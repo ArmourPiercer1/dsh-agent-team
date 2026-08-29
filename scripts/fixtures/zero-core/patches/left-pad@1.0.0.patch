@@ -1,0 +1,6 @@
+--- a/index.js
++++ b/index.js
+@@ -1,2 +1,2 @@
+-export function leftPad(str, len) {
++export function leftPad(str, len, pad = '0') {
+   return str

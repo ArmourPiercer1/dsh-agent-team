@@ -1,0 +1,7 @@
+packages:
+  - 'packages/*'
+  - 'plugins/*'
+
+patchedDependencies:
+  '@fixture/host-core@1.0.0': 'patches/@fixture+host-core@1.0.0.patch'
+  'left-pad@1.0.0': 'patches/left-pad@1.0.0.patch'

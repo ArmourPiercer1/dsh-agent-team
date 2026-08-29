@@ -13,6 +13,7 @@
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:node": "node scripts/run-tests.mjs",
     "smoke:composition": "node scripts/composition-smoke.mjs"
   },
   "devDependencies": {

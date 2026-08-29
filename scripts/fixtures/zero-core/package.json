@@ -1,0 +1,11 @@
+{
+  "name": "fixture-root",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "pnpm": {
+    "patchedDependencies": {
+      "@fixture/host-core@1.0.0": "patches/@fixture+host-core@1.0.0.patch"
+    }
+  }
+}
