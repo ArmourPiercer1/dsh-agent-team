@@ -67,10 +67,13 @@ export default {
   async run(ctx) {
     const { config, check, log, instance } = ctx
 
+    // Bare run (Quickstart/CI, no --report-dir): the documented one-command
+    // contract must stay all-green, so root obs + scratch evidence under this
+    // run's dedicated DSH_HOME (always writable, isolated per task).
     if (config.reportDir === null) {
-      check(false, 'agent-lifecycle requires --report-dir (obs + scratch evidence live under the report dir)')
-      return
+      config.reportDir = join(config.dshHome, 'characterization-obs')
     }
+    mkdirSync(config.reportDir, { recursive: true })
 
     // 0. static positive control: every upstream import admitted by the LIVE surface
     const pluginText = readFileSync(join(ctx.harnessRoot, ROW.rel), 'utf8')

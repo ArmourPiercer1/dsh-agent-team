@@ -53,7 +53,7 @@
  * record; an unexpected internal error is itself a check record, and the
  * finally-blocked teardown still restores every touched surface.
  */
-import { copyFileSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
@@ -105,15 +105,15 @@ export default {
     // Absolute paths: the payload runs in a child process whose cwd is the
     // pinned host tree, so everything it receives (report dir, cwd) must be
     // absolute and forward-slashed.
-    const reportDir = config.reportDir === null ? null : resolve(config.reportDir)
     const logDir = resolve(config.logDir)
     const mainHome = resolve(config.dshHome)
     const scratchHome = join(mainHome, 'scratch', 'isolation-home')
-
-    if (reportDir === null) {
-      check(false, 'storage-fork-descendants group requires --report-dir (observation JSONs + evidence live there)')
-      return
-    }
+    // Bare run (Quickstart/CI, no --report-dir): the documented one-command
+    // contract must stay all-green, so root observation JSONs under this run's
+    // dedicated DSH_HOME (always writable, isolated per task).
+    const reportDir =
+      config.reportDir === null ? join(mainHome, 'characterization-obs') : resolve(config.reportDir)
+    mkdirSync(reportDir, { recursive: true })
 
     let blackhole = undefined
     let isoInstance = undefined

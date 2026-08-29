@@ -9,3 +9,6 @@ dist/
 coverage/
 *.tsbuildinfo
 .eslintcache
+
+# characterization harness per-run scratch (P2 integration)
+tests/characterization/.run-logs/
