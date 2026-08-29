@@ -1,0 +1,14 @@
+{
+  "name": "p2t6-missing-bundle",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./client.js"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web"
+    }
+  }
+}

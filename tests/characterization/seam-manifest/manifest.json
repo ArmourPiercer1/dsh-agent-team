@@ -1,0 +1,563 @@
+{
+  "meta": {
+    "task": "P2-T6",
+    "title": "P2 seam manifest — aggregate of all P2-T1..T6 seams (TaskDoc §11.3, G2 gate input)",
+    "generatedBy": "P2-T6 leaf worker, branch task/P2-T6-remote-client",
+    "upstreamSha": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+    "worktree": ".worktrees/P2-T6",
+    "branch": "task/P2-T6-remote-client",
+    "pathBase": "all evidence/report paths are relative to the worktree root",
+    "criticalityMatrix": "DevPlan §15 frozen matrix: architecture-critical = TEAM_REMOTE, CLIENT_MODULE, TEAM_VIEW_SLOT, NEW_TEAM_ENTRY; conversation.input.dock is the frozen fallback seat for the (non-critical) input dock requirement",
+    "validatedBy": "tests/characterization/probes/remote-client/index.mjs in-group validation (seam-manifest-validation.json), re-run on every canonical execution",
+    "g2PreAudit": "dev/agent-workflow/evidence/P2-T6/g2-pre-audit.md"
+  },
+  "seams": [
+    {
+      "name": "fresh create",
+      "group": "agent-lifecycle",
+      "task": "P2-T2",
+      "seamId": "agent-lifecycle",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T2/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+    },
+    {
+      "name": "member resume",
+      "group": "agent-lifecycle",
+      "task": "P2-T2",
+      "seamId": "agent-lifecycle",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T2/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+    },
+    {
+      "name": "ordinary root cold resume",
+      "group": "agent-lifecycle",
+      "task": "P2-T2",
+      "seamId": "agent-lifecycle",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T2/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+    },
+    {
+      "name": "ordering trace",
+      "group": "agent-lifecycle",
+      "task": "P2-T2",
+      "seamId": "agent-lifecycle",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T2/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T2/seam-report.md"
+    },
+    {
+      "name": "AgentPreset composition (standing substrate)",
+      "group": "preset-persona-model",
+      "task": "P2-T3",
+      "seamId": "preset-persona-model",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+    },
+    {
+      "name": "Persona scope (preset standing scope; no leak)",
+      "group": "preset-persona-model",
+      "task": "P2-T3",
+      "seamId": "preset-persona-model",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+    },
+    {
+      "name": "`complete:true` detection / blocking (the 1A decision)",
+      "group": "preset-persona-model",
+      "task": "P2-T3",
+      "seamId": "preset-persona-model",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+    },
+    {
+      "name": "ModelSelection future boundary (per-Agent model route)",
+      "group": "preset-persona-model",
+      "task": "P2-T3",
+      "seamId": "preset-persona-model",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+    },
+    {
+      "name": "Preset switch lock (post-`turn/start` fixity)",
+      "group": "preset-persona-model",
+      "task": "P2-T3",
+      "seamId": "preset-persona-model",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+    },
+    {
+      "name": "Cold resume (durable preset + model selection across process restart)",
+      "group": "preset-persona-model",
+      "task": "P2-T3",
+      "seamId": "preset-persona-model",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T3/seam-report.md"
+    },
+    {
+      "name": "pre-step",
+      "group": "capabilities",
+      "task": "P2-T4",
+      "seamId": "capabilities",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "seam × 4 dimensions (creation / cold resume / tighten / capability disappear) = 4/4 PASS in the 20/20 matrix",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T4/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+    },
+    {
+      "name": "pre-execute",
+      "group": "capabilities",
+      "task": "P2-T4",
+      "seamId": "capabilities",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "seam × 4 dimensions (creation / cold resume / tighten / capability disappear) = 4/4 PASS in the 20/20 matrix",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T4/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+    },
+    {
+      "name": "tool visibility",
+      "group": "capabilities",
+      "task": "P2-T4",
+      "seamId": "capabilities",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "seam × 4 dimensions (creation / cold resume / tighten / capability disappear) = 4/4 PASS in the 20/20 matrix",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T4/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+    },
+    {
+      "name": "skills",
+      "group": "capabilities",
+      "task": "P2-T4",
+      "seamId": "capabilities",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "seam × 4 dimensions (creation / cold resume / tighten / capability disappear) = 4/4 PASS in the 20/20 matrix",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T4/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+    },
+    {
+      "name": "MCP",
+      "group": "capabilities",
+      "task": "P2-T4",
+      "seamId": "capabilities",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "seam × 4 dimensions (creation / cold resume / tighten / capability disappear) = 4/4 PASS in the 20/20 matrix; streamable-http transport only (see L4-2)",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T4/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T4/seam-report.md"
+    },
+    {
+      "name": "StorageDomain external persistence",
+      "group": "storage-fork-descendants",
+      "task": "P2-T5",
+      "seamId": "storage-fork-descendants",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T5/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T5/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T5/seam-report.md"
+    },
+    {
+      "name": "Fork lineage visibility",
+      "group": "storage-fork-descendants",
+      "task": "P2-T5",
+      "seamId": "storage-fork-descendants",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T5/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T5/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T5/seam-report.md"
+    },
+    {
+      "name": "Generic descendant enumeration / interrupt / drain",
+      "group": "storage-fork-descendants",
+      "task": "P2-T5",
+      "seamId": "storage-fork-descendants",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T5/router-rerun.log",
+        "dev/agent-workflow/evidence/P2-T5/seam-report.md"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T5/seam-report.md"
+    },
+    {
+      "name": "client module discovery (dsh.client → boot graph)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "CLIENT_MODULE",
+      "criticality": "architecture-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "positive: client-bundle row gains a /plugins combo-url entry in the composed Web boot graph (combo rev = composed-rev-index), bundle served from it, row present in composition dump; negative: no-decl control gains no client entry, unknown bundle 404s; loud-failure controls: missing bundle (B3) and malformed dsh.client declaration (B4) abort boot attributable to the package (activation-pass failures aggregate into ClientPackageCompositionError); quirk: a flat top-level \"dsh.client\" key instead of the nested \"dsh\": {\"client\": ...} form is silently ignored (resolveMeta → null, zero diagnostics) — see L6-4",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/run-log.txt",
+        "dev/agent-workflow/evidence/P2-T6/run/logs/obs/host-probe-activated.json",
+        "dev/agent-workflow/evidence/P2-T6/run/logs/dump-config-b1.txt",
+        "dev/agent-workflow/evidence/P2-T6/run/logs/instance-port3401-negative-b3.log",
+        "dev/agent-workflow/evidence/P2-T6/run/logs/instance-port3401-negative-b4.log"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "remote RPC (authenticated client-request channel)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "TEAM_REMOTE",
+      "criticality": "architecture-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "positive: launch URL mints the HMAC auth cookie; authenticated client-request round-trips the registered public channel with the exact wire contract (server-response ok); negative: 401 unauthenticated, 415 wrong content-type, bad-request on method/endpoint mismatch, 200 ok:false error result, 500 handler throw",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/run-log.txt",
+        "dev/agent-workflow/evidence/P2-T6/run/logs/obs/host-probe-activated.json"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "reconnect basic (loss → backoff → reconnect)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "TEAM_REMOTE",
+      "criticality": "architecture-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "ConnectionController probe: R1 happy path (+ restart-dedupe contract observation), R2 two-loss state sequence [connected, reconnecting, connected, reconnecting, connected] with backoff intervals within the frozen formula bounds, R3 ready-timeout → first state reconnecting with zero connects, R4 throwing sinks isolated (controller completes all generations), R5 stop-during-backoff leaves exactly one generation and no post-stop events",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/logs/obs/obs-reconnect.json",
+        "dev/agent-workflow/evidence/P2-T6/run/run-log.txt"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "conversation.view seat (Team Tab, list/session)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "TEAM_VIEW_SLOT",
+      "criticality": "architecture-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "SlotCore driven with declarations mirroring the frozen ui-conversation artifact: Team Tab registers into conversation.view (list/session), shadows at different priority, same-id-same-priority collision throws the verbatim seat message naming the registrant, disposer collapses child declarations with epoch bump and blocks re-register until redeclared",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/logs/obs/obs-slot.json"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "sidebar New Team entry (sidebar.footer.action, list/root)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "NEW_TEAM_ENTRY",
+      "criticality": "architecture-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "SlotCore driven with declarations mirroring the frozen ui-sidebar artifact: New Team action registers into sidebar.footer.action (list/root), squatter collision, missing-id, and dispose→collapse→register-after-collapse all verified",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/logs/obs/obs-slot.json"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "conversation input dock (Team Dock fallback seat)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "INPUT_DOCK",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "frozen DevPlan §15 matrix: the input dock is non-critical and its requirement is satisfied by the frozen fallback clause — an equivalent public seat (conversation.input.dock list/session) exists; Team Dock registers there as fallback-seat evidence, no blocker",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/logs/obs/obs-slot.json"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "client bundle missing (negative control)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "CLIENT_MODULE",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "row with dsh.client declaration but no client.js: boot fails fast and loudly; error attributable to MissingClientBundleError naming the package; instance log persisted",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/logs/instance-port3401-negative-b3.log",
+        "dev/agent-workflow/evidence/P2-T6/run/run-log.txt"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    },
+    {
+      "name": "malformed dsh.client declaration (negative control)",
+      "group": "remote-client",
+      "task": "P2-T6",
+      "seamId": "CLIENT_MODULE",
+      "criticality": "non-critical",
+      "verdict": "PASS",
+      "blocker_id": null,
+      "note": "row with dsh.client.platform = 42: boot fails fast and loudly; error attributable to the platform validation naming the package; instance log persisted",
+      "evidence": [
+        "dev/agent-workflow/evidence/P2-T6/run/logs/instance-port3401-negative-b4.log",
+        "dev/agent-workflow/evidence/P2-T6/run/run-log.txt"
+      ],
+      "report": "dev/agent-workflow/evidence/P2-T6/seam-report.md"
+    }
+  ],
+  "knownLimitations": [
+    {
+      "id": "L1-1",
+      "task": "P2-T1",
+      "title": "frontend bundle 404 in sandbox — vite→esbuild spawn denied, apps/web/dist cannot be built, GET /?token= 404s",
+      "status": "accepted-sandbox-limitation: machine-level boot proof is the boot marker; in CI the bundle builds and serves 200",
+      "evidence": ["dev/agent-workflow/evidence/P2-T1/compliance-report.md"]
+    },
+    {
+      "id": "L1-2",
+      "task": "P2-T1",
+      "title": "CI not executed locally (characterization.yml is a CI-side step)",
+      "status": "recorded: CI-only verification, out of local execution scope",
+      "evidence": ["dev/agent-workflow/evidence/P2-T1/compliance-report.md"]
+    },
+    {
+      "id": "L1-3",
+      "task": "P2-T1",
+      "title": "fixture regeneration only allowed on a byte-clean tree",
+      "status": "policy-frozen: enforced by the byte-clean section of the harness",
+      "evidence": ["dev/agent-workflow/evidence/P2-T1/compliance-report.md"]
+    },
+    {
+      "id": "L1-4",
+      "task": "P2-T1",
+      "title": "port policy — harness defaults 3281/3291; 3080/3180 are hard red lines (sacrosanct development instance)",
+      "status": "policy-frozen",
+      "evidence": ["dev/agent-workflow/evidence/P2-T1/compliance-report.md"]
+    },
+    {
+      "id": "L2-1",
+      "task": "P2-T2",
+      "title": "session/flush is not a durable publication barrier from a plugin row",
+      "status": "known-limitation: mitigated by waitForDurable bounded poll",
+      "evidence": ["dev/agent-workflow/evidence/P2-T2/seam-report.md"]
+    },
+    {
+      "id": "L2-2",
+      "task": "P2-T2",
+      "title": "jsonl write-behind .tmp/final-commit semantics (bare .tmp reads as session-not-found; kill-teardown window)",
+      "status": "known-limitation: documented; deterministic-name logs preferred for observation",
+      "evidence": ["dev/agent-workflow/evidence/P2-T2/seam-report.md"]
+    },
+    {
+      "id": "L2-3",
+      "task": "P2-T2",
+      "title": "session-event vocabulary whitelist is read-side fail-closed only",
+      "status": "known-limitation: documented",
+      "evidence": ["dev/agent-workflow/evidence/P2-T2/seam-report.md"]
+    },
+    {
+      "id": "L3-1",
+      "task": "P2-T3",
+      "title": "durable session data persists in references/.dsh-test-p2t3 sqlite",
+      "status": "test-residue: scoped to the T3 DSH_HOME, does not cross into other tasks",
+      "evidence": ["dev/agent-workflow/evidence/P2-T3/compliance-report.md"]
+    },
+    {
+      "id": "L3-2",
+      "task": "P2-T3",
+      "title": "leftover user preset p2t3-scope in the T3 DSH_HOME",
+      "status": "test-residue: scoped to the T3 DSH_HOME",
+      "evidence": ["dev/agent-workflow/evidence/P2-T3/compliance-report.md"]
+    },
+    {
+      "id": "L3-3",
+      "task": "P2-T3",
+      "title": "patch layer ends reset+[] (no composition state left mounted)",
+      "status": "documented: byte-exact restore verified",
+      "evidence": ["dev/agent-workflow/evidence/P2-T3/compliance-report.md"]
+    },
+    {
+      "id": "L3-4",
+      "task": "P2-T3",
+      "title": "P2-T1 latent defect — lib/instance.mjs resetPatchLayer passes an array to writeFileSync",
+      "status": "reported-latent-defect: worked around (groups write the patch file directly); owner fix recommended",
+      "evidence": ["dev/agent-workflow/evidence/P2-T3/compliance-report.md"]
+    },
+    {
+      "id": "L3-5",
+      "task": "P2-T3",
+      "title": "Loader apply-order race — synchronous ctx.get unsafe for late services",
+      "status": "known-limitation: mitigated by named-export inject declaration",
+      "evidence": ["dev/agent-workflow/evidence/P2-T3/compliance-report.md"]
+    },
+    {
+      "id": "L3-6",
+      "task": "P2-T3",
+      "title": "deterministic instance log name instance-port<port>.log (same-port reruns overwrite)",
+      "status": "documented: T6 negative-control logs rely on the deterministic name",
+      "evidence": ["dev/agent-workflow/evidence/P2-T3/compliance-report.md"]
+    },
+    {
+      "id": "L4-1",
+      "task": "P2-T4",
+      "title": "no model success without DEEPSEEK_API_KEY (LlmError MISSING_CREDENTIAL); all 20 capability cells model-independent",
+      "status": "environment-limitation: coverage complete at machine level, model-independent",
+      "evidence": ["dev/agent-workflow/evidence/P2-T4/compliance-report.md"]
+    },
+    {
+      "id": "L4-2",
+      "task": "P2-T4",
+      "title": "MCP transport streamable-http only — stdio structurally denied (EPERM under sandbox)",
+      "status": "known-limitation: documented",
+      "evidence": ["dev/agent-workflow/evidence/P2-T4/compliance-report.md"]
+    },
+    {
+      "id": "L4-3",
+      "task": "P2-T4",
+      "title": "aux port 3491 transient (MCP server lifetime)",
+      "status": "documented",
+      "evidence": ["dev/agent-workflow/evidence/P2-T4/compliance-report.md"]
+    },
+    {
+      "id": "L5-F1",
+      "task": "P2-T5",
+      "title": "interrupt of an absent target is an accepted silent no-op; authority checks fire for live targets only",
+      "status": "known-limitation: documented finding F1",
+      "evidence": ["dev/agent-workflow/evidence/P2-T5/seam-report.md"]
+    },
+    {
+      "id": "L5-F2",
+      "task": "P2-T5",
+      "title": "child session detach race by design — reliable observation via synchronous session/event store observer + durable log via sessionQuery",
+      "status": "known-limitation: documented finding F2",
+      "evidence": ["dev/agent-workflow/evidence/P2-T5/seam-report.md"]
+    },
+    {
+      "id": "L5-F3",
+      "task": "P2-T5",
+      "title": "live store is process-scoped — empty after restart",
+      "status": "known-limitation: documented finding F3",
+      "evidence": ["dev/agent-workflow/evidence/P2-T5/seam-report.md"]
+    },
+    {
+      "id": "L5-F4",
+      "task": "P2-T5",
+      "title": "sessionQuery.trace walks session lineage vs subagents.listDescendants enumerates subagent entries only",
+      "status": "known-limitation: documented finding F4",
+      "evidence": ["dev/agent-workflow/evidence/P2-T5/seam-report.md"]
+    },
+    {
+      "id": "L6-1",
+      "task": "P2-T6",
+      "title": "connection package public ./src/*.ts subpath import requires NODE_OPTIONS=--experimental-transform-types (node 24 strip-only cannot parse its parameter properties)",
+      "status": "documented-deviation: NODE_OPTIONS set around the B2 boot only and deleted in finally; no upstream modification",
+      "evidence": ["dev/agent-workflow/evidence/P2-T6/seam-report.md"]
+    },
+    {
+      "id": "L6-2",
+      "task": "P2-T6",
+      "title": "browser rendering out of machine-level scope — proof = boot marker + composition dump + public HTTP routes + SlotCore-driven seats",
+      "status": "scope-limitation: machine-level evidence complete; browser rendering verification belongs to later phases",
+      "evidence": ["dev/agent-workflow/evidence/P2-T6/seam-report.md"]
+    },
+    {
+      "id": "L6-3",
+      "task": "P2-T6",
+      "title": "deterministic instance log name (shared with L3-6) — T6 negative-control logs persist across runs until rewritten",
+      "status": "documented",
+      "evidence": ["dev/agent-workflow/evidence/P2-T6/seam-report.md"]
+    },
+    {
+      "id": "L6-4",
+      "task": "P2-T6",
+      "title": "a flat top-level \"dsh.client\" key (instead of the nested \"dsh\": {\"client\": ...} form) is silently ignored — resolveMeta returns null with no log line and the row is excluded from the client-module graph; the registry reads pkg.dsh.client, and a misdeclared row vanishes with zero diagnostics",
+      "status": "documented-characterization: canonical form is {\"dsh\":{\"client\":{\"platform\":\"web\",...}}} (per packages/client/modules/package.json); probe fixtures use the canonical form; no upstream validation rejects the flat form, so misdeclared rows are undetectable without reading the registry source",
+      "evidence": ["dev/agent-workflow/evidence/P2-T6/seam-report.md", "dev/agent-workflow/evidence/P2-T6/debug-b1/live-diag.json"]
+    }
+  ]
+}
