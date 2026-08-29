@@ -190,6 +190,15 @@
 - **Carry-forward（P3 起）**：O5 B1 timeout 级联 hardening；未来 Gate 并行评审的裸命令步骤须错峰或 per-reviewer CH_* env（避免共享默认端口/DSH_HOME 互撞）；`.dsh-test-p2t1` 共享运行残留 housekeeping；P3-T1 为 P3 shared write lock owner（contracts 冻结 v1），完成后 graph `locks.contracts` 置位，其余任务禁改 `packages/contracts/**`。
 - **下一步**：建 `int/P3-contracts-domain` + `.worktrees/P3-T1`（task/P3-T1-contract-freeze），派发 P3-T1 worker（单 worker，`qiyuan-self/qwen3.8-27b`）。
 
+### 轮次 R10：P3 启动 — P3-T1（contract freeze）派发（2026-08-30）
+
+- **分支**：`int/P3-contracts-domain` 自 master `4bb1ca3`（R9 bookkeeping，远程已验证 = 4bb1ca3，push #2 完成）；主 worktree 切换至 int/P3。
+- **P3-T1 worktree**：`.worktrees/P3-T1` @ `task/P3-T1-contract-freeze`（base `4bb1ca3`）；证据目录 `dev/agent-workflow/evidence/P3-T1/` 已建（worktree 内）。
+- **派发**：workflow `p3-t1-contract-freeze-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；brief 内容 = must-reads（ROUTER_RULES + TEST_METHODS）+ TaskDoc §11.4 P3-T1 卡片逐字 + owned-path（`packages/contracts/**` + `evidence/P3-T1/**`）+ 全局禁止项 + Architecture 冻结文档关键事实（TeamSessionId=RootSessionId、(rootSessionId, instanceId) 运行时 identity、templateId 静态、legacy MemberId 反模式；冻结文档未 track → 绝对路径读主 worktree）+ 沙箱测试链（`pnpm install --ignore-scripts` → `node scripts/run-tests.mjs contracts` → `node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json`；禁 pnpm run/exec/vitest CLI）+ erasable TS only + audited matcher surface（toBe/toEqual/toBeGreaterThan/toThrow + .not，禁扩 shim）+ ≤3 attempts + TaskResult JSON 契约 + never-escalate + 崩溃恢复重试注记。
+- **任务卡片要点**：目标 = TeamSessionId/InstanceId/TemplateId + DTO 基础 + errors + schema version → 共享 contract v1；必须测试 = type / serialization / illegal ID-input；验收 = 不含 legacy MemberId authority 或 live Agent；输出物 = contracts v1 + contract changelog；P3 shared write lock owner（冻结后其余任务禁改 `packages/contracts/**`，届时 graph `locks.contracts` 置位）。
+- **graph**：P3-T1 → RUNNING（branch task/P3-T1-contract-freeze，base `4bb1ca3`）；ready → []。
+- **结果**：（worker 返回后补记）
+
 ## 重审记录
 
 （空）
