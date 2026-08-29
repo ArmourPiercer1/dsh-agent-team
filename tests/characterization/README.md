@@ -111,6 +111,15 @@ CLI flags > `CH_*` environment variables > defaults:
 `CH_CLIENT_COMMIT_HASH` (default `cd5ef814`) is forwarded to the instance so
 its build/runtime commit assumptions match the pinned tree.
 
+`--host-tree`, `--dsh-home`, and `--report-dir` are resolved to ABSOLUTE
+paths (relative values resolve against the invoking process's cwd). This is
+not optional: probe payloads run inside the instance child whose cwd is the
+pinned upstream tree (see "Spawn mechanism"), so a relative value would make
+payloads write observations/homes into the pristine tree while the probe
+group — cwd = the invoked repo — reads them from the invoked root (9-failure
+divergence observed in the P2-T6 main-agent rerun, 20260830; resolved
+centrally in `resolveConfig`).
+
 ### Path resolution (`findTeamRoot`)
 
 Defaults assume the canonical team-repo layout. The harness walks up from

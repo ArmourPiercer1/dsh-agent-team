@@ -37,14 +37,23 @@ export const harnessRoot = resolve(here, '..')
 export function resolveConfig(argv) {
   const args = parseArgs(argv)
   const teamRoot = findTeamRoot()
+  const reportDirArg = args['report-dir'] ?? process.env.CH_REPORT_DIR ?? null
   const config = {
     fixtureWrite: Boolean(args['fixture-write']),
     only: args.only,
-    hostTree: args['host-tree'] ?? process.env.CH_HOST_TREE ?? join(teamRoot, 'references', 'deepseek-harness-test-use'),
-    dshHome: args['dsh-home'] ?? process.env.CH_DSH_HOME ?? join(teamRoot, 'references', '.dsh-test-p2t1'),
+    // Paths that cross the process boundary are forced absolute: probe
+    // payloads run inside the instance child (cwd = the pinned upstream
+    // tree, see lib/instance.mjs), so a relative --report-dir/--dsh-home
+    // would make payloads write observations/homes into the pristine tree
+    // (byte-clean violation) while the group — cwd = the invoked repo —
+    // reads them from the invoked root. Observed 20260830 in the P2-T6
+    // main-agent rerun (9 failures); resolve() here makes every consumer
+    // agree on one location.
+    hostTree: resolve(args['host-tree'] ?? process.env.CH_HOST_TREE ?? join(teamRoot, 'references', 'deepseek-harness-test-use')),
+    dshHome: resolve(args['dsh-home'] ?? process.env.CH_DSH_HOME ?? join(teamRoot, 'references', '.dsh-test-p2t1')),
     port: Number(args.port ?? process.env.CH_PORT ?? 3281),
     backupPort: Number(args['backup-port'] ?? process.env.CH_BACKUP_PORT ?? 3291),
-    reportDir: args['report-dir'] ?? process.env.CH_REPORT_DIR ?? null,
+    reportDir: reportDirArg === null ? null : resolve(reportDirArg),
     surface: undefined, // filled by run.mjs after building the whitelist
   }
   config.logDir = config.reportDir === null ? join(harnessRoot, '.run-logs') : join(config.reportDir, 'logs')
