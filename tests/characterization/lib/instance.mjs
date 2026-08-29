@@ -190,7 +190,7 @@ export class DshInstance {
   /** The baseline "revert" state of the patch layer (per baseline comment). */
   resetPatchLayer(header) {
     mkdirSync(this.profileDir, { recursive: true })
-    writeFileSync(this.patchFile, [...(header ?? []).map((line) => `# ${line}`), '[]', ''])
+    writeFileSync(this.patchFile, [...(header ?? []).map((line) => `# ${line}`), '[]', ''].join('\n'))
     return this.patchFile
   }
 
