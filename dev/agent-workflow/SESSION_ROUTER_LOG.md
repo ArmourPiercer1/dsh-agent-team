@@ -197,7 +197,19 @@
 - **派发**：workflow `p3-t1-contract-freeze-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；brief 内容 = must-reads（ROUTER_RULES + TEST_METHODS）+ TaskDoc §11.4 P3-T1 卡片逐字 + owned-path（`packages/contracts/**` + `evidence/P3-T1/**`）+ 全局禁止项 + Architecture 冻结文档关键事实（TeamSessionId=RootSessionId、(rootSessionId, instanceId) 运行时 identity、templateId 静态、legacy MemberId 反模式；冻结文档未 track → 绝对路径读主 worktree）+ 沙箱测试链（`pnpm install --ignore-scripts` → `node scripts/run-tests.mjs contracts` → `node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json`；禁 pnpm run/exec/vitest CLI）+ erasable TS only + audited matcher surface（toBe/toEqual/toBeGreaterThan/toThrow + .not，禁扩 shim）+ ≤3 attempts + TaskResult JSON 契约 + never-escalate + 崩溃恢复重试注记。
 - **任务卡片要点**：目标 = TeamSessionId/InstanceId/TemplateId + DTO 基础 + errors + schema version → 共享 contract v1；必须测试 = type / serialization / illegal ID-input；验收 = 不含 legacy MemberId authority 或 live Agent；输出物 = contracts v1 + contract changelog；P3 shared write lock owner（冻结后其余任务禁改 `packages/contracts/**`，届时 graph `locks.contracts` 置位）。
 - **graph**：P3-T1 → RUNNING（branch task/P3-T1-contract-freeze，base `4bb1ca3`）；ready → []。
-- **结果**：（worker 返回后补记）
+- **P3-T1 结果**（worker `qiyuan-self/qwen3.8-27b`，canonical attempts 1/3，SELF_VERIFIED，3 commits e757a93→d950a7d→b866d13，head `b866d131bee30f642e25f1155d5c5a2ccaa18d3a`）：
+  - **contract v1 内容**（packages/contracts，15 模块，零依赖，src 纯）：schema v1（closed set [1]，SCHEMA_VERSION_MISMATCH / UNSUPPORTED 两码）；branded string IDs — SessionId/RootSessionId/ChildSessionId（opaque ≤255、无控制/空白字符）、**TeamSessionId = RootSessionId 类型别名**（invariant 9，teamSessionIdOf）、InstanceId `inst-<1..32 小写字母数字>`、TemplateId slug、BlueprintId/Revision/ContentHash（blueprintId@revision 键）；**MemberIdentity = (rootSessionId, instanceId)**（invariant 18，canonical sorted-key 序列化）+ LEADER_INSTANCE_ID='inst-leader'（invariant 14）+ IDENTITY_SCOPE_MISMATCH 跨 scope 拒绝；DTO — TeamSessionRecordDto（invariants 8/10）、MemberInstanceRecordDto（invariant 23、§29 五态 lifecycle）、SessionBindingDto ordinary|team-root|team-member（§14.3）、BlueprintSnapshotRef；全 lossless-JSON + canonical-JSON byte-stable + deepFreeze + remote-safe；**20-code TeamContractError** 词汇；**legacy 隔离** — memberId 在所有 DTO surface 拒绝（LEGACY_MEMBER_ID_REJECTED），5 个 legacy Team SessionEvent 名 detection-only（invariant 42；invariant 65 legacy read-only）；CHANGELOG.md v1 FROZEN + 冻结规则（变更须新版本 + 显式授权 + main-agent 批准）。
+  - **测试 87/87**（contracts 2 / errors 7 / identity 12 / ids 18 / negative 21 / remote-safe 10 / serialization 16 / types 1）+ tsc clean（TS 6.0.3 strict + noUncheckedIndexedAccess）。
+  - **Debug ledger**（D1–D6，不计 attempt）：D4 的 11 失败暴露 2 个 shim matcher 缺口（toBeInstanceOf/toBeUndefined 不在 audited surface → 改用 node:assert/plain try-catch，**未扩 shim**）、1 个错误测试假设（Object.isFrozen 对 primitive vacuously true）、**1 个真实 source bug**（absent optional 字段被按 own property 断言 → parser 改为 “absent 或显式 null” 语义）；D3 TS2591（workspace 无 @types/node）→ 测试 helper 改 plain try/catch 捕获。
+- **主 Agent 独立复验**（不依赖 worker 自述）：
+  - owned-path 审计：31/31 文件 ⊆ `packages/contracts/**`（28）+ `evidence/P3-T1/**`（3）；零越界；worktree clean；3 commits 全归本任务。
+  - worktree 内独立重跑测试链：87/87 EXIT=0；tsc EXIT=0。
+  - 冻结语义核对：Architecture L2862（invariant 9）/ L2867（14）/ L2871（18）/ L2872（19）/ L2895（42）/ L2918（65）与源码注释逐条一致；18 个 src 文件 import 全为相对路径（零外部依赖，零 process/require/fetch/node:）。
+  - 集成态复验（主 worktree @ int/P3 `fba817c`）：pnpm install 13 s → 87/87 EXIT=0 → tsc EXIT=0。
+  - 小记：run-log.txt 含非 UTF-8 字节（疑 pnpm 输出编码残留），不影响 ledger/summary 记录 — 记为 minor observation，非 gate 判据。
+- **集成**：cherry-pick -x ×3 → int/P3 `984bb3c/af360cd/ba817c`，零冲突；int head = `fba817cef345ced3fcae374e86ae110dca878c63`。
+- **graph**：P3-T1 → INTEGRATED（attempts 1）；**locks.contracts = fba817c**（contract v1 冻结，其余任务禁改 `packages/contracts/**`）；integration_sha = fba817c；ready → [P3-T2, P3-T3, P3-T4, P3-T5]。
+- **下一步**：读 TaskDoc §11.4 P3-T2..T6 卡片 → 建 4 worktree（P3-T2..T5，base = int/P3 fba817c）→ workflow 4 并行派发（各自独立 worktree/分支/证据目录）；P3-T6 + G3 待 4 项集成后。
 
 ## 重审记录
 
