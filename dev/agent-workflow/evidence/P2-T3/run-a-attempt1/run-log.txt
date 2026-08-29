@@ -1,0 +1,84 @@
+[2026-08-29T18:13:54.559Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization
+[2026-08-29T18:13:54.559Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:13:54.560Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t3
+[2026-08-29T18:13:54.560Z] client hash  : cd5ef814
+[2026-08-29T18:13:54.560Z] port         : 3382 (backup 3392)
+[2026-08-29T18:13:54.560Z] node         : v24.20.0 (pid 96728)
+[2026-08-29T18:13:54.560Z] === section: preflight ===
+[2026-08-29T18:13:54.560Z]   PASS built upstream CLI entry present (apps/cli/lib/bin.js)
+[2026-08-29T18:13:54.560Z]   PASS good probe plugin present
+[2026-08-29T18:13:54.560Z]   PASS bad probe plugin present
+[2026-08-29T18:13:54.561Z]   PASS port 3382 free at start
+[2026-08-29T18:13:54.695Z]   PASS test-use tree PRISTINE at start (git status --porcelain empty)
+[2026-08-29T18:13:54.695Z]   (HEAD=cd5ef8148158c3a752a658978873241fdf8e2bbc via git)
+[2026-08-29T18:13:55.069Z]   PASS public surface built over 272 packages (>=200 for the pinned monorepo)
+[2026-08-29T18:13:55.071Z]   PASS probe sources import 6 upstream package(s): @deepseek-ai/dsh-agent, @deepseek-ai/dsh-agent-presets, @deepseek-ai/dsh-system-prompt, @deepseek-ai/dsh-scope, @deepseek-ai/dsh-session, @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:13:55.072Z]   probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization\probes\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+[2026-08-29T18:13:55.073Z]   probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization\probes\node_modules\@deepseek-ai\dsh-agent-presets -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\preset\agent-presets
+[2026-08-29T18:13:55.074Z]   probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization\probes\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+[2026-08-29T18:13:55.075Z]   probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization\probes\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+[2026-08-29T18:13:55.076Z]   probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization\probes\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+[2026-08-29T18:13:55.076Z]   probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization\probes\node_modules\@deepseek-ai\dsh-util-crypto -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\util\crypto
+[2026-08-29T18:13:55.076Z] === section: surface ===
+[2026-08-29T18:13:55.076Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-base
+[2026-08-29T18:13:55.076Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-web-app
+[2026-08-29T18:13:55.077Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:13:55.077Z]   PASS public root of @deepseek-ai/dsh-util-crypto admitted
+[2026-08-29T18:13:55.077Z]   PASS private subpath ./internal/random NOT admitted (subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:13:55.077Z] === section: fixture ===
+[2026-08-29T18:13:55.078Z]   PASS pinned SHA matches live HEAD (fixture=cd5ef8148158c3a752a658978873241fdf8e2bbc, live=cd5ef8148158c3a752a658978873241fdf8e2bbc [via git])
+[2026-08-29T18:13:55.078Z]   PASS public surface matches fixture (272 packages, schema p2t1-host-version/1)
+[2026-08-29T18:13:55.078Z] === section: static (private-import negative test) ===
+[2026-08-29T18:13:55.080Z]   PASS harness source (lib/ + run.mjs + spawn-probe.mjs + probes/*/index.mjs) has zero bare/third-party/private imports
+[2026-08-29T18:13:55.080Z]   PASS scanner: good probe PASSES (0 findings in probes\smoke\plugins\good-host.js)
+[2026-08-29T18:13:55.081Z]   PASS scanner: bad probe DETECTED + REJECTED (1 finding(s): private-subpath-import)
+[2026-08-29T18:13:55.081Z]   rejected: private-subpath-import "@deepseek-ai/dsh-util-crypto/internal/random" — subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:13:55.081Z]   PASS scanner positive control: synthetic bare import FLAGGED in harness mode
+[2026-08-29T18:13:55.081Z]   PASS scanner positive control: synthetic private subpath FLAGGED in probe mode
+[2026-08-29T18:13:55.081Z] === section: lifecycle ===
+[2026-08-29T18:13:55.081Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-29T18:13:56.904Z] throwaway boot OK: http://127.0.0.1:3382/?token=kEp1tVLvWk4m6t1akClsqVk3vA1nhvJoMzAbW3EqRRY
+[2026-08-29T18:13:56.940Z]   PASS web profile ready under dedicated DSH_HOME (created by throwaway boot)
+[2026-08-29T18:13:57.044Z]   PASS dump-config: mounted row present in the composed profile tree (public seam carries it)
+[2026-08-29T18:13:58.565Z]   PASS instance started: http://127.0.0.1:3382/?token=0cQhwA3eGazEIs4IB6dmMFJMtS8FuBtVIbFB-JU5XSU
+[2026-08-29T18:13:58.600Z]   PASS instance stopped, port freed
+[2026-08-29T18:13:58.600Z] === section: probes ===
+[2026-08-29T18:13:58.602Z]   PASS probe groups discovered: preset-persona-model, smoke
+[2026-08-29T18:13:58.602Z] --- probe group: preset-persona-model — P2-T3: AgentPreset composition + persona scope + complete:true detection/blocking + ModelSelection future boundary + preset switch lock + cold resume (2 boots, public surface only)
+[2026-08-29T18:13:58.603Z]   PASS p2t3-ppm-main carries >=1 upstream import (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-agent-presets, @deepseek-ai/dsh-system-prompt, @deepseek-ai/dsh-scope, @deepseek-ai/dsh-session)
+[2026-08-29T18:13:58.603Z]   PASS p2t3-ppm-main upstream imports all admitted by the live public surface
+[2026-08-29T18:13:58.604Z]   PASS p2t3-ppm-resume carries >=1 upstream import (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-system-prompt, @deepseek-ai/dsh-scope, @deepseek-ai/dsh-session)
+[2026-08-29T18:13:58.604Z]   PASS p2t3-ppm-resume upstream imports all admitted by the live public surface
+[2026-08-29T18:13:58.604Z]   PASS user preset fixture written: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t3\.agent-presets\p2t3-scope (trust 'user', unique persona text)
+[2026-08-29T18:13:58.605Z]   PASS pinned standard preset persona text extracted
+[2026-08-29T18:13:58.605Z]   PASS pinned minimal preset persona text extracted
+[2026-08-29T18:13:58.605Z]   PASS probe persona texts (standard/minimal/user) are mutually distinct
+[2026-08-29T18:14:00.162Z]   PASS boot 1 (main) marker: http://127.0.0.1:3382/?token=UC9nAxsdzaRC5Vs2s0so6twv3imnuaFXj5_P-jhzWcg
+[2026-08-29T18:14:00.786Z]   PASS main payload completed (done-main.json within poll window)
+[2026-08-29T18:14:00.869Z]   PASS port 3382 free after boot 1 stop
+[2026-08-29T18:14:02.456Z]   PASS boot 2 (resume) marker: http://127.0.0.1:3382/?token=OgxGuXAnnb-ICvFJQvAIfwLMU9SfgPbR_gFKLCYj5O0
+[2026-08-29T18:14:02.457Z]   PASS resume payload completed (done-resume.json within poll window)
+[2026-08-29T18:14:02.492Z]   PASS port 3382 free after boot 2 stop
+[2026-08-29T18:14:02.493Z]   FAIL probe group preset-persona-model threw: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Array
+[2026-08-29T18:14:02.493Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:14:02.493Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:14:02.493Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:14:02.494Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:14:02.494Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:14:02.494Z] smoke: good row mounted; starting instance
+[2026-08-29T18:14:04.028Z]   PASS good row boot succeeded: http://127.0.0.1:3382/?token=hOWA41LLarJKUZXFU_CYz3LZGFjs4j1tZRM4bAeM9rQ
+[2026-08-29T18:14:04.064Z]   PASS port free after good boot
+[2026-08-29T18:14:04.064Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:14:23.136Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:14:23.136Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:14:23.137Z]   PASS port free after failed bad boot
+[2026-08-29T18:14:23.137Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:14:24.960Z]   PASS recovery boot succeeded: http://127.0.0.1:3382/?token=ngOaJK4XS1zlShWhA82bROh8iUM2O5tou4sChd4iCU4
+[2026-08-29T18:14:24.997Z]   PASS port free after recovery stop
+[2026-08-29T18:14:24.997Z] === section: byte-clean ===
+[2026-08-29T18:14:25.140Z]   PASS test-use tree byte-clean after run (git status --porcelain empty)
+[2026-08-29T18:14:25.141Z]   PASS test-use tree byte-clean after run (git diff empty)
+[2026-08-29T18:14:25.141Z]   PASS HEAD unchanged (start=cd5ef8148158c3a752a658978873241fdf8e2bbc, end=cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-29T18:14:25.142Z] 
+[2026-08-29T18:14:25.142Z] RESULT: FAIL characterization self-test (1 failure(s))
+[2026-08-29T18:14:25.142Z]   - probe group preset-persona-model threw: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Array

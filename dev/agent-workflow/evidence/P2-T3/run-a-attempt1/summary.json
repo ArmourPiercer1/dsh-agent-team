@@ -1,0 +1,20 @@
+{
+  "ok": false,
+  "failures": [
+    "probe group preset-persona-model threw: The \"data\" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Array"
+  ],
+  "sections": [
+    "preflight",
+    "surface",
+    "fixture",
+    "static",
+    "lifecycle",
+    "probes",
+    "byte-clean"
+  ],
+  "port": 3382,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t3",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T18:14:25.141Z"
+}

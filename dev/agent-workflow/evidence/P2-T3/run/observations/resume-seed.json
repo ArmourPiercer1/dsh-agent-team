@@ -1,0 +1,32 @@
+{
+  "sessionId": "p2t3-minimal-mtepvqpv-v2kuf7",
+  "preset": "minimal",
+  "events": [
+    {
+      "seq": 0,
+      "type": "permission/preset"
+    },
+    {
+      "seq": 1,
+      "type": "sandbox/mode"
+    },
+    {
+      "seq": 2,
+      "type": "approval/policy"
+    },
+    {
+      "seq": 3,
+      "type": "model/selection"
+    }
+  ],
+  "modelSelectionEvent": [
+    {
+      "seq": 3,
+      "data": {
+        "provider": "p2t3-provider-b",
+        "model": "p2t3-model-b"
+      }
+    }
+  ],
+  "disposed": true
+}

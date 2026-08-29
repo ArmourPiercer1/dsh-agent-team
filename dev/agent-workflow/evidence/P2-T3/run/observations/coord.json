@@ -1,0 +1,10 @@
+{
+  "resumeSessionId": "p2t3-minimal-mtepvqpv-v2kuf7",
+  "expectedPreset": "minimal",
+  "expectedModelSelection": {
+    "provider": "p2t3-provider-b",
+    "model": "p2t3-model-b"
+  },
+  "userPresetId": "p2t3-scope",
+  "userPersonaText": "P2T3-SCOPE-PROBE persona from user preset p2t3-scope."
+}

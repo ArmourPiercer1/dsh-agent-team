@@ -1,0 +1,130 @@
+{
+  "selections": {
+    "A": {
+      "provider": "p2t3-provider-a",
+      "model": "p2t3-model-a"
+    },
+    "B": {
+      "provider": "p2t3-provider-b",
+      "model": "p2t3-model-b"
+    },
+    "C_EFFORT": {
+      "provider": "p2t3-provider-c",
+      "model": "p2t3-model-c1",
+      "reasoningEffort": "high"
+    },
+    "C_PLAIN": {
+      "provider": "p2t3-provider-c",
+      "model": "p2t3-model-c2"
+    }
+  },
+  "seed": {
+    "provider": "p2t3-seed-provider",
+    "model": "p2t3-seed-model",
+    "maxTokens": 1234,
+    "reasoningEffort": "medium"
+  },
+  "baselineVariables": {
+    "provider": "p2t3-provider-a",
+    "model": "p2t3-model-a"
+  },
+  "step1": {
+    "assembly": {
+      "assembled": {
+        "provider": "p2t3-provider-a",
+        "model": "p2t3-model-a"
+      },
+      "variables": {
+        "provider": "p2t3-provider-a",
+        "model": "p2t3-model-a"
+      }
+    },
+    "request": {
+      "provider": "p2t3-provider-a",
+      "model": "p2t3-model-a",
+      "maxTokens": 1234,
+      "reasoningEffort": null
+    }
+  },
+  "concurrentSwitchSameStep": {
+    "request": {
+      "provider": "p2t3-provider-a",
+      "model": "p2t3-model-a",
+      "maxTokens": 1234,
+      "reasoningEffort": null
+    }
+  },
+  "step2": {
+    "assembly": {
+      "assembled": {
+        "provider": "p2t3-provider-b",
+        "model": "p2t3-model-b"
+      },
+      "variables": {
+        "provider": "p2t3-provider-b",
+        "model": "p2t3-model-b"
+      }
+    },
+    "request": {
+      "provider": "p2t3-provider-b",
+      "model": "p2t3-model-b",
+      "maxTokens": 1234,
+      "reasoningEffort": null
+    }
+  },
+  "step3": {
+    "assembly": {
+      "assembled": {
+        "provider": "p2t3-provider-c",
+        "model": "p2t3-model-c1",
+        "reasoningEffort": "high"
+      },
+      "variables": {
+        "provider": "p2t3-provider-c",
+        "model": "p2t3-model-c1"
+      }
+    },
+    "request": {
+      "provider": "p2t3-provider-c",
+      "model": "p2t3-model-c1",
+      "maxTokens": 1234,
+      "reasoningEffort": "high"
+    }
+  },
+  "step4": {
+    "assembly": {
+      "assembled": {
+        "provider": "p2t3-provider-c",
+        "model": "p2t3-model-c2"
+      },
+      "variables": {
+        "provider": "p2t3-provider-c",
+        "model": "p2t3-model-c2"
+      }
+    },
+    "request": {
+      "provider": "p2t3-provider-c",
+      "model": "p2t3-model-c2",
+      "maxTokens": 1234,
+      "reasoningEffort": null
+    }
+  },
+  "afterDispose": {
+    "assembly": {
+      "assembled": {
+        "provider": "p2t3-provider-c",
+        "model": "p2t3-model-c2"
+      },
+      "variables": {
+        "provider": null,
+        "model": null
+      }
+    },
+    "request": {
+      "provider": "p2t3-seed-provider",
+      "model": "p2t3-seed-model",
+      "maxTokens": 1234,
+      "reasoningEffort": "medium"
+    }
+  }
+}

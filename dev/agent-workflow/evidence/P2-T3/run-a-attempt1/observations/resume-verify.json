@@ -1,0 +1,9 @@
+{
+  "services": {
+    "agentPresets": false,
+    "agents": true,
+    "systemPrompt": true,
+    "sessionProjections": true,
+    "sessionQuery": false
+  }
+}

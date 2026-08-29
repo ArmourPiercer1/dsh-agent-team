@@ -1,0 +1,71 @@
+{
+  "services": {
+    "agentPresets": true,
+    "agents": true,
+    "systemPrompt": true,
+    "sessionProjections": true,
+    "sessionQuery": true
+  },
+  "verified": {
+    "resumeSessionId": "p2t3-minimal-mtepvqpv-v2kuf7",
+    "composePath": "sessionQuery.observeSession",
+    "presetIdUsed": "minimal",
+    "resolvedId": "minimal",
+    "composedPreset": "minimal",
+    "projectionAgentPreset": "minimal",
+    "projectionModelSelection": {
+      "lastUsed": null,
+      "pending": {
+        "provider": "p2t3-provider-b",
+        "model": "p2t3-model-b"
+      }
+    },
+    "refAssembledAfterFirstAssembly": {
+      "provider": "p2t3-provider-b",
+      "model": "p2t3-model-b"
+    },
+    "assembly": {
+      "sectionNames": [
+        "deployment:persona"
+      ],
+      "sections": [
+        {
+          "name": "deployment:persona",
+          "text": "You are a helpful software engineer assistant."
+        }
+      ],
+      "contexts": 0,
+      "personaName": "deployment:persona"
+    },
+    "events": [
+      {
+        "seq": 0,
+        "type": "permission/preset"
+      },
+      {
+        "seq": 1,
+        "type": "sandbox/mode"
+      },
+      {
+        "seq": 2,
+        "type": "approval/policy"
+      },
+      {
+        "seq": 3,
+        "type": "model/selection",
+        "data": {
+          "provider": "p2t3-provider-b",
+          "model": "p2t3-model-b"
+        }
+      },
+      {
+        "seq": 4,
+        "type": "session/end-seed"
+      }
+    ],
+    "header": {
+      "agentPreset": null
+    },
+    "disposed": true
+  }
+}

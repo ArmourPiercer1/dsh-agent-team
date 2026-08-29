@@ -1,0 +1,55 @@
+{
+  "sessionId": "p2t3-standard-mtep93t5-uq4qpj",
+  "first": {
+    "rejected": false,
+    "value": "minimal"
+  },
+  "stateAfterFirst": {
+    "composedPreset": "minimal",
+    "projection": "minimal",
+    "selectedEvents": [
+      {
+        "seq": 3,
+        "data": {
+          "agentPreset": "minimal"
+        }
+      }
+    ]
+  },
+  "unknownOnUnlocked": {
+    "rejected": true,
+    "code": "agent-preset-not-found",
+    "isPresetLockedError": false,
+    "message": "agent-presets: preset \"p2t3-nope\" not found (available: standard, ptc, minimal, cordis, p2t3-scope)",
+    "details": {
+      "agentPreset": "p2t3-nope",
+      "available": [
+        "standard",
+        "ptc",
+        "minimal",
+        "cordis",
+        "p2t3-scope"
+      ]
+    }
+  },
+  "locked": {
+    "rejected": true,
+    "code": "agent-preset-locked",
+    "isPresetLockedError": false,
+    "message": "session \"p2t3-standard-mtep93t5-uq4qpj\" has already started; its agent preset is fixed",
+    "details": {
+      "sessionId": "p2t3-standard-mtep93t5-uq4qpj",
+      "agentPreset": "standard"
+    }
+  },
+  "unknownOnLocked": {
+    "rejected": true,
+    "code": "agent-preset-locked",
+    "isPresetLockedError": false,
+    "message": "session \"p2t3-standard-mtep93t5-uq4qpj\" has already started; its agent preset is fixed",
+    "details": {
+      "sessionId": "p2t3-standard-mtep93t5-uq4qpj",
+      "agentPreset": "p2t3-nope"
+    }
+  }
+}

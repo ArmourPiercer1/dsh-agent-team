@@ -1,0 +1,48 @@
+{
+  "standard": {
+    "sections": [
+      "harness:identity",
+      "harness:source",
+      "app:web-surface",
+      "deployment:persona",
+      "plan:policy",
+      "context:file-reference",
+      "tool:pwsh",
+      "tool:read",
+      "tool:write",
+      "tool:edit",
+      "tool:glob",
+      "tool:grep",
+      "tool:jobs",
+      "tool:web_search",
+      "tool:web_fetch",
+      "tool:goal",
+      "tool:workflow",
+      "tool:ralph",
+      "tool:subagent",
+      "tool:subagent_fork",
+      "ui:deliverable-file-references"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}."
+    },
+    "contexts": 2
+  },
+  "minimal": {
+    "sections": [
+      "deployment:persona"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "You are a helpful software engineer assistant."
+    },
+    "all": [
+      {
+        "name": "deployment:persona",
+        "text": "You are a helpful software engineer assistant."
+      }
+    ],
+    "contexts": 0
+  }
+}

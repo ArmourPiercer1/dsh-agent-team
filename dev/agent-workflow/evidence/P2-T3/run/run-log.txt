@@ -1,0 +1,141 @@
+[2026-08-29T18:31:32.499Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T3\tests\characterization
+[2026-08-29T18:31:32.500Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:31:32.501Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t3
+[2026-08-29T18:31:32.501Z] client hash  : cd5ef814
+[2026-08-29T18:31:32.501Z] port         : 3382 (backup 3392)
+[2026-08-29T18:31:32.501Z] node         : v24.20.0 (pid 56012)
+[2026-08-29T18:31:32.501Z] === section: preflight ===
+[2026-08-29T18:31:32.501Z]   PASS built upstream CLI entry present (apps/cli/lib/bin.js)
+[2026-08-29T18:31:32.501Z]   PASS good probe plugin present
+[2026-08-29T18:31:32.501Z]   PASS bad probe plugin present
+[2026-08-29T18:31:32.502Z]   PASS port 3382 free at start
+[2026-08-29T18:31:32.625Z]   PASS test-use tree PRISTINE at start (git status --porcelain empty)
+[2026-08-29T18:31:32.626Z]   (HEAD=cd5ef8148158c3a752a658978873241fdf8e2bbc via git)
+[2026-08-29T18:31:32.991Z]   PASS public surface built over 272 packages (>=200 for the pinned monorepo)
+[2026-08-29T18:31:32.993Z]   PASS probe sources import 6 upstream package(s): @deepseek-ai/dsh-agent, @deepseek-ai/dsh-agent-presets, @deepseek-ai/dsh-system-prompt, @deepseek-ai/dsh-scope, @deepseek-ai/dsh-session, @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:31:32.994Z] === section: surface ===
+[2026-08-29T18:31:32.994Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-base
+[2026-08-29T18:31:32.994Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-web-app
+[2026-08-29T18:31:32.994Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:31:32.995Z]   PASS public root of @deepseek-ai/dsh-util-crypto admitted
+[2026-08-29T18:31:32.995Z]   PASS private subpath ./internal/random NOT admitted (subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:31:32.995Z] === section: fixture ===
+[2026-08-29T18:31:32.996Z]   PASS pinned SHA matches live HEAD (fixture=cd5ef8148158c3a752a658978873241fdf8e2bbc, live=cd5ef8148158c3a752a658978873241fdf8e2bbc [via git])
+[2026-08-29T18:31:32.996Z]   PASS public surface matches fixture (272 packages, schema p2t1-host-version/1)
+[2026-08-29T18:31:32.996Z] === section: static (private-import negative test) ===
+[2026-08-29T18:31:32.998Z]   PASS harness source (lib/ + run.mjs + spawn-probe.mjs + probes/*/index.mjs) has zero bare/third-party/private imports
+[2026-08-29T18:31:32.998Z]   PASS scanner: good probe PASSES (0 findings in probes\smoke\plugins\good-host.js)
+[2026-08-29T18:31:32.998Z]   PASS scanner: bad probe DETECTED + REJECTED (1 finding(s): private-subpath-import)
+[2026-08-29T18:31:32.998Z]   rejected: private-subpath-import "@deepseek-ai/dsh-util-crypto/internal/random" — subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:31:32.999Z]   PASS scanner positive control: synthetic bare import FLAGGED in harness mode
+[2026-08-29T18:31:32.999Z]   PASS scanner positive control: synthetic private subpath FLAGGED in probe mode
+[2026-08-29T18:31:32.999Z] === section: lifecycle ===
+[2026-08-29T18:31:32.999Z]   PASS web profile ready under dedicated DSH_HOME (already initialized)
+[2026-08-29T18:31:33.139Z]   PASS dump-config: mounted row present in the composed profile tree (public seam carries it)
+[2026-08-29T18:31:34.694Z]   PASS instance started: http://127.0.0.1:3382/?token=tlBcjN7--yc46CxyyO3KtYE03FORZOecZ7yHUYN0Qiw
+[2026-08-29T18:31:34.729Z]   PASS instance stopped, port freed
+[2026-08-29T18:31:34.730Z] === section: probes ===
+[2026-08-29T18:31:34.732Z]   PASS probe groups discovered: preset-persona-model, smoke
+[2026-08-29T18:31:34.732Z] --- probe group: preset-persona-model — P2-T3: AgentPreset composition + persona scope + complete:true detection/blocking + ModelSelection future boundary + preset switch lock + cold resume (2 boots, public surface only)
+[2026-08-29T18:31:34.733Z]   PASS p2t3-ppm-main carries >=1 upstream import (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-agent-presets, @deepseek-ai/dsh-system-prompt, @deepseek-ai/dsh-scope, @deepseek-ai/dsh-session)
+[2026-08-29T18:31:34.733Z]   PASS p2t3-ppm-main upstream imports all admitted by the live public surface
+[2026-08-29T18:31:34.733Z]   PASS p2t3-ppm-resume carries >=1 upstream import (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-system-prompt, @deepseek-ai/dsh-scope, @deepseek-ai/dsh-session)
+[2026-08-29T18:31:34.733Z]   PASS p2t3-ppm-resume upstream imports all admitted by the live public surface
+[2026-08-29T18:31:34.734Z]   PASS user preset fixture written: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t3\.agent-presets\p2t3-scope (trust 'user', unique persona text)
+[2026-08-29T18:31:34.735Z]   PASS pinned standard preset persona text extracted
+[2026-08-29T18:31:34.735Z]   PASS pinned minimal preset persona text extracted
+[2026-08-29T18:31:34.736Z]   PASS probe persona texts (standard/minimal/user) are mutually distinct
+[2026-08-29T18:31:36.301Z]   PASS boot 1 (main) marker: http://127.0.0.1:3382/?token=2UJ5bjGm6rWuI9NvRWLcfPraWiXyCPtGKtLtQfAlCgA
+[2026-08-29T18:31:36.923Z]   PASS main payload completed (done-main.json within poll window)
+[2026-08-29T18:31:37.038Z]   PASS port 3382 free after boot 1 stop
+[2026-08-29T18:31:38.626Z]   PASS boot 2 (resume) marker: http://127.0.0.1:3382/?token=b9_BU3QXOTPdiLKy32KmLhVYV9i2Q4yQHF8AgayQ2rI
+[2026-08-29T18:31:38.627Z]   PASS resume payload completed (done-resume.json within poll window)
+[2026-08-29T18:31:38.741Z]   PASS port 3382 free after boot 2 stop
+[2026-08-29T18:31:38.742Z]   PASS main payload reports completed:true (got {"completed":true,"stamp":"mtepvqpv"})
+[2026-08-29T18:31:38.744Z]   PASS resume payload reports completed:true (got {"completed":true,"stamp":"mtepvszk"})
+[2026-08-29T18:31:38.745Z]   PASS roster observation present without payload error
+[2026-08-29T18:31:38.745Z]   PASS roster: shipped preset "cordis" listed with trust 'system'
+[2026-08-29T18:31:38.745Z]   PASS roster: shipped preset "minimal" listed with trust 'system'
+[2026-08-29T18:31:38.745Z]   PASS roster: shipped preset "ptc" listed with trust 'system'
+[2026-08-29T18:31:38.745Z]   PASS roster: shipped preset "standard" listed with trust 'system'
+[2026-08-29T18:31:38.745Z]   PASS roster: user preset "p2t3-scope" listed with trust 'user'
+[2026-08-29T18:31:38.745Z]   PASS default resolve() -> 'standard' (got standard)
+[2026-08-29T18:31:38.745Z]   PASS resolve('standard') -> 'standard'
+[2026-08-29T18:31:38.746Z]   PASS resolve('p2t3-nope') rejects with UnknownPresetError (class identity)
+[2026-08-29T18:31:38.746Z]   PASS unknown-preset message lists availability: agent-presets: preset "p2t3-nope" not found (available: standard, ptc, minimal, cordis, p2t3-scope)
+[2026-08-29T18:31:38.746Z]   PASS unknown-preset error details list shipped + user presets
+[2026-08-29T18:31:38.746Z]   PASS persona observation present without payload error
+[2026-08-29T18:31:38.746Z]   PASS standard agent assembly: persona section carries the preset persona template (exact text)
+[2026-08-29T18:31:38.746Z]   PASS standard agent assembly is additive (deployment:persona + harness:identity + others)
+[2026-08-29T18:31:38.746Z]   PASS standard persona template resolves model/cwd from the agent route ({{model}}/{{cwd}})
+[2026-08-29T18:31:38.746Z]   PASS minimal agent assembly: exactly one section (the complete persona)
+[2026-08-29T18:31:38.746Z]   PASS minimal agent assembly: persona text is the exact registered text (complete restoration)
+[2026-08-29T18:31:38.746Z]   PASS minimal agent assembly: runtime contexts suppressed (includeRuntimeContext:false)
+[2026-08-29T18:31:38.746Z]   PASS NEGATIVE: a second complete section in the same scope -> assembly REJECTED (detection)
+[2026-08-29T18:31:38.746Z]   PASS NEGATIVE: rejection names the multiple-complete condition
+[2026-08-29T18:31:38.747Z]   PASS NEGATIVE: rejection names both complete sections
+[2026-08-29T18:31:38.747Z]   PASS NEGATIVE: waterfall middleware cannot override the complete section text (restored post-waterfall)
+[2026-08-29T18:31:38.747Z]   PASS NEGATIVE: override marker absent from every assembled section
+[2026-08-29T18:31:38.747Z]   PASS scope observation present without payload error
+[2026-08-29T18:31:38.747Z]   PASS root (deployment) persona text equals the standard preset persona text (recorded identity fact)
+[2026-08-29T18:31:38.747Z]   PASS standard agent scope: preset persona shadows the deployment persona
+[2026-08-29T18:31:38.747Z]   PASS minimal agent scope: complete preset persona
+[2026-08-29T18:31:38.747Z]   PASS user preset agent scope: user-authored persona composes (trust user)
+[2026-08-29T18:31:38.747Z]   PASS standard standing scope: preset persona registered at the preset standing key
+[2026-08-29T18:31:38.748Z]   PASS user standing scope: user preset persona registered at the preset standing key
+[2026-08-29T18:31:38.748Z]   PASS minimal persona text does not leak into root/user scopes
+[2026-08-29T18:31:38.748Z]   PASS user persona text does not leak into root/standard/minimal scopes
+[2026-08-29T18:31:38.748Z]   PASS scopeOf(agent.ctx) is the Agent object itself (agent IS its scope key)
+[2026-08-29T18:31:38.748Z]   PASS model observation present without payload error
+[2026-08-29T18:31:38.748Z]   PASS model: step1 assembly captures current selection A into ref.assembled
+[2026-08-29T18:31:38.748Z]   PASS model: assembly variables patched with selection A (provider/model)
+[2026-08-29T18:31:38.748Z]   PASS model: step1 request applies A, preserves seed maxTokens, clears the seed effort
+[2026-08-29T18:31:38.749Z]   PASS model FUTURE-BOUNDARY: concurrent switch to B does NOT affect the in-flight step (still A)
+[2026-08-29T18:31:38.749Z]   PASS model: the next assembly captures B and the next request applies B
+[2026-08-29T18:31:38.749Z]   PASS model: a selected reasoningEffort (high) is applied on the request
+[2026-08-29T18:31:38.749Z]   PASS model: an absent selected effort clears the inherited effort
+[2026-08-29T18:31:38.749Z]   PASS model: disposer removes both steps (request back to the bare seed)
+[2026-08-29T18:31:38.749Z]   PASS model: post-dispose assembly no longer patches variables (patch step removed; the selected provider/model are gone)
+[2026-08-29T18:31:38.749Z]   PASS switch observation present without payload error
+[2026-08-29T18:31:38.749Z]   PASS switch: select(agent, minimal) on a fresh session succeeds
+[2026-08-29T18:31:38.749Z]   PASS switch: composedPreset() reflects the new preset live
+[2026-08-29T18:31:38.750Z]   PASS switch: agentPreset session projection advanced to minimal
+[2026-08-29T18:31:38.750Z]   PASS switch: agent-preset/selected session event appended
+[2026-08-29T18:31:38.750Z]   PASS switch NEGATIVE: unknown preset on an unlocked session -> agent-preset-not-found
+[2026-08-29T18:31:38.750Z]   PASS switch NEGATIVE: not-found details list the available presets
+[2026-08-29T18:31:38.750Z]   PASS switch NEGATIVE: after turn/start, select -> agent-preset-locked
+[2026-08-29T18:31:38.750Z]   PASS switch NEGATIVE: lock message names the fixed-preset rule
+[2026-08-29T18:31:38.750Z]   PASS switch NEGATIVE: lock details carry the session id
+[2026-08-29T18:31:38.750Z]   PASS switch NEGATIVE: lock precedence — unknown preset on a locked session -> agent-preset-locked
+[2026-08-29T18:31:38.750Z]   PASS resume seed: agent handle disposed (live registry detached, durable log persists)
+[2026-08-29T18:31:38.750Z]   PASS resume seed: model/selection event persisted on the session before detach
+[2026-08-29T18:31:38.754Z]   PASS resume verification present without payload error
+[2026-08-29T18:31:38.754Z]   PASS resume: preset id recovered from the durable agentPreset projection (composePath=sessionQuery.observeSession)
+[2026-08-29T18:31:38.754Z]   PASS resume: resolved preset is minimal
+[2026-08-29T18:31:38.754Z]   PASS resume: composedPreset() is minimal on the resumed agent
+[2026-08-29T18:31:38.754Z]   PASS resume: agentPreset projection is minimal on the resumed session
+[2026-08-29T18:31:38.754Z]   PASS resume: the persisted model/selection event survived the process restart
+[2026-08-29T18:31:38.754Z]   PASS resume: modelSelection projection carries the persisted selection as pending (lastUsed null)
+[2026-08-29T18:31:38.754Z]   PASS resume: first post-resume assembly captures the pending selection at the assembly boundary (§40.3)
+[2026-08-29T18:31:38.755Z]   PASS resume: composition rebuilt identically (exactly the minimal complete persona, contexts suppressed)
+[2026-08-29T18:31:38.755Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:31:38.755Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:31:38.755Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:31:38.755Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:31:38.756Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:31:38.756Z] smoke: good row mounted; starting instance
+[2026-08-29T18:31:40.313Z]   PASS good row boot succeeded: http://127.0.0.1:3382/?token=op-WRhKPlFmNOYxEeTXrmE3bua4ZnKORrA41fiasfOg
+[2026-08-29T18:31:40.348Z]   PASS port free after good boot
+[2026-08-29T18:31:40.349Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:31:59.488Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:31:59.488Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:31:59.488Z]   PASS port free after failed bad boot
+[2026-08-29T18:31:59.489Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:32:01.047Z]   PASS recovery boot succeeded: http://127.0.0.1:3382/?token=qG2RuRVABv4xhDA1J4GVrju0Q03QEIS8_zGiZjE8zW4
+[2026-08-29T18:32:01.082Z]   PASS port free after recovery stop
+[2026-08-29T18:32:01.082Z] === section: byte-clean ===
+[2026-08-29T18:32:01.201Z]   PASS test-use tree byte-clean after run (git status --porcelain empty)
+[2026-08-29T18:32:01.201Z]   PASS test-use tree byte-clean after run (git diff empty)
+[2026-08-29T18:32:01.201Z]   PASS HEAD unchanged (start=cd5ef8148158c3a752a658978873241fdf8e2bbc, end=cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-29T18:32:01.202Z] 
+[2026-08-29T18:32:01.202Z] RESULT: PASS characterization self-test (all sections green)

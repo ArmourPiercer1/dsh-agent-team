@@ -1,0 +1,113 @@
+{
+  "root": {
+    "sections": [
+      "harness:identity",
+      "harness:source",
+      "app:web-surface",
+      "deployment:persona",
+      "ui:deliverable-file-references"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}."
+    }
+  },
+  "standardAgent": {
+    "sections": [
+      "harness:identity",
+      "harness:source",
+      "app:web-surface",
+      "deployment:persona",
+      "plan:policy",
+      "context:file-reference",
+      "tool:pwsh",
+      "tool:read",
+      "tool:write",
+      "tool:edit",
+      "tool:glob",
+      "tool:grep",
+      "tool:jobs",
+      "tool:web_search",
+      "tool:web_fetch",
+      "tool:goal",
+      "tool:workflow",
+      "tool:ralph",
+      "tool:subagent",
+      "tool:subagent_fork",
+      "ui:deliverable-file-references"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}."
+    }
+  },
+  "minimalAgent": {
+    "sections": [
+      "deployment:persona"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "You are a helpful software engineer assistant."
+    }
+  },
+  "userAgent": {
+    "sections": [
+      "harness:identity",
+      "harness:source",
+      "app:web-surface",
+      "deployment:persona",
+      "context:file-reference",
+      "ui:deliverable-file-references"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "P2T3-SCOPE-PROBE persona from user preset p2t3-scope."
+    }
+  },
+  "standardStanding": {
+    "sections": [
+      "harness:identity",
+      "harness:source",
+      "app:web-surface",
+      "deployment:persona",
+      "plan:policy",
+      "tool:pwsh",
+      "tool:read",
+      "tool:write",
+      "tool:edit",
+      "tool:glob",
+      "tool:grep",
+      "tool:jobs",
+      "tool:web_search",
+      "tool:web_fetch",
+      "tool:goal",
+      "tool:workflow",
+      "tool:ralph",
+      "tool:subagent_fork",
+      "ui:deliverable-file-references"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}."
+    }
+  },
+  "userStanding": {
+    "sections": [
+      "harness:identity",
+      "harness:source",
+      "app:web-surface",
+      "deployment:persona",
+      "ui:deliverable-file-references"
+    ],
+    "persona": {
+      "name": "deployment:persona",
+      "text": "P2T3-SCOPE-PROBE persona from user preset p2t3-scope."
+    }
+  },
+  "agentKeyIsAgentObject": {
+    "a": true,
+    "c": true
+  },
+  "userPresetId": "p2t3-scope",
+  "userPersonaText": "P2T3-SCOPE-PROBE persona from user preset p2t3-scope."
+}

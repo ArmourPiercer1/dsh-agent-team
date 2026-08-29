@@ -1,0 +1,44 @@
+{
+  "roster": [
+    {
+      "id": "standard",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "p2t3-scope",
+      "trust": "user",
+      "broken": null
+    }
+  ],
+  "defaultId": "standard",
+  "defaultError": null,
+  "standardId": "standard",
+  "standardError": null,
+  "unknown": {
+    "isUnknownPresetError": true,
+    "message": "agent-presets: preset \"p2t3-nope\" not found (available: standard, ptc, minimal, cordis, p2t3-scope)",
+    "available": [
+      "standard",
+      "ptc",
+      "minimal",
+      "cordis",
+      "p2t3-scope"
+    ]
+  }
+}

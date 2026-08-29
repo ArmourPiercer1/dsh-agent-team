@@ -1,0 +1,4 @@
+{
+  "rejected": true,
+  "message": "multiple complete prompt sections are active: \"deployment:persona\", \"p2t3:probe-complete\""
+}
