@@ -1,0 +1,17 @@
+[2026-08-29T16:53:49.500Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\tests\characterization
+[2026-08-29T16:53:49.501Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\references\deepseek-harness-test-use
+[2026-08-29T16:53:49.501Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\references\.dsh-test-p2t1
+[2026-08-29T16:53:49.501Z] client hash  : cd5ef814
+[2026-08-29T16:53:49.501Z] port         : 3281 (backup 3291)
+[2026-08-29T16:53:49.502Z] node         : v24.20.0 (pid 80528)
+[2026-08-29T16:53:49.502Z] === section: fixture ===
+[2026-08-29T16:54:44.718Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\tests\characterization
+[2026-08-29T16:54:44.719Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T16:54:44.719Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t1
+[2026-08-29T16:54:44.719Z] client hash  : cd5ef814
+[2026-08-29T16:54:44.719Z] port         : 3281 (backup 3291)
+[2026-08-29T16:54:44.720Z] node         : v24.20.0 (pid 92240)
+[2026-08-29T16:54:44.720Z] === section: fixture ===
+[2026-08-29T16:54:45.573Z]   PASS fixture regenerated: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\tests\characterization\fixtures\host-version.json (sha=cd5ef8148158c3a752a658978873241fdf8e2bbc, 272 packages)
+[2026-08-29T16:54:45.573Z] 
+[2026-08-29T16:54:45.573Z] RESULT: PASS characterization self-test (all sections green)

@@ -1,0 +1,8 @@
+P1-piped-node    : DENIED ? spawn() threw synchronously: spawn EPERM
+P2-filefd-node   : OK     ? exit 0 ; log="probe-child-ok\n"
+probe-child-ok
+P3-inherit-node  : OK     ? exit 0 ; log="<inherit: not captured>"
+P4-filefd-git    : OK     ? exit 0 ; log="?? .github/\n?? dev/agent-workflow/evidence/P2-T1/\n?? tests/\n"
+
+VERDICT: P1-piped-node=denied P2-filefd-node=ok P3-inherit-node=ok P4-filefd-git=ok
+PROBE-DIR: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\dev\agent-workflow\evidence\P2-T1\spawn-probe-2026-08-29T17-18-30-362Z
