@@ -1,0 +1,526 @@
+================================================================================
+G2 INDEPENDENT BLIND REVIEW — REVIEWER G2-R1 — FULL SUMMARY LOG
+================================================================================
+Role: leaf G2 gate reviewer (1 of 3, blind to dev/agent-workflow/** and to the
+other reviewers). Verdict basis: FROZEN TEXT (DevPlan §15.4 six criteria,
+§15 seam matrix, TaskDoc §11.3 method), diff under review, own reproduction.
+Repo : dsh-agent-team (Team-mode vNext, CORE PATCH BUDGET = 0)
+Base : master @ cc6199b5f2c0367afac81ea6faa83c319fd7d5cb
+Head : 00c7e99fde5da36b0e0f1e3250173d47fdcc4d7b (detached HEAD of my worktree)
+Worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G2-R1
+Pinned: D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+         @ cd5ef8148158c3a752a658978873241fdf8e2bbc (read-only, pristine)
+My DSH_HOME (isolated): references\.dsh-test-g2r1
+My ports: 3481 (main) / 3491 (backup)
+Node: v24.20.0 ; pwsh 7 ; all commands run with cwd = worktree root.
+
+--------------------------------------------------------------------------------
+MUST-READS (completed first)
+--------------------------------------------------------------------------------
+[MR1] docs/ROUTER_RULES.md (worktree copy, 156 lines) — read in full (3 passes
+      covering pruned middle): §3.1 review composition (3 independent
+      subagents, no inheritance, process docs are NOT review objects), §3.2
+      four verdicts (通过/投机通过/补充内容/阻塞), §3.3 gate passes only if all
+      three in {通过, 投机通过}; blocker semantics per TaskDoc (architecture-
+      critical blocker confirmed-missing + no frozen fallback → STOP dependent
+      DAG; never auto-convert a solution into a core patch).
+[MR2] docs/TEST_METHODS.md (worktree copy, 68 lines) — read in full: pinned
+      upstream role, launch chain (node apps/cli/lib/bin.js web --port --no-open
+      + DSH_HOME + DSH_CLIENT_COMMIT_HASH), sandbox constraints (no piped-stdio
+      child spawns; pnpm/vitest/tsx/vite/esbuild off-limits; stable :3080
+      instance sacrosanct).
+
+--------------------------------------------------------------------------------
+V1 preflight-sanity
+--------------------------------------------------------------------------------
+cmd: git -C <worktree> rev-parse HEAD
+out: 00c7e99fde5da36b0e0f1e3250173d47fdcc4d7b   (= required Phase integration SHA)
+cmd: git -C <worktree> status --porcelain
+out: (empty)
+cmd: git -C <pinned> rev-parse HEAD
+out: cd5ef8148158c3a752a658978873241fdf8e2bbc   (= required pinned SHA)
+cmd: git -C <pinned> status --porcelain
+out: (empty)
+cmd: node --version
+out: v24.20.0
+V1 = PASS
+
+--------------------------------------------------------------------------------
+V2 full-suite (ISOLATED — primary machine-level evidence)
+--------------------------------------------------------------------------------
+cmd: node tests/characterization/run.mjs --port 3481 --backup-port 3491
+        --dsh-home D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g2r1
+      2>&1 | Out-File -Encoding utf8 <worktree>\G2-1-V2.log
+      (background job; EXIT captured after pipeline)
+out: EXIT=0
+Log: G2-1-V2.log, 426 lines, 22:30:07Z→22:31:40Z (~104 s).
+Config resolved in log head:
+  harness root : <worktree>\tests\characterization
+  host tree    : <main>\references\deepseek-harness-test-use
+  dsh home     : <main>\references\.dsh-test-g2r1
+  client hash  : cd5ef814 ; port 3481 (backup 3491) ; node v24.20.0 pid 93468
+Sections (in order, all green): preflight, surface, fixture, static,
+  lifecycle, probes, byte-clean.
+Counts: PASS lines = 350 ; true check-FAIL lines (regex '\]\s+FAIL ') = 0.
+Final line: "RESULT: PASS characterization self-test (all sections green)"
+
+Section highlights (log line content):
+- preflight: CLI entry present; good/bad probe plugins present; port 3481 free;
+  "test-use tree PRISTINE at start (git status --porcelain empty)"
+  (HEAD=cd5ef8148158c3a752a658978873241fdf8e2bbc via git);
+  "public surface built over 272 packages (>=200 ...)";
+  "probe sources import 12 upstream package(s): dsh-session, dsh-agent, dsh-llm,
+  dsh-mcp-client, dsh-agent-presets, dsh-system-prompt, dsh-scope,
+  dsh-client-connection, dsh-client-ui-slots, dsh-util-crypto, dsh-subagent,
+  dsh-storage-domain"; probe-resolution symlinks created under
+  probes/node_modules (→ pinned tree packages).
+- surface: whitelist contains @deepseek-ai/dsh-base / dsh-web-app /
+  dsh-util-crypto; public root admitted;
+  "private subpath ./internal/random NOT admitted (subpath is not in the map
+  exports surface of @deepseek-ai/dsh-util-crypto)".
+- fixture: "pinned SHA matches live HEAD (fixture=cd5ef814..., live=cd5ef814...)";
+  "public surface matches fixture (272 packages, schema p2t1-host-version/1)".
+- static: "harness source (lib/ + run.mjs + spawn-probe.mjs + probes/*/index.mjs)
+  has zero bare/third-party/private imports";
+  "scanner: good probe PASSES (0 findings ...)";
+  "scanner: bad probe DETECTED + REJECTED (1 finding: private-subpath-import)";
+  "scanner positive control: synthetic bare import FLAGGED in harness mode";
+  "scanner positive control: synthetic private subpath FLAGGED in probe mode".
+- lifecycle: profile created by throwaway boot; dump-config shows mounted row
+  "in the composed profile tree (public seam carries it)"; instance started
+  (http://127.0.0.1:3481/?token=...); "instance stopped, port freed".
+- probes (6 groups, sequential, one process pid 93468):
+  agent-lifecycle, capabilities, preset-persona-model, remote-client, smoke,
+  storage-fork-descendants (alphabetical discovery; all ran; group-level
+  teardown asserted ports free — see V6a).
+- byte-clean: "test-use tree byte-clean after run (git status --porcelain
+  empty)"; "test-use tree byte-clean after run (git diff empty)";
+  "HEAD unchanged (start=cd5ef8148158c3a752a658978873241fdf8e2bbc,
+  end=cd5ef8148158c3a752a658978873241fdf8e2bbc)".
+
+KNOWN DESIGNED SIDE EFFECT (T3-obs churn) — handled:
+cmd: git -C <worktree> status --porcelain  (after V2)
+out: M dev/agent-workflow/evidence/P2-T3/run/observations/{coord,done-main,
+     done-resume,model,negative-complete,negative-override,persona,resume-seed,
+     resume-verify,roster,scope,switch}.json   (12 committed obs JSONs) +
+     ?? G2-1-V2.log
+cmd: git -C <worktree> checkout -- dev/agent-workflow/evidence/P2-T3/run/observations/
+out: status clean except ?? G2-1-V2.log (my evidence log; expected)
+(Restored a SECOND time after the V4 retry, same result — see V4.)
+
+V2 = PASS
+
+--------------------------------------------------------------------------------
+V3 positive + negative key tests (verified inside G2-1-V2.log)
+--------------------------------------------------------------------------------
+remote-client group:
+  B1 discovery (CLIENT_MODULE): "B1 discovery+client: boot ok on port 3481";
+     dump-config: rows p2t6-host-probe / p2t6-client-probe / p2t6-no-decl all
+     present; "B1 graph: baseline client rows present (46, ...)";
+     "B1 graph: client-bundle probe entry present (entryIds: [...46 ids incl.
+     the probe...])"; no-decl control gains no client entry; host-only probe
+     gains no client entry; bundle served from /plugins combo-url entry;
+     unknown bundle 404s. (Task brief's "~26 remote client rows" ≈ my run's
+     46 baseline client rows; the machine check is the graph route, which
+     passed with the full entry list.)
+  B2 RPC + reconnect (TEAM_REMOTE): "B2 reconnect: all 25/25 scenario checks
+     passed"; auth: 303 redirect + dsh-auth-<b64url(sha256)>=v1 cookie,
+     HttpOnly + SameSite=Strict; rpc echo 200 round-trip verbatim;
+     NEGATIVES: no cookie → 401; wrong content-type → 415; method/endpoint
+     mismatch → 200 bad-request (machine-readable error body); deliberate
+     error result travels as normal result; thrown handler → 500; reconnect:
+     6 "connection lost, retry #" warns (>=2) + sink isolation (8 lines).
+  B3 missing-bundle NEGATIVE (fail-loud): "B3 missing-bundle: boot ABORTS
+     (start() threw) — activation-pass fail-loud contract"; child log names
+     the failing package; "carries the MissingClientBundleError marker
+     ('client bundles not found')"; row present in separate dump-config;
+     "B3 missing-bundle stop: port free".
+  B4 malformed-decl NEGATIVE (fail-loud): "B4 malformed-decl: boot ABORTS
+     (start() threw)"; log carries the parseDshClient marker (platform must be
+     a string); row present in composed profile dump (failure at composition);
+     "B4 malformed-decl stop: port free".
+  B5 slot seats: "B5 TEAM_VIEW_SLOT: Team Tab registered into conversation.view
+     (list/session)"; "B5 NEW_TEAM_ENTRY: New Team action registered into
+     sidebar.footer.action (list/root)"; "B5 input dock: Team Dock registered
+     into conversation.input.dock (list/session) — fallback seat exists";
+     NEGATIVE: "B5 slot collision: same id+priority refusal names the
+     incumbent registrant"; "B5 stop: port free".
+agent-lifecycle group:
+  NEGATIVE late binding: "PASS neg-late-binding: first Team step before attach
+     fails with P2T2_ROOT_BINDING_MISSING (got {... "code":"P2T2_ROOT_BINDING_
+     MISSING" ...})", plus "the machine-readable failure names the probe row
+     and the session" and a 6/6 ordering-subsequence PASS
+     (run-start → session/created → first-team-step-failed → binding-attach →
+     first-team-step → run-end).
+preset-persona-model group:
+  NEGATIVE complete:true detection + assembly rejection: "NEGATIVE: a second
+     complete section in the same scope -> assembly REJECTED (detection)";
+     "rejection names the multiple-complete condition"; "rejection names both
+     complete sections"; plus waterfall-override NEGATIVES (cannot override the
+     complete section text; override marker absent).
+  NEGATIVE preset-switch lock after turn/start: "switch NEGATIVE: after
+     turn/start, select -> agent-preset-locked"; lock message names the
+     fixed-preset rule; lock details carry the session id; lock precedence
+     (unknown preset on locked session → agent-preset-locked); unknown preset
+     on unlocked session → agent-preset-not-found with available list.
+smoke group:
+  NEGATIVE bad-host private import (runtime): "bad row boot failed loudly with
+     ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)";
+     "failure names the mounted negative row (attribution is machine-readable)";
+     good boot → port free → bad boot (failure expected) → recovery boot →
+     port free.
+storage-fork-descendants group:
+  SECOND independent runtime private-import NEGATIVE: "private-import fixture
+     carries >=1 upstream import (@deepseek-ai/dsh-subagent/lib/continuation.js)";
+     "rejected by the live public surface (static)";
+     "private-import rejected with ERR_PACKAGE_PATH_NOT_EXPORTED (got
+     ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './lib/continuation.js' is
+     not defined by 'exports' in ...\@deepseek-ai\dsh-subagent\package.json ...)".
+  S1 storage / S2 fork / S3 descendant checks all PASS (seed exactly
+  {member1, member2, grand}; plain fork adds no entry; durable listing survives
+  restart; interrupt/drain semantics; p2t5-negative-evidence.json written).
+No missing positive or negative control in the log. V3 = PASS
+
+--------------------------------------------------------------------------------
+V4 bare command (CI contract; shared-resource caveat applied)
+--------------------------------------------------------------------------------
+ATTEMPT 1
+cmd: node tests/characterization/run.mjs   (NO flags; cwd = worktree root;
+      captured to G2-1-V4.log the same way)
+out: EXIT=1
+Resolution (log head, proves bare flag wiring empirically):
+  dsh home = D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t1
+  port 3281 (backup 3291) ; host tree = pinned tree ; client hash cd5ef814
+  (defaults exactly as resolveConfig: ports 3281/3291, dshHome
+  <team-root>/references/.dsh-test-p2t1, hostTree <team-root>/references/
+  deepseek-harness-test-use, reportDir null)
+Result: 337 lines; preflight/surface/fixture/static/lifecycle all green;
+  groups agent-lifecycle, capabilities, preset-persona-model, remote-client,
+  smoke all green (incl. B1–B5, all negatives).
+  ONLY failures (2, same group):
+    - "FAIL port 3291 (isolation) in use — group cannot run"   (storage-fork-
+      descendants: its isolate boot needs the backup port; 3291 was held by a
+      concurrent bare run — shared-resource contention, per the checklist
+      caveat; 3281 itself was free at start)
+    - "FAIL port 3291 free after group teardown"
+  byte-clean section still green (pinned tree untouched).
+Per checklist: wait 180 s, retry once.
+
+ATTEMPT 2 (retry)
+cmd: Start-Sleep -Seconds 180; node tests/characterization/run.mjs
+      (captured to G2-1-V4-retry.log)
+out: EXIT=1
+Result: 420 lines; preflight/surface/fixture/static/lifecycle green; storage
+  isolation on 3291 now PASSED ("isolate boot (scratch home) succeeded:
+  http://127.0.0.1:3291/?token=..."; "port 3291 free after isolate stop");
+  byte-clean green.
+  ONLY failures (2):
+    - "FAIL probe group capabilities threw: instance boot failed: process
+       exited (code=1 signal=none)" — log tail in the harness output shows the
+       cause explicitly:
+         [cause]: Error: p2t6-slot-probe: P2T6_OBS_DIR is not set
+             at new apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/
+               .worktrees/G2-R3/tests/characterization/probes/remote-client/
+               plugins/slot-probe.js:28:11)
+             at file:///.../references/.dsh-test-p2t1/profiles/web/#p2t6-slot-probe
+             at file:///.../references/.dsh-test-p2t1/profiles/web/#include
+       → the SHARED default DSH_HOME's profile patch layer (profiles/web)
+       contained a row mounted by ANOTHER reviewer's concurrent bare run
+       (worktree G2-R3). My child process lacked that run's P2T6_OBS_DIR env,
+       so the foreign row's apply() threw and boot failed loudly
+       (assertEntriesActivated). This is cross-reviewer shared-state
+       interference, not a defect in the code under review: the foreign row is
+       literally another reviewer's file, and the fail-loud behavior is the
+       harness instance doing exactly what it is designed to do (refuse a
+       broken row at boot).
+    - "FAIL B3 missing-bundle: row present in the composed profile dump"
+       — transient: the same shared patch file (profiles/web) was rewritten
+       mid-group by the concurrent run; the identical check for the B4 row
+       PASSED 17 s later in the same run, and B3 passed in V2 and in V4
+       attempt 1.
+ENVIRONMENT-CONCURRENCY NOTE (not a code defect): the bare command's contract
+  is shared resources (ports 3281/3291 + shared DSH_HOME
+  references/.dsh-test-p2t1 + shared profile patch layer); with three
+  parallel reviewers on one machine, both of my attempts overlapped a
+  concurrent bare run. The checklist prescribes exactly this treatment:
+  record the failing lines, verify the bare flag wiring by reading
+  resolveConfig. Verified (tests/characterization/lib/harness-core.mjs):
+    line 37-62 resolveConfig: CLI flags > CH_* env > defaults;
+      port: Number(args.port ?? CH_PORT ?? 3281)      (line 54)
+      backupPort: ... ?? 3291)                        (line 55)
+      dshHome: ... ?? join(teamRoot,'references','.dsh-test-p2t1') (line 53)
+      hostTree: ... ?? join(teamRoot,'references','deepseek-harness-test-use')
+      reportDir: null unless --report-dir/CH_REPORT_DIR (lines 40,56);
+      logDir = reportDir===null ? <harness>/.run-logs : <reportDir>/logs
+      (line 59); group-level fallback <DSH_HOME>/characterization-obs is
+      applied in-group (agent-lifecycle/index.mjs line 73-74: reportDir ??
+      join(dshHome,'characterization-obs'); storage line 114-115 likewise).
+    lines 73-80 findTeamRoot: walks up ≤3 levels from the harness until a
+      directory containing references/deepseek-harness-test-use (canonical
+      team root; from my worktree that resolves to the main repo root).
+  Empirically, both bare runs resolved exactly those defaults (log heads).
+  Corroboration that the suite itself is not at fault: V2 (isolated) all-green
+  EXIT=0; V4 attempt 1 all sections green except the 2 port-isolation
+  assertions; V4 retry all sections green except the 2 shared-profile
+  contention assertions; every byte-clean check green in all three runs.
+After the retry: T3-obs churn restored again
+  (git checkout -- dev/agent-workflow/evidence/P2-T3/run/observations/);
+  final worktree status: only ?? G2-1-V2.log, ?? G2-1-V4.log,
+  ?? G2-1-V4-retry.log (my evidence files, required deliverables).
+V4 = ENV (documented shared-resource concurrency; flag wiring verified by
+     reading resolveConfig + empirical resolution; not a code defect)
+
+--------------------------------------------------------------------------------
+V5 zero-core / private-import / owned-boundary
+--------------------------------------------------------------------------------
+(1) Diff scope:
+cmd: git diff --name-only cc6199b5f2c0367afac81ea6faa83c319fd7d5cb..00c7e99fde5da36b0e0f1e3250173d47fdcc4d7b
+out: 466 files, grouped: dev/** 422 (blind bookkeeping — not read),
+     tests/** 42, .github 1 (workflows/characterization.yml), .gitignore 1.
+     Files under packages/**, references/**, docs/**, apps/**, scripts/**:
+     ZERO (explicit filter produced no violations).
+     Zero-core invariant at diff level: PASS.
+(2) Static scan (V2 static section) — confirmed NOT vacuous by reading
+    run.mjs lines 210-285 + lib/private-import.mjs:
+    - harness mode scans: lib/** (scanDirectory), run.mjs, spawn-probe.mjs,
+      and every probes/<group>/index.mjs — only node: builtins + in-root
+      relatives allowed; any bare specifier → 'bare-import-in-harness',
+      relative escape → 'private-relative-escape'.
+    - probe mode (plugins/ payload trees, C4 semantics): upstream packages
+      must be admitted by the LIVE public-exports whitelist
+      (lib/public-surface.mjs builds it from every package.json `exports`
+      map in the pinned tree — 272 packages); non-admitted →
+      'private-subpath-import'.
+    - regression guards against a vacuous scanner: synthetic bare import
+      MUST be flagged (harness mode) and synthetic private subpath MUST be
+      flagged (probe mode) — both PASS in V2; good probe PASSES with 0
+      findings, bad probe DETECTED+REJECTED.
+    - V2 result: "harness source ... has zero bare/third-party/private
+      imports" — zero findings over the whole scanned set.
+(3) Zero-core structure (own grep over the full tests/characterization tree):
+    - pattern 'from @deepseek-ai/...' over ALL *.mjs (lib/**, run.mjs,
+      spawn-probe.mjs, all six probes/*/index.mjs): 0 matches.
+    - same pattern over *.{js,mjs,cjs}: 21 matches, ALL under
+      probes/**/plugins/** payload files (group payloads + the two
+      designated negative fixtures: smoke bad-host.js
+      (@deepseek-ai/dsh-util-crypto/internal/random) and
+      storage private-import-host.js
+      (@deepseek-ai/dsh-subagent/lib/continuation.js) — both are
+      detection targets that the scanner + runtime reject, as proven in V2).
+    - explicit scan of lib/ for any "@deepseek-ai/" reference: 0 matches.
+    - upstream packages imported by probe payloads: exactly 12 (see V2
+      preflight line), all present in the pinned monorepo; resolution via
+      probes/node_modules symlinks INTO the pinned tree (no copies, no
+      vendored modified upstream).
+(4) Upstream untouched: V2 byte-clean triple (status empty + diff empty +
+    HEAD cd5ef814... start=end); independently re-verified at the very end of
+    my review (pinned tree: HEAD cd5ef814..., status --porcelain empty).
+    Instance mechanism (lib/instance.mjs) uses only public surfaces: CLI
+    entry `node apps/cli/lib/bin.js web --port N --no-open` (boot marker
+    line), `--profile web --dump-config`, and the public cordis.patch.yml
+    profile patch layer under DSH_HOME (mountRows/resetPatchLayer write the
+    profile's own patch file — never the upstream tree); file-FD stdio
+    spawns only (sandbox-compatible).
+V5 = PASS
+
+--------------------------------------------------------------------------------
+V6 cross-task invariants (combination review)
+--------------------------------------------------------------------------------
+(a) 6 probe groups ran sequentially in ONE process (pid 93468 in V2; log
+    order: agent-lifecycle → capabilities → preset-persona-model →
+    remote-client → smoke → storage-fork-descendants). Per-group teardown
+    port-free assertions all PASS — 28 port/isolation PASS lines in the V2
+    log, incl. "port 3491 free after isolate stop" (storage isolate boot on
+    the backup port) and the terminal "port 3481 free after group teardown" +
+    "port 3491 free after group teardown". No leaks between groups.
+(b) byte-clean: git status --porcelain empty, git diff empty, HEAD
+    start=end (cd5ef814...) — asserted by the harness at preflight AND after
+    the run; I re-verified independently after every run (see V4/V5).
+(c) no cross-group obs reads — spot-checked obs/report area per group:
+    agent-lifecycle      → <DSH_HOME>/characterization-obs (obs/, scratch/),
+                           payload channel via P2T2_OBS_DIR env (its own)
+    capabilities         → config.logDir (evidenceDir) + <DSH_HOME> file
+                           channels (its own)
+    preset-persona-model → its OWN committed task area
+                           <worktree>/dev/agent-workflow/evidence/P2-T3/run/
+                           observations (index.mjs line 44) + <DSH_HOME>/
+                           .agent-presets (its own user preset)
+    remote-client        → config.logDir/obs via P2T6_OBS_DIR (its own)
+    smoke                → config.logDir (its own negative-boot log)
+    storage-fork-descendants → <DSH_HOME>/characterization-obs p2t5-* +
+                           obs-{phase}.json (its own names)
+    Only shared state: config.reportDir set in-place by the first group to
+    the SAME default (<DSH_HOME>/characterization-obs) that the later group's
+    own fallback would compute — no cross-group reads, no name collisions.
+(d) .gitignore delta (git diff -- .gitignore): adds exactly
+      "# characterization harness per-run scratch (P2 integration)
+       tests/characterization/.run-logs/"
+    — scoped to harness scratch (the references/ coverage already exists in
+    the base file). CI workflow .github/workflows/characterization.yml:
+    checks out the team repo + the pinned upstream at cd5ef814... into
+    references/deepseek-harness-test-use (fetch-depth 0), Node 24, pnpm
+    11.7.0, `pnpm install --ignore-scripts`, build via
+    `DSH_CLIENT_COMMIT_HASH=cd5ef814 ESBUILD_WORKER_THREADS=1 node
+    scripts/build.ts` (TEST_METHODS §2 chain), then runs
+      env CH_DSH_HOME: ${{ github.workspace }}/references/.dsh-test-p2t1
+      run: node tests/characterization/run.mjs --report-dir
+            dev/agent-workflow/evidence/P2-T1
+    DEVIATION NOTE (minor, recorded honestly): the workflow command is the
+    bare command PLUS one --report-dir flag (evidence routing into
+    dev/agent-workflow/evidence/P2-T1) and the CH_DSH_HOME env (which equals
+    the bare default resolved on CI: workspace root is the team root, so
+    CH_DSH_HOME == <team-root>/references/.dsh-test-p2t1). Per
+    resolveConfig, --report-dir only changes where logs/summary.json land
+    (reportDir→logDir); it changes no test behavior, no ports, no DSH_HOME,
+    no host tree. The workflow header comment itself says the harness
+    self-test is "ONE command: node tests/characterization/run.mjs", and the
+    manifest's known limitation L1-2 explicitly records "CI not executed
+    locally". So: the CI job runs the same self-test on the pinned upstream;
+    the literal claim "exactly the bare command" is off by one
+    evidence-routing flag. Not a criterion issue; noted for the record.
+V6 = PASS (with the two recorded notes: (d) CI flag deviation; and the V4
+     environment-concurrency evidence from my own runs)
+
+--------------------------------------------------------------------------------
+V7 criterion mapping (DevPlan §15.4 — six criteria, my own evidence)
+--------------------------------------------------------------------------------
+C1 "every architecture-critical seam has executable characterization test"
+   PASS. The 5 architecture-critical seams (frozen matrix rows) all have
+   executable probe groups that I ran green in V2:
+     - remote RPC (TEAM_REMOTE)        → remote-client B2 (25/25 + negatives)
+     - reconnect (TEAM_REMOTE)         → remote-client B2 (loss/backoff/recon)
+     - client module (CLIENT_MODULE)   → remote-client B1 (46 baseline client
+                                         rows, probe combo-url entry, served)
+     - conversation.view (TEAM_VIEW_SLOT) → remote-client B5 Team Tab
+     - sidebar New Team (NEW_TEAM_ENTRY)  → remote-client B5 sidebar.footer.action
+   Non-critical input dock has its frozen fallback seat: B5 "Team Dock
+   registered into conversation.input.dock — fallback seat exists".
+   In-run aggregate validation (seam-manifest-validation.json):
+   "critical-rows: 5 architecture-critical seams (>=4)" PASS,
+   "critical-executable: every arch-critical seam is executable PASS".
+   Seam matrix blocker check: no seam is confirmed-missing-without-fallback →
+   no CORE_SEAM_BLOCKER:TEAM_REMOTE / :CLIENT_MODULE / :TEAM_VIEW_SLOT /
+   :NEW_TEAM_ENTRY is raised.
+C2 "tests pass on pristine pinned upstream"
+   PASS. My isolated V2 run: EXIT=0, 350 PASS / 0 FAIL, all 7 sections green,
+   on the pristine tree @ cd5ef814 (pristine asserted at start, byte-clean
+   asserted at end; HEAD unchanged). Bare-command runs on the same pinned
+   tree: attempt 1 all sections green except 2 port-isolation assertions
+   (concurrent bare run holding 3291); retry all sections green except 2
+   shared-profile contention assertions (foreign row from a concurrent
+   reviewer's worktree in the shared DSH_HOME — log shows G2-R3's file as the
+   direct cause). Environment concurrency on the shared bare contract only;
+   the code passes where the environment is uncontended.
+C3 "no private source import"
+   PASS. (i) Static: zero findings over lib/** + run.mjs + spawn-probe.mjs +
+   all 6 probes/*/index.mjs (harness mode) and over every plugins/ payload
+   (probe mode vs the live exports whitelist of the pinned tree); scanner
+   proven non-vacuous by 2 synthetic controls + good/bad probe pair.
+   (ii) Runtime: two independent negative controls both failed boot LOUD with
+   ERR_PACKAGE_PATH_NOT_EXPORTED in MY run — smoke bad-host
+   (@deepseek-ai/dsh-util-crypto/internal/random) with machine-readable
+   attribution, and storage private-import-host
+   (@deepseek-ai/dsh-subagent/lib/continuation.js, error quotes the package's
+   own exports map). (iii) All 12 upstream packages imported by payloads
+   resolve inside the pinned tree's public surface (V2 preflight).
+C4 "no fork-only required package"
+   PASS. The harness + all probe groups import ZERO third-party packages
+   (harness mode allows node: builtins only — zero findings); probe payloads
+   import only @deepseek-ai/* packages that exist in the pinned upstream
+   monorepo (12 packages, symlink-resolved into references/deepseek-harness-
+   test-use — no fork, no vendored copy, no added package under packages/**
+   in the diff; the diff touches no package manifests at all).
+C5 "every known limitation has explicit status"
+   PASS. tests/characterization/seam-manifest/manifest.json (code under
+   review, NOT evidence/): machine-parsed — seams=26 (all with verdict +
+   evidence), knownLimitations=24, and EVERY entry carries a non-empty
+   status string + non-empty evidence array (badLimitations=0). In-run
+   validation artifact from MY V2 run
+   (<worktree>/tests/characterization/.run-logs/obs/
+    seam-manifest-validation.json — actual location when run without
+    --report-dir; the checklist's "characterization-obs/logs/obs/..." shape
+    is the --report-dir form; the artifact + its rules are what matter):
+   rule id "limitations-complete" → passed: true,
+   "24 known limitations, each with status + evidence" (all 7 rules true).
+C6 "any blocker stops affected feature before implementation"
+   PASS. The aggregate seam manifest (manifest.json) declares blockers=[] —
+   no unresolved blocker row; all architecture-critical seams resolved to
+   executable PASS through public seams in this integration (C1). Per the
+   frozen blocker semantics (confirmed-missing + no frozen fallback → STOP
+   dependent DAG; never auto-core-patch), nothing in the reviewed diff
+   triggers a stop: no seam is missing, no fallback-less gap exists, and no
+   upstream-patch path was introduced (C3/C4 + zero-core diff). The
+   fail-loud negative controls (B3/B4/smoke/storage) prove the harness will
+   surface any future blocker as a loud boot failure rather than a silent
+   gap.
+V7 = PASS (6/6 criteria PASS)
+
+--------------------------------------------------------------------------------
+FINAL HYGIENE
+--------------------------------------------------------------------------------
+- T3-obs restored twice (after V2, after V4 retry):
+  git checkout -- dev/agent-workflow/evidence/P2-T3/run/observations/
+- Final worktree status: only my three evidence logs untracked
+  (G2-1-V2.log, G2-1-V4.log, G2-1-V4-retry.log) — required deliverables.
+- Final pinned tree check: HEAD cd5ef8148158c3a752a658978873241fdf8e2bbc,
+  status --porcelain empty.
+- Ports 3481/3491: Get-NetTCPConnection → no listeners (suite tore down;
+  no stray node process of mine remains).
+
+--------------------------------------------------------------------------------
+FINDINGS REGISTER
+--------------------------------------------------------------------------------
+F1 (minor, non-blocking) CI workflow command is "bare command + --report-dir
+   dev/agent-workflow/evidence/P2-T1 (+ CH_DSH_HOME env equal to the bare
+   default)". Same self-test, pinned SHA, TEST_METHODS §2 build chain; the
+   flag only routes evidence output (resolveConfig: reportDir→logDir only).
+   The V6(d) literal "exactly the bare command" is therefore imprecise;
+   behaviorally equivalent for the gate. Known limitation L1-2 records that
+   CI has never been executed locally.
+F2 (minor, non-blocking) Checklist expected the in-run
+   seam-manifest-validation.json under <DSH_HOME>/characterization-obs/
+   logs/obs/; when run without --report-dir the group's obs area is
+   <worktree>/tests/characterization/.run-logs/obs/ (logDir default) —
+   artifact exists there, all 7 rules incl. limitations-complete = true.
+F3 (environment) Bare command (V4) could not complete green in my session:
+   2/2 attempts overlapped a concurrent reviewer's bare run on the shared
+   DSH_HOME + shared ports (attempt 1: backup port 3291 held; attempt 2:
+   shared profiles/web patch layer carried the other worktree's row → loud
+   boot failure naming G2-R3's file; B3 dump-row check transiently missed,
+   twin B4 check passed 17 s later). Flag wiring verified by reading
+   resolveConfig + empirical resolution in both log heads. Not a code
+   defect: V2 isolated run is 100% green EXIT=0 with byte-clean.
+F4 (informational) V2's B1 client-row count is 46 baseline entries (task
+   brief said ~26); the machine assertion (graph route entry list) is green;
+   the count reflects the pinned tree's full client row set at cd5ef814.
+F5 (informational) Preset-persona-model group rewrites its 12 committed
+   P2-T3 observation JSONs on every run (run-specific session ids) — the
+   KNOWN DESIGNED SIDE EFFECT named in the brief; churn observed, restored,
+   not a defect.
+
+--------------------------------------------------------------------------------
+VERDICT
+--------------------------------------------------------------------------------
+投机通过 (speculative pass)
+
+Rationale: all six DevPlan §15.4 criteria PASS with clean machine-level
+reproduction (isolated full suite: EXIT=0, 350 PASS / 0 FAIL, all sections
+green, byte-clean; every positive and negative control present and green in
+my own log; zero-core/private-import/owned-boundary all verified by diff +
+static scan + source reading + runtime negatives). The single non-blocking
+deviation is V4: the bare command (CI contract) could not complete green in
+my session because both attempts collided with a concurrent reviewer's bare
+run on the shared DSH_HOME/ports — precisely the documented shared-resource
+caveat, with the flag wiring verified by reading resolveConfig and by the
+log heads of both runs. This is exactly the scenario the 投机通过
+definition covers ("all six criteria PASS but with a minor, explicitly
+justified non-blocking deviation (e.g. V4 blocked by documented port
+concurrency with flag-wiring verified by reading)"). Residual risk is
+contained: the shared contention is a property of three parallel reviewers
+on one machine, not of the CI environment (unique workspace/ports per job),
+and the fail-loud design converts any such collision into an immediate,
+attributable boot failure rather than a silent one.
+
+Reviewer: G2-R1
+End of log.
+================================================================================

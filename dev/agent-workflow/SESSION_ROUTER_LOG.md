@@ -168,6 +168,28 @@
 - **Graph**：P2-T6 → INTEGRATED（base `484e735`、head `d66f6eb`、attempts 1）；integration_sha = `00c7e99fde5da36b0e0f1e3250173d47fdcc4d7b`（bookkeeping 前 int head）；ready → [G2-REVIEW]。
 - **下一步**：G2-REVIEW — workflow 3 个 fresh 独立盲审（`qiyuan-self/qwen3.8-27b`）；各自 detached worktree @ integration SHA、端口 3481–3483/3491–3493、DSH_HOME `references/.dsh-test-g2r{1,2,3}`；盲审（禁读 SESSION_ROUTER_LOG / graph.yaml / evidence/，唯一例外 `dev/agent-workflow/evidence/provenance/file-manifest.json`）；brief 含 must-reads + 沙箱矩阵 + never-escalate + 冻结文档 flapping 绕行 + TaskDoc §11.3 “G2 Gate 执行方法”逐字 + DevPlan §15.4 六判据逐字 + 沙箱内复现清单（--dsh-home/--report-dir 用绝对路径）。
 
+### 轮次 R9：G2-REVIEW 通过（3/3）+ P2 合并 master 并推送（push #2）+ P3 启动准备（2026-08-30）
+
+- **G2 执行方式**：workflow `g2-review-p2-seam-characterization`；3 个 fresh 独立盲审 reviewer，全部 `qiyuan-self/qwen3.8-27b`（leaf agent，不拉子代理）；审查对象 = int/P2 集成 head `00c7e99`（审查范围 cc6199b..00c7e99 = 20 commits / 466 files：tests/characterization 42 + dev/agent-workflow 422 + .github/workflows 1 + .gitignore 1；packages/references/docs/apps/scripts 下 **零文件**）。
+- **隔离**：每 reviewer 独立 detached worktree @ `00c7e99`（`.worktrees/G2-R{1,2,3}`，审毕移除）、独立端口 3481–3483 / 3491–3493、独立 DSH_HOME `references/.dsh-test-g2r{1,2,3}`（均 gitignored，未入库）。
+- **盲审规则**：禁读 SESSION_ROUTER_LOG.md / graph.yaml / evidence/（白名单仅 `dev/agent-workflow/evidence/provenance/file-manifest.json`）。因 `docs/plans` 未 track（git ls-files 计数 = 0，仅存在于主 worktree），brief 内嵌冻结文档逐字摘录：DevPlan §15.4 六判据 + §15 seam 矩阵行、TaskDoc §11.3 “G2 Gate 执行方法”六步 + architecture-critical blocker 语义；provenance manifest 提供哈希交叉核验。
+- **裁决**（3/3 ∈ {通过, 投机通过} → **G2 PASSED**，0 blockers；3 个 reviewer 均独立复跑全套件绿：EXIT=0，350 PASS / 0 FAIL，worktree byte-clean，HEAD 不变；均映射 6/6 DevPlan §15.4 判据 PASS 并附各自证据）：
+  - G2-R1 **投机通过**：V4 裸命令步骤与 G2-R2 撞共享默认资源（端口 3281/3291 + 默认 DSH_HOME `references/.dsh-test-p2t1`），brief 指定的 180 s 重试仍被占用；但裸命令接线（resolveConfig 默认路径链）经读源码验证、V1–V3 绝对路径全绿 → 偏差仅限 V4 步骤执行时序，按 Gate 规则判投机通过（偏差如实登记）。
+  - G2-R2 **投机通过**：同上（与 R1 互撞）。
+  - G2-R3 **通过**：V4b 于安静窗口成功（裸命令全绿）。
+- **非阻塞发现台账**（记录、本轮不修）：
+  - F1/O4：`.github/workflows` 测试命令 = bare + `--report-dir` + `CH_DSH_HOME`，与本地裸命令行为等价；CI 从未本地执行（继承 L1-2）。
+  - O5：remote-client probe B1 timeout → 级联失败缺口（未来 hardening 项）。
+  - O7：seam-manifest 校验产物 ACTUAL 路径 = `tests/characterization/.run-logs/obs/seam-manifest-validation.json`（remote-client/index.mjs L94/587）；brief 猜测路径 `characterization-obs/logs/obs/` 更正。
+  - R3 备注：B1 日志 46 条 baseline client 行与 “26”（manifest seam 行数 26/26 PASS）为两个口径。
+- **环境备注**：预存 node 进程 PID 5820（2026-08-29 22:43 本地启动；无 TCP listener；沙箱拒 WMI cmdline 查询）——身份未明，按 no-kill 政策保留；端口 3281/3291 前后均验证 FREE。
+- **Worktree 清理事故**：3 个 G2 worktree `git worktree remove --force` 均 “Filename too long”（Windows 260 字符限制，node_modules 深路径）→ 日志先归档后 `cmd /c rmdir /s /q` 清残留（每目录 tests/ + tsconfig.base.json + vitest.config.ts）+ `git worktree prune`；主树 `tests/characterization/probes/node_modules/@deepseek-ai/` junction farm 12 包验证完好。
+- **证据归档**：13 份 reviewer 日志 → `dev/agent-workflow/evidence/G2-REVIEW/G2-R{1,2,3}/`（含 G2-R3 根目录 scratch G2-R3-diff-names.txt / G2-R3-tree.txt 移入）；根目录 6 个 P2-T4 debug scratch（scratch-p2t4-* ×5、scratch-zstd.mjs）删除（正式证据在 evidence/P2-T4/）。
+- **合并 + 推送（授权 push #2）**：`git switch master` + `git merge --ff-only int/P2-seam-characterization` → master = `4eaad19`（merge-base --is-ancestor 验证可 ff，零冲突）；本 bookkeeping commit（R9 + graph + G2 证据）随同一次 push 推送，ls-remote 验证结果记于 R10 开头。
+- **graph**：G2-REVIEW → PASSED（verdicts [通过, 投机通过, 投机通过]，gate 3/3 PASS，merged_to_master `4eaad19`，pushed）；current_phase → P3；integration_branch → int/P3-contracts-domain；integration_sha → null；ready → [P3-T1]；P3-T1..T6 + G3-REVIEW → DEFINED（依赖按 TaskDoc §11.4）。
+- **Carry-forward（P3 起）**：O5 B1 timeout 级联 hardening；未来 Gate 并行评审的裸命令步骤须错峰或 per-reviewer CH_* env（避免共享默认端口/DSH_HOME 互撞）；`.dsh-test-p2t1` 共享运行残留 housekeeping；P3-T1 为 P3 shared write lock owner（contracts 冻结 v1），完成后 graph `locks.contracts` 置位，其余任务禁改 `packages/contracts/**`。
+- **下一步**：建 `int/P3-contracts-domain` + `.worktrees/P3-T1`（task/P3-T1-contract-freeze），派发 P3-T1 worker（单 worker，`qiyuan-self/qwen3.8-27b`）。
+
 ## 重审记录
 
 （空）
