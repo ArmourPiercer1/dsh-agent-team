@@ -1,0 +1,16 @@
+﻿=== V12.1 git remote -v ===
+origin	git@github.com:ArmourPiercer1/dsh-agent-team.git (fetch)
+origin	git@github.com:ArmourPiercer1/dsh-agent-team.git (push)
+=== V12.2 .gitmodules presence ===
+exists: False
+=== V12.3 main repo top-level packages/ ===
+client
+contracts
+domain
+legacy
+remote
+runtime
+storage
+testkit
+tools
+

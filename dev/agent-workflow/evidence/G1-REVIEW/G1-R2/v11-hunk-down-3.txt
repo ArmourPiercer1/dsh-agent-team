@@ -1,0 +1,6 @@
+﻿diff --git a/packages/core/session/src/known-event-types.ts b/packages/core/session/src/known-event-types.ts
+index f97c8d4846..2d1f967127 100644
+--- a/packages/core/session/src/known-event-types.ts
++++ b/packages/core/session/src/known-event-types.ts
+@@ -38,0 +39 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
++  'permission/decision',

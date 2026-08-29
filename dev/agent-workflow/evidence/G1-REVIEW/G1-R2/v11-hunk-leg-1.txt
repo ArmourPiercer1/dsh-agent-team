@@ -1,0 +1,8 @@
+﻿diff --git a/docs/subsystems/README.md b/docs/subsystems/README.md
+index f3340ebeb4..f60c5bebb4 100644
+--- a/docs/subsystems/README.md
++++ b/docs/subsystems/README.md
+@@ -41,0 +42 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures
++| [team.md](team.md) | the agent-team seam: `TeamRegistry` member definitions, `TeamControlRegistry` approval coordination, the delegation/message/progress/control tools, and the `team/*` session events |
+@@ -47,0 +49 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures
++| [permission.md](permission.md) | the permission seam: the `PermissionService` rule engine, command/path/MCP/parameter matchers, deny→ask→allow adjudication, and the `permission/decision` audit event |

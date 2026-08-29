@@ -1,0 +1,180 @@
+=== V11a manifest dispositions (read-only) ===
+date: 2026-08-29T16:10:39.924Z
+
+--- classification | disposition counts ---
+  GENERATED_FROM_TEAM | GENERATED_REVERT: 64
+  GENERIC_FORK_CAPABILITY | KEEP: 44
+  GENERIC_FORK_CAPABILITY | REFERENCE_ONLY: 13
+  GENERIC_FORK_CAPABILITY | SPLIT: 13
+  MIXED | SPLIT: 11
+  TEAM_OWNED | DELETE: 19
+  TEAM_OWNED | MIGRATE: 25
+  TEAM_OWNED | REFERENCE_ONLY: 115
+  TEAM_OWNED | REPLACE: 49
+  TEAM_OWNED | SPLIT: 107
+  UNRELATED_FORK_FEATURE | REFERENCE_ONLY: 5
+  UNRELATED_FORK_FEATURE | SPLIT: 5
+
+--- GENERIC_FORK_CAPABILITY file list (path | status | disposition) ---
+  M | .agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.md | SPLIT
+  M | .agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.zh.md | SPLIT
+  A | .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.zh.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.zh.md | REFERENCE_ONLY
+  M | apps/cli/composition.md | SPLIT
+  A | apps/web/tests/expected/models-settings/fetch-grouped.expected.md | REFERENCE_ONLY
+  M | apps/web/tests/models-settings.e2e.ts | SPLIT
+  A | docs/subsystems/permission.md | KEEP
+  A | docs/subsystems/permission.zh.md | KEEP
+  M | packages/bundle/base/cordis.patch.yml | SPLIT
+  M | packages/bundle/base/package.json | SPLIT
+  M | packages/client/ui-settings-models/README.md | SPLIT
+  M | packages/client/ui-settings-models/README.zh.md | SPLIT
+  M | packages/client/ui-settings-models/src/client/ModelListEditor.tsx | SPLIT
+  M | packages/client/ui-settings-models/src/client/ModelsSection.module.css | SPLIT
+  A | packages/client/ui-settings-models/src/client/modelGrouping.ts | SPLIT
+  A | packages/client/ui-settings-models/tests/model-grouping.client.spec.ts | SPLIT
+  M | packages/client/ui-settings-models/tests/provider-form.client.spec.tsx | SPLIT
+  A | packages/permission/permission-engine/README.md | KEEP
+  A | packages/permission/permission-engine/README.zh.md | KEEP
+  A | packages/permission/permission-engine/package.json | KEEP
+  A | packages/permission/permission-engine/src/audit.ts | KEEP
+  A | packages/permission/permission-engine/src/index.ts | KEEP
+  A | packages/permission/permission-engine/src/invariant.ts | KEEP
+  A | packages/permission/permission-engine/src/load.ts | KEEP
+  A | packages/permission/permission-engine/src/match-command.ts | KEEP
+  A | packages/permission/permission-engine/src/match-mcp.ts | KEEP
+  A | packages/permission/permission-engine/src/match-param.ts | KEEP
+  A | packages/permission/permission-engine/src/match-path.ts | KEEP
+  A | packages/permission/permission-engine/src/matchers.ts | KEEP
+  A | packages/permission/permission-engine/src/parse.ts | KEEP
+  A | packages/permission/permission-engine/src/resolve.ts | KEEP
+  A | packages/permission/permission-engine/tests/audit.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/evaluate.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/load.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/match-command.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/match-mcp.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/match-param.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/match-path.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/parse.spec.ts | KEEP
+  A | packages/permission/permission-engine/tests/resolve.spec.ts | KEEP
+  A | packages/permission/permission-engine/tsconfig.json | KEEP
+  A | packages/permission/permission/README.md | KEEP
+  A | packages/permission/permission/README.zh.md | KEEP
+  A | packages/permission/permission/package.json | KEEP
+  A | packages/permission/permission/src/index.ts | KEEP
+  A | packages/permission/permission/src/invariant.ts | KEEP
+  A | packages/permission/permission/src/types.ts | KEEP
+  A | packages/permission/permission/tests/permission.loader-composition.spec.ts | KEEP
+  A | packages/permission/permission/tsconfig.json | KEEP
+  A | packages/permission/tool-permission-guard/README.md | KEEP
+  A | packages/permission/tool-permission-guard/README.zh.md | KEEP
+  A | packages/permission/tool-permission-guard/package.json | KEEP
+  A | packages/permission/tool-permission-guard/src/index.ts | KEEP
+  A | packages/permission/tool-permission-guard/src/invariant.ts | KEEP
+  A | packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts | KEEP
+  A | packages/permission/tool-permission-guard/tests/guard.unit.spec.ts | KEEP
+  A | packages/permission/tool-permission-guard/tsconfig.json | KEEP
+  A | permission-and-mcp-fusion-design.md | KEEP
+  A | permission-seam-implementation-plan.md | KEEP
+
+--- UNRELATED_FORK_FEATURE file list (path | status | disposition) ---
+  A | .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.md | REFERENCE_ONLY
+  A | .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.zh.md | REFERENCE_ONLY
+  M | AGENTS.md | SPLIT
+  A | ENVIRONMENTS.md | REFERENCE_ONLY
+  A | PLUGIN_DEV_GUIDE.md | REFERENCE_ONLY
+  M | docs/subsystems/subagent.zh.md | SPLIT
+  A | learning-path-zh.md | REFERENCE_ONLY
+  M | packages/session/session-persistence-jsonl/src/format.ts | SPLIT
+  M | packages/web/tool-web/src/turndown-plugin-gfm.d.ts | SPLIT
+  M | scripts/translation-pairing.ts | SPLIT
+
+--- MIXED file list (path | status | disposition) ---
+  M | .gitignore | SPLIT
+      reason: Multi-kind fork delta: OTHER+PERMISSION. Hunk routing below (kinds = OTHER+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"OTHER","note":"Local dev hygiene block (references/, issues/, archive/, start-dev.ps1, *.js.map, *.d.ts.map) plus .js/.d.ts build-artifact ignores for core/session and permission-engine sources."}
+  M | docs/subsystems/README.md | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"Adds the team.md row (TeamRegistry / TeamControlRegistry seam page) to the subsystems index."}
+      mixed_hunk: {"hunk":2,"kind":"PERMISSION","note":"Adds the permission.md row (PermissionService rule engine page) to the subsystems index."}
+  M | docs/subsystems/README.zh.md | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"Replaces the agent-team row with the new team.md row and re-adds the legacy agent-team row (zh subsystems index)."}
+      mixed_hunk: {"hunk":2,"kind":"PERMISSION","note":"Adds the permission.md row to the zh subsystems index."}
+  M | packages/core/session/src/known-event-types.ts | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"PERMISSION","note":"Registers the permission/decision audit event type."}
+      mixed_hunk: {"hunk":2,"kind":"TEAM","note":"Registers team/control-decision and team/control-request event types."}
+      mixed_hunk: {"hunk":3,"kind":"TEAM","note":"Registers team/member-bound and team/message event types."}
+      mixed_hunk: {"hunk":4,"kind":"TEAM","note":"Registers the team/progress event type."}
+  M | scripts/gen-cordis-catalog.ts | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"SERVICE_PAGE maps team, teamControl, teamProjection to team.md and permission to permission.md (one hunk, both kinds)."}
+      mixed_hunk: {"hunk":2,"kind":"TEAM","note":"LINK_MAP adds the Team* type links pointing at the new team.md page."}
+      mixed_hunk: {"hunk":3,"kind":"TEAM","note":"LINK_MAP drops the old TeamView: agent-team.md entry (moved to team.md in hunk 2)."}
+      mixed_hunk: {"hunk":4,"kind":"PERMISSION","note":"TYPE_LINK_EXEMPTIONS adds the permission type ownership notes (CompiledPolicy, RuleSource, PermissionContext, ...)."}
+  M | scripts/gen-doc-graphs.ts | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"GROUP_ORDER inserts the team group after subagent."}
+      mixed_hunk: {"hunk":2,"kind":"PERMISSION","note":"GROUP_ORDER inserts the permission group before cordis."}
+      mixed_hunk: {"hunk":3,"kind":"TEAM","note":"SERVICE_ROLES adds the team, teamControl, teamProjection and permission seam entries (one hunk, both kinds)."}
+  M | scripts/gen-tool-catalog.ts | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"Renames the experimental tool-agent-team import to ExperimentalToolAgentTeam (legacy first-gen mount rewire)."}
+      mixed_hunk: {"hunk":2,"kind":"TEAM","note":"Adds imports for TeamRegistry, TeamControlRegistry, ToolTeam and ToolPermissionGuard (team + permission packages)."}
+      mixed_hunk: {"hunk":3,"kind":"PERMISSION","note":"ToolPackage gains the noModelTools field for the pre-execute permission guard (registers no model-facing tool)."}
+      mixed_hunk: {"hunk":4,"kind":"PERMISSION","note":"TOOL_PACKAGES gains the tool-permission-guard entry (permission/decision audit events)."}
+      mixed_hunk: {"hunk":5,"kind":"TEAM","note":"Replaces await ctx.plugin(ToolTeam) with the renamed ExperimentalToolAgentTeam in the child-scope harvest."}
+      mixed_hunk: {"hunk":6,"kind":"TEAM","note":"TOOL_PACKAGES gains the tool-team entry (five team tools over the team seam)."}
+      mixed_hunk: {"hunk":7,"kind":"PERMISSION","note":"collectToolCatalog skips assertToolsHarvested for noModelTools packages (the guard)."}
+  M | scripts/project-doc-site.spec.ts | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"docsPages translated-locale count 46 to 48: the two new subsystem pages are team.md and permission.md (one hunk, both kinds)."}
+  M | tsconfig.base.json | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"paths: + @deepseek-ai/dsh-team-projection/types alias."}
+      mixed_hunk: {"hunk":2,"kind":"TEAM","note":"paths: + dsh-team/types and the four permission package aliases (dsh-permission, /types, permission-engine, tool-permission-guard) in one hunk."}
+      mixed_hunk: {"hunk":3,"kind":"TEAM","note":"paths: + hand-written dsh-bundle-team, dsh-bundle-team/invariant, dsh-client-ui-team aliases."}
+      mixed_hunk: {"hunk":4,"kind":"PERMISSION","note":"paths: + permission and permission-engine /invariant aliases."}
+      mixed_hunk: {"hunk":5,"kind":"TEAM","note":"paths: + dsh-team, dsh-team-channels, dsh-team-local, dsh-team-projection, dsh-team-runtime aliases (+ /invariant each)."}
+      mixed_hunk: {"hunk":6,"kind":"PERMISSION","note":"paths: + tool-permission-guard /invariant alias."}
+      mixed_hunk: {"hunk":7,"kind":"TEAM","note":"paths: + dsh-tool-team and dsh-tool-team/invariant aliases."}
+  M | tsconfig.host.json | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"project references: +7 team packages (team, team-local, team-projection, team-runtime, team-channels, tool-team, bundle/team) and +3 permission packages (permission, permission-engine, tool-permission-guard) in one hunk."}
+  M | website/docs.ts | SPLIT
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      mixed_hunk: {"hunk":1,"kind":"TEAM","note":"subsystemGroups adds the team.md (Team) doc page."}
+      mixed_hunk: {"hunk":2,"kind":"PERMISSION","note":"subsystemGroups adds the permission.md (Permissions) doc page."}
+
+--- UNRELATED_FORK_FEATURE reasons ---
+  .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.md: Process note: plugin development guide reference (generic fork process).
+  .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.zh.md: Process note: plugin development guide reference (generic fork process).
+  AGENTS.md: Two-instance warning header (never touch 3080; this checkout is 3180) pointing at ENVIRONMENTS.md.
+  ENVIRONMENTS.md: Local two-instance environment boundary doc (stable vs dev checkout); fork workspace process note, no team content.
+  PLUGIN_DEV_GUIDE.md: Fork-level plugin development guide; generic fork reference doc, no team/permission/model content.
+  docs/subsystems/subagent.zh.md: zh wording fix plus paragraph removal (doc sync with the English).
+  learning-path-zh.md: Chinese learning path for DSH aimed at physics-background readers; generic fork doc.
+  packages/session/session-persistence-jsonl/src/format.ts: Backward seq-scan replacement in the SessionLogScanner (compaction-summary driven).
+  packages/web/tool-web/src/turndown-plugin-gfm.d.ts: Type declaration doc-comment cleanup.
+  scripts/translation-pairing.ts: references/ excluded from the translation pairing scope (fork reference doc tree).
+
+--- TEAM_OWNED disposition distribution ---
+  DELETE: 19
+  MIGRATE: 25
+  REFERENCE_ONLY: 115
+  REPLACE: 49
+  SPLIT: 107
+
+--- GENERATED_FROM_TEAM disposition distribution ---
+  GENERATED_REVERT: 64

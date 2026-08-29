@@ -1,0 +1,30 @@
+﻿diff --git a/scripts/gen-cordis-catalog.ts b/scripts/gen-cordis-catalog.ts
+index 1bae81253b..09f3f18302 100644
+--- a/scripts/gen-cordis-catalog.ts
++++ b/scripts/gen-cordis-catalog.ts
+@@ -125,0 +126,4 @@ export const SERVICE_PAGE: Record<string, string> = {
++  team: 'team.md',
++  teamControl: 'team.md',
++  teamProjection: 'team.md',
++  permission: 'permission.md',
+@@ -504,0 +509,6 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
++  TeamView: 'team.md',
++  TeamMessagePage: 'team.md',
++  TeamMessageView: 'team.md',
++  TeamPageOptions: 'team.md',
++  TeamProjectionListener: 'team.md',
++  MessageAnchor: 'team.md',
+@@ -516 +525,0 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
+-  TeamView: 'agent-team.md',
+@@ -663,0 +673,11 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
++  CompiledPolicy: 'compiled permission policy handle is owned by packages/permission/permission/src/types.ts',
++  RuleSource: 'authored permission rule input is owned by packages/permission/permission/src/index.ts',
++  PermissionContext: 'permission evaluation inputs are owned by packages/permission/permission/src/types.ts',
++  PermissionDecision: 'permission evaluation result is owned by packages/permission/permission/src/types.ts',
++  ToolCallView: 'minimal tool-call view is owned by packages/permission/permission/src/types.ts',
++  LoadRuleLayersOptions: 'rule-layer load inputs are owned by packages/permission/permission/src/types.ts',
++  LoadedRuleLayers: 'rule-layer load result is owned by packages/permission/permission/src/types.ts',
++  TeamMemberDefinition: 'team member definition is owned by packages/team/team/src/types.ts',
++  TeamMemberId: 'branded team member identity is owned by packages/team/team/src/brand.ts',
++  TeamControlDecision: 'leader control decision is owned by packages/team/team-channels/src/control-coordinator.ts',
++  TeamControlRequestData: 'teammate control request payload is owned by packages/team/team-channels/src/control-coordinator.ts',

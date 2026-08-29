@@ -1,0 +1,41 @@
+﻿diff --git a/.gitignore b/.gitignore
+index d33bbc8a4e..9e2b94d11c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -41,0 +42,21 @@ worktrees/
++
++# references
++references/
++
++# local dev issues
++issues/
++
++# local archive (gitignored workspace stash for superseded WIP artifacts)
++archive/
++
++# local instance launcher
++start-dev.ps1
++
++# tsc composite build products emitted next to sources
++# (rewriteRelativeImportExtensions), never source of record
++*.js.map
++*.d.ts.map
++packages/core/session/src/*.js
++packages/core/session/src/*.d.ts
++packages/permission/permission-engine/src/*.js
++packages/permission/permission-engine/src/*.d.ts
+diff --git a/scripts/project-doc-site.spec.ts b/scripts/project-doc-site.spec.ts
+index f7062c2659..1d2a25726f 100644
+--- a/scripts/project-doc-site.spec.ts
++++ b/scripts/project-doc-site.spec.ts
+@@ -453 +453 @@ describe('docsPages locale routes', () => {
+-    expect(translated).toHaveLength(46)
++    expect(translated).toHaveLength(47)
+diff --git a/tsconfig.host.json b/tsconfig.host.json
+index 561cee9b17..55bba10549 100644
+--- a/tsconfig.host.json
++++ b/tsconfig.host.json
+@@ -305,0 +306,3 @@
++    { "path": "./packages/permission/permission" },
++    { "path": "./packages/permission/permission-engine" },
++    { "path": "./packages/permission/tool-permission-guard" },

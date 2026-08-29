@@ -1,0 +1,9 @@
+﻿=== V4 byte-clean PRE check (test-use, read-only git) ===
+date: 2026-08-29T23:47:08
+--porcelain status (empty expected):
+  (empty)
+--- diff (empty expected):
+  (empty)
+HEAD: cd5ef8148158c3a752a658978873241fdf8e2bbc
+expected: cd5ef8148158c3a752a658978873241fdf8e2bbc
+match: True

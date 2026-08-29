@@ -1,0 +1,62 @@
+﻿=== V5.7 vitest under pnpm (expect spawn EPERM — environment limitation) ===
+date: 2026-08-29T23:53:22
+cmd: pnpm --dir D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G1-R1 test
+exit: 1
+pnpm.exe : $ vitest run
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+failed to load config from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G1-R1\vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯
+Error: Build failed with 1 error:
+
+[plugin externalize-deps]
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:458:11)
+    at spawn (node:child_process:813:9)
+    at Object.execFile (node:child_process:349:17)
+    at exec (node:child_process:236:25)
+    at optimizeSafeRealPathSync (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node
+_modules/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:2497:2)
+    at windowsSafeRealPathSync (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_
+modules/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:2483:3)
+    at getRealPath (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modules/.pnp
+m/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:33260:36)
+    at tryResolveRealFileOrType (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node
+_modules/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:33254:9)
+    at tryCleanFsResolve (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_module
+s/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:33003:21)
+    at tryFsResolve (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modules/.pn
+pm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:32996:14)
+    at aggregateBindingErrorsIntoJsError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G
+1-R1/node_modules/.pnpm/rolldown@1.2.6/node_modules/rolldown/dist/shared/error-HDibX49O.mjs:48:18)
+    at unwrapBindingResult (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modu
+les/.pnpm/rolldown@1.2.6/node_modules/rolldown/dist/shared/error-HDibX49O.mjs:18:128)
+    at #build (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modules/.pnpm/rol
+ldown@1.2.6/node_modules/rolldown/dist/shared/rolldown-C9Hfg50O.mjs:133:34)
+    at async bundleConfigFile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_m
+odules/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:37116:17)
+    at async bundleAndLoadConfigFile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1
+/node_modules/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:37014:18)
+    at async loadConfigFromFile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node
+_modules/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:36975:42)
+    at async resolveConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modu
+les/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:36581:22)
+    at async _createServer (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modu
+les/.pnpm/vite@8.2.2/node_modules/vite/dist/node/chunks/node.js:26388:65)
+    at async createViteServer (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_m
+odules/.pnpm/vitest@4.1.11_vite@8.2.2/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:8902:17)
+    at async createVitest (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1/node_modul
+es/.pnpm/vitest@4.1.11_vite@8.2.2/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:14288:18) {
+  errors: [Getter/Setter]
+}
+
+
+
+[ELIFECYCLE] Test failed. See above for more details.
+

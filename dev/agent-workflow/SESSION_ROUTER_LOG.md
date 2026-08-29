@@ -80,6 +80,27 @@
 - **Profile 状态**：`references/.dsh-test/profiles/web/cordis.patch.yml` 保留两挂载行（带 revert 注释，供 G1-REVIEW 复用；downstream 侧在 `.dsh-test-downstream`）。
 - **graph**：P1-T5 → INTEGRATED（head `f718b47e`，attempts 1）；G1-REVIEW → READY；`integration_sha: 384a645d`。
 
+### G1-REVIEW round 1 — PASS（2026-08-29/30）
+
+- **方式**：workflow 工具 3 个独立并行 reviewer（G1-R1/R2/R3），全部 `qiyuan-self/qwen3.8-27b`，无会话继承、互不可见；brief 仅含 G1 判据（DevPlan §13.6 七条）、冻结文档段落（TaskDoc §11）、审查范围 + 复现清单 V1–V12、沙箱约束与启动绕行链；盲审（禁读 SESSION_ROUTER_LOG / graph.yaml / evidence/，唯一例外为 G0 已批准的 provenance 清单 file-manifest.json；禁止引用彼此结论）。
+- **资源隔离**：每 reviewer 独立 detached worktree（.worktrees/G1-R{1,2,3} @ 384a645d）、独立端口（3181–3183 / 3191–3193）、独立 DSH_HOME（references/.dsh-test-g1r{1,2,3}[-downstream]）；共享 .dsh-test / .dsh-test-downstream 与 test-use / downstream 树只读。
+- **裁决**：**通过 / 通过 / 通过**（3/3，gate_passed=true）。G1-R1 = 通过（G1-R1-SUMMARY.log 存 7/7 PASS + Verdict 全文）；G1-R3 = 通过（workflow 记录尾注）；G1-R2 ∈ {通过, 投机通过}（workflow 聚合 gate_passed=true 判定；原文存 workflow 运行记录）。七条判据均由三位 reviewer 各自独立机器级复现（V1–V12 日志存 evidence/G1-REVIEW/G1-R*/）：
+  - G1-1 独立 Git 仓库：独立 remote、无 .gitmodules、无任何指向 legacy fork 的 remote；嵌套 legacy 仓库 untracked（非 submodule）。
+  - G1-2 legacy 分支非依赖：packages/ 与 scripts/ 内对 a3ab319927 / packages/team / legacy 路径零引用；packages/legacy 为空槽（package.json+README，无 src）。
+  - G1-3 骨架独立构建：pnpm install --ignore-scripts → 每包直接 tsc 全绿（8 包 + legacy 空槽）→ eslint 全绿 → composition-smoke 绿 → 18/18 测试（plain-node vitest 等价跑手，reviewer 独立审计其等价性）；vitest EPERM 记录为环境限制。
+  - G1-4 插件与 pristine upstream 组合：公开 seam 挂载（cordis.patch.yml 两行 file:///）→ dump-config 两行在 composed entry list → boot 成功（assertEntriesActivated 使 entry 激活失败即拒绝启动）→ **负例对照**（行指向不存在模块 → boot 大声失败 exit 1）证明非空洞。
+  - G1-5 测试后 pristine upstream byte/source clean：before/after `git status --porcelain` 与 `git diff` 均空、HEAD = cd5ef814 不变。
+  - G1-6 downstream host 无 Team-required patch：scanner 对 downstream-int @ 02f3094c exit 0；V11 blob 级对照：10/10 UNRELATED + 70/70 GENERIC byte-identical，11 个 MIXED 文件 SPLIT 正确（非 Team hunk 在位、全部 Team hunk 缺席）。
+  - G1-7 unrelated fork 特性按 provenance 保留：按 file-manifest.json，downstream 相对 upstream 基点的 diff 仅含非 Team fork hunk、无 Team-owned hunk；≥3 个 UNRELATED 文件内容抽查在位。
+- **Gate 后动作**：`int/P1-host-foundation` ff 合入 master（`9267522..ac2be32`）；push origin（远端 master = ac2be32，2dadcb0 以来首次推送）；G1 reviewer 证据入库（dev/agent-workflow/evidence/G1-REVIEW/G1-R{1,2,3}/，共 154 文件）；3 个 reviewer worktree 已 prune；g1r DSH_HOME 实例已删（可再生产物）；共享基线实例 .dsh-test / .dsh-test-downstream 保留（cordis.patch.yml 挂载行带 revert 注释）；P1 task 分支保留（历史痕迹）。
+- **环境新发现（留档）**：`docs/plans/active/` 四份冻结文档在文件系统层出现间歇性读取失败（listing 正常、open 偶发 ENOENT，亚秒级 flapping）；绕行 = 镜像复制到 `references/.scratch-freedocs/`（gitignored）后从副本读取；不影响冻结文档内容，后续 Phase 的 reviewer/worker 若遇同样现象按此绕行（已写入各 brief）。
+
+### 轮次 R5：G1 合并 + push + P2 启动（2026-08-30）
+
+- **Gate**：G1 PASS（见上）→ int 合入 master 并 push（远端 master = ac2be32）。
+- **P2 启动**：TaskDoc §11.3 已读（P2 — Public Seam Characterization；依赖图 P2-T1 → {T2||T3||T4||T5} → T6 → G2）；`int/P2-seam-characterization` 自 master @ ac2be32 创建；P2-T1 worktree/分支已建，worker 已派发（qiyuan-self/qwen3.8-27b）。
+- **graph**：current_phase P2；G1-REVIEW → PASSED（verdicts 已录）；P2-T1 → READY；P2-T2..T6、G2-REVIEW → DEFINED。
+
 ## 重审记录
 
 （空）

@@ -1,0 +1,10 @@
+A	.agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.md
+A	.agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.zh.md
+M	AGENTS.md
+A	ENVIRONMENTS.md
+A	PLUGIN_DEV_GUIDE.md
+M	docs/subsystems/subagent.zh.md
+A	learning-path-zh.md
+M	packages/session/session-persistence-jsonl/src/format.ts
+M	packages/web/tool-web/src/turndown-plugin-gfm.d.ts
+M	scripts/translation-pairing.ts

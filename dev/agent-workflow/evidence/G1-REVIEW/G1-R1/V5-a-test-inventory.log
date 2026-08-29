@@ -1,0 +1,55 @@
+﻿=== V5.1 all test/spec files (excl node_modules) ===
+packages\client\test\client.test.ts
+packages\contracts\test\contracts.test.ts
+packages\domain\test\domain.test.ts
+packages\remote\test\remote.test.ts
+packages\runtime\test\runtime.test.ts
+packages\storage\test\storage.test.ts
+packages\testkit\test\testkit.test.ts
+packages\tools\test\tools.test.ts
+
+=== V5.2 vitest configs ===
+vitest.config.ts
+packages\client\vitest.config.ts
+packages\contracts\vitest.config.ts
+packages\domain\vitest.config.ts
+packages\remote\vitest.config.ts
+packages\runtime\vitest.config.ts
+packages\storage\vitest.config.ts
+packages\testkit\vitest.config.ts
+packages\tools\vitest.config.ts
+scripts\test-vitest-shim.mjs
+
+=== V5.3 matcher usage in test files ===
+packages\client\test\client.test.ts:16: .toBe(
+packages\client\test\client.test.ts:17: .toBe(
+packages\client\test\client.test.ts:18: .toBe(
+packages\client\test\client.test.ts:35: .toThrow(
+packages\client\test\client.test.ts:36: .toEqual(
+packages\client\test\client.test.ts:37: .toEqual(
+packages\client\test\client.test.ts:9: .toBe(
+packages\contracts\test\contracts.test.ts:11: .toBe(
+packages\contracts\test\contracts.test.ts:12: .toBeGreaterThan(
+packages\contracts\test\contracts.test.ts:7: .toBe(
+packages\domain\test\domain.test.ts:11: .toBe(
+packages\domain\test\domain.test.ts:12: .toBeGreaterThan(
+packages\domain\test\domain.test.ts:7: .toBe(
+packages\remote\test\remote.test.ts:11: .toBe(
+packages\remote\test\remote.test.ts:12: .toBeGreaterThan(
+packages\remote\test\remote.test.ts:7: .toBe(
+packages\runtime\test\runtime.test.ts:16: .toBe(
+packages\runtime\test\runtime.test.ts:17: .toBe(
+packages\runtime\test\runtime.test.ts:18: .toBe(
+packages\runtime\test\runtime.test.ts:35: .toThrow(
+packages\runtime\test\runtime.test.ts:36: .toEqual(
+packages\runtime\test\runtime.test.ts:37: .toEqual(
+packages\runtime\test\runtime.test.ts:9: .toBe(
+packages\storage\test\storage.test.ts:11: .toBe(
+packages\storage\test\storage.test.ts:12: .toBeGreaterThan(
+packages\storage\test\storage.test.ts:7: .toBe(
+packages\testkit\test\testkit.test.ts:11: .toBe(
+packages\testkit\test\testkit.test.ts:12: .toBeGreaterThan(
+packages\testkit\test\testkit.test.ts:7: .toBe(
+packages\tools\test\tools.test.ts:11: .toBe(
+packages\tools\test\tools.test.ts:12: .toBeGreaterThan(
+packages\tools\test\tools.test.ts:7: .toBe(

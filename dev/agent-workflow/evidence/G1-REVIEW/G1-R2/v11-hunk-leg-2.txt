@@ -1,0 +1,10 @@
+﻿diff --git a/docs/subsystems/README.zh.md b/docs/subsystems/README.zh.md
+index 2e4523f03d..7d5604cc2d 100644
+--- a/docs/subsystems/README.zh.md
++++ b/docs/subsystems/README.zh.md
+@@ -42 +42,2 @@
+-| [agent-team.md](agent-team.zh.md) | Agent Teams：隐式 Lead 身份、具名 continuable teammate、持久 peer mailbox 与共享任务 DAG |
++| [team.md](team.zh.md) | agent-team seam：`TeamRegistry` 成员定义、`TeamControlRegistry` 审批协调、委派/消息/进度/控制工具，以及 `team/*` 会话事件 |
++| [agent-team.md](agent-team.zh.md) | Agent Teams：隐式 Lead 身份、具名可续接队友、持久 mailbox 与共享任务 DAG |
+@@ -47,0 +49 @@
++| [permission.md](permission.zh.md) | permission seam：`PermissionService` 规则引擎、命令/路径/MCP/参数匹配器、deny→ask→allow 裁决，以及 `permission/decision` 审计事件 |

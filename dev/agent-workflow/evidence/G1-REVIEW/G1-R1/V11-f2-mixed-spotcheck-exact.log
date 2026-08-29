@@ -1,0 +1,17 @@
+=== V11f2 exact-line MIXED spot checks (corrected patterns) ===
+date: 2026-08-30T00:15:33.2232883+08:00
+
+--- known-event-types.ts ---
+permission/decision (expect >=1): 1
+'team/control-decision', (expect 0): 0
+'team/control-request', (expect 0): 0
+'team/member-bound', (expect 0): 0
+'team/message', (expect 0): 0
+'team/progress', (expect 0): 0
+
+--- docs/subsystems/README.md ---
+[permission.md](permission.md) row (expect >=1): 1
+[team.md](team.md) row (expect 0): 0
+[agent-team.md](agent-team.md) upstream row (expect 1): 1
+
+RESULT: PASS exact-line MIXED spot checks (both files: non-Team hunks kept, Team hunks absent)

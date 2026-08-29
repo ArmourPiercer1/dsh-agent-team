@@ -1,0 +1,33 @@
+﻿trees: base=8953 downstream=9017 legacy=9263
+sanity: .gitignore in all three: true true true
+
+manifest entries: 470, hunk-check deferred: 11
+OK breakdown: {
+ "base:identical": 132,
+ "legacy:identical": 67,
+ "base:absent": 246,
+ "MIXED pending-hunkcheck": 8
+}
+ISSUES: 17
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.zh.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.md
+ISSUE: base (absent in want) but PRESENT in downstream: .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.zh.md
+ISSUE: MIXED downstream == legacy (Team hunks may have been replayed!): .gitignore
+ISSUE: base (absent in want) but PRESENT in downstream: apps/web/tests/expected/models-settings/fetch-grouped.expected.md
+ISSUE: base MISMATCH: pnpm-lock.yaml
+  down=blob:9a8ade3522ffc875355506e53d26d3a9ca09c17d@100644
+  want=blob:06d5d75a109ab21a16a98f6fcfdb7bbda4e33f7d@100644
+  base=06d5d75a109ab21a16a98f6fcfdb7bbda4e33f7d legacy=8a9ceec360e8c10d061e36537872530304b3d7e3
+ISSUE: MIXED all-TEAM changed vs base: scripts/project-doc-site.spec.ts (down=1d2a25726f865967a7973f4be64df7811746f75f base=f7062c2659a6e564991db959f7f6470cb947dc38)
+ISSUE: MIXED all-TEAM changed vs base: tsconfig.host.json (down=55bba10549c9b6d210d3d3746f15ab6d0ffd14bb base=561cee9b175c9614f6b8e5a70ac74c3694e19329)
+
+extra (not in manifest): added=0 deleted=0 changed=0

@@ -1,0 +1,36 @@
+=== V10a scanner + git state: downstream host tree ===
+date: 2026-08-30T00:06:57.9464317+08:00
+tree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream
+HEAD: 02f3094c593163c9506710431555a4514a51c19a
+branch:
+host/downstream-int-20260829
+--porcelain status (empty expected):
+  (empty)
+
+--- zero-core scanner (downstream) ---
+cmd: node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G1-R1\scripts\verify-zero-core.mjs --host D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream --json
+exit code: 0 (expected 0)
+--- output ---
+verify-zero-core: host=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream
+INFO third-party patched dependency "node-pty" at D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream\pnpm-workspace.yaml [patchedDependencies] (upstream's own dependency patching; not a Team rewrite)
+INFO third-party patch file D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream\patches\node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+RESULT: PASS verify-zero-core (0 findings)
+{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-int-downstream",
+  "plugins": [],
+  "hostPackages": 275,
+  "findings": [],
+  "infoCount": 2,
+  "pass": true
+}
+
+--- pnpm-workspace.yaml line-ending + patchedDependencies check (CRLF-gap compensation) ---
+CRLF-count: 0
+LF-only-count: 78
+patchedDependencies section (first ~600 chars):
+patchedDependencies:
+  node-pty@1.2.0-beta.15: patches/node-pty@1.2.0-beta.15.patch
+
+
+RESULT: PASS scanner (0 findings) + git clean

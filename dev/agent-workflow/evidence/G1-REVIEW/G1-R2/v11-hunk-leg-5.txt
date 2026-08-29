@@ -1,0 +1,43 @@
+﻿diff --git a/scripts/gen-doc-graphs.ts b/scripts/gen-doc-graphs.ts
+index 0ea6043121..5a0faa7c7f 100644
+--- a/scripts/gen-doc-graphs.ts
++++ b/scripts/gen-doc-graphs.ts
+@@ -79,0 +80 @@ const GROUP_ORDER = [
++  'team',
+@@ -86,0 +88 @@ const GROUP_ORDER = [
++  'permission',
+@@ -666,0 +669,34 @@ const SERVICE_ROLES: ServiceRole[] = [
++  {
++    key: 'team',
++    pkg: 'team',
++    title: 'Team member registry seam',
++    mode: 'seam',
++    implementations: ['team-local'],
++    consumers: ['tool-team', 'team-runtime', 'team-channels'],
++    note: 'The Service Definition declares the abstract TeamRegistry; providers populate definitions, and runtime, channels, and tool consumers coordinate member lifecycles.',
++  },
++  {
++    key: 'teamControl',
++    pkg: 'team-channels',
++    title: 'Host-level team control request coordinator',
++    mode: 'core',
++    consumers: ['tool-team', 'team-runtime'],
++    note: 'Coordinates teammate approval requests and rendezvous on the leader session across child contexts and tool executions.',
++  },
++  {
++    key: 'teamProjection',
++    pkg: 'team-projection',
++    title: 'Host read-only team projection',
++    mode: 'core',
++    consumers: ['apiproxy'],
++    note: 'Folds one leader team view cold-safely from session logs and the workspace roster, overlays live running state, and publishes whole snapshots; the API gateway serves them to the browser.',
++  },
++  {
++    key: 'permission',
++    pkg: 'permission',
++    title: 'Tool-call permission evaluation seam',
++    mode: 'seam',
++    implementations: ['permission-engine'],
++    consumers: ['tool-permission-guard'],
++    note: 'The Service Definition declares evaluate and policy types; the engine package implements adjudication and ships in the base bundle, while the guard package implements execution gating and remains an opt-in consumer.',
++  },

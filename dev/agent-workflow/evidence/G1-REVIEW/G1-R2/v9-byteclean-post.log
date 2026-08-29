@@ -1,0 +1,5 @@
+﻿### V9 byte-clean POST-check @ 2026-08-30T00:03:19.4985703+08:00
+status-exit=0 status-lines=0
+diff-exit=0 (0=clean)
+HEAD=cd5ef8148158c3a752a658978873241fdf8e2bbc
+HEAD-unchanged: True

@@ -1,0 +1,5 @@
+=== V8 negative control: client row -> DOES_NOT_EXIST_NEGCTRL.js ===
+BOOT REFUSED, exit code 1:
+Error: dsh: plugin tree failed to load: failed to apply loader entry include (cordis:include): failed to import loader entry dsh-agent-team-client (file:///.../packages/client/dist/plugin/DOES_NOT_EXIST_NEGCTRL.js): Cannot find module 'D:\AgentDev\...\DOES_NOT_EXIST_NEGCTRL.js' imported from D:\AgentDev\...\profiles\web\
+Error [ERR_MODULE_NOT_FOUND] (full stack in job pwsh-16 output)
+Proves the boot gate is not vacuous: a bad entry import refuses startup (fail-closed), so the V7 success line is machine-level proof the real two rows imported+activated.

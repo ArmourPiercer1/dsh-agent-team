@@ -1,0 +1,22 @@
+﻿### V5 pnpm install --ignore-scripts @ 2026-08-29T23:49:39.7004991+08:00
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (174 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +149
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 149, reused 149, downloaded 0, added 38
+✓ Lockfile passes supply-chain policies (174 entries in 2s)
+Progress: resolved 149, reused 149, downloaded 0, added 39
+Progress: resolved 149, reused 149, downloaded 0, added 149, done
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 6.7s using pnpm v11.7.0
+exit=0 @ 2026-08-29T23:49:46.8590344+08:00

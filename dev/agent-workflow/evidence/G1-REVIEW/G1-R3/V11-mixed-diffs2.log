@@ -1,0 +1,111 @@
+######## docs/subsystems/README.zh.md
+diff --git a/docs/subsystems/README.zh.md b/docs/subsystems/README.zh.md
+index 2e4523f03d..30aa0763df 100644
+--- a/docs/subsystems/README.zh.md
++++ b/docs/subsystems/README.zh.md
+@@ -45,6 +45,7 @@
+ | [workflow.md](workflow.zh.md) | ??? seam?`WorkflowStartRequest`?`WorkflowMeta`?`WorkflowRun`/`Result`?`workflow/*` ?????`WorkflowError` ??? |
+ | [jobs.md](jobs.zh.md) | ??????????? `JobId`?producer ????????? `ctx.jobs` ???? |
+ | [permission-presets.md](permission-presets.zh.md) | ??????`PresetSpec`/`PresetOption`???? `custom` ???????? `permission/preset` ?? |
++| [permission.md](permission.zh.md) | permission seam?`PermissionService` ???????/??/MCP/??????deny?ask?allow ????? `permission/decision` ???? |
+ | [plan.md](plan.zh.md) | ?????????? `plan/mode` ???????????`PlanModeConfig`?`exit_plan_mode` ???? |
+ | [invariants.md](invariants.zh.md) | ?????????????? `Config`?`InvariantInstaller`/`InvariantFailure`???????? |
+ | [web-server.md](web-server.zh.md) | HTTP ???`WebRouteKind`/`WebRoute`???????????????index ????? |
+######## scripts/gen-cordis-catalog.ts
+diff --git a/scripts/gen-cordis-catalog.ts b/scripts/gen-cordis-catalog.ts
+index 1bae81253b..805ee5d72b 100644
+--- a/scripts/gen-cordis-catalog.ts
++++ b/scripts/gen-cordis-catalog.ts
+@@ -123,6 +123,7 @@ export const SERVICE_PAGE: Record<string, string> = {
+   workspaceRegistry: 'workspace.md',
+   workspaceController: 'workspace.md',
+   directoryPickerController: 'workspace.md',
++  permission: 'permission.md',
+ }
+ 
+ /**
+@@ -661,6 +662,13 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
+   BashEnvVariableInfo: 'service-local metadata type is owned by packages/shell/tool-bash/src/index.ts',
+   CompactionAgentContext: 'compaction service input is owned by packages/compaction/compaction/src/index.ts',
+   ManualCompactAgentContext: 'manual compaction service input is owned by packages/compaction/compaction/src/index.ts',
++  CompiledPolicy: 'compiled permission policy handle is owned by packages/permission/permission/src/types.ts',
++  RuleSource: 'authored permission rule input is owned by packages/permission/permission/src/index.ts',
++  PermissionContext: 'permission evaluation inputs are owned by packages/permission/permission/src/types.ts',
++  PermissionDecision: 'permission evaluation result is owned by packages/permission/permission/src/types.ts',
++  ToolCallView: 'minimal tool-call view is owned by packages/permission/permission/src/types.ts',
++  LoadRuleLayersOptions: 'rule-layer load inputs are owned by packages/permission/permission/src/types.ts',
++  LoadedRuleLayers: 'rule-layer load result is owned by packages/permission/permission/src/types.ts',
+   ClientResponse: 'wire response message is owned by packages/client/connection/src/rpc.ts',
+   ApprovalRequestId: 'dynamic Plugin approval identity is owned by packages/extensions/cordis-host-runner/src/types.ts',
+   CordisErrorDetails: 'Cordis runtime error payload is owned by packages/extensions/cordis-host-runner/src/types.ts',
+######## scripts/gen-doc-graphs.ts
+diff --git a/scripts/gen-doc-graphs.ts b/scripts/gen-doc-graphs.ts
+index 0ea6043121..f5b7af4b6a 100644
+--- a/scripts/gen-doc-graphs.ts
++++ b/scripts/gen-doc-graphs.ts
+@@ -84,6 +84,7 @@ const GROUP_ORDER = [
+   'spill',
+   'todo',
+   'plan',
++  'permission',
+   'cordis',
+   'hooks',
+   'session-persistence',
+@@ -664,6 +665,15 @@ const SERVICE_ROLES: ServiceRole[] = [
+     consumers: ['tool-cordis'],
+     note: 'Registers host inspect providers, mirrors the client provider manifest, and routes client queries through the dynamic Cordis transport.',
+   },
++  {
++    key: 'permission',
++    pkg: 'permission',
++    title: 'Tool-call permission evaluation seam',
++    mode: 'seam',
++    implementations: ['permission-engine'],
++    consumers: ['tool-permission-guard'],
++    note: 'The Service Definition declares evaluate and policy types; the engine package implements adjudication and ships in the base bundle, while the guard package implements execution gating and remains an opt-in consumer.',
++  },
+ ]
+ 
+ function generatedHeader(title: string): string[] {
+######## scripts/project-doc-site.spec.ts
+diff --git a/scripts/project-doc-site.spec.ts b/scripts/project-doc-site.spec.ts
+index f7062c2659..1d2a25726f 100644
+--- a/scripts/project-doc-site.spec.ts
++++ b/scripts/project-doc-site.spec.ts
+@@ -450,7 +450,7 @@ describe('docsPages locale routes', () => {
+     const translated = rootPages.filter(page => page.contentLocale === 'zh-CN')
+     const fallbacks = rootPages.filter(page => page.contentLocale === 'en-US')
+ 
+-    expect(translated).toHaveLength(46)
++    expect(translated).toHaveLength(47)
+     expect(translated.every(page => page.source.endsWith('.zh.md'))).toBe(true)
+     expect(fallbacks).toEqual([])
+   })
+######## tsconfig.host.json
+diff --git a/tsconfig.host.json b/tsconfig.host.json
+index 561cee9b17..55bba10549 100644
+--- a/tsconfig.host.json
++++ b/tsconfig.host.json
+@@ -303,6 +303,9 @@
+     { "path": "./packages/webhook/webhook" },
+     { "path": "./packages/webhook/webhook-github" },
+     { "path": "./packages/todo/tool-todo" },
++    { "path": "./packages/permission/permission" },
++    { "path": "./packages/permission/permission-engine" },
++    { "path": "./packages/permission/tool-permission-guard" },
+     { "path": "./packages/plan/plan-mode" },
+     { "path": "./packages/preset/agent-presets" },
+     { "path": "./packages/preset/persona" },
+######## website/docs.ts
+diff --git a/website/docs.ts b/website/docs.ts
+index b4d575a576..5f15d75be4 100644
+--- a/website/docs.ts
++++ b/website/docs.ts
+@@ -327,6 +327,7 @@ const subsystemGroups = [
+   ['?????', 'Policy and interaction', [
+     ['approval.md', '??', 'Approvals'],
+     ['permission-presets.md', '????', 'Permission presets'],
++    ['permission.md', '??', 'Permissions'],
+     ['sandbox.md', '??', 'Sandboxing'],
+     ['plan.md', '????', 'Plan mode'],
+     ['user-questions.md', '????', 'User interaction'],

@@ -1,0 +1,24 @@
+﻿=== V5.4 eslint linted-file count ===
+date: 2026-08-29T23:52:45
+linted files: 0 ; with messages: 0
+
+=== V5.5 composition-smoke ===
+exit: 0
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply is callable and side-effect-free
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply is callable and side-effect-free
+PASS composition-smoke
+
+=== V5.6 run-tests (plain-node vitest-equivalent) ===
+exit: 0
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 18 passed, 0 failed, 18 total, 32 ms
+RESULT: PASS run-tests (0 failures)
+

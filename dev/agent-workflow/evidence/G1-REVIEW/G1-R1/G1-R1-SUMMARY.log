@@ -1,0 +1,65 @@
+# G1 Gate — Reviewer G1-R1 Final Summary
+
+- date: 2026-08-30 (review session)
+- reviewer: G1-R1 (independent, blind; no SESSION_ROUTER_LOG / graph.yaml / evidence other than provenance manifest; no cross-reviewer reference)
+- review target: int tip `ac2be32` (= review target `384a645d5df23425b5bbe0c632ca8400fae7e419` + 1 orchestration-only commit, verified ancestor); P1 range c61a2f48..384a645d
+- my worktree: `.worktrees/G1-R1` @ 384a645d (detached; only install/build site)
+- evidence root: `.worktrees/G1-R1/dev/g1-review/G1-R1/`
+
+## Per-criterion verdicts (DevPlan §13.6 frozen criteria, 1:1)
+
+### G1-1 — dsh-agent-team is a separate Git repository — PASS
+- `V12-a-repo-independence.log`: independent remote `git@github.com:ArmourPiercer1/dsh-agent-team.git`; no `.gitmodules`; 0 tracked files under `references/`.
+- `V12-c-nested-and-workspace.log`: nested legacy repo (`references/deepseek-harness`) present as untracked reference, not a submodule, not tracked.
+- `V1-worktree.log`: my detached worktree created at 384a645d.
+
+### G1-2 — legacy branch is not a dependency — PASS
+- `V12-b-legacy-refs.log`: zero refs to `a3ab319927` / `packages/team` / `deepseek-harness` anywhere under `packages/` or `scripts/`.
+- `V12-d-package-deps.log`: no `git+` / `file:` / legacy package deps in any package.json; workspace links only.
+- `packages/legacy` is an empty slot (package.json + README only) — verified during V5 inventory.
+
+### G1-3 — plugin skeleton builds independently — PASS
+- `V5-a-test-inventory.log`: 8 packages, test inventory.
+- `V5-b-tsc-builds.log`: `pnpm install --ignore-scripts` exit 0 (10 projects); all 8 tsc builds exit 0 (tsc 6.0.3); plugin entries exist (`packages/runtime/dist/plugin/host.js`, `packages/client/dist/plugin/client.js`, names `dsh-agent-team` / `dsh-agent-team-client`).
+- `V5-c-eslint.log`: eslint 40 files, 0 findings, exit 0 (non-vacuous; workdir gotcha fixed).
+- `V5-d-smoke-and-tests.log`: composition-smoke PASS (both built entries import, names correct, side-effect-free apply); 18/18 tests green on plain-node runner.
+- `V5-e-vitest-pnpm.log` / `V5-f-vitest-direct.log`: vitest unusable in sandbox (vite 8 spawn EPERM — environment limitation, not a code fault); runner equivalence independently audited (8 test files all top-level `packages/*/test/*.test.ts`; matcher usage exactly {toBe, toEqual, toBeGreaterThan, toThrow} each with .not).
+
+### G1-4 — plugin composes with pristine upstream — PASS
+- `V6-boot-pristine.log` (+ UTF-8 twin): pristine boot success `dsh web: http://127.0.0.1:3181/?token=...`; probes 401/404.
+- `V7-dump-config.log`: two `file://` rows composed and attributed to the public patch layer (`# == ...\references\.dsh-test-g1r1\profiles\web\cordis.patch.yml`, lines 525-531) — composition via public seam only.
+- `V7-boot-mounted.log` / `-utf8.log`: mounted boot success line L1 (`dsh web: http://127.0.0.1:3181/?token=R3aD...`); probes 401/404 identical to pristine.
+- `V8-boot-broken(-utf8).log`: negative control — broke one row's path → fresh boot EXIT=1, `ERR_MODULE_NOT_FOUND`, `dsh: plugin tree failed to load: ... failed to import loader entry dsh-agent-team-host` (fail-loud proven; rows are genuinely imported/activated).
+- `V8b-boot-restored(-utf8).log`: restored row → boot success again (`token=3cyA...`).
+- Both entries are P1-T4 empty skeletons by design (`apply` intentionally no-op); entry import + activation success is the correct G1 proof depth.
+
+### G1-5 — pristine upstream remains byte/source clean after test — PASS
+- `V4-byte-clean-pre.log`: pre — status/diff empty, HEAD cd5ef814 match.
+- `V9-byte-clean-post-and-scanner.log`: post — status/diff empty, HEAD unchanged (cd5ef8148158c3a752a658978873241fdf8e2bbc), scanner re-run exit 0 / 0 findings.
+
+### G1-6 — active downstream host needs no Team core/api/client/bundle patch — PASS
+- `V10-a-scanner-and-git-downstream.log`: downstream `.worktrees/P1-int-downstream` @ 02f3094c (branch host/downstream-int-20260829): git clean; zero-core scanner exit 0 (0 findings, 275 pkgs, node-pty INFO = upstream's own); pnpm-workspace.yaml pure LF (CRLF count 0) with only `node-pty` patchedDependencies.
+- `V10-b-boot-downstream-pristine(-utf8).log`: downstream host boots on 3191 (`token=mSfl...`).
+- `V10-c-dump-config-downstream.log`: same two `file://` rows composed on the downstream, attributed to its patch layer (lines 527-533).
+- `V10-d-boot-downstream-mounted(-utf8).log`: downstream mounted boot success (`token=p5z0...`); probes 401/404; after stop: port free, git status still empty, HEAD unchanged.
+- Team capability mounted purely via the public `cordis.patch.yml` `file://` seam; zero modifications to the downstream host tree at any point.
+
+### G1-7 — unrelated fork features preserved per provenance manifest — PASS
+- Source of truth: `dev/agent-workflow/evidence/provenance/file-manifest.json` (only permitted evidence file): baseline upstream cd5ef814 / legacy a3ab319927; 470 files; classes TEAM_OWNED 315, GENERATED_FROM_TEAM 64, GENERIC_FORK_CAPABILITY 70, MIXED 11, UNRELATED_FORK_FEATURE 10.
+- `V11-a-manifest-dispositions.log`: dispositions + per-class file lists + MIXED hunk routing.
+- `V11-c-downstream-name-status.txt` + `V11-b-manifest-vs-diff.log`: downstream diff (cd5ef814..HEAD, 3 commits: T1 replay + T3 preservation + int) = 92 files = all 91 manifest non-Team files (GENERIC 70/70, UNRELATED 10/10, MIXED 11/11, 0 status mismatches) + `pnpm-lock.yaml` only. Zero TEAM_OWNED files in diff; zero unmanifested files.
+- `pnpm-lock.yaml` (manifest: GENERATED_FROM_TEAM | GENERATED_REVERT, "machine-derived from the package manifests"): verified regenerated artifact — 0 `packages/team` refs; all 21 case-insensitive "team" strings are upstream-derived `packages/experimental/agent-team*` packages (all five present in pristine upstream cd5ef814).
+- `V11-e-blob-preservation.log`: all 80 single-class non-Team files (GENERIC 70 + UNRELATED 10) byte-identical (blob SHA) between frozen legacy ref a3ab319927 and downstream HEAD.
+- `V11-f-mixed-spotcheck.log` (initial regex pass; 2 false positives diagnosed) + `V11-f2-mixed-spotcheck-exact.log`: exact-line checks on 3 MIXED files — non-Team hunks present (permission/decision, permission.md rows), all fork-added Team lines absent (team/control-decision, team/control-request, team/member-bound, bare team/message, team/progress, team.md row); upstream-derived agent-team.md row intact.
+
+## Residuals / notes (non-blocking)
+1. Review-tooling gap (mine, not the code under review): scanner C2-yaml entry regex does not handle CRLF yaml (header line matches, entry lines silently skipped). Compensated by manual line-ending verification on both host trees — both `pnpm-workspace.yaml` are pure LF and parsed correctly (node-pty INFO emitted from yaml in both trees).
+2. Sandbox environment limitation: node-originated piped-stdio child spawn → EPERM (vitest/vite/esbuild/tsx unusable). Equivalent plain-node runner used and independently audited; node v24 native .ts for scripts. Not a criterion failure per protocol (equivalent machine proofs exist).
+3. Latent gap in my `run-tests.mjs` discovery: nested test subdirs under `packages/*/test/` would be skipped (top-level only). Audited: all 8 test files are top-level.
+4. `apps/web/dist` not buildable in sandbox → HTTP probes (401/404 token/route gating) used as boot-sanity supplement; identical pristine vs mounted. Known non-criterion.
+5. V11-f initial check had regex false positives (`team\.md` matched `agent-team.md`; `team/message` matched `team/message/delivered`); corrected exact-line checks in V11-f2 are authoritative.
+
+## Overall
+All seven frozen G1 criteria PASS with machine-level, independently re-executed evidence. No red lines touched (no upstream modification, no push, no escalation, no commits; stable instance :3080 / D:\deepseek-harness untouched; downstream + main worktrees used read-only).
+
+Verdict: 通过

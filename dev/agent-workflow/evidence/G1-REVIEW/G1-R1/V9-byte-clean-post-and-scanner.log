@@ -1,0 +1,28 @@
+=== V9 byte-clean POST check + scanner re-run (test-use, read-only git) ===
+date: 2026-08-30T00:06:37.9435420+08:00
+--porcelain status (empty expected):
+  (empty)
+--- diff (empty expected):
+  (empty)
+HEAD: cd5ef8148158c3a752a658978873241fdf8e2bbc
+expected: cd5ef8148158c3a752a658978873241fdf8e2bbc
+match: True
+
+--- zero-core scanner re-run (post all boots) ---
+cmd: node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G1-R1\scripts\verify-zero-core.mjs --host D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use --json
+exit code: 0 (expected 0)
+--- output ---
+verify-zero-core: host=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+INFO third-party patched dependency "node-pty" at D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\pnpm-workspace.yaml [patchedDependencies] (upstream's own dependency patching; not a Team rewrite)
+INFO third-party patch file D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\patches\node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "plugins": [],
+  "hostPackages": 272,
+  "findings": [],
+  "infoCount": 2,
+  "pass": true
+}
+RESULT: PASS verify-zero-core (0 findings)
+RESULT: PASS post byte-clean + scanner (0 findings)

@@ -1,0 +1,89 @@
+# G1-R2 V11 evidence log — G1-7 (unrelated fork features preserved per provenance manifest)
+# Reviewer: G1-R2 | Target: downstream host .worktrees/P1-int-downstream @ 02f3094c593163c9506710431555a4514a51c19a
+# Base: upstream cd5ef8148158c3a752a658978873241fdf8e2bbc | Legacy fork: references/deepseek-harness @ a3ab31992762c5d6560797eabc7e0885a9320ade
+# Manifest: dev/agent-workflow/evidence/provenance/file-manifest.json (470 files: 315 TEAM_OWNED, 70 GENERIC_FORK_CAPABILITY, 64 GENERATED_FROM_TEAM, 11 MIXED, 10 UNRELATED_FORK_FEATURE)
+
+## [V11-1] Object availability & topology (read-only git)
+- downstream rev-parse HEAD = 02f3094c593163c9506710431555a4514a51c19a; status --porcelain = clean
+- downstream cat-file -e cd5ef814... = ok; merge-base(cd5ef814, HEAD) = cd5ef814  (HEAD descends from pinned upstream base)
+- legacy tree rev-parse HEAD = a3ab319927...; status clean; cat-file -e cd5ef814 = ok
+- lane topology (downstream branch -vv): host/downstream-clean-20260829 (T1 lane, 57fa482f3c) +
+  host/unrelated-features-20260829 (T3 lane, 74ac91e5f0) merged by 02f3094c "file-disjoint lanes"
+
+## [V11-2] Full-tree blob classification (probe-v11-classify.mjs; trees: base=8953, downstream=9017, legacy=9263 files)
+Replay rules applied per TaskDoc P1-T1/T2/T3 + DevPlan §5 vocabulary (KEEP=保留在原fork; SPLIT=独立generic capability;
+REFERENCE_ONLY=不进入新production source; GENERATED_REVERT=恢复upstream ownership; Team hunks 不进入新 host):
+- KEEP(44) + UNRELATED(10) + GENERIC-SPLIT-empty-hunks(13)  => 67 files must equal LEGACY blob
+- REFERENCE_ONLY-generic(13) + TEAM_OWNED(315) + GENERATED_FROM_TEAM(64) => must equal BASE blob
+- MIXED(11) => hunk-level check
+OK breakdown: base:identical=132, legacy:identical=67, base:absent=246, MIXED pending-hunkcheck=8
+EXTRA (downstream change not in manifest): added=0 deleted=0 changed=0
+=> Every one of the 92 downstream-changed files is manifest-driven; every manifest file is in its rule-mandated state, except the 17 items below.
+
+## [V11-3] The 17 flagged items, each resolved
+(1-13) 13x "GENERIC/REFERENCE_ONLY status-A present in downstream":
+    12x .agents/notes/implemented/{architecture,bug-fix,feature}/*.md(.zh) fork notes (permission seam, layered rule
+    loading, tool-permission-guard, model-picker-family-grouping, ...) + apps/web/tests/expected/models-settings/fetch-grouped.expected.md
+    => SUPERSET-RETENTION, not a preservation miss: all 13 are byte-identical to legacy. DevPlan §5 defines
+    REFERENCE_ONLY against the NEW production source ("不进入新 production source"), not against the fork host.
+    fetch-grouped.expected.md is REQUIRED by the replayed SPLIT test apps/web/tests/models-settings.e2e.ts
+    (GENERIC/SPLIT, blob-identical to legacy) — dropping the expectation would break the host test suite.
+    Team-word scan (probe-v11-final.mjs): 10/13 files contain descriptive team references (e.g. "The team side
+    supplies the three sources", dsh-team-local parsing member frontmatter) — documentation prose only; zero
+    team code/packages/patches. model-picker notes + fetch-grouped.expected.md: 0 team-word lines.
+(14) .gitignore "MIXED downstream == legacy": FALSE ALARM — its single hunk is kind=OTHER (non-TEAM), so
+    full replay => downstream==legacy is the CORRECT state. Verified legacy base..legacy diff = exactly 1 hunk
+    and the downstream hunk body matches the manifest description line-for-line.
+(15) pnpm-lock.yaml "base MISMATCH": GENERATED_FROM_TEAM/GENERATED_REVERT, status M. Regeneration is REQUIRED
+    because replayed permission packages join the workspace. Importer analysis (probe-v11-lockfile.mjs):
+    base=262 importers, downstream=265 (= base + exactly 3: packages/permission/{permission,permission-engine,
+    tool-permission-guard}), legacy=273 (= base + 3 permission + 8 team). The 8 legacy-added importers absent
+    from downstream are EXACTLY the 8 team packages (bundle/team, client/ui-team, team/{team,team-channels,
+    team-local,team-projection,team-runtime}, tool-team). Diff = pure additions (0 removed lines). Broad
+    team-name scan parity: base=21 lines, downstream=21 lines, 0 downstream lines not in base (all 21 are
+    upstream's own packages/experimental/agent-team*, present in base lockfile).
+(16-17) tsconfig.host.json + scripts/project-doc-site.spec.ts "MIXED all-TEAM changed vs base": CORRECT
+    PARTIAL TRANSPLANTS of one-hunk-both-kinds hunks (manifest notes say so):
+    - tsconfig.host.json: downstream adds exactly the 3 permission composite refs (permission, permission-engine,
+      tool-permission-guard); the 3 team refs from the same legacy hunk are excluded.
+    - project-doc-site.spec.ts: legacy changed locale count 46->48 (team.md + permission.md); downstream changed
+      46->47 (permission.md only). Cross-checked: docs/subsystems/permission.md present downstream (absent in base),
+      docs/subsystems/team.md ABSENT downstream, docs/subsystems/agent-team.md unchanged (present in base).
+
+## [V11-4] Hunk-level equivalence for all 11 MIXED files (probe-v11-hunks.mjs + raw diffs)
+Rule: downstream diff must equal the subsequence of non-TEAM legacy -U0 hunks (manifest hunk indices, 1-based),
+plus content-level transplants of the 4 one-hunk-both-kinds hunks (no team lines may enter).
+- docs/subsystems/README.md: keep h2 (PERMISSION) — oldSide SAME body SAME. PASS
+- docs/subsystems/README.zh.md: keep h2 (PERMISSION) — SAME/SAME. PASS
+- packages/core/session/src/known-event-types.ts: keep h1 (PERMISSION), drop h2-h4 (TEAM) — SAME/SAME. PASS
+- scripts/gen-cordis-catalog.ts: keep h4 (PERMISSION) exactly + transplant ONLY the permission line from mixed h1
+  (SERVICE_PAGE: permission:'permission.md') — raw diff shows 8 added lines, zero team lines. PASS
+- scripts/gen-doc-graphs.ts: keep h2 (PERMISSION GROUP_ORDER) SAME/SAME + transplant ONLY the permission
+  SERVICE_ROLES entry from mixed h3 (raw diff: 9 added lines, no team/teamControl/teamProjection entries). PASS
+- scripts/gen-tool-catalog.ts: keep h3 (noModelTools field), h4 (tool-permission-guard TOOL_PACKAGES entry),
+  h7 (assertToolsHarvested noModelTools guard) all exactly at oldSide -162,0 / -411,0 / -697,1 + transplant ONLY
+  the ToolPermissionGuard import from mixed h2 (team imports excluded). PASS
+- tsconfig.base.json: keep h4 (permission/permission-engine /invariant aliases @-364,0) and h6
+  (tool-permission-guard /invariant @-512,0) exactly + transplant ONLY the 4 permission path aliases from mixed h2
+  (team aliases dsh-team*/dsh-tool-team excluded). PASS
+- website/docs.ts: keep h2 (PERMISSION doc page) SAME/SAME; h1 (team.md page) excluded. PASS
+- .gitignore, tsconfig.host.json, project-doc-site.spec.ts: see [V11-3] (14)-(17). PASS
+=> 11/11 MIXED files carry exactly the non-TEAM content; zero team hunks entered the host.
+
+## [V11-5] UNRELATED_FORK_FEATURE (10 files, T3 lane) — all blob-identical to legacy (within the 67 legacy:identical)
+    AGENTS.md, ENVIRONMENTS.md, PLUGIN_DEV_GUIDE.md, learning-path-zh.md, the two .agents plugin-dev-guide notes,
+    docs/subsystems/subagent.zh.md, packages/session/session-persistence-jsonl/src/format.ts (backward seq-scan),
+    packages/web/tool-web/src/turndown-plugin-gfm.d.ts, scripts/translation-pairing.ts
+=> model-UI / unrelated fork features preserved byte-exactly; none entered the vNext repo (G1-2 [V12-8]/[V12-9]).
+
+## [V11-6] Team-purity summary (feeds G1-6 as well)
+- 315 TEAM_OWNED files: all at base state (identical or absent) — zero team files in host.
+- 64 GENERATED_FROM_TEAM artifacts: all reverted to base state, except pnpm-lock.yaml which was REGENERATED to the
+  correct new-host state (base + 3 permission packages; see 15).
+- 0 unexplained tree changes; 0 team importers in lockfile; 0 team hunks in any MIXED file.
+
+## RESULT
+G1-7: PASS — unrelated fork features preserved per the provenance manifest (10/10 UNRELATED + 70/70 GENERIC at
+rule-mandated states; 11/11 MIXED hunk-exact; no team content in the host).
+Observations (non-blocking, see supplements): 13-file REFERENCE_ONLY superset retention (one test-integrity
+required), 4 coarse one-hunk-both-kinds manifest labels resolved by content-level transplants, scanner CRLF gap.

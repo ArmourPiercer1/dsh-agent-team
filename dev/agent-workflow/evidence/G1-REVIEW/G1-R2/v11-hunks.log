@@ -1,0 +1,170 @@
+﻿
+== docs/subsystems/README.md ()
+   legacy hunks=2 keep=2 downstream hunks=1 expected=1
+   hunk 1: oldSide=SAME body=SAME
+
+== docs/subsystems/README.zh.md ()
+   legacy hunks=2 keep=2 downstream hunks=1 expected=1
+   hunk 1: oldSide=SAME body=SAME
+
+== packages/core/session/src/known-event-types.ts ()
+   legacy hunks=4 keep=1 downstream hunks=1 expected=1
+   hunk 1: oldSide=SAME body=SAME
+
+== scripts/gen-cordis-catalog.ts (h1 is one-hunk-both-kinds (partial transplant expected))
+   legacy hunks=4 keep=4 downstream hunks=2 expected=1
+   COUNT MISMATCH (down=2 want=1) — needs manual review
+   hunk 1: oldSide=DIFF down(-125,0) want(-663,0) body=DIFF
+      down: +  permission: 'permission.md',
+      want: +  CompiledPolicy: 'compiled permission policy handle is owned by packages/permission/permission/src/types.ts'
+      down: <none>
+      want: +  RuleSource: 'authored permission rule input is owned by packages/permission/permission/src/index.ts',
+      down: <none>
+      want: +  PermissionContext: 'permission evaluation inputs are owned by packages/permission/permission/src/types.ts',
+      down: <none>
+      want: +  PermissionDecision: 'permission evaluation result is owned by packages/permission/permission/src/types.ts',
+      down: <none>
+      want: +  ToolCallView: 'minimal tool-call view is owned by packages/permission/permission/src/types.ts',
+      down: <none>
+      want: +  LoadRuleLayersOptions: 'rule-layer load inputs are owned by packages/permission/permission/src/types.ts',
+      down: <none>
+      want: +  LoadedRuleLayers: 'rule-layer load result is owned by packages/permission/permission/src/types.ts',
+      down: <none>
+      want: +  TeamMemberDefinition: 'team member definition is owned by packages/team/team/src/types.ts',
+      down: <none>
+      want: +  TeamMemberId: 'branded team member identity is owned by packages/team/team/src/brand.ts',
+      down: <none>
+      want: +  TeamControlDecision: 'leader control decision is owned by packages/team/team-channels/src/control-coordinat
+      down: <none>
+      want: +  TeamControlRequestData: 'teammate control request payload is owned by packages/team/team-channels/src/contr
+   hunk 2: EXTRA in downstream: @@ -663,0 +665,7 @@
+      +  CompiledPolicy: 'compiled permission policy handle is owned by packages/permission/permission/src
+      +  RuleSource: 'authored permission rule input is owned by packages/permission/permission/src/index.
+      +  PermissionContext: 'permission evaluation inputs are owned by packages/permission/permission/src/
+      +  PermissionDecision: 'permission evaluation result is owned by packages/permission/permission/src/
+      +  ToolCallView: 'minimal tool-call view is owned by packages/permission/permission/src/types.ts',
+      +  LoadRuleLayersOptions: 'rule-layer load inputs are owned by packages/permission/permission/src/ty
+
+== scripts/gen-doc-graphs.ts ()
+   legacy hunks=3 keep=2 downstream hunks=2 expected=1
+   COUNT MISMATCH (down=2 want=1) — needs manual review
+   hunk 1: oldSide=SAME body=SAME
+   hunk 2: EXTRA in downstream: @@ -666,0 +668,9 @@
+      +  {
+      +    key: 'permission',
+      +    pkg: 'permission',
+      +    title: 'Tool-call permission evaluation seam',
+      +    mode: 'seam',
+      +    implementations: ['permission-engine'],
+
+== scripts/gen-tool-catalog.ts ()
+   legacy hunks=7 keep=3,4,7 downstream hunks=4 expected=3
+   COUNT MISMATCH (down=4 want=3) — needs manual review
+   hunk 1: oldSide=DIFF down(-67,0) want(-162,0) body=DIFF
+      down: +import * as ToolPermissionGuard from '@deepseek-ai/dsh-tool-permission-guard'
+      want: +  /**
+      down: <none>
+      want: +   * Package contributes no model-facing tool (e.g. a `tools/pre-execute`
+      down: <none>
+      want: +   * guard). Skips {@link assertToolsHarvested}; the note documents the role.
+      down: <none>
+      want: +   */
+      down: <none>
+      want: +  noModelTools?: boolean
+   hunk 2: oldSide=DIFF down(-162,0) want(-411,0) body=DIFF
+      down: +  /**
+      want: +  {
+      down: +   * Package contributes no model-facing tool (e.g. a `tools/pre-execute`
+      want: +    pkg: '@deepseek-ai/dsh-tool-permission-guard',
+      down: +   * guard). Skips {@link assertToolsHarvested}; the note documents the role.
+      want: +    dir: 'tool-permission-guard',
+      down: +   */
+      want: +    source: 'packages/permission/tool-permission-guard/src/index.ts',
+      down: +  noModelTools?: boolean
+      want: +    requires: ['ctx.tools (pre-execute listener)', 'ctx.permission via ctx.get'],
+      down: <none>
+      want: +    writes: ['permission/decision audit events in the acting session log'],
+      down: <none>
+      want: +    noModelTools: true,
+      down: <none>
+      want: +    async mount(ctx) {
+      down: <none>
+      want: +      await ctx.plugin(ToolPermissionGuard, {
+      down: <none>
+      want: +        mode: 'default',
+      down: <none>
+      want: +        rules: [],
+      down: <none>
+      want: +        pathBases: { settingsDir: '.', homeDir: '.', cwd: '.' },
+      down: <none>
+      want: +      })
+      down: <none>
+      want: +    },
+      down: <none>
+      want: +    note:
+      down: <none>
+      want: +      'A `tools/pre-execute` guard that applies `ctx.permission.evaluate` to the main agent and single delega
+      down: <none>
+      want: +  },
+   hunk 3: oldSide=DIFF down(-411,0) want(-697,1) body=DIFF
+      down: +  {
+      want: -      assertToolsHarvested(entry, schemas.length)
+      down: +    pkg: '@deepseek-ai/dsh-tool-permission-guard',
+      want: +      if (!entry.noModelTools) assertToolsHarvested(entry, schemas.length)
+      down: +    dir: 'tool-permission-guard',
+      want: <none>
+      down: +    source: 'packages/permission/tool-permission-guard/src/index.ts',
+      want: <none>
+      down: +    requires: ['ctx.tools (pre-execute listener)', 'ctx.permission via ctx.get'],
+      want: <none>
+      down: +    writes: ['permission/decision audit events in the acting session log'],
+      want: <none>
+      down: +    noModelTools: true,
+      want: <none>
+      down: +    async mount(ctx) {
+      want: <none>
+      down: +      await ctx.plugin(ToolPermissionGuard, {
+      want: <none>
+      down: +        mode: 'default',
+      want: <none>
+      down: +        rules: [],
+      want: <none>
+      down: +        pathBases: { settingsDir: '.', homeDir: '.', cwd: '.' },
+      want: <none>
+      down: +      })
+      want: <none>
+      down: +    },
+      want: <none>
+      down: +    note:
+      want: <none>
+      down: +      'A `tools/pre-execute` guard that applies `ctx.permission.evaluate` to the main agent and single delega
+      want: <none>
+      down: +  },
+      want: <none>
+   hunk 4: EXTRA in downstream: @@ -697,1 +720,1 @@
+      -      assertToolsHarvested(entry, schemas.length)
+      +      if (!entry.noModelTools) assertToolsHarvested(entry, schemas.length)
+
+== tsconfig.base.json ()
+   legacy hunks=7 keep=4,6 downstream hunks=3 expected=2
+   COUNT MISMATCH (down=3 want=2) — needs manual review
+   hunk 1: oldSide=DIFF down(-74,0) want(-364,0) body=DIFF
+      down: +      "@deepseek-ai/dsh-permission": ["./packages/permission/permission/src/index.ts"],
+      want: +      "@deepseek-ai/dsh-permission/invariant": ["./packages/permission/permission/src/invariant.ts"],
+      down: +      "@deepseek-ai/dsh-permission/types": ["./packages/permission/permission/src/types.ts"],
+      want: +      "@deepseek-ai/dsh-permission-engine/invariant": ["./packages/permission/permission-engine/src/invariant
+      down: +      "@deepseek-ai/dsh-permission-engine": ["./packages/permission/permission-engine/src/index.ts"],
+      want: <none>
+      down: +      "@deepseek-ai/dsh-tool-permission-guard": ["./packages/permission/tool-permission-guard/src/index.ts"],
+      want: <none>
+   hunk 2: oldSide=DIFF down(-364,0) want(-512,0) body=DIFF
+      down: +      "@deepseek-ai/dsh-permission/invariant": ["./packages/permission/permission/src/invariant.ts"],
+      want: +      "@deepseek-ai/dsh-tool-permission-guard/invariant": ["./packages/permission/tool-permission-guard/src/i
+      down: +      "@deepseek-ai/dsh-permission-engine/invariant": ["./packages/permission/permission-engine/src/invariant
+      want: <none>
+   hunk 3: EXTRA in downstream: @@ -512,0 +519,1 @@
+      +      "@deepseek-ai/dsh-tool-permission-guard/invariant": ["./packages/permission/tool-permission-g
+
+== website/docs.ts ()
+   legacy hunks=2 keep=2 downstream hunks=1 expected=1
+   hunk 1: oldSide=SAME body=SAME

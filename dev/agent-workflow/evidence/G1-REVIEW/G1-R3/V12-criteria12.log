@@ -1,0 +1,195 @@
+=== V12 criteria 1/2 ? main repo (read-only) 08/30/2026 00:16:20 ===
+--- git remote -v ---
+origin	git@github.com:ArmourPiercer1/dsh-agent-team.git (fetch)
+origin	git@github.com:ArmourPiercer1/dsh-agent-team.git (push)
+--- .gitmodules exists: False
+--- git config --get-regexp submodule (none expected): 
+--- main branch/HEAD: int/P1-host-foundation @ ac2be3258072dce8c16ee9b13d48afee626a39a2
+--- references/deepseek-harness has own .git: True
+--- is references/deepseek-harness tracked by main repo (ls-files): 
+--- git check-ignore references/deepseek-harness: 
+check-ignore exit: 0
+--- git check-ignore references/deepseek-harness-test-use: 
+check-ignore exit: 0
+--- references dir listing: 
+
+Name                      Mode  
+----                      ----  
+.dsh-test                 d-----
+.dsh-test-downstream      d-----
+.dsh-test-g1r1            d-----
+.dsh-test-g1r1-downstream d-----
+.dsh-test-g1r2            d-----
+.dsh-test-g1r2-downstream d-----
+.dsh-test-g1r3            d-----
+.dsh-test-g1r3-downstream d-----
+deepseek-harness          d-----
+deepseek-harness-test-use d-----
+p1t3-scratch              d-----
+
+
+
+--- tracked paths under references/deepseek-harness: 0
+--- tracked paths under references/ (all): 0
+--- packages/legacy contents: 
+\packages\legacy\package.json
+\packages\legacy\README.md
+--- grep legacy SHA a3ab319927 in packages/ scripts/ docs/ (tracked text): 
+docs/TEST_METHODS.md
+docs/migration/legacy-behavior-inventory.md
+docs/migration/reuse-map.md
+--- grep packages/team refs: 
+docs/migration/legacy-behavior-inventory.md:16:| G1 | **memberId ?? runtime identity**??????? id ??????????? | `packages/team/team/src/types.ts`?`TeamMemberDefinition.id: TeamMemberId`?payload ??? `memberId` ????`packages/team/team-runtime/src/orchestrator.ts`?activation map ? memberId ????`packages/team/tool-team/src/tool-delegate.ts`?`team.get(memberId)` ????? |
+docs/migration/legacy-behavior-inventory.md:17:| G2 | **Team SessionEvent ???????**?`team/*` ????? `SessionEventMap`?session log ?? team ??????? | `packages/team/team/src/events.ts`?declaration merging?`team/member-bound`?`team/progress`?`team/control-request`?`team/control-decision`?`team/message`??`packages/core/session/src/known-event-types.ts`?9 ? `team/*` ???????`packages/api/session-controller/src/client/sessions/team-mirror.ts` |
+docs/migration/legacy-behavior-inventory.md:18:| G3 | **continuable subagent ?? Member ??**?teammate ? spawn/follow-up/message/interrupt/settle ??? `subagents.startContinuable/followup/reportFrom/interrupt` + `registerContinuableSetup` | `packages/team/tool-team/src/tool-delegate.ts`?`deliverFollowup`?`subagents.interrupt`??`packages/team/tool-team/src/tool-send-message.ts`?`deliverTeamMessage`??`packages/team/team-runtime/src/index.ts`?`registerContinuableSetup`? |
+docs/migration/legacy-behavior-inventory.md:19:| G4 | **cwd/roster ?? authority**?workspace cwd ?? `.dsh/teammates/` + `$DSH_HOME/teammates/` ???? roster ??? team ?????subagent catalog ? `team:` label ?????"team ???"?? | `packages/team/team-local/src/discovery.ts`?`discoverTeamMembers` ? `$DSH_HOME/teammates`?`.dsh/teammates`??`packages/team/team-local/src/index.ts`?`resolveInitialWorkspace` ? `$DSH_CWD`/`process.cwd()`??`packages/client/ui-workspace/src/client/tree.ts`?`teamChildSessionIds` ? catalog label `team:` ??????`packages/team/team-projection/src/index.ts`?`rosterFor(workspacePath)`? |
+docs/migration/legacy-behavior-inventory.md:20:| G5 | **process-memory TeamRegistry / activation / pending ??**???????activation ??pending control ??progress ??????? Map????? | `packages/team/team/src/index.ts`?`TeamRegistry.definitions`??`packages/team/team-runtime/src/orchestrator.ts`?`byLeader` Map??`packages/team/team-channels/src/control-coordinator.ts`?`byLeader` Map??`packages/team/team-channels/src/progress-store.ts`?`byLeader` Map??`packages/team/team-runtime/src/rule-layers.ts`?`recoveredRuleLayers` Map? |
+docs/migration/legacy-behavior-inventory.md:21:| G6 | **one-member-one-activation ???**??? leader ??? teammate ?????? in-flight delegation | `packages/team/team-runtime/src/orchestrator.ts`?`recordActivation` ? `status === 'running'` ?? throw??`packages/team/tool-team/src/tool-delegate.ts`???? throw ?? "already running" ??? |
+docs/migration/legacy-behavior-inventory.md:22:| G7 | **leader session = team ??**?teamId ? leaderSessionId???? team ??? | `packages/team/team-projection/src/types.ts`?`TeamView.teamId` ?? "always the leader session id (no separate team entity)"??`packages/team/tool-team/src/index.ts`?`leaderId = session.header.parentSession ?? session.id`? |
+docs/migration/legacy-behavior-inventory.md:31:- `packages/team/tool-team/src/tool-delegate.ts` ? ???? + `execute`?L104?L310?+ `deliverFollowup`?L46?L57?+ `pathExists`?L24?L32?
+docs/migration/legacy-behavior-inventory.md:32:- `packages/team/tool-team/src/index.ts` ? `registerDelegateTool` ???`session/event` ??? `tool/call` ?? `updateActivity`?? `user/message(source.kind='subagent-settled')` ?? `markSettled`?L36?L57?
+docs/migration/legacy-behavior-inventory.md:33:- `packages/team/team-runtime/src/orchestrator.ts` ? `recordActivation/markSettled/markDisposed/get/findByChildSession/updateActivity`
+docs/migration/legacy-behavior-inventory.md:34:- `packages/team/team/src/index.ts` ? `TeamRegistry.get/getLeader/effectiveToolPolicy`
+docs/migration/legacy-behavior-inventory.md:35:- `packages/team/team-runtime/src/rule-layers.ts` ? `resolveRuleLayerPaths`
+docs/migration/legacy-behavior-inventory.md:38:- `effectiveToolPolicy(member)`?`packages/team/team/src/index.ts` L93?L130??????? role ?? `DEFAULT_LEADER_TOOLS`/`TEAMMATE_DENIED_TOOLS` ???? allow/deny ? ????????????
+docs/migration/legacy-behavior-inventory.md:56:- `packages/team/tool-team/src/tool-delegate.ts` ? `deliverFollowup`?L46?L57??`action==='follow_up'` ???L168?L216??persistent ?????L219?L246?
+docs/migration/legacy-behavior-inventory.md:57:- `packages/team/tool-team/src/index.ts` ? follow-up ? `recordActivation` ??? running
+docs/migration/legacy-behavior-inventory.md:80:- `packages/team/tool-team/src/tool-send-message.ts` ? `deliverTeamMessage`?L50?L89???????`memberBindingOf`?L17?L22???? session ??? `team/member-bound`???? `execute`?L98?L166?
+docs/migration/legacy-behavior-inventory.md:84:- ?? payload ?? `{from, to, message}`?`packages/team/team/src/types.ts` `TeamMessageData`?? contracts ???B??
+docs/migration/legacy-behavior-inventory.md:100:- `packages/team/team-runtime/src/approval-setup.ts` ? `installApprovalHook`?tools/pre-execute ???L168?L244??`requestLeaderDecision`?L61?L168?log request ? `registry.create` ? ?? leader ? race decision vs abort ? ?????
+docs/migration/legacy-behavior-inventory.md:101:- `packages/team/team-channels/src/control-coordinator.ts` ? `TeamControlRegistry`?`create/decide/list/sweep/reconcilePending/dispose`?host ? Service?`ctx.teamControl`?
+docs/migration/legacy-behavior-inventory.md:102:- `packages/team/tool-team/src/tool-control.ts` ? `team_control` ???list/decide?decide ??? requestId throw ? `Error: Unknown control request: "?"`?
+docs/migration/legacy-behavior-inventory.md:103:- `packages/team/team/src/types.ts` ? `TeamControlRequestData`?`requestId/memberId/tool/reason`??`TeamControlDecision`?`TeamControlDecisionData`
+docs/migration/legacy-behavior-inventory.md:104:- `packages/team/team-local/src/diagnostic.ts` ? `diagnoseLeaderTools`?leader ??????
+docs/migration/legacy-behavior-inventory.md:125:- `packages/team/tool-team/src/tool-progress.ts` ? ???list ?? L95?L113?update ?? L114?L126?`me.session.append('team/progress', entry)` + `store.update`?
+docs/migration/legacy-behavior-inventory.md:126:- `packages/team/team-channels/src/progress-store.ts` ? `TeamProgressStore`?`update/list/restore`?? taskId latest-wins?`restore(events)` ?????????
+docs/migration/legacy-behavior-inventory.md:127:- `packages/team/team-projection/src/fold.ts` ? `TeamFacts.tasks`?projection ? latest-per-taskId?first-seen ???
+docs/migration/legacy-behavior-inventory.md:153:- `packages/team/team-runtime/src/index.ts` ? `registerContinuableSetup(teamMemberSetupContribution(ctx))`?L40?L43?
+docs/migration/legacy-behavior-inventory.md:154:- `packages/team/team-runtime/src/member-setup.ts` ? `teamMemberSetupContribution`?L120?L161??`findMemberBound`?L60?L65??`findControlRequests`?L68?L74??`installMemberComposition`?L38?L57??`installRecoveredRules`?L90?L118?
+docs/migration/legacy-behavior-inventory.md:155:- `packages/team/team-runtime/src/rule-layers.ts` ? `MANAGED_RULE_FILE`/`PROJECT_RULE_FILE`?`resolveRuleLayerPaths`?L34?L60 ????`setRecoveredRuleLayers/getRecoveredRuleLayers/releaseRecoveredRuleLayers`
+docs/migration/legacy-behavior-inventory.md:156:- `packages/team/tool-team/src/tool-delegate.ts` ? bind ?? `team/member-bound`?? `managedPresent` probe?L254?L296?
+docs/migration/legacy-behavior-inventory.md:181:- ???????legacy authority??????`packages/team/team-projection/src/fold.ts` ? `delegations`?leader log ? `delegate_to_teammate` ?? ? `startedAt/endedAt/inProgress`?
+docs/migration/legacy-behavior-inventory.md:203:- ???????projection `members` ??`memberId/name/sessionIds/status/currentToolCall/pendingControlCount`?`packages/team/team-projection/src/types.ts`?
+docs/migration/legacy-behavior-inventory.md:224:- ?????host ???`packages/team/team-projection/src/fold.ts` ? `resolvePageLimit`?L389?L398?limit ? [1, MESSAGE_CAP] ????`sliceMessagePage`?L409?L431?? = (at, sessionId, seq) ????? `max(0, index-limit) .. index` ????????`packages/team/team-projection/src/index.ts` ? `pageMessages`/`resolveAnchor`
+docs/migration/reuse-map.md:14:| `packages/team/team/src/types.ts` | `contracts` | B | payload ???progress/message/control ?????status/decision ???? ??? contracts DTO?**?? `memberId` ??**?? `templateId`/`instanceId`?G1??`TeamMemberBoundData`?bind-time ???? D ?? authority / C ?? cold-resume ?????? 1.6?? |
+docs/migration/reuse-map.md:15:| `packages/team/team/src/events.ts` | none | D | `team/*` SessionEventMap declaration merging ?????G2??vNext ???? SessionEvent ?? team ???????????????C?????? |
+docs/migration/reuse-map.md:16:| `packages/team/team/src/index.ts` | `runtime` | B | `TeamRegistry` ???`definitions[]` ????G5?? D?`effectiveToolPolicy` ???? ? B ???? vNext tool-policy ??????????? |
+docs/migration/reuse-map.md:17:| `packages/team/team/src/constants.ts` | `contracts` | C | `DEFAULT_LEADER_TOOLS`/`TEAMMATE_DENIED_TOOLS`/`TEAM_EVENT_PREFIX` ?? ? ?????vNext ??????????????????? |
+docs/migration/reuse-map.md:18:| `packages/team/team/src/brand.ts` | `contracts` | B | branded id ???`TeamMemberId` ??? ?? branded `templateId`/`instanceId` ??????C ??????? |
+docs/migration/reuse-map.md:24:| `packages/team/team-local/src/parser.ts` | `legacy`?????? ? `runtime` ?? | B | `parseTeamMemberMarkdown`?YAML frontmatter + body?`SUPPORTED_SCHEMA_VERSION`?`ParseDiagnostic`??????vNext ???????????????????? |
+docs/migration/reuse-map.md:25:| `packages/team/team-local/src/discovery.ts` | `runtime` | B | ?????`$DSH_HOME/teammates` ? ??? `.dsh/teammates`??????last-wins ???? ??**??**?????**??**? G4 ?? authority?cwd/roster??vNext ????? TeamDomain ??? |
+docs/migration/reuse-map.md:26:| `packages/team/team-local/src/validation.ts` | `runtime` | A | `validateTeamDefinitions`??? id????? leader?`requiresApproval`?????skills ???????????????????? vNext ???? ? ??? A?B ????????? A ??? |
+docs/migration/reuse-map.md:27:| `packages/team/team-local/src/enablement.ts` | `runtime` | B | settings ?????? + `filterDisabledTeammates` ? ???settings ???? vNext ????? |
+docs/migration/reuse-map.md:28:| `packages/team/team-local/src/diagnostic.ts` | `runtime` | C | `diagnoseLeaderTools` leader ????? ? ?????vNext ??????? |
+docs/migration/reuse-map.md:29:| `packages/team/team-local/src/index.ts` | none | C????/ D???? | fs.watch + 500ms ?? reload?workspace-self-contained ?? ? ?????????`ctx.team.register` ????? registry ? plugin ?? ? D?G5?? |
+docs/migration/reuse-map.md:36:| `packages/team/team-runtime/src/orchestrator.ts` | none | D | `TeamOrchestrator.byLeader`?G5?G6 one-member-one-activation throw??????"in-flight ????"?? ? C ? acceptance ???vNext ????? TeamDomain? |
+docs/migration/reuse-map.md:37:| `packages/team/team-runtime/src/member-setup.ts` | `runtime` | C?B | `installMemberComposition`/`findMemberBound`/`findControlRequests`/`installRecoveredRules` ???**??**?bind-time ?? + ???????? + lapsed fail-closed + pending ?????? vNext cold-resume acceptance ???C????? rule-layer ??????? vNext seam ? B ????`team/member-bound` event ????G2?? D? |
+docs/migration/reuse-map.md:38:| `packages/team/team-runtime/src/rule-layers.ts` | `runtime` | B | `resolveRuleLayerPaths`?home ? + project ????????? ? B ??????????????`recoveredRuleLayers` ??? Map?G5?? D?`MANAGED/PROJECT_RULE_FILE` ?? ? C? |
+docs/migration/reuse-map.md:39:| `packages/team/team-runtime/src/approval-setup.ts` | `runtime` | C?B | `installApprovalHook`?pre-execute seam ?? allow/deny/ask ???? vNext ?? seam ???`requestLeaderDecision` ?????? `leader_unreachable` ???? ? B/C ????? leader ? `reportFrom`?G3?? D? |
+docs/migration/reuse-map.md:40:| `packages/team/team-runtime/src/mcp-guard.ts` | `runtime` | A | MCP ?? guard?? bound snapshot ? `mcpServers` allow ????? ???????????????? vNext ???? |
+docs/migration/reuse-map.md:41:| `packages/team/team-runtime/src/skill-guard.ts` | `runtime` | A | skills guard?? bound snapshot ? `skills` ?????? ??????????? |
+docs/migration/reuse-map.md:42:| `packages/team/team-runtime/src/index.ts` | none | D | `registerContinuableSetup`?fork-only API?G3?+ plugin ?? ? D?setup contribution ? no-op-for-non-team + disposer ??? ? C? |
+docs/migration/reuse-map.md:48:| `packages/team/team-channels/src/control-coordinator.ts` | `domain`???? | B | `sweep(now,timeoutMs)` ???? deny?`reconcilePending`??? decide ????`decide` ?? id throw ? ?? B ???? **TeamDomain-durable** pending control?????????`TeamControlRegistry` ??????G5?? D?`controlRequestTimeoutMs=120000`?bundle ???? C?????????? |
+docs/migration/reuse-map.md:49:| `packages/team/team-channels/src/progress-store.ts` | `domain`???? | B | latest-wins by taskId ? `update/restore` fold ? ??? TeamLedger activity ???`byLeader` ??????G5?? D? |
+docs/migration/reuse-map.md:50:| `packages/team/team-channels/src/index.ts` | none | D | Service ?????`ctx.teamControl` ??? D?service ???? ? C? |
+docs/migration/reuse-map.md:56:| `packages/team/tool-team/src/tool-delegate.ts` | `tools` | B | `delegate_to_teammate` schema/??/????run/follow_up/shutdown????? ? B ???? vNext `tools`????? = vNext TeamRuntime?G3 ?? D??`deliverFollowup`?G3?? D?`pathExists`?managedPresent probe?G4?? D?persistent ?????? ? B? |
+docs/migration/reuse-map.md:57:| `packages/team/tool-team/src/tool-send-message.ts` | `tools` | B | `send_team_message` ?????**??????**?peers ? leader?? B ???????? C ?????`deliverTeamMessage` ?? subagent ???G3?? D?`memberBindingOf`???? log ? member-bound?G2/G1?? D? |
+docs/migration/reuse-map.md:58:| `packages/team/tool-team/src/tool-control.ts` | `tools` | B | `team_control` list/decide ??? ? B ????decide ? `Unknown control request` ?? ? B??? registry ?? ? vNext TeamDomain API? |
+docs/migration/reuse-map.md:59:| `packages/team/tool-team/src/tool-progress.ts` | `tools` | B | `team_progress` list/update ? B ????merge ?? + status ??????`me.session.append('team/progress')`?G2?? D?vNext ? TeamLedger?? |
+docs/migration/reuse-map.md:60:| `packages/team/tool-team/src/tool-list-teammates.ts` | `tools` | B | `list_teammates`?registry + activations?last_activity/last_action?? B ??????? registry?G5?? ? vNext ????? |
+docs/migration/reuse-map.md:61:| `packages/team/tool-team/src/index.ts` | none | D | `session/event` ???`tool/call`?updateActivity?`subagent-settled`?markSettled??????????? activation ? ? D?G2/G5??settle/?????? ? C ?????? |
+docs/migration/reuse-map.md:62:| `packages/team/tool-team/src/invariant.ts` | none | D | ? `InvariantInstaller`?"tool validation is at registration"?? D?"????????"?????? ? C ???? |
+docs/migration/reuse-map.md:68:| `packages/team/team-projection/src/fold.ts` | `remote`???? | B | **?** fold?`foldTeamView`?delegations/tasks latest-per-taskId/approval pairs/messages capped 500??`compareMessages` (at,sessionId,seq)?`resolvePageLimit`/`sliceMessagePage`??????`ANCHOR_UNKNOWN`/`INVALID_LIMIT` ????? B ??????? SessionEvent ??? **TeamLedger**?G2 ?? D??? B??`delegatedMemberId` ?? JSON.parse ? C? |
+docs/migration/reuse-map.md:69:| `packages/team/team-projection/src/index.ts` | `remote`???? | D????/ C???? | `TeamProjectionService` ?????`rosterFor(workspacePath)` G4?live overlay ? subagent catalog G3/G4?`readSession` persistence.inspect?? D?**??**??? C ??????whole-snapshot ???cold-safe ??debounce+single-flight+triggerSeq ? `rebuild` ?? ? vNext TeamRemote ??? |
+docs/migration/reuse-map.md:70:| `packages/team/team-projection/src/types.ts` | `contracts` | B | `TeamView`/`TeamMemberRow`/`TeamDelegation`/`TeamTask`/`TeamApprovalPair`/`TeamMessageRow`/`MessageAnchor` ??? DTO ? B ???? contracts?? ? instanceId/childSessionId?G1/G7 ? D??`teamId = leaderSessionId`?G7?? D?vNext ??? team ??? |
+docs/migration/reuse-map.md:71:| `packages/team/team-projection/src/error.ts` | `contracts` | A | ???????? ? A ????????? contracts ??? |
+--- grep deepseek-harness refs in packages/ scripts/: 
+NONE
+--- main repo git-dir (own .git, not a link): .git
+--- git -C main rev-parse --is-bare-repository: false
+--- packages/legacy/package.json: ---
+{
+  "name": "@dsh-agent-team/legacy",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration).",
+  "type": "module"
+}
+
+--- packages/legacy/README.md (first 20 lines): ---
+# @dsh-agent-team/legacy ??empty slot (reference-only)
+
+**vNext does not depend on legacy code.** This package is the intentionally
+empty slot of the frozen 9-package layout (TaskDoc ?11 package-boundary rule).
+No legacy source is copied here, and no package in this repo may import
+`@dsh-agent-team/legacy` or any legacy fork package.
+
+- The legacy fork is frozen as a read-only reference (tag
+  `legacy-agent-team-pre-vnext`); its behavior inventory and per-file reuse
+  decisions live in `docs/migration/` (`legacy-behavior-inventory.md`,
+  `reuse-map.md`).
+- Reuse levels govern how legacy *behavior* re-enters vNext: A/B/C-level
+  ports are rewritten into the target packages against vNext contracts;
+  D-level content stays in Git history. Legacy code is **reference-only** and
+  never vendored into this repo.
+- This `package.json` carries no `main` / `exports` / `scripts` on purpose:
+  the slot holds no buildable code until a later phase says otherwise.
+--- file:/git+ dependencies in any tracked package.json: 
+NONE
+--- deps referencing references/ anywhere tracked: 
+.gitignore:1:references/
+AGENTS.md:10:2. `docs/TEST_METHODS.md` ? ??????????? DSH ?? = `references/deepseek-harness-test-use`?pristine upstream??DSH_HOME = `references/.dsh-test`?**??????**?workspace-write ??????port = `3180`???/???????????? ?2/?5?**??????????**?:3080 ? `D:\deepseek-harness\` ????
+AGENTS.md:26:| `references/deepseek-harness/` | ?? legacy fork ??????HEAD ? `a3ab319927...`?tag `legacy-agent-team-pre-vnext`????? vNext ??? |
+AGENTS.md:27:| `references/deepseek-harness-test-use/` | ???? DSH ???pristine upstream ??????????????? TEST_METHODS.md? |
+dev/agent-workflow/SESSION_ROUTER_LOG.md:10:  - legacy fork `feat/team-vnext-integration-20260829` @ `references/deepseek-harness` = `a3ab31992762c5d6560797eabc7e0885a9320ade`?ahead 39 commits / 470 changed files?
+dev/agent-workflow/SESSION_ROUTER_LOG.md:25:- **P0-T1 legacy-freeze**?class C???? `task/P0-T1-legacy-freeze` @ `616600c`??? `dev/agent-workflow/evidence/P0-T1/freeze-note.md`?? `references/deepseek-harness` ? annotated tag `legacy-agent-team-pre-vnext` @ LEGACY_SHA `a3ab319927` ??? fork remote????? 3 ??????????**SELF_VERIFIED**?
+dev/agent-workflow/SESSION_ROUTER_LOG.md:62:- **?????????**??? DSH_HOME ?????? `references/.dsh-test`????workspace-write ??????????"????"????????????????????????????????????????/?????AGENTS.md + TEST_METHODS.md??1/?2/?4/?5 ??/?6 ?????????
+dev/agent-workflow/SESSION_ROUTER_LOG.md:75:  - **Pristine upstream**?`references/deepseek-harness-test-use` @ cd5ef814??before ??? ? ????? ? ??? seam `references/.dsh-test/profiles/web/cordis.patch.yml`?insert ??file:/// ?? host+client ????? ? dump-config ?????? composed entry list ? ?????`assertEntriesActivated` ??? entry import/activation ??????????? = ????????? **????**????????? ? ?????? exit 1 `ERR_MODULE_NOT_FOUND`???????? ??? ? ?? ? after ?? status/diff 0 ???HEAD ?? ? scanner exit 0?0 findings / 2 INFO??
+dev/agent-workflow/SESSION_ROUTER_LOG.md:76:  - **Downstream**?`.worktrees/P1-int-downstream` @ 02f3094c??????? DSH_HOME `references/.dsh-test-downstream`?profile ????? downstream ??? ?????? status --porcelain ??node_modules/lib/.dsh-build ?? ignored??
+dev/agent-workflow/SESSION_ROUTER_LOG.md:80:- **Profile ??**?`references/.dsh-test/profiles/web/cordis.patch.yml` ???????? revert ???? G1-REVIEW ???downstream ?? `.dsh-test-downstream`??
+dev/agent-workflow/evidence/P1-T1/clean-host-report.md:17:- Legacy checkout `references/deepseek-harness` used strictly read-only (git object extraction only); no history rewrite, no worktree moves.
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:749:              "references/",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:729:              "references/",
+dev/agent-workflow/evidence/P1-T2/dependency-proof.json:8:    "legacy_checkout": "D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness",
+dev/agent-workflow/evidence/P1-T2/dependency-proof.json:15:    "team_repo_scan": "String search for 4 needles (the 3 npm package names + 'packages/permission') over every file of the Team repo worktree, excluding .git, node_modules, references/, docs/plans, .worktrees/ and the three files this task is forbidden to read (docs/ROUTER_RULES.md, dev/agent-workflow/SESSION_ROUTER_LOG.md, dev/agent-workflow/graph.yaml).",
+dev/agent-workflow/evidence/P1-T2/dependency-proof.json:934:      "references/",
+dev/agent-workflow/evidence/P1-T2/permission-split-note.md:69:Scanned the Team repo worktree `.worktrees/P1-T2` (branch `task/P1-T2-permission-split`) for the three npm package names and the `packages/permission` path string, excluding `.git`, `node_modules`, `references/`, `docs/plans`, `.worktrees/` (and, per task prohibition, the three files not to be read: `docs/ROUTER_RULES.md`, `dev/agent-workflow/SESSION_ROUTER_LOG.md`, `dev/agent-workflow/graph.yaml`):
+dev/agent-workflow/evidence/P1-T3/preservation-check.mjs:26: *   Scan every file in the Team worktree (skipping .git, node_modules, references/,
+dev/agent-workflow/evidence/P1-T3/preservation-report.md:8:- Legacy reference: `references/deepseek-harness` @ `a3ab31992762c5d6560797eabc7e0885a9320ade` (branch `feat/team-vnext-integration-20260829`, tag `legacy-agent-team-pre-vnext`), used read-only for `git show`/`rev-parse`.
+dev/agent-workflow/evidence/P1-T3/preservation-report.md:35:| 10 | `scripts/translation-pairing.ts` | M | SPLIT | `references/**` excluded from the translation-pairing scope | +2 lines | `e5365337`? | 18644 |
+dev/agent-workflow/evidence/P1-T3/preservation-report.md:131:  paths (patterns P1?P10) and feature markers (F1?F9); skips `.git`, `node_modules`, `references/`,
+dev/agent-workflow/evidence/P1-T3/sha-mapping.json:127:      "feature": "translation-pairing: references/ excluded from the translation pairing scope",
+dev/agent-workflow/evidence/P1-T3/sha-mapping.json:136:      "delta_vs_upstream": "+2 lines: 'references/**' added to TRANSLATION_SCOPE_GLOB_EXCLUDES + comment",
+dev/agent-workflow/evidence/P1-T5/C-downstream-smoke/profile-final.txt:6:# same rows as the pristine test home (references/.dsh-test) ??the mount
+dev/agent-workflow/evidence/P1-T5/verify-report.md:68:| Pristine test-use `references/deepseek-harness-test-use` (with 4 byte-empty git snapshots) | **PASS, 0 findings, exit 0**, 2 INFO node-pty (`B-pristine-smoke/scanner-pristine.txt`) |
+dev/agent-workflow/evidence/P1-T5/verify-report.md:110:`references/.dsh-test`, port 3180, `--no-open`.
+dev/agent-workflow/evidence/P1-T5/verify-report.md:114:`references/.dsh-test/profiles/web/cordis.patch.yml` ? the profile's **user patch layer**,
+dev/agent-workflow/evidence/P1-T5/verify-report.md:151:   (`DSH_HOME=references/.dsh-test`, `DSH_CLIENT_COMMIT_HASH=cd5ef814`) ?
+dev/agent-workflow/evidence/P1-T5/verify-report.md:173:The mount rows are **left in** `references/.dsh-test/profiles/web/cordis.patch.yml`
+dev/agent-workflow/evidence/P1-T5/verify-report.md:181:Independent DSH_HOME `references/.dsh-test-downstream` ? **created empty by design**:
+dev/agent-workflow/evidence/P1-T5/verify-report.md:191:| DSH_HOME | `references/.dsh-test-downstream` | **created empty on purpose** ? `loadProfile` auto-inited `profiles/web` from `PROFILE_TEMPLATES` (stock bundles + `patchReload: live`); zero state copied from the pristine side; launcher heals module-fallback against this tree's install | `C-03-dump-config-baseline.txt` |
+dev/agent-workflow/evidence/P1-T5/verify-report.md:193:| Mount | `profiles/web/cordis.patch.yml` | same two relative rows as the pristine home (relative depth identical: `references/<home>/profiles/web` ? 4 up to team root) | `profile-final.txt` |
+dev/agent-workflow/evidence/provenance/file-manifest.json:661:                                              "note":  "Local dev hygiene block (references/, issues/, archive/, start-dev.ps1, *.js.map, *.d.ts.map) plus .js/.d.ts build-artifact ignores for core/session and permission-engine sources."
+dev/agent-workflow/evidence/provenance/file-manifest.json:4528:                      "reason":  "references/ excluded from the translation pairing scope (fork reference doc tree).",
+dev/agent-workflow/evidence/provenance/mixed-hunk-report.md:60:| 1 | OTHER | Local dev hygiene block (`references/`, `issues/`, `archive/`, `start-dev.ps1`, `*.js.map`, `*.d.ts.map`) plus `.js`/`.d.ts` build-artifact ignores for `core/session` and `permission-engine` sources. Dominant: OTHER; secondary: PERMISSION (permission-engine artifact ignores). |
+dev/agent-workflow/evidence/test-infra/setup-20260829.md:11:| ? `references/.dsh-test`????? DSH_HOME? | **OK** |
+dev/agent-workflow/evidence/test-infra/setup-20260829.md:26:  env DSH_HOME=<workspace>/references/.dsh-test      # ???? ? workspace-write ??
+dev/agent-workflow/evidence/test-infra/setup-20260829.md:54:`references/.dsh-test/profiles/web/`?
+eslint.config.mjs:19:      'references/**',
+--- who depends on @dsh-legacy / packages/legacy: 
+packages/legacy/package.json:2:  "name": "@dsh-agent-team/legacy",
+packages/legacy/package.json:5:  "description": "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration).",
+{
+  "name": "@dsh-agent-team/legacy",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration).",
+  "type": "module"
+}
+
+=== git-dir: .git is-bare: false
+D:/AgentDev/dsh-plugins/dsh-agent-team                   ac2be32 [int/P1-host-foundation] D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R1  384a645 (detached HEAD) D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R2  384a645 (detached HEAD) D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R3  384a645 (detached HEAD) D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T1  24dd3d7 [task/P1-T1-host-replay] D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T2  c98a064 [task/P1-T2-permission-split] D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T3  473f65f [task/P1-T3-unrelated-preserve] D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T4  7d491b1 [task/P1-T4-team-skeleton] D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T5  f718b47 [task/P1-T5-zero-core]
+
+=== V12 verdict (criteria 1/2) 08/30/2026 00:18:02 ===
+G1-1 (separate Git repo) PASS: own .git (git-dir=.git, non-bare); origin=git@github.com:ArmourPiercer1/dsh-agent-team.git (independent remote, no remote pointing at legacy fork deepseek-harness); no .gitmodules, no submodule config; references/deepseek-harness = independent nested repo with own .git, gitignored (line 1 .gitignore references/), 0 tracked paths under references/.
+G1-2 (legacy not a dependency) PASS: 0 tracked paths under references/; packages/legacy = empty slot (package.json name=@dsh-agent-team/legacy v0.0.0 private "Reference-only empty slot: vNext never depends on legacy code" + README; no source, no deps); zero file:/git+/link: dependencies in any tracked package.json; zero references/ or deepseek-harness or packages/team mentions in packages/ or scripts/ (legacy SHA a3ab319927 + packages/team appear only in docs/TEST_METHODS.md and docs/migration/*, which are reference docs); nothing depends on @dsh-agent-team/legacy.

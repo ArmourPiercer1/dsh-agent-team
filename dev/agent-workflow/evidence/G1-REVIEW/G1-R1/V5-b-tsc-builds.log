@@ -1,0 +1,23 @@
+﻿=== V5.2 per-package tsc build (direct node, in-process) ===
+date: 2026-08-29T23:51:16
+tsc version: Version 6.0.3
+
+--- client : exit 0 ---
+dist/plugin entries: client.d.ts, client.d.ts.map, client.js, client.js.map
+
+--- contracts : exit 0 ---
+
+--- domain : exit 0 ---
+
+--- remote : exit 0 ---
+
+--- runtime : exit 0 ---
+dist/plugin entries: host.d.ts, host.d.ts.map, host.js, host.js.map
+
+--- storage : exit 0 ---
+
+--- testkit : exit 0 ---
+
+--- tools : exit 0 ---
+
+ALL_GREEN: True

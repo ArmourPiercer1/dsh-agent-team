@@ -1,0 +1,48 @@
+# G1-R2 V12 evidence log — G1-1 (separate Git repo) + G1-2 (legacy branch not a dependency)
+# Reviewer: G1-R2 | Date: session G1 review | Target: int frozen 384a645d5df23425b5bbe0c632ca8400fae7e419 (+live HEAD ac2be32)
+# All commands read-only, run against D:\AgentDev\dsh-plugins\dsh-agent-team (main worktree, int/P1-host-foundation)
+
+## G1-1: separate Git repository
+[V12-1] git -C <main> remote -v
+    origin  git@github.com:ArmourPiercer1/dsh-agent-team.git (fetch)
+    origin  git@github.com:ArmourPiercer1/dsh-agent-team.git (push)
+    => single remote, repo name "dsh-agent-team" — distinct from legacy fork remote
+       (git@github.com:ArmourPiercer1/deepseek-harness.git) and from upstream deepseek-harness.
+[V12-2] Test-Path .gitmodules => False. No submodules anywhere.
+[V12-3] git -C <main> log --reverse --oneline | head -3
+    e7a91fd 初始化空仓库
+    8e19844 docs: 改写 ROUTER_RULES 对齐 20260829 计划（G0–G10）并纳入版本控制
+    5ecf11d chore(workflow): 初始化 dev/agent-workflow 编排 artifacts 与执行日志（P0 前）
+    => history starts at an EMPTY-REPO init commit; not a fork/continuation of legacy history.
+[V12-4] git -C <main> ls-files -- references/ => (empty). Nested legacy/test-use checkouts under
+    references/ are untracked; .gitignore line 1 = "references/" (check-ignore -v confirms all three
+    references/ entries map to that rule). No vendored upstream copy in the repo.
+[V12-5] git -C <main> branch -a => int/P0-freeze-provenance, int/P1-host-foundation (HEAD), master,
+    task/P0-T1..P1-T5, remotes/origin/master only. No legacy branch, no legacy remote.
+RESULT: PASS — the vNext repo is a separate Git repository (own remote, own root commit, no submodules,
+legacy trees untracked/ignored).
+
+## G1-2: legacy branch is not a dependency
+Reviewed at frozen target 384a645d via `git grep <tree-ish>` (read-only).
+[V12-6] git grep -n 'a3ab319927' 384a645d -- packages scripts => no matches (exit 1).
+[V12-7] git grep -n 'team-vnext-integration-20260829|legacy-agent-team-pre-vnext' 384a645d -- packages scripts
+    => single hit: packages/legacy/README.md:9 (prose explaining the legacy tag; not a dependency).
+[V12-8] git grep -n 'packages/team' 384a645d -- packages scripts => no matches (exit 1).
+[V12-9] git grep -n 'deepseek-harness' 384a645d -- packages scripts => no matches (exit 1)
+    => no build/run/test script references the legacy or upstream tree paths.
+[V12-10] packages/legacy slot @ 384a645d: exactly [packages/legacy/README.md, packages/legacy/package.json];
+    package.json = { name: @dsh-agent-team/legacy, version 0.0.0, private,
+      description: "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration)." }
+    with ZERO dependencies.
+[V12-11] git grep -nE '"(file:|link:|git:|http)' 384a645d -- packages => no matches (exit 1).
+    No dependency spec points outside the workspace.
+[V12-12] Internal dep summary: all 9 packages (contracts, domain, storage, runtime, tools, remote,
+    client, legacy, testkit) declare ZERO @deepseek*/dsh* internal dependencies at the frozen target.
+[V12-13] Root pnpm-workspace.yaml @ 384a645d: packages: ["packages/*"] only (+ vite ^8.2.2 override,
+    allowBuilds esbuild:false) — no path to any legacy tree.
+[V12-14] Frozen->live delta: git diff --name-status 384a645d ac2be32 => only
+    M dev/agent-workflow/SESSION_ROUTER_LOG.md
+    M dev/agent-workflow/graph.yaml
+    => the one commit ahead of the frozen target is orchestration-state only; no code/dep change.
+RESULT: PASS — no build, run, test, or dependency-graph edge touches the legacy branch/repo; the legacy
+reference is docs/evidence-only (dev/agent-workflow/evidence, docs/migration, packages/legacy README).

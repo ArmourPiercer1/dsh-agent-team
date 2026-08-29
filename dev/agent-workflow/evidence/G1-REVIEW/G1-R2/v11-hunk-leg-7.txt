@@ -1,0 +1,39 @@
+﻿diff --git a/tsconfig.base.json b/tsconfig.base.json
+index 661a546bf8..90d1189886 100644
+--- a/tsconfig.base.json
++++ b/tsconfig.base.json
+@@ -71,0 +72 @@
++      "@deepseek-ai/dsh-team-projection/types": ["./packages/team/team-projection/src/types.ts"],
+@@ -74,0 +76,5 @@
++      "@deepseek-ai/dsh-team/types": ["./packages/team/team/src/types.ts"],
++      "@deepseek-ai/dsh-permission": ["./packages/permission/permission/src/index.ts"],
++      "@deepseek-ai/dsh-permission/types": ["./packages/permission/permission/src/types.ts"],
++      "@deepseek-ai/dsh-permission-engine": ["./packages/permission/permission-engine/src/index.ts"],
++      "@deepseek-ai/dsh-tool-permission-guard": ["./packages/permission/tool-permission-guard/src/index.ts"],
+@@ -233,0 +240,7 @@
++      // bundle/team and client/ui-team carry their group prefix in their npm
++      // names, so the generated aliases below cannot derive them; the client
++      // package's /invariant subpath already resolves through the wildcard
++      // above, only these three stay hand-written.
++      "@deepseek-ai/dsh-bundle-team": ["./packages/bundle/team/src"],
++      "@deepseek-ai/dsh-bundle-team/invariant": ["./packages/bundle/team/src/invariant.ts"],
++      "@deepseek-ai/dsh-client-ui-team": ["./packages/client/ui-team/src"],
+@@ -364,0 +378,2 @@
++      "@deepseek-ai/dsh-permission/invariant": ["./packages/permission/permission/src/invariant.ts"],
++      "@deepseek-ai/dsh-permission-engine/invariant": ["./packages/permission/permission-engine/src/invariant.ts"],
+@@ -482,0 +498,10 @@
++      "@deepseek-ai/dsh-team": ["./packages/team/team/src"],
++      "@deepseek-ai/dsh-team/invariant": ["./packages/team/team/src/invariant.ts"],
++      "@deepseek-ai/dsh-team-channels": ["./packages/team/team-channels/src"],
++      "@deepseek-ai/dsh-team-channels/invariant": ["./packages/team/team-channels/src/invariant.ts"],
++      "@deepseek-ai/dsh-team-local": ["./packages/team/team-local/src"],
++      "@deepseek-ai/dsh-team-local/invariant": ["./packages/team/team-local/src/invariant.ts"],
++      "@deepseek-ai/dsh-team-projection": ["./packages/team/team-projection/src"],
++      "@deepseek-ai/dsh-team-projection/invariant": ["./packages/team/team-projection/src/invariant.ts"],
++      "@deepseek-ai/dsh-team-runtime": ["./packages/team/team-runtime/src"],
++      "@deepseek-ai/dsh-team-runtime/invariant": ["./packages/team/team-runtime/src/invariant.ts"],
+@@ -512,0 +538 @@
++      "@deepseek-ai/dsh-tool-permission-guard/invariant": ["./packages/permission/tool-permission-guard/src/invariant.ts"],
+@@ -529,0 +556,2 @@
++      "@deepseek-ai/dsh-tool-team": ["./packages/team/tool-team/src"],
++      "@deepseek-ai/dsh-tool-team/invariant": ["./packages/team/tool-team/src/invariant.ts"],

@@ -1,0 +1,16 @@
+﻿diff --git a/scripts/gen-doc-graphs.ts b/scripts/gen-doc-graphs.ts
+index 0ea6043121..f5b7af4b6a 100644
+--- a/scripts/gen-doc-graphs.ts
++++ b/scripts/gen-doc-graphs.ts
+@@ -86,0 +87 @@ const GROUP_ORDER = [
++  'permission',
+@@ -666,0 +668,9 @@ const SERVICE_ROLES: ServiceRole[] = [
++  {
++    key: 'permission',
++    pkg: 'permission',
++    title: 'Tool-call permission evaluation seam',
++    mode: 'seam',
++    implementations: ['permission-engine'],
++    consumers: ['tool-permission-guard'],
++    note: 'The Service Definition declares evaluate and policy types; the engine package implements adjudication and ships in the base bundle, while the guard package implements execution gating and remains an opt-in consumer.',
++  },

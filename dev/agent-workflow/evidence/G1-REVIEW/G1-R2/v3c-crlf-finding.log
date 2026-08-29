@@ -1,0 +1,6 @@
+﻿### V3 scanner robustness observation (recorded 2026-08-29T23:49:20.2751885+08:00)
+- verify-zero-core.mjs pnpm-workspace.yaml key regex ^\\s{2,}([^:\\s][^:]*):\\s*(.*)$ fails on CRLF lines (JS \$ without /m anchor cannot precede \\r; . cannot match \\r)
+- consequence: C2 workspace-yaml patchedDependencies check is silently blind to CRLF files (false negative)
+- fixture scripts/fixtures/zero-core/pnpm-workspace.yaml IS CRLF -> its '@fixture/host-core@1.0.0' entry is NOT reported; observed 6 findings, workspace-yaml one missing
+- test-use pnpm-workspace.yaml parsed fine (node-pty INFO seen) -> LF in real tree; check works on LF
+- impact: does not weaken V2/V10 results (real trees LF) or byte-clean proof (git status/diff); scanner sub-check robustness gap -> supplements candidate

@@ -1,0 +1,31 @@
+﻿=== V12.10 per-package package.json dep scan (worktree @ 384a645d) ===
+--- @dsh-agent-team/client (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/contracts (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/domain (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/legacy (0.0.0) ---
+scripts: =
+deps: {}
+--- @dsh-agent-team/remote (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/runtime (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/storage (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/testkit (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+--- @dsh-agent-team/tools (0.0.0) ---
+scripts: build=tsc -p tsconfig.build.json | typecheck=tsc -p tsconfig.json | test=vitest run
+deps: {}
+=== V12.11 suspicious refs (git+/file:/legacy/deepseek-harness) in any package.json ===
+packages\legacy\package.json:2: "name": "@dsh-agent-team/legacy",
+packages\legacy\package.json:5: "description": "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration).",

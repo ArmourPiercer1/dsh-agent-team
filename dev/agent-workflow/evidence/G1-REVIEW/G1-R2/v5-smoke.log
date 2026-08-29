@@ -1,0 +1,5 @@
+﻿### V5 composition-smoke @ 2026-08-29T23:51:02.3755792+08:00
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply is callable and side-effect-free
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply is callable and side-effect-free
+PASS composition-smoke
+exit=0

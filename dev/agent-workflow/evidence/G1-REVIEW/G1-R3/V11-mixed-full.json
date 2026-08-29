@@ -1,0 +1,271 @@
+[
+ {
+  "path": ".gitignore",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: OTHER+PERMISSION. Hunk routing below (kinds = OTHER+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "OTHER",
+    "note": "Local dev hygiene block (references/, issues/, archive/, start-dev.ps1, *.js.map, *.d.ts.map) plus .js/.d.ts build-artifact ignores for core/session and permission-engine sources."
+   }
+  ]
+ },
+ {
+  "path": "docs/subsystems/README.md",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "Adds the team.md row (TeamRegistry / TeamControlRegistry seam page) to the subsystems index."
+   },
+   {
+    "hunk": 2,
+    "kind": "PERMISSION",
+    "note": "Adds the permission.md row (PermissionService rule engine page) to the subsystems index."
+   }
+  ]
+ },
+ {
+  "path": "docs/subsystems/README.zh.md",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "Replaces the agent-team row with the new team.md row and re-adds the legacy agent-team row (zh subsystems index)."
+   },
+   {
+    "hunk": 2,
+    "kind": "PERMISSION",
+    "note": "Adds the permission.md row to the zh subsystems index."
+   }
+  ]
+ },
+ {
+  "path": "packages/core/session/src/known-event-types.ts",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "PERMISSION",
+    "note": "Registers the permission/decision audit event type."
+   },
+   {
+    "hunk": 2,
+    "kind": "TEAM",
+    "note": "Registers team/control-decision and team/control-request event types."
+   },
+   {
+    "hunk": 3,
+    "kind": "TEAM",
+    "note": "Registers team/member-bound and team/message event types."
+   },
+   {
+    "hunk": 4,
+    "kind": "TEAM",
+    "note": "Registers the team/progress event type."
+   }
+  ]
+ },
+ {
+  "path": "scripts/gen-cordis-catalog.ts",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "SERVICE_PAGE maps team, teamControl, teamProjection to team.md and permission to permission.md (one hunk, both kinds)."
+   },
+   {
+    "hunk": 2,
+    "kind": "TEAM",
+    "note": "LINK_MAP adds the Team* type links pointing at the new team.md page."
+   },
+   {
+    "hunk": 3,
+    "kind": "TEAM",
+    "note": "LINK_MAP drops the old TeamView: agent-team.md entry (moved to team.md in hunk 2)."
+   },
+   {
+    "hunk": 4,
+    "kind": "PERMISSION",
+    "note": "TYPE_LINK_EXEMPTIONS adds the permission type ownership notes (CompiledPolicy, RuleSource, PermissionContext, ...)."
+   }
+  ]
+ },
+ {
+  "path": "scripts/gen-doc-graphs.ts",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "GROUP_ORDER inserts the team group after subagent."
+   },
+   {
+    "hunk": 2,
+    "kind": "PERMISSION",
+    "note": "GROUP_ORDER inserts the permission group before cordis."
+   },
+   {
+    "hunk": 3,
+    "kind": "TEAM",
+    "note": "SERVICE_ROLES adds the team, teamControl, teamProjection and permission seam entries (one hunk, both kinds)."
+   }
+  ]
+ },
+ {
+  "path": "scripts/gen-tool-catalog.ts",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "Renames the experimental tool-agent-team import to ExperimentalToolAgentTeam (legacy first-gen mount rewire)."
+   },
+   {
+    "hunk": 2,
+    "kind": "TEAM",
+    "note": "Adds imports for TeamRegistry, TeamControlRegistry, ToolTeam and ToolPermissionGuard (team + permission packages)."
+   },
+   {
+    "hunk": 3,
+    "kind": "PERMISSION",
+    "note": "ToolPackage gains the noModelTools field for the pre-execute permission guard (registers no model-facing tool)."
+   },
+   {
+    "hunk": 4,
+    "kind": "PERMISSION",
+    "note": "TOOL_PACKAGES gains the tool-permission-guard entry (permission/decision audit events)."
+   },
+   {
+    "hunk": 5,
+    "kind": "TEAM",
+    "note": "Replaces await ctx.plugin(ToolTeam) with the renamed ExperimentalToolAgentTeam in the child-scope harvest."
+   },
+   {
+    "hunk": 6,
+    "kind": "TEAM",
+    "note": "TOOL_PACKAGES gains the tool-team entry (five team tools over the team seam)."
+   },
+   {
+    "hunk": 7,
+    "kind": "PERMISSION",
+    "note": "collectToolCatalog skips assertToolsHarvested for noModelTools packages (the guard)."
+   }
+  ]
+ },
+ {
+  "path": "scripts/project-doc-site.spec.ts",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "docsPages translated-locale count 46 to 48: the two new subsystem pages are team.md and permission.md (one hunk, both kinds)."
+   }
+  ]
+ },
+ {
+  "path": "tsconfig.base.json",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "paths: + @deepseek-ai/dsh-team-projection/types alias."
+   },
+   {
+    "hunk": 2,
+    "kind": "TEAM",
+    "note": "paths: + dsh-team/types and the four permission package aliases (dsh-permission, /types, permission-engine, tool-permission-guard) in one hunk."
+   },
+   {
+    "hunk": 3,
+    "kind": "TEAM",
+    "note": "paths: + hand-written dsh-bundle-team, dsh-bundle-team/invariant, dsh-client-ui-team aliases."
+   },
+   {
+    "hunk": 4,
+    "kind": "PERMISSION",
+    "note": "paths: + permission and permission-engine /invariant aliases."
+   },
+   {
+    "hunk": 5,
+    "kind": "TEAM",
+    "note": "paths: + dsh-team, dsh-team-channels, dsh-team-local, dsh-team-projection, dsh-team-runtime aliases (+ /invariant each)."
+   },
+   {
+    "hunk": 6,
+    "kind": "PERMISSION",
+    "note": "paths: + tool-permission-guard /invariant alias."
+   },
+   {
+    "hunk": 7,
+    "kind": "TEAM",
+    "note": "paths: + dsh-tool-team and dsh-tool-team/invariant aliases."
+   }
+  ]
+ },
+ {
+  "path": "tsconfig.host.json",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "project references: +7 team packages (team, team-local, team-projection, team-runtime, team-channels, tool-team, bundle/team) and +3 permission packages (permission, permission-engine, tool-permission-guard) in one hunk."
+   }
+  ]
+ },
+ {
+  "path": "website/docs.ts",
+  "status": "M",
+  "classification": "MIXED",
+  "disposition": "SPLIT",
+  "reason": "Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).",
+  "mixed_hunks": [
+   {
+    "hunk": 1,
+    "kind": "TEAM",
+    "note": "subsystemGroups adds the team.md (Team) doc page."
+   },
+   {
+    "hunk": 2,
+    "kind": "PERMISSION",
+    "note": "subsystemGroups adds the permission.md (Permissions) doc page."
+   }
+  ]
+ }
+]

@@ -1,0 +1,22 @@
+# V1 — worktree creation (G1-R1)
+
+Date: 2026-08-29 (review session)
+Command: git -C D:\AgentDev\dsh-plugins\dsh-agent-team worktree add --detach .worktrees\G1-R1 384a645d5df23425b5bbe0c632ca8400fae7e419
+
+Result:
+- worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G1-R1
+- detached HEAD: 384a645d5df23425b5bbe0c632ca8400fae7e419  ("P1-T5: evidence package (zero-core verification report + all logs/snapshots)")
+- int/P1-host-foundation tip: ac2be32 ("chore(workflow): R4 P1-T5 集成至 int 分支（零冲突）+ 主 Agent 独立复核；graph G1-REVIEW READY")
+- 384a645d IS an ancestor of ac2be32 (merge-base --is-ancestor exit 0); int tip = review target + 1 orchestration-record commit (no code).
+
+P1 commit range under review (c61a2f48..384a645d, 8 commits):
+  384a645 P1-T5: evidence package (zero-core verification report + all logs/snapshots)
+  5bac15f P1-T5: zero-core machine-provable verification (scanner + fixtures + vitest-equivalent node runner)
+  957cce6 chore(workflow): R3 P1-T1..T4 集成至 int 分支（零冲突）+ downstream-int 合并 + 测试实例搭建 + 权限模式实测证据
+  932edb1 P1-T4: fresh vNext workspace skeleton (9 packages, build/lint/test green)
+  c9f4082 Record P1-T3 Class-B preservation evidence (unrelated fork features)
+  c7ba367 P1-T2: permission 能力拆分证据（Class A fork-only 归类 + 双向依赖证明 + Team 仓库零引用 + downstream 测试 132/132）
+  c1816ba evidence(P1-T1): clean-host forward-replay mapping, report, build/test logs
+  9267522 docs: AGENTS.md (prompt-injection must-read rules) + TEST_METHODS.md (test-instance constraints)
+
+No commits made by this reviewer in any branch. Log dir: dev/g1-review/G1-R1/ (gitignored).

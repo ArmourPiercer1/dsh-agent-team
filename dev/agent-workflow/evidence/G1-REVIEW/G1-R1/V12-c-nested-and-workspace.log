@@ -1,0 +1,224 @@
+﻿=== V12.6 a3ab319927 scan over tracked files only (git grep) ===
+AGENTS.md:26:| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；HEAD 锁 `a3ab319927...`，tag `legacy-agent-team-pre-vnext`；禁止任何 vNext 开发） |
+dev/agent-workflow/SESSION_ROUTER_LOG.md:10:  - legacy fork `feat/team-vnext-integration-20260829` @ `references/deepseek-harness` = `a3ab31992762c5d6560797eabc7e0885a9320ade`（ahead 39 commits / 470 changed files）
+dev/agent-workflow/SESSION_ROUTER_LOG.md:25:- **P0-T1 legacy-freeze**（class C）：分支 `task/P0-T1-legacy-freeze` @ `616600c`；交付 `dev/agent-workflow/evidence/P0-T1/freeze-note.md`；在 `references/deepseek-harness` 打 annotated tag `legacy-agent-team-pre-vnext` @ LEGACY_SHA `a3ab319927` 并推送 fork remote（用户裁决 3 许可的一次性推送）。**SELF_VERIFIED**。
+dev/agent-workflow/evidence/P0-T1/freeze-note.md:12:| LEGACY_SHA（冻结 checkpoint，feat/team-vnext-integration-20260829 分支尖） | `a3ab31992762c5d6560797eabc7e0885a9320ade` |
+dev/agent-workflow/evidence/P0-T1/freeze-note.md:26:  a3ab31992762c5d6560797eabc7e0885a9320ade   # == LEGACY_SHA ✓
+dev/agent-workflow/evidence/P0-T1/freeze-note.md:44:- **指向**: `a3ab31992762c5d6560797eabc7e0885a9320ade`（`rev-parse 'legacy/agent-team-integration-20260829^{commit}'` 验证输出一致）
+dev/agent-workflow/evidence/P0-T1/freeze-note.md:71:| 1 | `git -C LEGACY rev-parse 'legacy-agent-team-pre-vnext^{commit}'` | == LEGACY_SHA | `a3ab31992762c5d6560797eabc7e0885a9320ade` | PASS |
+dev/agent-workflow/evidence/P0-T1/freeze-note.md:72:| 2 | `git -C LEGACY rev-parse HEAD` | == LEGACY_SHA（HEAD 未动） | `a3ab31992762c5d6560797eabc7e0885a9320ade` | PASS |
+dev/agent-workflow/evidence/P0-T1/freeze-note.md:74:| 4 | `git -C LEGACY log -1 --format='%H %s'` | 分支尖仍为原 commit | `a3ab31992762c5d6560797eabc7e0885a9320ade docs: router log round 7 — WAVE2 acceptance, S0 complete` | PASS |
+dev/agent-workflow/evidence/P0-T4/inventory-verification.md:6:- `LEGACY_SHA = a3ab31992762c5d6560797eabc7e0885a9320ade`（branch `feat/team-vnext-integration-20260829`，tag `legacy-agent-team-pre-vnext`）
+dev/agent-workflow/evidence/P0-T4/inventory-verification.md:13:git -C D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness cat-file -e a3ab31992762c5d6560797eabc7e0885a9320ade:<path>
+dev/agent-workflow/evidence/P1-T1/clean-host-report.md:12:| Fork source (legacy tip, read-only) | `a3ab31992762c5d6560797eabc7e0885a9320ade` |
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:7:    "fork_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:33:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:43:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:53:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:63:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:73:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:83:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:93:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:103:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:113:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:123:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:133:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:143:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:153:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:163:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:173:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:183:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:193:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:203:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:213:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:223:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:233:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:243:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:253:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:263:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:273:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:283:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:293:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:303:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:313:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:323:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:333:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:343:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:353:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:363:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:373:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:383:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:393:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:403:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:413:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:423:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:433:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:443:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:453:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:463:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:473:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:483:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:493:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:503:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:513:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:523:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:533:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:543:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:553:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:563:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:573:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:583:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:593:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:603:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:613:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:623:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:633:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:643:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:653:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:663:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:673:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:683:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:693:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:703:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:713:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:723:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:733:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:785:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:821:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:860:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:902:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:981:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:1066:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:1183:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:1227:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:1315:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/replay-mapping.json:1364:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:2:  "tip": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:13:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:23:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:33:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:43:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:53:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:63:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:73:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:83:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:93:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:103:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:113:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:123:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:133:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:143:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:153:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:163:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:173:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:183:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:193:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:203:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:213:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:223:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:233:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:243:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:253:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:263:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:273:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:283:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:293:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:303:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:313:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:323:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:333:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:343:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:353:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:363:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:373:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:383:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:393:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:403:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:413:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:423:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:433:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:443:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:453:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:463:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:473:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:483:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:493:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:503:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:513:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:523:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:533:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:543:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:553:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:563:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:573:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:583:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:593:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:603:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:613:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:623:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:633:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:643:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:653:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:663:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:673:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:683:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:693:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:703:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:713:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:765:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:801:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:840:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:882:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:961:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:1046:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:1163:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:1207:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:1295:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T1/tests/replay-result.json:1344:      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T2/dependency-proof.json:7:    "legacy_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/P1-T2/permission-split-note.md:6:- **Baselines:** upstream `cd5ef8148158c3a752a658978873241fdf8e2bbc` (immutable audit baseline) · legacy fork tip `a3ab31992762c5d6560797eabc7e0885a9320ade` (frozen read-only reference)
+dev/agent-workflow/evidence/P1-T2/permission-tests.md:6:- **Branch / commit:** `work/permission-tests` @ `a3ab31992762c5d6560797eabc7e0885a9320ade` (object DB of the frozen legacy checkout; the checkout's main worktree stayed clean and untouched — this worktree is the task-owned surface)
+dev/agent-workflow/evidence/P1-T3/preservation-check.mjs:54:const LEGACY_SHA = 'a3ab31992762c5d6560797eabc7e0885a9320ade'
+dev/agent-workflow/evidence/P1-T3/preservation-report.md:8:- Legacy reference: `references/deepseek-harness` @ `a3ab31992762c5d6560797eabc7e0885a9320ade` (branch `feat/team-vnext-integration-20260829`, tag `legacy-agent-team-pre-vnext`), used read-only for `git show`/`rev-parse`.
+dev/agent-workflow/evidence/P1-T3/sha-mapping.json:6:  "legacy_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/provenance/commit-manifest.json:4:    "legacy_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade"
+dev/agent-workflow/evidence/provenance/commit-manifest.json:17:      "sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/provenance/file-manifest-verification.md:5:(`D:\AgentDev\deepseek-harness`, `cd5ef8148158c3a752a658978873241fdf8e2bbc..a3ab31992762c5d6560797eabc7e0885a9320ade`).
+dev/agent-workflow/evidence/provenance/file-manifest.json:5:                     "legacy_sha":  "a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/provenance/file-manifest.json:8:                     "diff_command":  "git -C D:\\AgentDev\\deepseek-harness diff -M cd5ef8148158c3a752a658978873241fdf8e2bbc a3ab31992762c5d6560797eabc7e0885a9320ade",
+dev/agent-workflow/evidence/provenance/mixed-hunk-report.md:3:Baseline: `git diff -M cd5ef8148158c3a752a658978873241fdf8e2bbc..a3ab31992762c5d6560797eabc7e0885a9320ade`
+dev/agent-workflow/evidence/provenance/validate-commit-manifest.ps1:11:    [string]$LegacySha = 'a3ab31992762c5d6560797eabc7e0885a9320ade'
+docs/TEST_METHODS.md:46:3. **禁止**把 `references\deepseek-harness`（冻结 legacy fork 参考，HEAD 锁定 `a3ab319927...`，tag `legacy-agent-team-pre-vnext`）用作测试运行时；它仅作证据/参考。
+docs/migration/legacy-behavior-inventory.md:4:- 审计基线：`LEGACY_SHA = a3ab31992762c5d6560797eabc7e0885a9320ade`（branch `feat/team-vnext-integration-20260829`，已冻结 tag `legacy-agent-team-pre-vnext`，工作树 clean、只读）
+docs/migration/reuse-map.md:6:- 路径均相对 LEGACY 检出根（`a3ab31992762c5d6560797eabc7e0885a9320ade`）。行内标注 `Gn` 指 inventory §0 全局错误假设编号。
+
+=== V12.7 root package.json workspaces / pnpm-workspace.yaml ===
+--- pnpm-workspace.yaml ---
+packages:
+  - "packages/*"
+overrides:
+  # Keep the whole vitest stack (vitest, @vitest/mocker, vite-node) on the
+  # rolldown-based vite 8 line: its config loading and TS transforms run
+  # in-process, whereas vite 7's esbuild pipeline spawns child processes
+  # (not viable in spawn-restricted environments such as the P1-T4
+  # verification sandbox).
+  vite: "^8.2.2"
+allowBuilds:
+  esbuild: false
+--- root package.json (workspaces field) ---
+workspaces: 
+
+=== V12.8 references/deepseek-harness: nested repo? tracked? ===
+has .git: True
+nested HEAD: a3ab31992762c5d6560797eabc7e0885a9320ade
+nested describe/tags: legacy-agent-team-pre-vnext
+--- git ls-files references/ (top 30) ---
+count tracked under references/: 0
+
+=== V12.9 .gitignore relevant lines ===
+
+references/
+.worktrees/
+node_modules/
+
+

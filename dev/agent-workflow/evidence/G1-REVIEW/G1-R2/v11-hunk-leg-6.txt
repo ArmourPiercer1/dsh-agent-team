@@ -1,0 +1,63 @@
+﻿diff --git a/scripts/gen-tool-catalog.ts b/scripts/gen-tool-catalog.ts
+index 36e0b0833c..3ab1846951 100644
+--- a/scripts/gen-tool-catalog.ts
++++ b/scripts/gen-tool-catalog.ts
+@@ -63 +63 @@ import type TeamService from '@deepseek-ai/dsh-experimental-agent-team'
+-import * as ToolTeam from '@deepseek-ai/dsh-experimental-tool-agent-team'
++import * as ExperimentalToolAgentTeam from '@deepseek-ai/dsh-experimental-tool-agent-team'
+@@ -67,0 +68,4 @@ import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
++import TeamRegistry from '@deepseek-ai/dsh-team'
++import { TeamControlRegistry } from '@deepseek-ai/dsh-team-channels'
++import * as ToolTeam from '@deepseek-ai/dsh-tool-team'
++import * as ToolPermissionGuard from '@deepseek-ai/dsh-tool-permission-guard'
+@@ -162,0 +167,5 @@ export interface ToolPackage {
++  /**
++   * Package contributes no model-facing tool (e.g. a `tools/pre-execute`
++   * guard). Skips {@link assertToolsHarvested}; the note documents the role.
++   */
++  noModelTools?: boolean
+@@ -411,0 +421,17 @@ const TOOL_PACKAGES: ToolPackage[] = [
++  {
++    pkg: '@deepseek-ai/dsh-tool-permission-guard',
++    dir: 'tool-permission-guard',
++    source: 'packages/permission/tool-permission-guard/src/index.ts',
++    requires: ['ctx.tools (pre-execute listener)', 'ctx.permission via ctx.get'],
++    writes: ['permission/decision audit events in the acting session log'],
++    noModelTools: true,
++    async mount(ctx) {
++      await ctx.plugin(ToolPermissionGuard, {
++        mode: 'default',
++        rules: [],
++        pathBases: { settingsDir: '.', homeDir: '.', cwd: '.' },
++      })
++    },
++    note:
++      'A `tools/pre-execute` guard that applies `ctx.permission.evaluate` to the main agent and single delegated subagents; it registers no model-facing tool, so it has no schema section. The note is the whole contract: `allow` proceeds, `deny` blocks, `ask` routes to the approval seam.',
++  },
+@@ -564 +590 @@ const TOOL_PACKAGES: ToolPackage[] = [
+-      await ctx.plugin(ToolTeam)
++      await ctx.plugin(ExperimentalToolAgentTeam)
+@@ -615,0 +642,20 @@ const TOOL_PACKAGES: ToolPackage[] = [
++  {
++    pkg: '@deepseek-ai/dsh-tool-team',
++    dir: 'tool-team',
++    source: {
++      delegate_to_teammate: 'packages/team/tool-team/src/tool-delegate.ts',
++      list_teammates: 'packages/team/tool-team/src/tool-list-teammates.ts',
++      send_team_message: 'packages/team/tool-team/src/tool-send-message.ts',
++      team_progress: 'packages/team/tool-team/src/tool-progress.ts',
++      team_control: 'packages/team/tool-team/src/tool-control.ts',
++    },
++    requires: ['ctx.tools', 'ctx.team', 'ctx.teamControl', 'ctx.subagents + ctx.session at execution time'],
++    writes: ['tool/call', 'tool/result', 'team/message, team/progress, team/control-decision session events'],
++    async mount(ctx) {
++      await ctx.plugin(TeamRegistry)
++      await ctx.plugin(TeamControlRegistry)
++      await ctx.plugin(ToolTeam)
++    },
++    note:
++      'Five team tools over the team seam and control coordinator. Schemas are stable; the delegate/list/send/control tools read `ctx.team` (and `ctx.subagents`/`ctx.session` at execution time) via `ctx.get`, so the harvest mounts only the registry + coordinator the plugin injects.',
++  },
+@@ -697 +743 @@ export async function collectToolCatalog(packages: ToolPackage[] = TOOL_PACKAGES
+-      assertToolsHarvested(entry, schemas.length)
++      if (!entry.noModelTools) assertToolsHarvested(entry, schemas.length)

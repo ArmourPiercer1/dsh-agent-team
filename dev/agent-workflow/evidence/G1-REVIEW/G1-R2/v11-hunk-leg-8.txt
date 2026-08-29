@@ -1,0 +1,8 @@
+﻿diff --git a/website/docs.ts b/website/docs.ts
+index b4d575a576..a35be7d0ef 100644
+--- a/website/docs.ts
++++ b/website/docs.ts
+@@ -325,0 +326 @@ const subsystemGroups = [
++    ['team.md', '团队', 'Team'],
+@@ -329,0 +331 @@ const subsystemGroups = [
++    ['permission.md', '权限', 'Permissions'],

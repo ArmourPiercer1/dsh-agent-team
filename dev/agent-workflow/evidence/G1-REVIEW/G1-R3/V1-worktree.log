@@ -1,0 +1,5 @@
+=== V1 review worktree (G1-R3) ===
+created via: git -C <main> worktree add --detach .worktrees/G1-R3 384a645d5df23425b5bbe0c632ca8400fae7e419
+worktree HEAD: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G1-R3  384a645 (detached HEAD)
+pinned P1 scope head (int branch ancestor, verified): 384a645d5df23425b5bbe0c632ca8400fae7e419
+note: created detached so no branch/commits could be affected by this review; this worktree is the only place install/build occurred.

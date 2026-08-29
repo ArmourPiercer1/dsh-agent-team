@@ -1,0 +1,11 @@
+.gitignore
+docs/subsystems/README.md
+docs/subsystems/README.zh.md
+packages/core/session/src/known-event-types.ts
+scripts/gen-cordis-catalog.ts
+scripts/gen-doc-graphs.ts
+scripts/gen-tool-catalog.ts
+scripts/project-doc-site.spec.ts
+tsconfig.base.json
+tsconfig.host.json
+website/docs.ts

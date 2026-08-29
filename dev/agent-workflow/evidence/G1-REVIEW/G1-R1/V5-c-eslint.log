@@ -1,0 +1,7 @@
+﻿=== V5.3 eslint (direct node invocation, cwd=worktree) ===
+date: 2026-08-29T23:52:29
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G1-R1
+cmd: node node_modules\eslint\bin\eslint.js . --format stylish
+exit code: 0 (expected 0)
+--- output ---
+(no output: 0 lint findings)

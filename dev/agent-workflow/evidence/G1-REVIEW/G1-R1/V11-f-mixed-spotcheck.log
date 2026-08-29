@@ -1,0 +1,20 @@
+=== V11f MIXED-file spot check: non-Team hunks present, Team hunks absent ===
+date: 2026-08-30T00:14:59.1030736+08:00
+
+--- docs/subsystems/README.md (expect: permission.md row YES; team.md row NO) ---
+permission.md-rows: 1
+team.md-rows: 1
+
+--- packages/core/session/src/known-event-types.ts (expect: permission/decision YES; team/member-bound NO; team/message NO; team/progress NO) ---
+permission-decision: 1
+team/member-bound: 0
+team/message: 2
+team/progress: 0
+
+--- website/docs.ts (expect: permission.md YES; team.md NO) ---
+permission.md: 1
+team.md: 0
+
+FAIL README.md
+FAIL known-event-types.ts
+RESULT: FAIL (2)

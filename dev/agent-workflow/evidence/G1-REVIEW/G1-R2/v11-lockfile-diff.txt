@@ -1,0 +1,419 @@
+﻿diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 06d5d75a10..9a8ade3522 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -1111,0 +1112,3 @@ importers:
++      '@deepseek-ai/dsh-permission-engine':
++        specifier: workspace:^
++        version: link:../../permission/permission-engine
+@@ -6633,0 +6637,94 @@ importers:
++  packages/permission/permission:
++    devDependencies:
++      '@deepseek-ai/cordis':
++        specifier: workspace:^
++        version: link:../../../vendor/cordis
++      '@deepseek-ai/cordis-plugin-include':
++        specifier: workspace:^
++        version: link:../../../vendor/include
++      '@deepseek-ai/cordis-plugin-loader':
++        specifier: workspace:^
++        version: link:../../../vendor/loader
++      '@deepseek-ai/dsh-invariants':
++        specifier: workspace:^
++        version: link:../../runtime-diagnostics/invariants
++      '@deepseek-ai/dsh-permission-engine':
++        specifier: workspace:^
++        version: link:../permission-engine
++      '@deepseek-ai/dsh-session':
++        specifier: workspace:^
++        version: link:../../core/session
++      '@deepseek-ai/dsh-tools':
++        specifier: workspace:^
++        version: link:../../core/tools
++      vitest:
++        specifier: ^3.2.1
++        version: 3.2.7(@types/debug@4.1.13)(@types/node@26.1.2)(happy-dom@20.11.6)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.3.0))(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++
++  packages/permission/permission-engine:
++    devDependencies:
++      '@deepseek-ai/cordis':
++        specifier: workspace:^
++        version: link:../../../vendor/cordis
++      '@deepseek-ai/dsh-invariants':
++        specifier: workspace:^
++        version: link:../../runtime-diagnostics/invariants
++      '@deepseek-ai/dsh-permission':
++        specifier: workspace:^
++        version: link:../permission
++      '@deepseek-ai/dsh-session':
++        specifier: workspace:^
++        version: link:../../core/session
++      '@deepseek-ai/dsh-tools':
++        specifier: workspace:^
++        version: link:../../core/tools
++      vitest:
++        specifier: ^3.2.1
++        version: 3.2.7(@types/debug@4.1.13)(@types/node@26.1.2)(happy-dom@20.11.6)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.3.0))(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++
++  packages/permission/tool-permission-guard:
++    dependencies:
++      '@deepseek-ai/schemastery':
++        specifier: link:../../../vendor/schemastery
++        version: link:../../../vendor/schemastery
++    devDependencies:
++      '@deepseek-ai/cordis':
++        specifier: workspace:^
++        version: link:../../../vendor/cordis
++      '@deepseek-ai/cordis-plugin-include':
++        specifier: workspace:^
++        version: link:../../../vendor/include
++      '@deepseek-ai/cordis-plugin-loader':
++        specifier: workspace:^
++        version: link:../../../vendor/loader
++      '@deepseek-ai/dsh-agent':
++        specifier: workspace:^
++        version: link:../../core/agent
++      '@deepseek-ai/dsh-invariants':
++        specifier: workspace:^
++        version: link:../../runtime-diagnostics/invariants
++      '@deepseek-ai/dsh-llm':
++        specifier: workspace:^
++        version: link:../../llm/llm
++      '@deepseek-ai/dsh-permission':
++        specifier: workspace:^
++        version: link:../permission
++      '@deepseek-ai/dsh-permission-engine':
++        specifier: workspace:^
++        version: link:../permission-engine
++      '@deepseek-ai/dsh-session':
++        specifier: workspace:^
++        version: link:../../core/session
++      '@deepseek-ai/dsh-system-prompt':
++        specifier: workspace:^
++        version: link:../../core/system-prompt
++      '@deepseek-ai/dsh-tools':
++        specifier: workspace:^
++        version: link:../../core/tools
++      '@deepseek-ai/dsh-user-approval':
++        specifier: workspace:^
++        version: link:../../interaction/user-approval
++      vitest:
++        specifier: ^3.2.1
++        version: 3.2.7(@types/debug@4.1.13)(@types/node@26.1.2)(happy-dom@20.11.6)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.3.0))(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++
+@@ -13190,0 +13288,3 @@ packages:
++  '@vitest/expect@3.2.7':
++    resolution: {integrity: sha512-E8eBXaKibuvH2pSZErOjdVb5vF4PbKYcrnluBTYxEk1l/VhhwZg1kZQsdtjq+CsF5CFydf2Rdkz7jDHKSisi3w==}
++
+@@ -13193,0 +13294,11 @@ packages:
++  '@vitest/mocker@3.2.7':
++    resolution: {integrity: sha512-Trr0hYO9CM3Wj6ksWHRhK9IZpIY6wTMO5u/MqXurMxT57sWBaOPEtP3Oq60ihZuh5JsiagKfz95OcxdEP6dBrA==}
++    peerDependencies:
++      msw: ^2.4.9
++      vite: ^5.0.0 || ^6.0.0 || ^7.0.0-0
++    peerDependenciesMeta:
++      msw:
++        optional: true
++      vite:
++        optional: true
++
+@@ -13204,0 +13316,3 @@ packages:
++  '@vitest/pretty-format@3.2.7':
++    resolution: {integrity: sha512-KUHlwqVu0sRlhCdyPdQ/wBoTfRahjUky1MubOmYw9fWfIZy1gNoHpuaaQBPAaMaVYdQYHJLurzj8ECCj5OwTqA==}
++
+@@ -13207,0 +13322,3 @@ packages:
++  '@vitest/runner@3.2.7':
++    resolution: {integrity: sha512-sB9y4ovltoQP+WaUPwmSxO9WIg9Ig694Di5PalVPsYHklAdE027mehpWF2SQSVq+k6sFgaivbTjTJwZLSHbedA==}
++
+@@ -13210,0 +13328,3 @@ packages:
++  '@vitest/snapshot@3.2.7':
++    resolution: {integrity: sha512-7C+MwShwtBSI5Buwoyg3s/iY1eHL9PKAf+O1wVh/TdnjXUtkoL/9YQtre90i4MtNXM6edP1wJ2zOBpfCyhIS7g==}
++
+@@ -13213,0 +13334,3 @@ packages:
++  '@vitest/spy@3.2.7':
++    resolution: {integrity: sha512-Q2eQGI6d2L/hBtZ0qNuKcAGid68XK6cv1xsoaIma6PaJhHPoqcEJhYpXZ/5myCMqkNgtP6UKuBhbc0nHKnrkuQ==}
++
+@@ -13216,0 +13340,3 @@ packages:
++  '@vitest/utils@3.2.7':
++    resolution: {integrity: sha512-x6BDOd7dyo3PFLY3I9/HJ25X/6OurhGXk2/B9gOZNPF7XDVjeBK4k01lQE5uvDpbuheErh91qYuE1E2OEjK3Rw==}
++
+@@ -13544,0 +13671,4 @@ packages:
++  cac@6.7.14:
++    resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
++    engines: {node: '>=8'}
++
+@@ -13562,0 +13693,4 @@ packages:
++  chai@5.3.3:
++    resolution: {integrity: sha512-4zNhdJD/iOjSH0A05ea+Ke6MU5mmpQcbQsSOkgdaUMJ9zTlDTD/GYlwohmIE2u0gaxHYiVHEn1Fw9mZ/ktJWgw==}
++    engines: {node: '>=18'}
++
+@@ -13583,0 +13718,4 @@ packages:
++  check-error@2.1.3:
++    resolution: {integrity: sha512-PAJdDJusoxnwm1VwW07VWwUN1sl7smmC3OKggvndJFadxxDRyFJBX/ggnu/KE4kQAB7a3Dp8f/YXC1FlUprWmA==}
++    engines: {node: '>= 16'}
++
+@@ -13877,0 +14016,4 @@ packages:
++  deep-eql@5.0.2:
++    resolution: {integrity: sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==}
++    engines: {node: '>=6'}
++
+@@ -13992,0 +14135,3 @@ packages:
++  es-module-lexer@1.7.0:
++    resolution: {integrity: sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==}
++
+@@ -14538,0 +14684,3 @@ packages:
++  js-tokens@9.0.1:
++    resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
++
+@@ -14825,0 +14974,3 @@ packages:
++  loupe@3.2.1:
++    resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
++
+@@ -15299,0 +15451,4 @@ packages:
++  pathval@2.0.1:
++    resolution: {integrity: sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==}
++    engines: {node: '>= 14.16'}
++
+@@ -15669,0 +15825,3 @@ packages:
++  std-env@3.10.0:
++    resolution: {integrity: sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==}
++
+@@ -15705,0 +15864,3 @@ packages:
++  strip-literal@3.1.0:
++    resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
++
+@@ -15736,0 +15898,3 @@ packages:
++  tinyexec@0.3.2:
++    resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
++
+@@ -15744,0 +15909,8 @@ packages:
++  tinypool@1.1.1:
++    resolution: {integrity: sha512-Zba82s87IFq9A9XmjiX5uZA/ARWDrB03OHlq+Vw1fSdt0I+4/Kutwy8BP4Y/y/aORMo61FQ0vIb5j44vSo5Pkg==}
++    engines: {node: ^18.0.0 || >=20.0.0}
++
++  tinyrainbow@2.0.0:
++    resolution: {integrity: sha512-op4nsTR47R6p0vMUUoYl/a+ljLFVtlfaXkLQmqfLR1qHma1h/ysYk4hEXZ880bf2CYgTskvTa/e196Vd5dDQXw==}
++    engines: {node: '>=14.0.0'}
++
+@@ -15748,0 +15921,4 @@ packages:
++  tinyspy@4.0.4:
++    resolution: {integrity: sha512-azl+t0z7pw/z958Gy9svOTuzqIk6xq+NSheJzn5MMWtWTFywIacg2wUlzKFGtt3cthx0r2SxMK0yzJOR0IES7Q==}
++    engines: {node: '>=14.0.0'}
++
+@@ -15953,0 +16130,5 @@ packages:
++  vite-node@3.2.4:
++    resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
++    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
++    hasBin: true
++
+@@ -16090,0 +16272,28 @@ packages:
++  vitest@3.2.7:
++    resolution: {integrity: sha512-KrxIJ62Fd89gfysR4WotlgZABiz2dqFPgqGzX7s+CwsqLFomRH7777ZcrOD6+WVAh7khPQP41A+BKbpcJFrdEg==}
++    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
++    hasBin: true
++    peerDependencies:
++      '@edge-runtime/vm': '*'
++      '@types/debug': ^4.1.12
++      '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
++      '@vitest/browser': 3.2.7
++      '@vitest/ui': 3.2.7
++      happy-dom: '*'
++      jsdom: '*'
++    peerDependenciesMeta:
++      '@edge-runtime/vm':
++        optional: true
++      '@types/debug':
++        optional: true
++      '@types/node':
++        optional: true
++      '@vitest/browser':
++        optional: true
++      '@vitest/ui':
++        optional: true
++      happy-dom:
++        optional: true
++      jsdom:
++        optional: true
++
+@@ -18703,0 +18913,8 @@ snapshots:
++  '@vitest/expect@3.2.7':
++    dependencies:
++      '@types/chai': 5.2.3
++      '@vitest/spy': 3.2.7
++      '@vitest/utils': 3.2.7
++      chai: 5.3.3
++      tinyrainbow: 2.0.0
++
+@@ -18712,0 +18930,8 @@ snapshots:
++  '@vitest/mocker@3.2.7(vite@6.4.3(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0))':
++    dependencies:
++      '@vitest/spy': 3.2.7
++      estree-walker: 3.0.3
++      magic-string: 0.30.21
++    optionalDependencies:
++      vite: 6.4.3(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++
+@@ -18736,0 +18962,4 @@ snapshots:
++  '@vitest/pretty-format@3.2.7':
++    dependencies:
++      tinyrainbow: 2.0.0
++
+@@ -18740,0 +18970,6 @@ snapshots:
++  '@vitest/runner@3.2.7':
++    dependencies:
++      '@vitest/utils': 3.2.7
++      pathe: 2.0.3
++      strip-literal: 3.1.0
++
+@@ -18745,0 +18981,6 @@ snapshots:
++  '@vitest/snapshot@3.2.7':
++    dependencies:
++      '@vitest/pretty-format': 3.2.7
++      magic-string: 0.30.21
++      pathe: 2.0.3
++
+@@ -18752,0 +18994,4 @@ snapshots:
++  '@vitest/spy@3.2.7':
++    dependencies:
++      tinyspy: 4.0.4
++
+@@ -18754,0 +19000,6 @@ snapshots:
++  '@vitest/utils@3.2.7':
++    dependencies:
++      '@vitest/pretty-format': 3.2.7
++      loupe: 3.2.1
++      tinyrainbow: 2.0.0
++
+@@ -19084,0 +19336,2 @@ snapshots:
++  cac@6.7.14: {}
++
+@@ -19100,0 +19354,8 @@ snapshots:
++  chai@5.3.3:
++    dependencies:
++      assertion-error: 2.0.1
++      check-error: 2.1.3
++      deep-eql: 5.0.2
++      loupe: 3.2.1
++      pathval: 2.0.1
++
+@@ -19115,0 +19377,2 @@ snapshots:
++  check-error@2.1.3: {}
++
+@@ -19414,0 +19678,2 @@ snapshots:
++  deep-eql@5.0.2: {}
++
+@@ -19508,0 +19774,2 @@ snapshots:
++  es-module-lexer@1.7.0: {}
++
+@@ -20185,0 +20453,2 @@ snapshots:
++  js-tokens@9.0.1: {}
++
+@@ -20460,0 +20730,2 @@ snapshots:
++  loupe@3.2.1: {}
++
+@@ -21157,0 +21429,2 @@ snapshots:
++  pathval@2.0.1: {}
++
+@@ -21621,0 +21895,2 @@ snapshots:
++  std-env@3.10.0: {}
++
+@@ -21660,0 +21936,4 @@ snapshots:
++  strip-literal@3.1.0:
++    dependencies:
++      js-tokens: 9.0.1
++
+@@ -21690,0 +21970,2 @@ snapshots:
++  tinyexec@0.3.2: {}
++
+@@ -21697,0 +21979,4 @@ snapshots:
++  tinypool@1.1.1: {}
++
++  tinyrainbow@2.0.0: {}
++
+@@ -21699,0 +21985,2 @@ snapshots:
++  tinyspy@4.0.4: {}
++
+@@ -21874,0 +22162,21 @@ snapshots:
++  vite-node@3.2.4(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0):
++    dependencies:
++      cac: 6.7.14
++      debug: 4.4.3
++      es-module-lexer: 1.7.0
++      pathe: 2.0.3
++      vite: 6.4.3(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++    transitivePeerDependencies:
++      - '@types/node'
++      - jiti
++      - less
++      - lightningcss
++      - sass
++      - sass-embedded
++      - stylus
++      - sugarss
++      - supports-color
++      - terser
++      - tsx
++      - yaml
++
+@@ -21910,0 +22219,16 @@ snapshots:
++  vite@6.4.3(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0):
++    dependencies:
++      esbuild: 0.25.12
++      fdir: 6.5.0(picomatch@4.0.4)
++      picomatch: 4.0.4
++      postcss: 8.5.15
++      rollup: 4.62.2
++      tinyglobby: 0.2.17
++    optionalDependencies:
++      '@types/node': 26.1.2
++      fsevents: 2.3.3
++      jiti: 2.7.0
++      lightningcss: 1.32.0
++      tsx: 4.22.4
++      yaml: 2.9.0
++
+@@ -21997,0 +22322,44 @@ snapshots:
++  vitest@3.2.7(@types/debug@4.1.13)(@types/node@26.1.2)(happy-dom@20.11.6)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.3.0))(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0):
++    dependencies:
++      '@types/chai': 5.2.3
++      '@vitest/expect': 3.2.7
++      '@vitest/mocker': 3.2.7(vite@6.4.3(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0))
++      '@vitest/pretty-format': 3.2.7
++      '@vitest/runner': 3.2.7
++      '@vitest/snapshot': 3.2.7
++      '@vitest/spy': 3.2.7
++      '@vitest/utils': 3.2.7
++      chai: 5.3.3
++      debug: 4.4.3
++      expect-type: 1.3.0
++      magic-string: 0.30.21
++      pathe: 2.0.3
++      picomatch: 4.0.4
++      std-env: 3.10.0
++      tinybench: 2.9.0
++      tinyexec: 0.3.2
++      tinyglobby: 0.2.17
++      tinypool: 1.1.1
++      tinyrainbow: 2.0.0
++      vite: 6.4.3(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++      vite-node: 3.2.4(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
++      why-is-node-running: 2.3.0
++    optionalDependencies:
++      '@types/debug': 4.1.13
++      '@types/node': 26.1.2
++      happy-dom: 20.11.6
++      jsdom: 29.1.1(@noble/hashes@2.3.0)
++    transitivePeerDependencies:
++      - jiti
++      - less
++      - lightningcss
++      - msw
++      - sass
++      - sass-embedded
++      - stylus
++      - sugarss
++      - supports-color
++      - terser
++      - tsx
++      - yaml
++

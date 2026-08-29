@@ -1,0 +1,14 @@
+﻿diff --git a/tsconfig.base.json b/tsconfig.base.json
+index 661a546bf8..9846a3fe76 100644
+--- a/tsconfig.base.json
++++ b/tsconfig.base.json
+@@ -74,0 +75,4 @@
++      "@deepseek-ai/dsh-permission": ["./packages/permission/permission/src/index.ts"],
++      "@deepseek-ai/dsh-permission/types": ["./packages/permission/permission/src/types.ts"],
++      "@deepseek-ai/dsh-permission-engine": ["./packages/permission/permission-engine/src/index.ts"],
++      "@deepseek-ai/dsh-tool-permission-guard": ["./packages/permission/tool-permission-guard/src/index.ts"],
+@@ -364,0 +369,2 @@
++      "@deepseek-ai/dsh-permission/invariant": ["./packages/permission/permission/src/invariant.ts"],
++      "@deepseek-ai/dsh-permission-engine/invariant": ["./packages/permission/permission-engine/src/invariant.ts"],
+@@ -512,0 +519 @@
++      "@deepseek-ai/dsh-tool-permission-guard/invariant": ["./packages/permission/tool-permission-guard/src/invariant.ts"],

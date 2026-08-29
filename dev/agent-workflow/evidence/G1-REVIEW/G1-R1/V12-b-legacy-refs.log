@@ -1,0 +1,8 @@
+﻿=== V12.4 packages/legacy contents (recursive) ===
+packages\legacy\package.json
+packages\legacy\README.md
+
+=== V12.5 grep legacy source refs in packages/ and scripts/ (main repo int) ===
+--- a3ab319927 ---
+--- packages/team ---
+--- references/deepseek-harness (legacy path refs) ---

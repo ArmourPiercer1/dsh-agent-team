@@ -1,0 +1,44 @@
+=== V11 provenance adjudication (criterion 7) — G1-R3 ===
+Time: 08/30/2026 (session)
+Sources: dev/agent-workflow/evidence/provenance/file-manifest.json (only allowed workflow-evidence read),
+         git object reads in .worktrees\P1-int-downstream (read-only), no other evidence read.
+
+1) Manifest structure (parsed by dev/g1-review/G1-R3/diag-manifest.mjs / diag-manifest2.mjs):
+   baseline.upstream_sha = cd5ef8148158c3a752a658978873241fdf8e2bbc
+   baseline.legacy_sha   = a3ab31992762c5d6560797eabc7e0885a9320ade
+   470 files: TEAM_OWNED=315, GENERATED_FROM_TEAM=64, GENERIC_FORK_CAPABILITY=70, MIXED=11, UNRELATED_FORK_FEATURE=10
+   (see V11-manifest-parsed.log, V11-paths-*.txt, V11-mixed-full.json, V11-mixed-compact.txt)
+
+2) Downstream tree shape (.worktrees\P1-int-downstream, HEAD=02f3094c593163c9506710431555a4514a51c19a):
+   - cd5ef814 object present; merge-base(HEAD, cd5ef814) = cd5ef814 (upstream base is an ancestor).
+   - HEAD is a merge of two file-disjoint lanes, both parented directly on cd5ef814:
+       57fa482f "replay(P1-T1): forward-apply non-Team fork capabilities onto upstream cd5ef814"
+       74ac91e5 "Preserve unrelated fork features (Class B, P1-T3)"
+       02f3094c "P1-int: downstream host = clean forward-replay (T1 lane) + unrelated fork features (T3 lane); file-disjoint lanes"
+
+3) Lane diffs vs base (see V11-diff-T1.txt, V11-diff-T3.txt, V11-diff-combined.txt, V11-compare.log):
+   - T1 lane: 82 files = 70 GENERIC_FORK_CAPABILITY + 11 MIXED + 1 (pnpm-lock.yaml). Set-identical to manifest GENERIC+MIXED sets; 0 forbidden (TEAM_OWNED/GENERATED_FROM_TEAM) files otherwise.
+   - T3 lane: 10 files = EXACTLY the 10 UNRELATED_FORK_FEATURE manifest paths (exact set match).
+   - T1 intersect T3 = 0 (file-disjoint claim verified); COMBINED(92) = T1 union T3 (M:28, A:64).
+
+4) pnpm-lock.yaml (manifest: GENERATED_FROM_TEAM / disposition GENERATED_REVERT):
+   - T1 lane delta = +368 lines only; added importer blocks = packages/permission/{permission,permission-engine,tool-permission-guard} + one workspace link dep (@deepseek-ai/dsh-permission-engine).
+   - Zero added lines mentioning team / model-ui (grep on V11-lock-T1.raw). Lock regenerated without Team entries -> GENERATED_REVERT semantics satisfied.
+
+5) MIXED files: all 11 verified hunk-level (manifest notes vs actual diff):
+   - .gitignore: only OTHER-kind hygiene block (references/, issues/, archive/, start-dev.ps1, *.js.map, *.d.ts.map, core/session + permission-engine build-artifact ignores).
+   - docs/subsystems/README.md + .zh.md: only the permission.md row added; NO team.md row.
+   - packages/core/session/src/known-event-types.ts: only 'permission/decision' added; NO team/* event types.
+   - tsconfig.base.json: only permission path entries; tsconfig.host.json: +3 permission project refs only (manifest legacy hunk had +7 team +3 permission in one hunk -> SPLIT kept permission part only).
+   - scripts/gen-cordis-catalog.ts: permission page mapping + TYPE_LINK_EXEMPTIONS only; NO team/teamControl/teamProjection mapping.
+   - scripts/gen-doc-graphs.ts, gen-tool-catalog.ts (noModelTools guard + permission tool entry), project-doc-site.spec.ts (toHaveLength(47) count consequence of permission doc), website/docs.ts (permission.md row): non-TEAM hunks only.
+   - Case-insensitive 'team' grep across ALL 11 MIXED file diffs: 0 occurrences (V11-mixed-diffs.log, V11-mixed-diffs2.log).
+
+6) Content preservation vs legacy fork tip a3ab3199 (object present in downstream repo):
+   - 10/10 UNRELATED_FORK_FEATURE files byte-identical (git show HEAD:<p> vs git show <legacy>:<p>) -> V11-unrelated-vs-legacy.txt
+   - 70/70 GENERIC_FORK_CAPABILITY files byte-identical -> V11-generic-vs-legacy.txt
+   (MIXED files intentionally differ from legacy: Team hunks removed by design.)
+
+V11 RESULT: PASS. Downstream contains exactly the manifest-authorized non-Team fork delta
+(70 generic + 10 unrelated + non-TEAM hunks of 11 SPLIT mixed files + regenerated lockfile),
+no TEAM_OWNED/GENERATED_FROM_TEAM source hunks; unrelated fork features preserved byte-for-byte.

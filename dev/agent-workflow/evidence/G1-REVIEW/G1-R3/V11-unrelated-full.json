@@ -1,0 +1,82 @@
+[
+ {
+  "path": ".agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.md",
+  "status": "A",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "REFERENCE_ONLY",
+  "reason": "Process note: plugin development guide reference (generic fork process).",
+  "mixed_hunks": []
+ },
+ {
+  "path": ".agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.zh.md",
+  "status": "A",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "REFERENCE_ONLY",
+  "reason": "Process note: plugin development guide reference (generic fork process).",
+  "mixed_hunks": []
+ },
+ {
+  "path": "AGENTS.md",
+  "status": "M",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "SPLIT",
+  "reason": "Two-instance warning header (never touch 3080; this checkout is 3180) pointing at ENVIRONMENTS.md.",
+  "mixed_hunks": []
+ },
+ {
+  "path": "ENVIRONMENTS.md",
+  "status": "A",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "REFERENCE_ONLY",
+  "reason": "Local two-instance environment boundary doc (stable vs dev checkout); fork workspace process note, no team content.",
+  "mixed_hunks": []
+ },
+ {
+  "path": "PLUGIN_DEV_GUIDE.md",
+  "status": "A",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "REFERENCE_ONLY",
+  "reason": "Fork-level plugin development guide; generic fork reference doc, no team/permission/model content.",
+  "mixed_hunks": []
+ },
+ {
+  "path": "docs/subsystems/subagent.zh.md",
+  "status": "M",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "SPLIT",
+  "reason": "zh wording fix plus paragraph removal (doc sync with the English).",
+  "mixed_hunks": []
+ },
+ {
+  "path": "learning-path-zh.md",
+  "status": "A",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "REFERENCE_ONLY",
+  "reason": "Chinese learning path for DSH aimed at physics-background readers; generic fork doc.",
+  "mixed_hunks": []
+ },
+ {
+  "path": "packages/session/session-persistence-jsonl/src/format.ts",
+  "status": "M",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "SPLIT",
+  "reason": "Backward seq-scan replacement in the SessionLogScanner (compaction-summary driven).",
+  "mixed_hunks": []
+ },
+ {
+  "path": "packages/web/tool-web/src/turndown-plugin-gfm.d.ts",
+  "status": "M",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "SPLIT",
+  "reason": "Type declaration doc-comment cleanup.",
+  "mixed_hunks": []
+ },
+ {
+  "path": "scripts/translation-pairing.ts",
+  "status": "M",
+  "classification": "UNRELATED_FORK_FEATURE",
+  "disposition": "SPLIT",
+  "reason": "references/ excluded from the translation pairing scope (fork reference doc tree).",
+  "mixed_hunks": []
+ }
+]

@@ -1,0 +1,33 @@
+﻿diff --git a/scripts/gen-tool-catalog.ts b/scripts/gen-tool-catalog.ts
+index 36e0b0833c..2cbdd5c231 100644
+--- a/scripts/gen-tool-catalog.ts
++++ b/scripts/gen-tool-catalog.ts
+@@ -67,0 +68 @@ import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
++import * as ToolPermissionGuard from '@deepseek-ai/dsh-tool-permission-guard'
+@@ -162,0 +164,5 @@ export interface ToolPackage {
++  /**
++   * Package contributes no model-facing tool (e.g. a `tools/pre-execute`
++   * guard). Skips {@link assertToolsHarvested}; the note documents the role.
++   */
++  noModelTools?: boolean
+@@ -411,0 +418,17 @@ const TOOL_PACKAGES: ToolPackage[] = [
++  {
++    pkg: '@deepseek-ai/dsh-tool-permission-guard',
++    dir: 'tool-permission-guard',
++    source: 'packages/permission/tool-permission-guard/src/index.ts',
++    requires: ['ctx.tools (pre-execute listener)', 'ctx.permission via ctx.get'],
++    writes: ['permission/decision audit events in the acting session log'],
++    noModelTools: true,
++    async mount(ctx) {
++      await ctx.plugin(ToolPermissionGuard, {
++        mode: 'default',
++        rules: [],
++        pathBases: { settingsDir: '.', homeDir: '.', cwd: '.' },
++      })
++    },
++    note:
++      'A `tools/pre-execute` guard that applies `ctx.permission.evaluate` to the main agent and single delegated subagents; it registers no model-facing tool, so it has no schema section. The note is the whole contract: `allow` proceeds, `deny` blocks, `ask` routes to the approval seam.',
++  },
+@@ -697 +720 @@ export async function collectToolCatalog(packages: ToolPackage[] = TOOL_PACKAGES
+-      assertToolsHarvested(entry, schemas.length)
++      if (!entry.noModelTools) assertToolsHarvested(entry, schemas.length)

@@ -1,0 +1,14 @@
+﻿diff --git a/packages/core/session/src/known-event-types.ts b/packages/core/session/src/known-event-types.ts
+index f97c8d4846..8be178ab27 100644
+--- a/packages/core/session/src/known-event-types.ts
++++ b/packages/core/session/src/known-event-types.ts
+@@ -38,0 +39 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
++  'permission/decision',
+@@ -52,0 +54,2 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
++  'team/control-decision',
++  'team/control-request',
+@@ -53,0 +57,2 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
++  'team/member-bound',
++  'team/message',
+@@ -55,0 +61 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
++  'team/progress',

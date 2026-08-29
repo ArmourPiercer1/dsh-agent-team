@@ -1,0 +1,147 @@
+######## .gitignore
+diff --git a/.gitignore b/.gitignore
+index d33bbc8a4e..9e2b94d11c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -39,3 +39,24 @@ apps/web/dist/
+ worktrees/
+ .agents/worktrees/
+ .typert-*/
++
++# references
++references/
++
++# local dev issues
++issues/
++
++# local archive (gitignored workspace stash for superseded WIP artifacts)
++archive/
++
++# local instance launcher
++start-dev.ps1
++
++# tsc composite build products emitted next to sources
++# (rewriteRelativeImportExtensions), never source of record
++*.js.map
++*.d.ts.map
++packages/core/session/src/*.js
++packages/core/session/src/*.d.ts
++packages/permission/permission-engine/src/*.js
++packages/permission/permission-engine/src/*.d.ts
+######## packages/core/session/src/known-event-types.ts
+diff --git a/packages/core/session/src/known-event-types.ts b/packages/core/session/src/known-event-types.ts
+index f97c8d4846..2d1f967127 100644
+--- a/packages/core/session/src/known-event-types.ts
++++ b/packages/core/session/src/known-event-types.ts
+@@ -36,6 +36,7 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([
+   'llm/retry',
+   'llm/retry-started',
+   'model/selection',
++  'permission/decision',
+   'permission/preset',
+   'plan/mode',
+   'request/context',
+######## docs/subsystems/README.md
+diff --git a/docs/subsystems/README.md b/docs/subsystems/README.md
+index f3340ebeb4..ea2f3e77cc 100644
+--- a/docs/subsystems/README.md
++++ b/docs/subsystems/README.md
+@@ -45,6 +45,7 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures
+ | [workflow.md](workflow.md) | the workflow seam: `WorkflowStartRequest`, `WorkflowMeta`, `WorkflowRun`/`Result`, the `workflow/*` event payloads, `WorkflowError` fatality |
+ | [jobs.md](jobs.md) | the background-job runtime: branded `JobId`s, the producer contract, consumer views, and `ctx.jobs` service behavior |
+ | [permission-presets.md](permission-presets.md) | the permission-preset layer: `PresetSpec`/`PresetOption`, the derived `custom` state, the log-only `permission/preset` event |
++| [permission.md](permission.md) | the permission seam: the `PermissionService` rule engine, command/path/MCP/parameter matchers, deny?ask?allow adjudication, and the `permission/decision` audit event |
+ | [plan.md](plan.md) | plan mode: the log-only `plan/mode` state, pending-selection flush, `PlanModeConfig`, the `exit_plan_mode` review arc |
+ | [invariants.md](invariants.md) | the runtime-invariant registry: selection `Config`, `InvariantInstaller`/`InvariantFailure`, the empty-companion contract |
+ | [web-server.md](web-server.md) | the HTTP carrier: `WebRouteKind`/`WebRoute`, match order, the claimable fallback seat, index taps |
+######## tsconfig.base.json
+diff --git a/tsconfig.base.json b/tsconfig.base.json
+index 661a546bf8..9846a3fe76 100644
+--- a/tsconfig.base.json
++++ b/tsconfig.base.json
+@@ -72,6 +72,10 @@
+       "@deepseek-ai/dsh-session-projection/types": ["./packages/session/session-projection/src/types.ts"],
+       "@deepseek-ai/dsh-tool-todo/types": ["./packages/todo/tool-todo/src/types.ts"],
+       "@deepseek-ai/dsh-tool-todo/client": ["./packages/todo/tool-todo/src/client.ts"],
++      "@deepseek-ai/dsh-permission": ["./packages/permission/permission/src/index.ts"],
++      "@deepseek-ai/dsh-permission/types": ["./packages/permission/permission/src/types.ts"],
++      "@deepseek-ai/dsh-permission-engine": ["./packages/permission/permission-engine/src/index.ts"],
++      "@deepseek-ai/dsh-tool-permission-guard": ["./packages/permission/tool-permission-guard/src/index.ts"],
+       "@deepseek-ai/dsh-session-title/types": ["./packages/session/session-title/src/types.ts"],
+       "@deepseek-ai/dsh-session-title/client": ["./packages/session/session-title/src/client.ts"],
+       "@deepseek-ai/dsh-subagent/client": ["./packages/subagent/subagent/src/client.ts"],
+@@ -362,6 +366,8 @@
+       "@deepseek-ai/dsh-native-command/invariant": ["./packages/util/native-command/src/invariant.ts"],
+       "@deepseek-ai/dsh-output-retention": ["./packages/util/output-retention/src"],
+       "@deepseek-ai/dsh-output-retention/invariant": ["./packages/util/output-retention/src/invariant.ts"],
++      "@deepseek-ai/dsh-permission/invariant": ["./packages/permission/permission/src/invariant.ts"],
++      "@deepseek-ai/dsh-permission-engine/invariant": ["./packages/permission/permission-engine/src/invariant.ts"],
+       "@deepseek-ai/dsh-permission-presets": ["./packages/interaction/permission-presets/src"],
+       "@deepseek-ai/dsh-permission-presets/invariant": ["./packages/interaction/permission-presets/src/invariant.ts"],
+       "@deepseek-ai/dsh-persona": ["./packages/preset/persona/src"],
+@@ -510,6 +516,7 @@
+       "@deepseek-ai/dsh-tool-jobs/invariant": ["./packages/jobs/tool-jobs/src/invariant.ts"],
+       "@deepseek-ai/dsh-tool-lsp": ["./packages/lsp/tool-lsp/src"],
+       "@deepseek-ai/dsh-tool-lsp/invariant": ["./packages/lsp/tool-lsp/src/invariant.ts"],
++      "@deepseek-ai/dsh-tool-permission-guard/invariant": ["./packages/permission/tool-permission-guard/src/invariant.ts"],
+       "@deepseek-ai/dsh-tool-pwsh/invariant": ["./packages/shell/tool-pwsh/src/invariant.ts"],
+       "@deepseek-ai/dsh-tool-pwsh-persistent": ["./packages/shell/tool-pwsh-persistent/src"],
+       "@deepseek-ai/dsh-tool-pwsh-persistent/invariant": ["./packages/shell/tool-pwsh-persistent/src/invariant.ts"],
+######## scripts/gen-tool-catalog.ts
+diff --git a/scripts/gen-tool-catalog.ts b/scripts/gen-tool-catalog.ts
+index 36e0b0833c..2cbdd5c231 100644
+--- a/scripts/gen-tool-catalog.ts
++++ b/scripts/gen-tool-catalog.ts
+@@ -65,6 +65,7 @@ import * as ToolTodo from '@deepseek-ai/dsh-tool-todo'
+ import * as ToolSubagent from '@deepseek-ai/dsh-tool-subagent'
+ import { registerListSubagentModels } from '../packages/subagent/tool-subagent/src/list-models.ts'
+ import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
++import * as ToolPermissionGuard from '@deepseek-ai/dsh-tool-permission-guard'
+ import VmWorkflowEngine from '@deepseek-ai/dsh-workflow-worker-thread'
+ import * as ToolRalph from '@deepseek-ai/dsh-tool-ralph'
+ import * as ToolWorkflow from '@deepseek-ai/dsh-tool-workflow'
+@@ -160,6 +161,11 @@ export interface ToolPackage {
+   writes: string[]
+   /** Additional model-visible names shipped by example/app config. */
+   shippedNames?: string[]
++  /**
++   * Package contributes no model-facing tool (e.g. a `tools/pre-execute`
++   * guard). Skips {@link assertToolsHarvested}; the note documents the role.
++   */
++  noModelTools?: boolean
+   /** Plug the injected seams + the tool plugin onto a context that already
+    * carries `systemPrompt` + `tools`. */
+   mount: (ctx: Context) => Promise<void>
+@@ -409,6 +415,23 @@ const TOOL_PACKAGES: ToolPackage[] = [
+     note:
+       'The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema.',
+   },
++  {
++    pkg: '@deepseek-ai/dsh-tool-permission-guard',
++    dir: 'tool-permission-guard',
++    source: 'packages/permission/tool-permission-guard/src/index.ts',
++    requires: ['ctx.tools (pre-execute listener)', 'ctx.permission via ctx.get'],
++    writes: ['permission/decision audit events in the acting session log'],
++    noModelTools: true,
++    async mount(ctx) {
++      await ctx.plugin(ToolPermissionGuard, {
++        mode: 'default',
++        rules: [],
++        pathBases: { settingsDir: '.', homeDir: '.', cwd: '.' },
++      })
++    },
++    note:
++      'A `tools/pre-execute` guard that applies `ctx.permission.evaluate` to the main agent and single delegated subagents; it registers no model-facing tool, so it has no schema section. The note is the whole contract: `allow` proceeds, `deny` blocks, `ask` routes to the approval seam.',
++  },
+   {
+     pkg: '@deepseek-ai/dsh-tool-ralph',
+     dir: 'tool-ralph',
+@@ -694,7 +717,7 @@ export async function collectToolCatalog(packages: ToolPackage[] = TOOL_PACKAGES
+       await ctx.plugin(ToolRuntime, entry.toolsConfig ?? {})
+       await entry.mount(ctx)
+       const schemas = ctx.tools.schemas(entry.scope?.(ctx)).sort((a, b) => a.name.localeCompare(b.name))
+-      assertToolsHarvested(entry, schemas.length)
++      if (!entry.noModelTools) assertToolsHarvested(entry, schemas.length)
+       catalog.push({
+         pkg: entry.pkg,
+         sources: Object.fromEntries(schemas.map(schema => [

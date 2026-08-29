@@ -1,0 +1,6 @@
+﻿### V10 scanner on downstream @ 2026-08-30T00:03:47.5385200+08:00
+verify-zero-core: host=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream
+INFO third-party patched dependency "node-pty" at D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream\pnpm-workspace.yaml [patchedDependencies] (upstream's own dependency patching; not a Team rewrite)
+INFO third-party patch file D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-int-downstream\patches\node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+RESULT: PASS verify-zero-core (0 findings)
+exit=0

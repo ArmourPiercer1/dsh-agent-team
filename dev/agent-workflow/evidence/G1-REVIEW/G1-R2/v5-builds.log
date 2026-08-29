@@ -1,0 +1,18 @@
+﻿### V5 per-package tsc builds (in-process) @ 2026-08-29T23:50:37.0246213+08:00
+=== contracts : exit=0 s
+    (no output = success)
+=== domain : exit=0 s
+    (no output = success)
+=== storage : exit=0 s
+    (no output = success)
+=== runtime : exit=0 s
+    (no output = success)
+=== tools : exit=0 s
+    (no output = success)
+=== remote : exit=0 s
+    (no output = success)
+=== client : exit=0 s
+    (no output = success)
+=== testkit : exit=0 s
+    (no output = success)
+UNION: ALL GREEN

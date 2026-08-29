@@ -1,0 +1,17 @@
+=== V10 downstream tree state (read-only) 08/30/2026 00:04:06 ===
+HEAD: 02f3094c593163c9506710431555a4514a51c19a
+branch: host/downstream-int-20260829
+status --porcelain exit: 0 lines: 0
+node_modules exists: True
+bin.js exists: True
+remote(s):
+origin	git@github.com:ArmourPiercer1/deepseek-harness.git (fetch)
+origin	git@github.com:ArmourPiercer1/deepseek-harness.git (push)
+scanner exit: 
+
+scanner exit: 0
+=== V10 downstream boot (rows present) success line ===
+dsh web: http://127.0.0.1:3193/?token=tPTY2e0QrVagQOh1lnE2KoygPa2mxLkflru8mBoqTmo
+=== V10 post-boot: 08/30/2026 00:09:27 ===
+downstream status --porcelain lines: 0
+HEAD unchanged: 02f3094c593163c9506710431555a4514a51c19a

@@ -1,0 +1,987 @@
+== classification_rule ==
+classification = provenance owner of the fork-side delta/content. A files are classified by dominant kind (secondary noted in reason); MIXED is reserved for hand-written M files whose fork-side content spans >=2 kinds.
+== disposition enum == DELETE, MIGRATE, REPLACE, KEEP, SPLIT, REFERENCE_ONLY, GENERATED_REVERT
+
+== TEAM_OWNED: 315 files ==
+  .agents/notes/implemented/architecture/2026-08-15-continuable-delegation-event-seeding.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: continuable delegation event seeding seam extension for teammates.
+  .agents/notes/implemented/architecture/2026-08-15-continuable-delegation-event-seeding.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: continuable delegation event seeding seam extension for teammates.
+  .agents/notes/implemented/architecture/2026-08-20-teammate-permission-enforcement-at-the-executor.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: permission enforcement at the team executor (permission capability applied to teammates).
+  .agents/notes/implemented/architecture/2026-08-20-teammate-permission-enforcement-at-the-executor.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: permission enforcement at the team executor (permission capability applied to teammates).
+  .agents/notes/implemented/architecture/2026-08-22-team-row-scoping.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: team row scoping in the workspace browser.
+  .agents/notes/implemented/architecture/2026-08-22-team-row-scoping.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: team row scoping in the workspace browser.
+  .agents/notes/implemented/architecture/2026-08-23-team-gui-projection-and-surfaces.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: team GUI projection and surfaces.
+  .agents/notes/implemented/architecture/2026-08-23-team-gui-projection-and-surfaces.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: team GUI projection and surfaces.
+  .agents/notes/implemented/bug-fix/2026-08-18-team-runtime-release-blockers.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bug-fix note: team runtime release blockers.
+  .agents/notes/implemented/bug-fix/2026-08-18-team-runtime-release-blockers.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bug-fix note: team runtime release blockers.
+  .agents/notes/implemented/feature/2026-08-14-agent-team-plugin.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: first-gen agent team plugin.
+  .agents/notes/implemented/feature/2026-08-14-agent-team-plugin.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: first-gen agent team plugin.
+  .agents/notes/implemented/feature/2026-08-18-team-plugin-round-2.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: team plugin round 2.
+  .agents/notes/implemented/feature/2026-08-18-team-plugin-round-2.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: team plugin round 2.
+  .agents/notes/implemented/feature/2026-08-18-team-workspace-session-discovery.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: team workspace session discovery.
+  .agents/notes/implemented/feature/2026-08-18-team-workspace-session-discovery.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: team workspace session discovery.
+  .agents/notes/implemented/feature/2026-08-19-dsh-teammate-cli.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: dsh teammate CLI command family.
+  .agents/notes/implemented/feature/2026-08-19-dsh-teammate-cli.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: dsh teammate CLI command family.
+  .agents/notes/implemented/feature/2026-08-19-shipped-team-preset.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: shipped team preset.
+  .agents/notes/implemented/feature/2026-08-19-shipped-team-preset.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: shipped team preset.
+  .agents/notes/implemented/process/2026-08-20-agent-team-cookbook-and-limitations-refresh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Process note: agent team cookbook and limitations refresh.
+  .agents/notes/implemented/process/2026-08-20-agent-team-cookbook-and-limitations-refresh.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Process note: agent team cookbook and limitations refresh.
+  .agents/notes/implemented/testing/2026-08-20-team-agent-keyless-e2e-snapshot.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Testing note: keyless team e2e snapshot methodology.
+  .agents/notes/implemented/testing/2026-08-20-team-agent-keyless-e2e-snapshot.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Testing note: keyless team e2e snapshot methodology.
+  .gitattributes [mixed_hunks=0 disposition=SPLIT]
+      reason: Adds whitespace=-blank-at-eol so the vNext plan docs' hard line breaks pass the pre-commit diff check.
+  AGENT_TEAM_N11_MAXCONTEXTTOKENS_DESIGN.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: First-gen agent-team plugin planning, audit and design docs (2026-08-14..19); historical reference superseded by the vNext plan set.
+  AGENT_TEAM_PLUGIN_AUDIT_2026-08-18.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: First-gen agent-team plugin planning, audit and design docs (2026-08-14..19); historical reference superseded by the vNext plan set.
+  AGENT_TEAM_PLUGIN_PLAN.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: First-gen agent-team plugin planning, audit and design docs (2026-08-14..19); historical reference superseded by the vNext plan set.
+  AGENT_TEAM_PLUGIN_ROUND2_PLAN.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: First-gen agent-team plugin planning, audit and design docs (2026-08-14..19); historical reference superseded by the vNext plan set.
+  AGENT_TEAM_PLUGIN_ROUND3_PLAN.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: First-gen agent-team plugin planning, audit and design docs (2026-08-14..19); historical reference superseded by the vNext plan set.
+  apps/cli/README.md [mixed_hunks=0 disposition=SPLIT]
+      reason: CLI docs gain the dsh teammate command family (en/zh).
+  apps/cli/README.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: CLI docs gain the dsh teammate command family (en/zh).
+  apps/cli/package.json [mixed_hunks=0 disposition=SPLIT]
+      reason: + dsh-team-local dependency for the teammate CLI.
+  apps/cli/reference/README.md [mixed_hunks=0 disposition=SPLIT]
+      reason: CLI docs gain the dsh teammate command family (en/zh).
+  apps/cli/reference/README.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: CLI docs gain the dsh teammate command family (en/zh).
+  apps/cli/src/args.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: teammate subcommand parsing and dispatch added to the CLI.
+  apps/cli/src/bin.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: teammate subcommand parsing and dispatch added to the CLI.
+  apps/cli/src/teammate.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: dsh teammate CLI runner (manages teammate definitions without launching a profile); port the command surface into the vNext CLI.
+  apps/cli/tests/teammate-source-launch.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: teammate CLI tests (source launch + command behavior).
+  apps/cli/tests/teammate.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: teammate CLI tests (source launch + command behavior).
+  apps/cli/tests/web-agent-presets.e2e.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Shipped-preset / shell tests updated for the shipped team preset.
+  apps/cli/tests/windows-shell.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Shipped-preset / shell tests updated for the shipped team preset.
+  apps/web/tests/expected/agent-preset-authoring/created.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/agent-preset-authoring/damaged.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/agent-preset-authoring/section.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/agent-preset-selection/menu.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/goal-command-presentation/ui.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/models-settings/configured.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/models-settings/declared-edit.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/models-settings/declared.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/models-settings/empty.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/onboarding-deepseek-config/models.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/onboarding-usable-provider/dismissed.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/plugin-config/section.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/settings-chrome/dialog-en.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/settings-chrome/dialog.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/skill-user-invoke/ui-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/steer-all/mid-steer.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  apps/web/tests/expected/steer-all/settled-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden updated for the shipped team preset and the settings-chrome Team section button.
+  docs/active-plans/DSH_Agent_Team_vNext_Architecture_Baseline_20260827.md [mixed_hunks=0 disposition=MIGRATE]
+      reason: vNext design plan (architecture baseline / compatibility / UI interaction / unattended execution spec); primary input to the new repo.
+  docs/active-plans/DSH_Agent_Team_vNext_Compatibility_Design_20260828.md [mixed_hunks=0 disposition=MIGRATE]
+      reason: vNext design plan (architecture baseline / compatibility / UI interaction / unattended execution spec); primary input to the new repo.
+  docs/active-plans/DSH_Agent_Team_vNext_UI_Interaction_Design_20260828.md [mixed_hunks=0 disposition=MIGRATE]
+      reason: vNext design plan (architecture baseline / compatibility / UI interaction / unattended execution spec); primary input to the new repo.
+  docs/active-plans/DSH_Agent_Team_vNext_Unattended_Execution_Spec_20260829.md [mixed_hunks=0 disposition=MIGRATE]
+      reason: vNext design plan (architecture baseline / compatibility / UI interaction / unattended execution spec); primary input to the new repo.
+  docs/active-plans/SESSION_ROUTER.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Unattended vNext development routing protocol (or its session log); dev-workflow process record, the authoritative workflow lives in the new repo.
+  docs/active-plans/SESSION_ROUTER_LOG.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Unattended vNext development routing protocol (or its session log); dev-workflow process record, the authoritative workflow lives in the new repo.
+  docs/cookbook/adding-agent-team.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Cookbook recipe for adding an agent team (legacy feature doc).
+  docs/cookbook/adding-agent-team.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Cookbook recipe for adding an agent team (legacy feature doc).
+  docs/subsystems/agent-team.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Adds the cross-reference link to the new team.md page.
+  docs/subsystems/agent-team.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Adds the cross-reference link to the new team.md page.
+  docs/subsystems/team.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy team subsystem doc; the vNext repo authors its own docs.
+  docs/subsystems/team.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy team subsystem doc; the vNext repo authors its own docs.
+  examples/team-agent/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Example manifest; the new repo carries its own example scaffolding.
+  examples/team-agent/team-mock-llm.mjs [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/fixtures/team-driver.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/fixtures/teammates/home-leader.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/fixtures/teammates/home-member.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/fixtures/teammates/sentry.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/fixtures/teammates/team-leader.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/fixtures/teammates/writer.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/snapshots/team-e2e/leader.expected.jsonl [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/snapshots/team-e2e/sentry.expected.jsonl [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/snapshots/team-e2e/writer.expected.jsonl [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  examples/team-agent/tests/team-e2e.snapshot.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team e2e example: mock LLM, driver, teammate definitions and expected session logs.
+  packages/README.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Package index gains the team row.
+  packages/README.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Package index gains the team row.
+  packages/api/session-controller/package.json [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/client/contract/sessions.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/client/index.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/client/sessions/manager.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/client/sessions/remotes.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/client/sessions/service.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/client/sessions/team-mirror.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/control.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/index.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/team.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/src/types.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/tests/fake-api.client.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/tests/manager.client.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/tests/team-projection.host.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/tests/test-remote.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/tsconfig.client.json [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/api/session-controller/tsconfig.host.json [mixed_hunks=0 disposition=SPLIT]
+      reason: Team projection API surface added to the session controller (contract types, manager/remotes/service wiring, control, fakes and tests, tsconfig references).
+  packages/bundle/team/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bundle README (legacy composition).
+  packages/bundle/team/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bundle README (legacy composition).
+  packages/bundle/team/cordis.patch.yml [mixed_hunks=0 disposition=REPLACE]
+      reason: Bundle composition rows; superseded by the vNext composition.
+  packages/bundle/team/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/bundle/team/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Bundle entry wiring.
+  packages/bundle/team/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure bundle invariants.
+  packages/bundle/team/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/bundle/web-app/cordis.patch.yml [mixed_hunks=0 disposition=SPLIT]
+      reason: Web-app composition mounts the team packages (+ dependencies).
+  packages/bundle/web-app/package.json [mixed_hunks=0 disposition=SPLIT]
+      reason: Web-app composition mounts the team packages (+ dependencies).
+  packages/client/connection/src/client/fixture.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Connection client fixture gains the team session shape (+ test).
+  packages/client/connection/tests/fixture.client.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Connection client fixture gains the team session shape (+ test).
+  packages/client/ui-agent-preset/src/client/locales.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Shipped-preset locale copy for the team preset (+ test).
+  packages/client/ui-agent-preset/tests/locales.client.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Shipped-preset locale copy for the team preset (+ test).
+  packages/client/ui-team/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy team GUI README.
+  packages/client/ui-team/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy team GUI README.
+  packages/client/ui-team/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package/build scaffolding.
+  packages/client/ui-team/src/client/TeamDock.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamDock.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamFeed.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamFeed.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamMarker.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamMarker.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamMembers.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamMembers.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamSettingsSection.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamSettingsSection.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamTasks.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamTasks.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamTimeline.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamTimeline.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamView.module.css [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/TeamView.tsx [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team GUI component/styles (dock, feed, marker, members, settings, tasks, timeline, view); superseded by the vNext UI interaction design.
+  packages/client/ui-team/src/client/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Plugin entry wiring / legacy GUI copy.
+  packages/client/ui-team/src/client/locales.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Plugin entry wiring / legacy GUI copy.
+  packages/client/ui-team/src/client/team-dock-model.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/client/team-feed-model.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/client/team-marker-definition.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/client/team-marker-jump.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/client/team-members-model.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/client/team-timeline-model.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/client/team-view-model.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy team view-model logic; superseded by the vNext UI.
+  packages/client/ui-team/src/css-modules.d.ts [mixed_hunks=0 disposition=DELETE]
+      reason: Package/build scaffolding.
+  packages/client/ui-team/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Client package entry wiring.
+  packages/client/ui-team/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure package invariants.
+  packages/client/ui-team/tests/client-bundle.client.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-dock-model.client.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-dock.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-feed-model.client.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-feed.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-marker-definition.client.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-marker.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-members-model.client.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-members.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-plugin.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-tasks.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-timeline-model.client.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-timeline.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tests/team-view.client.spec.tsx [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy GUI tests; reference for behavior parity.
+  packages/client/ui-team/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package/build scaffolding.
+  packages/client/ui-team/tsdown.config.ts [mixed_hunks=0 disposition=DELETE]
+      reason: Package/build scaffolding.
+  packages/client/ui-workspace/README.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/README.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/contract/slots.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/index.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/locales.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/rows/Rows.module.css [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/rows/Rows.tsx [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/rows/WorkspaceBrowser.tsx [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/src/client/tree.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/tests/apply.client.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/tests/rows.client.spec.tsx [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/tests/tree.client.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/client/ui-workspace/tests/workspace-browser.client.spec.tsx [mixed_hunks=0 disposition=SPLIT]
+      reason: Team rows, badges and tree integration in the workspace browser (+ tests, READMEs).
+  packages/preset/agent-presets/presets/cordis/preset.yml [mixed_hunks=0 disposition=SPLIT]
+      reason: Preset row renumbering after the team preset insertion.
+  packages/preset/agent-presets/presets/cordis/skills/editing-cordis-compositions/SKILL.md [mixed_hunks=0 disposition=SPLIT]
+      reason: team added to the shipped preset list in the skill doc.
+  packages/preset/agent-presets/presets/minimal/preset.yml [mixed_hunks=0 disposition=SPLIT]
+      reason: Preset row renumbering after the team preset insertion.
+  packages/preset/agent-presets/presets/ptc/preset.yml [mixed_hunks=0 disposition=SPLIT]
+      reason: Preset row renumbering after the team preset insertion.
+  packages/preset/agent-presets/presets/team/agent.cordis.yml [mixed_hunks=0 disposition=MIGRATE]
+      reason: Shipped team preset (agent composition + preset manifest); the vNext repo carries the team preset.
+  packages/preset/agent-presets/presets/team/preset.yml [mixed_hunks=0 disposition=MIGRATE]
+      reason: Shipped team preset (agent composition + preset manifest); the vNext repo carries the team preset.
+  packages/preset/agent-presets/tests/shipped-root.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: team added to the shipped preset expectations.
+  packages/subagent/subagent/src/continuation.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: DelegationEventAppend seam extension for continuable teammate seeding (architecture note 2026-08-15-continuable-delegation-event-seeding).
+  packages/subagent/subagent/src/descriptor-seed.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: DelegationEventAppend seam extension for continuable teammate seeding (architecture note 2026-08-15-continuable-delegation-event-seeding).
+  packages/subagent/subagent/src/index.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: DelegationEventAppend seam extension for continuable teammate seeding (architecture note 2026-08-15-continuable-delegation-event-seeding).
+  packages/subagent/subagent/src/types.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: DelegationEventAppend seam extension for continuable teammate seeding (architecture note 2026-08-15-continuable-delegation-event-seeding).
+  packages/subagent/subagent/tests/continuation.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: DelegationEventAppend seam extension for continuable teammate seeding (architecture note 2026-08-15-continuable-delegation-event-seeding).
+  packages/subagent/subagent/tests/descriptor-seed.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: DelegationEventAppend seam extension for continuable teammate seeding (architecture note 2026-08-15-continuable-delegation-event-seeding).
+  packages/team/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team group README.
+  packages/team/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Team group README.
+  packages/team/team-channels/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-channels/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-channels/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-channels/src/control-coordinator.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-channels/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-channels/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-channels/src/progress-store.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-channels/tests/control-coordinator.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-channels/tests/progress-store.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-channels/tests/sweep-timer.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-channels/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-local/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-local/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-local/examples/task.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Sample teammate definitions.
+  packages/team/team-local/examples/teammates/architect.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Sample teammate definitions.
+  packages/team/team-local/examples/teammates/backend-dev.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Sample teammate definitions.
+  packages/team/team-local/examples/teammates/frontend-dev.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Sample teammate definitions.
+  packages/team/team-local/examples/teammates/leader.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Sample teammate definitions.
+  packages/team/team-local/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-local/src/diagnostic.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-local/src/discovery.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-local/src/enablement.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-local/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-local/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-local/src/parser.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-local/src/validation.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-local/tests/discovery.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tests/enablement.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tests/leader-diagnostic.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tests/parser.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tests/session-workspace.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tests/validation.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tests/watch.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-local/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-projection/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-projection/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-projection/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-projection/src/error.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-projection/src/fold.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-projection/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-projection/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-projection/src/types.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-projection/tests/fold.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-projection/tests/invariant.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-projection/tests/loader-composition.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-projection/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-runtime/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-runtime/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team-runtime/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team-runtime/src/approval-setup.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team-runtime/src/mcp-guard.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/src/member-setup.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/src/orchestrator.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/src/rule-layers.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/src/skill-guard.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/team-runtime/tests/approval-setup.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-runtime/tests/mcp-guard.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-runtime/tests/member-setup.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-runtime/tests/orchestrator.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-runtime/tests/permission-enforcement.loader-composition.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-runtime/tests/skill-guard.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team-runtime/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/team/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/team/src/brand.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team/src/constants.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team/src/events.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team/src/index.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Service Definition barrel (re-exports the seam contracts only).
+  packages/team/team/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team/src/types.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/team/tests/brand.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team/tests/constants.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team/tests/tool-policy.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/team/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/tool-team/README.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/tool-team/README.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Package README for the legacy implementation.
+  packages/team/tool-team/package.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  packages/team/tool-team/src/index.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/tool-team/src/invariant.ts [mixed_hunks=0 disposition=MIGRATE]
+      reason: Pure logic/contract (types, constants, events, parsing, folding, invariants); port into the vNext packages.
+  packages/team/tool-team/src/tool-control.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/tool-team/src/tool-delegate.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/tool-team/src/tool-list-teammates.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/tool-team/src/tool-progress.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/tool-team/src/tool-send-message.ts [mixed_hunks=0 disposition=REPLACE]
+      reason: Legacy implementation/wiring; superseded by the vNext implementation.
+  packages/team/tool-team/tests/activity.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tests/delegation.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tests/loader-composition.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tests/progress-tool.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tests/send-message.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tests/settlement.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tests/tools.spec.ts [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Legacy test suite; reference for behavior parity.
+  packages/team/tool-team/tsconfig.json [mixed_hunks=0 disposition=DELETE]
+      reason: Package scaffolding; the new repo has its own.
+  scripts/check-workspace-constraints.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: + bundle-team workspace constraint.
+  scripts/verify-package-readme-model-experience.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Team packages added to the README model-experience contract table.
+  snapshots/web/cordis-tool-round/ui.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/feedback-command/ack-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/fresh-round-trip/ui-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/goal-multi-turn-actions/ui-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/lifecycle-chrome/reloaded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/live-interactions/cancel.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/live-interactions/error-auth.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/live-interactions/loading.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/live-interactions/retry-exhausted.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/live-interactions/retry-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/plan-review/approved-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/ptc-round/ui.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/question-composer/answered-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/queue-actions/collapsed.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/queue-actions/editing.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/queue-actions/layout.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/queue-actions/preserved.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/queue-actions/ui.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/steering/mid-steer.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/steering/settled-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/subagent-conversation/nested.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/subagent-conversation/ui-expanded.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/subagent-interrupt/offline-composer.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/turn-tail-actions/focused.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/turn-tail-actions/running.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  snapshots/web/web-search-round/ui.expected.md [mixed_hunks=0 disposition=SPLIT]
+      reason: UI golden +1 line for the new team chrome / marker row.
+  team-mode-feature-gap-analysis.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature gap analysis of PilotDeck / oh-my-opencode vs dsh; migration decision input for vNext.
+  tsconfig.client.json [mixed_hunks=0 disposition=SPLIT]
+      reason: + ui-team project reference.
+
+== GENERIC_FORK_CAPABILITY: 70 files ==
+  .agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.md [mixed_hunks=0 disposition=SPLIT]
+      reason: One-line path fix in the rename ledger for the moved permission package (packages/permission/*).
+  .agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: One-line path fix in the rename ledger for the moved permission package (packages/permission/*).
+  .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: permission rule layer loading and cold-recovery snapshot.
+  .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: permission rule layer loading and cold-recovery snapshot.
+  .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: permission seam + MCP fusion design consensus.
+  .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: permission seam + MCP fusion design consensus.
+  .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: tool-permission-guard per-call permission resolution.
+  .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Architecture note: tool-permission-guard per-call permission resolution.
+  .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bug-fix note: base composition carries the permission engine.
+  .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bug-fix note: base composition carries the permission engine.
+  .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bug-fix note: permission rule matching aligned with harness tool calls.
+  .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Bug-fix note: permission rule matching aligned with harness tool calls.
+  .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: model picker family grouping.
+  .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Feature note: model picker family grouping.
+  apps/cli/composition.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Composition flowchart adds the permission engine to the base bundle.
+  apps/web/tests/expected/models-settings/fetch-grouped.expected.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Golden for the grouped model-fetch e2e.
+  apps/web/tests/models-settings.e2e.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Adds the grouped model-fetch e2e (local mock gateway, family grouping, select-all toggle).
+  docs/subsystems/permission.md [mixed_hunks=0 disposition=KEEP]
+      reason: Permission subsystem doc; the capability stays in the fork.
+  docs/subsystems/permission.zh.md [mixed_hunks=0 disposition=KEEP]
+      reason: Permission subsystem doc; the capability stays in the fork.
+  packages/bundle/base/cordis.patch.yml [mixed_hunks=0 disposition=SPLIT]
+      reason: Base composition mounts the permission engine (+ dependency).
+  packages/bundle/base/package.json [mixed_hunks=0 disposition=SPLIT]
+      reason: Base composition mounts the permission engine (+ dependency).
+  packages/client/ui-settings-models/README.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/client/ui-settings-models/README.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/client/ui-settings-models/src/client/ModelListEditor.tsx [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/client/ui-settings-models/src/client/ModelsSection.module.css [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/client/ui-settings-models/src/client/modelGrouping.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/client/ui-settings-models/tests/model-grouping.client.spec.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/client/ui-settings-models/tests/provider-form.client.spec.tsx [mixed_hunks=0 disposition=SPLIT]
+      reason: Model picker family grouping in the settings UI (editor, styles, provider-form test, READMEs).
+  packages/permission/permission-engine/README.md [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/README.zh.md [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/package.json [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/audit.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/index.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/invariant.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/load.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/match-command.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/match-mcp.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/match-param.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/match-path.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/matchers.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/parse.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/src/resolve.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/audit.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/evaluate.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/load.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/match-command.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/match-mcp.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/match-param.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/match-path.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/parse.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tests/resolve.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission-engine/tsconfig.json [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/README.md [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/README.zh.md [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/package.json [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/src/index.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/src/invariant.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/src/types.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/tests/permission.loader-composition.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/permission/tsconfig.json [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/README.md [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/README.zh.md [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/package.json [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/src/index.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/src/invariant.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/tests/guard.unit.spec.ts [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  packages/permission/tool-permission-guard/tsconfig.json [mixed_hunks=0 disposition=KEEP]
+      reason: Fork permission capability (service definition, rule engine, execution guard): code, tests and docs stay in the downstream fork.
+  permission-and-mcp-fusion-design.md [mixed_hunks=0 disposition=KEEP]
+      reason: Design consensus and task-level implementation plan for the fork's permission seam; the capability stays in the downstream fork.
+  permission-seam-implementation-plan.md [mixed_hunks=0 disposition=KEEP]
+      reason: Design consensus and task-level implementation plan for the fork's permission seam; the capability stays in the downstream fork.
+
+== UNRELATED_FORK_FEATURE: 10 files ==
+  .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Process note: plugin development guide reference (generic fork process).
+  .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Process note: plugin development guide reference (generic fork process).
+  AGENTS.md [mixed_hunks=0 disposition=SPLIT]
+      reason: Two-instance warning header (never touch 3080; this checkout is 3180) pointing at ENVIRONMENTS.md.
+  ENVIRONMENTS.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Local two-instance environment boundary doc (stable vs dev checkout); fork workspace process note, no team content.
+  PLUGIN_DEV_GUIDE.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Fork-level plugin development guide; generic fork reference doc, no team/permission/model content.
+  docs/subsystems/subagent.zh.md [mixed_hunks=0 disposition=SPLIT]
+      reason: zh wording fix plus paragraph removal (doc sync with the English).
+  learning-path-zh.md [mixed_hunks=0 disposition=REFERENCE_ONLY]
+      reason: Chinese learning path for DSH aimed at physics-background readers; generic fork doc.
+  packages/session/session-persistence-jsonl/src/format.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Backward seq-scan replacement in the SessionLogScanner (compaction-summary driven).
+  packages/web/tool-web/src/turndown-plugin-gfm.d.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: Type declaration doc-comment cleanup.
+  scripts/translation-pairing.ts [mixed_hunks=0 disposition=SPLIT]
+      reason: references/ excluded from the translation pairing scope (fork reference doc tree).
+
+== GENERATED_FROM_TEAM: 64 files ==
+  .agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-15-continuable-delegation-event-seeding.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-20-teammate-permission-enforcement-at-the-executor.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-22-team-row-scoping.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/architecture/2026-08-23-team-gui-projection-and-surfaces.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/bug-fix/2026-08-18-team-runtime-release-blockers.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/feature/2026-08-14-agent-team-plugin.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/feature/2026-08-18-team-plugin-round-2.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/feature/2026-08-18-team-workspace-session-discovery.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/feature/2026-08-19-dsh-teammate-cli.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/feature/2026-08-19-shipped-team-preset.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/process/2026-08-14-plugin-development-guide-reference.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/process/2026-08-20-agent-team-cookbook-and-limitations-refresh.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  .agents/notes/implemented/testing/2026-08-20-team-agent-keyless-e2e-snapshot.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  apps/cli/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  apps/cli/reference/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/capability-seams.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/capability-seams.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/capability-seams.zh.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/config-catalog.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/config-catalog.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/config-catalog.zh.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/cookbook/adding-agent-team.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/event-producer-consumer.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/event-producer-consumer.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/event-producer-consumer.zh.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/module-graph.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/module-graph.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/module-graph.zh.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/persistence-catalog.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/persistence-catalog.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/persistence-catalog.zh.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/subsystems/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/subsystems/agent-team.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/subsystems/permission.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/subsystems/subagent.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/subsystems/team.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/tool-catalog.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  docs/tool-catalog.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  docs/tool-catalog.zh.md [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Regenerated by the gen-*.ts doc scripts; delta driven by the added team and permission seams.
+  packages/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/bundle/team/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/client/ui-settings-models/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/client/ui-team/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/client/ui-workspace/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/extensions/cordis-client-runner/src/client/slot-catalog.ts [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Generated slot catalog (gen-client-catalog.ts); delta adds the team slots.
+  packages/extensions/tool-cordis/src/api-catalog.ts [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Generated API catalog (gen-cordis-api.ts); delta adds team, permission and model-UI entries.
+  packages/permission/permission-engine/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/permission/permission/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/permission/tool-permission-guard/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/team-channels/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/team-local/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/team-projection/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/team-runtime/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/team/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  packages/team/tool-team/README.i18n.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Machine-maintained translation pairing hash ledger, updated by the translation-pairing tool after the fork's doc changes.
+  pnpm-lock.yaml [mixed_hunks=0 disposition=GENERATED_REVERT]
+      reason: Lockfile regenerated after adding the team, permission and model-UI packages; entries are machine-derived from the package manifests.
+
+== MIXED: 11 files ==
+  .gitignore [mixed_hunks=1 disposition=SPLIT]
+      reason: Multi-kind fork delta: OTHER+PERMISSION. Hunk routing below (kinds = OTHER+PERMISSION).
+      MIXED hunk#1: kind=OTHER | Local dev hygiene block (references/, issues/, archive/, start-dev.ps1, *.js.map, *.d.ts.map) plus .js/.d.ts build-artifact ignores for core/session and permission-engine sources.
+  docs/subsystems/README.md [mixed_hunks=2 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | Adds the team.md row (TeamRegistry / TeamControlRegistry seam page) to the subsystems index.
+      MIXED hunk#2: kind=PERMISSION | Adds the permission.md row (PermissionService rule engine page) to the subsystems index.
+  docs/subsystems/README.zh.md [mixed_hunks=2 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | Replaces the agent-team row with the new team.md row and re-adds the legacy agent-team row (zh subsystems index).
+      MIXED hunk#2: kind=PERMISSION | Adds the permission.md row to the zh subsystems index.
+  packages/core/session/src/known-event-types.ts [mixed_hunks=4 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=PERMISSION | Registers the permission/decision audit event type.
+      MIXED hunk#2: kind=TEAM | Registers team/control-decision and team/control-request event types.
+      MIXED hunk#3: kind=TEAM | Registers team/member-bound and team/message event types.
+      MIXED hunk#4: kind=TEAM | Registers the team/progress event type.
+  scripts/gen-cordis-catalog.ts [mixed_hunks=4 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | SERVICE_PAGE maps team, teamControl, teamProjection to team.md and permission to permission.md (one hunk, both kinds).
+      MIXED hunk#2: kind=TEAM | LINK_MAP adds the Team* type links pointing at the new team.md page.
+      MIXED hunk#3: kind=TEAM | LINK_MAP drops the old TeamView: agent-team.md entry (moved to team.md in hunk 2).
+      MIXED hunk#4: kind=PERMISSION | TYPE_LINK_EXEMPTIONS adds the permission type ownership notes (CompiledPolicy, RuleSource, PermissionContext, ...).
+  scripts/gen-doc-graphs.ts [mixed_hunks=3 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | GROUP_ORDER inserts the team group after subagent.
+      MIXED hunk#2: kind=PERMISSION | GROUP_ORDER inserts the permission group before cordis.
+      MIXED hunk#3: kind=TEAM | SERVICE_ROLES adds the team, teamControl, teamProjection and permission seam entries (one hunk, both kinds).
+  scripts/gen-tool-catalog.ts [mixed_hunks=7 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | Renames the experimental tool-agent-team import to ExperimentalToolAgentTeam (legacy first-gen mount rewire).
+      MIXED hunk#2: kind=TEAM | Adds imports for TeamRegistry, TeamControlRegistry, ToolTeam and ToolPermissionGuard (team + permission packages).
+      MIXED hunk#3: kind=PERMISSION | ToolPackage gains the noModelTools field for the pre-execute permission guard (registers no model-facing tool).
+      MIXED hunk#4: kind=PERMISSION | TOOL_PACKAGES gains the tool-permission-guard entry (permission/decision audit events).
+      MIXED hunk#5: kind=TEAM | Replaces await ctx.plugin(ToolTeam) with the renamed ExperimentalToolAgentTeam in the child-scope harvest.
+      MIXED hunk#6: kind=TEAM | TOOL_PACKAGES gains the tool-team entry (five team tools over the team seam).
+      MIXED hunk#7: kind=PERMISSION | collectToolCatalog skips assertToolsHarvested for noModelTools packages (the guard).
+  scripts/project-doc-site.spec.ts [mixed_hunks=1 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | docsPages translated-locale count 46 to 48: the two new subsystem pages are team.md and permission.md (one hunk, both kinds).
+  tsconfig.base.json [mixed_hunks=7 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | paths: + @deepseek-ai/dsh-team-projection/types alias.
+      MIXED hunk#2: kind=TEAM | paths: + dsh-team/types and the four permission package aliases (dsh-permission, /types, permission-engine, tool-permission-guard) in one hunk.
+      MIXED hunk#3: kind=TEAM | paths: + hand-written dsh-bundle-team, dsh-bundle-team/invariant, dsh-client-ui-team aliases.
+      MIXED hunk#4: kind=PERMISSION | paths: + permission and permission-engine /invariant aliases.
+      MIXED hunk#5: kind=TEAM | paths: + dsh-team, dsh-team-channels, dsh-team-local, dsh-team-projection, dsh-team-runtime aliases (+ /invariant each).
+      MIXED hunk#6: kind=PERMISSION | paths: + tool-permission-guard /invariant alias.
+      MIXED hunk#7: kind=TEAM | paths: + dsh-tool-team and dsh-tool-team/invariant aliases.
+  tsconfig.host.json [mixed_hunks=1 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | project references: +7 team packages (team, team-local, team-projection, team-runtime, team-channels, tool-team, bundle/team) and +3 permission packages (permission, permission-engine, tool-permission-guard) in one hunk.
+  website/docs.ts [mixed_hunks=2 disposition=SPLIT]
+      reason: Multi-kind fork delta: TEAM+PERMISSION. Hunk routing below (kinds = TEAM+PERMISSION).
+      MIXED hunk#1: kind=TEAM | subsystemGroups adds the team.md (Team) doc page.
+      MIXED hunk#2: kind=PERMISSION | subsystemGroups adds the permission.md (Permissions) doc page.
