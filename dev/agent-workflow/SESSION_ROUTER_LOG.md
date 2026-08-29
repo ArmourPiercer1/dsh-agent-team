@@ -211,6 +211,21 @@
 - **graph**：P3-T1 → INTEGRATED（attempts 1）；**locks.contracts = fba817c**（contract v1 冻结，其余任务禁改 `packages/contracts/**`）；integration_sha = fba817c；ready → [P3-T2, P3-T3, P3-T4, P3-T5]。
 - **下一步**：读 TaskDoc §11.4 P3-T2..T6 卡片 → 建 4 worktree（P3-T2..T5，base = int/P3 fba817c）→ workflow 4 并行派发（各自独立 worktree/分支/证据目录）；P3-T6 + G3 待 4 项集成后。
 
+### 轮次 R11：P3 D1 并行 — P3-T2..T5 派发（2026-08-30）
+
+- **Base**：int/P3 `39a5d22`（R10 bookkeeping；contract v1 已冻结，locks.contracts = fba817c）。
+- **D1 结构决策（主 Agent，记录在案）**：TaskDoc §11.4 D1 卡片 owned path `packages/domain/<subdir>/**` 与仓库 sanctioned 测试链（runner 只发现 `packages/<pkg>/test/*.test.ts`；包 tsconfig 只 include src/test）结构不兼容 → 以最小偏差解决，**零共享文件写入**：
+  - 代码：按卡片原样 `packages/domain/<subdir>/**`（T2 blueprint / T3 member + lifecycle / T4 policy / T5 compatibility）；建议子目录内 `src/**` + 子目录自有 `tsconfig.json`（owned、extends 根 base、noEmit、include 自身 src + 自身 test 文件）。
+  - 测试：`packages/domain/test/<t{n}>-*.test.ts`（命名空间文件名，4 worker 只新增文件、零重叠、永不触碰骨架 domain.test.ts）→ sanctioned `node scripts/run-tests.mjs domain` 可发现。
+  - contracts v1 导入：相对路径 `../../contracts/src/index.js`（NodeNext .js→.ts 映射 + runner hook 同映射；零 dist 构建）。
+  - 共享文件（domain package.json / src/index.ts / tsconfig.json / vitest.config.ts / test/domain.test.ts）：D1 期间无人编辑；最终接线由 P3-T6 集成处理。
+  - T3 卡片 owned path `member*；lifecycle*` 解释为 `packages/domain/member/**` + `packages/domain/lifecycle/**`。
+  - T2 “standard YAML/markdown parser” 允许依赖：若需第三方依赖（如 yaml），T2 为唯一被授权修改 packages/domain/package.json 的 worker（单写者例外，记录于本条）；亦可自包含实现 parser。
+- **Worktrees**：`.worktrees/P3-T{2,3,4,5}` @ task 分支（base `39a5d22`），各自证据目录 `evidence/P3-T{2,3,4,5}/`。
+- **派发**：workflow `p3-d1-parallel-domain`，4 worker 并行，全部 `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；无共享资源（纯包工作，无端口/DSH_HOME/实例）；各自 worktree 独立 pnpm install（warm store ~15 s；store lock 竞争 → 重试）。
+- **graph**：P3-T2..T5 → RUNNING（branches 已录）；ready → []。
+- **结果**：（各 worker 返回后补记）
+
 ## 重审记录
 
 （空）
