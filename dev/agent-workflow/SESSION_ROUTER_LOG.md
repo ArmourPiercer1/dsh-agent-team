@@ -139,6 +139,35 @@
 - **Graph**：P2-T2..T5 → INTEGRATED（attempts 1/2/2/3），integration_sha = `4f709608c2e810e617732bf454d543c24888c15d`，ready → [P2-T6]。
 - **下一步**：P2-T6（remote/client/additive UI seams + seam manifest 汇总 + G2 audit 前置）→ G2-REVIEW（3 名盲审）。
 
+### 轮次 R8：P2-T6 执行 + 集成 + 主 Agent 独立复验（2026-08-30）
+
+- **执行方式**：workflow 工具 1 个 worker，`qiyuan-self/qwen3.8-27b`；worktree `.worktrees/P2-T6`、分支 `task/P2-T6-remote-client`（基于 `484e735`）；端口 3401/3411、DSH_HOME `references/.dsh-test-p2t6`；执行 1/3，**SELF_VERIFIED**（head `d66f6eb`，2 commits：5cb406c probe 组 / d66f6eb 证据 + 3 报告），零 CORE_SEAM_BLOCKER。
+- **交付**（owned-path 审计 119 文件 / 0 越界）：
+  - `tests/characterization/probes/remote-client/` — remote/client/additive-UI seam probe 组：B1 discovery（26 remote client 行；registry 读嵌套 `pkg.dsh.client`，flat `"dsh.client"` key 被静默忽略 → quirk L6-4）/ B2 RPC + reconnect R1–R5（子进程崩溃后行自动重连）/ B3 missing-bundle 负例 boot / B4 malformed-decl 负例 boot（均 `ClientPackageCompositionError` + 子进程 exit 1，fail-loud-at-boot 契约，dump-config 留存）/ B5 slot seats（TEAM_VIEW_SLOT + NEW_TEAM_ENTRY 架构关键；INPUT_DOCK 非关键 frozen fallback seat `conversation.input.dock`）。
+  - `tests/characterization/seam-manifest/manifest.json` — 26 行全 verdict PASS（5 行 architecture-critical：CLIENT_MODULE / TEAM_REMOTE×2 / TEAM_VIEW_SLOT / NEW_TEAM_ENTRY）+ 24 knownLimitations（每条 status + evidence）；组内 7 校验规则（rows≥15 / critical-rows≥4 / evidence 存在 / critical-executable / verdicts 一致 / zero-private-imports（扫描 27 文件，2 处命中均在指定 negative-fixture 区）/ limitations 完备）canonical run 全 PASS（`run/logs/obs/seam-manifest-validation.json`）。
+  - `dev/agent-workflow/evidence/P2-T6/` — seam-report.md（8/8 seams PASS）/ compliance-report.md（attempt ledger：D1/D2 debug 不计，C1 canonical PASS 21:37:44→21:39:11Z，C2 裸命令契约跑）/ g2-pre-audit.md（DevPlan §15.4 六判据 6/6，criterion 原文逐字引自冻结文档）/ debug-b1/ / run/ canonical 工件。
+- **主 Agent 独立审计（全部通过）**：
+  - owned-path：119 文件（evidence 104 / probe 组 14 / manifest 1）全部在 owned paths，0 越界；任务 worktree 干净。
+  - 三份报告全文通读 + manifest 结构机器核验（26 行 / 24 limitations / 5 critical 行均带 evidence 路径）。
+  - 独立重跑暴露 **2 个真实缺陷**（均在 int/P2 上以主 Agent post-integration commit 修复）：
+    1. **相对路径分歧（9 项失败）**：主 Agent 以相对 `--report-dir` 重跑 → payload 实例子进程 cwd = 固定树（lib/instance.mjs `cwd: hostTree`），相对 env/directive/scratch-DSH_HOME 把观察文件与空 home（含 node_modules farm）写入 pristine 树，而组代码从调用根读取 → T2 readObs ENOENT ×5 + T6 B1/B2/B5 激活超时 ×3 + byte-clean 违规 ×1（`router-rerun.log`）。清理全部污染目录（含首次中止调用残留的 main-repo 空目录）。中心修复：`resolveConfig` 强制 `hostTree`/`dshHome`/`reportDir` 绝对化（commit `870abc7`）+ README 记契约（相对输入在调用根解析后才跨进程边界）。
+    2. **T3 seed→resume flake（2/2 复现）**：boot 2 冷恢复 `SessionPersistenceNotFoundError` — 磁盘证据：失败 seed 会话仅留 `session.jsonl.zstd.<hex>.tmp`（write-behind staging），成功会话有最终 `.zstd`；awaited `session/flush` 非 durable publication barrier（~200 ms write-behind，known-limitation 类 L2-1/L2-2；T2 组有 waitForDurable，T3 缺）（`fix-verify-relative-paths{,-2}.log`）。修复：T3 main.js 移植 durability gate（commit `7e7560d`）：`diskFilesFor` + `waitForDurable(sessionId, 30s)`（50 ms 轮询最终 `.zstd`），done-main.completed 反映 seed 成败，失败时 resume-seed.json 携带最后磁盘态、可归因。后续：`7e7560d` 漏 `readdirSync/statSync` import（运行期 `readdirSync is not defined`，由新增可归因失败路径精确捕获 — `fix-verify-3.log`）→ 补 import（commit `00c7e99`，node --check 通过）。
+- **修复后验证矩阵**：
+
+  | 场景 | 日志 | 结果 |
+  | --- | --- | --- |
+  | 绝对路径重跑（870abc7 后） | `router-rerun2.log` | EXIT=0 全绿 byte-clean |
+  | 裸命令整合（CI 契约） | `integrated-bare-run.log` | EXIT=0（5 probe 组 + 7 节） |
+  | 相对路径（修复前基线） | `fix-verify-relative-paths{,-2}.log` | 2/2 RED（T3 flake；9 失败根因已由 870abc7 消除） |
+  | 相对路径（修复后第 1 次） | `fix-verify-4.log` | EXIT=0 全绿 byte-clean（T3 seed→resume 11/11 PASS） |
+  | 相对路径（修复后第 2 次，flake 置信） | `fix-verify-5.log` | EXIT=0 全绿 byte-clean |
+- **说明**：
+  - T6 的 g2-pre-audit 早于上述两项主 Agent 修复；修复为 additive robustness（路径绝对化 + T3 durability gate），修复后全场景重跑均绿，审计结论不受影响。
+  - T6 attempt 数按 worker ledger = 1（D1/D2 debug 与 C2 裸命令契约跑在 compliance report 单独入账；主 Agent 重跑属审计，不计 attempt）。
+  - 卫生清理：`.dsh-test-p2t6/sessions/` 累积 140 个陈旧 probe 会话目录（p2t2-/p2t3-/p2t4-/p2t5- 前缀，跨 3 个 project-hash 目录；含 9 失败事件期间以固定树为 project 根的产物）→ 清理，仅保留 5 个 `11111111-*` fixture 会话（145→5）；套件重跑可再创建，无判据依赖。
+- **Graph**：P2-T6 → INTEGRATED（base `484e735`、head `d66f6eb`、attempts 1）；integration_sha = `00c7e99fde5da36b0e0f1e3250173d47fdcc4d7b`（bookkeeping 前 int head）；ready → [G2-REVIEW]。
+- **下一步**：G2-REVIEW — workflow 3 个 fresh 独立盲审（`qiyuan-self/qwen3.8-27b`）；各自 detached worktree @ integration SHA、端口 3481–3483/3491–3493、DSH_HOME `references/.dsh-test-g2r{1,2,3}`；盲审（禁读 SESSION_ROUTER_LOG / graph.yaml / evidence/，唯一例外 `dev/agent-workflow/evidence/provenance/file-manifest.json`）；brief 含 must-reads + 沙箱矩阵 + never-escalate + 冻结文档 flapping 绕行 + TaskDoc §11.3 “G2 Gate 执行方法”逐字 + DevPlan §15.4 六判据逐字 + 沙箱内复现清单（--dsh-home/--report-dir 用绝对路径）。
+
 ## 重审记录
 
 （空）
