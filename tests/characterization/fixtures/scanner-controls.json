@@ -1,0 +1,6 @@
+{
+  "schema": "p2t1-scanner-controls/1",
+  "note": "Synthetic scanner positive controls for the P2-T1 private-import scanner. Each value is source text that MUST produce a finding: bareHarness in harness (strict) mode, privateSubpath in probe (C4) mode. Kept in JSON — not in any scanned source file — so the harness's own static scan (and verify-zero-core C4 over the harness) cannot self-match these literals.",
+  "bareHarness": "import { x } from 'left-pad'\n",
+  "privateSubpath": "const m = await import('@deepseek-ai/dsh-util-crypto/internal/random')\n"
+}
