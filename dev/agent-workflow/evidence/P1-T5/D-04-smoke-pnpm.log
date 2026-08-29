@@ -1,0 +1,12 @@
+﻿pnpm.exe : $ node scripts/composition-smoke.mjs
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node scripts/composition-smoke.mjs:String) [], Remote 
+   Exception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply is callable and side-effect-free
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply is callable and side-effect-free
+PASS composition-smoke

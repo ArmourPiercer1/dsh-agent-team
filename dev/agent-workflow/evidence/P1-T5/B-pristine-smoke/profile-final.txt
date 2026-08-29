@@ -1,0 +1,16 @@
+﻿# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+#
+# P1-T5 zero-core mount (G1 criterion 4): the dsh-agent-team vNext skeleton
+# plugin, mounted through the public profile patch seam only 鈥?no upstream
+# source, no dependency plumbing. Relative names resolve against this
+# directory (profiles/web), four levels up to the team repo root. Rows point
+# at the T4 skeleton's built plugin halves (host row + client half mounted
+# host-side; browser activation is a non-G1 limitation, see
+# evidence/P1-T5/verify-report.md). Revert: replace the block below with [].
+- insert:
+    - id: dsh-agent-team
+      name: '../../../../.worktrees/P1-T5/packages/runtime/dist/plugin/host.js'
+    - id: dsh-agent-team-client
+      name: '../../../../.worktrees/P1-T5/packages/client/dist/plugin/client.js'

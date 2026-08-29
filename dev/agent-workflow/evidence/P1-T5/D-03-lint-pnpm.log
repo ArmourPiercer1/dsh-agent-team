@@ -1,0 +1,18 @@
+﻿pnpm.exe : $ eslint .
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ eslint .:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-T5\scripts\_calibrate.mjs
+  4:47  error  'existsSync' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P1-T5\scripts\verify-zero-core.mjs
+  67:10  error  'basename' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 2 problems (2 errors, 0 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.

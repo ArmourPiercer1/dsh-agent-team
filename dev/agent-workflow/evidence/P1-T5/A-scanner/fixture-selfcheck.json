@@ -1,0 +1,49 @@
+﻿{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core",
+  "plugins": [
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-a",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-b",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\good-plugin"
+  ],
+  "hostPackages": 5,
+  "findings": [
+    {
+      "code": "patchedDependencies-own",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\package.json [pnpm.patchedDependencies]",
+      "detail": "key \"@fixture/host-core@1.0.0\" targets host-owned package \"@fixture/host-core\" — upstream source rewrite via pnpm patch"
+    },
+    {
+      "code": "writing-lifecycle-script",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-b\\package.json [prepare]",
+      "detail": "lifecycle script inline Node fs write API: \"node -e \"require('fs').writeFileSync('marker.txt', 'written-by-lifecycle')\"\""
+    },
+    {
+      "code": "patch-package-lifecycle",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-a\\package.json [postinstall]",
+      "detail": "lifecycle script references the patch-package tool: \"patch-package\""
+    },
+    {
+      "code": "patchedDependencies-own",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\pnpm-workspace.yaml [patchedDependencies]",
+      "detail": "key \"@fixture/host-core@1.0.0\" targets host-owned package \"@fixture/host-core\" — upstream source rewrite via pnpm patch"
+    },
+    {
+      "code": "patch-own-source",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\patches\\@fixture+host-core@1.0.0.patch",
+      "detail": "patch-package file targets host-owned package \"@fixture/host-core\" — upstream source rewrite"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-a\\src\\index.js:1",
+      "detail": "import \"../../../packages/host-core/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-a (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\packages\\host-core\\src\\index.js); enters the host tree"
+    },
+    {
+      "code": "private-subpath",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P1-T5\\scripts\\fixtures\\zero-core\\plugins\\bad-plugin-b\\src\\index.js:1",
+      "detail": "import \"@fixture/host-core/internal\": subpath \"/internal\" not in exports surface of host package \"@fixture/host-core\" (public: ., ./public)"
+    }
+  ],
+  "infoCount": 2,
+  "pass": false
+}

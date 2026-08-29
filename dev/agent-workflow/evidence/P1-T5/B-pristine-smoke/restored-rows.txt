@@ -1,0 +1,2 @@
+﻿file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T5/packages/runtime/dist/plugin/host.js
+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T5/packages/client/dist/plugin/client.js

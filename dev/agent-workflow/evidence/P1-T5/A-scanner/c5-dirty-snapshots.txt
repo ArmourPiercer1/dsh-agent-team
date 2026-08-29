@@ -1,0 +1,7 @@
+﻿
+FINDING dirty-git-status-after @ tmp/dirty-status.txt — git snapshot for --status-after is non-empty 
+(first lines: M package.json)
+FINDING dirty-git-diff-before @ tmp/diff.txt — git snapshot for --diff-before is non-empty (first lin
+es: @@ -1 +1 @@)
+
+

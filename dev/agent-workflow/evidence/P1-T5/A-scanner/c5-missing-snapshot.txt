@@ -1,0 +1,5 @@
+﻿
+FINDING git-snapshot-missing @ tmp/nope.txt — --status-before file does not exist; byte-clean cannot 
+be proven
+
+
