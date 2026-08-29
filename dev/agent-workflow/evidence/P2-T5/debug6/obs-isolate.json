@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "phase": "isolate",
+  "startedAt": "2026-08-29T19:27:49.689Z",
+  "finishedAt": "2026-08-29T19:27:50.195Z",
+  "data": {
+    "domain": {
+      "descriptor": {
+        "name": "p2t5_probe",
+        "version": 1,
+        "tables": [
+          "records"
+        ],
+        "hasGlobal": true
+      },
+      "entries": [],
+      "keys": [],
+      "global": {
+        "note": "initial",
+        "count": 0
+      }
+    },
+    "liveStore": {
+      "root": false,
+      "member1": false,
+      "member2": false,
+      "grand": false
+    },
+    "corpusFixtureIds": [],
+    "entries": [],
+    "readMissingRoot": {
+      "threw": true,
+      "code": "SESSION_QUERY_SESSION_NOT_FOUND"
+    }
+  }
+}

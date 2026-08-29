@@ -1,0 +1,40 @@
+{
+  "ok": false,
+  "failures": [
+    "obs-seed.json reports failure: timed out after 30000ms waiting: grandchild turn/end aborted(user) Error: timed out after 30000ms waiting: grandchild turn/end aborted(user)",
+    "S1.1 seed: in-instance readback of all 3 records byte-equal to seeded values",
+    "S1.1 seed: in-instance global readback byte-equal",
+    "S1.2 seed: second open of a live spec fails loud (code=absent)",
+    "S2.1 seed: member1 header carries parentSession=root, origin=subagent, delegationDepth=1",
+    "S2.1 seed: member2 header carries parentSession=root, origin=subagent, delegationDepth=1",
+    "S2.1 seed: grand header carries parentSession=member1, origin=subagent, delegationDepth=2",
+    "S2.1 seed: root header carries parentSession=null, origin=null (plain agent session)",
+    "S2.2 seed: descendant listing is exactly {member1, member2, grand} — no missing, no phantom rows",
+    "S2.2 seed: entry parentId/depth/label/mode/hasChildren all correct (member1 hasChildren=true)",
+    "S2.2 seed: all three entries live-activity=running (held mid-turn)",
+    "S2.3 seed: plain (non-subagent) fork of root adds NO descendant entry (still exactly 3)",
+    "S2.7 verify: traceSession(root) resolves complete (no error)",
+    "S3.1 seed: interrupt(user, direct parent) ends the held turn with turn/end reason {kind:aborted, reason:{kind:user}}",
+    "S3.1 seed: grandchild entry activity flips to inactive after interrupt",
+    "S3.2 seed: interrupt with the WRONG parent session fails UNAUTHORIZED (got absent)",
+    "S3.3 seed (finding): interrupt of an unknown target is an accepted silent no-op (threw=false) — documented live behavior; task guidance expects a loud failure here, discrepancy recorded in seam-report",
+    "S3.4 seed: self-targeting ancestor authority fails UNAUTHORIZED (cross-checked with the bad-authority fixture document)",
+    "S3.5 seed: startContinuable with an existing childId fails DUPLICATE_CHILD (got absent)",
+    "S3.6 seed: both members have NO turn/end before the drain (held mid-turn)",
+    "S3.7 seed: drainContinuableDescendants([rootAgent]) resolved (error=none) in ?ms",
+    "S3.7 seed: after drain, member1 has no live agent and no live session",
+    "S3.7 seed: after drain, member2 has no live agent and no live session",
+    "S3.7 seed: after drain, grand has no live agent and no live session",
+    "S3.7 seed: root handle disposed through the public API after the drain",
+    "S3.8 verify: durable member1/member2 logs end with turn/end kind=aborted (drain-interrupted)",
+    "S3.9 seed: persistence gate passed (waited ?ms) — every fixture session persisted=true before stop"
+  ],
+  "sections": [
+    "probes"
+  ],
+  "port": 3384,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T18:51:09.988Z"
+}

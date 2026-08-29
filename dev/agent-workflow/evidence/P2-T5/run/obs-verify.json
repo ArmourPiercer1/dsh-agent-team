@@ -1,0 +1,277 @@
+{
+  "ok": true,
+  "phase": "verify",
+  "startedAt": "2026-08-29T19:33:01.037Z",
+  "finishedAt": "2026-08-29T19:33:01.572Z",
+  "data": {
+    "domain": {
+      "descriptor": {
+        "name": "p2t5_probe",
+        "version": 1,
+        "tables": [
+          "records"
+        ],
+        "hasGlobal": true
+      },
+      "records": {
+        "r1": {
+          "v": "alpha",
+          "n": 1
+        },
+        "r2": {
+          "v": "beta",
+          "n": 2
+        },
+        "r3": {
+          "v": "gamma",
+          "n": 3
+        }
+      },
+      "global": {
+        "note": "seeded-p2t5",
+        "count": 3
+      },
+      "entryCount": 3
+    },
+    "corpus": {
+      "root": {
+        "present": true,
+        "live": false,
+        "persisted": true,
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000001",
+          "parentSession": null,
+          "origin": null,
+          "delegationDepth": 0,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978718
+        }
+      },
+      "member1": {
+        "present": true,
+        "live": false,
+        "persisted": true,
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000002",
+          "parentSession": "11111111-0000-4000-8000-000000000001",
+          "origin": "subagent",
+          "delegationDepth": 1,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978727
+        }
+      },
+      "member2": {
+        "present": true,
+        "live": false,
+        "persisted": true,
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000003",
+          "parentSession": "11111111-0000-4000-8000-000000000001",
+          "origin": "subagent",
+          "delegationDepth": 1,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978732
+        }
+      },
+      "grand": {
+        "present": true,
+        "live": false,
+        "persisted": true,
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000004",
+          "parentSession": "11111111-0000-4000-8000-000000000002",
+          "origin": "subagent",
+          "delegationDepth": 2,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978736
+        }
+      },
+      "plainFork": {
+        "present": true,
+        "live": false,
+        "persisted": true,
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000005",
+          "parentSession": "11111111-0000-4000-8000-000000000001",
+          "origin": null,
+          "delegationDepth": 0,
+          "seedLength": 3,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978741
+        }
+      }
+    },
+    "logs": {
+      "root": {
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000001",
+          "parentSession": null,
+          "origin": null,
+          "delegationDepth": 0,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978718
+        },
+        "turnEnds": []
+      },
+      "member1": {
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000002",
+          "parentSession": "11111111-0000-4000-8000-000000000001",
+          "origin": "subagent",
+          "delegationDepth": 1,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978727
+        },
+        "turnEnds": [
+          {
+            "seq": 16,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "parent"
+              }
+            }
+          }
+        ]
+      },
+      "member2": {
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000003",
+          "parentSession": "11111111-0000-4000-8000-000000000001",
+          "origin": "subagent",
+          "delegationDepth": 1,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978732
+        },
+        "turnEnds": [
+          {
+            "seq": 14,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "parent"
+              }
+            }
+          }
+        ]
+      },
+      "grand": {
+        "header": {
+          "id": "11111111-0000-4000-8000-000000000004",
+          "parentSession": "11111111-0000-4000-8000-000000000002",
+          "origin": "subagent",
+          "delegationDepth": 2,
+          "seedLength": null,
+          "agentPreset": null,
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5",
+          "createdAt": 1788031978736
+        },
+        "turnEnds": [
+          {
+            "seq": 7,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "user"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "liveStoreAfterRestart": {
+      "root": false,
+      "member1": false,
+      "member2": false,
+      "grand": false
+    },
+    "entries": [
+      {
+        "kind": "child",
+        "id": "11111111-0000-4000-8000-000000000002",
+        "mode": "continuable",
+        "label": "member-1",
+        "activity": "inactive",
+        "hasChildren": true,
+        "parentId": "11111111-0000-4000-8000-000000000001",
+        "depth": 1
+      },
+      {
+        "kind": "child",
+        "id": "11111111-0000-4000-8000-000000000004",
+        "mode": "continuable",
+        "label": "grand-1",
+        "activity": "inactive",
+        "hasChildren": false,
+        "parentId": "11111111-0000-4000-8000-000000000002",
+        "depth": 2
+      },
+      {
+        "kind": "child",
+        "id": "11111111-0000-4000-8000-000000000003",
+        "mode": "continuable",
+        "label": "member-2",
+        "activity": "inactive",
+        "hasChildren": false,
+        "parentId": "11111111-0000-4000-8000-000000000001",
+        "depth": 1
+      }
+    ],
+    "trace": {
+      "complete": true,
+      "rootId": "11111111-0000-4000-8000-000000000001",
+      "ancestorIds": [],
+      "descendants": [
+        {
+          "id": "11111111-0000-4000-8000-000000000002",
+          "parentId": "11111111-0000-4000-8000-000000000001",
+          "origin": "subagent",
+          "children": [
+            {
+              "id": "11111111-0000-4000-8000-000000000004",
+              "parentId": "11111111-0000-4000-8000-000000000002",
+              "origin": "subagent",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "11111111-0000-4000-8000-000000000003",
+          "parentId": "11111111-0000-4000-8000-000000000001",
+          "origin": "subagent",
+          "children": []
+        },
+        {
+          "id": "11111111-0000-4000-8000-000000000005",
+          "parentId": "11111111-0000-4000-8000-000000000001",
+          "origin": null,
+          "children": []
+        }
+      ]
+    },
+    "traceError": null,
+    "unknownSession": {
+      "id": "ffffffff-ffff-4fff-afff-ffffffffffff",
+      "inCorpus": false,
+      "readSession": {
+        "threw": true,
+        "code": "SESSION_QUERY_SESSION_NOT_FOUND"
+      }
+    }
+  }
+}

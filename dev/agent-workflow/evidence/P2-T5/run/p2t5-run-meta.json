@@ -1,0 +1,68 @@
+{
+  "task": "P2-T5",
+  "generatedAt": "2026-08-29T19:33:05.562Z",
+  "fixtureIds": {
+    "root": "11111111-0000-4000-8000-000000000001",
+    "member1": "11111111-0000-4000-8000-000000000002",
+    "member2": "11111111-0000-4000-8000-000000000003",
+    "grand": "11111111-0000-4000-8000-000000000004",
+    "plainFork": "11111111-0000-4000-8000-000000000005",
+    "unknown": "ffffffff-ffff-4fff-afff-ffffffffffff"
+  },
+  "domain": {
+    "name": "p2t5_probe",
+    "version": 1,
+    "records": {
+      "r1": {
+        "v": "alpha",
+        "n": 1
+      },
+      "r2": {
+        "v": "beta",
+        "n": 2
+      },
+      "r3": {
+        "v": "gamma",
+        "n": 3
+      }
+    },
+    "global": {
+      "note": "seeded-p2t5",
+      "count": 3
+    },
+    "initial": {
+      "note": "initial",
+      "count": 0
+    }
+  },
+  "blackholePort": 60494,
+  "envFacts": {
+    "hasEnvApiKey": false,
+    "envBaseUrl": null
+  },
+  "settings": {
+    "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5\\settings.yaml",
+    "preExisted": false,
+    "written": true,
+    "restored": true
+  },
+  "credentials": {
+    "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5\\.credentials.yaml",
+    "preExisted": true,
+    "written": true,
+    "restored": true
+  },
+  "homes": {
+    "main": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5",
+    "isolate": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5\\scratch\\isolation-home"
+  },
+  "ports": {
+    "main": 3384,
+    "isolate": 3394
+  },
+  "obsFiles": [
+    "obs-seed.json",
+    "obs-verify.json",
+    "obs-isolate.json"
+  ]
+}

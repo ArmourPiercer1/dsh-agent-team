@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "failures": [],
+  "sections": [
+    "probes"
+  ],
+  "port": 3384,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T19:31:51.068Z"
+}

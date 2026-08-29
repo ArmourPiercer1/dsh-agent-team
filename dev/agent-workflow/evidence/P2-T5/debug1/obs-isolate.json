@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "phase": "isolate",
+  "startedAt": "2026-08-29T18:46:13.109Z",
+  "finishedAt": "2026-08-29T18:46:25.238Z",
+  "fatal": {
+    "message": "required base-bundle services missing via ctx.get: sessionQuery | DIAG {\"missing\":[\"sessionQuery\"],\"probe\":{\"sessionQuery\":false,\"sessions\":true,\"storageDomain\":true,\"subagents\":true,\"agents\":true,\"session-query\":false,\"sessionQuerySqlite\":false,\"sessionQueryEngine\":false,\"sessionPersistence\":true,\"sessionProjection\":false},\"propProbe\":{\"sessionQuery\":\"threw: cannot get property \\\"sessionQuery\\\" without inject\",\"sessions\":\"threw: cannot get property \\\"sessions\\\" without inject\"},\"sessionsMethods\":[\"ctx\",\"name\",\"store\",\"counter\"],\"storageDomainMethods\":[\"ctx\",\"config\",\"domains\",\"reserved\"],\"poll\":[true,true,true,true,true,true,true,true,true,true,true,true]}",
+    "stack": "Error: required base-bundle services missing via ctx.get: sessionQuery | DIAG {\"missing\":[\"sessionQuery\"],\"probe\":{\"sessionQuery\":false,\"sessions\":true,\"storageDomain\":true,\"subagents\":true,\"agents\":true,\"session-query\":false,\"sessionQuerySqlite\":false,\"sessionQueryEngine\":false,\"sessionPersistence\":true,\"sessionProjection\":false},\"propProbe\":{\"sessionQuery\":\"threw: cannot get property \\\"sessionQuery\\\" without inject\",\"sessions\":\"threw: cannot get property \\\"sessions\\\" without inject\"},\"sessionsMethods\":[\"ctx\",\"name\",\"store\",\"counter\"],\"storageDomainMethods\":[\"ctx\",\"config\",\"domains\",\"reserved\"],\"poll\":[true,true,true,true,true,true,true,true,true,true,true,true]}\n    at work (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T5/tests/characterization/probes/storage-fork-descendants/plugins/probe-host.js:203:13)"
+  }
+}

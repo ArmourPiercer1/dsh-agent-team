@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "phase": "seed",
+  "startedAt": "2026-08-29T18:50:34.077Z",
+  "finishedAt": "2026-08-29T18:51:05.020Z",
+  "fatal": {
+    "message": "timed out after 30000ms waiting: grandchild turn/end aborted(user)",
+    "stack": "Error: timed out after 30000ms waiting: grandchild turn/end aborted(user)\n    at waitFor (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T5/tests/characterization/probes/storage-fork-descendants/plugins/probe-host.js:86:39)\n    at async seed (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T5/tests/characterization/probes/storage-fork-descendants/plugins/probe-host.js:348:3)\n    at async work (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T5/tests/characterization/probes/storage-fork-descendants/plugins/probe-host.js:220:57)"
+  }
+}

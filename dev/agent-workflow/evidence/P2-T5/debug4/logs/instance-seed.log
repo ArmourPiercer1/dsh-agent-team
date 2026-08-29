@@ -1,0 +1,3 @@
+dsh web: http://127.0.0.1:3384/?token=MkMEyqGWF_Rr5X2-lE6PkUXDDd_H8BsAjQG1epHr1Wg
+dsh: fatal load failure: ReferenceError: partial is not defined
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T5/tests/characterization/probes/storage-fork-descendants/plugins/probe-host.js:239:21

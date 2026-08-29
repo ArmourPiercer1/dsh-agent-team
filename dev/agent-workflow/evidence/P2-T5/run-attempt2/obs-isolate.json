@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "phase": "isolate",
+  "startedAt": "2026-08-29T18:39:34.382Z",
+  "finishedAt": "2026-08-29T18:39:34.480Z",
+  "fatal": {
+    "message": "required base-bundle services missing via ctx.get: sessionQuery",
+    "stack": "Error: required base-bundle services missing via ctx.get: sessionQuery\n    at work (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T5/tests/characterization/probes/storage-fork-descendants/plugins/probe-host.js:179:35)"
+  }
+}

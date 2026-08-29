@@ -1,0 +1,27 @@
+{
+  "ok": false,
+  "failures": [
+    "obs-seed.json reports failure: timed out after 30000ms waiting: grandchild turn/end aborted(user) Error: timed out after 30000ms waiting: grandchild turn/end aborted(user)",
+    "S3.1 seed: interrupt(user, direct parent) ends the held turn with turn/end reason {kind:aborted, reason:{kind:user}}",
+    "S3.1 seed: grandchild entry activity flips to inactive after interrupt",
+    "S3.2 seed: interrupt with the WRONG parent session fails UNAUTHORIZED (got absent)",
+    "S3.3 seed (finding): interrupt of an unknown target is an accepted silent no-op (threw=false) — documented live behavior; task guidance expects a loud failure here, discrepancy recorded in seam-report",
+    "S3.4 seed: self-targeting ancestor authority fails UNAUTHORIZED (cross-checked with the bad-authority fixture document)",
+    "S3.6 seed: both members have NO turn/end before the drain (held mid-turn)",
+    "S3.7 seed: drainContinuableDescendants([rootAgent]) resolved (error=none) in ?ms",
+    "S3.7 seed: after drain, member1 has no live agent and no live session",
+    "S3.7 seed: after drain, member2 has no live agent and no live session",
+    "S3.7 seed: after drain, grand has no live agent and no live session",
+    "S3.7 seed: root handle disposed through the public API after the drain",
+    "S3.8 verify: durable member1/member2 logs end with turn/end kind=aborted (drain-interrupted)",
+    "S3.9 seed: persistence gate passed (waited ?ms) — every fixture session persisted=true before stop"
+  ],
+  "sections": [
+    "probes"
+  ],
+  "port": 3384,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\references\\.dsh-test-p2t5",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T19:18:08.881Z"
+}

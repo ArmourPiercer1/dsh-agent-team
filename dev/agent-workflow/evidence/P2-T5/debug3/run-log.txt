@@ -1,0 +1,128 @@
+[2026-08-29T18:50:10.226Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\tests\characterization
+[2026-08-29T18:50:10.227Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:50:10.227Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\references\.dsh-test-p2t5
+[2026-08-29T18:50:10.227Z] client hash  : cd5ef814
+[2026-08-29T18:50:10.227Z] port         : 3384 (backup 3394)
+[2026-08-29T18:50:10.227Z] node         : v24.20.0 (pid 7468)
+[2026-08-29T18:50:10.227Z] === section: probes ===
+[2026-08-29T18:50:10.618Z]   PASS probe groups discovered: smoke, storage-fork-descendants
+[2026-08-29T18:50:10.618Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:50:10.619Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:50:10.619Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:50:10.619Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:50:10.620Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:50:10.620Z] smoke: good row mounted; starting instance
+[2026-08-29T18:50:12.170Z]   PASS good row boot succeeded: http://127.0.0.1:3384/?token=lie9EaLLsA5ae4v5yagJDVOkuvyx9TTwHS6PGmCDZYQ
+[2026-08-29T18:50:12.207Z]   PASS port free after good boot
+[2026-08-29T18:50:12.207Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:50:31.343Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:50:31.343Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:50:31.344Z]   PASS port free after failed bad boot
+[2026-08-29T18:50:31.344Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:50:32.877Z]   PASS recovery boot succeeded: http://127.0.0.1:3384/?token=imbjP4x8WWrq_lE7zf63XzZSIjgEltK1mzTRg6nOpeg
+[2026-08-29T18:50:32.913Z]   PASS port free after recovery stop
+[2026-08-29T18:50:32.913Z] --- probe group: storage-fork-descendants — P2-T5 seams: StorageDomain external persistence, fork lineage visibility, descendant enumeration/interrupt/drain
+[2026-08-29T18:50:32.915Z]   PASS payload carries >=1 upstream import (@deepseek-ai/dsh-storage-domain)
+[2026-08-29T18:50:32.915Z]   PASS payload upstream imports all admitted by the live public surface
+[2026-08-29T18:50:32.916Z]   PASS bad-global fixture upstream imports admitted (its negativity is semantic, not import-level)
+[2026-08-29T18:50:32.916Z]   PASS private-import fixture carries >=1 upstream import (@deepseek-ai/dsh-subagent/lib/continuation.js)
+[2026-08-29T18:50:32.916Z]   PASS private-import fixture upstream import rejected by the live public surface (static)
+[2026-08-29T18:50:32.917Z]   PASS private-import rejected with ERR_PACKAGE_PATH_NOT_EXPORTED (got ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './lib/continuation.js' is not defined by "exports" in D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\tests\characterization\probes\node_modules\@deepseek-ai\dsh-subagent\package.json imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\tests\characterization\probes\storage-fork-descendants\plugins\negative-fixtures\private-import-host.js)
+[2026-08-29T18:50:32.961Z]   PASS bad-global rejected by the null-sentinel guard (got: domain 'p2t5_bad_global' global schema must not accept null: null is the medium's "never written" sentinel, so a stored null could not round-trip)
+[2026-08-29T18:50:32.962Z]   PASS bad-authority fixture documents the UNAUTHORIZED expectation
+[2026-08-29T18:50:32.973Z] p2t5: blackhole LLM endpoint on http://127.0.0.1:59472
+[2026-08-29T18:50:32.974Z] p2t5: env facts — hasEnvApiKey=false, envBaseUrl=null
+[2026-08-29T18:50:34.640Z]   PASS seed boot (main home) succeeded: http://127.0.0.1:3384/?token=JNt79BdjO_C9JuW0dx244r0DB6BjxG0ADMH4v62pxhA
+[2026-08-29T18:51:05.195Z]   FAIL obs-seed.json reports failure: timed out after 30000ms waiting: grandchild turn/end aborted(user) Error: timed out after 30000ms waiting: grandchild turn/end aborted(user)
+[2026-08-29T18:51:05.222Z]   PASS port free after seed stop
+[2026-08-29T18:51:06.774Z]   PASS verify boot (restart, main home) succeeded: http://127.0.0.1:3384/?token=4qSMeqZlhwYylXgGjT7cyxN6nFPuV6jOhj_xNfMKtw4
+[2026-08-29T18:51:06.813Z]   PASS port free after verify stop
+[2026-08-29T18:51:06.814Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-29T18:51:08.369Z] throwaway boot OK: http://127.0.0.1:3394/?token=Bj7JCMSgmK-gn-83F5UKZzFKSU5mQ-HITgXxmmTLWGA
+[2026-08-29T18:51:08.405Z]   PASS isolation home profile ready
+[2026-08-29T18:51:09.940Z]   PASS isolate boot (scratch home) succeeded: http://127.0.0.1:3394/?token=1URJ5__7wg01uRfqDFp6GpXTv7-WQQwuUcZCPUgQqXg
+[2026-08-29T18:51:09.979Z]   PASS port 3394 free after isolate stop
+[2026-08-29T18:51:09.981Z]   FAIL S1.1 seed: in-instance readback of all 3 records byte-equal to seeded values
+[2026-08-29T18:51:09.981Z]   FAIL S1.1 seed: in-instance global readback byte-equal
+[2026-08-29T18:51:09.981Z]   FAIL S1.2 seed: second open of a live spec fails loud (code=absent)
+[2026-08-29T18:51:09.981Z]   PASS S1.3 verify: after process restart, all 3 records reopen byte-equal
+[2026-08-29T18:51:09.981Z]   PASS S1.3 verify: after restart, global reopens byte-equal
+[2026-08-29T18:51:09.981Z]   PASS S1.3 verify: entryCount after restart = 3 (got 3)
+[2026-08-29T18:51:09.981Z]   PASS S1.4 isolate: fresh home table empty for the same domain name/version
+[2026-08-29T18:51:09.981Z]   PASS S1.4 isolate: fresh home has no entries
+[2026-08-29T18:51:09.981Z]   PASS S1.4 isolate: never-written global serves `initial`
+[2026-08-29T18:51:09.982Z]   FAIL S2.1 seed: member1 header carries parentSession=root, origin=subagent, delegationDepth=1
+[2026-08-29T18:51:09.982Z]   FAIL S2.1 seed: member2 header carries parentSession=root, origin=subagent, delegationDepth=1
+[2026-08-29T18:51:09.982Z]   FAIL S2.1 seed: grand header carries parentSession=member1, origin=subagent, delegationDepth=2
+[2026-08-29T18:51:09.982Z]   FAIL S2.1 seed: root header carries parentSession=null, origin=null (plain agent session)
+[2026-08-29T18:51:09.982Z]   FAIL S2.2 seed: descendant listing is exactly {member1, member2, grand} — no missing, no phantom rows
+[2026-08-29T18:51:09.982Z]   FAIL S2.2 seed: entry parentId/depth/label/mode/hasChildren all correct (member1 hasChildren=true)
+[2026-08-29T18:51:09.982Z]   FAIL S2.2 seed: all three entries live-activity=running (held mid-turn)
+[2026-08-29T18:51:09.982Z]   FAIL S2.3 seed: plain (non-subagent) fork of root adds NO descendant entry (still exactly 3)
+[2026-08-29T18:51:09.982Z]   PASS S2.4 verify: after restart, durable listing is exactly {member1, member2, grand}
+[2026-08-29T18:51:09.982Z]   PASS S2.4 verify: durable entry facts identical to the live snapshot (hasChildren survives via log fold)
+[2026-08-29T18:51:09.983Z]   PASS S2.4 verify: after restart all entries inactive (no live agents)
+[2026-08-29T18:51:09.983Z]   PASS S2.5 verify: corpus record root present+persisted+not-live
+[2026-08-29T18:51:09.983Z]   PASS S2.5 verify: corpus record member1 present+persisted+not-live
+[2026-08-29T18:51:09.983Z]   PASS S2.5 verify: corpus record member2 present+persisted+not-live
+[2026-08-29T18:51:09.983Z]   PASS S2.5 verify: corpus record grand present+persisted+not-live
+[2026-08-29T18:51:09.983Z]   PASS S2.5 verify: plainFork persisted in the corpus (a session, not an entry)
+[2026-08-29T18:51:09.983Z]   PASS S2.6 verify: replay-validated member1 log header keeps lineage facts
+[2026-08-29T18:51:09.983Z]   PASS S2.6 verify: replay-validated grand log header keeps lineage facts
+[2026-08-29T18:51:09.983Z]   FAIL S2.7 verify: traceSession(root) resolves complete (no error)
+[2026-08-29T18:51:09.983Z]   PASS S2.7 verify: trace rootId = fixture root (got 11111111-0000-4000-8000-000000000001)
+[2026-08-29T18:51:09.983Z]   PASS S2.7 verify: trace contains member1 as child of root
+[2026-08-29T18:51:09.983Z]   PASS S2.7 verify: trace contains member2 as child of root
+[2026-08-29T18:51:09.983Z]   PASS S2.7 verify: trace contains grand as child of member1
+[2026-08-29T18:51:09.983Z]   PASS S2.7 verify: trace contains plainFork as child of root with origin=null (session tree is broader than the entry listing)
+[2026-08-29T18:51:09.983Z]   PASS S2.N verify: unknown session id absent from corpus; exact readSession throws SESSION_QUERY_SESSION_NOT_FOUND
+[2026-08-29T18:51:09.984Z]   PASS S2.N isolate: readSession(fixture root) throws SESSION_QUERY_SESSION_NOT_FOUND on a fresh home
+[2026-08-29T18:51:09.984Z]   PASS S2.O verify (recorded): live store empty for every fixture id after restart — durable reads go through sessionQuery (documented process-scoped store)
+[2026-08-29T18:51:09.984Z]   PASS S2.ISO isolate: scratch home corpus/entries contain no fixture ids (lineage does not leak across homes)
+[2026-08-29T18:51:09.984Z]   FAIL S3.1 seed: interrupt(user, direct parent) ends the held turn with turn/end reason {kind:aborted, reason:{kind:user}}
+[2026-08-29T18:51:09.984Z]   FAIL S3.1 seed: grandchild entry activity flips to inactive after interrupt
+[2026-08-29T18:51:09.984Z]   FAIL S3.2 seed: interrupt with the WRONG parent session fails UNAUTHORIZED (got absent)
+[2026-08-29T18:51:09.984Z]   FAIL S3.3 seed (finding): interrupt of an unknown target is an accepted silent no-op (threw=false) — documented live behavior; task guidance expects a loud failure here, discrepancy recorded in seam-report
+[2026-08-29T18:51:09.984Z]   FAIL S3.4 seed: self-targeting ancestor authority fails UNAUTHORIZED (cross-checked with the bad-authority fixture document)
+[2026-08-29T18:51:09.984Z]   FAIL S3.5 seed: startContinuable with an existing childId fails DUPLICATE_CHILD (got absent)
+[2026-08-29T18:51:09.984Z]   FAIL S3.6 seed: both members have NO turn/end before the drain (held mid-turn)
+[2026-08-29T18:51:09.984Z]   FAIL S3.7 seed: drainContinuableDescendants([rootAgent]) resolved (error=none) in ?ms
+[2026-08-29T18:51:09.984Z]   FAIL S3.7 seed: after drain, member1 has no live agent and no live session
+[2026-08-29T18:51:09.984Z]   FAIL S3.7 seed: after drain, member2 has no live agent and no live session
+[2026-08-29T18:51:09.985Z]   FAIL S3.7 seed: after drain, grand has no live agent and no live session
+[2026-08-29T18:51:09.985Z]   FAIL S3.7 seed: root handle disposed through the public API after the drain
+[2026-08-29T18:51:09.985Z]   PASS S3.8 verify: durable grand log ends with turn/end aborted/user
+[2026-08-29T18:51:09.985Z]   FAIL S3.8 verify: durable member1/member2 logs end with turn/end kind=aborted (drain-interrupted)
+[2026-08-29T18:51:09.985Z]   FAIL S3.9 seed: persistence gate passed (waited ?ms) — every fixture session persisted=true before stop
+[2026-08-29T18:51:09.985Z] p2t5: group checks complete
+[2026-08-29T18:51:09.987Z]   PASS port 3384 free after group teardown
+[2026-08-29T18:51:09.987Z]   PASS port 3394 free after group teardown
+[2026-08-29T18:51:09.988Z] 
+[2026-08-29T18:51:09.988Z] RESULT: FAIL characterization self-test (27 failure(s))
+[2026-08-29T18:51:09.988Z]   - obs-seed.json reports failure: timed out after 30000ms waiting: grandchild turn/end aborted(user) Error: timed out after 30000ms waiting: grandchild turn/end aborted(user)
+[2026-08-29T18:51:09.988Z]   - S1.1 seed: in-instance readback of all 3 records byte-equal to seeded values
+[2026-08-29T18:51:09.988Z]   - S1.1 seed: in-instance global readback byte-equal
+[2026-08-29T18:51:09.988Z]   - S1.2 seed: second open of a live spec fails loud (code=absent)
+[2026-08-29T18:51:09.988Z]   - S2.1 seed: member1 header carries parentSession=root, origin=subagent, delegationDepth=1
+[2026-08-29T18:51:09.988Z]   - S2.1 seed: member2 header carries parentSession=root, origin=subagent, delegationDepth=1
+[2026-08-29T18:51:09.989Z]   - S2.1 seed: grand header carries parentSession=member1, origin=subagent, delegationDepth=2
+[2026-08-29T18:51:09.989Z]   - S2.1 seed: root header carries parentSession=null, origin=null (plain agent session)
+[2026-08-29T18:51:09.989Z]   - S2.2 seed: descendant listing is exactly {member1, member2, grand} — no missing, no phantom rows
+[2026-08-29T18:51:09.989Z]   - S2.2 seed: entry parentId/depth/label/mode/hasChildren all correct (member1 hasChildren=true)
+[2026-08-29T18:51:09.989Z]   - S2.2 seed: all three entries live-activity=running (held mid-turn)
+[2026-08-29T18:51:09.989Z]   - S2.3 seed: plain (non-subagent) fork of root adds NO descendant entry (still exactly 3)
+[2026-08-29T18:51:09.989Z]   - S2.7 verify: traceSession(root) resolves complete (no error)
+[2026-08-29T18:51:09.989Z]   - S3.1 seed: interrupt(user, direct parent) ends the held turn with turn/end reason {kind:aborted, reason:{kind:user}}
+[2026-08-29T18:51:09.989Z]   - S3.1 seed: grandchild entry activity flips to inactive after interrupt
+[2026-08-29T18:51:09.989Z]   - S3.2 seed: interrupt with the WRONG parent session fails UNAUTHORIZED (got absent)
+[2026-08-29T18:51:09.989Z]   - S3.3 seed (finding): interrupt of an unknown target is an accepted silent no-op (threw=false) — documented live behavior; task guidance expects a loud failure here, discrepancy recorded in seam-report
+[2026-08-29T18:51:09.989Z]   - S3.4 seed: self-targeting ancestor authority fails UNAUTHORIZED (cross-checked with the bad-authority fixture document)
+[2026-08-29T18:51:09.989Z]   - S3.5 seed: startContinuable with an existing childId fails DUPLICATE_CHILD (got absent)
+[2026-08-29T18:51:09.989Z]   - S3.6 seed: both members have NO turn/end before the drain (held mid-turn)
+[2026-08-29T18:51:09.989Z]   - S3.7 seed: drainContinuableDescendants([rootAgent]) resolved (error=none) in ?ms
+[2026-08-29T18:51:09.989Z]   - S3.7 seed: after drain, member1 has no live agent and no live session
+[2026-08-29T18:51:09.989Z]   - S3.7 seed: after drain, member2 has no live agent and no live session
+[2026-08-29T18:51:09.989Z]   - S3.7 seed: after drain, grand has no live agent and no live session
+[2026-08-29T18:51:09.990Z]   - S3.7 seed: root handle disposed through the public API after the drain
+[2026-08-29T18:51:09.990Z]   - S3.8 verify: durable member1/member2 logs end with turn/end kind=aborted (drain-interrupted)
+[2026-08-29T18:51:09.990Z]   - S3.9 seed: persistence gate passed (waited ?ms) — every fixture session persisted=true before stop

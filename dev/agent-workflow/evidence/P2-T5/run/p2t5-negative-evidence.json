@@ -1,0 +1,28 @@
+{
+  "negativeEvidence": {
+    "privateImport": {
+      "rejected": true,
+      "code": "ERR_PACKAGE_PATH_NOT_EXPORTED",
+      "message": "Package subpath './lib/continuation.js' is not defined by \"exports\" in D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\tests\\characterization\\probes\\node_modules\\@deepseek-ai\\dsh-subagent\\package.json imported from D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T5\\tests\\characterization\\probes\\storage-fork-descendants\\plugins\\negative-fixtures\\private-import-host.js"
+    },
+    "badGlobal": {
+      "threw": true,
+      "message": "domain 'p2t5_bad_global' global schema must not accept null: null is the medium's \"never written\" sentinel, so a stored null could not round-trip"
+    }
+  },
+  "authorityFixture": {
+    "seam": "descendants",
+    "name": "stale-ancestor-authority",
+    "kind": "authority",
+    "authority": {
+      "kind": "ancestor",
+      "agent": "<self or stale agent reference>"
+    },
+    "expected": {
+      "throws": true,
+      "code": "UNAUTHORIZED"
+    },
+    "liveObservationPath": "data.interrupt.selfAncestor",
+    "notes": "Exercised live in the seed phase: interrupt(root, {kind:\"ancestor\", agent: rootAgent}) — the presenting agent is the target itself, the stalest possible case."
+  }
+}
