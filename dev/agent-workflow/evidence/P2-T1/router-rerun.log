@@ -1,0 +1,59 @@
+﻿[2026-08-29T17:20:33.474Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T1\tests\characterization
+[2026-08-29T17:20:33.475Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T17:20:33.475Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t1
+[2026-08-29T17:20:33.475Z] client hash  : cd5ef814
+[2026-08-29T17:20:33.475Z] port         : 3281 (backup 3291)
+[2026-08-29T17:20:33.475Z] node         : v24.20.0 (pid 29428)
+[2026-08-29T17:20:33.475Z] === section: preflight ===
+[2026-08-29T17:20:33.475Z]   PASS built upstream CLI entry present (apps/cli/lib/bin.js)
+[2026-08-29T17:20:33.475Z]   PASS good probe plugin present
+[2026-08-29T17:20:33.475Z]   PASS bad probe plugin present
+[2026-08-29T17:20:33.475Z]   PASS port 3281 free at start
+[2026-08-29T17:20:33.592Z]   PASS test-use tree PRISTINE at start (git status --porcelain empty)
+[2026-08-29T17:20:33.592Z]   (HEAD=cd5ef8148158c3a752a658978873241fdf8e2bbc via git)
+[2026-08-29T17:20:33.955Z]   PASS public surface built over 272 packages (>=200 for the pinned monorepo)
+[2026-08-29T17:20:33.956Z]   PASS probe sources import 1 upstream package(s): @deepseek-ai/dsh-util-crypto
+[2026-08-29T17:20:33.956Z] === section: surface ===
+[2026-08-29T17:20:33.956Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-base
+[2026-08-29T17:20:33.956Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-web-app
+[2026-08-29T17:20:33.956Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-util-crypto
+[2026-08-29T17:20:33.956Z]   PASS public root of @deepseek-ai/dsh-util-crypto admitted
+[2026-08-29T17:20:33.956Z]   PASS private subpath ./internal/random NOT admitted (subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto)
+[2026-08-29T17:20:33.956Z] === section: fixture ===
+[2026-08-29T17:20:33.956Z]   PASS pinned SHA matches live HEAD (fixture=cd5ef8148158c3a752a658978873241fdf8e2bbc, live=cd5ef8148158c3a752a658978873241fdf8e2bbc [via git])
+[2026-08-29T17:20:33.957Z]   PASS public surface matches fixture (272 packages, schema p2t1-host-version/1)
+[2026-08-29T17:20:33.957Z] === section: static (private-import negative test) ===
+[2026-08-29T17:20:33.959Z]   PASS harness source (lib/ + run.mjs + spawn-probe.mjs + probes/*/index.mjs) has zero bare/third-party/private imports
+[2026-08-29T17:20:33.959Z]   PASS scanner: good probe PASSES (0 findings in probes\smoke\plugins\good-host.js)
+[2026-08-29T17:20:33.959Z]   PASS scanner: bad probe DETECTED + REJECTED (1 finding(s): private-subpath-import)
+[2026-08-29T17:20:33.959Z]   rejected: private-subpath-import "@deepseek-ai/dsh-util-crypto/internal/random" — subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto
+[2026-08-29T17:20:33.959Z]   PASS scanner positive control: synthetic bare import FLAGGED in harness mode
+[2026-08-29T17:20:33.959Z]   PASS scanner positive control: synthetic private subpath FLAGGED in probe mode
+[2026-08-29T17:20:33.959Z] === section: lifecycle ===
+[2026-08-29T17:20:33.959Z]   PASS web profile ready under dedicated DSH_HOME (already initialized)
+[2026-08-29T17:20:34.061Z]   PASS dump-config: mounted row present in the composed profile tree (public seam carries it)
+[2026-08-29T17:20:35.626Z]   PASS instance started: http://127.0.0.1:3281/?token=CUTDCC1Qkx9O3TWRaYbb-bkYPKFxBSaFvteKAPmdVls
+[2026-08-29T17:20:35.662Z]   PASS instance stopped, port freed
+[2026-08-29T17:20:35.662Z] === section: probes ===
+[2026-08-29T17:20:35.663Z]   PASS probe groups discovered: smoke
+[2026-08-29T17:20:35.663Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T17:20:35.663Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T17:20:35.663Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T17:20:35.663Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T17:20:35.663Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T17:20:35.663Z] smoke: good row mounted; starting instance
+[2026-08-29T17:20:37.248Z]   PASS good row boot succeeded: http://127.0.0.1:3281/?token=WX7ewmESSan5wUXSXffte0uDM3TqY7WUMLjxN9F-f5A
+[2026-08-29T17:20:37.285Z]   PASS port free after good boot
+[2026-08-29T17:20:37.285Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T17:20:56.400Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T17:20:56.400Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T17:20:56.401Z]   PASS port free after failed bad boot
+[2026-08-29T17:20:56.402Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T17:20:57.962Z]   PASS recovery boot succeeded: http://127.0.0.1:3281/?token=lLKmS970eoRkCmClOJicypXSfb2sEZcKKLmdYX4jIf0
+[2026-08-29T17:20:58.002Z]   PASS port free after recovery stop
+[2026-08-29T17:20:58.002Z] === section: byte-clean ===
+[2026-08-29T17:20:58.139Z]   PASS test-use tree byte-clean after run (git status --porcelain empty)
+[2026-08-29T17:20:58.139Z]   PASS test-use tree byte-clean after run (git diff empty)
+[2026-08-29T17:20:58.139Z]   PASS HEAD unchanged (start=cd5ef8148158c3a752a658978873241fdf8e2bbc, end=cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-29T17:20:58.139Z] 
+[2026-08-29T17:20:58.139Z] RESULT: PASS characterization self-test (all sections green)

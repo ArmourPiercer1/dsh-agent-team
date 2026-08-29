@@ -101,6 +101,21 @@
 - **P2 启动**：TaskDoc §11.3 已读（P2 — Public Seam Characterization；依赖图 P2-T1 → {T2||T3||T4||T5} → T6 → G2）；`int/P2-seam-characterization` 自 master @ ac2be32 创建；P2-T1 worktree/分支已建，worker 已派发（qiyuan-self/qwen3.8-27b）。
 - **graph**：current_phase P2；G1-REVIEW → PASSED（verdicts 已录）；P2-T1 → READY；P2-T2..T6、G2-REVIEW → DEFINED。
 
+### 轮次 R6：P2-T1 执行 + 集成（2026-08-30）
+
+- **执行方式**：workflow 工具 1 个 worker，`qiyuan-self/qwen3.8-27b`；worktree `.worktrees/P2-T1`、分支 `task/P2-T1-char-harness`（基于 `cc6199b`）；执行 1/3，**SELF_VERIFIED**（head `1f06ff3`，3 commits：309e062 harness / a7414ba CI / 1f06ff3 evidence）。
+- **交付**：
+  - `tests/characterization/` —— pristine characterization harness：`run.mjs` 单命令入口（self-test + 实例生命周期 + 负例 + 字节清洁断言）；`lib/{harness-core,instance,public-surface,private-import,fixture,tree-clean,util}.mjs` 共享库；`fixtures/host-version.json` 固定 UPSTREAM_SHA=cd5ef814 + public surface 指纹（272 packages，v0.1.2-alpha.1）；`probes/smoke/` 演示组（good-host 公开 import 启动 / bad-host private-import 运行时拒绝 ERR_PACKAGE_PATH_NOT_EXPORTED + 机器可读归因 / 恢复 / 停止 / 端口释放）；junction farm `probes/node_modules`（gitignored、幂等重建）为 probe bare-import 唯一运行时管线。
+  - `.github/workflows/characterization.yml` —— CI job（`node tests/characterization/run.mjs`；本环境未执行，留 CI）。
+  - `dev/agent-workflow/evidence/P2-T1/` —— compliance-report.md（§1 目标/owned-path/复用合规；§8 KNOWN LIMITATIONS 逐条带 G2 状态；§9 发现并修复的 9 个 harness bug）+ dryrun/zero-core 自检日志。
+- **主 Agent 独立审计（全部通过）**：
+  - owned-path：全部改动文件均在 `tests/characterization/**`、`.github/workflows/**`、`dev/agent-workflow/evidence/P2-T1/**` ✓
+  - test-use @ cd5ef814 byte-clean（status/diff 空、HEAD 不变）✓
+  - 独立重跑 `node tests/characterization/run.mjs`（`.worktrees/P2-T1` 内）：EXIT=0 / 40s / 全节绿（实例 3281 启动、good 行公开 import 启动、bad 行运行时拒绝+归因、恢复启动、停止、端口释放、运行后 byte-clean、HEAD 不变）；`router-rerun.log` 归档 ✓
+  - compliance-report §1.1 目标 / §1.2 owned-path / §1.3 复用 P1-T5 zero-core 扫描器 均合规 ✓
+- **集成**：cherry-pick -x 三 commit → `int/P2-seam-characterization` @ `10ce2fc`（5e306c1 / 77b1965 / 10ce2fc）；graph：P2-T1 → INTEGRATED（base cc6199b、head 1f06ff3、attempts 1），integration_sha = `10ce2fc`，ready → [P2-T2, P2-T3, P2-T4, P2-T5]。
+- **下一步**：workflow 并行拉起 P2-T2..T5（4 worker，`qiyuan-self/qwen3.8-27b`；各自独立 worktree/分支/端口/DSH_HOME；base = `10ce2fc`，复用 P2-T1 harness lib；完成后 P2-T6 → G2-REVIEW）。
+
 ## 重审记录
 
 （空）
