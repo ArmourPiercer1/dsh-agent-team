@@ -1,0 +1,6 @@
+{
+  "boot": 1,
+  "done": true,
+  "fatal": "Error: cannot get property \"skills\" without inject",
+  "results": {}
+}

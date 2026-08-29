@@ -1,0 +1,108 @@
+[2026-08-29T18:32:06.164Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T4\tests\characterization
+[2026-08-29T18:32:06.164Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:32:06.165Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t4
+[2026-08-29T18:32:06.165Z] client hash  : cd5ef814
+[2026-08-29T18:32:06.165Z] port         : 3383 (backup 3393)
+[2026-08-29T18:32:06.165Z] node         : v24.20.0 (pid 83244)
+[2026-08-29T18:32:06.165Z] === section: probes ===
+[2026-08-29T18:32:06.569Z]   PASS probe groups discovered: capabilities, smoke
+[2026-08-29T18:32:06.569Z] --- probe group: capabilities — P2-T4: agent-scope control of pre-step / pre-execute / tool visibility / skills / MCP across creation, cold resume, tighten, capability disappear
+[2026-08-29T18:32:06.570Z]   PASS payload carries >=3 upstream imports (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-llm, @deepseek-ai/dsh-mcp-client, @deepseek-ai/dsh-session)
+[2026-08-29T18:32:06.571Z]   PASS payload upstream imports all admitted by the live public surface (static)
+[2026-08-29T18:32:06.582Z]   PASS mini MCP streamable-http server listening on 127.0.0.1:3491 (auxiliary; closed in finally)
+[2026-08-29T18:32:06.582Z]   evidence: mini MCP port = 3491
+[2026-08-29T18:32:06.690Z]   PASS dump-config: capabilities probe row present in the composed profile tree (public seam carries it)
+[2026-08-29T18:32:08.476Z]   PASS boot 1: instance started at http://127.0.0.1:3383/?token=YLVSOMATTyY0S5cqBT2zZorA2545g10H8FKZLe7aQiI
+[2026-08-29T18:32:09.088Z]   PASS boot 1: instance stopped, port 3383 freed
+[2026-08-29T18:32:09.089Z]   PASS [boot1] scenario completed without fatal
+[2026-08-29T18:32:09.090Z]   PASS [tools/creation] global probe tool visible in the global view (public: tools.register in row scope)
+[2026-08-29T18:32:09.090Z]   PASS [tools/creation] scoped p2t4_echo visible in the agent view (public: register into the unpublished agent scope in setup)
+[2026-08-29T18:32:09.090Z]   PASS [tools/creation] global tool inherited into the agent view
+[2026-08-29T18:32:09.090Z]   PASS [tools/creation] scoped tool hidden from the global view (scope isolation)
+[2026-08-29T18:32:09.090Z]   evidence: agent tool view = ["p2t4_global","p2t4_echo","p2t4_gate","mcp__p2t4mini__ping"]
+[2026-08-29T18:32:09.090Z]   PASS [skills/creation] agentCtx.get("skills") resolves from the agent-scope ctx (strict global-store read)
+[2026-08-29T18:32:09.090Z]   PASS [skills/creation] scoped skill registered through the agent-scope ctx binding (public: agentCtx.get("skills").register in setup)
+[2026-08-29T18:32:09.090Z]   PASS [skills/creation] negative control: property access agentCtx.skills throws from the agent-scope ctx (topology-sensitive)
+[2026-08-29T18:32:09.090Z]   PASS [skills/creation] scoped skill listed in the agent-scoped snapshot
+[2026-08-29T18:32:09.090Z]   PASS [skills/creation] scoped skill absent from the global snapshot
+[2026-08-29T18:32:09.091Z]   evidence: skills write path = {"propAccess":{"threw":true,"message":"Error: cannot get property \"skills\" without inject"},"registeredVia":"agentGet"}
+[2026-08-29T18:32:09.091Z]   PASS [mcp/creation] mcp__p2t4mini__ping visible in the agent view (public: agent-scoped mcp-client instance)
+[2026-08-29T18:32:09.091Z]   PASS [mcp/creation] MCP tool hidden from the global view
+[2026-08-29T18:32:09.091Z]   PASS [mcp/creation] MCP tool call succeeds through the agent-scoped pipeline
+[2026-08-29T18:32:09.091Z]   PASS [mcp/creation] MCP round-trip echoed by the mini server (pong:hello-mcp)
+[2026-08-29T18:32:09.091Z]   PASS [pre-execute/creation] allow path: scoped listener delegates via next(), execution succeeds
+[2026-08-29T18:32:09.091Z]   PASS [pre-execute/creation] ask path without approval answerer fails closed (public: PreToolDecision kind=ask)
+[2026-08-29T18:32:09.091Z]   evidence: ask denial = "{\"message\":\"approval.request() outside an open turn: the approval/asked + approval/decided audit pair must be turn-enclosed (a bare event between turns is crash-tail garbage on reload). Ask from inside the turn that needs the decision.\"}"
+[2026-08-29T18:32:09.091Z]   PASS [pre-step/creation] enter path produced a step (step/start appended durably)
+[2026-08-29T18:32:09.091Z]   PASS [pre-step/creation] new events include step/start (public: agent/pre-step waterfall, default enter)
+[2026-08-29T18:32:09.091Z]   PASS [pre-step/creation] driver idle after the turn (model call failed contained — no key in this DSH_HOME)
+[2026-08-29T18:32:09.091Z]   PASS [pre-step/creation] turn settled without the whenIdle guard timeout
+[2026-08-29T18:32:09.091Z]   evidence: creation turn events = ["3:agent/inbox/spliced","4:turn/start","5:agent/inbox/spliced","6:step/start","7:user/message","8:user/message","9:session/title","10:request/header","11:request/context","12:session/title-llm-request","13:assistant/chunk","14:step/end","15:turn/end"]
+[2026-08-29T18:32:09.091Z]   evidence: creation turn ends = ["error"]
+[2026-08-29T18:32:09.092Z]   PASS [mcp/creation] duplicate serverName in the SAME scope is rejected (namespace reservation)
+[2026-08-29T18:32:09.092Z]   PASS [mcp/creation] rejection names the in-use serverName
+[2026-08-29T18:32:09.092Z]   evidence: same-scope duplicate = "Error: mcp-client: serverName \"p2t4mini\" is already in use by another mcp-client instance — pick a unique serverName in cordis.yml"
+[2026-08-29T18:32:09.092Z]   PASS [mcp/creation] failOnStartupError against a dead endpoint rejects agent creation
+[2026-08-29T18:32:09.092Z]   PASS [mcp/creation] rolled-back creation published no agent
+[2026-08-29T18:32:09.092Z]   PASS [mcp/creation] rolled-back creation published no session
+[2026-08-29T18:32:09.092Z]   evidence: rollback = "Error: mcp-client(p2t4dead): initial connection or tool synchronization failed"
+[2026-08-29T18:32:09.092Z]   PASS [tools/creation] cross-agent isolation: agent B cannot see A scoped tool
+[2026-08-29T18:32:09.092Z]   PASS [tools/creation] cross-agent: agent B inherits the global tool
+[2026-08-29T18:32:09.092Z]   PASS [mcp/creation] cross-agent: the same MCP serverName MAY be reused in another agent scope
+[2026-08-29T18:32:09.092Z]   PASS [lifecycle/creation] disposed agent B removed from the agent registry
+[2026-08-29T18:32:09.092Z]   PASS [tools/tighten] scoped restrict({deny}) hides the INHERITED global tool from the agent view (public: tools.restrict)
+[2026-08-29T18:32:09.092Z]   PASS [tools/tighten] own-layer scoped tool stays visible under the restriction
+[2026-08-29T18:32:09.093Z]   PASS [tools/tighten] restriction does not leak into the global view
+[2026-08-29T18:32:09.093Z]   PASS [tools/tighten] executing the restricted inherited tool now fails
+[2026-08-29T18:32:09.093Z]   PASS [pre-execute/tighten] mutable policy flip: the same call allowed at creation now denies
+[2026-08-29T18:32:09.093Z]   PASS [pre-execute/tighten] denial reason names the scoped policy listener
+[2026-08-29T18:32:09.093Z]   evidence: deny after flip = "{\"message\":\"p2t4-policy(A): p2t4_echo denied by the agent-scoped pre-execute listener\"}"
+[2026-08-29T18:32:09.093Z]   PASS [pre-step/tighten] reject decision produces NO new step/start (public: PreStepDecision kind=reject)
+[2026-08-29T18:32:09.093Z]   PASS [pre-step/tighten] rejected turn ends with reason blocked
+[2026-08-29T18:32:09.093Z]   evidence: tighten pre-step events = ["user/message","session/title","request/header","request/context","session/title-llm-request","assistant/chunk","step/end","turn/end","agent/inbox/spliced","turn/start","agent/inbox/spliced","turn/end"]
+[2026-08-29T18:32:09.093Z]   PASS [skills/tighten] registration disposer removes the scoped skill from the agent scope
+[2026-08-29T18:32:09.093Z]   evidence: post-publication registration (verbatim): {"tool":{"threw":false,"visibleWhileAlive":true},"skill":{"threw":false}}
+[2026-08-29T18:32:09.093Z]   PASS [mcp/tighten] fiber.dispose() unregisters the MCP tools from the agent view
+[2026-08-29T18:32:09.093Z]   PASS [mcp/tighten] remounting the same serverName restores the tool (namespace released)
+[2026-08-29T18:32:09.094Z]   PASS [disappear] session flushed to durable storage before dispose
+[2026-08-29T18:32:09.094Z]   PASS [disappear] agents.get(sessionId) is undefined after dispose
+[2026-08-29T18:32:09.094Z]   PASS [disappear] executing a scoped tool through the disposed agent context fails
+[2026-08-29T18:32:09.094Z]   PASS [skills/disappear] disposed agent scope no longer resolves the scoped skill (gone or hard error)
+[2026-08-29T18:32:09.094Z]   evidence: stale skill scope = {"threw":false,"scopedSkillGone":true}
+[2026-08-29T18:32:09.094Z]   evidence: followup after dispose = {"threw":false}
+[2026-08-29T18:32:09.094Z]   PASS boot 1 wrote the state channel (sessionId survives the process restart)
+[2026-08-29T18:32:10.903Z]   PASS boot 2: instance started at http://127.0.0.1:3383/?token=TgV9Wxu8mvqfGLAod36wExbv7vcOlOtSSaBPwk-dnl4
+[2026-08-29T18:32:11.210Z]   PASS boot 2: instance stopped, port 3383 freed
+[2026-08-29T18:32:11.211Z]   PASS [boot2] scenario completed without fatal
+[2026-08-29T18:32:11.211Z]   PASS [boot2] observation channel reports boot 2 (cold resume)
+[2026-08-29T18:32:11.211Z]   PASS [resume] durable history: pre-restart turn/start retained after cold resume
+[2026-08-29T18:32:11.211Z]   PASS [resume] durable history: pre-restart step/start retained after cold resume
+[2026-08-29T18:32:11.211Z]   PASS [resume] resumed session log positions boot-1 step/start at the recorded index (same durable log)
+[2026-08-29T18:32:11.211Z]   evidence: resumed log head = ["0:permission/preset","1:sandbox/mode","2:approval/policy","3:agent/inbox/spliced","4:turn/start","5:agent/inbox/spliced","6:step/start","7:user/message","8:user/message","9:session/title","10:request/header","11:request/context","12:session/title-llm-request","13:assistant/chunk","14:step/end","15:turn/end","16:agent/inbox/spliced","17:turn/start","18:agent/inbox/spliced","19:turn/end","20:session/end-seed"]
+[2026-08-29T18:32:11.211Z]   PASS [pre-step/resume] an enter turn after resume appends a fresh step/start (loop alive on the resumed session)
+[2026-08-29T18:32:11.211Z]   PASS [pre-step/resume] resumed turn settled without the whenIdle guard timeout
+[2026-08-29T18:32:11.211Z]   PASS [pre-step/resume] driver idle after the resumed turn
+[2026-08-29T18:32:11.211Z]   evidence: resume turn events = ["21:agent/inbox/spliced","22:turn/start","23:agent/inbox/spliced","24:step/start","25:user/message","26:request/header","27:assistant/chunk","28:step/end","29:turn/end"]
+[2026-08-29T18:32:11.212Z]   PASS [pre-step/resume] turn ended (reasons recorded)
+[2026-08-29T18:32:11.212Z]   PASS [pre-execute/resume] policy flip on the recomposed world denies the same call
+[2026-08-29T18:32:11.212Z]   PASS [pre-execute/resume] denial names the recomposed scoped listener
+[2026-08-29T18:32:11.212Z]   PASS [disappear/resume] resumed agent gone from the registry after dispose
+[2026-08-29T18:32:11.212Z]   PASS [disappear/resume] stale execution through the disposed resumed agent fails
+[2026-08-29T18:32:11.212Z]   PASS [skills/disappear/resume] disposed resumed scope no longer resolves the scoped skill
+[2026-08-29T18:32:11.213Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:32:11.213Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:32:11.213Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:32:11.214Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:32:11.214Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:32:11.214Z] smoke: good row mounted; starting instance
+[2026-08-29T18:32:12.737Z]   PASS good row boot succeeded: http://127.0.0.1:3383/?token=RHRuRjgwj567pzO5GpYeXMa33efy1AyWADJ3cRHpEE0
+[2026-08-29T18:32:12.773Z]   PASS port free after good boot
+[2026-08-29T18:32:12.773Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:32:31.901Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:32:31.901Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:32:31.901Z]   PASS port free after failed bad boot
+[2026-08-29T18:32:31.902Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:32:33.438Z]   PASS recovery boot succeeded: http://127.0.0.1:3383/?token=ow-TSEBOOv6nd8-Mc0xK9lIvRduuvdF1VYvlQE30bQ4
+[2026-08-29T18:32:33.477Z]   PASS port free after recovery stop
+[2026-08-29T18:32:33.477Z] 
+[2026-08-29T18:32:33.477Z] RESULT: PASS characterization self-test (all sections green)

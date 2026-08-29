@@ -1,0 +1,14 @@
+{
+  "ok": false,
+  "failures": [
+    "probe group capabilities threw: instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n          at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)\r\n          at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)\r\n          at afterResolve (node:internal/modules/esm/loader:611:52)\r\n          at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12)\r\n          at node:internal/modules/esm/loader:636:32\r\n          at TracingChannel.tracePromise (node:diagnostics_channel:361:14)\r\n    }\r\n  }\r\n}\r\n\r\nNode.js v24.20.0\r\n"
+  ],
+  "sections": [
+    "probes"
+  ],
+  "port": 3383,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t4",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T18:09:55.257Z"
+}

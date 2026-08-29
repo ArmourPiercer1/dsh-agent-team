@@ -1,0 +1,59 @@
+[2026-08-29T18:09:13.072Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T4\tests\characterization
+[2026-08-29T18:09:13.073Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:09:13.073Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t4
+[2026-08-29T18:09:13.073Z] client hash  : cd5ef814
+[2026-08-29T18:09:13.073Z] port         : 3383 (backup 3393)
+[2026-08-29T18:09:13.073Z] node         : v24.20.0 (pid 61664)
+[2026-08-29T18:09:13.073Z] === section: probes ===
+[2026-08-29T18:09:13.467Z]   PASS probe groups discovered: capabilities, smoke
+[2026-08-29T18:09:13.467Z] --- probe group: capabilities — P2-T4: agent-scope control of pre-step / pre-execute / tool visibility / skills / MCP across creation, cold resume, tighten, capability disappear
+[2026-08-29T18:09:13.469Z]   PASS payload carries >=3 upstream imports (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-llm, @deepseek-ai/dsh-mcp-client, @deepseek-ai/dsh-session)
+[2026-08-29T18:09:13.469Z]   PASS payload upstream imports all admitted by the live public surface (static)
+[2026-08-29T18:09:13.481Z]   PASS mini MCP streamable-http server listening on 127.0.0.1:3491 (auxiliary; closed in finally)
+[2026-08-29T18:09:13.481Z]   evidence: mini MCP port = 3491
+[2026-08-29T18:09:13.596Z]   PASS dump-config: capabilities probe row present in the composed profile tree (public seam carries it)
+[2026-08-29T18:09:32.948Z]   FAIL probe group capabilities threw: instance boot failed: process exited (code=1 signal=none)
+--- log tail ---
+          at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+          at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+          at afterResolve (node:internal/modules/esm/loader:611:52)
+          at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12)
+          at node:internal/modules/esm/loader:636:32
+          at TracingChannel.tracePromise (node:diagnostics_channel:361:14)
+    }
+  }
+}
+
+Node.js v24.20.0
+
+[2026-08-29T18:09:32.948Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:09:32.948Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:09:32.948Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:09:32.948Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:09:32.949Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:09:32.949Z] smoke: good row mounted; starting instance
+[2026-08-29T18:09:34.484Z]   PASS good row boot succeeded: http://127.0.0.1:3383/?token=kJ7tZ7prrZvU4hRnfCla1uH-qusrQALENg7dxda5UZQ
+[2026-08-29T18:09:34.521Z]   PASS port free after good boot
+[2026-08-29T18:09:34.522Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:09:53.679Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:09:53.679Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:09:53.680Z]   PASS port free after failed bad boot
+[2026-08-29T18:09:53.680Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:09:55.222Z]   PASS recovery boot succeeded: http://127.0.0.1:3383/?token=3TEHwECaB8r4SA3sn2rnCcR2lRBCryXSJBL6wAkcHEA
+[2026-08-29T18:09:55.257Z]   PASS port free after recovery stop
+[2026-08-29T18:09:55.257Z] 
+[2026-08-29T18:09:55.258Z] RESULT: FAIL characterization self-test (1 failure(s))
+[2026-08-29T18:09:55.258Z]   - probe group capabilities threw: instance boot failed: process exited (code=1 signal=none)
+--- log tail ---
+          at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+          at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+          at afterResolve (node:internal/modules/esm/loader:611:52)
+          at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12)
+          at node:internal/modules/esm/loader:636:32
+          at TracingChannel.tracePromise (node:diagnostics_channel:361:14)
+    }
+  }
+}
+
+Node.js v24.20.0
+

@@ -1,0 +1,164 @@
+[2026-08-29T18:11:02.163Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T4\tests\characterization
+[2026-08-29T18:11:02.164Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:11:02.164Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t4
+[2026-08-29T18:11:02.165Z] client hash  : cd5ef814
+[2026-08-29T18:11:02.165Z] port         : 3383 (backup 3393)
+[2026-08-29T18:11:02.165Z] node         : v24.20.0 (pid 38348)
+[2026-08-29T18:11:02.165Z] === section: probes ===
+[2026-08-29T18:11:02.539Z]   PASS probe groups discovered: capabilities, smoke
+[2026-08-29T18:11:02.540Z] --- probe group: capabilities — P2-T4: agent-scope control of pre-step / pre-execute / tool visibility / skills / MCP across creation, cold resume, tighten, capability disappear
+[2026-08-29T18:11:02.541Z]   PASS payload carries >=3 upstream imports (@deepseek-ai/dsh-agent, @deepseek-ai/dsh-llm, @deepseek-ai/dsh-mcp-client, @deepseek-ai/dsh-session)
+[2026-08-29T18:11:02.541Z]   PASS payload upstream imports all admitted by the live public surface (static)
+[2026-08-29T18:11:02.553Z]   PASS mini MCP streamable-http server listening on 127.0.0.1:3491 (auxiliary; closed in finally)
+[2026-08-29T18:11:02.553Z]   evidence: mini MCP port = 3491
+[2026-08-29T18:11:02.658Z]   PASS dump-config: capabilities probe row present in the composed profile tree (public seam carries it)
+[2026-08-29T18:11:04.244Z]   PASS boot 1: instance started at http://127.0.0.1:3383/?token=19J5GkRJv3lsK8qH2QQ9uDsEm41wLmfkXUiPLIxnh3I
+[2026-08-29T18:11:04.284Z]   PASS boot 1: instance stopped, port 3383 freed
+[2026-08-29T18:11:04.284Z]   FAIL boot 1: scenario reported fatal: Error: cannot get property "skills" without inject
+[2026-08-29T18:11:04.285Z]   FAIL [boot1] scenario completed without fatal
+[2026-08-29T18:11:04.285Z]   FAIL [tools/creation] global probe tool visible in the global view (public: tools.register in row scope)
+[2026-08-29T18:11:04.285Z]   FAIL [tools/creation] scoped p2t4_echo visible in the agent view (public: register into the unpublished agent scope in setup)
+[2026-08-29T18:11:04.285Z]   FAIL [tools/creation] global tool inherited into the agent view
+[2026-08-29T18:11:04.285Z]   FAIL [tools/creation] scoped tool hidden from the global view (scope isolation)
+[2026-08-29T18:11:04.286Z]   evidence: agent tool view = undefined
+[2026-08-29T18:11:04.286Z]   FAIL [skills/creation] scoped skill listed in the agent-scoped snapshot (public: ctx.skills.register in setup)
+[2026-08-29T18:11:04.286Z]   FAIL [skills/creation] scoped skill absent from the global snapshot
+[2026-08-29T18:11:04.286Z]   FAIL [mcp/creation] mcp__p2t4mini__ping visible in the agent view (public: agent-scoped mcp-client instance)
+[2026-08-29T18:11:04.286Z]   FAIL [mcp/creation] MCP tool hidden from the global view
+[2026-08-29T18:11:04.286Z]   FAIL [mcp/creation] MCP tool call succeeds through the agent-scoped pipeline
+[2026-08-29T18:11:04.286Z]   FAIL [mcp/creation] MCP round-trip echoed by the mini server (pong:hello-mcp)
+[2026-08-29T18:11:04.286Z]   FAIL [pre-execute/creation] allow path: scoped listener delegates via next(), execution succeeds
+[2026-08-29T18:11:04.286Z]   FAIL [pre-execute/creation] ask path without approval answerer fails closed (public: PreToolDecision kind=ask)
+[2026-08-29T18:11:04.286Z]   evidence: ask denial = undefined
+[2026-08-29T18:11:04.286Z]   FAIL [pre-step/creation] enter path produced a step (step/start appended durably)
+[2026-08-29T18:11:04.286Z]   FAIL [pre-step/creation] new events include step/start (public: agent/pre-step waterfall, default enter)
+[2026-08-29T18:11:04.286Z]   FAIL [pre-step/creation] driver idle after the turn (model call failed contained — no key in this DSH_HOME)
+[2026-08-29T18:11:04.287Z]   FAIL [pre-step/creation] turn settled without the whenIdle guard timeout
+[2026-08-29T18:11:04.287Z]   evidence: creation turn events = undefined
+[2026-08-29T18:11:04.287Z]   evidence: creation turn ends = undefined
+[2026-08-29T18:11:04.287Z]   FAIL [mcp/creation] duplicate serverName in the SAME scope is rejected (namespace reservation)
+[2026-08-29T18:11:04.287Z]   FAIL [mcp/creation] rejection names the in-use serverName
+[2026-08-29T18:11:04.287Z]   evidence: same-scope duplicate = undefined
+[2026-08-29T18:11:04.287Z]   FAIL [mcp/creation] failOnStartupError against a dead endpoint rejects agent creation
+[2026-08-29T18:11:04.287Z]   FAIL [mcp/creation] rolled-back creation published no agent
+[2026-08-29T18:11:04.287Z]   FAIL [mcp/creation] rolled-back creation published no session
+[2026-08-29T18:11:04.287Z]   evidence: rollback = undefined
+[2026-08-29T18:11:04.287Z]   FAIL [tools/creation] cross-agent isolation: agent B cannot see A scoped tool
+[2026-08-29T18:11:04.288Z]   FAIL [tools/creation] cross-agent: agent B inherits the global tool
+[2026-08-29T18:11:04.288Z]   FAIL [mcp/creation] cross-agent: the same MCP serverName MAY be reused in another agent scope
+[2026-08-29T18:11:04.288Z]   FAIL [lifecycle/creation] disposed agent B removed from the agent registry
+[2026-08-29T18:11:04.288Z]   FAIL [tools/tighten] scoped restrict({deny}) hides the INHERITED global tool from the agent view (public: tools.restrict)
+[2026-08-29T18:11:04.288Z]   FAIL [tools/tighten] own-layer scoped tool stays visible under the restriction
+[2026-08-29T18:11:04.288Z]   FAIL [tools/tighten] restriction does not leak into the global view
+[2026-08-29T18:11:04.288Z]   FAIL [tools/tighten] executing the restricted inherited tool now fails
+[2026-08-29T18:11:04.288Z]   FAIL [pre-execute/tighten] mutable policy flip: the same call allowed at creation now denies
+[2026-08-29T18:11:04.288Z]   FAIL [pre-execute/tighten] denial reason names the scoped policy listener
+[2026-08-29T18:11:04.288Z]   evidence: deny after flip = undefined
+[2026-08-29T18:11:04.288Z]   FAIL [pre-step/tighten] reject decision produces NO new step/start (public: PreStepDecision kind=reject)
+[2026-08-29T18:11:04.288Z]   FAIL [pre-step/tighten] rejected turn ends with reason blocked
+[2026-08-29T18:11:04.288Z]   evidence: tighten pre-step events = undefined
+[2026-08-29T18:11:04.289Z]   FAIL [skills/tighten] registration disposer removes the scoped skill from the agent scope
+[2026-08-29T18:11:04.289Z]   evidence: post-publication registration (verbatim): undefined
+[2026-08-29T18:11:04.289Z]   FAIL [mcp/tighten] fiber.dispose() unregisters the MCP tools from the agent view
+[2026-08-29T18:11:04.289Z]   FAIL [mcp/tighten] remounting the same serverName restores the tool (namespace released)
+[2026-08-29T18:11:04.289Z]   FAIL [disappear] session flushed to durable storage before dispose
+[2026-08-29T18:11:04.289Z]   FAIL [disappear] agents.get(sessionId) is undefined after dispose
+[2026-08-29T18:11:04.289Z]   FAIL [disappear] executing a scoped tool through the disposed agent context fails
+[2026-08-29T18:11:04.289Z]   FAIL [skills/disappear] disposed agent scope no longer resolves the scoped skill (gone or hard error)
+[2026-08-29T18:11:04.289Z]   evidence: stale skill scope = undefined
+[2026-08-29T18:11:04.289Z]   evidence: followup after dispose = undefined
+[2026-08-29T18:11:04.289Z]   FAIL boot 1 wrote the state channel (sessionId survives the process restart)
+[2026-08-29T18:11:05.854Z]   PASS boot 2: instance started at http://127.0.0.1:3383/?token=PdkWCNNo2FuOtmdLQaEJAeo_eXd7pSQww3VYntTCFF0
+[2026-08-29T18:15:05.918Z]   PASS boot 2: instance stopped, port 3383 freed
+[2026-08-29T18:15:05.918Z]   FAIL boot 2: observation channel incomplete after 240000ms
+[2026-08-29T18:15:05.919Z]   FAIL [boot2] scenario completed without fatal
+[2026-08-29T18:15:05.919Z]   FAIL [boot2] observation channel reports boot 2 (cold resume)
+[2026-08-29T18:15:05.919Z]   FAIL [resume] durable history: pre-restart turn/start retained after cold resume
+[2026-08-29T18:15:05.919Z]   FAIL [resume] durable history: pre-restart step/start retained after cold resume
+[2026-08-29T18:15:05.919Z]   FAIL [resume] resumed session log positions boot-1 step/start at the recorded index (same durable log)
+[2026-08-29T18:15:05.919Z]   evidence: resumed log head = undefined
+[2026-08-29T18:15:05.919Z]   FAIL [pre-step/resume] an enter turn after resume appends a fresh step/start (loop alive on the resumed session)
+[2026-08-29T18:15:05.919Z]   FAIL [pre-step/resume] resumed turn settled without the whenIdle guard timeout
+[2026-08-29T18:15:05.919Z]   FAIL [pre-step/resume] driver idle after the resumed turn
+[2026-08-29T18:15:05.919Z]   evidence: resume turn events = undefined
+[2026-08-29T18:15:05.919Z]   FAIL [pre-step/resume] turn ended (reasons recorded)
+[2026-08-29T18:15:05.919Z]   FAIL [pre-execute/resume] policy flip on the recomposed world denies the same call
+[2026-08-29T18:15:05.920Z]   FAIL [pre-execute/resume] denial names the recomposed scoped listener
+[2026-08-29T18:15:05.920Z]   FAIL [disappear/resume] resumed agent gone from the registry after dispose
+[2026-08-29T18:15:05.920Z]   FAIL [disappear/resume] stale execution through the disposed resumed agent fails
+[2026-08-29T18:15:05.920Z]   FAIL [skills/disappear/resume] disposed resumed scope no longer resolves the scoped skill
+[2026-08-29T18:15:05.921Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:15:05.921Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:15:05.921Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:15:05.922Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:15:05.922Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:15:05.922Z] smoke: good row mounted; starting instance
+[2026-08-29T18:15:07.509Z]   PASS good row boot succeeded: http://127.0.0.1:3383/?token=gaD9WyMuPfgM4EsLG2D-CpHj3TszdhXXwUxUbLA4-Ks
+[2026-08-29T18:15:07.545Z]   PASS port free after good boot
+[2026-08-29T18:15:07.546Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:15:26.656Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:15:26.656Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:15:26.656Z]   PASS port free after failed bad boot
+[2026-08-29T18:15:26.657Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:15:28.204Z]   PASS recovery boot succeeded: http://127.0.0.1:3383/?token=QrgsMjvqTgiT5kdbOOEMp18I5V56Ac7u6J4pQgD_LP8
+[2026-08-29T18:15:28.240Z]   PASS port free after recovery stop
+[2026-08-29T18:15:28.241Z] 
+[2026-08-29T18:15:28.241Z] RESULT: FAIL characterization self-test (58 failure(s))
+[2026-08-29T18:15:28.241Z]   - boot 1: scenario reported fatal: Error: cannot get property "skills" without inject
+[2026-08-29T18:15:28.241Z]   - [boot1] scenario completed without fatal
+[2026-08-29T18:15:28.241Z]   - [tools/creation] global probe tool visible in the global view (public: tools.register in row scope)
+[2026-08-29T18:15:28.241Z]   - [tools/creation] scoped p2t4_echo visible in the agent view (public: register into the unpublished agent scope in setup)
+[2026-08-29T18:15:28.241Z]   - [tools/creation] global tool inherited into the agent view
+[2026-08-29T18:15:28.241Z]   - [tools/creation] scoped tool hidden from the global view (scope isolation)
+[2026-08-29T18:15:28.242Z]   - [skills/creation] scoped skill listed in the agent-scoped snapshot (public: ctx.skills.register in setup)
+[2026-08-29T18:15:28.242Z]   - [skills/creation] scoped skill absent from the global snapshot
+[2026-08-29T18:15:28.242Z]   - [mcp/creation] mcp__p2t4mini__ping visible in the agent view (public: agent-scoped mcp-client instance)
+[2026-08-29T18:15:28.242Z]   - [mcp/creation] MCP tool hidden from the global view
+[2026-08-29T18:15:28.242Z]   - [mcp/creation] MCP tool call succeeds through the agent-scoped pipeline
+[2026-08-29T18:15:28.242Z]   - [mcp/creation] MCP round-trip echoed by the mini server (pong:hello-mcp)
+[2026-08-29T18:15:28.242Z]   - [pre-execute/creation] allow path: scoped listener delegates via next(), execution succeeds
+[2026-08-29T18:15:28.242Z]   - [pre-execute/creation] ask path without approval answerer fails closed (public: PreToolDecision kind=ask)
+[2026-08-29T18:15:28.242Z]   - [pre-step/creation] enter path produced a step (step/start appended durably)
+[2026-08-29T18:15:28.242Z]   - [pre-step/creation] new events include step/start (public: agent/pre-step waterfall, default enter)
+[2026-08-29T18:15:28.242Z]   - [pre-step/creation] driver idle after the turn (model call failed contained — no key in this DSH_HOME)
+[2026-08-29T18:15:28.242Z]   - [pre-step/creation] turn settled without the whenIdle guard timeout
+[2026-08-29T18:15:28.242Z]   - [mcp/creation] duplicate serverName in the SAME scope is rejected (namespace reservation)
+[2026-08-29T18:15:28.243Z]   - [mcp/creation] rejection names the in-use serverName
+[2026-08-29T18:15:28.243Z]   - [mcp/creation] failOnStartupError against a dead endpoint rejects agent creation
+[2026-08-29T18:15:28.243Z]   - [mcp/creation] rolled-back creation published no agent
+[2026-08-29T18:15:28.243Z]   - [mcp/creation] rolled-back creation published no session
+[2026-08-29T18:15:28.243Z]   - [tools/creation] cross-agent isolation: agent B cannot see A scoped tool
+[2026-08-29T18:15:28.243Z]   - [tools/creation] cross-agent: agent B inherits the global tool
+[2026-08-29T18:15:28.243Z]   - [mcp/creation] cross-agent: the same MCP serverName MAY be reused in another agent scope
+[2026-08-29T18:15:28.243Z]   - [lifecycle/creation] disposed agent B removed from the agent registry
+[2026-08-29T18:15:28.243Z]   - [tools/tighten] scoped restrict({deny}) hides the INHERITED global tool from the agent view (public: tools.restrict)
+[2026-08-29T18:15:28.243Z]   - [tools/tighten] own-layer scoped tool stays visible under the restriction
+[2026-08-29T18:15:28.243Z]   - [tools/tighten] restriction does not leak into the global view
+[2026-08-29T18:15:28.244Z]   - [tools/tighten] executing the restricted inherited tool now fails
+[2026-08-29T18:15:28.244Z]   - [pre-execute/tighten] mutable policy flip: the same call allowed at creation now denies
+[2026-08-29T18:15:28.244Z]   - [pre-execute/tighten] denial reason names the scoped policy listener
+[2026-08-29T18:15:28.244Z]   - [pre-step/tighten] reject decision produces NO new step/start (public: PreStepDecision kind=reject)
+[2026-08-29T18:15:28.244Z]   - [pre-step/tighten] rejected turn ends with reason blocked
+[2026-08-29T18:15:28.244Z]   - [skills/tighten] registration disposer removes the scoped skill from the agent scope
+[2026-08-29T18:15:28.244Z]   - [mcp/tighten] fiber.dispose() unregisters the MCP tools from the agent view
+[2026-08-29T18:15:28.244Z]   - [mcp/tighten] remounting the same serverName restores the tool (namespace released)
+[2026-08-29T18:15:28.244Z]   - [disappear] session flushed to durable storage before dispose
+[2026-08-29T18:15:28.244Z]   - [disappear] agents.get(sessionId) is undefined after dispose
+[2026-08-29T18:15:28.244Z]   - [disappear] executing a scoped tool through the disposed agent context fails
+[2026-08-29T18:15:28.244Z]   - [skills/disappear] disposed agent scope no longer resolves the scoped skill (gone or hard error)
+[2026-08-29T18:15:28.244Z]   - boot 1 wrote the state channel (sessionId survives the process restart)
+[2026-08-29T18:15:28.244Z]   - boot 2: observation channel incomplete after 240000ms
+[2026-08-29T18:15:28.244Z]   - [boot2] scenario completed without fatal
+[2026-08-29T18:15:28.244Z]   - [boot2] observation channel reports boot 2 (cold resume)
+[2026-08-29T18:15:28.244Z]   - [resume] durable history: pre-restart turn/start retained after cold resume
+[2026-08-29T18:15:28.244Z]   - [resume] durable history: pre-restart step/start retained after cold resume
+[2026-08-29T18:15:28.245Z]   - [resume] resumed session log positions boot-1 step/start at the recorded index (same durable log)
+[2026-08-29T18:15:28.245Z]   - [pre-step/resume] an enter turn after resume appends a fresh step/start (loop alive on the resumed session)
+[2026-08-29T18:15:28.245Z]   - [pre-step/resume] resumed turn settled without the whenIdle guard timeout
+[2026-08-29T18:15:28.245Z]   - [pre-step/resume] driver idle after the resumed turn
+[2026-08-29T18:15:28.245Z]   - [pre-step/resume] turn ended (reasons recorded)
+[2026-08-29T18:15:28.245Z]   - [pre-execute/resume] policy flip on the recomposed world denies the same call
+[2026-08-29T18:15:28.245Z]   - [pre-execute/resume] denial names the recomposed scoped listener
+[2026-08-29T18:15:28.245Z]   - [disappear/resume] resumed agent gone from the registry after dispose
+[2026-08-29T18:15:28.245Z]   - [disappear/resume] stale execution through the disposed resumed agent fails
+[2026-08-29T18:15:28.245Z]   - [skills/disappear/resume] disposed resumed scope no longer resolves the scoped skill
