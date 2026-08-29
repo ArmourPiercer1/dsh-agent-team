@@ -1,0 +1,1375 @@
+{
+  "tip": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+  "host": "D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T1-host",
+  "files_written": 81,
+  "noops": 0,
+  "results": [
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/architecture/2026-08-20-tool-permission-guard-resolves-permission-per-call.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": ".agents/notes/implemented/feature/2026-08-14-model-picker-family-grouping.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "apps/cli/composition.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "apps/cli/composition.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "apps/web/tests/expected/models-settings/fetch-grouped.expected.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "apps/web/tests/expected/models-settings/fetch-grouped.expected.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "apps/web/tests/models-settings.e2e.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "apps/web/tests/models-settings.e2e.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "docs/subsystems/permission.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "docs/subsystems/permission.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "docs/subsystems/permission.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "docs/subsystems/permission.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/bundle/base/cordis.patch.yml",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/bundle/base/cordis.patch.yml",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/bundle/base/package.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/bundle/base/package.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/README.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/README.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/README.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/README.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/src/client/ModelListEditor.tsx",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/src/client/ModelListEditor.tsx",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/src/client/ModelsSection.module.css",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/src/client/ModelsSection.module.css",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/src/client/modelGrouping.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/src/client/modelGrouping.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/tests/model-grouping.client.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/tests/model-grouping.client.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/client/ui-settings-models/tests/provider-form.client.spec.tsx",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "M",
+      "method": "whole-file",
+      "source_path": "packages/client/ui-settings-models/tests/provider-form.client.spec.tsx",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/README.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/README.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/README.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/README.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/package.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/package.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/audit.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/audit.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/index.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/index.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/invariant.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/invariant.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/load.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/load.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/match-command.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/match-command.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/match-mcp.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/match-mcp.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/match-param.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/match-param.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/match-path.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/match-path.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/matchers.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/matchers.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/parse.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/parse.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/src/resolve.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/src/resolve.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/audit.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/audit.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/evaluate.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/evaluate.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/load.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/load.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/match-command.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/match-command.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/match-mcp.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/match-mcp.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/match-param.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/match-param.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/match-path.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/match-path.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/parse.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/parse.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tests/resolve.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tests/resolve.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission-engine/tsconfig.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission-engine/tsconfig.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/README.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/README.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/README.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/README.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/package.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/package.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/src/index.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/src/index.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/src/invariant.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/src/invariant.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/src/types.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/src/types.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/permission/tsconfig.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/permission/tsconfig.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/README.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/README.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/README.zh.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/README.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/package.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/package.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/src/index.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/src/index.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/src/invariant.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/src/invariant.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "packages/permission/tool-permission-guard/tsconfig.json",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "packages/permission/tool-permission-guard/tsconfig.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "permission-and-mcp-fusion-design.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "permission-and-mcp-fusion-design.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": "permission-seam-implementation-plan.md",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "status": "A",
+      "method": "whole-file",
+      "source_path": "permission-seam-implementation-plan.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": null,
+      "noop_reason": null
+    },
+    {
+      "path": ".gitignore",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": ".gitignore",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 1,
+        "applied": [
+          1
+        ],
+        "skipped": [],
+        "partial": [],
+        "appliedHunks": [
+          {
+            "hunk": 1,
+            "oldStart": 41,
+            "oldCount": 0,
+            "newLines": [
+              "",
+              "# references",
+              "references/",
+              "",
+              "# local dev issues",
+              "issues/",
+              "",
+              "# local archive (gitignored workspace stash for superseded WIP artifacts)",
+              "archive/",
+              "",
+              "# local instance launcher",
+              "start-dev.ps1",
+              "",
+              "# tsc composite build products emitted next to sources",
+              "# (rewriteRelativeImportExtensions), never source of record",
+              "*.js.map",
+              "*.d.ts.map",
+              "packages/core/session/src/*.js",
+              "packages/core/session/src/*.d.ts",
+              "packages/permission/permission-engine/src/*.js",
+              "packages/permission/permission-engine/src/*.d.ts"
+            ]
+          }
+        ]
+      },
+      "plan_note": "single hunk, OTHER-dominant dev hygiene + permission-engine artifact ignores; whole hunk is non-Team",
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [],
+        "kept_from_upstream": []
+      }
+    },
+    {
+      "path": "docs/subsystems/README.md",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "docs/subsystems/README.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 2,
+        "applied": [
+          2
+        ],
+        "skipped": [
+          1
+        ],
+        "partial": [],
+        "appliedHunks": [
+          {
+            "hunk": 2,
+            "oldStart": 47,
+            "oldCount": 0,
+            "newLines": [
+              "| [permission.md](permission.md) | the permission seam: the `PermissionService` rule engine, command/path/MCP/parameter matchers, deny→ask→allow adjudication, and the `permission/decision` audit event |"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "| [team.md](team.md) | the agent-team seam: `TeamRegistry` member definitions, `TeamControlRegistry` approval coordination, the delegation/message/progress/control tools, and the `team/*` session events |"
+        ],
+        "kept_from_upstream": []
+      }
+    },
+    {
+      "path": "docs/subsystems/README.zh.md",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "docs/subsystems/README.zh.md",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 2,
+        "applied": [
+          2
+        ],
+        "skipped": [
+          1
+        ],
+        "partial": [],
+        "appliedHunks": [
+          {
+            "hunk": 2,
+            "oldStart": 47,
+            "oldCount": 0,
+            "newLines": [
+              "| [permission.md](permission.zh.md) | permission seam：`PermissionService` 规则引擎、命令/路径/MCP/参数匹配器、deny→ask→allow 裁决，以及 `permission/decision` 审计事件 |"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "| [team.md](team.zh.md) | agent-team seam：`TeamRegistry` 成员定义、`TeamControlRegistry` 审批协调、委派/消息/进度/控制工具，以及 `team/*` 会话事件 |",
+          "| [agent-team.md](agent-team.zh.md) | Agent Teams：隐式 Lead 身份、具名可续接队友、持久 mailbox 与共享任务 DAG |"
+        ],
+        "kept_from_upstream": [
+          "| [agent-team.md](agent-team.zh.md) | Agent Teams：隐式 Lead 身份、具名 continuable teammate、持久 peer mailbox 与共享任务 DAG |"
+        ]
+      }
+    },
+    {
+      "path": "packages/core/session/src/known-event-types.ts",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "packages/core/session/src/known-event-types.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 4,
+        "applied": [
+          1
+        ],
+        "skipped": [
+          2,
+          3,
+          4
+        ],
+        "partial": [],
+        "appliedHunks": [
+          {
+            "hunk": 1,
+            "oldStart": 38,
+            "oldCount": 0,
+            "newLines": [
+              "  'permission/decision',"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "  'team/control-decision',",
+          "  'team/control-request',",
+          "  'team/member-bound',",
+          "  'team/message',",
+          "  'team/progress',"
+        ],
+        "kept_from_upstream": []
+      }
+    },
+    {
+      "path": "scripts/gen-cordis-catalog.ts",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "scripts/gen-cordis-catalog.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 4,
+        "applied": [
+          1,
+          4
+        ],
+        "skipped": [
+          2,
+          3
+        ],
+        "partial": [
+          {
+            "hunk": 1,
+            "action": "keep-lines",
+            "kept": 1,
+            "dropped": 3
+          },
+          {
+            "hunk": 4,
+            "action": "keep-lines",
+            "kept": 7,
+            "dropped": 4
+          }
+        ],
+        "appliedHunks": [
+          {
+            "hunk": 1,
+            "oldStart": 125,
+            "oldCount": 0,
+            "newLines": [
+              "  permission: 'permission.md',"
+            ]
+          },
+          {
+            "hunk": 4,
+            "oldStart": 663,
+            "oldCount": 0,
+            "newLines": [
+              "  CompiledPolicy: 'compiled permission policy handle is owned by packages/permission/permission/src/types.ts',",
+              "  RuleSource: 'authored permission rule input is owned by packages/permission/permission/src/index.ts',",
+              "  PermissionContext: 'permission evaluation inputs are owned by packages/permission/permission/src/types.ts',",
+              "  PermissionDecision: 'permission evaluation result is owned by packages/permission/permission/src/types.ts',",
+              "  ToolCallView: 'minimal tool-call view is owned by packages/permission/permission/src/types.ts',",
+              "  LoadRuleLayersOptions: 'rule-layer load inputs are owned by packages/permission/permission/src/types.ts',",
+              "  LoadedRuleLayers: 'rule-layer load result is owned by packages/permission/permission/src/types.ts',"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "  team: 'team.md',",
+          "  teamControl: 'team.md',",
+          "  teamProjection: 'team.md',",
+          "  TeamView: 'team.md',",
+          "  TeamMessagePage: 'team.md',",
+          "  TeamMessageView: 'team.md',",
+          "  TeamPageOptions: 'team.md',",
+          "  TeamProjectionListener: 'team.md',",
+          "  MessageAnchor: 'team.md',",
+          "  TeamMemberDefinition: 'team member definition is owned by packages/team/team/src/types.ts',",
+          "  TeamMemberId: 'branded team member identity is owned by packages/team/team/src/brand.ts',",
+          "  TeamControlDecision: 'leader control decision is owned by packages/team/team-channels/src/control-coordinator.ts',",
+          "  TeamControlRequestData: 'teammate control request payload is owned by packages/team/team-channels/src/control-coordinator.ts',"
+        ],
+        "kept_from_upstream": [
+          "  TeamView: 'agent-team.md',"
+        ]
+      }
+    },
+    {
+      "path": "scripts/gen-doc-graphs.ts",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "scripts/gen-doc-graphs.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 3,
+        "applied": [
+          2,
+          3
+        ],
+        "skipped": [
+          1
+        ],
+        "partial": [
+          {
+            "hunk": 3,
+            "action": "extract-object",
+            "kept": 9,
+            "dropped": 25
+          }
+        ],
+        "appliedHunks": [
+          {
+            "hunk": 2,
+            "oldStart": 86,
+            "oldCount": 0,
+            "newLines": [
+              "  'permission',"
+            ]
+          },
+          {
+            "hunk": 3,
+            "oldStart": 666,
+            "oldCount": 0,
+            "newLines": [
+              "  {",
+              "    key: 'permission',",
+              "    pkg: 'permission',",
+              "    title: 'Tool-call permission evaluation seam',",
+              "    mode: 'seam',",
+              "    implementations: ['permission-engine'],",
+              "    consumers: ['tool-permission-guard'],",
+              "    note: 'The Service Definition declares evaluate and policy types; the engine package implements adjudication and ships in the base bundle, while the guard package implements execution gating and remains an opt-in consumer.',",
+              "  },"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "  'team',",
+          "  {",
+          "  {",
+          "  {",
+          "    mode: 'seam',",
+          "  },",
+          "  },",
+          "  },",
+          "    mode: 'core',",
+          "    mode: 'core',",
+          "    key: 'team',",
+          "    pkg: 'team',",
+          "    title: 'Team member registry seam',",
+          "    implementations: ['team-local'],",
+          "    consumers: ['tool-team', 'team-runtime', 'team-channels'],",
+          "    note: 'The Service Definition declares the abstract TeamRegistry; providers populate definitions, and runtime, channels, and tool consumers coordinate member lifecycles.',",
+          "    key: 'teamControl',",
+          "    pkg: 'team-channels',",
+          "    title: 'Host-level team control request coordinator',",
+          "    consumers: ['tool-team', 'team-runtime'],",
+          "    note: 'Coordinates teammate approval requests and rendezvous on the leader session across child contexts and tool executions.',",
+          "    key: 'teamProjection',",
+          "    pkg: 'team-projection',",
+          "    title: 'Host read-only team projection',",
+          "    consumers: ['apiproxy'],",
+          "    note: 'Folds one leader team view cold-safely from session logs and the workspace roster, overlays live running state, and publishes whole snapshots; the API gateway serves them to the browser.',"
+        ],
+        "kept_from_upstream": []
+      }
+    },
+    {
+      "path": "scripts/gen-tool-catalog.ts",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "scripts/gen-tool-catalog.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 7,
+        "applied": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "skipped": [
+          1,
+          5,
+          6
+        ],
+        "partial": [
+          {
+            "hunk": 2,
+            "action": "keep-lines",
+            "kept": 1,
+            "dropped": 3
+          }
+        ],
+        "appliedHunks": [
+          {
+            "hunk": 2,
+            "oldStart": 67,
+            "oldCount": 0,
+            "newLines": [
+              "import * as ToolPermissionGuard from '@deepseek-ai/dsh-tool-permission-guard'"
+            ]
+          },
+          {
+            "hunk": 3,
+            "oldStart": 162,
+            "oldCount": 0,
+            "newLines": [
+              "  /**",
+              "   * Package contributes no model-facing tool (e.g. a `tools/pre-execute`",
+              "   * guard). Skips {@link assertToolsHarvested}; the note documents the role.",
+              "   */",
+              "  noModelTools?: boolean"
+            ]
+          },
+          {
+            "hunk": 4,
+            "oldStart": 411,
+            "oldCount": 0,
+            "newLines": [
+              "  {",
+              "    pkg: '@deepseek-ai/dsh-tool-permission-guard',",
+              "    dir: 'tool-permission-guard',",
+              "    source: 'packages/permission/tool-permission-guard/src/index.ts',",
+              "    requires: ['ctx.tools (pre-execute listener)', 'ctx.permission via ctx.get'],",
+              "    writes: ['permission/decision audit events in the acting session log'],",
+              "    noModelTools: true,",
+              "    async mount(ctx) {",
+              "      await ctx.plugin(ToolPermissionGuard, {",
+              "        mode: 'default',",
+              "        rules: [],",
+              "        pathBases: { settingsDir: '.', homeDir: '.', cwd: '.' },",
+              "      })",
+              "    },",
+              "    note:",
+              "      'A `tools/pre-execute` guard that applies `ctx.permission.evaluate` to the main agent and single delegated subagents; it registers no model-facing tool, so it has no schema section. The note is the whole contract: `allow` proceeds, `deny` blocks, `ask` routes to the approval seam.',",
+              "  },"
+            ]
+          },
+          {
+            "hunk": 7,
+            "oldStart": 697,
+            "oldCount": 1,
+            "newLines": [
+              "      if (!entry.noModelTools) assertToolsHarvested(entry, schemas.length)"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "import * as ExperimentalToolAgentTeam from '@deepseek-ai/dsh-experimental-tool-agent-team'",
+          "import TeamRegistry from '@deepseek-ai/dsh-team'",
+          "import { TeamControlRegistry } from '@deepseek-ai/dsh-team-channels'",
+          "import * as ToolTeam from '@deepseek-ai/dsh-tool-team'",
+          "  {",
+          "    async mount(ctx) {",
+          "    },",
+          "    },",
+          "    note:",
+          "  },",
+          "    source: {",
+          "      await ctx.plugin(ExperimentalToolAgentTeam)",
+          "    pkg: '@deepseek-ai/dsh-tool-team',",
+          "    dir: 'tool-team',",
+          "      delegate_to_teammate: 'packages/team/tool-team/src/tool-delegate.ts',",
+          "      list_teammates: 'packages/team/tool-team/src/tool-list-teammates.ts',",
+          "      send_team_message: 'packages/team/tool-team/src/tool-send-message.ts',",
+          "      team_progress: 'packages/team/tool-team/src/tool-progress.ts',",
+          "      team_control: 'packages/team/tool-team/src/tool-control.ts',",
+          "    requires: ['ctx.tools', 'ctx.team', 'ctx.teamControl', 'ctx.subagents + ctx.session at execution time'],",
+          "    writes: ['tool/call', 'tool/result', 'team/message, team/progress, team/control-decision session events'],",
+          "      await ctx.plugin(TeamRegistry)",
+          "      await ctx.plugin(TeamControlRegistry)",
+          "      'Five team tools over the team seam and control coordinator. Schemas are stable; the delegate/list/send/control tools read `ctx.team` (and `ctx.subagents`/`ctx.session` at execution time) via `ctx.get`, so the harvest mounts only the registry + coordinator the plugin injects.',"
+        ],
+        "kept_from_upstream": [
+          "import * as ToolTeam from '@deepseek-ai/dsh-experimental-tool-agent-team'"
+        ]
+      }
+    },
+    {
+      "path": "scripts/project-doc-site.spec.ts",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "scripts/project-doc-site.spec.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 1,
+        "applied": [
+          1
+        ],
+        "skipped": [],
+        "partial": [
+          {
+            "hunk": 1,
+            "action": "replace-lines",
+            "kept": 1,
+            "dropped": 0,
+            "note": "fork hunk is 46->48 covering the team.md + permission.md pages; permission-only replay derives 46->47 (team.md page is not in the host)"
+          }
+        ],
+        "appliedHunks": [
+          {
+            "hunk": 1,
+            "oldStart": 453,
+            "oldCount": 1,
+            "newLines": [
+              "    expect(translated).toHaveLength(47)"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "    expect(translated).toHaveLength(48)"
+        ],
+        "kept_from_upstream": [
+          "    expect(translated).toHaveLength(47)"
+        ]
+      }
+    },
+    {
+      "path": "tsconfig.base.json",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "tsconfig.base.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 7,
+        "applied": [
+          2,
+          4,
+          6
+        ],
+        "skipped": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "partial": [
+          {
+            "hunk": 2,
+            "action": "keep-lines",
+            "kept": 4,
+            "dropped": 1
+          }
+        ],
+        "appliedHunks": [
+          {
+            "hunk": 2,
+            "oldStart": 74,
+            "oldCount": 0,
+            "newLines": [
+              "      \"@deepseek-ai/dsh-permission\": [\"./packages/permission/permission/src/index.ts\"],",
+              "      \"@deepseek-ai/dsh-permission/types\": [\"./packages/permission/permission/src/types.ts\"],",
+              "      \"@deepseek-ai/dsh-permission-engine\": [\"./packages/permission/permission-engine/src/index.ts\"],",
+              "      \"@deepseek-ai/dsh-tool-permission-guard\": [\"./packages/permission/tool-permission-guard/src/index.ts\"],"
+            ]
+          },
+          {
+            "hunk": 4,
+            "oldStart": 364,
+            "oldCount": 0,
+            "newLines": [
+              "      \"@deepseek-ai/dsh-permission/invariant\": [\"./packages/permission/permission/src/invariant.ts\"],",
+              "      \"@deepseek-ai/dsh-permission-engine/invariant\": [\"./packages/permission/permission-engine/src/invariant.ts\"],"
+            ]
+          },
+          {
+            "hunk": 6,
+            "oldStart": 512,
+            "oldCount": 0,
+            "newLines": [
+              "      \"@deepseek-ai/dsh-tool-permission-guard/invariant\": [\"./packages/permission/tool-permission-guard/src/invariant.ts\"],"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "      \"@deepseek-ai/dsh-team-projection/types\": [\"./packages/team/team-projection/src/types.ts\"],",
+          "      \"@deepseek-ai/dsh-team/types\": [\"./packages/team/team/src/types.ts\"],",
+          "      // bundle/team and client/ui-team carry their group prefix in their npm",
+          "      // names, so the generated aliases below cannot derive them; the client",
+          "      // package's /invariant subpath already resolves through the wildcard",
+          "      // above, only these three stay hand-written.",
+          "      \"@deepseek-ai/dsh-bundle-team\": [\"./packages/bundle/team/src\"],",
+          "      \"@deepseek-ai/dsh-bundle-team/invariant\": [\"./packages/bundle/team/src/invariant.ts\"],",
+          "      \"@deepseek-ai/dsh-client-ui-team\": [\"./packages/client/ui-team/src\"],",
+          "      \"@deepseek-ai/dsh-team\": [\"./packages/team/team/src\"],",
+          "      \"@deepseek-ai/dsh-team/invariant\": [\"./packages/team/team/src/invariant.ts\"],",
+          "      \"@deepseek-ai/dsh-team-channels\": [\"./packages/team/team-channels/src\"],",
+          "      \"@deepseek-ai/dsh-team-channels/invariant\": [\"./packages/team/team-channels/src/invariant.ts\"],",
+          "      \"@deepseek-ai/dsh-team-local\": [\"./packages/team/team-local/src\"],",
+          "      \"@deepseek-ai/dsh-team-local/invariant\": [\"./packages/team/team-local/src/invariant.ts\"],",
+          "      \"@deepseek-ai/dsh-team-projection\": [\"./packages/team/team-projection/src\"],",
+          "      \"@deepseek-ai/dsh-team-projection/invariant\": [\"./packages/team/team-projection/src/invariant.ts\"],",
+          "      \"@deepseek-ai/dsh-team-runtime\": [\"./packages/team/team-runtime/src\"],",
+          "      \"@deepseek-ai/dsh-team-runtime/invariant\": [\"./packages/team/team-runtime/src/invariant.ts\"],",
+          "      \"@deepseek-ai/dsh-tool-team\": [\"./packages/team/tool-team/src\"],",
+          "      \"@deepseek-ai/dsh-tool-team/invariant\": [\"./packages/team/tool-team/src/invariant.ts\"],"
+        ],
+        "kept_from_upstream": []
+      }
+    },
+    {
+      "path": "tsconfig.host.json",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "tsconfig.host.json",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 1,
+        "applied": [
+          1
+        ],
+        "skipped": [],
+        "partial": [
+          {
+            "hunk": 1,
+            "action": "keep-lines",
+            "kept": 3,
+            "dropped": 7
+          }
+        ],
+        "appliedHunks": [
+          {
+            "hunk": 1,
+            "oldStart": 305,
+            "oldCount": 0,
+            "newLines": [
+              "    { \"path\": \"./packages/permission/permission\" },",
+              "    { \"path\": \"./packages/permission/permission-engine\" },",
+              "    { \"path\": \"./packages/permission/tool-permission-guard\" },"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "    { \"path\": \"./packages/team/team\" },",
+          "    { \"path\": \"./packages/team/team-local\" },",
+          "    { \"path\": \"./packages/team/team-projection\" },",
+          "    { \"path\": \"./packages/team/team-runtime\" },",
+          "    { \"path\": \"./packages/team/team-channels\" },",
+          "    { \"path\": \"./packages/team/tool-team\" },",
+          "    { \"path\": \"./packages/bundle/team\" },"
+        ],
+        "kept_from_upstream": []
+      }
+    },
+    {
+      "path": "website/docs.ts",
+      "classification": "MIXED",
+      "status": "M",
+      "method": "hunk",
+      "source_path": "website/docs.ts",
+      "source_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "hunks": {
+        "total": 2,
+        "applied": [
+          2
+        ],
+        "skipped": [
+          1
+        ],
+        "partial": [],
+        "appliedHunks": [
+          {
+            "hunk": 2,
+            "oldStart": 329,
+            "oldCount": 0,
+            "newLines": [
+              "    ['permission.md', '权限', 'Permissions'],"
+            ]
+          }
+        ]
+      },
+      "plan_note": null,
+      "noop_reason": null,
+      "audit_vs_fork": {
+        "dropped_fork_lines": [
+          "    ['team.md', '团队', 'Team'],"
+        ],
+        "kept_from_upstream": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+=== 1. diff classification ===
+diff files: 23 | scope files: 81
+in-diff-not-in-scope (MUST be empty): []
+whitelist used: ["pnpm-lock.yaml"]
+in-scope-no-diff: 59 = new untracked files written (status A): 59 + true no-ops: 0
+true no-op list (MUST be empty or justified): []
+whitelist pnpm-lock.yaml: team refs = [] (clean)
+=== 2. per-hunk verification (MIXED) ===
+ok   .gitignore (worktree hunks: 41+21)
+ok   docs/subsystems/README.md (worktree hunks: 47+1)
+ok   docs/subsystems/README.zh.md (worktree hunks: 47+1)
+ok   packages/core/session/src/known-event-types.ts (worktree hunks: 38+1)
+ok   scripts/gen-cordis-catalog.ts (worktree hunks: 125+1, 663+7)
+ok   scripts/gen-doc-graphs.ts (worktree hunks: 86+1, 666+9)
+ok   scripts/gen-tool-catalog.ts (worktree hunks: 67+1, 162+5, 411+17, 697+1)
+ok   scripts/project-doc-site.spec.ts (worktree hunks: 453+1)
+ok   tsconfig.base.json (worktree hunks: 74+4, 364+2, 512+1)
+ok   tsconfig.host.json (worktree hunks: 305+3)
+ok   website/docs.ts (worktree hunks: 329+1)
+=== 3. zero-Team scan (all 81 replayed files) ===
+code files with team markers: 0 (expected 0)
+in-scope doc files with team-vocabulary mentions (recorded, manifest-classified GENERIC_FORK_CAPABILITY permission docs): 11
+   doc: .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md -> team/member-bound, team-runtime, team-local
+   doc: .agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md -> team/member-bound, team-runtime, team-local
+   doc: .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md -> packages/team/, team/control-request, team/member-bound, team-runtime
+   doc: .agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md -> packages/team/, team/control-request, team/member-bound, team-runtime
+   doc: .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md -> team-runtime
+   doc: .agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md -> team-runtime
+   doc: .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md -> team-local
+   doc: .agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md -> team-local
+   doc: packages/permission/permission-engine/README.md -> team/member-bound
+   doc: packages/permission/permission-engine/README.zh.md -> team/member-bound
+   doc: permission-seam-implementation-plan.md -> packages/team/, team/control-request, team/member-bound, team-runtime, tool-team
+=== RESULT: AUDIT-PASS ===

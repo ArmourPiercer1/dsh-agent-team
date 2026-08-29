@@ -1,0 +1,94 @@
+{
+  "in_diff_not_in_scope": [],
+  "whitelist_used": [
+    "pnpm-lock.yaml"
+  ],
+  "in_scope_no_diff": {
+    "total": 59,
+    "new_untracked_written": 59,
+    "true_noops": []
+  },
+  "doc_hits": [
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.md",
+      "hits": [
+        "team/member-bound",
+        "team-runtime",
+        "team-local"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-layered-rule-loading-and-cold-recovery-snapshot.zh.md",
+      "hits": [
+        "team/member-bound",
+        "team-runtime",
+        "team-local"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.md",
+      "hits": [
+        "packages/team/",
+        "team/control-request",
+        "team/member-bound",
+        "team-runtime"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/architecture/2026-08-15-permission-seam-and-mcp-fusion.zh.md",
+      "hits": [
+        "packages/team/",
+        "team/control-request",
+        "team/member-bound",
+        "team-runtime"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.md",
+      "hits": [
+        "team-runtime"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-base-composition-carries-the-permission-engine.zh.md",
+      "hits": [
+        "team-runtime"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.md",
+      "hits": [
+        "team-local"
+      ]
+    },
+    {
+      "path": ".agents/notes/implemented/bug-fix/2026-08-21-permission-rule-matching-aligns-with-harness-tool-calls.zh.md",
+      "hits": [
+        "team-local"
+      ]
+    },
+    {
+      "path": "packages/permission/permission-engine/README.md",
+      "hits": [
+        "team/member-bound"
+      ]
+    },
+    {
+      "path": "packages/permission/permission-engine/README.zh.md",
+      "hits": [
+        "team/member-bound"
+      ]
+    },
+    {
+      "path": "permission-seam-implementation-plan.md",
+      "hits": [
+        "packages/team/",
+        "team/control-request",
+        "team/member-bound",
+        "team-runtime",
+        "tool-team"
+      ]
+    }
+  ],
+  "hardFail": false
+}
