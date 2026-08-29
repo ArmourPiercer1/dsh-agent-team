@@ -29,9 +29,23 @@
 - **P0-T4 behavior-inventory**（class A）：分支 `task/P0-T4-behavior-inventory` @ `b58dcb4`；交付 `docs/migration/legacy-behavior-inventory.md`（11 行为域）+ `docs/migration/reuse-map.md` + 验证材料。**SELF_VERIFIED**。携带发现：TeamMarker "1 event = 1 Chat row" 语义弃用（仅 REFERENCE_ONLY）；`resolveTeamView` 存在双副本需去重；`formatTeamDuration` 硬编码中文（i18n 缺陷，移植时修复）；`known-event-types` 含 4 个疑似未用的 `team/*` 词表条目待净化。
 - **集成（主 Agent）**：`git checkout -b int/P0-freeze-provenance master(5ecf11d)`；按 T1→T2→T3→T4 顺序 `cherry-pick -x` 四笔任务提交，无冲突；int head = `1c4f2435b0e1e7e233fc5c384d112ed9fd874d5f`。cherry-pick 后 SHA 映射：T1 `ce86d21` / T2 `a9e6f3e` / T3 `9671a54` / T4 `1c4f243`。graph.yaml 已更新（4 任务 INTEGRATION_READY，G0-REVIEW READY）。
 
+### 轮次 R2：G0 Gate 裁决 + 合入 + 进入 P1（2026-08-29）
+
+- 见下方 Gate 记录（G0-REVIEW round 1 PASS 3/3）。
+- **P1 环境预检（主 Agent）**：node v24.20.0 / pnpm 11.7.0 / npm 11.19.0；npm registry HTTP 200 可达；legacy checkout 无 node_modules（host worktree 需 `pnpm install`）；pnpm store 解析为 workspace-local `.pnpm-store`（已加入 .gitignore）；DSH 现有安装（`D:\deepseek-harness\`，35 个顶层 node_modules，packageManager pnpm@11.7.0、engines node ^22.19||>=24）证明本机 install 可行；D 盘剩余空间在沙箱内不可查询（WMI/fsutil 均被拒），若 install 因空间失败按 TEST_INFRA_BLOCKER 处理。
+
 ## Gate 记录
 
-（尚无）
+### G0-REVIEW round 1 — PASS（2026-08-29）
+
+- **方式**：workflow 工具 3 个独立并行 reviewer（G0-R1/R2/R3），全部 `qiyuan-self/qwen3.8-27b`，无会话继承、互不可见；brief 仅含 G0 判据（DevPlan §12.3 六条）+ 冻结文档段落（DevPlan §12、TaskDoc §11.1）+ 审查范围 + 复现命令（V1–V9），不含任何先前轮次意见；禁止读 ROUTER_RULES / SESSION_ROUTER_LOG / graph.yaml。
+- **审查范围**：`5ecf11d..2dadcb0`（任务内容 `5ecf11d..1c4f243`，`2dadcb0` 为编排状态元数据）。
+- **裁决**：**通过 / 通过 / 通过**（3/3，gate_passed=true）。六条判据全部 PASS；V1–V9 每条均由 reviewer 亲自执行（tag/SHA 核验、legacy clean 核验、两个校验脚本重跑 exit 0、diff-set 39/470 双向差集为空、MIXED 抽样逐 hunk 交叉核对、tag message no-vNext 标记、11 行为域覆盖、node JSON.parse 独立验证、owned-boundary 12 路径全落在 evidence/+docs/migration/ 下）。
+- **补充内容（随 通过 裁决，非阻塞，已记录）**：
+  - S1（G0-R1）：file-manifest.json 的 baseline.legacy_checkout / diff_command 记录的是迁移前路径 `D:\AgentDev\deepseek-harness`，当前 legacy 检出位于 `references\deepseek-harness`；对象全 SHA 锚定，从当前路径重推导 100% 吻合（470/470 差集为空），不影响正确性；后续重跑脚本前先对齐路径即可。
+  - S2（G0-R1）：freeze-note.md L29 声称 tag object 与远端一致（`ls-remote --tags origin` 返回同一 SHA）。该声明为 P0-T1 执行期联网核验记录，沙箱离线不可重验；主 Agent 确认该一次性推送在 P0-T1 轮次实际发生（用户裁决 3 许可）。无需行动，留档。
+  - R2/R3 全文存于 workflow 运行记录（本次轮次工具返回）；两者裁决均为 通过，无阻塞项。
+- **Gate 后动作**：`int/P0-freeze-provenance` fast-forward 合入 master（5ecf11d..2dadcb0），已推送 origin（远端 master = 2dadcb0）；P0 四个 worktree 已清理（P0-T3 因 untracked .scratch/ 中间产物使用 --force 移除，产物为 worker 临时 dump，无未提交任务内容）；P0 task 分支保留（历史留痕）。
 
 ## 投机通过风险台账
 
@@ -39,7 +53,7 @@
 
 ## 补充记录
 
-（空）
+- G0-REVIEW round 1：G0-R1 随 通过 裁决附 2 条非阻塞补充（S1 manifest baseline 旧路径；S2 freeze-note ls-remote 离线不可重验声明）。全文见 Gate 记录 G0 条目。
 
 ## 重审记录
 
@@ -51,4 +65,5 @@
 
 ## TODO 列表
 
-（空）
+- P1-T1/T3 host worktree `pnpm install` 若因磁盘空间失败 → TEST_INFRA_BLOCKER（沙箱内无法预先查询 D 盘剩余空间）。
+- file-manifest baseline 旧路径（S1）：后续 Phase 重跑校验脚本前对齐 `references\deepseek-harness` 路径（不改动已冻结证据文件本身）。

@@ -1,17 +1,27 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
-current_phase: P0
-integration_branch: int/P0-freeze-provenance
-integration_sha: 1c4f2435b0e1e7e233fc5c384d112ed9fd874d5f
+current_phase: P1
+integration_branch: int/P1-host-foundation
+integration_sha: null
 contracts:
   core: v1
 locks:
   contracts: null
 ready:
-  - G0-REVIEW
-blocked: []
+  - P1-T1
+  - P1-T2
+  - P1-T3
+  - P1-T4
+blocked:
+  - P1-T5
 tasks:
-  P0-T1: { state: INTEGRATION_READY, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1 }
-  P0-T2: { state: INTEGRATION_READY, class: B, branch: task/P0-T2-commit-provenance, base_sha: 5ecf11d, head_sha: a9e6f3e762012504da6c3329fd16642e0566baab, attempts: 1, depends_on: [P0-T1] }
-  P0-T3: { state: INTEGRATION_READY, class: A, branch: task/P0-T3-file-provenance, base_sha: 5ecf11d, head_sha: 9671a54bf7f5a365363e99f825fdfd439e1e6bd8, attempts: 1, depends_on: [P0-T1] }
-  P0-T4: { state: INTEGRATION_READY, class: A, branch: task/P0-T4-behavior-inventory, base_sha: 5ecf11d, head_sha: 1c4f2435b0e1e7e233fc5c384d112ed9fd874d5f, attempts: 1, depends_on: [P0-T1] }
-  G0-REVIEW: { state: READY, class: A, branch: null, base_sha: 5ecf11d, head_sha: 1c4f2435b0e1e7e233fc5c384d112ed9fd874d5f, attempts: 0, depends_on: [P0-T1, P0-T2, P0-T3, P0-T4] }
+  P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
+  P0-T2: { state: INTEGRATED, class: B, branch: task/P0-T2-commit-provenance, base_sha: 5ecf11d, head_sha: a9e6f3e762012504da6c3329fd16642e0566baab, attempts: 1, depends_on: [P0-T1], gate: G0-PASS }
+  P0-T3: { state: INTEGRATED, class: A, branch: task/P0-T3-file-provenance, base_sha: 5ecf11d, head_sha: 9671a54bf7f5a365363e99f825fdfd439e1e6bd8, attempts: 1, depends_on: [P0-T1], gate: G0-PASS }
+  P0-T4: { state: INTEGRATED, class: A, branch: task/P0-T4-behavior-inventory, base_sha: 5ecf11d, head_sha: 1c4f2435b0e1e7e233fc5c384d112ed9fd874d5f, attempts: 1, depends_on: [P0-T1], gate: G0-PASS }
+  G0-REVIEW: { state: PASSED, class: A, branch: int/P0-freeze-provenance, base_sha: 5ecf11d, head_sha: 2dadcb0e14a67667bdbd2c9c8450e8d893a2dc64, attempts: 1, verdicts: [通过, 通过, 通过] }
+  P1-T1: { state: READY, class: A, branch: task/P1-T1-host-replay, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T2, P0-T3] }
+  P1-T2: { state: READY, class: A, branch: task/P1-T2-permission-split, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T3] }
+  P1-T3: { state: READY, class: B, branch: task/P1-T3-unrelated-preserve, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T2, P0-T3] }
+  P1-T4: { state: READY, class: B, branch: task/P1-T4-team-skeleton, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T4] }
+  P1-T5: { state: DEFINED, class: A, branch: task/P1-T5-zero-core, base_sha: null, head_sha: null, attempts: 0, depends_on: [P1-T1, P1-T4] }
+  G1-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P1-T1, P1-T2, P1-T3, P1-T4, P1-T5] }

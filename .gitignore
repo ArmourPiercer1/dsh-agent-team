@@ -1,3 +1,4 @@
 references/
 docs/plans
 .worktrees/
+.pnpm-store/
