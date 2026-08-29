@@ -1,0 +1,419 @@
+{
+  "probe": "p2t6-slot-probe",
+  "node": "v24.20.0",
+  "done": true,
+  "cores": {
+    "A_conversationView": {
+      "checks": [
+        {
+          "id": "A0-root-seeded",
+          "expected": {
+            "kind": "single",
+            "scope": "root"
+          },
+          "actual": {
+            "kind": "single",
+            "scope": "root"
+          },
+          "pass": true
+        },
+        {
+          "id": "A0-root-epoch",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A1-session-declared",
+          "expected": {
+            "kind": "single",
+            "scope": "session"
+          },
+          "actual": {
+            "kind": "single",
+            "scope": "session"
+          },
+          "pass": true
+        },
+        {
+          "id": "A2-view-declared",
+          "expected": {
+            "kind": "list",
+            "scope": "session"
+          },
+          "actual": {
+            "kind": "list",
+            "scope": "session"
+          },
+          "pass": true
+        },
+        {
+          "id": "A3-tab-registered",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A3-tab-fields",
+          "expected": {
+            "id": "p2t6-team-tab",
+            "label": "Team",
+            "registrant": "p2t6-team-probe",
+            "live": true
+          },
+          "actual": {
+            "id": "p2t6-team-tab",
+            "label": "Team",
+            "registrant": "p2t6-team-probe",
+            "live": true
+          },
+          "pass": true
+        },
+        {
+          "id": "A3-winners",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A4-shadow-entries",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "id": "A4-shadow-winner-count",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A4-shadow-winner-lowest",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "id": "A5-same-id-same-priority",
+          "expected": "throws containing: list slot \"conversation.view\" already has an entry with id \"p2t6-team-tab\" | at priority 0 | registered by p2t6-team-probe | register at a different priority to shadow it (lowest renders)",
+          "actual": "list slot \"conversation.view\" already has an entry with id \"p2t6-team-tab\" at priority 0 (registered by p2t6-team-probe) — register at a different priority to shadow it (lowest renders)",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "A6-list-requires-id",
+          "expected": "throws containing: list slot \"conversation.view\" requires options.id",
+          "actual": "list slot \"conversation.view\" requires options.id",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "A7-undeclared-slot",
+          "expected": "throws containing: slot \"conversation.view.nonexistent\" is not declared (a parent entry's children table must declare it)",
+          "actual": "slot \"conversation.view.nonexistent\" is not declared (a parent entry's children table must declare it)",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "A8-child-redeclaration",
+          "expected": "throws containing: slot \"conversation.view\" is already declared (by",
+          "actual": "slot \"conversation.view\" is already declared (by an entry in \"conversation.session\" (p2t6-session))",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "A9-single-shadow-entries",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "id": "A9-single-winner-count",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A9-single-winner-lowest",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "id": "A9-single-winner-identity",
+          "expected": "p2t6-session",
+          "actual": "p2t6-session",
+          "pass": true
+        },
+        {
+          "id": "A10-single-same-priority",
+          "expected": "throws containing: single slot \"conversation.session\" already has a registration | at priority 0 | registered by p2t6-session",
+          "actual": "single slot \"conversation.session\" already has a registration at priority 0 (registered by p2t6-session) — register at a different priority to shadow it (lowest renders)",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "A11-subscribe-not-yet",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "id": "A11-subscribe-batched",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A12-spec-collapsed",
+          "pass": true
+        },
+        {
+          "id": "A12-epoch-bumped",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "id": "A12-entries-cleared",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "id": "A12-entry-dead",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "id": "A12-register-after-collapse",
+          "expected": "throws containing: slot \"conversation.view\" is not declared (a parent entry's children table must declare it)",
+          "actual": "slot \"conversation.view\" is not declared (a parent entry's children table must declare it)",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "A12-decl-subscriber-notified",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "id": "A12-sibling-survives",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "A12-sibling-identity",
+          "expected": "p2t6-session-v2",
+          "actual": "p2t6-session-v2",
+          "pass": true
+        },
+        {
+          "id": "A12b-redeclare-after-collapse",
+          "expected": {
+            "kind": "list",
+            "scope": "session"
+          },
+          "actual": {
+            "kind": "list",
+            "scope": "session"
+          },
+          "pass": true
+        }
+      ],
+      "facts": {
+        "a3_tab": {
+          "id": "p2t6-team-tab",
+          "label": "Team",
+          "registrant": "p2t6-team-probe",
+          "live": true
+        },
+        "a5_sameId": {
+          "threw": true,
+          "message": "list slot \"conversation.view\" already has an entry with id \"p2t6-team-tab\" at priority 0 (registered by p2t6-team-probe) — register at a different priority to shadow it (lowest renders)"
+        },
+        "a6_noId": {
+          "threw": true,
+          "message": "list slot \"conversation.view\" requires options.id"
+        },
+        "a7_undeclared": {
+          "threw": true,
+          "message": "slot \"conversation.view.nonexistent\" is not declared (a parent entry's children table must declare it)"
+        },
+        "a8_redeclare": {
+          "threw": true,
+          "message": "slot \"conversation.view\" is already declared (by an entry in \"conversation.session\" (p2t6-session))"
+        },
+        "a10_singleSamePrio": {
+          "threw": true,
+          "message": "single slot \"conversation.session\" already has a registration at priority 0 (registered by p2t6-session) — register at a different priority to shadow it (lowest renders)"
+        },
+        "a12_rethrow": {
+          "threw": true,
+          "message": "slot \"conversation.view\" is not declared (a parent entry's children table must declare it)"
+        }
+      }
+    },
+    "B_sidebarFooterAction": {
+      "checks": [
+        {
+          "id": "B1-sidebar-declared",
+          "expected": {
+            "kind": "single",
+            "scope": "root"
+          },
+          "actual": {
+            "kind": "single",
+            "scope": "root"
+          },
+          "pass": true
+        },
+        {
+          "id": "B2-footer-action-declared",
+          "expected": {
+            "kind": "list",
+            "scope": "root"
+          },
+          "actual": {
+            "kind": "list",
+            "scope": "root"
+          },
+          "pass": true
+        },
+        {
+          "id": "B3-new-team-registered",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "B3-new-team-fields",
+          "expected": {
+            "id": "p2t6-new-team",
+            "label": "New Team",
+            "registrant": "p2t6-team-probe",
+            "live": true
+          },
+          "actual": {
+            "id": "p2t6-new-team",
+            "label": "New Team",
+            "registrant": "p2t6-team-probe",
+            "live": true
+          },
+          "pass": true
+        },
+        {
+          "id": "B4-winners",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "B5-same-id-same-priority",
+          "expected": "throws containing: list slot \"sidebar.footer.action\" already has an entry with id \"p2t6-new-team\" | registered by p2t6-team-probe",
+          "actual": "list slot \"sidebar.footer.action\" already has an entry with id \"p2t6-new-team\" at priority 0 (registered by p2t6-team-probe) — register at a different priority to shadow it (lowest renders)",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "B6-list-requires-id",
+          "expected": "throws containing: list slot \"sidebar.footer.action\" requires options.id",
+          "actual": "list slot \"sidebar.footer.action\" requires options.id",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "B7-spec-collapsed",
+          "pass": true
+        },
+        {
+          "id": "B7-entry-dead",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "id": "B8-register-after-collapse",
+          "expected": "throws containing: slot \"sidebar.footer.action\" is not declared",
+          "actual": "slot \"sidebar.footer.action\" is not declared (a parent entry's children table must declare it)",
+          "pass": true,
+          "missing": []
+        }
+      ],
+      "facts": {
+        "b3_action": {
+          "id": "p2t6-new-team",
+          "label": "New Team",
+          "registrant": "p2t6-team-probe",
+          "live": true
+        },
+        "b5_squatter": {
+          "threw": true,
+          "message": "list slot \"sidebar.footer.action\" already has an entry with id \"p2t6-new-team\" at priority 0 (registered by p2t6-team-probe) — register at a different priority to shadow it (lowest renders)"
+        },
+        "b6_noId": {
+          "threw": true,
+          "message": "list slot \"sidebar.footer.action\" requires options.id"
+        },
+        "b8_rethrow": {
+          "threw": true,
+          "message": "slot \"sidebar.footer.action\" is not declared (a parent entry's children table must declare it)"
+        }
+      }
+    },
+    "C_inputDock": {
+      "checks": [
+        {
+          "id": "C1-dock-declared",
+          "expected": {
+            "kind": "list",
+            "scope": "session"
+          },
+          "actual": {
+            "kind": "list",
+            "scope": "session"
+          },
+          "pass": true
+        },
+        {
+          "id": "C2-dock-registered",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "id": "C2-dock-fields",
+          "expected": {
+            "id": "p2t6-team-dock",
+            "label": "Team Dock",
+            "registrant": "p2t6-team-probe",
+            "live": true
+          },
+          "actual": {
+            "id": "p2t6-team-dock",
+            "label": "Team Dock",
+            "registrant": "p2t6-team-probe",
+            "live": true
+          },
+          "pass": true
+        }
+      ],
+      "facts": {
+        "c2_dock": {
+          "id": "p2t6-team-dock",
+          "label": "Team Dock",
+          "registrant": "p2t6-team-probe",
+          "live": true
+        }
+      }
+    }
+  },
+  "checkSummary": {
+    "total": 43,
+    "passed": 43,
+    "failedIds": []
+  }
+}

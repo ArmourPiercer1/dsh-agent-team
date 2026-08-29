@@ -1,0 +1,259 @@
+{
+  "probe": "p2t6-reconnect-probe",
+  "node": "v24.20.0",
+  "done": true,
+  "scenarios": {
+    "R1_happyPath": {
+      "connectedCount": 2,
+      "homes": [
+        "p2t6-home-1",
+        "p2t6-home-2"
+      ],
+      "states": [
+        "connected"
+      ],
+      "connectLatencyMs": 475,
+      "eventsBetweenStopAndRestart": 0,
+      "statesAfterRestart": 0,
+      "restartGenCall": 2
+    },
+    "R2_lossBackoffReconnect": {
+      "connectedCount": 3,
+      "homes": [
+        "p2t6-home-1",
+        "p2t6-home-2",
+        "p2t6-home-3"
+      ],
+      "states": [
+        "connected",
+        "reconnecting",
+        "connected",
+        "reconnecting",
+        "connected"
+      ],
+      "retryIntervalsMs": [
+        46,
+        31
+      ],
+      "genCalls": 3,
+      "firstConnectMs": 15
+    },
+    "R3_readyTimeout": {
+      "firstState": "reconnecting",
+      "firstStateMs": 251,
+      "connectedCount": 0,
+      "eventsAfterStop": 0,
+      "sourceGenerations": 1
+    },
+    "R4_throwingSinks": {
+      "sinkCalls": {
+        "onStateChange": 5,
+        "onConnected": 3
+      },
+      "genCalls": 3,
+      "controllerSurvived": true
+    },
+    "R5_stopDuringBackoff": {
+      "states": [
+        "connected",
+        "reconnecting"
+      ],
+      "genCalls": 1,
+      "eventsAfterStop": 0,
+      "genCallsAfterQuiescence": 1
+    }
+  },
+  "checkSummary": {
+    "total": 25,
+    "passed": 25,
+    "failedIds": []
+  },
+  "checks": [
+    {
+      "id": "R1-single-connect",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "id": "R1-home-fact",
+      "expected": [
+        "p2t6-home-1",
+        "p2t6-home-2"
+      ],
+      "actual": [
+        "p2t6-home-1",
+        "p2t6-home-2"
+      ],
+      "pass": true
+    },
+    {
+      "id": "R1-state-sequence",
+      "expected": [
+        "connected"
+      ],
+      "actual": [
+        "connected"
+      ],
+      "pass": true
+    },
+    {
+      "id": "R1-no-events-after-stop",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "id": "R1-restart-refires-onconnected",
+      "expected": 2,
+      "actual": 2,
+      "pass": true
+    },
+    {
+      "id": "R1-restart-no-state-event",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "id": "R2-three-connects",
+      "expected": 3,
+      "actual": 3,
+      "pass": true
+    },
+    {
+      "id": "R2-homes",
+      "expected": [
+        "p2t6-home-1",
+        "p2t6-home-2",
+        "p2t6-home-3"
+      ],
+      "actual": [
+        "p2t6-home-1",
+        "p2t6-home-2",
+        "p2t6-home-3"
+      ],
+      "pass": true
+    },
+    {
+      "id": "R2-state-sequence",
+      "expected": [
+        "connected",
+        "reconnecting",
+        "connected",
+        "reconnecting",
+        "connected"
+      ],
+      "actual": [
+        "connected",
+        "reconnecting",
+        "connected",
+        "reconnecting",
+        "connected"
+      ],
+      "pass": true
+    },
+    {
+      "id": "R2-interval1-lower",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R2-interval1-upper",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R2-interval2-lower",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R2-interval2-upper",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R3-first-state-reconnecting",
+      "expected": "reconnecting",
+      "actual": "reconnecting",
+      "pass": true
+    },
+    {
+      "id": "R3-ready-timeout-lower",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R3-ready-timeout-upper",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R3-zero-connects",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "id": "R3-no-events-after-stop",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "id": "R4-three-generations",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R4-state-sink-threw",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R4-connected-sink-threw",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "id": "R5-exactly-one-generation",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "id": "R5-state-sequence",
+      "expected": [
+        "connected",
+        "reconnecting"
+      ],
+      "actual": [
+        "connected",
+        "reconnecting"
+      ],
+      "pass": true
+    },
+    {
+      "id": "R5-no-events-after-stop",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "id": "R5-no-generation-after-quiescence",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    }
+  ]
+}

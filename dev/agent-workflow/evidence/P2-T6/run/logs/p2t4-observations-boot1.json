@@ -1,0 +1,227 @@
+{
+  "boot": 1,
+  "done": true,
+  "fatal": null,
+  "results": {
+    "services": {
+      "agents": true,
+      "agentDefaultModel": true,
+      "tools": true,
+      "skills": true,
+      "sessions": true,
+      "selection": {
+        "provider": "deepseek-official",
+        "model": "deepseek-v4-flash"
+      },
+      "mcpPort": 3491
+    },
+    "creation": {
+      "globalBaseline": {
+        "registered": true,
+        "inGlobalView": true,
+        "globalToolCount": 1
+      },
+      "tool": {
+        "scopedToolInAgentView": true,
+        "globalInheritedInAgentView": true,
+        "scopedToolHiddenFromGlobal": true,
+        "agentView": [
+          "p2t4_global",
+          "p2t4_echo",
+          "p2t4_gate",
+          "mcp__p2t4mini__ping"
+        ]
+      },
+      "skills": {
+        "propAccess": {
+          "threw": true,
+          "message": "Error: cannot get property \"skills\" without inject"
+        },
+        "agentGetAvailable": true,
+        "registeredVia": "agentGet",
+        "scopedSkillInAgentScope": true,
+        "scopedSkillHiddenFromGlobal": true,
+        "agentScopeSkillNames": [
+          "p2t4-probe-skill"
+        ],
+        "globalSkillCount": 0
+      },
+      "mcp": {
+        "mount": {
+          "ok": true
+        },
+        "mcpToolInAgentView": true,
+        "mcpToolHiddenFromGlobal": true,
+        "call": {
+          "failed": false,
+          "kind": "success",
+          "detail": "pong:hello-mcp",
+          "value": {
+            "content": [
+              {
+                "type": "text",
+                "text": "pong:hello-mcp"
+              }
+            ]
+          }
+        },
+        "duplicateSameScope": {
+          "rejected": true,
+          "message": "Error: mcp-client: serverName \"p2t4mini\" is already in use by another mcp-client instance — pick a unique serverName in cordis.yml"
+        },
+        "failOnStartupRollback": {
+          "rejected": true,
+          "message": "Error: mcp-client(p2t4dead): initial connection or tool synchronization failed",
+          "agentPublished": false,
+          "sessionExists": false
+        }
+      },
+      "preExecute": {
+        "allow": {
+          "failed": false,
+          "kind": "success",
+          "detail": "scope-A: allow-probe",
+          "value": {
+            "origin": "scope-A",
+            "msg": "allow-probe"
+          }
+        },
+        "ask": {
+          "failed": true,
+          "kind": "error-result",
+          "detail": "{\"message\":\"approval.request() outside an open turn: the approval/asked + approval/decided audit pair must be turn-enclosed (a bare event between turns is crash-tail garbage on reload). Ask from inside the turn that needs the decision.\"}",
+          "value": null
+        }
+      },
+      "preStep": {
+        "timedOut": false,
+        "canceled": false,
+        "newEvents": [
+          "3:agent/inbox/spliced",
+          "4:turn/start",
+          "5:agent/inbox/spliced",
+          "6:step/start",
+          "7:user/message",
+          "8:user/message",
+          "9:session/title",
+          "10:request/header",
+          "11:request/context",
+          "12:session/title-llm-request",
+          "13:assistant/chunk",
+          "14:step/end",
+          "15:turn/end"
+        ],
+        "stepStartCountAfter": 1,
+        "turnEndReasons": [
+          "error"
+        ],
+        "agentErrors": [
+          {
+            "turn": 1,
+            "step": 1,
+            "error": "LlmError: llm-deepseek: no API key for provider route \"deepseek-official\"; store DEEPSEEK_API_KEY through the credentials service (the web Models page writes it), or export DEEPSEEK_API_KEY in the launching environment [code=MISSING_CREDENTIAL]"
+          }
+        ],
+        "statusAfter": "idle"
+      },
+      "isolation": {
+        "bViewExcludesScopedToolOfA": true,
+        "bViewIncludesGlobalTool": true,
+        "bMcpSameNameAllowed": true,
+        "bMcpMount": {
+          "ok": true
+        },
+        "bView": [
+          "p2t4_global",
+          "mcp__p2t4mini__ping"
+        ],
+        "bDisposedRegistryGone": true
+      }
+    },
+    "tighten": {
+      "tool": {
+        "restrictHidesInherited": true,
+        "ownLayerExempt": true,
+        "globalViewUnaffected": true,
+        "agentViewAfter": [
+          "p2t4_echo",
+          "p2t4_gate",
+          "mcp__p2t4mini__ping"
+        ],
+        "executeInheritedNowFails": {
+          "failed": true,
+          "kind": "error-result",
+          "detail": "{\"message\":\"unknown tool \\\"p2t4_global\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}",
+          "value": null
+        }
+      },
+      "preExecute": {
+        "denyAfterFlip": {
+          "failed": true,
+          "kind": "error-result",
+          "detail": "{\"message\":\"p2t4-policy(A): p2t4_echo denied by the agent-scoped pre-execute listener\"}",
+          "value": null
+        }
+      },
+      "preStep": {
+        "timedOut": false,
+        "canceled": false,
+        "rejectCausedNoNewStepStart": true,
+        "stepStartsBefore": 1,
+        "stepStartsAfter": 1,
+        "lastTurnEndReason": "blocked",
+        "newEventTypes": [
+          "user/message",
+          "session/title",
+          "request/header",
+          "request/context",
+          "session/title-llm-request",
+          "assistant/chunk",
+          "step/end",
+          "turn/end",
+          "agent/inbox/spliced",
+          "turn/start",
+          "agent/inbox/spliced",
+          "turn/end"
+        ],
+        "statusAfter": "idle"
+      },
+      "skills": {
+        "disposerRemovesScoped": true,
+        "agentScopeSkillNamesAfter": []
+      },
+      "postPubRegistration": {
+        "tool": {
+          "threw": false,
+          "visibleWhileAlive": true
+        },
+        "skill": {
+          "threw": false
+        }
+      },
+      "mcp": {
+        "disposeRemovesTool": true,
+        "remountRestoresTool": true
+      }
+    },
+    "disappear": {
+      "sessionFlushedBeforeDispose": true,
+      "registryGetAfterDispose": "undefined",
+      "staleExecute": {
+        "failed": true,
+        "kind": "error-result",
+        "detail": "{\"message\":\"session \\\"p2t4-session-17b9324f-9a44-4646-acfd-8fcc69a46b3f\\\" is not live in this store\"}",
+        "value": null
+      },
+      "staleSkillScope": {
+        "threw": false,
+        "scopedSkillGone": true
+      },
+      "followupAfterDispose": {
+        "threw": false
+      },
+      "eventCountBeforeDispose": 20
+    },
+    "resume": {}
+  }
+}

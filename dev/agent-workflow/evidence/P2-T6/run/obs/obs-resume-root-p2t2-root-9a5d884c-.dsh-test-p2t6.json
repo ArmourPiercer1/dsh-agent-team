@@ -1,0 +1,150 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "resume-root",
+  "primaryId": "p2t2-root-9a5d884c",
+  "writtenAt": 1788039128023,
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t6",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1788039127692,
+      "phase": "activate",
+      "port": 3401,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t6",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1788039127994,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1788039127997,
+      "phase": "run-start",
+      "scenario": "resume-member",
+      "memberId": "p2t2-member-9a5d884c",
+      "rootId": "p2t2-root-9a5d884c"
+    },
+    {
+      "seq": 4,
+      "ts": 1788039128010,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-member-9a5d884c"
+    },
+    {
+      "seq": 5,
+      "ts": 1788039128011,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-member-9a5d884c"
+    },
+    {
+      "seq": 6,
+      "ts": 1788039128011,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-member-9a5d884c",
+      "source": "resume"
+    },
+    {
+      "seq": 7,
+      "ts": 1788039128013,
+      "phase": "binding-recovered",
+      "sessionId": "p2t2-member-9a5d884c",
+      "role": "member",
+      "rootId": "p2t2-root-9a5d884c",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-9a5d884c",
+      "rootLive": false,
+      "via": "sidecar-only"
+    },
+    {
+      "seq": 8,
+      "ts": 1788039128013,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-member-9a5d884c",
+      "role": "member",
+      "rootId": "p2t2-root-9a5d884c",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-9a5d884c",
+      "rootLive": false,
+      "source": "resume"
+    },
+    {
+      "seq": 9,
+      "ts": 1788039128013,
+      "phase": "run-end",
+      "scenario": "resume-member",
+      "memberId": "p2t2-member-9a5d884c",
+      "rootId": "p2t2-root-9a5d884c",
+      "memberLogLength": 4
+    },
+    {
+      "seq": 10,
+      "ts": 1788039128018,
+      "phase": "run-start",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-9a5d884c"
+    },
+    {
+      "seq": 11,
+      "ts": 1788039128021,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-root-9a5d884c"
+    },
+    {
+      "seq": 12,
+      "ts": 1788039128022,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-root-9a5d884c"
+    },
+    {
+      "seq": 13,
+      "ts": 1788039128022,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-root-9a5d884c",
+      "source": "resume"
+    },
+    {
+      "seq": 14,
+      "ts": 1788039128022,
+      "phase": "binding-recovered",
+      "sessionId": "p2t2-root-9a5d884c",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-9a5d884c",
+      "rootLive": true
+    },
+    {
+      "seq": 15,
+      "ts": 1788039128023,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-root-9a5d884c",
+      "role": "root",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-9a5d884c",
+      "rootLive": true,
+      "source": "resume"
+    },
+    {
+      "seq": 16,
+      "ts": 1788039128023,
+      "phase": "run-end",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-9a5d884c",
+      "rootLogLength": 4
+    }
+  ],
+  "traceLength": 9,
+  "ok": true,
+  "sessionId": "p2t2-root-9a5d884c",
+  "marker": "P2T2-ROOT-MARKER-p2t2-root-9a5d884c",
+  "source": "resume",
+  "rootLogLength": 4
+}

@@ -1,0 +1,12 @@
+{
+  "probe": "p2t6-host-probe",
+  "activatedAt": "2026-08-29T21:18:24.394Z",
+  "servicesPresent": {
+    "webServer": true,
+    "clientModules": true,
+    "connection": true
+  },
+  "graphRoute": "/__p2t6/graph",
+  "rpcChannel": "/p2t6rpc",
+  "done": true
+}

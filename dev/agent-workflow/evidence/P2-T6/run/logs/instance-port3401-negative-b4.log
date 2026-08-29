@@ -1,0 +1,65 @@
+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1512
+		throw new Error(`${binName}: ${stage}: ${detail}${stack}`, { cause });
+		      ^
+
+Error: dsh: plugin tree failed to load: failed to apply loader entry modules (@deepseek-ai/dsh-client-modules): client-modules: 1 client package failed to compose:
+  other failures:
+    - client-modules: p2t6-malformed-decl dsh.client.platform must be a string
+AggregateError: client-modules: 1 client package failed to compose:
+  other failures:
+    - client-modules: p2t6-malformed-decl dsh.client.platform must be a string
+    at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:479:34)
+    at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#modules
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#include
+Error: client-modules: p2t6-malformed-decl dsh.client.platform must be a string
+    at parseDshClient (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:144:47)
+    at ClientModuleRegistry.resolveMeta (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:630:16)
+    at ClientModuleRegistry.resolveSource (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:785:25)
+    at ClientModuleRegistry.processOne (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:760:24)
+    at ClientModuleRegistry.flush (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:822:14)
+    at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:478:8)
+    at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+    at composeError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+    at Fiber._execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1136:10)
+    at boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1512:9)
+    at async runProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/profile-boot-BTzzdrGY.js:261:14)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/bin.js:130:3 {
+  [cause]: Error: failed to apply loader entry modules (@deepseek-ai/dsh-client-modules): client-modules: 1 client package failed to compose:
+    other failures:
+      - client-modules: p2t6-malformed-decl dsh.client.platform must be a string
+      at updateError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:299:9)
+      at Entry._await (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:506:10)
+      at async Promise.allSettled (index 105)
+      at async Proxy.await (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:182:22)
+      at async boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1502:3)
+      at async runProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/profile-boot-BTzzdrGY.js:261:14)
+      at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/bin.js:130:3 {
+    [cause]: ClientPackageCompositionError [AggregateError]: client-modules: 1 client package failed to compose:
+      other failures:
+        - client-modules: p2t6-malformed-decl dsh.client.platform must be a string
+        at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:479:34)
+        at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#modules
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#include {
+      [errors]: [
+        Error: client-modules: p2t6-malformed-decl dsh.client.platform must be a string
+            at parseDshClient (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:144:47)
+            at ClientModuleRegistry.resolveMeta (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:630:16)
+            at ClientModuleRegistry.resolveSource (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:785:25)
+            at ClientModuleRegistry.processOne (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:760:24)
+            at ClientModuleRegistry.flush (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:822:14)
+            at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:478:8)
+            at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+            at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+            at composeError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+            at Fiber._execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1136:10)
+      ]
+    }
+  }
+}
+
+Node.js v24.20.0

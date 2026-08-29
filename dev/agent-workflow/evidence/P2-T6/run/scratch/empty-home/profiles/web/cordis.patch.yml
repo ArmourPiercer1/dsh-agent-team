@@ -1,0 +1,4 @@
+# P2-T2 agent-lifecycle group: Root TeamDomain binding seam (public APIs only). Revert: replace with [].
+- insert:
+    - id: p2t2-agent-lifecycle
+      name: "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P2-T6/tests/characterization/probes/agent-lifecycle/plugins/lifecycle-host.js"

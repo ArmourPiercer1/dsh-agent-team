@@ -1,0 +1,88 @@
+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1512
+		throw new Error(`${binName}: ${stage}: ${detail}${stack}`, { cause });
+		      ^
+
+Error: dsh: plugin tree failed to load: failed to apply loader entry modules (@deepseek-ai/dsh-client-modules): client-modules: 1 client package failed to compose:
+  client bundles not found; run `pnpm run build` before launch:
+    - package: p2t6-missing-bundle
+      path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js
+AggregateError: client-modules: 1 client package failed to compose:
+  client bundles not found; run `pnpm run build` before launch:
+    - package: p2t6-missing-bundle
+      path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js
+    at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:479:34)
+    at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#modules
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#include
+Error: client-modules: client bundle not found; run `pnpm run build` before launch:
+  package: p2t6-missing-bundle
+  path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js
+    at ClientModuleRegistry.initialBundleSnapshot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:743:10)
+    at ClientModuleRegistry.reconcilePackage (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:804:25)
+    at ClientModuleRegistry.processOne (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:775:13)
+    at ClientModuleRegistry.flush (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:822:14)
+    at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:478:8)
+    at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+    at composeError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+    at Fiber._execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1136:10)
+    at Fiber._reload (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1355:16)
+    at boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1512:9)
+    at async runProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/profile-boot-BTzzdrGY.js:261:14)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/bin.js:130:3 {
+  [cause]: Error: failed to apply loader entry modules (@deepseek-ai/dsh-client-modules): client-modules: 1 client package failed to compose:
+    client bundles not found; run `pnpm run build` before launch:
+      - package: p2t6-missing-bundle
+        path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js
+      at updateError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:299:9)
+      at Entry._await (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:506:10)
+      at async Promise.allSettled (index 105)
+      at async Proxy.await (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:182:22)
+      at async boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1502:3)
+      at async runProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/profile-boot-BTzzdrGY.js:261:14)
+      at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/bin.js:130:3 {
+    [cause]: ClientPackageCompositionError [AggregateError]: client-modules: 1 client package failed to compose:
+      client bundles not found; run `pnpm run build` before launch:
+        - package: p2t6-missing-bundle
+          path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js
+        at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:479:34)
+        at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#modules
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t6/profiles/web/#include {
+      [errors]: [
+        MissingClientBundleError: client-modules: client bundle not found; run `pnpm run build` before launch:
+          package: p2t6-missing-bundle
+          path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js
+            at ClientModuleRegistry.initialBundleSnapshot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:743:10)
+            at ClientModuleRegistry.reconcilePackage (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:804:25)
+            ... 5 lines matching cause stack trace ...
+            at composeError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+            at Fiber._execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1136:10)
+            at Fiber._reload (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1355:16) {
+          packageName: 'p2t6-missing-bundle',
+          clientPath: 'D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T6\\tests\\characterization\\probes\\remote-client\\plugins\\negative-fixtures\\missing-bundle\\client.js',
+          [cause]: Error: ENOENT: no such file or directory, stat 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T6\tests\characterization\probes\remote-client\plugins\negative-fixtures\missing-bundle\client.js'
+              at statSync (node:fs:1795:25)
+              at ClientModuleRegistry.captureArtifactBaseline (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:713:18)
+              at ClientModuleRegistry.initialBundleSnapshot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:733:26)
+              at ClientModuleRegistry.reconcilePackage (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:804:25)
+              at ClientModuleRegistry.processOne (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:775:13)
+              at ClientModuleRegistry.flush (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:822:14)
+              at new ClientModuleRegistry (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/client/modules/lib/index.js:478:8)
+              at Fiber.execute (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1067:24)
+              at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1141:34
+              at composeError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18) {
+            errno: -4058,
+            code: 'ENOENT',
+            syscall: 'stat',
+            path: 'D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T6\\tests\\characterization\\probes\\remote-client\\plugins\\negative-fixtures\\missing-bundle\\client.js'
+          }
+        }
+      ]
+    }
+  }
+}
+
+Node.js v24.20.0

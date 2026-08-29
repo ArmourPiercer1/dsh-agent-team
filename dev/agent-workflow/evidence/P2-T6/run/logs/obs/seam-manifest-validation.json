@@ -1,0 +1,40 @@
+{
+  "manifest": "seam-manifest/manifest.json",
+  "rules": [
+    {
+      "id": "rows",
+      "passed": true,
+      "detail": "aggregates 26 seam rows across P2-T1..T6 (>=15)"
+    },
+    {
+      "id": "critical-rows",
+      "passed": true,
+      "detail": "5 architecture-critical seams (>=4)"
+    },
+    {
+      "id": "evidence-exists",
+      "passed": true,
+      "detail": "all evidence paths + per-task reports exist"
+    },
+    {
+      "id": "critical-executable",
+      "passed": true,
+      "detail": "every arch-critical seam is executable PASS"
+    },
+    {
+      "id": "verdicts-consistent",
+      "passed": true,
+      "detail": "every seam is named in its per-task report"
+    },
+    {
+      "id": "zero-private-imports",
+      "passed": true,
+      "detail": "zero non-public upstream imports across 27 harness+payload files; 2 detection(s) in the designated negative-fixture zone (scanner actively rejects)"
+    },
+    {
+      "id": "limitations-complete",
+      "passed": true,
+      "detail": "24 known limitations, each with status + evidence"
+    }
+  ]
+}

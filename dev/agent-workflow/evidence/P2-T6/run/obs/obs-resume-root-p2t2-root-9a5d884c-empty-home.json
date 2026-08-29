@@ -1,0 +1,63 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "resume-root",
+  "primaryId": "p2t2-root-9a5d884c",
+  "writtenAt": 1788039129722,
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T6\\dev\\agent-workflow\\evidence\\P2-T6\\run\\scratch\\empty-home",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1788039129484,
+      "phase": "activate",
+      "port": 3401,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T6\\dev\\agent-workflow\\evidence\\P2-T6\\run\\scratch\\empty-home",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1788039129716,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1788039129720,
+      "phase": "run-start",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-9a5d884c"
+    },
+    {
+      "seq": 4,
+      "ts": 1788039129721,
+      "phase": "resume-rejected",
+      "sessionId": "p2t2-root-9a5d884c",
+      "errorName": "SessionPersistenceNotFoundError",
+      "errorMessage": "session \"p2t2-root-9a5d884c\" not found",
+      "sessionIdField": "p2t2-root-9a5d884c"
+    },
+    {
+      "seq": 5,
+      "ts": 1788039129721,
+      "phase": "run-end",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-9a5d884c",
+      "rejected": true
+    }
+  ],
+  "traceLength": 2,
+  "ok": false,
+  "code": "P2T2_RESUME_NOT_FOUND",
+  "sessionId": "p2t2-root-9a5d884c",
+  "error": "session \"p2t2-root-9a5d884c\" not found"
+}
