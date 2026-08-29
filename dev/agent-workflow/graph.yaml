@@ -1,0 +1,16 @@
+# Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
+current_phase: P0
+integration_sha: null
+contracts:
+  core: v1
+locks:
+  contracts: null
+ready:
+  - P0-T1
+blocked: []
+tasks:
+  P0-T1: { state: READY, class: C, branch: null, base_sha: null, head_sha: null, attempts: 0 }
+  P0-T2: { state: DEFINED, class: B, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T1] }
+  P0-T3: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T1] }
+  P0-T4: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T1] }
+  G0-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P0-T1, P0-T2, P0-T3, P0-T4] }

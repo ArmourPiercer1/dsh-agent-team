@@ -1,0 +1,14 @@
+# LOCKED_SURFACE（任务分包 §3.7）：只有 owner task 可修改；其他 worker 必须提 CONTRACT_CHANGE_REQUEST。
+locked_surfaces:
+  - contracts/**
+  - TeamDomain schema + migrations
+  - OperationJournal protocol
+  - Remote contract / DTO exports
+  - package public exports
+  - migration / provenance manifest
+  - client root store contract
+  - release compatibility matrix
+owners: {}
+notes: >
+  P0 阶段 provenance manifest 尚无 owner task 正式锁定；
+  P0-T2（commit manifest）与 P0-T3（file manifest）各自拥有其输出文件，互不重叠。
