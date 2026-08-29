@@ -116,6 +116,29 @@
 - **集成**：cherry-pick -x 三 commit → `int/P2-seam-characterization` @ `10ce2fc`（5e306c1 / 77b1965 / 10ce2fc）；graph：P2-T1 → INTEGRATED（base cc6199b、head 1f06ff3、attempts 1），integration_sha = `10ce2fc`，ready → [P2-T2, P2-T3, P2-T4, P2-T5]。
 - **下一步**：workflow 并行拉起 P2-T2..T5（4 worker，`qiyuan-self/qwen3.8-27b`；各自独立 worktree/分支/端口/DSH_HOME；base = `10ce2fc`，复用 P2-T1 harness lib；完成后 P2-T6 → G2-REVIEW）。
 
+### 轮次 R7：P2-T2..T5 并行执行 + 集成（2026-08-30）
+
+- **执行方式**：workflow 工具 4 worker 并行，全部 `qiyuan-self/qwen3.8-27b`；base = `45a8f38a`（int/P2 T1 集成后）；独立 worktree/分支/端口/DSH_HOME：
+  - P2-T2 `.worktrees/P2-T2` / task/P2-T2-agent-lifecycle @ `380a8969`，端口 3381/3391，DSH_HOME `.dsh-test-p2t2` — SELF_VERIFIED，attempts 1
+  - P2-T3 `.worktrees/P2-T3` / task/P2-T3-preset-persona-model @ `681199ca`，端口 3382/3392，DSH_HOME `.dsh-test-p2t3` — SELF_VERIFIED，attempts 2（attempt 1 失败：踩中 P2-T1 harness 潜在缺陷，见"集成修复"）
+  - P2-T4 `.worktrees/P2-T4` / task/P2-T4-capabilities @ `e1916b25`，端口 3383/3393，DSH_HOME `.dsh-test-p2t4` — SELF_VERIFIED，attempts 2（attempt 1 RED：payload 重复声明 SyntaxError；debug 跑不计 attempt）
+  - P2-T5 `.worktrees/P2-T5` / task/P2-T5-storage-fork-descendants @ `c8dfc74e`，端口 3384/3394，DSH_HOME `.dsh-test-p2t5` — SELF_VERIFIED，attempts 3（attempt 1 run-log 截断异常、attempt 2 `ctx.get('sessionQuery')` late registration → payload 有界等待循环）
+- **Seam 结果（零 CORE_SEAM_BLOCKER，全 PASS）**：
+  - T2 4/4：fresh create / member resume（`rootLive=false` 时 sidecar-only 恢复）/ root cold binding（marker round-trip、source=resume）/ ordering trace（14/14 valid，子序列 6/6 + 5/5）；负例：late-binding 拒绝（P2T2_ROOT_BINDING_MISSING）、读侧词汇白名单拒绝 custom event。行为发现：awaited session/flush 非 durable publication barrier（200 ms write-behind）→ 记为 known limitation + upstream generic-seam 提案（sidecar durable-on-resolve 契约不受影响，不发 blocker）。
+  - T3 6/6：preset standing composition / persona scope（零跨 scope 泄漏）/ complete:true 可检测可阻断（1A 决策，seam-report 引冻结 Architecture 文档原文为据）/ ModelSelection future boundary / preset switch lock / cold resume。
+  - T4 20/20 矩阵（pre-step / pre-execute / tool visibility / skills / MCP × creation / cold resume / tighten / disappear）；skills 与 MCP 独立判定，无 private registry。
+  - T5 3/3：external persistence（byte-equal + 跨 DSH_HOME 隔离负例）/ fork lineage 可见性（root/member fixture + lineage JSON）/ descendant enumeration/interrupt/drain（完备性 + 中断生效 + unknown id 大声失败）。
+- **主 Agent 独立审计（全部通过）**：
+  - owned-path：62 / 49 / 37 / 135 文件，全部在各自 probe 组目录 + evidence 目录内，零越界；4 个 worktree 状态干净。
+  - 独立重跑（各任务 worktree + 各任务端口/DSH_HOME）：T2 48s / T3 44s / T4 44s / T5 50s，均 EXIT=0、全节绿、byte-clean、HEAD 不变；`router-rerun.log` 归档各任务 evidence。
+  - T3 重跑副作用：probe 组重写自身 observations/ 证据 JSON（设计行为）；重跑后已把 T3 worktree 恢复到 worker canonical 版本。
+- **集成**：cherry-pick -x 8 commit 至 int/P2；随后裸命令整合验证（Quickstart/CI 契约）发现 **2 个跨任务集成缺陷**，主 Agent 修复：
+  1. T2/T5 组硬依赖 `--report-dir`，裸 `node tests/characterization/run.mjs`（README Quickstart + CI job）整合后 FAIL → 两组 reportDir 为 null 时 fallback 到 `<DSH_HOME>/characterization-obs`（commit `2679316`）；同 commit 将 `tests/characterization/.run-logs/`（T4 组裸跑默认观察目录，每次运行可变）加入 .gitignore。
+  2. P2-T1 潜在缺陷：`lib/instance.mjs` `resetPatchLayer(header)` 把数组直接传给 `writeFileSync` 必抛 TypeError（README 承诺的 `ctx.instance` 契约；T3 attempt 1 暴露，T3 当时经 `patchFile` getter 做字节等价的 revert 绕过并在代码中留 NOTE）→ 写入前 `join('\n')`（commit `4f70960`）；T6 及后续组可直接使用文档 API。
+  - 修复后裸命令整合验证全绿：5 个 probe group（agent-lifecycle / capabilities / preset-persona-model / smoke / storage-fork-descendants）+ 7 节，EXIT=0 / 64s，byte-clean（`evidence/P2/integrated-rerun.log`）。
+- **Graph**：P2-T2..T5 → INTEGRATED（attempts 1/2/2/3），integration_sha = `4f709608c2e810e617732bf454d543c24888c15d`，ready → [P2-T6]。
+- **下一步**：P2-T6（remote/client/additive UI seams + seam manifest 汇总 + G2 audit 前置）→ G2-REVIEW（3 名盲审）。
+
 ## 重审记录
 
 （空）

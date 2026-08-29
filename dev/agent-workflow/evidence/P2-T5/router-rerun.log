@@ -1,0 +1,139 @@
+﻿[2026-08-29T19:42:15.039Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\tests\characterization
+[2026-08-29T19:42:15.040Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T19:42:15.040Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t5
+[2026-08-29T19:42:15.040Z] client hash  : cd5ef814
+[2026-08-29T19:42:15.041Z] port         : 3384 (backup 3394)
+[2026-08-29T19:42:15.041Z] node         : v24.20.0 (pid 45024)
+[2026-08-29T19:42:15.041Z] === section: preflight ===
+[2026-08-29T19:42:15.041Z]   PASS built upstream CLI entry present (apps/cli/lib/bin.js)
+[2026-08-29T19:42:15.041Z]   PASS good probe plugin present
+[2026-08-29T19:42:15.041Z]   PASS bad probe plugin present
+[2026-08-29T19:42:15.042Z]   PASS port 3384 free at start
+[2026-08-29T19:42:15.169Z]   PASS test-use tree PRISTINE at start (git status --porcelain empty)
+[2026-08-29T19:42:15.169Z]   (HEAD=cd5ef8148158c3a752a658978873241fdf8e2bbc via git)
+[2026-08-29T19:42:15.532Z]   PASS public surface built over 272 packages (>=200 for the pinned monorepo)
+[2026-08-29T19:42:15.535Z]   PASS probe sources import 3 upstream package(s): @deepseek-ai/dsh-util-crypto, @deepseek-ai/dsh-subagent, @deepseek-ai/dsh-storage-domain
+[2026-08-29T19:42:15.535Z] === section: surface ===
+[2026-08-29T19:42:15.536Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-base
+[2026-08-29T19:42:15.536Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-web-app
+[2026-08-29T19:42:15.536Z]   PASS whitelist contains key seam package @deepseek-ai/dsh-util-crypto
+[2026-08-29T19:42:15.536Z]   PASS public root of @deepseek-ai/dsh-util-crypto admitted
+[2026-08-29T19:42:15.536Z]   PASS private subpath ./internal/random NOT admitted (subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto)
+[2026-08-29T19:42:15.536Z] === section: fixture ===
+[2026-08-29T19:42:15.537Z]   PASS pinned SHA matches live HEAD (fixture=cd5ef8148158c3a752a658978873241fdf8e2bbc, live=cd5ef8148158c3a752a658978873241fdf8e2bbc [via git])
+[2026-08-29T19:42:15.537Z]   PASS public surface matches fixture (272 packages, schema p2t1-host-version/1)
+[2026-08-29T19:42:15.537Z] === section: static (private-import negative test) ===
+[2026-08-29T19:42:15.539Z]   PASS harness source (lib/ + run.mjs + spawn-probe.mjs + probes/*/index.mjs) has zero bare/third-party/private imports
+[2026-08-29T19:42:15.540Z]   PASS scanner: good probe PASSES (0 findings in probes\smoke\plugins\good-host.js)
+[2026-08-29T19:42:15.540Z]   PASS scanner: bad probe DETECTED + REJECTED (1 finding(s): private-subpath-import)
+[2026-08-29T19:42:15.540Z]   rejected: private-subpath-import "@deepseek-ai/dsh-util-crypto/internal/random" — subpath "/internal/random" is not in the map exports surface of @deepseek-ai/dsh-util-crypto
+[2026-08-29T19:42:15.540Z]   PASS scanner positive control: synthetic bare import FLAGGED in harness mode
+[2026-08-29T19:42:15.541Z]   PASS scanner positive control: synthetic private subpath FLAGGED in probe mode
+[2026-08-29T19:42:15.541Z] === section: lifecycle ===
+[2026-08-29T19:42:15.541Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-29T19:42:17.341Z] throwaway boot OK: http://127.0.0.1:3384/?token=rbZMZQSpHAY5_KiwNZ2bvUrWAwWS9pwszKCiTn9SK60
+[2026-08-29T19:42:17.377Z]   PASS web profile ready under dedicated DSH_HOME (created by throwaway boot)
+[2026-08-29T19:42:17.483Z]   PASS dump-config: mounted row present in the composed profile tree (public seam carries it)
+[2026-08-29T19:42:19.028Z]   PASS instance started: http://127.0.0.1:3384/?token=tRNdj0kvnw9r80qcYvJhBfHd-PNeVjAim0q48XYZpU0
+[2026-08-29T19:42:19.066Z]   PASS instance stopped, port freed
+[2026-08-29T19:42:19.066Z] === section: probes ===
+[2026-08-29T19:42:19.081Z]   PASS probe groups discovered: smoke, storage-fork-descendants
+[2026-08-29T19:42:19.081Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T19:42:19.081Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T19:42:19.081Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T19:42:19.081Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T19:42:19.082Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T19:42:19.082Z] smoke: good row mounted; starting instance
+[2026-08-29T19:42:20.629Z]   PASS good row boot succeeded: http://127.0.0.1:3384/?token=-_Hq5ZVD__Kfxe3XrocL7tH6q6il6S2KNBNe4jr-LDc
+[2026-08-29T19:42:20.666Z]   PASS port free after good boot
+[2026-08-29T19:42:20.667Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T19:42:39.814Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T19:42:39.814Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T19:42:39.815Z]   PASS port free after failed bad boot
+[2026-08-29T19:42:39.816Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T19:42:41.371Z]   PASS recovery boot succeeded: http://127.0.0.1:3384/?token=wl7sWXXqiFWFtHZnxv-w_6JZG2XzzlzblwywQuGENII
+[2026-08-29T19:42:41.409Z]   PASS port free after recovery stop
+[2026-08-29T19:42:41.409Z] --- probe group: storage-fork-descendants — P2-T5 seams: StorageDomain external persistence, fork lineage visibility, descendant enumeration/interrupt/drain
+[2026-08-29T19:42:41.411Z]   PASS payload carries >=1 upstream import (@deepseek-ai/dsh-storage-domain)
+[2026-08-29T19:42:41.411Z]   PASS payload upstream imports all admitted by the live public surface
+[2026-08-29T19:42:41.411Z]   PASS bad-global fixture upstream imports admitted (its negativity is semantic, not import-level)
+[2026-08-29T19:42:41.411Z]   PASS private-import fixture carries >=1 upstream import (@deepseek-ai/dsh-subagent/lib/continuation.js)
+[2026-08-29T19:42:41.412Z]   PASS private-import fixture upstream import rejected by the live public surface (static)
+[2026-08-29T19:42:41.413Z]   PASS private-import rejected with ERR_PACKAGE_PATH_NOT_EXPORTED (got ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './lib/continuation.js' is not defined by "exports" in D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\tests\characterization\probes\node_modules\@deepseek-ai\dsh-subagent\package.json imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T5\tests\characterization\probes\storage-fork-descendants\plugins\negative-fixtures\private-import-host.js)
+[2026-08-29T19:42:41.457Z]   PASS bad-global rejected by the null-sentinel guard (got: domain 'p2t5_bad_global' global schema must not accept null: null is the medium's "never written" sentinel, so a stored null could not round-trip)
+[2026-08-29T19:42:41.458Z]   PASS bad-authority fixture documents the UNAUTHORIZED expectation
+[2026-08-29T19:42:41.469Z] p2t5: blackhole LLM endpoint on http://127.0.0.1:53781
+[2026-08-29T19:42:41.470Z] p2t5: env facts — hasEnvApiKey=false, envBaseUrl=null
+[2026-08-29T19:42:41.470Z] p2t5: removed 0 stale fixture session dir(s) from the main home: (none)
+[2026-08-29T19:42:43.040Z]   PASS seed boot (main home) succeeded: http://127.0.0.1:3384/?token=DNg8ideaWdbMkcxRMvn7RxZ5erXD4eFaLUGA8Ev4aAM
+[2026-08-29T19:42:44.620Z]   PASS port free after seed stop
+[2026-08-29T19:42:46.185Z]   PASS verify boot (restart, main home) succeeded: http://127.0.0.1:3384/?token=GEzKgJnKmXZ4tqVoqRxjGEx7YTJDmTYoU-EuLwnGD6M
+[2026-08-29T19:42:46.224Z]   PASS port free after verify stop
+[2026-08-29T19:42:46.224Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-29T19:42:47.793Z] throwaway boot OK: http://127.0.0.1:3394/?token=zbZ1cL8yFykn73HKvwTM1jVWgTl8MLIVGhDZjCDmYwg
+[2026-08-29T19:42:47.826Z]   PASS isolation home profile ready
+[2026-08-29T19:42:49.415Z]   PASS isolate boot (scratch home) succeeded: http://127.0.0.1:3394/?token=MwKaWKQDqRZhtZR_23SibPkW1E3_cJACDFTXPzijR18
+[2026-08-29T19:42:49.464Z]   PASS port 3394 free after isolate stop
+[2026-08-29T19:42:49.465Z]   PASS S1.1 seed: in-instance readback of all 3 records byte-equal to seeded values
+[2026-08-29T19:42:49.465Z]   PASS S1.1 seed: in-instance global readback byte-equal
+[2026-08-29T19:42:49.465Z]   PASS S1.2 seed: second open of a live spec fails loud (code=already-open)
+[2026-08-29T19:42:49.465Z]   PASS S1.3 verify: after process restart, all 3 records reopen byte-equal
+[2026-08-29T19:42:49.465Z]   PASS S1.3 verify: after restart, global reopens byte-equal
+[2026-08-29T19:42:49.465Z]   PASS S1.3 verify: entryCount after restart = 3 (got 3)
+[2026-08-29T19:42:49.465Z]   PASS S1.4 isolate: fresh home table empty for the same domain name/version
+[2026-08-29T19:42:49.465Z]   PASS S1.4 isolate: fresh home has no entries
+[2026-08-29T19:42:49.466Z]   PASS S1.4 isolate: never-written global serves `initial`
+[2026-08-29T19:42:49.466Z]   PASS S2.1 seed: member1 header carries parentSession=root, origin=subagent, delegationDepth=1
+[2026-08-29T19:42:49.466Z]   PASS S2.1 seed: member2 header carries parentSession=root, origin=subagent, delegationDepth=1
+[2026-08-29T19:42:49.466Z]   PASS S2.1 seed: grand header carries parentSession=member1, origin=subagent, delegationDepth=2
+[2026-08-29T19:42:49.466Z]   PASS S2.1 seed: root header carries parentSession=null, origin=null (plain agent session)
+[2026-08-29T19:42:49.466Z]   PASS S2.2 seed: descendant listing is exactly {member1, member2, grand} — no missing, no phantom rows
+[2026-08-29T19:42:49.467Z]   PASS S2.2 seed: entry parentId/depth/label/mode/hasChildren all correct (member1 hasChildren=true)
+[2026-08-29T19:42:49.467Z]   PASS S2.2 seed: all three entries live-activity=running (held mid-turn)
+[2026-08-29T19:42:49.467Z]   PASS S2.3 seed: plain (non-subagent) fork of root adds NO descendant entry (still exactly 3)
+[2026-08-29T19:42:49.467Z]   PASS S2.4 verify: after restart, durable listing is exactly {member1, member2, grand}
+[2026-08-29T19:42:49.467Z]   PASS S2.4 verify: durable entry facts identical to the live snapshot (hasChildren survives via log fold)
+[2026-08-29T19:42:49.467Z]   PASS S2.4 verify: after restart all entries inactive (no live agents)
+[2026-08-29T19:42:49.467Z]   PASS S2.5 verify: corpus record root present+persisted+not-live
+[2026-08-29T19:42:49.467Z]   PASS S2.5 verify: corpus record member1 present+persisted+not-live
+[2026-08-29T19:42:49.467Z]   PASS S2.5 verify: corpus record member2 present+persisted+not-live
+[2026-08-29T19:42:49.467Z]   PASS S2.5 verify: corpus record grand present+persisted+not-live
+[2026-08-29T19:42:49.467Z]   PASS S2.5 verify: plainFork persisted in the corpus (a session, not an entry)
+[2026-08-29T19:42:49.467Z]   PASS S2.6 verify: replay-validated member1 log header keeps lineage facts
+[2026-08-29T19:42:49.467Z]   PASS S2.6 verify: replay-validated grand log header keeps lineage facts
+[2026-08-29T19:42:49.467Z]   PASS S2.7 verify: traceSession(root) resolves complete (no error)
+[2026-08-29T19:42:49.468Z]   PASS S2.7 verify: trace rootId = fixture root (got 11111111-0000-4000-8000-000000000001)
+[2026-08-29T19:42:49.468Z]   PASS S2.7 verify: trace contains member1 as child of root
+[2026-08-29T19:42:49.468Z]   PASS S2.7 verify: trace contains member2 as child of root
+[2026-08-29T19:42:49.468Z]   PASS S2.7 verify: trace contains grand as child of member1
+[2026-08-29T19:42:49.468Z]   PASS S2.7 verify: trace contains plainFork as child of root with origin=null (session tree is broader than the entry listing)
+[2026-08-29T19:42:49.468Z]   PASS S2.N verify: unknown session id absent from corpus; exact readSession throws SESSION_QUERY_SESSION_NOT_FOUND
+[2026-08-29T19:42:49.468Z]   PASS S2.N isolate: readSession(fixture root) throws SESSION_QUERY_SESSION_NOT_FOUND on a fresh home
+[2026-08-29T19:42:49.468Z]   PASS S2.O verify (recorded): live store empty for every fixture id after restart — durable reads go through sessionQuery (documented process-scoped store)
+[2026-08-29T19:42:49.468Z]   PASS S2.ISO isolate: scratch home corpus/entries contain no fixture ids (lineage does not leak across homes)
+[2026-08-29T19:42:49.468Z]   PASS S3.1 seed: interrupt(user, direct parent) ends the held turn with turn/end reason {kind:aborted, reason:{kind:user}}
+[2026-08-29T19:42:49.468Z]   PASS S3.1 seed: grandchild entry no longer running after interrupt (observed: inactive) — 'inactive' (quiescent entry) or 'gone' (activation settled and removed)
+[2026-08-29T19:42:49.468Z]   PASS S3.2 seed: interrupt with the WRONG parent session fails UNAUTHORIZED (got UNAUTHORIZED)
+[2026-08-29T19:42:49.468Z]   PASS S3.3 seed (finding): interrupt of an unknown target is an accepted silent no-op (threw=false) — documented live behavior; task guidance expects a loud failure here, discrepancy recorded in seam-report
+[2026-08-29T19:42:49.469Z]   PASS S3.4 seed: self-targeting ancestor authority fails UNAUTHORIZED (cross-checked with the bad-authority fixture document)
+[2026-08-29T19:42:49.469Z]   PASS S3.5 seed: startContinuable with an existing childId fails DUPLICATE_CHILD (got DUPLICATE_CHILD)
+[2026-08-29T19:42:49.469Z]   PASS S3.6 seed: both members have NO turn/end before the drain (held mid-turn)
+[2026-08-29T19:42:49.469Z]   PASS S3.7 seed: drainContinuableDescendants([rootAgent]) resolved (error=none) in 296ms
+[2026-08-29T19:42:49.469Z]   PASS S3.7 seed: after drain, member1 has no live agent and no live session
+[2026-08-29T19:42:49.469Z]   PASS S3.7 seed: after drain, member2 has no live agent and no live session
+[2026-08-29T19:42:49.469Z]   PASS S3.7 seed: after drain, grand has no live agent and no live session
+[2026-08-29T19:42:49.469Z]   PASS S3.7 seed: root handle disposed through the public API after the drain
+[2026-08-29T19:42:49.469Z]   PASS S3.8 verify: durable grand log ends with turn/end aborted/user
+[2026-08-29T19:42:49.469Z]   PASS S3.8 verify: durable member1/member2 logs end with turn/end kind=aborted (drain-interrupted)
+[2026-08-29T19:42:49.469Z]   PASS S3.9 seed: persistence gate passed (waited 30000ms) — every fixture session persisted=true before stop
+[2026-08-29T19:42:49.470Z] p2t5: group checks complete
+[2026-08-29T19:42:49.471Z]   PASS cleanup: settings.yaml state matches the pre-group snapshot
+[2026-08-29T19:42:49.471Z]   PASS cleanup: .credentials.yaml state matches the pre-group snapshot
+[2026-08-29T19:42:49.471Z]   PASS port 3384 free after group teardown
+[2026-08-29T19:42:49.472Z]   PASS port 3394 free after group teardown
+[2026-08-29T19:42:49.472Z] === section: byte-clean ===
+[2026-08-29T19:42:49.598Z]   PASS test-use tree byte-clean after run (git status --porcelain empty)
+[2026-08-29T19:42:49.599Z]   PASS test-use tree byte-clean after run (git diff empty)
+[2026-08-29T19:42:49.599Z]   PASS HEAD unchanged (start=cd5ef8148158c3a752a658978873241fdf8e2bbc, end=cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-29T19:42:49.599Z] 
+[2026-08-29T19:42:49.599Z] RESULT: PASS characterization self-test (all sections green)
