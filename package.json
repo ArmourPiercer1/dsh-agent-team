@@ -1,0 +1,26 @@
+{
+  "name": "dsh-agent-team",
+  "version": "0.0.0",
+  "private": true,
+  "description": "DSH Agent Team vNext plugin set — public-seam only, CORE PATCH BUDGET = 0.",
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "smoke:composition": "node scripts/composition-smoke.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^16.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.8"
+  }
+}

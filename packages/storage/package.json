@@ -1,0 +1,23 @@
+{
+  "name": "@dsh-agent-team/storage",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TeamDomain - the persistent control-plane authority for DSH Agent Team vNext (skeleton).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  }
+}

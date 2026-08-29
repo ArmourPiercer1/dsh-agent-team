@@ -1,0 +1,11 @@
+packages:
+  - "packages/*"
+overrides:
+  # Keep the whole vitest stack (vitest, @vitest/mocker, vite-node) on the
+  # rolldown-based vite 8 line: its config loading and TS transforms run
+  # in-process, whereas vite 7's esbuild pipeline spawns child processes
+  # (not viable in spawn-restricted environments such as the P1-T4
+  # verification sandbox).
+  vite: "^8.2.2"
+allowBuilds:
+  esbuild: false

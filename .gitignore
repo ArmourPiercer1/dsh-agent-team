@@ -2,3 +2,10 @@ references/
 docs/plans
 .worktrees/
 .pnpm-store/
+
+# build & tooling (P1-T4 skeleton)
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.eslintcache
