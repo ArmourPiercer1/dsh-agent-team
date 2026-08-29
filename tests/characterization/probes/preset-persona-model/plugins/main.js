@@ -30,7 +30,7 @@
  * done-main.json. apply() never throws: every seam is isolated in try/catch
  * and records its failure shape so the harness can attribute it.
  */
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { agentEvents, installModelSelection } from '@deepseek-ai/dsh-agent'
