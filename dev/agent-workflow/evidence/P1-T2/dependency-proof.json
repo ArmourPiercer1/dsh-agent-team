@@ -1,0 +1,1346 @@
+{
+  "task_id": "P1-T2",
+  "title": "Bidirectional dependency proof: packages/permission/** is a downstream generic capability with zero Team coupling",
+  "generated_at": "2026-08-29T12:25:42.705Z",
+  "baselines": {
+    "upstream_sha": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+    "legacy_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+    "legacy_checkout": "D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness",
+    "team_worktree": "D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T2 (branch task/P1-T2-permission-split, off master c61a2f4)",
+    "downstream_test_worktree": "D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T2-permtests (branch work/permission-tests, a3ab3199)"
+  },
+  "method": {
+    "forward_scan": "Every import/export-from/dynamic-import/require specifier was extracted (regex over full file text, line numbers from match offset) from the 28 source files under packages/permission/** (extensions .ts/.tsx/.js/.jsx/.mjs/.cjs/.mts/.cts) in the legacy checkout, then classified: local relative | workspace package (sub-classified: team = packages/team/**, upstream_core = package dir exists at upstream SHA cd5ef814 via git cat-file -e, fork_only = absent, vendored = vendor/**, permission_intra = within the three permission packages) | external npm.",
+    "reverse_scan": "The same specifier extraction ran over every source file of the legacy checkout outside packages/permission/** (284 workspace packages enumerated from all package.json files) to find references to the three permission package names.",
+    "team_repo_scan": "String search for 4 needles (the 3 npm package names + 'packages/permission') over every file of the Team repo worktree, excluding .git, node_modules, references/, docs/plans, .worktrees/ and the three files this task is forbidden to read (docs/ROUTER_RULES.md, dev/agent-workflow/SESSION_ROUTER_LOG.md, dev/agent-workflow/graph.yaml).",
+    "upstream_existence_check": "git -C <legacy-checkout> cat-file -e cd5ef8148158c3a752a658978873241fdf8e2bbc:<package-dir>/package.json (node execFileSync, stdio ignored because the Windows sandbox denies piped-spawn with EPERM)"
+  },
+  "scan_commands": [
+    "node .scratch-p1t2/scan-deps.cjs   # forward + reverse scan over the legacy checkout (script in the P1-T2-permtests worktree scratch dir; not committed)",
+    "node .scratch-p1t2/team-scan.cjs   # Team repo worktree needle scan (same scratch dir)",
+    "git -C <legacy> ls-tree -r --name-only cd5ef8148158c3a752a658978873241fdf8e2bbc  (upstream package inventory cross-check)",
+    "git -C <legacy> cat-file -e cd5ef8148158c3a752a658978873241fdf8e2bbc:packages/permission/permission/package.json  # expected: not found (fork-only)"
+  ],
+  "permission_packages": {
+    "@deepseek-ai/dsh-permission": {
+      "dir": "packages/permission/permission",
+      "source_files_scanned": 4,
+      "present_in_upstream_cd5ef814": false,
+      "manifest_files": 9,
+      "manifest_classifications": {
+        "GENERATED_FROM_TEAM": 1,
+        "GENERIC_FORK_CAPABILITY": 8
+      },
+      "manifest_statuses": {
+        "A": 9
+      }
+    },
+    "@deepseek-ai/dsh-permission-engine": {
+      "dir": "packages/permission/permission-engine",
+      "source_files_scanned": 20,
+      "present_in_upstream_cd5ef814": false,
+      "manifest_files": 25,
+      "manifest_classifications": {
+        "GENERATED_FROM_TEAM": 1,
+        "GENERIC_FORK_CAPABILITY": 24
+      },
+      "manifest_statuses": {
+        "A": 25
+      }
+    },
+    "@deepseek-ai/dsh-tool-permission-guard": {
+      "dir": "packages/permission/tool-permission-guard",
+      "source_files_scanned": 4,
+      "present_in_upstream_cd5ef814": false,
+      "manifest_files": 9,
+      "manifest_classifications": {
+        "GENERATED_FROM_TEAM": 1,
+        "GENERIC_FORK_CAPABILITY": 8
+      },
+      "manifest_statuses": {
+        "A": 9
+      }
+    }
+  },
+  "permission_to_team_imports": [],
+  "permission_to_team_import_count": 0,
+  "forward": {
+    "@deepseek-ai/dsh-permission": {
+      "dir": "packages/permission/permission",
+      "source_file_count": 4,
+      "local_imports": 2,
+      "workspace_targets": {
+        "@deepseek-ai/dsh-session": {
+          "sub": "upstream_core",
+          "dir": "packages/core/session",
+          "count": 3,
+          "sites": [
+            {
+              "file": "packages/permission/permission/src/index.ts",
+              "line": 13,
+              "spec": "@deepseek-ai/dsh-session/types"
+            },
+            {
+              "file": "packages/permission/permission/src/types.ts",
+              "line": 11,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+              "line": 19,
+              "spec": "@deepseek-ai/dsh-session"
+            }
+          ]
+        },
+        "@deepseek-ai/cordis": {
+          "sub": "vendored",
+          "dir": "vendor/cordis",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/permission/src/invariant.ts",
+              "line": 7,
+              "spec": "@deepseek-ai/cordis"
+            },
+            {
+              "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+              "line": 16,
+              "spec": "@deepseek-ai/cordis"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-invariants": {
+          "sub": "upstream_core",
+          "dir": "packages/runtime-diagnostics/invariants",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission/src/invariant.ts",
+              "line": 8,
+              "spec": "@deepseek-ai/dsh-invariants"
+            }
+          ]
+        },
+        "@deepseek-ai/cordis-plugin-loader": {
+          "sub": "vendored",
+          "dir": "vendor/loader",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+              "line": 17,
+              "spec": "@deepseek-ai/cordis-plugin-loader"
+            }
+          ]
+        },
+        "@deepseek-ai/cordis-plugin-include": {
+          "sub": "vendored",
+          "dir": "vendor/include",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+              "line": 18,
+              "spec": "@deepseek-ai/cordis-plugin-include"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-permission-engine": {
+          "sub": "permission_intra",
+          "dir": "packages/permission/permission-engine",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+              "line": 20,
+              "spec": "@deepseek-ai/dsh-permission-engine"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-permission": {
+          "sub": "permission_intra",
+          "dir": "packages/permission/permission",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+              "line": 21,
+              "spec": "@deepseek-ai/dsh-permission"
+            }
+          ]
+        }
+      },
+      "external_targets": {
+        "node:fs/promises": 1,
+        "node:os": 1,
+        "node:path": 1,
+        "node:url": 1,
+        "vitest": 1
+      },
+      "team_imports": []
+    },
+    "@deepseek-ai/dsh-permission-engine": {
+      "dir": "packages/permission/permission-engine",
+      "source_file_count": 20,
+      "local_imports": 43,
+      "workspace_targets": {
+        "@deepseek-ai/dsh-session": {
+          "sub": "upstream_core",
+          "dir": "packages/core/session",
+          "count": 7,
+          "sites": [
+            {
+              "file": "packages/permission/permission-engine/src/audit.ts",
+              "line": 15,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/match-command.ts",
+              "line": 10,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/match-mcp.ts",
+              "line": 1,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/match-param.ts",
+              "line": 1,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/match-path.ts",
+              "line": 11,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/matchers.ts",
+              "line": 9,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/permission-engine/tests/audit.spec.ts",
+              "line": 3,
+              "spec": "@deepseek-ai/dsh-session"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-permission": {
+          "sub": "permission_intra",
+          "dir": "packages/permission/permission",
+          "count": 11,
+          "sites": [
+            {
+              "file": "packages/permission/permission-engine/src/audit.ts",
+              "line": 16,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/index.ts",
+              "line": 18,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/index.ts",
+              "line": 47,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/index.ts",
+              "line": 59,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/load.ts",
+              "line": 17,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/parse.ts",
+              "line": 11,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/resolve.ts",
+              "line": 11,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/tests/audit.spec.ts",
+              "line": 4,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/tests/evaluate.spec.ts",
+              "line": 5,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/tests/load.spec.ts",
+              "line": 16,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/permission-engine/tests/resolve.spec.ts",
+              "line": 5,
+              "spec": "@deepseek-ai/dsh-permission"
+            }
+          ]
+        },
+        "@deepseek-ai/cordis": {
+          "sub": "vendored",
+          "dir": "vendor/cordis",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/permission-engine/src/index.ts",
+              "line": 16,
+              "spec": "@deepseek-ai/cordis"
+            },
+            {
+              "file": "packages/permission/permission-engine/src/invariant.ts",
+              "line": 11,
+              "spec": "@deepseek-ai/cordis"
+            }
+          ]
+        },
+        "@deepseek-ai/schemastery": {
+          "sub": "vendored",
+          "dir": "vendor/schemastery",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission-engine/src/index.ts",
+              "line": 17,
+              "spec": "@deepseek-ai/schemastery"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-invariants": {
+          "sub": "upstream_core",
+          "dir": "packages/runtime-diagnostics/invariants",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/permission-engine/src/invariant.ts",
+              "line": 12,
+              "spec": "@deepseek-ai/dsh-invariants"
+            }
+          ]
+        }
+      },
+      "external_targets": {
+        "node:fs/promises": 2,
+        "vitest": 9,
+        "node:os": 1,
+        "node:path": 1
+      },
+      "team_imports": []
+    },
+    "@deepseek-ai/dsh-tool-permission-guard": {
+      "dir": "packages/permission/tool-permission-guard",
+      "source_file_count": 4,
+      "local_imports": 0,
+      "workspace_targets": {
+        "@deepseek-ai/cordis": {
+          "sub": "vendored",
+          "dir": "vendor/cordis",
+          "count": 5,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/index.ts",
+              "line": 18,
+              "spec": "@deepseek-ai/cordis"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/src/invariant.ts",
+              "line": 9,
+              "spec": "@deepseek-ai/cordis"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 15,
+              "spec": "@deepseek-ai/cordis"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 16,
+              "spec": "@deepseek-ai/cordis"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 10,
+              "spec": "@deepseek-ai/cordis"
+            }
+          ]
+        },
+        "@deepseek-ai/schemastery": {
+          "sub": "vendored",
+          "dir": "vendor/schemastery",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/index.ts",
+              "line": 19,
+              "spec": "@deepseek-ai/schemastery"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-permission": {
+          "sub": "permission_intra",
+          "dir": "packages/permission/permission",
+          "count": 3,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/index.ts",
+              "line": 20,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 29,
+              "spec": "@deepseek-ai/dsh-permission"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 21,
+              "spec": "@deepseek-ai/dsh-permission"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-permission-engine": {
+          "sub": "permission_intra",
+          "dir": "packages/permission/permission-engine",
+          "count": 3,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/index.ts",
+              "line": 28,
+              "spec": "@deepseek-ai/dsh-permission-engine"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 27,
+              "spec": "@deepseek-ai/dsh-permission-engine"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 18,
+              "spec": "@deepseek-ai/dsh-permission-engine"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-tools": {
+          "sub": "upstream_core",
+          "dir": "packages/core/tools",
+          "count": 5,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/index.ts",
+              "line": 29,
+              "spec": "@deepseek-ai/dsh-tools"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 23,
+              "spec": "@deepseek-ai/dsh-tools"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 24,
+              "spec": "@deepseek-ai/dsh-tools"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 16,
+              "spec": "@deepseek-ai/dsh-tools"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 17,
+              "spec": "@deepseek-ai/dsh-tools"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-session": {
+          "sub": "upstream_core",
+          "dir": "packages/core/session",
+          "count": 3,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/index.ts",
+              "line": 30,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 21,
+              "spec": "@deepseek-ai/dsh-session"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 14,
+              "spec": "@deepseek-ai/dsh-session"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-invariants": {
+          "sub": "upstream_core",
+          "dir": "packages/runtime-diagnostics/invariants",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/src/invariant.ts",
+              "line": 10,
+              "spec": "@deepseek-ai/dsh-invariants"
+            }
+          ]
+        },
+        "@deepseek-ai/cordis-plugin-loader": {
+          "sub": "vendored",
+          "dir": "vendor/loader",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 17,
+              "spec": "@deepseek-ai/cordis-plugin-loader"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 11,
+              "spec": "@deepseek-ai/cordis-plugin-loader"
+            }
+          ]
+        },
+        "@deepseek-ai/cordis-plugin-include": {
+          "sub": "vendored",
+          "dir": "vendor/include",
+          "count": 1,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 18,
+              "spec": "@deepseek-ai/cordis-plugin-include"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-llm": {
+          "sub": "upstream_core",
+          "dir": "packages/llm/llm",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 19,
+              "spec": "@deepseek-ai/dsh-llm"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 12,
+              "spec": "@deepseek-ai/dsh-llm"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-agent": {
+          "sub": "upstream_core",
+          "dir": "packages/core/agent",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 20,
+              "spec": "@deepseek-ai/dsh-agent"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 13,
+              "spec": "@deepseek-ai/dsh-agent"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-system-prompt": {
+          "sub": "upstream_core",
+          "dir": "packages/core/system-prompt",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 22,
+              "spec": "@deepseek-ai/dsh-system-prompt"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 15,
+              "spec": "@deepseek-ai/dsh-system-prompt"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-user-approval": {
+          "sub": "upstream_core",
+          "dir": "packages/interaction/user-approval",
+          "count": 2,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 25,
+              "spec": "@deepseek-ai/dsh-user-approval"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 26,
+              "spec": "@deepseek-ai/dsh-user-approval"
+            }
+          ]
+        },
+        "@deepseek-ai/dsh-tool-permission-guard": {
+          "sub": "permission_intra",
+          "dir": "packages/permission/tool-permission-guard",
+          "count": 3,
+          "sites": [
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+              "line": 28,
+              "spec": "@deepseek-ai/dsh-tool-permission-guard"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 19,
+              "spec": "@deepseek-ai/dsh-tool-permission-guard"
+            },
+            {
+              "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+              "line": 20,
+              "spec": "@deepseek-ai/dsh-tool-permission-guard"
+            }
+          ]
+        }
+      },
+      "external_targets": {
+        "node:fs/promises": 1,
+        "node:os": 1,
+        "node:path": 1,
+        "node:url": 1,
+        "vitest": 3
+      },
+      "team_imports": []
+    }
+  },
+  "importers_of_permission_legacy_fork": {
+    "@deepseek-ai/dsh-permission": {
+      "intra_permission_files": [
+        {
+          "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+          "line": 21,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/audit.ts",
+          "line": 16,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/index.ts",
+          "line": 18,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/index.ts",
+          "line": 47,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/index.ts",
+          "line": 59,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/load.ts",
+          "line": 17,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/parse.ts",
+          "line": 11,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/src/resolve.ts",
+          "line": 11,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/tests/audit.spec.ts",
+          "line": 4,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/tests/evaluate.spec.ts",
+          "line": 5,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/tests/load.spec.ts",
+          "line": 16,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/permission-engine/tests/resolve.spec.ts",
+          "line": 5,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-permission-engine"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/src/index.ts",
+          "line": 20,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+          "line": 29,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+          "line": 21,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        }
+      ],
+      "non_permission_importers": [
+        {
+          "file": "packages/team/team-runtime/src/approval-setup.ts",
+          "line": 27,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_dir": "packages/team/team-runtime",
+          "importer_pkg": "0"
+        },
+        {
+          "file": "packages/team/team-runtime/src/member-setup.ts",
+          "line": 20,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_dir": "packages/team/team-runtime",
+          "importer_pkg": "0"
+        },
+        {
+          "file": "packages/team/team-runtime/src/rule-layers.ts",
+          "line": 16,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_dir": "packages/team/team-runtime",
+          "importer_pkg": "0"
+        },
+        {
+          "file": "packages/team/team-runtime/tests/approval-setup.spec.ts",
+          "line": 16,
+          "spec": "@deepseek-ai/dsh-permission",
+          "importer_dir": "packages/team/team-runtime",
+          "importer_pkg": "0"
+        }
+      ],
+      "non_permission_importer_count": 4
+    },
+    "@deepseek-ai/dsh-permission-engine": {
+      "intra_permission_files": [
+        {
+          "file": "packages/permission/permission/tests/permission.loader-composition.spec.ts",
+          "line": 20,
+          "spec": "@deepseek-ai/dsh-permission-engine",
+          "importer_pkg": "@deepseek-ai/dsh-permission"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/src/index.ts",
+          "line": 28,
+          "spec": "@deepseek-ai/dsh-permission-engine",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+          "line": 27,
+          "spec": "@deepseek-ai/dsh-permission-engine",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+          "line": 18,
+          "spec": "@deepseek-ai/dsh-permission-engine",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        }
+      ],
+      "non_permission_importers": [
+        {
+          "file": "packages/team/team-runtime/src/approval-setup.ts",
+          "line": 34,
+          "spec": "@deepseek-ai/dsh-permission-engine",
+          "importer_dir": "packages/team/team-runtime",
+          "importer_pkg": "0"
+        },
+        {
+          "file": "packages/team/team-runtime/tests/permission-enforcement.loader-composition.spec.ts",
+          "line": 46,
+          "spec": "@deepseek-ai/dsh-permission-engine",
+          "importer_dir": "packages/team/team-runtime",
+          "importer_pkg": "0"
+        }
+      ],
+      "non_permission_importer_count": 2
+    },
+    "@deepseek-ai/dsh-tool-permission-guard": {
+      "intra_permission_files": [
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts",
+          "line": 28,
+          "spec": "@deepseek-ai/dsh-tool-permission-guard",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+          "line": 19,
+          "spec": "@deepseek-ai/dsh-tool-permission-guard",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        },
+        {
+          "file": "packages/permission/tool-permission-guard/tests/guard.unit.spec.ts",
+          "line": 20,
+          "spec": "@deepseek-ai/dsh-tool-permission-guard",
+          "importer_pkg": "@deepseek-ai/dsh-tool-permission-guard"
+        }
+      ],
+      "non_permission_importers": [
+        {
+          "file": "scripts/gen-tool-catalog.ts",
+          "line": 71,
+          "spec": "@deepseek-ai/dsh-tool-permission-guard",
+          "importer_dir": "(repo-root)",
+          "importer_pkg": null
+        }
+      ],
+      "non_permission_importer_count": 1
+    }
+  },
+  "reverse_check": {
+    "@deepseek-ai/dsh-session": {
+      "sub": "upstream_core",
+      "dir": "packages/core/session",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/cordis": {
+      "sub": "vendored",
+      "dir": "vendor/cordis",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-invariants": {
+      "sub": "upstream_core",
+      "dir": "packages/runtime-diagnostics/invariants",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/cordis-plugin-loader": {
+      "sub": "vendored",
+      "dir": "vendor/loader",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/cordis-plugin-include": {
+      "sub": "vendored",
+      "dir": "vendor/include",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-permission-engine": {
+      "sub": "permission_intra",
+      "dir": "packages/permission/permission-engine",
+      "imports_permission_back": true,
+      "hit_count": 11
+    },
+    "@deepseek-ai/dsh-permission": {
+      "sub": "permission_intra",
+      "dir": "packages/permission/permission",
+      "imports_permission_back": true,
+      "hit_count": 2
+    },
+    "@deepseek-ai/schemastery": {
+      "sub": "vendored",
+      "dir": "vendor/schemastery",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-tools": {
+      "sub": "upstream_core",
+      "dir": "packages/core/tools",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-llm": {
+      "sub": "upstream_core",
+      "dir": "packages/llm/llm",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-agent": {
+      "sub": "upstream_core",
+      "dir": "packages/core/agent",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-system-prompt": {
+      "sub": "upstream_core",
+      "dir": "packages/core/system-prompt",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-user-approval": {
+      "sub": "upstream_core",
+      "dir": "packages/interaction/user-approval",
+      "imports_permission_back": false,
+      "hit_count": 0
+    },
+    "@deepseek-ai/dsh-tool-permission-guard": {
+      "sub": "permission_intra",
+      "dir": "packages/permission/tool-permission-guard",
+      "imports_permission_back": true,
+      "hit_count": 9
+    }
+  },
+  "team_to_permission_references": 0,
+  "team_to_permission_reference_note": "Zero references at dependency/code/config level in the Team repo (vNext). The only string occurrences of \"packages/permission\" anywhere in the Team repo are 61 path-string mentions inside four G0 provenance audit files (dev/agent-workflow/evidence/provenance/*) that catalog the legacy fork — audit data, not build inputs. Occurrences of the three npm package names: 0.",
+  "team_repo_scan": {
+    "worktree": "D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P1-T2",
+    "branch": "task/P1-T2-permission-split",
+    "files_scanned": 24,
+    "files_excluded_from_content_read": [
+      "docs/ROUTER_RULES.md",
+      "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+      "dev/agent-workflow/graph.yaml"
+    ],
+    "directory_exclusions": [
+      ".git",
+      "node_modules",
+      "references/",
+      "docs/plans",
+      ".worktrees/"
+    ],
+    "binary_files_skipped": 0,
+    "needles": [
+      "@deepseek-ai/dsh-permission-engine",
+      "@deepseek-ai/dsh-tool-permission-guard",
+      "@deepseek-ai/dsh-permission",
+      "packages/permission"
+    ],
+    "hits_total": 61,
+    "hits_by_needle": {
+      "packages/permission": 61
+    },
+    "hits_by_file": {
+      "dev/agent-workflow/evidence/provenance/commit-manifest-verification.md": 2,
+      "dev/agent-workflow/evidence/provenance/commit-manifest.json": 10,
+      "dev/agent-workflow/evidence/provenance/file-manifest-verification.md": 4,
+      "dev/agent-workflow/evidence/provenance/file-manifest.json": 45
+    },
+    "hits_detail": [
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest-verification.md",
+        "line": 26,
+        "needle": "packages/permission",
+        "content": "- 非 Team 路径：`packages/permission/**`（engine 与 tool-permission-guard 的 README）、`.agents/notes`、`docs/cookbook/adding-agent-team` ×3。"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest-verification.md",
+        "line": 34,
+        "needle": "packages/permission",
+        "content": "- 观察：17 个文件 = 3 个 `.agents/notes`（tool-permission-guard-resolves-permission-per-call 系列）+ 14 个 `packages/permission/**`（permission 与 tool-permission-guard 的 src/tests/README/package.json）。**无任何 Team 路"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 7,
+        "needle": "packages/permission",
+        "content": "\"methodology\": \"每 commit 的触碰文件 = git show --stat 的内容（等价于相对第一父的 diff；对 merge commit 即该 merge 带入分支的内容，空 merge 88cd0972 为 0 文件）。Team 路径 = packages/team/**、packages/client/ui-team/**、packages/bundle/team/"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 49,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"53 文件：Team 路径 22（packages/team/** 13 + packages/client/ui-team/** 9）+ 非 Team 路径（packages/permission 1、生成 catalog 2：extensions slot-catalog.ts 与 tool-cordis api-catalog.ts、packages/host/a"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 112,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"51 文件：以 permission 子系统为主体（packages/permission 9 含 permission-engine src/README、docs/subsystems/permission ×3、packages/bundle/base 携带 permission engine 的布线、apps/cli/composition.md、permiss"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 133,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"10 文件：6 个 packages/team/**（member-bound snapshot、parser 布线）+ 4 个 packages/permission/**（layered rule loading 引擎侧）。同一 commit 跨 Team 包与通用 permission 包实现 Team 的权限规则加载 wiring。\""
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 154,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"仅 1 文件：packages/permission/permission-engine/src/load.ts（新增 369 行分层规则加载模块：managed/project 两层 + teammate 内联规则/冷恢复快照，YAML 子集解析）。文件位置完全在通用 permission 子系统内（审计口径：Team 不得硬依赖的通用 fork 能力）；虽动机为 T"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 161,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"23 文件：permission 侧（packages/permission 2、docs/subsystems/permission ×3、根级 permission-seam-implementation-plan.md、接受路径笔记 .agents/notes 12、docs/persistence-catalog ×3 生成物）+ Team 侧（AGENT_TE"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 168,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"38 文件：17 个 packages/team/**（teammate executor 边界的 permission 强制实现）+ 6 个 packages/permission/**（引擎侧配合改动）+ 12 个 .agents/notes + 3 个 docs/cookbook。同一 commit 同时改 Team runtime 与通用 permission "
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 196,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"17 文件：14 个 packages/permission/**（tool-permission-guard 按调用解析 permission + composition 测试）+ 3 个 .agents/notes（tool-permission-guard note）。全部位于通用 permission 子系统，无 Team 路径。\""
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 252,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"101 文件：文档门禁修复 + catalog 再生成，同时触碰 packages/team 28（Team 包文档补全）、packages/permission 13（permission 包文档补全）、docs/subsystems 12、文档基建（scripts/gen-tool-catalog、project-doc-site.spec、translation-"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/commit-manifest.json",
+        "line": 259,
+        "needle": "packages/permission",
+        "content": "\"rationale\": \"105 文件：48 个 packages/team/**（team mode 集成的首批实现）+ 32 个 packages/permission/**（permission engine 包首次引入）+ 根级设计文档 3（permission-seam-implementation-plan.md、team-mode-feature-gap-analysis.md、p"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest-verification.md",
+        "line": 41,
+        "needle": "packages/permission",
+        "content": "## Sample 3 — `packages/permission/permission-engine/src/match-mcp.ts`"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest-verification.md",
+        "line": 44,
+        "needle": "packages/permission",
+        "content": "Command: `git -C <legacy> show L:packages/permission/permission-engine/src/match-mcp.ts`"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest-verification.md",
+        "line": 58,
+        "needle": "packages/permission",
+        "content": "node, the `client-ui-team` node, the whole `packages/permission` subgraph (`permission`,"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest-verification.md",
+        "line": 84,
+        "needle": "packages/permission",
+        "content": "| 3 | `packages/permission/permission-engine/src/match-mcp.ts` | A / GENERIC_FORK_CAPABILITY / KEEP | PASS |"
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 56,
+        "needle": "packages/permission",
+        "content": "\"reason\":  \"One-line path fix in the rename ledger for the moved permission package (packages/permission/*).\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 66,
+        "needle": "packages/permission",
+        "content": "\"reason\":  \"One-line path fix in the rename ledger for the moved permission package (packages/permission/*).\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2753,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/README.i18n.yaml\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2763,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/README.md\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2773,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/README.zh.md\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2783,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/package.json\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2793,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/audit.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2803,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/index.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2813,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/invariant.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2823,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/load.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2833,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/match-command.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2843,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/match-mcp.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2853,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/match-param.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2863,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/match-path.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2873,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/matchers.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2883,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/parse.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2893,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/src/resolve.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2903,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/audit.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2913,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/evaluate.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2923,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/load.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2933,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/match-command.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2943,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/match-mcp.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2953,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/match-param.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2963,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/match-path.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2973,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/parse.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2983,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tests/resolve.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 2993,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission-engine/tsconfig.json\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3003,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/README.i18n.yaml\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3013,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/README.md\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3023,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/README.zh.md\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3033,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/package.json\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3043,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/src/index.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3053,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/src/invariant.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3063,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/src/types.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3073,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/tests/permission.loader-composition.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3083,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/permission/tsconfig.json\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3093,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/README.i18n.yaml\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3103,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/README.md\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3113,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/README.zh.md\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3123,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/package.json\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3133,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/src/index.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3143,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/src/invariant.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3153,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/tests/guard.loader-composition.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3163,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/tests/guard.unit.spec.ts\","
+      },
+      {
+        "file": "dev/agent-workflow/evidence/provenance/file-manifest.json",
+        "line": 3173,
+        "needle": "packages/permission",
+        "content": "\"path\":  \"packages/permission/tool-permission-guard/tsconfig.json\","
+      }
+    ]
+  },
+  "manifest_classification": {
+    "source": "dev/agent-workflow/evidence/provenance/file-manifest.json (470 files, diff cd5ef814..a3ab3199)",
+    "permission_entries_total": 43,
+    "by_classification": {
+      "GENERATED_FROM_TEAM": 3,
+      "GENERIC_FORK_CAPABILITY": 40
+    },
+    "by_disposition": {
+      "GENERATED_REVERT": 3,
+      "KEEP": 40
+    },
+    "by_status": {
+      "A": 43
+    },
+    "mixed_hunk_files": 0,
+    "note": "All 43 entries are status A (added by the fork). 40 are GENERIC_FORK_CAPABILITY/KEEP; 3 are GENERATED_FROM_TEAM/GENERATED_REVERT (the three README.i18n.yaml machine-maintained ledgers). No permission file appears in the MIXED set, so no hunk-level routing applies."
+  },
+  "observations": [
+    "Legacy-fork dependency direction is Team -> permission: packages/team/team-runtime imports dsh-permission (3 src files + 1 test) and dsh-permission-engine (1 src + 1 test); repo-root scripts/gen-tool-catalog.ts imports dsh-tool-permission-guard. These legacy edges stay in the downstream host (replayed by P1-T1/P1-T3); the vNext Team repo carries none of them.",
+    "pnpm reports a pre-existing dev-only cyclic workspace dependency between packages/permission/permission and packages/permission/permission-engine (devDependencies only; no runtime cycle).",
+    "permission targets that are upstream core packages: dsh-session, dsh-invariants, dsh-tools, dsh-llm, dsh-agent, dsh-system-prompt, dsh-user-approval (paths identical in upstream cd5ef814). Vendored: cordis, cordis-plugin-loader, cordis-plugin-include, schemastery (vendor/**). External: vitest, node:* builtins."
+  ]
+}
