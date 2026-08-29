@@ -55,6 +55,15 @@
 
 - G0-REVIEW round 1：G0-R1 随 通过 裁决附 2 条非阻塞补充（S1 manifest baseline 旧路径；S2 freeze-note ls-remote 离线不可重验声明）。全文见 Gate 记录 G0 条目。
 
+### 轮次 R3：P1-B1 集成 + 测试实例搭建 + 权限模式实测（2026-08-29）
+
+- **P1 集成（主 Agent）**：`int/P1-host-foundation` @ master `9267522`（docs commit）；`cherry-pick -x` 顺序 T1 `24dd3d74`→T2 `c98a0649`→T3 `473f65f9`→T4 `7d491b17`，**零冲突**（提前把预存在的 npm-init 占位根 package.json 移出工作树至 `.worktrees/package.json.pre-T4-scratch`；`.gitignore` 为两侧并集，T4 已正确处理）。int head（集成后）`932edb1c`。
+- **downstream 集成**：`host/downstream-int-20260829` = `host/downstream-clean-20260829`（57fa482f）⊕ merge `host/unrelated-features-20260829`（74ac91e5）→ `02f3094c`，file-disjoint 两 lane 合并干净。
+- **用户裁决（第三次）**：测试 DSH_HOME 改为工作区内 `references/.dsh-test`（原因：workspace-write 下工作区外写入被拒；"替我审批"自动批准实测不生效——升级请求仍到达用户并被拒一次；此后不再发起升级请求）。端口/源码不变。AGENTS.md + TEST_METHODS.md（§1/§2/§4/§5 新增/§6 裁决历史）已更新。
+- **测试实例搭建（全部 workspace-write，零批准）**：install `--ignore-scripts` PASS（1011 包）；build 绕行链 = `node scripts/build.ts`（v24 原生 type-stripping 绕开 tsx）+ `DSH_CLIENT_COMMIT_HASH=cd5ef814`（跳过 build 内 git spawn）→ **build:lib PASS**（50 个 lib/client.js + apps/cli/lib/bin.js）；`build:web` FAIL（vite→esbuild service spawn EPERM，沙箱全模式不可行；前端 bundle 缺失仅影响浏览器页面，**非 G1 判据**，DevPlan §13.6 冻结文本已核对）。启动 `node apps/cli/lib/bin.js web --port 3180 --no-open` **PASS**：boot URL 行出现、无 token GET 401（token 鉴权门）、DSH_HOME 初始化完整（profiles/web 公开 seam 文件就位）；稳定实例 :3080 全程 200 未触碰。验证后实例已停止，端口释放（P1-T5 worker 自行管理生命周期）。
+- **证据**：`dev/agent-workflow/evidence/test-infra/setup-20260829.md`（权限探测矩阵、绕行链、执行记录、验证输出、public seam 记录）。
+- **graph**：P1-T1..T4 → INTEGRATED（head_shas 已录），P1-T5 → READY；`integration_sha: 932edb1c`。
+
 ## 重审记录
 
 （空）

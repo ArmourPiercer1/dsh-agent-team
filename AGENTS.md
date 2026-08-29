@@ -7,7 +7,7 @@
 在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
 
 1. `docs/ROUTER_RULES.md` — 无人值守执行协议：Phase DAG（P0→G0→…→P10→G10→RELEASE）、每任务 ≤3 次执行、Gate 三独立 reviewer 规则与四种裁决、blocker 类型与固定格式、git 纪律（1 task=1 branch=1 worktree=1 writer、cherry-pick -x 到 int 分支、Gate 过后才进 master）。
-2. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `references/deepseek-harness-test-use`（pristine upstream），DSH_HOME = `C:/Users/user/.dsh-dev`，port = `3180`；**严禁影响稳定开发实例**（:3080 与 `D:\deepseek-harness\` 部署）。
+2. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `references/deepseek-harness-test-use`（pristine upstream），DSH_HOME = `references/.dsh-test`（**必须工作区内**，workspace-write 沙箱约束），port = `3180`；构建/启动绕行链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 与 `D:\deepseek-harness\` 部署）。
 
 读取之后才可执行任务；不得以"上下文已熟悉"为由跳过，不得违反其中禁止项。
 
