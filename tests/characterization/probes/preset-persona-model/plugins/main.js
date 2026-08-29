@@ -77,6 +77,57 @@ function failureOf(error) {
   }
 }
 
+// Durable-publication gate (pattern from P2-T2 lifecycle-host.js; known
+// limitations L2-1/L2-2): the on-disk final artifact of a session log is
+//   <DSH_HOME>/sessions/<project-hash-dir>/<sessionId>/session.jsonl.zstd
+// The write-behind publishes via synced temp + rename; a bare *.tmp is NOT
+// visible to cold reads (the cold findLog only sees the final name, so an
+// uncommitted staging file reads as "session not found"). An awaited
+// `session/flush` is not a publication barrier, so the seed block polls for
+// the final name before done-main.
+const diskFilesFor = (sessionId) => {
+  const home = process.env.DSH_HOME
+  if (!home) return { error: 'no DSH_HOME' }
+  try {
+    const sessionsRoot = join(home, 'sessions')
+    for (const pd of readdirSync(sessionsRoot, { withFileTypes: true }).filter((e) => e.isDirectory())) {
+      const dir = join(sessionsRoot, pd.name, sessionId)
+      let entries
+      try {
+        entries = readdirSync(dir, { withFileTypes: true })
+      } catch {
+        continue // not this project dir
+      }
+      return {
+        projectDir: pd.name,
+        files: entries.filter((e) => e.isFile()).map((e) => ({
+          name: e.name,
+          size: statSync(join(dir, e.name)).size,
+          final: e.name === 'session.jsonl.zstd',
+        })),
+      }
+    }
+    return { found: false, sessionsRoot }
+  } catch (error) {
+    return { error: String(error?.message ?? error) }
+  }
+}
+
+async function waitForDurable(sessionId, timeoutMs) {
+  const startedAt = Date.now()
+  for (;;) {
+    const disk = diskFilesFor(sessionId)
+    if (disk.error === undefined && disk.files && disk.files.some((f) => f.final)) {
+      const pub = disk.files.find((f) => f.final)
+      return { waitMs: Date.now() - startedAt, size: pub.size }
+    }
+    if (Date.now() - startedAt >= timeoutMs) {
+      throw new Error(`p2t3-ppm-main: seed session "${String(sessionId)}" not durably published as session.jsonl.zstd within ${timeoutMs}ms; last disk state: ${JSON.stringify(disk)}`)
+    }
+    await new Promise((r) => { setTimeout(r, 50) })
+  }
+}
+
 function personaOf(assembly) {
   const section = assembly.sections.find((s) => s.name === PERSONA_SECTION)
   return section === undefined ? null : { name: section.name, text: section.text }
@@ -377,10 +428,17 @@ async function run(ctx) {
   writeObs('switch.json', result.seams.switch)
 
   // ── resume seed: persist a model/selection, then detach agent B ───────────
+  let seedFailed = false
   try {
     const sessionId = String(b.agent.id)
     const selection = { ...SELECTION_B }
     b.agent.session.append('model/selection', selection)
+    // Durable-publication gate before done-main (L2-1/L2-2): the awaited
+    // flush is not a barrier; a kill inside the write-behind window leaves
+    // only a staging *.tmp, and boot 2's cold resume then reads "session not
+    // found" (SessionPersistenceNotFoundError — observed 20260830 in the
+    // P2-T6 main-agent rerun, two consecutive relative-path runs).
+    const durable = await waitForDurable(sessionId, 30_000)
     result.seams.resumeSeed = {
       sessionId,
       preset: 'minimal',
@@ -388,6 +446,8 @@ async function run(ctx) {
       modelSelectionEvent: b.agent.session.events
         .filter((ev) => ev.type === 'model/selection')
         .map((ev) => ({ seq: ev.seq, data: ev.data })),
+      durableWaitMs: durable.waitMs,
+      durableSize: durable.size,
     }
     writeObs('coord.json', {
       resumeSessionId: sessionId,
@@ -398,10 +458,11 @@ async function run(ctx) {
     })
     result.seams.resumeSeed.disposed = true
   } catch (e) {
+    seedFailed = true
     result.seams.resumeSeed = { error: failureOf(e) }
   }
   writeObs('resume-seed.json', result.seams.resumeSeed)
 
   await disposeAll()
-  writeObs('done-main.json', { completed: true, stamp: STAMP })
+  writeObs('done-main.json', { completed: !seedFailed, stamp: STAMP })
 }
