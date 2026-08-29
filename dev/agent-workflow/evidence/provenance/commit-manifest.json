@@ -1,0 +1,290 @@
+{
+  "baseline": {
+    "upstream_sha": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+    "legacy_sha": "a3ab31992762c5d6560797eabc7e0885a9320ade"
+  },
+  "generated_at": "2026-08-29",
+  "methodology": "每 commit 的触碰文件 = git show --stat 的内容（等价于相对第一父的 diff；对 merge commit 即该 merge 带入分支的内容，空 merge 88cd0972 为 0 文件）。Team 路径 = packages/team/**、packages/client/ui-team/**、packages/bundle/team/**、.dsh/teammates 与 team preset 布线、examples/team-agent/**、Team 专属文档（AGENT_TEAM_PLUGIN_*、docs/subsystems/team*、adding-agent-team cookbook、docs/active-plans 下 vNext 文档）、以及通用包内的 Team 专属布线（apiproxy team.schema、client runtime team-mirror、dsh teammate CLI）。非 Team 路径 = packages/permission/**（通用能力）、与 Team 无关的 fork 功能（ui-settings-models model picker）、upstream 同步内容、仓库事务（.gitignore/tsconfig/pnpm-lock/issues/）、生成 catalog。合并 upstream 的 merge/squash 归类为 MIXED；若其 diff 不含 Team 路径，rationale 中显式注明。upstream 基线 cd5ef814 已核实不含 packages/team、packages/client/ui-team、packages/permission。",
+  "classification_counts": {
+    "TEAM_OWNED": 20,
+    "MIXED": 13,
+    "GENERIC_FORK_CAPABILITY": 2,
+    "UNRELATED_FORK_FEATURE": 3,
+    "GENERATED_FROM_TEAM": 1
+  },
+  "commits": [
+    {
+      "sha": "a3ab31992762c5d6560797eabc7e0885a9320ade",
+      "date": "2026-08-29",
+      "subject": "docs: router log round 7 — WAVE2 acceptance, S0 complete",
+      "classification": "TEAM_OWNED",
+      "rationale": "仅触碰 1 文件：docs/active-plans/SESSION_ROUTER_LOG.md（Team vNext 无人值守 session router 日志，round 7 / WAVE2 验收记录，+35/-1）。纯 Team vNext 项目过程文档。"
+    },
+    {
+      "sha": "57e47a7fbb1b66ee4de5168f9f0052ff8f5c11dd",
+      "date": "2026-08-29",
+      "subject": "merge: sync upstream master into team vNext integration",
+      "classification": "MIXED",
+      "rationale": "真 2 父 merge（P1=9eac3d0d team 分支，P2=cd5ef814 upstream 基线）。第一父 diff = 6475 文件（upstream b150a551→cd5ef814 的全部 delta），其中 41 个为 Team 路径（packages/client/ui-team/** 全量、packages/api/session-controller/tests/team-projection.host.spec.ts 等）；combined diff（205 文件，与两父均不同）为冲突解决集，同时含 upstream 内容与 Team 内容（SESSION_ROUTER_LOG.md、packages/team/team-projection README×3、team-runtime/tool-team 测试、apps/web snapshots、pnpm-lock、scripts 等）。同一 commit 同时触碰 Team 与非 Team 路径。"
+    },
+    {
+      "sha": "9eac3d0d9b6744366cacd8505ac1ec5643182d03",
+      "date": "2026-08-29",
+      "subject": "team-vnext: adopt unattended execution spec, retire development plan (user correction)",
+      "classification": "TEAM_OWNED",
+      "rationale": "3 文件全在 docs/active-plans/：采纳 DSH_Agent_Team_vNext_Unattended_Execution_Spec、退役旧开发计划并同步 router 日志。纯 Team vNext 规划文档。"
+    },
+    {
+      "sha": "506191ba893ac55980dd09680c438710ab24095b",
+      "date": "2026-08-29",
+      "subject": "docs(team-vnext): vNext plan set, unattended session router, lockfile baseline fix",
+      "classification": "TEAM_OWNED",
+      "rationale": "8 文件：6 个 docs/active-plans/（vNext 规划文档集：架构基线/兼容性设计/UI 交互设计/无人值守执行规格/SESSION_ROUTER.md 等）+ pnpm-lock.yaml 与 .gitattributes（lockfile 基线修正，随本规划 commit 的附属修正）。主体为 Team vNext 规划内容。"
+    },
+    {
+      "sha": "91775d879bcf94ee58bd3707caf843a8698b6779",
+      "date": "2026-08-26",
+      "subject": "feat(team-gui): integration - re-arm fix, golden curation, note consolidation, docs sync, branch lint/dup debt clearance (P6)",
+      "classification": "MIXED",
+      "rationale": "53 文件：Team 路径 22（packages/team/** 13 + packages/client/ui-team/** 9）+ 非 Team 路径（packages/permission 1、生成 catalog 2：extensions slot-catalog.ts 与 tool-cordis api-catalog.ts、packages/host/apiproxy 4、apps/web UI snapshots 17、client runtime/connection 测试 2、.agents/notes 5）。Team GUI 集成（P6）与 permission 触碰点、生成物、快照更新混于同一 commit。"
+    },
+    {
+      "sha": "ec7286d5df62378a562005b91a1e755aa8ee4fb4",
+      "date": "2026-08-25",
+      "subject": "feat(ui-team): persistent team dock and per-event inline markers replacing the whole-card panel (P5)",
+      "classification": "TEAM_OWNED",
+      "rationale": "全部 24 文件均在 packages/client/ui-team/**（TeamDock/TeamFeed/TeamMarker/TeamTimeline/TeamMembers 组件与 model、client 测试）。纯 Team GUI（P5），已核实无非 Team 文件。"
+    },
+    {
+      "sha": "deb09db0dbee65cb8a071de43214ba773f5c8fc8",
+      "date": "2026-08-25",
+      "subject": "feat(ui-team): team tab content - timeline, member groups, task board, event feed with message pagination (P4)",
+      "classification": "TEAM_OWNED",
+      "rationale": "33 文件：27 个 packages/client/ui-team/**（Team tab 时间线/成员组/任务板/事件流）+ 6 个 packages/client/runtime（contract/sessions.ts、sessions/manager.ts、sessions/service.ts、index.ts、fake-api、manager.spec —— session-controller 侧的 Team wiring，属审计口径的 Team 专属内容）。纯 Team GUI（P4）及其 session-controller 布线。"
+    },
+    {
+      "sha": "60796a8dddc3d2ae7dbf2c1448f64d81428ac95b",
+      "date": "2026-08-25",
+      "subject": "feat(ui-team): team projection mirror, Team tab zero-state, sidebar team-ization (P3)",
+      "classification": "TEAM_OWNED",
+      "rationale": "68 文件全部为 Team GUI（P3：team projection mirror / Team tab 零态 / 侧栏 team-化）内容或布线：packages/client/ui-team 10、packages/client/runtime 10（含 Team 专属的 sessions/team-mirror.ts）、packages/client/ui-workspace 14（侧栏 team-化）、packages/client/connection 4、packages/host/apiproxy 5（projection API 布线）、apps/web UI snapshots 25（随 UI 变更更新的测试快照）。无与 Team 无关的实质改动。"
+    },
+    {
+      "sha": "33c5e2ef0a45323d51f4aa7ea3c711c115e1dae3",
+      "date": "2026-08-25",
+      "subject": "feat(team-projection): read-only host team projection for the team GUI (P2)",
+      "classification": "TEAM_OWNED",
+      "rationale": "53 文件：packages/team/** 14（含 team-projection 宿主实现）+ packages/host/apiproxy 17（Team RPC/事件暴露布线，含 team.schema.ts、events.schema.ts、rpc-map.ts）+ packages/bundle/web-app 注册 + packages/client/connection fixture + 生成 catalog 9（capability-seams/config-catalog/event-producer-consumer ×3 语言）+ api-catalog.ts + gen-cordis-catalog/gen-doc-graphs 脚本 + tsconfig。宿主侧 Team projection（P2）及其 wiring，附带再生成 generated catalogs。"
+    },
+    {
+      "sha": "88cd09727d8e34a5e118019badea9a96adb22f38",
+      "date": "2026-08-24",
+      "subject": "Merge master (b150a551b8) into feat/agent-teams",
+      "classification": "MIXED",
+      "rationale": "空 merge：第一父 diff = 0 文件（git show --stat 无输出；P1=3737cabc，P2=upstream b150a551，上游内容已由前一 squash a340d07a 引入，此 merge 仅并入 lineage）。未触碰任何文件；作为 Team 分支与 upstream lineage 的合并点归类 MIXED（集成 commit）。"
+    },
+    {
+      "sha": "3737cabcac99d2f2adbbef8665c1f76e64306e60",
+      "date": "2026-08-24",
+      "subject": "fix(docs): restore upstream docs state dropped by squash merge a340d07a3b",
+      "classification": "MIXED",
+      "rationale": "单父 commit，459 文件全部为非 Team 的 upstream 状态恢复（.agents/notes 259、packages/client 46、docs/subsystems 24、packages/session/subagent/core/llm 等；diff 中 0 个 Team 路径，大小写不敏感 'team' 搜索为空）。内容为 squash a340d07a 丢失的 upstream 文档/代码状态，属 Team 分支的 upstream 集成工作而非 Team 或 fork 自有内容；按集成 commit 归类 MIXED（diff 不含 Team 路径，显式注明）。"
+    },
+    {
+      "sha": "a340d07a3b683db01396d8fa50036ec6a8b924d4",
+      "date": "2026-08-23",
+      "subject": "Merge master (b150a551b8) into feat/agent-teams",
+      "classification": "MIXED",
+      "rationale": "单父 squash commit（主题称 Merge master b150a551 但仅 1 父=ddff02c4），3235 文件：3222 为 upstream master（b150a551 树）内容 + 13 个 Team 路径文件在同一 commit 中被改（packages/team/team-runtime/src/approval-setup.ts、packages/team/tool-team/src/tool-send-message.ts 与其测试、packages/client/ui-team/tests/team-panel.client.spec.tsx、packages/team/team-local README×2、examples/team-agent e2e 快照、.agents/notes 5）。同一 commit 同时触碰 Team 与非 Team 路径。"
+    },
+    {
+      "sha": "ddff02c447f22c7491a9c5e41bc034b23dbae870",
+      "date": "2026-08-22",
+      "subject": "fix(team): scope member setup to its preset generation and partition orchestrator state per leader",
+      "classification": "TEAM_OWNED",
+      "rationale": "21 文件：15 个 packages/team/**（member setup 作用域限定到 preset generation、orchestrator 状态按 leader 分区）+ 3 个 .agents/notes（Team 修复笔记）+ 3 个 docs/cookbook（team cookbook 同步）。纯 Team runtime 修复。"
+    },
+    {
+      "sha": "b512c3c718d959d6629432196f4e4a95913b6b1e",
+      "date": "2026-08-22",
+      "subject": "fix(permission): compose the engine into the base bundle and align rule matching",
+      "classification": "MIXED",
+      "rationale": "51 文件：以 permission 子系统为主体（packages/permission 9 含 permission-engine src/README、docs/subsystems/permission ×3、packages/bundle/base 携带 permission engine 的布线、apps/cli/composition.md、permission 架构/bug-fix 笔记 9、生成 catalog 2）+ Team 集成路径（examples/team-agent 7、packages/team 3、packages/extensions 2）。同一 commit 同时改通用 permission 能力与 Team 集成代码。"
+    },
+    {
+      "sha": "ff6e904780a9f593ff64a71dab28fed82aa5b50f",
+      "date": "2026-08-20",
+      "subject": "test(team-runtime): complete permission enforcement test follow-ups",
+      "classification": "TEAM_OWNED",
+      "rationale": "仅 2 文件，均在 packages/team/**（team-runtime 中 permission enforcement 的测试补全）。虽主题涉及 permission enforcement，但触碰文件全部位于 Team 自有包内（executor 边界行为的 Team 侧测试）。"
+    },
+    {
+      "sha": "7b1e9403e5dd865cf367529dbdeb9b027790e934",
+      "date": "2026-08-20",
+      "subject": "docs(team): complete dsh teammate CLI wiring docs and note",
+      "classification": "TEAM_OWNED",
+      "rationale": "10 文件：apps/cli README×3 与 reference/README×3（dsh teammate CLI 命令文档）、apps/cli/src/args.ts（teammate 子命令参数解析布线）、.agents/notes×3（dsh-teammate-cli feature note）。内容全部为 Team 专属 teammate CLI。"
+    },
+    {
+      "sha": "3310cbabf3392360b6a4e48d931a73e5bda2c552",
+      "date": "2026-08-20",
+      "subject": "feat(team): complete layered permission rule loading, member-bound snapshot and parser wiring",
+      "classification": "MIXED",
+      "rationale": "10 文件：6 个 packages/team/**（member-bound snapshot、parser 布线）+ 4 个 packages/permission/**（layered rule loading 引擎侧）。同一 commit 跨 Team 包与通用 permission 包实现 Team 的权限规则加载 wiring。"
+    },
+    {
+      "sha": "33f98c434edf2fb9f60dfe0eb980758e80faf988",
+      "date": "2026-08-20",
+      "subject": "test(team): add keyless REAL-composition e2e snapshot over the shipped team preset",
+      "classification": "TEAM_OWNED",
+      "rationale": "15 文件：12 个 examples/team-agent/**（shipped team preset 的 keyless REAL-composition e2e 快照）+ 3 个 .agents/notes（team-agent keyless e2e note）。纯 Team 测试内容。"
+    },
+    {
+      "sha": "f3aa7527f65438b09deb806097495e5ccb55c5ed",
+      "date": "2026-08-20",
+      "subject": "feat(team): add the dsh teammate command family",
+      "classification": "TEAM_OWNED",
+      "rationale": "4 文件：apps/cli/src/teammate.ts（新增 teammate 命令族）、apps/cli/tests/teammate.spec.ts、apps/cli/tests/teammate-source-launch.spec.ts、apps/cli/src/bin.ts（命令注册）。Team 专属 teammate 命令族（CLI 宿主位置为通用 apps/cli）。"
+    },
+    {
+      "sha": "bb3250760e87c028e5dad3378858c8524bb53b26",
+      "date": "2026-08-20",
+      "subject": "feat(team): load layered permission rules with cold-recovery snapshot",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "rationale": "仅 1 文件：packages/permission/permission-engine/src/load.ts（新增 369 行分层规则加载模块：managed/project 两层 + teammate 内联规则/冷恢复快照，YAML 子集解析）。文件位置完全在通用 permission 子系统内（审计口径：Team 不得硬依赖的通用 fork 能力）；虽动机为 Team（member-bound 快照），按触碰文件准则归入通用能力。"
+    },
+    {
+      "sha": "7266dfed78d9eb2d3be3cbe1ffb704927ab674aa",
+      "date": "2026-08-20",
+      "subject": "test(permission): map acceptance paths and finalize permission seam note",
+      "classification": "MIXED",
+      "rationale": "23 文件：permission 侧（packages/permission 2、docs/subsystems/permission ×3、根级 permission-seam-implementation-plan.md、接受路径笔记 .agents/notes 12、docs/persistence-catalog ×3 生成物）+ Team 侧（AGENT_TEAM_PLUGIN_ROUND3_PLAN.md、AGENT_TEAM_PLUGIN_PLAN.md —— Round3 计划含 permission 与 Team 双线的任务路由）。同一 commit 混合 permission seam 定稿与 Team Round3 规划文档。"
+    },
+    {
+      "sha": "31196dae7f3e14a29c5d04d17090e7995ae7227b",
+      "date": "2026-08-20",
+      "subject": "feat(team-runtime): enforce permission at teammate executor boundary",
+      "classification": "MIXED",
+      "rationale": "38 文件：17 个 packages/team/**（teammate executor 边界的 permission 强制实现）+ 6 个 packages/permission/**（引擎侧配合改动）+ 12 个 .agents/notes + 3 个 docs/cookbook。同一 commit 同时改 Team runtime 与通用 permission 引擎。"
+    },
+    {
+      "sha": "49ef4a201b16ad91443aa6f7f2e1cb61310be022",
+      "date": "2026-08-20",
+      "subject": "docs(team): add adding-agent-team cookbook and refresh team readme limitations",
+      "classification": "TEAM_OWNED",
+      "rationale": "12 文件：6 个 packages/team/**（team readme limitations 刷新）+ 3 个 docs/cookbook（adding-agent-team cookbook）+ 3 个 .agents/notes。纯 Team 文档。"
+    },
+    {
+      "sha": "39e43871d1b34fa82ed23d934692c8a1944984a0",
+      "date": "2026-08-20",
+      "subject": "feat(ui-team): add web team panel task-progress board",
+      "classification": "TEAM_OWNED",
+      "rationale": "17 文件：13 个 packages/client/ui-team/**（web team panel 任务进度板）+ 3 个 .agents/notes（web-team-panel feature note）+ 1 个 packages/bundle/web-app/cordis.patch.yml（team panel 注册进 web app 组合的 Team 布线）。纯 Team GUI。"
+    },
+    {
+      "sha": "5f957cd011b6549a203a6c10e6b644e70e5996d0",
+      "date": "2026-08-20",
+      "subject": "feat(team): ship the team agent preset with roster and gui visibility",
+      "classification": "TEAM_OWNED",
+      "rationale": "23 文件：team preset（apps/cli/config/agent-presets/team/** 的 preset.yml 与 agent.cordis.yml）、其余 preset（code/cordis/minimal）的 team 可见性条目与 SKILL.md、apps/cli e2e/windows 测试、packages/bundle/team README×3、packages/client/ui-agent-preset（README/locales/测试，team preset 的 GUI 可见性）、apps/web preset 选择快照×4、.agents/notes×3。Team preset 发布 + GUI 可见性（通用位置内的 Team 专属布线）。"
+    },
+    {
+      "sha": "113d724a6d4d5a7c47d4239a73a1c656bebf14d5",
+      "date": "2026-08-20",
+      "subject": "feat(permission): resolve tool-permission-guard permission per call and add composition tests",
+      "classification": "GENERIC_FORK_CAPABILITY",
+      "rationale": "17 文件：14 个 packages/permission/**（tool-permission-guard 按调用解析 permission + composition 测试）+ 3 个 .agents/notes（tool-permission-guard note）。全部位于通用 permission 子系统，无 Team 路径。"
+    },
+    {
+      "sha": "f06657520fbc387fbc666fcd404c0bd4e1f0f6ae",
+      "date": "2026-08-20",
+      "subject": "docs(team): record the confirmed round 3 productization plan with task routing",
+      "classification": "TEAM_OWNED",
+      "rationale": "2 文件：AGENT_TEAM_PLUGIN_ROUND3_PLAN.md + AGENT_TEAM_PLUGIN_PLAN.md（Round3 产品化计划与任务路由）。纯 Team 规划文档。"
+    },
+    {
+      "sha": "8faf33f75a29714ce65b21381cd441021f5dac2b",
+      "date": "2026-08-19",
+      "subject": "docs: regenerate catalogs after the upstream merge and sync the Chinese counterparts",
+      "classification": "GENERATED_FROM_TEAM",
+      "rationale": "9 文件全为 generated catalogs：docs/tool-catalog×3、docs/event-producer-consumer×3、docs/config-catalog×3（含 zh 对照），在 upstream merge cc7aff09 后由源码再生成（生成源为 Team+upstream 合并后的代码树）。commit 内容为纯 catalog 再生成，按审计口径（generated catalogs 等生成物）归类。"
+    },
+    {
+      "sha": "cc7aff093a493e45b0e1cd62ae51657d8a2f8c47",
+      "date": "2026-08-19",
+      "subject": "Merge remote-tracking branch 'upstream/master'",
+      "classification": "MIXED",
+      "rationale": "真 2 父 merge（P1=ee026cf5，P2=upstream 99f6f02）。第一父 diff = 539 文件（upstream delta，0 个 Team 路径，大小写不敏感 'team' 搜索为空；combined diff 14 文件为冲突解决）。Team 分支与 upstream lineage 的合并点，按集成 commit 归类 MIXED（diff 不含 Team 路径，显式注明）。"
+    },
+    {
+      "sha": "ee026cf53a5c77603b2765b8925500791dbf8646",
+      "date": "2026-08-19",
+      "subject": "team: track the live session workspace for teammate discovery",
+      "classification": "TEAM_OWNED",
+      "rationale": "14 文件：10 个 packages/team/**（为 teammate 发现跟踪 live session workspace）+ 3 个 .agents/notes + pnpm-lock.yaml。纯 Team。"
+    },
+    {
+      "sha": "e35cb11d3513b0aee4d26b7c971dc5d10fec128a",
+      "date": "2026-08-18",
+      "subject": "feat(team): implement round 2 foundation capabilities and decisions",
+      "classification": "TEAM_OWNED",
+      "rationale": "63 文件：41 个 packages/team/**（Round2 基础能力）+ docs/subsystems/team ×3（Team 子系统文档）+ AGENT_TEAM 规划/审计文档 3 + .agents/notes 6 + 生成 catalog 8（tool-catalog/event-producer-consumer/config-catalog，随实现再生成）+ packages/extensions/tool-cordis api-catalog.ts + docs 小改。Team Round2 实现，附带再生成 generated catalogs。"
+    },
+    {
+      "sha": "236b600788d15c3f5c515f34c08a3ad11d26ad5d",
+      "date": "2026-08-18",
+      "subject": "docs(team): record the Route A publication strategy and migration interface",
+      "classification": "TEAM_OWNED",
+      "rationale": "4 文件：3 个 .agents/notes（Route A 发布策略笔记）+ AGENT_TEAM_PLUGIN_PLAN.md（Route A 发布策略与迁移接口记录）。纯 Team 规划文档。"
+    },
+    {
+      "sha": "267fec8a2efb74aab9344153317733007888c136",
+      "date": "2026-08-18",
+      "subject": "fix(team): repair four runtime release blockers",
+      "classification": "TEAM_OWNED",
+      "rationale": "12 文件：9 个 packages/team/**（4 个 runtime 发布阻断项修复）+ 3 个 .agents/notes。纯 Team 修复。"
+    },
+    {
+      "sha": "d5ce3083459bcd80f0e5501e018a89b1bbad6e3f",
+      "date": "2026-08-18",
+      "subject": "docs: repair the documentation gates and regenerate the catalogs",
+      "classification": "MIXED",
+      "rationale": "101 文件：文档门禁修复 + catalog 再生成，同时触碰 packages/team 28（Team 包文档补全）、packages/permission 13（permission 包文档补全）、docs/subsystems 12、文档基建（scripts/gen-tool-catalog、project-doc-site.spec、translation-pairing、website/docs.ts）、packages/client/bundle/extensions README 与 packages/core 1。同一 commit 混合 Team 文档、permission 文档与通用文档基建。"
+    },
+    {
+      "sha": "f6c8913a1f8919dc0b5949c6099db1a0ad7b6bf6",
+      "date": "2026-08-16",
+      "subject": "feat(permission): add permission seam notes and permission engine packages",
+      "classification": "MIXED",
+      "rationale": "105 文件：48 个 packages/team/**（team mode 集成的首批实现）+ 32 个 packages/permission/**（permission engine 包首次引入）+ 根级设计文档 3（permission-seam-implementation-plan.md、team-mode-feature-gap-analysis.md、permission-and-mcp-fusion-design.md）+ packages/subagent 6 + packages/client/apps-cli 各 1 + tsconfig×2/pnpm-lock/.gitignore。同一 commit 同时引入 permission engine（通用能力）与 Team 集成。"
+    },
+    {
+      "sha": "6d89ee229bc014cbfd30fadbce1fd8e1f6b956ff",
+      "date": "2026-08-14",
+      "subject": "更改了.gitignore，移除了local dev issues",
+      "classification": "UNRELATED_FORK_FEATURE",
+      "rationale": "仅 1 文件 M .gitignore（name-status 核实）：移除 local dev issues 相关忽略项。仓库事务性改动，与 Team 无关，也非 fork 能力/用户功能；五枚举中归入与 Team 无关的 fork 内容。"
+    },
+    {
+      "sha": "4adaf9c6ab00fcc06358f56c3be1a777f2f64f34",
+      "date": "2026-08-14",
+      "subject": "更改了.gitignore",
+      "classification": "UNRELATED_FORK_FEATURE",
+      "rationale": "2 文件 D issues/compile-error/cmd-output.txt 与 cmd-output-2.txt（name-status 核实：删除本地开发 issue dump；主题称 .gitignore 但实际 diff 为删除这两个文件，主题与 diff 不一致已注明）。仓库事务性改动，与 Team 无关。"
+    },
+    {
+      "sha": "584cd8e73f41e426e26f7e47625518623f0276f7",
+      "date": "2026-08-14",
+      "subject": "初步配置了team mode，尚待迭代",
+      "classification": "MIXED",
+      "rationale": "93 文件：Team 侧 63（packages/team 55 + packages/bundle/team 8：team mode 首批配置与 bundle）+ 非 Team 侧 23（.gitignore、PLUGIN_DEV_GUIDE.md、issues/compile-error 2、tsconfig×3、pnpm-lock、scripts/check-workspace-constraints、scripts/verify-package-readme、packages/session/session-persistence-jsonl/src/format.ts、packages/core/session 测试、packages/README、packages/bundle/web-app 布线 2、.agents/notes 2）。team mode 初始配置与仓库基建/通用包改动混于同一 commit。"
+    },
+    {
+      "sha": "bc97f43cda8eb46825729a78679cea7672e196cc",
+      "date": "2026-08-14",
+      "subject": "feat(web): group custom-provider model picker by family with select-all",
+      "classification": "UNRELATED_FORK_FEATURE",
+      "rationale": "14 文件：9 个 packages/client/ui-settings-models/**（modelGrouping.ts、ModelsSection.module.css、locales、model-grouping/provider-form 测试等 —— custom-provider model picker 按 family 分组 + 全选）+ apps/web 2 + .agents/notes 3。与 Team 无关的 fork 用户功能（审计口径的典型例子）。"
+    }
+  ]
+}
