@@ -1,0 +1,17 @@
+{
+  "ok": false,
+  "failures": [
+    "resume-root: root log intact across the process death (4 === 3)",
+    "resume-member: root session is NOT live after the cold restart; the binding came from the sidecar (rootLive=true)",
+    "neg-custom-event-cold: the cold read path refuses the downstream event type (got {\"probe\":\"p2t2-agent-lifecycle\",\"scenario\":\"neg-custom-event-cold\",\"traceLength\":16,\"ok\":false,\"code\":\"P2T2_UNEXPECTED_ERROR\",\"error\":\"session \\\"p2t2-probe-2540ff2c\\\" not found\",\"obsFile\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\.worktrees\\\\P2-T2\\\\dev\\\\agent-workflow\\\\evidence\\\\P2-T2\\\\dev-run-3\\\\obs\\\\obs-neg-custom-event-cold-p2t2-probe-2540ff2c-.dsh-test-p2t2.json\"})",
+    "neg-custom-event-cold: the upstream refusal names the whitelist, the session and the event type"
+  ],
+  "sections": [
+    "probes"
+  ],
+  "port": 3381,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T18:50:34.332Z"
+}

@@ -1,0 +1,150 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "diag-commit",
+  "primaryId": "p2t2-diag-170e",
+  "writtenAt": 1788030356253,
+  "dshHome": "D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t2",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1788030349204,
+      "phase": "activate",
+      "port": 3381,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-p2t2",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1788030353930,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1788030353934,
+      "phase": "run-start",
+      "scenario": "diag-commit",
+      "sessionId": "p2t2-diag-170e"
+    },
+    {
+      "seq": 4,
+      "ts": 1788030353937,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-diag-170e",
+      "eventType": "permission/preset"
+    },
+    {
+      "seq": 5,
+      "ts": 1788030353937,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-diag-170e",
+      "eventType": "sandbox/mode"
+    },
+    {
+      "seq": 6,
+      "ts": 1788030353937,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-diag-170e",
+      "eventType": "approval/policy"
+    },
+    {
+      "seq": 7,
+      "ts": 1788030353937,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-diag-170e"
+    },
+    {
+      "seq": 8,
+      "ts": 1788030353940,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-diag-170e"
+    },
+    {
+      "seq": 9,
+      "ts": 1788030353940,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-diag-170e",
+      "source": "startup"
+    },
+    {
+      "seq": 10,
+      "ts": 1788030353940,
+      "phase": "flush-after-create",
+      "sessionId": "p2t2-diag-170e",
+      "disk": {
+        "found": false,
+        "sessionsRoot": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2\\sessions"
+      }
+    },
+    {
+      "seq": 11,
+      "ts": 1788030353940,
+      "phase": "event:session/event",
+      "sessionId": "p2t2-diag-170e",
+      "eventType": "team/vnext/p2t2-probe-marker"
+    },
+    {
+      "seq": 12,
+      "ts": 1788030353941,
+      "phase": "flush-after-append",
+      "sessionId": "p2t2-diag-170e",
+      "disk": {
+        "found": false,
+        "sessionsRoot": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2\\sessions"
+      }
+    },
+    {
+      "seq": 13,
+      "ts": 1788030354243,
+      "phase": "after-300ms",
+      "sessionId": "p2t2-diag-170e",
+      "disk": {
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-deepseek-harness-test-use--",
+        "files": [
+          {
+            "name": "session.jsonl.zstd",
+            "size": 363,
+            "final": true
+          }
+        ]
+      }
+    },
+    {
+      "seq": 14,
+      "ts": 1788030356253,
+      "phase": "after-2300ms",
+      "sessionId": "p2t2-diag-170e",
+      "disk": {
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-deepseek-harness-test-use--",
+        "files": [
+          {
+            "name": "session.jsonl.zstd",
+            "size": 363,
+            "final": true
+          }
+        ]
+      }
+    },
+    {
+      "seq": 15,
+      "ts": 1788030356253,
+      "phase": "run-end",
+      "scenario": "diag-commit",
+      "sessionId": "p2t2-diag-170e"
+    }
+  ],
+  "traceLength": 2,
+  "ok": true,
+  "sessionId": "p2t2-diag-170e"
+}

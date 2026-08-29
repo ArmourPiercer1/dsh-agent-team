@@ -1,0 +1,38 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "__readiness__",
+  "primaryId": "unknown",
+  "writtenAt": 1788029412017,
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-3\\scratch\\empty-home",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1788029411830,
+      "phase": "activate",
+      "port": 3381,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-3\\scratch\\empty-home",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1788029412017,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    }
+  ],
+  "traceLength": 1,
+  "ok": false,
+  "code": "P2T2_UNEXPECTED_ERROR",
+  "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+}

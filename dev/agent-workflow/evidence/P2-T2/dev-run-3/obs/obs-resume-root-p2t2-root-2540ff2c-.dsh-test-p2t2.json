@@ -1,0 +1,92 @@
+{
+  "probe": "p2t2-agent-lifecycle",
+  "scenario": "resume-root",
+  "primaryId": "p2t2-root-2540ff2c",
+  "writtenAt": 1788029408487,
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2",
+  "trace": [
+    {
+      "seq": 1,
+      "ts": 1788029408207,
+      "phase": "activate",
+      "port": 3381,
+      "backendNames": [
+        "json"
+      ],
+      "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2",
+      "services": {
+        "sessions": true,
+        "agents": true,
+        "sessionPersistence": true,
+        "webServer": true,
+        "storage": true
+      }
+    },
+    {
+      "seq": 2,
+      "ts": 1788029408473,
+      "phase": "scenario-error",
+      "scenario": "__readiness__",
+      "code": "P2T2_UNEXPECTED_ERROR",
+      "error": "p2t2-agent-lifecycle: unknown scenario '__readiness__'"
+    },
+    {
+      "seq": 3,
+      "ts": 1788029408477,
+      "phase": "run-start",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-2540ff2c"
+    },
+    {
+      "seq": 4,
+      "ts": 1788029408484,
+      "phase": "event:session/created",
+      "sessionId": "p2t2-root-2540ff2c"
+    },
+    {
+      "seq": 5,
+      "ts": 1788029408485,
+      "phase": "event:agent/created",
+      "sessionId": "p2t2-root-2540ff2c"
+    },
+    {
+      "seq": 6,
+      "ts": 1788029408485,
+      "phase": "event:agent/session-start",
+      "sessionId": "p2t2-root-2540ff2c",
+      "source": "resume"
+    },
+    {
+      "seq": 7,
+      "ts": 1788029408487,
+      "phase": "binding-recovered",
+      "sessionId": "p2t2-root-2540ff2c",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-2540ff2c",
+      "rootLive": true
+    },
+    {
+      "seq": 8,
+      "ts": 1788029408487,
+      "phase": "first-team-step",
+      "sessionId": "p2t2-root-2540ff2c",
+      "role": "root",
+      "marker": "P2T2-ROOT-MARKER-p2t2-root-2540ff2c",
+      "rootLive": true,
+      "source": "resume"
+    },
+    {
+      "seq": 9,
+      "ts": 1788029408487,
+      "phase": "run-end",
+      "scenario": "resume-root",
+      "rootId": "p2t2-root-2540ff2c",
+      "rootLogLength": 4
+    }
+  ],
+  "traceLength": 2,
+  "ok": true,
+  "sessionId": "p2t2-root-2540ff2c",
+  "marker": "P2T2-ROOT-MARKER-p2t2-root-2540ff2c",
+  "source": "resume",
+  "rootLogLength": 4
+}

@@ -1,0 +1,206 @@
+{
+  "pid": 94760,
+  "rows": [
+    {
+      "label": "meta",
+      "meta": {
+        "at": 941.98193359375,
+        "getIsFunction": true,
+        "hasReflect": "object",
+        "fiberType": "object"
+      }
+    },
+    {
+      "label": "t0-apply",
+      "at": 941.98193359375,
+      "sessions": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"sessions\" without inject"
+      },
+      "agents": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"agents\" without inject"
+      },
+      "sessionPersistence": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"sessionPersistence\" without inject"
+      },
+      "webServer": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"webServer\" without inject"
+      },
+      "storage": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"storage\" without inject"
+      },
+      "storageDomain": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"storageDomain\" without inject"
+      },
+      "settings": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"settings\" without inject"
+      },
+      "llm": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"llm\" without inject"
+      },
+      "tools": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"tools\" without inject"
+      },
+      "systemPrompt": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"systemPrompt\" without inject"
+      },
+      "inspect": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"inspect\" without inject"
+      }
+    },
+    {
+      "label": "t2s",
+      "at": 2950.98193359375,
+      "sessions": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"sessions\" without inject"
+      },
+      "agents": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"agents\" without inject"
+      },
+      "sessionPersistence": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"sessionPersistence\" without inject"
+      },
+      "webServer": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"webServer\" without inject"
+      },
+      "storage": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"storage\" without inject"
+      },
+      "storageDomain": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"storageDomain\" without inject"
+      },
+      "settings": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"settings\" without inject"
+      },
+      "llm": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"llm\" without inject"
+      },
+      "tools": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"tools\" without inject"
+      },
+      "systemPrompt": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"systemPrompt\" without inject"
+      },
+      "inspect": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"inspect\" without inject"
+      }
+    },
+    {
+      "label": "t6s",
+      "at": 6953.98193359375,
+      "sessions": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"sessions\" without inject"
+      },
+      "agents": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"agents\" without inject"
+      },
+      "sessionPersistence": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"sessionPersistence\" without inject"
+      },
+      "webServer": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"webServer\" without inject"
+      },
+      "storage": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"storage\" without inject"
+      },
+      "storageDomain": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"storageDomain\" without inject"
+      },
+      "settings": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"settings\" without inject"
+      },
+      "llm": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"llm\" without inject"
+      },
+      "tools": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"tools\" without inject"
+      },
+      "systemPrompt": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"systemPrompt\" without inject"
+      },
+      "inspect": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"inspect\" without inject"
+      }
+    },
+    {
+      "label": "t12s",
+      "at": 12954.98193359375,
+      "sessions": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"sessions\" without inject"
+      },
+      "agents": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"agents\" without inject"
+      },
+      "sessionPersistence": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"sessionPersistence\" without inject"
+      },
+      "webServer": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"webServer\" without inject"
+      },
+      "storage": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"storage\" without inject"
+      },
+      "storageDomain": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"storageDomain\" without inject"
+      },
+      "settings": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"settings\" without inject"
+      },
+      "llm": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"llm\" without inject"
+      },
+      "tools": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"tools\" without inject"
+      },
+      "systemPrompt": {
+        "strict": "present",
+        "prox": "ERR:cannot get property \"systemPrompt\" without inject"
+      },
+      "inspect": {
+        "strict": "undef",
+        "prox": "ERR:cannot get property \"inspect\" without inject"
+      }
+    }
+  ]
+}

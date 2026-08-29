@@ -1,0 +1,23 @@
+{
+  "sessions": false,
+  "agents": false,
+  "sessionPersistence": false,
+  "webServer": false,
+  "storage": false,
+  "storageDomain": false,
+  "settings": false,
+  "jobs": false,
+  "llm": false,
+  "tools": false,
+  "subagents": false,
+  "inspect": false,
+  "logger": false,
+  "timer": false,
+  "hmr": false,
+  "credentials": false,
+  "identity": false,
+  "sessionQuery": false,
+  "sessionProjection": false,
+  "compaction": false,
+  "__writtenAt": 1788028980649
+}

@@ -1,0 +1,14 @@
+{
+  "ok": false,
+  "failures": [
+    "boot1 fresh: boot failed: instance boot failed: process exited (code=1 signal=none) (instance log: D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-2\\logs\\instance-port3381.log)"
+  ],
+  "sections": [
+    "probes"
+  ],
+  "port": 3381,
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2",
+  "node": "v24.20.0",
+  "finishedAt": "2026-08-29T18:32:47.275Z"
+}

@@ -1,0 +1,36 @@
+[2026-08-29T18:32:05.236Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T2\tests\characterization
+[2026-08-29T18:32:05.237Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T18:32:05.238Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t2
+[2026-08-29T18:32:05.238Z] client hash  : cd5ef814
+[2026-08-29T18:32:05.238Z] port         : 3381 (backup 3391)
+[2026-08-29T18:32:05.238Z] node         : v24.20.0 (pid 84660)
+[2026-08-29T18:32:05.238Z] === section: probes ===
+[2026-08-29T18:32:05.641Z]   PASS probe groups discovered: agent-lifecycle, smoke
+[2026-08-29T18:32:05.641Z] --- probe group: agent-lifecycle — P2-T2: setup ordering + fresh/member/root-cold resume of the Root TeamDomain binding (storage-sidecar), with negative controls
+[2026-08-29T18:32:05.642Z]   PASS probe carries >=1 upstream import (@deepseek-ai/dsh-session)
+[2026-08-29T18:32:05.642Z]   PASS probe upstream imports all admitted by the live public surface
+[2026-08-29T18:32:05.644Z]   PASS probe sources import 2 upstream package(s): @deepseek-ai/dsh-session, @deepseek-ai/dsh-util-crypto
+[2026-08-29T18:32:05.645Z] obs dir: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T2\dev\agent-workflow\evidence\P2-T2\dev-run-2\obs
+[2026-08-29T18:32:05.645Z] session ids: root=p2t2-root-149bb6b2 member=p2t2-member-149bb6b2 late=p2t2-late-149bb6b2 probe=p2t2-probe-149bb6b2
+[2026-08-29T18:32:05.645Z] saved patch layer: 256 bytes
+[2026-08-29T18:32:05.646Z] port 3381 in use before boot1: false
+[2026-08-29T18:32:24.986Z]   FAIL boot1 fresh: boot failed: instance boot failed: process exited (code=1 signal=none) (instance log: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T2\dev\agent-workflow\evidence\P2-T2\dev-run-2\logs\instance-port3381.log)
+[2026-08-29T18:32:24.986Z] patch layer restored (byte-exact)
+[2026-08-29T18:32:24.987Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T18:32:24.987Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T18:32:24.987Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T18:32:24.987Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T18:32:24.987Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T18:32:24.988Z] smoke: good row mounted; starting instance
+[2026-08-29T18:32:26.545Z]   PASS good row boot succeeded: http://127.0.0.1:3381/?token=u6VnFFctrCYyQ1pIALvd490_llYPo0942Aqxm9q6BT4
+[2026-08-29T18:32:26.581Z]   PASS port free after good boot
+[2026-08-29T18:32:26.582Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T18:32:45.705Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T18:32:45.705Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T18:32:45.706Z]   PASS port free after failed bad boot
+[2026-08-29T18:32:45.706Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T18:32:47.239Z]   PASS recovery boot succeeded: http://127.0.0.1:3381/?token=Qc_JbFtgZ-IgkLI5dJYMja8WQD5Vw4G_pFTH_2GdYi4
+[2026-08-29T18:32:47.275Z]   PASS port free after recovery stop
+[2026-08-29T18:32:47.275Z] 
+[2026-08-29T18:32:47.275Z] RESULT: FAIL characterization self-test (1 failure(s))
+[2026-08-29T18:32:47.276Z]   - boot1 fresh: boot failed: instance boot failed: process exited (code=1 signal=none) (instance log: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T2\dev\agent-workflow\evidence\P2-T2\dev-run-2\logs\instance-port3381.log)

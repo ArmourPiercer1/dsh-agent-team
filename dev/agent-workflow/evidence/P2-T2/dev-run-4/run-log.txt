@@ -1,0 +1,70 @@
+[2026-08-29T19:15:24.486Z] harness root : D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T2\tests\characterization
+[2026-08-29T19:15:24.487Z] host tree    : D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-08-29T19:15:24.487Z] dsh home     : D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p2t2
+[2026-08-29T19:15:24.487Z] client hash  : cd5ef814
+[2026-08-29T19:15:24.487Z] port         : 3381 (backup 3391)
+[2026-08-29T19:15:24.487Z] node         : v24.20.0 (pid 96300)
+[2026-08-29T19:15:24.487Z] === section: probes ===
+[2026-08-29T19:15:24.879Z]   PASS probe groups discovered: agent-lifecycle, smoke
+[2026-08-29T19:15:24.879Z] --- probe group: agent-lifecycle — P2-T2: setup ordering + fresh/member/root-cold resume of the Root TeamDomain binding (storage-sidecar), with negative controls
+[2026-08-29T19:15:24.880Z]   PASS probe carries >=1 upstream import (@deepseek-ai/dsh-session)
+[2026-08-29T19:15:24.880Z]   PASS probe upstream imports all admitted by the live public surface
+[2026-08-29T19:15:24.882Z]   PASS probe sources import 2 upstream package(s): @deepseek-ai/dsh-session, @deepseek-ai/dsh-util-crypto
+[2026-08-29T19:15:24.882Z] obs dir: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P2-T2\dev\agent-workflow\evidence\P2-T2\dev-run-4\obs
+[2026-08-29T19:15:24.883Z] session ids: root=p2t2-root-01840ddd member=p2t2-member-01840ddd late=p2t2-late-01840ddd probe=p2t2-probe-01840ddd
+[2026-08-29T19:15:24.883Z] saved patch layer: 242 bytes
+[2026-08-29T19:15:24.884Z] port 3381 in use before boot1: false
+[2026-08-29T19:15:26.451Z]   PASS boot1 fresh: boot ok on port 3381 (http://127.0.0.1:3381/?token=aopMHD5LQnD2P6jX1WaPGA1x9vL7DWmRaT2DkjmuwFY)
+[2026-08-29T19:15:26.459Z] boot1 fresh: scenario route ready
+[2026-08-29T19:15:26.708Z]   PASS fresh: HTTP 200 + ok (got {"probe":"p2t2-agent-lifecycle","scenario":"fresh","traceLength":2,"ok":true,"marker":"P2T2-ROOT-MARKER-p2t2-root-01840ddd","rootLogLength":3,"memberLogLength":3,"obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-fresh-p2t2-root-01840ddd-.dsh-test-p2t2.json"})
+[2026-08-29T19:15:26.712Z]   PASS fresh: trace is a strict-seq, non-decreasing-ts ordering record
+[2026-08-29T19:15:26.712Z]   PASS fresh: ordering subsequence violated (matched 14/14 of [activate -> run-start -> event:session/created -> event:agent/created -> event:agent/session-start -> binding-attach -> first-team-step -> event:session/created -> event:agent/created -> event:agent/session-start -> first-team-step -> durable -> durable -> run-end]; trace: activate[] scenario-error[] run-start[] event:session/event[p2t2-root-01840ddd] event:session/event[p2t2-root-01840ddd] event:session/event[p2t2-root-01840ddd] event:session/created[p2t2-root-01840ddd] event:agent/created[p2t2-root-01840ddd] event:agent/session-start[p2t2-root-01840ddd:startup] binding-attach[p2t2-root-01840ddd] first-team-step[p2t2-root-01840ddd] event:session/event[p2t2-member-01840ddd] event:session/event[p2t2-member-01840ddd] event:session/event[p2t2-member-01840ddd] event:session/created[p2t2-member-01840ddd] event:agent/created[p2t2-member-01840ddd] event:agent/session-start[p2t2-member-01840ddd:startup] first-team-step[p2t2-member-01840ddd] durable[p2t2-root-01840ddd] durable[p2t2-member-01840ddd] run-end[])
+[2026-08-29T19:15:26.712Z]   PASS fresh: response carries the root marker (P2T2-ROOT-MARKER-p2t2-root-01840ddd)
+[2026-08-29T19:15:26.712Z]   PASS fresh: root session log length recorded (3)
+[2026-08-29T19:15:26.841Z]   PASS prep-custom-event: downstream session event appended + flushed (got {"probe":"p2t2-agent-lifecycle","scenario":"prep-custom-event","traceLength":21,"ok":true,"sessionId":"p2t2-probe-01840ddd","eventType":"team/vnext/p2t2-probe-marker","logLength":4,"obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-prep-custom-event-p2t2-probe-01840ddd-.dsh-test-p2t2.json"})
+[2026-08-29T19:15:26.940Z]   PASS neg-late-binding: first Team step before attach fails with P2T2_ROOT_BINDING_MISSING (got {"probe":"p2t2-agent-lifecycle","scenario":"neg-late-binding","traceLength":32,"ok":false,"code":"P2T2_ROOT_BINDING_MISSING","sessionId":"p2t2-late-01840ddd","error":"p2t2-agent-lifecycle: first Team-sensitive step failed for root \"p2t2-late-01840ddd\": no binding record in the p2t2_binding sidecar (attach missing or not durable)","marker":"P2T2-ROOT-MARKER-p2t2-late-01840ddd","obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-neg-late-binding-p2t2-late-01840ddd-.dsh-test-p2t2.json"})
+[2026-08-29T19:15:26.941Z]   PASS neg-late-binding: the machine-readable failure names the probe row and the session
+[2026-08-29T19:15:26.944Z]   PASS neg-late-binding: ordering subsequence violated (matched 6/6 of [run-start -> event:session/created -> first-team-step-failed -> binding-attach -> first-team-step -> run-end]; trace: activate[] scenario-error[] run-start[] event:session/event[p2t2-root-01840ddd] event:session/event[p2t2-root-01840ddd] event:session/event[p2t2-root-01840ddd] event:session/created[p2t2-root-01840ddd] event:agent/created[p2t2-root-01840ddd] event:agent/session-start[p2t2-root-01840ddd:startup] binding-attach[p2t2-root-01840ddd] first-team-step[p2t2-root-01840ddd] event:session/event[p2t2-member-01840ddd] event:session/event[p2t2-member-01840ddd] event:session/event[p2t2-member-01840ddd] event:session/created[p2t2-member-01840ddd] event:agent/created[p2t2-member-01840ddd] event:agent/session-start[p2t2-member-01840ddd:startup] first-team-step[p2t2-member-01840ddd] durable[p2t2-root-01840ddd] durable[p2t2-member-01840ddd] run-end[] run-start[p2t2-probe-01840ddd] event:session/event[p2t2-probe-01840ddd] event:session/event[p2t2-probe-01840ddd] event:session/event[p2t2-probe-01840ddd] event:session/created[p2t2-probe-01840ddd] event:agent/created[p2t2-probe-01840ddd] event:agent/session-start[p2t2-probe-01840ddd:startup] event:session/event[p2t2-probe-01840ddd] session-log-marker-appended[p2t2-probe-01840ddd] durable[p2t2-probe-01840ddd] run-end[p2t2-probe-01840ddd] run-start[] event:session/event[p2t2-late-01840ddd] event:session/event[p2t2-late-01840ddd] event:session/event[p2t2-late-01840ddd] event:session/created[p2t2-late-01840ddd] event:agent/created[p2t2-late-01840ddd] event:agent/session-start[p2t2-late-01840ddd:startup] first-team-step-failed[p2t2-late-01840ddd] binding-attach[p2t2-late-01840ddd] first-team-step[p2t2-late-01840ddd] run-end[])
+[2026-08-29T19:15:26.944Z]   PASS neg-late-binding: the failed step carries a machine-readable violation {code,message}
+[2026-08-29T19:15:27.042Z]   PASS boot1 stop: port free
+[2026-08-29T19:15:28.588Z]   PASS boot2 cold resume: boot ok on port 3381 (http://127.0.0.1:3381/?token=Mk2UJlgzuwuFU0bXMPwb7lcTUFeUaycLrmkbK3gKxHo)
+[2026-08-29T19:15:28.594Z] boot2 cold resume: scenario route ready
+[2026-08-29T19:15:28.606Z]   PASS resume-member: cold resume ok (got {"probe":"p2t2-agent-lifecycle","scenario":"resume-member","traceLength":2,"ok":true,"sessionId":"p2t2-member-01840ddd","rootId":"p2t2-root-01840ddd","marker":"P2T2-ROOT-MARKER-p2t2-root-01840ddd","rootLive":false,"source":"resume","memberLogLength":4,"obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-resume-member-p2t2-root-01840ddd-.dsh-test-p2t2.json"})
+[2026-08-29T19:15:28.610Z]   PASS resume-member: trace valid (strict seq, non-decreasing ts)
+[2026-08-29T19:15:28.610Z]   PASS resume-member: ordering subsequence violated (matched 6/6 of [activate -> run-start -> event:agent/session-start -> binding-recovered -> first-team-step -> run-end]; trace: activate[] scenario-error[] run-start[] event:session/created[p2t2-member-01840ddd] event:agent/created[p2t2-member-01840ddd] event:agent/session-start[p2t2-member-01840ddd:resume] binding-recovered[p2t2-member-01840ddd] first-team-step[p2t2-member-01840ddd:resume] run-end[])
+[2026-08-29T19:15:28.610Z]   PASS resume-member: root binding recovered via sidecar (P2T2-ROOT-MARKER-p2t2-root-01840ddd)
+[2026-08-29T19:15:28.610Z]   PASS resume-member: root session is NOT live after the cold restart; the binding came from the sidecar alone (rootLive=false)
+[2026-08-29T19:15:28.615Z]   PASS resume-root: cold resume ok (got {"probe":"p2t2-agent-lifecycle","scenario":"resume-root","traceLength":9,"ok":true,"sessionId":"p2t2-root-01840ddd","marker":"P2T2-ROOT-MARKER-p2t2-root-01840ddd","source":"resume","rootLogLength":4,"obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-resume-root-p2t2-root-01840ddd-.dsh-test-p2t2.json"})
+[2026-08-29T19:15:28.618Z]   PASS resume-root: trace valid (strict seq, non-decreasing ts)
+[2026-08-29T19:15:28.619Z]   PASS resume-root: ordering subsequence violated (matched 5/5 of [run-start -> event:agent/session-start -> binding-recovered -> first-team-step -> run-end]; trace: activate[] scenario-error[] run-start[] event:session/created[p2t2-member-01840ddd] event:agent/created[p2t2-member-01840ddd] event:agent/session-start[p2t2-member-01840ddd:resume] binding-recovered[p2t2-member-01840ddd] first-team-step[p2t2-member-01840ddd:resume] run-end[] run-start[] event:session/created[p2t2-root-01840ddd] event:agent/created[p2t2-root-01840ddd] event:agent/session-start[p2t2-root-01840ddd:resume] binding-recovered[p2t2-root-01840ddd] first-team-step[p2t2-root-01840ddd:resume] run-end[])
+[2026-08-29T19:15:28.619Z]   PASS resume-root: bound value recovered BEFORE the first Team step (P2T2-ROOT-MARKER-p2t2-root-01840ddd)
+[2026-08-29T19:15:28.619Z]   PASS resume-root: session-start source is 'resume' (resume)
+[2026-08-29T19:15:28.619Z]   PASS resume-root: root log intact across the process death (resumed length 4 >= fresh length 3)
+[2026-08-29T19:15:28.622Z]   PASS neg-custom-event-cold: the cold read path refuses the downstream event type (got {"probe":"p2t2-agent-lifecycle","scenario":"neg-custom-event-cold","traceLength":16,"ok":false,"code":"P2T2_CUSTOM_EVENT_COLD_READ_REFUSED","sessionId":"p2t2-probe-01840ddd","error":"session \"p2t2-probe-01840ddd\" contains event type \"team/vnext/p2t2-probe-marker\" (seq 3) unknown to this harness; refusing to interpret the log — it was likely written by a newer harness (raw log: D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p2t2\\sessions\\--D-AgentDev-dsh-plugins-dsh-agent-team-references-deepseek-harness-test-use--\\p2t2-probe-01840ddd\\session.jsonl.zstd)","obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-neg-custom-event-cold-p2t2-probe-01840ddd-.dsh-test-p2t2.json"})
+[2026-08-29T19:15:28.622Z]   PASS neg-custom-event-cold: the upstream refusal names the whitelist, the session and the event type
+[2026-08-29T19:15:28.775Z]   PASS boot2 stop: port free
+[2026-08-29T19:15:28.775Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-29T19:15:30.562Z] throwaway boot OK: http://127.0.0.1:3381/?token=FD-4vkdIOo-LGTGpARCBmTS_cJdbzI3OmmmG2Xxszcs
+[2026-08-29T19:15:32.115Z]   PASS boot3 empty-home: boot ok
+[2026-08-29T19:15:32.120Z] boot3 empty-home: scenario route ready
+[2026-08-29T19:15:32.123Z]   PASS neg-empty-home: resume on an empty DSH_HOME is rejected with P2T2_RESUME_NOT_FOUND (got {"probe":"p2t2-agent-lifecycle","scenario":"resume-root","traceLength":2,"ok":false,"code":"P2T2_RESUME_NOT_FOUND","sessionId":"p2t2-root-01840ddd","error":"session \"p2t2-root-01840ddd\" not found","obsFile":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P2-T2\\dev\\agent-workflow\\evidence\\P2-T2\\dev-run-4\\obs\\obs-resume-root-p2t2-root-01840ddd-empty-home.json"})
+[2026-08-29T19:15:32.128Z]   PASS neg-empty-home: the rejection is attributable (names the session id)
+[2026-08-29T19:15:32.164Z]   PASS boot3 stop: port free
+[2026-08-29T19:15:32.164Z] patch layer restored (byte-exact)
+[2026-08-29T19:15:32.165Z] --- probe group: smoke — demo group: public seam full chain (good boot, private-import runtime rejection, recovery, stop)
+[2026-08-29T19:15:32.165Z]   PASS good probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto)
+[2026-08-29T19:15:32.165Z]   PASS good probe upstream imports all admitted by the live public surface
+[2026-08-29T19:15:32.165Z]   PASS bad probe carries >=1 upstream import (@deepseek-ai/dsh-util-crypto/internal/random)
+[2026-08-29T19:15:32.165Z]   PASS bad probe upstream import rejected by the live public surface (static)
+[2026-08-29T19:15:32.166Z] smoke: good row mounted; starting instance
+[2026-08-29T19:15:33.725Z]   PASS good row boot succeeded: http://127.0.0.1:3381/?token=9WpFp5KdqPVAReWezbkwLGJIRk_8NXEMwnAn47AtKjs
+[2026-08-29T19:15:33.763Z]   PASS port free after good boot
+[2026-08-29T19:15:33.764Z] smoke: bad row mounted; starting instance (failure expected)
+[2026-08-29T19:15:52.869Z]   PASS bad row boot failed loudly with ERR_PACKAGE_PATH_NOT_EXPORTED (runtime whitelist enforcement)
+[2026-08-29T19:15:52.869Z]   PASS failure names the mounted negative row (attribution is machine-readable)
+[2026-08-29T19:15:52.869Z]   PASS port free after failed bad boot
+[2026-08-29T19:15:52.870Z] smoke: good row restored; starting instance (recovery)
+[2026-08-29T19:15:54.383Z]   PASS recovery boot succeeded: http://127.0.0.1:3381/?token=KNVN2Rjjq-Ty9v5pvVnlRLC6ycUx4c5upt1nRrbvSWI
+[2026-08-29T19:15:54.419Z]   PASS port free after recovery stop
+[2026-08-29T19:15:54.420Z] 
+[2026-08-29T19:15:54.420Z] RESULT: PASS characterization self-test (all sections green)
