@@ -1,13 +1,12 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
 current_phase: P1
 integration_branch: int/P1-host-foundation
-integration_sha: 932edb1c90e6fb4caa969dcd0a10dc95bc93d45c
+integration_sha: 384a645d5df23425b5bbe0c632ca8400fae7e419
 contracts:
   core: v1
 locks:
   contracts: null
-ready:
-  - P1-T5
+ready: []
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -19,5 +18,5 @@ tasks:
   P1-T2: { state: INTEGRATED, class: A, branch: task/P1-T2-permission-split, base_sha: c61a2f48714d418c31b05e2c0d42aa5ecf5db36e, head_sha: c98a06496ee3dc42ac53e8218afb5329017c4713, attempts: 1, depends_on: [P0-T3] }
   P1-T3: { state: INTEGRATED, class: B, branch: task/P1-T3-unrelated-preserve, base_sha: c61a2f48714d418c31b05e2c0d42aa5ecf5db36e, head_sha: 473f65f94d04966fd2f2e9f729250342004e54ba, attempts: 1, depends_on: [P0-T2, P0-T3] }
   P1-T4: { state: INTEGRATED, class: B, branch: task/P1-T4-team-skeleton, base_sha: c61a2f48714d418c31b05e2c0d42aa5ecf5db36e, head_sha: 7d491b1797649a780ae236a543d2179b1d1e2714, attempts: 1, depends_on: [P0-T4] }
-  P1-T5: { state: READY, class: A, branch: task/P1-T5-zero-core, base_sha: null, head_sha: null, attempts: 0, depends_on: [P1-T1, P1-T4] }
-  G1-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P1-T1, P1-T2, P1-T3, P1-T4, P1-T5] }
+  P1-T5: { state: INTEGRATED, class: A, branch: task/P1-T5-zero-core, base_sha: 957cce6c9539976014515e67204c72e41a2c3026, head_sha: f718b47ec8d0c9cc7e1cee093ce17d748360a1b8, attempts: 1, depends_on: [P1-T1, P1-T4] }
+  G1-REVIEW: { state: READY, class: A, branch: int/P1-host-foundation, base_sha: 957cce6c9539976014515e67204c72e41a2c3026, head_sha: null, attempts: 0, depends_on: [P1-T1, P1-T2, P1-T3, P1-T4, P1-T5] }

@@ -64,6 +64,22 @@
 - **证据**：`dev/agent-workflow/evidence/test-infra/setup-20260829.md`（权限探测矩阵、绕行链、执行记录、验证输出、public seam 记录）。
 - **graph**：P1-T1..T4 → INTEGRATED（head_shas 已录），P1-T5 → READY；`integration_sha: 932edb1c`。
 
+### 轮次 R4：P1-T5 执行 + 集成（2026-08-29）
+
+- **执行方式**：workflow 工具 1 个 worker，`qiyuan-self/qwen3.8-27b`；worktree `.worktrees/P1-T5`、分支 `task/P1-T5-zero-core`（基于 `957cce6c`）；执行 1/3，**SELF_VERIFIED**。
+- **交付**：
+  - `scripts/verify-zero-core.mjs` —— zero-core 改写扫描器（plain node、**零子进程**、对 host 树只读）：C1a/C1b patch-package（lifecycle 引用 + 指向 host 自身 workspace 包的 patches/ 文件）、C2 pnpm.patchedDependencies、C3 写文件 lifecycle 脚本（pnpm patch / git apply|am / sed / perl / patch -x / Node fs 写 API 标记）、C4a 相对 import 逃出插件根进入 host 树、C4b bare import 子路径不在 host 包 exports 白名单（白名单由先读 host 树全部非 node_modules package.json 构建）、C4c 未解析 @deepseek-ai/* 、C5 git 快照文件存在且 trim-空；**校准**：upstream 自身第三方依赖补丁（node-pty）报 INFO 而非 finding（"改写 upstream 源码" 的定义 = 补丁目标属于 host 自身 workspace 包）。
+  - `scripts/fixtures/zero-core/` 负例（每违规类型一个样本 + 第三方校准样本 + good-plugin）；scanner 自检全部命中并逐条命名（fixture-selfcheck.json）。
+  - `scripts/run-tests.mjs` / `run-tests-hooks.mjs` / `test-vitest-shim.mjs` —— plain-node vitest 等价测试跑手：18/18 PASS（`pnpm test` 因 vitest→vite→esbuild spawn 在沙箱 EPERM，D-05 记录精确栈 `Error: spawn EPERM ... optimizeSafeRealPathSync`）。
+- **双侧 smoke**：
+  - **Pristine upstream**（`references/deepseek-harness-test-use` @ cd5ef814）：before 快照空 → 启动成功行 → 经公开 seam `references/.dsh-test/profiles/web/cordis.patch.yml`（insert 块，file:/// 两行 host+client 插件）挂载 → dump-config 证明两行进入 composed entry list → 启动成功（`assertEntriesActivated` 在任一 entry import/activation 失败时拒绝启动，成功行 = 机器级加载证明）→ **负例对照**：行指向不存在模块 → 启动大声失败 exit 1 `ERR_MODULE_NOT_FOUND`（非空洞证明）→ 恢复行 → 停止 → after 快照 status/diff 0 字节、HEAD 不变 → scanner exit 0（0 findings / 2 INFO）。
+  - **Downstream**（`.worktrees/P1-int-downstream` @ 02f3094c）：同链（独立 DSH_HOME `references/.dsh-test-downstream`，profile 路径改写为 downstream 树）→ 同结论；该树 status --porcelain 空（node_modules/lib/.dsh-build 均为 ignored）。
+- **骨架独立构建**：`pnpm install --ignore-scripts` ✓ → `pnpm -r run build` EPERM（pnpm 本体是 node 发起 piped-spawn，矩阵 (b) 推论，与 vitest 同因）→ 每包直接 tsc → **ALL 9 PACKAGES BUILT GREEN**（legacy 为有意空参考槽，无 build script）→ eslint 直接跑全绿 → `composition-smoke`（node scripts/composition-smoke.mjs）绿 → vitest EPERM（已记录）→ run-tests 18/18 PASS + 负例对照。
+- **主 Agent 独立复核**：test-use `git status --porcelain` 空 + `git diff` 空；downstream-int status 空；端口 3180 已释放；证据文件清单与分支内容一致；dump-config-after-mount / negative-control / vitest 栈抽查与报告一致。
+- **集成**：`cherry-pick -x 21f4d45 f718b47` → int `5bac15f` + `384a645d`，零冲突。
+- **Profile 状态**：`references/.dsh-test/profiles/web/cordis.patch.yml` 保留两挂载行（带 revert 注释，供 G1-REVIEW 复用；downstream 侧在 `.dsh-test-downstream`）。
+- **graph**：P1-T5 → INTEGRATED（head `f718b47e`，attempts 1）；G1-REVIEW → READY；`integration_sha: 384a645d`。
+
 ## 重审记录
 
 （空）
@@ -74,5 +90,5 @@
 
 ## TODO 列表
 
-- P1-T1/T3 host worktree `pnpm install` 若因磁盘空间失败 → TEST_INFRA_BLOCKER（沙箱内无法预先查询 D 盘剩余空间）。
+- （已解决 R4）P1-T1/T3 host worktree `pnpm install` 磁盘空间风险：实际全部 `pnpm install --ignore-scripts` 成功（test-use 1011 packages、downstream-int、P1-T5 worktree、P1-T1/T3 树），磁盘空间未成为阻塞。
 - file-manifest baseline 旧路径（S1）：后续 Phase 重跑校验脚本前对齐 `references\deepseek-harness` 路径（不改动已冻结证据文件本身）。
