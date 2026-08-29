@@ -1,0 +1,46 @@
+# P3-T1 execution ledger (dev/agent-workflow/evidence/P3-T1)
+
+Rules applied (ROUTER_RULES / TaskDoc §11.4): max 3 canonical executions;
+debug runs do not count but are itemized here. Canonical chain is exactly:
+`pnpm install --ignore-scripts` → `node scripts/run-tests.mjs contracts` →
+`node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json`.
+No `pnpm run/exec`, no vitest CLI, no tsx/esbuild/vite, no sandbox escalation.
+
+## Debug runs (uncounted)
+
+| # | command | result | notes |
+|---|---------|--------|-------|
+| D1 | `pnpm install --ignore-scripts` | exit 0 | 149 packages reused (~14.7s) — debug prerequisite so the node_modules toolchain existed for tsc/run-tests |
+| D2 | tsc (contracts) ×5 cycles | exit 0 after 5 fixes | (1) deepFreeze/canonicalJsonStringify signature relaxation to `unknown`; (2) uniqueness.ts explicit `b is SessionBindingTeamMember` predicate; (3) `toRemoteSafeDetail()` for `unknown` details values; (4) removed duplicate `export type { TeamContractErrorCode }` in index.ts; (5) `Object.entries().sort()` for noUncheckedIndexedAccess |
+| D3 | tsc (contracts, tests written) | exit 2 → fix | TS2591 `node:assert/strict` (no @types/node in workspace; package is zero-dep) → replaced with plain try/catch helpers (test/helpers.ts); missing `parseBlueprintSnapshotKey` import; `unknown` err narrowing |
+| D4 | `node scripts/run-tests.mjs contracts` | 74 passed / 11 failed | failures: 2 shim matcher gaps (toBeInstanceOf/toBeUndefined not in shim), 1 wrong test assumption (Object.isFrozen on primitives is vacuously true), 1 `declare const` referenced at runtime under type-stripping, **5 real source bugs** — absent optional fields became own `undefined` keys rejected by deepFreeze (REMOTE_VALUE_NOT_JSON) on team/member DTO parse |
+| D5 | `node scripts/run-tests.mjs contracts` (captured) | 74/11 | full output captured to itemize all 11 failures (same set as D4) |
+| D6 | tsc + run-tests | exit 0 / 85 passed, 0 failed | after: src conditional-spread fix (team-session-record.ts, member-instance-record.ts), test matcher fixes, types.test.ts type-level cross-brand check, deepFreeze primitive assertion removed |
+| D7 | tsc + run-tests | exit 0 / 87 passed, 0 failed | after adding 2 regression tests pinning the absent-optional-field bug (serialization.test.ts) |
+
+## Canonical runs
+
+| # | chain | result |
+|---|-------|--------|
+| 1 | install (exit 0, "Already up to date") + run-tests (exit 0, 87/87) + tsc (exit 0) | **PASS** — full output in run-log.txt |
+
+Canonical attempts used: **1 / 3**. No fixes were required during the
+canonical chain (all fixes happened in debug runs D2–D7).
+
+## Git
+
+- branch: `task/P3-T1-contract-freeze` (worktree `.worktrees/P3-T1`)
+- base: `4bb1ca373b85cb228d8df139f22767f01160dc05`
+- commits: `e757a93` (contracts v1 + changelog, 28 files) → `d950a7d` (run-log)
+  → this ledger/summary commit (final branch head; sha reported in the
+  task's structured output — a commit cannot record its own sha, so
+  summary.json's `head_sha` is the immutable run-log head `d950a7d`)
+- `git status --porcelain` empty at completion; `git log 4bb1ca3..HEAD` = only task commits
+- owned paths only: `packages/contracts/**`, `dev/agent-workflow/evidence/P3-T1/**`
+
+## Red-line compliance
+
+- no upstream/references touch; no legacy `packages/team` copy
+- no shared infra edits (scripts/, vitest.config.ts, tsconfig.base.json, root package.json, eslint.config.mjs untouched)
+- no push; no worktree/remote side effects beyond the owned worktree
+- contracts src is pure (no process/fs/env, zero deps); legacy vocabulary is detection-only

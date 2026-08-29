@@ -1,0 +1,71 @@
+{
+  "task_id": "P3-T1",
+  "title": "freeze core contracts/IDs/errors — shared contract v1 in packages/contracts/**",
+  "branch": "task/P3-T1-contract-freeze",
+  "base_sha": "4bb1ca373b85cb228d8df139f22767f01160dc05",
+  "head_sha": "d950a7ddcc470744a988ab341209aa41a498dae1",
+  "head_sha_note": "run-log head at authoring time; the final branch head is one further evidence commit (this summary/ledger) and is reported in the task's structured output",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs contracts",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": {
+    "install": "exit 0 (Already up to date; 10 workspace projects)",
+    "tests": "exit 0 — 87 passed, 0 failed, 87 total",
+    "typecheck": "exit 0 (TypeScript 6.0.3, strict, noUncheckedIndexedAccess, isolatedModules, verbatimModuleSyntax)"
+  },
+  "test_counts": {
+    "contracts.test.ts": 2,
+    "errors.test.ts": 7,
+    "identity.test.ts": 12,
+    "ids.test.ts": 18,
+    "negative.test.ts": 21,
+    "remote-safe.test.ts": 10,
+    "serialization.test.ts": 16,
+    "types.test.ts": 1
+  },
+  "outputs": {
+    "contract_v1_source": "packages/contracts/src/** (15 modules, single re-export surface in src/index.ts)",
+    "contract_v1_tests": "packages/contracts/test/** (8 test files + helpers.ts)",
+    "contract_changelog": "packages/contracts/CHANGELOG.md (v1 freeze entry + freeze rule)",
+    "evidence": "dev/agent-workflow/evidence/P3-T1/{run-log.txt,summary.json,attempt-ledger.txt}"
+  },
+  "frozen_surface": {
+    "schema_version": "TEAM_CONTRACT_SCHEMA_VERSION = 1; SUPPORTED_SCHEMA_VERSIONS = [1]",
+    "ids": [
+      "SessionId / RootSessionId / ChildSessionId (opaque, non-empty, <=255, no control chars, no whitespace)",
+      "TeamSessionId = RootSessionId (invariant 9, type-level alias; teamSessionIdOf identity fn)",
+      "InstanceId inst-<1..32 lowercase alphanumerics> (<=37 chars)",
+      "TemplateId [a-z][a-z0-9-]{0,63} (static template identity)",
+      "BlueprintId (<=128, no '@') / BlueprintRevision (<=64, no '@') / BlueprintContentHash (<=256)",
+      "blueprintId@revision snapshot key form (AIUED-ALGO@17)"
+    ],
+    "member_runtime_identity": "MemberIdentity = (rootSessionId, instanceId) exactly (invariant 18); canonical sorted-key identity key; LEADER_INSTANCE_ID = 'inst-leader'; label/templateId/groupId are NOT identities (invariant 19); groupId semantics-free (invariant 20)",
+    "dtos": [
+      "TeamSessionRecordDto (invariants 8/10)",
+      "MemberInstanceRecordDto (invariant 23; lifecycle CREATED|RUNNING|SETTLED|ARCHIVED|DISPOSED per §29)",
+      "SessionBindingDto (ordinary|team-root|team-member per §14.3 C)",
+      "BlueprintSnapshotRef (embedded, owner record stamps schemaVersion)"
+    ],
+    "errors": "closed 20-code vocabulary TeamContractErrorCode + TeamContractError {code, details?}; consumers branch on code",
+    "remote_safe": "RemoteSafeJsonValue/Record; isRemoteSafeJsonValue; assertRemoteSafeJsonValue (path-carrying REMOTE_VALUE_NOT_JSON); toRemoteSafeDetail (never throws); canonicalJsonStringify (sorted keys); deepFreeze",
+    "legacy_quarantine": "LEGACY_FORBIDDEN_FIELDS=['memberId'] rejected on every DTO (LEGACY_MEMBER_ID_REJECTED); LEGACY_TEAM_SESSION_EVENT_NAMES detection-only (LEGACY_TEAM_SESSION_EVENT_REJECTED); no vNext Team SessionEvents (invariant 42)",
+    "uniqueness": "assertTeamSessionUnique (invariant 8); assertInstanceIdUniqueWithinTeam (scoped, invariant 18); assertChildSessionBindingUnique (invariant 23)"
+  },
+  "acceptance_checks": {
+    "no_legacy_memberId_authority": "pass — every parse entry rejects a memberId field; composite identity is the only runtime identity; negative tests cover all four DTO surfaces",
+    "no_live_agent": "pass — package is pure TS: no process/fs/env in src, no imports outside the package, zero dependencies",
+    "type_tests_tsc": "pass — tsc exit 0; test/types.test.ts encodes invariant 9/18, schema literal, 5-state lifecycle, DTO field sets, brand distinctness, @ts-expect-error on plain-string and cross-brand assignment, discriminated-union exhaustiveness",
+    "serialization_tests": "pass — canonical sorted-key round-trip byte-stability for all DTOs + snapshot key; hand-built key-shuffled JSON; id validation round-trip; absent-optional-field regression",
+    "illegal_id_input_tests": "pass — negative.test.ts (21) + ids.test.ts (18) cover empty/whitespace/control/over-length/non-string per id flavor, legacy names, unknown/missing fields, non-object DTOs, schema version 0/2/'1', lifecycle 'running'/'PROVISIONING_FAILED'/others, malformed timestamps/generation"
+  },
+  "defects_found_and_fixed": [
+    "parse path: absent optional fields (groupId / workspace / defaultWorkspace) were materialized as own `undefined` keys on the frozen DTO and then rejected by deepFreeze with REMOTE_VALUE_NOT_JSON — reproducible on any record without optional fields; fixed with conditional-spread in validateTeamSessionRecord/validateMemberInstanceRecord and pinned by 2 regression tests"
+  ],
+  "notes": "Repo test shim exposes only toBe/toEqual/toBeGreaterThan/toThrow (no args on toThrow); thrown-code assertions therefore go through packages/contracts/test/helpers.ts (capture/expectCode/expectErrorPath, plain ES2022, no node: builtins — the workspace has no @types/node and the package is zero-dependency). Node 24 type-stripping erases `declare const`, so types.test.ts checks cross-brand distinctness at the type level instead of via runtime values.",
+  "toolchain": { "node": "24.20.0", "pnpm": "11.7.0", "typescript": "6.0.3" }
+}
