@@ -1,0 +1,94 @@
+# P2-T1 — pristine characterization CI job
+#
+# Runs the P2-T1 characterization harness (tests/characterization) against a
+# pristine, pinned checkout of upstream deepseek-ai/deepseek-harness.
+#
+# The harness self-test is ONE command:
+#
+#   node tests/characterization/run.mjs
+#
+# It boots the pinned upstream through its public exports only, verifies the
+# host-version fixture, exercises the probe lifecycle (including a
+# private-import negative control that must fail boot loudly), and finally
+# asserts the upstream tree is byte-clean (git status --porcelain empty and
+# git diff empty) after the run.
+#
+# Note: this job was authored for CI; per the P2-T1 task brief it was NOT
+# executed in the local authoring environment. The local equivalent command
+# (`node tests/characterization/run.mjs` against the pinned tree) is all-green
+# — see dev/agent-workflow/evidence/P2-T1/ (run-all.log, summary.json).
+
+name: characterization
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: characterization-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  characterize:
+    name: P2-T1 characterization on pristine upstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout team repo
+        uses: actions/checkout@v4
+
+      # The pinned pristine upstream tree, at the exact SHA recorded in
+      # tests/characterization/fixtures/host-version.json (upstreamSha).
+      # fetch-depth: 0 — the ref is a bare SHA, so full history is fetched.
+      - name: Checkout pinned pristine upstream (test-use tree)
+        uses: actions/checkout@v4
+        with:
+          repository: deepseek-ai/deepseek-harness
+          ref: cd5ef8148158c3a752a658978873241fdf8e2bbc
+          path: references/deepseek-harness-test-use
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      # TEST_METHODS.md §2 launch chain (same chain as the local sandbox, so
+      # CI and local evidence stay comparable):
+      #   --ignore-scripts skips lifecycle scripts; prebuilt native binaries
+      #   (node-pty/koffi/esbuild platform packages) are unaffected.
+      - name: Install upstream dependencies (no lifecycle scripts)
+        working-directory: references/deepseek-harness-test-use
+        run: pnpm install --ignore-scripts
+
+      # Build the runtime closure. DSH_CLIENT_COMMIT_HASH skips the git spawn
+      # inside the build orchestrator; ESBUILD_WORKER_THREADS=1 keeps esbuild
+      # off child-process spawn (sandbox parity; harmless on CI runners).
+      - name: Build upstream runtime closure (TEST_METHODS §2)
+        working-directory: references/deepseek-harness-test-use
+        env:
+          DSH_CLIENT_COMMIT_HASH: cd5ef814
+          ESBUILD_WORKER_THREADS: "1"
+        run: node scripts/build.ts
+
+      # The one-command self-test. cwd = team repo root, which is what the
+      # harness's findTeamRoot expects (references/deepseek-harness-test-use
+      # beside tests/characterization). Evidence lands in
+      # dev/agent-workflow/evidence/P2-T1/ under the workspace root.
+      - name: Run characterization self-test (one command)
+        env:
+          CH_DSH_HOME: ${{ github.workspace }}/references/.dsh-test-p2t1
+        run: node tests/characterization/run.mjs --report-dir dev/agent-workflow/evidence/P2-T1
+
+      - name: Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2t1-characterization-evidence
+          path: dev/agent-workflow/evidence/P2-T1/
+          if-no-files-found: ignore
