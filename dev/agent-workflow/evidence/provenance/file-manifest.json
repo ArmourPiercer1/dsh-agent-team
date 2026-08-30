@@ -37,6 +37,16 @@
                      "classification_rule":  "classification = provenance owner of the fork-side delta/content. A files are classified by dominant kind (secondary noted in reason); MIXED is reserved for hand-written M files whose fork-side content spans \u003e=2 kinds.",
                      "generated_at":  "2026-08-29 19:31:31 +08:00"
                  },
+    "frozen_docs":  {
+        "note":  "SHA-256 of the four 20260829 frozen plan docs (docs/plans/active/, untracked). Added at G4 evidence housekeeping (R27) per G4-REVIEW findings D-01/M-1 (all three blind reviewers flagged the missing entries and recorded observed hashes); main agent recomputed the hashes from the files and cross-checked. Future gates cross-check against this section.",
+        "recorded_at":  "2026-08-30 (Gate G4, R27)",
+        "docs":  [
+            { "path":  "docs/plans/active/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md", "sha256":  "030dfb8ec55bae30f35c2826c7e4e659c0e0b742d836018ce502f34017870c53" },
+            { "path":  "docs/plans/active/DSH_Agent_Team_vNext_Detailed_UI_Design_20260829.md", "sha256":  "3ef3ab69ed2bd7879e4c15079a16c8dae456b572690246a5c1f9cbb0c8c4981e" },
+            { "path":  "docs/plans/active/DSH_Agent_Team_vNext_Detailed_Development_Plan_20260829.md", "sha256":  "a05d237f8515fd6467373632849afe0c6a1ae63bc0ec298de63b9d124d881d0f" },
+            { "path":  "docs/plans/active/DSH_Agent_Team_vNext_Task_Decomposition_and_Review_Method_20260829.md", "sha256":  "2b457cc033ca1b72aa781e072e0ef7fe55bc05d2f7ea25cc03c827d257e888a3" }
+        ]
+    },
     "files":  [
                   {
                       "path":  ".agents/notes/implemented/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.i18n.yaml",

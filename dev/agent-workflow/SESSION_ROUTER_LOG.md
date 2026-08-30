@@ -429,6 +429,24 @@
 - **verdict**：通过 / 投机通过 / 补充内容 / 阻塞；gate PASS 当且仅当 3/3 ∈ {通过, 投机通过}。review 全文写入各自 worktree `dev/agent-workflow/evidence/G4-REVIEW/reviewer-<N>/g4-review.md`（主 Agent 在移除 worktree 前归档）。
 - **graph**：G4-REVIEW → RUNNING（target `cdc7f95`）；ready → []。
 
+### 轮次 R27：G4-REVIEW 结果 + Gate PASS + merge/push #4（2026-08-30）
+
+- **Verdicts（3/3，独立盲审，全部 `qiyuan-self/qwen3.8-27b`，各自 detached worktree @ `cdc7f95`）**：
+  - **R1：投机通过**——7/7 PASS（canonical 783/783 + 12 个 P4 关键 suite 单独重跑 189 tests 全绿）；C7 = 进程重启 proxy（ruling R22）经独立核验成立（TeamDomain 仅经 seam 触达 OS，无 seam 外代码路径）；findings：D-01 minor（file-manifest 缺 frozen-doc 哈希条目）、D-02 minor（P4-T1 一行 tsconfig rootDir 在 card glob 外，test typecheck 必需胶水）、R-A reservation（C7 真实 OS 进程 + 真 StorageDomain 绑定属 P5）、R-B（编排器自述全部独立复验，无矛盾）；无 blocking/material。
+  - **R2：投机通过**——7/7 PASS（canonical 6/6 leg + 子集 testkit 124/124、storage 250/250 + scanner 独立运行 190 files/15 hits/0 payload/0 merge）；0 blocking、0 material、2 minor（M-1 manifest 哈希；M-2 T1-T4 测试/一行 tsconfig 判为 test-area 产出）、2 reservation（R-1：C7 真进程/真 StorageDomain 属 P5；R-2：C4 在 durable child 记录丢失场景依赖成文 real-factory 幂等契约，real binding 属 P5）。
+  - **R3：通过**——7/7 PASS；MINOR-1（manifest 哈希）、MINOR-2（tsconfig rootDir）、NOTE-1（storage/src/index.ts 为 P1 skeleton 未动，后续 phase 的 API 面）、NOTE-2（invariant 42 → Arch §14.2）。
+- **Gate G4：PASS（3/3 ∈ {通过, 投机通过}）**。
+- **Carry-forwards（记录在案，供 P5 与后续 gate）**：
+  - **I-1（P5 硬性要求）**：G5 前须在真实 OS 进程 + 真 StorageDomain 绑定下重跑 crash/restart/corrupt suites（三名 reviewer R-A/R-1 一致）；P5 任务必须含真实 AgentFactoryAdapter + 真实 seam 绑定。
+  - **R-2**：C4 的 durable child 记录丢失场景依赖成文 real-factory 幂等契约（P5 真绑定时验证）。
+  - **M-1/D-01（manifest）——本轮已解决**：`evidence/provenance/file-manifest.json` 新增 `frozen_docs` 节（4 份 frozen doc SHA-256，主 Agent 重算并与 3 reviewer 记录值核对一致：Arch `030dfb8e…`、UI `3ef3ab69…`、DevPlan `a05d237f…`、TaskDoc `2b457cc0…`）；后续 gate 对该节 cross-check。
+  - **M-2/D-02（tsconfig）**：P4-T1 的 `packages/storage/tsconfig.json` rootDir 一行 = formal owned-path exception（test typecheck 必需胶水、零生产代码），无需行动，记录在案。
+  - **Standing check（R1 要求）**：后续每个 gate，p4t6 denylist scanner 负控必须保持绿（quarantine 2 文件之外零命中）。
+- **归档**：3 份 g4-review.md 已归档至 `dev/agent-workflow/evidence/G4-REVIEW/reviewer-{1,2,3}/`；G4-R1/R2/R3 worktree 归档后移除。
+- **merge/push #4（sanctioned，每 Gate 一次）**：int/P4（含本 bookkeeping）ff-merge master → `git push origin master` → `ls-remote` 核验。
+- **Graph**：G4-REVIEW → PASSED（verdicts [投机通过, 投机通过, 通过]，gate 3/3 PASS，merged_to_master `cdc7f95`，pushed true）；current_phase → P5；ready → []（P5 cards 待读后 define）。
+- **下一步**：R28 —— 读 TaskDoc §11.5 P5 完整卡片组 + DevPlan §18（Agent Binding / Member Lifecycle Substrate）→ define P5 tasks（含 I-1 真进程/真绑定任务）→ int/P5 分支 + kickoff。
+
 ## 重审记录
 
 （空）
