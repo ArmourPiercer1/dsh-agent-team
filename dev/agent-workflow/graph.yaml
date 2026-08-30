@@ -1,12 +1,12 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
-current_phase: P3
-integration_branch: int/P3-contracts-domain
-integration_sha: 7839f7a3db8c610c50975f2facc220df3ce80c62
+current_phase: P4
+integration_branch: int/P4-teamdomain-journal
+integration_sha: null
 contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [G3-REVIEW]
+ready: [P4-T1]
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -33,4 +33,4 @@ tasks:
   P3-T4: { state: INTEGRATED, class: A, branch: task/P3-T4-policy-resolver, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: 92a5fa6ca76115c3de781d55ff52c7533652de32, attempts: 1, depends_on: [P3-T1] }
   P3-T5: { state: INTEGRATED, class: A, branch: task/P3-T5-compatibility-engine, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: caab380f935bef182cff61560d0c95c930ff93c3, attempts: 1, depends_on: [P3-T1] }
   P3-T6: { state: INTEGRATED, class: A, branch: task/P3-T6-domain-integration, base_sha: ba293ec, head_sha: d05dcfb510a8c3244cecfcabb228b3d0fa728293, attempts: 2, depends_on: [P3-T2, P3-T3, P3-T4, P3-T5] }
-  G3-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P3-T1, P3-T2, P3-T3, P3-T4, P3-T5, P3-T6] }
+  G3-REVIEW: { state: PASSED, class: A, branch: int/P3-contracts-domain, base_sha: 4bb1ca373b85cb228d8df139f22767f01160dc05, head_sha: 5d0bdfc86f3b1c0ca3f15383050b4732669213da, attempts: 1, depends_on: [P3-T1, P3-T2, P3-T3, P3-T4, P3-T5, P3-T6], verdicts: [投机通过, 投机通过, 投机通过], gate: 3/3 PASS, merged_to_master: 5d0bdfc86f3b1c0ca3f15383050b4732669213da, pushed: true }

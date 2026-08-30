@@ -277,6 +277,19 @@
 - **Graph**：P3-T6 → INTEGRATED（head `d05dcfb`，attempts 2）；integration_sha = `7839f7a3db8c610c50975f2facc220df3ce80c62`；ready → [G3-REVIEW]。
 - **下一步**：G3-REVIEW — workflow 3 个 fresh 独立盲审（`qiyuan-self/qwen3.8-27b`）；各自 detached worktree @ integration SHA（纯包 Gate：无端口/DSH_HOME/实例）；盲审（禁读 SESSION_ROUTER_LOG / graph.yaml / evidence/，唯一例外 provenance manifest）；brief 嵌 TaskDoc “G3 Gate 执行方法”逐字 + DevPlan §16.4 七判据逐字 + 沙箱测试链 + V-checklist 复现清单。
 
+### 轮次 R15：G3-REVIEW 通过（3/3）+ P3 合并 master 并推送（push #3）+ P4 启动准备（2026-08-30）
+
+- **G3 执行方式**：workflow `g3-review-p3-domain`；3 个 fresh 独立盲审 reviewer，全部 `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；各自 detached worktree @ integration SHA `7839f7a`（`.worktrees/G3R{1,2,3}`；纯包 Gate：无端口/DSH_HOME/实例）；盲审纪律 = 禁读 SESSION_ROUTER_LOG / graph.yaml / evidence/（唯一例外 `dev/agent-workflow/evidence/provenance/file-manifest.json` 仅哈希交叉）+ `docs/contracts/g3-report.md`（worker 产物）只作 claim 不作证据 + 冻结文档绝对路径读（flap 重试一次）。
+- **裁决（3/3 ∈ {通过, 投机通过} → G3 PASS）**：
+  - **Reviewer 1：投机通过** — 7/7 PASS；独立重跑 492/492 EXIT=0 + tsc 4/4 EXIT=0；zero-core（`4bb1ca3..HEAD` 21 commits / 144 files 全部在 `packages/**`、`docs/contracts`、`dev/agent-workflow/**` + `pnpm-lock.yaml`；无 references/ 或 upstream 路径；无 patches/ 目录；11 个 package.json 无 postinstall/patch-package；lockfile 唯一 delta = 授权 `yaml@2.9.0`）/ private-import（仅相对导入 + 唯一 bare `yaml`；无 node: 内置）/ owned-boundary（per-commit 全清，3 项记录在案例外均核实）；6 项 cross-task invariants 全成立（TeamSessionId=RootSessionId inv 9、identity=(rootSessionId,instanceId) templateId 静态 inv 18/19、恰好 5 个 member 状态 inv 51、20-code 封闭词汇、legacy MemberId 四 DTO 面全拒、5 个 legacy SessionEvent 名 detection-only inv 42）；非阻塞观察 D-1（provenance manifest 无冻结文档哈希条目，记录 observed SHA-256）+ O-1（policy mirror 观察）。
+  - **Reviewer 2：投机通过** — 7/7 PASS；492/492 + tsc 4/4；zero-core / private-import / owned-boundary 全 PASS；同样观察 provenance manifest 无冻结文档哈希条目（记录 observed SHA-256）。
+  - **Reviewer 3：投机通过** — 7/7 PASS；492/492 + tsc 4/4；独立 criterion→file 映射与 g3-report.md（claim）无差异（计数 492 = 413 + 79 t6、88-case negative matrix、attempt 1/2 历史）；20-code 词汇独立计数 + 封闭测试；5 个 legacy team event 名冻结 detection-only 与 migration inventory 一致。
+- **归档**：3 份 `g3-review.md` → `dev/agent-workflow/evidence/G3-REVIEW/reviewer-{1,2,3}/`（主 worktree）；G3R worktree 移除（`remove --force` + 磁盘残留 rmdir + prune；评审证据 commit `8980a09/687b38b/34851fc` 已先归档）。
+- **合并与推送**：ff-merge `int/P3-contracts-domain` → master（fast-forward 至 `5d0bdfc86f3b1c0ca3f15383050b4732669213da`）；push #3（用户授权每 Gate 一次）后 ls-remote 验证。
+- **graph**：G3-REVIEW → PASSED（verdicts [投机通过, 投机通过, 投机通过]，gate 3/3 PASS，merged_to_master = `5d0bdfc`，pushed: true）；current_phase → P4；ready → [P4-T1]；integration_branch → `int/P4-teamdomain-journal`（待建）；integration_sha → null；**locks.contracts = fba817c 保持**（v1 freeze rule 持续有效：任何改动需新版本 + 显式授权 + 主 Agent 批准，CHANGELOG §Freeze rule；G2 时代置 null 是因 contracts 尚未存在，P3 后冻结为既成事实）。
+- **Carry-forward（本轮新增）**：(a) D-1/O-2（R1+R2 共同观察）：`file-manifest.json`（provenance）无四份冻结文档的哈希条目（其为 legacy-fork diff manifest）→ 后续每 Gate 盲审继续记录 observed SHA-256；下次 evidence housekeeping 时为 manifest 补冻结文档条目；(b) TS6059 rootDir 模式：P4+ 凡 import contracts 的新包复现同模式 — 按 b660e90（domain）/ R13（testkit 预置）模式处理。
+- **下一步**：读 TaskDoc §11.5 P4-T1..T6 卡片 → 建 `int/P4-teamdomain-journal` + `.worktrees/P4-T1`（task/P4-T1-…）→ 派发 P4-T1 worker（单 worker，`qiyuan-self/qwen3.8-27b`）。P4 = TeamDomain / Journal / Recovery（E 序列）。
+
 ## 重审记录
 
 （空）
