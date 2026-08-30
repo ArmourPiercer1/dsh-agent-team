@@ -1,0 +1,75 @@
+P4-T3 run log (worktree .worktrees/P4-T3, branch task/P4-T3-binding-reconciliation, base f6d7da5c89a0c3f06f534d3cd0b5351fc7135628)
+=== debug history (pre-canonical; not counted against canonical budget) ===
+debug node scripts/run-tests.mjs storage: run 1 = 118 passed / 2 failed / 120 total (fixed: toBeUndefined not in shim surface -> expect(x).toBe(undefined); unawaited capture() in p4t3-reconciler S14 -> awaited)
+debug node scripts/run-tests.mjs storage: run 2 = 120 passed / 0 failed / 120 total (74 baseline + 46 p4t3)
+debug node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json: run 1 = 2 errors (TS2724: 'StorageDomainStore' not exported by schema/index.js -> type is TeamDomainStore in schema/stores.ts, both binding modules); run 2 = 2 errors (TS2552: usage-site names not updated after import fix); run 3 = EXIT=0
+debug node scripts/run-tests.mjs (all 9 packages): 610 passed / 0 failed / 610 total
+debug node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json: EXIT=0
+debug node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json: EXIT=0
+debug pnpm install --ignore-scripts: 17.7s, resolved 150 / reused 150 / downloaded 0 (store-lock contention: none; zero new deps, lockfile untouched)
+=== debug history end ===
+=== canonical attempt 1 (all legs completed by 2026-08-30T12:04:27+08:00; per-leg wall times not captured, order as listed) ===
+leg 1: pnpm install --ignore-scripts EXIT=0
+Scope: all 10 workspace projects
+Already up to date
+Done in 55ms using pnpm v11.7.0
+leg 2: node scripts/run-tests.mjs (all 9 packages) EXIT=0
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\p4-01-schema-meta.test.ts (10 tests)
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\p4t3-binding-service.test.ts (17 tests)
+PASS packages\storage\test\p4t3-fork-reconciliation.test.ts (12 tests)
+PASS packages\storage\test\p4t3-reconciler.test.ts (17 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 610 passed, 0 failed, 610 total, 405 ms
+RESULT: PASS run-tests (0 failures)
+leg 3: tsc -p packages/storage/tsconfig.json EXIT=0
+leg 4: tsc -p packages/domain/tsconfig.json EXIT=0
+leg 5: tsc -p packages/contracts/tsconfig.json EXIT=0
+=== canonical attempt 1 end (leg exits: 1:0 2:0 3:0 4:0 5:0) ===

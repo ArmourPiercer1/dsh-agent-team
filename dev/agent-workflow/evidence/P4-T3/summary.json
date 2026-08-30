@@ -1,0 +1,59 @@
+{
+  "task_id": "P4-T3",
+  "title": "P4 E1: Team-mode vNext Phase P4 — SessionBinding integrity/reconciliation (packages/storage/bindings): root/member/ordinary bindings, bidirectional integrity, orphan/missing binding diagnostics",
+  "branch": "task/P4-T3-binding-reconciliation",
+  "base_sha": "f6d7da5c89a0c3f06f534d3cd0b5351fc7135628",
+  "head_sha": "c14bf51b01c75b8fc11f8d0255b2a6745a645aa6",
+  "head_sha_note": "code commit (branch head at summary-writing time); the evidence commit is stacked directly on top of it on the same task branch",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": {
+    "attempt_1": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, already up to date, no store-lock retry needed)",
+      "leg_2_run_tests_all_packages": "PASS (EXIT=0, 610 passed / 0 failed / 610 total across all 9 packages = 564 baseline + 46 p4t3)",
+      "leg_3_tsc_storage": "PASS (EXIT=0)",
+      "leg_4_tsc_domain": "PASS (EXIT=0)",
+      "leg_5_tsc_contracts": "PASS (EXIT=0)"
+    }
+  },
+  "test_counts": {
+    "packages/storage/test/p4t3-binding-service.test.ts": 17,
+    "packages/storage/test/p4t3-reconciler.test.ts": 17,
+    "packages/storage/test/p4t3-fork-reconciliation.test.ts": 12,
+    "p4t3_total": 46,
+    "full_suite_total": 610,
+    "full_suite_baseline": 564
+  },
+  "acceptance_evidence": [
+    "binding 查询可支撑 cold hydration: p4t3-binding-service.test.ts resolves team-root / team-member (exact composite identity) / ordinary / unbound from a fresh SessionBindingService over durable state only (Architecture §36.1); p4t3-fork-reconciliation.test.ts 'resolves the full cold-hydration chain from a fresh service'",
+    "binding 查询可支撑 fork reconciliation: p4t3-fork-reconciliation.test.ts — root fork (§35.2): empty scope before commit, fail-closed rejection before TeamSession, missing-root-binding diagnosis after commit, idempotent sidecar team-root recognition, recognized fork consistent + memberless + resolves team-root, original team untouched; member-child fork (§35.3): binding-contradicts-record + root-session-not-a-team rejections, fork left unbound with no row created, optional ordinary recording leaves team consistent",
+    "must-test 'missing child' (DevPlan §17.4 crash window): p4t3-reconciler.test.ts S1 record-without-binding -> exactly ['missing-member-binding'] (fields sessionId/instanceId/rootSessionId asserted); S3 both fault windows at once -> ['missing-member-binding','orphan-member-binding']",
+    "must-test 'duplicate binding': p4t3-binding-service.test.ts — cross-kind rebind rejected RECORD_DUPLICATE problem 'session-already-bound' (existingKind ordinary / newKind team-member); same-kind second claimant rejected RECORD_DUPLICATE contractsCode SESSION_ALREADY_BOUND; p4t3-reconciler.test.ts S8 stored two-claimant state -> ['child-bound-to-other-instance','duplicate-child-claim'] with context.instanceIds ['inst-alpha','inst-gamma']",
+    "must-test 'wrong root': p4t3-binding-service.test.ts createTeamRootBinding on a session without a TeamSession -> RECORD_INVALID problem 'root-session-not-a-team'; p4t3-reconciler.test.ts S4 child bound under a different existing team -> ['child-bound-to-other-root'] (+ orphan under the other root), S5 artifacts under a root without TeamSession -> ['team-session-missing']",
+    "must-test 'ordinary fork no binding': p4t3-binding-service.test.ts fork of member child resolves unbound and both creation attempts are rejected (fail closed); p4t3-fork-reconciliation.test.ts confirms no binding row is ever created for the fork",
+    "bidirectional integrity (§15.3): reconciler is read-only (writeLog unchanged asserted), deterministic (two runs toEqual, report frozen), fail-closed diagnostics only (no auto-repair); 10 closed diagnostic codes; per-team scope with trivially consistent empty scope for ordinary sessions; malformed scope root rejected with contracts INVALID_ROOT_SESSION_ID preserved",
+    "no live Agent created: all tests run against the in-memory P4 seam with durable records only; zero network, zero process spawning"
+  ],
+  "p4t1_defect_findings": "none (P4-T1 repositories/seam/schema behaved exactly as documented while constructing all 46 p4t3 tests)",
+  "owned_paths": [
+    "packages/storage/bindings/diagnostics.ts",
+    "packages/storage/bindings/binding-service.ts",
+    "packages/storage/bindings/reconciler.ts",
+    "packages/storage/bindings/index.ts",
+    "packages/storage/test/p4t3-helpers.ts",
+    "packages/storage/test/p4t3-binding-service.test.ts",
+    "packages/storage/test/p4t3-reconciler.test.ts",
+    "packages/storage/test/p4t3-fork-reconciliation.test.ts",
+    "dev/agent-workflow/evidence/P4-T3/**"
+  ],
+  "notes": "Coverage rule satisfied: every bindings module is imported (transitively via bindings/index.js) by the three p4t3 test files, so typecheck (include src+test, rootDir ../..) covers them; packages/storage/src/index.ts untouched (still the skeleton marker). Zero new deps; relative imports only; pnpm-lock.yaml untouched (install 'Already up to date'). Debug history: 2 test failures fixed pre-canonical (shim has no toBeUndefined -> toBe(undefined); unawaited capture()), 4 tsc errors fixed (StorageDomainStore -> TeamDomainStore in both binding modules, imports + usage sites).",
+  "toolchain": "node (plain-node runner scripts/run-tests.mjs with native TS type-stripping), typescript 6.0.3 (tsc per-package), pnpm 11.7.0 (install --ignore-scripts only; no pnpm run/exec)"
+}
