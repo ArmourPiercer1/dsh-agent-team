@@ -205,3 +205,63 @@ All steps executed in the worktree; exact outputs captured:
 5. Stable dev instance self-check (AFTER): `http://127.0.0.1:3080` →
    HTTP 200.
 
+## STEP 7 — commits (COMPLETE)
+
+- Commit 1 `61644c811c4940f4e7cd2231b5a39230d335264e`
+  `feat(runtime): P6-T5 activity ledger — durable per-member telemetry
+  with RUNNING intervals, out-of-order REJECT guard, and pure UI
+  projection seeds (no workflow authority)` — 13 files (12 new + p4t6
+  glue), 3415 insertions.
+- Commit 2 `02246a5b232b79d1e10d4f3e7b8484d4388b422c`
+  `docs(evidence): P6-T5 evidence (baseline, verification round 1, run
+  log)` — 3 files. No push (task branch stays local).
+
+## STEP 8 — verification round 2 (after the final commit, COMPLETE)
+
+1. `pnpm install --ignore-scripts` → exit 0.
+2. `node scripts/run-tests.mjs` (all 9 packages): **1129 passed, 0
+   failed, 1129 total, 2392 ms** — `RESULT: PASS run-tests (0
+   failures)`. Full output: `tests-run-2.txt`.
+3. `tsc -p packages/runtime/tsconfig.json` → exit 0;
+   `tsc -p packages/testkit/tsconfig.json` → exit 0.
+4. Self-check diff vs base: 16 files, all inside the owned surface
+   (6 activity modules + 6 p6t5 test files + 1 p4t6 glue + 3 evidence
+   files); zero-core, no sibling surface, no frozen path. The p4t6
+   scanner `session-event-scan.mjs` and
+   `contracts/src/legacy-vocabulary.ts` verified BYTE-IDENTICAL to the
+   base via git blob hash
+   (`5c026f57…` / `252210a3…` on both sides).
+5. Stable dev instance self-check (END): `http://127.0.0.1:3080` →
+   HTTP 200. Ports 3180/3181 and 3491-3495 were never occupied (no
+   real-instance harness run).
+
+Note: this final append (plus `tests-run-2.txt`, produced after
+commit 2) is left UNCOMMITTED by design — the final commit cannot
+contain its own SHA.
+
+## FINDINGS (for the main agent)
+
+- Orphan audit facts: a guard rejection (stale/gap/already-open/
+  not-open) occurs AFTER the P6-T2 facade has already committed its
+  `team-coordination-recorded` audit fact, so the durable ledger can
+  hold audit facts without a matching activity row. This is the
+  documented crash-window shape — detectable via fact-type scan,
+  repairable by re-reporting at re-read head+1. Such orphans DO count
+  in `entryCount()`; pre-facade rejections (input validation, reporter
+  rule) have ZERO side effects.
+- Ordering is serialized in two critical sections (facade audit commit,
+  then the activity guard+commit) under the same per-team lock — no
+  interleaving between members.
+- Display labels: `createdAt` comes from each fact's own injected
+  clock; across a restart the clock resets, so a spanning interval can
+  show `closedAt` earlier than `startedAt` while the durable order
+  (globalSequence) is always correct. Tested in the restart suite.
+- Extension-seam usage: `op/subject/sequence/note/closeNote` ride the
+  P6-T2 documented REPORT_PROGRESS payload extension seam; P6-T2
+  persists only its known fields in the audit record.
+- Reporter-rule ordering (pre-facade): member self-report / leader-any /
+  human rejected; a member reporting for an unknown other-instance is
+  ACTIVITY_UNAUTHORIZED_REPORTER (never reaches the facade); the
+  unknown-instance facade code is reachable via a leader report.
+
+
