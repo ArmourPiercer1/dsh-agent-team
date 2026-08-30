@@ -290,6 +290,24 @@
 - **Carry-forward（本轮新增）**：(a) D-1/O-2（R1+R2 共同观察）：`file-manifest.json`（provenance）无四份冻结文档的哈希条目（其为 legacy-fork diff manifest）→ 后续每 Gate 盲审继续记录 observed SHA-256；下次 evidence housekeeping 时为 manifest 补冻结文档条目；(b) TS6059 rootDir 模式：P4+ 凡 import contracts 的新包复现同模式 — 按 b660e90（domain）/ R13（testkit 预置）模式处理。
 - **下一步**：读 TaskDoc §11.5 P4-T1..T6 卡片 → 建 `int/P4-teamdomain-journal` + `.worktrees/P4-T1`（task/P4-T1-…）→ 派发 P4-T1 worker（单 worker，`qiyuan-self/qwen3.8-27b`）。P4 = TeamDomain / Journal / Recovery（E 序列）。
 
+### 轮次 R16：P4 启动 — P4-T1（TeamDomain schema/meta repositories）派发（2026-08-30）
+
+- **Base**：master `3ccff7b`（R15 bookkeeping，= remote master，push #3 已验证）；`int/P4-teamdomain-journal` 自建 master；主 worktree 切换至 int/P4。
+- **P4 依赖图（TaskDoc §11.5，录入 graph）**：P4-T1 → {P4-T2 ‖ P4-T3} → P4-T4 → P4-T5 → P4-T6 → G4（E0..E4，全部 Class A；P4-T1 R5/C5/T5，P4-T2 R5/C5/T5，P4-T3 R5/C4/T5，P4-T4 R5/C5/T5，P4-T5 R5/C4/T5，P4-T6 R5/C1/T5）。
+- **P4-T1 结构裁决（主 Agent，记录在案）**：
+  - 卡片 owned path `packages/storage/schema/**` + `packages/storage/repositories/**`；授权例外（同 R13 模式）：`packages/storage/test/p4-*.test.ts`（仅新增；骨架 storage.test.ts 不动）+ `packages/storage/tsconfig.json`（noEmit 配置 rootDir 起始即 `../..`，预置 TS6059；T1 为 E0 唯一 storage 写者）。
+  - `packages/storage/package.json`：零改动（零新依赖，跨包一律相对导入）。
+  - `packages/storage/src/index.ts`：**不动**（D1 先例：骨架共享 entry 由后续集成接线；P4 序列内 T2..T5 继续新增子目录，最终接线留 G4 前主 Agent post-integration 处理）。
+  - **StorageDomain seam 裁决**：卡片允许依赖 = "public StorageDomain only"。仓库内 vNext 包不得 import references/**（零 vendoring、零上游路径依赖）→ 仓库层定义**窄 typed seam 接口**（置于 `packages/storage/schema/**`，逐面镜像 upstream 公开 StorageDomain surface，来源 = 主 worktree 绝对路径只读 `references/deepseek-harness-test-use/packages/storage/storage-domain/`（README.md + lib/index.js + lib/types/*.d.ts），flap 重试一次）；repositories 接受**注入的 seam handle**（依赖注入），测试用 in-memory fake（p4-helpers.ts）。运行期真实 StorageDomain 绑定属后续阶段（P4-T5 fault-injection 起的持久化测试 / P5 runtime）。若所需能力不在公开 surface 上 → `STOP → CORE_SEAM_BLOCKER:<seam>`（协议阻塞，不得绕过）。
+  - **schema write-lock owner**：T1 定义 version policy（每 store schema version stamp + upgrade policy；无内置 migration ⇒ mismatch 必须 fail loudly — G4 判据 "schema version mismatch fails loudly"）。
+- **Worktree**：`.worktrees/P4-T1` @ `task/P4-T1-teamdomain-schema`（base `3ccff7b`）；证据目录 `dev/agent-workflow/evidence/P4-T1/`（worktree 内）。
+- **任务卡片要点**：目标 = 建立 schema_meta、team_sessions、member_instances、session_bindings、overrides、compatibility、operations、ledger 八个 store；必须测试 = open/create/read/write、schema mismatch、record validation；验收 = Team control-plane authority 可独立于 SessionEvent 存储（测试须证明 storage 包对 SessionEvent/Team-event 词汇零依赖）；输出物 = schema v1 + repository tests。
+- **G4 判据预读（DevPlan §17.5，T1 相关）**：TeamDomain is sole Team control-plane authority / no Team SessionEvent persistence / schema version mismatch fails loudly（crash matrix、retries、SessionBinding integrity、recovery 属后续任务）。
+- **基线**（int/P4 = master `3ccff7b`）：全量 492/492 PASS + tsc 各包绿（R15 后未变）。
+- **派发**：workflow `p4-t1-teamdomain-schema-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；纯包工作，无端口/DSH_HOME/实例；worktree 内 pnpm install。
+- **graph**：P4-T1..T6 + G4-REVIEW 行已录（DEFINED）；P4-T1 → RUNNING（branch task/P4-T1-teamdomain-schema，base `3ccff7b`）；ready → []。
+- **结果**：（worker 返回后补记）
+
 ## 重审记录
 
 （空）
