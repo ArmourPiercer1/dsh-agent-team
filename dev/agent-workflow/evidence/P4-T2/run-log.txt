@@ -1,0 +1,62 @@
+# P4-T2 run-log — task/P4-T2-operation-journal (base f6d7da5)
+# Chain definition (canonical attempt = all 5 steps in order, all exit 0):
+#   S1 pnpm install --ignore-scripts
+#   S2 node scripts/run-tests.mjs
+#   S3 node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+#   S4 node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+#   S5 node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+# Toolchain: node v24.20.0 (native TS type-stripping), pnpm v11.7.0, typescript (repo devDependency), plain-node runner scripts/run-tests.mjs (no vitest spawn).
+
+## BASELINE (pre-implementation, recorded 2026-08-30)
+S1 pnpm install --ignore-scripts        -> exit 0
+S2 run-tests                            -> 564 passed, 0 failed, 564 total (exit 0)
+S3 tsc -p packages/storage              -> exit 0
+S4 tsc -p packages/domain               -> exit 0
+S5 tsc -p packages/contracts            -> exit 0
+RESULT: PASS (baseline, not a canonical attempt)
+
+## DEBUG cycles (implementation iteration, not canonical attempts)
+D1 (first full implementation: journal 12 + crash 19 + conflicts 25 p4t2 tests written; the conflicts file aborted at module top level by the CAS bug, registering 0 of its 25 tests — the file-level eval error itself was one of the 2 failures):
+S2 run-tests -> 594 passed, 2 failed, 596 total (exit 1)
+   fail-1 p4t2-conflicts: fresh op execute with expectedGeneration 0 threw stale-generation (engine bug: verifyGeneration compared found===null against expected 0)
+   fail-2 p4t2-crash-recovery: memberWriteCounts [1,1,1,1,7,1,1] (test bug: key substring 'ce' matched the word "instanceId" inside every canonical member key)
+FIX-1 journal.ts verifyGeneration: found===null normalizes to effective 0 (absent row satisfies expectedGeneration 0); error report still shows found: null.
+FIX-2 p4t2-crash-recovery.test.ts: exact member keys via memberIdentityKey(createMemberIdentity(root, parseInstanceId(...))) instead of substring.
+D2:
+S2 run-tests -> 614 passed, 6 failed, 620 total (exit 1)
+   (total rose 596->620 because the conflicts file now loads fully: 25 tests register instead of 2 — the previous abort happened mid module-evaluation)
+   fail-1..2 p4t2-conflicts zero-write asserts compared FINAL seam.writeCount (26, includes staged-child flow +7) against beforeConflicts snapshot (19)
+   fail-3..4 p4t2-conflicts duplicate-ledger asserts expected 2 facts/keys ['1','2',counter] but the world ends with 3 committed ops (OP1/OP2/OP3)
+   fail-5 p4t2-conflicts effect-classification asserted live entryCount()===0 in it() body; final worldB state has 2 facts
+   fail-6 p4t2-conflicts cross-team: drive (cb2) on a COMMITTED row whose fact belongs to another team returned the durable result instead of rejecting
+FIX-3 p4t2-conflicts.test.ts: afterConflicts/afterTerminal snapshots around the zero-write blocks; fxEntryAfterBad snapshot; duplicate-ledger asserts updated to 3 facts (one per op, keys 1/2/3, no gaps).
+FIX-4 journal.ts driveRow: foreign-fact scope check moved BEFORE the terminal short-circuit (matches execute ordering); a terminal row with a foreign fact now rejects with idempotency-conflict instead of serving a foreign ledger sequence.
+D3:
+S2 run-tests -> 620 passed, 0 failed, 620 total (exit 0)
+
+## CANONICAL ATTEMPT 1 (started 2026-08-30T12:1xZ)
+S1 pnpm install --ignore-scripts -> exit 0 ("Already up to date", 10 workspace projects)
+S2 run-tests -> 620 passed, 0 failed, 620 total (exit 0)
+S3 tsc -p packages/storage -> exit 2
+   error TS2551 p4t2-journal.test.ts(109,28): Property 'rootSessionId' does not exist on type 'SessionBindingDto' (only on the 'team-member' variant; expect() does not narrow)
+S4, S5 -> not reached (chain stops at first failing step)
+RESULT: FAILED (step 3/5)
+
+## FIX-5 (after canonical attempt 1)
+p4t2-journal.test.ts: typed narrowing const bindingMember = binding?.kind === 'team-member' ? binding : undefined; assertions on the narrowed value.
+
+## D4 (post-FIX-5 verification)
+S2 run-tests -> 620 passed, 0 failed, 620 total (exit 0)
+S3 tsc -p packages/storage -> exit 0
+S4 tsc -p packages/domain  -> exit 0
+S5 tsc -p packages/contracts -> exit 0
+RESULT: PASS (debug; all five chain steps green)
+
+## CANONICAL ATTEMPT 2 (started 2026-08-30T12:1xZ, completed 2026-08-30T12:17:46Z)
+S1 pnpm install --ignore-scripts -> exit 0 ("Already up to date", 10 workspace projects)
+S2 run-tests -> 620 passed, 0 failed, 620 total, 396 ms (exit 0)
+   p4t2 tests: 12 (p4t2-journal) + 25 (p4t2-conflicts) + 19 (p4t2-crash-recovery) = 56; baseline 564 unchanged
+S3 tsc -p packages/storage  -> exit 0
+S4 tsc -p packages/domain   -> exit 0
+S5 tsc -p packages/contracts -> exit 0
+RESULT: PASS (all 5 steps exit 0)

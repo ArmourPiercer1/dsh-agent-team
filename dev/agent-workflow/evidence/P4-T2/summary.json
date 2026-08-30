@@ -1,0 +1,62 @@
+{
+  "task_id": "P4-T2",
+  "title": "OperationJournal engine: PREPARED -> effects -> ledger -> COMMITTED, lastAppliedOperationId, generation CAS (TaskDoc §11.5, Development Plan §17.3/§17.4)",
+  "branch": "task/P4-T2-operation-journal",
+  "base_sha": "f6d7da5c89a0c3f06f534d3cd0b5351fc7135628",
+  "head_sha": "4d6a94a687bde1de27cb7ab66c8bcbbc7eed88f8",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 2,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": "PASS on attempt 2 (2026-08-30T12:17:46Z): S1 install exit 0; S2 run-tests 620 passed / 0 failed / 620 total exit 0; S3 tsc storage exit 0; S4 tsc domain exit 0; S5 tsc contracts exit 0. Attempt 1 FAILED at step 3/5 (tsc storage: TS2551 p4t2-journal.test.ts:109, SessionBindingDto has no rootSessionId outside the team-member variant) — fixed with a typed narrowing in the test before attempt 2. Full chronology in run-log.txt; per-attempt lines in attempt-ledger.txt.",
+  "test_counts": "p4t2:56/full:620 (baseline 564 + 56 new p4t2 tests: 12 p4t2-journal + 25 p4t2-conflicts + 19 p4t2-crash-recovery; baseline 564 unchanged and fully green)",
+  "acceptance_evidence": {
+    "acceptance_criterion": "重复执行收敛到同一 durable result (re-execution converges to the same durable result)",
+    "mandatory_test_1_retry_same_operation": "p4t2-journal.test.ts 'retry same operation (mandatory)': re-execute + re-drive of a committed operation return the identical durable result (phase/idempotencyKey/canonical-intent JSON/childSessionId/ledgerSequence byte-identical via serializeOperationRecord and durableOutcomeShape), perform ZERO writes, and the ledger keeps exactly one fact (seq 1) with no gaps; raw store keys stay [op-row, '1', counter].",
+    "mandatory_test_2_generation_conflict": "p4t2-conflicts.test.ts 'generation CAS (mandatory)': expectedGeneration 1 vs committed gen 2 -> stale-generation (RECORD_INVALID, expected/found); drive with stale expectedGeneration fails identically; expectedGeneration 1 on a fresh (absent) operation fails with found:null; expectedGeneration 0 (expect-absent) is the CAS that admits first prepare; matching expectedGeneration drives clean; every conflict path performs zero writes. Engine rule: an absent row satisfies expectedGeneration 0 (verifyGeneration normalizes found===null to 0).",
+    "mandatory_test_3_duplicate_ledger_prevention": "p4t2-conflicts.test.ts 'duplicate ledger prevention (mandatory)': three committed operations in one world yield exactly three facts (one per operationId), sequences [1,2,3] with gaps [], raw ledger keys exactly ['1','2','3','__ledger_sequence_counter'], and the first fact's raw bytes are byte-stable across all later drives/conflicts (no re-allocation, no rewrite). Crash side: p4t2-crash-recovery.test.ts scenario F proves that when the fact is durable but the COMMITTED put is not, recovery REUSES the allocated sequence (fact 7) instead of allocating a duplicate; scenario D/E prove counter-gap behavior (allocated-but-lost sequence 5 becomes a permanent gap, later facts 6/7/8 continue — no sequence reuse).",
+    "crash_recovery": "p4t2-crash-recovery.test.ts: crash armed after each of the 7 writes of a fresh operation (k=0..5) plus a staged prepare->recordChildSession crash (G); every recovery completes to the SAME durable result (semantic outcome identical to the no-crash run), re-applies effects idempotently (applied/skipped split matches what the crash already persisted), writes nothing for an already-converged operation, and the whole run issues ZERO deletes. Final world: 7 facts, sequences [1,2,3,4,6,7,8], gaps [5], every target record written exactly once.",
+    "protocol_never_rolls_back": "All three test files carry a global no-delete assertion over every seam's writeLog (entry.op !== 'delete'); recovery is roll-forward/reconcile only (DevPlan §17.3).",
+    "cross_team": "p4t2-conflicts.test.ts 'cross-team fact conflict' + p4t2-journal.test.ts world A root-2 journal: the operations store is global (frozen v1 OperationRecord has no team field) while the journal is team-scoped; a foreign team's journal cannot serve, re-drive, or read the sequence of an operation committed under another root — execute/drive reject with idempotency-conflict (expected/found roots) and lastApplied()/factSequence() see nothing. Engine fix exercised by this test: driveRow now performs the foreign-fact scope check BEFORE the terminal short-circuit, matching execute."
+  },
+  "notes": {
+    "p4_t1_defect_findings": "none — all 564 P4-T1 baseline tests pass unmodified; P4-T1 repository/seam behavior matched the documented contract everywhere P4-T2 exercises it (idempotent puts, typed conflicts, ledger counter boot/allocate, seam crash fake). No P4-T1 code was touched.",
+    "interpretations": [
+      "(a) lastAppliedOperationId: the frozen v1 DTOs carry no lastAppliedOperationId field (grep-verified across contracts v1), so its durable carrier is the ledger fact's operationId link (factType payload + operationId on the fact row). journal.lastApplied(team) returns the operationId of the highest-sequence fact of the bound team's ledger that links an operation; journal.factSequence(operationId) returns that fact's sequence (or rejects with idempotency-conflict when the fact belongs to another team). Documented in packages/storage/operations/journal.ts header.",
+      "(b) Convergence semantics: 'same durable result' means the semantic outcome is stable across crash/attempt history — phase, idempotency key, canonical intent bytes, child session, effects-applied-once, and a single ledger fact with stable bytes. Wall-clock updatedAt, row generation, and sequence numbers after lost-allocations (gaps) are legitimately attempt-dependent audit/bookkeeping and are excluded from the durable-outcome comparison (documented in p4t2-helpers.durableOutcomeShape and the journal.ts header).",
+      "(c) Journal is TEAM-scoped (bound rootSessionId) while the operations store is GLOBAL (frozen v1 OperationRecord has no team field); same-operationId collisions across teams surface as idempotency-conflict on the foreign fact rather than silent cross-team convergence.",
+      "(d) The per-operationId lock is a process-local complement to the domain write chain (serialize-within-domain per Arch §14.4); it provides no cross-process guarantee, which the domain seam's write serialization owns.",
+      "(e) Write budget (measured, InMemoryStorageSeam): domain bootstrap stamps 8 schema_meta rows on first open; fresh operation = 7 writes (prepare, binding, member, counter boot+update = 2, fact, COMMITTED put); later operations = 5-6 writes depending on effect skip; retry/re-drive of a converged operation = 0 writes. A crashed fact allocation leaves a permanent ledger gap (sequences are never reused)."
+    ],
+    "toolchain": "node v24.20.0 (native TS type-stripping, no flag), pnpm v11.7.0 (install --ignore-scripts only; no pnpm run/exec), plain-node runner scripts/run-tests.mjs with scripts/run-tests-hooks.mjs resolution hooks and scripts/test-vitest-shim.mjs matcher surface (toBe/toEqual/toBeGreaterThan/toThrow + .not), typescript via node node_modules/typescript/bin/tsc. No new dependencies. Zero subagents used; all work inside worktree .worktrees/P4-T2 only.",
+    "files": {
+      "production": [
+        "packages/storage/operations/types.ts",
+        "packages/storage/operations/journal.ts",
+        "packages/storage/operations/index.ts"
+      ],
+      "tests": [
+        "packages/storage/test/p4t2-helpers.ts",
+        "packages/storage/test/p4t2-journal.test.ts",
+        "packages/storage/test/p4t2-conflicts.test.ts",
+        "packages/storage/test/p4t2-crash-recovery.test.ts"
+      ],
+      "evidence": [
+        "dev/agent-workflow/evidence/P4-T2/run-log.txt",
+        "dev/agent-workflow/evidence/P4-T2/attempt-ledger.txt",
+        "dev/agent-workflow/evidence/P4-T2/summary.json"
+      ]
+    },
+    "head_sha_note": "head_sha is the code commit (the verified tree at which canonical attempt 2 ran). A final evidence commit containing this summary.json is appended on top of it on the same branch.",
+    "engine_fixes_during_development": [
+      "verifyGeneration: absent row (found===null) satisfies expectedGeneration 0 — the first-prepare CAS.",
+      "driveRow: foreign-fact scope check moved before the terminal short-circuit so drive cannot serve a durable result from another team's ledger (matches execute; caught by the cross-team mandatory scenario)."
+    ]
+  }
+}
