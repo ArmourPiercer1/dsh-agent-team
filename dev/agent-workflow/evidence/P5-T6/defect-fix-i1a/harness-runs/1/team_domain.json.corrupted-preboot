@@ -1,0 +1,35 @@
+{
+  "unit": {
+    "name": "team_domain",
+    "version": 999
+  },
+  "global": null,
+  "tables": {
+    "schema_meta": {
+      "schema_meta": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.046Z\",\"store\":\"schema_meta\",\"version\":1}",
+      "team_sessions": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.116Z\",\"store\":\"team_sessions\",\"version\":1}",
+      "member_instances": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.197Z\",\"store\":\"member_instances\",\"version\":1}",
+      "session_bindings": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.309Z\",\"store\":\"session_bindings\",\"version\":1}",
+      "overrides": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.386Z\",\"store\":\"overrides\",\"version\":1}",
+      "compatibility": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.442Z\",\"store\":\"compatibility\",\"version\":1}",
+      "operations": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.498Z\",\"store\":\"operations\",\"version\":1}",
+      "ledger": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-30T12:51:57.545Z\",\"store\":\"ledger\",\"version\":1}"
+    },
+    "team_sessions": {
+      "session-p5t6-root": "{\"blueprint\":{\"blueprintId\":\"P5T6-BP-REAL\",\"contentHash\":\"sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc\",\"revision\":\"1\"},\"createdAt\":\"2026-08-30T12:51:57.994Z\",\"defaultWorkspace\":\"C:/agent-team/work/p5t6\",\"generation\":1,\"rootSessionId\":\"session-p5t6-root\",\"schemaVersion\":1}"
+    },
+    "member_instances": {
+      "{\"instanceId\":\"inst-0eeg6ty1oe6h\",\"rootSessionId\":\"session-p5t6-root\"}": "{\"activityVersion\":1,\"childSessionId\":\"session-child-0eeg6ty1oe6h9p1g\",\"createdAt\":\"2026-08-30T12:52:03.497Z\",\"instanceId\":\"inst-0eeg6ty1oe6h\",\"label\":\"worker-b\",\"lifecycle\":\"CREATED\",\"rootSessionId\":\"session-p5t6-root\",\"schemaVersion\":1,\"templateId\":\"p5t6worker\"}",
+      "{\"instanceId\":\"inst-1vz9d1n0819t\",\"rootSessionId\":\"session-p5t6-root\"}": "{\"activityVersion\":1,\"childSessionId\":\"session-child-1vz9d1n0819tzg0x\",\"createdAt\":\"2026-08-30T12:52:08.393Z\",\"instanceId\":\"inst-1vz9d1n0819t\",\"label\":\"worker-a\",\"lifecycle\":\"CREATED\",\"rootSessionId\":\"session-p5t6-root\",\"schemaVersion\":1,\"templateId\":\"p5t6worker\"}"
+    },
+    "session_bindings": {
+      "session-p5t6-root": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"session-p5t6-root\"}",
+      "session-child-1vz9d1n0819tzg0x": "{\"instanceId\":\"inst-1vz9d1n0819t\",\"kind\":\"team-member\",\"rootSessionId\":\"session-p5t6-root\",\"schemaVersion\":1,\"sessionId\":\"session-child-1vz9d1n0819tzg0x\"}",
+      "session-child-0eeg6ty1oe6h9p1g": "{\"instanceId\":\"inst-0eeg6ty1oe6h\",\"kind\":\"team-member\",\"rootSessionId\":\"session-p5t6-root\",\"schemaVersion\":1,\"sessionId\":\"session-child-0eeg6ty1oe6h9p1g\"}"
+    },
+    "overrides": {},
+    "compatibility": {},
+    "operations": {},
+    "ledger": {}
+  }
+}

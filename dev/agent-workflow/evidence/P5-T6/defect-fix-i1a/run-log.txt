@@ -1,0 +1,143 @@
+﻿P5-T6 defect-fix (I1A crash-window) verification chain - counted attempt 3 (FINAL; verbatim per-leg commands and output)
+worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6  branch: task/P5-T6-member-residency  base: 3d59505a1c8161c2bb8b5257e072e1c94ccd59c0
+started: 2026-08-30T20:50:49.1079066+08:00 (chain start = step0 + leg1 start)
+note: first worker instance produced the code edits (uncommitted) and died before running any verification; this second instance audited the diff, fixed the one deviation found (missing M1 must-assert in harness/plugin.mjs), and runs the full chain. attempt-3 incident note.
+note: frozen-doc SHA-256 re-verified at chain start (Architecture/UI/DevPlan/TaskDoc): all 4 MATCH.
+note: pre-change integrated truth = 925 passed (P5-T6 counted attempt 2); post-change expectation = 925 + 4 new S12/S13 unit tests = 929.
+
+
+============================================================
+== leg1-install
+============================================================
+leg1-install :: pnpm install --ignore-scripts
+Scope: all 10 workspace projects
+Already up to date
+Done in 53ms using pnpm v11.7.0
+LEG1_EXIT=0
+
+
+============================================================
+== selfcheck (pre-chain, this instance)
+============================================================
+frozen-doc SHA-256 (main worktree, bytes as-is): Architecture 030dfb8e...=MATCH  UI 3ef3ab69...=MATCH  DevPlan a05d237f...=MATCH  TaskDoc 2b457cc0...=MATCH
+stable :3080 HEAD probe: status=200
+test-use head: cd5ef8148158c3a752a658978873241fdf8e2bbc
+test-use status --porcelain: '' (empty = pristine)
+ports 3180,3181,3491-3495: all free before chain
+
+============================================================
+== leg2-runtests
+============================================================
+leg2-runtests :: node scripts/run-tests.mjs
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+... [all 9 packages, per-file PASS lines; key lines below] ...
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)   <-- p4t6 negative control: 258 scannable files assertion still green (no scannable file added by this change)
+run-tests (plain-node vitest-equivalent): 929 passed, 0 failed, 929 total, 1333 ms
+RESULT: PASS run-tests (0 failures)
+LEG2_EXIT=0
+note: 929 = 925 (pre-change integrated truth) + 4 new unit tests (S12 x3 + S13 x1 in p5t6-fresh-member.test.ts). p4t6Count=258 unchanged (DEC-1 note not triggered).
+
+
+============================================================
+== leg3-6-tsc
+============================================================
+leg3-tsc-storage    :: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json    EXIT=0
+leg4-tsc-domain     :: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json     EXIT=0
+leg5-tsc-contracts  :: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json  EXIT=0
+leg6-tsc-runtime    :: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json    EXIT=0
+
+
+============================================================
+== leg7-harness-run-1
+============================================================
+leg7-harness :: node packages/runtime/member-residency/harness/run.mjs --report-dir dev/agent-workflow/evidence/P5-T6/defect-fix-i1a/harness-runs/1
+pre-run ports 3180,3181,3491-3495: all free
+2026-08-30T12:51:52.311Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T12:51:52.320Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T12:51:52.359Z preflight: fresh DSH_HOME created at references\.dsh-test-p5t6
+2026-08-30T12:51:57.978Z boot 1: health ok  rowMounted={"p5t5-root-binding":true}
+2026-08-30T12:51:58.445Z scenario S1 (p5t5): http=200 pass=true assertions=15 (467ms)
+2026-08-30T12:52:00.511Z scenario S2 (p5t5): http=200 pass=true assertions=11 (45ms)
+2026-08-30T12:52:02.551Z boot 3: health ok  rowMounted={"p5t6-member-residency":true}
+2026-08-30T12:52:03.098Z scenario M1 (p5t6): http=200 pass=true assertions=11 (546ms)   <-- 10 pre-existing + 1 NEW must-assert entry (see M1.json)
+2026-08-30T12:52:03.198Z scenario M5 (p5t6): http=200 pass=true assertions=6 (99ms)
+2026-08-30T12:52:03.215Z I1a: gate armed - the gated create of member B is running
+2026-08-30T12:52:03.844Z I1a: process killed in the durable-write window (killed=true portFree=true state={"armed":true,"recordWritten":true,"bindingWritten":false,"recordPresent":true,"bindingPresent":false})   <-- windowWaitMs=555 (summary.i1.a)
+2026-08-30T12:52:05.754Z boot 4: health ok  rowMounted={"p5t6-member-residency":true}
+2026-08-30T12:52:06.124Z scenario I1A (p5t6): http=200 pass=true assertions=5 (323ms)   <-- I1A GREEN (the locked precondition resumeChildWithSetup is unchanged; the resumed child is durable at resume time)
+2026-08-30T12:52:08.524Z scenario I1C (p5t6): http=200 pass=true assertions=6 (178ms)   <-- I1c "only durable write is the binding put" stays true
+2026-08-30T12:52:08.704Z I1b: team_domain unit version corrupted pre-boot (999; original 3030 bytes backed up)
+boot 6 (I1B): setup FAIL LOUD as expected - setup-failure.json: code=SCHEMA_VERSION_MISMATCH error="team_domain is persisted at schema version null; this TeamDomain supports version 1 and has no built-in migration" (the ORIGINAL expected-fail reason, unchanged)
+2026-08-30T12:52:10.764Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T12:52:10.765Z postflight: test-use pristine after=true
+summary.pass=true failures=[] ports.released {odd,even,mcp}=true,true,true
+M1 must-assert evidence (M1.json): {name:"session: final artifact durable SYNCHRONOUSLY at resolution (M1 must-assert; no polling)", pass:true, actual:{projectDir:"--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--", size:317}}
+post-run port check: 3180,3181,3491-3495 all free
+LEG7_RUN1_EXIT=0
+
+
+============================================================
+== leg7-harness-run-2
+============================================================
+leg7-harness :: node packages/runtime/member-residency/harness/run.mjs --report-dir dev/agent-workflow/evidence/P5-T6/defect-fix-i1a/harness-runs/2
+pre-run ports 3180,3181,3491-3495: all free
+2026-08-30T12:53:03.097Z scenario S1 (p5t5): http=200 pass=true assertions=15 (384ms)
+2026-08-30T12:53:05.145Z scenario S2 (p5t5): http=200 pass=true assertions=11 (44ms)
+2026-08-30T12:53:07.556Z scenario M1 (p5t6): http=200 pass=true assertions=11 (363ms)
+2026-08-30T12:53:07.689Z scenario M5 (p5t6): http=200 pass=true assertions=6 (132ms)
+2026-08-30T12:53:07.699Z I1a: gate armed 鈥?the gated create of member B is running
+2026-08-30T12:53:08.192Z I1a: process killed in the durable-write window (killed=true portFree=true state={"armed":true,"recordWritten":true,"bindingWritten":false,"recordPresent":true,"bindingPresent":false})
+2026-08-30T12:53:10.189Z scenario M2 (p5t6): http=200 pass=true assertions=9 (51ms)
+2026-08-30T12:53:10.514Z scenario I1A (p5t6): http=200 pass=true assertions=5 (325ms)
+2026-08-30T12:53:10.766Z scenario M3 (p5t6): http=200 pass=true assertions=8 (231ms)
+2026-08-30T12:53:10.799Z scenario M4 (p5t6): http=200 pass=true assertions=6 (33ms)
+2026-08-30T12:53:10.849Z I1c: member A record deleted pre-boot (key={"instanceId":"inst-1vz9d1n0819t","rootSessionId":"session-p5t6-root"})
+2026-08-30T12:53:12.914Z scenario I1C (p5t6): http=200 pass=true assertions=6 (171ms)
+2026-08-30T12:53:13.085Z I1b: team_domain unit version corrupted pre-boot (999; original 3030 bytes backed up)
+2026-08-30T12:53:15.154Z P5-T6 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6\dev\agent-workflow\evidence\P5-T6\defect-fix-i1a\harness-runs\2\summary.json
+summary.pass=true failures=[] ports.released {odd,even,mcp}=true,true,true
+i1.a: windowObserved=true windowWaitMs=435 killed=true stateAtKill={recordPresent:true,bindingPresent:false}
+i1.b: setup-failure code=SCHEMA_VERSION_MISMATCH (expected; original reason) fileUnchangedAfterFailedBoot=true
+i1.c: pass=true (the only durable write is the binding put)
+M1 must-assert (M1.json): pass=true actual.size=321 (final artifact on disk at createFreshMember resolution, no polling)
+post-run port check: 3180,3181,3491-3495 all free
+LEG7_RUN2_EXIT=0
+
+
+============================================================
+== leg7-harness-run-3
+============================================================
+leg7-harness :: node packages/runtime/member-residency/harness/run.mjs --report-dir dev/agent-workflow/evidence/P5-T6/defect-fix-i1a/harness-runs/3
+pre-run ports 3180,3181,3491-3495: all free
+2026-08-30T12:53:41.471Z scenario S1 (p5t5): http=200 pass=true assertions=15 (381ms)
+2026-08-30T12:53:43.495Z scenario S2 (p5t5): http=200 pass=true assertions=11 (49ms)
+2026-08-30T12:53:45.884Z scenario M1 (p5t6): http=200 pass=true assertions=11 (375ms)
+2026-08-30T12:53:46.108Z scenario M5 (p5t6): http=200 pass=true assertions=6 (208ms)
+2026-08-30T12:53:46.126Z I1a: gate armed 鈥?the gated create of member B is running
+2026-08-30T12:53:46.570Z I1a: process killed in the durable-write window (killed=true portFree=true state={"armed":true,"recordWritten":true,"bindingWritten":false,"recordPresent":true,"bindingPresent":false})
+2026-08-30T12:53:48.502Z scenario M2 (p5t6): http=200 pass=true assertions=9 (46ms)
+2026-08-30T12:53:48.972Z scenario I1A (p5t6): http=200 pass=true assertions=5 (469ms)
+2026-08-30T12:53:49.160Z scenario M3 (p5t6): http=200 pass=true assertions=8 (188ms)
+2026-08-30T12:53:49.195Z scenario M4 (p5t6): http=200 pass=true assertions=6 (35ms)
+2026-08-30T12:53:49.298Z I1c: member A record deleted pre-boot (key={"instanceId":"inst-1vz9d1n0819t","rootSessionId":"session-p5t6-root"})
+2026-08-30T12:53:51.336Z scenario I1C (p5t6): http=200 pass=true assertions=6 (139ms)
+2026-08-30T12:53:51.616Z I1b: team_domain unit version corrupted pre-boot (999; original 3030 bytes backed up)
+2026-08-30T12:53:53.650Z P5-T6 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6\dev\agent-workflow\evidence\P5-T6\defect-fix-i1a\harness-runs\3\summary.json
+summary.pass=true failures=[] ports.released {odd,even,mcp}=true,true,true
+i1.a: windowObserved=true windowWaitMs=401 killed=true stateAtKill={recordPresent:true,bindingPresent:false}
+i1.b: setup-failure code=SCHEMA_VERSION_MISMATCH (expected; original reason) fileUnchangedAfterFailedBoot=true
+i1.c: pass=true (the only durable write is the binding put)
+M1 must-assert (M1.json): pass=true actual.size=316 (final artifact on disk at createFreshMember resolution, no polling)
+post-run port check: 3180,3181,3491-3495 all free
+LEG7_RUN3_EXIT=0
+
+============================================================
+== verdict
+============================================================
+leg exits: leg1-install=0 leg2-runtests=0 leg3-tsc-storage=0 leg4-tsc-domain=0 leg5-tsc-contracts=0 leg6-tsc-runtime=0 leg7-harness-run1=0 leg7-harness-run2=0 leg7-harness-run3=0
+bad legs: ''
+harness summary.pass: True x3 (runs 1,2,3); I1A pass in summary.json x3 (scenario I1A pass=true, assertions=5, each run)
+incident note: a first worker instance produced the code edits (uncommitted) and died before running any verification; this (second/resuming) instance audited the diff, fixed the single deviation (missing M1 must-assert in harness/plugin.mjs — added as a synchronous no-polling at-resolution artifact check before modelSource.select + one report assertions entry), and ran the complete chain to green in this single run.
+VERDICT: PASS
+

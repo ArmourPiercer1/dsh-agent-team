@@ -1,0 +1,119 @@
+{
+  "scenario": "M3",
+  "boot": 4,
+  "sessionId": "session-child-1vz9d1n0819tzg0x",
+  "identity": {
+    "instanceId": "inst-1vz9d1n0819t",
+    "childSessionId": "session-child-1vz9d1n0819tzg0x"
+  },
+  "pass": true,
+  "assertions": [
+    {
+      "name": "setup: SETTLED seeded through the row-owned repository seam (2 harness-setup writes, logged)",
+      "pass": true,
+      "actual": [
+        {
+          "op": "harness-setup-member-delete",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-1vz9d1n0819t"
+        },
+        {
+          "op": "harness-setup-member-put-settled",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-1vz9d1n0819t"
+        }
+      ]
+    },
+    {
+      "name": "evict: path evict-settled with the live handle present -> residencyDropped=true",
+      "pass": true,
+      "actual": {
+        "path": "evict-settled",
+        "residencyDropped": true,
+        "hadLiveResidency": true
+      }
+    },
+    {
+      "name": "evict: the live handle was disposed (no residency left)",
+      "pass": true,
+      "actual": {
+        "liveHandlePresent": false
+      }
+    },
+    {
+      "name": "evict: the durable record SURVIVES — lifecycle SETTLED, identity intact",
+      "pass": true,
+      "actual": {
+        "lifecycle": "SETTLED",
+        "instanceId": "inst-1vz9d1n0819t"
+      }
+    },
+    {
+      "name": "evict: the binding row SURVIVES (team-member, unchanged identity)",
+      "pass": true,
+      "actual": {
+        "schemaVersion": 1,
+        "kind": "team-member",
+        "sessionId": "session-child-1vz9d1n0819tzg0x",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t"
+      }
+    },
+    {
+      "name": "evict: ZERO product durable writes (harness-setup writes are flagged separately)",
+      "pass": true,
+      "actual": {
+        "productWrites": [],
+        "setupWrites": [
+          {
+            "op": "harness-setup-member-delete",
+            "rootSessionId": "session-p5t6-root",
+            "instanceId": "inst-1vz9d1n0819t"
+          },
+          {
+            "op": "harness-setup-member-put-settled",
+            "rootSessionId": "session-p5t6-root",
+            "instanceId": "inst-1vz9d1n0819t"
+          }
+        ]
+      }
+    },
+    {
+      "name": "evict: no agent-setup events on the evict path (the binder is the single emitter; eviction is not a bind path)",
+      "pass": true,
+      "actual": []
+    },
+    {
+      "name": "evict2: handle-absent eviction still succeeds (residencyDropped=false, record intact)",
+      "pass": true,
+      "actual": {
+        "path": "evict-settled",
+        "residencyDropped": false
+      }
+    }
+  ],
+  "evict1": {
+    "path": "evict-settled",
+    "residencyDropped": true
+  },
+  "evict2": {
+    "path": "evict-settled",
+    "residencyDropped": false
+  },
+  "verification": {
+    "writes": [
+      {
+        "op": "harness-setup-member-delete",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t"
+      },
+      {
+        "op": "harness-setup-member-put-settled",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t"
+      }
+    ],
+    "hadLiveResidency": true
+  },
+  "obs": {}
+}

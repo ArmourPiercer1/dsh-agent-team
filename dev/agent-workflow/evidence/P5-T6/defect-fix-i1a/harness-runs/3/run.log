@@ -1,0 +1,47 @@
+2026-08-30T12:53:36.743Z P5-T6 harness start: worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6
+2026-08-30T12:53:36.744Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:36.744Z ports: odd boots=3180 even boots=3181
+2026-08-30T12:53:36.819Z product modules loaded: deriveMemberIdentity + memberIdentityKey (worktree TS sources)
+2026-08-30T12:53:36.937Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T12:53:36.946Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T12:53:36.984Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:36.986Z junction farm ready (shared packages/runtime/node_modules)
+2026-08-30T12:53:36.987Z user presets written: p5t6-leader-persona, p5t6-member-persona
+2026-08-30T12:53:36.998Z mini MCP server up on 127.0.0.1:3491
+2026-08-30T12:53:36.999Z derived identities: A={"instanceId":"inst-1vz9d1n0819t","childSessionId":"session-child-1vz9d1n0819tzg0x"} B={"instanceId":"inst-0eeg6ty1oe6h","childSessionId":"session-child-0eeg6ty1oe6h9p1g"}
+2026-08-30T12:53:37.000Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-30T12:53:38.611Z throwaway boot OK: http://127.0.0.1:3180/?token=EWb8omlOJlU6WWu86n40s6ddhCYuI2MMRwmiuQaUayw
+2026-08-30T12:53:38.648Z directive(s) boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:41.089Z boot 1: health={"ok":true,"boot":1,"ready":true} rowMounted={"p5t5-root-binding":true}
+2026-08-30T12:53:41.471Z scenario S1 (p5t5): http=200 pass=true assertions=15 (381ms)
+2026-08-30T12:53:41.546Z boot 1: stopped killed=true portFree=true
+2026-08-30T12:53:41.547Z directive(s) boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:43.446Z boot 2: health={"ok":true,"boot":2,"ready":true} rowMounted={"p5t5-root-binding":true}
+2026-08-30T12:53:43.495Z scenario S2 (p5t5): http=200 pass=true assertions=11 (49ms)
+2026-08-30T12:53:43.625Z boot 2: stopped killed=true portFree=true
+2026-08-30T12:53:43.627Z directive(s) boot=3 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:45.508Z boot 3: health={"ok":true,"boot":3,"setupError":null,"setupErrorCode":null} rowMounted={"p5t6-member-residency":true}
+2026-08-30T12:53:45.884Z scenario M1 (p5t6): http=200 pass=true assertions=11 (375ms)
+2026-08-30T12:53:46.108Z scenario M5 (p5t6): http=200 pass=true assertions=6 (208ms)
+2026-08-30T12:53:46.126Z I1a: gate armed — the gated create of member B is running
+2026-08-30T12:53:46.570Z I1a: process killed in the durable-write window (killed=true portFree=true state={"armed":true,"recordWritten":true,"bindingWritten":false,"recordPresent":true,"bindingPresent":false})
+2026-08-30T12:53:46.570Z boot 3: stopped killed=false portFree=true
+2026-08-30T12:53:46.571Z directive(s) boot=4 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:48.456Z boot 4: health={"ok":true,"boot":4,"setupError":null,"setupErrorCode":null} rowMounted={"p5t6-member-residency":true}
+2026-08-30T12:53:48.502Z scenario M2 (p5t6): http=200 pass=true assertions=9 (46ms)
+2026-08-30T12:53:48.972Z scenario I1A (p5t6): http=200 pass=true assertions=5 (469ms)
+2026-08-30T12:53:49.160Z scenario M3 (p5t6): http=200 pass=true assertions=8 (188ms)
+2026-08-30T12:53:49.195Z scenario M4 (p5t6): http=200 pass=true assertions=6 (35ms)
+2026-08-30T12:53:49.295Z boot 4: stopped killed=true portFree=true
+2026-08-30T12:53:49.298Z I1c: member A record deleted pre-boot (key={"instanceId":"inst-1vz9d1n0819t","rootSessionId":"session-p5t6-root"})
+2026-08-30T12:53:49.299Z directive(s) boot=5 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:51.197Z boot 5: health={"ok":true,"boot":5,"setupError":null,"setupErrorCode":null} rowMounted={"p5t6-member-residency":true}
+2026-08-30T12:53:51.336Z scenario I1C (p5t6): http=200 pass=true assertions=6 (139ms)
+2026-08-30T12:53:51.615Z boot 5: stopped killed=true portFree=true
+2026-08-30T12:53:51.616Z I1b: team_domain unit version corrupted pre-boot (999; original 3030 bytes backed up)
+2026-08-30T12:53:51.617Z directive(s) boot=6 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T12:53:53.524Z boot 6: stopped killed=true portFree=true
+2026-08-30T12:53:53.525Z mini MCP server closed
+2026-08-30T12:53:53.649Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T12:53:53.650Z postflight: test-use pristine after=true
+2026-08-30T12:53:53.650Z P5-T6 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6\dev\agent-workflow\evidence\P5-T6\defect-fix-i1a\harness-runs\3\summary.json

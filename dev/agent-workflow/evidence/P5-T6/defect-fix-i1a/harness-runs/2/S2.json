@@ -1,0 +1,251 @@
+{
+  "scenario": "S2",
+  "sessionId": "session-p5t6-root",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "durable: present after restart, re-read WITHOUT writes (wrote:false)",
+      "pass": true,
+      "actual": {
+        "durable": {
+          "wrote": false,
+          "blueprint": {
+            "blueprintId": "P5T6-BP-REAL",
+            "revision": "1",
+            "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+          }
+        }
+      }
+    },
+    {
+      "name": "durable: read-back pins the immutable blueprint snapshot",
+      "pass": true,
+      "actual": {
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+      },
+      "expected": {
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+      }
+    },
+    {
+      "name": "bind: cold path re-admits (ADMISSION_OPEN)",
+      "pass": true,
+      "actual": {
+        "admitted": true,
+        "admissionCode": "ADMISSION_OPEN"
+      }
+    },
+    {
+      "name": "bind: cold path is a real bind, not an ordinary no-op (bound:true, installed:true, no noopReason)",
+      "pass": true,
+      "actual": {
+        "bound": true,
+        "installed": true,
+        "noopReason": null
+      }
+    },
+    {
+      "name": "bind: no fresh-time overlay installs (zero overlay-installed events; scope restored instead)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/scope-restored",
+          "detail": "root"
+        },
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    },
+    {
+      "name": "bind: agent-setup events (1 scope-restored + 1 admission-decided)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/scope-restored",
+          "detail": "root"
+        },
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    },
+    {
+      "name": "writes: zero durable writes on the cold path (this boot)",
+      "pass": true,
+      "actual": []
+    },
+    {
+      "name": "model: durable model/selection survived the process restart",
+      "pass": true,
+      "actual": [
+        {
+          "seq": 0,
+          "type": "permission/preset"
+        },
+        {
+          "seq": 1,
+          "type": "sandbox/mode"
+        },
+        {
+          "seq": 2,
+          "type": "approval/policy"
+        },
+        {
+          "seq": 3,
+          "type": "model/selection"
+        },
+        {
+          "seq": 4,
+          "type": "session/end-seed"
+        }
+      ]
+    },
+    {
+      "name": "model: re-seeded ref captured at the first post-resume assembly",
+      "pass": true,
+      "actual": {
+        "assembled": {
+          "provider": "p5t6-static",
+          "model": "p5t6-model-v1"
+        },
+        "composePath": "sessionProjections",
+        "variables": {
+          "provider": "p5t6-static",
+          "model": "p5t6-model-v1"
+        }
+      },
+      "expected": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    {
+      "name": "persona: composed preset carries the blueprint leader persona",
+      "pass": true,
+      "actual": {
+        "composedPreset": "p5t6-leader-persona",
+        "personaPresent": true,
+        "textMatches": true
+      }
+    },
+    {
+      "name": "surface: restore was a re-entrant no-op or a mount",
+      "pass": true,
+      "actual": {
+        "restoreEffect": "already-composed",
+        "restored": {
+          "kind": "root",
+          "slots": [
+            "persona",
+            "model",
+            "capability"
+          ]
+        }
+      }
+    }
+  ],
+  "bind": {
+    "requested": "cold-root",
+    "bound": true,
+    "installed": true,
+    "identity": {
+      "kind": "root",
+      "sessionId": "session-p5t6-root",
+      "rootSessionId": "session-p5t6-root"
+    },
+    "admitted": true,
+    "admissionCode": "ADMISSION_OPEN",
+    "emittedEvents": [
+      {
+        "name": "agent-setup/scope-restored",
+        "detail": "root"
+      },
+      {
+        "name": "agent-setup/admission-decided",
+        "detail": "ADMISSION_OPEN"
+      }
+    ]
+  },
+  "durableState": {
+    "teamSession": {
+      "schemaVersion": 1,
+      "rootSessionId": "session-p5t6-root",
+      "blueprint": {
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+      },
+      "createdAt": "2026-08-30T12:53:02.728Z",
+      "generation": 1,
+      "defaultWorkspace": "C:/agent-team/work/p5t6"
+    },
+    "binding": {
+      "schemaVersion": 1,
+      "kind": "team-root",
+      "sessionId": "session-p5t6-root"
+    },
+    "wrote": false
+  },
+  "verification": {
+    "model": {
+      "seededFrom": "sessionProjections",
+      "projection": {
+        "lastUsed": null,
+        "pending": {
+          "provider": "p5t6-static",
+          "model": "p5t6-model-v1"
+        }
+      },
+      "current": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      },
+      "assembled": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    "persona": {
+      "present": true,
+      "textMatches": true
+    },
+    "durable": {
+      "sessionFile": {
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--",
+        "files": [
+          {
+            "name": "session.jsonl.zstd",
+            "size": 414,
+            "final": true
+          }
+        ]
+      }
+    },
+    "writes": [],
+    "guardFacts": [
+      {
+        "scenario": "S2",
+        "policy": "open",
+        "liveFacts": {
+          "sessionExists": true,
+          "path": "cold-root"
+        }
+      }
+    ],
+    "mountFailures": []
+  },
+  "obs": {
+    "listeners": null
+  }
+}

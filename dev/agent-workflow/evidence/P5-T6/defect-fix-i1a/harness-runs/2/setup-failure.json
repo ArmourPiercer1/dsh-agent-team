@@ -1,0 +1,5 @@
+{
+  "error": "team_domain is persisted at schema version null; this TeamDomain supports version 1 and has no built-in migration",
+  "code": "SCHEMA_VERSION_MISMATCH",
+  "stack": "TeamDomainError: team_domain is persisted at schema version null; this TeamDomain supports version 1 and has no built-in migration\n    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/storage/schema/errors.ts:98:10)\n    at openHandle (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/storage/repositories/team-domain.ts:101:13)\n    at async Module.openTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/storage/repositories/team-domain.ts:195:18)\n    at async run (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/runtime/member-residency/harness/plugin.mjs:450:14)"
+}

@@ -1,0 +1,513 @@
+{
+  "task": "P5-T6 member create/resume residency (I-1 real instance)",
+  "runStamp": 1788094312184,
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6",
+  "ports": {
+    "odd": 3180,
+    "even": 3181,
+    "mcp": 3491,
+    "released": {
+      "odd": true,
+      "even": true,
+      "mcp": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "afterBuild": null,
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "build": {
+    "required": false
+  },
+  "rowMounted": {
+    "p5t5-root-binding-boot1": true,
+    "p5t5-root-binding-boot2": true,
+    "p5t6-member-residency-boot3": true,
+    "p5t6-member-residency-boot4": true,
+    "p5t6-member-residency-boot5": true,
+    "p5t6-member-residency-boot6": true
+  },
+  "boots": {
+    "boot1": {
+      "port": 3180,
+      "rows": [
+        "p5t5-root-binding"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "url": "http://127.0.0.1:3180/?token=zMsVCGLB6PVlMZtA3evpIjQF2U-PYuEz4gdghxlBF_U",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6\\dev\\agent-workflow\\evidence\\P5-T6\\defect-fix-i1a\\harness-runs\\1\\logs\\boot1\\instance-port3180.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3180/?token=zMsVCGLB6PVlMZtA3evpIjQF2U-PYuEz4gdghxlBF_U",
+      "healthBefore": {
+        "ok": true,
+        "boot": 1,
+        "ready": true
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 1,
+        "ready": true
+      },
+      "rowMounted": {
+        "p5t5-root-binding": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "S1": {
+          "httpStatus": 200,
+          "durationMs": 467,
+          "pass": true,
+          "assertions": 15,
+          "failing": [],
+          "error": null
+        }
+      }
+    },
+    "boot2": {
+      "port": 3181,
+      "rows": [
+        "p5t5-root-binding"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3181/?token=cU0TV489Tt2fDrsuaay3FsqSqzs5sGSWQ8DX1zHaWjc",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6\\dev\\agent-workflow\\evidence\\P5-T6\\defect-fix-i1a\\harness-runs\\1\\logs\\boot2\\instance-port3181.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3181/?token=cU0TV489Tt2fDrsuaay3FsqSqzs5sGSWQ8DX1zHaWjc",
+      "healthBefore": {
+        "ok": true,
+        "boot": 2,
+        "ready": true
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 2,
+        "ready": true
+      },
+      "rowMounted": {
+        "p5t5-root-binding": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "S2": {
+          "httpStatus": 200,
+          "durationMs": 45,
+          "pass": true,
+          "assertions": 11,
+          "failing": [],
+          "error": null
+        }
+      }
+    },
+    "boot3": {
+      "port": 3180,
+      "rows": [
+        "p5t6-member-residency"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3180/?token=ooH6D-hIAUrbo58PTE18FtoWCa0GQIkDCzrZenIfBto",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6\\dev\\agent-workflow\\evidence\\P5-T6\\defect-fix-i1a\\harness-runs\\1\\logs\\boot3\\instance-port3180.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3180/?token=ooH6D-hIAUrbo58PTE18FtoWCa0GQIkDCzrZenIfBto",
+      "healthBefore": {
+        "ok": true,
+        "boot": 3,
+        "setupError": null,
+        "setupErrorCode": null
+      },
+      "healthAfter": null,
+      "rowMounted": {
+        "p5t6-member-residency": true
+      },
+      "stop": {
+        "killed": false,
+        "portFree": true
+      },
+      "scenarios": {
+        "M1": {
+          "httpStatus": 200,
+          "durationMs": 546,
+          "pass": true,
+          "assertions": 11,
+          "failing": [],
+          "error": null
+        },
+        "M5": {
+          "httpStatus": 200,
+          "durationMs": 99,
+          "pass": true,
+          "assertions": 6,
+          "failing": [],
+          "error": null
+        }
+      },
+      "i1aCrash": {
+        "armed": true,
+        "windowObserved": true,
+        "stateAtKill": {
+          "armed": true,
+          "recordWritten": true,
+          "bindingWritten": false,
+          "recordPresent": true,
+          "bindingPresent": false
+        },
+        "kill": {
+          "killed": true,
+          "portFree": true
+        },
+        "windowWaitMs": 555
+      }
+    },
+    "boot4": {
+      "port": 3181,
+      "rows": [
+        "p5t6-member-residency"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3181/?token=iLYnVPyxRVEMwjrecY_V94crQkNY03bgGIJBpWKyTC8",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6\\dev\\agent-workflow\\evidence\\P5-T6\\defect-fix-i1a\\harness-runs\\1\\logs\\boot4\\instance-port3181.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3181/?token=iLYnVPyxRVEMwjrecY_V94crQkNY03bgGIJBpWKyTC8",
+      "healthBefore": {
+        "ok": true,
+        "boot": 4,
+        "setupError": null,
+        "setupErrorCode": null
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 4,
+        "setupError": null,
+        "setupErrorCode": null
+      },
+      "rowMounted": {
+        "p5t6-member-residency": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "M2": {
+          "httpStatus": 200,
+          "durationMs": 46,
+          "pass": true,
+          "assertions": 9,
+          "failing": [],
+          "error": null
+        },
+        "I1A": {
+          "httpStatus": 200,
+          "durationMs": 323,
+          "pass": true,
+          "assertions": 5,
+          "failing": [],
+          "error": null
+        },
+        "M3": {
+          "httpStatus": 200,
+          "durationMs": 148,
+          "pass": true,
+          "assertions": 8,
+          "failing": [],
+          "error": null
+        },
+        "M4": {
+          "httpStatus": 200,
+          "durationMs": 31,
+          "pass": true,
+          "assertions": 6,
+          "failing": [],
+          "error": null
+        }
+      }
+    },
+    "boot5": {
+      "port": 3180,
+      "rows": [
+        "p5t6-member-residency"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3180/?token=znXwnArCHdxicGPk7CbeWVKarjnc7yfvNactuDpd4lM",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6\\dev\\agent-workflow\\evidence\\P5-T6\\defect-fix-i1a\\harness-runs\\1\\logs\\boot5\\instance-port3180.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3180/?token=znXwnArCHdxicGPk7CbeWVKarjnc7yfvNactuDpd4lM",
+      "healthBefore": {
+        "ok": true,
+        "boot": 5,
+        "setupError": null,
+        "setupErrorCode": null
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 5,
+        "setupError": null,
+        "setupErrorCode": null
+      },
+      "rowMounted": {
+        "p5t6-member-residency": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "I1C": {
+          "httpStatus": 200,
+          "durationMs": 178,
+          "pass": true,
+          "assertions": 6,
+          "failing": [],
+          "error": null
+        }
+      }
+    },
+    "boot6": {
+      "port": 3181,
+      "rows": [
+        "p5t6-member-residency"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3181/?token=FsqYv6mnOJ3ltDgfNTQ26A9fBRsJhF4PfG3RUF5QFfU",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P5-T6\\dev\\agent-workflow\\evidence\\P5-T6\\defect-fix-i1a\\harness-runs\\1\\logs\\boot6\\instance-port3181.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3181/?token=FsqYv6mnOJ3ltDgfNTQ26A9fBRsJhF4PfG3RUF5QFfU",
+      "healthBefore": null,
+      "healthAfter": null,
+      "rowMounted": {
+        "p5t6-member-residency": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {},
+      "setupFailure": {
+        "error": "team_domain is persisted at schema version null; this TeamDomain supports version 1 and has no built-in migration",
+        "code": "SCHEMA_VERSION_MISMATCH",
+        "stack": "TeamDomainError: team_domain is persisted at schema version null; this TeamDomain supports version 1 and has no built-in migration\n    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/storage/schema/errors.ts:98:10)\n    at openHandle (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/storage/repositories/team-domain.ts:101:13)\n    at async Module.openTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/storage/repositories/team-domain.ts:195:18)\n    at async run (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T6/packages/runtime/member-residency/harness/plugin.mjs:450:14)"
+      }
+    }
+  },
+  "scenarios": {
+    "S1": {
+      "boot": 1,
+      "row": "p5t5",
+      "httpStatus": 200,
+      "durationMs": 467,
+      "pass": true,
+      "assertions": 15,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/S1.json"
+    },
+    "S2": {
+      "boot": 2,
+      "row": "p5t5",
+      "httpStatus": 200,
+      "durationMs": 45,
+      "pass": true,
+      "assertions": 11,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/S2.json"
+    },
+    "M1": {
+      "boot": 3,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 546,
+      "pass": true,
+      "assertions": 11,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/M1.json"
+    },
+    "M5": {
+      "boot": 3,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 99,
+      "pass": true,
+      "assertions": 6,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/M5.json"
+    },
+    "M2": {
+      "boot": 4,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 46,
+      "pass": true,
+      "assertions": 9,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/M2.json"
+    },
+    "I1A": {
+      "boot": 4,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 323,
+      "pass": true,
+      "assertions": 5,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/I1A.json"
+    },
+    "M3": {
+      "boot": 4,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 148,
+      "pass": true,
+      "assertions": 8,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/M3.json"
+    },
+    "M4": {
+      "boot": 4,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 31,
+      "pass": true,
+      "assertions": 6,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/M4.json"
+    },
+    "I1C": {
+      "boot": 5,
+      "row": "p5t6",
+      "httpStatus": 200,
+      "durationMs": 178,
+      "pass": true,
+      "assertions": 6,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/I1C.json"
+    }
+  },
+  "i1": {
+    "a": {
+      "armed": true,
+      "windowObserved": true,
+      "stateAtKill": {
+        "armed": true,
+        "recordWritten": true,
+        "bindingWritten": false,
+        "recordPresent": true,
+        "bindingPresent": false
+      },
+      "kill": {
+        "killed": true,
+        "portFree": true
+      },
+      "windowWaitMs": 555
+    },
+    "b": {
+      "corruptedVersion": 999,
+      "boot": 6,
+      "expectedCode": "SCHEMA_VERSION_MISMATCH",
+      "fileUnchangedAfterFailedBoot": true,
+      "setupFailureCode": "SCHEMA_VERSION_MISMATCH"
+    },
+    "c": {
+      "deletedKey": "{\"instanceId\":\"inst-1vz9d1n0819t\",\"rootSessionId\":\"session-p5t6-root\"}",
+      "boot": 5,
+      "scenario": {
+        "boot": 5,
+        "row": "p5t6",
+        "httpStatus": 200,
+        "durationMs": 178,
+        "pass": true,
+        "assertions": 6,
+        "failing": [],
+        "error": null,
+        "reportFile": "harness-output/I1C.json"
+      }
+    }
+  },
+  "pass": true,
+  "failures": [],
+  "members": {
+    "rootSessionId": "session-p5t6-root",
+    "ordinarySessionId": "session-p5t6-ordinary",
+    "A": {
+      "spec": {
+        "rootSessionId": "session-p5t6-root",
+        "templateId": "p5t6worker",
+        "label": "worker-a"
+      },
+      "identity": {
+        "instanceId": "inst-1vz9d1n0819t",
+        "childSessionId": "session-child-1vz9d1n0819tzg0x"
+      }
+    },
+    "B": {
+      "spec": {
+        "rootSessionId": "session-p5t6-root",
+        "templateId": "p5t6worker",
+        "label": "worker-b"
+      },
+      "identity": {
+        "instanceId": "inst-0eeg6ty1oe6h",
+        "childSessionId": "session-child-0eeg6ty1oe6h9p1g"
+      }
+    }
+  }
+}

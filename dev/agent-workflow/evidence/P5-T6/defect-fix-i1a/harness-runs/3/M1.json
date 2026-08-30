@@ -1,0 +1,257 @@
+{
+  "scenario": "M1",
+  "boot": 3,
+  "sessionId": "session-child-1vz9d1n0819tzg0x",
+  "identity": {
+    "instanceId": "inst-1vz9d1n0819t",
+    "childSessionId": "session-child-1vz9d1n0819tzg0x"
+  },
+  "pass": true,
+  "assertions": [
+    {
+      "name": "identity: durable record carries the DERIVED identity (invariant 18/23)",
+      "pass": true,
+      "actual": {
+        "instanceId": "inst-1vz9d1n0819t",
+        "childSessionId": "session-child-1vz9d1n0819tzg0x",
+        "rootSessionId": "session-p5t6-root"
+      },
+      "expected": {
+        "instanceId": "inst-1vz9d1n0819t",
+        "childSessionId": "session-child-1vz9d1n0819tzg0x"
+      }
+    },
+    {
+      "name": "durable: team-member binding row written (child -> root, instance)",
+      "pass": true,
+      "actual": {
+        "schemaVersion": 1,
+        "kind": "team-member",
+        "sessionId": "session-child-1vz9d1n0819tzg0x",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t"
+      }
+    },
+    {
+      "name": "bind: fresh-member path, installed=true, admitted (open policy)",
+      "pass": true,
+      "actual": {
+        "path": "fresh-member",
+        "wrote": true,
+        "bound": true,
+        "installed": true,
+        "admitted": true
+      }
+    },
+    {
+      "name": "slots: all three overlay slots installed (persona/model/capability)",
+      "pass": true,
+      "actual": [
+        "persona",
+        "model",
+        "capability"
+      ],
+      "expected": [
+        "persona",
+        "model",
+        "capability"
+      ]
+    },
+    {
+      "name": "bind: agent-setup events (3 overlay-installed + 1 admission-decided)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "name": "agent-setup/overlay-installed",
+          "detail": "persona"
+        },
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "name": "agent-setup/overlay-installed",
+          "detail": "model"
+        },
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "name": "agent-setup/overlay-installed",
+          "detail": "capability"
+        },
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    },
+    {
+      "name": "persona: assembled persona text is the blueprint MEMBER persona",
+      "pass": true,
+      "actual": "You are the p5t6worker member, executing your assigned step and reporting facts.",
+      "expected": "You are the p5t6worker member, executing your assigned step and reporting facts."
+    },
+    {
+      "name": "model: assembly variables carry the selected provider/model",
+      "pass": true,
+      "actual": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      },
+      "expected": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    {
+      "name": "capability: tools + skills registered and the mini-MCP tool visible",
+      "pass": true,
+      "actual": {
+        "toolsRegistered": [
+          "p5t6-tool-alpha",
+          "p5t6-tool-beta"
+        ],
+        "skillsRegistered": [
+          "p5t6-skill-one"
+        ],
+        "mcpVisible": true,
+        "toolNames": [
+          "p5t6-tool-alpha",
+          "p5t6-tool-beta",
+          "mcp__p5t6mini__ping"
+        ]
+      }
+    },
+    {
+      "name": "session: final artifact durable SYNCHRONOUSLY at resolution (M1 must-assert; no polling)",
+      "pass": true,
+      "actual": {
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--",
+        "size": 316
+      }
+    },
+    {
+      "name": "session: live + durable artifact published, model/selection appended",
+      "pass": true,
+      "actual": {
+        "sessionExists": true,
+        "durable": {
+          "published": true,
+          "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--",
+          "size": 316
+        },
+        "sessionEvents": [
+          {
+            "seq": 0,
+            "type": "permission/preset"
+          },
+          {
+            "seq": 1,
+            "type": "sandbox/mode"
+          },
+          {
+            "seq": 2,
+            "type": "approval/policy"
+          },
+          {
+            "seq": 3,
+            "type": "model/selection"
+          }
+        ]
+      }
+    },
+    {
+      "name": "writes: exactly [putMemberInstance, putSessionBinding] in that order",
+      "pass": true,
+      "actual": [
+        {
+          "op": "putMemberInstance",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-1vz9d1n0819t",
+          "childSessionId": "session-child-1vz9d1n0819tzg0x"
+        },
+        {
+          "op": "putSessionBinding",
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "kind": "team-member"
+        }
+      ]
+    }
+  ],
+  "bind": {
+    "requested": "fresh-member",
+    "bound": true,
+    "installed": true,
+    "identity": {
+      "kind": "member",
+      "sessionId": "session-child-1vz9d1n0819tzg0x",
+      "rootSessionId": "session-p5t6-root",
+      "instanceId": "inst-1vz9d1n0819t"
+    },
+    "admitted": true,
+    "admissionCode": "ADMISSION_OPEN",
+    "emittedEvents": [
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "persona"
+      },
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "model"
+      },
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "capability"
+      },
+      {
+        "name": "agent-setup/admission-decided",
+        "detail": "ADMISSION_OPEN"
+      }
+    ]
+  },
+  "durableState": {
+    "member": {
+      "schemaVersion": 1,
+      "rootSessionId": "session-p5t6-root",
+      "instanceId": "inst-1vz9d1n0819t",
+      "templateId": "p5t6worker",
+      "label": "worker-a",
+      "childSessionId": "session-child-1vz9d1n0819tzg0x",
+      "lifecycle": "CREATED",
+      "createdAt": "2026-08-30T12:53:45.698Z",
+      "activityVersion": 1
+    },
+    "binding": {
+      "schemaVersion": 1,
+      "kind": "team-member",
+      "sessionId": "session-child-1vz9d1n0819tzg0x",
+      "rootSessionId": "session-p5t6-root",
+      "instanceId": "inst-1vz9d1n0819t"
+    },
+    "wrote": true
+  },
+  "verification": {
+    "writes": [
+      {
+        "op": "putMemberInstance",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t",
+        "childSessionId": "session-child-1vz9d1n0819tzg0x"
+      },
+      {
+        "op": "putSessionBinding",
+        "sessionId": "session-child-1vz9d1n0819tzg0x",
+        "kind": "team-member"
+      }
+    ],
+    "guardFacts": [
+      {
+        "scenario": "M1",
+        "policy": "open",
+        "path": "fresh-member"
+      }
+    ]
+  },
+  "obs": {
+    "mountErrors": [],
+    "mountFailures": []
+  }
+}

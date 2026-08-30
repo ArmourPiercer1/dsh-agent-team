@@ -1,0 +1,52 @@
+{
+  "scenario": "M5",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "ordinary: no team binding row for the ordinary session",
+      "pass": true,
+      "actual": null
+    },
+    {
+      "name": "ordinary: no residency/overlay bookkeeping for the ordinary session",
+      "pass": true,
+      "actual": {
+        "surfaceEntry": null,
+        "liveHandle": false
+      }
+    },
+    {
+      "name": "ordinary: no agent-setup events for the ordinary session",
+      "pass": true,
+      "actual": []
+    },
+    {
+      "name": "member: the M1 member record still stands (unchanged by this scenario)",
+      "pass": true,
+      "actual": {
+        "childSessionId": "session-child-1vz9d1n0819tzg0x"
+      }
+    },
+    {
+      "name": "probe: followup(rootAgent, memberChildId) rejected with SubagentError UNAUTHORIZED",
+      "pass": true,
+      "actual": {
+        "name": "SubagentError",
+        "code": "UNAUTHORIZED",
+        "message": "subagent \"session-child-1vz9d1n0819tzg0x\" belongs to another parent session"
+      },
+      "expected": {
+        "name": "SubagentError",
+        "code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "probe: no turn submitted to the member child (event count unchanged)",
+      "pass": true,
+      "actual": {
+        "before": 5,
+        "after": 5
+      }
+    }
+  ]
+}
