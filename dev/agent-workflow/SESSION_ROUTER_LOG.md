@@ -330,7 +330,14 @@
   - T3：实现 root/member/ordinary binding、双向 integrity、orphan/missing binding diagnostics；允许依赖 = contracts/domain/repositories；**不创建 live Agent，只处理 durable binding**；必须测试 = missing child / duplicate binding / wrong root / ordinary fork no binding；验收 = binding 查询可支撑 cold hydration/fork reconciliation；输出物 = binding repo/reconciler + tests。
 - **派发**：workflow `p4-e1-parallel-journal-bindings`，2 worker 并行，全部 `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；纯包工作，无端口/DSH_HOME/实例。
 - **graph**：P4-T2/T3 → RUNNING（branches 已录）；ready → []。
-- **结果**：（各 worker 返回后补记）
+- **结果**（2 worker 全部返回，`qiyuan-self/qwen3.8-27b`）：
+  - **P4-T2**（OperationJournal 引擎，head `4efef29`，attempts **2/3**）：a1 RED（tsc-storage 单处测试侧 TS2551，SessionBindingDto union narrowing，测试侧修复）；a2 GREEN。PREPARED→idempotent effects→ledger fact→COMMITTED；generation CAS（absent row 满足 expectedGeneration 0）；idempotency-identity 检查（同 operationId 异 payload → typed idempotency-conflict）；staged child-session 记录；effect 错误分类（typed pass-through vs unclassified-effect-error）；team-scoped fact ownership；zero-delete roll-forward recovery（DevPlan §17.3）。56 p4t2（journal 12 + conflicts 25 + crash-recovery 19 + helpers）。三项必测全过：retry same operation → byte-stable durable result 零写收敛；generation conflict → 任何写入前拒绝；duplicate ledger → 每 operationId 一条 fact、无 sequence 复用、丢失分配留永久 gap、COMMITTED put 丢失时 fact 复用。开发中 2 处引擎自修（verifyGeneration absent-row 语义；driveRow foreign-fact scope check 前移于 terminal 短路之前）+ 6 处 stale final-state 断言修正。
+  - **P4-T3**（SessionBinding integrity/reconciliation，head `bdf16bc`，attempts **1/3**，一次全绿）：SessionBindingService（cold-hydration resolve、幂等 create、typed cross-record 拒绝）+ 只读双向 reconciler（10 个封闭 diagnostic codes、fail-closed）；root/member/ordinary 三类 binding 按冻结 SessionBindingDto；无 live Agent（in-memory seam、仅 durable records）。46 p4t3：missing child / duplicate binding / wrong root / ordinary fork no binding 四项必测全覆盖 + 双向 integrity + orphan/missing diagnostics + cold-hydration 查询支撑。
+  - **P4-T1 缺陷**：两 worker 均报 none（T2 的 2 处自修属其自身引擎代码）。
+  - **主 Agent 独立审计（全部通过）**：两 worktree head 与自报一致、干净；owned-path 审计越界检查均为空（T2 = operations/** + p4t2-* + evidence；T3 = bindings/** + p4t3-* + evidence）；独立重跑 T2 = 620/620、T3 = 610/610 PASS EXIT=0 + 各 3× tsc EXIT=0。
+- **集成**：cherry-pick -x ×4（T2 `4d6a94a`→`31a3d2e` + `4efef29`→`f8da356`；T3 `c14bf51`→`4e110a4` + `bdf16bc`→`d5300dd9`）→ int/P4 零冲突，head `d5300dd9`。整合验证（主 worktree）：pnpm install（无新依赖）+ 全量 **666/666 PASS EXIT=0**（564 + 56 + 46）+ storage/domain/contracts 3× tsc 全 EXIT=0。
+- **Graph**：P4-T2 → INTEGRATED（head `4efef29`，attempts 2）；P4-T3 → INTEGRATED（head `bdf16bc`，attempts 1）；integration_sha = `d5300dd9c39254f1aa63938edfe358f011ed47db`；ready → [P4-T4]。
+- **下一步**：读 TaskDoc §11.5 P4-T4 完整卡片 → 建 `.worktrees/P4-T4`（base `d5300dd9`）→ 单 worker 派发（`qiyuan-self/qwen3.8-27b`）。
 
 ## 重审记录
 
