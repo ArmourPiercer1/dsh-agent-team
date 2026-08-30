@@ -182,3 +182,31 @@ Tests:   runtime/test/p6t2-{helpers,addressing,authority,quota,actions}.ts
   16 files changed, 5052 insertions(+), 4 deletions(-)
 - Commit 2: "docs(evidence): P6-T2 evidence" — staging now; SHA recorded in
   the next append (with STEP 8 chain #2 results).
+
+[2026-08-31] STEP 7 (cont.) — Commit 2 (DONE)
+- SHA 186ecf5c84ae0dc5e64ebb5d8f4b1a44c518d0fb
+  "docs(evidence): P6-T2 evidence"
+  5 files changed, 459 insertions(+)  (evidence dir only)
+
+[2026-08-31] STEP 8 — verification chain #2 after final commit (DONE)
+- pnpm install --ignore-scripts -> EXIT=0
+- node scripts/run-tests.mjs (all 9 packages) -> EXIT=0,
+  "1080 passed, 0 failed, 1080 total, 2651 ms"
+  "RESULT: PASS run-tests (0 failures)"  (full output: full-tests-2.txt)
+- tsc -p packages/runtime/tsconfig.json -> EXIT=0;
+  tsc -p packages/testkit/tsconfig.json -> EXIT=0  (output: tsc-2.txt)
+- Boundary self-check (output: self-check-2.txt): git status --porcelain
+  shows ONLY owned-surface evidence files — modified run-log.txt (this
+  post-commit append) + untracked full-tests-2.txt / tsc-2.txt /
+  self-check-2.txt. base..HEAD diff = exactly the 21 owned files (16 in
+  Commit 1 + 5 in Commit 2); zero core files; packages/contracts/** and
+  packages/runtime/activation/** unmodified.
+- Self-check :3080 END: STATUS_3080_END=200.
+
+[2026-08-31] RESULT — COMPLETE (attempt 1 of max 3)
+- Commits: 7a34379f037f073d6e1dbeb503e934f315f2cb6f (feat),
+  186ecf5c84ae0dc5e64ebb5d8f4b1a44c518d0fb (docs(evidence)).
+- Tests: 1080/1080 full suite (baseline 1022 + 58 new P6-T2 tests);
+  tsc runtime + testkit exit 0.
+- p4t6 scan test: 286 files scanned (was 271; +15 P6-T2 files).
+- Not pushed (per protocol; main agent cherry-picks after Gate review).

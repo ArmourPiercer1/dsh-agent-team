@@ -1,0 +1,37 @@
+﻿=== P6-T2 SELF-CHECK #2 (after final commit) ===
+date: 
+2026-08-31 00:34:18 +08:00
+
+--- git rev-parse HEAD ---
+186ecf5c84ae0dc5e64ebb5d8f4b1a44c518d0fb
+--- git log --oneline -3 ---
+186ecf5 docs(evidence): P6-T2 evidence
+7a34379 feat(runtime): P6-T2 TeamRuntime action router + admission
+e32e737 fix(testkit): p4t6 scan test title 258 -> 271 (align prose with assertion, R39 main-agent hygiene)
+--- git status --porcelain (expect EMPTY) ---
+?? dev/agent-workflow/evidence/P6-T2/full-tests-2.txt
+?? dev/agent-workflow/evidence/P6-T2/tsc-2.txt
+--- changed files base..HEAD (e32e737..HEAD) ---
+dev/agent-workflow/evidence/P6-T2/baseline-tests.txt
+dev/agent-workflow/evidence/P6-T2/frozen-doc-verification.txt
+dev/agent-workflow/evidence/P6-T2/full-tests-1.txt
+dev/agent-workflow/evidence/P6-T2/run-log.txt
+dev/agent-workflow/evidence/P6-T2/runtime-tests-first-run.txt
+packages/runtime/action-router/effects.ts
+packages/runtime/action-router/index.ts
+packages/runtime/action-router/router.ts
+packages/runtime/admission/actions.ts
+packages/runtime/admission/envelope.ts
+packages/runtime/admission/errors.ts
+packages/runtime/admission/gate.ts
+packages/runtime/admission/index.ts
+packages/runtime/admission/resolve.ts
+packages/runtime/admission/types.ts
+packages/runtime/test/p6t2-actions.test.ts
+packages/runtime/test/p6t2-addressing.test.ts
+packages/runtime/test/p6t2-authority.test.ts
+packages/runtime/test/p6t2-helpers.ts
+packages/runtime/test/p6t2-quota.test.ts
+packages/testkit/test/p4t6-session-event-scan.test.ts
+
+STATUS_3080_END=200

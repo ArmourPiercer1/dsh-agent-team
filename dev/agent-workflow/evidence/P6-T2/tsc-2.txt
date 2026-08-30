@@ -1,0 +1,5 @@
+﻿=== tsc -p packages/runtime/tsconfig.json ===
+RUNTIME_TSC_EXIT=0
+
+=== tsc -p packages/testkit/tsconfig.json ===
+TESTKIT_TSC_EXIT=0
