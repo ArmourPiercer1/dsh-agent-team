@@ -584,6 +584,18 @@
 - **Graph**：G5-REVIEW → PASSED（verdicts [投机通过, 投机通过, 投机通过]，gate 3/3 PASS，merged_to_master `0338f8a`，pushed true）；current_phase → P6；ready []（P6 cards 待读后 define）。
 - **下一步**：R38 —— 读 TaskDoc P6 卡片组 + DevPlan §19（Activation / Runtime / Coordination）→ define P6 tasks（DAG `P6-T1 → P6-T2 → {T3||T4||T5} → P6-T6 → G6`；P6-T1 ActivationProvider 为所有新 MemberInstance creation 唯一入口，owns `packages/runtime/activation/**`，dep P5-T6）→ int/P6 分支 + kickoff。
 
+### 轮次 R39：P6-T1 ActivationProvider 执行（1/3 attempts）+ 主 Agent 独立验证 + INTEGRATED（2026-08-30）
+
+- **执行**：workflow `p6-t1-activation-provider`（单 leaf worker，qiyuan-self/qwen3.8-27b）；worktree `.worktrees/P6-T1` 分支 `task/P6-T1-activation-provider` @ base `11b0584`；worker 自报 COMPLETE。
+- **Worker 报告（CLAIM）**：2 commits `085ef11`（feat：activation 7 模块 + p6t1 测试 6 文件，共 13 新文件）/ `265c5e3`（evidence run-log）；1022/1022（+93 新测试）；tsc runtime+testkit exit 0；outside-owned：p4t6 scan 计数 258→271（13 新文件，DEC-1 模式，已声明；scanner .mjs 未动）；findings：admit-once 以稳定 operation identity `(rootSessionId, source, requestToken)` 实现（同 token replay 恒为 activated+replayed:true，persistent 与 fresh_per_delegation 两 policy 下均成立；PREPARED roll-forward / COMMITTED replay / FAILED 显式 OPERATION_FAILED——journal protocol 永不 roll-forward FAILED 行；retry 永不重跑 admission/quota/compatibility）；crash wrapping 注意（testkit seam CrashFault 被 repository 层包成 TeamDomainError）；:3080 前后 200；未跑 real-instance harness（P6-T6/G6 范围），3180/3181/3491-3495 未占用，无 push。
+- **主 Agent 独立验证（disk is truth）**：①git truth：task 分支 tip `265c5e3`（=worker 报告），base `11b0584`，diff 15 文件 = 7 activation + 6 p6t1 测试 + 1 run-log + 1 p4t6（全在 owned + 已声明 glue 内，contracts 零改动）；②zero-core：activation 模块全部 import 均在本 9 包内（contracts/domain/storage/runtime 内部），无 upstream、无 node: builtin；③full chain 独立重跑（leg1）：**1022/1022 PASS**（与 worker 报告一致）；p4t6 suite 10 tests PASS，assert filesScanned=271；④tsc ×5（contracts/domain/storage/runtime/testkit）全 exit 0；⑤:3080 = 200；⑥结构 spot-check：provider.ts 头注 16 步顺序 + 三分支收敛（new / PREPARED roll-forward / COMMITTED replay）+ continuedResult（delegation 解析到既有 member → invariant 24 同 child Session，read-only 无写）；p6t1-explicit S1 断言 durable write sequence（operations → operations → member → binding → (ledger) → operations）。
+- **主 Agent hygiene fixup**：p4t6 scan 测试标题 "258 files scanned" → "271 files scanned"（worker 更新了 assert + 枚举注释但漏标题；与 standing prose-miscount 同类）→ fixup commit `9c04815`（task 分支）；fixup 后 full chain 再跑 1022/1022 + tsc ×5 全绿。
+- **Integration**：cherry-pick -x ×3 → int/P6-activation-runtime：`d1d6d55`（feat）/ `794f3d1`（evidence）/ `e32e737`（fixup）；int 分支 tip `e32e737`；int 分支独立 sanity 重跑 1022/1022 PASS。
+- **证据**：worktree `dev/agent-workflow/evidence/P6-T1/run-log.txt`（已 pick）；主 worktree `dev/agent-workflow/evidence/P6-T1/main-audit-runs/leg1-full-tests.txt`（本轮独立重跑）。
+- **Graph**：P6-T1 → INTEGRATED（attempts 1/3，head `e32e737`）；P6-T2 → READY（base `e32e737`）；integration_sha → `e32e737`；ready [P6-T2]。
+- **Carry-forwards（P6-T2 上下文）**：P6-T2（TeamRuntime admission/policy，owns `packages/runtime/admission*` + `action-router*`）构建于 P6-T1 provider 的 check 面之上；G6 gate 预览 = DevPlan 19.7 六判据；admit-once 语义与 operation identity 是 P6-T2 runtime API 的既有资产。
+- **下一步**：R40 —— P6-T2 kickoff（workflow 单 leaf worker，同路由 `qiyuan-self/qwen3.8-27b`，brief 结构同 P6-T1：first-reads → frozen docs hash-verify → 卡面 verbatim → owned surface → 实现要求 → canonical chain（基线 1022+N）→ commits → structured report）。
+
 ## 重审记录
 
 （空）
