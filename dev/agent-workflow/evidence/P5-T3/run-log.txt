@@ -1,0 +1,160 @@
+# P5-T3 run log — canonical verification chain (verbatim commands + output tails)
+#
+# Task:      P5-T3 Team model selection overlay (Class B, F1)
+# Worktree:  D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3
+# Branch:    task/P5-T3-model-selection-overlay (base 6618d65)
+#
+# Canonical chain per task contract / TEST_METHODS.md (all commands run from
+# the worktree root):
+#   Leg1  pnpm install --ignore-scripts
+#   Leg2  node scripts/run-tests.mjs                (all 9 packages)
+#   Leg3  node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+#   Leg4  node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+#   Leg5  node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+# DEBUG legs (non-canonical, must still exit 0) are labeled DEBUG.
+
+=====================================================================
+SECTION 0 — BASELINE (pre-change; worktree at base 6618d65, before any
+            P5-T3 file existed)
+=====================================================================
+
+--- Leg1 ---
+$ pnpm install --ignore-scripts
+Scope: all 10 workspace projects
+Already up to date
+Done in 18.8s using pnpm v11.7.0
+EXIT=0
+
+--- Leg2 ---
+$ node scripts/run-tests.mjs
+run-tests (plain-node vitest-equivalent): 827 passed, 0 failed, 827 total, 840 ms
+RESULT: PASS run-tests (0 failures)
+EXIT=0
+
+--- Leg3 ---
+$ node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+(no output)
+EXIT=0
+
+--- Leg4 ---
+$ node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+(no output)
+EXIT=0
+
+--- Leg5 ---
+$ node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+(no output)
+EXIT=0
+
+--- DEBUG (non-canonical) ---
+$ node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+(no output)
+EXIT=0
+
+=====================================================================
+SECTION 1 — ATTEMPT 1 (first full implement-verify cycle) — RED
+=====================================================================
+
+--- Leg1 ---
+$ pnpm install --ignore-scripts
+Scope: all 10 workspace projects
+Already up to date
+Done in 54ms using pnpm v11.7.0
+EXIT=0
+
+--- Leg2 ---
+$ node scripts/run-tests.mjs
+FAIL packages\runtime\test\p5t3-future-boundary.test.ts (1/9 tests)
+     ✗ P5-T3 group 1 (negative): fail-closed posture through the binder › a model slot apply fault is BINDER_OVERLAY_FAILED (no later slot, no admission) and the retry converges
+       Error: expectation failed: actual toBe 3 — actual: 4
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3/packages/runtime/test/p5t3-future-boundary.test.ts:249:56
+FAIL packages\runtime\test\p5t3-restart.test.ts (1/13 tests)
+     ✗ P5-T3 group 2: restart — the full process restart (fresh runtime, durable world re-opens) › root: a fresh runtime cold-rehydrates the root — zero in-flight state, the first request uses the durable CURRENT source (B)
+       Error: async it() is not supported by the plain-node shim; the skeleton tests are synchronous
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3/scripts/test-vitest-shim.mjs:71:19)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3/packages/runtime/test/p5t3-restart.test.ts:138:3
+           at describe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P5-T3/scripts/test-vitest-shim.mjs:59:5)
+run-tests (plain-node vitest-equivalent): 847 passed, 2 failed, 849 total, 842 ms
+EXIT=1
+(note: 849 = 827 baseline + 12 new P5-T3 tests + 10 stray assertion records
+leaked by the unsupported async it body — see attempt-ledger.txt)
+
+--- Leg3 ---
+$ node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+(no output)
+EXIT=0
+
+--- Leg4 ---
+$ node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+(no output)
+EXIT=0
+
+--- Leg5 ---
+$ node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+(no output)
+EXIT=0
+
+ATTEMPT 1 RESULT: RED (Leg2 EXIT=1; all other legs green)
+
+=====================================================================
+SECTION 2 — DEBUG RUN 2 (post-fix, pre-attempt-2; non-canonical)
+=====================================================================
+
+$ node scripts/run-tests.mjs runtime
+PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+
+run-tests (plain-node vitest-equivalent): 59 passed, 0 failed, 59 total, 227 ms
+RESULT: PASS run-tests (0 failures)
+EXIT=0
+
+=====================================================================
+SECTION 3 — ATTEMPT 2 (final) — GREEN
+=====================================================================
+
+--- Leg1 ---
+$ pnpm install --ignore-scripts
+Scope: all 10 workspace projects
+Already up to date
+Done in 55ms using pnpm v11.7.0
+EXIT=0
+
+--- Leg2 ---
+$ node scripts/run-tests.mjs
+(new P5-T3 files, in the full per-file PASS listing)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+(tail)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 839 passed, 0 failed, 839 total, 13317 ms
+RESULT: PASS run-tests (0 failures)
+EXIT=0
+
+--- Leg3 ---
+$ node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+(no output)
+EXIT=0
+
+--- Leg4 ---
+$ node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+(no output)
+EXIT=0
+
+--- Leg5 ---
+$ node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+(no output)
+EXIT=0
+
+ATTEMPT 2 RESULT: GREEN — all five canonical legs EXIT=0; 839/839 tests
+pass (baseline 827 + 12 new P5-T3 tests = 839); p4t6 scanner test green at
+208 scanned files (count pre-ruled 202 -> 208).

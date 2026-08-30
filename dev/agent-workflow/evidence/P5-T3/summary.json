@@ -1,0 +1,65 @@
+{
+  "task": "P5-T3",
+  "title": "Team model selection overlay (Class B, F1)",
+  "branch": "task/P5-T3-model-selection-overlay",
+  "base_sha": "6618d65",
+  "status": "DONE",
+  "attempts": 2,
+  "attempt_budget": 3,
+  "tests": {
+    "baseline_total": 827,
+    "final_total": 839,
+    "final_passed": 839,
+    "final_failed": 0,
+    "new_tests": 12,
+    "new_test_files": [
+      "packages/runtime/test/p5t3-future-boundary.test.ts",
+      "packages/runtime/test/p5t3-restart.test.ts"
+    ]
+  },
+  "canonical_chain_attempt2": {
+    "leg1_pnpm_install_ignore_scripts": "EXIT=0",
+    "leg2_run_tests": "EXIT=0 (839 passed, 0 failed, 839 total)",
+    "leg3_tsc_storage": "EXIT=0",
+    "leg4_tsc_domain": "EXIT=0",
+    "leg5_tsc_contracts": "EXIT=0"
+  },
+  "owned_files_added": [
+    "packages/runtime/agent-setup/model/types.ts",
+    "packages/runtime/agent-setup/model/overlay.ts",
+    "packages/runtime/agent-setup/model/index.ts",
+    "packages/runtime/test/p5t3-helpers.ts",
+    "packages/runtime/test/p5t3-future-boundary.test.ts",
+    "packages/runtime/test/p5t3-restart.test.ts"
+  ],
+  "pre_ruled_exception": {
+    "file": "packages/testkit/test/p4t6-session-event-scan.test.ts",
+    "change": "scanned-file count 202 -> 208: it(...) title, exactly 2 toBe assertions, and the derived comment only; scanner .mjs/.d.mts byte-identical; all other assertions untouched"
+  },
+  "red_lines": {
+    "core_patch_budget": 0,
+    "upstream_source_edits": 0,
+    "upstream_private_api_imports": 0,
+    "legacy_team_sessionevent_vocabulary_hits_outside_quarantine": 0,
+    "p4t6_scanner": "green at 208 files scanned, zero denylist violations",
+    "new_package_json_deps": 0,
+    "live_agent_or_port_or_dsh_home_used": false,
+    "binder_persona_preset_capability_dirs_touched": false,
+    "push": false
+  },
+  "must_test_groups": {
+    "group1_devplan_18_4_sequence": "PASS — verbatim N=model A / concurrent override->B / N remains A / N+1 uses B on fresh root AND fresh member through the binder; plus concurrent in-flight N+A/M+B bookkeeping, absent selection carried as undefined, double-bind no-op preserving the in-flight capture, and the negative fail-closed set (slot apply fault -> BINDER_OVERLAY_FAILED origin=model, no later slot/admission, retry convergence; source fault at request time propagates with no capture; idempotent completion; ordinary session no-op)",
+    "group2_restart": "PASS — same-process residency drop + fresh rebind (installed marker persists, zero in-flight leak, first request uses current source B, no stale A); same-process drop + cold member rehydrate (restoreScope only, zero fresh-time effects, admission deduped, first request B); full process restart (restartTeamWorld on the same durable dir, fresh surface/binder/adapter/source carrying the durable B) cold root (zero in-flight state, first request B, no resolution at install)"
+  },
+  "design_notes": [
+    "Resolution happens strictly at request time (beginRequest copies the source's current value): install performs no resolution and no source effect, so nothing pre-resolved can go stale across a restart (ruling R30).",
+    "The installed marker is a session-scoped ratchet (the restored scope always carries the full slot set), while in-flight captures are residency-scoped and cleared by the explicit restart-boundary drop hook.",
+    "Selection captures are copies ({ ...current }), so a shared mutable object cannot corrupt an in-flight capture.",
+    "The adapter never writes the source: the operator/control-plane owns mutations (the overlay only resolves); the source is the sole owner of the in-effect selection.",
+    "The local ModelSelection contract is a lossless structural mirror of the public upstream ModelSelection interface (reasoningEffort widened to string); T5/T6 binds the real seam."
+  ],
+  "attempt1_failures": [
+    "test-side: wrong post-retry installOverlay expectation (3 instead of 1 + 3 = 4)",
+    "test-side: unsupported async it() body in the full-restart test (hoisted restartTeamWorld to module-level top-level await)"
+  ]
+}

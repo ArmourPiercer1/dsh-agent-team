@@ -1,0 +1,76 @@
+# P5-T3 attempt ledger
+#
+# Budget: <= 3 full implement-verify cycles (attempts). Pure debug runs do
+# NOT count as attempts but are ledgered here.
+
+---------------------------------------------------------------------
+ATTEMPT 1 — RED
+---------------------------------------------------------------------
+Scope: full canonical chain (Legs 1-5) after the first implementation of
+packages/runtime/agent-setup/model/** (types.ts, overlay.ts, index.ts),
+the two new test files (p5t3-future-boundary 9 tests, p5t3-restart 3
+tests) + p5t3-helpers.ts, and the pre-ruled p4t6 count edit (202 -> 208).
+
+Outcome: Leg1/3/4/5 EXIT=0; Leg2 847 passed / 2 failed / 849 total
+(EXIT=1).
+
+Failure 1 — p5t3-future-boundary.test.ts, "a model slot apply fault is
+BINDER_OVERLAY_FAILED ... and the retry converges":
+  assertion `expect(surface.countCalls('installOverlay', root)).toBe(3)`
+  after the failed bind + retry got actual 4.
+  Root cause: MY TEST ASSERTION was wrong, not the code. The failed first
+  attempt had already performed the persona installOverlay call (1) before
+  the model slot faulted; the target was never registered, so the binder
+  retry re-drives the FULL fresh path over all three slots (+3): 1 + 3 = 4
+  is the correct binder behavior (fail-closed halts the path at the fault
+  without rolling back the persona effect).
+  Fix: assertion corrected to 4 with an explanatory comment.
+
+Failure 2 — p5t3-restart.test.ts, "root: a fresh runtime cold-rehydrates
+the root ...":
+  "async it() is not supported by the plain-node shim; the skeleton tests
+  are synchronous".
+  Root cause: the test body used `async () =>` to await restartTeamWorld
+  inside `it(...)`; the plain-node runner (scripts/test-vitest-shim.mjs)
+  executes `it` bodies synchronously and rejects returned promises.
+  Side effect: the suspended async body resumed during `await import(file)`
+  and pushed its remaining 10 assertion records into the file's batch
+  (hence the anomalous "1/13" per-file count and the 849 global total =
+  827 + 12 + 10). All 10 leaked assertions had passed, which independently
+  corroborated the cold-root logic before the fix.
+  Fix: `restartTeamWorld(worldD.scratchDir)` hoisted to module-level
+  top-level await (the established pattern — identical to the
+  seedTeamWorld world seeds); the `it` body made synchronous.
+
+No production code was changed between attempt 1 and attempt 2; both
+failures were test-side defects (a wrong expected count and an unsupported
+async test body).
+
+---------------------------------------------------------------------
+DEBUG RUNS (not attempts)
+---------------------------------------------------------------------
+D1 (before attempt 1):
+  $ node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+  EXIT=0 — clean compile of agent-setup/model/** + the new test files
+  (catches type errors cheaply before spending a canonical-chain attempt).
+D2 (after the two test fixes, before attempt 2):
+  $ node scripts/run-tests.mjs runtime
+  59 passed / 0 failed / 59 total, EXIT=0 — fail-fast gate on the runtime
+  package (P5-T1 44 + skeleton 3 + new P5-T3 12).
+
+---------------------------------------------------------------------
+ATTEMPT 2 — GREEN (final)
+---------------------------------------------------------------------
+Scope: full canonical chain (Legs 1-5) after the two test fixes.
+Outcome:
+  Leg1  pnpm install --ignore-scripts        EXIT=0
+  Leg2  node scripts/run-tests.mjs           EXIT=0 — 839/839 (827 baseline
+                                              + 12 new P5-T3 tests)
+  Leg3  tsc -p packages/storage/tsconfig     EXIT=0
+  Leg4  tsc -p packages/domain/tsconfig      EXIT=0
+  Leg5  tsc -p packages/contracts/tsconfig   EXIT=0
+No further changes; committed as 6ea3ec9 (code) + this evidence commit.
+
+---------------------------------------------------------------------
+TOTAL: 2 of 3 attempts used.
+---------------------------------------------------------------------
