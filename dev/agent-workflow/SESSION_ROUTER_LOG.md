@@ -620,6 +620,17 @@
 - **Carry-forwards（P6-T6 上下文，关键）**：①T6 的 tool 层必须 wire T4 的 `guardOperation` last-mile guard（control 的 allow 不自动执行，tool 执行前必须查询）；②T6 的 tool 层只可调 Runtime（createTeamRuntime / ActivationProvider / control / activity / messaging 的公开 API），禁止直接写 TeamDomain 或 agents.create（tool bypass scan 是 G6 判据）；③T6 是 real-instance headless E2E 的责任方（G6 六判据：same template N instances、instance-addressed、follow-up 同 Session、fresh_per_delegation 新 instance、message/control/progress survive restart、quota race 不过量）——E2E harness 须串行（共享 DSH_HOME + 固定 MCP 端口 3491-3495，与 P2-T4 band 复用注意）；④T3 SessionInputPort 的真实 public Session input API 在 T6 plugin wiring 落地；⑤p4t6 现 318。
 - **下一步**：R42 —— P6-T6 kickoff（workflow 单 leaf worker，同路由；brief 含 G6 六判据 verbatim + 上述 wire 要求 + headless E2E 设计要求 + canonical chain 基线 1181+N）。
 
+## R42 — P6-T6 kickoff（2026-08-31，主 Agent）
+
+- **状态**：P6-T1..T5 INTEGRATED；int/P6 @ `760e736`（主 Agent 已独立验证 1181/1181 + tsc ×5 + zero-core/owned-boundary；p4t6 318）。P6-T6 为 P6 最后任务，Class A，R5/C5/T5。
+- **Kickoff 执行（主 Agent，全绿）**：
+  - worktree `.worktrees/P6-T6` + 分支 `task/P6-T6-team-tools-e2e` 创建 @ base `760e7369650fe7e082772368f67569730cd80912`（int/P6 tip；rev-parse 验证）。
+  - 冻结文档 hash kickoff 前新复核：TaskDoc `2b457cc…` / DevPlan `a05d237…` / Arch `030dfb8…` / UI `3ef3ab6…` — 4/4 与 file-manifest.json `frozen_docs`（CRLF）一致。
+  - test-use pristine：head `cd5ef8148158c3a752a658978873241fdf8e2bbc`，porcelain 空；稳定实例 :3080 = 200。
+- **Worker 派发**：workflow `p6-t6-tools-e2e` 单 leaf worker，provider qiyuan-self，model qwen3.8-27b（counted attempt 1/3）。Brief：`dev/agent-workflow/briefs/P6-T6-brief.md`（TaskDoc P6-T6 卡 verbatim + G6 执行方法 verbatim + DevPlan 19.6 tool 列表 verbatim + 19.7 七判据 verbatim；carry-forwards a–g：①T4 guardOperation last-mile guard；②tools 仅走 Runtime public 面（禁 TeamDomain 直写 / agents.create / legacy SessionEvent 词汇）；③T6 负责真实实例 headless E2E（FILE-FD stdio spawn；boot `node apps/cli/lib/bin.js web --port N --no-open`；env DSH_HOME=`references/.dsh-test-p6t6`（新建、任务专属）+ DSH_CLIENT_COMMIT_HASH（同 P5 先例）；cordis.patch.yml 行挂载缝；SessionInputPort→真实 public Session input seam；public Cordis tool registration；harness 串行；端口 3180/3181 + mini-MCP 3491–3495）；④基线 1181 + p4t6 318（DEC-1 三处一致 + 实扫防 prose-miscount）；⑤canonical chain ×2（含 leg0-baseline 1181 验证）+ 结构化 P6T6_REPORT + ≤3 attempts；⑥P6 tool 范围裁决（archive/restore/dispose = P7-T3，本任务不实现，记录 scoping decision）；⑦E2E 场景 E1–E7 一一映射 G6 七判据且必须经注册的 tool handler 发起（driver 不得绕过 tool 层直调 Runtime）。
+- **先例锚点（brief 内指向）**：`packages/runtime/member-residency/harness/{run.mjs, plugin.mjs, slots-t6.mjs}` + `dev/agent-workflow/evidence/P5-T6/{run-log.txt, public-surfaces.md, g5-report.md}`（boot/directive/scenario/summary.json 机制与 public seam 注册表）。
+- **Post-worker 协议（主 Agent）**：git truth 审计（rev-parse / diff vs base / zero-core 含多行 from 子句 / owned-boundary）→ 独立全链重跑（full tests + tsc ×5 + p4t6）→ 独立 E2E 重跑（串行）→ 任务分支 evidence-close commit → cherry-pick -x 至 int/P6 → R43 bookkeeping → G6-REVIEW（3 个全新独立盲审 reviewer @ int/P6 tip；TaskDoc 11.7 六步方法 + DevPlan 19.7 七判据；裁决 通过/投机通过/补充内容/阻塞，3/3 ∈ {通过, 投机通过} 方过）。
+
 ## 重审记录
 
 （空）
