@@ -240,6 +240,22 @@
 - **Graph**：P3-T2 → INTEGRATED（head `a4fe261`，attempts 3/3）；P3-T3 → INTEGRATED（head `cbd2619`，attempts 2/3）；P3-T4 → INTEGRATED（head `92a5fa6`，attempts 1/3）；P3-T5 → INTEGRATED（head `caab380`，attempts 1/3）；integration_sha = `b660e90681cc09b612be98b4537b1ea8f061c237`；ready → [P3-T6]。
 - **下一步**：P3-T6 — 建 `.worktrees/P3-T6` + `task/P3-T6-domain-integration`（base int/P3 `b660e90`），单 worker 派发（`qiyuan-self/qwen3.8-27b`）：组合 Blueprint/Member/Policy/Compatibility + architecture property suite；owns `packages/testkit/domain` + `docs/contracts`；P3 四包只读；不新增功能；合同缺口走 CONTRACT_CHANGE_REQUEST。
 
+### 轮次 R13：P3-T6 启动 — Domain integration/property review + G3 派发（2026-08-30）
+
+- **Base**：int/P3 `ba293ec`（R12 bookkeeping；D1 全部集成完毕，TS6059 已修 `b660e90`，全量基线 413/413 PASS）。
+- **T6 结构裁决（主 Agent，记录在案，D1 模式）**：TaskDoc §11.4 T6 卡片 owned path `packages/testkit/domain` + `docs/contracts` 与仓库 sanctioned 测试链结构不兼容（runner 只发现 `packages/testkit/test/*.test.ts`；包 tsconfig `rootDir "."` 对跨包导入触发 TS6059）→ 最小偏差解决：
+  - 代码：`packages/testkit/domain/**`（按卡片）；子目录自有 `packages/testkit/domain/tsconfig.json`（owned；extends 根 base、noEmit、**不设显式 rootDir** — T2 子目录模式，无 rootDir ⇒ 无 TS6059；include 自身 src + `../test/t6-*.test.ts`）。
+  - 测试：`packages/testkit/test/t6-*.test.ts` **仅新增文件**（授权例外；永不触碰骨架 testkit.test.ts）→ sanctioned runner 可发现。
+  - `packages/testkit/tsconfig.json`（noEmit 类型检查配置；`tsconfig.build.json` rootDir `src` 不动）：`rootDir "." → "../.."` 起始即置（b660e90 模式，预置 TS6059 修复；T6 为 P3 期间 testkit 唯一写者）— 授权例外。
+  - `packages/testkit/package.json`：**零改动**（不新增依赖；跨包访问一律相对导入）。
+  - `docs/contracts/`：T6 文档区 — G3 report（criterion→evidence）+ contracts v1 freeze confirmation。
+- **Worktree**：`.worktrees/P3-T6` @ `task/P3-T6-domain-integration`（base `ba293ec`）；证据目录 `dev/agent-workflow/evidence/P3-T6/`（worktree 内）。
+- **派发**：workflow `p3-t6-domain-integration-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；无共享资源（纯包工作，无端口/DSH_HOME/实例）；worktree 内 pnpm install。
+- **任务卡片要点**：目标 = 组合 Blueprint/Member/Policy/Compatibility + 执行 architecture property suite；只读各 P3 package；不新增功能；contract 缺口走 CONTRACT_CHANGE_REQUEST；必须测试 = cross-module property / serialization round-trip / negative matrix；验收 = G3 每条 criterion 有独立证据 + contracts v1 freeze confirmed；输出物 = G3 report + domain test bundle；审查重点 = reviewer 核对 owned-path、frozen semantics、negative tests、zero-core 约束，不得仅凭 worker 自述批准。
+- **基线**（派发前主 Agent 全量跑，int/P3 `ba293ec`）：`node scripts/run-tests.mjs`（无参 = 全 9 包）413/413 PASS EXIT=0（contracts 87 + domain 312 + testkit 骨架 2 + client/remote/runtime/storage/tools 骨架 12）；testkit/domain/contracts 包级 tsc 全绿。
+- **graph**：P3-T6 → RUNNING（branch task/P3-T6-domain-integration，base `ba293ec`）；ready → []。
+- **结果**：（worker 返回后补记）
+
 ## 重审记录
 
 （空）

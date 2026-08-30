@@ -6,7 +6,7 @@ contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [P3-T6]
+ready: []
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -32,5 +32,5 @@ tasks:
   P3-T3: { state: INTEGRATED, class: A, branch: task/P3-T3-member-lifecycle, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: cbd2619343f186dbc3072251da20bebaf870922a, attempts: 2, depends_on: [P3-T1] }
   P3-T4: { state: INTEGRATED, class: A, branch: task/P3-T4-policy-resolver, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: 92a5fa6ca76115c3de781d55ff52c7533652de32, attempts: 1, depends_on: [P3-T1] }
   P3-T5: { state: INTEGRATED, class: A, branch: task/P3-T5-compatibility-engine, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: caab380f935bef182cff61560d0c95c930ff93c3, attempts: 1, depends_on: [P3-T1] }
-  P3-T6: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P3-T2, P3-T3, P3-T4, P3-T5] }
+  P3-T6: { state: RUNNING, class: A, branch: task/P3-T6-domain-integration, base_sha: ba293ec, head_sha: null, attempts: 0, depends_on: [P3-T2, P3-T3, P3-T4, P3-T5] }
   G3-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P3-T1, P3-T2, P3-T3, P3-T4, P3-T5, P3-T6] }
