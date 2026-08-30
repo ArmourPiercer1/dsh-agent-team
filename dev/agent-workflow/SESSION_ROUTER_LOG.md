@@ -473,6 +473,20 @@
 - **Graph**：P5-T1 → INTEGRATED（head `bc9f8b4`，attempts 1，DEC-1 note）；ready → `[P5-T2, P5-T3, P5-T4]`（F1 并行组）。
 - **下一步**：R30 —— 建 P5-T2/T3/T4 三个 worktree（base `6618d65`）→ 单 workflow 一次扇出 3 leaf worker（全 `qiyuan-self/qwen3.8-27b`，各自 ≤3 attempts）→ 返回后三审计 → 依次 cherry-pick → R31 → ready `[P5-T5]`（I-1 真绑定任务：真 AgentFactoryAdapter + 真 seam 绑定 + TEST_METHODS 端口 3180 / 独立 DSH_HOME）。
 
+### 轮次 R30：P5-T2/T3/T4（F1 并行组）kickoff —— ruling + worktree + dispatch（2026-08-30）
+
+- **Git**：三个 worktree 建出于 base `6618d65`（int/P5 含 P5-T1 全部工作）：`.worktrees/P5-T2` @ `task/P5-T2-persona-preset-overlay`、`.worktrees/P5-T3` @ `task/P5-T3-model-selection-overlay`、`.worktrees/P5-T4` @ `task/P5-T4-capability-guard-adapters`。
+- **共同 ruling（三任务适用，随 brief 下发）**：
+  - P5-T1 binder（`packages/runtime/agent-setup/binder/**`）为只读共享依赖；overlay 实现必须精确匹配 T1 的 `OverlaySlot` 槽位契约（`binder/types.ts`），经 binder 装配验证；不得修改 binder 任何文件。
+  - 零 live agent / 零端口 / 零 DSH_HOME / 零实例（真实 DSH 绑定属 T5/T6）；mock-first。
+  - canonical 链 baseline 更新为 **827/827**（P5-T1 后）；改动后 827+N 全绿；tsc 四包 + runtime DEBUG leg 全 EXIT=0。
+  - **p4t6 覆盖计数冲突预裁决（F1 并行特有）**：三 worker 的新文件都会抬高 scanner 覆盖计数（当前 202）。各 worker 若计数断言失败，按 R29 DEC-1 先例只更新 `p4t6-session-event-scan.test.ts` 的标题 + 2 个 toBe 断言 + 推导注释（scanner `.mjs` 逐字节不动、其余断言不动）；此为预裁决 owned-path 例外。integration 时主 Agent 在每个 cherry-pick 后把断言重同步到累计树并重跑 p4t6 suite。
+- **P5-T2 ruling（A/F1）**：owned `packages/runtime/agent-setup/persona/**` + `preset/**` + `test/p5t2-*.test.ts` + evidence。允许依赖：public preset/system-prompt seams；compat engine（P2 产出，testkit 只读）。实现要点：compatible preset → scoped identity（persona adapter）；`complete:true` → `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` FATAL 且必须发生在 admission 之前（T1 admission 决策点之前抛出，Team work 永不启动）；不得复制/解析 dsh-persona private internals（upstream 仅只读证据）。必须测试：no persona；complete=false；complete=true；cold bind。验收：compatible preset 保留 upstream assembly semantics；complete:true 永不启动 Team work。
+- **P5-T3 ruling（B/F1）**：owned `packages/runtime/agent-setup/model/**` + `test/p5t3-*.test.ts` + evidence。允许依赖：public ModelSelection。实现要点：实现 T1 model 槽位；effective selection 按请求时刻解析——在飞请求 N 保持 A，并发 override B 不改 N，N+1 起用 B（DevPlan §18.4 逐字语义）。必须测试：A in-flight + override B + next request B；restart。验收：模型 mutation 与 frozen semantics 一致。
+- **P5-T4 ruling（A/F1）**：owned `packages/runtime/agent-setup/capability/**` + `test/p5t4-*.test.ts` + evidence。允许依赖：policy resolver + public seams only。实现要点：tools/permissions、skills、MCP、pre-step/pre-execute 的 resolved adapter；**effective capability = available ∩ teamResolved ∩ externalHard**；任何未通过 G2 的 capability 不得 private workaround（fail-closed）。必须测试：tighten；external hard；capability disappear；cold resume。验收：交集公式成立（负测试覆盖每一侧）。
+- **Graph**：P5-T2/T3/T4 → RUNNING（attempts 0）。
+- **下一步**：单 workflow 一次扇出 3 leaf worker（全 `qiyuan-self/qwen3.8-27b`，各自 ≤3 attempts，禁止再派生）；返回后三审计（diff 面 / 独立重跑 / head 自验）→ 依次 cherry-pick + p4t6 计数重同步 → R31 → ready `[P5-T5]`。
+
 ## 重审记录
 
 （空）

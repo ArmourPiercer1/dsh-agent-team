@@ -42,9 +42,9 @@ tasks:
   P4-T6: { state: INTEGRATED, class: A, branch: task/P4-T6-teamdomain-audit, base_sha: 4a61394, head_sha: bd97476e17911fa7d4ab15513087a8521b064ea4, attempts: 3, depends_on: [P4-T5] }
   G4-REVIEW: { state: PASSED, class: A, branch: int/P4-teamdomain-journal, base_sha: 3ccff7bc98fb15bd8c691a13639177041f91b1b0, head_sha: cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07, attempts: 1, depends_on: [P4-T1, P4-T2, P4-T3, P4-T4, P4-T5, P4-T6], verdicts: [投机通过, 投机通过, 通过], gate: 3/3 PASS, merged_to_master: cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07, pushed: true }
   P5-T1: { state: INTEGRATED, class: A, branch: task/P5-T1-team-agent-binder, base_sha: 06bd13bc13de4bc8aa6c91cb41e31fc02d04baee, head_sha: bc9f8b43531e2935a57b59f4254b55054d03715e, attempts: 1, depends_on: [P4-T6], note: DEC-1 p4t6 coverage-count maintenance 190->202 ratified as formal owned-path exception (standing negative control; scanner .mjs byte-identical; G5 re-verifies) }
-  P5-T2: { state: DEFINED, class: A, depends_on: [P5-T1] }
-  P5-T3: { state: DEFINED, class: B, depends_on: [P5-T1] }
-  P5-T4: { state: DEFINED, class: A, depends_on: [P5-T1] }
+  P5-T2: { state: RUNNING, class: A, branch: task/P5-T2-persona-preset-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, attempts: 0, depends_on: [P5-T1] }
+  P5-T3: { state: RUNNING, class: B, branch: task/P5-T3-model-selection-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, attempts: 0, depends_on: [P5-T1] }
+  P5-T4: { state: RUNNING, class: A, branch: task/P5-T4-capability-guard-adapters, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, attempts: 0, depends_on: [P5-T1] }
   P5-T5: { state: DEFINED, class: A, depends_on: [P5-T2, P5-T3, P5-T4] }
   P5-T6: { state: DEFINED, class: A, depends_on: [P5-T5] }
   G5-REVIEW: { state: DEFINED, class: A, depends_on: [P5-T1, P5-T2, P5-T3, P5-T4, P5-T5, P5-T6] }
