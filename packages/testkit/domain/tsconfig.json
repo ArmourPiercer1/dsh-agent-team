@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "../test/t6-*.test.ts",
+    "../test/t6-helpers.ts"
+  ]
+}
