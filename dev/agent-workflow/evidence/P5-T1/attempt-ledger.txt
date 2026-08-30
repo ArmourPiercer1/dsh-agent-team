@@ -1,0 +1,24 @@
+# P5-T1 attempt ledger
+
+Budget: max 3 canonical attempts. Used: 1.
+
+## Canonical attempts
+
+- ATTEMPT 1 (final): LEG1 PASS EXIT=0 (up to date) | LEG2 first pass FAIL EXIT=1 (826 passed / 1 failed / 827 total — sole failure: p4t6 coverage count 190 vs actual 202; the 12 new runtime files raised the scanned-tree count; all 9 denylist/quarantine/violation checks PASSED) -> DEC-1 count maintenance -> LEG2 re-run PASS EXIT=0 (827/827) | LEG3 tsc storage PASS EXIT=0 | LEG4 tsc domain PASS EXIT=0 | LEG5 tsc contracts PASS EXIT=0 | DEBUG tsc runtime PASS EXIT=0 => CHAIN_OK (5/5 canonical + debug). Verdict: ATTEMPT 1 complete and final; no further attempts required.
+
+## Debug runs (not counted, per run-log D1-D5)
+
+- D1 tsc runtime: EXIT=2, 8 errors (wrong import depth in 3 binder modules; AdmissionDecision narrowing; test cast; bogus-slot literal; surface1/surface2 typos) — all fixed in this task's own files.
+- D2 tsc runtime: EXIT=0.
+- D3 run-tests runtime: 44/47 (invalid instance id format; residency-probe count; installOverlay count after a failed attempt) — fixed.
+- D4 run-tests runtime: 46/47 (fake surface recorded a failed recordSessionEvent call; push-before-throw) — fixed fake to record only completed calls + cascading count fixes in overlay-slots.
+- D5 run-tests runtime: 47/47 EXIT=0 (44 new + 3 pre-existing runtime).
+
+## Decision record
+
+DEC-1 (most review-sensitive action of this task): p4t6 coverage count 190 -> 202 in packages/testkit/test/p4t6-session-event-scan.test.ts.
+- Context: the p4t6 scanner test (committed at 92368d2 by P4-T6, unmodified since) pins the scanned-tree file count (190) as a standing coverage invariant. P5-T1 adds 12 runtime files (6 binder modules + 6 test files), so the deterministic tree scan now counts 202.
+- Why not BLOCKED: the task red line requires the p4t6 scanner negative control to stay GREEN, and the task's own acceptance requires the full canonical chain green with the new files committed. A BLOCKED outcome over a hardcoded count would leave the chain permanently red for this task and for every future task that adds package files. The count is a standing-coverage invariant of the scan, not part of the denylist.
+- Edit scope (git diff verified): test title (190 -> 202), two toBe(190) assertions (-> toBe(202)), and the comment's derivation (189 -> 201, with an explicit "189 pre-P5 + 12 P5-T1" note). Nothing else in the file changed.
+- What did NOT change: packages/testkit/fault-injection/session-event-scan.mjs is byte-for-byte unchanged (denylist strings, payload-symbol word-bound rules, declaration-merge pattern, the frozen 2-file QUARANTINE_FILES set, the 2-file self-exclusion contract, and all matching logic). The 9 denylist/violation/quarantine tests passed on the FIRST Leg2 run, before and after the count edit.
+- Reversibility: if the main Agent / G5 disagrees, the revert is a 4-token change of the count constant in one committed test file; the 12 P5-T1 files pass every violation check regardless.

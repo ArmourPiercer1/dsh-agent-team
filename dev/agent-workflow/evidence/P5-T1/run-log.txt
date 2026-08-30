@@ -1,0 +1,80 @@
+# P5-T1 run log — TeamAgentBinder core
+
+Worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T1
+Branch: task/P5-T1-team-agent-binder
+Base: 06bd13bc13de4bc8aa6c91cb41e31fc02d04baee (int/P5-agent-binding-binder @ 06bd13b)
+Log written: 2026-08-30 15:11 +08:00
+Runner discipline: canonical chain = pnpm install --ignore-scripts -> node scripts/run-tests.mjs -> tsc storage -> tsc domain -> tsc contracts (each EXIT=0 required). The DEBUG leg (tsc runtime) is separate and must also EXIT=0 (labeled DEBUG, not a canonical leg). Debug runs are recorded separately and do not count against the 3 canonical attempts. Zero live agents, zero ports, zero DSH_HOME, zero DSH instances, zero subagents.
+
+## Runs (chronological)
+
+### B1 — BASELINE Leg1 (pre-change, clean tree; not counted)
+- cmd: pnpm install --ignore-scripts
+- result: EXIT=0 (0.9s, up to date; output tail showed only the pnpm update banner 11.7.0 -> 11.24.0)
+
+### B2 — BASELINE Leg2 (pre-change; not counted)
+- cmd: node scripts/run-tests.mjs
+- result: EXIT=0 — "783 passed, 0 failed, 783 total", "RESULT: PASS run-tests (0 failures)"
+
+### B3 — BASELINE Leg3/4/5 (pre-change; not counted)
+- cmd: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json  (and domain, contracts)
+- result: all three EXIT=0
+
+### D1 — DEBUG tsc runtime round 1 (not counted)
+- cmd: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+- result: EXIT=2 (8 errors) — all in THIS task's new files:
+  - TS2307 x3: wrong relative import depth from packages/runtime/agent-setup/binder/ (../../contracts, ../../storage -> needed ../../../contracts, ../../../storage)
+  - TS2339: TS does not narrow AdmissionDecision via a separate const; fixed to decision.status === 'admitted' ? ADMISSION_OPEN_CODE : decision.code
+  - TS2352: test cast handle as Record<string, unknown> needed as unknown as
+  - TS2345: bogus slot-key test literal 'prompt' is not an OverlaySlotName; used identityOverlaySlot('persona') for the value
+  - TS2561 x2: surface1/surface2 typos in p5t1-ordinary-noop
+
+### D2 — DEBUG tsc runtime round 2 (not counted)
+- cmd: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+- result: EXIT=0
+
+### D3 — DEBUG test run round 1 (not counted)
+- cmd: node scripts/run-tests.mjs runtime
+- result: 44 passed, 3 failed —
+  - 'inst-missing-p5t1' rejected by format (no dash allowed after the inst- prefix) -> 'inst-missingp5t1'
+  - getInstalledSlots count expectation 2 -> 1 (only the NO-OP second bind probes residency; the first installing bind has no entry yet)
+  - installOverlay count expectation 6 -> 4 (failed attempt installed persona only: 1 + retry 3)
+
+### D4 — DEBUG test run round 2 (not counted)
+- cmd: node scripts/run-tests.mjs runtime
+- result: 46 passed, 1 failed — FakeAgentSetupSurface recorded the FAILED recordSessionEvent call (push-before-throw); fake now records ONLY completed calls; cascading assertion fixes in p5t1-overlay-slots (install-fault countCalls('installOverlay') 1 -> 0; restore-fault countCalls('restoreScope') 2 -> 1)
+
+### D5 — DEBUG test run round 3 (not counted)
+- cmd: node scripts/run-tests.mjs runtime
+- result: EXIT=0 — "47 passed, 0 failed, 47 total" (44 new P5-T1 + 3 pre-existing runtime)
+
+### (files written) packages/runtime/agent-setup/binder/{types,errors,defaults,read-handle,binder,index}.ts + packages/runtime/test/p5t1-{helpers,double-bind,fresh-cold-paths,ordinary-noop,overlay-slots,binder-core}.{ts} (12 new files)
+
+### A1 — ATTEMPT 1 Leg1
+- cmd: pnpm install --ignore-scripts
+- result: EXIT=0 (0.9s, up to date; output tail showed only the pnpm update banner 11.7.0 -> 11.24.0)
+
+### A1 — ATTEMPT 1 Leg2 (first pass)
+- cmd: node scripts/run-tests.mjs
+- result: EXIT=1 — "826 passed, 1 failed, 827 total"; sole failure: packages/testkit/test/p4t6-session-event-scan.test.ts coverage test "190 files scanned" vs actual 202 (the 12 new runtime files raised the scanned-tree count 190 -> 202). All 9 denylist/quarantine/violation checks PASSED.
+- resolution: count-maintenance-only edit to that one committed test file (test title 190 -> 202; two toBe(190) assertions -> toBe(202); comment derivation 189 -> 201 with an explicit "189 pre-P5 + 12 P5-T1" note). Scanner session-event-scan.mjs (denylist, quarantine set, self-exclusion contract, matching logic) byte-for-byte unchanged. Full justification: attempt-ledger.txt DEC-1.
+
+### A1 — ATTEMPT 1 Leg2 (re-run after DEC-1)
+- cmd: node scripts/run-tests.mjs
+- result: EXIT=0 — "827 passed, 0 failed, 827 total", "RESULT: PASS run-tests (0 failures)", 848 ms
+  - p4t6-session-event-scan.test.ts (10 tests) PASS
+  - p5t1-*.test.ts (44 tests) PASS
+  - all pre-existing suites PASS
+
+### A1 — ATTEMPT 1 Leg3/4/5 + DEBUG
+- LEG3 tsc -p packages/storage/tsconfig.json: EXIT=0
+- LEG4 tsc -p packages/domain/tsconfig.json: EXIT=0
+- LEG5 tsc -p packages/contracts/tsconfig.json: EXIT=0
+- DEBUG tsc -p packages/runtime/tsconfig.json: EXIT=0
+
+## Post-chain
+- removed stray dev_p5t1_baseline_leg1.log (created by baseline Leg1 Tee-Object at the worktree root; confirmed absent via git status)
+- git status --porcelain after cleanup: exactly 12 new runtime files (packages/runtime/agent-setup/binder/ + packages/runtime/test/p5t1-*) + 1 modified file (packages/testkit/test/p4t6-session-event-scan.test.ts, DEC-1)
+- legacy-vocabulary grep over packages/runtime for all 10 denylist items + SessionEventMap + @deepseek-ai/dsh-session: zero matches
+- code commit 366ccfd40dd0922e61206d8b5069426ce70e3d13 (13 files changed, 2797 insertions(+), 6 deletions(-))
+- evidence commit (this file + attempt-ledger.txt + summary.json) stacked directly on top

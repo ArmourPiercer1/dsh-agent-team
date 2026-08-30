@@ -1,0 +1,40 @@
+{
+  "task_id": "P5-T1",
+  "title": "P5 E1: Team-mode vNext Phase P5 - TeamAgentBinder core: single TeamAgentBinder class covering all 4 bind paths (bindFreshRoot / bindFreshMember / rehydrateColdRoot / rehydrateColdMember) in fresh packages/runtime/agent-setup/binder/ (types/errors/defaults/read-handle/binder/index): fail-closed ordinary-target no-op before any surface call; read-only TeamDomainReadHandle projecting only getTeamSession/getMemberInstance/getSessionBinding from P4 storage repositories (zero-write proven by seam writeLog invariance across all 4 paths); agent-setup/* session event namespace with per-session (name, detail) dedup; closed 5-code TeamAgentBinderError channel; overlay slot contract persona/model/capability with identity no-op defaults (T2/T3/T4 fill business logic); admission decision point (open default, injectable guard, ADMISSION_GUARD_ERROR wrap, detail channel); mock-first per ruling R28 (narrow injected TeamAgentSetupSurface, call-recording + scriptable one-shot fault injection; zero live agents, zero ports, zero DSH_HOME, zero instances)",
+  "branch": "task/P5-T1-team-agent-binder",
+  "base_sha": "06bd13bc13de4bc8aa6c91cb41e31fc02d04baee",
+  "head_sha": "366ccfd40dd0922e61206d8b5069426ce70e3d13",
+  "head_sha_note": "code commit (12 new binder/test files + the one-file p4t6 count maintenance, 13 files changed, +2797/-6); the evidence commit (this file + run-log.txt + attempt-ledger.txt) is stacked directly on top of it on the same task branch. The head_sha reported to the main Agent (structured_output) is the post-evidence-commit git rev-parse HEAD, self-verified after the evidence commit - not this value.",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": {
+    "attempt_1": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, 0.9s, up to date; output tail showed only the pnpm update banner 11.7.0 -> 11.24.0)",
+      "leg_2_run_tests_all_packages": "first pass FAIL (EXIT=1, 826 passed / 1 failed / 827 total) - sole failure: p4t6-session-event-scan.test.ts coverage '190 files scanned' vs actual 202 (the 12 new runtime files raised the scanned-tree count); all 9 denylist/quarantine/violation checks PASSED -> DEC-1 (count-maintenance-only edit to that one committed test file; scanner byte-for-byte unchanged; full justification in attempt-ledger.txt) -> re-run PASS (EXIT=0, 827 passed / 0 failed / 827 total, 848 ms, 'RESULT: PASS run-tests (0 failures)')",
+      "leg_3_tsc_storage": "PASS (EXIT=0)",
+      "leg_4_tsc_domain": "PASS (EXIT=0)",
+      "leg_5_tsc_contracts": "PASS (EXIT=0)",
+      "debug_leg_tsc_runtime": "PASS (EXIT=0, recorded separately, not a canonical leg)",
+      "result": "PASS (final canonical pass, 5/5 legs + debug tsc runtime); pre-change baseline 783/783, post-change full run 827/827"
+    }
+  },
+  "test_counts": "p5t1:44 (double-bind 8, fresh-cold-paths 8, ordinary-noop 5, overlay-slots 8, binder-core 15); runtime package 47 (44 new + 3 pre-existing); full 783 + 44 = 827 passed, 0 failed, 827 total",
+  "p4t6_maintenance": "coverage count 190 -> 202 in packages/testkit/test/p4t6-session-event-scan.test.ts (test title + two toBe assertions + comment derivation '189 pre-P5 + 12 P5-T1'); scanner packages/testkit/fault-injection/session-event-scan.mjs byte-for-byte unchanged (denylist strings, payload-symbol rules, declaration-merge pattern, frozen 2-file quarantine set, 2-file self-exclusion contract, matching logic); the 9 violation tests green before and after the edit; decision record DEC-1 in attempt-ledger.txt",
+  "acceptance_evidence": [
+    "dev/agent-workflow/evidence/P5-T1/run-log.txt - 3 pre-change baseline runs (not counted) + 5 debug runs + 1 canonical attempt with per-leg exits and verbatim tails",
+    "dev/agent-workflow/evidence/P5-T1/attempt-ledger.txt - 1 canonical attempt + 5 debug runs + DEC-1 (p4t6 count-maintenance rationale and exact edit scope)",
+    "dev/agent-workflow/evidence/P5-T1/summary.json - this file",
+    "packages/runtime/agent-setup/binder/{types,errors,defaults,read-handle,binder,index}.ts - committed binder: single TeamAgentBinder class, 4 public path methods over one private bind()",
+    "packages/runtime/test/p5t1-{double-bind,fresh-cold-paths,ordinary-noop,overlay-slots,binder-core}.test.ts + p5t1-helpers.ts - 44 committed tests: double-bind idempotency (no duplicate install / no duplicate events / stable identity), fresh/cold 4 paths over P4 storage repositories via the testkit file seam (cold = restoreScope only, zero fresh-time side effects), ordinary agent zero effects + zero record writes, overlay/admission channels, ctor validation, closed error channel, facade exports"
+  ],
+  "notes": "R28 compliance: single TeamAgentBinder class covers all 4 paths; owns orchestration order + overlay slot contract (persona/model/capability; identity no-op defaults only - T2/T3/T4 fill business logic) + admission decision point (fail-closed channel; T2's persona complete:true FATAL gate lands before this admission; T1 leaves decision point + error-code channel only). Does NOT own TeamDomain truth (injected READ-ONLY TeamDomainReadHandle; zero-write proven) and does NOT own the external Agent runtime (injected narrow TeamAgentSetupSurface, mock-first). Fresh = full install effects in slot order with per-slot agent-setup/overlay-installed events; cold = rehydrate from durable TeamDomain records via restoreScope, no re-run of fresh-time side effects; residency loss on a previously bound target re-restores without re-emitting already-deduped events. Ordinary/unbound targets: zero surface calls, zero record writes (seam writeLog invariant across all 4 paths). Zero new dependencies; no upstream seam required (everything built on public contracts/storage seams + injected mocks); no legacy Team SessionEvent vocabulary anywhere in new files (agent-setup/* namespace; p4t6 negative control green over 202 scanned files). The single file touched outside packages/runtime is the p4t6 count maintenance (DEC-1): it is maintenance of the standing coverage invariant (the count must track tree growth or the chain stays red for every future task), not a loosening of the denylist - if G5 disagrees it is a 4-token revert and the 12 P5-T1 files still pass all violation checks.",
+  "toolchain": "node (plain-node vitest-equivalent runner scripts/run-tests.mjs; no vitest CLI / tsx / esbuild / vite, no piped-stdio child spawns), typescript 6.0.3 (tsc per package, erasable-only TS, NodeNext + verbatimModuleSyntax, noUncheckedIndexedAccess), pnpm 11.7.0 (install --ignore-scripts only; no pnpm run/exec); zero new dependencies; pnpm-lock.yaml untouched; no node: builtin imports in new .ts (node:fs confined to the committed testkit .mjs scanner, unchanged)"
+}
