@@ -6,7 +6,7 @@ contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [P4-T2, P4-T3]
+ready: []
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -35,8 +35,8 @@ tasks:
   P3-T6: { state: INTEGRATED, class: A, branch: task/P3-T6-domain-integration, base_sha: ba293ec, head_sha: d05dcfb510a8c3244cecfcabb228b3d0fa728293, attempts: 2, depends_on: [P3-T2, P3-T3, P3-T4, P3-T5] }
   G3-REVIEW: { state: PASSED, class: A, branch: int/P3-contracts-domain, base_sha: 4bb1ca373b85cb228d8df139f22767f01160dc05, head_sha: 5d0bdfc86f3b1c0ca3f15383050b4732669213da, attempts: 1, depends_on: [P3-T1, P3-T2, P3-T3, P3-T4, P3-T5, P3-T6], verdicts: [投机通过, 投机通过, 投机通过], gate: 3/3 PASS, merged_to_master: 5d0bdfc86f3b1c0ca3f15383050b4732669213da, pushed: true }
   P4-T1: { state: INTEGRATED, class: A, branch: task/P4-T1-teamdomain-schema, base_sha: 3ccff7bc98fb15bd8c691a13639177041f91b1b0, head_sha: 4a7131a731c358b3c5d485bc7d7634de93f84e8b, attempts: 1, depends_on: [P3-T6] }
-  P4-T2: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T1] }
-  P4-T3: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T1] }
+  P4-T2: { state: RUNNING, class: A, branch: task/P4-T2-operation-journal, base_sha: f6d7da5c89a0c3f06f534d3cd0b5351fc7135628, head_sha: null, attempts: 0, depends_on: [P4-T1] }
+  P4-T3: { state: RUNNING, class: A, branch: task/P4-T3-binding-reconciliation, base_sha: f6d7da5c89a0c3f06f534d3cd0b5351fc7135628, head_sha: null, attempts: 0, depends_on: [P4-T1] }
   P4-T4: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T2, P4-T3] }
   P4-T5: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T2, P4-T3, P4-T4] }
   P4-T6: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T5] }

@@ -316,6 +316,22 @@
 - **Graph**：P4-T1 → INTEGRATED（head `4a7131a`，attempts 1）；integration_sha = `f441d1f50fb5aedac1696069f86d50a554014d67`；ready → [P4-T2, P4-T3]。
 - **下一步**：读 TaskDoc §11.5 P4-T2/T3 完整卡片 → 建 2 worktree（`.worktrees/P4-T{2,3}`，base `f441d1f`）→ workflow 2 worker 并行派发（`qiyuan-self/qwen3.8-27b`）。
 
+### 轮次 R18：P4 E1 并行 — P4-T2（OperationJournal）+ P4-T3（SessionBinding）派发（2026-08-30）
+
+- **Base**：int/P4 `f6d7da5`（R17 bookkeeping；基线 564/564 + tsc 绿；T1 schema v1 已就位）。
+- **E1 并行结构裁决（主 Agent，记录在案，D1/R13 模式）**：
+  - T2 owned `packages/storage/operations/**`；T3 owned `packages/storage/bindings/**` — 子目录零重叠。
+  - 测试命名空间：T2 = `packages/storage/test/p4t2-*.test.ts`，T3 = `packages/storage/test/p4t3-*.test.ts`（仅新增文件；T1 的 p4-0X 与骨架 storage.test.ts 永不触碰；`p4t2-helpers.ts` / `p4t3-helpers.ts` 各自私有）。
+  - 共享文件：两者均**不编辑**（包 tsconfig rootDir 已 `../..`（T1 预置）；`package.json` 零改动、零新依赖；`src/index.ts` 不动；T1 的 `schema/**` / `repositories/**` 对两者只读）。
+  - 各自 worktree 独立 pnpm install（warm store；store lock 竞争 → 重试一次）。
+- **Worktrees**：`.worktrees/P4-T2` @ `task/P4-T2-operation-journal`、`.worktrees/P4-T3` @ `task/P4-T3-binding-reconciliation`（base `f6d7da5`）；证据目录 `evidence/P4-T{2,3}/`。
+- **任务卡片要点**：
+  - T2：实现 PREPARED→effects→ledger→COMMITTED、lastAppliedOperationId、generation CAS；允许依赖 = TeamDomain repositories only；不假设 cross-table ACID、roll-forward first；必须测试 = retry same operation / generation conflict / duplicate ledger prevention；验收 = 重复执行收敛到同一 durable result；输出物 = journal engine + tests。
+  - T3：实现 root/member/ordinary binding、双向 integrity、orphan/missing binding diagnostics；允许依赖 = contracts/domain/repositories；**不创建 live Agent，只处理 durable binding**；必须测试 = missing child / duplicate binding / wrong root / ordinary fork no binding；验收 = binding 查询可支撑 cold hydration/fork reconciliation；输出物 = binding repo/reconciler + tests。
+- **派发**：workflow `p4-e1-parallel-journal-bindings`，2 worker 并行，全部 `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；纯包工作，无端口/DSH_HOME/实例。
+- **graph**：P4-T2/T3 → RUNNING（branches 已录）；ready → []。
+- **结果**：（各 worker 返回后补记）
+
 ## 重审记录
 
 （空）
