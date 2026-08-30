@@ -1,0 +1,70 @@
+﻿P4-T1 run log (worktree .worktrees/P4-T1, branch task/P4-T1-teamdomain-schema, base 3ccff7bc98fb15bd8c691a13639177041f91b1b0)
+=== debug history (pre-canonical; not counted against canonical budget) ===
+debug node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json: iterative rounds; 19 errors fixed (contracts import depth x4, deepFreeze casts x7, nested-literal casts x2, childSessionId cast x1, helpers committed-map arity x1), 2 errors fixed (legacyInput hoist, MemberLifecycleState cast); final EXIT=0
+debug node scripts/run-tests.mjs storage: run 1 = 40 passed / 12 failed / 52 total (fixed: fake-seam delete existence, non-canonical JSON braces, legacy-field validation at put, schemaVersion stamping in builders, binding conflict ordering, INVALID_INSTANCE_ID expectation, p4-08 bare-specifier scope)
+debug node scripts/run-tests.mjs storage: run 2 = 72 passed / 2 failed / 74 total (fixed: p4-01 live reads after close -> captured constants; p4-05 live writeLog count -> writesAfterIdem capture)
+debug node scripts/run-tests.mjs storage: run 3 = 74 passed / 0 failed / 74 total
+debug node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json: EXIT=0 (post-fix)
+=== debug history end ===
+=== canonical attempt 1 start 2026-08-30T11:35:25+08:00 ===
+leg 1: pnpm install --ignore-scripts EXIT=0
+Scope: all 10 workspace projects
+Already up to date
+Done in 50ms using pnpm v11.7.0
+leg 2: node scripts/run-tests.mjs (all 9 packages) EXIT=0
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\p4-01-schema-meta.test.ts (10 tests)
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 564 passed, 0 failed, 564 total, 393 ms
+RESULT: PASS run-tests (0 failures)
+leg 3: tsc -p packages/storage/tsconfig.json EXIT=0
+leg 4: tsc -p packages/domain/tsconfig.json EXIT=0
+leg 5: tsc -p packages/contracts/tsconfig.json EXIT=0
+=== canonical attempt 1 end 2026-08-30T11:35:28+08:00 (leg exits: 1:0 2:0 3:0 4:0 5:0) ===

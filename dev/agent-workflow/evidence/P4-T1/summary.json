@@ -1,0 +1,88 @@
+{
+  "task_id": "P4-T1",
+  "title": "P4 E0: TeamDomain / Journal / Recovery — TeamDomain schema v1 + repository layer (8 stores, narrow public-StorageDomain seam)",
+  "branch": "task/P4-T1-teamdomain-schema",
+  "base_sha": "3ccff7bc98fb15bd8c691a13639177041f91b1b0",
+  "head_sha": "b5795d91273d3fd12c0e721e9e30fecb3ea15962",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": {
+    "attempt_1": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, already up to date, no store-lock retry needed)",
+      "leg_2_run_tests_all_packages": "PASS (EXIT=0, 564 passed / 0 failed / 564 total across all 9 packages)",
+      "leg_3_tsc_storage": "PASS (EXIT=0)",
+      "leg_4_tsc_domain": "PASS (EXIT=0)",
+      "leg_5_tsc_contracts": "PASS (EXIT=0)"
+    }
+  },
+  "test_counts": {
+    "packages/storage/test/p4-01-schema-meta.test.ts": 10,
+    "packages/storage/test/p4-02-team-sessions.test.ts": 9,
+    "packages/storage/test/p4-03-member-instances.test.ts": 9,
+    "packages/storage/test/p4-04-session-bindings.test.ts": 8,
+    "packages/storage/test/p4-05-governance.test.ts": 11,
+    "packages/storage/test/p4-06-journal.test.ts": 13,
+    "packages/storage/test/p4-07-durability-crash.test.ts": 6,
+    "packages/storage/test/p4-08-independence-negative.test.ts": 6,
+    "p4_total": 72,
+    "storage_package_total": 74,
+    "full_suite_total": 564,
+    "full_suite_baseline": 492
+  },
+  "acceptance_evidence": [
+    {
+      "acceptance": "open/create/read/write: createTeamDomain stamps all 8 stores and hands out 8 repositories; openTeamDomain re-verifies every stamp in canonical store order after close/re-open; create-on-already-stamped domain rejects TEAM_DOMAIN_EXISTS; per-store put/get/list/delete exercised with write-log idempotency checks (identical-byte put is a no-op, delete of absent key reports false); crash mid-create leaves a detectable partial stamp set",
+      "test_files": [
+        "packages/storage/test/p4-01-schema-meta.test.ts",
+        "packages/storage/test/p4-07-durability-crash.test.ts"
+      ],
+      "test_count": 16,
+      "rerun": "node scripts/run-tests.mjs storage"
+    },
+    {
+      "acceptance": "schema mismatch: backend 'version-mismatch' at open maps to SCHEMA_VERSION_MISMATCH {expected:1,found,seamCode}; missing stamp -> SCHEMA_STAMP_MISSING {store,expected:1,found:null}; tampered/parseable-but-wrong stamp -> SCHEMA_STAMP_MISMATCH via assertSupportedTeamDomainSchemaVersion; corrupted stamp row -> RECORD_INVALID; unsupported stamp version rejected without migration",
+      "test_files": [
+        "packages/storage/test/p4-01-schema-meta.test.ts"
+      ],
+      "test_count": 10,
+      "rerun": "node scripts/run-tests.mjs storage"
+    },
+    {
+      "acceptance": "record validation: per-store negatives — malformed DTO and legacy memberId rejection (LEGACY_MEMBER_ID_REJECTED surfaced as RECORD_INVALID with contractsCode), non-canonical bytes detection (storage-layer byte comparison, deserializeX alone does not enforce it), duplicate keys with contracts codes (DUPLICATE_TEAM_SESSION, DUPLICATE_INSTANCE_ID, SESSION_ALREADY_BOUND, cross-kind rebind -> typed 'session-already-bound'), missing instanceId on team-member binding -> INVALID_INSTANCE_ID, append-only operations/ledger conflicts (terminal-operation, idempotency-conflict, non-monotonic-update, unallocated-sequence), sequence bootstrap and gap detection, closed-domain NOT_OPEN propagation",
+      "test_files": [
+        "packages/storage/test/p4-02-team-sessions.test.ts",
+        "packages/storage/test/p4-03-member-instances.test.ts",
+        "packages/storage/test/p4-04-session-bindings.test.ts",
+        "packages/storage/test/p4-05-governance.test.ts",
+        "packages/storage/test/p4-06-journal.test.ts"
+      ],
+      "test_count": 50,
+      "rerun": "node scripts/run-tests.mjs storage"
+    },
+    {
+      "acceptance": "SessionEvent-independence negatives (Team control-plane authority independent of SessionEvent storage): import closure of all 22 TeamDomain production modules contains no references/** segments, no legacy Team SessionEvent vocabulary (5 frozen event names + legacy memberId), no bare (non-relative) specifiers outside the frozen contracts package, no 'dsh-agent-team' substring; live-import marker verification confirms every production module is transitively imported by at least one p4 test",
+      "test_files": [
+        "packages/storage/test/p4-08-independence-negative.test.ts"
+      ],
+      "test_count": 6,
+      "rerun": "node scripts/run-tests.mjs storage"
+    }
+  ],
+  "schema_version_policy_summary": "TeamDomain schema v1: the domain name is 'team_domain'; createTeamDomain stamps one schema-meta row per store (8 stamps keyed by store name, fields schemaVersion/store/version/stampedAt) and rejects an already-stamped domain with TEAM_DOMAIN_EXISTS {store:'schema_meta',size}. SUPPORTED_TEAM_DOMAIN_SCHEMA_VERSIONS = [1]. openTeamDomain verifies every stamp in canonical store order: missing -> SCHEMA_STAMP_MISSING {store,expected:1,found:null}; parseable-but-unsupported version -> SCHEMA_STAMP_MISMATCH via assertSupportedTeamDomainSchemaVersion(value,store); corrupt row -> RECORD_INVALID; the backend 'version-mismatch' rejection at open maps to SCHEMA_VERSION_MISMATCH {expected:1,found,seamCode}. No built-in migration: a version-2 medium rejects at open and must be handled by a future explicit migration operation. Every record in all 8 stores carries schemaVersion:1 and is validated by the frozen contracts v1 parsers; input-factory stores (team_sessions, member_instances) additionally run assertNoLegacyFields on the raw input at put time because the contracts factories silently drop unknown fields. Crash model is roll-forward/reconcile (no rollback): a crash between any two writes leaves either the prior fully-committed state or a detectable partial/stamped-mismatch state that open refuses.",
+  "notes": [
+    "head_sha above is the code commit; the final evidence commit (this file + run-log.txt + attempt-ledger.txt) is its direct child on the same branch and is the branch head at task completion.",
+    "p4-08 closure proof is data-based: test files cannot use node: imports under the frozen runner, so the import-edge mirror (P4_RAW_SPECIFIERS, 22 modules, 40 closure targets) is hand-maintained from the actual relative specifiers in the committed sources, complemented by live import-marker checks that execute the real module graph at test time.",
+    "Repositories take the StorageDomainSeam handle as an injected parameter (R16): tests run against an in-memory fake seam; the real binding to the public StorageDomain is deliberately deferred to P4-T5/P5. No public capability was missing, so no CORE_SEAM_BLOCKER.",
+    "Limitation recorded, not fabricated: the frozen plan docs under docs/plans/active/ have no file hashes in file-manifest.json, so their integrity is asserted by read-only status only.",
+    "No changes outside owned paths: packages/storage/{schema,repositories,test,p4-*}, packages/storage/tsconfig.json (rootDir only), dev/agent-workflow/evidence/P4-T1/**. src/index.ts untouched; test/storage.test.ts untouched (still 2/2 passing)."
+  ],
+  "toolchain": "node (plain-node runner scripts/run-tests.mjs with native TS type-stripping), typescript 6.0.3 (tsc per-package), pnpm 11.7.0 (install --ignore-scripts only; no pnpm run/exec)"
+}
