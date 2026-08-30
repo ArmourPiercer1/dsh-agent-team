@@ -364,6 +364,23 @@
 - **Graph**：P4-T4 → INTEGRATED（head `7f3f6a2`，attempts 2）；integration_sha = `194c2240b00ed33626087bce53d0d3c4eeccf96d`；ready → [P4-T5]。
 - **下一步**：读 TaskDoc §11.5 P4-T5 完整卡片 → 建 `.worktrees/P4-T5`（base `194c224`）→ 裁决隔离形态（TEST_METHODS 端口/DSH_HOME 规则 vs 纯 in-process 模拟，卡片允许 "test-only filesystem/process harness"）→ 派发。
 
+### 轮次 R22：P4-T5（Fault-injection/restart testkit）派发（2026-08-30）
+
+- **Base**：int/P4 `28466ac`（R21 bookkeeping；基线 740/740 + tsc 绿；T4 provisioning 状态机已就位）。
+- **T5 结构裁决（主 Agent，记录在案）**：
+  - 卡片（TaskDoc §11.5 逐字）：目标 = 为每个 durable boundary 注入 crash，并跨 process/reopen recovery；owned = `packages/testkit/fault-injection*；persistence tests`；前置 = P4-T2,T3,T4；允许依赖 = test-only filesystem/process harness；必须测试 = all crash points / double retry / restart / corrupt version；验收 = 最终只有 one committed instance 或 diagnosable orphan；输出物 = fault matrix report + fixtures；Class A / R5/C4/T5 / E3。
+  - **harness 形态**：`packages/testkit/fault-injection/**` = **file-backed StorageDomainSeam**（实现 T1 seam 接口，KvTable 逐表 JSON 文件，tmp+rename 原子写），harness 代码用 **.mjs**（node:fs 仅限 .mjs；任何 .ts 不得 import node: builtin——TS2591 不变量），配相邻 **.d.mts** 声明作 tsc 类型面；runner 对 .mjs 原生解析、.js→.ts hook 不受影响。
+  - **crash 注入**：seam 级 armed fault（可设 afterWrites/指定 durable 写点，触发 `CrashFault`，realm 丢弃、内存状态全失）；**restart = 同一 scratch 目录上全新 repository/journal/provisioning 栈 reopen**。TeamDomain 只经 seam 触达 OS → file-backed realm restart 对 TeamDomain 全部代码路径与 OS 进程重启观测等价（fault matrix report 必须显式论证此等价，并映射 §17.5 判据 7；真实 OS 进程 + 真 StorageDomain 绑定属 P5 runtime）。
+  - **scratch 纪律**：`packages/testkit/test/.tmp-fault*/`（workspace 内；逐测试建 + finally 清；沙箱禁 workspace 外写）。
+  - **corrupt version 必须测试**：(a) schema version stamp 篡改 → open fail-loudly SCHEMA_VERSION_MISMATCH；(b) durable record 正文字节损坏（截断/garbage）→ 开放/水合时 typed parse 错误、不静默；(c) crash 遗留 tmp garbage 文件不得污染 reopen。
+  - 测试命名空间 `packages/testkit/test/p4t5-*.test.ts`（仅新增 + p4t5-helpers.ts）；t6-* / testkit.test.ts 不动；report → `dev/agent-workflow/evidence/P4-T5/fault-matrix-report.md`；fixtures → `packages/testkit/fault-injection/fixtures/**`。
+  - 共享文件零编辑（storage/** 全只读含 T1-T4 代码、domain/**、contracts/** FROZEN、testkit/src/index.ts、testkit tsconfig×2/package.json、runner/hooks/shim、.gitignore）；零新依赖。
+  - **额外验证 leg（debug 记账，非 canonical 5 leg）**：`tsc -p packages/testkit/tsconfig.json` 必须 EXIT=0（canonical 5 leg 只 typecheck storage/domain/contracts）。
+  - 无端口、无 DSH_HOME、无 DSH 实例（无 live Agent——T4 fake adapter 不变）；稳定实例 :3080 / `D:\deepseek-harness\` 零接触。
+- **Worktree**：`.worktrees/P4-T5` @ `task/P4-T5-fault-injection-testkit`（base `28466ac`）。
+- **派发**：workflow `p4-t5-fault-injection-testkit-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；无端口/DSH_HOME/实例。
+- **graph**：P4-T5 → RUNNING（branch task/P4-T5-fault-injection-testkit，base `28466ac`）；ready → []。
+
 ## 重审记录
 
 （空）
