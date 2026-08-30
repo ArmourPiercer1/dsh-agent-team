@@ -1,0 +1,100 @@
+# 10. MemberInstance
+
+## 10.1 定义
+
+**MemberInstance** 是团队中真正可以长期运行、继续对话、被寻址和被治理的执行实体。
+
+一个 MemberTemplate 可以生成：
+
+```text
+0..N MemberInstances
+```
+
+## 10.2 Instance identity
+
+运行时 identity 必须使用系统生成的稳定 `instanceId`。
+
+概念 identity：
+
+```text
+(rootSessionId, instanceId)
+```
+
+`instanceId` 在一个 TeamSession 内唯一；组合键保证跨 TeamSession 不混淆。
+
+`templateId`、`label`、`groupId` 均不是运行时 identity。
+
+允许：
+
+```text
+templateId = researcher
+label = Fourier
+instanceId = inst-A
+
+same templateId = researcher
+same label = Fourier
+instanceId = inst-B
+```
+
+二者仍是完全不同的 persistent MemberInstance。
+
+## 10.3 MemberInstance 概念属性
+
+至少包括：
+
+```text
+instanceId
+templateId
+label
+groupId?
+workspace
+childSessionId
+creation-time effective configuration
+contextPolicy
+runtime/autonomy overlay
+explicit user instance override
+lifecycle
+createdAt / activity metadata
+current compatibility/admission impact
+```
+
+## 10.4 MemberInstance = Team-owned Agent + Session
+
+vNext 中：
+
+```text
+MemberInstance
+!= DSH continuable subagent activation
+```
+
+而是：
+
+```text
+MemberInstance
+  ├─ durable Team identity in TeamDomain
+  ├─ one durable DSH child Session
+  └─ zero or one currently resident live Agent handle
+```
+
+Team runtime 通过 DSH 公开 Agent factory 生命周期管理其 live Agent。
+
+## 10.5 Generic Subagent 与 MemberInstance 并存
+
+Member Agent 仍可以使用普通 DSH subagent/workflow 能力：
+
+```text
+TeamSession
+└─ MemberInstance
+   └─ ordinary generic subagent
+      └─ ordinary descendant ...
+```
+
+这些 generic subagent：
+
+- 不进入 Team membership；
+- 没有 MemberInstance identity；
+- 不继承独立 MemberTemplate；
+- 仍由 DSH ordinary subagent 语义管理；
+- 在所属 Member Archive/Dispose 时，若仍 resident，必须参与 descendant drain。
+
+---

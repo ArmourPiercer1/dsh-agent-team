@@ -1,0 +1,1415 @@
+{
+  "task": "P6-T6 team tools + orchestration E2E (G6 criteria E1-E7)",
+  "runStamp": "p6t6-1788124073615",
+  "harness": "packages/tools/harness",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R3",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p6t6",
+  "selectedScenarios": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7"
+  ],
+  "ports": {
+    "boot1": 3180,
+    "boot2": 3181,
+    "mcp": 3491,
+    "released": {
+      "mcp": true,
+      "boot1": true,
+      "boot2": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "afterBuild": null,
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "build": {
+    "required": false
+  },
+  "rowMounted": {
+    "p6t6-team-tools-boot1": true,
+    "p6t6-team-tools-boot2": true
+  },
+  "boots": {
+    "boot1": {
+      "port": 3180,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p6t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "url": "http://127.0.0.1:3180/?token=zGUqX_O05TeVWJa_6yZUsNwLyHxEfn4S_4Qd_rRhhRI",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R3\\dev\\agent-workflow\\evidence\\G6-REVIEW\\reviewer-3\\harness-output\\logs\\boot1\\instance-port3180.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3180/?token=zGUqX_O05TeVWJa_6yZUsNwLyHxEfn4S_4Qd_rRhhRI",
+      "healthBefore": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6seedw1",
+          "session-child-p6t6seeds1"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6seedw1",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6-0j3weh1176s5",
+          "session-child-p6t6-0i9xle4180qy",
+          "session-child-p6t6-0ijx73317qrd",
+          "session-child-p6t6-01h07j114nii",
+          "session-child-p6t6-00n1eg415hhb",
+          "session-child-p6t6-1v2h6hs1webz"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "E1": {
+          "criterion": "E1",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1582,
+          "assertions": [
+            {
+              "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+              "pass": true,
+              "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+            },
+            {
+              "name": "boot1 state: the seeded instance ids are present",
+              "pass": true,
+              "detail": "[\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "team_list_members executed through the registered handler",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSe"
+            },
+            {
+              "name": "list effect is members-listed with the three members",
+              "pass": true,
+              "detail": "{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-child-p6t6seeds1\"},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"lifecycle\":\""
+            },
+            {
+              "name": "team_list_templates executed; worker (persistent) and scout (fresh_per_delegation) listed",
+              "pass": true,
+              "detail": "[{\"templateId\":\"leader\",\"displayName\":\"\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"worker\",\"displayName\":\"Worker\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"scout\",\"displayName\":\"Scout\",\"contextPolicy\":\"fresh_per_delegation\"}]"
+            },
+            {
+              "name": "all three concurrent creates admitted (executed)",
+              "pass": true,
+              "detail": "[\"executed\",\"executed\",\"executed\"]"
+            },
+            {
+              "name": "every create returned a member-activated effect",
+              "pass": true,
+              "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-0j3weh1176s5\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0j3weh1176s5\",\"operationId\":\"op-1f86tdr00q0rpa10a3nbl0cs\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0i9xle4180qy\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0i9xle4180qy\",\"operationId\":\"op-0gvn3290iz6yqw1h8sq0j04g\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ijx73317qrd\",\"templateId\":\"worker\",\"childSessionId\":\"sessi"
+            },
+            {
+              "name": "three distinct new instance ids",
+              "pass": true,
+              "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+            },
+            {
+              "name": "none of the new ids collides with the seeded set",
+              "pass": true,
+              "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+            },
+            {
+              "name": "every activation carries a child session id",
+              "pass": true,
+              "detail": "[\"session-child-p6t6-0j3weh1176s5\",\"session-child-p6t6-0i9xle4180qy\",\"session-child-p6t6-0ijx73317qrd\"]"
+            },
+            {
+              "name": "every activation is on the worker template",
+              "pass": true,
+              "detail": "[\"worker\",\"worker\",\"worker\"]"
+            },
+            {
+              "name": "state after E1: six members total",
+              "pass": true,
+              "detail": "[\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "state after E1: four worker-template members (1 seed + 3 new)",
+              "pass": true,
+              "detail": "workerCount=4"
+            },
+            {
+              "name": "state after E1: the three new instance ids are present",
+              "pass": true,
+              "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 5,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "membersBefore": [
+              "inst-leader",
+              "inst-p6t6seeds1",
+              "inst-p6t6seedw1"
+            ],
+            "templates": [
+              {
+                "templateId": "leader",
+                "displayName": "",
+                "contextPolicy": "persistent"
+              },
+              {
+                "templateId": "worker",
+                "displayName": "Worker",
+                "contextPolicy": "persistent"
+              },
+              {
+                "templateId": "scout",
+                "displayName": "Scout",
+                "contextPolicy": "fresh_per_delegation"
+              }
+            ],
+            "created": [
+              {
+                "token": "p6t6-e1-1",
+                "instanceId": "inst-0j3weh1176s5",
+                "label": "e1-1",
+                "childSessionId": "session-child-p6t6-0j3weh1176s5"
+              },
+              {
+                "token": "p6t6-e1-2",
+                "instanceId": "inst-0i9xle4180qy",
+                "label": "e1-2",
+                "childSessionId": "session-child-p6t6-0i9xle4180qy"
+              },
+              {
+                "token": "p6t6-e1-3",
+                "instanceId": "inst-0ijx73317qrd",
+                "label": "e1-3",
+                "childSessionId": "session-child-p6t6-0ijx73317qrd"
+              }
+            ],
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "memberCountAfter": 6,
+            "workerCountAfter": 4
+          },
+          "reportFile": "harness-output/E1.json"
+        },
+        "E2": {
+          "criterion": "E2",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 58,
+          "assertions": [
+            {
+              "name": "all three out-of-namespace targets live-rejected (rejected status)",
+              "pass": true,
+              "detail": "[{\"tool\":\"team_follow_up\",\"target\":\"existing-worker\",\"status\":\"rejected\"},{\"tool\":\"team_follow_up\",\"target\":\"worker\",\"status\":\"rejected\"},{\"tool\":\"team_send_message\",\"target\":\"e1-1\",\"status\":\"rejected\"}]"
+            },
+            {
+              "name": "every rejection carries TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "pass": true,
+              "detail": "[\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\"]"
+            },
+            {
+              "name": "no side effect: member count unchanged (6)",
+              "pass": true
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 3,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "attempts": [
+              {
+                "tool": "team_follow_up",
+                "target": "existing-worker",
+                "kind": "seed member LABEL",
+                "token": "p6t6-e2-label",
+                "httpStatus": 200,
+                "value": {
+                  "status": "rejected",
+                  "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+                  "message": "TeamRuntime: target 'existing-worker' is a member label — actions are addressed by instanceId only (invariant 19)",
+                  "details": {
+                    "action": "follow-up",
+                    "targetToken": "existing-worker",
+                    "kind": "member-label",
+                    "instanceId": "inst-p6t6seedw1"
+                  }
+                }
+              },
+              {
+                "tool": "team_follow_up",
+                "target": "worker",
+                "kind": "TEMPLATE id",
+                "token": "p6t6-e2-template",
+                "httpStatus": 200,
+                "value": {
+                  "status": "rejected",
+                  "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+                  "message": "TeamRuntime: target 'worker' is a template id — actions are addressed by instanceId only (invariant 19)",
+                  "details": {
+                    "action": "follow-up",
+                    "targetToken": "worker",
+                    "kind": "template-id",
+                    "templateId": "worker"
+                  }
+                }
+              },
+              {
+                "tool": "team_send_message",
+                "target": "e1-1",
+                "kind": "E1 member LABEL",
+                "token": "p6t6-e2-label-msg",
+                "httpStatus": 200,
+                "value": {
+                  "status": "rejected",
+                  "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+                  "message": "TeamRuntime: target 'e1-1' is a member label — actions are addressed by instanceId only (invariant 19)",
+                  "details": {
+                    "action": "send-message",
+                    "targetToken": "e1-1",
+                    "kind": "member-label",
+                    "instanceId": "inst-0j3weh1176s5"
+                  }
+                }
+              }
+            ]
+          },
+          "reportFile": "harness-output/E2.json"
+        },
+        "E3": {
+          "criterion": "E3",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 219,
+          "assertions": [
+            {
+              "name": "E1 produced a persistent worker with a bound child session",
+              "pass": true,
+              "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "first follow-up executed on the existing instance",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":4},\"requestToken\":\"p6t6-e3-1\"}"
+            },
+            {
+              "name": "second follow-up executed on the SAME instance",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":5},\"requestToken\":\"p6t6-e3-2\"}"
+            },
+            {
+              "name": "the admission sequences advance by one (monotonic per admission)",
+              "pass": true,
+              "detail": "seq1=4 seq2=5"
+            },
+            {
+              "name": "the bound child session id is UNCHANGED across follow-ups",
+              "pass": true,
+              "detail": "before=session-child-p6t6-0j3weh1176s5 after=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "no new instance was created (six members)",
+              "pass": true,
+              "detail": "6"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "sequences": [
+              4,
+              5
+            ]
+          },
+          "reportFile": "harness-output/E3.json"
+        },
+        "E4": {
+          "criterion": "E4",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1107,
+          "assertions": [
+            {
+              "name": "both fresh_per_delegation delegates executed",
+              "pass": true,
+              "detail": "[\"executed\",\"executed\"]"
+            },
+            {
+              "name": "both delegates returned member-activated effects",
+              "pass": true,
+              "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-01h07j114nii\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-01h07j114nii\",\"operationId\":\"op-13ke21x06coo400ngzm171qk\",\"replayed\":false,\"ledgerSequence\":6,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-00n1eg415hhb\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-00n1eg415hhb\",\"operationId\":\"op-11hthzw0dnenb50wkdyve0qy\",\"replayed\":false,\"ledgerSequence\":7,\"admissionCode\":\"ADMISSION_OPEN\"}]"
+            },
+            {
+              "name": "two distinct NEW instance ids (not the seed, not each other)",
+              "pass": true,
+              "detail": "[\"inst-01h07j114nii\",\"inst-00n1eg415hhb\"]"
+            },
+            {
+              "name": "each activation carries a distinct new child session",
+              "pass": true,
+              "detail": "[\"session-child-p6t6-01h07j114nii\",\"session-child-p6t6-00n1eg415hhb\"]"
+            },
+            {
+              "name": "state after E4: three scout-template members (1 seed + 2 new)",
+              "pass": true,
+              "detail": "scoutCount=3"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "created": [
+              {
+                "token": "p6t6-e4-1",
+                "instanceId": "inst-01h07j114nii",
+                "childSessionId": "session-child-p6t6-01h07j114nii"
+              },
+              {
+                "token": "p6t6-e4-2",
+                "instanceId": "inst-00n1eg415hhb",
+                "childSessionId": "session-child-p6t6-00n1eg415hhb"
+              }
+            ],
+            "scoutCountAfter": 3
+          },
+          "reportFile": "harness-output/E4.json"
+        },
+        "E6": {
+          "criterion": "E6",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 529,
+          "assertions": [
+            {
+              "name": "pre-race state: three scout members (limit 4)",
+              "pass": true,
+              "detail": "scoutCount=3"
+            },
+            {
+              "name": "exactly ONE of the three concurrent creates admitted at ==limit",
+              "pass": true,
+              "detail": "[\"executed\",\"rejected\",\"rejected\"]"
+            },
+            {
+              "name": "the admitted create is member-activated",
+              "pass": true,
+              "detail": "[\"member-activated\"]"
+            },
+            {
+              "name": "both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES",
+              "pass": true,
+              "detail": "[\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\"]"
+            },
+            {
+              "name": "state after E6: four scout members (== limit; never over-created)",
+              "pass": true,
+              "detail": "scoutCount=4"
+            },
+            {
+              "name": "state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)",
+              "pass": true,
+              "detail": "total=9"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 3,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "scoutCountBefore": 3,
+            "outcomes": [
+              {
+                "token": "p6t6-e6-1",
+                "status": "executed",
+                "instanceId": "inst-1v2h6hs1webz"
+              },
+              {
+                "token": "p6t6-e6-2",
+                "status": "rejected",
+                "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+              },
+              {
+                "token": "p6t6-e6-3",
+                "status": "rejected",
+                "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+              }
+            ],
+            "scoutCountAfter": 4,
+            "memberCountAfter": 9
+          },
+          "reportFile": "harness-output/E6.json"
+        },
+        "E5-boot1-writes": {
+          "criterion": "E5",
+          "phase": "boot1-writes",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 922,
+          "assertions": [
+            {
+              "name": "E1 produced the persistent worker (message/progress caller)",
+              "pass": true,
+              "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "team message from the member to the leader delivered",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":9,\"deliveredSequence\":10,\"requestToken\":\"p6t6-e5-msg1\"}}"
+            },
+            {
+              "name": "delivery targeted the leader instance",
+              "pass": true,
+              "detail": "{\"r\":\"inst-leader\",\"d\":\"inst-leader\"}"
+            },
+            {
+              "name": "delivery landed on the leader bound session (the root)",
+              "pass": true,
+              "detail": "\"session-p6t6root\""
+            },
+            {
+              "name": "delivery carries durable fact + delivered sequences",
+              "pass": true,
+              "detail": "{\"f\":9,\"d\":10}"
+            },
+            {
+              "name": "first progress report recorded on sequence 1",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":12,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p1\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:08:03.009Z\",\"summary\":\"p6t6 e5 in flight\"}}"
+            },
+            {
+              "name": "second progress report recorded on sequence 2",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":14,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":2,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"p6t6-e5-p2\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:08:03.220Z\",\"summary\":\"p6t6 e5 done\"}}"
+            },
+            {
+              "name": "control request accepted (control-requested, pending)",
+              "pass": true,
+              "detail": "{\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"rootSessionId\":\"session-p6t6root\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:08:03.363Z\",\"requestSequence\":15,\"toolName\":\"team_follow_up\",\"summary\":\"p6t6 e5 gated follow-up\"}}"
+            },
+            {
+              "name": "control request scope carries the E5 correlation token + tool name",
+              "pass": true,
+              "detail": "{\"c\":\"p6t6-e5-ctrl1\",\"t\":\"team_follow_up\"}"
+            },
+            {
+              "name": "state after E5a: the control request is durably pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:08:03.307Z\"}"
+            },
+            {
+              "name": "state after E5a: both progress rows for (w, e5) are durable",
+              "pass": true,
+              "detail": "[1,2]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 4,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "message": {
+              "factSequence": 9,
+              "deliveredSequence": 10,
+              "body": "p6t6 e5 hello from worker one"
+            },
+            "progressSequences": [
+              1,
+              2
+            ],
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "correlation": "p6t6-e5-ctrl1",
+              "status": "pending"
+            }
+          },
+          "reportFile": "harness-output/E5-boot1-writes.json"
+        }
+      }
+    },
+    "boot2": {
+      "port": 3181,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p6t6\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3181/?token=WQNK9AXiMwHGfuefPXC46XSFg90a3T9FcOmsTRveM94",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R3\\dev\\agent-workflow\\evidence\\G6-REVIEW\\reviewer-3\\harness-output\\logs\\boot2\\instance-port3181.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3181/?token=WQNK9AXiMwHGfuefPXC46XSFg90a3T9FcOmsTRveM94",
+      "healthBefore": {
+        "ok": true,
+        "boot": 2,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6-00n1eg415hhb",
+          "session-child-p6t6-01h07j114nii",
+          "session-child-p6t6-0i9xle4180qy",
+          "session-child-p6t6-0ijx73317qrd",
+          "session-child-p6t6-0j3weh1176s5",
+          "session-child-p6t6-1v2h6hs1webz",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 2,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6-00n1eg415hhb",
+          "session-child-p6t6-01h07j114nii",
+          "session-child-p6t6-0i9xle4180qy",
+          "session-child-p6t6-0ijx73317qrd",
+          "session-child-p6t6-0j3weh1176s5",
+          "session-child-p6t6-1v2h6hs1webz",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "E5-boot2-restart": {
+          "criterion": "E5",
+          "phase": "boot2-restart",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 983,
+          "assertions": [
+            {
+              "name": "state after restart: nine members total",
+              "pass": true,
+              "detail": "[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "state after restart: the member id set is UNCHANGED from boot 1",
+              "pass": true,
+              "detail": "boot1=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"] boot2=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "the boot-1 control request SURVIVED the restart as pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:08:03.307Z\"}"
+            },
+            {
+              "name": "the boot-1 progress rows (sequences 1 and 2) SURVIVED the restart",
+              "pass": true,
+              "detail": "[1,2]"
+            },
+            {
+              "name": "no pending delivery was skipped at recovery (the boot-1 delivery is accounted)",
+              "pass": true,
+              "detail": "{\"recovered\":[],\"skipped\":[]}"
+            },
+            {
+              "name": "team_list_members after restart reports nine members through the tool",
+              "pass": true,
+              "detail": "9"
+            },
+            {
+              "name": "leader resolved the request as allow (control-resolved)",
+              "pass": true,
+              "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-p6t6root\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"toolName\":\"team_follow_up\"},\"requestSequence\":15,\"decisionSequence\":16,\"createdAt\":\"2026-08-30T21:08:06.102Z\",\"note\":\"p6t6 e5 leader allows the follow-up\"}}"
+            },
+            {
+              "name": "the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":18},\"requestToken\":\"p6t6-e5-ctrl1\"}"
+            },
+            {
+              "name": "retrying the SAME token is BLOCKED (allow-consumed, exactly-once)",
+              "pass": true,
+              "detail": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"reason\":\"allow-consumed\",\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decisionSequence\":16}"
+            },
+            {
+              "name": "a fresh token with no request row proceeds (no-request deviation)",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":19},\"requestToken\":\"p6t6-e5-ctrl3\"}"
+            },
+            {
+              "name": "post-restart team message delivered (new durable sequences)",
+              "pass": true,
+              "detail": "{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":20,\"deliveredSequence\":21,\"requestToken\":\"p6t6-e5-msg2\"}"
+            },
+            {
+              "name": "post-restart progress report continues the per-subject sequence (3)",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":23,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":3,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p3\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:08:06.898Z\",\"summary\":\"p6t6 e5 resumed after restart\"}}"
+            },
+            {
+              "name": "after consumption the request row is decided",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"decided\",\"createdAt\":\"2026-08-30T21:08:03.307Z\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 7,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "membersCountAfter": 9,
+            "memberIdsSameAsBoot1": true,
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "statusBefore": "pending",
+              "statusAfter": "decided"
+            },
+            "activitySequences": [
+              1,
+              2
+            ],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "guard": {
+              "executedToken": "p6t6-e5-ctrl1",
+              "blockedRetry": "blocked",
+              "blockedReason": "allow-consumed",
+              "freshTokenExecuted": "executed"
+            },
+            "postMessage": {
+              "deliveredSequence": 21,
+              "factSequence": 20
+            },
+            "postProgressSequence": 3
+          },
+          "reportFile": "harness-output/E5-boot2-restart.json"
+        }
+      }
+    }
+  },
+  "scenarios": {
+    "E7": {
+      "criterion": "E7",
+      "pass": true,
+      "durationMs": 59,
+      "assertions": [
+        {
+          "name": "scan covers exactly the five committed tool-layer source files",
+          "pass": true,
+          "detail": "[\"packages/tools/src/guard.ts\",\"packages/tools/src/index.ts\",\"packages/tools/src/tokens.ts\",\"packages/tools/src/tools.ts\",\"packages/tools/src/types.ts\"]"
+        },
+        {
+          "name": "zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)",
+          "pass": true,
+          "detail": "[]"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 0,
+        "stateCalls": 0,
+        "non200": []
+      },
+      "evidence": {
+        "files": [
+          "packages/tools/src/guard.ts",
+          "packages/tools/src/index.ts",
+          "packages/tools/src/tokens.ts",
+          "packages/tools/src/tools.ts",
+          "packages/tools/src/types.ts"
+        ],
+        "totalImportSpecifiers": 25,
+        "totalViolations": 0,
+        "violations": []
+      },
+      "reportFile": "harness-output/E7.json"
+    },
+    "E1": {
+      "criterion": "E1",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1582,
+      "assertions": [
+        {
+          "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+          "pass": true,
+          "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+        },
+        {
+          "name": "boot1 state: the seeded instance ids are present",
+          "pass": true,
+          "detail": "[\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+        },
+        {
+          "name": "team_list_members executed through the registered handler",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSe"
+        },
+        {
+          "name": "list effect is members-listed with the three members",
+          "pass": true,
+          "detail": "{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-child-p6t6seeds1\"},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"lifecycle\":\""
+        },
+        {
+          "name": "team_list_templates executed; worker (persistent) and scout (fresh_per_delegation) listed",
+          "pass": true,
+          "detail": "[{\"templateId\":\"leader\",\"displayName\":\"\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"worker\",\"displayName\":\"Worker\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"scout\",\"displayName\":\"Scout\",\"contextPolicy\":\"fresh_per_delegation\"}]"
+        },
+        {
+          "name": "all three concurrent creates admitted (executed)",
+          "pass": true,
+          "detail": "[\"executed\",\"executed\",\"executed\"]"
+        },
+        {
+          "name": "every create returned a member-activated effect",
+          "pass": true,
+          "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-0j3weh1176s5\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0j3weh1176s5\",\"operationId\":\"op-1f86tdr00q0rpa10a3nbl0cs\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0i9xle4180qy\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0i9xle4180qy\",\"operationId\":\"op-0gvn3290iz6yqw1h8sq0j04g\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ijx73317qrd\",\"templateId\":\"worker\",\"childSessionId\":\"sessi"
+        },
+        {
+          "name": "three distinct new instance ids",
+          "pass": true,
+          "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+        },
+        {
+          "name": "none of the new ids collides with the seeded set",
+          "pass": true,
+          "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+        },
+        {
+          "name": "every activation carries a child session id",
+          "pass": true,
+          "detail": "[\"session-child-p6t6-0j3weh1176s5\",\"session-child-p6t6-0i9xle4180qy\",\"session-child-p6t6-0ijx73317qrd\"]"
+        },
+        {
+          "name": "every activation is on the worker template",
+          "pass": true,
+          "detail": "[\"worker\",\"worker\",\"worker\"]"
+        },
+        {
+          "name": "state after E1: six members total",
+          "pass": true,
+          "detail": "[\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+        },
+        {
+          "name": "state after E1: four worker-template members (1 seed + 3 new)",
+          "pass": true,
+          "detail": "workerCount=4"
+        },
+        {
+          "name": "state after E1: the three new instance ids are present",
+          "pass": true,
+          "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 5,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "membersBefore": [
+          "inst-leader",
+          "inst-p6t6seeds1",
+          "inst-p6t6seedw1"
+        ],
+        "templates": [
+          {
+            "templateId": "leader",
+            "displayName": "",
+            "contextPolicy": "persistent"
+          },
+          {
+            "templateId": "worker",
+            "displayName": "Worker",
+            "contextPolicy": "persistent"
+          },
+          {
+            "templateId": "scout",
+            "displayName": "Scout",
+            "contextPolicy": "fresh_per_delegation"
+          }
+        ],
+        "created": [
+          {
+            "token": "p6t6-e1-1",
+            "instanceId": "inst-0j3weh1176s5",
+            "label": "e1-1",
+            "childSessionId": "session-child-p6t6-0j3weh1176s5"
+          },
+          {
+            "token": "p6t6-e1-2",
+            "instanceId": "inst-0i9xle4180qy",
+            "label": "e1-2",
+            "childSessionId": "session-child-p6t6-0i9xle4180qy"
+          },
+          {
+            "token": "p6t6-e1-3",
+            "instanceId": "inst-0ijx73317qrd",
+            "label": "e1-3",
+            "childSessionId": "session-child-p6t6-0ijx73317qrd"
+          }
+        ],
+        "w": "inst-0j3weh1176s5",
+        "wChild": "session-child-p6t6-0j3weh1176s5",
+        "memberCountAfter": 6,
+        "workerCountAfter": 4
+      },
+      "reportFile": "harness-output/E1.json"
+    },
+    "E2": {
+      "criterion": "E2",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 58,
+      "assertions": [
+        {
+          "name": "all three out-of-namespace targets live-rejected (rejected status)",
+          "pass": true,
+          "detail": "[{\"tool\":\"team_follow_up\",\"target\":\"existing-worker\",\"status\":\"rejected\"},{\"tool\":\"team_follow_up\",\"target\":\"worker\",\"status\":\"rejected\"},{\"tool\":\"team_send_message\",\"target\":\"e1-1\",\"status\":\"rejected\"}]"
+        },
+        {
+          "name": "every rejection carries TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+          "pass": true,
+          "detail": "[\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\"]"
+        },
+        {
+          "name": "no side effect: member count unchanged (6)",
+          "pass": true
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 3,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "attempts": [
+          {
+            "tool": "team_follow_up",
+            "target": "existing-worker",
+            "kind": "seed member LABEL",
+            "token": "p6t6-e2-label",
+            "httpStatus": 200,
+            "value": {
+              "status": "rejected",
+              "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "message": "TeamRuntime: target 'existing-worker' is a member label — actions are addressed by instanceId only (invariant 19)",
+              "details": {
+                "action": "follow-up",
+                "targetToken": "existing-worker",
+                "kind": "member-label",
+                "instanceId": "inst-p6t6seedw1"
+              }
+            }
+          },
+          {
+            "tool": "team_follow_up",
+            "target": "worker",
+            "kind": "TEMPLATE id",
+            "token": "p6t6-e2-template",
+            "httpStatus": 200,
+            "value": {
+              "status": "rejected",
+              "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "message": "TeamRuntime: target 'worker' is a template id — actions are addressed by instanceId only (invariant 19)",
+              "details": {
+                "action": "follow-up",
+                "targetToken": "worker",
+                "kind": "template-id",
+                "templateId": "worker"
+              }
+            }
+          },
+          {
+            "tool": "team_send_message",
+            "target": "e1-1",
+            "kind": "E1 member LABEL",
+            "token": "p6t6-e2-label-msg",
+            "httpStatus": 200,
+            "value": {
+              "status": "rejected",
+              "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "message": "TeamRuntime: target 'e1-1' is a member label — actions are addressed by instanceId only (invariant 19)",
+              "details": {
+                "action": "send-message",
+                "targetToken": "e1-1",
+                "kind": "member-label",
+                "instanceId": "inst-0j3weh1176s5"
+              }
+            }
+          }
+        ]
+      },
+      "reportFile": "harness-output/E2.json"
+    },
+    "E3": {
+      "criterion": "E3",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 219,
+      "assertions": [
+        {
+          "name": "E1 produced a persistent worker with a bound child session",
+          "pass": true,
+          "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+        },
+        {
+          "name": "first follow-up executed on the existing instance",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":4},\"requestToken\":\"p6t6-e3-1\"}"
+        },
+        {
+          "name": "second follow-up executed on the SAME instance",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":5},\"requestToken\":\"p6t6-e3-2\"}"
+        },
+        {
+          "name": "the admission sequences advance by one (monotonic per admission)",
+          "pass": true,
+          "detail": "seq1=4 seq2=5"
+        },
+        {
+          "name": "the bound child session id is UNCHANGED across follow-ups",
+          "pass": true,
+          "detail": "before=session-child-p6t6-0j3weh1176s5 after=session-child-p6t6-0j3weh1176s5"
+        },
+        {
+          "name": "no new instance was created (six members)",
+          "pass": true,
+          "detail": "6"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "w": "inst-0j3weh1176s5",
+        "wChild": "session-child-p6t6-0j3weh1176s5",
+        "sequences": [
+          4,
+          5
+        ]
+      },
+      "reportFile": "harness-output/E3.json"
+    },
+    "E4": {
+      "criterion": "E4",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1107,
+      "assertions": [
+        {
+          "name": "both fresh_per_delegation delegates executed",
+          "pass": true,
+          "detail": "[\"executed\",\"executed\"]"
+        },
+        {
+          "name": "both delegates returned member-activated effects",
+          "pass": true,
+          "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-01h07j114nii\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-01h07j114nii\",\"operationId\":\"op-13ke21x06coo400ngzm171qk\",\"replayed\":false,\"ledgerSequence\":6,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-00n1eg415hhb\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-00n1eg415hhb\",\"operationId\":\"op-11hthzw0dnenb50wkdyve0qy\",\"replayed\":false,\"ledgerSequence\":7,\"admissionCode\":\"ADMISSION_OPEN\"}]"
+        },
+        {
+          "name": "two distinct NEW instance ids (not the seed, not each other)",
+          "pass": true,
+          "detail": "[\"inst-01h07j114nii\",\"inst-00n1eg415hhb\"]"
+        },
+        {
+          "name": "each activation carries a distinct new child session",
+          "pass": true,
+          "detail": "[\"session-child-p6t6-01h07j114nii\",\"session-child-p6t6-00n1eg415hhb\"]"
+        },
+        {
+          "name": "state after E4: three scout-template members (1 seed + 2 new)",
+          "pass": true,
+          "detail": "scoutCount=3"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "created": [
+          {
+            "token": "p6t6-e4-1",
+            "instanceId": "inst-01h07j114nii",
+            "childSessionId": "session-child-p6t6-01h07j114nii"
+          },
+          {
+            "token": "p6t6-e4-2",
+            "instanceId": "inst-00n1eg415hhb",
+            "childSessionId": "session-child-p6t6-00n1eg415hhb"
+          }
+        ],
+        "scoutCountAfter": 3
+      },
+      "reportFile": "harness-output/E4.json"
+    },
+    "E6": {
+      "criterion": "E6",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 529,
+      "assertions": [
+        {
+          "name": "pre-race state: three scout members (limit 4)",
+          "pass": true,
+          "detail": "scoutCount=3"
+        },
+        {
+          "name": "exactly ONE of the three concurrent creates admitted at ==limit",
+          "pass": true,
+          "detail": "[\"executed\",\"rejected\",\"rejected\"]"
+        },
+        {
+          "name": "the admitted create is member-activated",
+          "pass": true,
+          "detail": "[\"member-activated\"]"
+        },
+        {
+          "name": "both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES",
+          "pass": true,
+          "detail": "[\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\"]"
+        },
+        {
+          "name": "state after E6: four scout members (== limit; never over-created)",
+          "pass": true,
+          "detail": "scoutCount=4"
+        },
+        {
+          "name": "state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)",
+          "pass": true,
+          "detail": "total=9"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 3,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "scoutCountBefore": 3,
+        "outcomes": [
+          {
+            "token": "p6t6-e6-1",
+            "status": "executed",
+            "instanceId": "inst-1v2h6hs1webz"
+          },
+          {
+            "token": "p6t6-e6-2",
+            "status": "rejected",
+            "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+          },
+          {
+            "token": "p6t6-e6-3",
+            "status": "rejected",
+            "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+          }
+        ],
+        "scoutCountAfter": 4,
+        "memberCountAfter": 9
+      },
+      "reportFile": "harness-output/E6.json"
+    },
+    "E5": {
+      "criterion": "E5",
+      "pass": true,
+      "phases": {
+        "boot1-writes": {
+          "criterion": "E5",
+          "phase": "boot1-writes",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 922,
+          "assertions": [
+            {
+              "name": "E1 produced the persistent worker (message/progress caller)",
+              "pass": true,
+              "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "team message from the member to the leader delivered",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":9,\"deliveredSequence\":10,\"requestToken\":\"p6t6-e5-msg1\"}}"
+            },
+            {
+              "name": "delivery targeted the leader instance",
+              "pass": true,
+              "detail": "{\"r\":\"inst-leader\",\"d\":\"inst-leader\"}"
+            },
+            {
+              "name": "delivery landed on the leader bound session (the root)",
+              "pass": true,
+              "detail": "\"session-p6t6root\""
+            },
+            {
+              "name": "delivery carries durable fact + delivered sequences",
+              "pass": true,
+              "detail": "{\"f\":9,\"d\":10}"
+            },
+            {
+              "name": "first progress report recorded on sequence 1",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":12,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p1\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:08:03.009Z\",\"summary\":\"p6t6 e5 in flight\"}}"
+            },
+            {
+              "name": "second progress report recorded on sequence 2",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":14,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":2,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"p6t6-e5-p2\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:08:03.220Z\",\"summary\":\"p6t6 e5 done\"}}"
+            },
+            {
+              "name": "control request accepted (control-requested, pending)",
+              "pass": true,
+              "detail": "{\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"rootSessionId\":\"session-p6t6root\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:08:03.363Z\",\"requestSequence\":15,\"toolName\":\"team_follow_up\",\"summary\":\"p6t6 e5 gated follow-up\"}}"
+            },
+            {
+              "name": "control request scope carries the E5 correlation token + tool name",
+              "pass": true,
+              "detail": "{\"c\":\"p6t6-e5-ctrl1\",\"t\":\"team_follow_up\"}"
+            },
+            {
+              "name": "state after E5a: the control request is durably pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:08:03.307Z\"}"
+            },
+            {
+              "name": "state after E5a: both progress rows for (w, e5) are durable",
+              "pass": true,
+              "detail": "[1,2]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 4,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "message": {
+              "factSequence": 9,
+              "deliveredSequence": 10,
+              "body": "p6t6 e5 hello from worker one"
+            },
+            "progressSequences": [
+              1,
+              2
+            ],
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "correlation": "p6t6-e5-ctrl1",
+              "status": "pending"
+            }
+          },
+          "reportFile": "harness-output/E5-boot1-writes.json"
+        },
+        "boot2-restart": {
+          "criterion": "E5",
+          "phase": "boot2-restart",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 983,
+          "assertions": [
+            {
+              "name": "state after restart: nine members total",
+              "pass": true,
+              "detail": "[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "state after restart: the member id set is UNCHANGED from boot 1",
+              "pass": true,
+              "detail": "boot1=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"] boot2=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "the boot-1 control request SURVIVED the restart as pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:08:03.307Z\"}"
+            },
+            {
+              "name": "the boot-1 progress rows (sequences 1 and 2) SURVIVED the restart",
+              "pass": true,
+              "detail": "[1,2]"
+            },
+            {
+              "name": "no pending delivery was skipped at recovery (the boot-1 delivery is accounted)",
+              "pass": true,
+              "detail": "{\"recovered\":[],\"skipped\":[]}"
+            },
+            {
+              "name": "team_list_members after restart reports nine members through the tool",
+              "pass": true,
+              "detail": "9"
+            },
+            {
+              "name": "leader resolved the request as allow (control-resolved)",
+              "pass": true,
+              "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-p6t6root\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"toolName\":\"team_follow_up\"},\"requestSequence\":15,\"decisionSequence\":16,\"createdAt\":\"2026-08-30T21:08:06.102Z\",\"note\":\"p6t6 e5 leader allows the follow-up\"}}"
+            },
+            {
+              "name": "the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":18},\"requestToken\":\"p6t6-e5-ctrl1\"}"
+            },
+            {
+              "name": "retrying the SAME token is BLOCKED (allow-consumed, exactly-once)",
+              "pass": true,
+              "detail": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"reason\":\"allow-consumed\",\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decisionSequence\":16}"
+            },
+            {
+              "name": "a fresh token with no request row proceeds (no-request deviation)",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":19},\"requestToken\":\"p6t6-e5-ctrl3\"}"
+            },
+            {
+              "name": "post-restart team message delivered (new durable sequences)",
+              "pass": true,
+              "detail": "{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":20,\"deliveredSequence\":21,\"requestToken\":\"p6t6-e5-msg2\"}"
+            },
+            {
+              "name": "post-restart progress report continues the per-subject sequence (3)",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":23,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":3,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p3\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:08:06.898Z\",\"summary\":\"p6t6 e5 resumed after restart\"}}"
+            },
+            {
+              "name": "after consumption the request row is decided",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"decided\",\"createdAt\":\"2026-08-30T21:08:03.307Z\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 7,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "membersCountAfter": 9,
+            "memberIdsSameAsBoot1": true,
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "statusBefore": "pending",
+              "statusAfter": "decided"
+            },
+            "activitySequences": [
+              1,
+              2
+            ],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "guard": {
+              "executedToken": "p6t6-e5-ctrl1",
+              "blockedRetry": "blocked",
+              "blockedReason": "allow-consumed",
+              "freshTokenExecuted": "executed"
+            },
+            "postMessage": {
+              "deliveredSequence": 21,
+              "factSequence": 20
+            },
+            "postProgressSequence": 3
+          },
+          "reportFile": "harness-output/E5-boot2-restart.json"
+        }
+      },
+      "reportFiles": [
+        "harness-output/E5-boot1-writes.json",
+        "harness-output/E5-boot2-restart.json"
+      ]
+    }
+  },
+  "pass": true,
+  "failures": []
+}

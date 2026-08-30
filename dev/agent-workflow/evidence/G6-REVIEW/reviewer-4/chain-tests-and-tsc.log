@@ -1,0 +1,11 @@
+﻿chain started 2026-08-31T05:18:57.9260608+08:00
+== STEP full-tests :: cmd: node scripts/run-tests.mjs :: exit=0 ==
+== STEP tsc-contracts :: cmd: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json :: exit=0 ==
+== STEP tsc-domain :: cmd: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json :: exit=0 ==
+== STEP tsc-storage :: cmd: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json :: exit=0 ==
+== STEP tsc-runtime :: cmd: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json :: exit=0 ==
+== STEP tsc-testkit :: cmd: node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json :: exit=0 ==
+== STEP targeted-runtime :: cmd: node scripts/run-tests.mjs runtime :: exit=0 ==
+== STEP targeted-tools :: cmd: node scripts/run-tests.mjs tools :: exit=0 ==
+== STEP targeted-testkit :: cmd: node scripts/run-tests.mjs testkit :: exit=0 ==
+chain ended 2026-08-31T05:19:12.6975298+08:00

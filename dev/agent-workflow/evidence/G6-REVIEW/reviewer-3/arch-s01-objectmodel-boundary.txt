@@ -1,0 +1,205 @@
+# 1. 架构目标
+
+Team vNext 的目标不是为现有 Team Mode 增加更多工具，而是重新建立**身份、所有权、持久化和运行时边界**。
+
+最终系统必须满足四个基本目标。
+
+## 1.1 静态定义与动态实体分离
+
+```text
+TeamBlueprint / LeaderTemplate / MemberTemplate
+                │
+                │ instantiate / bind
+                ▼
+TeamSession / LeaderInstance / MemberInstance
+```
+
+静态定义说明“团队和角色是什么”；动态实体说明“这次实际运行的是谁”。
+
+## 1.2 Team 与普通 DSH Agent 基础设施正交
+
+Team 不创造第二套 LLM runtime、Session、Conversation、Trajectory、Tool 或 AgentPreset 系统。
+
+它建立的是：
+
+```text
+DSH Agent/Session substrate
+        +
+Team-owned aggregate control plane
+```
+
+## 1.3 Durable Team identity 不依赖进程内 registry
+
+进程内 cache、live Agent handle、UI store、当前 cwd 都不能成为 Team identity 或 roster 的权威来源。
+
+## 1.4 运行时可变性必须有明确 authority 和生命周期
+
+model、tools、permissions、skills、MCP、workspace、context policy 等字段不能用一个模糊的 `mutable=true` 表示。任何运行时变化都必须回答：
+
+1. 谁可以改变；
+2. 在什么边界改变；
+3. 允许改变到什么范围；
+4. 是否持久；
+5. 对当前 in-flight work 还是 future work 生效；
+6. 是否会被 PolicyState 或 External Hard Policy 抑制。
+
+---
+
+# 2. 明确不属于 vNext 的内容
+
+为避免 Team vNext 膨胀成 workflow engine，本版本明确**不实现**：
+
+```text
+formal WorkstreamInstance
+WorkflowState
+automatic workflow transition
+automatic task-completion inference
+DAG scheduler
+router-driven automatic activation
+arbitrary transition effects
+Git branch/worktree lifecycle management
+cross-route mandatory information-flow control
+Blueprint hot upgrade / rebind
+per-member AgentPreset
+instance conversation cloning
+cross-Session live memory/history search
+Team-specific DSH SessionEvent vocabulary
+core/host/client patch dependency
+official private experimental Agent Teams runtime dependency
+```
+
+未来 Router / Workflow / Workstream 可以建立在本文保留的扩展缝之上，但不能反向污染本版本的核心对象模型。
+
+---
+
+# 3. 系统边界与所有权
+
+## 3.1 DSH upstream 拥有
+
+DSH 继续拥有：
+
+```text
+Agent factory / Agent lifecycle primitive
+Session and first-person durable execution history
+AgentPreset composition
+ModelSelection / provider-model-effort routing
+System Prompt assembly infrastructure
+Tools registry and execution pipeline
+Skills registry
+MCP capability substrate
+Permission / hard restriction substrate
+Generic Subagent
+StorageDomain infrastructure
+Remote/Typert infrastructure
+Client module graph
+Conversation
+Trajectory
+Native Session fork primitive
+```
+
+Team 只能消费这些公开能力，不复制其内部实现。
+
+## 3.2 Team plugin 拥有
+
+Team plugin 拥有：
+
+```text
+TeamBlueprint catalog and immutable snapshot semantics
+TeamIntent
+TeamSession binding
+LeaderTemplate / MemberTemplate
+LeaderInstance / MemberInstance
+TeamDomain durable state
+Team activation / admission
+Team policy resolution
+Team compatibility state
+Team lifecycle
+Team coordination messages
+Team control/approval state
+Team progress/activity coordination facts
+Team ledger
+Team aggregate projection
+Team Remote API
+Team UI
+legacy Team adapters
+```
+
+## 3.3 AgentPreset 与 TeamSession 正交
+
+根对象关系：
+
+```text
+Root DSH Session
+├─ AgentPreset binding
+├─ ModelSelection
+└─ optional TeamSession binding
+```
+
+两者回答不同问题：
+
+- **AgentPreset**：这个 Agent 的 ordinary model-facing composition 是什么？
+- **TeamSession**：这个 Root Session 是否属于某支具体 Team，并拥有哪些 Team runtime 语义？
+
+因此：
+
+```text
+TeamSession != AgentPreset
+TeamBlueprint != AgentPreset
+```
+
+一个名为 `team` 的 AgentPreset 可以存在，但它只是一份推荐的 Team-friendly ordinary composition，不是 Team Mode 开关，也不是 Team runtime 依赖。
+
+---
+
+# 4. 总体对象模型
+
+```text
+                       TeamBlueprintCatalog
+                               │
+                     resolves immutable revision
+                               │
+                               ▼
+                        TeamBlueprint@R
+                 ┌─────────────┼─────────────┐
+                 │             │             │
+          LeaderTemplate  MemberTemplates  Policy/Quota/
+                                      ...  Requirement defs
+                 │             │
+                 │             └──────────────┐
+                 ▼                            │ instantiate 0..N
+          LeaderInstance                     ▼
+        (= Root Agent/Session)          MemberInstance
+                 │                     ├─ instanceId
+                 │                     ├─ childSessionId
+                 │                     ├─ workspace
+                 │                     ├─ context
+                 │                     ├─ overlays
+                 │                     └─ lifecycle
+                 └──────────┬─────────────────┘
+                            │
+                            ▼
+                       TeamSession
+                 id = RootSessionId
+                 immutable Blueprint snapshot
+                 policy state / overrides
+                 compatibility / admission
+                 Team ledger / membership
+                            │
+                            ▼
+                        TeamDomain
+                    durable authority
+```
+
+运行时还存在三个与 durable object 不同的概念：
+
+```text
+MemberInstance (durable Team identity)
+        │
+        ├── DSH Session (durable first-person history)
+        │
+        └── live Agent residency (ephemeral process object)
+```
+
+这三层必须始终分开。
+
+---

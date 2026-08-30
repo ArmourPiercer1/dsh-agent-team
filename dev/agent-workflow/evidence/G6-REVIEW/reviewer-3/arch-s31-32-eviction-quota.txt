@@ -1,0 +1,155 @@
+# 31. Runtime eviction
+
+SETTLED 的 persistent MemberInstance 可以为了资源回收而失去 live Agent residency。
+
+```text
+SETTLED MemberInstance
+child Session durable
+live Agent evicted
+```
+
+这**不改变 lifecycle**。
+
+下一次 work：
+
+```text
+cold resume Agent
+→ rehydrate Team scoped runtime
+→ admit work
+```
+
+因此：
+
+```text
+lifecycle != residency
+```
+
+---
+
+# 32. Concurrency 与 quota
+
+一旦一个 template 可以生成 N instances，必须有显式资源边界。
+
+Blueprint 至少能够表达：
+
+```text
+per-template maxConcurrent
+per-template maxTotal
+team maxConcurrent
+possibly unlimited
+```
+
+语义：
+
+- `maxConcurrent`：同时处于活动运行/占用定义范围内的实例上限；
+- `maxTotal`：该 TeamSession 生命周期内从该 template 成功创建的 MemberInstance 总预算；
+- Team-level quota 对所有 templates 聚合。
+
+Quota 是 Team autonomy boundary 的组成部分。
+
+Human override 是否可放宽某个 Team quota，遵循 human authority 规则，但不能越过宿主的真实资源/hard limit。
+
+并发 create 必须以 durable/idempotent 方式避免 race 超额。
+
+---
+
+# 33. Model mutation 与 in-flight isolation
+
+当前 DSH 的公开 ModelSelection 语义允许“当前 selection”在 prompt assembly 时被捕获，并在相应 request 上保持一致；并发切换在后续 step 生效。
+
+Team vNext 应保持：
+
+```text
+request N assembly captures model A
+user/leader changes effective model to B while N is running
+request N stays on A
+next safe request/step uses B
+```
+
+TeamDomain 保存的是 Member runtime override / intended effective selection provenance；真正 model call 仍由 DSH ModelSelection/agent request contract 执行。
+
+Team 不建立第二套 LLM dispatcher。
+
+---
+
+# 34. Start Team from Here
+
+## 34.1 目标
+
+允许从普通 meaningful AgentSession A 创建一个新的 TeamIntent/TeamSession B，并带入一次性上下文。
+
+## 34.2 One-shot handoff
+
+```text
+Source Session A
+↓
+read frozen current canonical surface
+↓
+one-shot summarize/compress
+↓
+frozen sourced handoff context
+↓
+TeamIntent / new TeamSession B
+```
+
+## 34.3 明确禁止 live link
+
+创建后：
+
+```text
+B cannot history_read(A)
+B cannot search A
+B does not share A live memory
+B does not reread A later
+changes in A do not mutate B handoff
+```
+
+`sourceSessionId` 可以作为 provenance/navigation metadata，但不是读取授权。
+
+## 34.4 Handoff summarizer
+
+Handoff summarization route 不应依赖 Blueprint Leader model 或 Member model；它是 Host/Team creation 辅助能力。
+
+失败必须显式暴露，例如：
+
+```text
+Retry
+Continue without handoff
+Cancel
+```
+
+不能静默假装 handoff 成功。
+
+---
+
+# 35. Fork 语义
+
+## 35.1 Root TeamSession fork
+
+对 Team Root P 执行 DSH native fork 后：
+
+```text
+Parent Root P
+  TeamSession P
+  Blueprint snapshot R
+  Members A/B/C
+        │
+        │ native Session fork
+        ▼
+Child Root C
+  new TeamSession C
+  same immutable Blueprint snapshot R
+  MemberInstances = empty
+```
+
+不复制 runtime MemberInstances、Policy runtime activity 或 child execution trees。
+
+需要保留普通 DSH fork 的 history/lineage 语义，但 Team runtime current state 在新的 TeamDomain aggregate 中重新建立。
+
+## 35.2 Root fork 的 0-core 边界
+
+不得 patch `session.fork`。
+
+Team plugin 依据公开 Session lineage/parent information 与 TeamDomain binding 做 idempotent sidecar recognition/reconciliation。
+
+若必要 lineage 对外不可观察并导致该冻结行为无法实现，属于：

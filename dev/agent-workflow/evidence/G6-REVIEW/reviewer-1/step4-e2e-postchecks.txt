@@ -1,0 +1,67 @@
+G6-R1 step 4 — E2E harness rerun (reviewer 1, self-verified)
+Date: 2026-08-31 (local, +08:00)
+Worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R1
+Command: node packages/tools/harness/run.mjs --report-dir dev/agent-workflow/evidence/G6-REVIEW/reviewer-1/harness-output
+Job: pwsh-174, exit 0, wall ~13s (farm pre-built; build.required=false)
+
+LOCK PROTOCOL (shared DSH_HOME references/.dsh-test-p6t6 + fixed ports 3180/3181/3491-3495)
+  pre  : lock ABSENT (no concurrent reviewer); written "reviewer=1 time=2026-08-31T05:08:35+08:00 worktree=G6-R1"
+  post : lock REMOVED after run (all paths — run succeeded)
+
+PREFLIGHT (independent, before run)
+  :3080 GET = 200 (stable dev instance healthy)
+  ports 3180,3181,3491,3492,3493,3494,3495 all free
+
+HARNESS RESULT (harness-output/summary.json, re-read independently)
+  pass = true ; failures = []
+  test-use pristine before AND after: head cd5ef8148158c3a752a658978873241fdf8e2bbc, status empty, diff empty
+  stable :3080 pre=200 post=200 (harness postflight)
+  row mounted both boots: p6t6-team-tools-boot1=true, p6t6-team-tools-boot2=true
+  boots: boot1 port 3180 (row p6t6-team-tools, health toolCount=10, root session-p6t6root, liveSessions root+seedw1+seeds1)
+         boot2 port 3181 (restart directive boot=2)
+
+SCENARIOS (all pass, 0 failing)
+  E1 boot1: 14 assertions  (C1 same-template concurrent instances)
+  E2 boot1:  3 assertions  (C2 instance-addressed actions only)
+  E3 boot1:  6 assertions  (C3 persistent follow-up same child session)
+  E4 boot1:  5 assertions  (C4 fresh_per_delegation new instances)
+  E5 boot1 (E5a): 11 assertions  (C5 writes before restart)
+  E5 boot2 (E5b): 13 assertions  (C5 restart survival + control consumption)
+  E6 boot1:  6 assertions  (C6 quota race no over-create)
+  E7 static:  2 assertions  (C7 tool-layer bypass scan, 5 files, 0 violations)
+  total: 60 live assertions, 0 failures
+
+KEY LIVE EVIDENCE (assertion names, from summary.json)
+  E1: "all three concurrent creates admitted (executed)" / "three distinct new instance ids"
+      (inst-0j3weh1176s5, inst-0i9xle4180qy, inst-0ijx73317qrd) / "state after E1: four worker-template members (1 seed + 3 new)"
+  E2: "all three out-of-namespace targets live-rejected (rejected status)" /
+      "every rejection carries TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED" / "no side effect: member count unchanged (6)"
+  E3: "second follow-up executed on the SAME instance" / "the bound child session id is UNCHANGED across follow-ups" /
+      "the admission sequences advance by one (monotonic per admission)" / "no new instance was created (six members)"
+  E4: "both fresh_per_delegation delegates executed" / "two distinct NEW instance ids (not the seed, not each other)" /
+      "each activation carries a distinct new child session" / "state after E4: three scout-template members (1 seed + 2 new)"
+  E5a: "team message from the member to the leader delivered" / "delivery landed on the leader bound session (the root)" /
+       "delivery carries durable fact + delivered sequences" / "first progress report recorded on sequence 1" /
+       "second progress report recorded on sequence 2" / "control request accepted (control-requested, pending)" /
+       "state after E5a: the control request is durably pending"
+  E5b: "the member id set is UNCHANGED from boot 1" (nine members) /
+       "the boot-1 control request SURVIVED the restart as pending" /
+       "the boot-1 progress rows (sequences 1 and 2) SURVIVED the restart" /
+       "no pending delivery was skipped at recovery (the boot-1 delivery is accounted)" /
+       "leader resolved the request as allow (control-resolved)" /
+       "the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed" /
+       "retrying the SAME token is BLOCKED (allow-consumed, exactly-once)" /
+       "a fresh token with no request row proceeds (no-request deviation)" /
+       "post-restart progress report continues the per-subject sequence (3)"
+  E6: "exactly ONE of the three concurrent creates admitted at ==limit" /
+      "both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES" /
+      "state after E6: four scout members (== limit; never over-created)" /
+      "state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)"
+  E7: "scan covers exactly the five committed tool-layer source files" /
+      "zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)"
+
+POSTCHECKS (independent, after run)
+  ports 3180,3181,3491,3492,3493,3494,3495 all free
+  :3080 GET = 200
+  worktree packages/node_modules junction farm: removed
+  test-use (independent re-check): HEAD cd5ef8148158c3a752a658978873241fdf8e2bbc ; git status --porcelain = (empty)

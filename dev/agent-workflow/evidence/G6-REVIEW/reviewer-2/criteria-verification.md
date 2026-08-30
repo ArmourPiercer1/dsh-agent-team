@@ -1,0 +1,26 @@
+# G6-REVIEW reviewer-2 — criteria verification table
+
+All evidence paths below are relative to this worktree (`.worktrees/G6-R2/`) and were produced or
+independently re-verified by reviewer 2 in this session. Harness JSONs live under
+`dev/agent-workflow/evidence/G6-REVIEW/reviewer-2/harness-output/`.
+
+| Criterion (DevPlan §19.7, verbatim intent) | Verdict | Evidence (self-re-verified) |
+| --- | --- | --- |
+| C1 — same template N simultaneous instances | PASS | Live E1: 3 concurrent same-template creates → 3 distinct instanceIds, 3 child sessions, 14/14 assertions (`harness-output/E1.json`, pass=true). Unit: p6t1-parallel 9/9 + p6t1-identity 15/15 + p6t1-concurrency 27/27 in full chain (`run-tests-full.log`). Structural: distinct logical ops get distinct activationKeys → distinct deterministic instanceIds (`packages/runtime/activation/identity.ts`); no cross-request collision (INSTANCE_ID_CONFLICT fail-loud, `provider.ts` step 11). |
+| C2 — every runtime action instance-addressed | PASS | Live E2: member-label token x2 + template-id token all rejected `TEAM_RUNTIME_QUOTA...` no — `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED` (kinds member-label/template-id/member-label), zero side effects, 3/3 assertions (`harness-output/E2.json`). Unit: p6t2-addressing 12/12 (`run-tests-full.log`). Structural: `admission/resolve.ts` instanceId-first, 3 rejection sites (label/template/out-of-namespace); facade `createTeamRuntime` rejects non-instanceId addressing (`action-router/router.ts`). |
+| C3 — persistent follow-up keeps same Session | PASS | Live E3: persistent follow-up on an existing instance → same instance, child session UNCHANGED, 6/6 assertions (`harness-output/E3.json`). Unit: p6t1/p6t3 suites green in full chain. Structural: admit-once — stable logical op identity (rootSessionId, source, requestToken) → same activationKey → PREPARED/COMMITTED retry rolls forward to the SAME instance without re-admission (`activation/provider.ts:542`, `activation/identity.ts`). |
+| C4 — fresh_per_delegation creates new instance | PASS | Live E4: two delegations with fresh tokens → two NEW scout instances + two NEW child sessions, 5/5 assertions (`harness-output/E4.json`). Structural: distinct requestToken → distinct activationKey → new instance, while the old one stays untouched. |
+| C5 — message/control/progress survive restart | PASS | Live E5 boot1 (writes, 11/11): messaging factSeq 9 / deliveredSeq 10 two-record split, progress seq 1–2, control request pending `ctrl-1i8yy171hbdshk0hy6gfl05u` (`harness-output/E5-boot1-writes.json`). Live E5 boot2 (SAME DSH_HOME, new process on 3181, 13/13): 9 members unchanged; control survived pending → leader allow (reqSeq 15 / decSeq 16); guarded follow-up executed (seq 18); retry blocked `allow-consumed` (allow consumed exactly once); fresh token executed; post-restart message fact 20 / delivered 21; post-restart progress seq 3 (`harness-output/E5-boot2-restart.json`). Unit: p6t3-restart 5/5, p6t4-restart 5/5, p6t5-restart 6/6 in full chain. Structural: control request/decision durable in TeamDomain; invariant 45 no cached authority; messaging `recoverPendingDeliveries` restart scan. |
+| C6 — quota race does not over-create | PASS | Live E6: over-limit create rejected `TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES`, count == limit, never over-created, 6/6 assertions (`harness-output/E6.json`). Unit: p6t2-quota 6/6 + p6t1 checks suites green in full chain. Structural: quota enforced ONLY inside provider step 7 under the per-team `withTeamLock` on a fresh view counting committed members + in-flight PREPARED reservations (`activation/provider.ts:631`, `activation/checks.ts:countTeamQuota`/`checkQuota`); router only maps provider quota codes — no second, drift-prone check (`admission/gate.ts`). |
+| C7 — tool layer cannot bypass ActivationProvider/TeamRuntime | PASS | Live E7: bypass scan of exactly the 5 committed tool-layer src files: 25 specifiers, 0 violations (`harness-output/E7.json`). Unit: p6t6-bypass-scan 10/10 + p6t6-guard 9/9 in full chain. Structural: `TeamToolsOptions` = facade + sanctioned satellites; "the tool layer itself writes nothing" (`packages/tools/src/types.ts`); guard fail-closed on every reason except allowed/no-request with runtime never called on refusal (`packages/tools/src/guard.ts`); registration only via public `agentCtx.tools.register` (`packages/tools/harness/plugin.mjs:282`); E2E driver reaches team actions only via HTTP → registered tool handlers, never TeamRuntime directly (`packages/tools/harness/run.mjs`). |
+
+Cross-task invariant combination (a)–(f): all verified by direct code reading in this session —
+see `findings.md` §Verification record item 7.
+
+Chain results (own worktree, clean state, canonical commands only):
+- `pnpm install --ignore-scripts` → exit 0 (`install.log`).
+- `node scripts/run-tests.mjs` (all packages) → 1214/1214, exit 0 (`run-tests-full.log`).
+- `tsc -p` ×5 → contracts:0 domain:0 storage:0 runtime:0 testkit:0 (`tsc-*.log`).
+- E2E harness with lockfile serialization (acquire → run → release in finally): pass=true, 7/7
+  scenarios, 0 failures (`harness-output/summary.json`, `harness-run-utf8.log`); post-harness ports
+  3180/3181/3491–3495 free, test-use pristine, stable :3080 = 200.

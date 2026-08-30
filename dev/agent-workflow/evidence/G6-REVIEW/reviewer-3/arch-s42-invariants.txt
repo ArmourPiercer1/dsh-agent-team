@@ -1,0 +1,107 @@
+# 42. Architecture invariants
+
+以下清单应成为后续 UI、API、开发计划、测试与 code review 的硬约束。
+
+1. **CORE PATCH BUDGET = 0。**
+2. **Team runtime 必须可作为独立外部插件加载。**
+3. **Team-required upstream source diff 必须为 0。**
+4. **Team Mode != AgentPreset。**
+5. **TeamBlueprint != AgentPreset。**
+6. **AgentPreset 与 TeamSession 是 Root Session 上的正交绑定。**
+7. **ModelSelection 独立于 AgentPreset 与 Team identity。**
+8. **一个 Root Session 最多一个 TeamSession。**
+9. **TeamSessionId = RootSessionId。**
+10. **一个 TeamSession 恰好绑定一个 immutable Blueprint snapshot。**
+11. **Blueprint bind 后不可原地换 Blueprint。**
+12. **Blueprint snapshot 冻结 Blueprint-owned semantics，不冻结 external environment。**
+13. **Blueprint 必须包含恰好一个完整 LeaderTemplate。**
+14. **LeaderInstance 是 Root Agent/Session，是唯一特殊 MemberInstance。**
+15. **LeaderInstance 不可独立 archive/dispose。**
+16. **MemberTemplate 不是 runtime actor。**
+17. **一个 MemberTemplate 可以产生 0..N persistent MemberInstance。**
+18. **Member runtime identity 使用 `(rootSessionId, instanceId)`。**
+19. **label/templateId/groupId 都不是运行时 identity。**
+20. **groupId 无 state/permission/lifecycle/activation 语义。**
+21. **MemberInstance = Team-owned Agent + Session，不是 continuable subagent activation。**
+22. **Generic DSH subagent 与 Team Member additive 共存。**
+23. **每个 MemberInstance 绑定一个 durable child Session。**
+24. **对既有 instance 的 follow-up 永远继续同一 child Session。**
+25. **`fresh_per_delegation` 通过创建新 MemberInstance 获得 fresh context，不重置既有 instance。**
+26. **所有新 MemberInstance 创建统一经过 ActivationProvider。**
+27. **workspace 不定义 Team identity。**
+28. **Member workspace 默认 creation-mutable、first RUNNING 后冻结。**
+29. **contextPolicy 在 instance creation 后冻结。**
+30. **model 在 policy 允许时于安全 request/step 边界变化；in-flight request 不变。**
+31. **tools/permissions/skills/MCP mutation 只影响 future operations。**
+32. **Requirement != Policy。**
+33. **Team-owned policy 必须先在 Team domain resolve，再 materialize 到 DSH guard。**
+34. **Human override 可以超过 Team autonomy boundary，但不能超过 External Hard Policy。**
+35. **Human override 不能创造不存在的 capability。**
+36. **Leader/router/automation 永远不能越过 Team autonomy envelope。**
+37. **Member 不能 unrestricted self-escalate。**
+38. **PolicyState 属于 TeamSession。**
+39. **PolicyState 只治理 runtime mutation，不表示 workflow progress。**
+40. **vNext PolicyState 只由 user/authorized leader 显式切换。**
+41. **Team control-plane durable authority = TeamDomain。**
+42. **禁止新增 Team-specific DSH SessionEvent vocabulary。**
+43. **DSH Session 只承担对应 Agent 的 first-person durable execution history。**
+44. **Team-wide coordination order 来自 TeamLedger，不跨 child logs 按 timestamp 伪造 total order。**
+45. **进程内 registry/cache/live Agent 不是 durable authority。**
+46. **Provisioning 必须能够处理跨 TeamDomain/Session crash window 和 idempotent retry。**
+47. **Compatibility structural FATAL 不可 Continue Anyway。**
+48. **AgentPreset effective persona `complete:true` 对 Team 为 structural FATAL。**
+49. **Compatibility warning 可明确 acknowledgement，但新 mismatch 必须重新评估。**
+50. **Compatibility gate 阻止 new Team work admission，不 retroactively cancel 已 admitted work。**
+51. **Member lifecycle = CREATED/RUNNING/SETTLED/ARCHIVED/DISPOSED。**
+52. **Archive/Dispose 必须先 close admission + quiesce/drain，再提交状态。**
+53. **Restore = ARCHIVED -> SETTLED。**
+54. **Restore 不 resume Agent、不启动 turn、不调用 model。**
+55. **新 work 才把 SETTLED Member 恢复 residency 并进入 RUNNING。**
+56. **DISPOSED terminal，但历史 Session/Trajectory/Team ledger 不删除。**
+57. **Agent residency 与 Member lifecycle 独立。**
+58. **默认 Member context 不继承 Leader full transcript 或 sibling transcript。**
+59. **跨 Member 信息共享必须是显式 relay/context transfer。**
+60. **Start Team from Here 是 one-shot frozen handoff，不授予 source Session live retrieval。**
+61. **Root Team fork = same Blueprint snapshot + zero MemberInstances。**
+62. **Member child fork = ordinary independent AgentSession。**
+63. **`.dsh/teammates` 只能作为 snapshot-on-create legacy Blueprint input。**
+64. **不得恢复 live cwd-driven mutable TeamRegistry。**
+65. **Existing legacy Team Sessions = READ-ONLY；不自动迁移。**
+66. **vNext 不依赖官方 private experimental Agent Teams。**
+67. **缺失必需 public seam 时输出 CORE_SEAM_BLOCKER，不扩大 core patch scope。**
+
+---
+
+# 43. 架构状态与后续文档边界
+
+在当前 upstream/fork 审计点上，没有发现必须重新打开用户决策的架构冲突。
+
+仍需要在**开发计划阶段通过 characterization test 证明**、但不改变本文产品语义的技术事实包括：
+
+```text
+cold Root resume 能否保证 Team hydration 早于第一个 Team-sensitive step
+skills/MCP 的精确 scoped filtering/mutation 接线
+fork lineage 的外部可观察时序与 sidecar reconciliation
+StorageDomain 上 TeamDomain journal/recovery 的具体布局
+external Remote/UI slot 的最终 API/slot 名称
+```
+
+这些属于“如何实现”的问题，不属于“系统是什么”的问题。
+
+如果 characterization 发现其中某一项缺失公开 seam：
+
+```text
+CORE_SEAM_BLOCKER
+```
+
+必须阻塞相应功能，而不是修改本文架构定义或偷偷 patch upstream。
+
+本文应作为后续三份文档的上游约束：
+
+1. **Team vNext UI 设计文档**：只决定如何把本文对象和状态清晰呈现给用户；
+2. **Team vNext 详细开发计划**：决定如何从当前代码迁移到本文架构；
+3. **Team vNext 任务分包与审查方法**：决定主 Agent / subagent 如何执行开发计划。
+
+后续文档不得以实现便利为理由重新定义本文对象关系、authority、lifecycle、persistence 或 compatibility 语义。
+
+---

@@ -1,0 +1,148 @@
+# 41. 典型端到端信息流
+
+## 41.1 创建 Team
+
+```text
+User
+↓
+TeamIntent
+↓
+select Blueprint R
+select AgentPreset P
+select default workspace
+↓
+Compatibility Resolver
+├─ structural FATAL -> stop
+├─ warning -> AWAITING_ACK
+└─ pass/acknowledged
+↓
+create Root DSH Agent/Session
+↓
+TeamDomain creates TeamSession binding
+↓
+LeaderInstance = Root Agent/Session
+↓
+Team scoped identity/policy/tools active
+↓
+Admission OPEN/DEGRADED_ACKNOWLEDGED
+```
+
+## 41.2 Leader 创建两个相同 template 的路线
+
+```text
+LeaderInstance
+↓ ActivationRequest(template=researcher, label=Fourier, workspace=A)
+ActivationProvider
+↓
+inst-A / child Session A
+
+LeaderInstance
+↓ ActivationRequest(template=researcher, label=Neural, workspace=B)
+ActivationProvider
+↓
+inst-B / child Session B
+```
+
+两者：
+
+```text
+same template
+independent instanceId
+independent Session
+independent context
+independent workspace
+independent runtime overlay
+```
+
+## 41.3 Follow-up
+
+```text
+Leader -> inst-A follow-up
+↓
+TeamDomain records coordination
+↓
+ensure inst-A Agent residency
+↓
+message admitted to Session A
+↓
+inst-A RUNNING
+↓
+work settles
+↓
+inst-A SETTLED
+```
+
+不会创建新 instance。
+
+## 41.4 `fresh_per_delegation`
+
+```text
+Leader delegates template=researcher (fresh policy)
+→ inst-A
+
+later leader performs NEW delegation to template=researcher
+→ inst-B
+```
+
+若 Leader 明确 follow-up `inst-A`：
+
+```text
+continue inst-A
+```
+
+## 41.5 Model override
+
+```text
+inst-A RUNNING request uses Model X
+↓
+Human/authorized leader stores model override = Y
+↓
+current request remains X
+↓
+next request boundary resolves Y
+↓
+Team ledger records provenance
+```
+
+## 41.6 Archive / Restore
+
+```text
+inst-A RUNNING
+↓ Archive
+close admission -> cancel -> drain -> quiesce
+↓
+ARCHIVED
+↓ Restore
+SETTLED (no Agent resume)
+↓ new follow-up
+cold resume Agent if needed
+↓
+RUNNING
+```
+
+## 41.7 Compatibility drift
+
+```text
+Team running normally
+↓ MCP/model/tool disappears
+compatibility generation changes
+↓
+new Team admission BLOCKED
+already admitted work may settle
+↓
+User repairs config or acknowledges warning if allowed
+↓
+new admission reopens
+```
+
+## 41.8 Root fork
+
+```text
+Team Root P @ Blueprint R
+Members A/B
+↓ native fork
+Root C
+↓ TeamDomain lineage recognition
+TeamSession C @ same snapshot R
+Members = empty
+```

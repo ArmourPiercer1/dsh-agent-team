@@ -1,0 +1,115 @@
+﻿action-router\effects.ts:11: * are written exactly once by the ActivationProvider (invariant 26;
+action-router\effects.ts:33: * per-team promise chain (the same pattern as the P6-T1 ActivationProvider
+action-router\effects.ts:60: ActivationProvider,
+action-router\effects.ts:86: readonly activationProvider: ActivationProvider
+action-router\effects.ts:442: return await ctx.activationProvider.activate(activationRequest)
+action-router\index.ts:11: *                  ActivationProvider as the sole creation path,
+action-router\router.ts:8: * Member CREATION is still exclusively the P6-T1 ActivationProvider's job
+action-router\router.ts:34: *   6. QUOTA — enforced solely inside the ActivationProvider for the
+action-router\router.ts:64: *   ActivationProvider (the sole creation path), the blueprint catalog, the
+action-router\router.ts:101: activationProvider: options.activationProvider,
+activation\adapter.ts:5: * The P4-T4 provisioning coordinator takes its one external effect through
+activation\adapter.ts:7: * ActivationProvider's {@link ChildSessionFactoryPort} to that seam and
+activation\adapter.ts:36: } from '../../storage/provisioning/index.js'
+activation\adapter.ts:43: ChildSessionFactoryPort,
+activation\adapter.ts:57: * @returns the P4-T4 adapter the provisioning coordinator consumes.
+activation\adapter.ts:60: factory: ChildSessionFactoryPort,
+activation\checks.ts:2: * ActivationProvider admission checks — steps 1–11 of the DevPlan §19.2
+activation\checks.ts:84: PROVISION_INTENT_TYPE,
+activation\checks.ts:85: } from '../../storage/provisioning/index.js'
+activation\checks.ts:416: /** Whether one operation row is an IN-FLIGHT provisioning reservation. */
+activation\checks.ts:417: function isInFlightProvisionOperation(operation: OperationRecord, root: string): boolean {
+activation\checks.ts:418: if (operation.intent.type !== PROVISION_INTENT_TYPE) return false
+activation\checks.ts:426: * not yet committed) provisioning reservations. In-flight reservations
+activation\checks.ts:462: if (!isInFlightProvisionOperation(operation, root)) continue
+activation\checks.ts:829: * of the team AND in-flight provisioning reservations (PREPARED operation
+activation\checks.ts:858: if (!isInFlightProvisionOperation(operation, root)) continue
+activation\checks.ts:862: `activation: allocated instance id '${instanceId}' is already reserved by an in-flight provisioning operation '${operation.operationId}'`,
+activation\errors.ts:2: * ActivationProvider error contract (TaskDoc §11.7 P6-T1).
+activation\identity.ts:12: * operationId     = provisioningOperationId(rootSessionId, instanceId)   (P4-T4)
+activation\identity.ts:13: * idempotencyKey  = provisioningIdempotencyKey(rootSessionId, instanceId, requestToken)
+activation\identity.ts:46: provisioningIdempotencyKey,
+activation\identity.ts:47: provisioningOperationId,
+activation\identity.ts:48: } from '../../storage/provisioning/index.js'
+activation\identity.ts:126: * provisioning protocol triple inputs): the operation id, the idempotency
+activation\identity.ts:147: operationId: provisioningOperationId(rootSessionId, instanceId),
+activation\identity.ts:148: idempotencyKey: provisioningIdempotencyKey(rootSessionId, instanceId, requestToken),
+activation\index.ts:2: * P6-T1 ActivationProvider — public facade.
+activation\index.ts:4: * The ActivationProvider is the SOLE entry point for every new
+activation\index.ts:6: * admission/provisioning order (DevPlan 19.2). Human, leader-explicit, and
+activation\index.ts:15: *   - `checks.ts`   — the admission/provisioning step functions (DevPlan
+activation\index.ts:32: ActivationProvider,
+activation\index.ts:37: ChildSessionFactoryPort,
+activation\index.ts:84: createActivationProvider,
+activation\provider.ts:2: * ActivationProvider — the SOLE entry point for every new MemberInstance
+activation\provider.ts:3: * creation (Architecture invariant 26) and the full admission/provisioning
+activation\provider.ts:18: *   - no durable operation row  → the full admission+provisioning order runs
+activation\provider.ts:19: *   - PREPARED operation        → roll-forward through the provisioning
+activation\provider.ts:62: createProvisioningCoordinator,
+activation\provider.ts:63: } from '../../storage/provisioning/index.js'
+activation\provider.ts:65: ProvisioningCoordinator,
+activation\provider.ts:66: ProvisionRequest,
+activation\provider.ts:67: } from '../../storage/provisioning/index.js'
+activation\provider.ts:100: ActivationProvider,
+activation\provider.ts:119: * Create an ActivationProvider over the given ports.
+activation\provider.ts:129: export function createActivationProvider(ports: ActivationPorts): ActivationProvider {
+activation\provider.ts:132: const coordinators = new Map<string, ProvisioningCoordinator>()
+activation\provider.ts:136: function getCoordinator(rootSessionId: string): ProvisioningCoordinator {
+activation\provider.ts:139: coordinator = createProvisioningCoordinator({
+activation\provider.ts:142: adapter: createActivationChildAdapter(ports.childSessionFactory, ports.sessionDurability),
+activation\provider.ts:300: * resolves no team-member target is a provisioning defect (the durable
+activation\provider.ts:324: `activation: post-commit bind resolved no team-member target for child session '${childSessionId}' (the durable binding must exist after the terminal commit — provisioning defect)`,
+activation\provider.ts:443: * the team lock. The provision request is RECONSTRUCTED FROM THE DURABLE
+activation\provider.ts:484: const provisionRequest: ProvisionRequest = {
+activation\provider.ts:492: // Roll-forward through the provisioning coordinator: idempotent effects,
+activation\provider.ts:494: const committed = await coordinator.recover(provisionRequest)
+activation\provider.ts:522: * The full admission + provisioning order (DevPlan 19.2) for a NEW
+activation\provider.ts:618: // the full provisioning order below.
+activation\provider.ts:668: const provisionRequest: ProvisionRequest = {
+activation\provider.ts:676: await coordinator.allocate(provisionRequest)
+activation\provider.ts:679: await coordinator.createChildSession(provisionRequest)
+activation\provider.ts:691: await coordinator.bindChildSession(provisionRequest)
+activation\provider.ts:694: const committed = await coordinator.commitInstance(provisionRequest)
+activation\types.ts:2: * ActivationProvider contracts (TaskDoc §11.7 P6-T1; DevPlan §19.1–§19.2).
+activation\types.ts:4: * The ActivationProvider is the SOLE entry point for every new
+activation\types.ts:7: * the SAME admission/provisioning order. No other path may create a
+activation\types.ts:9: * "tool layer cannot bypass ActivationProvider/TeamRuntime" is verified
+activation\types.ts:26: * provisioning coordinator, and every external effect goes through the
+activation\types.ts:28: * provisioning protocol).
+activation\types.ts:66: * Every new MemberInstance is created through the ActivationProvider by one
+activation\types.ts:172: * provisioning protocol behind the P4-T4 adapter seam (ruling R20).
+activation\types.ts:179: * provisioning protocol).
+activation\types.ts:181: export interface ChildSessionFactoryPort {
+activation\types.ts:186: * The ports the ActivationProvider is built with (mock-first, R28).
+activation\types.ts:190: * External-effect boundary: `childSessionFactory` is the only seam that
+activation\types.ts:192: * provisioning protocol). Everything else is read-only input or a best-
+activation\types.ts:206: readonly childSessionFactory: ChildSessionFactoryPort
+activation\types.ts:339: /** The ActivationProvider: the sole entry point for new MemberInstance creation (invariant 26). */
+activation\types.ts:340: export interface ActivationProvider {
+activation\types.ts:342: * Activate: the full admission/provisioning order (DevPlan §19.2).
+activation\types.ts:346: *   durable provisioning (allocation inside the journal protocol, child
+admission\actions.ts:21: * delegation fields of the request are the ActivationProvider's own
+admission\actions.ts:52: *  ActivationProvider (invariant 26). Requires BOTH `assign-task` and
+admission\actions.ts:88: /** New instance creation (routed through the ActivationProvider). */
+admission\actions.ts:141: /** Routed through the ActivationProvider (the sole creation path). */
+admission\errors.ts:28: * - quota (creation actions; enforced inside the ActivationProvider step 7
+admission\errors.ts:75: * by the ActivationProvider).
+admission\gate.ts:28: *   ActivationProvider's step 7, under the provider's per-team lock, on a
+admission\gate.ts:30: *   PREPARED provision operations (the P6-T1 `countTeamQuota`);
+admission\index.ts:30: *   (5) quota (creation actions enforce inside the ActivationProvider step
+admission\types.ts:14: *   P6-T1 ActivationProvider — the router calls it, never re-implements it
+admission\types.ts:15: *   (invariant 26: every new creation via the ActivationProvider);
+admission\types.ts:76: * re-interpreted. The delegation fields are the ActivationProvider's own
+admission\types.ts:152: /** A NEW member instance was created through the ActivationProvider
+admission\types.ts:218: * are written exactly once by the ActivationProvider (invariant 26), and
+admission\types.ts:249: /** The P6-T1 ActivationProvider (the ONLY creation path, inv 26). */
+admission\types.ts:250: readonly activationProvider: import('../activation/index.js').ActivationProvider
+agent-setup\binder\binder.ts:263: // TeamDomain records: a missing record is a provisioning defect,
+agent-setup\binder\errors.ts:20: *   record is a provisioning defect, surfaced fail-closed.
+control\service.ts:126: import { deterministicToken } from '../../storage/provisioning/index.js'
+control\service.ts:403: *  NUL-separated per the provisioning identity convention). */
+control\types.ts:322: * and creates no members, so no ActivationProvider is in scope).
+member-residency\identity.ts:7: * member slot of the Team (the coordinator's provisioning request,
+member-residency\identity.ts:34: * mirror of `packages/storage/provisioning/identity.ts#deterministicToken`
+member-residency\identity.ts:112: * `packages/storage/provisioning/identity.ts#deterministicToken` (kept
+member-residency\types.ts:256: * slot of the Team (DevPlan §18.1; the coordinator's provisioning

@@ -1,0 +1,35 @@
+{
+  "criterion": "E7",
+  "pass": true,
+  "durationMs": 77,
+  "assertions": [
+    {
+      "name": "scan covers exactly the five committed tool-layer source files",
+      "pass": true,
+      "detail": "[\"packages/tools/src/guard.ts\",\"packages/tools/src/index.ts\",\"packages/tools/src/tokens.ts\",\"packages/tools/src/tools.ts\",\"packages/tools/src/types.ts\"]"
+    },
+    {
+      "name": "zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)",
+      "pass": true,
+      "detail": "[]"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 0,
+    "stateCalls": 0,
+    "non200": []
+  },
+  "evidence": {
+    "files": [
+      "packages/tools/src/guard.ts",
+      "packages/tools/src/index.ts",
+      "packages/tools/src/tokens.ts",
+      "packages/tools/src/tools.ts",
+      "packages/tools/src/types.ts"
+    ],
+    "totalImportSpecifiers": 25,
+    "totalViolations": 0,
+    "violations": []
+  }
+}

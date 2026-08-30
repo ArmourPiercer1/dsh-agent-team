@@ -1,0 +1,1245 @@
+{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "plugins": [
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\tools",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\remote",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\client",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\legacy",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit"
+  ],
+  "hostPackages": 272,
+  "findings": [
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t2-blueprint-revision.test.ts:14",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t2-helpers.ts:14",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t2-helpers.ts:15",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-helpers.ts:25",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-helpers.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-lifecycle-property.test.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-lifecycle-property.test.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-lifecycle-transitions.test.ts:33",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-lifecycle-transitions.test.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-member-context-policy.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-member-context-policy.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-member-lifecycle.test.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-member-n-instances.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-member-n-instances.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\test\\t3-member-workspace.test.ts:24",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\context-policy.ts:70",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\context-policy.ts:77",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\instance.ts:22",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\roster.ts:62",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\roster.ts:68",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\roster.ts:75",
+      "detail": "import \"../../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\workspace.ts:43",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\workspace.ts:44",
+      "detail": "import \"../../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\workspace.ts:48",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\errors.ts:20",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\operations.ts:34",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\operations.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\transitions.ts:31",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\transitions.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-complete-true.test.ts:15",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-engine-outcomes.test.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-environment-facts.test.ts:12",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-environment-facts.test.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-purity-serialization.test.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-requirement-validation.test.ts:11",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\test\\t5-requirement-validation.test.ts:12",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\acknowledgement.ts:22",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\common.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\engine.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\environment-facts.ts:26",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\fingerprint.ts:28",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\fingerprint.ts:29",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\requirement.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\result.ts:32",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\result.ts:33",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\testdata\\fixtures.ts:12",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\catalog.ts:25",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\catalog.ts:26",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\hash.ts:34",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\hash.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\parse.ts:38",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\snapshot.ts:17",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\snapshot.ts:18",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\types.ts:25",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\validate.ts:51",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\validate.ts:55",
+      "detail": "import \"../../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\validate.ts:61",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4-02-team-sessions.test.ts:11",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4-03-member-instances.test.ts:17",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4-03-member-instances.test.ts:18",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4-04-session-bindings.test.ts:13",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4-helpers.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4-helpers.ts:44",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4t2-crash-recovery.test.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4t2-helpers.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4t3-binding-service.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4t3-fork-reconciliation.test.ts:26",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4t3-helpers.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\test\\p4t3-reconciler.test.ts:32",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\compatibility.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\compatibility.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\compatibility.ts:37",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\errors.ts:24",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\field-rules.ts:17",
+      "detail": "import \"../../contracts/src/ids/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\ids\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\ledger.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\ledger.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\ledger.ts:37",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\operation.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\operation.ts:38",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\operation.ts:39",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\override.ts:42",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\override.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\override.ts:44",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\schema-meta.ts:24",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\schema-meta.ts:25",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\version-policy.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\base.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\compatibility.ts:15",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\member-instances.ts:25",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\member-instances.ts:26",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\overrides.ts:15",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\session-bindings.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\session-bindings.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\team-domain.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\team-sessions.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\team-sessions.ts:23",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\adapter.ts:44",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\coordinator.ts:60",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\coordinator.ts:67",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\diagnostics.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\diagnostics.ts:31",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\fake-adapter.ts:41",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\fake-adapter.ts:42",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\identity.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\operations\\journal.ts:46",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\operations\\types.ts:48",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\bindings\\binding-service.ts:44",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\bindings\\binding-service.ts:54",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\bindings\\diagnostics.ts:20",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\bindings\\diagnostics.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\bindings\\reconciler.ts:58",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\bindings\\reconciler.ts:59",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t1-helpers.ts:39",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t1-helpers.ts:40",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t1-helpers.ts:41",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t1-helpers.ts:42",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t2-helpers.ts:35",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t2-helpers.ts:39",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t2-helpers.ts:55",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t2-persona-compatible.test.ts:29",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t2-persona-complete-fatal.test.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t2-persona-complete-fatal.test.ts:25",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t4-helpers.ts:53",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t4-helpers.ts:61",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t5-cold-root.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t5-fresh-root.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t5-helpers.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t5-helpers.ts:36",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t5-helpers.ts:37",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t5-helpers.ts:38",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-cold-member.test.ts:41",
+      "detail": "import \"../../storage/provisioning/identity.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\identity.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-fresh-member.test.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-fresh-member.test.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-helpers.ts:48",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-helpers.ts:49",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-helpers.ts:50",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-helpers.ts:51",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\test\\p5t6-helpers.ts:52",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\fresh-root.ts:52",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\types.ts:70",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\write-port.ts:20",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\write-port.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\plugin.mjs:351",
+      "detail": "import \"../../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\run.mjs:56",
+      "detail": "import \"../../../../tests/characterization/lib/instance.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\characterization\\lib\\instance.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\run.mjs:62",
+      "detail": "import \"../../../../tests/characterization/lib/util.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\characterization\\lib\\util.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\run.mjs:63",
+      "detail": "import \"../../../../tests/characterization/lib/tree-clean.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\characterization\\lib\\tree-clean.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\fresh-member.ts:110",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\types.ts:101",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\write-port.ts:23",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\write-port.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\harness\\plugin.mjs:435",
+      "detail": "import \"../../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\harness\\run.mjs:81",
+      "detail": "import \"../../../../tests/characterization/lib/instance.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\characterization\\lib\\instance.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\harness\\run.mjs:87",
+      "detail": "import \"../../../../tests/characterization/lib/util.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\characterization\\lib\\util.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\harness\\run.mjs:88",
+      "detail": "import \"../../../../tests/characterization/lib/tree-clean.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\characterization\\lib\\tree-clean.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\member-residency\\harness\\run.mjs:238",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\persona\\adapter.ts:57",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\persona\\adapter.ts:58",
+      "detail": "import \"../../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\persona\\adapter.ts:59",
+      "detail": "import \"../../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\persona\\errors.ts:23",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\persona\\types.ts:27",
+      "detail": "import \"../../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\capability\\policy-sources.ts:42",
+      "detail": "import \"../../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\capability\\policy-sources.ts:43",
+      "detail": "import \"../../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\binder\\binder.ts:90",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\binder\\read-handle.ts:27",
+      "detail": "import \"../../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\agent-setup\\binder\\types.ts:41",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-corrupt-version.test.ts:60",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-corrupt-version.test.ts:64",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-crash-matrix.test.ts:50",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-helpers.ts:38",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-helpers.ts:39",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-helpers.ts:40",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-helpers.ts:41",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-helpers.ts:51",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\p4t5-retry-restart.test.ts:50",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:36",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:37",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:38",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:39",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:51",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:52",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:27",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:28",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:26",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:28",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:29",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:40",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:41",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:32",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:33",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:39",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:47",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:53",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:30",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:37",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:41",
+      "detail": "import \"../../domain/compatibility/fixtures/requirements.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\fixtures\\requirements.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:42",
+      "detail": "import \"../../domain/compatibility/fixtures/environment-facts.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\fixtures\\environment-facts.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:27",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:28",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:37",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:33",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:34",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:42",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:43",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:47",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:48",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:41",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:47",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:48",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:55",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:56",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:57",
+      "detail": "import \"../../domain/compatibility/fixtures/environment-facts.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\fixtures\\environment-facts.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:58",
+      "detail": "import \"../../domain/compatibility/fixtures/requirements.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\fixtures\\requirements.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:59",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:60",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:61",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:50",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:51",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:52",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:53",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:59",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:65",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:66",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:67",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:71",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:72",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:73",
+      "detail": "import \"../../domain/compatibility/fixtures/requirements.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\fixtures\\requirements.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:74",
+      "detail": "import \"../../domain/compatibility/fixtures/environment-facts.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\compatibility\\fixtures\\environment-facts.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-helpers.ts:11",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-helpers.ts:12",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-helpers.ts:13",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\test\\t6-helpers.ts:14",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\domain\\src\\scenario.ts:23",
+      "detail": "import \"../../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\domain\\src\\scenario.ts:24",
+      "detail": "import \"../../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\domain\\src\\scenario.ts:25",
+      "detail": "import \"../../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\domain\\src\\scenario.ts:26",
+      "detail": "import \"../../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\domain\\src\\scenario.ts:41",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit\\domain\\src\\scenario.ts:51",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\contracts\\src\\index.js)"
+    }
+  ],
+  "infoCount": 2,
+  "pass": false
+}

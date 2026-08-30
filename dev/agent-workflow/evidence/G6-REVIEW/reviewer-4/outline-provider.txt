@@ -1,0 +1,118 @@
+﻿   7: * (INSIDE the stable operation identity, per the journal protocol) 鈫?journal
+  19: *   - PREPARED operation        鈫?roll-forward through the provisioning
+  21: *   - COMMITTED operation       鈫?durable result is replayed (idempotent no-op
+  22: *     at the journal; binder + projection re-applied, `replayed: true`)
+  23: *   - FAILED operation          鈫?ABANDONED (the journal protocol never
+  30: * the durable admitted content (the journal intent payload) is authoritative.
+  33: * `recoverActivation` documents the intent (recover a crashed/abandoned
+ 111: /** The stable operation identity handed to the journal protocol. */
+ 130: const repositories = ports.teamDomain.repositories
+ 132: const coordinators = new Map<string, ProvisioningCoordinator>()
+ 134: const teamLocks = new Map<string, Promise<unknown>>()
+ 136: function getCoordinator(rootSessionId: string): ProvisioningCoordinator {
+ 149: function withTeamLock<T>(rootSessionId: string, work: () => Promise<T>): Promise<T> {
+ 150: const previous = teamLocks.get(rootSessionId) ?? Promise.resolve(undefined as unknown)
+ 151: const run = previous.then(work)
+ 161: * Step 0: closed-grammar validation of the request.
+ 165: function validateRequest(request: MemberActivationRequest): void {
+ 166: const fail = (reason: string): never => {
+ 200: const hasTemplate = request.templateId !== undefined
+ 201: const hasDelegation = request.delegation !== undefined
+ 205: const delegation = request.delegation as { explicitInstanceId?: unknown; templateId?: unknown }
+ 206: const hasExplicit = delegation.explicitInstanceId !== undefined
+ 207: const hasDelegatedTemplate = delegation.templateId !== undefined
+ 242: function requestedTemplateAddress(request: MemberActivationRequest): string | undefined {
+ 244: const templateId = request.delegation.templateId
+ 251: function templateContextPolicy(template: BlueprintTemplate): ContextPolicy {
+ 252: const policy = template.contextPolicy ?? DEFAULT_CONTEXT_POLICY
+ 268: function templateForAddressedMember(
+ 273: const member = repositories.memberInstances.get(rootSessionId, instanceId)
+ 285: function mapDelegationTargetError(error: unknown, rootSessionId: string): never {
+ 287: const record = (error ?? {}) as { code?: unknown }
+ 288: const code = typeof record.code === 'string' ? record.code : 'UNCLASSIFIED'
+ 303: function bindPostCommit(childSessionId: string): TeamAgentBindResult {
+ 304: const binder = new TeamAgentBinder({
+ 332: * Step 16: projection publication. Non-fatal by design (the durable state
+ 336: function publishProjection(event: ActivationProjectionEvent): ActivationProjectionState {
+ 337: const publisher = ports.projectionPublisher
+ 351: function activatedResult(
+ 363: const bind = bindPostCommit(childSessionId)
+ 383: const projection = publishProjection(projectionEvent)
+ 410: function continuedResult(
+ 416: const template = resolveTemplate(blueprint, String(member.templateId))
+ 417: const contextPolicy = templateContextPolicy(template)
+ 418: const teamSession = repositories.teamSessions.get(rootSessionId)
+ 426: const workspace = resolveEffectiveWorkspace(member, teamSession)
+ 450: async function reDriveActivation(
+ 460: `activation: the durable operation '${identity.operationId}' for this logical activation is terminally FAILED (abandoned 鈥?the journal protocol never roll-forwards a FAILED row); start a new logical operation with a new requestToken`,
+ 467: const replayed = existingOp.phase === OPERATION_PHASES.COMMITTED
+ 469: const payload = existingOp.intent.payload
+ 470: const templateId = String(payload['templateId'])
+ 471: const requestedTemplate = requestedTemplateAddress(request)
+ 483: const coordinator = getCoordinator(rootSessionId)
+ 493: // self-ensuring stages, terminal convergence to COMMITTED.
+ 494: const committed = await coordinator.recover(provisionRequest)
+ 495: if (committed.committed !== true || committed.childSessionId === undefined) {
+ 498: `activation: the re-drive of operation '${identity.operationId}' did not converge to COMMITTED (durable state anomaly)`,
+ 499: { operationId: identity.operationId, stage: committed.stage },
+ 502: const childSessionId = String(committed.childSessionId)
+ 503: const template = resolveTemplate(blueprint, templateId)
+ 504: const contextPolicy = templateContextPolicy(template)
+ 505: const workspace = payload['workspace'] !== undefined ? String(payload['workspace']) : undefined
+ 508: committed.member,
+ 516: committed.ledgerSequence,
+ 526: async function activate(request: MemberActivationRequest): Promise<ActivationResult> {
+ 527: // step 0: closed grammar
+ 530: // step 1: resolve the durable TeamSession
+ 531: const teamSession = resolveTeamSession(repositories, request.rootSessionId)
+ 532: const rootSessionId = String(teamSession.rootSessionId)
+ 534: // step 2: resolve the bound immutable Blueprint (content-hash checked)
+ 535: const resolvedBlueprint = resolveBoundBlueprint(ports.blueprintCatalog, teamSession)
+ 536: const blueprint = resolvedBlueprint.blueprint
+ 542: // PREPARED/COMMITTED re-drive (roll-forward: no re-admission, no
+ 547: // operation is re-driven to COMMITTED instead of being shadowed by the
+ 554: const existingOp = repositories.operations.get(identity.operationId)
+ 559: // steps 3-5 (+ delegation target resolution): the create address
+ 560: const createTemplateAddress = requestedTemplateAddress(request)
+ 563: const delegation = request.delegation as { explicitInstanceId?: unknown; templateId?: unknown }
+ 576: const template = resolveTemplate(blueprint, createTemplateId)
+ 578: // step 4: caller authority
+ 580: // step 5: source admission (closed vocabulary)
+ 581: admitSource(request.source)
+ 585: const delegation = request.delegation as { explicitInstanceId?: unknown; templateId?: unknown }
+ 586: const members = repositories.memberInstances.list(rootSessionId)
+ 587: const contextPolicy = templateContextPolicy(template)
+ 607: const member = repositories.memberInstances.get(rootSessionId, String(target.instanceId))
+ 621: // step 6: compatibility (the new-work admission gate, invariant 50)
+ 622: const environmentFacts = await ports.environmentFacts()
+ 623: const compatibility = evaluateActivationCompatibility(
+ 629: // steps 7-15 under the team lock (all durable writes for this team are
+ 632: const members = repositories.memberInstances.list(rootSessionId)
+ 633: const operations = repositories.operations.list()
+ 634: const view = { members, operations }
+ 636: // step 7: quota
+ 637: const counts = countTeamQuota(view, rootSessionId, createTemplateId)
+ 638: checkQuota(blueprint.quotas, counts, createTemplateId)
+ 640: // step 8: policy (frozen at creation, invariant 29)
+ 641: const external = await ports.externalPolicyFacts()
+ 642: const policy = resolveActivationPolicy({
+ 649: // step 9: overlay bounds (the operation-level intersection)
+ 652: // step 10: workspace + context fields
+ 653: const fields = resolveCreationFields(teamSession, request, template)
+ 655: // step 11: instanceId allocation (collision-checked under the lock)
+ 656: const instanceId = allocateCheckedInstanceId(request, view)
+ 666: // step 12: journal prepare (the durable reservation)
+ 667: const coordinator = getCoordinator(rootSessionId)
+ 678: // step 13: child Agent+Session (external effect + unconditional barrier)
+ 680: const status = coordinator.status({ instanceId })
+ 688: const childSessionId = String(status.childSessionId)
+ 690: // step 14: TeamDomain binding
+ 693: // step 15: commit the MemberInstance (the terminal durable fact)
+ 694: const committed = await coordinator.commitInstance(provisionRequest)
+ 696: // steps 14/16 tail: binder (work gate) + projection
+ 699: committed.member,
+ 707: committed.ledgerSequence,
+ 713: * Recovery entry: converge a crashed/abandoned activation. Same entry as
+ 718: async function recoverActivation(request: MemberActivationRequest): Promise<ActivationResult> {
+ 743: const details = (error.details ?? {}) as { problem?: unknown }
+ 744: const problem = typeof details.problem === 'string' ? details.problem : undefined

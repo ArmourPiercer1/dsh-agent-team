@@ -1,0 +1,86 @@
+{
+  "criterion": "E2",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 64,
+  "assertions": [
+    {
+      "name": "all three out-of-namespace targets live-rejected (rejected status)",
+      "pass": true,
+      "detail": "[{\"tool\":\"team_follow_up\",\"target\":\"existing-worker\",\"status\":\"rejected\"},{\"tool\":\"team_follow_up\",\"target\":\"worker\",\"status\":\"rejected\"},{\"tool\":\"team_send_message\",\"target\":\"e1-1\",\"status\":\"rejected\"}]"
+    },
+    {
+      "name": "every rejection carries TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+      "pass": true,
+      "detail": "[\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\"]"
+    },
+    {
+      "name": "no side effect: member count unchanged (6)",
+      "pass": true
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 3,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "attempts": [
+      {
+        "tool": "team_follow_up",
+        "target": "existing-worker",
+        "kind": "seed member LABEL",
+        "token": "p6t6-e2-label",
+        "httpStatus": 200,
+        "value": {
+          "status": "rejected",
+          "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+          "message": "TeamRuntime: target 'existing-worker' is a member label — actions are addressed by instanceId only (invariant 19)",
+          "details": {
+            "action": "follow-up",
+            "targetToken": "existing-worker",
+            "kind": "member-label",
+            "instanceId": "inst-p6t6seedw1"
+          }
+        }
+      },
+      {
+        "tool": "team_follow_up",
+        "target": "worker",
+        "kind": "TEMPLATE id",
+        "token": "p6t6-e2-template",
+        "httpStatus": 200,
+        "value": {
+          "status": "rejected",
+          "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+          "message": "TeamRuntime: target 'worker' is a template id — actions are addressed by instanceId only (invariant 19)",
+          "details": {
+            "action": "follow-up",
+            "targetToken": "worker",
+            "kind": "template-id",
+            "templateId": "worker"
+          }
+        }
+      },
+      {
+        "tool": "team_send_message",
+        "target": "e1-1",
+        "kind": "E1 member LABEL",
+        "token": "p6t6-e2-label-msg",
+        "httpStatus": 200,
+        "value": {
+          "status": "rejected",
+          "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+          "message": "TeamRuntime: target 'e1-1' is a member label — actions are addressed by instanceId only (invariant 19)",
+          "details": {
+            "action": "send-message",
+            "targetToken": "e1-1",
+            "kind": "member-label",
+            "instanceId": "inst-0j3weh1176s5"
+          }
+        }
+      }
+    ]
+  }
+}

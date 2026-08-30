@@ -1,0 +1,31 @@
+﻿  19: *        a. the OUT-OF-ORDER GUARD (REJECT policy): the claimed per-subject
+  20: *           `sequence` must equal the durable head + 1 exactly;
+  21: *           `ACTIVITY_SEQUENCE_STALE` otherwise (`details.kind` `'stale'`
+  22: *           when claimed ≤ head — a stale update can NEVER overwrite
+  23: *           newer state; `'gap'` when claimed > head + 1 — a gap is never
+  35: * head) and repairable (re-report at the re-read head + 1 — the guard
+  36: * admits it because the head never moved). The raw TeamLedger keeps both
+  45: * - a HUMAN caller is rejected (`ACTIVITY_UNAUTHORIZED_REPORTER`).
+  46: * Full caller identity / role-staleness / target liveness remain the
+  48: * CALLER_NOT_FOUND, a stale caller with CALLER_ROLE_STALE, an unknown
+  50: * WORK_STATE_REJECTED.
+  91: function failInput(problem: string, details?: Record<string, unknown>): never {
+ 100: function parseRootOrFail(value: unknown): RootSessionId {
+ 110: function parseInstanceOrFail(value: unknown): InstanceId {
+ 120: function requiredString(value: unknown, field: string, max: number): string {
+ 128: function optionalString(value: unknown, field: string, max: number): string | undefined {
+ 137: function parseProgress(value: unknown): ProgressValue {
+ 145: function parseClaimedSequence(value: unknown): number {
+ 158: function parseCaller(value: unknown): ActionCaller {
+ 179: function checkReporter(caller: ActionCaller, targetInstanceId: string): void {
+ 214: function validateBase(input: {
+ 244: export function createActivityLedger(options: ActivityLedgerOptions): ActivityLedger {
+ 269: * the per-team lock, the out-of-order guard, the interval guards, then
+ 291: // (a) the out-of-order guard — REJECT policy (deterministic total
+ 292: // order per subject; a stale update can never overwrite newer state)
+ 293: const head = rows.reduce((max, row) => Math.max(max, row.sequence), 0)
+ 294: const expected = head + 1
+ 297: ACTIVITY_ERROR_CODES.ACTIVITY_SEQUENCE_STALE,
+ 298: `activity: claimed per-subject sequence ${base.sequence} for '${base.subject}' of '${base.instanceId}' is out of order — the durable head is ${head} and the next admissible sequence is ${expected}`,
+ 300: kind: base.sequence < expected ? 'stale' : 'gap',
+ 304: head,

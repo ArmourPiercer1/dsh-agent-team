@@ -1,0 +1,94 @@
+﻿  32: * - `control-allow-consumed`    — the exactly-once consumption of an
+  33: *   allow by the last-mile guard.
+  35: * Scope model (types.ts): an allow authorizes EXACTLY
+  42: * attempt after an allow was consumed (or after a deny) must carry a NEW
+  53: *   allow);
+  55: *   verdict `target-stale` (an allow only authorizes execution on a
+  58: * External hard policy (Architecture 25.4 / invariant 34): an `allow`
+  59: * decision probes the LIVE external facts before the decision row is
+  60: * written; a hard deny, an allow-list that excludes the named item, or an
+  62: * `reason: 'external-policy'` FIRST, then
+  63: * CONTROL_EXTERNAL_POLICY_DENIED — even a human/leader allow fails
+  65: * externally lawful). When BOTH a stale target and an external deny
+  67: * stale-denied — the external probe is moot for an operation that can
+  73: * its template envelope allows the `resolve-control` op (no
+  84: * allow decision exists for the EXACT scope and is unconsumed — then
+  86: * returns `allowed:true`. Policy outcomes are VERDICTS, never throws;
+  89: * unconsumed allows for one scope — the guard refuses to guess).
+  91: * Invariant 45: the in-process holds NO cached authority state — every
+ 160: /** The durable allow-consumption fact family (the exactly-once evidence). */
+ 161: const FACT_CONSUMPTION = 'control-allow-consumed'
+ 165: function closedActionSpecOf(name: string): ActionSpec {
+ 209: /** The `control-allow-consumed` payload. */
+ 225: * ledger read; the in-process caches nothing — invariant 45).
+ 235: function isPlainObject(value: unknown): value is Record<string, unknown> {
+ 240: *  fail closed: a corrupted row can never grant an allow). */
+ 241: function parseCallerRef(value: unknown): ControlCallerRef | undefined {
+ 264: function parseScope(value: unknown): ControlOperationScope | undefined {
+ 296: function parseRequestPayload(value: unknown): RequestPayload | undefined {
+ 337: function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
+ 371: function parseConsumptionPayload(value: unknown): ConsumptionPayload | undefined {
+ 391: function isActionCaller(caller: unknown): caller is ActionCaller {
+ 404: function scopeKey(
+ 416: function requestIdOf(key: string): string {
+ 421: function scopeSnapshotMatches(
+ 435: * Does the external hard cell allow the operation? Fail closed: an ABSENT
+ 437: * allow-list must NAME the operation's tool (an operation with no named
+ 440: function hardCellAllows(entry: PolicyEntry | undefined, toolName: string | undefined): boolean {
+ 456: export function createControlService(options: ControlServiceOptions): ControlService {
+ 465: function malformed(stage: 'request' | 'resolve' | 'list', field: string, message: string): ControlError {
+ 473: function guardMalformed(field: string, message: string): ControlError {
+ 481: function parseRoot(raw: unknown, code: ControlErrorCode, stage: string): string {
+ 497: function durableFailure(stage: string, error: unknown): TeamRuntimeError {
+ 505: async function allocateSequence(): Promise<number> {
+ 513: async function putEntry(entry: {
+ 531: function loadControlState(root: string): ControlState {
+ 556: function scopeOf(entry: LedgerEntry, payload: RequestPayload): ControlOperationScope {
+ 569: function toRequestRecord(
+ 594: function toDecisionRecord(entry: LedgerEntry, payload: DecisionPayload): ControlDecisionRecord {
+ 608: function toConsumptionRecord(
+ 621: function callerRefOf(caller: ResolvedCaller): ControlCallerRef {
+ 636: async function commitDecision(args: {
+ 687: async function requestControl(args: {
+ 724: // Reused authority steps (the facade's typed codes surface as-is):
+ 824: async function resolveControl(args: {
+ 828: readonly decision: 'allow' | 'deny'
+ 838: if (args.decision !== 'allow' && args.decision !== 'deny') {
+ 839: throw malformed('resolve', 'decision', `decision must be 'allow' or 'deny' (got ${JSON.stringify(args.decision)})`)
+ 845: // Reused authority steps: (1) caller; (2) team + blueprint resolution
+ 880: const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]
+ 881: if (!allowedRoles.includes(caller.role)) {
+ 884: `ControlService: role '${caller.role}' is not a resolver for kind '${request.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`,
+ 890: allowedRoles: [...allowedRoles],
+ 914: `ControlService: request '${request.payload.requestId}' is stale — the target instance is ${target === undefined ? 'missing' : targetLifecycle} (recorded as stale-denied; it can never become an allow)`,
+ 923: // External hard policy (allow only — Architecture 25.4 / invariant
+ 925: if (args.decision === 'allow') {
+ 930: const facts = await options.externalPolicyFacts()
+ 933: !hardCellAllows(facts.hard[capabilityDomain], request.payload.toolName)
+ 940: reason: 'external-policy',
+ 945: CONTROL_ERROR_CODES.CONTROL_EXTERNAL_POLICY_DENIED,
+ 946: `ControlService: allow impossible — the external hard policy denies capability '${capabilityDomain}' (recorded as deny with reason external-policy)`,
+ 959: value: args.decision === 'allow' ? CONTROL_DECISION_VALUES.ALLOW : CONTROL_DECISION_VALUES.DENY,
+ 970: async function listControlState(rootSessionId: string): Promise<{
+ 995: async function guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict> {
+1018: // live and work-accepting (an allow only authorizes execution on a
+1026: return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.TARGET_STALE }
+1041: return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST }
+1043: const unconsumedAllows: {
+1048: allowed: false,
+1049: reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+1057: allowed: false,
+1065: allowed: false,
+1073: allowed: false,
+1079: // decision === 'allow'
+1085: allowed: false,
+1086: reason: CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED,
+1094: allowed: false,
+1100: unconsumedAllows.push({ request, decision })
+1102: if (unconsumedAllows.length > 1) {
+1105: `ControlService: ${unconsumedAllows.length} distinct unconsumed durable allows for one scope — refusing to guess which authorizes the operation`,
+1108: requestIds: unconsumedAllows.map((a) => a.request.payload.requestId),
+1112: if (unconsumedAllows.length === 1) {
+1113: const winner = unconsumedAllows[0]
+1116: throw new Error('control: invariant violation — one unconsumed allow but no element')
+1133: allowed: true,

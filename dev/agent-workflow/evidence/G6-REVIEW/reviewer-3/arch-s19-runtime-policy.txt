@@ -1,0 +1,239 @@
+# 19. Runtime policy 模型
+
+## 19.1 Requirement 与 Policy 严格分离
+
+```text
+Requirement
+= Blueprint expects a capability to exist
+
+Policy
+= if the capability exists, whether this Team role may use it
+```
+
+例如：
+
+```text
+requires MCP server: abtem
+```
+
+与：
+
+```text
+allow MCP server: abtem
+```
+
+是两个不同事实。
+
+Requirement 不表示“请 Team plugin 自动安装这个 capability”。
+
+## 19.2 External Hard Policy
+
+属于 DSH/宿主环境的不可越过上限，例如：
+
+```text
+system policy
+managed policy
+project/workspace hard policy
+capability actual existence
+security restriction
+```
+
+任何 Team actor，包括 human override，都不能越过真正的 external hard policy。
+
+## 19.3 Team Autonomy Boundary
+
+由：
+
+```text
+Blueprint envelope
+MemberTemplate envelope
+PolicyState envelope
+```
+
+共同定义：
+
+> Team 内 agent 自主改变配置时允许走多远。
+
+## 19.4 Autonomy Overlay
+
+由 Leader、经授权 Member request、未来 Router/Workflow 等产生。
+
+它必须处于 Team autonomy boundary 内。
+
+PolicyState 变严时，已经记录的 autonomy overlay 可以：
+
+```text
+stored but suppressed
+```
+
+而不是 destructive delete。
+
+未来 PolicyState 放宽后，仍可重新成为 effective value。
+
+## 19.5 Explicit Human Override
+
+由用户通过明确 UI/API 设置。
+
+它：
+
+```text
+may override Team autonomy restrictions
+must remain durable and auditable
+cannot create unavailable capability
+cannot override External Hard Policy
+```
+
+PolicyState 变化不得自动压制明确的 human override。
+
+## 19.6 Effective Team Policy
+
+所有 Team-owned 层先在 Team domain 内 resolve：
+
+```text
+P_TeamResolved = Resolve(
+    Blueprint,
+    MemberTemplate,
+    PolicyState,
+    TemplateAutonomyOverlay,
+    InstanceAutonomyOverlay,
+    ExplicitHumanOverride
+)
+```
+
+然后：
+
+```text
+P_effective
+=
+P_externalHard
+∩ P_capabilityExists
+∩ P_TeamResolved
+```
+
+禁止将 Blueprint deny、PolicyState deny、User allow 等分别 materialize 成多个不可逆 monotonic restriction，否则 human override 将无法按设计放宽 Team 自己的限制。
+
+---
+
+# 20. PolicyState
+
+## 20.1 定义
+
+PolicyState 是：
+
+> TeamSession 当前的运行治理模式。
+
+它回答：
+
+```text
+“当前允许怎样修改运行配置？”
+```
+
+而不是：
+
+```text
+“任务进行到哪一步？”
+```
+
+合理示例：
+
+```text
+research
+locked-validation
+```
+
+不应把：
+
+```text
+coding
+review
+testing
+```
+
+仅因为它们是任务阶段就包装成 PolicyState。
+
+## 20.2 Scope
+
+```text
+PolicyState belongs to TeamSession
+```
+
+不是每个 MemberInstance 各自一个 PolicyState。
+
+Member 间差异由 MemberTemplate envelope 与 instance-specific overlay 表达。
+
+## 20.3 可选性
+
+简单 Blueprint 可以只有隐含 `default` state，不必为了架构完整性强制定义多个状态。
+
+## 20.4 Transition authority
+
+vNext 只允许：
+
+```text
+explicit human transition
+explicit authorized leader transition
+```
+
+普通 Member 不自动推进；任务完成也不自动切换。
+
+未来 Workflow engine 若加入 transition source，必须作为新版本设计。
+
+---
+
+# 21. 字段 mutation 语义
+
+## 21.1 通用 mutation modes
+
+架构至少区分：
+
+```text
+immutable
+creation-mutable
+immutable-after-start
+turn/step-mutable
+runtime-mutable-for-future-operations
+bounded
+tighten-only
+inherit
+```
+
+具体 schema 以后决定，但这些语义差异必须保留。
+
+## 21.2 workspace
+
+默认：
+
+```text
+creation-mutable
+immutable after first RUNNING
+```
+
+未指定时继承：
+
+```text
+TeamSession.defaultWorkspace
+```
+
+一旦 instance 已经在 workspace A 建立 conversation/context，就不能简单把 filesystem 根切到 B 并宣称仍是同一干净执行身份。
+
+需要新路线时创建新 MemberInstance。
+
+## 21.3 model/provider/reasoningEffort
+
+默认：
+
+```text
+turn/step-boundary mutable if envelope allows
+```
+
+同一个 MemberInstance 可以：
+
+```text
+turn 1 -> model A
+turn 2 -> model B
+turn 3 -> model A
+```
+
+identity 与 conversation 不变。
+
+正在 in-flight 的 request 不因 concurrent override 被改成另一 model；新选择在下一可安全 request/step boundary 生效。

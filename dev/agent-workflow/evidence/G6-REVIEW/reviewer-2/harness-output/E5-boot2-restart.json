@@ -1,0 +1,108 @@
+{
+  "criterion": "E5",
+  "phase": "boot2-restart",
+  "boot": 2,
+  "pass": true,
+  "durationMs": 853,
+  "assertions": [
+    {
+      "name": "state after restart: nine members total",
+      "pass": true,
+      "detail": "[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+    },
+    {
+      "name": "state after restart: the member id set is UNCHANGED from boot 1",
+      "pass": true,
+      "detail": "boot1=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"] boot2=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1v2h6hs1webz\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+    },
+    {
+      "name": "the boot-1 control request SURVIVED the restart as pending",
+      "pass": true,
+      "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T20:58:10.415Z\"}"
+    },
+    {
+      "name": "the boot-1 progress rows (sequences 1 and 2) SURVIVED the restart",
+      "pass": true,
+      "detail": "[1,2]"
+    },
+    {
+      "name": "no pending delivery was skipped at recovery (the boot-1 delivery is accounted)",
+      "pass": true,
+      "detail": "{\"recovered\":[],\"skipped\":[]}"
+    },
+    {
+      "name": "team_list_members after restart reports nine members through the tool",
+      "pass": true,
+      "detail": "9"
+    },
+    {
+      "name": "leader resolved the request as allow (control-resolved)",
+      "pass": true,
+      "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-p6t6root\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"toolName\":\"team_follow_up\"},\"requestSequence\":15,\"decisionSequence\":16,\"createdAt\":\"2026-08-30T20:58:16.720Z\",\"note\":\"p6t6 e5 leader allows the follow-up\"}}"
+    },
+    {
+      "name": "the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":18},\"requestToken\":\"p6t6-e5-ctrl1\"}"
+    },
+    {
+      "name": "retrying the SAME token is BLOCKED (allow-consumed, exactly-once)",
+      "pass": true,
+      "detail": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"reason\":\"allow-consumed\",\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decisionSequence\":16}"
+    },
+    {
+      "name": "a fresh token with no request row proceeds (no-request deviation)",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":19},\"requestToken\":\"p6t6-e5-ctrl3\"}"
+    },
+    {
+      "name": "post-restart team message delivered (new durable sequences)",
+      "pass": true,
+      "detail": "{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":20,\"deliveredSequence\":21,\"requestToken\":\"p6t6-e5-msg2\"}"
+    },
+    {
+      "name": "post-restart progress report continues the per-subject sequence (3)",
+      "pass": true,
+      "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":23,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":3,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p3\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T20:58:17.430Z\",\"summary\":\"p6t6 e5 resumed after restart\"}}"
+    },
+    {
+      "name": "after consumption the request row is decided",
+      "pass": true,
+      "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"decided\",\"createdAt\":\"2026-08-30T20:58:10.415Z\"}"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 7,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "membersCountAfter": 9,
+    "memberIdsSameAsBoot1": true,
+    "controlRequest": {
+      "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+      "statusBefore": "pending",
+      "statusAfter": "decided"
+    },
+    "activitySequences": [
+      1,
+      2
+    ],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "guard": {
+      "executedToken": "p6t6-e5-ctrl1",
+      "blockedRetry": "blocked",
+      "blockedReason": "allow-consumed",
+      "freshTokenExecuted": "executed"
+    },
+    "postMessage": {
+      "deliveredSequence": 21,
+      "factSequence": 20
+    },
+    "postProgressSequence": 3
+  }
+}

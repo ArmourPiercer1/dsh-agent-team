@@ -1,0 +1,72 @@
+﻿diff --git a/packages/testkit/test/p4t6-session-event-scan.test.ts b/packages/testkit/test/p4t6-session-event-scan.test.ts
+index 5e65068..3d0244c 100644
+--- a/packages/testkit/test/p4t6-session-event-scan.test.ts
++++ b/packages/testkit/test/p4t6-session-event-scan.test.ts
+@@ -35,21 +35,21 @@ const REQUIRED_SUITES: readonly string[] = [
+   'packages/storage/test/p4t4-per-stage-retry.test.ts',
+   'packages/testkit/test/p4t5-crash-matrix.test.ts',
+   'packages/testkit/test/p4t5-retry-restart.test.ts',
+   'packages/testkit/test/p4t5-corrupt-version.test.ts',
+   'packages/storage/test/p4-01-schema-meta.test.ts',
+ ]
+ 
+ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
+   const scanResult = scanSessionEventVocabulary()
+ 
+-  it('coverage: all nine package dirs discovered, eight carry source, 258 files scanned, legacy documented sourceless', () => {
++  it('coverage: all nine package dirs discovered, eight carry source, 330 files scanned, legacy documented sourceless', () => {
+     expect(scanResult.packageDirs).toEqual([
+       'client',
+       'contracts',
+       'domain',
+       'legacy',
+       'remote',
+       'runtime',
+       'storage',
+       'testkit',
+       'tools',
+@@ -64,23 +64,41 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
+       scanResult.files.filter((f) => f.startsWith('packages/legacy/')).length,
+     ).toBe(0)
+     // 226 pre-existing .ts/.mts/.mjs files (189 pre-P5 + 12 P5-T1 runtime
+     // files + 11 P5-T2 persona/preset files + 6 P5-T3 runtime files +
+     // 8 P5-T4 capability adapter files) + the adjacent .d.mts type surface
+     // of the scanner (the scanner .mjs and this test are excluded by the
+     // self-reference contract) + 10 P5-T5 root-binding files (6 module
+     // .ts + 4 unit-test .ts) + 6 P5-T5 real-instance harness .mjs
+     // (ts-loader, seam, mini-mcp, slots, plugin, run) + 15 P5-T6
+     // member-residency files (8 module .ts + 4 unit-test .ts +
+-    // 3 real-instance harness .mjs: plugin, run, slots-t6).
+-    expect(scanResult.filesScanned).toBe(258)
+-    expect(scanResult.files.length).toBe(258)
++    // 3 real-instance harness .mjs: plugin, run, slots-t6) + 13 P6-T1
++    // activation-provider files (7 module .ts under runtime/activation +
++    // 6 unit-test .ts under runtime/test: p6t1-helpers + 5 suites) +
++    // 15 P6-T2 admission/action-router files (7 module .ts under
++    // runtime/admission + 3 module .ts under runtime/action-router +
++    // 5 unit-test .ts under runtime/test: p6t2-helpers + 4 suites) +
++    // 9 P6-T3 messaging-coordination files (5 module .ts under
++    // runtime/messaging + 4 unit-test .ts under runtime/test:
++    // p6t3-helpers + 3 suites) +
++    // 11 P6-T4 control files (4 module .ts under runtime/control:
++    // errors, types, service, index + 7 unit-test .ts under
++    // runtime/test: p6t4-helpers + 6 suites) +
++    // 12 P6-T5 activity-ledger files (6 module .ts under runtime/activity
++    // + 6 unit-test .ts under runtime/test: p6t5-helpers + 5 suites) +
++    // 12 P6-T6 team-tools files (4 module .ts under tools/src: tokens,
++    // guard, tools, types + 6 unit-test files under tools/test:
++    // p6t6-helpers, p6t6-actions.test, p6t6-guard.test,
++    // p6t6-bypass-scan.test, p6t6-bypass-scan.mjs, p6t6-bypass-scan.d.mts
++    // + 2 real-instance harness .mjs under tools/harness: plugin, run).
++    expect(scanResult.filesScanned).toBe(330)
++    expect(scanResult.files.length).toBe(330)
+   })
+ 
+   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
+     expect(scanResult.excludedSelfFiles).toEqual([
+       'packages/testkit/fault-injection/session-event-scan.mjs',
+       'packages/testkit/test/p4t6-session-event-scan.test.ts',
+     ])
+   })
+ 
+   it('zero denylist violations outside the frozen quarantine set (no files skipped)', () => {

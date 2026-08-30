@@ -1,0 +1,64 @@
+## A.7 当前 fork Team model
+
+审计路径：
+
+```text
+packages/team/team/src/types.ts
+packages/team/team-runtime/src/orchestrator.ts
+packages/team/team-local/src/index.ts
+packages/team/tool-team/src/tool-delegate.ts
+```
+
+当前事实：
+
+- `TeamMemberDefinition` 同时承担静态 role 和运行参数；
+- `TeamOrchestrator` 按 `(leaderSessionId, memberId)` 保存一条 activation；
+- `team-local` 根据 live cwd watch/reload `ctx.team`；
+- delegation 以 continuable subagent 为 Member primitive；
+- `persistent` 重用 settled child；`fresh_per_delegation` 启动新 child；
+- message/control/progress 已有用户价值，但 identity 仍是 memberId-centric。
+
+架构结论：
+
+- messaging/control/progress/Timeline/navigation 等价值应保留；
+- mutable TeamRegistry、cwd authority、memberId runtime identity、one-member-one-activation、subagent-as-Member 等结构必须被替换；
+- `fresh_per_delegation` 的用户意图迁移为“每次新 delegation 创建新 MemberInstance”。
+
+---
+
+# 附录 B：术语表
+
+| 术语 | 含义 |
+|---|---|
+| **TeamBlueprint** | 可复用的静态团队定义及版本化语义 |
+| **Blueprint snapshot** | 某 TeamSession 创建时冻结的 Blueprint-owned semantics |
+| **TeamIntent** | 真实 TeamSession 创建前的 Team-owned staging object |
+| **TeamSession** | Root Session 对一个 Blueprint snapshot 的 Team binding；ID 等于 RootSessionId |
+| **LeaderTemplate** | Blueprint 中唯一 Leader 的静态定义 |
+| **MemberTemplate** | 可被实例化 0..N 次的静态成员角色模板 |
+| **LeaderInstance** | Root Agent/Session，对统一 Member 模型的特殊实例 |
+| **MemberInstance** | 拥有持久 identity、child Session、workspace、context、overlay、lifecycle 的执行实体 |
+| **instanceId** | MemberInstance 的稳定运行时 identity |
+| **templateId** | MemberTemplate 静态 identity，不用于 runtime addressing |
+| **groupId** | 无状态/权限/lifecycle 语义的 opaque grouping metadata |
+| **AgentPreset** | DSH ordinary Agent composition substrate，与 TeamSession 正交 |
+| **ModelSelection** | per-Agent provider/model/reasoningEffort route |
+| **ActivationRequest** | 请求创建新 MemberInstance 的统一输入 |
+| **ActivationProvider** | 所有 MemberInstance creation 的统一 authority/validation seam |
+| **TeamDomain** | Team control-plane durable sidecar authority |
+| **TeamLedger** | Team-wide coordination facts 的 durable chronological ledger |
+| **SessionBinding** | DSH SessionId 与 Team root/member identity 的 TeamDomain 关联 |
+| **Autonomy Overlay** | agent/leader 在 Team envelope 内产生的 runtime override |
+| **Explicit Human Override** | 用户明确设置、可越过 Team autonomy 但不可越过 external hard policy 的 durable override |
+| **PolicyState** | TeamSession-level runtime governance mode，不是 workflow progress |
+| **External Hard Policy** | Team 和用户都不能越过的宿主安全/能力上限 |
+| **Compatibility** | Blueprint requirements 与当前实际 substrate/environment 的匹配状态 |
+| **Admission** | 是否允许新的 Team work 进入执行系统 |
+| **Residency** | 某 durable MemberInstance 当前是否有 live Agent object 驻留在进程内 |
+| **Restore** | `ARCHIVED -> SETTLED`，仅恢复可用性，不 resume Agent |
+| **Resume** | 在有新 work 时恢复 cold Agent residency 并继续同一 Session |
+| **Legacy Team Session** | 旧架构产生的 Team Session；vNext 中只读，不自动迁移 |
+
+---
+
+**End of Architecture Baseline**

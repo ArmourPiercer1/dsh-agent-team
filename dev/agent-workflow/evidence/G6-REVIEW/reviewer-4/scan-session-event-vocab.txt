@@ -1,0 +1,53 @@
+﻿agent-setup\binder\binder.ts:57: * SessionEvent vocabulary (vNext has no Team SessionEvents — the recorded
+agent-setup\binder\binder.ts:137: '(getInstalledSlots / installOverlay / restoreScope / recordSessionEvent)',
+agent-setup\binder\binder.ts:435: out: AgentSessionEventAccumulator,
+agent-setup\binder\binder.ts:445: this.surface.recordSessionEvent(sessionId, event)
+agent-setup\binder\binder.ts:455: type AgentSessionEventAccumulator = AgentSetupEventRecord[]
+agent-setup\binder\binder.ts:485: typeof candidate['recordSessionEvent'] === 'function'
+agent-setup\binder\errors.ts:29: *   `installOverlay` / `restoreScope` / `recordSessionEvent` call, or the
+agent-setup\binder\types.ts:25: * - no Team SessionEvent vocabulary of any kind (vNext has no Team
+agent-setup\binder\types.ts:26: *   SessionEvents; the recorded events are the public Agent
+agent-setup\binder\types.ts:64: * SessionEvents: the names deliberately live in the `agent-setup/*`
+agent-setup\binder\types.ts:122: * 4. `recordSessionEvent` — the public Agent setup/session event channel
+agent-setup\binder\types.ts:157: recordSessionEvent(sessionId: string, event: AgentSetupEventRecord): void
+agent-setup\capability\index.ts:18: * No TeamDomain contact and no session-event emission in this module —
+agent-setup\model\overlay.ts:46: * - no Team SessionEvent vocabulary (the binder is the single event
+agent-setup\model\types.ts:23: * - no Team SessionEvent vocabulary of any kind (vNext has no Team
+agent-setup\model\types.ts:24: *   SessionEvents; the model overlay emits no session events at all — the
+control\service.ts:27: * p4t6 scanner's legacy denylist is slash-prefixed Team SessionEvent
+member-residency\types.ts:30: * - Invariant 42 — vNext has NO Team SessionEvents. This module emits no
+member-residency\types.ts:31: *   SessionEvents; its observability channel is the binder's
+messaging\coordinator.ts:82: * - **R7 (no Team SessionEvents, invariant 42):** the module creates
+messaging\index.ts:25: *       the injected `SessionInputPort` (no Team-specific DSH SessionEvent
+messaging\types.ts:36: * No Team-specific DSH SessionEvent vocabulary exists anywhere (invariant
+root-binding\types.ts:18: * - Invariant 42 — vNext has NO Team SessionEvents. This module emits no
+root-binding\types.ts:19: *   SessionEvents; its observability channel is the binder's
+test\p5t1-binder-core.test.ts:93: // recordSessionEvent missing
+test\p5t1-binder-core.test.ts:102: recordSessionEvent: () => {},
+test\p5t1-double-bind.test.ts:65: expect(surface.countCalls('recordSessionEvent')).toBe(4)
+test\p5t1-double-bind.test.ts:81: expect(surface.countCalls('recordSessionEvent')).toBe(4)
+test\p5t1-double-bind.test.ts:108: expect(surface.countCalls('recordSessionEvent', child)).toBe(4)
+test\p5t1-double-bind.test.ts:130: expect(surface.countCalls('recordSessionEvent')).toBe(4)
+test\p5t1-double-bind.test.ts:149: expect(surface.countCalls('recordSessionEvent')).toBe(2)
+test\p5t1-double-bind.test.ts:159: expect(surface.countCalls('recordSessionEvent')).toBe(4)
+test\p5t1-double-bind.test.ts:175: expect(surface.countCalls('recordSessionEvent')).toBe(5)
+test\p5t1-double-bind.test.ts:213: expect(surface.countCalls('recordSessionEvent')).toBe(0)
+test\p5t1-double-bind.test.ts:223: expect(surface.countCalls('recordSessionEvent')).toBe(4)
+test\p5t1-double-bind.test.ts:298: expect(surface.countCalls('recordSessionEvent')).toBe(2)
+test\p5t1-fresh-cold-paths.test.ts:238: expect(surface.countCalls('recordSessionEvent')).toBe(0)
+test\p5t1-helpers.ts:204: readonly method: 'getInstalledSlots' | 'installOverlay' | 'restoreScope' | 'recordSessionEvent'
+test\p5t1-helpers.ts:210: /** The recorded event (recordSessionEvent). */
+test\p5t1-helpers.ts:264: recordSessionEvent(sessionId: string, event: AgentSetupEventRecord): void {
+test\p5t1-helpers.ts:270: this.calls.push({ method: 'recordSessionEvent', sessionId, event })
+test\p5t1-helpers.ts:283: /** Arm a one-shot fault on the NEXT `recordSessionEvent` (the binder must fail-closed). */
+test\p5t1-helpers.ts:303: .filter((call) => call.method === 'recordSessionEvent' && call.sessionId === sessionId)
+test\p5t1-overlay-slots.test.ts:14: *   `recordSessionEvent`) are fail-closed too, with the failing origin in
+test\p5t1-overlay-slots.test.ts:58: for (const event of surface.calls.filter((call) => call.method === 'recordSessionEvent')) {
+test\p5t1-overlay-slots.test.ts:119: expect(surface.countCalls('recordSessionEvent')).toBe(0)
+test\p5t1-overlay-slots.test.ts:166: expect(surface.countCalls('recordSessionEvent')).toBe(0)
+test\p5t1-overlay-slots.test.ts:186: expect(surface.countCalls('recordSessionEvent')).toBe(0)
+test\p5t2-persona-cold-bind.test.ts:123: expect(rig.surface.countCalls('recordSessionEvent', root)).toBe(2)
+test\p5t2-persona-complete-fatal.test.ts:64: expect(rig.surface.countCalls('recordSessionEvent')).toBe(0)
+test\p5t6-cold-member.test.ts:520: expect(c1.surfaceCallCount).toBe(3) // restoreScope + 2 recordSessionEvent
+test\p5t6-fresh-member.test.ts:244: .filter((call) => call.method === 'recordSessionEvent' && call.sessionId === CHILD_A)
+test\p6t3-send-delivery.test.ts:36: * NO Team-specific DSH SessionEvent vocabulary anywhere.

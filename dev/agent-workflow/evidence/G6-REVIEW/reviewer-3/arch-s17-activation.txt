@@ -1,0 +1,133 @@
+# 17. ActivationProvider
+
+## 17.1 角色
+
+所有新 MemberInstance 创建必须通过一个统一的**ActivationProvider** 概念边界。
+
+```text
+ActivationRequest
+       │
+       ▼
+ActivationProvider
+       ├─ resolve TeamSession
+       ├─ resolve Blueprint snapshot
+       ├─ resolve MemberTemplate
+       ├─ validate caller authority
+       ├─ validate quota
+       ├─ resolve policy/requirements
+       ├─ validate compatibility
+       ├─ freeze creation-time fields
+       ├─ allocate instanceId
+       ├─ provision child Agent/Session
+       ├─ persist TeamDomain binding
+       └─ publish committed MemberInstance
+```
+
+## 17.2 vNext 的调用来源
+
+本版本支持：
+
+```text
+leader explicit create
+leader delegate + implicit create
+human/UI explicit create, where product exposes it
+```
+
+未来可以有：
+
+```text
+router
+workflow activator
+automation
+```
+
+但未来 producer 不获得额外 authority；仍必须经过同一 Provider。
+
+## 17.3 ActivationRequest
+
+概念上可携带：
+
+```text
+templateId
+label?
+groupId?
+workspace?
+initial work prompt?
+explicit attached context?
+allowed creation-time overlay?
+idempotency/correlation identity
+caller identity/authority
+```
+
+## 17.4 创建提交点
+
+在以下事实都准备好之前，新 MemberInstance 不应作为正式可用成员暴露：
+
+```text
+instanceId stable
+child Session known
+TeamDomain binding durable
+creation config frozen
+initial context/work admission consistency established
+```
+
+若中途 crash，需要由 provisioning recovery 重建或收敛，而不是留下半个可运行 Member。
+
+---
+
+# 18. Provisioning 与 crash consistency
+
+## 18.1 问题形式
+
+创建 Member 涉及至少两个 durable system：
+
+```text
+TeamDomain
+DSH Session persistence
+```
+
+它们没有跨系统 ACID transaction。
+
+因此必须存在 internal provisioning state。
+
+概念状态：
+
+```text
+PROVISIONING
+   ├─ success -> committed MemberInstance / CREATED
+   └─ failure -> PROVISIONING_FAILED (internal only)
+```
+
+`PROVISIONING_FAILED` 不是用户可见 Member lifecycle。
+
+## 18.2 稳定 operation identity
+
+重试同一次 logical create 必须能识别：
+
+```text
+same logical operation
+```
+
+防止 crash/reconnect 后重复创建两个 MemberInstance。
+
+## 18.3 Recovery 必须处理
+
+至少包括：
+
+```text
+operation recorded / child absent
+child allocated / Team binding absent
+binding exists / Member commit absent
+Member committed / ledger update absent
+commit marker absent after effective completion
+```
+
+最终结果必须收敛为：
+
+```text
+one committed MemberInstance
+OR
+no committed MemberInstance + diagnostic/recoverable orphan handling
+```
+
+---

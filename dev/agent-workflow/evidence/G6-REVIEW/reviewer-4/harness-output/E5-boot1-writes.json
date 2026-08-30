@@ -1,0 +1,88 @@
+{
+  "criterion": "E5",
+  "phase": "boot1-writes",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 1091,
+  "assertions": [
+    {
+      "name": "E1 produced the persistent worker (message/progress caller)",
+      "pass": true,
+      "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+    },
+    {
+      "name": "team message from the member to the leader delivered",
+      "pass": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":9,\"deliveredSequence\":10,\"requestToken\":\"p6t6-e5-msg1\"}}"
+    },
+    {
+      "name": "delivery targeted the leader instance",
+      "pass": true,
+      "detail": "{\"r\":\"inst-leader\",\"d\":\"inst-leader\"}"
+    },
+    {
+      "name": "delivery landed on the leader bound session (the root)",
+      "pass": true,
+      "detail": "\"session-p6t6root\""
+    },
+    {
+      "name": "delivery carries durable fact + delivered sequences",
+      "pass": true,
+      "detail": "{\"f\":9,\"d\":10}"
+    },
+    {
+      "name": "first progress report recorded on sequence 1",
+      "pass": true,
+      "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":12,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p1\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:29:39.056Z\",\"summary\":\"p6t6 e5 in flight\"}}"
+    },
+    {
+      "name": "second progress report recorded on sequence 2",
+      "pass": true,
+      "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":14,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":2,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"p6t6-e5-p2\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-08-30T21:29:39.270Z\",\"summary\":\"p6t6 e5 done\"}}"
+    },
+    {
+      "name": "control request accepted (control-requested, pending)",
+      "pass": true,
+      "detail": "{\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"rootSessionId\":\"session-p6t6root\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:29:39.479Z\",\"requestSequence\":15,\"toolName\":\"team_follow_up\",\"summary\":\"p6t6 e5 gated follow-up\"}}"
+    },
+    {
+      "name": "control request scope carries the E5 correlation token + tool name",
+      "pass": true,
+      "detail": "{\"c\":\"p6t6-e5-ctrl1\",\"t\":\"team_follow_up\"}"
+    },
+    {
+      "name": "state after E5a: the control request is durably pending",
+      "pass": true,
+      "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-08-30T21:29:39.392Z\"}"
+    },
+    {
+      "name": "state after E5a: both progress rows for (w, e5) are durable",
+      "pass": true,
+      "detail": "[1,2]"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 4,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "w": "inst-0j3weh1176s5",
+    "wChild": "session-child-p6t6-0j3weh1176s5",
+    "message": {
+      "factSequence": 9,
+      "deliveredSequence": 10,
+      "body": "p6t6 e5 hello from worker one"
+    },
+    "progressSequences": [
+      1,
+      2
+    ],
+    "controlRequest": {
+      "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+      "correlation": "p6t6-e5-ctrl1",
+      "status": "pending"
+    }
+  }
+}

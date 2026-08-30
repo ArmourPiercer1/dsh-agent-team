@@ -1,0 +1,248 @@
+# 14. TeamDomain：Team control-plane durable authority
+
+## 14.1 定义
+
+TeamDomain 是 Team plugin 自己拥有的 durable sidecar domain，优先建立在 DSH `StorageDomain` 之上。
+
+它不是第二套 Agent Session 数据库，而是：
+
+> 与 DSH Session 并列、按 Session/instance 关联的 Team aggregate control-plane store。
+
+## 14.2 为什么必须独立于 DSH SessionEvent
+
+Team control-plane state 如果继续写成 Team-specific SessionEvent，会重新产生：
+
+```text
+Team event vocabulary
+→ core known-events/types
+→ session persistence generators
+→ Chat/Trajectory special integration
+→ generated docs/catalogs
+→ upstream coupling
+```
+
+这与 0-core 目标直接冲突。
+
+因此：
+
+```text
+Team control plane -> TeamDomain
+Agent first-person execution -> native DSH Session
+```
+
+## 14.3 TeamDomain 的逻辑数据类别
+
+本文不规定最终 table 名或 schema 细节，但必须能够表达以下逻辑实体。
+
+### A. TeamSessionRecord
+
+至少保存：
+
+```text
+rootSessionId
+Blueprint snapshot identity/content
+Team default workspace
+PolicyState
+TeamSession-level overrides
+compatibility/admission state
+handoff provenance
+version/generation
+```
+
+### B. MemberInstanceRecord
+
+至少保存：
+
+```text
+rootSessionId
+instanceId
+templateId
+label / groupId
+childSessionId
+workspace
+creation config/context policy
+runtime overlays
+explicit human overrides
+lifecycle
+activity summary/version
+```
+
+### C. SessionBinding
+
+必须能从任意相关 DSH Session 反查：
+
+```text
+SessionId -> ordinary / team-root / team-member
+```
+
+member binding 至少提供：
+
+```text
+childSessionId
+→ rootSessionId
+→ instanceId
+```
+
+这是 cold resume、member navigation、fork discrimination 和 integrity check 的基础。
+
+### D. Governance / Override state
+
+必须区分：
+
+```text
+TeamSession template autonomy overlay
+MemberInstance autonomy overlay
+explicit human TeamSession override
+explicit human MemberInstance override
+PolicyState
+```
+
+不得把 agent autonomy mutation 与 human override 混成一个不可追溯 patch。
+
+### E. Compatibility / Acknowledgement
+
+必须记录：
+
+```text
+current compatibility facts/fingerprint
+warning acknowledgement
+acknowledgement provenance
+staleness/generation
+```
+
+### F. Provisioning / Operation journal
+
+用于处理跨 TeamDomain 与 DSH Agent/Session creation 的 crash window。
+
+必须能够表达：
+
+```text
+operation identity
+idempotency identity
+intent
+phase
+external child Session identity, if allocated
+commit/reconciliation state
+failure diagnostics
+```
+
+### G. TeamLedger
+
+保存 Team-wide coordination facts，例如：
+
+```text
+Member created / restored / archived / disposed
+work admitted
+message coordination
+control request / decision
+PolicyState transition
+override mutation
+compatibility warning/acknowledgement
+model mutation request/effective boundary
+handoff/fork provenance
+progress/activity coordination facts
+```
+
+它是 Team Tab 的跨 Session coordination authority。
+
+## 14.4 TeamDomain 不是跨表 ACID 数据库
+
+当前 DSH StorageDomain：
+
+- 每次单 record write 在 resolve 前 durable；
+- 具有 domain 内 write serialization；
+- 但没有 cross-table transaction；
+- 没有内建 schema migration；
+- 没有 secondary index；
+- cross-process change push 也不是其当前保证。
+
+因此 Team architecture 必须假设：
+
+```text
+multi-record Team operation can crash between durable boundaries
+```
+
+不能假设“多个 Team table + child Session create”是一个 ACID transaction。
+
+---
+
+# 15. DSH Session 与 TeamDomain 的职责分离
+
+## 15.1 Root DSH Session
+
+Root Session 保存 Leader 的第一人称执行历史：
+
+```text
+user prompts
+assistant/model messages
+tool calls/results
+injected/relay context
+turn/step/request facts
+native Session lineage
+```
+
+它不保存 Team membership/control-plane 的第二套权威副本。
+
+## 15.2 Member child Session
+
+Member child Session 保存该 Member Agent 的第一人称执行历史。
+
+它不需要 Team-specific SessionEvent 来证明自己是谁；其 Team binding authority 在 TeamDomain `SessionBinding`。
+
+Native Session history仍然可以包含普通来源归因，例如“这条输入来自 coordinator relay”，但那是**执行历史中的消息来源**，不是 Team membership authority。
+
+## 15.3 双向 integrity
+
+TeamDomain 必须能够检查：
+
+```text
+MemberInstance.childSessionId
+<->
+SessionBinding(childSessionId -> rootSessionId, instanceId)
+```
+
+若 TeamDomain 内部绑定自相矛盾：
+
+```text
+fail closed for new Team work
+```
+
+不得猜测“更可能是哪一边对”。
+
+DSH Session 的历史读取仍应尽可能保持可用；Team corruption 不应抹除已有 Chat/Trajectory。
+
+---
+
+# 16. Live Agent residency 与 durable identity
+
+必须明确区分：
+
+```text
+MemberInstance lifecycle state
+DSH Session existence
+live Agent residency
+current turn activity
+```
+
+例如：
+
+```text
+MemberInstance = SETTLED
+child Session = exists
+live Agent = not resident
+```
+
+这是完全合法的状态。
+
+收到新 work 后：
+
+```text
+SETTLED MemberInstance
+→ ensure/resume live Agent residency
+→ admit work
+→ RUNNING
+```
+
+因此运行时内存 registry 永远不能成为 Member 是否存在的权威。
+
+---

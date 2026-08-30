@@ -1,0 +1,90 @@
+delta-import-scan (reviewer-4) root=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4
+files listed: 75, files scanned: 75, specifiers extracted: 501
+
+--- bare specifiers (unique) ---
+1x  ${SESSION_TYPES_SPECIFIER}
+1x  @deepseek-ai/dsh-agent
+1x  @deepseek-ai/dsh-llm
+1x  @deepseek-ai/dsh-session
+2x  node:fs
+1x  node:fs/promises
+2x  node:http
+1x  node:module
+3x  node:path
+2x  node:url
+27x  vitest
+3x  x
+
+--- relative targets (resolved, unique) ---
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\contracts\src\dto\common.js
+38x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\contracts\src\index.js
+14x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\domain\blueprint\src\index.js
+8x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\domain\compatibility\src\index.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\domain\lifecycle\src\index.js
+6x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\domain\member\src\index.js
+14x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\domain\policy\src\index.js
+5x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\action-router\effects.js
+5x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\action-router\index.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\action-router\router.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\adapter.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\checks.js
+6x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\errors.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\identity.js
+20x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\index.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\provider.js
+8x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activation\types.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activity\errors.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activity\facts.js
+13x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activity\index.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activity\ledger.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activity\projection.js
+7x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\activity\types.js
+8x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\actions.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\envelope.js
+8x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\errors.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\gate.js
+38x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\index.js
+5x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\resolve.js
+7x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\admission\types.js
+4x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\agent-setup\binder\index.js
+4x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\control\errors.js
+23x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\control\index.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\control\service.js
+4x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\control\types.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\member-residency\index.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\messaging\coordinator.js
+5x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\messaging\errors.js
+15x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\messaging\index.js
+4x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\messaging\mediation.js
+5x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\messaging\types.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\root-binding\harness\mini-mcp.mjs
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\root-binding\harness\seam.mjs
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\storage-check\index.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p5t1-helpers.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p5t6-helpers.js
+33x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p6t1-helpers.js
+11x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p6t2-helpers.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p6t3-helpers.js
+13x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p6t4-helpers.js
+7x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\runtime\test\p6t5-helpers.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\storage\index.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\storage\operations\index.js
+8x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\storage\provisioning\index.js
+15x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\storage\repositories\index.js
+23x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\storage\schema\index.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\testkit\fault-injection\file-seam.mjs
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\testkit\fault-injection\session-event-scan.mjs
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\testkit\test\legacy-payloads
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\src\guard.js
+9x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\src\index.js
+3x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\src\tokens.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\src\tools.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\src\types.js
+2x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\test\p6t6-bypass-scan.mjs
+4x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\packages\tools\test\p6t6-helpers.js
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\tests\characterization\lib\instance.mjs
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\tests\characterization\lib\tree-clean.mjs
+1x  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G6-R4\tests\characterization\lib\util.mjs
+
+--- flagged ---
+NONE

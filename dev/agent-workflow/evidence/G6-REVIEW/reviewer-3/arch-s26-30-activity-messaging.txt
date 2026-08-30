@@ -1,0 +1,313 @@
+# 26. Progress 与 Activity
+
+## 26.1 Activity
+
+Activity 是可观察 telemetry，例如：
+
+```text
+current/last action
+running interval
+last activity time
+resident/non-resident
+current admitted work correlation
+```
+
+## 26.2 Progress
+
+Progress 可以是 Member 主动报告的结构化协调事实，例如：
+
+```text
+subject/status/summary/correlation
+```
+
+但它不是 authoritative WorkflowState。
+
+因此 Progress **不得自动**：
+
+```text
+transition PolicyState
+activate reviewer
+archive member
+mark workstream complete
+advance DAG
+```
+
+UI 可以展示 progress，但不能把它提升为本版本不存在的 task engine。
+
+---
+
+# 27. Compatibility model
+
+## 27.1 Typed requirement domains
+
+Blueprint requirement 只允许声明可真实 probe 的 domain，例如：
+
+```text
+tools
+skills
+MCP servers
+model/provider routes
+persona/runtime-context compatibility
+Team structural runtime capabilities
+```
+
+未知 requirement domain = Blueprint validation error。
+
+## 27.2 Compatibility result
+
+至少三类：
+
+```text
+PASS
+WARNING
+FATAL
+```
+
+### WARNING
+
+ordinary capability mismatch，例如预期 tool/MCP/model route 当前不可用。
+
+用户可以：
+
+```text
+Continue Anyway
+```
+
+之后 Team 进入 acknowledged degraded 状态。
+
+### FATAL
+
+结构性 Team contract 无法成立，例如：
+
+```text
+Team durable persistence unavailable
+Agent lifecycle public seam unavailable
+intrinsic Leader/Member Team surface cannot be established
+persona identity cannot be installed safely
+AgentPreset complete:true persona conflict
+```
+
+FATAL 不允许 Continue Anyway。
+
+## 27.3 Compatibility acknowledgement
+
+Acknowledgement 必须对应**具体 mismatch/environment generation**，而不是一个永久“忽略所有 warning”的 flag。
+
+概念上与：
+
+```text
+requirement fingerprint
+capability/environment fingerprint
+```
+
+绑定。
+
+如果环境或 selected AgentPreset 变化产生新的 mismatch，旧 acknowledgement 不自动覆盖新问题。
+
+---
+
+# 28. Admission State
+
+Compatibility 与生命周期分离。
+
+TeamSession 需要一个逻辑 **Admission State** 来决定“能否接收新的 Team work”。
+
+概念状态可表达：
+
+```text
+OPEN
+BLOCKED_WARNING
+BLOCKED_FATAL
+DEGRADED_ACKNOWLEDGED
+```
+
+具体 enum 名可在实现设计中调整，但语义固定。
+
+## 28.1 Gate 的范围
+
+当有未处理 warning/fatal 时，阻止新的 Team work admission，例如：
+
+```text
+Root new prompt
+Leader new delegate/create
+new Member activation
+existing Member new follow-up
+SETTLED Member new work
+Team-sensitive mutation requiring current compatibility
+```
+
+## 28.2 不回滚 in-flight work
+
+若 work 在 warning 被发现前已经 admitted：
+
+```text
+allow it to settle
+```
+
+Compatibility drift 不自动取消正在执行的 model/tool operation。
+
+## 28.3 Last-mile guard
+
+即使上层入口漏检，真正进入下一 Agent step 或关键 Team mutation 前仍应经公开 guard seam 进行最终检查。
+
+这是 architecture safety property，不要求修改 AgentLoop。
+
+---
+
+# 29. Member lifecycle
+
+vNext 最终 MemberInstance FSM：
+
+```text
+              new admitted work
+CREATED --------------------------> RUNNING
+                                      │
+                                      │ turn/work settles
+                                      ▼
+                                   SETTLED
+                                   │     │
+                     new work      │     │ Archive
+                    / Resume       │     ▼
+                         ┌─────────┘  ARCHIVED
+                         │               │
+                         ▼               │ Restore
+                      RUNNING            ▼
+                                      SETTLED
+
+CREATED / RUNNING / SETTLED / ARCHIVED
+                └───────────────> DISPOSED
+                                  terminal
+```
+
+## 29.1 CREATED
+
+Member identity、binding 和 creation config 已 durable commit，但尚未进入第一有效 work turn。
+
+## 29.2 RUNNING
+
+该 MemberInstance 存在 active admitted execution/turn。
+
+`RUNNING` 描述 logical work activity，不要求 UI 把每个底层 micro-step 变成 lifecycle transition。
+
+## 29.3 SETTLED
+
+当前 admitted work 已结束；instance 仍可继续：
+
+```text
+child Session preserved
+conversation preserved
+identity preserved
+future follow-up allowed
+live Agent may or may not be resident
+```
+
+## 29.4 ARCHIVED
+
+退出主要活跃工作集，但保留：
+
+```text
+instanceId
+Team membership history
+child Session/transcript
+context history
+restore capability
+```
+
+默认 UI 可以折叠/隐藏，但不能删除。
+
+## 29.5 DISPOSED
+
+终态：
+
+```text
+cannot restore
+cannot receive new Team work
+not treated as recoverable runtime entity
+historical Session/Trajectory remains readable
+Team ledger history remains
+```
+
+---
+
+# 30. Archive、Restore、Resume、Dispose
+
+## 30.1 Archive
+
+Archive 不是只改 enum。
+
+如果 Member 正在运行：
+
+```text
+close new admission
+↓
+cancel/interrupt current Member activity
+↓
+drain resident generic descendants
+↓
+wait for quiescence
+↓
+release resident Agent handle as appropriate
+↓
+commit ARCHIVED
+```
+
+必须先 quiesce，再 durable transition。
+
+禁止：
+
+```text
+write ARCHIVED
+then try to stop Agent
+```
+
+## 30.2 Restore：最终冻结语义 3A
+
+```text
+ARCHIVED
+   ↓ Restore
+SETTLED
+```
+
+Restore 只恢复 durable availability。
+
+Restore **不得**：
+
+```text
+call model
+send prompt
+start turn
+create/resume live Agent residency merely for restore
+transition directly to RUNNING
+```
+
+## 30.3 Resume / new work
+
+真正有新 work 被 admitted 时：
+
+```text
+SETTLED
+↓
+ensure child Agent residency (resume if cold)
+↓
+deliver/admit work
+↓
+RUNNING
+```
+
+因此 Restore 与 Resume 是两个不同动作。
+
+## 30.4 Dispose
+
+RUNNING 状态 Dispose 同样必须：
+
+```text
+close admission
+interrupt
+quiesce/drain descendants
+release live resources
+commit DISPOSED
+```
+
+Dispose 不删除历史。
+
+---

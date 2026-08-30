@@ -1,0 +1,2140 @@
+{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "plugins": [
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\remote",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\client",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\legacy",
+    "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit"
+  ],
+  "hostPackages": 272,
+  "findings": [
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t2-blueprint-revision.test.ts:14",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t2-helpers.ts:14",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t2-helpers.ts:15",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-helpers.ts:25",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-helpers.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-lifecycle-property.test.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-lifecycle-property.test.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-lifecycle-transitions.test.ts:33",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-lifecycle-transitions.test.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-member-context-policy.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-member-context-policy.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-member-lifecycle.test.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-member-n-instances.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-member-n-instances.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\test\\t3-member-workspace.test.ts:24",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\context-policy.ts:70",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\context-policy.ts:77",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\instance.ts:22",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\roster.ts:62",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\roster.ts:68",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\roster.ts:75",
+      "detail": "import \"../../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\workspace.ts:43",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\workspace.ts:44",
+      "detail": "import \"../../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\workspace.ts:48",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\errors.ts:20",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\operations.ts:34",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\operations.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\transitions.ts:31",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\transitions.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-complete-true.test.ts:15",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-engine-outcomes.test.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-environment-facts.test.ts:12",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-environment-facts.test.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-purity-serialization.test.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-requirement-validation.test.ts:11",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\test\\t5-requirement-validation.test.ts:12",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\acknowledgement.ts:22",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\common.ts:13",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\engine.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\environment-facts.ts:26",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\fingerprint.ts:28",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\fingerprint.ts:29",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\requirement.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\result.ts:32",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\result.ts:33",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\testdata\\fixtures.ts:12",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\catalog.ts:25",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\catalog.ts:26",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\hash.ts:34",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\hash.ts:35",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\parse.ts:38",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\snapshot.ts:17",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\snapshot.ts:18",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\types.ts:25",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\validate.ts:51",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\validate.ts:55",
+      "detail": "import \"../../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\validate.ts:61",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4-02-team-sessions.test.ts:11",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4-03-member-instances.test.ts:17",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4-03-member-instances.test.ts:18",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4-04-session-bindings.test.ts:13",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4-helpers.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4-helpers.ts:44",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4t2-crash-recovery.test.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4t2-helpers.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4t3-binding-service.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4t3-fork-reconciliation.test.ts:26",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4t3-helpers.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\test\\p4t3-reconciler.test.ts:32",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\compatibility.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\compatibility.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\compatibility.ts:37",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\errors.ts:24",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\field-rules.ts:17",
+      "detail": "import \"../../contracts/src/ids/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\ids\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\ledger.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\ledger.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\ledger.ts:37",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\operation.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\operation.ts:38",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\operation.ts:39",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\override.ts:42",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\override.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\override.ts:44",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\schema-meta.ts:24",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\schema-meta.ts:25",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\version-policy.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\base.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\compatibility.ts:15",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\member-instances.ts:25",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\member-instances.ts:26",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\overrides.ts:15",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\session-bindings.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\session-bindings.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\team-domain.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\team-sessions.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\team-sessions.ts:23",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\adapter.ts:44",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\coordinator.ts:60",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\coordinator.ts:67",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\diagnostics.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\diagnostics.ts:31",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\fake-adapter.ts:41",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\fake-adapter.ts:42",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\identity.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\operations\\journal.ts:46",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\operations\\types.ts:48",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\bindings\\binding-service.ts:44",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\bindings\\binding-service.ts:54",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\bindings\\diagnostics.ts:20",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\bindings\\diagnostics.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\bindings\\reconciler.ts:58",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\bindings\\reconciler.ts:59",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t1-helpers.ts:39",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t1-helpers.ts:40",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t1-helpers.ts:41",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t1-helpers.ts:42",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t2-helpers.ts:35",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t2-helpers.ts:39",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t2-helpers.ts:55",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t2-persona-compatible.test.ts:29",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t2-persona-complete-fatal.test.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t2-persona-complete-fatal.test.ts:25",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t4-helpers.ts:53",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t4-helpers.ts:61",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t5-cold-root.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t5-fresh-root.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t5-helpers.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t5-helpers.ts:36",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t5-helpers.ts:37",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t5-helpers.ts:38",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-cold-member.test.ts:41",
+      "detail": "import \"../../storage/provisioning/identity.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\identity.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-fresh-member.test.ts:36",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-fresh-member.test.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-helpers.ts:48",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-helpers.ts:49",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-helpers.ts:50",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-helpers.ts:51",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p5t6-helpers.ts:52",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-checks.test.ts:48",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-checks.test.ts:52",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-checks.test.ts:53",
+      "detail": "import \"../../storage/operations/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\operations\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-checks.test.ts:54",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-delegate.test.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-explicit.test.ts:32",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-explicit.test.ts:33",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-explicit.test.ts:34",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:50",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:51",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:55",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:56",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:57",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:58",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:62",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:63",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.ts:68",
+      "detail": "import \"../../testkit/fault-injection/file-seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\fault-injection\\file-seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-parallel.test.ts:27",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-recovery.test.ts:40",
+      "detail": "import \"../../storage/operations/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\operations\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-recovery.test.ts:41",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-recovery.test.ts:42",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-actions.test.ts:12",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-actions.test.ts:17",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-addressing.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-addressing.test.ts:23",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-helpers.ts:31",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-helpers.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-helpers.ts:36",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-helpers.ts:30",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-helpers.ts:31",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-helpers.ts:32",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-helpers.ts:33",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-mediation.test.ts:32",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-restart.test.ts:23",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t3-send-delivery.test.ts:43",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t4-helpers.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t4-helpers.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t4-helpers.ts:35",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t4-helpers.ts:36",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t5-authority.test.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t5-authority.test.ts:29",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t5-helpers.ts:31",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t5-helpers.ts:32",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\fresh-root.ts:52",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\types.ts:70",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\write-port.ts:20",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\write-port.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\harness\\plugin.mjs:351",
+      "detail": "import \"../../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\harness\\run.mjs:56",
+      "detail": "import \"../../../../tests/characterization/lib/instance.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\instance.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\harness\\run.mjs:62",
+      "detail": "import \"../../../../tests/characterization/lib/util.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\util.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\harness\\run.mjs:63",
+      "detail": "import \"../../../../tests/characterization/lib/tree-clean.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\tree-clean.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\coordinator.ts:90",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\coordinator.ts:91",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\coordinator.ts:92",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\coordinator.ts:93",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\coordinator.ts:94",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\mediation.ts:41",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\mediation.ts:42",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\types.ts:45",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\fresh-member.ts:110",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\types.ts:101",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\write-port.ts:23",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\write-port.ts:28",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\harness\\plugin.mjs:435",
+      "detail": "import \"../../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\harness\\run.mjs:81",
+      "detail": "import \"../../../../tests/characterization/lib/instance.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\instance.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\harness\\run.mjs:87",
+      "detail": "import \"../../../../tests/characterization/lib/util.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\util.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\harness\\run.mjs:88",
+      "detail": "import \"../../../../tests/characterization/lib/tree-clean.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\tree-clean.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\member-residency\\harness\\run.mjs:238",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\service.ts:101",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\service.ts:104",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\service.ts:108",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\service.ts:125",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\service.ts:126",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\types.ts:54",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\types.ts:326",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\types.ts:329",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\types.ts:332",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\persona\\adapter.ts:57",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\persona\\adapter.ts:58",
+      "detail": "import \"../../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\persona\\adapter.ts:59",
+      "detail": "import \"../../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\persona\\errors.ts:23",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\persona\\types.ts:27",
+      "detail": "import \"../../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\capability\\policy-sources.ts:42",
+      "detail": "import \"../../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\capability\\policy-sources.ts:43",
+      "detail": "import \"../../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\binder\\binder.ts:90",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\binder\\read-handle.ts:27",
+      "detail": "import \"../../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\agent-setup\\binder\\types.ts:41",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\envelope.ts:38",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\envelope.ts:39",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\envelope.ts:40",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\gate.ts:46",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\gate.ts:47",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\gate.ts:48",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\gate.ts:49",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\gate.ts:50",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\resolve.ts:39",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\resolve.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\resolve.ts:44",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\resolve.ts:45",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:29",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:30",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:248",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:252",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:255",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\types.ts:259",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\facts.ts:17",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\facts.ts:18",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\ledger.ts:64",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\ledger.ts:65",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\ledger.ts:66",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\types.ts:36",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\adapter.ts:36",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\adapter.ts:37",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:38",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:44",
+      "detail": "import \"../../contracts/src/dto/common.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\dto\\common.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:48",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:53",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:60",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:64",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:69",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:70",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:75",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:82",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:85",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:88",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:92",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\checks.ts:93",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\identity.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\identity.ts:48",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:48",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:49",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:55",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:59",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:60",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:63",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:67",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:71",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:72",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:108",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:109",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\provider.ts:730",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\types.ts:36",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\types.ts:41",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\types.ts:44",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\types.ts:47",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\types.ts:50",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:42",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:43",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:44",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:45",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:46",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:51",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:52",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:63",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\effects.ts:64",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-actions.test.ts:31",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-actions.test.ts:35",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-actions.test.ts:36",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-actions.test.ts:37",
+      "detail": "import \"../../runtime/test/p6t1-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-actions.test.ts:38",
+      "detail": "import \"../../runtime/test/p6t2-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-bypass-scan.test.ts:86",
+      "detail": "import \"../../storage/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-bypass-scan.test.ts:110",
+      "detail": "import \"../../runtime/storage-check/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\storage-check\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-guard.test.ts:33",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-guard.test.ts:37",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-guard.test.ts:38",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-guard.test.ts:39",
+      "detail": "import \"../../runtime/test/p6t4-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t4-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-guard.test.ts:40",
+      "detail": "import \"../../runtime/test/p6t1-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-guard.test.ts:45",
+      "detail": "import \"../../runtime/test/p6t2-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:21",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:22",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:23",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:24",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:25",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:26",
+      "detail": "import \"../../runtime/messaging/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:31",
+      "detail": "import \"../../runtime/messaging/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:32",
+      "detail": "import \"../../runtime/test/p6t1-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t1-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\test\\p6t6-helpers.ts:42",
+      "detail": "import \"../../runtime/test/p6t2-helpers.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\test\\p6t2-helpers.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\guard.ts:41",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\guard.ts:46",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:51",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:52",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:57",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:58",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:59",
+      "detail": "import \"../../runtime/messaging/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:63",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:76",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:88",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\tools.ts:89",
+      "detail": "import \"../../runtime/messaging/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\types.ts:21",
+      "detail": "import \"../../runtime/admission/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\admission\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\types.ts:27",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\types.ts:28",
+      "detail": "import \"../../runtime/messaging/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\src\\types.ts:29",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:380",
+      "detail": "import \"../../runtime/root-binding/harness/seam.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\harness\\seam.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:381",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:382",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:383",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:384",
+      "detail": "import \"../../runtime/action-router/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\action-router\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:385",
+      "detail": "import \"../../runtime/activation/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activation\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:386",
+      "detail": "import \"../../runtime/control/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\control\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:387",
+      "detail": "import \"../../runtime/messaging/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\messaging\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\plugin.mjs:388",
+      "detail": "import \"../../runtime/activity/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\activity\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\run.mjs:77",
+      "detail": "import \"../../../tests/characterization/lib/instance.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\instance.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\run.mjs:83",
+      "detail": "import \"../../../tests/characterization/lib/util.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\util.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\run.mjs:84",
+      "detail": "import \"../../../tests/characterization/lib/tree-clean.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\tests\\characterization\\lib\\tree-clean.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools\\harness\\run.mjs:85",
+      "detail": "import \"../../runtime/root-binding/harness/mini-mcp.mjs\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\tools (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\runtime\\root-binding\\harness\\mini-mcp.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-corrupt-version.test.ts:60",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-corrupt-version.test.ts:64",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-crash-matrix.test.ts:50",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-helpers.ts:38",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-helpers.ts:39",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-helpers.ts:40",
+      "detail": "import \"../../storage/repositories/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\repositories\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-helpers.ts:41",
+      "detail": "import \"../../storage/schema/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\schema\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-helpers.ts:51",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\p4t5-retry-restart.test.ts:50",
+      "detail": "import \"../../storage/provisioning/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\storage\\provisioning\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:34",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:35",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:36",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:37",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:38",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:39",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:51",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-10-composition-pipeline.test.ts:52",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:21",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:27",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-2-template-n-instances.test.ts:28",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:26",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:28",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:29",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:40",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-3-lifecycle-matrix.test.ts:41",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:32",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:33",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:39",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:47",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-4-policy-precedence.test.ts:53",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:30",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:37",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:41",
+      "detail": "import \"../../domain/compatibility/fixtures/requirements.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\fixtures\\requirements.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-5-compat-complete-true.test.ts:42",
+      "detail": "import \"../../domain/compatibility/fixtures/environment-facts.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\fixtures\\environment-facts.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:22",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:27",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:28",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-6-snapshot-immutability.test.ts:37",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:27",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:33",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:34",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:42",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:43",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:47",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-7-fresh-per-delegation.test.ts:48",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:41",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:47",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:48",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:55",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:56",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:57",
+      "detail": "import \"../../domain/compatibility/fixtures/environment-facts.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\fixtures\\environment-facts.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:58",
+      "detail": "import \"../../domain/compatibility/fixtures/requirements.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\fixtures\\requirements.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:59",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:60",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-8-serialization-roundtrip.test.ts:61",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:50",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:51",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:52",
+      "detail": "import \"../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:53",
+      "detail": "import \"../../domain/blueprint/testdata/fixtures.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\testdata\\fixtures.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:59",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:65",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:66",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:67",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:71",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:72",
+      "detail": "import \"../../domain/compatibility/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:73",
+      "detail": "import \"../../domain/compatibility/fixtures/requirements.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\fixtures\\requirements.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-9-negative-matrix.test.ts:74",
+      "detail": "import \"../../domain/compatibility/fixtures/environment-facts.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\compatibility\\fixtures\\environment-facts.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-helpers.ts:11",
+      "detail": "import \"../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-helpers.ts:12",
+      "detail": "import \"../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-helpers.ts:13",
+      "detail": "import \"../../domain/lifecycle/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\lifecycle\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\test\\t6-helpers.ts:14",
+      "detail": "import \"../../domain/policy/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\policy\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\domain\\src\\scenario.ts:23",
+      "detail": "import \"../../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\domain\\src\\scenario.ts:24",
+      "detail": "import \"../../../domain/blueprint/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\blueprint\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\domain\\src\\scenario.ts:25",
+      "detail": "import \"../../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\domain\\src\\scenario.ts:26",
+      "detail": "import \"../../../domain/member/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\domain\\member\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\domain\\src\\scenario.ts:41",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit\\domain\\src\\scenario.ts:51",
+      "detail": "import \"../../../contracts/src/index.js\" escapes plugin root D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\testkit (resolves to D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G6-R4\\packages\\contracts\\src\\index.js)"
+    }
+  ],
+  "infoCount": 2,
+  "pass": false
+}

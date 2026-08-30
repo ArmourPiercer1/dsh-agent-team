@@ -1,0 +1,228 @@
+## 21.4 tools / permissions
+
+在 policy 允许时可以 runtime mutation，但：
+
+```text
+change affects future operations
+```
+
+不能事后让已经执行的 tool call “变成未授权”。
+
+对当前即将 dispatch、尚未真实执行的 operation，应在 DSH 公开 pre-execute/guard 边界重新检查 effective policy。
+
+## 21.5 skills / MCP
+
+与 tools 类似，Team 可以定义可见/可用范围与 future-operation mutation，但最终受：
+
+```text
+actual substrate availability
+external hard policy
+```
+
+限制。
+
+如果某项 capability 被移除，Team 不能通过 stored override 把它“创造回来”；应进入 compatibility drift。
+
+## 21.6 contextPolicy
+
+创建 MemberInstance 后 immutable。
+
+原因是 context policy 定义这个 instance 的历史怎样被解释；运行中改变会破坏 continuation identity。
+
+---
+
+# 22. Workspace 与 context isolation
+
+## 22.1 默认 context inheritance
+
+新 MemberInstance 的初始 model-facing Team context 默认来自：
+
+```text
+MemberTemplate persona
++
+ActivationRequest prompt
++
+explicitly attached context
++
+necessary structural Team identity/context
+```
+
+默认不自动继承：
+
+```text
+Leader full transcript
+sibling transcript
+other group transcript
+other MemberInstance context
+```
+
+## 22.2 显式信息共享
+
+Leader/Member 可以通过明确 message/relay/context attachment 分享必要信息。
+
+原则：
+
+```text
+default isolate
+explicitly share when needed
+```
+
+## 22.3 不承诺强制 noninterference
+
+vNext 的隔离目标是：
+
+```text
+filesystem/workspace isolation
+tool/permission isolation
+default context isolation
+```
+
+不是完整信息流安全系统。
+
+Leader 已经知道多个路线时，可以主动把 B 的结果告诉 A；Team plugin 不分析自然语言是否“泄露 sibling 信息”。
+
+---
+
+# 23. Team coordination 信息模型
+
+Team 有两种不同的信息：
+
+```text
+A. Team-wide coordination fact
+B. Agent first-person execution fact
+```
+
+二者必须关联，但不能混成一个 storage authority。
+
+## 23.1 Team-wide coordination fact
+
+进入 TeamDomain/TeamLedger，例如：
+
+```text
+leader assigned work to inst-A
+inst-A reported result to leader
+control request opened
+control decision resolved
+Member lifecycle changed
+PolicyState changed
+warning acknowledged
+model override requested
+progress/activity update
+```
+
+## 23.2 First-person execution fact
+
+进入实际 Root/Member DSH Session，例如：
+
+```text
+Agent received relay text
+Agent/model read an injected context
+Agent emitted answer
+Agent called tool
+Tool returned result
+```
+
+## 23.3 Correlation
+
+同一逻辑 coordination 可以在两侧产生相关但不同的记录。
+
+例如：
+
+```text
+TeamDomain:
+  TeamMessage messageId=M, from=leader, to=inst-A
+
+Member Session:
+  admitted relay/context message carrying correlation=M
+```
+
+这不是“重复 authority”：
+
+- TeamDomain 说明 Team 协调发生了什么；
+- Member Session 说明该 Agent 实际看到了什么。
+
+---
+
+# 24. Team Message
+
+## 24.1 地址
+
+任何运行时 Team message 使用 instance-first addressing。
+
+```text
+fromInstanceId
+toInstanceId
+```
+
+Leader 可以使用 reserved LeaderInstance identity；UI 可以展示名称，但 transport/audit 不依赖 label/templateId。
+
+## 24.2 Delivery
+
+概念流：
+
+```text
+sender
+  ↓
+Team runtime validates membership/authority/admission
+  ↓
+TeamDomain records coordination intent
+  ↓
+target Agent inbox/session receives attributed relay/context
+  ↓
+delivery/result correlation updates Team ledger as needed
+```
+
+## 24.3 Message 不授予共享历史权限
+
+收到一条 relay 不代表目标 Member 获得 source Session 的 live read/search 能力。
+
+---
+
+# 25. Control / Approval
+
+## 25.1 目的
+
+Member 可能遇到超出其 autonomy boundary、但可以由更高 authority 决定的操作。
+
+例如：
+
+```text
+request leader approval
+request explicit user approval
+request mutation inside leader-authorized envelope
+```
+
+## 25.2 ControlRequest
+
+概念上至少具有：
+
+```text
+requestId
+rootSessionId
+requesterInstanceId
+kind
+target authority
+requested operation summary/payload reference
+createdAt
+status
+correlation
+```
+
+## 25.3 Decision
+
+决策必须 durable、instance-addressed、可在 reconnect/cold projection 后恢复。
+
+决定本身不等同于 tool execution。
+
+```text
+ControlDecision
+  ↓ grants/rejects a pending operation
+actual tool/model/runtime operation
+  ↓ remains recorded in the acting Agent's first-person Session
+```
+
+## 25.4 不允许借 approval 绕过 External Hard Policy
+
+Leader/User 的 Team control decision 只能改变 Team-owned admission/autonomy；最终 operation 仍必须通过 DSH external hard guard。
+
+---

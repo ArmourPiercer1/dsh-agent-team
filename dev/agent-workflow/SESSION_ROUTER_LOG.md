@@ -640,6 +640,28 @@
 - **Attempt ledger**：3/3（attempt 1 = 变更前 baseline 1181 绿；attempt 2 = 变更后 1214 绿；attempt 3 = 第二次连续 1214 绿；harness 开发迭代不计 chain attempt，g6-report 内记录）。
 - **下一步**：R44 —— G6-REVIEW kickoff（3 个全新独立盲审 reviewer @ int/P6 tip `54950fb`；TaskDoc 11.7 六步方法 + DevPlan 19.7 七判据；裁决 通过/投机通过/补充内容/阻塞，3/3 ∈ {通过, 投机通过} 方过；过闸 → ff-merge master + 授权 push #6 + P6 完结）。
 
+## R44 — G6-REVIEW（Gate G6 PASS 3/3；master 合并 + push #6；P6 完结）（2026-08-31，主 Agent）
+
+- **状态**：P6-T1..T6 全部 INTEGRATED；int/P6 @ `54950fb`（R43 主 Agent 独立验证 1214/1214 + tsc ×5 + E2E 7/7）。G6-REVIEW 为 P6 最后闸门。
+- **Gate kickoff（主 Agent）**：workflow `g6-review`，3 个并行全新独立盲审 reviewer（均 provider qiyuan-self / model qwen3.8-27b）；worktrees `.worktrees/G6-R1|R2|R3` @ `54950fb`（fresh 分支 `g6-review-r1|r2|r3`）。Brief `dev/agent-workflow/briefs/G6-REVIEW-brief.md`（随本条提交）：TaskDoc 11.7 六步方法 verbatim + DevPlan 19.7 七判据 verbatim + delta `11b0584..54950fb` + 冻结文档 4/4 hash + E2E lockfile 串行协议（共享 DSH_HOME + 固定端口禁并行：`references/.dsh-test-p6t6.lock` fresh<10min → 20s 重试 ≤45；stale → 删除；写 id+timestamp；finally 删除）+ 盲审规则（无主 Agent 结论 / 无 prior round / reviewer 间不互查；in-tree reports 只是 claims）+ 红线（禁改受审代码；findings only）+ G6R<N>_REPORT 输出格式。
+- **R2 传输丢失（记录、不计票）**：workflow 返回值 >50KB 中段裁剪 → reviewer-2 的最终 `G6R2_REPORT` 块（含裁决 token）在传输中丢失。磁盘证据分支 `7438e52` 完整（findings.md：7/7 criteria PASS + 明确 "No HIGH findings. No MED findings." + 7 项验证记录含 live external-policy probe `CONTROL_EXTERNAL_POLICY_DENIED`），但 workflow 子代理不可续接（list_agents/send_message 实测：不可 resumable）→ 裁决不可恢复。按 G5 round-1 VOID 先例（verdict 传输损坏 → 裁决无效），R2 不计入 quorum；其证据 + 分支已完整归档（见 Closeout），作为额外审计留痕。
+- **R4 补位（主 Agent）**：新 worktree `.worktrees/G6-R4` @ `54950fb`（分支 `g6-review-r4`）；workflow `g6-review-replacement` 单 agent（qiyuan-self/qwen3.8-27b），同 brief（N=4；evidence `reviewer-4/`；块 `G6R4_REPORT`）。R4 全项独立重验：chain **1214/1214** + tsc ×5 exit 0；zero-core 0 serious（test-use pristine pre+post `cd5ef814`）；75/75 delta 文件在 owned paths 内（DEC-1 330 三处一致 + scanner byte-identical）；E2E harness lockfile 协议下 **7/7 PASS**（E1:14 / E2:3 / E3:6 / E4:5 / E5a:11 / E5b:13 / E6:6 / E7:2 = 60 assertions，failures []；summary `pass:true`）；ports 释放；:3080=200 pre/post；evidence 提交 `a6fa733`。
+- **裁决（全部取自磁盘已提交证据；workflow 返回值仅作旁证）**：
+  - R1 `6f77473`：findings.md L72 `## Verdict: 通过 (PASS)` → **通过**（2 LOW informational：F1 SD-GUARD no-request 偏差 = recorded scoping decision（tool 层承载全部 team 面，leader 普通自治路径必须开放；proceed 路径终结于 performAction，facade 仍强制 identity/role/envelope/addressing/quota）；F2 at-least-once session-input delivery = documented durability ruling；均非缺陷）。
+  - R3 `5257378`：findings.md `## Verdict` — "7/7 criteria PASS … No HIGH/MED findings → verdict **通过 (PASS)**" → **通过**（3 INFO：lockfile 并发串行化被 live 观察到按设计工作；E2E 复用 pinned test-use 树既有 lib/ 构建产物（build.required=false，pristine 前后独立验证）；scan-imports.mjs 行号归属 cosmetic note）。
+  - R4 `a6fa733`：findings.md L140–142 `## 8. Verdict` — "**verdict = 通过 (PASS)**" → **通过**（3 INFO：ledger phase-2 guard 失败 crash-window 语义（documented，audit fact 持久）；SD-GUARD no-request→proceed（documented deviation，pinned p6t6-guard:305/:395）；harness 16s 为 warm-cache（经 boot markers / health probes / 端口 bind-release / 进程 kill 验证为真实运行））。
+  - R2 `7438e52`：传输丢失 → 不计票（见上）。
+  - → 有效裁决 R1/R3/R4 = 3/3，全部 ∈ {通过, 投机通过}（实为全 通过）→ **Gate G6 PASS（3/3）**。
+- **Findings 汇总（无 HIGH/MED；全部非结构性；无需修复）**：R2 F-1 LOW（同一 worktree 内 chain + harness 并行时 p4t6 scanner `packageDirs` 瞬态 `node_modules` 窗口 → 操作规程：同一 worktree 内测试 chain 不得与 harness 并行；后续阶段沿用）；R2 F-2 INFO（E2 absent-instanceId 拒绝仅 unit-pinned，label/template 拒绝 live 验证）；R2 F-3 INFO（harness throwaway profile-init boot）；R1 F1/F2（如上）；R3 3 INFO（如上）；R4 3 INFO（如上）。
+- **Closeout（主 Agent，全部 disk-verified）**：
+  - **证据先行归档**：4 个 `dev/agent-workflow/evidence/G6-REVIEW/reviewer-{1,2,3,4}/`（29/35/48/45 = 157 文件，与各 evidence 分支 `git diff --name-only 54950fb..g6-review-rN` 计数 1:1 精确一致）复制入主 worktree，随本条与 brief 一并提交。
+  - **合并**：int/P6 与 master 分叉 @ `11b0584`（P6 期 R38–R43 bookkeeping 6 commits 在 master；int/P6 17 picks）→ int/P6 上 `git merge master --no-edit`（无冲突；merge commit `6dac9f6`，parents `54950fb`+`006c85e`）→ master 上 `git merge --ff-only` → **master = int/P6 tip `6dac9f625a3681a64f75da712b324c9518c136cc`**（G5 ff-merge 语义：master 快进到 int 分支 tip）。
+  - **授权 push #6**：origin master ← `6dac9f6`（每 gate 一次 sanctioned push；主 Agent 执行；无 force-push）。
+  - **Worktree 清理**：G6-R1..R4 worktree 注销 + 目录删除（含 untracked node_modules 残留），分支 `g6-review-r1..r4` 删除（证据已先行完整归档；分支 head SHA 已记录如上）；P6-T6 任务 worktree/分支保留（P1–P6 任务 worktree 保留惯例）。
+  - **收尾健康检查**：主 worktree test-use pristine `cd5ef814` porcelain 空；:3080=200；ports 3180/3181/3491–3495 全 free；lockfile 不存在。
+- **Graph**：G6-REVIEW → PASSED（verdicts [通过, 通过, 通过]，gate 3/3 PASS，merged_to_master `6dac9f6`，pushed true）；current_phase → P7；ready []（P7 任务 R45 kickoff 定义）。**P6 COMPLETE**。
+- **下一步**：R45 —— P7 kickoff（TaskDoc §11.8 DAG：{P7-T1 ∥ P7-T3 ∥ P7-T4 ∥ P7-T5 ∥ P7-T6} → P7-T2（after T1）→ all → P7-T7 → G7；新 int/P7-… 分支 @ master `6dac9f6`）。
+
 ## 重审记录
 
 （空）
