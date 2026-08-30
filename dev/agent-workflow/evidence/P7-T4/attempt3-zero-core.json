@@ -1,0 +1,13 @@
+verify-zero-core: host=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+INFO third-party patched dependency "node-pty" at D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\pnpm-workspace.yaml [patchedDependencies] (upstream's own dependency patching; not a Team rewrite)
+INFO third-party patch file D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\patches\node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "plugins": [],
+  "hostPackages": 272,
+  "findings": [],
+  "infoCount": 2,
+  "pass": true
+}
+RESULT: PASS verify-zero-core (0 findings)
