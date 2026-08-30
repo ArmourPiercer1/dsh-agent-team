@@ -1,0 +1,74 @@
+{
+  "task_id": "P3-T3",
+  "title": "member lifecycle + instance domain: Template→N instances, lifecycle transition matrix, contextPolicy, workspace creation semantics (pure domain over contracts v1)",
+  "branch": "task/P3-T3-member-lifecycle",
+  "base_sha": "39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c",
+  "head_sha": "e0f4c82a35db3f162b99cb5fe01fd79b9810b3a2",
+  "head_sha_note": "code commit at authoring time; the final branch head is one further evidence commit (this summary + ledger + run-log) and is reported in the task's structured output",
+  "status": "BLOCKED_CORE_SEAM",
+  "canonical_attempts_used": 2,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs domain",
+    "node node_modules/typescript/bin/tsc -p packages/domain/lifecycle/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/member/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json"
+  ],
+  "canonical_result": {
+    "install": "exit 0 (Already up to date; 10 workspace projects; 149 packages)",
+    "tests": "exit 0 — 72 passed, 0 failed, 72 total",
+    "typecheck_subdir_lifecycle": "exit 0 (strict, noUncheckedIndexedAccess, verbatimModuleSyntax, NodeNext — inherited from repo-root tsconfig.base.json)",
+    "typecheck_subdir_member": "exit 0 (same config inheritance)",
+    "typecheck_package": "exit 2 — 18× TS6059 only (100% of error lines; zero other error codes): contracts src/** files in the program but outside frozen rootDir 'packages/domain' with declaration enabled — frozen-surface config collision, see blocker"
+  },
+  "test_counts": {
+    "domain.test.ts (skeleton, pre-existing)": 2,
+    "t3-lifecycle-transitions.test.ts": 14,
+    "t3-lifecycle-property.test.ts": 4,
+    "t3-member-n-instances.test.ts": 14,
+    "t3-member-context-policy.test.ts": 17,
+    "t3-member-workspace.test.ts": 14,
+    "t3-member-lifecycle.test.ts": 7
+  },
+  "acceptance_evidence": {
+    "same_template_yields_N_instances": "t3-member-n-instances: 50 instances of one template+label in one TeamSession + a 51st (no cap — quota is a separate concern, Arch §32); roster queries scoped by (team, template); same instanceId under two teams = two members (invariant 18); identity (rootSessionId, instanceId) addressing (§24.1)",
+    "restore_only_legal_archived_to_settled": "t3-lifecycle-transitions acceptance block: RESTORE commits ONLY from ARCHIVED to SETTLED; rejected from CREATED/RUNNING/SETTLED/DISPOSED with typed LifecycleTransitionError; no (from, SETTLED) edge except via SETTLE(RUNNING) or RESTORE(ARCHIVED); full §41.6 path RUNNING→SETTLE→ARCHIVE→RESTORE→ADMIT_WORK commits with activityVersion +4",
+    "invalid_transition_matrix": "25-pair sweep: exactly 9 legal edges of 25; all 16 illegal pairs throw typed domain errors (exact from/to/reason/code); op-level 5×5 sweep enforces per-operation source lists (an operation never aliases another edge — the RESTORE-from-RUNNING aliasing flaw found in D-03 is regression-covered)",
+    "fresh_per_delegation_semantics": "t3-member-context-policy: fresh_per_delegation mints a new instance per delegation, an explicit follow-up address continues that instance, and delegation still creates while a previous instance is RUNNING; persistent default: 0 work-accepting → create, exactly 1 → continue, ≥2 → DELEGATION_TARGET_AMBIGUOUS (no invented selection rule); contextPolicy immutable for the instance's life (v1 DTO gap — wrapper carries it, invariant 29)"
+  },
+  "outputs": {
+    "lifecycle_module": "packages/domain/lifecycle/src/** — errors.ts (LIFECYCLE_TERMINAL_STATE / LIFECYCLE_ILLEGAL_TRANSITION, LifecycleTransitionError), operations.ts (5 operations + frozen rule table + derived frozen 9-edge transition matrix), transitions.ts (assertTransitionLegal, canTransition, legalTargets, transitionMemberLifecycle, applyLifecycleOperation with source-list enforcement), index.ts; plus packages/domain/lifecycle/tsconfig.json (owned sub-package typecheck config, extends repo-root base)",
+    "member_module": "packages/domain/member/src/** — errors.ts (6 domain codes, MemberDomainError), roster.ts (createMemberInstance: full parse/validation order, INSTANCE_ID_RESERVED, DUPLICATE_INSTANCE_ID, global SESSION_ALREADY_BOUND; instancesForTemplate / instanceCountForTemplate / findMemberRecord), context-policy.ts (vocabulary, default persistent, resolveDelegationTarget), workspace.ts (resolveEffectiveWorkspace, setWorkspace with hasEnteredRunning lock §21.2/§31), instance.ts (transitionInstance wrapper; hasEnteredRunning latching), index.ts; plus packages/domain/member/tsconfig.json",
+    "tests": "packages/domain/test/t3-{lifecycle-transitions,lifecycle-property,member-n-instances,member-context-policy,member-workspace,member-lifecycle}.test.ts + t3-helpers.ts (namespaced helpers: capture/expectThrows/expectNoThrow/expectContractCode/expectMemberCode + id/record factories + mulberry32)",
+    "evidence": "dev/agent-workflow/evidence/P3-T3/{run-log.txt, attempt-ledger.txt, summary.json}"
+  },
+  "blocker": {
+    "type": "CORE_SEAM_BLOCKER",
+    "protocol_vehicle": "CONTRACT_CHANGE_REQUEST against the P1-T4 frozen tsconfig trio (LOCKED_SURFACE); no upstream DSH patch involved",
+    "seam": "frozen P1-T4 tsconfig trio: packages/domain/tsconfig.json (noEmit + rootDir '.' + include src,test) + packages/domain/tsconfig.build.json (extends repo-root base, rootDir 'src', outDir dist) + tsconfig.base.json (declaration + declarationMap)",
+    "host_sha": "39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c (base; the trio is byte-identical at base and at HEAD)",
+    "required_behavior": "tsc -p packages/domain/tsconfig.json passes for domain code importing contracts v1 (TaskDoc §11.4 mandates contracts v1 as the only allowed dependency; every P3 domain task does this)",
+    "observed_public_behavior": "exit 2 with exactly 18× error TS6059 (contracts src/** outside rootDir 'packages/domain' while declaration is enabled); all domain source and all 70 t3 tests typecheck clean otherwise; the base skeleton (contracts-free) typechecks clean, so the seam activates precisely when the mandated dependency is imported",
+    "minimal_reproduction": "any file under packages/domain/src/** or packages/domain/test/** containing `import { deepFreeze } from '<relative>/contracts/src/index.js'` (the only runtime-viable import style: contracts package.json exports point at unbuilt ./dist/*, which must not be built; package-name imports fail in tsc with TS2307 and in the plain-node runner with a missing dist file) followed by `node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json`",
+    "affected_invariant": "TaskDoc §11.4 canonical chain, package-tsc leg — for P3-T3 and, structurally, for P3-T2 / P3-T4 / P3-T5 (all domain tasks import contracts)",
+    "possible_generic_seam_proposal": "any one of: (a) drop rootDir from the noEmit typecheck config packages/domain/tsconfig.json; (b) add declaration:false + declarationMap:false + sourceMap:false to that config only; (c) skeleton-level project references or paths to contracts sources. All three make the current P3-T3 tree pass the full canonical chain without touching domain code"
+  },
+  "design_notes": [
+    "(a) domain error codes (LIFECYCLE_*, CONTEXT_POLICY_UNKNOWN, DELEGATION_TARGET_*, INSTANCE_ID_RESERVED, WORKSPACE_MUTATION_FORBIDDEN) are DISJOINT from the contracts v1 20-code TeamContractError vocabulary because isTeamContractError branches on code — contract-level failures (id parse, duplicate, session bound) surface as TeamContractError, domain-rule failures as typed domain errors",
+    "(b) every durable change bumps activityVersion by exactly 1, including setWorkspace no-op re-sets and clears — each is one durable record change (D3)",
+    "(c) MemberInstance wrapper {record, contextPolicy, hasEnteredRunning} owns the two invariants the v1 MemberInstanceRecordDto lacks (no contextPolicy field; §31 has-entered-running) — the v1 DTO gap is carried by the wrapper, not by patching contracts",
+    "(d) no per-template instance cap in T3 — quota is a separate concern (Arch §32, P3-T4)",
+    "(e) persistent delegation with ≥2 work-accepting instances refuses with DELEGATION_TARGET_AMBIGUOUS (candidateInstanceIds in details) rather than inventing a selection rule",
+    "(f) explicit address to ARCHIVED resolves 'continue' (the caller Restores per §30.2 before work); explicit address to DISPOSED is rejected (§29.5)",
+    "(g) operations enforce their own source lists — an operation must never alias another edge: RESTORE from RUNNING is rejected even though RUNNING→SETTLED is a legal pair (flaw found in D-03, regression-covered by the op-level sweep and property P2)",
+    "(h) the workspace mutation lock keys on durable hasEnteredRunning (for-life), not on the current lifecycle state (§31 lifecycle ≠ residency)",
+    "(i) t3-helpers.ts is a namespaced test helper beyond the strict t3-*.test.ts file glob — follows the endorsed contracts test/helpers.ts pattern; disclosed for reviewers",
+    "(j) the owned sub-package tsconfigs (lifecycle, member) extend the REPO-ROOT tsconfig.base.json (../../../tsconfig.base.json) — the P1-T4 skeleton shipped no sub-package example; this makes them run under the same strict config as the package tsc while avoiding the frozen package's rootDir/declaration pair"
+  ],
+  "deviations": [
+    "C-01 (canonical attempt 1) was executed on the committed tree and its live results are recorded in the ledger, but its run-log.txt was lost to an evidence-logger path bug (relative path resolved against the session cwd instead of the worktree); C-02 re-ran the identical chain for evidence capture — deterministic, identical results (install 0; tests 72/72; lifecycle tsc 0; member tsc 0; package tsc 2 with 18× TS6059)",
+    "status is BLOCKED_CORE_SEAM rather than the task card's expected SELF_VERIFIED: the domain-package tsc leg of the canonical chain is unfixable from within owned paths (frozen P1-T4 tsconfig trio vs mandated contracts import); everything inside owned paths is green (72/72 tests, both sub-package tscs exit 0, zero non-TS6059 type errors)"
+  ],
+  "toolchain": { "node": "24.20.0", "pnpm": "11.7.0", "typescript": "6.0.3" }
+}

@@ -1,0 +1,221 @@
+=== P3-T3 canonical run - attempt 2 of 3 (evidence capture; attempt 1 executed same tree, log lost to writer path bug) ===
+started: 2026-08-30T08:19:39+08:00
+node: v24.20.0
+pnpm: 11.7.0
+branch: task/P3-T3-member-lifecycle
+base: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c
+head before run: e0f4c82a35db3f162b99cb5fe01fd79b9810b3a2
+--- [1/5] pnpm install --ignore-scripts ---
+Scope: all 10 workspace projects
+Already up to date
+Done in 46ms using pnpm v11.7.0
+exit code: 0
+--- [2/5] node scripts/run-tests.mjs domain ---
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+
+run-tests (plain-node vitest-equivalent): 72 passed, 0 failed, 72 total, 109 ms
+RESULT: PASS run-tests (0 failures)
+exit code: 0
+--- [3/5] node node_modules/typescript/bin/tsc -p packages/domain/lifecycle/tsconfig.json ---
+exit code: 0
+--- [4/5] node node_modules/typescript/bin/tsc -p packages/domain/member/tsconfig.json ---
+exit code: 0
+--- [5/5] node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json ---
+packages/contracts/src/dto/blueprint-snapshot.ts(29,38): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/legacy-vocabulary.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via './legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/dto/team-session-record.ts(39,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/common.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via '../../../contracts/src/dto/common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/roster.ts'
+    Imported via '../../../contracts/src/dto/common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/workspace.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/dto/team-session-record.ts(40,43): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './blueprint-snapshot.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via './blueprint-snapshot.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via './dto/blueprint-snapshot.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/blueprint-snapshot.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/errors.ts(19,39): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/remote-safe.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/errors.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/schema-version.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/common.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/common.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/legacy-vocabulary.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/legacy-vocabulary.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via '../remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/ids/session-id.ts(24,28): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/brand.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './brand.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/session-id.ts'
+    Imported via './brand.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/instance-id.ts'
+    Imported via './brand.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/template-id.ts'
+    Imported via './brand.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/blueprint-id.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/ids/session-id.ts(25,51): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/common.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/session-id.ts'
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/instance-id.ts'
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/template-id.ts'
+    Imported via './common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/blueprint-id.ts'
+    Imported via '../ids/common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../ids/common.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(53,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/schema-version.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via '../schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via '../schema-version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(86,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/session-id.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via './ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via '../ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via './ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+    Imported via './ids/session-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(99,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/instance-id.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via './ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via '../ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via '../ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via './ids/instance-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(107,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/template-id.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './ids/template-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './ids/template-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via '../ids/template-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../ids/template-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(118,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/blueprint-id.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './ids/blueprint-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './ids/blueprint-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via '../ids/blueprint-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via '../ids/blueprint-id.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(134,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './identity.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './identity.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via '../identity.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../identity.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(144,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './dto/team-session-record.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/team-session-record.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/team-session-record.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(157,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './dto/member-instance-record.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/member-instance-record.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/member-instance-record.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(169,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './dto/session-binding.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/session-binding.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via './dto/session-binding.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/index.ts(201,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/contracts/src/schema-version.ts(20,35): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/errors.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/schema-version.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/remote-safe.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/common.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/common.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/session-id.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/instance-id.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/template-id.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/ids/blueprint-id.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/identity.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/common.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/legacy-vocabulary.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/dto/session-binding.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/uniqueness.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+packages/domain/test/t3-helpers.ts(25,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/src/index.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-helpers.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-helpers.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/context-policy.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/context-policy.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/roster.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/roster.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/workspace.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/workspace.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/member/src/instance.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/lifecycle/src/errors.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/lifecycle/src/operations.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/lifecycle/src/operations.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/lifecycle/src/transitions.ts'
+    Imported via '../../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/lifecycle/src/transitions.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-lifecycle-property.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-lifecycle-property.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-lifecycle-transitions.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-lifecycle-transitions.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-member-context-policy.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-member-context-policy.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-member-lifecycle.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-member-n-instances.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-member-n-instances.test.ts'
+    Imported via '../../contracts/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/domain/test/t3-member-workspace.test.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T3/packages/contracts/package.json' has field "type" with value "module"
+exit code: 2
+ended: 2026-08-30T08:19:42+08:00
+RESULT: install PASS; tests PASS; lifecycle tsc PASS; member tsc PASS; domain-package tsc FAIL

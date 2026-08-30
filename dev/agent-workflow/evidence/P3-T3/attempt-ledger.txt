@@ -1,0 +1,101 @@
+# P3-T3 execution ledger (dev/agent-workflow/evidence/P3-T3)
+
+Rules applied (ROUTER_RULES / TaskDoc §11.4): max 3 canonical executions;
+debug runs do not count but are itemized here. Canonical chain is exactly:
+`pnpm install --ignore-scripts` → `node scripts/run-tests.mjs domain` →
+`node node_modules/typescript/bin/tsc -p packages/domain/lifecycle/tsconfig.json` →
+`node node_modules/typescript/bin/tsc -p packages/domain/member/tsconfig.json` →
+`node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json`.
+No `pnpm run/exec`, no vitest CLI, no tsx/esbuild/vite, no sandbox escalation
+(approval prompts are disabled in this session; none requested).
+
+## Debug runs (uncounted)
+
+| # | command | result | notes |
+|---|---------|--------|-------|
+| D-00 | `pnpm install --ignore-scripts` | exit 0 | 149 packages; pre-compaction prerequisite so the node_modules toolchain (typescript 6.0.3) existed for tsc/run-tests |
+| D-01 | `node scripts/run-tests.mjs domain` | 2 passed / 6 failed (evaluation errors) | (a) `member/src/instance.ts` cross-module import at wrong depth (`../lifecycle/src/index.js` → fixed `../../lifecycle/src/index.js`); (b) property test had two statements merged onto one line (a prior edit ate a newline) → split back |
+| D-02 | `node scripts/run-tests.mjs domain` | 2 passed / 6 failed (evaluation errors) | `member/src/workspace.ts` imported `parseWorkspaceField` from the contracts index, which does not re-export `dto/common.js` helpers → direct import of `contracts/src/dto/common.js` |
+| D-03 | `node scripts/run-tests.mjs domain` | 50 passed / 6 failed | (a) REAL DESIGN FLAW: `applyLifecycleOperation` validated only the (from, target) pair, so RESTORE from RUNNING silently aliased SETTLE → now enforces `rule.sources.includes(record.lifecycle)` (property test P2 asserts the sources-based property); (b) context-policy fixture ids `inst-ctx-a` violated the instance-id pattern (no hyphens after `inst-`) → renamed `inst-ctxa…`; (c) foreign-team fixture reused child session `session-300-0` → global SESSION_ALREADY_BOUND (invariant 23) → `session-310-0`; (d) member-lifecycle RESTORE rejection case (same root cause as (a)) |
+| D-04 | `node scripts/run-tests.mjs domain` | 69 passed / 3 failed | test-assertion bugs (source was right): (a) transitions acceptance asserted pair-level `canTransition(from, SETTLED) === false` for every from≠ARCHIVED — wrong for RUNNING (SETTLE is legal) → replaced with the true pair fact (SETTLED's only incoming sources are RUNNING and ARCHIVED); op-level RESTORE-only-from-ARCHIVED assertions already present and now passing; (b) n-instances: forgot `existing.push(inB.record)` before the team-B identity lookup; (c) n-instances: foreign fixture minted `inst-a0` (same id as team A's first instance) so the team-B lookup for `inst-a0` legitimately hit team B's own member → foreign fixture re-minted at index 50 (`inst-a50`) |
+| D-05 | 3× tsc (lifecycle, member, package) | exit 2 / 2 / 2 | (1) both sub tsconfigs had wrong `extends` depth (`../../tsconfig.base.json` → `../../../tsconfig.base.json`; the base lives at the repo root); (2) `operations.ts:133` `Object.freeze(array)` returned readonly array assigned to mutable slot (TS4104) → explicit cast; (3) t3-member-lifecycle test: 3-key cast assigned to a 4-key-typed variable (TS2741, `reason` missing) → cast widened; (4) t3-member-n-instances: `firstA` possibly undefined under noUncheckedIndexedAccess (TS18048 ×3) → real narrowing guard (throw) instead of a runtime expect; (5) package tsc: 18× TS6059, all rootDir violations for contracts sources (see Blocker below) — no other error code present |
+| D-06 | `node scripts/run-tests.mjs domain` | exit 0 — 72 passed / 0 failed | green after the D-05 type-level fixes (casts + narrowing guard; no behavior change) |
+| D-07 | tsc lifecycle + tsc member | exit 0 / exit 0 | green after the extends fix; both run under strict + noUncheckedIndexedAccess + verbatimModuleSyntax (inherited from the repo-root base) |
+| D-08 | tsc package (diagnostics) | exit 2 | error profile: exactly 18 error lines, 100% TS6059, zero other codes; every violation is a contracts `src/**` file (or `t3-helpers.ts` as importing locus) outside frozen `rootDir: packages/domain`. Diagnostic `--declaration false` → TS5069 (`declarationMap` cannot be specified without `declaration`) confirms the failure is the frozen config pair itself, not the domain source |
+
+## Canonical runs (counted, max 3)
+
+| # | result | notes |
+|---|--------|-------|
+| C-01 | install 0; tests 0 (72/72); lifecycle tsc 0; member tsc 0; package tsc 2 | executed on committed tree `e0f4c82`; run-log.txt NOT written — the evidence logger had a path bug (relative path resolved against the session cwd `D:\AgentDev\dsh-plugins\dsh-agent-team` instead of the worktree). No files were created, no state changed; result recorded here from the live console output of the run |
+| C-02 | install 0; tests 0 (72/72); lifecycle tsc 0; member tsc 0; package tsc 2 | full 221-line log in `run-log.txt` (31 KB); result identical to C-01 (deterministic: install already up to date, tests pass, tsc errors are structural) |
+
+## Blocker — canonical chain cannot pass
+
+Seam: the frozen P1-T4 tsconfig trio for the domain package:
+- `packages/domain/tsconfig.json` (FROZEN, P1-T4): `extends ./tsconfig.build.json`, `noEmit: true`, `rootDir: "."`, `include: [src, test, vitest.config.ts]`
+- `packages/domain/tsconfig.build.json` (FROZEN, P1-T4): `extends ../../tsconfig.base.json`, `rootDir: "src"`, `outDir: "dist"`, `include: [src]`
+- `tsconfig.base.json` (FROZEN, repo root): `declaration: true`, `declarationMap: true`
+
+Required behavior: `tsc -p packages/domain/tsconfig.json` passes for any domain code that imports
+contracts v1 — which TaskDoc §11.4 mandates ("Allowed deps: contracts v1 ONLY") and which every P3
+domain task (P3-T2/T3/T4/T5) therefore does.
+
+Observed behavior: 18× `error TS6059` — contracts `src/**` files are in the program (imported via
+the sanctioned relative `.js` specifiers; see below) but outside `rootDir: packages/domain`, while
+`declaration` (inherited via the frozen build config) is enabled. Exit code 2. Zero other error
+codes: all domain source and all 70 t3 tests typecheck clean.
+
+Minimal reproduction: any file under `packages/domain/src/**` or `packages/domain/test/**` with
+`import { deepFreeze } from '<relative path>/contracts/src/index.js'` (the only runtime-viable import
+style — contracts `package.json` exports point at `./dist/*`, which is unbuilt and must not be built
+per task red lines; package-name imports fail identically in tsc with TS2307 and in the plain-node
+runner with missing `dist/index.js`), then `node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json`.
+Verified on base `39a5d22f` skeleton: the base package program is contracts-free and clean; the seam
+activates the moment the mandated dependency is imported.
+
+Why no owned-path fix exists: the three files that would fix it are all outside P3-T3's owned paths
+(they are the P1-T4 frozen skeleton / LOCKED_SURFACE). Alternatives rejected: building contracts
+`dist` (forbidden), vendoring/copying contracts sources into `packages/domain` (forbidden; creates a
+divergent copy of a frozen contract), type-only imports (domain needs runtime values: `deepFreeze`,
+parse functions, `teamContractError`, `LEADER_INSTANCE_ID`, `assertInstanceIdUniqueWithinTeam`).
+
+Affected invariant: TaskDoc §11.4 canonical chain (package tsc leg) for every P3 domain task.
+
+Proposed fix (for the skeleton owner / integrator; a CONTRACT_CHANGE_REQUEST against P1-T4 is the
+protocol path per ROUTER_RULES §4.3): make the noEmit typecheck config not conflict with
+cross-package source imports, e.g. (a) drop `rootDir` from `packages/domain/tsconfig.json` (the
+noEmit typecheck config), or (b) add `"declaration": false, "declarationMap": false, "sourceMap": false`
+to that config only, or (c) have the skeleton provide per-package `paths`/project references to the
+contracts sources. Any of the three makes the canonical chain pass on the current P3-T3 tree
+without touching domain code.
+
+Classification note: reported as `CORE_SEAM_BLOCKER` because the task card names it as the blocked
+status and `structured_output` offers `BLOCKED_CORE_SEAM` as the only blocked status; the precise
+protocol vehicle for the fix is a `CONTRACT_CHANGE_REQUEST` against the P1-T4 LOCKED_SURFACE
+(tsconfig trio), not an upstream DSH patch (no upstream behavior is missing).
+
+## Owned paths (all writes made by P3-T3)
+
+- `packages/domain/lifecycle/**` (src/errors.ts, src/operations.ts, src/transitions.ts, src/index.ts, tsconfig.json)
+- `packages/domain/member/**` (src/errors.ts, src/context-policy.ts, src/roster.ts, src/workspace.ts, src/instance.ts, src/index.ts, tsconfig.json)
+- `packages/domain/test/t3-helpers.ts`
+- `packages/domain/test/t3-lifecycle-transitions.test.ts`
+- `packages/domain/test/t3-lifecycle-property.test.ts`
+- `packages/domain/test/t3-member-n-instances.test.ts`
+- `packages/domain/test/t3-member-context-policy.test.ts`
+- `packages/domain/test/t3-member-workspace.test.ts`
+- `packages/domain/test/t3-member-lifecycle.test.ts`
+- `dev/agent-workflow/evidence/P3-T3/**`
+
+## Red-line compliance
+
+- no upstream/references touch; no legacy `packages/team` copy; no legacy Team SessionEvent vocabulary
+- no shared infra edits: `scripts/`, root `vitest.config.ts`, `tsconfig.base.json`, root `package.json`,
+  `eslint.config.mjs`, `packages/contracts/**`, `packages/domain/{package.json,tsconfig.json,tsconfig.build.json,vitest.config.ts,src/index.ts}`,
+  skeleton `packages/domain/test/domain.test.ts` all untouched — `git status` at evidence time shows
+  only untracked owned-path additions (zero modifications of tracked files)
+- no push; no worktree/remote side effects beyond the owned worktree; no other server/process started
+- domain source is pure: no I/O, no process/fs/env, no DSH imports, no live Agent/Session handles,
+  no ambient state; durable-state descriptions only
+- no sandbox escalation (approval prompts disabled; none requested, none needed)
