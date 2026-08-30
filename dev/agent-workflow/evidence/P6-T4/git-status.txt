@@ -1,0 +1,10 @@
+﻿ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? dev/agent-workflow/evidence/P6-T4/
+?? packages/runtime/control/
+?? packages/runtime/test/p6t4-allow-once.test.ts
+?? packages/runtime/test/p6t4-deny.test.ts
+?? packages/runtime/test/p6t4-external-policy.test.ts
+?? packages/runtime/test/p6t4-helpers.ts
+?? packages/runtime/test/p6t4-negatives.test.ts
+?? packages/runtime/test/p6t4-restart.test.ts
+?? packages/runtime/test/p6t4-stale.test.ts

@@ -1,0 +1,3 @@
+﻿tsc -p packages/testkit/tsconfig.json
+exit: 0
+output: (none)
