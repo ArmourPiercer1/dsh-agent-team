@@ -501,6 +501,19 @@
 - **Graph**：P5-T2/T3/T4 → INTEGRATED（attempts 2/2/2，note 记录上报缺陷）；ready → `[P5-T5]`。
 - **下一步**：R32 —— P5-T5 kickoff（**I-1 真绑定任务**：真实 AgentFactoryAdapter + 真 StorageDomain seam 绑定；TEST_METHODS 端口 3180、每任务独立 DSH_HOME（`references/.dsh-test-p5t5`）、稳定实例 :3080 绝对不碰；先重读 TEST_METHODS 全文再 ruling/dispatch）。
 
+### 轮次 R32：P5-T5（I-1 真绑定任务）kickoff —— ruling + worktree + dispatch（2026-08-30）
+
+- **上下文重读**：TEST_METHODS.md 全文（§1 测试实例 / §2 启动链与验证语义 / §3 硬性禁止 / §5 沙箱边界 / §6 裁决史）；P2-T1 char harness 机制（`tests/characterization/lib/instance.mjs`：FILE-FD stdio spawn 绕 piped-stdio EPERM；boot marker = `dsh web: http://127.0.0.1:<port>/?token=...`；**row 挂载公开 seam = `DSH_HOME/profiles/web/cordis.patch.yml` patch 层 + resolution symlink**（`dump-config --profile web` 可验证 mounted row）；P2-T1 实测端口 3281/3291、DSH_HOME `.dsh-test-p2t1` 先例）。
+- **Git**：`.worktrees/P5-T5` @ `task/P5-T5-root-binding`（base `870c001` = int/P5 含 F1 全部工作）。
+- **P5-T5 ruling（主 Agent，I-1 落位）**：
+  - **owned**：`packages/runtime/root-binding/**`（产品化模块 + real-instance harness + fixtures）+ `packages/runtime/test/p5t5-*.test.ts`（注入 handle 的 unit 层，mock-first）+ `dev/agent-workflow/evidence/P5-T5/**`。
+  - **只读复用**：binder + 三 overlay（T1–T4 全部）；storage repositories + StorageDomainSeam（P4 真 seam）；testkit fault-injection（T6 的 I-1 crash/corrupt 重跑将复用）；`tests/characterization/lib/**`（DshInstance/util）；P2-T1 evidence（挂载机制证据）；test-use 树（pristine，进出必须 clean）；legacy fork（仅证据）。
+  - **设计**：① 产品化 root-binding 模块（erasable TS、纯、注入 handle）= ROOT_COLD_BINDING 产品化——fresh Team root（root agent 创建 → 经注入 surface 跑 T1 binder 四槽位全装 + session binding 落 TeamDomain durable）/ cold root（进程重启 → 自 durable rehydrate，首个 Team-sensitive step 前 scope 完整恢复，无 fresh 副作用）/ admission fail-closed（guard 拒绝 → 无 Team-sensitive step、可观测、实例健康）/ ordinary root（非 team 零记录零效果）。② real-instance harness（`.mjs`，放 owned 内，复用 DshInstance）：DSH_HOME `references/.dsh-test-p5t5`（每任务隔离、workspace 内、gitignored）、端口 3180 主 / 3181 备（TEST_METHODS §1）；Team plugin host row 只经 profile-patch 公开 seam 挂载，插件代码从 team 仓库供给（.mjs 入口或 v24 原生 type-stripping 加载 erasable .ts——worker 自选并记录）；零写 test-use 树、零碰 :3080（harness 须自检）。③ 四场景经**公开面**驱动、断言公开可观测状态（dump-config / 公开 session 状态 / scoped surface / DSH_HOME 下 TeamDomain 文件），无需真实 LLM 调用。④ harness 须可复用并留短 README：P5-T6 将用它做 I-1 的 crash/restart/corrupt 真进程重跑。
+  - **逃逸阀**：任何所需公开机制缺失（如 root agent 创建/生命周期无公开钩子、scoped surface 无公开可观测面）→ `STOP → CORE_SEAM_BLOCKER:<seam>`，不得私有绕路。
+  - **验证**：canonical 5 leg（baseline **867/867**，unit 层 +N）+ EXTRA leg（harness 四场景，run-log 标注 EXTRA，非 canonical）；tsc 四包 + runtime DEBUG leg；harness 前后 test-use 树 pristine 证明 + 端口释放证明 + :3080 未扰动记录。
+  - p4t6 计数：本轮单 worker，新文件 227→227+Δ 由本 worker 落终值（T6 后续再增）。
+- **下一步**：单 workflow 派 P5-T5 leaf worker（`qiyuan-self/qwen3.8-27b`，≤3 attempts，最重任务，attempt 预算谨慎使用）；返回后主 Agent 审计（含独立重跑 harness 四场景）→ cherry-pick → R33 → ready `[P5-T6]`（G5 报告 + I-1 重跑落位）。
+
 ## 重审记录
 
 （空）

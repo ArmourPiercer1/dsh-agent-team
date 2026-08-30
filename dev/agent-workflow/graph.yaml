@@ -45,6 +45,6 @@ tasks:
   P5-T2: { state: INTEGRATED, class: A, branch: task/P5-T2-persona-preset-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 7e07525fe8e95fa15f7b6cfb528714d704255638, attempts: 2, depends_on: [P5-T1], note: TaskResult undercount 835 vs true 839; notes cited stale code SHA 8106a04 (true 4e998be) - main-agent audit used worktree rev-parse/log }
   P5-T3: { state: INTEGRATED, class: B, branch: task/P5-T3-model-selection-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 416d2acfe79f40e605bacf9f15ed643c0d696739, attempts: 2, depends_on: [P5-T1], note: TaskResult undercount 837 vs true 839; notes cited stale SHAs 8f6d218/28d547e (true 6ea3ec9/416d2ac) - main-agent audit used worktree rev-parse/log }
   P5-T4: { state: INTEGRATED, class: A, branch: task/P5-T4-capability-guard-adapters, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 1094a4c2de48427d02ad6514ddd4446bf2e5cea2, attempts: 2, depends_on: [P5-T1] }
-  P5-T5: { state: DEFINED, class: A, depends_on: [P5-T2, P5-T3, P5-T4] }
+  P5-T5: { state: RUNNING, class: A, branch: task/P5-T5-root-binding, base_sha: 870c0019de7d4377cca86948632533a6efe973e2, attempts: 0, depends_on: [P5-T2, P5-T3, P5-T4], note: I-1 real-binding task (real AgentFactoryAdapter + real seam binding); public profile-patch mount seam (P2-T1 mechanism); DSH_HOME references/.dsh-test-p5t5; port 3180/3181 }
   P5-T6: { state: DEFINED, class: A, depends_on: [P5-T5] }
   G5-REVIEW: { state: DEFINED, class: A, depends_on: [P5-T1, P5-T2, P5-T3, P5-T4, P5-T5, P5-T6] }
