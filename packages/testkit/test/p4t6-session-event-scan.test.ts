@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, eight carry source, 365 files scanned, legacy documented sourceless', () => {
+  it('coverage: all nine package dirs discovered, eight carry source, 377 files scanned, legacy documented sourceless', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -104,9 +104,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // + 11 P7-T4 fork-reconciliation files (5 module .ts under
     // runtime/fork-reconciliation: errors, types, reconciler, adapter,
     // index + 6 unit-test .ts under runtime/test: p7t4-helpers +
-    // 5 suites).
-    expect(scanResult.filesScanned).toBe(365)
-    expect(scanResult.files.length).toBe(365)
+    // 5 suites)) +
+    // 12 P7-T5 handoff files (4 module .ts under runtime/handoff: types,
+    // errors, service, index + 8 files under runtime/test:
+    // p7t5-helpers, p7t5-snapshot-once.test, p7t5-source-mutate.test,
+    // p7t5-target-inspect.test, p7t5-failure-before-root-create.test,
+    // p7t5-no-creation-scan.test, p7t5-no-creation-scan.mjs,
+    // p7t5-no-creation-scan.d.mts).
+    expect(scanResult.filesScanned).toBe(377)
+    expect(scanResult.files.length).toBe(377)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

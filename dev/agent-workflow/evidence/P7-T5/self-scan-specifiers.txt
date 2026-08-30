@@ -1,0 +1,14 @@
+# typescript 6.0.3
+packages/runtime/handoff/types.ts :: ../../contracts/src/index.js
+packages/runtime/handoff/errors.ts :: (no imports)
+packages/runtime/handoff/service.ts :: ../../contracts/src/index.js, ./errors.js, ./types.js
+packages/runtime/handoff/index.ts :: ./errors.js, ./service.js, ./types.js
+packages/runtime/test/p7t5-helpers.ts :: ../../contracts/src/index.js, ../handoff/index.js
+packages/runtime/test/p7t5-snapshot-once.test.ts :: ../../contracts/src/index.js, ../handoff/index.js, ./p7t5-helpers.js, vitest
+packages/runtime/test/p7t5-source-mutate.test.ts :: ./p7t5-helpers.js, vitest
+packages/runtime/test/p7t5-target-inspect.test.ts :: ../../contracts/src/index.js, ../handoff/index.js, ./p7t5-helpers.js, vitest
+packages/runtime/test/p7t5-failure-before-root-create.test.ts :: ../handoff/index.js, ./p7t5-helpers.js, vitest
+packages/runtime/test/p7t5-no-creation-scan.test.ts :: ./p7t5-no-creation-scan.mjs, vitest
+packages/runtime/test/p7t5-no-creation-scan.mjs :: node:fs, node:path, node:url
+packages/runtime/test/p7t5-no-creation-scan.d.mts :: (no imports)
+SPECIFIER SELF-SCAN: PASS
