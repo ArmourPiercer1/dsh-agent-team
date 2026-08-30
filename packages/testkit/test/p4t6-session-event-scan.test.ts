@@ -71,9 +71,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // .ts + 4 unit-test .ts) + 6 P5-T5 real-instance harness .mjs
     // (ts-loader, seam, mini-mcp, slots, plugin, run) + 15 P5-T6
     // member-residency files (8 module .ts + 4 unit-test .ts +
-    // 3 real-instance harness .mjs: plugin, run, slots-t6).
-    expect(scanResult.filesScanned).toBe(258)
-    expect(scanResult.files.length).toBe(258)
+    // 3 real-instance harness .mjs: plugin, run, slots-t6) + 13 P6-T1
+    // activation-provider files (7 module .ts under runtime/activation +
+    // 6 unit-test .ts under runtime/test: p6t1-helpers + 5 suites).
+    expect(scanResult.filesScanned).toBe(271)
+    expect(scanResult.files.length).toBe(271)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
