@@ -352,7 +352,17 @@
 - **收敛判据（DevPlan §17.4 逐字预期）**：故障注入后最终只允许 "one committed MemberInstance OR no committed MemberInstance + diagnosable orphan"（crash 注入本体属 P4-T5，T4 状态机必须暴露 §17.4 的 10 个 durable boundary 作为可注入点）。
 - **派发**：workflow `p4-t4-provisioning-sm-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；纯包工作，无端口/DSH_HOME/实例。
 - **graph**：P4-T4 → RUNNING（branch task/P4-T4-provisioning-sm，base `4a58702`）；ready → []。
-- **结果**：（worker 返回后补记）
+- **结果**（worker 返回，`qiyuan-self/qwen3.8-27b`）：**SELF_VERIFIED**，head `7f3f6a2`，attempts **2/3**（a1 RED @ leg2：3 处测试侧 bug + 4 处生产侧 tsc 错误，均为任务内部；a2 全 5 leg 绿）。
+  - **交付**：`packages/storage/provisioning/**`（adapter.ts 窄 AgentFactoryAdapter 接口 + coordinator.ts 四阶段 durable 状态机 + stages.ts + identity.ts 确定性 per-(root,instance) operation identity + diagnostics.ts diagnosable-orphan 词汇 + fake-adapter.ts 确定性内存 fake（scriptable failures、幂等 child minting）+ index.ts）；74 p4t4 测试（adapter / per-stage-retry / orphan-detect / one-committed-invariant + helpers）。
+  - **三项必测**：per-stage retry = 0-write 幂等重跑、无 adapter 重调、seam-write delta 精确（1/2/1/4/8）；orphan detect = 全部 boundary 状态 + team scoping + 排序枚举；one-committed-invariant = §17.4 十 boundary 完整 crash matrix（每 boundary fresh world、seam-armed crash + re-drive、剩余写算术精确），全部收敛至 exactly one committed member / one fact / stable operationId / 0 orphan；B2/B3 与 B6/B8 记录为共享 seam boundary。
+  - **T1/T2/T3 缺陷报告**：none（开发中 1 处失败系 worker 自身测试期望错误——root session id 为上游 opaque 结构规则——生产验证正确，已记录）。
+
+### 轮次 R21：P4-T4 主 Agent 审计 + 集成（2026-08-30）
+
+- **独立审计（全部通过）**：`.worktrees/P4-T4` head `7f3f6a2` 与自报一致、工作树干净；owned-path 越界检查为空（provisioning/** + test/p4t4-* + evidence/P4-T4/**，共 15 文件）；独立重跑 = pnpm install EXIT=0 + 全量 **740/740 PASS EXIT=0**（666 + 74）+ storage/domain/contracts 3× tsc 全 EXIT=0。
+- **集成**：cherry-pick -x ×2（code `db6dde6`→`8c50e4c` + evidence `7f3f6a2`→`194c224`）→ int/P4 零冲突，head `194c224`。整合验证（主 worktree）：全量 **740/740 PASS EXIT=0** + storage/domain/contracts 3× tsc 全 EXIT=0。
+- **Graph**：P4-T4 → INTEGRATED（head `7f3f6a2`，attempts 2）；integration_sha = `194c2240b00ed33626087bce53d0d3c4eeccf96d`；ready → [P4-T5]。
+- **下一步**：读 TaskDoc §11.5 P4-T5 完整卡片 → 建 `.worktrees/P4-T5`（base `194c224`）→ 裁决隔离形态（TEST_METHODS 端口/DSH_HOME 规则 vs 纯 in-process 模拟，卡片允许 "test-only filesystem/process harness"）→ 派发。
 
 ## 重审记录
 
