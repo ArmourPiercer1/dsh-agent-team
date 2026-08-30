@@ -1,0 +1,3 @@
+tsc -p packages/testkit/tsconfig.json (pass 3, post final commit c9330d7cf8d56f7049eead2d2f7a1172a13248be)
+exit: 0
+output: (none — clean)

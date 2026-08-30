@@ -259,3 +259,22 @@ All four match the task-specified hashes AND the tracked file-manifest.json froz
   Commit 2) is performed AFTER this commit is created and is recorded in
   the uncommitted final append (the final commit cannot contain its own
   SHA); see leftover_uncommitted in the structured report.
+
+## STEP 7 — final state + verification pass 3 (post final commit) (done)
+
+- Commit 2 (this evidence): `c9330d7cf8d56f7049eead2d2f7a1172a13248be`
+  `docs(evidence): P6-T4 evidence` (15 files, +550).
+- Branch `task/P6-T4-control-approval` now: `72cfdc5` (code+tests) →
+  `c9330d7` (evidence). Working tree clean after Commit 2.
+- Verification pass 3, executed AFTER the final commit on the committed
+  tree:
+  - `node scripts/run-tests.mjs` → 1112 passed, 0 failed, 1112 total
+    (full-tests-pass3.txt)
+  - tsc runtime exit 0 (tsc-runtime-pass3.txt), tsc testkit exit 0
+    (tsc-testkit-pass3.txt)
+  - stable instance self-check: http://127.0.0.1:3080 → 200
+    (selfcheck-3080-final.txt)
+- This STEP 7 block, the pass-3 evidence files, and the two new
+  self-check/tsc pass-3 files are necessarily UNCOMMITTED (a commit
+  cannot contain its own SHA); the main agent may fold them into the
+  Gate record as-is (they are append-only evidence, no code).
