@@ -447,6 +447,22 @@
 - **Graph**：G4-REVIEW → PASSED（verdicts [投机通过, 投机通过, 通过]，gate 3/3 PASS，merged_to_master `cdc7f95`，pushed true）；current_phase → P5；ready → []（P5 cards 待读后 define）。
 - **下一步**：R28 —— 读 TaskDoc §11.5 P5 完整卡片组 + DevPlan §18（Agent Binding / Member Lifecycle Substrate）→ define P5 tasks（含 I-1 真进程/真绑定任务）→ int/P5 分支 + kickoff。
 
+### 轮次 R28：P5 kickoff —— P5 cards 读毕 + graph define + int/P5 + P5-T1 ruling（2026-08-30）
+
+- **P5 卡片组**（TaskDoc §11.5，逐字读毕）：DAG `P5-T1 → {T2||T3||T4} → T5 → T6 → G5`。T1 binder（A/F0，dep P4-T6）；T2 persona+preset（A/F1）；T3 model（B/F1）；T4 capability（A/F1）；T5 root-binding（A/F2，deps T2–T4）；T6 member-residency + G5 集成（A/F3，dep T5）。
+- **DevPlan §18 全文已读**：§18.1 TeamAgentBinder（owns persona / Team prompt-policy / Team tools / resolved guard / model overlay / skills-MCP adapter / context policy / admission guard；fresh Root / fresh Member / cold Root / cold Member 四路径皆须幂等）；§18.2 AgentPreset（public preset 语义；Member 继承 Root substrate；禁止 per-member preset selector；禁止把 preset plugin graph 抄进 Blueprint）；§18.3 Persona（兼容 preset → scoped identity；`complete:true` → `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` FATAL before work；不得引入 dsh-persona 私有语义）；§18.4 Model（public ModelSelection；在飞请求 N 保持 A，并发 override B 不改 N，N+1 起用 B）；§18.5 Residency（MemberInstance durable / Session durable / Agent residency ephemeral；SETTLED 允许 Agent handle 缺席；新工作 = cold resume）；§18.6 G5 八项判据（Root fresh bind / Root cold bind / Member fresh create / Member cold resume / ordinary Agent 不受影响 / persona 语义 / model 未来边界变异 / residency 可丢弃而不删 Member）。
+- **I-1 carry-forward 落位**：P5-T5/T6 交付真实 AgentFactoryAdapter + 真实 seam 绑定（TEST_METHODS：`references/deepseek-harness-test-use` 源码、DSH_HOME `references/.dsh-test`（每任务独立）、port 3180、稳定实例 :3080 绝对不碰）；G5 前在真 OS 进程 + 真 StorageDomain 下重跑 crash/restart/corrupt suites（R-2 的 real-factory 幂等契约同批验证）。
+- **Git**：`int/P5-agent-binding-binder` 自 master `602590d` 建出；主 Agent 预置 glue commit `06bd13b`（`packages/runtime/tsconfig.json` noEmit rootDir `"."`→`"../.."`，canonical TS6059 修复，同 storage `b660e90` / testkit R13 先例，先于 P5-T1 落账以杜绝 M-2/D-02 类 finding 复现，零生产代码）；worktree `.worktrees/P5-T1` @ `task/P5-T1-team-agent-binder`（base `06bd13b`）。
+- **P5-T1 ruling（主 Agent 结构裁决，随 brief 下发）**：
+  - **owned**：`packages/runtime/agent-setup/binder/**`（新模块，`agent-setup/` 不在 runtime tsconfig include 根集内，但被 test 文件 import 后进入 program，rootDir 已预置可覆盖）+ `packages/runtime/test/p5t1-*.test.ts`（可含 `p5t1-helpers.ts`）+ `dev/agent-workflow/evidence/P5-T1/**`。
+  - **只读共享面**：runtime `src/index.ts`、`src/plugin/host.ts`、`test/runtime.test.ts`、runtime 两个 tsconfig、`package.json`（零新增依赖）、storage/domain/contracts/testkit 全部、四份 frozen docs、upstream（仅只读查公开契约）。
+  - **设计边界**：单一 `TeamAgentBinder` 幂等编排核心，同一类覆盖四 bind 路径（fresh Root / fresh Member / cold Root / cold Member）；owns 编排顺序 + overlay 槽位契约 + admission 决策点（admission 前 fail-closed，T2 的 FATAL 落在此闸之前）；**不 owns** TeamDomain 真相（只经注入的只读 handle 读）与外部 Agent 运行时；binder 不 import 任何 legacy `packages/team` 词汇（p4t6 scanner 负控须保持绿）。
+  - **注入面（narrow，mock-first）**：`TeamAgentSetupSurface` 最小接口（worker 按最小必要面设计并逐成员记录理由）+ 测试 fake（call-recording + 可脚本化故障注入）；persona/model/capability 三个 overlay 槽位 T1 只定义契约 + 恒等默认实现，T2/T3/T4 填实现；真实 DSH 公开面绑定属 T5/T6。若所需面非 DSH 公开 API：`STOP → CORE_SEAM_BLOCKER:<seam>`，不得绕。
+  - **必测**：① double bind 幂等（同目标二次 bind = 无重复 install、无重复 session event、稳定身份）；② fresh/cold mock 四路径全绿（fresh = 首装全效果；cold = 自 durable TeamDomain 记录 rehydrate、不重跑 fresh 期副作用）；③ ordinary agent no-op（非 team 目标零效果、零记录写入）。
+  - **验收**：单一 binder 类覆盖四 bind 路径；零新增依赖；canonical 链 5 leg（baseline 783/783 不回归）+ 附加 DEBUG leg `node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json` EXIT=0（记录为 DEBUG，不计 canonical）；T1 零 live agent、零端口、零 DSH_HOME。
+- **Graph**：P5-T1..T6 + G5-REVIEW 落账（T1 RUNNING，余 DEFINED）；integration_branch → `int/P5-agent-binding-binder`；integration_sha `06bd13b`；ready `[P5-T1]`。
+- **下一步**：P5-T1 单一 leaf worker 经 workflow 派单（`qiyuan-self/qwen3.8-27b`，禁止再派生子代理，≤3 次执行）；返回后标准主 Agent 审计（owned-path diff / 干净树 / 独立重跑 783+N + runtime tsc）→ `cherry-pick -x` → R29 → ready `[P5-T2, P5-T3, P5-T4]`。
+
 ## 重审记录
 
 （空）
