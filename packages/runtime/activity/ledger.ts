@@ -1,0 +1,465 @@
+/**
+ * P6-T5 — the activity ledger write path: `createActivityLedger`.
+ *
+ * Every durable activity row is written EXACTLY ONCE through this module,
+ * in two serialized critical sections:
+ *
+ *   1. THE FACADE (P6-T2 authority): `runtime.performAction` with the
+ *      closed `report-progress` action — the facade validates the request
+ *      shape, resolves the instanceId-first target, resolves the caller
+ *      identity + role from the durable TeamDomain, enforces the closed
+ *      role set + the mutation envelope, and (under the runtime's own
+ *      per-team lock) requires a LIVE, work-accepting target, then
+ *      commits its `team-coordination-recorded` audit fact (the
+ *      authorization evidence: action / caller / target / progress /
+ *      summary / token / at).
+ *   2. THE GUARDED COMMIT (this module's own per-team lock, `withTeamLock`
+ *      from `action-router/effects.js`): a FRESH durable re-read of the
+ *      subject's rows, then
+ *        a. the OUT-OF-ORDER GUARD (REJECT policy): the claimed per-subject
+ *           `sequence` must equal the durable head + 1 exactly;
+ *           `ACTIVITY_SEQUENCE_STALE` otherwise (`details.kind` `'stale'`
+ *           when claimed ≤ head — a stale update can NEVER overwrite
+ *           newer state; `'gap'` when claimed > head + 1 — a gap is never
+ *           silently filled);
+ *        b. the INTERVAL GUARDS: at most one open interval per
+ *           `(instanceId, subject, correlation)` — open-while-open fails
+ *           with `ACTIVITY_INTERVAL_ALREADY_OPEN`, close-without-open
+ *           FAILS CLOSED with `ACTIVITY_INTERVAL_NOT_OPEN`;
+ *        c. `ledger.allocateSequence()` (the TeamLedger global sequence,
+ *           invariant 44) + `ledger.put(...)` the structured activity row.
+ *
+ * CRASH WINDOW (documented): a crash between the two sections leaves the
+ * audit fact without its structured row. It is detectable (an audit
+ * `report-progress` fact with no matching activity row at the re-read
+ * head) and repairable (re-report at the re-read head + 1 — the guard
+ * admits it because the head never moved). The raw TeamLedger keeps both
+ * families forever (append-only; no deletion path exists).
+ *
+ * REPORTER RULE (documented + enforced pre-facade, zero side effects):
+ * - a MEMBER caller may report ONLY for its own instance (self-report) —
+ *   reporting for another instance is `ACTIVITY_UNAUTHORIZED_REPORTER`;
+ * - the LEADER (the fixed id `inst-leader`, `contracts/src/identity.ts` —
+ *   the same identity test the facade uses to derive the role) may report
+ *   for ANY live instance;
+ * - a HUMAN caller is rejected (`ACTIVITY_UNAUTHORIZED_REPORTER`).
+ * Full caller identity / role-staleness / target liveness remain the
+ * FACADE's enforcement (no duplication here): an unknown caller fails with
+ * CALLER_NOT_FOUND, a stale caller with CALLER_ROLE_STALE, an unknown
+ * target with INSTANCE_NOT_FOUND, a non-work-accepting target with
+ * WORK_STATE_REJECTED.
+ *
+ * NO WORKFLOW AUTHORITY (structural): this module imports only the storage
+ * repositories (reads + the ledger writes above), the closed admission
+ * vocabularies, and the per-team lock helper. It never reads or writes
+ * lifecycle state, member records, or quota counters; nothing downstream
+ * may consume an activity row as a lifecycle/completion decision
+ * (DevPlan §19.5).
+ */
+
+import {
+  LEADER_INSTANCE_ID,
+  parseInstanceId,
+  parseRootSessionId,
+} from '../../contracts/src/index.js'
+import type { InstanceId, RootSessionId } from '../../contracts/src/index.js'
+import type { LedgerEntry } from '../../storage/schema/index.js'
+import { ACTION_NAMES, PROGRESS_VALUES } from '../admission/actions.js'
+import type { ActionCaller, ProgressValue, TeamRuntimeActionRequest } from '../admission/index.js'
+import { withTeamLock } from '../action-router/effects.js'
+import { ACTIVITY_ERROR_CODES, ActivityError } from './errors.js'
+import { buildActivityEntry, parseActivityFact } from './facts.js'
+import {
+  ACTIVITY_CORRELATION_MAX_LENGTH,
+  ACTIVITY_LAST_ACTION_MAX_LENGTH,
+  ACTIVITY_NOTE_MAX_LENGTH,
+  ACTIVITY_REQUEST_TOKEN_MAX_LENGTH,
+  ACTIVITY_SUBJECT_MAX_LENGTH,
+  ACTIVITY_SUMMARY_MAX_LENGTH,
+} from './types.js'
+import type {
+  ActivityFactQuery,
+  ActivityFactRow,
+  ActivityIntervalCloseInput,
+  ActivityIntervalOpenInput,
+  ActivityLedger,
+  ActivityLedgerOptions,
+  ActivityProgressInput,
+} from './types.js'
+
+/** The fail-closed input validation error (closed code, zero side effects). */
+function failInput(problem: string, details?: Record<string, unknown>): never {
+  throw new ActivityError(
+    ACTIVITY_ERROR_CODES.ACTIVITY_INPUT_INVALID,
+    `activity: ${problem}`,
+    details,
+  )
+}
+
+/** Parse-or-fail for the team root (typed ActivityError, not a raw parse). */
+function parseRootOrFail(value: unknown): RootSessionId {
+  if (typeof value !== 'string') failInput('rootSessionId: a string is required', { field: 'rootSessionId' })
+  try {
+    return parseRootSessionId(value)
+  } catch {
+    failInput(`rootSessionId '${value}' is not a valid root session id`, { field: 'rootSessionId' })
+  }
+}
+
+/** Parse-or-fail for the target instance id (instanceId-first, inv 18). */
+function parseInstanceOrFail(value: unknown): InstanceId {
+  if (typeof value !== 'string') failInput('instanceId: a string is required', { field: 'instanceId' })
+  try {
+    return parseInstanceId(value)
+  } catch {
+    failInput(`instanceId '${value}' is not a valid instance id`, { field: 'instanceId' })
+  }
+}
+
+/** A required bounded string field (typed failure otherwise). */
+function requiredString(value: unknown, field: string, max: number): string {
+  if (typeof value !== 'string' || value.length < 1 || value.length > max) {
+    failInput(`${field}: a string of 1..${max} characters is required`, { field })
+  }
+  return value
+}
+
+/** An optional bounded string field (absent stays absent). */
+function optionalString(value: unknown, field: string, max: number): string | undefined {
+  if (value === undefined) return undefined
+  if (typeof value !== 'string' || value.length < 1 || value.length > max) {
+    failInput(`${field}: when present must be a string of 1..${max} characters`, { field })
+  }
+  return value
+}
+
+/** The closed status value (PROGRESS_VALUES — no invented vocabulary). */
+function parseProgress(value: unknown): ProgressValue {
+  if (typeof value !== 'string' || !(PROGRESS_VALUES as readonly string[]).includes(value)) {
+    failInput(`progress: one of [${PROGRESS_VALUES.join(' | ')}] is required`, { field: 'progress' })
+  }
+  return value as ProgressValue
+}
+
+/** The claimed per-subject sequence (positive integer). */
+function parseClaimedSequence(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    failInput('sequence: a positive integer (the claimed per-subject next sequence) is required', {
+      field: 'sequence',
+    })
+  }
+  return value
+}
+
+/**
+ * The closed ActionCaller shape (the facade re-validates the full identity;
+ * this is only the reporter-rule pre-check input).
+ */
+function parseCaller(value: unknown): ActionCaller {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    failInput('caller: a closed ActionCaller object is required', { field: 'caller' })
+  }
+  const rec = value as Record<string, unknown>
+  if (rec['kind'] === 'human') {
+    requiredString(rec['humanId'], 'caller.humanId', 128)
+    return value as ActionCaller
+  }
+  if (rec['kind'] === 'instance') {
+    parseInstanceOrFail(rec['instanceId'])
+    return value as ActionCaller
+  }
+  failInput("caller: kind must be 'human' or 'instance'", { field: 'caller' })
+}
+
+/**
+ * The REPORTER RULE (zero side effects, pre-facade — see the module docs):
+ * a member may report only for itself; the leader may report for any live
+ * instance; a human may not report activity at all.
+ */
+function checkReporter(caller: ActionCaller, targetInstanceId: string): void {
+  if (caller.kind === 'human') {
+    throw new ActivityError(
+      ACTIVITY_ERROR_CODES.ACTIVITY_UNAUTHORIZED_REPORTER,
+      `activity: a human caller ('${caller.humanId}') cannot report member activity — self-report (member) or leader report is required`,
+      { kind: 'human-reporter', humanId: caller.humanId, targetInstanceId },
+    )
+  }
+  if (caller.instanceId !== targetInstanceId) {
+    const isLeader = caller.instanceId === String(LEADER_INSTANCE_ID)
+    if (!isLeader) {
+      throw new ActivityError(
+        ACTIVITY_ERROR_CODES.ACTIVITY_UNAUTHORIZED_REPORTER,
+        `activity: member '${caller.instanceId}' cannot report for another instance ('${targetInstanceId}') — only the leader may report for other members`,
+        {
+          kind: 'member-proxy-report',
+          callerInstanceId: caller.instanceId,
+          targetInstanceId,
+        },
+      )
+    }
+  }
+}
+
+/** The validated base shared by all three write operations. */
+interface ValidatedBase {
+  readonly rootSessionId: RootSessionId
+  readonly caller: ActionCaller
+  readonly instanceId: string
+  readonly subject: string
+  readonly sequence: number
+  readonly progress: ProgressValue
+  readonly requestToken: string
+}
+
+function validateBase(input: {
+  readonly rootSessionId: unknown
+  readonly caller: unknown
+  readonly instanceId: unknown
+  readonly subject: unknown
+  readonly sequence: unknown
+  readonly progress: unknown
+  readonly requestToken: unknown
+}): ValidatedBase {
+  return {
+    rootSessionId: parseRootOrFail(input.rootSessionId),
+    caller: parseCaller(input.caller),
+    instanceId: parseInstanceOrFail(input.instanceId),
+    subject: requiredString(input.subject, 'subject', ACTIVITY_SUBJECT_MAX_LENGTH),
+    sequence: parseClaimedSequence(input.sequence),
+    progress: parseProgress(input.progress),
+    requestToken: requiredString(input.requestToken, 'requestToken', ACTIVITY_REQUEST_TOKEN_MAX_LENGTH),
+  }
+}
+
+/**
+ * Build one activity ledger over an injected TeamDomain + TeamRuntime
+ * facade (the production wiring — both dependencies are injected ports,
+ * so the ledger is testable without a live team and carries no
+ * router-owned state beyond its own per-team lock map).
+ *
+ * @param options - the wiring (TeamDomain repositories, the facade, the
+ *        display clock).
+ * @returns the closed `ActivityLedger` surface.
+ */
+export function createActivityLedger(options: ActivityLedgerOptions): ActivityLedger {
+  const repositories = options.teamDomain.repositories
+  const now = options.now ?? (() => new Date().toISOString())
+  /** The ledger's OWN per-team lock map (separate from the facade's). */
+  const teamLocks = new Map<string, Promise<unknown>>()
+
+  const listActivityFacts = (query: ActivityFactQuery): readonly ActivityFactRow[] => {
+    const rootSessionId = parseRootOrFail(query.rootSessionId)
+    const instanceId =
+      query.instanceId !== undefined ? parseInstanceOrFail(query.instanceId) : undefined
+    const rows: ActivityFactRow[] = []
+    for (const entry of repositories.ledger.list()) {
+      const row = parseActivityFact(entry)
+      if (row === undefined) continue
+      if (row.rootSessionId !== rootSessionId) continue
+      if (instanceId !== undefined && row.instanceId !== instanceId) continue
+      if (query.subject !== undefined && row.subject !== query.subject) continue
+      rows.push(row)
+    }
+    rows.sort((a, b) => a.globalSequence - b.globalSequence)
+    return rows
+  }
+
+  /**
+   * The guarded commit (critical section 2): fresh durable re-read under
+   * the per-team lock, the out-of-order guard, the interval guards, then
+   * the TeamLedger allocation + put. Throws the typed ActivityError on
+   * any guard failure (zero durable writes in that case); the facade
+   * audit fact from critical section 1 is NOT rolled back (documented
+   * crash-window semantics — see the module docs).
+   */
+  const commit = async (args: {
+    readonly base: ValidatedBase
+    readonly op: 'progress' | 'interval-open' | 'interval-close'
+    readonly summary?: string
+    readonly lastAction?: string
+    readonly correlation?: string
+    readonly note?: string
+    readonly closeNote?: string
+  }): Promise<ActivityFactRow> => {
+    const { base } = args
+    return withTeamLock(teamLocks, base.rootSessionId, async () => {
+      const rows = listActivityFacts({
+        rootSessionId: base.rootSessionId,
+        instanceId: base.instanceId,
+        subject: base.subject,
+      })
+      // (a) the out-of-order guard — REJECT policy (deterministic total
+      // order per subject; a stale update can never overwrite newer state)
+      const head = rows.reduce((max, row) => Math.max(max, row.sequence), 0)
+      const expected = head + 1
+      if (base.sequence !== expected) {
+        throw new ActivityError(
+          ACTIVITY_ERROR_CODES.ACTIVITY_SEQUENCE_STALE,
+          `activity: claimed per-subject sequence ${base.sequence} for '${base.subject}' of '${base.instanceId}' is out of order — the durable head is ${head} and the next admissible sequence is ${expected}`,
+          {
+            kind: base.sequence < expected ? 'stale' : 'gap',
+            instanceId: base.instanceId,
+            subject: base.subject,
+            claimed: base.sequence,
+            head,
+            expected,
+          },
+        )
+      }
+      // (b) the interval guards (per-correlation fold in sequence order)
+      if (args.op !== 'progress' && args.correlation !== undefined) {
+        const lastIntervalOp = new Map<string, ActivityFactRow>()
+        for (const row of rows) {
+          if (row.op === 'interval-open' || row.op === 'interval-close') {
+            lastIntervalOp.set(row.correlation as string, row)
+          }
+        }
+        const last = lastIntervalOp.get(args.correlation)
+        const open = last !== undefined && last.op === 'interval-open'
+        if (args.op === 'interval-open' && open) {
+          throw new ActivityError(
+            ACTIVITY_ERROR_CODES.ACTIVITY_INTERVAL_ALREADY_OPEN,
+            `activity: interval '${args.correlation}' of '${base.subject}' for '${base.instanceId}' is already open (since per-subject sequence ${last?.sequence})`,
+            {
+              kind: 'already-open',
+              correlation: args.correlation,
+              instanceId: base.instanceId,
+              subject: base.subject,
+              openSinceSequence: last?.sequence,
+            },
+          )
+        }
+        if (args.op === 'interval-close' && !open) {
+          throw new ActivityError(
+            ACTIVITY_ERROR_CODES.ACTIVITY_INTERVAL_NOT_OPEN,
+            `activity: interval '${args.correlation}' of '${base.subject}' for '${base.instanceId}' is not open — close-without-open fails closed`,
+            {
+              kind: 'no-open-interval',
+              correlation: args.correlation,
+              instanceId: base.instanceId,
+              subject: base.subject,
+            },
+          )
+        }
+      }
+      // (c) the durable write (TeamLedger — invariant 41/44)
+      const globalSequence = await repositories.ledger.allocateSequence()
+      const entry: LedgerEntry = buildActivityEntry({
+        rootSessionId: base.rootSessionId,
+        globalSequence,
+        op: args.op,
+        instanceId: base.instanceId,
+        subject: base.subject,
+        sequence: base.sequence,
+        progress: base.progress,
+        summary: args.summary,
+        lastAction: args.lastAction,
+        correlation: args.correlation,
+        note: args.note,
+        closeNote: args.closeNote,
+        requestToken: base.requestToken,
+        reportedByInstanceId:
+          base.caller.kind === 'instance' ? base.caller.instanceId : 'human',
+        createdAt: now(),
+      })
+      let put: LedgerEntry
+      try {
+        put = await repositories.ledger.put(entry)
+      } catch (error) {
+        throw new ActivityError(
+          ACTIVITY_ERROR_CODES.ACTIVITY_DURABLE_WRITE_FAILED,
+          `activity: the TeamLedger durable write failed: ${error instanceof Error ? error.message : String(error)}`,
+          { globalSequence },
+        )
+      }
+      const row = parseActivityFact(put)
+      if (row === undefined) {
+        // unreachable: the builder emits the closed shape the parser accepts
+        throw new ActivityError(
+          ACTIVITY_ERROR_CODES.ACTIVITY_DURABLE_WRITE_FAILED,
+          'activity: the committed entry failed re-parse (internal invariant)',
+          { globalSequence },
+        )
+      }
+      return row
+    })
+  }
+
+  const facadeRequest = (
+    base: ValidatedBase,
+    payload: Record<string, unknown>,
+  ): TeamRuntimeActionRequest => ({
+    rootSessionId: base.rootSessionId,
+    action: ACTION_NAMES.REPORT_PROGRESS,
+    caller: base.caller,
+    targetInstanceId: base.instanceId,
+    requestToken: base.requestToken,
+    payload,
+  })
+
+  const recordProgress = async (input: ActivityProgressInput): Promise<ActivityFactRow> => {
+    const base = validateBase(input)
+    const summary = optionalString(input.summary, 'summary', ACTIVITY_SUMMARY_MAX_LENGTH)
+    const lastAction = optionalString(input.lastAction, 'lastAction', ACTIVITY_LAST_ACTION_MAX_LENGTH)
+    const correlation = optionalString(input.correlation, 'correlation', ACTIVITY_CORRELATION_MAX_LENGTH)
+    checkReporter(base.caller, base.instanceId)
+    // critical section 1 — the facade (authorization + audit fact)
+    await options.runtime.performAction(
+      facadeRequest(base, {
+        progress: base.progress,
+        op: 'progress',
+        subject: base.subject,
+        sequence: base.sequence,
+        ...(summary !== undefined ? { summary } : {}),
+        ...(lastAction !== undefined ? { lastAction } : {}),
+        ...(correlation !== undefined ? { correlation } : {}),
+      }),
+    )
+    // critical section 2 — the guarded commit (structured row)
+    return commit({
+      base,
+      op: 'progress',
+      summary,
+      lastAction,
+      correlation,
+    })
+  }
+
+  const openInterval = async (input: ActivityIntervalOpenInput): Promise<ActivityFactRow> => {
+    const base = validateBase(input)
+    const correlation = requiredString(input.correlation, 'correlation', ACTIVITY_CORRELATION_MAX_LENGTH)
+    const note = optionalString(input.note, 'note', ACTIVITY_NOTE_MAX_LENGTH)
+    checkReporter(base.caller, base.instanceId)
+    await options.runtime.performAction(
+      facadeRequest(base, {
+        progress: base.progress,
+        op: 'interval-open',
+        subject: base.subject,
+        sequence: base.sequence,
+        correlation,
+        ...(note !== undefined ? { note } : {}),
+      }),
+    )
+    return commit({ base, op: 'interval-open', correlation, note })
+  }
+
+  const closeInterval = async (input: ActivityIntervalCloseInput): Promise<ActivityFactRow> => {
+    const base = validateBase(input)
+    const correlation = requiredString(input.correlation, 'correlation', ACTIVITY_CORRELATION_MAX_LENGTH)
+    const closeNote = optionalString(input.closeNote, 'closeNote', ACTIVITY_NOTE_MAX_LENGTH)
+    checkReporter(base.caller, base.instanceId)
+    await options.runtime.performAction(
+      facadeRequest(base, {
+        progress: base.progress,
+        op: 'interval-close',
+        subject: base.subject,
+        sequence: base.sequence,
+        correlation,
+        ...(closeNote !== undefined ? { closeNote } : {}),
+      }),
+    )
+    return commit({ base, op: 'interval-close', correlation, closeNote })
+  }
+
+  return { recordProgress, openInterval, closeInterval, listActivityFacts }
+}
