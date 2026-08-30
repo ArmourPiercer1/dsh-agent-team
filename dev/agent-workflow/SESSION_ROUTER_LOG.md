@@ -662,6 +662,24 @@
 - **Graph**：G6-REVIEW → PASSED（verdicts [通过, 通过, 通过]，gate 3/3 PASS，merged_to_master `6dac9f6`，pushed true）；current_phase → P7；ready []（P7 任务 R45 kickoff 定义）。**P6 COMPLETE**。
 - **下一步**：R45 —— P7 kickoff（TaskDoc §11.8 DAG：{P7-T1 ∥ P7-T3 ∥ P7-T4 ∥ P7-T5 ∥ P7-T6} → P7-T2（after T1）→ all → P7-T7 → G7；新 int/P7-… 分支 @ master `6dac9f6`）。
 
+## R45 — P7 kickoff（TaskDoc §11.8 定义 P7-T1..T7 + G7-REVIEW；int/P7-advanced-semantics；H1 五并行第一波派发）（2026-08-31，主 Agent）
+
+- **状态**：P6 COMPLETE（R44）；master = `6732601`（origin 同步，push #6 已执行）。P7 = Advanced Semantics / Fork / Handoff / Legacy（TaskDoc §11.8）。
+- **DAG（TaskDoc §11.8 verbatim）**：`{P7-T1 || P7-T3 || P7-T4 || P7-T5 || P7-T6} → P7-T2(after T1) ; all → P7-T7 → G7`。第一波 READY = P7-T1/T3/T4/T5/T6（并行组 H1）；P7-T2 = H2（after T1）；P7-T7 = H3（legacy reader + G7 phase e2e）。
+- **定义（graph 行已写入，卡片 verbatim 摘要）**：
+  - P7-T1（A, H1）：compatibility drift + ACK lifecycle；owns `packages/runtime/compatibility/**`；probe generation + warning ACK fingerprint + drift→new work admission（in-flight settle / new work block）；必须测试 fingerprint change / stale ACK / cold resume / in-flight drift；验收 drift semantics 与 frozen spec 一致（DevPlan 20.1）。
+  - P7-T3（A, H1）：Archive/Restore/Dispose + descendant drain；owns `packages/runtime/lifecycle*`；close admission→interrupt→drain→release→commit；Restore 只 ARCHIVED→SETTLED 绝不 agents.resume；Dispose 保历史；必须测试 archive running / nested subagent drain / restore no agent / dispose race；验收 quiescence 与 durable lifecycle 一致（DevPlan 20.3）。
+  - P7-T4（A, H1）：Fork reconciliation；owns `packages/runtime/fork*；persistence reconciliation`；lazy root fork sidecar（same Blueprint snapshot + zero members）；Member fork ordinary Session；不 patch session.fork；repeat reconcile 幂等；必须测试 root/member/ordinary fork / crash during sidecar / repeat reconcile；验收 Root/Member fork exact frozen semantics（DevPlan 20.4）。
+  - P7-T5（A, H1）：Start Team from Here；owns `packages/runtime/handoff*`；source canonical surface freeze→one-shot summary/handoff→new TeamIntent/Root；无 live link；必须测试 snapshot once / source mutate / target inspect / failure before root create；验收 handoff 一次性上下文、不建立 cross-session memory（DevPlan 20.5）。
+  - P7-T6（B, H1）：Legacy teammate adapter；owns `packages/legacy/teammates-adapter*`；`.dsh/teammates` one-time Blueprint import only；无 watcher / 无 live runtime authority；必须测试 import valid/invalid / duplicate / source changes after snapshot；验收 legacy definition 可生成新 Blueprint 但不控制既有 TeamSession（DevPlan 20.6）。
+  - P7-T2（A, H2, PENDING）：Runtime mutation/provenance；owns `packages/runtime/mutation*；policy adapters`；base = T1 pick 后（派发时定）。
+  - P7-T7（A, H3, PENDING）：Legacy Team Session read-only reader + G7 e2e；owns `packages/legacy/session-reader*；P7 e2e`；base = T1..T6 picks 后。
+  - G7-REVIEW（PENDING）：3 全新独立盲审 reviewer（TaskDoc 11.8 六步方法）；criteria DevPlan 20.7（9 项：warning/fatal admission semantics、ack fingerprint invalidation、human override precedence、lifecycle quiescence、Restore does not create/resume Agent、Root fork exact semantics、Member fork ordinary semantics、handoff one-shot/no-live-link、legacy old Team cannot mutate/resume）。
+- **Branch**：`int/P7-advanced-semantics` @ master `673260198e2f90474678087fa7518bdd241403b8`（rev-parse 验证）；integration_sha 更新；ready [P7-T1, P7-T3, P7-T4, P7-T5, P7-T6]。
+- **Worker 派发（本轮，workflow `p7-first-wave`，5 并行 leaf worker，全部 qiyuan-self/qwen3.8-27b，各 counted attempt 1/3）**：worktrees `.worktrees/P7-T1|T3|T4|T5|T6` + 分支 `task/P7-T1-compat-drift-ack / task/P7-T3-lifecycle-archive / task/P7-T4-fork-reconciliation / task/P7-T5-handoff-start-from-here / task/P7-T6-legacy-teammate-adapter` 各 @ `6732601`（主 Agent 创建；1 task=1 branch=1 worktree=1 writer）。Brief：`dev/agent-workflow/briefs/P7-first-wave-brief.md`（5 任务卡 verbatim + 共享协议：冻结 4 文档 hash 复核、canonical chain 1214 基线 + tsc ×5、zero-core/private-import/owned-boundary、DEC-1 p4t6 330 维护（三处一致 + scanner byte-identical）、P7T<N>_REPORT 报告格式、红线、≤3 attempts、失败处理）。**本波不启动真实 DSH 实例**（单元/集成级 negative+positive 测试；phase 级 real-instance E2E 归 P7-T7）→ 5 worker 无共享资源、可安全并行。
+- **Post-worker 协议（主 Agent）**：每 worker 返回 → 独立审计（rev-parse/status/log 验证 + 该 worktree chain 重跑 + tsc ×5 + zero-core/owned-boundary + p4t6 计数 union 收敛）→ 串行 pick `-x` 到 int/P7 → int 独立 chain 重跑 → INTEGRATED；T1 集成后 P7-T2 READY。
+- **下一步**：R46 —— 第一波 worker 结果审计 + 集成（视 attempt 情况含缺陷修复）。
+
 ## 重审记录
 
 （空）
