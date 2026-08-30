@@ -1,0 +1,72 @@
+# P3-T4 execution ledger (dev/agent-workflow/evidence/P3-T4)
+
+Rules applied (ROUTER_RULES / TaskDoc §11.4): max 3 canonical executions;
+debug runs do not count but are itemized here. Canonical chain is exactly:
+`pnpm install --ignore-scripts` → `node scripts/run-tests.mjs domain` →
+`node node_modules/typescript/bin/tsc -p packages/domain/policy/tsconfig.json` →
+`node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json`.
+No `pnpm run/exec`, no vitest CLI, no tsx/esbuild/vite, no sandbox
+escalation (approval prompts disabled in this session; never requested).
+
+## Canonical run (attempt 1 of 3)
+
+- [1/4] pnpm install --ignore-scripts — exit 0 (16.5s)
+- [2/4] node scripts/run-tests.mjs domain — exit 0, 65 passed / 0 failed / 65 total (73 ms)
+- [3/4] tsc -p packages/domain/policy/tsconfig.json — exit 0
+- [4/4] tsc -p packages/domain/tsconfig.json — exit 0
+Result: ATTEMPT 1 GREEN. No further canonical attempt needed.
+
+## Debug runs (uncounted)
+
+### Test runs: `node scripts/run-tests.mjs domain` (5 debug + 1 canonical)
+
+| # | result | notes |
+|---|--------|-------|
+| T1 | run aborted (syntax) | first writes of matrix+explain test files truncated mid-file (placeholder junk) → full rewrite of both files |
+| T2 | run aborted (eval) | `POLICY_ERROR_CODES` imported from `./types.js` but defined in `./errors.js` → split the import in validate.ts |
+| T3 | 60 failures | `TeamContractError: member identity belongs to TeamSession 'undefined'` — `assertMemberIdentityInTeam` called with swapped args; contract signature is `(identity, teamSessionId)` → fixed call order |
+| T4 | 1 failure | `TypeError: Cannot read properties of undefined (reading 'model')` — envelope precompute indexed absent maps → optional chaining on `blueprintEnvelope`/`templateEnvelope` |
+| T5 | 2 failures | `expect(...).toContain is not a function` — audited shim surface has no toContain → replaced with manual `String.includes` checks |
+| T6 | 65/65 PASS | canonical run (above); pre-run audit fixes landed before T6: mergeEnvelopeMap union-merge (pair-overlay envelope clobbering), `teamValue` in CellExpectation (stage-2-reduced cases), 6 negative-file type fixes (lock/human overlay in-envelope, malformedError narrowing, `as unknown as` for the quota-key cast, unused import, bad-InstanceId cast, dead loop) |
+
+### Policy tsc runs: `tsc -p packages/domain/policy/tsconfig.json` (3 debug + 1 canonical)
+
+| # | result | notes |
+|---|--------|-------|
+| P1 | exit 2 | TS2339 push on ReadonlyArray (resolve.ts overlays) → `Array<...>` |
+| P2 | exit 2 | TS2540 cannot assign to read-only property — input DTOs declared `readonly` but validation/tests mutate normalized inputs → removed `readonly` from ALL input-DTO fields (output types stay deep-frozen readonly) |
+| P3 | exit 2 | first fix batch missed the 9 top-level `EffectivePolicyInput` fields → removed `readonly` there too |
+| P4 | exit 0 | canonical run (above) |
+
+### Domain tsc runs: `tsc -p packages/domain/tsconfig.json` (2 debug + 1 canonical)
+
+| # | result | notes |
+|---|--------|-------|
+| D1 | exit 2 | TS6059 `File '.../contracts/src/...' is not under 'rootDir' '.../packages/domain'` (all contracts modules) — the test files' relative imports of `../../contracts/src/index.js` pull contracts sources into the emitting program; domain tsconfig (owned by P1-T4 skeleton, not by P3-T4) sets `rootDir: "."` |
+| D2 | exit 2 | same TS6059 after input-DTO fix (confirmed the contracts sources, not my code, are the violation) |
+| D3 | exit 0 | canonical run (above), after the contracts-mirror decoupling (below) |
+
+## Design change in-cycle: contracts-mirror decoupling
+
+Root-cause investigation (read-only) for D1/D2:
+- `packages/domain/tsconfig.json` (NOT owned by P3-T4): extends tsconfig.build.json, `noEmit: true`, `rootDir: "."`, include `["src","test","vitest.config.ts"]` → TS6059 forbids ANY non-declaration source file outside `packages/domain` in the program.
+- `packages/contracts/package.json`: `main`/`exports`/`types` all point at `dist/**`; **dist is not built** (no build step in the canonical chain) and `@dsh-agent-team/domain` declares NO dependency on contracts → the bare specifier `@dsh-agent-team/contracts` resolves to nothing (checked `packages/contracts/dist` — absent; no other package in the repo imports contracts yet, so no established pattern exists).
+- `scripts/run-tests-hooks.mjs`: only rewrites the `vitest` bare specifier and RELATIVE `.js`→`.ts` siblings; bare package specifiers are left to stock Node resolution.
+- Conclusion: within P3-T4 owned paths (`packages/domain/policy/**` + `packages/domain/test/t4-*.test.ts`), the only way to keep BOTH typechecks green is to keep relative imports for runtime (the hook rewrites them) while keeping contracts `.ts` sources OUT of the tsc program → the package cannot import contracts at all.
+
+Fix (all inside owned paths): new `packages/domain/policy/src/contracts-mirror.ts` — a faithful local mirror of exactly the contracts-v1 surface the resolver consumes (session/instance id rules incl. `inst-[a-z0-9]{1,32}`, `TeamSessionId = RootSessionId` invariant 9, `MemberIdentity` composite + `LEADER_INSTANCE_ID` + `createMemberIdentity` (deep-frozen) + `assertMemberIdentityInTeam` invariant-18 guard, `deepFreeze` lossless-JSON assert + freeze). Two documented deltas: compile-time-only brands erased to plain `string` aliases (real branded values stay assignable); boundary violations throw the policy's own `PolicyResolutionError` (malformed ids → `MALFORMED_POLICY_INPUT`; cross-scope identity → `IDENTITY_SCOPE_MISMATCH`, keeping the contracts-v1 code string; the code was added to the closed `POLICY_ERROR_CODES` set). All 6 import sites rewired (3 src + 3 tests); the 3 identity-boundary negative tests rewritten to assert the policy error type with the preserved code string and exact `details`. When the repo build wiring makes contracts resolvable (built dist + declared dep), the mirror can be retired for the real import (module doc says so).
+
+## Owned-path compliance
+
+- writes strictly within `packages/domain/policy/**`,
+  `packages/domain/test/t4-*.test.ts`, `dev/agent-workflow/evidence/P3-T4/**`
+- NOT touched: packages/domain/{package.json,tsconfig.json,tsconfig.build.json,src/index.ts,vitest.config.ts}, packages/contracts/**, scripts/**, root configs, references/**, docs/**
+- 10 implementation/test files committed (3570 insertions), 0 modifications to pre-existing files
+
+## Red-line compliance
+
+- no upstream/references touch; no legacy `packages/team` copy
+- no shared infra edits (scripts/, vitest configs, tsconfig.base.json, root package.json untouched)
+- no push; no worktree/remote side effects beyond the owned worktree
+- policy src is pure (no I/O, no DSH imports, no ambient state, zero deps)
+- :3180 characterization suite NOT run (P3-T4 is pure domain; not required)

@@ -1,0 +1,64 @@
+{
+  "task_id": "P3-T4",
+  "title": "Policy resolver â€?pure resolver: Blueprint envelope -> PolicyState -> template/instance/human override -> external hard intersection (Architecture Â§19.6 two-stage)",
+  "branch": "task/P3-T4-policy-resolver",
+  "base_sha": "39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c",
+  "head_sha": "6bf6d7e7b6a571f659f1298b062335f5f0beda7f",
+  "head_sha_note": "implementation commit at authoring time; the final branch head is one further evidence commit (this summary/ledger) and is reported in the task's structured output",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs domain",
+    "node node_modules/typescript/bin/tsc -p packages/domain/policy/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json"
+  ],
+  "canonical_result": {
+    "install": "exit 0 (16.5s)",
+    "tests": "exit 0 â€?65 passed, 0 failed, 65 total, 73 ms (plain-node runner, Node 24.20.0 native TS type-stripping)",
+    "typecheck_policy": "exit 0 (packages/domain/policy/tsconfig.json)",
+    "typecheck_domain": "exit 0 (packages/domain/tsconfig.json â€?no TS6059 after contracts-mirror decoupling)"
+  },
+  "test_counts": {
+    "domain.test.ts (P1-T4 skeleton)": 2,
+    "t4-policy-matrix.test.ts (precedence exhaustive matrix + external-hard matrix)": 14,
+    "t4-policy-negative.test.ts (self-escalation / leader out-of-envelope / fail-closed / tightening / suppression / malformed input / identity boundary / seeded fuzz 300+200)": 34,
+    "t4-policy-explain.test.ts (exact explanation strings / provenance / leader-vs-human separation / determinism)": 15,
+    "total": 65
+  },
+  "outputs": {
+    "policy_module": "packages/domain/policy/src/** (7 files: index.ts, types.ts, errors.ts, validate.ts, resolve.ts, contracts-mirror.ts) + packages/domain/policy/tsconfig.json",
+    "policy_tests": "packages/domain/test/t4-policy-{matrix,negative,explain}.test.ts (63 new tests, self-contained, audited shim surface only)",
+    "evidence": "dev/agent-workflow/evidence/P3-T4/{run-log.txt,attempt-ledger.txt,summary.json}"
+  },
+  "design_notes": {
+    "two_stage_resolution": "P_TeamResolved = Resolve(Blueprint, MemberTemplate, PolicyState, TemplateAutonomyOverlay, InstanceAutonomyOverlay, ExplicitHumanOverride) with ascending precedence blueprint < policyState < template < templateOverlay < instanceOverlay < humanOverride; then P_effective = P_externalHard âˆ?P_capabilityExists âˆ?P_TeamResolved. External facts intersect AFTER team resolution: no Team layer, human override included, can bypass external hard (invariant 35, Â§25.4).",
+    "precedence_not_monotonic": "Â§19.6 anti-pattern honored: layers resolve by precedence, NOT materialized as monotonic restrictions â€?a higher layer (notably human override) may lawfully relax a lower Team deny (invariant 34).",
+    "envelope_fail_closed": "Per-cell Team autonomy envelope = blueprint.autonomyEnvelope âˆ?template.mutationEnvelope (absent/deny â†?âˆ?. Agent overlays (template/instance, leader or member origin) that grant items OUTSIDE the envelope fail the WHOLE resolution: MEMBER_SELF_ESCALATION (invariant 37) / LEADER_OUT_OF_ENVELOPE (invariant 36) â€?typed errors, never silent drops, never resolved around (TaskDoc: 'a Member attempting self-elevation must fail').",
+    "stored_but_suppressed": "Â§19.4: a PolicyState-locked cell suppresses a stored allow overlay that is in-envelope â€?non-destructive: the overlay value is preserved in the cell provenance (cell.team.suppressed) and in the top-level EffectivePolicy.suppressed list with reason 'policyStateLocked'; suppression never loosens and never suppresses deny overlays or human overrides (Â§19.5).",
+    "leader_vs_human_separation": "leader autonomy (origin 'leader', recordId = overlayId) and explicit human override (origin 'human', durable/auditable, not state-gated, no envelope check) are separate provenance lines; every TeamResolvedCell carries {layer, origin, recordId, value, overriddenLower[], suppressed[]} so each effective value is explainable (TaskDoc acceptance).",
+    "output_discipline": "Outputs are deep-frozen lossless-JSON (deepFreeze assert at the output boundary); explanation = one deterministic line per capability cell + a fixed 5-line report header; identical input always yields deeply-equal output (determinism test).",
+    "unspecified_cells": "A cell with no team-layer value resolves to deny with layer 'unspecified' (fail-closed), and stage 2 still records capabilityMissing/externalHardDeny/externalHardRemovedAll notes with removedItems.",
+    "capability_vocabulary": "Closed set model | tools | permissions | skills | mcp = the five runtime configuration domains of Architecture Â§21.3â€“Â?1.5 that PolicyState governs (Â§20.1); contextPolicy (invariant 29) and approval/quota domains are out of scope for P3-T4."
+  },
+  "deviations_and_decisions": [
+    "packages/domain/policy/tsconfig.json extends ../../../tsconfig.base.json (three levels up, not the task-suggested ../../) because the package lives one level deeper than the skeleton packages; noEmit: true; include [src, ../test/t4-*.test.ts].",
+    "CONTRACTS-MIRROR DECOUPLING (root cause + fix documented in attempt-ledger.txt): the P1-T4-owned packages/domain/tsconfig.json typechecks test/ with an explicit rootDir, and TS6059 forbids contracts .ts sources in that program; contracts ships no built dist and domain declares no contracts dependency (package.json NOT owned by P3-T4), so the bare specifier is unresolvable. The resolver therefore consumes a faithful local mirror (packages/domain/policy/src/contracts-mirror.ts) of exactly the contracts-v1 surface it uses (id rules, TeamSessionId=RootSessionId invariant 9, MemberIdentity composite + invariant-18 scope guard, LEADER_INSTANCE_ID, deepFreeze). Documented deltas: compile-time-only brands erased to plain string aliases (branded values stay assignable); boundary violations throw the policy's own PolicyResolutionError â€?malformed ids as MALFORMED_POLICY_INPUT, cross-scope identity as IDENTITY_SCOPE_MISMATCH (contracts-v1 code string kept, added to the closed POLICY_ERROR_CODES set). The mirror is a strict subset and can be retired when the repo build wiring makes @dsh-agent-team/contracts resolvable.",
+    "Input DTOs are plain mutable data (no readonly) â€?the resolver validates by copying into normalized internal state; OUTPUT types are readonly and deep-frozen. This split is documented in types.ts.",
+    "No shared test-helper file: each of the 3 test files is self-contained (task constraint: plain-node runner, audited shim surface toBe/toEqual/toBeGreaterThan/toThrow + .not â€?no toContain, no it.each); fuzz uses a fixed-seed mulberry32 (0x5eed positive / 0xf12e negative), never Math.random.",
+    "Identity-boundary negative tests now assert PolicyResolutionError (code IDENTITY_SCOPE_MISMATCH / MALFORMED_POLICY_INPUT with exact details) instead of contracts TeamContractError â€?a direct consequence of the mirror decision above; the accepted cross-scope failure semantics (invariant 18) are unchanged."
+  ],
+  "acceptance_mapping": {
+    "no_external_hard_bypass": "external-hard matrix (5 caps x {unspecified, deny, allow-subset, allow-disjoint, capability-missing, missing+deny note precedence, team-deny+hard-allow}) incl. strongest human-override contrast: effective is always a subset of the hard allow-set; deny when capability missing or hard deny; removedItems recorded. Seeded positive fuzz asserts effective âŠ?hard for 300 inputs.",
+    "member_self_escalation_fails": "out-of-envelope member-origin overlays throw MEMBER_SELF_ESCALATION with exact details (outOfEnvelopeItems, sorted envelopeItems), including the intersection case and the absent-envelope (âˆ? case; fail-closed even when a human override grants the same items; seeded negative fuzz throws the origin-matching code for 200/200 injected overlays.",
+    "every_effective_value_explainable": "exact-string explanation tests for all 6 solo layers x 5 caps + deny verbatim, multi-layer winner/overriddenLower provenance, leader-vs-human separation lines, fail-closed 'unspecified' lines, external-stage lines, suppression line, structural invariant (line begins 'cap: effective <entry>;' and states team + external facts), and determinism (two calls deeply equal, identical explanation)."
+  },
+  "red_lines": [
+    "no upstream/references touch; no legacy packages/team copy",
+    "no shared infra edits (scripts/, vitest configs, tsconfig.base.json, root package.json, packages/domain/package.json|tsconfig*|src/index.ts|vitest.config.ts, packages/contracts/** all untouched)",
+    "no push; no worktree/remote side effects beyond the owned worktree",
+    "policy module pure: no I/O, no process/fs/env, no DSH imports, no ambient state, zero dependencies"
+  ],
+  "toolchain": { "node": "24.20.0", "pnpm": "11.7.0", "typescript": "6.0.3" }
+}

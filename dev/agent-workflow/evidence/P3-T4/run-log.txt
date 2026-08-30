@@ -1,0 +1,25 @@
+=== P3-T4 canonical run - attempt 1 of 3 ===
+started: 2026-08-30T08:25:20+08:00 (steps [2/4]-[4/4] executed at this time;
+        step [1/4] executed earlier in the same attempt, ~15 min prior)
+node: v24.20.0
+pnpm: 11.7.0
+branch: task/P3-T4-policy-resolver
+head before run: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c
+--- [1/4] pnpm install --ignore-scripts ---
+exit code: 0 (16.5s; output not captured verbatim - run earlier in the attempt)
+--- [2/4] node scripts/run-tests.mjs domain ---
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+
+run-tests (plain-node vitest-equivalent): 65 passed, 0 failed, 65 total, 73 ms
+RESULT: PASS run-tests (0 failures)
+tests exit code: 0
+--- [3/4] node node_modules/typescript/bin/tsc -p packages/domain/policy/tsconfig.json ---
+(no output)
+tsc exit code: 0
+--- [4/4] node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json ---
+(no output)
+tsc exit code: 0
+ended: 2026-08-30T08:25:20+08:00
