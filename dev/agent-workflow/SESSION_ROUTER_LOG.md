@@ -524,6 +524,19 @@
 - **Graph**：P5-T5 → INTEGRATED（head `2b38c11`，attempts 1）；ready → `[P5-T6]`（P5 末任务：member residency + G5 报告 + I-1 crash/restart/corrupt 真进程重跑落位）。
 - **下一步**：R34 —— 读 P5-T6 卡片全文（含被截行）→ T6 ruling（harness 复用、I-1 重跑矩阵、G5 八项判据报告格式）→ worktree → dispatch。
 
+### 轮次 R34：P5-T6（末任务：member residency + G5 报告 + I-1 重跑）kickoff —— ruling + worktree + dispatch（2026-08-30）
+
+- **卡片逐字读毕**（TaskDoc §11.5 P5-T6 + G5 Gate 执行方法）：目标=接通 MemberInstance durable identity、child Session、ephemeral Agent residency，SETTLED 可无 handle；owned=`packages/runtime/member-residency*`+P5 integration tests；允许依赖=public agents.create/resume；实现要点=Member 不是 continuable subagent、nested generic subagents 仍可用；必须测试=fresh create setup；cold resume；evict settled；re-admit；ordinary agent invariance；验收=G5 全部 criterion PASS；输出物=member residency module + G5 report。
+- **Git**：`.worktrees/P5-T6` @ `task/P5-T6-member-residency`（base `83b934a` = int/P5 含 T5 全部工作 + 主 Agent 审计证据）。
+- **P5-T6 ruling（主 Agent）**：
+  - **owned**：`packages/runtime/member-residency/**`（模块 + 自己的 real-instance harness + fixtures）+ `packages/runtime/test/p5t6-*.test.ts`（unit 层，mock-first）+ `dev/agent-workflow/evidence/P5-T6/**`（含 g5-report.md）。T5 的 `root-binding/**`（含 harness）只读可 import 复用，不得修改。
+  - **设计**：① member-residency 模块（产品化）：MemberInstance durable identity + child Session + ephemeral Agent residency（§18.5）；fresh create setup（binder bindFreshMember 四槽位全装、Member 继承 Root AgentPreset substrate §18.2）；cold resume（新 work = 自 durable rehydrate）；evict settled（SETTLED 驱逐：residency 丢弃、Member 不删、handle 可缺席）；re-admit（驱逐后重新准入 = cold resume 路径、幂等）；Member ≠ continuable subagent（负测试：member 不能被当 continuable subagent resume；generic subagent 路径不受影响）。② real-instance harness（新 DSH_HOME `references/.dsh-test-p5t6`、端口 3180/3181、复用 DshInstance + profile-patch seam；挂载 row 可含 T5 root-binding row + T6 member row，均从 team 仓库供给）跑五场景：fresh create setup / cold resume / evict settled / re-admit / ordinary agent invariance，全部经公开面驱动、断言公开可观测状态。③ **I-1 硬性要求（G4 carry-forward，G5 前必须完成）**：真 OS 进程 + 真 StorageDomain 绑定下重跑 P4-T5 的 crash/restart/corrupt 语义——在真实实例上：写 durable TeamDomain 期间 kill 真进程（crash）→ 重启后恢复行为正确（无半写/可恢复）；版本文件损坏 → SCHEMA_VERSION_MISMATCH fail-loudly 不静默迁移；重启幂等（R-2：durable child 记录丢失场景下 real-factory 幂等契约成立）。P4-T5 原 file-seam 三套测试保持 canonical 绿（888 含其 33 测试），I-1 是真实进程版补充而非替代。④ **G5 报告**（`evidence/P5-T6/g5-report.md`）：DevPlan §18.6 八项判据逐条 criterion → evidence（unit 测试名 + harness 场景报告 file:line + 公开面出处）→ PASS/FAIL；报告是 CLAIM，G5 reviewer 将独立复验，禁止夸大。
+  - **验证**：canonical 5 leg（baseline **888/888**，+N unit）+ tsc 四包 + runtime DEBUG + EXTRA leg（harness 五场景 + I-1 三组真进程重跑，run-log 标注 EXTRA）；pristine/3080/ports 自检同 T5。
+  - **逃逸阀**：public agents.create/resume 或所需公开钩子缺失 → `STOP → CORE_SEAM_BLOCKER:<seam>`。
+  - p4t6 计数：243→243+Δ 由本 worker 落终值（G5 reviewer 复核）。
+  - attempt 预算 ≤3（真进程 crash 场景最重，优先 unit 层绿、harness 最后收敛）。
+- **下一步**：单 workflow 派 P5-T6 leaf worker（`qiyuan-self/qwen3.8-27b`）；返回后主 Agent 审计（含独立重跑 harness 五场景 + I-1 重跑）→ cherry-pick → R35 → G5-REVIEW kickoff（三独立盲审 @ integration SHA，G4 协议 + 常设检查 + I-1 复核 + DEC-1 计数复核）。
+
 ## 重审记录
 
 （空）
