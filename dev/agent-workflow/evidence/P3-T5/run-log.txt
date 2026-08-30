@@ -1,0 +1,26 @@
+﻿P3-T5 canonical run — 2026-08-30 08:14:25 +08:00
+worktree: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T5
+branch: task/P3-T5-compatibility-engine
+base: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c
+
+== [1/4] pnpm install --ignore-scripts ==
+Scope: all 10 workspace projects
+Already up to date
+Done in 48ms using pnpm v11.7.0
+exit: 0
+
+== [2/4] node scripts/run-tests.mjs domain ==
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+
+run-tests (plain-node vitest-equivalent): 77 passed, 0 failed, 77 total, 82 ms
+RESULT: PASS run-tests (0 failures)
+exit: 0
+
+== [3/4] node node_modules/typescript/bin/tsc -p packages/domain/compatibility/tsconfig.json ==
+exit: 0 (no output = clean)
+
+== [4/4] node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json ==
+exit: 0 (no output = clean)
+
+CANONICAL RESULT: install=0 tests=0 tsc-compat=0 tsc-domain=0

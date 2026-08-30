@@ -1,0 +1,51 @@
+{
+  "task_id": "P3-T5",
+  "title": "compatibility engine — typed requirement, PASS/WARNING/FATAL, ack/environment fingerprint, complete:true FATAL",
+  "branch": "task/P3-T5-compatibility-engine",
+  "base_sha": "39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c",
+  "head_sha": "29d0b7d4c1e5ec396494bc1a02fc8322ce2d88c5",
+  "head_sha_note": "HEAD at authoring time (engine + tests + bridge, 2 commits); the final branch head is one further evidence commit (this summary/ledger) and is reported in the task's structured output",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs domain",
+    "node node_modules/typescript/bin/tsc -p packages/domain/compatibility/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json"
+  ],
+  "canonical_result": {
+    "install": "exit 0 (Already up to date; 149 packages reused, ~17.5s)",
+    "tests": "exit 0 — 77 passed, 0 failed, 77 total (2 domain.test.ts skeleton + 75 t5 compatibility tests via bridge)",
+    "typecheck": "exit 0 for both invocations (TypeScript 6.0.3, strict, noUncheckedIndexedAccess, isolatedModules, verbatimModuleSyntax; compatibility program covers src+fixtures+test, domain program unchanged)"
+  },
+  "test_counts": {
+    "domain.test.ts": 2,
+    "t5-requirement-validation.test.ts": 17,
+    "t5-environment-facts.test.ts": 17,
+    "t5-engine-outcomes.test.ts": 9,
+    "t5-warning-ack.test.ts": 9,
+    "t5-drift-invalidation.test.ts": 9,
+    "t5-complete-true.test.ts": 6,
+    "t5-purity-serialization.test.ts": 8
+  },
+  "outputs": {
+    "compat_package_source": "packages/domain/compatibility/src/** (8 modules: fingerprint, common, requirement, environment-facts, acknowledgement, result, engine, single re-export surface in index.ts)",
+    "compat_fixtures": "packages/domain/compatibility/fixtures/** (requirements.ts — blueprint requirement set incl. complete:true persona/tool variants; environment-facts.ts — 9 fact sets incl. drift / missing-probe / irrelevant-drift cases)",
+    "compat_tests": "packages/domain/compatibility/test/** (7 suites, 75 tests — executed via the bridge file below)",
+    "canonical_chain_bridge": "packages/domain/test/t5-compatibility-bridge.test.ts (single file, disclosed deviation outside the owned path; rationale in notes[0])",
+    "compat_tsconfig": "packages/domain/compatibility/tsconfig.json (noEmit program over src+fixtures+test; frozen packages/domain/tsconfig.json untouched)",
+    "evidence": "dev/agent-workflow/evidence/P3-T5/{run-log.txt, summary.json, attempt-ledger.txt}"
+  },
+  "notes": [
+    "Bridge-file deviation (the one out-of-owned path): the canonical runner scripts/run-tests.mjs discovers only flat packages/<pkg>/test/*.test.ts, and the frozen packages/domain/tsconfig.json (rootDir \".\") rejects any source outside packages/domain from its program — TS6059 fires even with noEmit and even transitively through imports. The real 7 suites therefore live in the owned packages/domain/compatibility/test/ (typed by packages/domain/compatibility/tsconfig.json) and are re-executed by one bridge file that uses computed dynamic imports (specifiers tsc cannot resolve; Node/hook resolves them at runtime). This is the minimal configuration satisfying all three constraints at once: canonical `run-tests.mjs domain` executes the suites, the domain tsc program stays contracts-source-free, and the real tests remain on the owned path.",
+    "Ack applicability precedence is VALID > STALE > MISSING (tested): an unconsumed warning ack matching the requirement is consumed only when BOTH its mismatch fingerprint AND its environment fingerprint match the recomputed values. If the environment drifted (probe generation changed, DevPlan 20.1 / Arch 14.3 E staleness), the first applicable ack whose environment fingerprint mismatches is consumed as STALE and counted — environment drift is the actionable diagnosis (Arch 27.3 binds acks to the environment generation, so re-ack is required), which is why STALE outranks MISSING. Acks referencing FATAL or PASS requirements are never consumed and stay in unappliedAcknowledgements; duplicate acks: first valid consumed, the rest unapplied.",
+    "complete:true is structural and mandatory FATAL, never downgradable or ack-able (Arch 13.5): an unmet complete:true persona requirement reports the frozen code TeamContractErrorCode.TEAM_PERSONA_COMPLETE_PRESET_CONFLICT verbatim (cross-checked against the frozen contracts value in t5-complete-true.test.ts); other complete:true types report COMPLETE_REQUIREMENT_NOT_MET. This is the G3 gate criterion 'complete:true compatibility fatal test'.",
+    "Environment fingerprint: canonical-JSON FNV-1a double 32-bit pass (fp-v1:<16 hex>, dependency-free) over the sorted probe records for exactly the (domain, subject) pairs named by the requirements; absent probes are encoded {available:false, generation:-1}; irrelevant environment facts are excluded. isCompatibilityResultValidForEnvironment(result, requirements, facts) recomputes the fingerprint and is the drift-check API intended for P7-T1 (runtime).",
+    "ProbeRecord is a type alias, not an interface: RemoteSafeRecord requires an implicit index signature, which interfaces do not have (TS assignment constraint in the fingerprint call).",
+    "Purity verified in t5-purity-serialization: inputs are never mutated (canonical JSON before/after equality), results are deep-frozen, serializeCompatibilityResult is byte-stable canonical JSON (key-order independent). No I/O, no process/fs/env, no ambient state, no node: imports in any .ts of the compatibility package; erasable TS only (no enum/namespace/parameter properties); zero new dependencies.",
+    "Tooling incident (fully recovered, codepoint-verified): two bulk-edit commands through pwsh 5.1 round-tripped UTF-8 text via Get-Content's CP936 default decode, mojibake-ing all non-ASCII (Chinese, section signs, em dashes) in 14 files (7 compatibility src — index.ts skipped by an edit guard, later touched by the recovery itself — plus all 7 test files). Recovery: backup to .t5-recover-backup/ (deleted after), byte-level inversion (UTF-8 read -> GBK(936) encode -> repair the one known byte pattern E2 80 3F -> E2 80 94 em-dash -> mark remaining [E0-EF][80-BF]3F sequences as EF BF BD -> UTF-8 decode), then 7 manual codepoint-level repairs for lost bytes (all replacement strings built from [char]0xXXXX because non-ASCII literals in the pwsh 5.1 command line are themselves mangled): 6 isolated U+FFFD (U+8BB8, U+52A8, U+5B9A) plus 1 double U+FFFD (-> U+00A7 in engine.ts); index.ts restored verbatim from backup. Verification: grep over the entire packages/ tree for mojibake signatures (GBK-mojibake byte pairs incl. U+FFFD) -> 0 matches; codepoint dumps confirm U+00A7, U+2014, U+672A U+77E5. Lesson recorded: never round-trip UTF-8 text through Get-Content/Set-Content without explicit encodings; never pass non-ASCII literals through a pwsh 5.1 command line.",
+    "Consumer note for P7-T1 (runtime): this package is consumed read-only. evaluateCompatibility is the admission gate (OPEN / BLOCKED_WARNING / BLOCKED_FATAL / DEGRADED_ACKNOWLEDGED per Arch 28); isCompatibilityResultValidForEnvironment is the generation-drift re-probe trigger (DevPlan 20.1). The engine emits requirement-level compatibility only — it never produces policy and never auto-installs (Arch 19.1: Requirement is not a Policy)."
+  ],
+  "toolchain": { "node": "24.20.0", "pnpm": "11.7.0", "typescript": "6.0.3" }
+}

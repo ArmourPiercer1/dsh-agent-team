@@ -1,0 +1,89 @@
+# P3-T5 execution ledger (dev/agent-workflow/evidence/P3-T5)
+
+Rules applied (ROUTER_RULES / TaskDoc section 11.4): max 3 canonical executions;
+debug runs do not count but are itemized here. Canonical chain (one execution
+= all four commands, in order) is exactly:
+`pnpm install --ignore-scripts` -> `node scripts/run-tests.mjs domain` ->
+`node node_modules/typescript/bin/tsc -p packages/domain/compatibility/tsconfig.json` ->
+`node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json`.
+No `pnpm run/exec`, no vitest CLI, no tsx/esbuild/vite, no sandbox escalation.
+
+## Debug runs (uncounted)
+
+| # | command | result | notes |
+|---|---------|--------|-------|
+| D1 | `pnpm install --ignore-scripts` | exit 0 | 149 packages reused (~17.5s) - debug prerequisite so the node_modules toolchain existed for tsc/run-tests |
+| D2 | `node scripts/run-tests.mjs domain` | 2 passed / 7 failed | all 7 t5 suites failed to load: ERR_MODULE_NOT_FOUND `packages\domain\contracts\src\index.js` - compatibility sources sit three levels below packages/, so the relative contracts import needs `../../../contracts/src/index.js` (9 import lines across 7 files); also fixed the compatibility tsconfig extends (base tsconfig lives at the repo root: `../../../tsconfig.base.json`). The fix was applied by two pwsh bulk-rewrite commands - see the encoding incident below |
+| D3 | `node scripts/run-tests.mjs domain` | 75 passed / 2 failed | (1) drift suite: an ack previously VALID came out MISSING after a probe generation bump -> redesigned ack precedence to VALID > STALE > MISSING (environment fingerprint checked before mismatch fingerprint; a drifted environment makes an ack STALE, not MISSING - Arch 27.3 binds acks to the environment generation, so re-ack is the required action); (2) purity suite: a failing `it` referenced `baseInput` declared in a different describe block -> rebuilt the input locally. All previously passing suites stayed green after the redesign (expectations re-verified before the change) |
+| D4 | `node scripts/run-tests.mjs domain` | 77 passed / 0 failed | test logic green |
+| D5 | tsc (compatibility) + tsc (domain) | exit 2 | real type errors fixed: readonly array at the computeFingerprint call (spread), optional error.details (TS18048, 5 sites across 3 test files), facts literal in t5-complete-true losing contextual typing (annotated `EnvironmentFact[]`). Additionally DISCOVERED the TS6059 problem in the domain program: the frozen packages/domain/tsconfig.json (rootDir ".") rejects ANY source outside packages/domain from its program - even with noEmit, even transitively via test -> compatibility -> contracts imports. Earlier assumption "noEmit suppresses TS6059" was empirically false |
+| D6 | restructure (file moves + new files) | - | moved the 7 suites from packages/domain/test/ into the owned packages/domain/compatibility/test/ (typed by the new packages/domain/compatibility/tsconfig.json), rewrote import depths (../../../contracts, ../src, ../fixtures), and added the bridge file packages/domain/test/t5-compatibility-bridge.test.ts (computed dynamic imports - invisible to tsc, resolved at runtime by Node/hooks) so the canonical flat-discovery runner still executes the suites while the domain tsc program stays contracts-source-free |
+| D7 | tsc (compatibility) + tsc (domain) | exit 2 -> fixed | `interface ProbeRecord` had no implicit index signature and was not assignable to RemoteSafeRecord -> converted to a `type` alias (documented in environment-facts.ts) |
+| D8 | tsc (compatibility) | exit 2 -> fixed | orphaned doc-comment line in environment-facts.ts (a bare ` *` continuation after the closing `*/`, from an edit that split a comment) caused a TS1109/TS1005 cascade -> repaired the comment structure |
+| D9 | `node scripts/run-tests.mjs domain` + tsc pair | 77 passed / 0 failed; both tsc exit 0 | final debug green before the canonical run |
+| D10 | `node scripts/run-tests.mjs` (ALL packages, debug-only) | 178 passed / 0 failed | confirms no cross-package regression from the restructure (other packages' suites unaffected) |
+
+## pwsh 5.1 CP936 encoding incident and recovery
+
+Triggered during the D2 fix: two bulk-edit commands (pwsh `Get-Content -Raw` ->
+`[System.IO.File]::WriteAllText`) round-tripped UTF-8 text through Windows
+PowerShell 5.1's CP936 default decode, mojibake-ing all non-ASCII content
+(Chinese comments, section signs, em dashes) in 14 files: 7 compatibility src
+files (index.ts was skipped by an edit guard and only later touched by the
+recovery itself) plus all 7 test files.
+
+Recovery steps:
+1. Backup of all affected files to `.t5-recover-backup/` (deleted after recovery).
+2. Byte-level inversion: UTF-8 read -> GBK(936) encode -> repair the one known
+   byte pattern E2 80 3F -> E2 80 94 (em dash) -> mark remaining
+   `[E0-EF][80-BF]3F` sequences as EF BF BD (U+FFFD) -> UTF-8 decode.
+3. Seven manual codepoint-level repairs for lost bytes. All replacement
+   strings were built from `[char]0xXXXX` codepoints because non-ASCII
+   literals in the pwsh 5.1 command line are themselves mangled: 6 isolated
+   U+FFFD (U+8BB8 x4, U+52A8, U+5B9A) plus 1 double U+FFFD (-> U+00A7 in
+   engine.ts).
+4. index.ts restored verbatim from backup (never corrupted; the inversion
+   itself had damaged that clean file).
+
+Verification: grep over the entire packages/ tree for mojibake signatures
+(GBK-mojibake byte pairs, incl. U+FFFD) -> 0 matches; codepoint dumps confirm
+U+00A7 (section), U+2014 (em dash), U+672A U+77E5 (Chinese). All files re-ran
+green afterwards (D9).
+
+Lesson recorded for future tasks: never round-trip UTF-8 text through
+Get-Content/Set-Content without explicit encodings (`[System.IO.File]::
+ReadAllText/WriteAllText` with a no-BOM UTF-8 encoding), and never pass
+non-ASCII literals through a pwsh 5.1 command line.
+
+## Canonical run (attempt 1 of 3)
+
+Full transcript: `run-log.txt` (timestamped header with worktree/branch/base,
+all four commands, final line `CANONICAL RESULT: install=0 tests=0
+tsc-compat=0 tsc-domain=0`).
+
+- `pnpm install --ignore-scripts` -> exit 0
+- `node scripts/run-tests.mjs domain` -> exit 0 - 77 passed, 0 failed, 77 total
+- `node node_modules/typescript/bin/tsc -p packages/domain/compatibility/tsconfig.json` -> exit 0
+- `node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json` -> exit 0
+
+## Artifacts
+
+- engine + fixtures + compatibility tsconfig -> commit 1 (e6831a1)
+- 7 test suites (owned path) + bridge file (disclosed deviation) -> commit 2 (29d0b7d)
+- this evidence -> commit 3 (final branch head, reported in the task's
+  structured output)
+
+## Red-line compliance
+
+- owned path: everything under packages/domain/compatibility/** except the one
+  disclosed bridge file packages/domain/test/t5-compatibility-bridge.test.ts
+  (rationale in summary.json notes[0] and the D6/D5 entries above)
+- no shared infra edits (packages/domain/{package.json,tsconfig.json,
+  tsconfig.build.json,src/index.ts,test/domain.test.ts,vitest.config.ts},
+  packages/contracts/**, scripts/**, root configs, docs/**, references/** -
+  all untouched; verified via git status at commit time)
+- no node: imports in any .ts; no new third-party dependencies; no
+  pnpm run/exec; no vitest CLI
+- compatibility src is pure domain (no I/O, no process/fs/env, no ambient
+  state); erasable TS only
+- no push; no worktree/remote side effects beyond the owned worktree
