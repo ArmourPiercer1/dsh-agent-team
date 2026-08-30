@@ -26,7 +26,19 @@
  *    ordinary/member session) AND a durable TeamSession record
  *    (`MEMBER_RESIDENCY_RECORD_CONFLICT` otherwise — a team-root binding
  *    without its record is an integrity violation, invariant 41).
- * 3. MemberInstance record — absent: durably put the `CREATED` /
+ * 3. The child-Session durability barrier (DevPlan §18.5 "Session
+ *    durable") — `ports.sessionDurability.ensureDurable(childSessionId)`
+ *    is awaited BEFORE the first durable write. UNCONDITIONAL: the
+ *    convergent-replay and idempotent-re-run paths call it too (the real
+ *    upstream `ensureMaterialized` is a no-op there — the artifact is
+ *    already durable or the resumed session's load already marked it
+ *    materialized). Fail-closed: a rejection propagates with ZERO durable
+ *    writes performed (nothing has been put yet). After it resolves the
+ *    child artifact is durable on disk (header-only when the session has
+ *    no events yet), so a later crash inside the write window below
+ *    leaves a COLD-RESUMABLE world, never a durable row pointing at a
+ *    missing session.
+ * 4. MemberInstance record — absent: durably put the `CREATED` /
  *    activityVersion-1 record. PRESENT: it must match the spec's
  *    immutable identity (templateId, label, groupId, workspace,
  *    childSessionId) exactly — `MEMBER_RESIDENCY_RECORD_CONFLICT`
@@ -34,23 +46,37 @@
  *    `MEMBER_RESIDENCY_LIFECYCLE_CONFLICT` (the terminal state is never
  *    re-entered by the create path; a re-creation after disposal is a
  *    DIFFERENT spec / different derived identity).
- * 4. `team-member` session binding — absent: durably put it. PRESENT: it
+ * 5. `team-member` session binding — absent: durably put it. PRESENT: it
  *    must agree with the derived identity (`MEMBER_RESIDENCY_RECORD_CONFLICT`
  *    otherwise). CONVERGENT REPLAY (I1c): when the record is absent but a
- *    CONSISTENT binding is present, step 3 re-puts the record (recovery)
- *    and step 4 keeps the binding — a re-drive after a lost record
+ *    CONSISTENT binding is present, step 4 re-puts the record (recovery)
+ *    and step 5 keeps the binding — a re-drive after a lost record
  *    produces no duplicate row (the repositories' identical-bytes put is
  *    an idempotent no-op) and no crash.
  *
- * CRASH-SAFE ORDERING: the record is committed BEFORE the binding
- * (mirror of the T5 root ordering). A crash between the two writes leaves
- * a binding-less record: the re-run detects it (step 4 sees no binding)
- * and completes it — there is no unrecoverable half-write. A binding
- * WITHOUT a record cannot arise from this module's ordering; it is
- * repaired convergently when consistent (step 3) and rejected otherwise
- * (step 4's conflict check).
+ * CRASH-SAFE ORDERING: the child-session artifact is durable BEFORE the
+ * MemberInstance record, and the record is committed BEFORE the binding
+ * (the barrier + the T5 mirror ordering). Every crash point is therefore
+ * recoverable:
  *
- * 5. The binder's fresh-member path (P5-T1) — a NEW
+ * - a crash BEFORE the barrier (step 3) leaves NO member rows — at most a
+ *   possibly-orphaned EMPTY session artifact, diagnosable per DevPlan
+ *   §17.4 (no committed MemberInstance);
+ * - a crash between the barrier and the record put leaves a durable
+ *   artifact + NO member rows — the same diagnosable orphan class;
+ * - a crash between the record put and the binding put leaves a durable
+ *   artifact + a binding-less record: the re-run detects it (step 5 sees
+ *   no binding) and completes it — there is no unrecoverable half-write;
+ * - a crash AFTER the binding (or in the binder step) leaves a fully
+ *   COLD-RESUMABLE world (artifact + record + binding all durable) with
+ *   at most the ephemeral residency lost — exactly the state the COLD
+ *   path recovers.
+ *
+ * A binding WITHOUT a record cannot arise from this module's ordering; it
+ * is repaired convergently when consistent (step 4) and rejected
+ * otherwise (step 5's conflict check).
+ *
+ * 6. The binder's fresh-member path (P5-T1) — a NEW
  *    `TeamAgentBinder` per call (fresh per-invocation state, mirror of
  *    the T5 discipline), driving `bindFreshMember(childSessionId)`:
  *    per slot in `OVERLAY_SLOT_ORDER` → `slot.apply(context)` +
@@ -58,7 +84,7 @@
  *    `agent-setup/overlay-installed` event record; then
  *    `admissionGuard.decide(context)` + the `agent-setup/admission-decided`
  *    record. Any binder failure propagates fail-closed and the durable
- *    commit of steps 3–4 STANDS BY DESIGN (DevPlan §18.5: durable commit
+ *    commit of steps 4–5 STANDS BY DESIGN (DevPlan §18.5: durable commit
  *    + lost ephemeral residency is exactly the state the COLD path —
  *    `./cold-member.js` — recovers; re-reading the same durable rows on
  *    the next call is the recovery, not a duplicate).
@@ -103,16 +129,21 @@ function defaultNow(): string {
  * Create one FRESH member of a bound Team (see the module docs for the
  * full orchestration and the crash/convergence guarantees).
  *
- * @param ports - the injected handles (read handle, write port, surface,
- *   residency port, optional slot/guard/clock overrides).
+ * @param ports - the injected handles (read handle, write port, the
+ *   child-Session durability barrier, surface, residency port, optional
+ *   slot/guard/clock overrides).
  * @param spec - the member creation spec (the canonical identity input).
  * @returns the result: the durable state (written or pre-existing) plus
  *   the binder's fresh-member bind result (all three overlay slots
- *   installed, admission decision included).
+ *   installed, admission decision included). On resolution the child
+ *   Session artifact is durable on disk (the 18.5 "Session durable"
+ *   postcondition) AND the TeamDomain rows are durable/consistent.
  * @throws {@link MemberResidencyError} (`MEMBER_RESIDENCY_INVALID_INPUT`,
  *   `MEMBER_RESIDENCY_ROOT_NOT_BOUND`,
  *   `MEMBER_RESIDENCY_RECORD_CONFLICT`,
  *   `MEMBER_RESIDENCY_LIFECYCLE_CONFLICT`) before any effect; a
+ *   durability-barrier rejection (`sessionDurability.ensureDurable`) is a
+ *   pre-commit seam failure — it propagates with ZERO durable writes; a
  *   repository/seam write error or a binder error after the durable
  *   commit (fail-closed; see the module docs).
  */
@@ -143,7 +174,18 @@ export async function createFreshMember(
     )
   }
 
-  // Step 3 — the MemberInstance record: write it, repair it (convergent
+  // Step 3 — the child-Session durability barrier (DevPlan §18.5 "Session
+  // durable") — awaited UNCONDITIONALLY, before the first durable write
+  // below, on every path (fresh write, convergent replay, idempotent
+  // re-run; the real upstream `ensureMaterialized` is a no-op when the
+  // artifact is already durable or the resumed session's load already
+  // marked it materialized). Fail-closed: a rejection propagates with
+  // ZERO durable writes performed (nothing has been put yet), so a later
+  // crash inside the write window can never leave a durable member row
+  // pointing at a session with no artifact on disk.
+  await ports.sessionDurability.ensureDurable(childSessionId)
+
+  // Step 4 — the MemberInstance record: write it, repair it (convergent
   // replay), or verify the existing one.
   let member: MemberInstanceRecordDto
   let wrote = false
@@ -224,7 +266,7 @@ export async function createFreshMember(
     member = existingMember
   }
 
-  // Step 4 — the 'team-member' session binding row (record committed
+  // Step 5 — the 'team-member' session binding row (record committed
   // first — the crash-safe ordering of the module docs).
   let binding: SessionBindingDto
   if (existingBinding === undefined) {
@@ -258,7 +300,7 @@ export async function createFreshMember(
     binding = existingBinding
   }
 
-  // Step 5 — the binder's fresh-member path (the agent-setup step): the
+  // Step 6 — the binder's fresh-member path (the agent-setup step): the
   // durable state above is now authoritative (invariant 41); any binder
   // failure propagates fail-closed and the durable commit stands
   // (DevPlan §18.5: the cold path is the recovery for that crash window).

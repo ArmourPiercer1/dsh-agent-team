@@ -54,11 +54,12 @@
  * The three entry points:
  *
  * - {@link createFreshMember} (`./fresh-member.js`) — the first-time
- *   creation of one member: derive the identity from the spec, persist
- *   the MemberInstance record (BEFORE) and the `team-member` session
- *   binding (idempotent + convergent re-runs skip the writes), then run
- *   the binder's fresh-member path (all three overlay slots installed +
- *   the admission decision).
+ *   creation of one member: derive the identity from the spec, make the
+ *   child Session artifact DUREABLE (the 18.5 "Session durable" barrier,
+ *   BEFORE any durable write), persist the MemberInstance record (BEFORE)
+ *   and the `team-member` session binding (idempotent + convergent
+ *   re-runs skip the writes), then run the binder's fresh-member path
+ *   (all three overlay slots installed + the admission decision).
  * - {@link rehydrateColdMember} (`./cold-member.js`) — the process-
  *   restart / re-admit path: restore the member scope from the durable
  *   TeamDomain onto the (re)created agent residency; an identity with no
@@ -163,6 +164,49 @@ export interface ResidencyPort {
 }
 
 /**
+ * The child-Session DURABILITY barrier (DevPlan §18.5 "Session durable").
+ *
+ * The settled member world requires BOTH the durable MemberInstance/binding
+ * rows AND the durable child Session. The fresh path creates the child
+ * session LAZILY (the upstream persistence coordinator records intent only;
+ * the artifact is published by the first append's write-behind batch), so a
+ * crash between the MemberInstance commit and that batch's publication would
+ * leave a durable member row pointing at a session with NO artifact on disk
+ * — a world the zero-durable-write cold path cannot repair (DevPlan §17.4
+ * expected end states). This barrier is the fix: the fresh path calls it
+ * BEFORE the first durable TeamDomain write, so after the operation resolves
+ * the child artifact is guaranteed to exist on disk.
+ *
+ * Contract (fail-closed, idempotent):
+ *
+ * - After `ensureDurable` RESOLVES, the child session's artifact MUST exist
+ *   on disk (a header-only JSONL artifact when the session has no events
+ *   yet) AND every pending append of that session MUST be durable.
+ * - It MUST be idempotent: calling it on an already-durable session — or on
+ *   a resumed session, whose load path already marked it materialized — is
+ *   a no-op.
+ * - It MUST be fail-closed: a rejection propagates to the caller and the
+ *   fresh path performs ZERO durable writes (the barrier runs before the
+ *   MemberInstance put).
+ *
+ * The real public seam is the upstream
+ * `sessionPersistence.ensureMaterialized(liveSession)` service method (the
+ * same call the upstream ACP row makes at session creation): it flushes the
+ * session's pending write-behind batches and materializes a header-only
+ * artifact when none exists. The module never reaches that service itself
+ * (ruling R28 mock-first): the harness binds the live session handle here.
+ */
+export interface SessionDurabilityPort {
+  /**
+   * Make the child session's artifact durable (see the interface docs).
+   * @param childSessionId - the derived durable child DSH session id (the
+   *   fresh path's ONLY identity for this barrier).
+   * @returns resolves when the artifact is durable; rejects on seam failure.
+   */
+  ensureDurable(childSessionId: string): Promise<void>
+}
+
+/**
  * Every injected handle of the member residency. The module owns NO
  * state beyond this injection: the binder instance is created per call.
  */
@@ -175,6 +219,14 @@ export interface MemberResidencyPorts {
   readonly teamDomain: TeamDomainReadHandle
   /** The durable write surface (fresh-member path only). */
   readonly writes: MemberDomainWritePort
+  /**
+   * The child-Session durability barrier (fresh-member path ONLY — the
+   * cold and evict paths never call it: the cold path is zero-durable-write
+   * by construction). REQUIRED, not optional: the fresh path must not be
+   * able to silently skip the 18.5 "Session durable" barrier — a missing
+   * wiring is a type error (fail-loud convention).
+   */
+  readonly sessionDurability: SessionDurabilityPort
   /**
    * The agent-setup surface — the only contact point to the agent
    * runtime for install/restore (ruling R28 mock-first; the real DSH

@@ -16,7 +16,9 @@
  *   the spec / identity validation gates;
  * - the injected-handle contract — {@link MemberResidencyPorts},
  *   {@link MemberDomainWritePort} (fresh path's only writer, invariant
- *   41), {@link ResidencyPort} (evict path's only live-runtime
+ *   41), {@link SessionDurabilityPort} (fresh path's child-Session
+ *   durability barrier — the DevPlan §18.5 "Session durable"
+ *   postcondition), {@link ResidencyPort} (evict path's only live-runtime
  *   contact), the input/result types;
  * - the closed error channel — {@link MemberResidencyError} + codes;
  * - the real write-port adapter over the P4 TeamDomain repositories —
@@ -62,4 +64,5 @@ export type {
   MemberResidencyDurableState,
   MemberResidencyPorts,
   ResidencyPort,
+  SessionDurabilityPort,
 } from './types.js'

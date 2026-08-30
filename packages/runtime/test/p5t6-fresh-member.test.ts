@@ -618,6 +618,134 @@ let s11: {
   }
 }
 
+// ---------------------------------------------------------------------------
+// S12 — the child-Session durability barrier (ordering + unconditional)
+// ---------------------------------------------------------------------------
+let s12: {
+  readonly order: readonly string[]
+  readonly barrierCalls: readonly string[]
+  readonly reRunBarrierCalls: readonly string[]
+  readonly reRunWrote: boolean | undefined
+  readonly replayOrder: readonly string[]
+  readonly replayBarrierCalls: readonly string[]
+  readonly replayWrote: boolean | undefined
+}
+{
+  // The recording wrappers interleave the barrier calls with the durable
+  // write calls into one sequence (the crash-safe ordering proof).
+  const world = await createMemberResidencyWorld('p5t6-s12', { seedBoundRoot: true })
+  const order: string[] = []
+  const ports: MemberResidencyPorts = {
+    ...world.ports,
+    sessionDurability: {
+      ensureDurable(childSessionId) {
+        order.push(`barrier:${childSessionId}`)
+        return world.durability.ensureDurable(childSessionId)
+      },
+    },
+    writes: {
+      putMemberInstance(input) {
+        order.push('putMemberInstance')
+        return world.writes.putMemberInstance(input)
+      },
+      putSessionBinding(binding) {
+        order.push('putSessionBinding')
+        return world.writes.putSessionBinding(binding)
+      },
+    },
+  }
+  try {
+    // (a) fresh write — the barrier is awaited BEFORE the first durable
+    // write; (b) idempotent re-run — the barrier is UNCONDITIONAL: it is
+    // awaited again although the re-run performs no durable writes.
+    const first = await runFresh(world, P5T6_SPEC_A, ports)
+    if (first.error !== undefined) throw first.error
+    const reRun = await runFresh(world, P5T6_SPEC_A, ports)
+    if (reRun.error !== undefined) throw reRun.error
+    s12 = {
+      order: [...order],
+      barrierCalls: [...world.durability.calls],
+      reRunBarrierCalls: [...world.durability.calls].slice(1),
+      reRunWrote: reRun.result?.durable?.wrote,
+      replayOrder: [],
+      replayBarrierCalls: [],
+      replayWrote: undefined,
+    }
+  } finally {
+    await destroyWorld(world)
+  }
+}
+{
+  // (c) convergent replay — the barrier is awaited BEFORE the record
+  // re-put (the recovery write) too.
+  const world = await createMemberResidencyWorld('p5t6-s12c', {
+    seedBoundRoot: true,
+    seedMember: { spec: P5T6_SPEC_A, withRecord: false },
+  })
+  const replayOrder: string[] = []
+  const ports: MemberResidencyPorts = {
+    ...world.ports,
+    sessionDurability: {
+      ensureDurable(childSessionId) {
+        replayOrder.push(`barrier:${childSessionId}`)
+        return world.durability.ensureDurable(childSessionId)
+      },
+    },
+    writes: {
+      putMemberInstance(input) {
+        replayOrder.push('putMemberInstance')
+        return world.writes.putMemberInstance(input)
+      },
+      putSessionBinding(binding) {
+        replayOrder.push('putSessionBinding')
+        return world.writes.putSessionBinding(binding)
+      },
+    },
+  }
+  try {
+    const { result, error } = await runFresh(world, P5T6_SPEC_A, ports)
+    s12 = {
+      ...s12,
+      replayOrder: [...replayOrder],
+      replayBarrierCalls: [...world.durability.calls],
+      replayWrote: result?.durable?.wrote,
+    }
+    if (error !== undefined) throw error
+  } finally {
+    await destroyWorld(world)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// S13 — the barrier rejection (fail-closed: ZERO durable writes; the
+// binder never runs)
+// ---------------------------------------------------------------------------
+let s13: {
+  readonly error: unknown
+  readonly writeCalls: readonly P5T6WriteCall[]
+  readonly surfaceCallCount: number
+  readonly memberCount: number
+  readonly barrierCalls: readonly string[]
+}
+{
+  const world = await createMemberResidencyWorld('p5t6-s13', { seedBoundRoot: true })
+  try {
+    world.durability.failNextEnsureDurable(
+      new Error('p5t6: injected barrier fault (write-behind flush failed)'),
+    )
+    const { error } = await runFresh(world, P5T6_SPEC_A)
+    s13 = {
+      error,
+      writeCalls: [...world.writeCalls],
+      surfaceCallCount: world.surface.calls.length,
+      memberCount: world.domain.repositories.memberInstances.list(ROOT).length,
+      barrierCalls: [...world.durability.calls],
+    }
+  } finally {
+    await destroyWorld(world)
+  }
+}
+
 describe('P5-T6 S1: fresh member create (derived identity + durable create + fresh install + admission)', () => {
   it('derives the stable identity and persists the MemberInstance record before the team-member binding', () => {
     expect(s1.error).toBe(undefined)
@@ -897,5 +1025,35 @@ describe('P5-T6 S11: overlay fault (the durable commit stands; the cold path rec
       AGENT_SETUP_EVENT_NAMES.scopeRestored,
       AGENT_SETUP_EVENT_NAMES.admissionDecided,
     ])
+  })
+})
+
+describe('P5-T6 S12: the child-Session durability barrier (ordering + unconditional)', () => {
+  it('fresh write: the barrier is awaited BEFORE the first durable write (barrier → record → binding)', () => {
+    expect(s12.order.slice(0, 3)).toEqual([`barrier:${CHILD_A}`, 'putMemberInstance', 'putSessionBinding'])
+    expect(s12.barrierCalls).toEqual([CHILD_A, CHILD_A])
+  })
+
+  it('idempotent re-run: the barrier is unconditional (awaited again, zero durable writes)', () => {
+    expect(s12.order.slice(3)).toEqual([`barrier:${CHILD_A}`])
+    expect(s12.reRunBarrierCalls).toEqual([CHILD_A])
+    expect(s12.reRunWrote).toBe(false)
+  })
+
+  it('convergent replay: the barrier is awaited before the record re-put (the recovery write)', () => {
+    expect(s12.replayOrder).toEqual([`barrier:${CHILD_A}`, 'putMemberInstance'])
+    expect(s12.replayBarrierCalls).toEqual([CHILD_A])
+    expect(s12.replayWrote).toBe(true)
+  })
+})
+
+describe('P5-T6 S13: the barrier rejection (fail-closed; zero durable writes)', () => {
+  it('the rejection propagates with ZERO durable writes and the binder never runs', () => {
+    expect(s13.error instanceof Error).toBe(true)
+    expect((s13.error as Error).message).toBe('p5t6: injected barrier fault (write-behind flush failed)')
+    expect(s13.barrierCalls).toEqual([CHILD_A])
+    expect(s13.writeCalls).toEqual([])
+    expect(s13.memberCount).toBe(0)
+    expect(s13.surfaceCallCount).toBe(0)
   })
 })

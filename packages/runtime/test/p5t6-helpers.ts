@@ -14,6 +14,9 @@
  * - {@link FakeResidencyPort} — the mock-first {@link ResidencyPort}
  *   (the ephemeral-residency boundary of the evict path): Map-backed
  *   live state, call recording, one-shot drop fault injection;
+ * - {@link FakeSessionDurability} — the mock-first
+ *   {@link SessionDurabilityPort} (the child-Session durability barrier
+ *   of the fresh path): call recording, one-shot fault injection;
  * - {@link createMemberResidencyWorld} — one durable TeamDomain world
  *   over the testkit `FileStorageSeam` (the REAL P4 repositories + the
  *   REAL read-handle projection (P5-T1) + the REAL write-port adapter
@@ -55,6 +58,7 @@ import type {
   MemberDomainWritePort,
   MemberResidencyPorts,
   ResidencyPort,
+  SessionDurabilityPort,
 } from '../member-residency/index.js'
 import { FakeAgentSetupSurface } from './p5t1-helpers.js'
 
@@ -138,6 +142,35 @@ export class FakeResidencyPort implements ResidencyPort {
   }
 }
 
+/**
+ * The mock-first {@link SessionDurabilityPort} (the child-Session
+ * durability barrier of the fresh path): records every `ensureDurable`
+ * call in order (the ordering / zero-write proof channel) and supports
+ * one-shot fault injection. A resolved call is the no-op the contract
+ * demands for an already-durable session.
+ */
+export class FakeSessionDurability implements SessionDurabilityPort {
+  /** Every `ensureDurable(childSessionId)` call, in order. */
+  readonly calls: string[] = []
+
+  private nextEnsureDurableFault: Error | undefined = undefined
+
+  ensureDurable(childSessionId: string): Promise<void> {
+    this.calls.push(childSessionId)
+    if (this.nextEnsureDurableFault !== undefined) {
+      const fault = this.nextEnsureDurableFault
+      this.nextEnsureDurableFault = undefined
+      return Promise.reject(fault)
+    }
+    return Promise.resolve()
+  }
+
+  /** Inject a fault into the NEXT `ensureDurable` call only. */
+  failNextEnsureDurable(fault: Error): void {
+    this.nextEnsureDurableFault = fault
+  }
+}
+
 /** One recorded durable write call of the world's recording proxy. */
 export interface P5T6WriteCall {
   readonly method: 'putMemberInstance' | 'putSessionBinding'
@@ -161,6 +194,8 @@ export interface P5T6World {
   readonly surface: FakeAgentSetupSurface
   /** The mock-first residency port (the evict path's live boundary). */
   readonly residency: FakeResidencyPort
+  /** The mock-first child-Session durability barrier (fresh path). */
+  readonly durability: FakeSessionDurability
   /** The deterministic clock (1s ticks from the fixture base time). */
   readonly now: () => string
   /** The ports wired over this world (for the member-residency entry points). */
@@ -284,8 +319,16 @@ function finishWorld(
   }
   const surface = new FakeAgentSetupSurface()
   const residency = new FakeResidencyPort()
+  const durability = new FakeSessionDurability()
   const now = makeNow()
-  const ports: MemberResidencyPorts = { teamDomain: readHandle, writes, surface, residency, now }
+  const ports: MemberResidencyPorts = {
+    teamDomain: readHandle,
+    writes,
+    surface,
+    residency,
+    sessionDurability: durability,
+    now,
+  }
   return {
     scratchDir,
     seam,
@@ -295,6 +338,7 @@ function finishWorld(
     writeCalls,
     surface,
     residency,
+    durability,
     now,
     ports,
     failNextPutMemberInstance: (fault: Error) => {

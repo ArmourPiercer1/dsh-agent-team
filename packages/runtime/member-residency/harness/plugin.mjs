@@ -726,8 +726,36 @@ function makePorts(ctx, opts = {}) {
     writes,
     surface: createSurface(ctx),
     residency: createResidencyPort(),
+    sessionDurability: makeSessionDurability(ctx),
     ...(opts.slots !== undefined ? { slots: opts.slots } : {}),
     ...(opts.scenario !== undefined ? { admissionGuard: makeGuard(opts.scenario) } : {}),
+  }
+}
+
+/**
+ * The REAL SessionDurabilityPort: the upstream public
+ * `sessionPersistence.ensureMaterialized(liveSession)` seam (the same
+ * call the ACP row makes at session creation — it flushes the session's
+ * pending write-behind batches and materializes the header-only artifact
+ * for an empty session). Fail-closed: a missing service or a missing
+ * live child agent throws before any durable TeamDomain write.
+ * @param {object} ctx
+ * @returns {object} a SessionDurabilityPort implementation.
+ */
+function makeSessionDurability(ctx) {
+  return {
+    async ensureDurable(childSessionId) {
+      const persistence = ctx.get('sessionPersistence')
+      if (persistence === undefined) {
+        throw new Error('p5t6: sessionPersistence service missing — the durability barrier seam is unavailable')
+      }
+      const svc = resolveServices(ctx)
+      const agent = svc.agents.get(SessionId(childSessionId))
+      if (agent === undefined) {
+        throw new Error(`p5t6: child session '${childSessionId}' has no live agent handle — the barrier cannot materialize it`)
+      }
+      await persistence.ensureMaterialized(agent.session)
+    },
   }
 }
 
@@ -890,6 +918,24 @@ async function runFreshMember(ctx) {
     const ports = makePorts(ctx, { slots: built.slots, scenario: 'M1' })
     const result = await modules.memberMod.createFreshMember(ports, spec)
 
+    // M1 must-assert (P5-T6 defect fix): at the moment createFreshMember
+    // RESOLVED, the child's final artifact is already durable on disk --
+    // the sessionDurability barrier (before the first durable write) is a
+    // complete barrier: it flushed the pending write-behind batches and
+    // materialized the (header-only) artifact. Synchronous check, NO
+    // polling: polling would mask the very publication race the barrier
+    // closes (DevPlan 18.5: MemberInstance durable / Session durable).
+    const artifactAtResolve = diskFilesFor(identity.childSessionId)
+    const artifactAtResolveFinal =
+      artifactAtResolve.files !== undefined
+        ? artifactAtResolve.files.find((f) => f.final)
+        : undefined
+    if (artifactAtResolveFinal === undefined) {
+      throw new Error(
+        `p5t6 M1 must-assert: child artifact not durable at createFreshMember resolution (disk: ${JSON.stringify(artifactAtResolve)}); the sessionDurability barrier failed to close the write-behind window`,
+      )
+    }
+
     const mountFailures = await settleMounts(built.pendingEffects)
 
     // Control-plane step: the model selection (app-faithful — the app
@@ -962,6 +1008,11 @@ async function runFreshMember(ctx) {
         pass: built.obs.toolsRegistered.includes('p5t6-tool-alpha') && built.obs.toolsRegistered.includes('p5t6-tool-beta')
           && built.obs.skillsRegistered.includes('p5t6-skill-one') && mcpVisible === true,
         actual: { toolsRegistered: built.obs.toolsRegistered, skillsRegistered: built.obs.skillsRegistered, mcpVisible, toolNames },
+      },
+      {
+        name: 'session: final artifact durable SYNCHRONOUSLY at resolution (M1 must-assert; no polling)',
+        pass: artifactAtResolveFinal !== undefined,
+        actual: { projectDir: artifactAtResolve.projectDir ?? null, size: artifactAtResolveFinal?.size ?? null },
       },
       {
         name: 'session: live + durable artifact published, model/selection appended',
