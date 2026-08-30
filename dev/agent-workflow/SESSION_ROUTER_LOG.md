@@ -680,6 +680,22 @@
 - **Post-worker 协议（主 Agent）**：每 worker 返回 → 独立审计（rev-parse/status/log 验证 + 该 worktree chain 重跑 + tsc ×5 + zero-core/owned-boundary + p4t6 计数 union 收敛）→ 串行 pick `-x` 到 int/P7 → int 独立 chain 重跑 → INTEGRATED；T1 集成后 P7-T2 READY。
 - **下一步**：R46 —— 第一波 worker 结果审计 + 集成（视 attempt 情况含缺陷修复）。
 
+## R46 — P7 第一波主 Agent 独立审计 + 集成（int/P7 @ `3aa146c`，1399/1399；ready → P7-T2）（2026-08-31，主 Agent）
+
+- **状态**：P7 第一波（H1 五并行）workers 全部 settled（R45 经 workflow `p7-first-wave` 派发，均 qiyuan-self/qwen3.8-27b；报告文本按设计不可恢复，磁盘为真：5 条任务分支 + evidence）。本轮 = 主 Agent 独立审计 + 串行集成 + 基线复验 + R45 勘误。
+- **分支普查（主 Agent）**：5 分支各 1 个干净 worktree（T4 分支为 2 commits：`bab3b3a` code + `1e721b0` evidence，其余各 1 commit）；新增文件全部在卡片 owned paths + p4t6（DEC-1）+ evidence 内；T6 的 12 个 .md fixtures 位于 `packages/legacy/test/fixtures/teammates*/`（scanner 不计，作为测试交付物可接受）；worker 报告的 SHA 全部 rev-parse 复核一致。
+- **p4t6 逐分支核验（DEC-1）**：分支断言 341（T1=330+11）/ 343（T3=+13）/ 341（T4=+11）/ 342（T5=+12）/ 334（T6=+4）与主 Agent 独立重算全部一致（scanner 仅计 `packages/<pkg>/` 下 .ts/.mts/.mjs，.md 不计）；scanner `.mjs` 五分支 byte-identical；集成并集预期 = **381**。
+- **审计事故（R1 作废，记录在案）**：5 条并行后台审计链中 —— (a) T3/T4/T5/T6 的 run-tests leg 实际在**主仓库**执行（workdir 配置错误）：主仓库 `packages/testkit/test/.tmp-fault` scratch 被并行同名测试互踩 → 3 个文件 import/evaluation 错误（p4t5-corrupt-version / p4t5-crash-matrix / p6t6-guard，错误路径指向主仓库，为"主仓库执行"的决定性证据）；totals 1214/1185/1206/1206 均偏离 worktree 预期值；(b) 五 worktree 的 tsc leg 全部无效（TS5023：`'-p <path>'` 被作为单参数传入）。R1 裁决：仅 T1（1275/1275）有效，其余四条链整体作废；主 Agent 审计重跑不消耗 worker 的 ≤3 次/task 协议额度。
+- **R2 重审（串行，磁盘证据）**：每 worktree 先落 `git toplevel` + `HEAD` 证明再执行（`pnpm install --ignore-scripts` → `node scripts/run-tests.mjs` 全量 → tsc ×5，参数修正为 `'-p'` 与路径两个独立参数）：T1 `b17187d` **1275/1275**（=1214+61）、T3 `1fb3e6a` **1238/1238**（=+24）、T4 `1e721b0` **1261/1261**（=+47）、T5 `2da480c` **1247/1247**（=+33）、T6 `11b7978` **1234/1234**（=+20）；各分支 tsc ×5 全 exit 0；主基线复验 `1d0c8d0` **1214/1214** + tsc ×5。日志内 LOCATION MISMATCH 标记为 `/` 与 `\` 路径比较假阳性（toplevel 路径本身全部正确）。证据：`evidence/P7-TN/main-audit-chain-r2.log` + `evidence/baseline-main-r2.log`。
+- **zero-core / import-face 抽查**：主 Agent 对 5 模块新文件（compatibility / lifecycle / fork-reconciliation / handoff / legacy adapter）specifier 扫描：仅 intra-repo 相对 import + vitest（测试文件）+ node: 内建（仅 .mjs/.d.mts seam，允许）；无 upstream 私有路径；与 worker zero-core 证据（T1/T3/T4 日志）一致。
+- **T5 卫生发现（LOW）**：worktree 根 0 字节未跟踪临时文件 `_tmp_54076_1e0f24e55f31b312ea3a62c17747dc39`，集成前已删除。
+- **集成（`int/P7-advanced-semantics`：`6732601` → `3aa146c`）**：串行 `cherry-pick -x`：T1 `b17187d`→`f13f963`（无冲突）→ T3 `1fb3e6a`→`ec53da7` → T4 `1e721b0`→`db4a0d4`（evidence）+ `bab3b3a`→`3ddbe47`（code）→ T5 `2da480c`→`da339fc` → T6 `11b7978`→`3aa146c`。p4t6 每 pick 必冲突（五分支同区域）：新工具 `dev/agent-workflow/tools/resolve-p4t6-conflicts.mjs` 按 DEC-1 累积并集裁决（354→365→377→381 + T6 标题翻转 "nine carry source, legacy carries the P7-T6 adapter"；withSource 8→9 / legacy 0→4 由 git 自动合并）。
+- **集成事故（2 个污染 commit，均当场修复，int 分支无残留）**：(1) resolver v1 循环漏自增索引（RangeError）崩溃 exit 1 后，误将仍含冲突标记的文件 `git add` + `--continue` → 污染 commit `9c2d2c6`；经 reflog 定位 → `reset --hard HEAD~1` + 重 pick。(2) 重 pick 中 resolver v2 被 CRLF `endsWith` 误判 → v3（按文件原生 EOL split/join）成功；但该次 `--continue` 又产出污染 commit `f800d70`（p4t6 含标记；CHERRY_PICK_HEAD 状态异常机制未定）→ `git commit --amend --no-edit` 修复为 `ec53da7`（int 分支仅本地、未 push，amend 安全）。**新增常设规则**：每次 cherry-pick 后必须 grep HEAD 内 p4t6 的冲突标记 + 累积计数验证，再继续下一 pick；发现污染 commit 立即 amend 或 reset+重 pick 并记录。
+- **int 链（主 Agent 独立）**：int tip `3aa146c`：**1399/1399**（=1214+61+24+47+33+20，与预期精确一致）+ tsc ×5 全 exit 0；p4t6 扫描 381 文件（并集）断言通过。证据：`evidence/int-P7/main-audit-chain.log`。
+- **R45 勘误（补记）**：R45 kickoff 记账（brief `P7-first-wave-brief.md` + log "## R45 — P7 kickoff" 18 行 + graph P7 八行）经 `git show 1d0c8d0` 确认完整在 master；本轮早前"graph 缺 P7 行"的判断系误读——当时读文件位于 int 分支工作树（int 派生自 `6732601`，不含 R45 记账），非 master 状态缺失。另有 R45 不精确更正：worktree 实际创建于 `1d0c8d0`（含 R45 bookkeeping commit，代码等价于 `6732601`），graph 各 T 行 base_sha 已更正为 `1d0c8d0`；int 分支创建基点 `6732601` 无误（int 确从该点分叉）。
+- **状态更新**：graph：P7-T1/T3/T4/T5/T6 → INTEGRATED（attempts 1/3）；ready `[P7-T2]`（base = int tip `3aa146c`）；P7-T7、G7-REVIEW PENDING；integration_sha → `3aa146c801ed7509cc23c1b414665de5a5363180`。push #7 仍仅限 G7（origin master `6732601`；local master 领先 1 commit = 本条记账）。
+- **下一步**：R47 —— P7-T2 派发（单 worker，qiyuan-self/qwen3.8-27b；owns `packages/runtime/mutation*` + policy adapters；验收：Effective Configuration 每项有来源、非法 escalation 被拒；DevPlan 20.2；卡片 TaskDoc §11.8）。
+
 ## 重审记录
 
 （空）
