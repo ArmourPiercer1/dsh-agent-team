@@ -514,6 +514,16 @@
   - p4t6 计数：本轮单 worker，新文件 227→227+Δ 由本 worker 落终值（T6 后续再增）。
 - **下一步**：单 workflow 派 P5-T5 leaf worker（`qiyuan-self/qwen3.8-27b`，≤3 attempts，最重任务，attempt 预算谨慎使用）；返回后主 Agent 审计（含独立重跑 harness 四场景）→ cherry-pick → R33 → ready `[P5-T6]`（G5 报告 + I-1 重跑落位）。
 
+### 轮次 R33：P5-T5（I-1 真绑定）结果 + 主 Agent 审计 + 独立 harness 重跑 + integration（2026-08-30）
+
+- **Worker 自报**（workflow 单 leaf，`qiyuan-self/qwen3.8-27b`）：DONE，1/3 attempts，canonical 888/888（基线 867 + 21 unit：p5t5-fresh 8 / cold 7 / admission 6）+ EXTRA harness 四场景全绿（S1 fresh 15 断言 / S2 cold 11 / S3 fail-closed 8 / S4 ordinary 5）；head `2b38c11`（evidence，叠在 code `f1fc8fd` 上，已自验）；p4t6 计数 227→243（+10 模块/测试 .ts、+6 harness .mjs，仅标题/2 断言/注释）；14 次纯 debug run 入账（含 pwsh-103 误启动与 Tee-Object 混合编码 run-log 字节级重组修复）。
+- **主 Agent 审计**：worktree 干净树，HEAD 与自报一致，2 提交结构正确；diff 43 文件全部在 owned（root-binding 8 模块 + harness 7 文件含 README/plugin.mjs + 4 测试）+ evidence + p4t6 例外；零 legacy 词汇命中；test-use 树 pristine（0 dirty，head `cd5ef81` 前后一致）；harness summary 核验：boot1 3180 / boot2 3181 / mini-MCP 3481 全部释放、stable :3080 200→200、pristine before/after、rowMounted 双 boot true、boot marker（token URL）在档；public-surfaces.md 逐面 file:line 出处（profile-patch seam / dump-config / 公开 session API / dsh-scope / model-selection waterfall 等，全公开面）；run-log 168 行逐字完整（7 leg 分明，leg2 888/888，leg7 EXTRA 全轨迹）。
+- **独立终验（int/P5，审计性质）**：Leg2 **888/888 PASS**；tsc storage/domain/contracts/runtime 全 EXIT=0；**EXTRA harness 主 Agent 重跑**（独立 report dir `harness-output-main-audit/`，不覆盖 worker 证据）：**PASS，failures=0**，S1/S2/S3/S4 全 pass（15/11/8/5 断言），pristine/3080/ports 全绿，EXIT=0。
+- **基线更正说明**：worker 记录任务指令中 978/998 为错误沿用值，实际 worktree 基线 867（主 Agent 终验一致）；本程序基线链更新为 **888**。
+- **Git**：cherry-pick -x `f1fc8fd`→`3c99ee4`（code）、`2b38c11`→`b961511`（evidence）入 int/P5，无冲突；integration_sha → `b9615116ce2957fd8cadc06d733f65b5dae95cb4`；主 Agent 审计 harness 输出目录随本轮 bookkeeping 提交。
+- **Graph**：P5-T5 → INTEGRATED（head `2b38c11`，attempts 1）；ready → `[P5-T6]`（P5 末任务：member residency + G5 报告 + I-1 crash/restart/corrupt 真进程重跑落位）。
+- **下一步**：R34 —— 读 P5-T6 卡片全文（含被截行）→ T6 ruling（harness 复用、I-1 重跑矩阵、G5 八项判据报告格式）→ worktree → dispatch。
+
 ## 重审记录
 
 （空）

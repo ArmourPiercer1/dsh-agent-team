@@ -1,0 +1,32 @@
+2026-08-30T09:35:31.476Z P5-T5 harness start: worktree=D:\AgentDev\dsh-plugins\dsh-agent-team
+2026-08-30T09:35:31.477Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5
+2026-08-30T09:35:31.477Z selected scenarios=S1,S3,S4,S2 ports boot1=3180 boot2=3181
+2026-08-30T09:35:31.608Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T09:35:31.618Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T09:35:31.671Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5
+2026-08-30T09:35:31.673Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-08-30T09:35:31.675Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-08-30T09:35:31.675Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-08-30T09:35:31.676Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-08-30T09:35:31.677Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-08-30T09:35:31.677Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-08-30T09:35:31.678Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\packages\runtime\root-binding\harness\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-08-30T09:35:31.678Z junction farm ready
+2026-08-30T09:35:31.678Z user preset written: p5t5-team-persona
+2026-08-30T09:35:31.689Z mini MCP server up on 127.0.0.1:3481
+2026-08-30T09:35:31.690Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-30T09:35:33.558Z throwaway boot OK: http://127.0.0.1:3180/?token=TqTJ_Wh0ZkFSXkY91czDS1s64OHFqdiiWoSwK8VfEPA
+2026-08-30T09:35:33.593Z directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5\p5t5-directive.json
+2026-08-30T09:35:36.258Z boot 1: health={"ok":true,"boot":1,"ready":true} rowMounted=true
+2026-08-30T09:35:36.584Z scenario S1: http=200 pass=true assertions=15 (326ms)
+2026-08-30T09:35:36.843Z scenario S3: http=200 pass=true assertions=8 (259ms)
+2026-08-30T09:35:36.859Z scenario S4: http=200 pass=true assertions=5 (16ms)
+2026-08-30T09:35:36.916Z boot 1: stopped killed=true portFree=true
+2026-08-30T09:35:36.919Z directive boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5\p5t5-directive.json
+2026-08-30T09:35:38.826Z boot 2: health={"ok":true,"boot":2,"ready":true} rowMounted=true
+2026-08-30T09:35:38.870Z scenario S2: http=200 pass=true assertions=11 (43ms)
+2026-08-30T09:35:39.004Z boot 2: stopped killed=true portFree=true
+2026-08-30T09:35:39.005Z mini MCP server closed
+2026-08-30T09:35:39.124Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T09:35:39.124Z postflight: test-use pristine after=true
+2026-08-30T09:35:39.125Z P5-T5 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P5-T5\harness-output-main-audit\summary.json

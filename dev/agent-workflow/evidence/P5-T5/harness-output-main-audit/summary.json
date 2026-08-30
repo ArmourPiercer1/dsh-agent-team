@@ -1,0 +1,195 @@
+{
+  "task": "P5-T5",
+  "runStamp": "p5t5-1788082531477",
+  "harness": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\run.mjs",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+  "repoRoot": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t5",
+  "selectedScenarios": [
+    "S1",
+    "S3",
+    "S4",
+    "S2"
+  ],
+  "ports": {
+    "boot1": 3180,
+    "boot2": 3181,
+    "mcp": 3481,
+    "released": {
+      "boot1": true,
+      "boot2": true,
+      "mcp": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "afterBuild": null,
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "build": {
+    "required": false
+  },
+  "rowMounted": {
+    "boot1": true,
+    "boot2": true
+  },
+  "boots": {
+    "boot1": {
+      "port": 3180,
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t5\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "url": "http://127.0.0.1:3180/?token=AZil9N5AntTF6d3N2QyvLpJ1CANxHXJyVviWzd9tHQE",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\P5-T5\\harness-output-main-audit\\logs\\boot1\\instance-port3180.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3180/?token=AZil9N5AntTF6d3N2QyvLpJ1CANxHXJyVviWzd9tHQE",
+      "healthBefore": {
+        "ok": true,
+        "boot": 1,
+        "ready": true
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 1,
+        "ready": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "S1": {
+          "httpStatus": 200,
+          "durationMs": 326,
+          "pass": true,
+          "assertions": 15,
+          "failing": [],
+          "error": null
+        },
+        "S3": {
+          "httpStatus": 200,
+          "durationMs": 259,
+          "pass": true,
+          "assertions": 8,
+          "failing": [],
+          "error": null
+        },
+        "S4": {
+          "httpStatus": 200,
+          "durationMs": 16,
+          "pass": true,
+          "assertions": 5,
+          "failing": [],
+          "error": null
+        }
+      }
+    },
+    "boot2": {
+      "port": 3181,
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p5t5\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3181/?token=bJlqBihMXbB8Jysggvr40098qy04utJwL3qyy_ArtFw",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\P5-T5\\harness-output-main-audit\\logs\\boot2\\instance-port3181.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3181/?token=bJlqBihMXbB8Jysggvr40098qy04utJwL3qyy_ArtFw",
+      "healthBefore": {
+        "ok": true,
+        "boot": 2,
+        "ready": true
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 2,
+        "ready": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "S2": {
+          "httpStatus": 200,
+          "durationMs": 43,
+          "pass": true,
+          "assertions": 11,
+          "failing": [],
+          "error": null
+        }
+      }
+    }
+  },
+  "scenarios": {
+    "S1": {
+      "boot": 1,
+      "httpStatus": 200,
+      "durationMs": 326,
+      "pass": true,
+      "assertions": 15,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/S1.json"
+    },
+    "S3": {
+      "boot": 1,
+      "httpStatus": 200,
+      "durationMs": 259,
+      "pass": true,
+      "assertions": 8,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/S3.json"
+    },
+    "S4": {
+      "boot": 1,
+      "httpStatus": 200,
+      "durationMs": 16,
+      "pass": true,
+      "assertions": 5,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/S4.json"
+    },
+    "S2": {
+      "boot": 2,
+      "httpStatus": 200,
+      "durationMs": 43,
+      "pass": true,
+      "assertions": 11,
+      "failing": [],
+      "error": null,
+      "reportFile": "harness-output/S2.json"
+    }
+  },
+  "pass": true,
+  "failures": []
+}

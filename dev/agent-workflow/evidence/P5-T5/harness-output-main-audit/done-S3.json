@@ -1,0 +1,98 @@
+{
+  "scenario": "S3",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "durable: TeamSession record + team-root binding written",
+      "pass": true,
+      "actual": {
+        "wrote": true,
+        "teamSessionPresent": true,
+        "bindingKind": "team-root"
+      }
+    },
+    {
+      "name": "durable: read-back pins the immutable blueprint snapshot",
+      "pass": true,
+      "actual": {
+        "blueprintId": "P5T5-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-a51823ade969e3c50e9b47efa5a4f3ae907897e4daf361f00d15298a8115692c"
+      },
+      "expected": {
+        "blueprintId": "P5T5-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-a51823ade969e3c50e9b47efa5a4f3ae907897e4daf361f00d15298a8115692c"
+      }
+    },
+    {
+      "name": "bind: overlays installed in fixed order",
+      "pass": true,
+      "actual": [
+        "persona",
+        "model",
+        "capability"
+      ]
+    },
+    {
+      "name": "bind: agent-setup events (3 overlay-installed + 1 admission-decided)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-p5t5-s3",
+          "name": "agent-setup/overlay-installed",
+          "detail": "persona"
+        },
+        {
+          "sessionId": "session-p5t5-s3",
+          "name": "agent-setup/overlay-installed",
+          "detail": "model"
+        },
+        {
+          "sessionId": "session-p5t5-s3",
+          "name": "agent-setup/overlay-installed",
+          "detail": "capability"
+        },
+        {
+          "sessionId": "session-p5t5-s3",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_TEAM_POLICY_CLOSED"
+        }
+      ]
+    },
+    {
+      "name": "admission: closed policy rejects (ADMISSION_TEAM_POLICY_CLOSED)",
+      "pass": true,
+      "actual": {
+        "admitted": false,
+        "admissionCode": "ADMISSION_TEAM_POLICY_CLOSED"
+      }
+    },
+    {
+      "name": "admission: rejection is a decision, not a failure (bind completed)",
+      "pass": true,
+      "actual": {
+        "bound": true,
+        "installed": true
+      }
+    },
+    {
+      "name": "durable: state stands after the closed decision",
+      "pass": true,
+      "actual": {
+        "teamSessionPresent": true,
+        "bindingKind": "team-root"
+      }
+    },
+    {
+      "name": "durable: session log published as session.jsonl.zstd",
+      "pass": true,
+      "actual": {
+        "published": true,
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t5--",
+        "waitMs": 0,
+        "size": 297
+      }
+    }
+  ]
+}
