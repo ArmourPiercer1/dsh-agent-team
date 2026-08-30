@@ -571,6 +571,19 @@
 - **G5 round 2 准备完成**：G5-R1/R2/R3 worktree re-checkout detached @ `9f5bd12`（round-1 旧 `g5-review-harness-output/` 与垃圾 `review-report.md` 已删、0 untracked）；prompts 已修（JSON.stringify 嵌入；verdict agents 自读磁盘 summary.json；全部 agent provider qiyuan-self / model qwen3.8-27b；harness 运行严格串行 —— 共享 DSH_HOME + 固定 MCP 端口）。
 - **下一步**：R37 —— 启动 G5-REVIEW round 2（workflow：phase1 并行盲分析 → phase2 SEQUENTIAL harness 重跑 → phase3 并行 verdicts）；gate 过：archive → ff-merge master → push #5 → P6。
 
+### 轮次 R37：Gate G5 PASS（3/3 投机通过）—— P5 完成，ff-merge + push #5，current_phase → P6（2026-08-30）
+
+- **G5 round 2 执行**（workflow `g5-review-round2`，9 agents 全部 qiyuan-self/qwen3.8-27b；3 并行盲分析 → 3 严格串行独立 chain+harness 重跑 → 3 并行 verdicts；payload 缺陷已修：JSON.stringify 嵌入 + verdict agents 自读磁盘 summary.json；worktrees G5-R1/R2/R3 detached @ `9f5bd12`（post-fix int/P5 tip），round-1 旧 artifacts 执行前已清）。
+- **裁决 3/3：投机通过**（gate 规则：all ∈ {通过, 投机通过} → PASS）。三名 reviewer 各自独立：frozen-docs 4/4 hash ok（+ manifest `frozen_docs` 节交叉核对）；8/8 criteria PASS（criterion→file:line evidence，phase 3 逐条重读复核）；leg2 **929/929**；tsc 4/4 exit 0；harness **9/9 场景绿**（I1A 5/5 断言 ×3，I1B expected-fail by design）；zero-core / private-import / owned-boundary 全净（私有 import 0；cross-task touches 仅 2 处已识别：runtime tsconfig rootDir 胶水、p4t6 覆盖计数 pin）；invariants 组合无矛盾。
+- **Findings 14 条（4+5+5），全 LOW/minor/INFO，无 HIGH/CRITICAL**（主 Agent 已逐条读磁盘报告核验）：R1：①member-residency README 任务号笔误（"P5-T3 root binding" 应为 P5-T5，纯 prose，后续 doc pass 修）；②T6 harness mini-MCP 3491-3495 与 P2-T4 band 复用（串行 + pre-check + release assert，无争用观测；未来并发使用需注意）；③I1A 时序依赖为 managed residual risk（本 run 观测窗口 420ms 绿、convergent replay 过、确定性 barrier 由 units S12/S13 钉死；投机通过而非通过的主因，ROUTER_RULES §3.2 判可控制）。R2：minor findings 见归档报告。R3：F1 p4t6 prose 257 vs 断言 258（worker 行文误记，断言为真值，standing）；F2 M3 以 row 自有 repository seam 种子 SETTLED（无 lifecycle transition 机制的 documented scope stand-in，延后任务）；F4 I1B 错误文本 "schema version null" vs 实际 corrupt 999（P4 版本抽取把被篡改 stamp 读为 null——cosmetic）；F5 :3080 listener 观测（in-run 记录 before/after 均 200 括住 harness 窗口，post-run 停止状态在窗口外——informational）。
+- **Round 1 处置（记录在案）**：round 1（@ `33e462a`）VOID（orchestrator `String(obj)` payload bug → 三 verdict agents 收到 `[object Object]`）；其 phase-2 artifacts 真实有效：R2/R3 全绿、**R1 I1A red = genuine product defect**（R36 已 adjudicate 并在 T6 attempt 3 修复）；round-1 原始 harness 目录在 round-2 准备时按计划清除（防 stale 读取），发现保全于 R35/R36 日志与截断的 workflow spill。
+- **主 Agent 独立验证（disk is truth，不采信 workflow 嵌入值）**：3× 磁盘 `g5-review-harness-output/summary.json` pass=true、failures=[]、9/9 场景（I1A pass ×3）；3× 磁盘 `review-report.md` 裁决行 = 投机通过；14 条 findings 逐条重读。
+- **merge/push #5（sanctioned，每 Gate 一次）**：int/P5 tip `0338f8a764337c7caf6ca15aaf7ede9d46bcc620`（R36 bookkeeping）ff-merge master → `git push origin master` → `ls-remote` 核验（commit 记录见下）。
+- **归档**：3× `review-report.md` + 3× `harness-summary.json` → `dev/agent-workflow/evidence/G5-REVIEW/round-2/reviewer-{1,2,3}/`；G5-R1/R2/R3 worktree 归档后移除。
+- **Carry-forwards（入 P6 背景，非阻塞）**：README 任务号笔误；MCP band 文档化；I1A residual risk 接受（barrier + S12/S13 + 实测窗口 420ms 绿）；p4t6 prose 257；M3 lifecycle stand-in（延后任务）；I1B version-null 文本（P4 cosmetic）。
+- **Graph**：G5-REVIEW → PASSED（verdicts [投机通过, 投机通过, 投机通过]，gate 3/3 PASS，merged_to_master `0338f8a`，pushed true）；current_phase → P6；ready []（P6 cards 待读后 define）。
+- **下一步**：R38 —— 读 TaskDoc P6 卡片组 + DevPlan §19（Activation / Runtime / Coordination）→ define P6 tasks（DAG `P6-T1 → P6-T2 → {T3||T4||T5} → P6-T6 → G6`；P6-T1 ActivationProvider 为所有新 MemberInstance creation 唯一入口，owns `packages/runtime/activation/**`，dep P5-T6）→ int/P6 分支 + kickoff。
+
 ## 重审记录
 
 （空）
