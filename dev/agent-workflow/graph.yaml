@@ -1,12 +1,12 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
 current_phase: P4
 integration_branch: int/P4-teamdomain-journal
-integration_sha: 194c2240b00ed33626087bce53d0d3c4eeccf96d
+integration_sha: c874a7f1605ef1fb2ecfb8c89377c5ba74e86ac6
 contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: []
+ready: [P4-T6]
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -38,6 +38,6 @@ tasks:
   P4-T2: { state: INTEGRATED, class: A, branch: task/P4-T2-operation-journal, base_sha: f6d7da5c89a0c3f06f534d3cd0b5351fc7135628, head_sha: 4efef296df580ad08c297ffd102a0035cc3ba8bf, attempts: 2, depends_on: [P4-T1] }
   P4-T3: { state: INTEGRATED, class: A, branch: task/P4-T3-binding-reconciliation, base_sha: f6d7da5c89a0c3f06f534d3cd0b5351fc7135628, head_sha: bdf16bcec7369b7e2ad169cb2e32092d9b306811, attempts: 1, depends_on: [P4-T1] }
   P4-T4: { state: INTEGRATED, class: A, branch: task/P4-T4-provisioning-sm, base_sha: 4a587021e9f8f560870793b1cad20550b57b7ccd, head_sha: 7f3f6a29c1a3fed080ff7e7099360eeb268423b7, attempts: 2, depends_on: [P4-T2, P4-T3] }
-  P4-T5: { state: RUNNING, class: A, branch: task/P4-T5-fault-injection-testkit, base_sha: 28466ac, head_sha: null, attempts: 0, depends_on: [P4-T2, P4-T3, P4-T4] }
+  P4-T5: { state: INTEGRATED, class: A, branch: task/P4-T5-fault-injection-testkit, base_sha: 28466ac, head_sha: 3a5ac2bd0c6ca8bad82556a63dcb2aae5c25a70a, attempts: 1, depends_on: [P4-T2, P4-T3, P4-T4] }
   P4-T6: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T5] }
   G4-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T1, P4-T2, P4-T3, P4-T4, P4-T5, P4-T6] }

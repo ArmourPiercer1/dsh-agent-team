@@ -381,6 +381,18 @@
 - **派发**：workflow `p4-t5-fault-injection-testkit-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；无端口/DSH_HOME/实例。
 - **graph**：P4-T5 → RUNNING（branch task/P4-T5-fault-injection-testkit，base `28466ac`）；ready → []。
 
+### 轮次 R23：P4-T5 结果 + 主 Agent 审计 + 集成（2026-08-30）
+
+- **结果**（worker 返回，`qiyuan-self/qwen3.8-27b`）：**SELF_VERIFIED**，head `3a5ac2b`，attempts **1/3**（canonical a1 全 5 leg 绿 + DEBUG testkit-tsc 绿；9 次 debug 运行单独记账）。
+  - **交付**：`packages/testkit/fault-injection/`（file-seam.mjs FileStorageSeam = file-backed StorageDomainSeam，node:fs 仅 .mjs、tmp+renameSync 原子写、armCrashAfterWrites 触发 CrashFault 于 mid-atomic-write、write 计数/crash 状态查询；file-seam.d.mts 类型面；fixtures/committed-world/ 确定性已提交世界 fixture，8 个表文件 + meta，被 4 个测试流消费）+ 33 p4t5 测试（crash-matrix 13 / retry-restart 10 / corrupt-version 10 + helpers）。
+  - **验收映射**：all crash points = 10 boundary 全部（W1–W8 精确 seam-write 算术 offset+recovery=8、每 crash 恰好 1 个 tmp 落在精确表上、reopen 后收敛 exactly one committed MemberInstance + 0-write no-op recover、B2==B3 与 B6==B8 共享 seam 状态）；double retry（B2/B9：7+1 剩余写后 0-write no-op、同 ledger sequence）；restart（committed-world fixture 0-write 读回；stamped-empty NONE + member-not-provisioned 后 8-write commit；第二 member inst-beta 7 写至 ledger seq 2 且存活二次 restart）；corrupt version（a1 stamp SCHEMA_STAMP_MISMATCH / a2 domain meta SCHEMA_VERSION_MISMATCH / b1 SEAM_FAILURE / b2-b3 RECORD_INVALID（MALFORMED_DTO、SCHEMA_VERSION_MISMATCH）/ c1-c2 遗留 tmp 不污染 reopen）。
+  - **report**：`evidence/P4-T5/fault-matrix-report.md`（10-boundary 表 + 进程等价论证 + §17.5 判据映射，G4 criterion 7 等价性显式声明、真进程/真 StorageDomain 绑定属 P5）。
+  - **T1-T4 缺陷报告**：none（唯一 harness bug 在 T5 自身新 file-seam.mjs update 返回值，任务内修复）。
+- **独立审计（全部通过）**：`.worktrees/P4-T5` head `3a5ac2b` 与自报一致、工作树干净；owned-path 越界检查为空（fault-injection/** + fixtures + test/p4t5-* + evidence/P4-T5/**，共 18 文件）；独立重跑 = pnpm install EXIT=0 + 全量 **773/773 PASS EXIT=0**（740 + 33）+ storage/domain/contracts/testkit 4× tsc 全 EXIT=0；fault-matrix-report.md 抽查（W1–W8 算术、boundary 表、等价论证、判据映射齐全）。
+- **集成**：cherry-pick -x ×2（code `5605584`→`3adddf4` + evidence `3a5ac2b`→`c874a7f`）→ int/P4 零冲突，head `c874a7f`。整合验证（主 worktree）：全量 **773/773 PASS EXIT=0** + storage/domain/contracts/testkit 4× tsc 全 EXIT=0。
+- **Graph**：P4-T5 → INTEGRATED（head `3a5ac2b`，attempts 1）；integration_sha = `c874a7f1605ef1fb2ecfb8c89377c5ba74e86ac6`；ready → [P4-T6]。
+- **下一步**：读 TaskDoc §11.5 P4-T6 完整卡片（TeamDomain independent audit + G4，owned = review artifacts only；Gate reviewer 不参与 P4-T1..T5 实现——主 Agent 执行独立审计并产出 G4 候选证据）→ 建 `.worktrees/P4-T6` → 派发。
+
 ## 重审记录
 
 （空）
