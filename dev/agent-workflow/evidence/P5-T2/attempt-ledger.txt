@@ -1,0 +1,38 @@
+# P5-T2 attempt ledger
+
+Budget: max 3 canonical attempts. Used: 1.
+
+## Canonical attempts
+
+- ATTEMPT 1 (final): LEG1 PASS EXIT=0 (fresh-worktree install, 19.2s, 150 packages) | LEG2 first pass FAIL EXIT=1 (837 passed / 2 failed / 839 total — failure 1: uncaught fail-closed error in the p5t2 retry test, a test-harness bug in THIS task's own file; failure 2: p4t6 coverage count 202 vs actual 213, expected — the 11 new P5-T2 .ts files raised the scanned-tree count; all 8 remaining p4t6 denylist/quarantine/violation/control checks PASSED) -> test fix (try/catch around the first attempt) + DEC-1 count maintenance -> LEG2 re-run PASS EXIT=0 (839/839) | LEG3 tsc storage PASS EXIT=0 | LEG4 tsc domain PASS EXIT=0 | LEG5 tsc contracts PASS EXIT=0 | DEBUG tsc runtime PASS EXIT=0 => CHAIN_OK (5/5 canonical + debug). Verdict: ATTEMPT 1 complete and final; no further attempts required.
+
+## Debug runs (not counted, per run-log D1-D4)
+
+- D1 tsc runtime (first pass after all files written): EXIT=0 — no type errors on the first pass.
+- D2 run-tests full (first pass): 837/839 (two failures above — one test-harness bug in the p5t2 retry test, one expected p4t6 count pin) — both fixed; see run-log D2 for the exact fixes.
+- D3 tsc runtime (after the test fix): EXIT=0.
+- D4 run-tests full (second pass): 839/839 EXIT=0 (12 new p5t2 tests + 827 baseline).
+
+## Decision record
+
+DEC-1 (most review-sensitive action of this task): p4t6 coverage count 202 -> 213 in packages/testkit/test/p4t6-session-event-scan.test.ts.
+- Context: the p4t6 scanner test pins the scanned-tree file count (189 pre-P5 .ts/.mts/.mjs files + 12 P5-T1 runtime files + the scanner's adjacent .d.mts = 202 at P5-T1's landing). This task adds 11 new .ts files under packages/runtime/ (6 persona/preset modules + p5t2-helpers.ts + 4 p5t2 test files), all within the scanner's scope (every .ts/.mts/.mjs under packages/** except the two self-referential exclusions) and all verified CARRY ZERO denylist tokens (the 5 legacy event strings matched as exact quoted literals, the 5 word-bounded payload symbols, the declaration-merge pattern): the zero-violation test, the quarantine set, the self-exclusion contract, and the positive/negative controls all PASSED before and after the count edit. The count pin is the only assertion that changes.
+- Pre-adjudication: the task card pre-adjudicated exactly this maintenance (if the p4t6 count assertion fails, update ONLY that file's title + the two toBe assertions + the derivation comment).
+- Exact edit scope (4 tokens + comment, one file): test title "202 files scanned" -> "213 files scanned"; `expect(scanResult.filesScanned).toBe(202)` -> `.toBe(213)`; `expect(scanResult.files.length).toBe(202)` -> `.toBe(213)`; the derivation comment "201 pre-existing .ts/.mts/.mjs files (189 pre-P5 + 12 P5-T1 runtime files)" -> "212 pre-existing .ts/.mts/.mjs files (189 pre-P5 + 12 P5-T1 runtime files + 11 P5-T2 persona/preset files)". Nothing else in that file was touched (the required-P4-suites table, the quarantine set, the pinned hit table, the control samples are byte-for-byte unchanged).
+- Untouched by design: the scanner packages/testkit/fault-injection/session-event-scan.mjs and session-event-scan.d.mts remain byte-for-byte identical (frozen denylist, payload-symbol rules, declaration-merge pattern, the frozen 2-file QUARANTINE_FILES set, the 2-file self-exclusion contract, and all matching logic).
+- Reversibility: if the main Agent / G5 disagrees, the revert is a 3-token change of the count constant in one committed test file; the 11 P5-T2 files pass every violation check regardless.
+
+## Interpretation decisions (documented for review)
+
+INT-1 (must-test group 1 "no persona"): "no persona" = a preset whose EFFECTIVE persona is absent (personaKind 'absent') — nothing to compose and nothing to conflict, so the persona slot's apply returns without installing a scoped identity and without probing the compatibility engine; the bind succeeds with the preset's plain upstream assembly semantics (no error). This maps 1:1 to the binding test list "(1) no persona — bind succeeds, no scoped identity, no error". The three-state closed vocabulary (absent / standard / complete) lives in packages/runtime/agent-setup/preset/types.ts.
+INT-2 (FATAL surfacing): the complete:true FATAL is thrown from the persona slot's apply (before the binder's admission decision, per the T1 slot contract), carrying the frozen contracts v1 code TEAM_PERSONA_COMPLETE_PRESET_CONFLICT on TeamPersonaOverlayError; the binder wraps it as its closed BINDER_OVERLAY_FAILED (details.origin='persona') with the persona error on `cause`. The binder's frozen 5-code vocabulary is untouched (binder/** is read-only).
+INT-3 (member substrate inheritance, Architecture §13.1): the preset seam is keyed by the ROOT session id only, so a member's substrate is structurally the root's — no per-member selector exists. The FATAL therefore fires for a member exactly when its root preset is complete:true (negative proof in the fatal suite).
+INT-4 (cold path, DevPlan §18.5): a cold rehydrate NEVER calls a slot apply (T1 binder contract) — the persona scope (identity + full slot set incl. 'persona') is restored from the durable records via restoreScope, with zero fresh-time side effects (no engine probe, no scoped-identity install, no installOverlay). The cold suite proves the restored identity equals the fresh identity.
+
+## Red-line compliance (self-audit)
+
+- Owned paths only: packages/runtime/agent-setup/persona/**, packages/runtime/agent-setup/preset/**, packages/runtime/test/p5t2-*.test.ts + p5t2-helpers.ts, dev/agent-workflow/evidence/P5-T2/** (+ the pre-adjudicated one-file p4t6 count maintenance). Read-only surfaces (binder/**, domain/compatibility, contracts, storage, testkit scanner) untouched except the DEC-1 file.
+- CORE PATCH BUDGET 0: no upstream source change, no private API import, no patch-package, no legacy packages/team copy, zero legacy Team SessionEvent vocabulary in the new sources (p4t6 scanner green, count 213).
+- Mock-first per ruling R30: zero live agents, zero ports, zero DSH_HOME, zero instances; the real DSH public seam binding belongs to T5/T6 (narrow injected seams: AgentPresetSeam / TeamBlueprintPersonaSource / ScopedPersonaPromptSurface, all mock-implemented in p5t2-helpers.ts).
+- Real P3-T5 compatibility engine is the classification dependency (pure, read-only import); a counting wrapper is test-only.
+- Every new module is transitively imported by a committed test (persona/index -> adapter -> preset, errors, types; all four p5t2 suites import the persona index and the helpers).

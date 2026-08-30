@@ -1,0 +1,53 @@
+# P5-T2 run log — persona preset overlay (compatible-preset scoped identity + complete:true FATAL gate)
+
+Worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T2
+Branch: task/P5-T2-persona-preset-overlay
+Base: 6618d65c648be0117b6b914c3052e600f67a2389 (P5-T1 evidence commit)
+Log written: 2026-08-30 15:39 +08:00
+Runner discipline: canonical chain = pnpm install --ignore-scripts -> node scripts/run-tests.mjs -> tsc storage -> tsc domain -> tsc contracts (each EXIT=0 required). The DEBUG leg (tsc runtime) is separate and must also EXIT=0 (labeled DEBUG, not a canonical leg). Debug runs are recorded separately and do not count against the 3 canonical attempts. Zero live agents, zero ports, zero DSH_HOME, zero DSH instances, zero subagents. Only `node scripts/run-tests.mjs` runs tests (no pnpm run/exec, no vitest CLI / tsx / esbuild / vite).
+
+## Runs (chronological)
+
+### L1 — Leg1 in the fresh worktree (node_modules absent; not counted)
+- cmd: pnpm install --ignore-scripts
+- result: EXIT=0 — "resolved 150, reused 150, downloaded 0, added 150, done"; "+ typescript 6.0.3"; "Done in 19.2s using pnpm v11.7.0"
+
+### D1 — DEBUG tsc runtime, first pass after all 11 new files written (not counted)
+- cmd: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+- result: EXIT=0 (no diagnostics — the persona/preset modules + p5t2 helpers/tests type-checked clean on the first pass)
+
+### D2 — run-tests full, first pass (not counted; a debug run)
+- cmd: node scripts/run-tests.mjs
+- result: EXIT=1 — "837 passed, 2 failed, 839 total"
+  - Failure 1 (test bug, THIS task's file): p5t2-persona-complete-fatal.test.ts, test "a retry of the same complete-persona bind fails identically" — the FIRST bindFreshRoot call in the retry test was not wrapped in try/catch, so the (correct) fail-closed TeamAgentBinderError (code BINDER_OVERLAY_FAILED, cause TEAM_PERSONA_COMPLETE_PRESET_CONFLICT) escaped and failed the test. Fixed by wrapping the first attempt in try/catch and asserting isTeamAgentBinderError on it.
+  - Failure 2 (expected, pre-adjudicated): p4t6-session-event-scan.test.ts coverage "202 files scanned" vs actual 213 — the 11 new P5-T2 .ts files raised the scanned-tree count. ALL other p4t6 tests (denylist zero-violation, quarantine set, self-exclusion, positive/negative controls, suite citation) PASSED in the same run, before and after the count edit.
+- fix: the try/catch test fix above + DEC-1 count-maintenance-only edit (title 202 -> 213; two toBe(202) -> toBe(213); comment derivation "189 pre-P5 + 12 P5-T1" -> "189 pre-P5 + 12 P5-T1 + 11 P5-T2"). Scanner session-event-scan.mjs (denylist, quarantine set, self-exclusion contract, matching logic) and session-event-scan.d.mts byte-for-byte unchanged. Full justification: attempt-ledger.txt DEC-1.
+
+### D3 — DEBUG tsc runtime, after the test fix (not counted)
+- cmd: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+- result: EXIT=0
+
+### D4 — run-tests full, second pass (not counted; a debug run)
+- cmd: node scripts/run-tests.mjs
+- result: EXIT=0 — "839 passed, 0 failed, 839 total, 845 ms", "RESULT: PASS run-tests (0 failures)"
+- per-file new suites (all green): p5t2-persona-no-persona 3, p5t2-persona-compatible 3, p5t2-persona-complete-fatal 3, p5t2-persona-cold-bind 3 (12 new tests; baseline 827 -> 839)
+
+### A1 — ATTEMPT 1 canonical chain (final)
+- cmd (Leg1): pnpm install --ignore-scripts
+- result: EXIT=0 (re-verified idempotent after the D4 green run)
+- cmd (Leg2): node scripts/run-tests.mjs
+- result: EXIT=0 — "839 passed, 0 failed, 839 total, 857 ms", "RESULT: PASS run-tests (0 failures)"
+- cmd (Leg3): node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+- result: EXIT=0
+- cmd (Leg4): node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+- result: EXIT=0
+- cmd (Leg5): node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+- result: EXIT=0
+- cmd (DEBUG): node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+- result: EXIT=0
+- verdict: CHAIN_OK (5/5 canonical legs + DEBUG tsc runtime all EXIT=0); ATTEMPT 1 complete and final; no further attempts required.
+
+## Commit record
+
+- code commit: 4e998be "feat(runtime): add P5-T2 persona preset overlay - compatible-preset scoped identity + complete:true FATAL gate" (12 files: 6 new persona/preset modules, 4 new p5t2 test files + p5t2-helpers.ts, 1 modified p4t6 count maintenance)
+- evidence commit: this directory (run-log.txt, attempt-ledger.txt, summary.json), stacked directly on top on the same task branch.
