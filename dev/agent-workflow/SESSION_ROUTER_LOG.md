@@ -487,6 +487,20 @@
 - **Graph**：P5-T2/T3/T4 → RUNNING（attempts 0）。
 - **下一步**：单 workflow 一次扇出 3 leaf worker（全 `qiyuan-self/qwen3.8-27b`，各自 ≤3 attempts，禁止再派生）；返回后三审计（diff 面 / 独立重跑 / head 自验）→ 依次 cherry-pick + p4t6 计数重同步 → R31 → ready `[P5-T5]`。
 
+### 轮次 R31：P5-T2/T3/T4（F1 并行组）结果 + 三审计 + integration（2026-08-30）
+
+- **Worker 自报**（单 workflow 3 leaf 并发，全 `qiyuan-self/qwen3.8-27b`，各自 2/3 attempts）：
+  - **T2**：DONE。preset 三态词汇（absent/standard/complete）+ 仅以 Root 会话 id 为键的窄 `AgentPresetSeam`（Member 继承 Root substrate 为结构性保证）；persona adapter 填 T1 persona 槽位：absent 不装身份；standard 经真实 P3-T5 compat 引擎（PASS/SATISFIED，零 probe 泄漏）→ 深冻结 `ScopedPersonaIdentity`（blueprint 文本 + 继承 presetId + personaOrigin）装 scoped-prompt 面；complete:true → 引擎 BLOCKED_FATAL + contracts v1 冻结码 `TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` 自槽位 apply 抛出（binder admission 之前），binder 包成封闭 `BINDER_OVERLAY_FAILED`（cause 链携带冻结码）——Team work 永不启动（无 surface 安装、无 admission、无事件、无注册）；cold bind 零 fresh 副作用。自报 835/835。
+  - **T3**：DONE。model 槽位：`TeamModelSelectionSource` 注入点 + `resolveEffective` 请求时刻解析（in-flight 保持 A、并发 override 切源不改 N、N+1 用 B）；restart 重载当前源无 stale A；`ModelSelectionMirror` 为 public ModelSelection 的结构镜像（T5/T6 绑真实 seam）。自报 837/837。
+  - **T4**：DONE。capability 槽位：三面 resolver（tools-permissions/skills/MCP）+ `G2CapabilityMatrix` 封闭枚举（public seam 有/无显式区分）+ `resolveEffectiveCapability = available ∩ teamResolved ∩ externalHard` 三面一致性；pre-step/pre-execute 钩子点 fail-closed（未知 capability 拒绝、无 bypass 路径）；cold resume 只读重建 resolver 不重跑 fresh 副作用。自报 843/843。
+- **主 Agent 三审计**：三 worktree 均干净树；diff 面 = owned + evidence + p4t6 计数预裁决例外（三处均仅标题+2 断言+注释，scanner `.mjs`/`.d.mts` 未动）；负向 grep 零 legacy 词汇、零真实 `node:` import（命中全部为 doc 注释纯度声明）；**逐 worktree 独立重跑**：T2 **839/839**、T3 **839/839**、T4 **843/843** 全绿。
+- **上报缺陷（记录在案，非阻塞，已入 graph note）**：T2 TaskResult 报 835（真 839）且 notes 引陈旧 code SHA `8106a04`（真 `4e998be`，attempt-1 中间提交）；T3 TaskResult 报 837（真 839）且 notes 引陈旧 SHA `8f6d218`/`28d547e`（真 `6ea3ec9`/`416d2ac`）；T4 数字与 SHA 均准。教训固化：worker notes 的 SHA/数字可能是中间态——**一律以 worktree `git rev-parse`/`log`/独立重跑为准**（P4-T6 规则第三次验证）。
+- **Integration 事件**：首次 cherry-pick 误用 T2 陈旧 code SHA `8106a04`（bad revision），T2 evidence `7e07525` 先行落上 int/P5 成为孤儿提交 → 主 Agent 立即 `reset --hard 56cc9ed` 清除，按真 SHA 顺序重放：T2（`4e998be`+`7e07525`）→ T3（`6ea3ec9`+`416d2ac`，p4t6 计数冲突解为累计 219）→ T4（`40a6140`+`1094a4c`，p4t6 冲突解为累计 227，含清除一行残留 `>>>>>>>` 标记）；全部 `-x`。
+- **独立终验（int/P5）**：`node scripts/run-tests.mjs` **867/867 PASS**（827+12+12+16）；tsc storage/domain/contracts/runtime 全 EXIT=0。
+- **Git**：int/P5 head `4d150028671c9d1da7a8df8853bf2075bb2b28dc`（含 T2/T3/T4 全部 code+evidence）；integration_sha 已更新。
+- **Graph**：P5-T2/T3/T4 → INTEGRATED（attempts 2/2/2，note 记录上报缺陷）；ready → `[P5-T5]`。
+- **下一步**：R32 —— P5-T5 kickoff（**I-1 真绑定任务**：真实 AgentFactoryAdapter + 真 StorageDomain seam 绑定；TEST_METHODS 端口 3180、每任务独立 DSH_HOME（`references/.dsh-test-p5t5`）、稳定实例 :3080 绝对不碰；先重读 TEST_METHODS 全文再 ruling/dispatch）。
+
 ## 重审记录
 
 （空）

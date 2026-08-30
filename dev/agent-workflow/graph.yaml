@@ -1,12 +1,12 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
 current_phase: P5
 integration_branch: int/P5-agent-binding-binder
-integration_sha: 6618d65c648be0117b6b914c3052e600f67a2389
+integration_sha: 4d150028671c9d1da7a8df8853bf2075bb2b28dc
 contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [P5-T2, P5-T3, P5-T4]
+ready: [P5-T5]
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -42,9 +42,9 @@ tasks:
   P4-T6: { state: INTEGRATED, class: A, branch: task/P4-T6-teamdomain-audit, base_sha: 4a61394, head_sha: bd97476e17911fa7d4ab15513087a8521b064ea4, attempts: 3, depends_on: [P4-T5] }
   G4-REVIEW: { state: PASSED, class: A, branch: int/P4-teamdomain-journal, base_sha: 3ccff7bc98fb15bd8c691a13639177041f91b1b0, head_sha: cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07, attempts: 1, depends_on: [P4-T1, P4-T2, P4-T3, P4-T4, P4-T5, P4-T6], verdicts: [投机通过, 投机通过, 通过], gate: 3/3 PASS, merged_to_master: cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07, pushed: true }
   P5-T1: { state: INTEGRATED, class: A, branch: task/P5-T1-team-agent-binder, base_sha: 06bd13bc13de4bc8aa6c91cb41e31fc02d04baee, head_sha: bc9f8b43531e2935a57b59f4254b55054d03715e, attempts: 1, depends_on: [P4-T6], note: DEC-1 p4t6 coverage-count maintenance 190->202 ratified as formal owned-path exception (standing negative control; scanner .mjs byte-identical; G5 re-verifies) }
-  P5-T2: { state: RUNNING, class: A, branch: task/P5-T2-persona-preset-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, attempts: 0, depends_on: [P5-T1] }
-  P5-T3: { state: RUNNING, class: B, branch: task/P5-T3-model-selection-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, attempts: 0, depends_on: [P5-T1] }
-  P5-T4: { state: RUNNING, class: A, branch: task/P5-T4-capability-guard-adapters, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, attempts: 0, depends_on: [P5-T1] }
+  P5-T2: { state: INTEGRATED, class: A, branch: task/P5-T2-persona-preset-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 7e07525fe8e95fa15f7b6cfb528714d704255638, attempts: 2, depends_on: [P5-T1], note: TaskResult undercount 835 vs true 839; notes cited stale code SHA 8106a04 (true 4e998be) - main-agent audit used worktree rev-parse/log }
+  P5-T3: { state: INTEGRATED, class: B, branch: task/P5-T3-model-selection-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 416d2acfe79f40e605bacf9f15ed643c0d696739, attempts: 2, depends_on: [P5-T1], note: TaskResult undercount 837 vs true 839; notes cited stale SHAs 8f6d218/28d547e (true 6ea3ec9/416d2ac) - main-agent audit used worktree rev-parse/log }
+  P5-T4: { state: INTEGRATED, class: A, branch: task/P5-T4-capability-guard-adapters, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 1094a4c2de48427d02ad6514ddd4446bf2e5cea2, attempts: 2, depends_on: [P5-T1] }
   P5-T5: { state: DEFINED, class: A, depends_on: [P5-T2, P5-T3, P5-T4] }
   P5-T6: { state: DEFINED, class: A, depends_on: [P5-T5] }
   G5-REVIEW: { state: DEFINED, class: A, depends_on: [P5-T1, P5-T2, P5-T3, P5-T4, P5-T5, P5-T6] }
