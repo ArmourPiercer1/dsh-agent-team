@@ -1,12 +1,12 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
 current_phase: P5
 integration_branch: int/P5-agent-binding-binder
-integration_sha: b9615116ce2957fd8cadc06d733f65b5dae95cb4
+integration_sha: 33e462ad9860f55980f352e2355e5482181b9584
 contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [P5-T6]
+ready: []
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -46,5 +46,5 @@ tasks:
   P5-T3: { state: INTEGRATED, class: B, branch: task/P5-T3-model-selection-overlay, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 416d2acfe79f40e605bacf9f15ed643c0d696739, attempts: 2, depends_on: [P5-T1], note: TaskResult undercount 837 vs true 839; notes cited stale SHAs 8f6d218/28d547e (true 6ea3ec9/416d2ac) - main-agent audit used worktree rev-parse/log }
   P5-T4: { state: INTEGRATED, class: A, branch: task/P5-T4-capability-guard-adapters, base_sha: 6618d65c648be0117b6b914c3052e600f67a2389, head_sha: 1094a4c2de48427d02ad6514ddd4446bf2e5cea2, attempts: 2, depends_on: [P5-T1] }
   P5-T5: { state: INTEGRATED, class: A, branch: task/P5-T5-root-binding, base_sha: 870c0019de7d4377cca86948632533a6efe973e2, head_sha: 2b38c11a9a3356916cbd3e2a2e2d33fbde7386a1, attempts: 1, depends_on: [P5-T2, P5-T3, P5-T4], note: I-1 real binding delivered (profile-patch seam, 2 boots, S1-S4 green, pristine+3080+ports verified); main-agent independent harness rerun PASS (harness-output-main-audit); baseline correction 867 confirmed by worker }
-  P5-T6: { state: RUNNING, class: A, branch: task/P5-T6-member-residency, base_sha: 83b934a01227ed147b80a8e4b1211552dce3f624, attempts: 0, depends_on: [P5-T5], note: final P5 task (member residency + G5 report + I-1 crash/restart/corrupt real-process rerun + R-2 real-factory idempotency); DSH_HOME references/.dsh-test-p5t6; port 3180/3181 }
+  P5-T6: { state: INTEGRATED, class: A, branch: task/P5-T6-member-residency, base_sha: 83b934a01227ed147b80a8e4b1211552dce3f624, head_sha: 3d59505a1c8161c2bb8b5257e072e1c94ccd59c0, attempts: 2, depends_on: [P5-T5], note: member residency + G5 8-criterion report + I-1 real-process crash/corrupt/restart (I1a/I1b/I1c) delivered; attempt 1 void (driver & $cmd defect, tsc legs never executed, archived attempt-1-broken-chain.log); worker prose miscount 257 vs committed p4t6 truth 258 (Leg2 green, code correct); main-agent independent harness rerun PASS all 9 scenarios + I-1 groups (harness-output-main-audit); baseline chain now 925 }
   G5-REVIEW: { state: DEFINED, class: A, depends_on: [P5-T1, P5-T2, P5-T3, P5-T4, P5-T5, P5-T6] }

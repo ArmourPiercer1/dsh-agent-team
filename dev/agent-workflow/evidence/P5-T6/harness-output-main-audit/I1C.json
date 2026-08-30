@@ -1,0 +1,138 @@
+{
+  "scenario": "I1C",
+  "boot": 5,
+  "sessionId": "session-child-1vz9d1n0819tzg0x",
+  "identity": {
+    "instanceId": "inst-1vz9d1n0819t",
+    "childSessionId": "session-child-1vz9d1n0819tzg0x"
+  },
+  "pass": true,
+  "assertions": [
+    {
+      "name": "precondition: the member record was LOST before this boot (record absent at scenario start)",
+      "pass": true,
+      "actual": "absent"
+    },
+    {
+      "name": "replay: the record is recreated — exactly one row for the identity, no crash",
+      "pass": true,
+      "actual": {
+        "identityRecordCount": 1,
+        "wrote": true
+      }
+    },
+    {
+      "name": "no duplicate member: the team holds exactly A + B (the recreation is not a second record)",
+      "pass": true,
+      "actual": {
+        "teamMemberCount": 2
+      }
+    },
+    {
+      "name": "no duplicate binding: the original binding survived the record loss (one row, never re-pointed)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "instanceId": "inst-1vz9d1n0819t"
+        }
+      ]
+    },
+    {
+      "name": "no duplicate session: the child session exists exactly once (resumed, not recreated)",
+      "pass": true,
+      "actual": {
+        "childSessionRows": 1,
+        "totalSessions": 1
+      }
+    },
+    {
+      "name": "replay: writes exactly [putMemberInstance] (the binding already existed and was consistent)",
+      "pass": true,
+      "actual": [
+        {
+          "op": "putMemberInstance",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-1vz9d1n0819t",
+          "childSessionId": "session-child-1vz9d1n0819tzg0x"
+        }
+      ]
+    }
+  ],
+  "bind": {
+    "requested": "fresh-member",
+    "bound": true,
+    "installed": true,
+    "identity": {
+      "kind": "member",
+      "sessionId": "session-child-1vz9d1n0819tzg0x",
+      "rootSessionId": "session-p5t6-root",
+      "instanceId": "inst-1vz9d1n0819t"
+    },
+    "admitted": true,
+    "admissionCode": "ADMISSION_OPEN",
+    "emittedEvents": [
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "persona"
+      },
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "model"
+      },
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "capability"
+      },
+      {
+        "name": "agent-setup/admission-decided",
+        "detail": "ADMISSION_OPEN"
+      }
+    ]
+  },
+  "durableState": {
+    "member": {
+      "schemaVersion": 1,
+      "rootSessionId": "session-p5t6-root",
+      "instanceId": "inst-1vz9d1n0819t",
+      "templateId": "p5t6worker",
+      "label": "worker-a",
+      "childSessionId": "session-child-1vz9d1n0819tzg0x",
+      "lifecycle": "CREATED",
+      "createdAt": "2026-08-30T11:28:01.587Z",
+      "activityVersion": 1
+    },
+    "binding": {
+      "schemaVersion": 1,
+      "kind": "team-member",
+      "sessionId": "session-child-1vz9d1n0819tzg0x",
+      "rootSessionId": "session-p5t6-root",
+      "instanceId": "inst-1vz9d1n0819t"
+    },
+    "wrote": true
+  },
+  "verification": {
+    "writes": [
+      {
+        "op": "putMemberInstance",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t",
+        "childSessionId": "session-child-1vz9d1n0819tzg0x"
+      }
+    ],
+    "guardFacts": [
+      {
+        "scenario": "I1C",
+        "policy": "open",
+        "path": "fresh-member"
+      }
+    ]
+  },
+  "obs": {
+    "composePath": "sessionProjections",
+    "modelRef": null,
+    "mountErrors": [
+      "dsh-scope: scope key is already bound to a parent; re-linking requires the binding returned by the original bind"
+    ]
+  }
+}

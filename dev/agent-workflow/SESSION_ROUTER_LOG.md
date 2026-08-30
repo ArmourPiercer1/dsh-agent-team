@@ -537,6 +537,23 @@
   - attempt 预算 ≤3（真进程 crash 场景最重，优先 unit 层绿、harness 最后收敛）。
 - **下一步**：单 workflow 派 P5-T6 leaf worker（`qiyuan-self/qwen3.8-27b`）；返回后主 Agent 审计（含独立重跑 harness 五场景 + I-1 重跑）→ cherry-pick → R35 → G5-REVIEW kickoff（三独立盲审 @ integration SHA，G4 协议 + 常设检查 + I-1 复核 + DEC-1 计数复核）。
 
+### 轮次 R35：P5-T6 INTEGRATED（2/3 attempts；925/925 + 主 Agent 独立 harness 重跑 PASS 含 I-1 三组）（2026-08-30）
+
+- **Worker TaskResult**：DONE，2/3 attempts；head `3d59505a1c8161c2bb8b5257e072e1c94ccd59c0`（rev-parse 自检）；code `ec14a3f`（17 files）+ evidence `3d59505`（48 files）；**925/925**（baseline 888 + 37 units）；harness 6 boot 9 场景全绿（S1/S2 = T5 row 复验 15+11 断言，M1 10 / M2 9 / M3 8 / M4 6 / M5 6，I1A 5，I1C 6，共 76 断言）；I-1 三组 3/3；G5 报告 8/8；self-checks（test-use pristine、:3080 200→200、端口释放）齐。
+- **主 Agent 审计（全部对工作区 git truth 独立复核，不采信 worker 自报）**：
+  - worktree 干净（0 dirty）；HEAD 与自报一致；`83b934a..HEAD` 仅 `ec14a3f` + `3d59505` 两提交。
+  - **scope 干净**：65 files = `member-residency/` 12 + `runtime/test/p5t6-*` 4 + evidence 48 + p4t6 1（DEC-1 例外路径）；`agent-setup/**`（T1–T5）0 触碰；新增代码无 `node:` builtin import（0 hits）；contracts quarantine 外无 legacy-vocabulary hits（0）。
+  - **p4t6 计数**：真实 base 243 → **258**（新增 15 个 scannable files，diff 逐一点名核验）。worker 报告/注册文档行文 "257→258" 为 prose 误记（g5-report §5、public-surfaces 首段、TaskResult 三处写 257）；**committed 断言 toBe(258) 为唯一真值**且 Leg 2 绿。记 minor defect（行文错、代码对；与 T2/T3 缺陷同族、方向相反）。
+  - **证据完整性**：g5-report 八判据 criterion→evidence→PASS 齐（Root fresh/cold 如实标注 "T5 delivered, T6 re-verified"；M3 主动披露 lifecycle transition API 缺口——SETTLED 种子经 row 自有 repository seam 的 harness-setup 写入，与 product audited proxy 写分离计账，语义不改）；summary.json 顶层 pass=true，`i1.a`（windowObserved、kill 时 recordWritten=true && bindingWritten=false 真实半写窗口、kill.killed=true、window 419ms）/ `i1.b`（version 999 → SCHEMA_VERSION_MISMATCH、fileUnchangedAfterFailedBoot=true）/ `i1.c`（pre-boot 删 member 记录 key、boot 5 I1C 6 断言）；run-log 7 legs verbatim EXIT=0 + selfcheck before/after 完整；attempt-1（driver `& $cmd` 整串调用 → tsc leg 从未执行、日志捕获陈旧 leg-2 文本）如实归档为 INVALID（`attempt-1-broken-chain.log`），两次 attempt 间产品代码零变更。
+- **独立验证（主 Agent @ int/P5，非 worker 产物）**：
+  - Leg 2：`node scripts/run-tests.mjs` → **925/925**，EXIT=0。
+  - tsc：storage / domain / contracts / runtime 全部 EXIT=0（无输出）。
+  - **EXTRA harness main-audit 重跑**（`evidence/P5-T6/harness-output-main-audit/`，43 files，主 worktree 集成代码）：pass=true、9/9 场景、**I-1 三组全部复现**（I1a 窗口+真 kill / I1b 999→MISMATCH+文件不变 / I1c 幂等）、pristine before/after（cd5ef814）、:3080 200→200、3180/3181/3491 释放、rowMounted 6/6。
+  - **G4 carry-forward I-1 裁决：在集成树上独立重跑 PASS → closed**；R-2（durable child 记录丢失下 real-factory 幂等）经 I1c 真进程版验证成立。
+- **Git**：cherry-pick -x `ec14a3f`→`ce010a3b7932aba2c4509f9d623e33ad67ff7939`（code）、`3d59505`→`33e462ad9860f55980f352e2355e5482181b9584`（evidence）入 int/P5，无冲突（p4t6 243→258 干净落位，单 worker 轮无计数碰撞）；integration_sha → `33e462ad9860f55980f352e2355e5482181b9584`；主 Agent 审计 harness 输出目录随本轮 bookkeeping 提交。
+- **Graph**：P5-T6 → INTEGRATED（head `3d59505`，attempts 2）；ready → `[]`；P5 全部任务（T1–T6 + F1）INTEGRATED。
+- **下一步**：R36 —— G5-REVIEW kickoff：3 独立盲审子代理 @ pre-bookkeeping integration SHA `33e462ad9860f55980f352e2355e5482181b9584`，G4 协议（各独立 detached worktree；禁读 SESSION_ROUTER_LOG/graph.yaml/evidence/ 仅白名单 provenance manifest；briefs 内嵌冻结文档逐字段 + `frozen_docs` 四哈希交叉核验；worker 报告 = CLAIM 非证据）；常设检查（p4t6 负向控制 green + scanner .mjs byte-identical + DEC-1/F1 计数维护复核）；**I-1 独立真进程重跑验证（G4 三 reviewer 一致要求，主 Agent R35 重跑 PASS 为参考，各 reviewer 须自行重跑）**；R-2 幂等；G5 八判据按 DevPlan §18.6 + TaskDoc §11.5 G5 Gate 执行方法（checkout SHA → 读 gate entry → 重跑关键正/负测试 → zero-core/private-import/owned-boundary 检查 → 跨任务不变量组合复核 → criterion→evidence→PASS/FAIL）。Gate 过后：archive reviews → ff-merge master → push #5。
+
 ## 重审记录
 
 （空）

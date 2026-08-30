@@ -1,0 +1,388 @@
+{
+  "scenario": "S1",
+  "sessionId": "session-p5t6-root",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "durable: TeamSession record + team-root binding written",
+      "pass": true,
+      "actual": {
+        "wrote": true,
+        "teamSessionPresent": true,
+        "bindingKind": "team-root"
+      }
+    },
+    {
+      "name": "durable: read-back pins the immutable blueprint snapshot",
+      "pass": true,
+      "actual": {
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+      },
+      "expected": {
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+      }
+    },
+    {
+      "name": "bind: overlays installed in fixed order",
+      "pass": true,
+      "actual": [
+        "persona",
+        "model",
+        "capability"
+      ]
+    },
+    {
+      "name": "bind: agent-setup events (3 overlay-installed + 1 admission-decided)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/overlay-installed",
+          "detail": "persona"
+        },
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/overlay-installed",
+          "detail": "model"
+        },
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/overlay-installed",
+          "detail": "capability"
+        },
+        {
+          "sessionId": "session-p5t6-root",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    },
+    {
+      "name": "admission: open policy admits (ADMISSION_OPEN)",
+      "pass": true,
+      "actual": {
+        "admitted": true,
+        "admissionCode": "ADMISSION_OPEN"
+      }
+    },
+    {
+      "name": "persona: substrate is the seeded standard preset",
+      "pass": true,
+      "actual": {
+        "personaKind": "standard",
+        "probeSections": [
+          "harness:identity",
+          "harness:source",
+          "app:web-surface",
+          "deployment:persona",
+          "context:file-reference",
+          "ui:deliverable-file-references"
+        ]
+      }
+    },
+    {
+      "name": "persona: assembled leader persona text === blueprint text",
+      "pass": true,
+      "actual": "You are the p5t6 team leader, guiding workers with clear directives and steady judgement."
+    },
+    {
+      "name": "model: assembly variables carry the selected provider/model",
+      "pass": true,
+      "actual": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      },
+      "expected": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    {
+      "name": "model: ref.assembled captured the selection at the assembly boundary",
+      "pass": true,
+      "actual": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      },
+      "expected": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    {
+      "name": "capability: installed tools === available ∩ teamResolved ∩ externalHard",
+      "pass": true,
+      "actual": {
+        "registered": [
+          "p5t6-tool-alpha",
+          "p5t6-tool-beta"
+        ],
+        "effective": [
+          "p5t6-tool-alpha",
+          "p5t6-tool-beta"
+        ],
+        "visible": [
+          "p5t6-tool-alpha",
+          "p5t6-tool-beta",
+          "mcp__p5t5mini__ping"
+        ]
+      }
+    },
+    {
+      "name": "capability: installed skills === available ∩ teamResolved ∩ externalHard",
+      "pass": true,
+      "actual": {
+        "registered": [
+          "p5t6-skill-one"
+        ],
+        "effective": [
+          "p5t6-skill-one"
+        ]
+      }
+    },
+    {
+      "name": "capability: pre-step/pre-execute listeners registered per effective items",
+      "pass": true,
+      "actual": {
+        "listeners": [
+          "tools/pre-execute",
+          "agent/pre-step"
+        ],
+        "effective": [
+          "agent/pre-step",
+          "tools/pre-execute"
+        ]
+      }
+    },
+    {
+      "name": "capability: mini-MCP tool visible (mcp__p5t5mini__ping)",
+      "pass": true,
+      "actual": true,
+      "effective": [
+        "p5t6mini"
+      ]
+    },
+    {
+      "name": "session: durable model/selection event recorded",
+      "pass": true,
+      "actual": [
+        {
+          "seq": 0,
+          "type": "permission/preset"
+        },
+        {
+          "seq": 1,
+          "type": "sandbox/mode"
+        },
+        {
+          "seq": 2,
+          "type": "approval/policy"
+        },
+        {
+          "seq": 3,
+          "type": "model/selection"
+        }
+      ]
+    },
+    {
+      "name": "durable: session log published as session.jsonl.zstd",
+      "pass": true,
+      "actual": {
+        "published": true,
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--",
+        "waitMs": 166,
+        "size": 410
+      }
+    }
+  ],
+  "bind": {
+    "requested": "fresh-root",
+    "bound": true,
+    "installed": true,
+    "identity": {
+      "kind": "root",
+      "sessionId": "session-p5t6-root",
+      "rootSessionId": "session-p5t6-root"
+    },
+    "admitted": true,
+    "admissionCode": "ADMISSION_OPEN",
+    "emittedEvents": [
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "persona"
+      },
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "model"
+      },
+      {
+        "name": "agent-setup/overlay-installed",
+        "detail": "capability"
+      },
+      {
+        "name": "agent-setup/admission-decided",
+        "detail": "ADMISSION_OPEN"
+      }
+    ]
+  },
+  "durableState": {
+    "teamSession": {
+      "schemaVersion": 1,
+      "rootSessionId": "session-p5t6-root",
+      "blueprint": {
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+      },
+      "createdAt": "2026-08-30T11:27:50.752Z",
+      "generation": 1,
+      "defaultWorkspace": "C:/agent-team/work/p5t6"
+    },
+    "binding": {
+      "schemaVersion": 1,
+      "kind": "team-root",
+      "sessionId": "session-p5t6-root"
+    },
+    "wrote": true
+  },
+  "verification": {
+    "substrate": {
+      "presetId": "p5t6-leader-persona",
+      "personaKind": "standard",
+      "probeSections": [
+        "harness:identity",
+        "harness:source",
+        "app:web-surface",
+        "deployment:persona",
+        "context:file-reference",
+        "ui:deliverable-file-references"
+      ],
+      "probePersonaText": "You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}.",
+      "probeSessionId": "p5t5-substrate-probe-S1-1788089265192"
+    },
+    "persona": {
+      "present": true,
+      "textMatches": true
+    },
+    "model": {
+      "current": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      },
+      "assembled": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      },
+      "variables": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    "tools": {
+      "registered": [
+        "p5t6-tool-alpha",
+        "p5t6-tool-beta"
+      ],
+      "visible": [
+        "p5t6-tool-alpha",
+        "p5t6-tool-beta",
+        "mcp__p5t5mini__ping"
+      ]
+    },
+    "skills": {
+      "registered": [
+        "p5t6-skill-one"
+      ]
+    },
+    "mcp": {
+      "toolVisible": true,
+      "fiberError": null,
+      "mount": {
+        "ok": true,
+        "serverName": "p5t5mini",
+        "port": 3491,
+        "item": "p5t6mini"
+      }
+    },
+    "listeners": [
+      "tools/pre-execute",
+      "agent/pre-step"
+    ],
+    "durable": {
+      "published": true,
+      "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--",
+      "waitMs": 166,
+      "size": 410
+    },
+    "teamDomain": {
+      "teamSession": {
+        "schemaVersion": 1,
+        "rootSessionId": "session-p5t6-root",
+        "blueprint": {
+          "blueprintId": "P5T6-BP-REAL",
+          "revision": "1",
+          "contentHash": "sha256-0492c5f8caf82e6661876b4dcd50bcb369622e1d06a4af2ef03749854e216cfc"
+        },
+        "createdAt": "2026-08-30T11:27:50.752Z",
+        "generation": 1,
+        "defaultWorkspace": "C:/agent-team/work/p5t6"
+      },
+      "binding": {
+        "schemaVersion": 1,
+        "kind": "team-root",
+        "sessionId": "session-p5t6-root"
+      }
+    },
+    "writes": [
+      {
+        "op": "putTeamSession",
+        "sessionId": "session-p5t6-root",
+        "blueprintId": "P5T6-BP-REAL",
+        "revision": "1"
+      },
+      {
+        "op": "putSessionBinding",
+        "sessionId": "session-p5t6-root",
+        "kind": "team-root"
+      }
+    ],
+    "guardFacts": [
+      {
+        "scenario": "S1",
+        "policy": "open",
+        "liveFacts": {
+          "sessionExists": true,
+          "path": "fresh-root"
+        }
+      }
+    ]
+  },
+  "obs": {
+    "toolsRegistered": [
+      "p5t6-tool-alpha",
+      "p5t6-tool-beta"
+    ],
+    "skillsRegistered": [
+      "p5t6-skill-one"
+    ],
+    "mcpMount": {
+      "ok": true,
+      "serverName": "p5t5mini",
+      "port": 3491,
+      "item": "p5t6mini"
+    },
+    "mcpActivationError": null,
+    "listeners": [
+      "tools/pre-execute",
+      "agent/pre-step"
+    ],
+    "preExecuteCalls": [],
+    "preStepCalls": [],
+    "mountErrors": []
+  },
+  "mountFailures": []
+}
