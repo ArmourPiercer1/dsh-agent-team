@@ -1,0 +1,45 @@
+# P5-T6 attempt ledger
+
+Budget: <= 3 counted attempts (canonical verification chain = leg1 install + leg2 full suite +
+leg3-5 tsc storage/domain/contracts + leg6 debug tsc runtime + leg7 real-instance harness +
+selfchecks; every leg verbatim in run-log.txt). Debug harness iterations (run 1-6, report dir
+harness-output-debug) and tsc/testkit pre-checks are NOT counted attempts.
+
+## attempt 1 — started 2026-08-30T19:16:54+08:00 — INVALID (driver defect)
+
+- leg1-install: EXIT=0. leg2-runtests: 925/925, EXIT=0.
+- leg3..leg6 (tsc storage/domain/contracts/runtime): NEVER EXECUTED — the driver invoked
+  `& $cmd` with the full command string; PowerShell treated the whole string as one command
+  name (CommandNotFoundException) and the log captured stale leg-2 text with the stale
+  $LASTEXITCODE (0). The chain verdict "PASS" printed by that run is FALSE.
+- leg7-extra-harness: executed, EXIT=0, 9/9 scenarios (that run's harness output was discarded
+  with the log).
+- Disposition: not usable as canonical evidence; archived as attempt-1-broken-chain.log in this
+  directory. Driver fixed for attempt 2 (each tsc leg invoked as a direct `node ...` command;
+  fresh $r/$LASTEXITCODE capture per leg; empty tsc output marked "(no output)").
+
+## attempt 2 — started 2026-08-30T19:18:22+08:00 — CANONICAL, VERDICT: PASS
+
+- leg1-install: `pnpm install --ignore-scripts` -> EXIT=0 (Already up to date, 10 workspace projects).
+- leg2-runtests: `node scripts/run-tests.mjs` -> "925 passed, 0 failed, 925 total" -> EXIT=0.
+- leg3-tsc-storage / leg4-tsc-domain / leg5-tsc-contracts / leg6-debug-tsc-runtime:
+  `node node_modules/typescript/bin/tsc -p packages/<pkg>/tsconfig.json` -> (no output), EXIT=0 each.
+- leg7-extra-harness:
+  `node packages/runtime/member-residency/harness/run.mjs --report-dir dev/agent-workflow/evidence/P5-T6/harness-output`
+  -> "P5-T6 harness PASS", 9/9 scenarios (S1,S2,M1,M5 boot3; M2,I1A,M3,M4 boot4; I1C boot5;
+  boot6 expected-fail corruption) -> EXIT=0.
+- I-1: i1.a armed/windowObserved=true (recordWritten=true && bindingWritten=false observed,
+  windowWaitMs=419), stateAtKill recordPresent=true bindingPresent=false, kill.killed=true
+  portFree=true; i1.b corruptedVersion=999 -> setupFailureCode=SCHEMA_VERSION_MISMATCH,
+  fileUnchangedAfterFailedBoot=true; i1.c deletedKey={"instanceId":"inst-1vz9d1n0819t","rootSessionId":"session-p5t6-root"},
+  I1C 6/6 pass=true.
+- Selfchecks: stable :3080 GET before/after status=200; test-use pristine before/after
+  (head cd5ef8148158c3a752a658978873241fdf8e2bbc, status --porcelain empty); ports 3180/3181/3491
+  free after run; summary.ports.released {odd,even,mcp}=true.
+- VERDICT: PASS (run-log.txt, lines under "verdict").
+
+## outcome
+
+P5-T6 delivered on attempt 2. Attempt 1 consumed by the driver defect above; 1 budget entry
+remains unused. No product code changed between attempt 1 and attempt 2 (only the temporary
+driver script).

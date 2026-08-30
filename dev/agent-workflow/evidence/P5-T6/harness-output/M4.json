@@ -1,0 +1,93 @@
+{
+  "scenario": "M4",
+  "boot": 4,
+  "sessionId": "session-child-1vz9d1n0819tzg0x",
+  "identity": {
+    "instanceId": "inst-1vz9d1n0819t",
+    "childSessionId": "session-child-1vz9d1n0819tzg0x"
+  },
+  "pass": true,
+  "assertions": [
+    {
+      "name": "readmit1: cold path succeeded on the SETTLED member (bound+installed+admitted, wrote=false)",
+      "pass": true,
+      "actual": {
+        "bound": true,
+        "installed": true,
+        "admitted": true,
+        "wrote": false
+      }
+    },
+    {
+      "name": "readmit2: the SECOND cold path is idempotent (same outcome, wrote=false)",
+      "pass": true,
+      "actual": {
+        "bound": true,
+        "installed": true,
+        "admitted": true,
+        "wrote": false
+      }
+    },
+    {
+      "name": "no duplicate member: exactly one durable record for the identity (team size A + B unchanged)",
+      "pass": true,
+      "actual": {
+        "identityRecordCount": 1,
+        "teamMemberCount": 2
+      }
+    },
+    {
+      "name": "no duplicate binding: exactly one team-member row for the child session (never re-pointed)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "instanceId": "inst-1vz9d1n0819t"
+        }
+      ]
+    },
+    {
+      "name": "no duplicate session: the child session exists exactly once in the live session list",
+      "pass": true,
+      "actual": {
+        "childSessionRows": 1,
+        "totalSessions": 1
+      }
+    },
+    {
+      "name": "readmit: scope restored twice, ZERO product durable writes",
+      "pass": true,
+      "actual": {
+        "restoreScopeCalls": 2,
+        "writes": []
+      }
+    }
+  ],
+  "readmit1": {
+    "bound": true,
+    "wrote": false
+  },
+  "readmit2": {
+    "bound": true,
+    "wrote": false
+  },
+  "verification": {
+    "writes": [],
+    "guardFacts": [
+      {
+        "scenario": "M4",
+        "policy": "open",
+        "path": "cold-member"
+      },
+      {
+        "scenario": "M4",
+        "policy": "open",
+        "path": "cold-member"
+      }
+    ]
+  },
+  "obs": {
+    "composePath": "sessionProjections",
+    "modelRef": null
+  }
+}

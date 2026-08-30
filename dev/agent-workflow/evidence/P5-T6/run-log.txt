@@ -1,0 +1,243 @@
+P5-T6 verification chain - counted attempt 2 (verbatim per-leg commands and output)
+worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6  branch: task/P5-T6-member-residency  base: 83b934a01227ed147b80a8e4b1211552dce3f624
+started: 2026-08-30T19:18:22.3911684+08:00 (chain start = selfcheck-before + leg1 start)
+note: canonical full-suite baseline in this worktree = 888 passed (P5-T5 integrated chain); post-change target = 925 (888 + 37 new P5-T6 tests).
+note: counted attempt 1 was invalidated by a driver bug (tsc legs never executed; log archived as attempt-1-broken-chain.log).
+
+============================================================
+== selfcheck-before
+============================================================
+stable :3080 GET probe: status=200
+test-use head: cd5ef8148158c3a752a658978873241fdf8e2bbc
+test-use status --porcelain: '' (empty = pristine)
+
+============================================================
+== leg1-install
+============================================================
+leg1-install :: pnpm install --ignore-scripts
+Scope: all 10 workspace projects
+Already up to date
+Done in 50ms using pnpm v11.7.0
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 11.7.0 → 11.24.0.    │
+   │   Changelog: https://pnpm.io/v/11.24.0   │
+   │     To update, run: pnpm self-update     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+
+
+EXIT=0
+
+============================================================
+== leg2-runtests
+============================================================
+leg2-runtests :: node scripts/run-tests.mjs
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t2-persona-cold-bind.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-compatible.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-complete-fatal.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-no-persona.test.ts (3 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+PASS packages\runtime\test\p5t5-admission.test.ts (5 tests)
+PASS packages\runtime\test\p5t5-cold-root.test.ts (7 tests)
+PASS packages\runtime\test\p5t5-fresh-root.test.ts (9 tests)
+PASS packages\runtime\test\p5t6-cold-member.test.ts (8 tests)
+PASS packages\runtime\test\p5t6-evict-readmit.test.ts (7 tests)
+PASS packages\runtime\test\p5t6-fresh-member.test.ts (22 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\p4-01-schema-meta.test.ts (10 tests)
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\p4t2-conflicts.test.ts (25 tests)
+PASS packages\storage\test\p4t2-crash-recovery.test.ts (19 tests)
+PASS packages\storage\test\p4t2-journal.test.ts (12 tests)
+PASS packages\storage\test\p4t3-binding-service.test.ts (17 tests)
+PASS packages\storage\test\p4t3-fork-reconciliation.test.ts (12 tests)
+PASS packages\storage\test\p4t3-reconciler.test.ts (17 tests)
+PASS packages\storage\test\p4t4-adapter.test.ts (12 tests)
+PASS packages\storage\test\p4t4-one-committed-invariant.test.ts (21 tests)
+PASS packages\storage\test\p4t4-orphan-detect.test.ts (21 tests)
+PASS packages\storage\test\p4t4-per-stage-retry.test.ts (20 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\p4t5-corrupt-version.test.ts (10 tests)
+PASS packages\testkit\test\p4t5-crash-matrix.test.ts (13 tests)
+PASS packages\testkit\test\p4t5-retry-restart.test.ts (10 tests)
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 925 passed, 0 failed, 925 total, 1521 ms
+RESULT: PASS run-tests (0 failures)
+
+
+EXIT=0
+
+============================================================
+== leg3-tsc-storage
+============================================================
+leg3-tsc-storage :: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+(no output)
+
+EXIT=0
+
+============================================================
+== leg4-tsc-domain
+============================================================
+leg4-tsc-domain :: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+(no output)
+
+EXIT=0
+
+============================================================
+== leg5-tsc-contracts
+============================================================
+leg5-tsc-contracts :: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+(no output)
+
+EXIT=0
+
+============================================================
+== leg6-debug-tsc-runtime
+============================================================
+leg6-debug-tsc-runtime :: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+(no output)
+
+EXIT=0
+
+============================================================
+== leg7-extra-harness
+============================================================
+leg7-extra-harness :: node packages/runtime/member-residency/harness/run.mjs --report-dir dev/agent-workflow/evidence/P5-T6/harness-output
+2026-08-30T11:18:28.691Z P5-T6 harness start: worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6
+2026-08-30T11:18:28.692Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:28.692Z ports: odd boots=3180 even boots=3181
+2026-08-30T11:18:28.769Z product modules loaded: deriveMemberIdentity + memberIdentityKey (worktree TS sources)
+2026-08-30T11:18:28.892Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T11:18:28.901Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T11:18:28.956Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:28.959Z junction farm ready (shared packages/runtime/node_modules)
+2026-08-30T11:18:28.960Z user presets written: p5t6-leader-persona, p5t6-member-persona
+2026-08-30T11:18:28.974Z mini MCP server up on 127.0.0.1:3491
+2026-08-30T11:18:28.975Z derived identities: A={"instanceId":"inst-1vz9d1n0819t","childSessionId":"session-child-1vz9d1n0819tzg0x"} B={"instanceId":"inst-0eeg6ty1oe6h","childSessionId":"session-child-0eeg6ty1oe6h9p1g"}
+2026-08-30T11:18:28.976Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-30T11:18:30.839Z throwaway boot OK: http://127.0.0.1:3180/?token=oo56LWk_7cWGphZCK1u90RDaGzASQwFrJXIR3xHWNYw
+2026-08-30T11:18:30.878Z directive(s) boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:33.562Z boot 1: health={"ok":true,"boot":1,"ready":true} rowMounted={"p5t5-root-binding":true}
+2026-08-30T11:18:33.935Z scenario S1 (p5t5): http=200 pass=true assertions=15 (373ms)
+2026-08-30T11:18:34.016Z boot 1: stopped killed=true portFree=true
+2026-08-30T11:18:34.018Z directive(s) boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:35.955Z boot 2: health={"ok":true,"boot":2,"ready":true} rowMounted={"p5t5-root-binding":true}
+2026-08-30T11:18:36.002Z scenario S2 (p5t5): http=200 pass=true assertions=11 (46ms)
+2026-08-30T11:18:36.131Z boot 2: stopped killed=true portFree=true
+2026-08-30T11:18:36.132Z directive(s) boot=3 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:38.279Z boot 3: health={"ok":true,"boot":3,"setupError":null,"setupErrorCode":null} rowMounted={"p5t6-member-residency":true}
+2026-08-30T11:18:38.599Z scenario M1 (p5t6): http=200 pass=true assertions=10 (320ms)
+2026-08-30T11:18:38.717Z scenario M5 (p5t6): http=200 pass=true assertions=6 (102ms)
+2026-08-30T11:18:38.733Z I1a: gate armed — the gated create of member B is running
+2026-08-30T11:18:39.255Z I1a: process killed in the durable-write window (killed=true portFree=true state={"armed":true,"recordWritten":true,"bindingWritten":false,"recordPresent":true,"bindingPresent":false})
+2026-08-30T11:18:39.255Z boot 3: stopped killed=false portFree=true
+2026-08-30T11:18:39.256Z directive(s) boot=4 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:41.410Z boot 4: health={"ok":true,"boot":4,"setupError":null,"setupErrorCode":null} rowMounted={"p5t6-member-residency":true}
+2026-08-30T11:18:41.456Z scenario M2 (p5t6): http=200 pass=true assertions=9 (45ms)
+2026-08-30T11:18:41.659Z scenario I1A (p5t6): http=200 pass=true assertions=5 (203ms)
+2026-08-30T11:18:41.840Z scenario M3 (p5t6): http=200 pass=true assertions=8 (180ms)
+2026-08-30T11:18:41.911Z scenario M4 (p5t6): http=200 pass=true assertions=6 (29ms)
+2026-08-30T11:18:41.988Z boot 4: stopped killed=true portFree=true
+2026-08-30T11:18:41.992Z I1c: member A record deleted pre-boot (key={"instanceId":"inst-1vz9d1n0819t","rootSessionId":"session-p5t6-root"})
+2026-08-30T11:18:41.993Z directive(s) boot=5 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:44.151Z boot 5: health={"ok":true,"boot":5,"setupError":null,"setupErrorCode":null} rowMounted={"p5t6-member-residency":true}
+2026-08-30T11:18:44.331Z scenario I1C (p5t6): http=200 pass=true assertions=6 (180ms)
+2026-08-30T11:18:44.498Z boot 5: stopped killed=true portFree=true
+2026-08-30T11:18:44.502Z I1b: team_domain unit version corrupted pre-boot (999; original 3030 bytes backed up)
+2026-08-30T11:18:44.503Z directive(s) boot=6 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t6
+2026-08-30T11:18:46.437Z boot 6: stopped killed=true portFree=true
+2026-08-30T11:18:46.438Z mini MCP server closed
+2026-08-30T11:18:46.569Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T11:18:46.569Z postflight: test-use pristine after=true
+2026-08-30T11:18:46.570Z P5-T6 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T6\dev\agent-workflow\evidence\P5-T6\harness-output\summary.json
+
+
+EXIT=0
+
+============================================================
+== selfcheck-after
+============================================================
+stable :3080 GET probe: status=200
+test-use head: cd5ef8148158c3a752a658978873241fdf8e2bbc
+test-use status --porcelain: '' (empty = pristine)
+ports probe (3180/3181/3491): {"3180":"free","3181":"free","3491":"free"}
+
+============================================================
+== selfcheck-harness-summary
+============================================================
+summary.pass: True
+scenarios: S1=True S2=True M1=True M5=True M2=True I1A=True M3=True M4=True I1C=True
+ports.released: {"odd":true,"even":true,"mcp":true}
+stable3080 before: {"reachable":true,"status":200}
+stable3080 after:  {"reachable":true,"status":200}
+pristine before: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=True
+pristine after:  head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=True
+i1.a: {"armed":true,"windowObserved":true,"stateAtKill":{"armed":true,"recordWritten":true,"bindingWritten":false,"recordPresent":true,"bindingPresent":false},"kill":{"killed":true,"portFree":true},"windowWaitMs":419}
+i1.b: {"corruptedVersion":999,"boot":6,"expectedCode":"SCHEMA_VERSION_MISMATCH","fileUnchangedAfterFailedBoot":true,"setupFailureCode":"SCHEMA_VERSION_MISMATCH"}
+i1.c.deletedKey: {"instanceId":"inst-1vz9d1n0819t","rootSessionId":"session-p5t6-root"}
+i1.c.scenario.pass: True
+
+============================================================
+== verdict
+============================================================
+leg exits: leg3-tsc-storage=0 leg7-extra-harness=0 leg4-tsc-domain=0 leg6-debug-tsc-runtime=0 leg2-runtests=0 leg1-install=0 leg5-tsc-contracts=0
+bad legs: ''
+harness summary.pass: True
+VERDICT: PASS

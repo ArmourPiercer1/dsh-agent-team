@@ -1,0 +1,64 @@
+{
+  "scenario": "I1A",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "replay: convergent — the ONLY durable write is the binding put (the record pre-existed)",
+      "pass": true,
+      "actual": [
+        {
+          "op": "putSessionBinding",
+          "sessionId": "session-child-0eeg6ty1oe6h9p1g",
+          "kind": "team-member"
+        }
+      ],
+      "expected": [
+        {
+          "op": "putSessionBinding"
+        }
+      ]
+    },
+    {
+      "name": "replay: no duplicate member — exactly one record for the identity, team size unchanged (A + B)",
+      "pass": true,
+      "actual": {
+        "memberPresent": true,
+        "teamMemberCount": 2
+      }
+    },
+    {
+      "name": "replay: no unrecoverable half-write — record + binding consistent after crash+replay",
+      "pass": true,
+      "actual": {
+        "record": {
+          "childSessionId": "session-child-0eeg6ty1oe6h9p1g"
+        },
+        "binding": {
+          "schemaVersion": 1,
+          "kind": "team-member",
+          "sessionId": "session-child-0eeg6ty1oe6h9p1g",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-0eeg6ty1oe6h"
+        }
+      }
+    },
+    {
+      "name": "replay: operation completed (wrote=true, installed=true, admitted open)",
+      "pass": true,
+      "actual": {
+        "wrote": true,
+        "installed": true,
+        "admitted": true
+      }
+    },
+    {
+      "name": "replay: child session durable (no duplicate session)",
+      "pass": true,
+      "actual": {
+        "published": true,
+        "projectDir": "--D-AgentDev-dsh-plugins-dsh-agent-team-references-.dsh-test-p5t6--",
+        "size": 385
+      }
+    }
+  ]
+}
