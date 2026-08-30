@@ -254,7 +254,28 @@
 - **任务卡片要点**：目标 = 组合 Blueprint/Member/Policy/Compatibility + 执行 architecture property suite；只读各 P3 package；不新增功能；contract 缺口走 CONTRACT_CHANGE_REQUEST；必须测试 = cross-module property / serialization round-trip / negative matrix；验收 = G3 每条 criterion 有独立证据 + contracts v1 freeze confirmed；输出物 = G3 report + domain test bundle；审查重点 = reviewer 核对 owned-path、frozen semantics、negative tests、zero-core 约束，不得仅凭 worker 自述批准。
 - **基线**（派发前主 Agent 全量跑，int/P3 `ba293ec`）：`node scripts/run-tests.mjs`（无参 = 全 9 包）413/413 PASS EXIT=0（contracts 87 + domain 312 + testkit 骨架 2 + client/remote/runtime/storage/tools 骨架 12）；testkit/domain/contracts 包级 tsc 全绿。
 - **graph**：P3-T6 → RUNNING（branch task/P3-T6-domain-integration，base `ba293ec`）；ready → []。
-- **结果**：（worker 返回后补记）
+- **结果**（worker `qiyuan-self/qwen3.8-27b`，canonical attempts **2/3**，SELF_VERIFIED，2 commits `6763892`→`d05dcfb`，head `d05dcfb510a8c3244cecfcabb228b3d0fa728293`）：
+  - **交付**：79 个新 t6 测试（10 个 t6 文件 + `packages/testkit/domain/src/{import-graph,index,scenario}.ts` + helpers），逐条编码 DevPlan §16.4 全部 7 条 G3 criterion 为跨模块 property：
+    - G3-1 no live Agent dependency：import-graph 闭包 63 specifier 静态断言（9 direct + 54 transitive），唯一 bare dep = `yaml`，banned 段（runtime/tools/remote/client/legacy/team）全覆盖（6 tests）；
+    - G3-2 template→N instances：N∈{1..8,12} property + 无上限语义（t6-2）；
+    - G3-3 lifecycle matrix：9 边/25 对固定矩阵 + 5×5 operation sweep（t6-3）；
+    - G3-4 policy precedence：六层优先级穷举（t6-4）；
+    - G3-5 complete:true FATAL：36 格立方 + ack 不可降级（`TEAM_PERSONA_COMPLETE_PRESET_CONFLICT` / `COMPLETE_REQUIREMENT_NOT_MET`）（t6-5）；
+    - G3-6 snapshot immutability：deep-frozen + BOM/CRLF/键序归一 hash + 派生 hash 防夹带（t6-6）；
+    - G3-7 fresh_per_delegation：new-instance policy property（非 context reset）（t6-7）；
+    - 另：serialization round-trip（t6-8，canonicalJsonStringify byte-stable）+ 88 例 negative matrix（t6-9，封闭 20-code 词汇 + 错误族不相交）+ 组合管线（t6-10）。
+  - **Canonical 链**：attempt 1 RED（leg 3 testkit tsc 15 处 test-side 类型错误，全部测试侧修复，contracts 零改动）；attempt 2 GREEN 六腿全过 = 492/492（413 基线 + 79 t6）+ 4× tsc EXIT=0。
+  - **Contract gap**：无。所有 mismatch 均为 test-side 对冻结 v1 文档化行为的期望错误 → 测试侧修复，`packages/contracts/**` 零改动，**无 CONTRACT_CHANGE_REQUEST**。
+  - **G3 report**：`docs/contracts/g3-report.md`（criterion→test 文件→count→rerun 命令，verdict G3 PASS）+ `docs/contracts/freeze-confirmation.md`（CHANGELOG v1 FROZEN 原文引用 + freeze rule 逐字 + 9 项 spot-check）。
+  - **主 Agent 独立审计（全部通过）**：head 与自报一致；worktree 干净；31 文件全部在 owned paths（`packages/testkit/**`、`docs/contracts/**`、`evidence/P3-T6/**`），越界检查为空；独立重跑 492/492 PASS EXIT=0 + 4× tsc EXIT=0（与自报完全一致）；G3 report 与 freeze-confirmation 通读（结构完整、证据可复现、freeze rule 引用带行号）。
+
+### 轮次 R14：P3-T6 集成（→ int/P3）+ G3 准备（2026-08-30）
+
+- **集成**：cherry-pick -x ×2（`6763892`→`189414f`、`d05dcfb`→`7839f7a`）→ int/P3 零冲突，head `7839f7a`。
+- **整合验证（int/P3 主 worktree）**：`pnpm install --ignore-scripts`（already up to date，无新依赖）+ 全量 `node scripts/run-tests.mjs` **492/492 PASS EXIT=0** + testkit/testkit-domain/domain/contracts 4× tsc 全 EXIT=0。
+- **contracts v1 冻结再确认**：T6 全程零改 `packages/contracts/**`；graph `locks.contracts = fba817c` 保持。
+- **Graph**：P3-T6 → INTEGRATED（head `d05dcfb`，attempts 2）；integration_sha = `7839f7a3db8c610c50975f2facc220df3ce80c62`；ready → [G3-REVIEW]。
+- **下一步**：G3-REVIEW — workflow 3 个 fresh 独立盲审（`qiyuan-self/qwen3.8-27b`）；各自 detached worktree @ integration SHA（纯包 Gate：无端口/DSH_HOME/实例）；盲审（禁读 SESSION_ROUTER_LOG / graph.yaml / evidence/，唯一例外 provenance manifest）；brief 嵌 TaskDoc “G3 Gate 执行方法”逐字 + DevPlan §16.4 七判据逐字 + 沙箱测试链 + V-checklist 复现清单。
 
 ## 重审记录
 
