@@ -596,6 +596,17 @@
 - **Carry-forwards（P6-T2 上下文）**：P6-T2（TeamRuntime admission/policy，owns `packages/runtime/admission*` + `action-router*`）构建于 P6-T1 provider 的 check 面之上；G6 gate 预览 = DevPlan 19.7 六判据；admit-once 语义与 operation identity 是 P6-T2 runtime API 的既有资产。
 - **下一步**：R40 —— P6-T2 kickoff（workflow 单 leaf worker，同路由 `qiyuan-self/qwen3.8-27b`，brief 结构同 P6-T1：first-reads → frozen docs hash-verify → 卡面 verbatim → owned surface → 实现要求 → canonical chain（基线 1022+N）→ commits → structured report）。
 
+### 轮次 R40：P6-T2 TeamRuntime admission/policy 执行（1/3 attempts）+ 主 Agent 独立验证 + INTEGRATED（2026-08-30）
+
+- **执行**：workflow `p6-t2-runtime-admission`（单 leaf worker，qiyuan-self/qwen3.8-27b）；worktree `.worktrees/P6-T2` 分支 `task/P6-T2-runtime-admission` @ base `e32e737`（int/P6 tip，含 P6-T1）；worker 自报 COMPLETE。
+- **Worker 报告（CLAIM）**：2 commits `7a34379`（feat：admission 7 模块 + action-router 3 模块 + p6t2 测试 5 文件，共 15 新源文件）/ `186ecf5`（evidence 5 文件）；1080/1080（+58）；p4t6 271→286（title+assert 对齐，上轮教训已吸取）；tsc runtime+testkit exit 0；outside_owned 自报 []（p4t6 更新按 DEC-1 约定，主 Agent 核验认可）；findings：createTeamRuntime 统一 authority facade，documented enforcement order steps 0-6（request validation → instanceId-first target resolution，label/template token 拒绝 ACTION_ADDRESSING_REJECTED → caller identity+role from TeamDomain → caller authority + mutation envelope → compatibility/admission gate（仅 NEW work，inv 50）→ quota → durable effects under per-team lock）；quota 语义裁决：count+1 > limit 拒绝、== limit 在界内允许、team-then-template 检查序、**quota 仅在 ActivationProvider step-7 内执行（单一事实源，router 无独立计数器）**；fail-closed 全 typed error + 零 durable 副作用。
+- **主 Agent 独立验证（disk is truth）**：①git truth：task 分支 tip `186ecf5`（=报告），base `e32e737`；diff 22 tracked = 5 evidence + 15 源（action-router 3 + admission 7 + p6t2 测试 5；271→286 吻合）+ 1 p4t6 修改；working tree 残留 = run-log 未提交 append + 3 个 chain-#2 未跟踪证据文件（worker 自述"commit 不能包含自己的 SHA"——合理，主 Agent 补提交 `001f0de` evidence close，4 files）；②zero-core：两模块全部 import（含多行 import 的 from 子句逐行核）均在本 9 包内（contracts/domain/storage/runtime 内部），无 upstream、无 node: builtin；③full chain 独立重跑（补提交后）：**1080/1080 PASS**；tsc ×5（contracts/domain/storage/runtime/testkit）全 exit 0；p4t6 suite 绿（assert 286）；④:3080 = 200。
+- **Integration**：cherry-pick -x ×3 → int/P6-activation-runtime：`bebd5a6`（feat）/ `496d6f9`（evidence）/ `4fa5d12`（evidence close）；int tip `4fa5d1254d2ba9f1b5afface40c76963177271b2`；int 分支 sanity 重跑 1080/1080 PASS。
+- **证据**：worktree `dev/agent-workflow/evidence/P6-T2/`（baseline、frozen-doc-verification、full-tests-1/2、runtime-tests-first-run、tsc-2、self-check-2、run-log，全部已 pick）。
+- **Graph**：P6-T2 → INTEGRATED（attempts 1/3，head `4fa5d12`）；P6-T3/T4/T5 → READY（base `4fa5d12`，并行组 G2）；integration_sha → `4fa5d12`；ready [P6-T3, P6-T4, P6-T5]。
+- **Carry-forwards（P6-T3/4/5 上下文）**：三者均构建于 createTeamRuntime facade 之上（action 经 router 授权；durable 写经 per-team lock）；quota 单一事实源在 activation step-7（勿在 router 侧再造计数器）；p4t6 计数现 286（新文件须再更新 title+assert+枚举注释，三者并行会互相踩计数——brief 已各自内嵌 286 基线并要求在集成时由主 Agent 统一核对最终计数）。
+- **下一步**：R41 —— P6-T3（messaging）/ P6-T4（control）/ P6-T5（activity）并行 kickoff（单 workflow 3 leaf workers，同路由；三 worktree 独立、owned surface 不相交、无 real-instance harness → 可并行；各自基于 `4fa5d12`，p4t6 计数各按 286+自身新文件独立更新，集成时由主 Agent 串行 pick 并统一收敛计数）。
+
 ## 重审记录
 
 （空）
