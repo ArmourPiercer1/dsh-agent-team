@@ -1,0 +1,95 @@
+{
+  "task_id": "P3-T2",
+  "title": "Blueprint / catalog / parser — TeamBlueprint, LeaderTemplate, MemberTemplate, revision/hash, catalog source, strict validation",
+  "worker": "qiyuan-self/qwen3.8-27b (D1 parallel leaf, no subagents)",
+  "branch": "task/P3-T2-blueprint-catalog",
+  "base_sha": "39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c",
+  "head_sha": "edaec4f2f7d34843770bc7c969dd105e463b5c70",
+  "head_sha_note": "sha of the run-log commit at authoring time; the final branch head is the summary/ledger commit made after this file is written, and is reported in structured_output.",
+  "status": "SELF_VERIFIED",
+  "environment": {
+    "worktree": ".worktrees/P3-T2",
+    "node": "v24.20.0 (native TypeScript type stripping)",
+    "typescript": "6.0.3 via node node_modules/typescript/bin/tsc",
+    "test_runner": "scripts/run-tests.mjs (plain-node, scripts/test-vitest-shim.mjs; audited matcher surface toBe/toEqual/toBeGreaterThan/toThrow + .not; synchronous describe/it)"
+  },
+  "canonical_attempts": {
+    "used": 3,
+    "max": 3,
+    "chain": [
+      "STEP 1: node scripts/run-tests.mjs domain",
+      "STEP 2: node node_modules/typescript/bin/tsc -p packages/domain/blueprint/tsconfig.json",
+      "STEP 3: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json (structural during D1, see structural_notes)"
+    ],
+    "results": [
+      { "attempt": 1, "outcome": "RED", "step1": "6/6 t2 files import-eval error (TS1005 '}' expected validate.ts:772, missing brace in capabilityPolicy check)", "step2": "same TS1005", "step3": "same TS1005 + TS6059 structural noise" },
+      { "attempt": 2, "outcome": "RED", "step1": "6/6 t2 files import-eval at parse.ts:29 — SyntaxError: Named export 'YAMLException' not found (yaml is CJS; v2 exports YAMLError, YAMLException is a v1 name)", "step2": "TS6059 flood (rootDir \".\") + TS2305 'YAMLException' + TS2305 assertNoUnknownFields/assertPlainRecord (not re-exported by contracts root index) + TS2322 persona string|undefined + TS2322 x2 details not RemoteSafeJsonValue", "step3": "same semantic errors + TS6059 vs rootDir 'packages/domain' (structural)" },
+      { "attempt": 3, "outcome": "GREEN", "step1": "exit 0 — 104 passed / 0 failed / 104 total, 121 ms (domain.test.ts 2 + t2 102)", "step2": "exit 0, no diagnostics", "step3": "exit 2 — 18 diagnostics, all TS6059, 0 semantic (structural, deferred to P3-T6)" }
+    ]
+  },
+  "test_counts": {
+    "packages/domain/test/domain.test.ts": 2,
+    "packages/domain/test/t2-blueprint-catalog.test.ts": 15,
+    "packages/domain/test/t2-blueprint-hash.test.ts": 15,
+    "packages/domain/test/t2-blueprint-immutability.test.ts": 10,
+    "packages/domain/test/t2-blueprint-parse.test.ts": 13,
+    "packages/domain/test/t2-blueprint-revision.test.ts": 8,
+    "packages/domain/test/t2-blueprint-validation.test.ts": 41,
+    "total": 104,
+    "passed": 104,
+    "failed": 0
+  },
+  "test_coverage": [
+    "parse: frontmatter splitting (BOM/CRLF/CR, missing/unclosed frontmatter, empty-body-only), yaml decode failure, minimal + full fixtures, shuffled key order, persona variation",
+    "validation: 31 negative fixtures (one single-rule violation each) covering schemaVersion, blueprintId/revision/templateId/memberId formats, duplicate member/template ids, closed field sets, envelope allow∩deny=∅, quotas (positive ints, maxConcurrent<=maxInstances), capabilityPolicy decisions, metadata, remote-safe JSON values, legacy forbidden fields",
+    "hash: pure-TS SHA-256 pinned against NIST vectors (abc, empty, 448-bit), contentHash derivation stability under key reordering, sensitivity to any field change, sha256: prefix format",
+    "immutability: deepFreeze recursion across every blueprint shape, mutation attempts throw in strict mode, catalog-level freeze",
+    "revision: compareRevisions ordering (numeric ascending, length-first for digit revisions, non-digit lexicographic), blueprintSnapshotKey round-trip, createBlueprintSnapshotRef",
+    "catalog: buildCatalog (duplicate revision pair -> MALFORMED_DTO duplicate-blueprint-revision; missing -> blueprint-not-found), source wrappers with sourceName annotation, shallow-frozen catalog vs deep-frozen blueprints"
+  ],
+  "outputs": {
+    "package": "packages/domain/blueprint/ (tsconfig.json, src/{schema,types,hash,parse,validate,snapshot,catalog,index}.ts, testdata/fixtures.ts)",
+    "tests": "packages/domain/test/t2-{blueprint-parse,blueprint-validation,blueprint-hash,blueprint-immutability,blueprint-revision,blueprint-catalog}.test.ts + t2-helpers.ts",
+    "shared_file_change": "packages/domain/package.json — added \"dependencies\": { \"yaml\": \"^2.9.0\" } only (sole sanctioned shared-file edit for T2) + pnpm-lock.yaml consequence (minimal diff: yaml@2.9.0 zero-dep entry + importer + pnpm peer-key re-renders)",
+    "evidence": "dev/agent-workflow/evidence/P3-T2/{run-log.txt,attempt-ledger.txt,summary.json}"
+  },
+  "design_decisions": [
+    "Frontmatter-only document model: the blueprint source is YAML frontmatter plus an empty (whitespace-only) markdown body; a non-empty body fails with markdown-body-not-allowed (TeamBlueprint is a complete snapshot, not a document)",
+    "contentHash is derived, never a source field: sha256: + hex(sha256(canonicalJsonStringify(toHashableBlueprint(core)))), absent optional fields normalize to null so key presence never changes the hash",
+    "Pure-TS SHA-256 implementation (no node: crypto, per the no-node-builtin rule) pinned against NIST test vectors",
+    "Recursive memberId quarantine: a member id colliding with any other member id at any nesting depth in the parse tree is rejected, not just at the top members[] level",
+    "Closed field sets: every blueprint object validates against a fixed field allow-list; unknown fields fail loud with UNKNOWN_FIELD listing each offender (acceptance: 'unknown fields/version fail loud')",
+    "Catalog revision ordering: digit revisions compare numerically ascending with length-first tie-break before digit count, non-digit revisions lexicographic after digit ones (deterministic total order for compareRevisions)",
+    "Catalog is shallow Object.freeze at the catalog level; each blueprint entry is deep-frozen (blueprints are the immutable units; the catalog map itself is a stable read-only view)",
+    "teamContractError details are built exclusively from statically JSON-safe values; unknown-origin values pass through contracts v1 toRemoteSafeDetail (never throws, coerces to RemoteSafeJsonValue)",
+    "takeString is a plain (non-generic) helper; the single required:true call site asserts the invariant with '!' because required:true never yields undefined (it throws instead) — a generic conditional return failed to typecheck under strict"
+  ],
+  "acceptance_checks": {
+    "blueprint_snapshot_complete_immutable": "PASS — parse produces a complete TeamBlueprint (schemaVersion/blueprintId/revision/leader/members/requirements/memberEnvelopes/policyStates/metadata/contentHash) and deepFreeze is applied end-to-end; immutability suite 10/10",
+    "unknown_fields_version_fail_loud": "PASS — 31 negative fixtures each assert the exact TeamContractError code/reason; unknown-field and unsupported-schemaVersion cases included",
+    "revision_hash_immutability_tested": "PASS — dedicated t2 suites: revision 8, hash 15, immutability 10",
+    "selective_legacy_parser_reference": "PASS — legacy frontmatter parser read READ-ONLY at references/deepseek-harness/packages/team/team-local/src/parser.ts (mechanism only: BOM strip, line-normalization, --- fence handling); zero legacy source copied"
+  },
+  "structural_notes": [
+    "STEP 3 (tsc -p packages/domain/tsconfig.json) is red by design during D1: the shared domain tsconfig (rootDir \".\", include src+test) is frozen by the R11 ruling in SESSION_ROUTER_LOG.md L221 — '共享文件（domain package.json / src/index.ts / tsconfig.json / vitest.config.ts / test/domain.test.ts）D1 期间无人编辑；最终接线由 P3-T6 集成处理'. The sanctioned relative contracts imports pull contracts v1 .ts sources into the program outside rootDir -> 18x TS6059. All 18 classified: 18 TS6059, 0 semantic. No D1 worker can clear this without writing a frozen shared file; P3-T6 integration owns the fix (rootDir/include adjustment or contracts dist consumption).",
+    "Consequently the comprehensive typecheck of record for P3-T2 is STEP 2: packages/domain/blueprint/tsconfig.json (noEmit; extends root base; includes src + testdata + t2 tests + t2-helpers + contracts sources as type deps) — green. Note the extends path from the owned subdir is '../../../tsconfig.base.json' (three levels to repo root); the R11 '../../' figure is the contracts-import depth from the subdir root, a different path.",
+    "The plain-node runner prints only the first stack line of import/evaluation errors (importError.split('\\n')[0]); full messages were reproduced with a node:module.register probe (debug run D3)."
+  ],
+  "dependency_note": "yaml@2.9.0 is the sole new third-party dependency (TaskDoc allows a standard YAML parser). Lockfile diff is minimal (zero-dep package). Two v2 pitfalls resolved: (1) CJS entry under NodeNext type stripping — Node's cjs-module-lexer surfaces only part of module.exports, so parse/YAMLError are bound through the default import (esModuleInterop true); (2) 'YAMLException' is a v1 name and does not exist in yaml v2 — v2 exports YAMLError (with linePos), YAMLParseError, YAMLWarning from dist/errors.d.ts, re-exported at the package root.",
+  "owned_paths": [
+    "packages/domain/blueprint/**",
+    "packages/domain/test/t2-*",
+    "packages/domain/package.json (yaml dep only, sanctioned)",
+    "pnpm-lock.yaml (consequence of the sanctioned dep)",
+    "dev/agent-workflow/evidence/P3-T2/**"
+  ],
+  "red_line_compliance": {
+    "no_node_builtin_imports_in_ts": true,
+    "no_io_process_env_dsh_imports_in_domain": true,
+    "erasable_ts_only": true,
+    "matcher_surface_audited": "154 usages, all toBe/toEqual/toBeGreaterThan/toThrow (+.not); negative grep for non-audited matchers = 0",
+    "no_legacy_source_copied": true,
+    "no_push": true,
+    "shared_files_untouched_beyond_sanction": "domain src/index.ts, tsconfig.json, vitest.config.ts, test/domain.test.ts untouched"
+  }
+}

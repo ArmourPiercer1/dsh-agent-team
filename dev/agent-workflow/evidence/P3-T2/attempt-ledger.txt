@@ -1,0 +1,79 @@
+# P3-T2 attempt ledger — dev/agent-workflow/evidence/P3-T2/attempt-ledger.txt
+# Worker: qiyuan-self/qwen3.8-27b (D1 parallel leaf; no subagents/workflows of its own)
+# Branch: task/P3-T2-blueprint-catalog   Base: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c
+
+## Budget rules (ROUTER_RULES / TaskDoc §11)
+  - Max 3 canonical executions per task. A canonical execution = the full chain:
+      STEP 1 node scripts/run-tests.mjs domain
+      STEP 2 node node_modules/typescript/bin/tsc -p packages/domain/blueprint/tsconfig.json
+      STEP 3 node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+    (STEP 3 is structural during D1; see run-log.txt STRUCTURAL NOTE / R11 ruling L221.)
+  - Debug runs (partial commands, single-file probes, grep classification) do NOT count.
+  - pnpm / vitest CLI / tsx / esbuild are not used for verification (plain-node runner only).
+  - Toolchain prerequisite run once up front (pnpm install --ignore-scripts, exit 0) is not
+    an attempt: it happened before any code existed to test.
+
+## Canonical attempts
+  #  | outcome | STEP 1 (run-tests domain)      | STEP 2 (tsc blueprint)           | STEP 3 (tsc domain)
+  ---+---------+--------------------------------+----------------------------------+-------------------------------------------
+  1  | RED     | 6/6 t2 files import-eval error | TS1005 '}' expected validate.ts:772 (missing
+  2  |         | first line .../validate.ts:698 | brace in capabilityPolicy check) | same TS1005 (+ TS6059 structural noise)
+  ---+---------+--------------------------------+----------------------------------+-------------------------------------------
+  2  | RED     | 6/6 t2 files import-eval at    | TS6059 flood (rootDir ".") +     | same semantic errors + TS6059 vs rootDir
+  3  |         | parse.ts:29 — SyntaxError:     | TS2305 'YAMLException' (parse.ts) 'packages/domain' (structural)
+  4  |         | Named export 'YAMLException'   | + TS2305 assertNoUnknownFields / |
+  5  |         | not found (yaml is CJS; v2     | assertPlainRecord (validate.ts)  |
+  6  |         | exports YAMLError)             | + TS2322 persona string|undef +  |
+  7  |         |                                | TS2322 x2 details not            |
+  8  |         |                                | RemoteSafeJsonValue              |
+  ---+---------+--------------------------------+----------------------------------+-------------------------------------------
+  3  | GREEN*  | PASS 104 passed / 0 failed /   | exit 0, no diagnostics           | exit 2: 18 diagnostics, ALL TS6059
+  9  |         | 104 total, 121 ms (exit 0)     |                                  | (0 semantic) — structural, deferred
+ 10  |         | detail in run-log.txt          |                                  | to P3-T6 per R11 ruling
+  * GREEN = canonical chain green as defined for D1 (STEP 1 + STEP 2 exit 0).
+    Budget: 3/3 used. No further canonical run is possible; the final state was
+    verified by re-classification of STEP 3 output only (debug run D7).
+
+## Debug (non-canonical) runs
+  id | what                                                                    | result
+  ---+------------------------------------------------------------------------+------------------------------------------
+  D1 | pnpm install --ignore-scripts (yaml dep added first)                    | exit 0, warm store
+  D2 | per-line brace-depth trace of validate.ts (attempt-1 root cause)        | found missing '}' before policy[domain] = ...
+  D3 | node:module.register probe reproducing runner import-eval with full     | exposed real error: Named export
+     | stack (runner prints only importError.split('\n')[0])                   | 'YAMLException' not found (CJS yaml)
+  D4 | require('yaml') from worktree root                                      | fails (pnpm isolation); yaml resolves only
+                                                                                | from packages/domain subtree — the
+                                                                                | runtime path of record, confirmed
+  D5 | incremental `tsc -p packages/domain/blueprint/tsconfig.json` cycles     | TS2305/TS2322 fixed one by one; TS6059
+     | while fixing TS2305/TS2322                                              | cleared by removing "rootDir" (noEmit)
+  D6 | run-tests domain after toContain->toEqual fix                           | 103/104 -> 104/104 (became canonical #3)
+  D7 | Select-String classification of STEP 3 output (before AND after final   | 18 total / 18 TS6059 / 0 other, both times
+     | edit)                                                                   |
+  N  | negative matcher audit: grep for non-audited matchers across t2 files   | 0 matches; 154 usages all audited
+     | (toContain/toBeUndefined/toHaveLength/toBeDefined/toBeInstanceOf/toBeNull/
+     |  toBeGreaterThanOrEqual/toBeLessThan/toBeCloseTo, ...)                  |
+
+## Commits on task/P3-T2-blueprint-catalog (base 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c)
+  1. 99f0563a2ef9bbffe0cf6559251a57b6cdd14e78 — code: packages/domain/blueprint/**
+     (tsconfig.json, src x8, testdata/fixtures.ts), packages/domain/test/t2-*.test.ts x6
+     + t2-helpers.ts, packages/domain/package.json (yaml dep), pnpm-lock.yaml
+     subject: P3-T2: implement blueprint domain package (parse/validate/hash/snapshot/catalog)
+              + yaml dep + t2 test suite
+  2. edaec4f2f7d34843770bc7c969dd105e463b5c70 — run-log: dev/agent-workflow/evidence/P3-T2/run-log.txt
+     subject: P3-T2: add canonical run evidence (104/104 tests + tsc blueprint clean;
+              domain tsc TS6059 structural, wiring deferred to P3-T6)
+  3. summary:       dev/agent-workflow/evidence/P3-T2/summary.json + attempt-ledger.txt
+                    (this file; its own commit sha is reported in structured_output)
+     subject: P3-T2: add summary.json + attempt ledger evidence
+
+## Ownership verification
+  `git status --porcelain` after commit 3: clean (empty).
+  `git log --oneline base..HEAD`: exactly the 3 commits above.
+  Written paths are all inside the owned set:
+    packages/domain/blueprint/**            (sole owner: P3-T2)
+    packages/domain/test/t2-*               (t2 namespace, sole owner: P3-T2)
+    packages/domain/package.json            (sanctioned shared-file edit: yaml dep only)
+    pnpm-lock.yaml                          (consequence of the sanctioned dep)
+    dev/agent-workflow/evidence/P3-T2/**    (task evidence dir, append)
+  Shared files NOT touched: domain src/index.ts, domain tsconfig.json,
+  vitest.config.ts, test/domain.test.ts (frozen by R11 during D1).
