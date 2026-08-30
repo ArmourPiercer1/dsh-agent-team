@@ -1,0 +1,45 @@
+P5-T4 attempt ledger (TaskDoc §11.5: ≤3 executions per task; pure debug
+runs do not count but are logged)
+=========================================================================
+
+[DEBUG-0] (not counted) Leg 1: pnpm install --ignore-scripts → EXIT=0
+          (environment setup; lockfile satisfied, no source changes)
+
+[DEBUG-1] (not counted) Baseline verification chain at session start
+          (canonical baseline 827/827 re-confirmed; at that point 2 of the
+          8 new P5-T4 files already existed, so the p4t6 scanner test
+          failed with "actual toBe 202 — actual: 204" — the anticipated,
+          pre-adjudicated count conflict; final expected value 210 =
+          202 + 8)
+          LEGS: run-tests.mjs → 826 passed, 1 failed (p4t6 count only);
+          tsc storage/domain/contracts → EXIT=0; tsc runtime → EXIT=0
+
+[DEBUG-2] (not counted) First runtime tsc after all module files existed
+          → EXIT=2: TS2459 'FACET_POLICY_DOMAINS' declared locally but not
+          exported (index.ts re-exported it; policy-sources.ts had a bare
+          const). Fixed by exporting the facet→domain map; re-run → EXIT=0
+
+[ATTEMPT-1] Run A: full canonical Leg 2 (node scripts/run-tests.mjs)
+          with ALL 8 new files + the p4t6 pre-adjudication still pending
+          → EXIT=1: 868 passed, 2 failed
+            (1) p5t4-cold-resume: async it() unsupported by the plain-node
+                vitest shim (skeleton tests are synchronous) → restructured
+                to module-top-level async world setup + sync it() body;
+            (2) p4t6 coverage count: actual 210 vs toBe(202) — the
+                pre-adjudicated conflict, applied per the ruling (title +
+                two toBe + derivation comment ONLY; scanner .mjs/.d.mts
+                byte-identical; all other assertions untouched).
+
+[ATTEMPT-2] Run B: full canonical chain (FINAL)
+          LEG 2  node scripts/run-tests.mjs → EXIT=0, 843 passed, 0 failed,
+                 843 total (827 baseline + 15 p5t4-intersection
+                 + 1 p5t4-cold-resume); p4t6 10/10 at the updated 210
+                 count; scanner negative control green (no legacy Team
+                 SessionEvent vocabulary in the new files)
+          LEG 3  tsc -p packages/storage/tsconfig.json   → EXIT=0
+          LEG 4  tsc -p packages/domain/tsconfig.json    → EXIT=0
+          LEG 5  tsc -p packages/contracts/tsconfig.json → EXIT=0
+          DEBUG  tsc -p packages/runtime/tsconfig.json   → EXIT=0
+
+ATTEMPTS USED: 2 / 3 — DONE, green.
+=========================================================================

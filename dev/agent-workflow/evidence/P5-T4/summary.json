@@ -1,0 +1,64 @@
+{
+  "task": "P5-T4 — Capability/guard adapters (TaskDoc §11.5, F1 parallel group)",
+  "status": "DONE",
+  "branch": "task/P5-T4-capability-guard-adapters",
+  "base": "6618d65c648be0117b6b914c3052e600f67a2389",
+  "timestamp_utc": "2026-08-30T07:41:30Z",
+  "deliverable": {
+    "owned_paths": [
+      "packages/runtime/agent-setup/capability/types.ts",
+      "packages/runtime/agent-setup/capability/resolve.ts",
+      "packages/runtime/agent-setup/capability/policy-sources.ts",
+      "packages/runtime/agent-setup/capability/slot.ts",
+      "packages/runtime/agent-setup/capability/index.ts",
+      "packages/runtime/test/p5t4-helpers.ts",
+      "packages/runtime/test/p5t4-intersection.test.ts",
+      "packages/runtime/test/p5t4-cold-resume.test.ts"
+    ],
+    "pre_adjudicated_exception": {
+      "file": "packages/testkit/test/p4t6-session-event-scan.test.ts",
+      "change": "coverage count 202 → 210 (title + two toBe + derivation comment only; scanner .mjs/.d.mts byte-identical; all other assertions untouched)",
+      "derivation": "202 baseline + 8 new P5-T4 files = 210 (scanner counts .ts/.mts/.mjs under packages/** minus the 2 self-referential files)"
+    },
+    "core_formula": "effective capability = available ∩ teamResolved ∩ externalHard (per facet; available-order, deduped)",
+    "facets": [
+      "tools-permissions (tool visibility seam)",
+      "skills (skills seam)",
+      "mcp (MCP seam, streamable-http only)",
+      "pre-step-pre-execute (pre-step + pre-execute seams; teamResolved injected directly — no policy domain)"
+    ],
+    "g2_discipline": "a facet whose public seam did not pass G2 (seam.available === false) resolves to effective: [] with failClosed: 'seam-not-g2'; nothing is installed and no private registry/bypass is fabricated (deny/degrade, never bypass)",
+    "policy_integration": "teamResolved derived via the allowed dependency resolveEffectivePolicy (P3-T4, stage-1 team winner, allow items only; deny/unspecified contributes nothing); pre-step-pre-execute is not policy-governed (injected)",
+    "binder_integration": "createCapabilityOverlaySlot returns the T1 OverlaySlot contract (name 'capability'); installed via TeamAgentBinderOptions.slots; fresh path = slot.apply + installOverlay + agent-setup/overlay-installed; cold path = restoreScope with the full slot order, ZERO fresh-time side effects (no apply, no install, no overlay-installed event); slot.apply never throws on disappear/unexposed capabilities (graceful denial)"
+  },
+  "must_tests": {
+    "tighten": "PASS — PolicyState pin (layer above blueprint) shrinks tools to [tool-read]; re-bind after residency loss installs [tool-read, perm-fs-workspace, perm-net-web]; Team deny winner empties the facet (no install)",
+    "external_hard": "PASS — host ceiling removing one item removes it from effective; empty ceiling empties the facet; bind still succeeds",
+    "capability_disappear": "PASS — item removed from available drops out of effective (failClosed: null, graceful); a facet whose capabilities all disappeared installs nothing and the binder does not crash",
+    "cold_resume": "PASS — restart (new binder + new surface over the same durable world + same config): scope restored with full slot order incl. 'capability', zero installOverlay/overlay-installed/slot-apply, shared seams record nothing new, resolution idempotent (recompute === fresh install), already-bound rehydrate is a no-op, zero durable writes (seam writeLog unchanged)"
+  },
+  "verification": {
+    "leg1_install": "pnpm install --ignore-scripts → EXIT=0",
+    "leg2_tests": "node scripts/run-tests.mjs → EXIT=0, 843 passed, 0 failed, 843 total (827 baseline + 16 new)",
+    "leg3_storage_tsc": "EXIT=0",
+    "leg4_domain_tsc": "EXIT=0",
+    "leg5_contracts_tsc": "EXIT=0",
+    "debug_runtime_tsc": "node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json → EXIT=0",
+    "tests_total": 843,
+    "tests_passed": 843,
+    "new_tests": 16,
+    "scanner_negative_control": "p4t6 denylist scan green at the updated 210-file coverage count (no legacy Team SessionEvent vocabulary in the new files)"
+  },
+  "attempts_used": 2,
+  "attempt_budget": 3,
+  "red_lines": {
+    "core_patch_budget": "0 honored — no upstream patch, no private API, no legacy team vocabulary",
+    "live_agents_ports_dsh_home": "none — mock-first (RecordingSeam + FakeAgentSetupSurface + real P4 repositories over the testkit FileStorageSeam)",
+    "overlay_behavior_through_binder": "all must-test scenarios verified through the TeamAgentBinder fresh AND cold paths; isolated slot-level units only for the pure resolution functions' exact set semantics"
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/P5-T4/run-log.txt",
+    "dev/agent-workflow/evidence/P5-T4/attempt-ledger.txt",
+    "dev/agent-workflow/evidence/P5-T4/summary.json"
+  ]
+}

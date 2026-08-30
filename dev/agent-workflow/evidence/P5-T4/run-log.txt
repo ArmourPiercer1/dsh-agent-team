@@ -1,0 +1,130 @@
+P5-T4 run log — canonical verification chain (verbatim commands + output tails)
+================================================================================
+Task:      P5-T4 — Capability/guard adapters (TaskDoc §11.5, F1 parallel group)
+Branch:    task/P5-T4-capability-guard-adapters
+Base:      6618d65c648be0117b6b914c3052e600f67a2389 (clean at start)
+Workdir:   D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T4
+Node:      v24.20.0 / pnpm 11.7.0
+Red lines: CORE PATCH BUDGET = 0 (no upstream patch / private API / legacy
+           team vocabulary — p4t6 scanner negative control stays green
+           except the 2 quarantine files); tests verify overlay behavior
+           through the binder (fresh AND cold paths), mock-first, zero
+           live agents/ports/DSH_HOME.
+
+--------------------------------------------------------------------------------
+Leg 1 (canonical): pnpm install --ignore-scripts
+--------------------------------------------------------------------------------
+Command:  pnpm install --ignore-scripts
+Result:   EXIT=0 (completed earlier in the session, pre-compaction; lockfile
+          satisfied, no source changes)
+
+--------------------------------------------------------------------------------
+DEBUG leg (non-canonical, logged): runtime tsc after module + test files
+--------------------------------------------------------------------------------
+Command:  node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+Result 1: EXIT=2
+          packages/runtime/agent-setup/capability/index.ts(42,10): error TS2459:
+          Module '"./policy-sources.js"' declares 'FACET_POLICY_DOMAINS' locally,
+          but it is not exported.
+Fix:      export FACET_POLICY_DOMAINS in policy-sources.ts (the facet→domain
+          map is part of the module's public surface, re-exported by index.ts)
+Result 2: EXIT=0
+
+--------------------------------------------------------------------------------
+Run A (attempt 1 of the full deliverable; first full suite with all 8 new
+files + the 2 files pre-created at baseline time): node scripts/run-tests.mjs
+--------------------------------------------------------------------------------
+Command:  node scripts/run-tests.mjs
+Result:   EXIT=1
+          run-tests (plain-node vitest-equivalent): 868 passed, 2 failed, 870 total, 848 ms
+          (870 = 827 baseline + 16 new p5t4 tests + 27 miscounted expect units
+           inside the single async `it` that the plain-node shim rejects — see
+           failure 1; the shim aborts an async it() before its expects run,
+           then tallies the file's registered expect sites. Run B below shows
+           the corrected tally: 843 = 827 + 16.)
+Failure 1:
+  FAIL packages\runtime\test\p5t4-cold-resume.test.ts (1/28 tests)
+    ✗ P5-T4 must-test: cold resume (no fresh-time side effects, idempotent
+      resolution) › a fresh bind installs the effective capability, then a
+      cold rehydrate after restart restores the scope only
+      Error: async it() is not supported by the plain-node shim; the skeleton
+      tests are synchronous
+        at it (file:///…/scripts/test-vitest-shim.mjs:71:19)
+        at …/packages/runtime/test/p5t4-cold-resume.test.ts:62:3
+        at describe (file:///…/scripts/test-vitest-shim.mjs:59:5)
+  Diagnosis: the plain-node vitest shim runs SYNCHRONOUS `it` bodies only
+  (p5t1 convention: top-level `await` for async world setup, sync `it`).
+  Fix: restructure p5t4-cold-resume.test.ts — `seedTeamWorld` +
+  `restartTeamWorld` moved to module top-level; the `it` body is sync.
+Failure 2 (anticipated, pre-adjudicated count conflict):
+  FAIL packages\testkit\test\p4t6-session-event-scan.test.ts (1/10 tests)
+    ✗ p4t6 frozen Team SessionEvent denylist scan › coverage: all nine package
+      dirs discovered, eight carry source, 202 files scanned, legacy documented
+      sourceless
+      Error: expectation failed: actual toBe 202 — actual: 210
+  Diagnosis: the p4t6 scanner counts .ts/.mts/.mjs under packages/** (minus
+  the 2 self-referential files); the 8 new P5-T4 files raise 202 → 210.
+  Pre-adjudication (ruling): update ONLY the title + the two toBe(202) +
+  the derivation comment; scanner .mjs/.d.mts byte-identical; all other
+  assertions untouched. Actual 210 = 202 + 8, exactly as predicted.
+  Fix: packages/testkit/test/p4t6-session-event-scan.test.ts —
+    title:  "202 files scanned" → "210 files scanned"
+    comment: "201 pre-existing … (189 pre-P5 + 12 P5-T1 runtime files)"
+             → "209 pre-existing … (189 pre-P5 + 12 P5-T1 runtime files
+                + 8 P5-T4 capability adapter files)"
+    expect(scanResult.filesScanned).toBe(202) → toBe(210)
+    expect(scanResult.files.length).toBe(202)  → toBe(210)
+
+--------------------------------------------------------------------------------
+Run B (attempt 2; FINAL canonical chain): node scripts/run-tests.mjs
+--------------------------------------------------------------------------------
+Command:  node scripts/run-tests.mjs
+Result:   EXIT=0
+Output tail (verbatim):
+  PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+  PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+  PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+  PASS packages\testkit\test\testkit.test.ts (2 tests)
+  PASS packages\tools\test\tools.test.ts (2 tests)
+
+  run-tests (plain-node vitest-equivalent): 843 passed, 0 failed, 843 total, 874 ms
+  RESULT: PASS run-tests (0 failures)
+  EXIT=0
+P5-T4 / p4t6 lines (verbatim):
+  PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+  PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+  PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+Tally: 843 = 827 (canonical baseline incl. P5-T1) + 15 (p5t4-intersection)
+       + 1 (p5t4-cold-resume). p4t6 stays green at 10/10 with the updated
+       210-file coverage count; the scanner negative control (denylist scan)
+       is unchanged and green — no legacy Team SessionEvent vocabulary
+       leaked into the new files.
+
+--------------------------------------------------------------------------------
+Leg 3 (canonical): storage tsc
+--------------------------------------------------------------------------------
+Command:  node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+Result:   STORAGE_EXIT=0
+
+--------------------------------------------------------------------------------
+Leg 4 (canonical): domain tsc
+--------------------------------------------------------------------------------
+Command:  node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+Result:   DOMAIN_EXIT=0
+
+--------------------------------------------------------------------------------
+Leg 5 (canonical): contracts tsc
+--------------------------------------------------------------------------------
+Command:  node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+Result:   CONTRACTS_EXIT=0
+
+--------------------------------------------------------------------------------
+DEBUG leg (final): runtime tsc (after the cold-resume restructure)
+--------------------------------------------------------------------------------
+Command:  node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+Result:   RUNTIME_EXIT=0
+
+================================================================================
+Final state: ALL LEGS GREEN (Legs 1–5 + DEBUG leg). 843/843 tests.
+No upstream source touched (CORE PATCH BUDGET = 0 honored).
+================================================================================
