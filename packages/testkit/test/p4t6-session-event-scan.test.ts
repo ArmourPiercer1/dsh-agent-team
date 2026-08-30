@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, eight carry source, 243 files scanned, legacy documented sourceless', () => {
+  it('coverage: all nine package dirs discovered, eight carry source, 258 files scanned, legacy documented sourceless', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -69,9 +69,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // of the scanner (the scanner .mjs and this test are excluded by the
     // self-reference contract) + 10 P5-T5 root-binding files (6 module
     // .ts + 4 unit-test .ts) + 6 P5-T5 real-instance harness .mjs
-    // (ts-loader, seam, mini-mcp, slots, plugin, run).
-    expect(scanResult.filesScanned).toBe(243)
-    expect(scanResult.files.length).toBe(243)
+    // (ts-loader, seam, mini-mcp, slots, plugin, run) + 15 P5-T6
+    // member-residency files (8 module .ts + 4 unit-test .ts +
+    // 3 real-instance harness .mjs: plugin, run, slots-t6).
+    expect(scanResult.filesScanned).toBe(258)
+    expect(scanResult.files.length).toBe(258)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
