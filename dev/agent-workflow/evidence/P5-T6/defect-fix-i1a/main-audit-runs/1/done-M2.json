@@ -1,0 +1,139 @@
+{
+  "scenario": "M2",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "cold: cold-member path, bound+installed, no noop (the member exists durably)",
+      "pass": true,
+      "actual": {
+        "path": "cold-member",
+        "bound": true,
+        "installed": true,
+        "noopReason": null
+      }
+    },
+    {
+      "name": "cold: identity is the MEMBER identity (kind member, root, instance, child session)",
+      "pass": true,
+      "actual": {
+        "kind": "member",
+        "sessionId": "session-child-1vz9d1n0819tzg0x",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t"
+      }
+    },
+    {
+      "name": "cold: scope restored with the exact member scope (persona/model/capability)",
+      "pass": true,
+      "actual": {
+        "kind": "member",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t",
+        "slots": [
+          "persona",
+          "model",
+          "capability"
+        ]
+      },
+      "expected": {
+        "kind": "member",
+        "rootSessionId": "session-p5t6-root",
+        "instanceId": "inst-1vz9d1n0819t",
+        "slots": [
+          "persona",
+          "model",
+          "capability"
+        ]
+      }
+    },
+    {
+      "name": "cold: admission re-decided open (admitted=true)",
+      "pass": true,
+      "actual": {
+        "admitted": true,
+        "admissionCode": "ADMISSION_OPEN"
+      }
+    },
+    {
+      "name": "cold: agent-setup events exactly [scope-restored(member), admission-decided] — no overlay-installed",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "name": "agent-setup/scope-restored",
+          "detail": "member"
+        },
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    },
+    {
+      "name": "cold: ZERO durable writes this boot (the cold path is read-only on the control plane)",
+      "pass": true,
+      "actual": []
+    },
+    {
+      "name": "durable: record + binding intact and consistent (wrote=false)",
+      "pass": true,
+      "actual": {
+        "wrote": false,
+        "memberPresent": true,
+        "binding": {
+          "schemaVersion": 1,
+          "kind": "team-member",
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-1vz9d1n0819t"
+        }
+      }
+    },
+    {
+      "name": "model: durable model/selection survived the process restart (projection re-seed)",
+      "pass": true,
+      "actual": {
+        "composePath": "sessionProjections",
+        "assembled": {
+          "provider": "p5t6-static",
+          "model": "p5t6-model-v1"
+        },
+        "sessionEvents": [
+          {
+            "seq": 0,
+            "type": "permission/preset"
+          },
+          {
+            "seq": 1,
+            "type": "sandbox/mode"
+          },
+          {
+            "seq": 2,
+            "type": "approval/policy"
+          },
+          {
+            "seq": 3,
+            "type": "model/selection"
+          },
+          {
+            "seq": 4,
+            "type": "session/end-seed"
+          }
+        ]
+      },
+      "expected": {
+        "provider": "p5t6-static",
+        "model": "p5t6-model-v1"
+      }
+    },
+    {
+      "name": "persona: resumed handle composes the member persona preset with the blueprint text",
+      "pass": true,
+      "actual": {
+        "composedPreset": "p5t6-member-persona",
+        "personaText": "You are the p5t6worker member, executing your assigned step and reporting facts."
+      }
+    }
+  ]
+}

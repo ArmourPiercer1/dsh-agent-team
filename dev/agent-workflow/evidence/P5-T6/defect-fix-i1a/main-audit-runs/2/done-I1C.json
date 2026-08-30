@@ -1,0 +1,56 @@
+{
+  "scenario": "I1C",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "precondition: the member record was LOST before this boot (record absent at scenario start)",
+      "pass": true,
+      "actual": "absent"
+    },
+    {
+      "name": "replay: the record is recreated — exactly one row for the identity, no crash",
+      "pass": true,
+      "actual": {
+        "identityRecordCount": 1,
+        "wrote": true
+      }
+    },
+    {
+      "name": "no duplicate member: the team holds exactly A + B (the recreation is not a second record)",
+      "pass": true,
+      "actual": {
+        "teamMemberCount": 2
+      }
+    },
+    {
+      "name": "no duplicate binding: the original binding survived the record loss (one row, never re-pointed)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-child-1vz9d1n0819tzg0x",
+          "instanceId": "inst-1vz9d1n0819t"
+        }
+      ]
+    },
+    {
+      "name": "no duplicate session: the child session exists exactly once (resumed, not recreated)",
+      "pass": true,
+      "actual": {
+        "childSessionRows": 1,
+        "totalSessions": 1
+      }
+    },
+    {
+      "name": "replay: writes exactly [putMemberInstance] (the binding already existed and was consistent)",
+      "pass": true,
+      "actual": [
+        {
+          "op": "putMemberInstance",
+          "rootSessionId": "session-p5t6-root",
+          "instanceId": "inst-1vz9d1n0819t",
+          "childSessionId": "session-child-1vz9d1n0819tzg0x"
+        }
+      ]
+    }
+  ]
+}
