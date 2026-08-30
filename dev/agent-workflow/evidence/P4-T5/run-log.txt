@@ -1,0 +1,28 @@
+# P4-T5 run log (appended; debug/bare runs recorded here do NOT count toward the canonical attempt budget)
+# branch task/P4-T5-fault-injection-testkit, base 28466acabb28426629c10ef82b27858fff280bbb
+# environment: Windows/pwsh, workspace-write sandbox, node plain-node runner (scripts/run-tests.mjs), typescript 6.0.3, pnpm 11.7.0
+
+## Debug runs (2026-08-30, all pre-canonical)
+
+- D1  tsc packages/testkit (DEBUG leg): EXIT=2 — 22 type errors: `copyFixtureIntoScratch` not re-exported from p4t5-helpers (added re-export); `SessionBindingDto.instanceId` not present on the whole union (fixed with a `kind === 'team-member'` narrowing); `capture()`'s `value: unknown` narrows to `{}` after an undefined-check (made `capture<T>` generic). FIXED in p4t5-helpers.ts + p4t5-corrupt-version.test.ts.
+- D2  run-tests (bare): EXIT=1 — 744 passed / 20 failed / 764 total: the frozen vitest shim only implements toBe/toEqual/toBeGreaterThan/toThrow (+ .not); 19 usages of toBeUndefined (17) / toContain (2) across the three p4t5 files rewritten to the allowed set (`toBe(undefined)`, `includes(...) + toBe(true)`).
+- D3  tsc packages/testkit (DEBUG leg): EXIT=0.
+- D4  run-tests (bare): EXIT=1 — 763 passed / 1 failed / 764 total: p4t5-retry-restart import/evaluation error `TeamDomainError ... the TeamDomain is closed` — the second-member top-level block read `restarted.domain` AFTER `dropRealm(restarted)`; switched those 5 reads to the second-restart realm `again` (same durable state, no writes in between).
+- D5  run-tests (bare): EXIT=1 — 772 passed / 1 failed / 773 total: pristine `base` was captured after the recover (8) instead of after the reopen (0); added the pre-recover capture (`reopenedBase`) and a `pristineBase === STAMP_WRITE_COUNT` assertion; corrected the misleading it-title.
+- D6  tsc packages/testkit (DEBUG leg): EXIT=0.
+- D7  run-tests (bare): EXIT=1 — 772 passed / 1 failed / 773 total: pristine `memberCount`/`orphanCount` were read after recover+noOp (by then exactly 1 member is committed — correct behavior, wrong capture point); moved both captures before recover, added `postMemberCount === 1` assertion; a temporary probe file (deleted before commit) confirmed the isolated pristine flow reads 0 members pre-recover.
+- D8  tsc packages/testkit (DEBUG leg): EXIT=0.
+- D9  run-tests (bare): EXIT=0 — 773 passed / 0 failed / 773 total (740 baseline + p4t5-corrupt-version 10 + p4t5-crash-matrix 13 + p4t5-retry-restart 10), ~650 ms.
+
+## Canonical attempt 1 (2026-08-30T05:28Z–05:34Z) — the ONLY canonical attempt used (budget 3)
+
+| leg | command | exit | result |
+| --- | --- | --- | --- |
+| 1 | pnpm install --ignore-scripts | 0 | "Already up to date" (10 workspace projects, pnpm 11.7.0) |
+| 2 | node scripts/run-tests.mjs | 0 | 773 passed / 0 failed / 773 total, ~650 ms (740 baseline + 33 p4t5); full output preserved in canonical-attempt1-leg2-run-tests.log |
+| 3 | node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json | 0 | clean |
+| 4 | node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json | 0 | clean |
+| 5 | node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json | 0 | clean |
+| +DEBUG | node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json | 0 | clean (extra leg, outside the canonical budget) |
+
+Canonical result: PASS (5/5 canonical legs + DEBUG leg EXIT=0). No further canonical attempts required.

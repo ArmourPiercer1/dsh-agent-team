@@ -1,0 +1,2 @@
+# P4-T5 attempt ledger (one line per canonical attempt; debug runs in run-log.txt do not count)
+attempt=1 status=PASS legs=5/5 detail="install EXIT=0; run-tests EXIT=0 773/773 (baseline 740 + p4t5 33: crash-matrix 13, retry-restart 10, corrupt-version 10); tsc storage EXIT=0; tsc domain EXIT=0; tsc contracts EXIT=0; +DEBUG tsc testkit EXIT=0"

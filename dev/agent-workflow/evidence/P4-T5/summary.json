@@ -1,0 +1,39 @@
+{
+  "task_id": "P4-T5",
+  "title": "P4 E3: Team-mode vNext Phase P4 — Fault-injection/restart testkit (packages/testkit/fault-injection): file-backed StorageDomainSeam (.mjs, node:fs only) with atomic durable writes + seam-level armed CrashFault, process-restart model (drop whole realm, reopen brand-new stack over the same scratch dir), 10-boundary DevPlan 17.4 crash matrix, double retry, restart semantics, corrupt-version a/b/c, deterministic committed-world fixture",
+  "branch": "task/P4-T5-fault-injection-testkit",
+  "base_sha": "28466acabb28426629c10ef82b27858fff280bbb",
+  "head_sha": "56055845bbcb756dc4d8b3f4271edab5c53531c1",
+  "head_sha_note": "code + fixtures commit (branch head at summary-writing time); the evidence commit is stacked directly on top of it on the same task branch",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 1,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": {
+    "attempt_1": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, 'Already up to date', 10 workspace projects, pnpm 11.7.0)",
+      "leg_2_run_tests_all_packages": "PASS (EXIT=0, 773 passed / 0 failed / 773 total, ~650 ms; 740 baseline + 33 p4t5; full output in canonical-attempt1-leg2-run-tests.log)",
+      "leg_3_tsc_storage": "PASS (EXIT=0)",
+      "leg_4_tsc_domain": "PASS (EXIT=0)",
+      "leg_5_tsc_contracts": "PASS (EXIT=0)",
+      "extra_debug_leg_tsc_testkit": "PASS (EXIT=0; outside the canonical budget, recorded as DEBUG)"
+    }
+  },
+  "test_counts": {
+    "baseline": 740,
+    "p4t5_crash_matrix": 13,
+    "p4t5_retry_restart": 10,
+    "p4t5_corrupt_version": 10,
+    "p4t5_total": 33,
+    "full_suite": "773/773 (EXIT=0)"
+  },
+  "acceptance_evidence": "Every one of the 10 DevPlan 17.4 boundaries was crashed at its exact seam-write offset on the FILE-BACKED seam, the realm was dropped, a brand-new stack reopened over the same scratch dir, and the post-restart world is EXACTLY ONE committed MemberInstance (1 member, 1 ledger fact, 0 orphans, op COMMITTED, deterministic child id) with a 0-write no-op second recover — or, pre-recovery, a diagnosable state (B1 member-not-provisioned; B4/B5/B6/B8/B9 orphaned-child-session with exact context.missing arrays). No boundary yields a second committed instance, an undiagnosable orphan, or a silent corruption. See fault-matrix-report.md §2-§5.",
+  "notes": "Process-equivalence ruling (DevPlan 17.5 criterion 7, in scope here): the drop-realm/reopen-stack model partitions state exactly like an OS process restart — durable bytes (9 table files + L1 meta, written only via atomic tmp+renameSync) survive; ALL volatile state (seam instance with write counts/crash arming, TeamDomain, deterministic FakeAgentFactoryAdapter, ProvisioningCoordinator) is destroyed and reconstructed brand-new over the same dir; every assertion is phrased in durable/derived terms only, and no assertion reads the dead realm after the drop. Documented non-coverage: no real OS process / real StorageDomain binding / cross-process locking — that is P5 runtime territory (DevPlan §18). Corrupt-version (a) implemented as BOTH (a1) L2 schema_meta stamp 1->2 -> SCHEMA_STAMP_MISMATCH {store:'ledger',expected:1,found:2} and (a2) L1 domain meta 1->2 -> SCHEMA_VERSION_MISMATCH {expected:1,found:2,seamCode:'version-mismatch'} — the brief said 'SCHEMA_VERSION_MISMATCH' for the stamp tamper, but the frozen T1 version policy names the per-store-stamp code SCHEMA_STAMP_MISMATCH; both layers fail loudly at open with SUPPORTED=[1] and no built-in migration, and both are asserted. (b): truncated table -> open fails SEAM_FAILURE {store:'team_domain',op:'open',seamCode:'malformed-medium'}; garbage record body -> open OK, hydration read RECORD_INVALID contractsCode MALFORMED_DTO; record schemaVersion 2 -> open OK, hydration read RECORD_INVALID contractsCode SCHEMA_VERSION_MISMATCH. (c): planted crash-shaped .tmp and a REAL crash-leftover tmp (B9) are both ignored by the reopen (identical tmp listing before/after; c2 recovers with exactly 1 seam write). Write arithmetic verified: fresh commit = 8 seam writes (W1-W8) after 8 schema_meta stamps; second member's commit = 7 (ledger counter already bootstrapped); recovery writes = 8 - offset; restart read-back = 0 writes. Two documented deviations from the P4-T1 in-memory fake (both harmless/unreachable in provisioning): crash armed for an update of a MISSING key throws without a tmp; first-open medium initialization (meta + empty table files) is infrastructure, excluded from write accounting. No live Agent, no DSH runtime, no ports, no DSH_HOME. Scratch dirs under packages/testkit/test/.tmp-fault/ created lazily and destroyed in finally on both success and failure (.gitignore does not cover them and could not be edited); final git status --porcelain is empty. Prior-task (T1-T4) defect findings: none — the only harness bug found was in P4-T5's own new file-seam.mjs (KvTable.update resolved undefined instead of the updated value), fixed within this task. Note for the record: dev/agent-workflow/evidence/provenance/file-manifest.json holds only a legacy baseline/files inventory with no frozen-doc hash ledger, so doc-hash cross-checking was limited to re-verifying the §17.4 boundary table and §17.5 criteria verbatim against the frozen Development Plan.",
+  "toolchain": "node (plain-node runner scripts/run-tests.mjs with native TS type-stripping + .js->.ts sibling hooks; no vitest CLI/tsx/esbuild/vite/piped-stdio child spawns), typescript 6.0.3 (tsc per-package), pnpm 11.7.0 (install --ignore-scripts only; no pnpm run/exec); zero new dependencies; pnpm-lock.yaml untouched; node:fs/node:path confined to packages/testkit/fault-injection/file-seam.mjs (the ruling R22 .mjs exception) with adjacent file-seam.d.mts"
+}
