@@ -1,0 +1,62 @@
+# P4-T4 canonical run log
+# Task: P4-T4 (Provisioning state machine) — Team-mode vNext Phase P4, E2
+# Branch: task/P4-T4-provisioning-sm (base 4a58702)
+# Worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P4-T4
+# Chain (frozen, TaskDoc §11.5): 1) pnpm install --ignore-scripts
+#   2) node scripts/run-tests.mjs  3-5) node node_modules/typescript/bin/tsc -p packages/{storage,domain,contracts}/tsconfig.json
+# An "attempt" = one full 5-leg chain. Budget: <= 3. Debug (bare) runs are listed separately and do not count.
+
+## Debug runs (not counted against the 3-attempt budget)
+
+debug-1 (after first full draft of all 4 p4t4 test files + helpers):
+  leg2 node scripts/run-tests.mjs -> EXIT=1
+    737 passed, 3 failed, 740 total
+    failures:
+      p4t4-adapter.test.ts (1/12): async it() bodies rejected by the plain-node shim (module eval reached line 214);
+      p4t4-one-committed / p4t4-orphan-detect / p4t4-per-stage-retry: import/evaluation ReferenceError "FakeAgentFactoryAdapter is not defined"
+        root cause: p4t4-helpers.ts imported the class as `type` only, but `createP4t4World` news it up (value position);
+        node's native TS type-stripping erases the type-only import, leaving the `new` reference unbound.
+  leg3 tsc packages/storage -> EXIT=2 (4 errors, all in P4-T4 production code):
+    coordinator.ts(343): TS2367 unreachable stage===NONE comparison (no-op branch returned early);
+    diagnostics.ts(107/108/111): TS2540 assignment to readonly interface fields (post-construction mutation).
+  leg4 tsc packages/domain -> EXIT=0
+  leg5 tsc packages/contracts -> EXIT=0
+  fixes applied:
+    p4t4-helpers.ts: `type FakeAgentFactoryAdapter` -> value import;
+    p4t4-adapter.test.ts: all async it() bodies hoisted to module-level captures (shim: it bodies must be synchronous);
+    p4t4-adapter.test.ts: corrected invalid-id expectations — root session ids are OPAQUE (structural rule: non-empty,
+      <=255, no control chars, no whitespace per contracts ids/session-id.ts); 'not-a-root' is a VALID opaque id, so
+      provisioningOperationId rightly does not throw for it. Test now uses '' and 'root with space' for root violations
+      (production code NOT a defect; test expectation was wrong);
+    p4t4-orphan-detect.test.ts: two it bodies read LIVE state (seam.writeCount, memberInstances.list) at it-registration
+      time, i.e. AFTER the module-level recovery had already run (2+6=8 writes, 1 member) — replaced with module-level
+      captures taken at the crash point (b4CrashWrites, b4MemberCountAfterCrash);
+    coordinator.ts: removed the unreachable stage===NONE comparison (early return above);
+    diagnostics.ts: optional fields now set via conditional spreads at object construction (no readonly mutation).
+
+debug-2 (after fixes):
+  leg2 node scripts/run-tests.mjs -> EXIT=0  740 passed, 0 failed, 740 total
+    p4t4-adapter 12, p4t4-one-committed-invariant 21, p4t4-orphan-detect 21, p4t4-per-stage-retry 20 (p4t4 = 74)
+  leg3 tsc packages/storage -> EXIT=0
+  (leg4/leg5 already EXIT=0 in debug-1, unchanged files)
+
+## Canonical attempts
+
+### attempt 1 — FAILED (stopped at leg 2)
+- 2026-08-30T12:44:55 leg1 pnpm install --ignore-scripts -> EXIT=0 (20681 ms; fresh install, 150 pkgs)
+- 2026-08-30T12:45:20 leg2 node scripts/run-tests.mjs -> EXIT=1 (see debug-1 failure list above)
+- legs 3-5 not reached (chain is sequential; leg2 failure aborts the attempt)
+
+### attempt 2 — PASS (all 5 legs)
+- 2026-08-30T12:54:03 leg1 pnpm install --ignore-scripts -> EXIT=0 (505 ms; already up to date)
+- 2026-08-30T12:54:09 leg2 node scripts/run-tests.mjs -> EXIT=0
+    run-tests (plain-node vitest-equivalent): 740 passed, 0 failed, 740 total, 447 ms
+    RESULT: PASS run-tests (0 failures)
+    p4t4 files: p4t4-adapter.test.ts (12), p4t4-one-committed-invariant.test.ts (21),
+                p4t4-orphan-detect.test.ts (21), p4t4-per-stage-retry.test.ts (20)  => p4t4 = 74
+    baseline (P4-T2/T3 integrated at base 4a58702) = 666; 666 + 74 = 740
+- 2026-08-30T12:54:13 leg3 node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json -> EXIT=0 (738 ms)
+- 2026-08-30T12:54:14 leg4 node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json -> EXIT=0 (708 ms)
+- 2026-08-30T12:54:14 leg5 node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json -> EXIT=0 (485 ms)
+
+RESULT: attempt 2 fully green. canonical_attempts_used = 2 / 3.

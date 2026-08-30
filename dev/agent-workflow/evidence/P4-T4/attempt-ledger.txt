@@ -1,0 +1,3 @@
+# P4-T4 attempt ledger (one line per canonical attempt; debug runs in run-log.txt do not count)
+attempt=1 status=FAILED legs=1/5 detail="leg2 run-tests EXIT=1 (737/740): 3 p4t4 test-file bugs (async it() bodies; type-only import of FakeAgentFactoryAdapter used in value position by p4t4-helpers; live state reads at it-registration) + 4 storage tsc errors (TS2367 unreachable NONE compare; 3x TS2540 readonly mutation in diagnostics)"
+attempt=2 status=PASS legs=5/5 detail="install EXIT=0; run-tests EXIT=0 740/740 (baseline 666 + p4t4 74); tsc storage EXIT=0; tsc domain EXIT=0; tsc contracts EXIT=0"
