@@ -1,0 +1,5 @@
+﻿tsc -p packages/contracts/tsconfig.json -> EXIT=0
+tsc -p packages/domain/tsconfig.json -> EXIT=0
+tsc -p packages/storage/tsconfig.json -> EXIT=0
+tsc -p packages/runtime/tsconfig.json -> EXIT=0
+tsc -p packages/testkit/tsconfig.json -> EXIT=0
