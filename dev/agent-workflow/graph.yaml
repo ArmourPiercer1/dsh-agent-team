@@ -6,7 +6,7 @@ contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [P4-T4]
+ready: []
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -37,7 +37,7 @@ tasks:
   P4-T1: { state: INTEGRATED, class: A, branch: task/P4-T1-teamdomain-schema, base_sha: 3ccff7bc98fb15bd8c691a13639177041f91b1b0, head_sha: 4a7131a731c358b3c5d485bc7d7634de93f84e8b, attempts: 1, depends_on: [P3-T6] }
   P4-T2: { state: INTEGRATED, class: A, branch: task/P4-T2-operation-journal, base_sha: f6d7da5c89a0c3f06f534d3cd0b5351fc7135628, head_sha: 4efef296df580ad08c297ffd102a0035cc3ba8bf, attempts: 2, depends_on: [P4-T1] }
   P4-T3: { state: INTEGRATED, class: A, branch: task/P4-T3-binding-reconciliation, base_sha: f6d7da5c89a0c3f06f534d3cd0b5351fc7135628, head_sha: bdf16bcec7369b7e2ad169cb2e32092d9b306811, attempts: 1, depends_on: [P4-T1] }
-  P4-T4: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T2, P4-T3] }
+  P4-T4: { state: RUNNING, class: A, branch: task/P4-T4-provisioning-sm, base_sha: 4a587021e9f8f560870793b1cad20550b57b7ccd, head_sha: null, attempts: 0, depends_on: [P4-T2, P4-T3] }
   P4-T5: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T2, P4-T3, P4-T4] }
   P4-T6: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T5] }
   G4-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T1, P4-T2, P4-T3, P4-T4, P4-T5, P4-T6] }

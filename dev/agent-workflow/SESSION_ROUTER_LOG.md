@@ -339,6 +339,21 @@
 - **Graph**：P4-T2 → INTEGRATED（head `4efef29`，attempts 2）；P4-T3 → INTEGRATED（head `bdf16bc`，attempts 1）；integration_sha = `d5300dd9c39254f1aa63938edfe358f011ed47db`；ready → [P4-T4]。
 - **下一步**：读 TaskDoc §11.5 P4-T4 完整卡片 → 建 `.worktrees/P4-T4`（base `d5300dd9`）→ 单 worker 派发（`qiyuan-self/qwen3.8-27b`）。
 
+### 轮次 R20：P4-T4（Provisioning state machine）派发（2026-08-30）
+
+- **Base**：int/P4 `4a58702`（R19 bookkeeping；基线 666/666 + tsc 绿；T2 journal + T3 bindings 已就位）。
+- **T4 结构裁决（主 Agent，记录在案）**：
+  - 代码：`packages/storage/provisioning/**`（按卡片）；测试命名空间 `packages/storage/test/p4t4-*.test.ts`（仅新增 + p4t4-helpers.ts）；证据 `evidence/P4-T4/**`。
+  - 共享文件零编辑（包 tsconfig/package.json/src-index/T1-T3 代码全只读）。
+  - **Agent factory adapter 裁决**：卡片允许依赖 = "public Agent factory adapter interface（mock first）"→ provisioning 模块内定义**窄 AgentFactoryAdapter 接口**（外部效果面：child session 创建/最小必需面，来源以冻结 Architecture 文档为准；真实实现属 P5 runtime），本 task 只写 **fake** 实现 + 测试；**不创建 live Agent、不调 DSH runtime、不起进程、零新依赖**。
+  - 构建于：T2 journal 引擎（`packages/storage/operations`，只读）+ T3 binding service/reconciler（`packages/storage/bindings`，只读）+ T1 repositories（只读）。
+- **Worktree**：`.worktrees/P4-T4` @ `task/P4-T4-provisioning-sm`（base `4a58702`）。
+- **任务卡片要点**：目标 = ALLOCATED→CHILD_SESSION_CREATED→CHILD_BOUND→INSTANCE_COMMITTED 的 durable protocol adapter；必须测试 = 每阶段 retry / orphan detect / one committed instance invariant；验收 = 重复 provisioning/recovery 最终收敛、不会形成两个 committed MemberInstance；输出物 = provisioning coordinator + fake tests。
+- **收敛判据（DevPlan §17.4 逐字预期）**：故障注入后最终只允许 "one committed MemberInstance OR no committed MemberInstance + diagnosable orphan"（crash 注入本体属 P4-T5，T4 状态机必须暴露 §17.4 的 10 个 durable boundary 作为可注入点）。
+- **派发**：workflow `p4-t4-provisioning-sm-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；纯包工作，无端口/DSH_HOME/实例。
+- **graph**：P4-T4 → RUNNING（branch task/P4-T4-provisioning-sm，base `4a58702`）；ready → []。
+- **结果**：（worker 返回后补记）
+
 ## 重审记录
 
 （空）
