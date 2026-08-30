@@ -1,0 +1,19 @@
+Frozen doc hash verification — P6-T2 (worker, attempt 1)
+==========================================================
+Method: Get-FileHash -Algorithm SHA256 (PowerShell), lowercase.
+Files read from the MAIN worktree absolute paths (frozen docs are
+gitignored+untracked, present only there):
+
+ 2b457cc033ca1b72aa781e072e0ef7fe55bc05d2f7ea25cc03c827d257e888a3  DSH_Agent_Team_vNext_Task_Decomposition_and_Review_Method_20260829.md
+ a05d237f8515fd6467373632849afe0c6a1ae63bc0ec298de63b9d124d881d0f  DSH_Agent_Team_vNext_Detailed_Development_Plan_20260829.md
+ 030dfb8ec55bae30f35c2826c7e4e659c0e0b742d836018ce502f34017870c53  DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md
+ 3ef3ab69ed2bd7879e4c15079a16c8dae456b572690246a5c1f9cbb0c8c4981e  DSH_Agent_Team_vNext_Detailed_UI_Design_20260829.md
+
+Cross-check: dev/agent-workflow/evidence/provenance/file-manifest.json
+(tracked, present in worktree) frozen_docs section (lines 40-48):
+ - Architecture  030dfb8ec55bae30f35c2826c7e4e659c0e0b742d836018ce502f34017870c53  MATCH
+ - UI            3ef3ab69ed2bd7879e4c15079a16c8dae456b572690246a5c1f9cbb0c8c4981e  MATCH
+ - DevPlan       a05d237f8515fd6467373632849afe0c6a1ae63bc0ec298de63b9d124d881d0f  MATCH
+ - TaskDoc       2b457cc033ca1b72aa781e072e0ef7fe55bc05d2f7ea25cc03c827d257e888a3  MATCH
+
+RESULT: all 4 hashes match task-provided values AND manifest. No DOCS_HASH_MISMATCH.

@@ -1,0 +1,72 @@
+﻿PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t2-persona-cold-bind.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-compatible.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-complete-fatal.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-no-persona.test.ts (3 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+PASS packages\runtime\test\p5t5-admission.test.ts (5 tests)
+PASS packages\runtime\test\p5t5-cold-root.test.ts (7 tests)
+PASS packages\runtime\test\p5t5-fresh-root.test.ts (9 tests)
+PASS packages\runtime\test\p5t6-cold-member.test.ts (8 tests)
+PASS packages\runtime\test\p5t6-evict-readmit.test.ts (7 tests)
+PASS packages\runtime\test\p5t6-fresh-member.test.ts (26 tests)
+PASS packages\runtime\test\p6t1-checks.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-delegate.test.ts (15 tests)
+PASS packages\runtime\test\p6t1-explicit.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-parallel.test.ts (9 tests)
+PASS packages\runtime\test\p6t1-recovery.test.ts (15 tests)
+FAIL packages\runtime\test\p6t2-actions.test.ts (6/30 tests)
+     ✗ P6-T2 D1: reads, coordination facts, and follow-up work admission › list-members (by a member caller) lists every instance by instanceId
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:979:42
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:977:3
+     ✗ P6-T2 E1: lifecycle operations (invariants 52-55) › archive of a RUNNING member is rejected (SETTLE-then-ARCHIVE is the only path), zero writes, port never called
+       Error: expectation failed: actual toBe 0 — actual: 4
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1072:41
+     ✗ P6-T2 E1: lifecycle operations (invariants 52-55) › the leader dispose is out of envelope (the P6-T2 teamEnvelope lacks dispose-member), zero writes
+       Error: expectation failed: actual toBe 0 — actual: 4
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1083:40
+     ✗ P6-T2 E2: the delegate effect — continue vs fresh_per_delegation › delegate by instanceId CONTINUES the existing instance (same child session, no new instance, no child factory call)
+       Error: expectation failed: actual toBe 0 — actual: 1
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1122:44
+     ✗ P6-T2 E2: the delegate effect — continue vs fresh_per_delegation › delegate by templateId CREATES a fresh instance (fresh_per_delegation: new instance + new child session + child factory call)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1129:33
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1127:3
+     ✗ P6-T2 E3: explicit creation (provider-only) + admit-once replay › a human create-member activates a new member through the provider
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1148:39
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-actions.test.ts:1146:3
+PASS packages\runtime\test\p6t2-addressing.test.ts (12 tests)
+FAIL packages\runtime\test\p6t2-authority.test.ts (2/10 tests)
+     ✗ P6-T2 A2: role sets + mutation envelope rejections (zero writes) › MUST-TEST: a worker self-escalation (follow-up on itself) is out of envelope
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-authority.test.ts:288:36
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-authority.test.ts:281:3
+     ✗ P6-T2 B1: the human override boundary + positive member controls › a send-message recipient BY LABEL is rejected (instanceId-first, invariant 19), zero writes
+       Error: expectation failed: actual toBe 0 — actual: 4
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2/packages/runtime/test/p6t2-authority.test.ts:356:45
+FAIL packages\runtime\test\p6t2-quota.test.ts
+     import/evaluation error: Error: C2a: expected member-activated, got 'work-admitted'
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+
+run-tests (plain-node vitest-equivalent): 286 passed, 9 failed, 295 total, 1434 ms

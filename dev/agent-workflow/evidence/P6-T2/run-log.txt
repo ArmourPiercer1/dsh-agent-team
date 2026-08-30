@@ -1,0 +1,184 @@
+================================================================================
+P6-T2 RUN LOG — TeamRuntime admission/policy (attempt 1 of max 3)
+Worker: P6-T2 leaf (qwen3.8-27b), own context, no subagents.
+Worktree: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P6-T2
+Branch:   task/P6-T2-runtime-admission
+Base:     e32e7378954100c3e39abb3fb56f1bfa5a3ec926 (= int/P6-activation-runtime tip)
+================================================================================
+
+[2026-08-29] STEP 0 — first reads done
+- docs/ROUTER_RULES.md (read in full; rules: 1 task=1 branch=1 worktree=1 writer,
+  max 3 attempts, CORE PATCH BUDGET=0, no push, cherry-pick -x by main agent).
+- docs/TEST_METHODS.md (read in full; stable instance :3080 + D:/deepseek-harness
+  must stay untouched; this task runs NO real-instance harness (P6-T6/G6 scope)).
+- Self-check :3080 BEFORE start:
+  STATUS_3080_START=200   (recorded 2026-08-29)
+
+[2026-08-29] STEP 1 — worktree
+- git worktree add .worktrees/P6-T2 -b task/P6-T2-runtime-admission e32e7378954100c3e39abb3fb56f1bfa5a3ec926
+  -> EXIT=0, "HEAD is now at e32e737 fix(testkit): p4t6 scan test title 258 -> 271 ..."
+- Verified: int/P6-activation-runtime == e32e7378954100c3e39abb3fb56f1bfa5a3ec926 (tip, 3 commits:
+  e32e737 fix(testkit), 794f3d1 docs(evidence): P6-T1 evidence, d1d6d55 feat(runtime): P6-T1 ActivationProvider)
+- pnpm install --ignore-scripts -> EXIT=0 (150 resolved, 17s, pnpm v11.7.0)
+- git rev-parse HEAD = e32e7378954100c3e39abb3fb56f1bfa5a3ec926  (matches required base)
+- git status --porcelain = empty (clean)
+- Baseline: node scripts/run-tests.mjs -> EXIT=0
+  "run-tests (plain-node vitest-equivalent): 1022 passed, 0 failed, 1022 total, 2206 ms"
+  "RESULT: PASS run-tests (0 failures)"  (full output: baseline-tests.txt)
+  BASELINE = 1022/1022  (as required)
+
+[2026-08-29] STEP 2 — frozen docs (DONE)
+- All 4 frozen doc SHA256 hashes verified against task values AND the tracked
+  manifest (file-manifest.json frozen_docs, lines 40-48): all MATCH.
+  No DOCS_HASH_MISMATCH. (details: frozen-doc-verification.txt)
+
+[2026-08-29] STEP 4 — read existing surface (DONE)
+- packages/runtime/activation/** (READ-ONLY dep, not modified):
+  * provider.ts: createActivationProvider(ports), per-team promise-chain lock
+    withTeamLock (all durable writes serialized; fresh views under lock).
+  * checks.ts reusable pure seams: resolveTeamSession, resolveBoundBlueprint,
+    checkCallerAuthority, evaluateActivationCompatibility (compat engine
+    bridge), countTeamQuota/checkQuota (boundary: count+1 > limit -> reject;
+    counts = committed members + in-flight PREPARED operations),
+    selectPolicyOverrides, resolveActivationPolicy (empty blueprint/template
+    value layers per P6-T1 documented ruling), effectivePolicyValues,
+    computeOverlayBounds (team ∩ template allow, minus denies; fail-closed).
+  * types.ts: ACTIVATION_SOURCES, MemberActivationRequest
+    {rootSessionId, source, templateId?, delegation?{explicitInstanceId?|
+    templateId?}, label, groupId?, workspace?, requestToken, callerId?,
+    warningAcknowledgements?}, ActivationResult (activated|continued).
+  * errors.ts: ActivationError {code, details} + closed code vocabulary.
+- packages/storage: TeamDomain repositories (teamSessions/memberInstances/
+  sessionBindings/overrides/compatibility/operations/ledger) — put() async,
+  get/list sync; LedgerEntry {sequence, rootSessionId, factType (1..128, no
+  ctrl/ws), payload RemoteSafeRecord, operationId?, createdAt};
+  OperationRecord {operationId, idempotencyKey, intent{type,payload}, phase
+  PREPARED|COMMITTED|FAILED, childSessionId?, updatedAt, generation};
+  GovernanceOverrideRecord {kind autonomy-overlay|human-override, recordId,
+  scope team|instance, rootSessionId, instanceId?, origin leader|member,
+  values RemoteSafeRecord, generation, updatedAt};
+  CompatibilityStateRecord {status OPEN|BLOCKED_WARNING|BLOCKED_FATAL|
+  DEGRADED_ACKNOWLEDGED, fingerprint, generation, outcomes, acknowledgements}.
+- packages/domain/policy: CAPABILITY_NAMES, PolicyEntry {allow items|deny},
+  TEAM_LAYERS precedence (blueprint<policyState<template<templateOverlay<
+  instanceOverlay<humanOverride), AutonomyOverlayRecord, HumanOverrideRecord,
+  ExternalPolicyFacts {hard, capabilityExists}, EffectivePolicyInput,
+  resolveEffectivePolicy (two-stage, §19.6).
+- packages/domain/member: resolveDelegationTarget (M1-M5),
+  WORK_ACCEPTING_STATES = [CREATED, RUNNING, SETTLED], CONTEXT_POLICES.
+- packages/domain/lifecycle: LIFECYCLE_OPERATIONS, canTransition/legalTargets/
+  assertTransitionLegal/transitionMemberLifecycle/applyLifecycleOperation.
+- packages/contracts (frozen): ids, MemberInstanceRecordDto/Input,
+  TeamSessionRecordDto, SessionBindingDto, LEADER_INSTANCE_ID.
+- p4t6 scanner: kebab-case factType strings without slashes are safe (the
+  denylist matches only the 5 legacy quoted event strings + 5 word-bounded
+  CamelCase payload symbols + SessionEventMap + the legacy types import).
+- P6-T1 commit d1d6d55 stat: ZERO glue files (activation/ + test/ + p4t6 only).
+  The runtime dev tsconfig includes src+test transitively -> no package.json /
+  tsconfig / index glue needed for new runtime submodules (same precedent).
+
+[2026-08-29] STEP 5 — implementation (STARTED)
+Design (documented in module headers; enforcement order is the facade contract):
+  (1) team + target resolution — instanceId-first (rootSessionId, instanceId);
+      label/template tokens are REJECTED (ACTION_ADDRESSING_REJECTED);
+  (2) caller identity+role from TeamDomain (human / leader / member;
+      DISPOSED or ARCHIVED caller = stale -> CALLER_ROLE_STALE);
+  (3) caller authority + mutation envelope — human: NOT team-envelope-bound
+      (inv 34; external hard policy is per-capability, enforced by the policy
+      resolver, no op-level external hard deny exists in v1 contracts);
+      leader: team envelope (blueprint.teamEnvelope ∖ deny; leader template
+      entry intersected when present); member: team ∩ template ∩ instance
+      autonomy-overlay envelope (P6-T2 convention: overlay values may carry
+      an `envelope` {allow,deny} key in the free-form storage `values`);
+      fail-closed: op absent from any allow set = out-of-bounds.
+  (4) compatibility/admission — work actions gated by the durable compat
+      state (absent -> live evaluation via the reused domain/compatibility
+      bridge); target must be in WORK_ACCEPTING_STATES for work actions;
+  (5) quota — creation actions enforce INSIDE ActivationProvider step 7 under
+      its per-team lock on a fresh durable view (in-flight PREPARED counted);
+      boundary: admitted iff count+1 <= limit (at-exact-limit rejects);
+      non-creation actions consume no creation budget; provider QUOTA_* codes
+      mapped to router codes;
+  (6) effects — durable writes ONLY via the injected TeamDomain repositories
+      (inv 41) under the router's per-team lock; state change first, evidence
+      fact second (documented bounded non-atomicity on mid-effect fault).
+Modules: runtime/admission/{errors,types,actions,resolve,envelope,gate,index}.ts
+         runtime/action-router/{effects,router,index}.ts
+Tests:   runtime/test/p6t2-{helpers,addressing,authority,quota,actions}.ts
+
+[2026-08-29] STEP 5 (cont.) — design rulings + results (DONE)
+- Durable-write boundary (frozen-plan ruling): packages/runtime/lifecycle* is
+  owned by P7-T3. The facade NEVER rewrites member records (append-only store:
+  identical bytes -> no-op; different bytes same key -> RECORD_DUPLICATE).
+  Lifecycle transitions commit through the injected LifecycleCommitPort;
+  absent port -> LIFECYCLE_COMMIT_UNAVAILABLE (fail-closed, zero durable
+  effects). Work admission with a non-RUNNING target still commits the
+  work-admitted fact with lifecycleCommitted=false and fromLifecycle set.
+- Facade's own durable writes = ledger facts only (team-work-admitted,
+  member-lifecycle-changed, team-coordination-recorded) via commitFact
+  (allocateSequence -> entry put) under the router per-team lock; state change
+  first, evidence fact second (documented bounded non-atomicity on mid-effect
+  fault: DURABLE_WRITE_FAILED).
+- Remote-safe payloads: optionalStringField conditional spread — never store
+  undefined (the remote seam rejects undefined values as RECORD_INVALID).
+- Ledger sequence numbers always via ledger.allocateSequence().
+- Quota semantics (documented boundary): count+1 > limit -> reject;
+  count+1 == limit -> in-boundary (allowed). Check order: team, then template.
+  Enforced SOLELY inside ActivationProvider step-7 admission (single source
+  of truth; the router keeps no counters).
+- C2/C3 redesign rationale: a delegation carrying templateId for a NON-fresh
+  template that has an active instance resolves to 'continue' (work-admitted,
+  no creation) under provider delegation mapping M1-M5. The P6T2 blueprint's
+  only fresh_per_delegation template is 'scout', so the template-quota
+  boundary is exercised with scout: C2 isolates it (team stays in-boundary
+  3+1=4<=4 -> QUOTA_EXCEEDED_TEMPLATE_INSTANCES, zero writes); C3 fires 4
+  parallel scout delegations -> exactly 1 member-activated, 3
+  QUOTA_EXCEEDED_TEMPLATE_INSTANCES, scoutCount=2, teamTotal=3.
+- Closed role sets per action spec (DELEGATE=[leader], CREATE_MEMBER=[human,
+  leader], ...): member self-escalation is rejected CALLER_AUTHORITY_DENIED;
+  delegate requires assign-task AND create-member (may-create, fail-closed).
+- Envelope: an op is in-bounds only when EVERY applicable allow-set allows it
+  and no deny-set denies it; absent from an allow-set = out-of-bounds (fail
+  closed). member = team ∩ template ∩ newest-generation instance overlay
+  (values['envelope']); leader = teamEnvelope minus deny, intersected with the
+  leader-template entry; human = ALL_MUTATION_OPS (inv 34: humans are not
+  team-envelope-bound).
+- Compat gate (inv 50) blocks NEW work admission only; coordination and
+  lifecycle ops are exempt.
+- Test-infra discoveries (measured): the vitest shim supports ONLY
+  toBe/toEqual/toBeGreaterThan/toThrow (+ .not forms); toContain/
+  toBeDefined/toHaveLength throw TypeError. Seam writeCount / childFactory /
+  memberList / portCall deltas must be captured IMMEDIATELY after each action
+  (a delta computed at the end of a setup block is contaminated by the later
+  actions' writes).
+- First runtime package run: 286 passed / 295 total (9 failures, all fixed):
+  (a) unsupported shim matchers, (b) delta contamination, (c) C2 expected
+  member-activated but provider delegated a non-fresh template -> continue.
+  (first failing run output: runtime-tests-first-run.txt)
+- Final runtime package: 300/300 = 242 pre-existing + 58 new
+  (p6t2-actions 30, p6t2-addressing 12, p6t2-authority 10, p6t2-quota 6).
+
+[2026-08-29] STEP 6 — verification chain #1 (DONE)
+- pnpm install --ignore-scripts -> EXIT=0
+- node scripts/run-tests.mjs (all 9 packages) -> EXIT=0,
+  "1080 passed, 0 failed, 1080 total"  (full output: full-tests-1.txt)
+- node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+  -> EXIT=0; node node_modules/typescript/bin/tsc
+  -p packages/testkit/tsconfig.json -> EXIT=0
+- p4t6 scan test updated 271 -> 286 (15 P6-T2 files: 7 admission module .ts +
+  3 action-router module .ts + 5 unit-test .ts); scanner .mjs and
+  legacy-vocabulary.ts byte-identical (never staged).
+- Boundary self-check (git status --porcelain): ONLY owned surfaces touched —
+  packages/runtime/admission/*, packages/runtime/action-router/*,
+  packages/runtime/test/p6t2-*, packages/testkit/test/p4t6-*.test.ts, untracked
+  dev/agent-workflow/evidence/P6-T2/. Zero core files; packages/contracts/**
+  and packages/runtime/activation/** unmodified.
+- Self-check :3080 mid-implementation: STATUS_3080_MID=200.
+
+[2026-08-29] STEP 7 — commits (IN PROGRESS)
+- Commit 1:
+  SHA 7a34379f037f073d6e1dbeb503e934f315f2cb6f
+  "feat(runtime): P6-T2 TeamRuntime action router + admission"
+  16 files changed, 5052 insertions(+), 4 deletions(-)
+- Commit 2: "docs(evidence): P6-T2 evidence" — staging now; SHA recorded in
+  the next append (with STEP 8 chain #2 results).
