@@ -393,6 +393,22 @@
 - **Graph**：P4-T5 → INTEGRATED（head `3a5ac2b`，attempts 1）；integration_sha = `c874a7f1605ef1fb2ecfb8c89377c5ba74e86ac6`；ready → [P4-T6]。
 - **下一步**：读 TaskDoc §11.5 P4-T6 完整卡片（TeamDomain independent audit + G4，owned = review artifacts only；Gate reviewer 不参与 P4-T1..T5 实现——主 Agent 执行独立审计并产出 G4 候选证据）→ 建 `.worktrees/P4-T6` → 派发。
 
+### 轮次 R24：P4-T6（TeamDomain independent audit + G4）派发（2026-08-30）
+
+- **Base**：int/P4 `4a61394`（R23 bookkeeping；基线 773/773 + 4× tsc 绿；T1-T5 全部就位）。
+- **T6 结构裁决（主 Agent，记录在案）**：
+  - 卡片（TaskDoc §11.5 逐字）：目标 = 独立审查 authority、SessionEvent 禁用、recovery convergence；owned = review artifacts only；minor test-only additions if assigned；前置 = P4-T5；允许依赖 = read-only production code；实现要点 = Gate reviewer 不参与 P4-T1..T5 实现；必须测试 = zero Team SessionEvent scan / fault suite / restart suite / schema mismatch；验收 = G4 PASS；否则明确 blocking invariant；输出物 = G4 report；Class A / R5/C1/T5 / E4。
+  - **独立性**：P4-T6 worker = 全新 leaf agent（未参与 T1-T5 实现，满足"Gate reviewer 不参与实现"的 task 级要求）；G4-REVIEW 另加 3 名 fresh blind reviewer（worker 的 G4 report 对它们只是 CLAIM，不是证据）。
+  - **分配的 minor test-only addition**：zero Team SessionEvent scan = 提交的测试 `packages/testkit/test/p4t6-*.test.ts` + scanner `packages/testkit/fault-injection/session-event-scan.{mjs,d.mts}`（仅新增；不改既有 fault-injection 文件）。
+  - **denylist（冻结，源自 legacy `references/deepseek-harness/packages/team/team/src/events.ts` 逐字 + reuse-map）**：事件类型串 `team/member-bound`、`team/progress`、`team/control-request`、`team/control-decision`、`team/message`；对 `@deepseek-ai/dsh-session/types` 的 `SessionEventMap` team 合并；legacy payload 符号 `TeamMemberBoundData`/`TeamProgressData`/`TeamControlRequestData`/`TeamControlDecisionData`/`TeamMessageData`。扫描面 = `packages/**` 生产+测试源码（.ts/.mjs/.mts，排除 node_modules/dist）；断言零命中；若出现疑似 false positive，记录并精化 denylist（禁止整文件 blanket 排除）。
+  - **fault/restart/schema-mismatch 必测**：复用既有 p4t5（crash-matrix/retry-restart/corrupt-version）+ p4t4（per-stage retry）+ T1 version policy 测试——P4-T6 必须实际运行（canonical chain 内含）并在 G4 report 中按 suite 逐条引用通过数。
+  - **G4 report**：`dev/agent-workflow/evidence/P4-T6/g4-report.md`——7 条 §17.5 判据逐条 PASS/FAIL + 证据（文件/测试/行）；FAIL 必须给明确 blocking invariant（禁止含糊）。
+  - 共享文件零编辑（packages/** 全只读——含 P4-T5 新文件；testkit 既有测试/tsconfig/package.json/scripts/.gitignore）；零新依赖；无端口/DSH_HOME/实例；稳定实例 :3080 / `D:\deepseek-harness\` 零接触。
+  - 额外验证 leg（debug 记账）：`tsc -p packages/testkit/tsconfig.json` EXIT=0。
+- **Worktree**：`.worktrees/P4-T6` @ `task/P4-T6-teamdomain-audit`（base `4a61394`）。
+- **派发**：workflow `p4-t6-teamdomain-audit-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）。
+- **graph**：P4-T6 → RUNNING（branch task/P4-T6-teamdomain-audit，base `4a61394`）；ready → []。
+
 ## 重审记录
 
 （空）
