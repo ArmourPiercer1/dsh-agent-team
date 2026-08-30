@@ -1,0 +1,37 @@
+2026-08-30T20:49:06.476Z P6-T6 harness start: runStamp=p6t6-1788122946476 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6
+2026-08-30T20:49:06.478Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6
+2026-08-30T20:49:06.478Z ports: boot1=3180 boot2=3181; selected scenarios: E1,E2,E3,E4,E5,E6,E7
+2026-08-30T20:49:06.602Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T20:49:06.613Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T20:49:06.669Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6
+2026-08-30T20:49:06.672Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-08-30T20:49:06.673Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-08-30T20:49:06.673Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-08-30T20:49:06.674Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-08-30T20:49:06.675Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-08-30T20:49:06.675Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-08-30T20:49:06.676Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-08-30T20:49:06.677Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-08-30T20:49:06.677Z junction farm ready (shared packages/node_modules)
+2026-08-30T20:49:06.688Z mini MCP server up on 127.0.0.1:3491
+2026-08-30T20:49:06.756Z scenario E7: pass=true assertions=2 failing=[] (67ms)
+2026-08-30T20:49:06.757Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-30T20:49:08.569Z throwaway boot OK: http://127.0.0.1:3180/?token=k3mIYGzA3XeMoPLdHSLnvFW58eYGF1cLL3pfukYemPI
+2026-08-30T20:49:08.610Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6\p6t6-directive.json
+2026-08-30T20:49:11.578Z boot 1: ready — toolCount=10 liveSessions=3 (expected 10 tools)
+2026-08-30T20:49:12.978Z scenario E1: pass=true assertions=14 failing=[] (1400ms)
+2026-08-30T20:49:13.039Z scenario E2: pass=true assertions=3 failing=[] (61ms)
+2026-08-30T20:49:13.259Z scenario E3: pass=true assertions=6 failing=[] (219ms)
+2026-08-30T20:49:14.213Z scenario E4: pass=true assertions=5 failing=[] (954ms)
+2026-08-30T20:49:14.620Z scenario E6: pass=true assertions=6 failing=[] (405ms)
+2026-08-30T20:49:15.636Z scenario E5(boot1-writes): pass=true assertions=11 failing=[] (1015ms)
+2026-08-30T20:49:15.687Z boot 1: stopped killed=true portFree=true
+2026-08-30T20:49:15.688Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6\p6t6-directive.json
+2026-08-30T20:49:18.124Z boot 2: ready — toolCount=10 liveSessions=9 (expected 10 tools)
+2026-08-30T20:49:19.131Z scenario E5(boot2-restart): pass=true assertions=13 failing=[] (1005ms)
+2026-08-30T20:49:19.185Z boot 2: stopped killed=true portFree=true
+2026-08-30T20:49:19.186Z postflight: mini MCP server closed; port 3491 released=true
+2026-08-30T20:49:19.312Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T20:49:19.312Z postflight: test-use pristine after=true
+2026-08-30T20:49:19.314Z postflight: junction farm removed (packages/node_modules)
+2026-08-30T20:49:19.315Z P6-T6 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\dev\agent-workflow\evidence\P6-T6\main-audit-harness-output\summary.json

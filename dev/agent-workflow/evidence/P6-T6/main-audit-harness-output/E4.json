@@ -1,0 +1,54 @@
+{
+  "criterion": "E4",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 954,
+  "assertions": [
+    {
+      "name": "both fresh_per_delegation delegates executed",
+      "pass": true,
+      "detail": "[\"executed\",\"executed\"]"
+    },
+    {
+      "name": "both delegates returned member-activated effects",
+      "pass": true,
+      "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-01h07j114nii\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-01h07j114nii\",\"operationId\":\"op-13ke21x06coo400ngzm171qk\",\"replayed\":false,\"ledgerSequence\":6,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-00n1eg415hhb\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-00n1eg415hhb\",\"operationId\":\"op-11hthzw0dnenb50wkdyve0qy\",\"replayed\":false,\"ledgerSequence\":7,\"admissionCode\":\"ADMISSION_OPEN\"}]"
+    },
+    {
+      "name": "two distinct NEW instance ids (not the seed, not each other)",
+      "pass": true,
+      "detail": "[\"inst-01h07j114nii\",\"inst-00n1eg415hhb\"]"
+    },
+    {
+      "name": "each activation carries a distinct new child session",
+      "pass": true,
+      "detail": "[\"session-child-p6t6-01h07j114nii\",\"session-child-p6t6-00n1eg415hhb\"]"
+    },
+    {
+      "name": "state after E4: three scout-template members (1 seed + 2 new)",
+      "pass": true,
+      "detail": "scoutCount=3"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 2,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "created": [
+      {
+        "token": "p6t6-e4-1",
+        "instanceId": "inst-01h07j114nii",
+        "childSessionId": "session-child-p6t6-01h07j114nii"
+      },
+      {
+        "token": "p6t6-e4-2",
+        "instanceId": "inst-00n1eg415hhb",
+        "childSessionId": "session-child-p6t6-00n1eg415hhb"
+      }
+    ],
+    "scoutCountAfter": 3
+  }
+}
