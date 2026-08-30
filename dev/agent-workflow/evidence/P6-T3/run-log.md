@@ -74,3 +74,34 @@ injected port. Class B. Writer: P6 leaf worker, attempt 1/3.
     `packages/testkit/test/p4t6-session-event-scan.test.ts`.
 - Branch `task/P6-T3-messaging-coordination` only; no push; master and int
   branches untouched.
+
+---
+
+## Entry 3 — verification chain #2 (post-final-commit) — UNCOMMITTED
+
+Left uncommitted on purpose: the final commit cannot contain its own SHA /
+its own post-commit verification, so this final append stays in the working
+tree and is reported to the main agent (nothing else is uncommitted).
+
+- **Commit 2** (evidence): SHA **`847dc879f8917eafce66dc107b82067e4a82c453`**,
+  subject `docs(evidence): P6-T3 evidence`
+  (files: this run-log at its Entry-2 state, `verification-chain-1.md`,
+  `findings.md`).
+- Branch now = exactly 2 commits over base `4fa5d125…71b2`:
+  - `b9430b5aafd7975cff10efb882120b3d84bd4236` feat(runtime): P6-T3 …
+  - `847dc879f8917eafce66dc107b82067e4a82c453` docs(evidence): P6-T3 evidence
+- Chain #2 FULL (post-final-commit), exact outputs:
+  1. `pnpm install --ignore-scripts` → **exit 0** ("Already up to date").
+  2. `node scripts/run-tests.mjs` (all 9 packages) → **1100 passed,
+     0 failed, 1100 total, 2249 ms, exit 0** (RESULT: PASS).
+  3. `node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json`
+     → **TSC_EXIT=0** (no diagnostics).
+  4. diff audit → `git status --porcelain` EMPTY (working tree clean; all
+     P6-T3 files committed in the two commits above); branch log vs base =
+     exactly the two commits listed.
+  5. `http://127.0.0.1:3080` → **STATUS_3080=200** (final check).
+- No push performed; `master` and integration branches untouched; no DSH
+  test instance started (3180/3181, 3491–3495 free); no sandbox escalation
+  attempted (approval prompts disabled in this session).
+
+END OF LOG — P6-T3 worker attempt 1/3.
