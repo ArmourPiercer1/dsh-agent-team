@@ -421,6 +421,14 @@
 - **Graph**：P4-T6 → INTEGRATED（head `bd97476`，attempts 3）；integration_sha = `cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07`；ready → [G4-REVIEW]。
 - **下一步**：G4-REVIEW 派发——3 名 fresh blind reviewer（各自 detached worktree @ `cdc7f95`，G3 协议：禁 SESSION_ROUTER_LOG/graph/evidence 除 provenance manifest；worker 的 g4-report = CLAIM 非证据；verdict 通过/投机通过/补充内容/阻塞，3/3 ∈ {通过,投机通过} 才 PASS）→ 若 PASS：ff-merge master + push #4 → P5。
 
+### 轮次 R26：G4-REVIEW 派发（2026-08-30）
+
+- **Review target**：int/P4 integration head `cdc7f95`（P4 全 phase：`3ccff7b..cdc7f95`，P4-T1..T6 全部交付；R25 bookkeeping commit `69a7968` 属主 Agent 状态记录，不在 review 范围——与 G3 先例一致：review 前置 integration head，master 随后吸收 bookkeeping）。
+- **协议（G3 先例，盲审）**：3 名 fresh reviewer（全部 `qiyuan-self/qwen3.8-27b`，从未参与 P4 实现，leaf，禁子代理）；各自 detached worktree @ `cdc7f95`（`.worktrees/G4-R1/R2/R3`）；**禁读** `dev/agent-workflow/SESSION_ROUTER_LOG.md`、`dev/agent-workflow/graph.yaml`、`dev/agent-workflow/evidence/**`（白名单仅 `evidence/provenance/file-manifest.json`）；worker 自述/report = CLAIM，必须从源码 + 独立执行验证；先读 ROUTER_RULES + TEST_METHODS（worktree 内）。
+- **必审项**：canonical chain 独立重跑（783/783 + tsc）；7 条 §17.5 G4 判据逐条（源码 file:line + 执行计数）；P4 全 phase owned-path 纪律（按任务 diff 核对）；zero-core（无 upstream import、.ts 无 node: builtin、无 live Agent/端口/DSH_HOME）；contracts v1 FROZEN 未被 P4 触碰（`git diff --name-only 3ccff7b..cdc7f95 -- packages/contracts` 必须为空 + lock hash `fba817c`）；domain/** 未被 P4 触碰；no Team SessionEvent persistence（独立跑 p4t6 scan + 自抽查）；crash matrix 收敛（§17.4 十 boundary）；retry 幂等；SessionBinding integrity；version mismatch fail-loudly；restart recovery（含进程等价性声明的成立与否）。
+- **verdict**：通过 / 投机通过 / 补充内容 / 阻塞；gate PASS 当且仅当 3/3 ∈ {通过, 投机通过}。review 全文写入各自 worktree `dev/agent-workflow/evidence/G4-REVIEW/reviewer-<N>/g4-review.md`（主 Agent 在移除 worktree 前归档）。
+- **graph**：G4-REVIEW → RUNNING（target `cdc7f95`）；ready → []。
+
 ## 重审记录
 
 （空）

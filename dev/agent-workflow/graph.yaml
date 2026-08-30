@@ -6,7 +6,7 @@ contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: [G4-REVIEW]
+ready: []
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -40,4 +40,4 @@ tasks:
   P4-T4: { state: INTEGRATED, class: A, branch: task/P4-T4-provisioning-sm, base_sha: 4a587021e9f8f560870793b1cad20550b57b7ccd, head_sha: 7f3f6a29c1a3fed080ff7e7099360eeb268423b7, attempts: 2, depends_on: [P4-T2, P4-T3] }
   P4-T5: { state: INTEGRATED, class: A, branch: task/P4-T5-fault-injection-testkit, base_sha: 28466ac, head_sha: 3a5ac2bd0c6ca8bad82556a63dcb2aae5c25a70a, attempts: 1, depends_on: [P4-T2, P4-T3, P4-T4] }
   P4-T6: { state: INTEGRATED, class: A, branch: task/P4-T6-teamdomain-audit, base_sha: 4a61394, head_sha: bd97476e17911fa7d4ab15513087a8521b064ea4, attempts: 3, depends_on: [P4-T5] }
-  G4-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P4-T1, P4-T2, P4-T3, P4-T4, P4-T5, P4-T6] }
+  G4-REVIEW: { state: RUNNING, class: A, branch: int/P4-teamdomain-journal, base_sha: 3ccff7bc98fb15bd8c691a13639177041f91b1b0, head_sha: cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07, attempts: 0, depends_on: [P4-T1, P4-T2, P4-T3, P4-T4, P4-T5, P4-T6] }
