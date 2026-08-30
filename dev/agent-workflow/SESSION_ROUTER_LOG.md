@@ -224,7 +224,21 @@
 - **Worktrees**：`.worktrees/P3-T{2,3,4,5}` @ task 分支（base `39a5d22`），各自证据目录 `evidence/P3-T{2,3,4,5}/`。
 - **派发**：workflow `p3-d1-parallel-domain`，4 worker 并行，全部 `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；无共享资源（纯包工作，无端口/DSH_HOME/实例）；各自 worktree 独立 pnpm install（warm store ~15 s；store lock 竞争 → 重试）。
 - **graph**：P3-T2..T5 → RUNNING（branches 已录）；ready → []。
-- **结果**：（各 worker 返回后补记）
+- **结果**（4 worker 全部返回，`qiyuan-self/qwen3.8-27b`）：
+  - **P3-T2**（blueprint catalog，head `a4fe261`，**attempts 3/3 预算用尽**）：a1 RED（TS1005 缺右括号）；a2 RED（yaml v2 CJS named-export 事件 — 导出 `YAMLError` 而非 v1 `YAMLException` + TS2305/TS2322）；a3 GREEN。104/104 测试（102 自有 + 2 骨架），tsc blueprint 干净，包级 tsc TS6059 结构性（18×，0 语义，按 R11 裁决接线延后）。唯一被授权共享文件编辑：`packages/domain/package.json` 加 `yaml@2.9.0`（单写者例外）+ `pnpm-lock.yaml`（接受副作用）。
+  - **P3-T3**（member + lifecycle，head `cbd2619`，attempts 2/3）：72/72（70 自有 + 2 骨架），两个子目录 tsc 均干净，包级 tsc TS6059。worker 就包级 tsc 腿自报 `BLOCKED_CORE_SEAM`（owned paths 内不可修：冻结 P1-T4 tsconfig 三件套 vs 卡片强制的 contracts 相对导入）— 主 Agent 按 R11 结构裁决定性为**集成接线项**而非协议阻塞（非 upstream seam、非 core patch，main-agent post-integration fix 可解），于 R12 以 `b660e90` 修复并验证 EXIT=0。
+  - **P3-T4**（policy resolver，head `92a5fa6`，attempts 1/3）：65/65（63 自有），两个 tsc 均绿。**观察**：T4/T5 的包级 tsc 未把 contracts src 拉入包程序（耦合深度与 T2/T3 不同）— G3 reviewer 应核查四子目录对 contracts 的耦合深度差异。
+  - **P3-T5**（compatibility engine，head `caab380`，attempts 1/3）：77/77（75 自有），两个 tsc 均绿。下游注记：P7-T1 只读消费（`evaluateCompatibility` 准入闸、`isCompatibilityResultValidForEnvironment` 漂移重探，DevPlan §20.1）。
+  - **主 Agent 独立审计（全部通过）**：逐 worktree 重跑测试链 — 104/104、72/72、65/65、77/77 全 PASS；子目录 tsc 全干净；T4/T5 包级 tsc 绿、T2/T3 仅 TS6059 结构性（与 worker 自报一致）。owned-path 审计：T2 越界 = `pnpm-lock.yaml` 唯一（授权单写者例外，接受）；T3/T4/T5 全部在界内；证据目录均在界内。
+
+### 轮次 R12：P3 D1 集成（P3-T2..T5 → int/P3）+ TS6059 主 Agent 修复（2026-08-30）
+
+- **集成**：cherry-pick -x ×10（T2 ×3 `d000212/5aef611/7891c79`、T3 ×2 `1ec17cc/1b74dbd`、T4 ×2 `8950962/98e1e90`、T5 ×3 `ffa409b/88c0008/4f857a8`）→ int/P3 零冲突，head `4f857a8`。
+- **整合验证事故与过程规则**：int 树首次验证 210/216（6 失败 = 全部 t2 测试文件 import 失败）+ tsc blueprint `Cannot find module 'yaml'` + 2×TS18046 — 根因 = 主 worktree node_modules 为 T2 之前安装（依赖新增型集成未同步）。`pnpm install --ignore-scripts`（warm 2.1 s）后 **312/312 PASS EXIT=0**。过程规则（记入）：**凡集成触碰 package.json/lockfile 的任务后，主 worktree 必须先 pnpm install 再验证**。
+- **TS6059 修复（主 Agent post-integration fix，precedent `870abc7/7e7560d/00c7e99`）**：D1 测试经 `../../contracts/src/index.js` 相对导入 contracts src，contracts `.ts` 文件进入 domain 类型检查程序且位于旧 rootDir（`packages/domain`）之外 → 结构性 TS6059（T2/T3 各 18×，0 语义错误）。修复 = `packages/domain/tsconfig.json`（noEmit 类型检查配置；`tsconfig.build.json` rootDir `src` 不动、emit 布局不受影响）`rootDir "." → "../.."`，commit `b660e90`。验证：`tsc -p packages/domain/tsconfig.json` EXIT=0 + `run-tests domain` 312/312 PASS。T3 worker 的 `BLOCKED_CORE_SEAM` 自报至此按 R11 裁决闭环（非协议阻塞，见 R11 结果条）。
+- **已知后续**：P4+ 凡 import contracts 的包将复现同一 TS6059 rootDir 模式 — 按本修复模式处理（记录于 carry-forward）。
+- **Graph**：P3-T2 → INTEGRATED（head `a4fe261`，attempts 3/3）；P3-T3 → INTEGRATED（head `cbd2619`，attempts 2/3）；P3-T4 → INTEGRATED（head `92a5fa6`，attempts 1/3）；P3-T5 → INTEGRATED（head `caab380`，attempts 1/3）；integration_sha = `b660e90681cc09b612be98b4537b1ea8f061c237`；ready → [P3-T6]。
+- **下一步**：P3-T6 — 建 `.worktrees/P3-T6` + `task/P3-T6-domain-integration`（base int/P3 `b660e90`），单 worker 派发（`qiyuan-self/qwen3.8-27b`）：组合 Blueprint/Member/Policy/Compatibility + architecture property suite；owns `packages/testkit/domain` + `docs/contracts`；P3 四包只读；不新增功能；合同缺口走 CONTRACT_CHANGE_REQUEST。
 
 ## 重审记录
 

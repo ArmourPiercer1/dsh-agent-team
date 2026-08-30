@@ -1,12 +1,12 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
 current_phase: P3
 integration_branch: int/P3-contracts-domain
-integration_sha: fba817cef345ced3fcae374e86ae110dca878c63
+integration_sha: b660e90681cc09b612be98b4537b1ea8f061c237
 contracts:
   core: v1
 locks:
   contracts: fba817cef345ced3fcae374e86ae110dca878c63
-ready: []
+ready: [P3-T6]
 blocked: []
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
@@ -28,9 +28,9 @@ tasks:
   P2-T6: { state: INTEGRATED, class: A, branch: task/P2-T6-remote-client, base_sha: 484e735689fa1d337a89d573710da4ec449e7766, head_sha: d66f6eb396bd4ecf3d593b6e6dee6583d816c722, attempts: 1, depends_on: [P2-T1, P2-T2, P2-T3, P2-T4, P2-T5] }
   G2-REVIEW: { state: PASSED, class: A, branch: int/P2-seam-characterization, base_sha: cc6199b5f2c0367afac81ea6faa83c319fd7d5cb, head_sha: 4eaad19216932a1b7ecaaa0faa945fcc0e5341c2, attempts: 1, depends_on: [P2-T1, P2-T2, P2-T3, P2-T4, P2-T5, P2-T6], verdicts: [通过, 投机通过, 投机通过], gate: 3/3 PASS, merged_to_master: 4eaad19216932a1b7ecaaa0faa945fcc0e5341c2, pushed: true }
   P3-T1: { state: INTEGRATED, class: A, branch: task/P3-T1-contract-freeze, base_sha: 4bb1ca373b85cb228d8df139f22767f01160dc05, head_sha: b866d131bee30f642e25f1155d5c5a2ccaa18d3a, attempts: 1, depends_on: [P2-T6] }
-  P3-T2: { state: RUNNING, class: B, branch: task/P3-T2-blueprint-catalog, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: null, attempts: 0, depends_on: [P3-T1] }
-  P3-T3: { state: RUNNING, class: A, branch: task/P3-T3-member-lifecycle, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: null, attempts: 0, depends_on: [P3-T1] }
-  P3-T4: { state: RUNNING, class: A, branch: task/P3-T4-policy-resolver, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: null, attempts: 0, depends_on: [P3-T1] }
-  P3-T5: { state: RUNNING, class: A, branch: task/P3-T5-compatibility-engine, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: null, attempts: 0, depends_on: [P3-T1] }
+  P3-T2: { state: INTEGRATED, class: B, branch: task/P3-T2-blueprint-catalog, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: a4fe261c2b10cf8a9aa8b960adc80b0f919da733, attempts: 3, depends_on: [P3-T1] }
+  P3-T3: { state: INTEGRATED, class: A, branch: task/P3-T3-member-lifecycle, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: cbd2619343f186dbc3072251da20bebaf870922a, attempts: 2, depends_on: [P3-T1] }
+  P3-T4: { state: INTEGRATED, class: A, branch: task/P3-T4-policy-resolver, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: 92a5fa6ca76115c3de781d55ff52c7533652de32, attempts: 1, depends_on: [P3-T1] }
+  P3-T5: { state: INTEGRATED, class: A, branch: task/P3-T5-compatibility-engine, base_sha: 39a5d22f0be2ce0f27ed3d6a12ebff09fd39274c, head_sha: caab380f935bef182cff61560d0c95c930ff93c3, attempts: 1, depends_on: [P3-T1] }
   P3-T6: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P3-T2, P3-T3, P3-T4, P3-T5] }
   G3-REVIEW: { state: DEFINED, class: A, branch: null, base_sha: null, head_sha: null, attempts: 0, depends_on: [P3-T1, P3-T2, P3-T3, P3-T4, P3-T5, P3-T6] }
