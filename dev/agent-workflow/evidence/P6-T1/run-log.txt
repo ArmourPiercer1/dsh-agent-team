@@ -1,0 +1,199 @@
+# P6-T1 run log (ActivationProvider) â€” worker qwen3.8-27b, attempt 1/3
+
+## 2026-08-29 session start
+- STEP 0: read docs/ROUTER_RULES.md + docs/TEST_METHODS.md (full).
+- :3080 pre-start self-check: STATUS=200 (stable dev instance reachable).
+- STEP 1: git worktree add .worktrees/P6-T1 -b task/P6-T1-activation-provider 11b0584473c78e6d1aed179f3a06b5fb7fa0db2d
+  - HEAD verified: 11b0584473c78e6d1aed179f3a06b5fb7fa0db2d
+  - git status: clean
+  - pnpm install --ignore-scripts: exit 0, "Done in 29.8s using pnpm v11.7.0"
+- STEP 2 frozen docs SHA256 (observed, all MATCH required values and file-manifest.json frozen_docs section):
+  - TaskDoc  2b457cc033ca1b72aa781e072e0ef7fe55bc05d2f7ea25cc03c827d257e888a3
+  - DevPlan  a05d237f8515fd6467373632849afe0c6a1ae63bc0ec298de63b9d124d881d0f
+  - Arch     030dfb8ec55bae30f35c2826c7e4e659c0e0b742d836018ce502f34017870c53
+  - UI       3ef3ab69ed2bd7879e4c15079a16c8dae456b572690246a5c1f9cbb0c8c4981e
+  - manifest cross-check: dev/agent-workflow/evidence/provenance/file-manifest.json lines 40-48 frozen_docs â€” identical.
+- Doc sections read in full: TaskDoc 11.7 (P6 phase + P6-T1 card), DevPlan 19.1-19.7 (incl. 16-step check order, G6 gates),
+  Architecture 18 (Provisioning & crash consistency: PROVISIONING/FAILED states, stable operation identity, recovery windows)
+  and 42 (invariants; key for P6-T1: 17 one template 0..N instances; 18 identity=(rootSessionId,instanceId);
+  19 label/templateId/groupId not identity; 23 each instance binds one durable child Session;
+  24 follow-up keeps same child Session; 25 fresh_per_delegation = new instance;
+  26 ALL new MemberInstance creation via ActivationProvider; 29 contextPolicy frozen at creation;
+  41 Team control-plane durable authority = TeamDomain; 46 provisioning handles cross-system crash window + idempotent retry).
+
+## design notes (pre-coding)
+- (to be filled after STEP 4 surface read)
+
+## STEP 4 complete â€” surface read done; FINAL DESIGN (recorded before coding)
+
+### Reuse decisions (no duplication)
+- Durable provisioning = P4-T4 `ProvisioningCoordinator` (journal prepare = ALLOCATED reservation ->
+  adapter child create + `journal.recordChildSession` -> `ensureMemberRecord` (record carries child, inv 23)
+  -> P4-T3 `createTeamMemberBinding` -> `journal.drive` ledger fact + COMMITTED). ONE coordinator instance
+  per rootSessionId (team-scoped, cached in a Map).
+- instanceId allocation INSIDE the journal protocol (task card): instanceId is derived from the caller's
+  LOGICAL OPERATION token, not from the spec string (P5-T6 `deriveMemberIdentity` collides for same-template
+  parallel creates). `instanceId = 'inst-' + deterministicToken(activationKey, 12)` where
+  activationKey = [rootSessionId, source, requestToken].join('\u0000'). Same token -> same instanceId ->
+  same operationId (`provisioningOperationId`) -> same idempotencyKey (`provisioningIdempotencyKey` with
+  allocationToken = requestToken) -> convergent replay. Different token -> different id (inv 17: one
+  template -> 0..N instances).
+- The coordinator's `AgentFactoryAdapter` (the ONE external effect) is implemented by an ACTIVATION adapter:
+  `childSessionFactory.createChildSession(...)` (injected port; real DSH seam later) then the UNCONDITIONAL
+  `sessionDurability.ensureDurable(childSessionId)` barrier (P5-T6 invariant, never conditional, inv 46).
+- The binder (P5-T1 `TeamAgentBinder.bindFreshMember`) runs POST-commit, NOT inside the adapter:
+  `bindFreshMember` resolves session kind via the read handle and requires the team-member binding + member
+  record to exist (they are created in coordinator stages 2-3 / commit). This matches P5-T6 precedent where
+  the binder ran after all durable puts. The child session artifact itself is durable BEFORE the
+  MemberInstance commit (barrier + recordChildSession precede ensureMemberRecord/commit).
+- Post-commit effects (binder + projection) are idempotent, so the crash window "COMMITTED but binder not yet
+  installed" converges on re-drive. Roll-forward, never rollback (Arch 18).
+
+### Admit-once rule (crash-safe retry semantics)
+- `activate(request)`: compute instanceId from the logical token; if a durable operation row ALREADY exists
+  for it (any phase: PREPARED or COMMITTED) -> the operation is already ADMITTED: skip admission checks and
+  re-drive the durable stages idempotently (roll-forward). Only when NO operation row exists do the 11
+  read-only admission checks run, then the reservation (journal PREPARED) happens. A same-token replay after
+  commit therefore returns the original member (replayed: true) and is never re-blocked by a changed
+  environment. A same-token request with DIFFERENT content under the same operationId -> journal
+  IDEMPOTENCY_CONFLICT -> ACTIVATION_IDEMPOTENCY_CONFLICT (loud).
+- `recoverActivation(request)`: explicit recovery entry; identical to the re-drive path (no admission
+  re-checks by construction).
+
+### The 16-step order (DevPlan 19.2 floor; steps 1-11 read-only, zero durable writes on failure)
+ 1 resolve TeamSession: root `team-root` binding (kind check) + TeamSession record.
+ 2 resolve immutable Blueprint: catalog.resolve(blueprintId, revision) from TeamSession.blueprint;
+   contentHash equality vs the bound ref (immutability).
+ 3 resolve template: blueprint.members lookup (leader-delegate: the delegation's template).
+ 4 caller authority: closed source rules â€” leader-*: callerId must equal LEADER_INSTANCE_ID ('inst-leader');
+   human-ui: human authority (callerId optional). Unknown caller for leader sources -> denied.
+ 5 admission: closed source vocabulary admission (unknown source rejected at validation; v1 admits all
+   three sources â€” the compatibility engine is the environment gate, the binder guard is the work gate).
+ 6 compatibility: blueprint.requirements -> RequirementInput via the closed domain bridge
+   {tool,skill,mcp->mcpServer,mcpServer,modelRoute,teamStructure,persona} (mirrors t6-10 glue, canonical);
+   unknown domain -> FATAL. evaluateCompatibility(facts from injected port, request.acknowledgements pass-
+   through). OPEN/DEGRADED_ACKNOWLEDGED -> pass; BLOCKED_WARNING/BLOCKED_FATAL -> reject (inv 50).
+ 7 quota (UNDER the per-team lock): counts = committed memberInstances (any lifecycle) + in-flight
+   non-COMMITTED operations (intent.type = PROVISION_INTENT_TYPE, same root). team.maxInstances vs total;
+   team.maxConcurrent vs active (CREATED|RUNNING); members.maxInstances/maxConcurrent per template
+   (same counting, template-scoped). Absent quota = unlimited.
+ 8 policy: resolveEffectivePolicy â€” member = createMemberIdentity(root, allocated instanceId);
+   blueprint = teamEnvelope ?? {}; template = memberEnvelopes[templateId] ?? {};
+   policyState = {stateId:'default'} (v1: TeamSession has no durable transition store; inv 40 owns
+   transitions, out of scope); overlays mapped deterministically from the durable `overrides` repo
+   (scope team + autonomy-overlay -> templateOverlay {kind:'template'}; scope instance matching the new
+   id -> instanceOverlay; human-override: instance-scoped wins over team-scoped; multiple candidates ->
+   max generation, then min recordId; malformed stored values -> resolver throws -> wrapped);
+   external facts from injected port.
+ 9 overlay bounds: per-cell intersection of blueprint teamEnvelope.autonomyEnvelope âˆ© template
+   mutationEnvelope (pure; absent cell on either side = empty boundary). Result carries the bounds.
+10 workspace/context fields: parseWorkspaceField (explicit > TeamSession.defaultWorkspace, via
+   resolveEffectiveWorkspace over the would-be record), parseLabelLikeField(label), groupId parse,
+   contextPolicy = template.contextPolicy ?? DEFAULT_CONTEXT_POLICY (inv 29: frozen from the template,
+   never caller-chosen).
+11 allocate instanceId (UNDER the lock, with the quota): deterministic from activationKey; validated by
+   parseInstanceId; must not equal LEADER_INSTANCE_ID; must not collide with committed member ids or
+   in-flight operation payload ids (else ACTIVATION_INSTANCE_ID_CONFLICT â€” loud, tokens are stable).
+12 journal prepare: coordinator.allocate (durable PREPARED row = ALLOCATED reservation; FIRST durable write).
+13 create Agent/Session: coordinator.createChildSession (adapter = child port + unconditional barrier;
+   recordChildSession).
+14 bind TeamDomain: coordinator.bindChildSession (P4-T3 binding service).
+15 commit MemberInstance: coordinator.commitInstance (ledger fact + COMMITTED).
+16 publish projection: injected projectionPublisher (optional; best-effort â€” a publisher fault is reported
+   in the result {published:false, error} and never fails the activation: the durable commit is
+   authoritative and projections are reconstructable).
+
+### Binder admission decision (post-commit)
+- Per P5-T1 contract: a `rejected` guard decision completes the overlay install but keeps the work gate
+  closed; the activation SUCCEEDS and reports admission:{admitted:false, code}. A throwing guard ->
+  ADMISSION_GUARD_ERROR (fail-closed, same reporting). The tools layer gates work on admitted===true.
+
+### Failure matrix (fail-closed)
+- Steps 1-11: ActivationError, ZERO durable writes (asserted in tests over a recording proxy).
+- Step 12+ (after PREPARED): the PREPARED row remains; recovery re-drive converges (journal idempotency +
+  adapter idempotency on (root, instanceId) + barrier idempotency + surface installOverlay idempotency).
+  No rollback path exists anywhere.
+- Journal IDEMPOTENCY_CONFLICT -> ACTIVATION_IDEMPOTENCY_CONFLICT; CHILD_SESSION_CONFLICT ->
+  ACTIVATION_CHILD_SESSION_CONFLICT (durable child never re-pointed).
+
+### Closed error vocabulary (errors.ts)
+REQUEST_MALFORMED, TEAM_SESSION_NOT_FOUND, BLUEPRINT_UNRESOLVED, BLUEPRINT_HASH_MISMATCH,
+TEMPLATE_NOT_FOUND, CALLER_AUTHORITY_DENIED, SOURCE_NOT_ADMITTED, COMPATIBILITY_BLOCKED_WARNING,
+COMPATIBILITY_BLOCKED_FATAL, QUOTA_TEAM_MAX_INSTANCES, QUOTA_TEAM_MAX_CONCURRENT,
+QUOTA_MEMBER_MAX_INSTANCES, QUOTA_MEMBER_MAX_CONCURRENT, POLICY_RESOLUTION_FAILED,
+OVERLAY_BOUNDS_VIOLATION, INVALID_WORKSPACE_FIELD, INVALID_LABEL_FIELD, INVALID_GROUP_ID_FIELD,
+INSTANCE_ID_CONFLICT, LEADER_INSTANCE_ID_RESERVED, IDEMPOTENCY_CONFLICT, CHILD_SESSION_CONFLICT,
+CHILD_SESSION_CREATION_FAILED, BARRIER_REJECTED, BINDER_FAILED, ADMISSION_REJECTED (result-reported, not
+thrown for the work gate).
+
+### Ports (ActivationPorts) â€” mock-first (R28)
+teamDomain: TeamDomain (repositories facade; the coordinator + read handle build over it),
+blueprintCatalog: BlueprintCatalog,
+environmentFacts: () => Promise<readonly EnvironmentFact[]>,
+externalPolicyFacts: () => Promise<ExternalPolicyFacts>,
+childSessionFactory: {createChildSession({rootSessionId,instanceId,templateId,label,workspace?}) ->
+  {childSessionId}},
+sessionDurability: SessionDurabilityPort,
+surface: TeamAgentSetupSurface,
+slots?: Partial<Record<OverlaySlotName, OverlaySlot>>,
+admissionGuard?: AdmissionGuard,
+projectionPublisher?: (event: ActivationProjectionEvent) => void,
+now?: () => string.
+Read handle built internally via createTeamDomainReadHandle(teamDomain.repositories).
+
+### Sources (closed, extensible by later phases through the same single entry, inv 26)
+leader-explicit (leader explicitly creates), leader-delegate (delegate via
+resolveDelegationTarget: continue -> read-only result {kind:'continued'}; create -> full pipeline,
+inv 25), human-ui (human adds a member).
+
+2026-08-30 22:32:53 STEP 3 ¡ª source modules complete
+- packages/runtime/activation/provider.ts written (orchestration steps 0-16 + admit-once convergence + recoverActivation)
+- packages/runtime/activation/index.ts facade written (re-exports corrected to actual module exports: QuotaCountingView, no activateTemplateAddress, ActivationTeamDomain from storage/repositories)
+- provider fixes vs first draft: removed nonexistent DomainMemberInstanceRecordDto import (domain/member has no such export ¡ª resolveDelegationTarget takes contracts DTOs directly); TeamDomain type moved to storage/repositories import; compatibilityStatus param typed CompatibilityStatus (union, not string)
+- focused tsc: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json -> exit 0 (no output)
+- node scripts/run-tests.mjs runtime -> 149 passed, 0 failed, 149 total (baseline intact, no p6t1 tests yet)
+
+[checkpoint-resume] CORRECTION to STEP 3: the earlier 'tsc exit 0' claim was spurious (the clean run was unreliable). A full re-run showed 13 errors.
+[checkpoint-resume] Fix round: (1) adapter.ts wrap childSessionId in parseChildSessionId (branded ChildSessionId); (2) provider.ts resolveDelegationTarget call now passes parseRootSessionId(rootSessionId) + branded DelegationRequest (parseInstanceId/parseTemplateId); (3) p6t1-helpers.ts: added import type { MemberInstanceRecordDto }; teamSessions.put seed drops schemaVersion (TeamSessionRecordInput is stamped by the repository); memberInstances.put seed uses MemberInstanceRecordInput shape (no schemaVersion, activityVersion default 1); P6T1World ports record gains optional projectionPublisher (user-supplied only); restartP6T1World re-wires the default publisher to the fresh world's own projections array; assertActivationCode .code access fixed via the cast record.
+[checkpoint-resume] node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json -> EXIT=0 (clean, verified this round).
+
+2026-08-30 23:10:18 [checkpoint-resume] STEP 4 ¡ª p6t1 test suites written (5 suites, 93 tests)
+- p6t1-explicit.test.ts (27): S1 happy path fields + write-order spine + ledger-between; S2 human-ui; S3 replay (replayed:true, 0 writes, 2 projections); S4 IDEMPOTENCY_CONFLICT; S5 negative matrix (13 codes, all zero-durable-writes); S5b DEGRADED_ACKNOWLEDGED; S6 invariant-26 bijection
+- p6t1-delegate.test.ts (15): D1 persistent create; D2 persistent continue (read-only, no op/projection); D3 fresh_per_delegation 2 tokens -> 2 distinct instances/children; D4 explicit-instance continue under BOTH policies (read-only); D5-D7 DELEGATION_TARGET_UNRESOLVED (MEMBER_NOT_FOUND / AMBIGUOUS / DISPOSED); D8 non-leader CALLER_AUTHORITY_DENIED; D9 admit-once replays under both policies (replayed:true, never 'continued')
+- p6t1-parallel.test.ts (9): P1 N=2 distinct ids/children; P2 N=5 all succeed (raised-quota blueprint); P3 fixture quotas N=5 -> exactly 2 succeed + 3 QUOTA_MEMBER_MAX_INSTANCES (no over-create); P4 pairwise uniqueness
+- p6t1-recovery.test.ts (15): R1-R4 crash at writes seed+1..+4 (crash snapshot + restart + same-token re-drive: factory idempotency, recovery write sequences 7/6/5/4, one ledger fact, COMMITTED); R5 committed replay (replayed:true, 0 writes, 1 projection); R6 FAILED row fails loudly (OPERATION_FAILED with stored diagnostic, 0 writes, new token creates fine); R7 barrier fault (BARRIER_REJECTED -> PREPARED, no child; re-drive completes); R8 factory fault (CHILD_SESSION_CREATION_FAILED; re-drive completes)
+- p6t1-checks.test.ts (27): C1 identity (key shape/determinism/malformed token); C2 source vocab closed; C3 quota codes; C4 in-flight PREPARED counting; C5 resolveCreationFields precedence; C6 overlay fail-closed intersections; C7 TeamDomainError mapping; C8 compatibility evaluation
+
+2026-08-30 23:10:18 [checkpoint-resume] STEP 5 ¡ª first full runtime run + failure fixes
+- node scripts/run-tests.mjs runtime -> 233 passed, 8 failed, 241 total
+- fixes applied:
+  * C1: shim has no toBeInstanceOf -> try/catch name+code check (matcher rule: toBe/toEqual/toBeGreaterThan/toThrow only)
+  * D4: manual seed put was inside the write window -> capture before/after around EACH continuation separately
+  * R1-R4: seam CrashFault is wrapped by the TeamDomain repository layer -> assert error name 'TeamDomainError' + code 'SEAM_FAILURE' (crashCode added to all 4 crash snapshots); removed now-unused CrashFault import
+  * R6: writesOnFailedActivate measured after the retry (legit 8 writes) -> capture afterFailed immediately after the failed run
+  * C6: BOTH overlay test blueprints were envelope-invalid (same op in allow+deny of one envelope ¡ª validateEnvelope forbids it): template-deny case fixed (worker allow [op-a] deny [op-b]); the intended 'team deny excludes op both allows carry' case is UNREPRESENTABLE (validator enforces allow cap deny = 0 per envelope -> the !teamDeny guard in computeOverlayBounds is defensive-only) -> rebuilt as 'team allow list is the outer bound' (team allow {op-a}, worker allow {op-a,op-b} -> [op-a])
+- intermediate tsc TS1117 (duplicate crashCode from overlapping replace_all) -> deduped; re-verified
+
+2026-08-30 23:10:18 [checkpoint-resume] STEP 6 ¡ª runtime package GREEN
+- node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json -> EXIT=0
+- node scripts/run-tests.mjs runtime -> 242 passed, 0 failed, 242 total (149 baseline + 93 new p6t1: explicit 27, delegate 15, parallel 9, recovery 15, checks 27)
+
+2026-08-30 23:11:45 [checkpoint-resume] p4t6 scan count update (OUTSIDE owned surface, recorded for the report)
+- packages/testkit/test/p4t6-session-event-scan.test.ts: the P4-T6 audit hardcodes the CUMULATIVE .ts/.mts/.mjs file count under packages/ (the comment enumerates each task's contribution: 189 pre-P5 -> 226 pre-P5-T5 -> 258 after P5-T6). Every prior task updated it when adding files. My 13 new files (7 runtime/activation modules + 6 p6t1 test files) -> 271. All 9 other assertions in that suite pass (zero denylist hits in my files). Change: count literal 258->271 (x2) + enumeration comment line. No scanner (.mjs) change; packages/testkit/fault-injection/** untouched.
+
+2026-08-30 23:11:45 [checkpoint-resume] STEP 7 ¡ª verification chain PASS 1 (end of implementation)
+- pnpm install --ignore-scripts -> exit 0
+- node scripts/run-tests.mjs -> 1022 passed, 0 failed, 1022 total (929 baseline + 93 new p6t1)
+- p4t6 suite: 10/10 (scan count 271 = 258 + 13; zero denylist violations; quarantine set unchanged)
+- tsc runtime -> EXIT=0; tsc testkit -> EXIT=0
+- diff self-check: git status shows only activation/ (new), p6t1-* tests (new), p4t6 count update (M), evidence dir (new). NO contracts/**, NO references/**, NO docs/plans/**, NO graph.yaml, NO fault-injection/**, NO other P6 surfaces. Zero node:/upstream imports in runtime (grep clean).
+- stable dev instance http://127.0.0.1:3080 -> STATUS=200 (post chain; pre-check was recorded STATUS=200 at task start)
+
+2026-08-30 23:12:04 [checkpoint-resume] STEP 8 ¡ª commit 1 + verification chain PASS 2
+- Commit 1 (code+tests): feat(runtime): P6-T1 ActivationProvider
+  SHA 085ef11700aa1c0fba166017a2bca8a5ad10f288 (14 files, 5815 insertions, 3 deletions)
+- PASS 2 (after commit 1 ¡ª the final CODE state; commit 2 below is evidence-only text and cannot alter test/tsc outcomes):
+  * node scripts/run-tests.mjs -> 1022 passed, 0 failed, 1022 total
+  * tsc runtime -> EXIT=0; tsc testkit -> EXIT=0
+  * http://127.0.0.1:3080 -> STATUS=200
+- Commit 2 (this evidence dir): docs(evidence): P6-T1 evidence ¡ª SHA reported in the task report (the log is committed in this very commit, so its SHA cannot be recorded inside it).
