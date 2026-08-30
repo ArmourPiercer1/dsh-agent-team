@@ -1,0 +1,25 @@
+2026-08-30T09:28:45.051Z P5-T5 harness start: worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T5
+2026-08-30T09:28:45.052Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5
+2026-08-30T09:28:45.052Z selected scenarios=S1,S3,S4,S2 ports boot1=3180 boot2=3181
+2026-08-30T09:28:45.178Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T09:28:45.187Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T09:28:45.241Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5
+2026-08-30T09:28:45.243Z junction farm ready
+2026-08-30T09:28:45.244Z user preset written: p5t5-team-persona
+2026-08-30T09:28:45.255Z mini MCP server up on 127.0.0.1:3481
+2026-08-30T09:28:45.256Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-30T09:28:47.102Z throwaway boot OK: http://127.0.0.1:3180/?token=6uNTAyVQUE7Gm_3BBEr1HaLnkxmyk9xn-WhtCVlWuCo
+2026-08-30T09:28:47.139Z directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5\p5t5-directive.json
+2026-08-30T09:28:49.595Z boot 1: health={"ok":true,"boot":1,"ready":true} rowMounted=true
+2026-08-30T09:28:49.913Z scenario S1: http=200 pass=true assertions=15 (317ms)
+2026-08-30T09:28:50.296Z scenario S3: http=200 pass=true assertions=8 (382ms)
+2026-08-30T09:28:50.308Z scenario S4: http=200 pass=true assertions=5 (11ms)
+2026-08-30T09:28:50.384Z boot 1: stopped killed=true portFree=true
+2026-08-30T09:28:50.385Z directive boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p5t5\p5t5-directive.json
+2026-08-30T09:28:52.564Z boot 2: health={"ok":true,"boot":2,"ready":true} rowMounted=true
+2026-08-30T09:28:52.609Z scenario S2: http=200 pass=true assertions=11 (45ms)
+2026-08-30T09:28:52.715Z boot 2: stopped killed=true portFree=true
+2026-08-30T09:28:52.716Z mini MCP server closed
+2026-08-30T09:28:52.848Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T09:28:52.848Z postflight: test-use pristine after=true
+2026-08-30T09:28:52.849Z P5-T5 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P5-T5\dev\agent-workflow\evidence\P5-T5\harness-output\summary.json

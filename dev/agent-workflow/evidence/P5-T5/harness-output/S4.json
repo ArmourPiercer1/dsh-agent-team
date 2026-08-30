@@ -1,0 +1,69 @@
+{
+  "scenario": "S4",
+  "sessionId": "session-p5t5-s4",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "bind: ordinary no-op (bound:false, noopReason ordinary)",
+      "pass": true,
+      "actual": {
+        "bound": false,
+        "noopReason": "ordinary"
+      }
+    },
+    {
+      "name": "bind: no install, no events",
+      "pass": true,
+      "actual": {
+        "installed": false,
+        "emitted": [],
+        "recorded": []
+      }
+    },
+    {
+      "name": "durable: absent (an ordinary session carries no Team state)",
+      "pass": true,
+      "actual": null
+    },
+    {
+      "name": "writes: zero durable writes touched this session",
+      "pass": true,
+      "actual": []
+    },
+    {
+      "name": "residency: no overlay slots recorded",
+      "pass": true,
+      "actual": []
+    }
+  ],
+  "bind": {
+    "requested": "cold-root",
+    "bound": false,
+    "installed": false,
+    "noopReason": "ordinary",
+    "emittedEvents": []
+  },
+  "durableState": null,
+  "verification": {
+    "writes": [],
+    "guardFacts": [
+      {
+        "scenario": "S1",
+        "policy": "open",
+        "liveFacts": {
+          "sessionExists": true,
+          "path": "fresh-root"
+        }
+      },
+      {
+        "scenario": "S3",
+        "policy": "closed",
+        "liveFacts": {
+          "sessionExists": true,
+          "path": "fresh-root"
+        }
+      }
+    ]
+  },
+  "obs": {}
+}
