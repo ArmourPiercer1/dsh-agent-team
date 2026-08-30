@@ -1,0 +1,7 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src", "../test/t3-member-*.test.ts", "../test/t3-helpers.ts"]
+}
