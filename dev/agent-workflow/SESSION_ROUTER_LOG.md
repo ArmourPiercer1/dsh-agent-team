@@ -463,6 +463,16 @@
 - **Graph**：P5-T1..T6 + G5-REVIEW 落账（T1 RUNNING，余 DEFINED）；integration_branch → `int/P5-agent-binding-binder`；integration_sha `06bd13b`；ready `[P5-T1]`。
 - **下一步**：P5-T1 单一 leaf worker 经 workflow 派单（`qiyuan-self/qwen3.8-27b`，禁止再派生子代理，≤3 次执行）；返回后标准主 Agent 审计（owned-path diff / 干净树 / 独立重跑 783+N + runtime tsc）→ `cherry-pick -x` → R29 → ready `[P5-T2, P5-T3, P5-T4]`。
 
+### 轮次 R29：P5-T1 结果 + 主 Agent 审计 + DEC-1 裁决 + integration（2026-08-30）
+
+- **Worker 自报**（workflow 单 leaf，`qiyuan-self/qwen3.8-27b`）：DONE，1/3 attempts，827/827（基线 783 + 新增 44：double-bind 8 / fresh-cold 8 / ordinary-noop 5 / overlay-slots 8 / binder-core 15）；head `bc9f8b4`（evidence 提交，叠在 code 提交 `366ccfd` 之上）；5 次纯 debug run 已入账不占预算；自曝 DEC-1（p4t6 覆盖计数 190→202）。
+- **主 Agent 审计**：HEAD 自验 `bc9f8b43531e2935a57b59f4254b55054d03715e` 与自报一致；worktree 干净树；diff 16 文件 = 12 owned（6 binder 模块 + 6 测试）+ 3 evidence + 1 例外（`packages/testkit/test/p4t6-session-event-scan.test.ts`）；grep 全 runtime 包零 legacy 词汇命中、零 `node:` import；`binder.ts` 抽核确认单类四方法（bindFreshRoot/bindFreshMember/rehydrateColdRoot/rehydrateColdMember）、注入窄 `TeamAgentSetupSurface` + 只读 `TeamDomainReadHandle`（投影三方法、无写面）、admission 决策点 fail-closed、事件 (sessionId,name,detail) 去重、overlay 槽位 persona/model/capability 仅契约+恒等默认（业务留 T2/T3/T4）。
+- **DEC-1 裁决（主 Agent，记入 graph P5-T1 note）**：批准为正式 owned-path 例外。理由：p4t6 覆盖计数断言是常设不变量，树增长 12 文件后必须随动，否则全链恒红（worker 无 owned 内替代路径）；改动仅标题 + 2 个 toBe 断言 + 推导注释，scanner `.mjs`/`.d.mts` 逐字节未动、denylist/隔离集/自排除契约/匹配逻辑零改动，9 项违规检查改动前后均绿，4 个 token 可回退。G5 reviewer 须复核（常设检查追加项：scanner .mjs 保持字节同一，计数断言随树增长）。同 M-2/D-02 先例（worker 卡外 test-area 一行/数行胶水，主 Agent 裁决入账，零生产代码）。
+- **独立重跑（int/P5，审计性质不计 attempt）**：Leg2 `node scripts/run-tests.mjs` 827/827 PASS；Leg3/4/5 tsc storage/domain/contracts 全 EXIT=0；DEBUG tsc runtime EXIT=0。
+- **Git**：cherry-pick -x `366ccfd`→`fe7571c`（code）、`bc9f8b4`→`6618d65`（evidence）入 `int/P5-agent-binding-binder`，无冲突；integration_sha → `6618d65c648be0117b6b914c3052e600f67a2389`。
+- **Graph**：P5-T1 → INTEGRATED（head `bc9f8b4`，attempts 1，DEC-1 note）；ready → `[P5-T2, P5-T3, P5-T4]`（F1 并行组）。
+- **下一步**：R30 —— 建 P5-T2/T3/T4 三个 worktree（base `6618d65`）→ 单 workflow 一次扇出 3 leaf worker（全 `qiyuan-self/qwen3.8-27b`，各自 ≤3 attempts）→ 返回后三审计 → 依次 cherry-pick → R31 → ready `[P5-T5]`（I-1 真绑定任务：真 AgentFactoryAdapter + 真 seam 绑定 + TEST_METHODS 端口 3180 / 独立 DSH_HOME）。
+
 ## 重审记录
 
 （空）
