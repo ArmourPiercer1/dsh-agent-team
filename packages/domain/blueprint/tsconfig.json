@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "testdata",
+    "../test/t2-*.test.ts",
+    "../test/t2-helpers.ts"
+  ]
+}
