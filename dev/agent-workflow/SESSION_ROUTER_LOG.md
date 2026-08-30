@@ -409,6 +409,18 @@
 - **派发**：workflow `p4-t6-teamdomain-audit-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）。
 - **graph**：P4-T6 → RUNNING（branch task/P4-T6-teamdomain-audit，base `4a61394`）；ready → []。
 
+### 轮次 R25：P4-T6 结果 + 主 Agent 审计 + 集成（2026-08-30）
+
+- **结果**（worker 返回，`qiyuan-self/qwen3.8-27b`）：**SELF_VERIFIED**，attempts **3/3**（a1 RED @ leg2：p4t6 漏 vitest shim import；a2 被 TS2532（noUncheckedIndexedAccess）superseded；a3 全 5 leg 绿——两处缺陷均在 T6 自身新测试文件，未触碰任何既有文件；3 次 canonical 用尽但任务完成）。G4 verdict（worker 报告）：**PASS 7/7，0 blocking invariant**（1/2/3/4/6 direct，5/7 to the extent P4 evidence exists，final call = G4-REVIEW）。
+  - **交付（3 新文件，592 insertions，0 既有文件修改）**：`packages/testkit/fault-injection/session-event-scan.mjs`（frozen denylist scanner：5 事件串 exact quoted-literal 匹配、5 payload 符号 word-bounded、SessionEventMap 合并 file-level 检测；确定性 walk、node_modules/dist skip 有记录、symlink-cycle guard、unreadable fail-loud、恰好 2 个 self-reference 排除）+ `session-event-scan.d.mts`（token-free 类型面，本身被扫描）+ `packages/testkit/test/p4t6-session-event-scan.test.ts`（10 测试）。
+  - **扫描结果**：190 文件（9 包目录、legacy documented sourceless）；quarantine 之外 **0 违规**（无文件跳过）；payload 符号 0；declaration-merge 0；15 个 event-string 命中全部落在冻结 2 文件 quarantine（`contracts/src/legacy-vocabulary.ts` + `contracts/test/negative.test.ts`）并逐条 pin（file:line:col:token）；positive control（declaration-merge + emitter）与 near-miss negative control（`team/unknown`、`user/message`、`team/progress-report`、`TeamProgressDataX` → 0 命中）入测试。
+  - **T1-T5 缺陷报告**：none（read-only 独立审计；具体核对：coordinator.ts:392-397 无双外部效果路径、version-policy.ts:38-61 + team-domain.ts:94-109 无 built-in migration、team-domain.ts:173-176/211-214 无 handle 泄漏、stages 从 durable 状态派生、journal 零删除）。
+  - **head_sha 自报更正（主 Agent 审计发现）**：worker 自报 head `d3bf92c` 实为 code commit；分支真 HEAD = `bd97476`（evidence commit 叠加其上）。graph 记录真值。
+- **独立审计（全部通过）**：`.worktrees/P4-T6` 工作树干净；owned-path 越界检查为空（session-event-scan.{mjs,d.mts} + p4t6 测试 + evidence/P4-T6/**，共 8 文件）；quarantine 裁决核验 = 合法（contracts v1 FROZEN 的 `legacy-vocabulary.ts` 是 invariant 42/65 的 **detection vocabulary**：LEGACY_TEAM_SESSION_EVENT_NAMES 冻结为仅检测用途 + 拒绝发射（LEGACY_TEAM_SESSION_EVENT_REJECTED）+ 只读 legacy import 识别，非 vNext 权威词汇，符合红线"不得把 legacy 词汇当 vNext 权威"）；测试设计核验（exclusion contract 恰好 2 文件、15-hit pin、正/近失配 control）；独立重跑 = pnpm install EXIT=0 + 全量 **783/783 PASS EXIT=0**（773 + 10）+ storage/domain/contracts/testkit 4× tsc 全 EXIT=0；g4-report.md 逐判据证据抽查（file:line + 执行 suite + 计数齐全，attempt 历史诚实）。
+- **集成**：cherry-pick -x ×2（code `d3bf92c`→`92368d2` + evidence `bd97476`→`cdc7f95`）→ int/P4 零冲突，head `cdc7f95`。整合验证（主 worktree）：全量 **783/783 PASS EXIT=0** + storage/domain/contracts/testkit 4× tsc 全 EXIT=0。
+- **Graph**：P4-T6 → INTEGRATED（head `bd97476`，attempts 3）；integration_sha = `cdc7f9506f1e84b53c381b6f5e4641f88e3b2b07`；ready → [G4-REVIEW]。
+- **下一步**：G4-REVIEW 派发——3 名 fresh blind reviewer（各自 detached worktree @ `cdc7f95`，G3 协议：禁 SESSION_ROUTER_LOG/graph/evidence 除 provenance manifest；worker 的 g4-report = CLAIM 非证据；verdict 通过/投机通过/补充内容/阻塞，3/3 ∈ {通过,投机通过} 才 PASS）→ 若 PASS：ff-merge master + push #4 → P5。
+
 ## 重审记录
 
 （空）
