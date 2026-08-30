@@ -1,0 +1,170 @@
+﻿# P3-T6 canonical run log
+# worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P3-T6
+# branch: task/P3-T6-domain-integration (base ba293ec)
+# generated: 2026-08-30T09:44:18.1141184+08:00
+
+## Canonical attempt 1 — FAILED (abort at leg 3)
+
+### leg 1: pnpm install --ignore-scripts  [exit 0]
+Scope: all 10 workspace projects
+Already up to date
+Done in 55ms using pnpm v11.7.0
+
+### leg 2: node scripts/run-tests.mjs  [exit 0; 492 passed, 0 failed, 492 total]
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 492 passed, 0 failed, 492 total, 339 ms
+RESULT: PASS run-tests (0 failures)
+
+### leg 3: node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json  [exit 2 — 15 type errors]
+packages/testkit/test/t6-10-composition-pipeline.test.ts(238,36): error TS2345: Argument of type 'import("D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T6/packages/domain/policy/src/contracts-mirror", { with: { "resolution-mode": "import" } }).MemberIdentity' is not assignable to parameter of type 'import("D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P3-T6/packages/contracts/src/identity", { with: { "resolution-mode": "import" } }).MemberIdentity'.
+  Types of property 'rootSessionId' are incompatible.
+    Type 'string' is not assignable to type 'RootSessionId'.
+      Type 'string' is not assignable to type 'Brand<"RootSessionId">'.
+packages/testkit/test/t6-10-composition-pipeline.test.ts(292,37): error TS2345: Argument of type 'readonly RequirementInput[]' is not assignable to parameter of type 'readonly Requirement[]'.
+  Type 'RequirementInput' is not assignable to type 'Requirement'.
+    Types of property 'complete' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+packages/testkit/test/t6-10-composition-pipeline.test.ts(319,37): error TS2345: Argument of type 'readonly RequirementInput[]' is not assignable to parameter of type 'readonly Requirement[]'.
+  Type 'RequirementInput' is not assignable to type 'Requirement'.
+    Types of property 'complete' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+packages/testkit/test/t6-2-template-n-instances.test.ts(131,50): error TS2345: Argument of type 'string' is not assignable to parameter of type 'RootSessionId'.
+  Type 'string' is not assignable to type 'Brand<"RootSessionId">'.
+packages/testkit/test/t6-4-policy-precedence.test.ts(489,11): error TS2741: Property 'capabilityExists' is missing in type '{ hard: { [x: string]: PolicyEntry; }; }' but required in type 'ExternalPolicyFacts'.
+packages/testkit/test/t6-4-policy-precedence.test.ts(505,11): error TS2741: Property 'capabilityExists' is missing in type '{ hard: { [x: string]: PolicyEntry; }; }' but required in type 'ExternalPolicyFacts'.
+packages/testkit/test/t6-4-policy-precedence.test.ts(520,11): error TS2741: Property 'capabilityExists' is missing in type '{ hard: { [x: string]: PolicyEntry; }; }' but required in type 'ExternalPolicyFacts'.
+packages/testkit/test/t6-4-policy-precedence.test.ts(536,11): error TS2741: Property 'capabilityExists' is missing in type '{ hard: { [x: string]: PolicyEntry; }; }' but required in type 'ExternalPolicyFacts'.
+packages/testkit/test/t6-4-policy-precedence.test.ts(597,67): error TS2345: Argument of type 'string' is not assignable to parameter of type 'InstanceId'.
+  Type 'string' is not assignable to type 'Brand<"InstanceId">'.
+packages/testkit/test/t6-6-snapshot-immutability.test.ts(49,46): error TS18047: 'result.error' is possibly 'null'.
+packages/testkit/test/t6-6-snapshot-immutability.test.ts(49,59): error TS2339: Property 'name' does not exist on type '{}'.
+packages/testkit/test/t6-6-snapshot-immutability.test.ts(49,75): error TS18047: 'result.error' is possibly 'null'.
+packages/testkit/test/t6-6-snapshot-immutability.test.ts(49,88): error TS2339: Property 'message' does not exist on type '{}'.
+packages/testkit/test/t6-6-snapshot-immutability.test.ts(66,22): error TS2352: Conversion of type 'TeamBlueprint' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'TeamBlueprint'.
+packages/testkit/test/t6-6-snapshot-immutability.test.ts(157,9): error TS2352: Conversion of type 'BlueprintSnapshotRef' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'BlueprintSnapshotRef'.
+
+### legs 4-6: not run (chain aborted at leg 3)
+
+## Canonical attempt 2 — PASS (all 6 legs exit 0)
+
+### leg 1: pnpm install --ignore-scripts  [exit 0]
+Scope: all 10 workspace projects
+Already up to date
+Done in 55ms using pnpm v11.7.0
+
+### leg 2: node scripts/run-tests.mjs  [exit 0; 492 passed, 0 failed, 492 total]
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 492 passed, 0 failed, 492 total, 341 ms
+RESULT: PASS run-tests (0 failures)
+
+### leg 3: node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json  [exit 0, no output]
+
+### leg 4: node node_modules/typescript/bin/tsc -p packages/testkit/domain/tsconfig.json  [exit 0, no output]
+
+### leg 5: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json  [exit 0, no output]
+
+### leg 6: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json  [exit 0, no output]
+
+## Debug runs (not canonical attempts; package-scoped, logged per protocol)
+- node scripts/run-tests.mjs testkit — after t6-4 merge fix: 76 passed, 5 failed (t6-8 canonical key; t6-9 hash input, binding code, fixture count 31, property cascade)
+- node scripts/run-tests.mjs testkit — after t6-8/t6-9 fixes: 81 passed, 0 failed, 81 total
+- node scripts/run-tests.mjs (all) — pre-attempt full debug: 492 passed, 0 failed, 492 total
+- node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json — after type fixes: exit 0
+- node node_modules/typescript/bin/tsc -p packages/testkit/domain/tsconfig.json — after extends-path fix: exit 0
+- node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json — exit 0
+- node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json — exit 0
+
+## Attempt 1 fixes (applied before attempt 2)
+- t6-10: policy-stage mirror MemberIdentity re-parsed through contracts boundary (createMemberIdentity(parseRootSessionId(...), parseInstanceId(...)))
+- t6-10: computeEnvironmentFingerprint now fed parseRequirements(REQUIREMENTS_IN) (typed readonly Requirement[])
+- t6-2: teamSessionIdOf(parseRootSessionId("session-team-root-2")) (branded RootSessionId)
+- t6-4: four external-stage partials now carry capabilityExists: {} (ExternalPolicyFacts is not internally partial)
+- t6-4: mirror-vs-contracts identity test uses contracts parseInstanceId
+- t6-6: expectTypeError rewritten on a local error binding (describeError); two casts via unknown (TS2352)
+- packages/testkit/domain/tsconfig.json: extends path corrected to ../../../tsconfig.base.json (TS5083)

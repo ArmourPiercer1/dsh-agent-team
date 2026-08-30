@@ -1,0 +1,83 @@
+{
+  "task": "P3-T6",
+  "title": "Domain integration/property review + G3 (Team-mode vNext, P3 D2)",
+  "status": "SELF_VERIFIED",
+  "branch": "task/P3-T6-domain-integration",
+  "worktree": ".worktrees/P3-T6",
+  "base_sha": "ba293ec91f7712153ad35c98b5da43d3247acc14",
+  "code_commit_sha": "6763892c3a43136a8e78e6f23e867af5ed22b043",
+  "attempts_used": 2,
+  "max_attempts": 3,
+  "test_counts": {
+    "t6_bundle": 79,
+    "t6_by_file": {
+      "t6-1-no-agent-dependency": 6,
+      "t6-2-template-n-instances": 8,
+      "t6-3-lifecycle-matrix": 8,
+      "t6-4-policy-precedence": 11,
+      "t6-5-compat-complete-true": 6,
+      "t6-6-snapshot-immutability": 8,
+      "t6-7-fresh-per-delegation": 6,
+      "t6-8-serialization-roundtrip": 9,
+      "t6-9-negative-matrix": 12,
+      "t6-10-composition-pipeline": 5
+    },
+    "testkit_filtered": 81,
+    "full_suite": 492,
+    "baseline": 413,
+    "full_formula": "413 + 79 = 492",
+    "negative_cases_runtime": 88,
+    "blueprint_negative_fixtures": 31,
+    "contracts_error_codes_closed_set": 20
+  },
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/testkit/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_attempt_2": {
+    "leg1_install": "exit 0",
+    "leg2_run_tests": "492/492 exit 0",
+    "leg3_tsc_testkit": "exit 0",
+    "leg4_tsc_testkit_domain": "exit 0",
+    "leg5_tsc_domain": "exit 0",
+    "leg6_tsc_contracts": "exit 0"
+  },
+  "g3_criteria_evidence": {
+    "G3-1_no_live_agent_dependency": "packages/testkit/test/t6-1-no-agent-dependency.test.ts (6 tests) + packages/testkit/domain/src/import-graph.ts",
+    "G3-2_template_n_instances": "packages/testkit/test/t6-2-template-n-instances.test.ts (8 tests)",
+    "G3-3_lifecycle_matrix": "packages/testkit/test/t6-3-lifecycle-matrix.test.ts (8 tests)",
+    "G3-4_policy_precedence": "packages/testkit/test/t6-4-policy-precedence.test.ts (11 tests)",
+    "G3-5_complete_true_fatal": "packages/testkit/test/t6-5-compat-complete-true.test.ts (6 tests)",
+    "G3-6_snapshot_immutability": "packages/testkit/test/t6-6-snapshot-immutability.test.ts (8 tests)",
+    "G3-7_fresh_per_delegation": "packages/testkit/test/t6-7-fresh-per-delegation.test.ts (6 tests)"
+  },
+  "owned_paths": [
+    "packages/testkit/domain/**",
+    "packages/testkit/test/t6-*.test.ts",
+    "packages/testkit/test/t6-helpers.ts",
+    "packages/testkit/tsconfig.json",
+    "docs/contracts/g3-report.md",
+    "docs/contracts/freeze-confirmation.md",
+    "dev/agent-workflow/evidence/P3-T6/**"
+  ],
+  "contracts_modified": false,
+  "contract_change_requests": "none",
+  "evidence": [
+    "run-log.txt",
+    "attempt-ledger.txt",
+    "can1-leg1.txt",
+    "can1-leg2.txt",
+    "can1-leg3.txt",
+    "can2-leg1.txt",
+    "can2-leg2.txt",
+    "can2-leg3.txt",
+    "can2-leg4.txt",
+    "can2-leg5.txt",
+    "can2-leg6.txt",
+    "debug-repro.mjs"
+  ]
+}

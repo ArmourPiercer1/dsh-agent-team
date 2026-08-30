@@ -1,0 +1,43 @@
+# P3-T6 attempt ledger
+
+Canonical chain = 6 legs: (1) `pnpm install --ignore-scripts`,
+(2) `node scripts/run-tests.mjs` (all packages), (3) `tsc -p packages/testkit/tsconfig.json`,
+(4) `tsc -p packages/testkit/domain/tsconfig.json`, (5) `tsc -p packages/domain/tsconfig.json`,
+(6) `tsc -p packages/contracts/tsconfig.json`. Budget: <= 3 attempts. Debug runs are
+logged separately in `run-log.txt` and do not consume the budget.
+
+## Attempt 1 — FAILED (aborted at leg 3)
+
+| leg | command | exit | result |
+| --- | --- | --- | --- |
+| 1 | `pnpm install --ignore-scripts` | 0 | already up to date (pnpm 11.7.0) |
+| 2 | `node scripts/run-tests.mjs` | 0 | 492 passed, 0 failed, 492 total |
+| 3 | `node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json` | 2 | 15 type errors in t6 test files (TS2345/TS2741/TS18047/TS2339/TS2352) |
+| 4-6 | — | — | not run (chain aborted) |
+
+Fixes applied after attempt 1 (all in owned `packages/testkit/**`):
+- t6-10: policy-stage identity re-parsed through the strict contracts boundary
+  (`createMemberIdentity(parseRootSessionId(policy.member.rootSessionId), parseInstanceId(policy.member.instanceId))`);
+  `computeEnvironmentFingerprint` fed `parseRequirements(REQUIREMENTS_IN)`.
+- t6-2: `teamSessionIdOf(parseRootSessionId('session-team-root-2'))`.
+- t6-4: the four external-stage partials now include `capabilityExists: {}`
+  (`ExternalPolicyFacts` has no internal optionality); mirror-vs-contracts test
+  uses the contracts `parseInstanceId`.
+- t6-6: `expectTypeError` rewritten on a local `error` binding using `describeError`;
+  two direct `as Record<string, unknown>` casts routed through `unknown` (TS2352).
+- `packages/testkit/domain/tsconfig.json`: `extends` corrected from
+  `../../tsconfig.base.json` to `../../../tsconfig.base.json` (TS5083, discovered in the
+  debug check of leg 4; leg 4 had not yet run in attempt 1).
+
+## Attempt 2 — PASS (all 6 legs exit 0)
+
+| leg | command | exit | result |
+| --- | --- | --- | --- |
+| 1 | `pnpm install --ignore-scripts` | 0 | already up to date |
+| 2 | `node scripts/run-tests.mjs` | 0 | **492 passed, 0 failed, 492 total** (413 baseline + 79 t6) |
+| 3 | `node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json` | 0 | no output |
+| 4 | `node node_modules/typescript/bin/tsc -p packages/testkit/domain/tsconfig.json` | 0 | no output |
+| 5 | `node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json` | 0 | no output |
+| 6 | `node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json` | 0 | no output |
+
+At 2 of 3 attempts. No further attempts needed.
