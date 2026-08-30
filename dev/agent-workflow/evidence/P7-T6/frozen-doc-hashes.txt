@@ -1,0 +1,11 @@
+﻿# P7-T6 frozen-doc hash verification (recomputed at final commit)
+
+Source: main worktree docs/plans/active/ (gitignored; task worktrees have no copy).
+Cross-check: dev/agent-workflow/evidence/provenance/file-manifest.json -> frozen_docs.docs
+
+030dfb8ec55bae30f35c2826c7e4e659c0e0b742d836018ce502f34017870c53  docs/plans/active/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md  match=True
+3ef3ab69ed2bd7879e4c15079a16c8dae456b572690246a5c1f9cbb0c8c4981e  docs/plans/active/DSH_Agent_Team_vNext_Detailed_UI_Design_20260829.md  match=True
+a05d237f8515fd6467373632849afe0c6a1ae63bc0ec298de63b9d124d881d0f  docs/plans/active/DSH_Agent_Team_vNext_Detailed_Development_Plan_20260829.md  match=True
+2b457cc033ca1b72aa781e072e0ef7fe55bc05d2f7ea25cc03c827d257e888a3  docs/plans/active/DSH_Agent_Team_vNext_Task_Decomposition_and_Review_Method_20260829.md  match=True
+
+ALL_MATCH=True

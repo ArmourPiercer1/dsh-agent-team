@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, eight carry source, 377 files scanned, legacy documented sourceless', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 381 files scanned, legacy carries the P7-T6 adapter', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -57,12 +57,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const withSource = scanResult.packageDirs.filter((name) =>
       scanResult.files.some((f) => f.startsWith('packages/' + name + '/')),
     )
-    expect(withSource.length).toBe(8)
-    // `packages/legacy` is a skeleton (package.json + README only); the
-    // audit records that no source file exists there to scan.
+    expect(withSource.length).toBe(9)
+    // `packages/legacy` now carries the P7-T6 legacy teammates import
+    // adapter: the pure core .ts, the sync fs seam .mjs, its .d.mts type
+    // surface, and the p7t6 unit-test .ts (the fixture .md files are not
+    // scanned source).
     expect(
       scanResult.files.filter((f) => f.startsWith('packages/legacy/')).length,
-    ).toBe(0)
+    ).toBe(4)
     // 226 pre-existing .ts/.mts/.mjs files (189 pre-P5 + 12 P5-T1 runtime
     // files + 11 P5-T2 persona/preset files + 6 P5-T3 runtime files +
     // 8 P5-T4 capability adapter files) + the adjacent .d.mts type surface
@@ -110,9 +112,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // p7t5-helpers, p7t5-snapshot-once.test, p7t5-source-mutate.test,
     // p7t5-target-inspect.test, p7t5-failure-before-root-create.test,
     // p7t5-no-creation-scan.test, p7t5-no-creation-scan.mjs,
-    // p7t5-no-creation-scan.d.mts).
-    expect(scanResult.filesScanned).toBe(377)
-    expect(scanResult.files.length).toBe(377)
+    // p7t5-no-creation-scan.d.mts)) +
+    // + 2 real-instance harness .mjs under tools/harness: plugin, run
+    // + 4 P7-T6 legacy teammates adapter files under legacy (1 core
+    // .ts + 1 fs seam .mjs + 1 .d.mts type surface + 1 unit-test .ts)).
+    expect(scanResult.filesScanned).toBe(381)
+    expect(scanResult.files.length).toBe(381)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

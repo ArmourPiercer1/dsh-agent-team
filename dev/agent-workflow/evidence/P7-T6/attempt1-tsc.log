@@ -1,0 +1,5 @@
+== tsc contracts exit=0 ==
+== tsc domain exit=0 ==
+== tsc storage exit=0 ==
+== tsc runtime exit=0 ==
+== tsc testkit exit=0 ==
