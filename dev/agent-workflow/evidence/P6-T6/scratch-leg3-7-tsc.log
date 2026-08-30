@@ -1,0 +1,6 @@
+tsc contracts EXIT=0
+tsc domain EXIT=0
+tsc storage EXIT=0
+tsc runtime EXIT=0
+tsc testkit EXIT=0
+TSC-EXITS: contracts:0 domain:0 storage:0 runtime:0 testkit:0

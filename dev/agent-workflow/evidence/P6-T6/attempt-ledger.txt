@@ -1,0 +1,32 @@
+P6-T6 canonical verification chain — attempt ledger (budget: 3 counted attempts)
+worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6
+branch: task/P6-T6-team-tools-e2e
+base: 760e7369650fe7e7e082772368f67569730cd80912 (P6-T5 evidence-close commit; verified via git rev-parse HEAD pre-commit)
+chain definition: leg1 pnpm install --ignore-scripts / leg2 node scripts/run-tests.mjs / leg3-7 node node_modules/typescript/bin/tsc -p packages/{contracts,domain,storage,runtime,testkit}/tsconfig.json
+
+attempt 1 — baseline (pre-change)
+  started (leg1 log mtime, UTC): 2026-08-30 18:17:52
+  legs: leg1 exit=0; leg2 exit=0 (1181 passed / 0 failed / 1181 total, 3462 ms); leg3-7 tsc exit=0 x5 (contracts, domain, storage, runtime, testkit)
+  result: FULL GREEN
+  failure reasons: none
+  evidence: scratch-leg1-install.log, scratch-leg2-runtests.log, scratch-leg3-7-tsc.log
+  note: recorded before any P6-T6 change; establishes canonical full-suite baseline 1181.
+
+attempt 2 — post-change
+  started (leg1 log mtime, UTC): 2026-08-30 20:37:38
+  legs: leg1 exit=0; leg2 exit=0 (1214 passed / 0 failed / 1214 total); leg3-7 tsc exit=0 x5
+  result: FULL GREEN
+  failure reasons: none
+  evidence: chain2-leg1-install.log, chain2-leg2-runtests.log, chain2-leg{3..7}-tsc-*.log
+  note: post-change target met: 1214 = 1181 baseline + 33 new P6-T6 tests (14 actions + 9 guard + 10 bypass-scan).
+
+attempt 3 — post-change, second consecutive full-green
+  started (leg1 log mtime, UTC): 2026-08-30 20:38:10
+  legs: leg1 exit=0; leg2 exit=0 (1214 passed / 0 failed / 1214 total, 4721 ms); leg3-7 tsc exit=0 x5
+  result: FULL GREEN
+  failure reasons: none
+  evidence: chain3-leg1-install.log, chain3-leg2-runtests.log, chain3-leg{3..7}-tsc-*.log
+  note: confirms stability/reproducibility of the post-change suite (two consecutive identical full-green runs).
+
+budget: 3/3 consumed. All counted attempts full green; no invalidated counted attempts.
+(Earlier P6-T6 harness driver/plugin iterations were development iterations of the E2E harness, not counted chain attempts; they are documented in g6-report.md.)

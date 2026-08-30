@@ -1,0 +1,579 @@
+P6-T6 verification chain - counted attempts 1-3 (verbatim per-leg commands and output)
+worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6  branch: task/P6-T6-team-tools-e2e  base: 760e7369650fe7e7e082772368f67569730cd80912
+started: attempt1=2026-08-30T18:17:52Z attempt2=2026-08-30T20:37:38Z attempt3=2026-08-30T20:38:10Z (leg1 log mtimes, UTC)
+note: canonical full-suite baseline (pre-change) = 1181 passed; post-change target = 1214 (1181 + 33 new P6-T6 tests: 14 actions + 9 guard + 10 bypass-scan).
+note: all three counted attempts full green; no counted attempt invalidated. Two earlier P6-T6 E2E harness runs that failed were development iterations of the harness (driver ordering / health-gate fixes), not counted chain attempts; see g6-report.md.
+
+============================================================
+== selfcheck-before
+============================================================
+stable :3080 GET probe: before=200 after=200 (harness preflight + postflight, summary.json stable3080)
+test-use head: cd5ef8148158c3a752a658978873241fdf8e2bbc (before and after; headSource=git)
+test-use status --porcelain: '' (empty = pristine, before and after)
+test-use diff --stat: '' (empty, before and after)
+
+============================================================
+== attempt 1 (baseline, pre-change) - leg1-install
+============================================================
+leg1-install :: pnpm install --ignore-scripts
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (175 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +150
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 11.7.0 → 11.24.0.    │
+   │   Changelog: https://pnpm.io/v/11.24.0   │
+   │     To update, run: pnpm self-update     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+Progress: resolved 150, reused 150, downloaded 0, added 16
+✓ Lockfile passes supply-chain policies (175 entries in 2s)
+Progress: resolved 150, reused 150, downloaded 0, added 17
+Progress: resolved 150, reused 150, downloaded 0, added 88
+Progress: resolved 150, reused 150, downloaded 0, added 89
+Progress: resolved 150, reused 150, downloaded 0, added 107
+Progress: resolved 150, reused 150, downloaded 0, added 108
+Progress: resolved 150, reused 150, downloaded 0, added 150, done
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 16.9s using pnpm v11.7.0
+EXIT=0
+
+============================================================
+== attempt 1 (baseline, pre-change) - leg2-runtests
+============================================================
+leg2-runtests :: node scripts/run-tests.mjs
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t2-persona-cold-bind.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-compatible.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-complete-fatal.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-no-persona.test.ts (3 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+PASS packages\runtime\test\p5t5-admission.test.ts (5 tests)
+PASS packages\runtime\test\p5t5-cold-root.test.ts (7 tests)
+PASS packages\runtime\test\p5t5-fresh-root.test.ts (9 tests)
+PASS packages\runtime\test\p5t6-cold-member.test.ts (8 tests)
+PASS packages\runtime\test\p5t6-evict-readmit.test.ts (7 tests)
+PASS packages\runtime\test\p5t6-fresh-member.test.ts (26 tests)
+PASS packages\runtime\test\p6t1-checks.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-delegate.test.ts (15 tests)
+PASS packages\runtime\test\p6t1-explicit.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-parallel.test.ts (9 tests)
+PASS packages\runtime\test\p6t1-recovery.test.ts (15 tests)
+PASS packages\runtime\test\p6t2-actions.test.ts (30 tests)
+PASS packages\runtime\test\p6t2-addressing.test.ts (12 tests)
+PASS packages\runtime\test\p6t2-authority.test.ts (10 tests)
+PASS packages\runtime\test\p6t2-quota.test.ts (6 tests)
+PASS packages\runtime\test\p6t3-mediation.test.ts (7 tests)
+PASS packages\runtime\test\p6t3-restart.test.ts (5 tests)
+PASS packages\runtime\test\p6t3-send-delivery.test.ts (8 tests)
+PASS packages\runtime\test\p6t4-allow-once.test.ts (4 tests)
+PASS packages\runtime\test\p6t4-deny.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-external-policy.test.ts (6 tests)
+PASS packages\runtime\test\p6t4-negatives.test.ts (11 tests)
+PASS packages\runtime\test\p6t4-restart.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-stale.test.ts (5 tests)
+PASS packages\runtime\test\p6t5-authority.test.ts (12 tests)
+PASS packages\runtime\test\p6t5-intervals.test.ts (9 tests)
+PASS packages\runtime\test\p6t5-progress.test.ts (14 tests)
+PASS packages\runtime\test\p6t5-projection.test.ts (8 tests)
+PASS packages\runtime\test\p6t5-restart.test.ts (6 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\p4-01-schema-meta.test.ts (10 tests)
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\p4t2-conflicts.test.ts (25 tests)
+PASS packages\storage\test\p4t2-crash-recovery.test.ts (19 tests)
+PASS packages\storage\test\p4t2-journal.test.ts (12 tests)
+PASS packages\storage\test\p4t3-binding-service.test.ts (17 tests)
+PASS packages\storage\test\p4t3-fork-reconciliation.test.ts (12 tests)
+PASS packages\storage\test\p4t3-reconciler.test.ts (17 tests)
+PASS packages\storage\test\p4t4-adapter.test.ts (12 tests)
+PASS packages\storage\test\p4t4-one-committed-invariant.test.ts (21 tests)
+PASS packages\storage\test\p4t4-orphan-detect.test.ts (21 tests)
+PASS packages\storage\test\p4t4-per-stage-retry.test.ts (20 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\p4t5-corrupt-version.test.ts (10 tests)
+PASS packages\testkit\test\p4t5-crash-matrix.test.ts (13 tests)
+PASS packages\testkit\test\p4t5-retry-restart.test.ts (10 tests)
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 1181 passed, 0 failed, 1181 total, 3462 ms
+RESULT: PASS run-tests (0 failures)
+EXIT=0
+
+============================================================
+== attempt 1 (baseline, pre-change) - leg3..7-tsc (single verbatim log, 5 tsc legs)
+============================================================
+leg3-tsc-contracts :: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+leg4-tsc-domain :: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+leg5-tsc-storage :: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+leg6-tsc-runtime :: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+leg7-tsc-testkit :: node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json
+tsc contracts EXIT=0
+tsc domain EXIT=0
+tsc storage EXIT=0
+tsc runtime EXIT=0
+tsc testkit EXIT=0
+TSC-EXITS: contracts:0 domain:0 storage:0 runtime:0 testkit:0
+EXIT=0 (all 5 tsc legs: contracts, domain, storage, runtime, testkit)
+
+============================================================
+== attempt 2 (post-change) - leg1-install
+============================================================
+leg1-install :: pnpm install --ignore-scripts
+pnpm.exe : ERROR: Access to the registry path is denied.
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: Access t...path is denied.:String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ERROR: Access to the registry path is denied.
+Access is denied.
+The system cannot find the path specified.
+
+WARNING: The data being saved is truncated to 1024 characters.
+ERROR: Access to the registry path is denied.
+Access is denied.
+Enter the absolute path where the nvm-windows zip file is extracted/copied to:
+EXIT=0
+
+============================================================
+== attempt 2 (post-change) - leg2-runtests
+============================================================
+leg2-runtests :: node scripts/run-tests.mjs
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t2-persona-cold-bind.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-compatible.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-complete-fatal.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-no-persona.test.ts (3 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+PASS packages\runtime\test\p5t5-admission.test.ts (5 tests)
+PASS packages\runtime\test\p5t5-cold-root.test.ts (7 tests)
+PASS packages\runtime\test\p5t5-fresh-root.test.ts (9 tests)
+PASS packages\runtime\test\p5t6-cold-member.test.ts (8 tests)
+PASS packages\runtime\test\p5t6-evict-readmit.test.ts (7 tests)
+PASS packages\runtime\test\p5t6-fresh-member.test.ts (26 tests)
+PASS packages\runtime\test\p6t1-checks.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-delegate.test.ts (15 tests)
+PASS packages\runtime\test\p6t1-explicit.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-parallel.test.ts (9 tests)
+PASS packages\runtime\test\p6t1-recovery.test.ts (15 tests)
+PASS packages\runtime\test\p6t2-actions.test.ts (30 tests)
+PASS packages\runtime\test\p6t2-addressing.test.ts (12 tests)
+PASS packages\runtime\test\p6t2-authority.test.ts (10 tests)
+PASS packages\runtime\test\p6t2-quota.test.ts (6 tests)
+PASS packages\runtime\test\p6t3-mediation.test.ts (7 tests)
+PASS packages\runtime\test\p6t3-restart.test.ts (5 tests)
+PASS packages\runtime\test\p6t3-send-delivery.test.ts (8 tests)
+PASS packages\runtime\test\p6t4-allow-once.test.ts (4 tests)
+PASS packages\runtime\test\p6t4-deny.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-external-policy.test.ts (6 tests)
+PASS packages\runtime\test\p6t4-negatives.test.ts (11 tests)
+PASS packages\runtime\test\p6t4-restart.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-stale.test.ts (5 tests)
+PASS packages\runtime\test\p6t5-authority.test.ts (12 tests)
+PASS packages\runtime\test\p6t5-intervals.test.ts (9 tests)
+PASS packages\runtime\test\p6t5-progress.test.ts (14 tests)
+PASS packages\runtime\test\p6t5-projection.test.ts (8 tests)
+PASS packages\runtime\test\p6t5-restart.test.ts (6 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\p4-01-schema-meta.test.ts (10 tests)
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\p4t2-conflicts.test.ts (25 tests)
+PASS packages\storage\test\p4t2-crash-recovery.test.ts (19 tests)
+PASS packages\storage\test\p4t2-journal.test.ts (12 tests)
+PASS packages\storage\test\p4t3-binding-service.test.ts (17 tests)
+PASS packages\storage\test\p4t3-fork-reconciliation.test.ts (12 tests)
+PASS packages\storage\test\p4t3-reconciler.test.ts (17 tests)
+PASS packages\storage\test\p4t4-adapter.test.ts (12 tests)
+PASS packages\storage\test\p4t4-one-committed-invariant.test.ts (21 tests)
+PASS packages\storage\test\p4t4-orphan-detect.test.ts (21 tests)
+PASS packages\storage\test\p4t4-per-stage-retry.test.ts (20 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\p4t5-corrupt-version.test.ts (10 tests)
+PASS packages\testkit\test\p4t5-crash-matrix.test.ts (13 tests)
+PASS packages\testkit\test\p4t5-retry-restart.test.ts (10 tests)
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\p6t6-actions.test.ts (14 tests)
+PASS packages\tools\test\p6t6-bypass-scan.test.ts (10 tests)
+PASS packages\tools\test\p6t6-guard.test.ts (9 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 1214 passed, 0 failed, 1214 total, 4689 ms
+RESULT: PASS run-tests (0 failures)
+EXIT=0
+
+============================================================
+== attempt 2 (post-change) - leg3-tsc-contracts
+============================================================
+leg3-tsc-contracts :: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 2 (post-change) - leg4-tsc-domain
+============================================================
+leg4-tsc-domain :: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 2 (post-change) - leg5-tsc-storage
+============================================================
+leg5-tsc-storage :: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 2 (post-change) - leg6-tsc-runtime
+============================================================
+leg6-tsc-runtime :: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 2 (post-change) - leg7-tsc-testkit
+============================================================
+leg7-tsc-testkit :: node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg1-install
+============================================================
+leg1-install :: pnpm install --ignore-scripts
+pnpm.exe : ERROR: Access to the registry path is denied.
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: Access t...path is denied.:String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ERROR: Access to the registry path is denied.
+Access is denied.
+The system cannot find the path specified.
+
+WARNING: The data being saved is truncated to 1024 characters.
+ERROR: Access to the registry path is denied.
+Access is denied.
+Enter the absolute path where the nvm-windows zip file is extracted/copied to:
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg2-runtests
+============================================================
+leg2-runtests :: node scripts/run-tests.mjs
+PASS packages\client\test\client.test.ts (3 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-hash.test.ts (15 tests)
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (41 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t2-persona-cold-bind.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-compatible.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-complete-fatal.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-no-persona.test.ts (3 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+PASS packages\runtime\test\p5t5-admission.test.ts (5 tests)
+PASS packages\runtime\test\p5t5-cold-root.test.ts (7 tests)
+PASS packages\runtime\test\p5t5-fresh-root.test.ts (9 tests)
+PASS packages\runtime\test\p5t6-cold-member.test.ts (8 tests)
+PASS packages\runtime\test\p5t6-evict-readmit.test.ts (7 tests)
+PASS packages\runtime\test\p5t6-fresh-member.test.ts (26 tests)
+PASS packages\runtime\test\p6t1-checks.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-delegate.test.ts (15 tests)
+PASS packages\runtime\test\p6t1-explicit.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-parallel.test.ts (9 tests)
+PASS packages\runtime\test\p6t1-recovery.test.ts (15 tests)
+PASS packages\runtime\test\p6t2-actions.test.ts (30 tests)
+PASS packages\runtime\test\p6t2-addressing.test.ts (12 tests)
+PASS packages\runtime\test\p6t2-authority.test.ts (10 tests)
+PASS packages\runtime\test\p6t2-quota.test.ts (6 tests)
+PASS packages\runtime\test\p6t3-mediation.test.ts (7 tests)
+PASS packages\runtime\test\p6t3-restart.test.ts (5 tests)
+PASS packages\runtime\test\p6t3-send-delivery.test.ts (8 tests)
+PASS packages\runtime\test\p6t4-allow-once.test.ts (4 tests)
+PASS packages\runtime\test\p6t4-deny.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-external-policy.test.ts (6 tests)
+PASS packages\runtime\test\p6t4-negatives.test.ts (11 tests)
+PASS packages\runtime\test\p6t4-restart.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-stale.test.ts (5 tests)
+PASS packages\runtime\test\p6t5-authority.test.ts (12 tests)
+PASS packages\runtime\test\p6t5-intervals.test.ts (9 tests)
+PASS packages\runtime\test\p6t5-progress.test.ts (14 tests)
+PASS packages\runtime\test\p6t5-projection.test.ts (8 tests)
+PASS packages\runtime\test\p6t5-restart.test.ts (6 tests)
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\storage\test\p4-01-schema-meta.test.ts (10 tests)
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\p4t2-conflicts.test.ts (25 tests)
+PASS packages\storage\test\p4t2-crash-recovery.test.ts (19 tests)
+PASS packages\storage\test\p4t2-journal.test.ts (12 tests)
+PASS packages\storage\test\p4t3-binding-service.test.ts (17 tests)
+PASS packages\storage\test\p4t3-fork-reconciliation.test.ts (12 tests)
+PASS packages\storage\test\p4t3-reconciler.test.ts (17 tests)
+PASS packages\storage\test\p4t4-adapter.test.ts (12 tests)
+PASS packages\storage\test\p4t4-one-committed-invariant.test.ts (21 tests)
+PASS packages\storage\test\p4t4-orphan-detect.test.ts (21 tests)
+PASS packages\storage\test\p4t4-per-stage-retry.test.ts (20 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\p4t5-corrupt-version.test.ts (10 tests)
+PASS packages\testkit\test\p4t5-crash-matrix.test.ts (13 tests)
+PASS packages\testkit\test\p4t5-retry-restart.test.ts (10 tests)
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\p6t6-actions.test.ts (14 tests)
+PASS packages\tools\test\p6t6-bypass-scan.test.ts (10 tests)
+PASS packages\tools\test\p6t6-guard.test.ts (9 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 1214 passed, 0 failed, 1214 total, 4721 ms
+RESULT: PASS run-tests (0 failures)
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg3-tsc-contracts
+============================================================
+leg3-tsc-contracts :: node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg4-tsc-domain
+============================================================
+leg4-tsc-domain :: node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg5-tsc-storage
+============================================================
+leg5-tsc-storage :: node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg6-tsc-runtime
+============================================================
+leg6-tsc-runtime :: node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.json
+EXIT=0
+
+============================================================
+== attempt 3 (post-change, consecutive) - leg7-tsc-testkit
+============================================================
+leg7-tsc-testkit :: node node_modules/typescript/bin/tsc -p packages/testkit/tsconfig.json
+EXIT=0
+
+============================================================
+== harness (real-instance E2E, G6 criteria E1-E7)
+============================================================
+driver: packages/tools/harness/run.mjs (node, from worktree root; spawns DSH instance boots on 3180/3181, FILE-FD stdio)
+console log (verbatim; UTF-8 copy of the harness console capture):
+2026-08-30T20:36:24.688Z P6-T6 harness start: runStamp=p6t6-1788122184688 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6
+2026-08-30T20:36:24.689Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6
+2026-08-30T20:36:24.689Z ports: boot1=3180 boot2=3181; selected scenarios: E1,E2,E3,E4,E5,E6,E7
+2026-08-30T20:36:24.822Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-30T20:36:24.833Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T20:36:24.876Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6
+2026-08-30T20:36:24.879Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-08-30T20:36:24.880Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-08-30T20:36:24.880Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-08-30T20:36:24.881Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-08-30T20:36:24.882Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-08-30T20:36:24.882Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-08-30T20:36:24.883Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-08-30T20:36:24.884Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-08-30T20:36:24.884Z junction farm ready (shared packages/node_modules)
+2026-08-30T20:36:24.895Z mini MCP server up on 127.0.0.1:3491
+2026-08-30T20:36:24.955Z scenario E7: pass=true assertions=2 failing=[] (60ms)
+2026-08-30T20:36:24.956Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-30T20:36:26.751Z throwaway boot OK: http://127.0.0.1:3180/?token=oWxQ_kiIMWd712hbosCcnxhXo8UXnt-OFFFu0JDa9Yw
+2026-08-30T20:36:26.790Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6\p6t6-directive.json
+2026-08-30T20:36:30.019Z boot 1: ready — toolCount=10 liveSessions=3 (expected 10 tools)
+2026-08-30T20:36:31.521Z scenario E1: pass=true assertions=14 failing=[] (1501ms)
+2026-08-30T20:36:31.550Z scenario E2: pass=true assertions=3 failing=[] (28ms)
+2026-08-30T20:36:31.800Z scenario E3: pass=true assertions=6 failing=[] (249ms)
+2026-08-30T20:36:32.705Z scenario E4: pass=true assertions=5 failing=[] (905ms)
+2026-08-30T20:36:33.177Z scenario E6: pass=true assertions=6 failing=[] (470ms)
+2026-08-30T20:36:34.021Z scenario E5(boot1-writes): pass=true assertions=11 failing=[] (843ms)
+2026-08-30T20:36:34.072Z boot 1: stopped killed=true portFree=true
+2026-08-30T20:36:34.074Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p6t6\p6t6-directive.json
+2026-08-30T20:36:36.537Z boot 2: ready — toolCount=10 liveSessions=9 (expected 10 tools)
+2026-08-30T20:36:37.700Z scenario E5(boot2-restart): pass=true assertions=13 failing=[] (1162ms)
+2026-08-30T20:36:37.750Z boot 2: stopped killed=true portFree=true
+2026-08-30T20:36:37.751Z postflight: mini MCP server closed; port 3491 released=true
+2026-08-30T20:36:37.870Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-30T20:36:37.871Z postflight: test-use pristine after=true
+2026-08-30T20:36:37.872Z postflight: junction farm removed (packages/node_modules)
+2026-08-30T20:36:37.873Z P6-T6 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P6-T6\dev\agent-workflow\evidence\P6-T6\harness-output\summary.json
+
+summary.json: pass=true, failures=[] ; scenarios E1-E7 all pass=true (E5 merged: phases boot1-writes [11 asserts] + boot2-restart [13 asserts])
+rowMounted: p6t6-team-tools-boot1=true, p6t6-team-tools-boot2=true ; ports released: boot1=true boot2=true mcp=true
+stable3080: before=200 after=200 ; test-use pristine before/after (head cd5ef8148158c3a752a658978873241fdf8e2bbc, porcelain empty, diff empty)
+
+============================================================
+== verdict
+============================================================
+leg exits: attempt1 leg1-install=0 leg2-runtests=0 leg3-tsc-contracts=0 leg4-tsc-domain=0 leg5-tsc-storage=0 leg6-tsc-runtime=0 leg7-tsc-testkit=0
+leg exits: attempt2 leg1-install=0 leg2-runtests=0 leg3-tsc-contracts=0 leg4-tsc-domain=0 leg5-tsc-storage=0 leg6-tsc-runtime=0 leg7-tsc-testkit=0
+leg exits: attempt3 leg1-install=0 leg2-runtests=0 leg3-tsc-contracts=0 leg4-tsc-domain=0 leg5-tsc-storage=0 leg6-tsc-runtime=0 leg7-tsc-testkit=0
+bad legs: ''
+harness summary.pass: True
+VERDICT: PASS

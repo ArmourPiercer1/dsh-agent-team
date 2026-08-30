@@ -1,0 +1,52 @@
+{
+  "criterion": "E3",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 249,
+  "assertions": [
+    {
+      "name": "E1 produced a persistent worker with a bound child session",
+      "pass": true,
+      "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+    },
+    {
+      "name": "first follow-up executed on the existing instance",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":4},\"requestToken\":\"p6t6-e3-1\"}"
+    },
+    {
+      "name": "second follow-up executed on the SAME instance",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":false,\"sequence\":5},\"requestToken\":\"p6t6-e3-2\"}"
+    },
+    {
+      "name": "the admission sequences advance by one (monotonic per admission)",
+      "pass": true,
+      "detail": "seq1=4 seq2=5"
+    },
+    {
+      "name": "the bound child session id is UNCHANGED across follow-ups",
+      "pass": true,
+      "detail": "before=session-child-p6t6-0j3weh1176s5 after=session-child-p6t6-0j3weh1176s5"
+    },
+    {
+      "name": "no new instance was created (six members)",
+      "pass": true,
+      "detail": "6"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 2,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "w": "inst-0j3weh1176s5",
+    "wChild": "session-child-p6t6-0j3weh1176s5",
+    "sequences": [
+      4,
+      5
+    ]
+  }
+}
