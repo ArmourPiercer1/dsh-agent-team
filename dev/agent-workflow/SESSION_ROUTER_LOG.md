@@ -306,7 +306,15 @@
 - **基线**（int/P4 = master `3ccff7b`）：全量 492/492 PASS + tsc 各包绿（R15 后未变）。
 - **派发**：workflow `p4-t1-teamdomain-schema-exec`，单 worker `qiyuan-self/qwen3.8-27b`（leaf，禁子代理）；纯包工作，无端口/DSH_HOME/实例；worktree 内 pnpm install。
 - **graph**：P4-T1..T6 + G4-REVIEW 行已录（DEFINED）；P4-T1 → RUNNING（branch task/P4-T1-teamdomain-schema，base `3ccff7b`）；ready → []。
-- **结果**：（worker 返回后补记）
+- **结果**（worker `qiyuan-self/qwen3.8-27b`，canonical attempts **1/3**，SELF_VERIFIED，2 commits `b5795d9`→`4a7131a`，head `4a7131a731c358b3c5d485bc7d7634de93f84e8b`）：
+  - **交付**：TeamDomain schema v1 = 窄 typed `StorageDomainSeam`（`packages/storage/schema/seam.ts`，仅镜像 upstream 公开 surface：KvTable get/entries/keys/size/put/delete/update、Domain open/close、DomainError codes）+ 8 个 stamped store（schema_meta / team_sessions / member_instances / session_bindings / overrides / compatibility / operations / ledger）+ version policy（SUPPORTED=[1]；create-on-stamped 拒绝 `TEAM_DOMAIN_EXISTS`；open 按 canonical 顺序重验 stamps；backend 版本错配映射 `SCHEMA_VERSION_MISMATCH`；无内置 migration）+ repository 层（canonical-byte 校验、put 时 legacy 字段拒绝 `assertNoLegacyFields`（冻结 contracts factory 会静默丢未知字段）、typed conflict/NOT_OPEN 归一化）。
+  - **测试**：72 p4（8 文件 p4-01..p4-08 + p4-helpers）：open/create/read/write（8 stores）、schema mismatch 负面、per-store record validation、crash/durability（roll-forward、no rollback）、SessionEvent 独立负面（import closure、legacy vocabulary、bare specifiers、live import markers）。
+  - **Canonical 链**：attempt 1 五腿一次全绿（install / 564/564 全量 / tsc storage + domain + contracts 全 EXIT=0）。
+  - **主 Agent 独立审计（全部通过）**：head 与自报一致；worktree 干净；35 文件全部在 owned paths（越界检查为空）；独立重跑 564/564 PASS EXIT=0 + 3× tsc EXIT=0；summary.json 通读（per-leg 证据 + acceptance_evidence 完整：open/create/read/write、schema mismatch、record validation、SessionEvent 独立四类判据均带 test 文件 + count + rerun 命令）。
+- **集成**：cherry-pick -x ×2 → `8c4d8fa`/`f441d1f`，零冲突；int/P4 head `f441d1f`。整合验证（主 worktree）：`pnpm install --ignore-scripts`（无新依赖）+ 全量 **564/564 PASS EXIT=0** + storage/domain/contracts 3× tsc 全 EXIT=0。
+- **Seam 结论**：public StorageDomain surface 充足，**无 CORE_SEAM_BLOCKER**；真实 StorageDomain 绑定按计划延后 P4-T5/P5（R16 裁决记录在案）。
+- **Graph**：P4-T1 → INTEGRATED（head `4a7131a`，attempts 1）；integration_sha = `f441d1f50fb5aedac1696069f86d50a554014d67`；ready → [P4-T2, P4-T3]。
+- **下一步**：读 TaskDoc §11.5 P4-T2/T3 完整卡片 → 建 2 worktree（`.worktrees/P4-T{2,3}`，base `f441d1f`）→ workflow 2 worker 并行派发（`qiyuan-self/qwen3.8-27b`）。
 
 ## 重审记录
 
