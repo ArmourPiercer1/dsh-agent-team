@@ -1,0 +1,7 @@
+# P4-T6 attempt ledger — canonical attempts (max 3)
+
+attempt 1 | LEG1 install EXIT=0; LEG2 run-tests EXIT=1 (773 passed / 1 failed: p4t6 import/evaluation error "ReferenceError: describe is not defined" — missing `import { describe, it, expect } from 'vitest'`); chain aborted before LEG3-5 | FAILED
+attempt 2 | LEG1 EXIT=0; LEG2 run-tests EXIT=0 (783/783); LEG3 tsc storage EXIT=0; LEG4 tsc domain EXIT=0; LEG5 tsc contracts EXIT=0; CHAIN_OK — superseded: subsequent DEBUG tsc testkit leg found TS2532 (type-level, p4t6:153 index access under noUncheckedIndexedAccess) | CHAIN_OK (superseded)
+attempt 3 | LEG1 EXIT=0; LEG2 run-tests EXIT=0 (783/783); LEG3 tsc storage EXIT=0; LEG4 tsc domain EXIT=0; LEG5 tsc contracts EXIT=0; CHAIN_OK; DEBUG tsc testkit EXIT=0 | PASS (final canonical pass)
+
+debug runs (separate record, not counted): D1 scanner one-liner EXIT=0; D2 scanner one-liner EXIT=0; D3 run-tests FAIL filter EXIT=1 (diagnostic); D4 run-tests full EXIT=0; D5 tsc testkit EXIT=2 (diagnostic); D6 tsc testkit EXIT=0; D7 run-tests full log capture EXIT=0.

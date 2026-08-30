@@ -1,0 +1,71 @@
+# P4-T6 run log — TeamDomain independent audit (G4)
+
+Worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P4-T6
+Branch: task/P4-T6-teamdomain-audit
+Base: 4a61394296f1c4037fbd2aa7fba7c07dc11e6e69 (int/P4, "R23 - P4-T5 integrated")
+Log written: 2026-08-30 13:54 +08:00
+Runner discipline: canonical chain = pnpm install --ignore-scripts -> node scripts/run-tests.mjs -> tsc storage -> tsc domain -> tsc contracts (each EXIT=0 required). Debug runs are recorded separately and do not count against the 3 canonical attempts. No ports, no DSH_HOME, no live DSH instance, no subagents.
+
+## Runs (chronological)
+
+### D1 — DEBUG scanner smoke run (before test file existed)
+- cmd: node -e "import('file:///.../session-event-scan.mjs').then(...)" (one-liner, file:// URL)
+- result: EXIT=0
+- filesScanned=190; packageDirs=9 [client contracts domain legacy remote runtime storage testkit tools]; excludedSelfFiles=1 (only the .mjs — the p4t6 test did not exist yet)
+- summary={"eventString":15,"payloadSymbol":0,"declarationMerge":0,"total":15}
+- hits: exactly the 15-entry frozen quarantine table (contracts/src/legacy-vocabulary.ts L7 x3, L8 x2, L51-L55 x5; contracts/test/negative.test.ts L119-L123 x5). See g4-report.md scan table.
+
+### (file written) packages/testkit/fault-injection/session-event-scan.d.mts
+
+### (file written) packages/testkit/test/p4t6-session-event-scan.test.ts (first version, 10 tests)
+
+### D2 — DEBUG scanner re-run (after test file existed)
+- cmd: node -e scanner one-liner
+- result: EXIT=0
+- filesScanned=190 (unchanged: the test file is a self-exclusion); excludedSelfFiles=2 exactly [packages/testkit/fault-injection/session-event-scan.mjs, packages/testkit/test/p4t6-session-event-scan.test.ts]; summary={"eventString":15,"payloadSymbol":0,"declarationMerge":0,"total":15}; allHitsQuarantine=true.
+
+## CANONICAL ATTEMPT 1 — FAILED at LEG2
+- LEG1 pnpm install --ignore-scripts: EXIT=0 (23.2s, 150 packages reused from store, lockfile up to date)
+- LEG2 node scripts/run-tests.mjs: EXIT=1 — "773 passed, 1 failed, 774 total"
+  - failure: packages/testkit/test/p4t6-session-event-scan.test.ts — import/evaluation error: ReferenceError: describe is not defined (test file omitted the explicit `import { describe, it, expect } from 'vitest'` shim import; the plain-node runner provides no globals)
+- LEG3/LEG4/LEG5: not run (chain abort)
+
+### D3 — DEBUG diagnostic re-run of run-tests (FAIL lines filtered)
+- result: EXIT=1; confirmed the single failure is the p4t6 import/evaluation error (no other suite affected; all 773 pre-existing tests still PASS)
+- fix applied: added `import { describe, it, expect } from 'vitest'` to the p4t6 test (shim surface pattern per p4t5-crash-matrix.test.ts:29)
+
+### D4 — DEBUG full re-run of run-tests (post fix)
+- result: EXIT=0 — "783 passed, 0 failed, 783 total"; PASS packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests)
+
+## CANONICAL ATTEMPT 2 — CHAIN_OK (superseded by DEBUG type error, see D5)
+- LEG1 pnpm install --ignore-scripts: EXIT=0 (59ms, already up to date)
+- LEG2 node scripts/run-tests.mjs: EXIT=0 — "783 passed, 0 failed, 783 total"
+- LEG3 tsc -p packages/storage/tsconfig.json: EXIT=0
+- LEG4 tsc -p packages/domain/tsconfig.json: EXIT=0
+- LEG5 tsc -p packages/contracts/tsconfig.json: EXIT=0
+- CHAIN_OK (5/5 legs) — runtime pass
+
+### D5 — DEBUG leg: tsc -p packages/testkit/tsconfig.json (the extra required debug leg)
+- result: EXIT=2 — packages/testkit/test/p4t6-session-event-scan.test.ts(153,12): error TS2532: Object is possibly 'undefined' (merges[0] index access under noUncheckedIndexedAccess inherited from packages/testkit/tsconfig.build.json)
+- fix applied: `merges[0].line` -> `merges[0]?.line` (erasable-only TS; assertion semantics unchanged)
+
+### D6 — DEBUG leg retry: tsc -p packages/testkit/tsconfig.json
+- result: EXIT=0
+
+## CANONICAL ATTEMPT 3 — CHAIN_OK = FINAL CANONICAL PASS
+- LEG1 pnpm install --ignore-scripts: EXIT=0 (48ms, already up to date)
+- LEG2 node scripts/run-tests.mjs: EXIT=0 — "783 passed, 0 failed, 783 total", "RESULT: PASS run-tests (0 failures)"
+  - p4t6-session-event-scan.test.ts (10 tests) PASS
+  - required suites all PASS (counts in g4-report.md scan/suite table)
+- LEG3 tsc -p packages/storage/tsconfig.json: EXIT=0
+- LEG4 tsc -p packages/domain/tsconfig.json: EXIT=0
+- LEG5 tsc -p packages/contracts/tsconfig.json: EXIT=0
+- CHAIN_OK (5/5 legs)
+
+### D7 — DEBUG full-run log capture (for citation)
+- cmd: node scripts/run-tests.mjs > dev/agent-workflow/evidence/P4-T6/run-tests-full.log
+- result: EXIT=0 — "783 passed, 0 failed, 783 total"
+- per-file counts for all cited suites extracted from this log (see g4-report.md suite table)
+
+## Debug runs tally (not counted against canonical 3)
+D1 scanner one-liner (EXIT=0), D2 scanner one-liner (EXIT=0), D3 run-tests FAIL filter (EXIT=1, diagnostic), D4 run-tests full (EXIT=0), D5 tsc testkit (EXIT=2, diagnostic), D6 tsc testkit (EXIT=0), D7 run-tests full log capture (EXIT=0).

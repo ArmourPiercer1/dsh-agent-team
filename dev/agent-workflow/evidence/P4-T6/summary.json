@@ -1,0 +1,69 @@
+{
+  "task_id": "P4-T6",
+  "title": "P4 E4: Team-mode vNext Phase P4 - INDEPENDENT TeamDomain audit + G4 report (no T1-T5 code touched; owned additions only): frozen Team SessionEvent denylist scanner (session-event-scan.mjs, node:fs/node:path only + token-free adjacent session-event-scan.d.mts type surface) with exact/word-precision matching, deterministic re-runnable tree scan, two-file self-exclusion contract; committed p4t6-session-event-scan.test.ts (10 tests: coverage, exclusion contract, zero violations outside the frozen 2-file quarantine, 0 payload symbols, 0 declaration merges, 15-hit quarantine adjudication pinned exactly, declaration-merge + emitter positive controls, near-miss negative control, 8 required-suite citations); G4 report: 7/7 criteria PASS (1/2/3/4/6 direct, 5/7 to the extent P4 evidence exists), no defects found in T1-T5",
+  "branch": "task/P4-T6-teamdomain-audit",
+  "base_sha": "4a61394296f1c4037fbd2aa7fba7c07dc11e6e69",
+  "head_sha": "d3bf92c1f475e4d46f38476217509fdc37d0dae1",
+  "head_sha_note": "code commit (scanner + type surface + committed test; branch head at summary-writing time); the evidence commit is stacked directly on top of it on the same task branch",
+  "status": "SELF_VERIFIED",
+  "canonical_attempts_used": 3,
+  "canonical_attempts_max": 3,
+  "canonical_chain": [
+    "pnpm install --ignore-scripts",
+    "node scripts/run-tests.mjs",
+    "node node_modules/typescript/bin/tsc -p packages/storage/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+    "node node_modules/typescript/bin/tsc -p packages/contracts/tsconfig.json"
+  ],
+  "canonical_result": {
+    "attempt_1": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, 23.2s, 150 packages reused from store, lockfile up to date)",
+      "leg_2_run_tests_all_packages": "FAIL (EXIT=1, 773 passed / 1 failed / 774 total) - p4t6-session-event-scan.test.ts import/evaluation error: ReferenceError: describe is not defined (test file omitted the explicit `import { describe, it, expect } from 'vitest'` shim import; plain-node runner provides no globals). Defect was in THIS task's new file; all 773 pre-existing tests passed. Chain aborted before LEG3-5.",
+      "result": "FAILED at LEG2"
+    },
+    "attempt_2": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, 59ms, already up to date)",
+      "leg_2_run_tests_all_packages": "PASS (EXIT=0, 783 passed / 0 failed / 783 total, ~680ms; 773 baseline + 10 p4t6)",
+      "leg_3_tsc_storage": "PASS (EXIT=0)",
+      "leg_4_tsc_domain": "PASS (EXIT=0)",
+      "leg_5_tsc_contracts": "PASS (EXIT=0)",
+      "result": "CHAIN_OK (5/5 legs) - runtime pass; superseded because the required DEBUG leg (tsc testkit) then found TS2532 in p4t6:153 (index access under noUncheckedIndexedAccess)"
+    },
+    "attempt_3": {
+      "leg_1_pnpm_install": "PASS (EXIT=0, 48ms, already up to date)",
+      "leg_2_run_tests_all_packages": "PASS (EXIT=0, 783 passed / 0 failed / 783 total, ~685ms; 'RESULT: PASS run-tests (0 failures)'; 773 baseline + 10 p4t6)",
+      "leg_3_tsc_storage": "PASS (EXIT=0)",
+      "leg_4_tsc_domain": "PASS (EXIT=0)",
+      "leg_5_tsc_contracts": "PASS (EXIT=0)",
+      "debug_leg_tsc_testkit": "PASS (EXIT=0, recorded separately, not a canonical leg)",
+      "result": "PASS (final canonical pass, 5/5 legs + debug tsc testkit)"
+    }
+  },
+  "test_counts": "p4t6:10/full:773+10 (=783 passed, 0 failed)",
+  "g4": {
+    "verdict": "PASS",
+    "criteria_total": 7,
+    "criteria_pass": 7,
+    "criteria_fail": 0,
+    "blocking_invariants": 0,
+    "criteria": [
+      { "id": 1, "criterion": "TeamDomain is sole Team control-plane authority", "verdict": "PASS", "mode": "direct" },
+      { "id": 2, "criterion": "no Team SessionEvent persistence", "verdict": "PASS", "mode": "direct" },
+      { "id": 3, "criterion": "crash matrix converges", "verdict": "PASS", "mode": "direct" },
+      { "id": 4, "criterion": "retries idempotent", "verdict": "PASS", "mode": "direct" },
+      { "id": 5, "criterion": "SessionBinding integrity checks", "verdict": "PASS", "mode": "to the extent P4 evidence exists" },
+      { "id": 6, "criterion": "schema version mismatch fails loudly", "verdict": "PASS", "mode": "direct" },
+      { "id": 7, "criterion": "recovery tests work after process restart", "verdict": "PASS", "mode": "to the extent P4 evidence exists (seam-level process-restart equivalence; real OS process + real StorageDomain binding = P5 runtime)" }
+    ],
+    "final_call": "G4-REVIEW"
+  },
+  "acceptance_evidence": [
+    "dev/agent-workflow/evidence/P4-T6/g4-report.md - per-criterion PASS with file:line + executed suites + counts; denylist scan table (190 files, 15 quarantine hits, 0 payload, 0 merge); restart-equivalence note; scope note",
+    "dev/agent-workflow/evidence/P4-T6/run-log.txt - 7 debug runs + 3 canonical attempts with per-leg exits",
+    "dev/agent-workflow/evidence/P4-T6/attempt-ledger.txt - one line per canonical attempt",
+    "dev/agent-workflow/evidence/P4-T6/run-tests-full.log - verbatim full-run capture (783/783) with per-file counts",
+    "packages/testkit/fault-injection/session-event-scan.mjs + session-event-scan.d.mts + packages/testkit/test/p4t6-session-event-scan.test.ts - committed scanner + 10-test pinning suite (re-runnable gate evidence)"
+  ],
+  "notes": "Independence held: P4-T1..T5 audited read-only, zero existing files modified (3 new files, 592 insertions). No defects found in T1-T5 (no denylist vocabulary outside the frozen 2-file quarantine, no double-effect paths, no migrations, no silent version handling, no handle leaks, stages derived not persisted, zero journal deletes). Provenance manifest is a legacy-fork diff without frozen-doc hashes, so doc-hash cross-check vs the manifest is N/A; frozen docs read directly by absolute path. Canonical attempts 1 and 2 failed only on defects in this task's own new test file (missing vitest shim import; TS2532 index access), both fixed without touching any pre-existing file.",
+  "toolchain": "node v24.20.0 (plain-node runner scripts/run-tests.mjs with native TS type-stripping + vitest shim, frozen matcher surface toBe/toEqual/toBeGreaterThan/toThrow(.not); .js->.ts sibling hooks; no vitest CLI/tsx/esbuild/vite/piped-stdio child spawns), typescript 6.0.3 (tsc per package, erasable-only TS, NodeNext + verbatimModuleSyntax), pnpm 11.7.0 (install --ignore-scripts only; no pnpm run/exec); zero new dependencies; pnpm-lock.yaml untouched; node:fs/node:path confined to packages/testkit/fault-injection/session-event-scan.mjs (the ruling R22 .mjs exception) with adjacent token-free session-event-scan.d.mts"
+}
