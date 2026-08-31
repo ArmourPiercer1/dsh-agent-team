@@ -825,6 +825,26 @@
 - **证据归档 + 环境**：3 reviewer worktree → 主仓 `dev/agent-workflow/evidence/G8-REVIEW/reviewer-{1,2,3}/`（30+22+24 文件，含 harness/ 与 chain/e2e/boundary/dependency 日志；harness/node_modules 未归档，可 `pnpm install --ignore-scripts` 重建）；worktrees G8-R1/R2/R3 移除（git 注册 + 磁盘）；`references/.dsh-test-g8.lock` 无残留；ports 3181–3183 free；:3080=200；test-use pristine @ `cd5ef814`。
 - **下一步**：R60 — G8-S1 brief → commit → 派发（workflow，qiyuan-self/qwen3.8-27b）→ 主 Agent 独立审计 → cherry-pick -x 入 int/P8 → int 链 → **G8 round-2 完整对抗式重审**（3 fresh blind reviewers；brief 不得含任何上一轮意见/裁决/补充要求，§3.3.3；owned-glob 枚举修正；head = 新 int tip）→ 3/3 ∈ {通过, 投机通过} → gate close（merge master→int、ff master、**push #8**）→ P9 kickoff。
 
+## R60 — G8-S1 attempt 1（S1-B DONE / S1-A BLOCKER:SPEC）→ 主 Agent 磁盘核验 + 裁决（S1-A 修订为 lag-tolerant 设计）→ attempt 2 派发（2026-08-31，主 Agent）
+
+- **Attempt 1 结果（worker self-report + 主 Agent 磁盘核验，worktree `.worktrees/G8-S1` @ `cdd451c`，clean）**：
+  - **S1-B DONE**（code commit `a5b418a`）：diff vs base = 恰好 4 个 owned 文件（`packages/remote/src/handlers/{member,ports}.ts` + `packages/remote/test/{p8t3-helpers,p8t3-round-trip.test}.ts`，+213/-12）；canonical rule：fact-recorded/work-admitted/lifecycle-changed → `effect.sequence`；member-activated → `effect.ledgerSequence`（缺失则 null）；none/config-inspected/members-listed/templates-listed/unknown → null；wire schema 不变。
+  - **S1-A BLOCKER:SPEC**：storage-primitive gap — 现有公开 seam 无任何原语可使跨表 state 写 + `team_sessions.generation` 自增原子（主 Agent 独立核验：upstream `DomainImpl` = 每 domain 一条 write chain、**每个单写各自为 durable boundary**，无跨写事务；`LedgerRepository.allocateSequence()` 为唯一 fact 汇聚点）；worker 依 brief §4.2 req-2 escape clause 停报，未发明新表/两阶段绕行（正确行为）。design note 含完整 14-writer 枚举（W1-W14：12 in-tree + W7/W8 为 P9/P10 host-wired 未来写者；W-T template 行来自绑定蓝图快照 invariant 10，无独立写者）+ commit-point 分析 + crash-window 论证。
+  - 证据链：chain 1758/1758 + tsc×6 exit 0（run3 = committed clean tree，proof header 合规：pwsh-cwd/toplevel/HEAD/ran-on 全对）；evidence commit `cdd451c`（9 文件，仅 evidence 目录）。p4t6 482→482（pin 维持）。frozen-region diff = ONLY-owned。
+- **主 Agent 裁决（SPEC 类，对冻结文档，§3.3.4 权限）**：BLOCKER 根因 = 本 brief §4.2 req-2（“same commit/transaction” 严格原子）系**主 Agent 过约**——冻结文档对 stamp 的 crash-window 原子性**只字未提**（DevPlan §21.4 仅要求 whole-projection generation + client 拒 stale；TaskDoc P8-T1 仅 “generation monotonic”；Architecture B 仅列 “version/generation” 持久化字段）。冻结文档未要求的实现约束不得升格为门禁阻塞。严格原子在 CORE PATCH BUDGET = 0 下确不可行（需 upstream 新公开原语 = 预算违规，或改 frozen v1 OperationRecord/TeamSessionRecord = CONTRACT_CHANGE_REQUEST），故**修订 S1-A 为 lag-tolerant 设计**（记录为对冻结文档的架构决定）：
+  - **S1-A'（attempt 2 决策框架）**：stamp = `team_sessions.generation` 计数器（冻结列；seed 1 冻结行为；P8-T2 read port 原样读列、不动）。
+    - **Hook A（主）**：TeamDomain ledger fact 汇聚点——每个**新 fact 经 `repositories.ledger` durable put 之后**，以单行 durable put 对 team_sessions 推进 +1（全部 fact 写者 W10/W11/W12/W13/W14 及未来 W7 之 evidence fact、W8 之 appendLedger（若经该 repository）均过此点）。**禁止在 `allocateSequence`（fact put 之前）推进**——那构成 stamp-first（re-pull 会以新 stamp 应用旧 body 再被 duplicate 锁死，worker 已论证）。
+    - **Hook B**：compatibility commit 点（`probe.ts` `replaceState` = delete+put，**无 ledger fact**，主 Agent 独立核验 probe.ts 全文无 ledger 调用）——durable put 后 +1（warning ACK 走同一 replaceState，一并覆盖）。
+    - **排序不变量**：state 写 durable 先于 stamp put；永不 stamp-first。
+    - **Crash window（v1 限定，记录）**：fact put 与 stamp put 之间崩溃 → stamp 恰好 lag 1 → re-pull 同 stamp → 冻结 guard 判 `duplicate`（state untouched，冻结语义保持）→ client 保持旧 body 至下一次 mutation（有界、自愈、仅跨崩溃）。此为有损但冻结准则全满足的 v1 一致性模型（单调 + 跨崩溃窗口最终一致）。
+    - **幂等**：P4 ledger duplicate-prevention（journal re-drive 不重复 append）→ 不双推；非 journal 写者（W9 等）一次性无 re-drive → 不双推。
+    - **并发**：worker 须核验 team_sessions 与 ledger 是否同一 upstream Domain（单 write chain → get-then-put 序列化安全）；若不同 domain 须以既有原语保证 stamp put 顺序并论证；不可解则再次 BLOCKER（不得引入新原语/新表/新冻结字段）。
+    - **未来写者义务（转 P9/P10 brief 记录）**：W7（lifecycle：state first, fact second）经 Hook A 自动覆盖；W8（MutationStore.appendLedger）须经 repository 方被覆盖；W5（独立 member put）须路由至 fact 或加 hook——P9/P10 kickoff 时核对，无 card 拥有则升 SPEC gap。
+    - **冻结面不变**：contracts 不改（不加字段）、P8 各冻结 surface 不改、upstream 不改。
+  - **Hook 放置**：优先单一 choke point（ledger repository 或其 TeamDomain 级 commit 包装）；若在通用 repository 内加 team_sessions 耦合不可接受，则置于所有 fact 写者共享的 TeamDomain 级路径——选择记入 design note。
+- **G8-S1 attempt 2 派发**：workflow 新 leaf（qiyuan-self/qwen3.8-27b；workflow 子代理不可续接 → 全新 leaf 携裁决文本），同一 branch/worktree 自 `cdd451c` 续作（S1-B 不重做不改）；scope = S1-A' 实现 + §7 必须测试（positive: mutation→stamp 推进→新 client re-pull verdict apply 且 body = 最新 durable state；negative: 单调/不双推/seed=1/非 state 写不推）+ p4t6 pin 维护 + 证据；attempt ledger G8-S1 = 2/3；若再 BLOCKER → attempt 3；attempt 3 仍败 → 按 §5 转阻塞报用户。
+- **下一步**：R61 — attempt 2 结果 → 主 Agent 审计（S1-A' 合规 + S1-B 复核 + 冻结区 diff）→ cherry-pick -x 入 int/P8 → int 链 → G8 round-2 完整 blind 重审。
+
 ## 重审记录
 
 （空）
