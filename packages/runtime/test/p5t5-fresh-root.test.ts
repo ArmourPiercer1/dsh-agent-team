@@ -113,10 +113,14 @@ describe('P5-T5 S1: fresh Team root (durable create + fresh install + admission)
     expect(s1.repoTeamSessionGeneration).toBe(1)
     expect(s1.repoBindingKind).toBe('team-root')
 
-    // Write ordering: the record is committed BEFORE the binding.
+    // Write ordering: the record is committed BEFORE the binding, the
+    // binding BEFORE the P8-S2 LeaderInstance mint (crash-safe order;
+    // P8-S2 defect-encoding update: the pre-mint assertion pinned the
+    // two-write fresh path).
     expect(s1.writeCalls).toEqual([
       { method: 'putTeamSession' },
       { method: 'putSessionBinding' },
+      { method: 'putMemberInstance' },
     ])
 
     // The agent-setup step: all three slots installed in fixed order.
@@ -193,7 +197,10 @@ describe('P5-T5 S1 conflicts', () => {
       expect(s3Error.code).toBe(ROOT_BINDING_ERROR_CODES.ROOT_BINDING_TEAM_SESSION_CONFLICT)
     }
     // No new effect: the durable state and the residency are untouched.
-    expect(s3.writeCalls.length).toBe(2)
+    // P8-S2 defect-encoding update: the successful first bind now mints
+    // the LeaderInstance record (third write); the failed re-run writes
+    // nothing.
+    expect(s3.writeCalls.length).toBe(3)
     expect(s3.installSlots.length).toBe(3)
   })
 })
@@ -216,7 +223,8 @@ describe('P5-T5 S1 conflicts (cont.)', () => {
     if (isRootBindingError(s4Error)) {
       expect(s4Error.code).toBe(ROOT_BINDING_ERROR_CODES.ROOT_BINDING_TEAM_SESSION_CONFLICT)
     }
-    expect(s4.writeCalls.length).toBe(2)
+    // P8-S2 defect-encoding update: 2 → 3 (the first bind's leader mint).
+    expect(s4.writeCalls.length).toBe(3)
   })
 })
 
@@ -286,6 +294,9 @@ try {
     putTeamSession: (input) => s7World.writes.putTeamSession(input),
     putSessionBinding: () =>
       Promise.reject(new Error('SEAM_FAILURE: simulated durable write failure')),
+    // P8-S2: the mint is never reached (the binding put fails first);
+    // the stub delegates so the fake stays a faithful port.
+    putMemberInstance: (input) => s7World.writes.putMemberInstance(input),
   }
   s7Error = await captureError(() =>
     bindFreshTeamRoot({ ...s7World.ports, writes: failingWrites }, freshInput()),

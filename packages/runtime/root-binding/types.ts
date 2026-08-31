@@ -36,10 +36,12 @@
  * The two entry points map 1:1 onto the binder's two root paths:
  *
  * - {@link bindFreshTeamRoot} (`./fresh-root.js`) — the first-time
- *   binding of a root session: persist the TeamSession record and the
- *   `team-root` session binding (idempotent re-runs skip the writes),
- *   then run the binder's fresh-root path (all three overlay slots
- *   installed + the admission decision).
+ *   binding of a root session: persist the TeamSession record, the
+ *   `team-root` session binding, and the durable LeaderInstance mint
+ *   (P8-S2, Architecture §9.2: the fresh root yields the honest v2
+ *   leader row; idempotent re-runs skip every write), then run the
+ *   binder's fresh-root path (all three overlay slots installed + the
+ *   admission decision).
  * - {@link rehydrateColdTeamRoot} (`./cold-root.js`) — the process-
  *   restart path: restore the root scope from the durable TeamDomain
  *   onto the (re)created agent residency; an ordinary session is a
@@ -63,11 +65,16 @@ import type {
 } from '../agent-setup/binder/index.js'
 import type {
   BlueprintSnapshotRef,
+  LeaderInstanceRecordDto,
+  LeaderInstanceRecordInput,
+  MemberInstanceRecordDto,
+  MemberInstanceRecordInput,
   RootSessionId,
   SessionBindingDto,
   TeamSessionRecordDto,
   TeamSessionRecordInput,
 } from '../../contracts/src/index.js'
+import type { BlueprintCatalog } from '../../domain/blueprint/src/index.js'
 
 /**
  * The durable TeamDomain WRITE surface — the fresh-root path's only
@@ -75,11 +82,12 @@ import type {
  * {@link createTeamDomainWritePort} (`./write-port.js`) over the P4
  * `TeamDomain` repositories; unit tests may inject a fake.
  *
- * Failure of either method aborts the fresh-root binding fail-closed:
+ * Failure of any method aborts the fresh-root binding fail-closed:
  * the error propagates to the caller, the binder is NOT run, and the
  * durable state remains at whatever the writes committed (the write
- * ORDERING of the fresh path — record before binding — makes a crash
- * between the two recoverable by a re-run; see {@link bindFreshTeamRoot}).
+ * ORDERING of the fresh path — record, then binding, then the leader
+ * mint — makes a crash between any of them recoverable by a re-run;
+ * see {@link bindFreshTeamRoot}).
  */
 export interface TeamDomainWritePort {
   /**
@@ -96,6 +104,21 @@ export interface TeamDomainWritePort {
    * @returns the frozen stored row.
    */
   putSessionBinding(binding: SessionBindingDto): Promise<SessionBindingDto>
+  /**
+   * Durably put a MemberInstance record, keyed by the member identity
+   * `(rootSessionId, instanceId)`. Fresh-root path only (P8-S2): the
+   * durable LeaderInstance mint (Architecture §9.2, invariants 14/15).
+   * @param input - the contracts input; the union admits the v1 member
+   *   input and the v2 leader input (the contracts factory branches on
+   *   the shape and mints the matching record — never a default).
+   * @returns the frozen stamped record: the v2 leader record for a
+   *   structurally leader input (no `childSessionId`/`lifecycle` keys),
+   *   the v1 record otherwise (the documented contracts type-lie: the
+   *   declared return covers both shapes).
+   */
+  putMemberInstance(
+    input: MemberInstanceRecordInput | LeaderInstanceRecordInput,
+  ): Promise<MemberInstanceRecordDto | LeaderInstanceRecordDto>
 }
 
 /**
@@ -111,6 +134,15 @@ export interface RootBindingPorts {
   readonly teamDomain: TeamDomainReadHandle
   /** The durable write surface (fresh-root path only). */
   readonly writes: TeamDomainWritePort
+  /**
+   * The Blueprint catalog the fresh path resolves the bound snapshot
+   * against for the durable LeaderInstance mint (P8-S2, invariant 14).
+   * Absent = the fresh path fails closed with
+   * `ROOT_BINDING_LEADER_MINT_FAILED` when the leader row must be minted
+   * (an idempotent re-run with the row already present never touches
+   * the catalog — the mint is skipped).
+   */
+  readonly blueprintCatalog?: BlueprintCatalog
   /**
    * The agent-setup surface — the only contact point to the agent
    * runtime (ruling R28 mock-first; the real DSH public seam in the
@@ -171,6 +203,15 @@ export interface RootBindingDurableState {
   readonly teamSession: TeamSessionRecordDto
   /** The durable `team-root` session binding row. */
   readonly binding: SessionBindingDto
+  /**
+   * The durable row at the leader identity (`inst-leader`) observed
+   * after the operation (P8-S2). A fresh mint is the honest v2
+   * LeaderInstance record (no `childSessionId`/`lifecycle` keys); a
+   * pre-existing legacy v1 hack row is reported as stored (the freeze
+   * rule never converts stored rows). ABSENT when no row exists at the
+   * leader identity (e.g. the cold path over a world that never minted).
+   */
+  readonly leaderRow?: MemberInstanceRecordDto | LeaderInstanceRecordDto
   /**
    * `true` when THIS operation performed the durable writes (fresh
    * create); `false` for an idempotent re-run and for the cold path

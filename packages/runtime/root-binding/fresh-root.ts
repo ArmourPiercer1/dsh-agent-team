@@ -23,11 +23,17 @@
  * 4. `team-root` session binding — durably put when absent (step 2
  *    guarantees kind consistency; the repository re-validates the DTO
  *    and enforces key uniqueness).
- * 5. The binder's fresh-root path (P5-T1) — all three overlay slots
+ * 5. LeaderInstance mint (P8-S2, Architecture §9.2 / invariants 14/15) —
+ *    the durable leader row (the honest v2 shape: no childSessionId, no
+ *    lifecycle keys) is put only when absent (an idempotent re-run
+ *    never writes); it requires the injected blueprint catalog — an
+ *    absent catalog or an unresolvable bound blueprint is
+ *    `ROOT_BINDING_LEADER_MINT_FAILED` (the mint is never defaulted).
+ * 6. The binder's fresh-root path (P5-T1) — all three overlay slots
  *    installed in `OVERLAY_SLOT_ORDER` + the admission decision, on the
  *    injected `TeamAgentSetupSurface`. Any binder failure (missing
  *    record, overlay fault, …) propagates: the durable state of steps
- *    3–4 is kept BY DESIGN (DevPlan §18.5: durable commit + lost
+ *    3–5 is kept BY DESIGN (DevPlan §18.5: durable commit + lost
  *    ephemeral residency is exactly the state the COLD path recovers).
  *
  * Idempotency: a re-run on a world where the session is already bound
@@ -45,11 +51,23 @@ import {
   TeamAgentBinder,
   defaultAdmissionGuard,
 } from '../agent-setup/binder/index.js'
+import {
+  LEADER_INSTANCE_ID,
+} from '../../contracts/src/index.js'
 import type {
+  LeaderInstanceRecordDto,
+  LeaderInstanceRecordInput,
+  MemberInstanceRecordDto,
   SessionBindingDto,
   TeamSessionRecordDto,
   TeamSessionRecordInput,
 } from '../../contracts/src/index.js'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+import {
+  ACTIVATION_ERROR_CODES,
+  isActivationError,
+  resolveBoundBlueprint,
+} from '../activation/index.js'
 import {
   ROOT_BINDING_ERROR_CODES,
   RootBindingError,
@@ -96,7 +114,9 @@ function sameBlueprintRef(
  *   the binder's fresh-root bind result (admission decision included).
  * @throws {@link RootBindingError} (`ROOT_BINDING_INVALID_INPUT`,
  *   `ROOT_BINDING_SESSION_KIND_CONFLICT`, `ROOT_BINDING_TEAM_SESSION_CONFLICT`)
- *   before any effect; a repository/seam write error or a binder error
+ *   before any effect; `ROOT_BINDING_LEADER_MINT_FAILED` after the
+ *   record + binding commits (the mint is never defaulted); a
+ *   repository/seam write error or a binder error
  *   after the durable commit (fail-closed; see module docs).
  */
 export async function bindFreshTeamRoot(
@@ -182,7 +202,57 @@ export async function bindFreshTeamRoot(
     bindingRow = binding
   }
 
-  // Step 5 — the binder's fresh-root path (the agent-setup step): the
+  // Step 5 — the durable LeaderInstance mint (P8-S2, Architecture §9.2,
+  // invariants 14/15): a fresh root yields the Leader's honest v2 record
+  // (no childSessionId, no lifecycle keys — the Leader IS the Root Agent
+  // + the Root Session). Idempotent: the mint runs only when the row is
+  // absent, so an idempotent re-run performs ZERO durable writes.
+  // Crash-safe ordering: after the record + binding, so a crash before
+  // the mint leaves a root a re-run completes; the C3 caller resolution
+  // needs no row at all (the durable Root/Team identity is authoritative).
+  const existingLeaderRow = ports.teamDomain.getMemberInstance(sessionId, LEADER_INSTANCE_ID)
+  let leaderRow: MemberInstanceRecordDto | LeaderInstanceRecordDto | undefined
+  if (existingLeaderRow !== undefined) {
+    leaderRow = existingLeaderRow
+  } else {
+    const catalog = ports.blueprintCatalog
+    if (catalog === undefined) {
+      throw new RootBindingError(
+        ROOT_BINDING_ERROR_CODES.ROOT_BINDING_LEADER_MINT_FAILED,
+        `fresh root binding of session '${sessionId}' cannot mint the LeaderInstance record: the blueprint catalog is absent (the mint is never defaulted)`,
+        { sessionId, instanceId: LEADER_INSTANCE_ID, cause: 'catalog-absent' },
+      )
+    }
+    let blueprint: TeamBlueprint
+    try {
+      blueprint = resolveBoundBlueprint(catalog, teamSession).blueprint
+    } catch (error) {
+      if (
+        isActivationError(error) &&
+        (error.code === ACTIVATION_ERROR_CODES.BLUEPRINT_UNRESOLVED ||
+          error.code === ACTIVATION_ERROR_CODES.BLUEPRINT_HASH_MISMATCH)
+      ) {
+        throw new RootBindingError(
+          ROOT_BINDING_ERROR_CODES.ROOT_BINDING_LEADER_MINT_FAILED,
+          `fresh root binding of session '${sessionId}' cannot mint the LeaderInstance record: the bound blueprint is unusable (${error.code})`,
+          { sessionId, instanceId: LEADER_INSTANCE_ID, cause: error.code },
+        )
+      }
+      throw error
+    }
+    const leaderInput: LeaderInstanceRecordInput = {
+      rootSessionId: input.rootSessionId,
+      instanceId: LEADER_INSTANCE_ID,
+      templateId: blueprint.leader.templateId,
+      label: blueprint.leader.displayName ?? String(blueprint.leader.templateId),
+      createdAt: (ports.now ?? defaultNow)(),
+      activityVersion: 1,
+    }
+    leaderRow = await ports.writes.putMemberInstance(leaderInput)
+    wrote = true
+  }
+
+  // Step 6 — the binder's fresh-root path (the agent-setup step): the
   // durable state above is now authoritative (invariant 41); any binder
   // failure propagates fail-closed and the durable commit stands
   // (DevPlan §18.5: the cold path is the recovery for that crash window).
@@ -194,6 +264,11 @@ export async function bindFreshTeamRoot(
   })
   const bind = binder.bindFreshRoot(sessionId)
 
-  const durable: RootBindingDurableState = { teamSession, binding: bindingRow, wrote }
+  const durable: RootBindingDurableState = {
+    teamSession,
+    binding: bindingRow,
+    wrote,
+    ...(leaderRow !== undefined ? { leaderRow } : {}),
+  }
   return { path: 'fresh-root', durable, bind }
 }

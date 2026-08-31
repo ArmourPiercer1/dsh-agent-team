@@ -4,9 +4,10 @@
  * surface `packages/runtime/lifecycle/**`).
  *
  * - `types.ts`   — the port / request / result / step vocabulary;
- * - `errors.ts`  — the closed runtime error channel (six codes);
- * - `resolve.ts` — the shared fail-closed prologue (identity → durable
- *   read → dry-run legality) + the single durable commit path;
+ * - `errors.ts`  — the closed runtime error channel (seven codes);
+ * - `resolve.ts` — the shared fail-closed prologue (identity →
+ *   LeaderInstance guard → durable read → dry-run legality) + the single
+ *   durable commit path;
  * - `quiesce.ts` — the shared five-step quiescence procedure (DevPlan
  *   §20.3 steps 1–5, shared by Archive and Dispose);
  * - `archive.ts` — `archiveMember` (RUNNING ⇒ settle-then-archive — the

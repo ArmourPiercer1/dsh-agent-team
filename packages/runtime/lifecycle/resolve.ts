@@ -6,6 +6,9 @@
  * Every operation (Archive / Restore / Dispose) begins with the SAME
  * fail-closed prologue: validate the target identity (the P5-T6 identity
  * gate, wrapped into the runtime's own `LIFECYCLE_INVALID_INPUT`), then
+ * the LeaderInstance guard (the reserved leader id is rejected with
+ * `LIFECYCLE_LEADER_NOT_OPERABLE`, Architecture §9.2 / invariant 15,
+ * regardless of whether a leader row exists and of its shape), then
  * read the durable record (absent → `LIFECYCLE_MEMBER_NOT_FOUND`, read
  * fault → `LIFECYCLE_DURABLE_STATE_FAILED` phase `read`). The prologue is
  * BEFORE any live effect and BEFORE any legality probe, so an invalid or
@@ -25,6 +28,7 @@
  */
 
 import type { MemberInstanceRecordDto, MemberLifecycleState } from '../../contracts/src/index.js'
+import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import { isLifecycleTransitionError } from '../../domain/lifecycle/src/index.js'
 import type { LifecycleOperation } from '../../domain/lifecycle/src/index.js'
 import { isMemberResidencyError, validateMemberIdentityInput } from '../member-residency/index.js'
@@ -62,14 +66,35 @@ export function validateTarget(target: LifecycleTarget): void {
 
 /**
  * Read the durable MemberInstance record of the target (fail-closed):
- * absent → `LIFECYCLE_MEMBER_NOT_FOUND`; read fault →
- * `LIFECYCLE_DURABLE_STATE_FAILED` (phase `read`).
+ * the reserved leader id is rejected up front (`LIFECYCLE_LEADER_NOT_OPERABLE`,
+ * §9.2 / invariant 15); otherwise absent → `LIFECYCLE_MEMBER_NOT_FOUND`;
+ * read fault → `LIFECYCLE_DURABLE_STATE_FAILED` (phase `read`).
  * @param ports - the lifecycle ports.
  * @param target - the composite member identity.
+ * @throws {@link LifecycleRuntimeError} (`LIFECYCLE_INVALID_INPUT`,
+ *   `LIFECYCLE_LEADER_NOT_OPERABLE`, `LIFECYCLE_MEMBER_NOT_FOUND`, or
+ *   `LIFECYCLE_DURABLE_STATE_FAILED`).
  * @returns the frozen durable record.
  */
 export function loadMember(ports: LifecyclePorts, target: LifecycleTarget): MemberInstanceRecordDto {
   validateTarget(target)
+  // The LeaderInstance guard (P8-S2, Architecture §9.2, invariant 15):
+  // the Leader IS the Root Agent + the Root Session — it cannot be
+  // independently archived, restored, or disposed. The guard is BEFORE
+  // any durable read and any live effect, and it applies regardless of
+  // whether a leader row exists and of its shape (a legacy v1 hack row
+  // is rejected exactly like an absent row — never defaulted, never
+  // "made operable").
+  if (target.instanceId === LEADER_INSTANCE_ID) {
+    throw new LifecycleRuntimeError(
+      LIFECYCLE_RUNTIME_ERROR_CODES.LIFECYCLE_LEADER_NOT_OPERABLE,
+      `the LeaderInstance (instance 'inst-leader') cannot be archived, restored, or disposed — it IS the Root Agent + the Root Session (Architecture §9.2, invariant 15)`,
+      {
+        rootSessionId: target.rootSessionId,
+        instanceId: target.instanceId,
+      },
+    )
+  }
   let record: MemberInstanceRecordDto | undefined
   try {
     record = ports.teamDomain.repositories.memberInstances.get(target.rootSessionId, target.instanceId)

@@ -159,11 +159,17 @@ describe('contracts v1 — schema version discipline', () => {
     )
   })
 
-  it('supports exactly version 1', () => {
+  it('supports exactly versions 1 and 2 (P8-S2: the supported set grew by an explicit, authorized v2 contract change — not a silent v1 edit)', () => {
     expect(isSupportedSchemaVersion(1)).toBe(true)
-    expect(isSupportedSchemaVersion(2)).toBe(false)
+    // P8-S2 defect-encoding update: this asserted `false` before v2 existed.
+    // The supported set grew [1] -> [1, 2] under the freeze rule (new schema
+    // stamp + CHANGELOG v2 + explicit authority: Architecture §9.2,
+    // invariants 13/14/15/23, P8-S plan §15.2, P8-S2 task packet).
+    expect(isSupportedSchemaVersion(2)).toBe(true)
     expect(isSupportedSchemaVersion(0)).toBe(false)
+    expect(isSupportedSchemaVersion(3)).toBe(false)
     expect(isSupportedSchemaVersion('1')).toBe(false)
+    expect(isSupportedSchemaVersion('2')).toBe(false)
   })
 })
 

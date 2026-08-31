@@ -91,6 +91,63 @@ what is forbidden: business mutation, Cordis service, storage, React).
   solely to recognize and reject legacy values (`LEGACY_TEAM_SESSION_EVENT_REJECTED`).
   vNext defines NO Team SessionEvents (invariant 42).
 
+## [v2] — LeaderInstance record (task P8-S2, 2026-09)
+
+**Status: ACTIVE.** This is a NEW version added under the freeze rule —
+v1 is untouched: every v1 record (including legacy harness-style leader
+rows that carry `childSessionId` + `lifecycle`) stays parseable, and no v1
+field, code, id rule, or encoding changed.
+
+Authority: frozen Architecture §9.1/§9.2 (the LeaderInstance is the Root
+Agent + the Root Session: exactly one, no child Session, no ordinary
+member lifecycle, cannot be independently archived/disposed) and invariants
+13/14/15/18/23; P8-S plan §15.2 (P8-S2 Leader + Core Contract Repair);
+P8-S2 task packet with main-agent approval (dev/agent-workflow evidence).
+
+### Added in v2
+
+**Schema version**
+- `LEADER_INSTANCE_RECORD_SCHEMA_VERSION = 2` (+ type
+  `LeaderInstanceRecordSchemaVersion`).
+- `SUPPORTED_SCHEMA_VERSIONS` grew from `[1]` to `[1, 2]` (the supported
+  set only ever grows through an explicit contract change). The global
+  `TEAM_CONTRACT_SCHEMA_VERSION` stays `1` (the current v1 member shape).
+
+**DTO**
+- `LeaderInstanceRecordDto` — `schemaVersion: 2, rootSessionId,
+  instanceId, templateId, label, groupId?, workspace?, createdAt,
+  activityVersion`. `childSessionId` and `lifecycle` are ABSENT keys:
+  validation rejects their presence (reasons
+  `LEADER_INSTANCE_MUST_NOT_CARRY_CHILD_SESSION` /
+  `LEADER_INSTANCE_MUST_NOT_CARRY_LIFECYCLE` in `details.reason`), they are
+  never defaulted, and they are absent from the canonical serialization —
+  the same key rule the frozen P8-T1 member projection enforces for
+  `inst-leader`.
+- `LeaderInstanceRecordInput` — the creation input (no `schemaVersion`;
+  stamped `2` by the factory). Any `schemaVersion`/`childSessionId`/
+  `lifecycle` key on the input fails closed (`MALFORMED_DTO`).
+- `LEADER_INSTANCE_RECORD_FIELDS` / `LEADER_INSTANCE_RECORD_INPUT_FIELDS` —
+  the exact frozen v2 field sets (the v1 set minus `childSessionId` and
+  `lifecycle`).
+- `createLeaderInstanceRecord` — the v2 creation factory (rejects a
+  non-leader `instanceId` with `MALFORMED_DTO`).
+
+**Factories**
+- `createMemberInstanceRecord` now accepts the union
+  `MemberInstanceRecordInput | LeaderInstanceRecordInput`. The shape
+  branch mints the honest v2 leader record only for the structurally
+  leader input (reserved `inst-leader` id AND no `childSessionId` AND no
+  `lifecycle`); every other input takes the v1 path byte-identical. A
+  half-hack input (the leader id with exactly one of the two fields) falls
+  to the v1 path and is rejected fail-closed.
+- `parseMemberInstanceRecord` branches on `schemaVersion === 2` to the v2
+  validator. Both branches keep the v1 `MemberInstanceRecordDto` declared
+  return type (the unowned storage/domain consumers assign to it); a v2
+  result is a `LeaderInstanceRecordDto` whose shared identity core makes
+  those assignments safe (documented type lie, confined to the return
+  types of `createMemberInstanceRecord` / `parseMemberInstanceRecord` /
+  `deserializeMemberInstanceRecord`).
+
 ### Freeze rule
 
 As of v1, **no other task may modify contracts v1 semantics** (add/remove

@@ -4,7 +4,7 @@
  * `packages/runtime/lifecycle/**`).
  *
  * Every rejection of the Archive / Restore / Dispose procedures is one of
- * these six codes. The codes are deliberately DISJOINT from the P5-T6
+ * these seven codes. The codes are deliberately DISJOINT from the P5-T6
  * member-residency codes and from the P3-T3 domain lifecycle codes:
  *
  * - a *domain* `LifecycleTransitionError` (the pure FSM rejection) is
@@ -14,9 +14,10 @@
  *   `LIFECYCLE_INVALID_INPUT` — the runtime's input contract is its own.
  *
  * No-effect guarantees (asserted by the tests): `LIFECYCLE_INVALID_INPUT`,
- * `LIFECYCLE_MEMBER_NOT_FOUND`, `LIFECYCLE_ILLEGAL_STATE` and
- * `LIFECYCLE_NOT_QUIESCENT` are all thrown BEFORE any live effect and with
- * ZERO durable writes; `LIFECYCLE_LIVE_EFFECT_FAILED` is thrown before the
+ * `LIFECYCLE_LEADER_NOT_OPERABLE`, `LIFECYCLE_MEMBER_NOT_FOUND`,
+ * `LIFECYCLE_ILLEGAL_STATE` and `LIFECYCLE_NOT_QUIESCENT` are all thrown
+ * BEFORE any live effect and with ZERO durable writes;
+ * `LIFECYCLE_LIVE_EFFECT_FAILED` is thrown before the
  * remaining live steps and the durable commit; `LIFECYCLE_DURABLE_STATE_
  * FAILED` carries the durable phase (`read` | `write`) and, for a write,
  * the failing commit step.
@@ -31,6 +32,15 @@ export const LIFECYCLE_RUNTIME_ERROR_CODES = {
   LIFECYCLE_INVALID_INPUT: 'LIFECYCLE_INVALID_INPUT',
   /** The addressed member has no durable record. No effect. */
   LIFECYCLE_MEMBER_NOT_FOUND: 'LIFECYCLE_MEMBER_NOT_FOUND',
+  /**
+   * The addressed instance is the reserved LeaderInstance (P8-S2,
+   * Architecture §9.2, invariant 15): the Leader IS the Root Agent + the
+   * Root Session, so it cannot be independently archived, restored, or
+   * disposed. Thrown before the durable read; no effect. The rejection is
+   * shape-agnostic — a missing row and a legacy v1 hack row are rejected
+   * identically (never defaulted, never made operable).
+   */
+  LIFECYCLE_LEADER_NOT_OPERABLE: 'LIFECYCLE_LEADER_NOT_OPERABLE',
   /** The durable lifecycle state forbids the operation (the §29 FSM; the domain error is mapped, never leaked). No effect. */
   LIFECYCLE_ILLEGAL_STATE: 'LIFECYCLE_ILLEGAL_STATE',
   /** The descendant drain reported residual activity (quiescence negative). Zero durable writes; the residency is NOT released (the §30.1 order is structural). */

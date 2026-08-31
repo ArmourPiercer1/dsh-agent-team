@@ -112,7 +112,8 @@ describe('P5-T5 S3: admission fail-closed (the guard rejects)', () => {
     expect(s1.eventDetails[3]).toBe(REJECTION_CODE)
 
     // The durable state stands (the instance stays healthy).
-    expect(s1.writeCalls).toBe(2)
+    // P8-S2 defect-encoding update: 2 → 3 (fresh bind now mints the leader).
+    expect(s1.writeCalls).toBe(3)
     expect(s1.repoBindingKind).toBe('team-root')
   })
 })
@@ -170,8 +171,9 @@ describe('P5-T5 S3: admission re-decision (the policy opens later)', () => {
     expect(s3.result?.bind.installed).toBe(true)
     expect(s3.result?.bind.admitted).toBe(true)
     expect(s3.result?.bind.admissionCode).toBe(ADMISSION_OPEN_CODE)
-    // The durable rows are written exactly once (the original fresh create).
-    expect(s3.writeCalls).toBe(2)
+    // The durable rows are written exactly once (the original fresh create,
+    // including the P8-S2 leader mint: 2 → 3).
+    expect(s3.writeCalls).toBe(3)
     // The fresh install re-ran (a fresh binder): 3 + 3 installs, both decisions recorded.
     expect(s3.installCount).toBe(6)
     expect(s3.eventNames).toEqual([

@@ -159,9 +159,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // p8t4-negative.test, p8t4-negative-scan.mjs,
     // p8t4-negative-scan.d.mts, p8t4-server, p8t4-test-client) +
     // 2 G8-S1 gate-supplement test files (storage g8s1-stamp-advance +
-    // runtime g8s1-generation-stamp)).
-    expect(scanResult.filesScanned).toBe(484)
-    expect(scanResult.files.length).toBe(484)
+    // runtime g8s1-generation-stamp) +
+    // 2 P8-S2 leader-contract test files (contracts
+    // leader-instance-record.test + runtime p8s2-leader-contract.test)).
+    expect(scanResult.filesScanned).toBe(486)
+    expect(scanResult.files.length).toBe(486)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -46,12 +46,16 @@ export const PACKAGE_ID = 'contracts'
 // --- schema version -------------------------------------------------------
 export {
   TEAM_CONTRACT_SCHEMA_VERSION,
+  LEADER_INSTANCE_RECORD_SCHEMA_VERSION,
   SUPPORTED_SCHEMA_VERSIONS,
   isSupportedSchemaVersion,
   assertSupportedSchemaVersion,
   assertSchemaVersion,
 } from './schema-version.js'
-export type { TeamContractSchemaVersion } from './schema-version.js'
+export type {
+  TeamContractSchemaVersion,
+  LeaderInstanceRecordSchemaVersion,
+} from './schema-version.js'
 
 // --- errors ----------------------------------------------------------------
 export {
@@ -149,8 +153,11 @@ export {
   MEMBER_LIFECYCLE_STATE_VALUES,
   isMemberLifecycleState,
   MEMBER_INSTANCE_RECORD_FIELDS,
+  LEADER_INSTANCE_RECORD_FIELDS,
+  LEADER_INSTANCE_RECORD_INPUT_FIELDS,
   parseMemberInstanceRecord,
   createMemberInstanceRecord,
+  createLeaderInstanceRecord,
   memberIdentityOf,
   serializeMemberInstanceRecord,
   deserializeMemberInstanceRecord,
@@ -158,6 +165,8 @@ export {
 export type {
   MemberInstanceRecordDto,
   MemberInstanceRecordInput,
+  LeaderInstanceRecordDto,
+  LeaderInstanceRecordInput,
   MemberLifecycleState,
 } from './dto/member-instance-record.js'
 
