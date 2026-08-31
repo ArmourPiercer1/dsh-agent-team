@@ -1,0 +1,50 @@
+{
+  "scenario": "L3",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "tool call succeeded (isError=false)",
+      "pass": true,
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "view status is native-fallback",
+      "pass": true,
+      "expected": "native-fallback",
+      "actual": "native-fallback"
+    },
+    {
+      "name": "fallback reason is no-legacy-metadata",
+      "pass": true,
+      "expected": "no-legacy-metadata",
+      "actual": "no-legacy-metadata"
+    },
+    {
+      "name": "degraded to native-chat-trajectory",
+      "pass": true,
+      "expected": "native-chat-trajectory",
+      "actual": "native-chat-trajectory"
+    },
+    {
+      "name": "native list carries the planted native session",
+      "pass": true,
+      "expected": true,
+      "actual": "sess-native/header=true"
+    },
+    {
+      "name": "native session has no team events",
+      "pass": true,
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "name": "home fixture snapshot identical after inspect (read-only)",
+      "pass": true,
+      "expected": true,
+      "actual": false
+    }
+  ],
+  "viewStatus": "native-fallback",
+  "mcpPort": 3491
+}

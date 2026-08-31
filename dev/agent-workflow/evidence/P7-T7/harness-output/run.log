@@ -1,0 +1,33 @@
+[2026-08-31T02:01:39.108Z] P7-T7 harness starting (worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7 repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7)
+[2026-08-31T02:01:39.110Z] selected scenarios=L1,L2,L3 port boot=3180 reportDir=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7\dev\agent-workflow\evidence\P7-T7\harness-output
+[2026-08-31T02:01:39.237Z] preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-31T02:01:39.265Z] preflight: stable :3080 {"reachable":true,"status":200}
+[2026-08-31T02:01:39.328Z] preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7
+[2026-08-31T02:01:39.329Z] build chain skipped (all farm lib artifacts present)
+[2026-08-31T02:01:39.331Z] fixtures planted: ["teammates/01-leader.md","teammates/02-alpha.md","ws/.dsh/teammates/02-alpha.md","sessions/--C-p7t7-legacy-team--/sess-leader/session.jsonl","sessions/--C-p7t7-legacy-team--/sess-alpha/session.jsonl"]
+[2026-08-31T02:01:39.331Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T02:01:58.975Z] instance stopped: {"killed":false,"portFree":true}
+[2026-08-31T02:03:08.287Z] P7-T7 harness starting (worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7 repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7)
+[2026-08-31T02:03:08.289Z] selected scenarios=L1,L2,L3 port boot=3180 reportDir=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7\dev\agent-workflow\evidence\P7-T7\harness-output
+[2026-08-31T02:03:08.424Z] preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-31T02:03:08.450Z] preflight: stable :3080 {"reachable":true,"status":200}
+[2026-08-31T02:03:08.510Z] preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7
+[2026-08-31T02:03:08.510Z] build chain skipped (all farm lib artifacts present)
+[2026-08-31T02:03:08.511Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T02:03:10.374Z] throwaway boot OK: http://127.0.0.1:3180/?token=KKjR_bai5vE6ugt1tunV39oygZPt2sYIhg77NdyK1Fc
+[2026-08-31T02:03:10.413Z] profile ready: {"initialized":true,"created":true}
+[2026-08-31T02:03:10.413Z] row mounted in the public patch layer: p7t7-legacy-session-reader
+[2026-08-31T02:03:10.414Z] run directive written
+[2026-08-31T02:03:12.234Z] instance booted: http://127.0.0.1:3180/?token=2eIsEJ6Hu6yCugwYKvS8e0JzsrXP20ik5t_Fde7_vIY (marker: dsh web: http://127.0.0.1:3180/?token=2eIsEJ6Hu6yCugwYKvS8e0JzsrXP20ik5t_Fde7_vIY)
+[2026-08-31T02:03:12.339Z] dump-config captured; rowMounted=true
+[2026-08-31T02:03:12.351Z] row health: {"ok":true,"ready":true,"mcpPort":3491} mcpPort=3491
+[2026-08-31T02:03:12.353Z] fixtures planted (post-boot): ["teammates/01-leader.md","teammates/02-alpha.md","ws/.dsh/teammates/02-alpha.md","sessions/--C-p7t7-legacy-team--/sess-leader/session.jsonl","sessions/--C-p7t7-legacy-team--/sess-alpha/session.jsonl"]
+[2026-08-31T02:03:12.395Z] scenario L1: http=200 duration=41ms pass=true assertions=17 failing=[]
+[2026-08-31T02:03:12.532Z] scenario L2: http=200 duration=137ms pass=true assertions=11 failing=[]
+[2026-08-31T02:03:12.535Z] fixtures reset to native-only: ["sessions/--C-p7t7-native--/sess-native/session.jsonl"]
+[2026-08-31T02:03:12.594Z] scenario L3: http=200 duration=59ms pass=true assertions=7 failing=[]
+[2026-08-31T02:03:12.634Z] instance stopped: {"killed":true,"portFree":true}
+[2026-08-31T02:03:12.635Z] postflight: ports released {"boot":true,"mcp":true}
+[2026-08-31T02:03:12.760Z] postflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-31T02:03:12.764Z] postflight: stable :3080 {"reachable":true,"status":200}
+[2026-08-31T02:03:12.765Z] P7-T7 harness PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7\dev\agent-workflow\evidence\P7-T7\harness-output\summary.json

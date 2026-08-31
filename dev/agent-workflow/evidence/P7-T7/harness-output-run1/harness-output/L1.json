@@ -1,0 +1,103 @@
+{
+  "scenario": "L1",
+  "pass": false,
+  "assertions": [
+    {
+      "name": "mini-MCP initialize handshake (http 200)",
+      "pass": true,
+      "expected": 200,
+      "actual": 200
+    },
+    {
+      "name": "tool call succeeded (isError=false)",
+      "pass": true,
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "view status is legacy-team",
+      "pass": true,
+      "expected": "legacy-team",
+      "actual": "legacy-team"
+    },
+    {
+      "name": "leader selected from team events",
+      "pass": false,
+      "expected": "team-events",
+      "actual": "roster-only"
+    },
+    {
+      "name": "leader session (and teamId) is sess-leader",
+      "pass": false,
+      "expected": "sess-leader"
+    },
+    {
+      "name": "roster has exactly the 2 planted members",
+      "pass": true,
+      "expected": 2,
+      "actual": 2
+    },
+    {
+      "name": "workspace overlay wins per id (alpha name)",
+      "pass": false,
+      "expected": "Alpha WS",
+      "actual": "Alpha"
+    },
+    {
+      "name": "workspace overlay source recorded",
+      "pass": false,
+      "expected": "workspace",
+      "actual": "home"
+    },
+    {
+      "name": "leader roster role is leader",
+      "pass": true,
+      "expected": "leader",
+      "actual": "leader"
+    },
+    {
+      "name": "member child sessions include sess-alpha",
+      "pass": false,
+      "expected": true,
+      "actual": []
+    },
+    {
+      "name": "sess-leader header recognized",
+      "pass": false,
+      "expected": true
+    },
+    {
+      "name": "sess-leader eventCount is 3",
+      "pass": false,
+      "expected": 3
+    },
+    {
+      "name": "sess-leader teamEventTotal is 2",
+      "pass": false,
+      "expected": 2
+    },
+    {
+      "name": "sess-alpha origin is subagent",
+      "pass": false,
+      "expected": "subagent"
+    },
+    {
+      "name": "sess-alpha parentSession is sess-leader",
+      "pass": false,
+      "expected": "sess-leader"
+    },
+    {
+      "name": "sess-alpha teamEventTotal is 1 (member-bound)",
+      "pass": false,
+      "expected": 1
+    },
+    {
+      "name": "home fixture snapshot identical after inspect (read-only)",
+      "pass": true,
+      "expected": true,
+      "actual": false
+    }
+  ],
+  "viewStatus": "legacy-team",
+  "mcpPort": 3491
+}

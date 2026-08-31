@@ -1,0 +1,25 @@
+[2026-08-31T01:53:33.924Z] P7-T7 harness starting (worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7 repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7)
+[2026-08-31T01:53:33.925Z] selected scenarios=L1,L2,L3 port boot=3180 reportDir=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7\dev\agent-workflow\evidence\P7-T7\harness-output
+[2026-08-31T01:53:34.056Z] preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-31T01:53:34.080Z] preflight: stable :3080 {"reachable":true,"status":200}
+[2026-08-31T01:53:34.081Z] preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7
+[2026-08-31T01:53:34.082Z] build chain skipped (all farm lib artifacts present)
+[2026-08-31T01:53:34.083Z] fixtures planted: ["teammates/01-leader.md","teammates/02-alpha.md","ws/.dsh","sessions/--C-p7t7-legacy-team--","sessions/--C-p7t7-legacy-team--"]
+[2026-08-31T01:53:34.084Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T01:53:38.243Z] throwaway boot OK: http://127.0.0.1:3180/?token=-lgaUWGFlNOonH5q5-XQVUX-rY0wu_Eg7y1ZN9Tu6uA
+[2026-08-31T01:53:38.281Z] profile ready: {"initialized":true,"created":true}
+[2026-08-31T01:53:38.282Z] row mounted in the public patch layer: p7t7-legacy-session-reader
+[2026-08-31T01:53:38.282Z] run directive written
+[2026-08-31T01:53:40.064Z] instance booted: http://127.0.0.1:3180/?token=ngQdtNMzyZFCcF70OK1DTrUWDUezzenv2SaxFReBliI (marker: dsh web: http://127.0.0.1:3180/?token=ngQdtNMzyZFCcF70OK1DTrUWDUezzenv2SaxFReBliI)
+[2026-08-31T01:53:40.173Z] dump-config captured; rowMounted=true
+[2026-08-31T01:53:40.185Z] row health: {"ok":true,"ready":true,"mcpPort":3491} mcpPort=3491
+[2026-08-31T01:53:40.207Z] scenario L1: http=200 duration=22ms pass=false assertions=17 failing=["leader selected from team events","leader session (and teamId) is sess-leader","workspace overlay wins per id (alpha name)","workspace overlay source recorded","member child sessions include sess-alpha","sess-leader header recognized","sess-leader eventCount is 3","sess-leader teamEventTotal is 2","sess-alpha origin is subagent","sess-alpha parentSession is sess-leader","sess-alpha teamEventTotal is 1 (member-bound)"]
+[2026-08-31T01:53:40.395Z] scenario L2: http=200 duration=188ms pass=true assertions=11 failing=[]
+[2026-08-31T01:53:40.397Z] fixtures reset to native-only: ["sessions/--C-p7t7-native--/sess-native/session.jsonl"]
+[2026-08-31T01:53:40.456Z] scenario L3: http=200 duration=59ms pass=true assertions=7 failing=[]
+[2026-08-31T01:53:40.507Z] instance stopped: {"killed":true,"portFree":true}
+[2026-08-31T01:53:40.508Z] postflight: ports released {"boot":true,"mcp":true}
+[2026-08-31T01:53:40.624Z] postflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-31T01:53:40.628Z] postflight: stable :3080 {"reachable":true,"status":200}
+[2026-08-31T01:53:40.628Z] FAILURE: scenario L1 failed (http=200 failing=["leader selected from team events","leader session (and teamId) is sess-leader","workspace overlay wins per id (alpha name)","workspace overlay source recorded","member child sessions include sess-alpha","sess-leader header recognized","sess-leader eventCount is 3","sess-leader teamEventTotal is 2","sess-alpha origin is subagent","sess-alpha parentSession is sess-leader","sess-alpha teamEventTotal is 1 (member-bound)"])
+[2026-08-31T01:53:40.629Z] P7-T7 harness FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7\dev\agent-workflow\evidence\P7-T7\harness-output\summary.json

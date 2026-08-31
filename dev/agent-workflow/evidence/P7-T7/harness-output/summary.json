@@ -1,0 +1,99 @@
+{
+  "task": "P7-T7",
+  "runStamp": "p7t7-1788141788289",
+  "harness": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P7-T7\\packages\\legacy\\session-reader\\e2e\\run.mjs",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P7-T7",
+  "repoRoot": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p7t7",
+  "selectedScenarios": [
+    "L1",
+    "L2",
+    "L3"
+  ],
+  "ports": {
+    "boot": 3180,
+    "mcp": 3491,
+    "released": {
+      "boot": true,
+      "mcp": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "afterBuild": null,
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "build": {
+    "required": false
+  },
+  "fixtures": {
+    "legacyPlanted": [
+      "teammates/01-leader.md",
+      "teammates/02-alpha.md",
+      "ws/.dsh/teammates/02-alpha.md",
+      "sessions/--C-p7t7-legacy-team--/sess-leader/session.jsonl",
+      "sessions/--C-p7t7-legacy-team--/sess-alpha/session.jsonl"
+    ],
+    "nativePlanted": [
+      "sessions/--C-p7t7-native--/sess-native/session.jsonl"
+    ]
+  },
+  "rowMounted": true,
+  "instance": {
+    "url": "http://127.0.0.1:3180/?token=2eIsEJ6Hu6yCugwYKvS8e0JzsrXP20ik5t_Fde7_vIY",
+    "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P7-T7\\dev\\agent-workflow\\evidence\\P7-T7\\harness-output\\logs\\boot\\instance-port3180.log",
+    "bootMarkerLine": "dsh web: http://127.0.0.1:3180/?token=2eIsEJ6Hu6yCugwYKvS8e0JzsrXP20ik5t_Fde7_vIY"
+  },
+  "scenarios": {
+    "L1": {
+      "httpStatus": 200,
+      "durationMs": 41,
+      "pass": true,
+      "assertionCount": 17,
+      "failing": []
+    },
+    "L2": {
+      "httpStatus": 200,
+      "durationMs": 137,
+      "pass": true,
+      "assertionCount": 11,
+      "failing": []
+    },
+    "L3": {
+      "httpStatus": 200,
+      "durationMs": 59,
+      "pass": true,
+      "assertionCount": 7,
+      "failing": []
+    }
+  },
+  "pass": true,
+  "failures": []
+}

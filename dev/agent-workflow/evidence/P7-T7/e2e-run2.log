@@ -1,0 +1,43 @@
+﻿[2026-08-31T02:01:39.108Z] P7-T7 harness starting (worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7 repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7)
+[2026-08-31T02:01:39.110Z] selected scenarios=L1,L2,L3 port boot=3180 reportDir=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P7-T7\dev\agent-workflow\evidence\P7-T7\harness-output
+[2026-08-31T02:01:39.237Z] preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+[2026-08-31T02:01:39.265Z] preflight: stable :3080 {"reachable":true,"status":200}
+[2026-08-31T02:01:39.328Z] preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p7t7
+[2026-08-31T02:01:39.329Z] build chain skipped (all farm lib artifacts present)
+[2026-08-31T02:01:39.331Z] fixtures planted: ["teammates/01-leader.md","teammates/02-alpha.md","ws/.dsh/teammates/02-alpha.md","sessions/--C-p7t7-legacy-team--/sess-leader/session.jsonl","sessions/--C-p7t7-legacy-team--/sess-alpha/session.jsonl"]
+[2026-08-31T02:01:39.331Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T02:01:58.975Z] instance stopped: {"killed":false,"portFree":true}
+node.exe : P7-T7 harness fatal: Error: instance boot failed: process exited (code=1 signal=none)
+At line:1 char:143
++ ... ode='node'; & $node packages/legacy/session-reader/e2e/run.mjs --repo ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (P7-T7 harness f...=1 signal=none):String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--- log tail ---
+          at async Proxy.list (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-har
+ness-test-use/packages/session/session-persistence-jsonl/lib/index.js:1080:11)
+          at async [cordis.init] (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-
+harness-test-use/packages/workspace/workspace/lib/index.js:321:20)
+          at async Fiber._reload (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-
+harness-test-use/vendor/cordis/lib/index.js:1355:5)
+          at async Fiber.await (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-ha
+rness-test-use/vendor/cordis/lib/index.js:1399:24)
+          at async Entry._start (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-h
+arness-test-use/vendor/loader/lib/index.js:528:4)
+          at async Entry._init (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-ha
+rness-test-use/vendor/loader/lib/index.js:517:4)
+    }
+  }
+}
+
+Node.js v24.20.0
+
+    at DshInstance.start (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P7-T7/tests/chara
+cterization/lib/instance.mjs:101:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async ensureProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P7-T7/tests/cha
+racterization/lib/instance.mjs:211:19)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P7-T7/packages/legacy/se
+ssion-reader/e2e/run.mjs:421:21)
