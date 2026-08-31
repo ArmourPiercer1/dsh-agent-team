@@ -786,6 +786,12 @@
 - **计数链**：1588 (int/P7) → +50 (P8-T1) 1638 → +31 (P8-T2) 1669 → **+44 (P8-T3: round-trip 10 / invalid-ids 9 / admission 5 / version 13 / negative 7) 1713**；p4t6 440 → **469**（N=29；withSource 9 / legacy 21 不变）。
 - **下一步**：R56 —— P8-T4 派发（Class B，push/generation/reconnect/pagination，owns `packages/remote/push*` + test client，base = int tip `c957f1a`；DevPlan 21.4 correctness first：stale 不覆盖新 state、分页稳定；必须测试 out-of-order frames / reconnect / duplicate invalidation / page anchor；同协议 brief + `P8T4_REPORT`）。
 
+## R56 — P8-T4 派发（Push/generation/reconnect/pagination，base int/P8 @ `c957f1a`，1713/1713）（2026-08-31，主 Agent）
+
+- **Brief**：`dev/agent-workflow/briefs/P8-T4-brief.md`（本轮提交）：TaskDoc §11.9 P8-T4 卡片 verbatim + 4 冻结文档 sha256 + DevPlan §21.4 verbatim（whole projection generation 或 versioned invalidation+pull；correctness first；client 必须拒 stale generation 覆盖新 state）+ read-only 上下文三件套（P8-T3 冻结契约 23 methods / provenance / dispatcher 不变式 + design-note 指针；P8-T2 `ledger.ts` 分页读路径；P2-T6 seam-report remote RPC（request/response only，无 server→client push 通道）+ reconnect basic 特征化 + probe 路径）+ owned `packages/remote/src/push/**` + `test/**`（p8t4-*）+ additive index + DEC-1 p4t6 469→469+N + 设计决策框架 D-1（push model 二选一）/ D-2（frozen surface 约束，新 catalog method 不可避免 → BLOCKER:SPEC）+ test-client fixture（in-process、fake transport、stale guard / idempotent / reconnect 状态机对齐 P2-T6 / page anchor，G8 可复用）+ 必须 4 测试（out-of-order / reconnect / duplicate invalidation / page anchor）+ acceptance（新 state 不被旧 response 覆盖；分页稳定）+ negative（generation check / typed errors / 无 mirror-log）+ 三 commit 分离 + `P8T4_REPORT`。
+- **派发**：workflow 单 leaf `p8-t4-remote-push`，`agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；brief 以主 worktree 绝对路径引用（worker 只读）；worker attempts 1/3。
+- **下一步**：R57 —— P8-T4 worker 结果审计 + 集成（post-pick p4t6；P8-T3 冻结区 diff 必须为空；int chain（log `evidence/int-P8/main-audit-chain-r57.log`）；台账 ready → P8-T5/G8）。
+
 ## 重审记录
 
 （空）
