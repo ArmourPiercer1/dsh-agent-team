@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 394 files scanned, runtime carries the P7-T2 mutation files, legacy carries the P7-T6 adapter', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 411 files scanned, runtime carries the P7-T2 mutation files, legacy carries the P7-T6 adapter and the P7-T7 session reader', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -61,10 +61,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `packages/legacy` now carries the P7-T6 legacy teammates import
     // adapter: the pure core .ts, the sync fs seam .mjs, its .d.mts type
     // surface, and the p7t6 unit-test .ts (the fixture .md files are not
-    // scanned source).
+    // scanned source), plus the P7-T7 read-only legacy Team Session reader
+    // (5 module .ts + 7 in-process suite .ts + 5 real-instance harness
+    // .mjs).
     expect(
       scanResult.files.filter((f) => f.startsWith('packages/legacy/')).length,
-    ).toBe(4)
+    ).toBe(21)
     // 226 pre-existing .ts/.mts/.mjs files (189 pre-P5 + 12 P5-T1 runtime
     // files + 11 P5-T2 persona/preset files + 6 P5-T3 runtime files +
     // 8 P5-T4 capability adapter files) + the adjacent .d.mts type surface
@@ -121,9 +123,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // runtime/policy-adapter.ts + 7 unit-test .ts under runtime/test:
     // p7t2-helpers + 6 suites: p7t2-future-boundary, p7t2-escalation,
     // p7t2-override-precedence, p7t2-policy-state, p7t2-creation-fields,
-    // p7t2-provenance)).
-    expect(scanResult.filesScanned).toBe(394)
-    expect(scanResult.files.length).toBe(394)
+    // p7t2-provenance) +
+    // + 17 P7-T7 legacy session reader files under legacy (5 module .ts
+    // under legacy/session-reader: types, errors, format, inspect, index +
+    // 7 in-process suite .ts under legacy/test: p7t7-helpers + 6 suites:
+    // p7t7-legacy-read, p7t7-mutation-reject,
+    // p7t7-integrated-drift-ack, p7t7-integrated-override-admission,
+    // p7t7-integrated-lifecycle-restore, p7t7-integrated-fork-handoff +
+    // 5 real-instance harness .mjs under
+    // legacy/session-reader/e2e: ts-loader, fs-seam, mini-mcp, plugin,
+    // run)).
+    expect(scanResult.filesScanned).toBe(411)
+    expect(scanResult.files.length).toBe(411)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
