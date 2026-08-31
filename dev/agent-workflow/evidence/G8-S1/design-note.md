@@ -230,3 +230,171 @@ surface touched: `packages/contracts/src/**`, upstream, `references/**`,
 
 New S1-A tests: **0** (blocker). New S1-B tests: 4 `it`s in one extended file
 (existing file, no new file).
+
+---
+
+## Addendum — attempt 2 (R60 adjudication): S1-A as lag-tolerant stamp advance
+
+Supersedes the §1 verdict. The BLOCKER:SPEC on §4.2 req 2 was adjudicated
+(R60): implement S1-A as a **LAG-TOLERANT stamp advance**. The stamp is the
+existing `team_sessions.generation` field (creation seed `1` frozen; **no new
+field anywhere**, no new table). Code commit `18d1ce3` on
+`task/G8-S1-gate-supplement` (base `cdd451c`).
+
+### A.1 Hook placement decision and rationale
+
+Two hooks, both placed AFTER the state write is durable:
+
+- **Hook A (primary) — the ledger fact commit choke point.**
+  `packages/storage/repositories/ledger.ts`, `LedgerRepository.put`: a
+  pre-read `isNewEntry = readRow(key) === undefined` is taken BEFORE
+  `putRecord`; after the durable `putRecord` succeeds,
+  `if (isNewEntry) await this.teamSessions.advanceGeneration(record.rootSessionId)`.
+  The advance is a single-row durable put, a separate write ordered after the
+  fact write. `TeamSessionsRepository.advanceGeneration(rootSessionId)`
+  (`packages/storage/repositories/team-sessions.ts`) deserializes the current
+  row through `updateRaw` and returns
+  `serializeTeamSessionRecord({...record, generation: record.generation + 1})`,
+  yielding the next value; malformed id → `RECORD_INVALID`; missing row →
+  `SEAM_FAILURE` carrying the public seam code `missing-key` — the closed v1
+  error set has no `RECORD_MISSING`, and a missing team row is an invariant
+  violation (the root row is seeded before any fact for that root can exist),
+  so the loud seam failure is the intended surface.
+- **Hook B — the compatibility re-probe.**
+  `packages/runtime/compatibility/probe.ts`, `replaceState`: after the durable
+  `delete` + `put` of the compat record,
+  `await repositories.teamSessions.advanceGeneration(rootSessionId)`.
+  `probe()` calls `replaceState` unconditionally on every probe, so every
+  probe advances exactly once — the warning-ACK re-probe path is covered
+  because it funnels through the same `replaceState`.
+
+Why the fact choke point: in v1 every projection-visible state mutation flows
+through the ledger — the journal protocol (PREPARED → idempotent effects →
+dedup ledger fact → COMMITTED) plus the four direct fact writers (W10–W13).
+One seam-level hook covers W10–W14, and any future fact writer inherits the
+coverage automatically.
+
+Why NOT at `allocateSequence` time (stamp-first — rejected): the sequence is
+allocated BEFORE the operation's outcome is known; an aborted or
+roll-forwarded operation would leave the stamp AHEAD of state — the exact
+inversion of the ordering invariant (state write durable BEFORE stamp put).
+
+Why not one hook per runtime call site: that would be five-plus hook sites
+that could drift apart; the storage seam is the single point every fact
+writer passes through.
+
+### A.2 Concurrency argument
+
+All 8 TeamDomain stores share one `team_domain` handle → ONE upstream Domain →
+one write chain per domain (upstream `DomainImpl`: each write awaits backend
+durability FIRST, then mutates memory; no batch, no transaction). The fact
+write and the stamp advance that follows it both travel this single writer
+chain, so they cannot interleave with a concurrent write of the same session:
+no observer can see a state in which the stamp advanced while the fact is not
+durable, because the stamp put is issued only after the fact write was acked
+durable. The stamp row's own update is a single-key atomic read-modify-write
+(`StorageKvTable.update` on the same chain), so two advances cannot merge or
+reorder. The invariant this protects is monotonicity: `generation` never
+decreases and never leads state beyond the accepted crash window (§A.4).
+(Cross-session concurrency is out of v1 scope by the one-team-one-session
+invariant; the per-domain single writer chain is the serialization argument.)
+
+### A.3 Unified writer coverage (§2 table W1–W14 + W-T, with Hook B)
+
+| Writer | Store | v1 stamp coverage | Mechanism |
+|---|---|---|---|
+| W1 / W2 | `team_sessions` (root) | seed | creation puts the row with `generation = 1` (frozen seed = stamp origin; no separate advance) |
+| W3 | `team_sessions` (root) | seed | fork creates the new root row → seed 1 for the new team |
+| W4 | `team_sessions` (root) | seed / no-op | a freshly created row seeds 1; an identical-bytes re-put is an idempotent no-op; a non-identical re-put is rejected `RECORD_DUPLICATE` — the ONLY post-creation mutation path of the row is `advanceGeneration` itself |
+| W5 | `member_instances` | **uncovered direct write** | host-wired adapter puts the member record directly; no fact ⇒ no automatic advance → future-writer obligation (§A.5) |
+| W6 | `member_instances` | covered indirectly | the put precedes `journal.drive`; the provisioning journal fact (W14) advances the stamp |
+| W7 | `member_instances` (lifecycle) | no production impl in tree | P9/P10 host wiring → future-writer obligation |
+| W8 | `overrides` | no production writer in tree | P9/P10 host wiring → future-writer obligation |
+| W9 | `compatibility` | **Hook B** | `replaceState` advances after the durable delete+put |
+| W10–W14 | `ledger` | **Hook A** | every fact writer goes through `LedgerRepository.put` → advance on each NEW fact (identical-bytes re-put: no advance) |
+| W-T | template rows (DTO `templates`) | n/a | materialized from the immutable blueprint snapshot; no store write |
+
+Negative surface (proven by the World-B tests): `allocateSequence` (boot +
+bump), `operations` rows, `session_bindings` rows, and direct puts to the
+other stores do NOT advance the stamp.
+
+### A.4 Crash window — the v1 consistency-model decision (accepted)
+
+Ordering invariant: the state write is durable BEFORE the stamp put. The crash
+window between a durable fact (write W7 of the new 9-write provision chain)
+and its stamp put (W8) is ACCEPTED as the v1 consistency model:
+
+- The stamp is **monotonic and eventually consistent**; a crash in the window
+  leaves it lagging the durable fact count by **exactly one change**.
+- A re-pull at the equal stamp verdicts `duplicate` under the frozen P8-T4
+  `assessProjectionSync` (equal-generation verdict) — one duplicate pull is
+  the bounded cost. The projections are full states, not deltas, so the next
+  strictly newer stamp delivers the complete latest durable state: no client
+  can remain behind the durable state for more than one mutation, and any
+  lagging client catches up at the next mutation.
+- **Recovery does NOT replay a missed stamp advance**: the recovery paths
+  (journal roll-forward, coordinator recovery) find the existing durable fact
+  via `findFact(operationId)` and reuse it without re-appending — Hook A does
+  not fire. A crash in the window therefore leaves the stamp lagging by
+  exactly one for that team — each later new fact still advances the stamp by
+  exactly one, and one advance was lost, so the residual lag stays at exactly
+  one — and this residual is the accepted v1 window, documented here per the
+  adjudication. The remapped crash matrix
+  (p4t5 B9, the new fact/stamp boundary) proves the recovery side: recovery
+  writes exactly 1 (fact reuse + COMMITTED row only, no stamp replay).
+
+### A.5 Future-writer obligation (for the P9/P10 briefs)
+
+Any new production writer that mutates a projection-visible TeamDomain store
+must make the stamp advance observable for that change, by exactly one of two
+means: (a) preferred — record a durable ledger fact through
+`repositories.ledger.put`, where the stamp advance happens automatically via
+Hook A; or (b) for a state change that genuinely carries no fact, call
+`repositories.teamSessions.advanceGeneration(rootSessionId)` with a
+single-row durable put AFTER the state write is durable. The stamp put must
+NEVER precede the state write (stamp-first is rejected), a missing team row at
+advance time is an invariant violation surfaced loudly as
+`SEAM_FAILURE` (public seam `missing-key`), and root-row creation (W1/W3
+style) seeding `generation = 1` is the only sanctioned stamp origin.
+
+### A.6 Evidence (attempt 2)
+
+- New tests `packages/storage/test/g8s1-stamp-advance.test.ts` (10 `it`s):
+  fresh team seeds at 1 with an empty ledger; four committed operations via
+  the REAL journal path advance the stamp strictly 1→2→3→4→5 in lockstep with
+  the ledger count 1→2→3→4; a second operation on the same member (identical
+  effects skipped) still advances exactly once — the advance tracks the FACT;
+  a replay (fact reuse) advances nothing and writes nothing (0 seam writes);
+  an identical-bytes re-put of a fact is a no-op that advances nothing;
+  non-state writes (allocateSequence ×2, member/operations/overrides/
+  compatibility/binding puts) leave the seed untouched with 0 writes; direct
+  `advanceGeneration` works; a missing team row → `SEAM_FAILURE` with
+  `details.seamCode = 'missing-key'`; a fact put for the teamless root
+  rejects while the fact row is already durable (1 fact + counter, 0 team
+  rows).
+- New tests `packages/runtime/test/g8s1-generation-stamp.test.ts` (5 `it`s):
+  a real P6-T2 runtime world walks three delegates through the real router
+  (landing exactly on the P6T2 quota boundaries) with the stamp strictly
+  1→2→3→4 in lockstep with the ledger count; the projection carries
+  `generation = 4` verbatim and a NEW-client re-pull verdicts `apply` (NOT
+  `duplicate`), an equal-stamp pull `duplicate`, a stale pull `stale`; the
+  applied body equals the latest durable state (member ids, full ledger
+  summary, and generation mirror the real rows; the DTO equals an
+  independent fresh fold); a same-token replay advances nothing (0 new seam
+  writes); Hook B: two durable compatibility probes on a fresh world advance
+  1→2→3.
+- Remapped existing suites to the new 9-write provision chain (+1 stamp
+  write between the fact and the COMMITTED row): storage
+  `p4-06-journal`, `p4t2-crash-recovery`, `p4t2-journal`, `p4t2-conflicts`,
+  `p4t4-one-committed-invariant`, `p4t4-per-stage-retry`,
+  `p4t4-orphan-detect` (+ `p4t2-helpers` / `p4t4-helpers` seeding the team
+  row); testkit `p4t5-corrupt-version`, `p4t5-crash-matrix`,
+  `p4t5-retry-restart` (+ `p4t5-helpers`: crash boundary B9 remapped to the
+  fact/stamp boundary, `STAMP_WRITE_COUNT` unchanged); runtime
+  `p6t1-explicit`, `p6t1-recovery`, `p6t3-send-delivery`; committed-world
+  fixture `team_domain/team_sessions.json` (root-1 row, generation 2,
+  canonical sorted-key JSON); p4t6 scanned-file pin DEC-1 style 482 → 484
+  (scanner `.mjs` byte-identical; no new legacy markers).
+- RUN 4 on the committed clean tree `18d1ce3` (proof header in
+  `attempt-log.md`): chain **1773 passed / 0 failed / 1773 total**; tsc ×6
+  (contracts, domain, storage, runtime, testkit, remote) all exit 0.
