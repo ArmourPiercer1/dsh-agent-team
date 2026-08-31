@@ -802,6 +802,13 @@
 - **计数链**：1588 (int/P7) → 1638 (T1) → 1669 (T2) → 1713 (T3) → **+41 (P8-T4: out-of-order 6 / reconnect 10 / duplicate-inval 2 / page-anchor 10 / stale-guard 5 / negative 8) = 1754**；p4t6 469 → **482**（withSource 9 / legacy 21 不变）。
 - **下一步**：R58 —— G8-REVIEW 准备与派发（3 fresh independent blind reviewers，同 G7 机制：detached worktrees @ int tip `93d2a96`、TaskDoc 11.8 六步法、G8 六准则 DevPlan §21.5、`G8RN_VERDICT` 格式、证据 `evidence/G8-REVIEW/reviewer-N/`；P8-T5 卡片要求 pristine host browser-less remote e2e / dependency scan / reconnect suite → G8 brief 需定义 e2e 机制，预计复用 P7-T7 harness 模板 + 外部 lockfile wrapper；gate reviewer 不参与 Remote 实现）。
 
+## R58 — G8-REVIEW 派发（3 fresh independent blind reviewers；int/P8 @ `93d2a96`，1754/1754）（2026-08-31，主 Agent）
+
+- **Brief**：`dev/agent-workflow/briefs/G8-review-brief.md`（本轮提交，G7 结构同型 + P8 特化）：blindness 规则（禁读 `dev/agent-workflow/` 全部；唯一写入 = 自身 evidence 目录）+ TaskDoc G8 执行方法六步（checkout / 读 Gate 条目 / 重跑链（1754/1754 预期 + tsc **×6** 含 remote）/ zero-core + private-import + owned-boundary（P8 owned globs：T1 projection contracts / T2 runtime projection / T3 remote contracts+handlers+test / T4 push+test+p8t3 pin standing exception / DEC-1 p4t6；diff base `959e363`）/ cross-task invariants 组合审查 / criterion→evidence→PASS-FAIL）+ **P8-T5 卡片必须 e2e**：pristine host browser-less remote e2e（recipe 全给：P7-T7 `run.mjs`/`plugin.mjs`/`ts-loader.mjs` 启动+row 模板、P2-T6 probe 的 TEAM_REMOTE 线协议+cookie+negative、`registerRemoteHandlers` + `REMOTE_RPC_CHANNEL='/team-remote'` + 12 ports、`p8t4-test-client` 作为浏览器-less 消费者）+ 6 e2e 场景 E1–E6（round-trip / reconnect / stale / pagination / typed errors / wire negatives）+ dependency scan（criterion 1 消费者视角）+ reconnect suite（e2e + in-process 合并）+ 外部 lockfile `references/.dsh-test-g8.lock`（75×20s≈25min，stale ≥10min 删除，finally 仅属主删）+ 端口 3181/3182/3183 按 reviewer 分配 + 瞬态环境故障（Windows handle 竞态类）清左遗重试一次记 concerns 不直接 FAIL + `G8RN_VERDICT` 固定格式（六准则 + e2e + zero-core 三行 + concerns/blocker）。
+- **派发**：workflow `g8-blind-review`，3 并行 leaf，每个 `agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；brief 以主 worktree 绝对路径引用 + 每 leaf 分配 N∈{1,2,3}（detached worktrees `G8-R1/R2/R3` @ `93d2a96`）。
+- **裁决规则**：gate PASS iff 3 verdicts ∈ {通过, 投机通过}；裁决一律以 committed disk 证据为准（reviewer worktree 归档后才移除 worktree）。
+- **下一步**：R59 —— G8 裁决：3 verdicts 从 disk 读取 → PASS 则 merge master→int/P8（bookkeeping catch-up）→ ff master → **push #8** → P9 kickoff（External Web UI Migration，DevPlan §22，G9 §22.9）；FAIL/补充内容 则按 ROUTER_RULES 处理。
+
 ## 重审记录
 
 （空）
