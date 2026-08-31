@@ -770,6 +770,13 @@
 - **偏差/concerns**：worker 将 design-note 拆为独立首提交（3 提交结构，brief 只要求 code/evidence 分离）—— cherry-pick 无碍，可接受，留痕。
 - **下一步**：R54 —— P8-T3 派发（Remote contract v1 + Host handlers，owns `packages/remote/contracts*` + `handlers*`，base = int tip `67c3d4e`；seam = P2-T6 实证 `TEAM_REMOTE`：`connection` 服务 `rpc.handle` 注册 public handlers，wire `{"type":"client-request","rpcId","method","payload"}`，envelope `result:{ok,value|error:{code,message}}`；必须测试 round-trip / invalid IDs / admission errors / version mismatch）。
 
+## R54 — P8-T3 派发（Remote contract v1 + Host handlers，base int/P8 @ `67c3d4e`，1669/1669；R52 台账修复）（2026-08-31，主 Agent）
+
+- **R52 台账修复（本轮新发现）**：R53 条目所引 “master `8566d3b`，R52 kickoff commit” 经 `git cat-file -t` 验证**不存在**（master 历史 959e363 ← d8971c6 ← de46f52 ← 97b834d，无 R52 提交；无 `## R52` 日志条目）。R52 轮实际执行过（brief 写出 + workflow 派发，内容已由 R53 条目覆盖），但 P8-T2 brief 文件**从未提交**（在 master 工作区遗留 untracked）。处理：磁盘 untracked 副本以 `fb80e48` 提交（与 R53 条目描述逐项核对一致：base `48b3334` / owned `packages/runtime/projection/**` / `P8T2_REPORT` / 55 行）。旧条目不重写（append-only），本条目为更正记录。**教训**：每轮台账 commit 后必须 `git rev-parse`/`git log` 验证落盘（R52 漏做）。
+- **Brief**：`dev/agent-workflow/briefs/P8-T3-brief.md`（本轮提交，136 行）：TaskDoc §11.9 P8-T3 卡片 verbatim + 4 冻结文档 sha256 复核 + 21.3 类别分离（固定：catalog/intent/team/member/override/policy/compat/handoff/legacy，方法名可自定）+ P2-T6 seam 实证摘要（`connection` 服务 `rpc.handle` 注册 public handlers；wire `POST /<channel>/<endpoint>` body `{"type":"client-request","rpcId","method","payload"}`；envelope `result:{ok:true,value}` / `result:{ok:false,error:{code,message}}`；negative contract：no cookie 401 / wrong content-type 415 / method≠endpoint 200 bad-request / handler typed error 200 ok:false / **handler throw → 500，故 handler 必须返回 typed error 结果，禁止 throw**）+ base `67c3d4e`（int/P8 tip，1669/1669 + tsc ×5 + p4t6 440）+ owned `packages/remote/src/contracts/**` + `handlers/**`（+ additive index）+ DEC-1 p4t6 440→440+N + 必须 4 测试（round-trip / invalid IDs / admission errors / version mismatch）+ negative（无 SessionController Team mirror、无 session-log-derived Team truth、全错误 typed）+ 三 commit 分离（design-note / code / evidence，-x per commit）+ `P8T3_REPORT` 固定格式。
+- **派发**：workflow 单 leaf `p8-t3-remote-contract`，`agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；brief 以主 worktree 绝对路径引用（worker 只读，禁止写主 worktree）；worker attempts 1/3。
+- **下一步**：R55 —— P8-T3 worker 结果审计 + 集成（HEAD/files/status/p4t6 440+N/markers 验证；task worktree 全链 + zero-core/import-face；cherry-pick -x 上 int/P8 + post-pick p4t6 检查；int chain（log `evidence/int-P8/main-audit-chain-r55.log`）；台账 ready → P8-T4）。
+
 ## 重审记录
 
 （空）
