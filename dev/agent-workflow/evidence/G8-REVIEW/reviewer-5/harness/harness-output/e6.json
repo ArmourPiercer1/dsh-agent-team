@@ -1,0 +1,59 @@
+{
+  "noAuth": {
+    "status": 401,
+    "text": "unauthorized"
+  },
+  "wrongCt": {
+    "status": 415,
+    "text": "content type must be application/json"
+  },
+  "mismatch": {
+    "type": "server-response",
+    "rpcId": "g8r5-r17",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "bad-request",
+        "message": "method \"member.send\" does not match endpoint \"team.getProjection\"",
+        "details": {
+          "issues": []
+        }
+      }
+    }
+  },
+  "unknown": {
+    "type": "server-response",
+    "rpcId": "g8r5-r18",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "unknown-method",
+        "message": "endpoint 'nope.nothere' is not a method of the closed Remote contract v1 catalog",
+        "details": {
+          "method": "nope.nothere",
+          "endpoint": "nope.nothere",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "unknown-endpoint"
+        }
+      }
+    }
+  },
+  "garbage": {
+    "type": "server-response",
+    "rpcId": "g8r5-r19",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "malformed-request",
+        "message": "request payload must be an object, got string",
+        "details": {
+          "method": "team.getProjection",
+          "endpoint": "team.getProjection",
+          "contractVersion": 1,
+          "requestToken": null
+        }
+      }
+    }
+  }
+}

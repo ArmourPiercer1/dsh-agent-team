@@ -1,0 +1,29 @@
+﻿diff --git a/packages/storage/repositories/team-domain.ts b/packages/storage/repositories/team-domain.ts
+index fe93346..5676b72 100644
+--- a/packages/storage/repositories/team-domain.ts
++++ b/packages/storage/repositories/team-domain.ts
+@@ -119,17 +119,22 @@ async function closeHandleSafe(handle: StorageDomainHandle): Promise<void> {
+ 
+ /** Build the facade over an open, verified handle. */
+ function buildDomain(handle: StorageDomainHandle): TeamDomain {
++  // S1-A hook A wiring: the ledger repository receives the SAME
++  // `team_sessions` repository instance (same handle, same upstream
++  // domain, one write chain) so the post-fact stamp advance is
++  // serialized with the fact put it follows.
++  const teamSessions = new TeamSessionsRepository(handle)
+   return {
+     name: handle.name,
+     repositories: {
+       schemaMeta: new SchemaMetaRepository(handle),
+-      teamSessions: new TeamSessionsRepository(handle),
++      teamSessions,
+       memberInstances: new MemberInstancesRepository(handle),
+       sessionBindings: new SessionBindingsRepository(handle),
+       overrides: new OverridesRepository(handle),
+       compatibility: new CompatibilityRepository(handle),
+       operations: new OperationsRepository(handle),
+-      ledger: new LedgerRepository(handle),
++      ledger: new LedgerRepository(handle, teamSessions),
+     },
+     close() {
+       return handle.close()

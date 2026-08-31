@@ -1,0 +1,3 @@
+dsh web: http://127.0.0.1:3185/?token=weHV3ZkwOHKO3th_abE85oQ54howY3Fi_DmNOv4rQUg
+g8r5 worker +0ms: started NO_DIAG=0 proto=len-less-json
+g8r5 worker +482ms: world built: ports=22

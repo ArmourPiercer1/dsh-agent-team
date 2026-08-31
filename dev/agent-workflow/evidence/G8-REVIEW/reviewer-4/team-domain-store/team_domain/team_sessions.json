@@ -1,0 +1,4 @@
+{
+  "g8-root-1": "{\"blueprint\":{\"blueprintId\":\"team.g8research\",\"contentHash\":\"sha256:c19ef77e9fd14ee553c56328c7da4fe5cab3df2346cce6cc236538832eb4582a\",\"revision\":\"1\"},\"createdAt\":\"2026-08-31T13:53:38.853Z\",\"defaultWorkspace\":\"D:/g8-r4/ws\",\"generation\":8,\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1}",
+  "g8-e1-root": "{\"blueprint\":{\"blueprintId\":\"team.g8research\",\"contentHash\":\"sha256:c19ef77e9fd14ee553c56328c7da4fe5cab3df2346cce6cc236538832eb4582a\",\"revision\":\"1\"},\"createdAt\":\"2026-08-31T13:53:39.161Z\",\"defaultWorkspace\":\"D:/g8-r4/ws\",\"generation\":2,\"rootSessionId\":\"g8-e1-root\",\"schemaVersion\":1}"
+}

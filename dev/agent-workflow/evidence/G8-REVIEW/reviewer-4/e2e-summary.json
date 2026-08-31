@@ -1,0 +1,64 @@
+{
+  "at": "2026-08-31T13:53:39.731Z",
+  "head": "3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86",
+  "port": 3184,
+  "preflight": {
+    "stableBefore": 200,
+    "pin": "cd5ef814"
+  },
+  "boot": {
+    "pid": 67032,
+    "tokenPresent": true
+  },
+  "health": {
+    "ok": true,
+    "ready": true,
+    "setupError": null,
+    "row": "g8r4-remote-projection",
+    "contractVersion": 1,
+    "teamRootId": "g8-root-1",
+    "generation": 6,
+    "seeded": true,
+    "writeFailures": 0
+  },
+  "e2e": {
+    "allPassed": true,
+    "results": [
+      {
+        "id": "E1",
+        "ok": true,
+        "detail": "path=fresh-root, gen=2, lossless=true, typed=TeamProjectionDto"
+      },
+      {
+        "id": "E6",
+        "ok": true,
+        "detail": "401 no-cookie; 415 text/plain; 200 bad-request method-mismatch"
+      },
+      {
+        "id": "E2",
+        "ok": true,
+        "detail": "gen 6 -> 6, entries=5, content identical"
+      },
+      {
+        "id": "E3",
+        "ok": true,
+        "detail": "held gen 6 rejected stale after gen 7 applied (instance inst-0ebe162068c4)"
+      },
+      {
+        "id": "E4",
+        "ok": true,
+        "detail": "anchor 0: 6 -> 7 entries, prefix stable, appended seq 8; client cursor walk 0->2->4"
+      },
+      {
+        "id": "E5",
+        "ok": true,
+        "detail": "all three typed codes returned with 200 envelopes (no 500s, no raw exceptions)"
+      }
+    ]
+  },
+  "postflight": {
+    "testUseClean": true,
+    "stableAfter": 200,
+    "portBusy": false
+  }
+}

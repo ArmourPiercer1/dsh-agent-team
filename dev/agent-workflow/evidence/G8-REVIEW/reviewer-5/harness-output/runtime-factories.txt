@@ -1,0 +1,39 @@
+﻿===== lifecycle =====
+L45: export { LIFECYCLE_STEP_NAMES, LIFECYCLE_STEP_NAME_VALUES } from './types.js'
+L61: export { quiesceMember } from './quiesce.js'
+L62: export { archiveMember } from './archive.js'
+L63: export { restoreMember } from './restore.js'
+L64: export { disposeMember } from './dispose.js'
+L82: export function createLifecycleService(ports: LifecyclePorts): LifecycleService {
+===== control =====
+L104: export { createControlService } from './service.js'
+===== compatibility =====
+L41: export { classifyDrift } from './drift.js'
+L42: export { createCompatibilityProber } from './probe.js'
+===== handoff =====
+L33: export { HANDOFF_DECISION_OPTIONS } from './types.js'
+L62: export { createHandoffService } from './service.js'
+===== projection =====
+L45: export { projectLedgerSummary } from './ledger.js'
+L46: export { projectTeam } from './fold.js'
+L47: export { createProjectionService } from './service.js'
+===== admission =====
+===== action-router =====
+L21: export { createTeamRuntime } from './router.js'
+L22: export { executeEffect, withTeamLock } from './effects.js'
+===== agent-setup\binder =====
+L47: export { createTeamDomainReadHandle } from './read-handle.js'
+L49: export { TeamAgentBinder } from './binder.js'
+===== member-residency =====
+L38: export { createFreshMember } from './fresh-member.js'
+L39: export { rehydrateColdMember } from './cold-member.js'
+L40: export { evictSettledMember } from './evict.js'
+L48: export { createMemberDomainWritePort } from './write-port.js'
+===== messaging =====
+L75: export { createMessagingCoordinator } from './coordinator.js'
+===== root-binding =====
+L29: export { bindFreshTeamRoot } from './fresh-root.js'
+L30: export { rehydrateColdTeamRoot } from './cold-root.js'
+L31: export { createTeamDomainWritePort } from './write-port.js'
+===== activation =====
+L80: export { createActivationChildAdapter } from './adapter.js'

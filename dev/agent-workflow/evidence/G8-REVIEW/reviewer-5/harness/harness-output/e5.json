@@ -1,0 +1,83 @@
+{
+  "missingField": {
+    "type": "server-response",
+    "rpcId": "g8r5-r11",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "malformed-params",
+        "message": "method 'team.getProjection' requires param field 'teamSessionId'",
+        "details": {
+          "method": "team.getProjection",
+          "endpoint": "team.getProjection",
+          "contractVersion": 1,
+          "requestToken": null,
+          "field": "teamSessionId",
+          "reason": "missing-required"
+        }
+      }
+    }
+  },
+  "badId": {
+    "type": "server-response",
+    "rpcId": "g8r5-r12",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_SESSION_NOT_FOUND",
+        "message": "no TeamSession 'not-a-valid-id'",
+        "details": {
+          "method": "team.getProjection",
+          "endpoint": "team.getProjection",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_SESSION_NOT_FOUND",
+            "message": "no TeamSession 'not-a-valid-id'"
+          }
+        }
+      }
+    }
+  },
+  "badVer": {
+    "type": "server-response",
+    "rpcId": "g8r5-r13",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "contract-version-unsupported",
+        "message": "remote contract version 99 is not supported (supported: [1])",
+        "details": {
+          "method": "team.getProjection",
+          "endpoint": "team.getProjection",
+          "contractVersion": 1,
+          "requestToken": null,
+          "field": "version"
+        }
+      }
+    }
+  },
+  "denied": {
+    "type": "server-response",
+    "rpcId": "g8r5-r14",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_RUNTIME_CALLER_AUTHORITY_DENIED",
+        "message": "TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')",
+        "details": {
+          "method": "member.create",
+          "endpoint": "member.create",
+          "contractVersion": 1,
+          "requestToken": "tok-g8r5-e5m",
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_RUNTIME_CALLER_AUTHORITY_DENIED",
+            "message": "TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')"
+          }
+        }
+      }
+    }
+  }
+}

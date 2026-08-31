@@ -1,0 +1,45 @@
+# G8-R4 e2e run — 2026-08-31T13:53:36.731Z
+[2026-08-31T13:53:36.732Z] === preflight ===
+[2026-08-31T13:53:36.733Z] lock: acquired (D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock)
+[2026-08-31T13:53:36.817Z] preflight: test-use HEAD=cd5ef81481 (expect cd5ef814*) clean=true
+[2026-08-31T13:53:36.843Z] preflight: stable :3080 -> 200
+[2026-08-31T13:53:36.844Z] preflight: port 3184 free
+[2026-08-31T13:53:36.844Z] farm: artifacts present (apps/cli/lib/bin.js, app-boot lib)
+[2026-08-31T13:53:36.845Z] home: removing existing D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r4
+[2026-08-31T13:53:36.884Z] home: fresh D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r4, row mounted at profiles/web/cordis.patch.yml
+[2026-08-31T13:53:36.884Z] === boot ===
+[2026-08-31T13:53:36.988Z] boot: host pid 67032 spawned (FILE-FD stdio -> D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R4\dev\agent-workflow\evidence\G8-REVIEW\reviewer-4\boot.log)
+[2026-08-31T13:53:39.013Z] boot: marker seen, launch token gXV_dL...
+[2026-08-31T13:53:39.023Z] health: ready (seedGen=6 seeded=true writeFailures=0)
+[2026-08-31T13:53:39.024Z] === e2e scenarios ===
+[2026-08-31T13:53:39.145Z] health: ready=true ok=true seedGen=6 seeded=true
+[2026-08-31T13:53:39.155Z] cookie minted: dsh-auth-a6BGBTB-J6zBFEh...
+[2026-08-31T13:53:39.165Z]   provenance ok for team.create (origin=team-remote, gen=null, effect=null)
+[2026-08-31T13:53:39.172Z]   provenance ok for team.getProjection (origin=team-remote, gen=2, effect=null)
+[2026-08-31T13:53:39.174Z] PASS E1 — path=fresh-root, gen=2, lossless=true, typed=TeamProjectionDto
+[2026-08-31T13:53:39.217Z] PASS E6 — 401 no-cookie; 415 text/plain; 200 bad-request method-mismatch
+[2026-08-31T13:53:39.248Z]   E2: connection destroyed, cookie re-minted
+[2026-08-31T13:53:39.281Z] PASS E2 — gen 6 -> 6, entries=5, content identical
+[2026-08-31T13:53:39.346Z]   provenance ok for member.create (origin=team-remote, gen=null, effect=7)
+[2026-08-31T13:53:39.375Z] PASS E3 — held gen 6 rejected stale after gen 7 applied (instance inst-0ebe162068c4)
+[2026-08-31T13:53:39.391Z]   provenance ok for team.getLedgerPage (origin=team-remote, gen=null, effect=null)
+[2026-08-31T13:53:39.437Z]   provenance ok for member.send (origin=team-remote, gen=null, effect=8)
+[2026-08-31T13:53:39.498Z] PASS E4 — anchor 0: 6 -> 7 entries, prefix stable, appended seq 8; client cursor walk 0->2->4
+[2026-08-31T13:53:39.529Z] PASS E5 — all three typed codes returned with 200 envelopes (no 500s, no raw exceptions)
+[2026-08-31T13:53:39.530Z]   E1: PASS
+[2026-08-31T13:53:39.530Z]   E6: PASS
+[2026-08-31T13:53:39.530Z]   E2: PASS
+[2026-08-31T13:53:39.530Z]   E3: PASS
+[2026-08-31T13:53:39.530Z]   E4: PASS
+[2026-08-31T13:53:39.530Z]   E5: PASS
+[2026-08-31T13:53:39.530Z] === shutdown ===
+[2026-08-31T13:53:39.568Z] kill: taskkill status 1 (ERROR: Access denied) — falling back to child.kill()
+[2026-08-31T13:53:39.608Z] shutdown: host exited (code n/a)
+[2026-08-31T13:53:39.610Z] output: harness-output/ copied to evidence
+[2026-08-31T13:53:39.622Z] output: team-domain-store/ copied to evidence
+[2026-08-31T13:53:39.622Z] === postflight ===
+[2026-08-31T13:53:39.720Z] postflight: test-use HEAD=cd5ef81481 (expect cd5ef814*) clean=true
+[2026-08-31T13:53:39.730Z] postflight: stable :3080 -> 200
+[2026-08-31T13:53:39.731Z] postflight: port 3184 busy=false
+[2026-08-31T13:53:39.732Z] summary: e2e=ALL-PASS postflight={"testUseClean":true,"stableAfter":200,"portBusy":false}
+[2026-08-31T13:53:39.733Z] lock: released

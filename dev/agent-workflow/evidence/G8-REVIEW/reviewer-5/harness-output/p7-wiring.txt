@@ -1,0 +1,40 @@
+﻿########## p7t1-helpers.ts ##########
+L34: import type { EnvironmentFact } from '../../domain/compatibility/src/index.js'
+L35: import {
+L38: } from '../compatibility/index.js'
+L43: } from '../compatibility/index.js'
+L44: import {
+L50: } from './p6t1-helpers.js'
+L51: import type { P6T1World } from './p6t1-helpers.js'
+L103: return createCompatibilityProber({
+L209: * @param error - the thrown error (e.g. from `captureError`).
+########## p7t2-helpers.ts ##########
+L32: import {
+L38: } from '../../domain/policy/src/index.js'
+L47: } from '../../domain/policy/src/index.js'
+L48: import {
+L64: } from '../mutation/index.js'
+########## p7t3-helpers.ts ##########
+L10: *   creation specs), distinct from the P4 / P5 / P6 fixture values;
+L45: import {
+L54: } from '../../contracts/src/index.js'
+L55: import type { MemberInstanceRecordDto, MemberLifecycleState } from '../../contracts/src/index.js'
+L56: import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
+L57: import type { TeamDomain } from '../../storage/repositories/index.js'
+L58: import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
+L59: import type { LifecycleCommitPort } from '../admission/index.js'
+L60: import { createLifecycleService, isLifecycleRuntimeError } from '../lifecycle/index.js'
+L69: } from '../lifecycle/index.js'
+L70: import { deriveMemberIdentity } from '../member-residency/index.js'
+L71: import type { MemberCreateSpec, ResidencyPort } from '../member-residency/index.js'
+L116: * from the durable store).
+L444: `p7t3 commit fake: lifecycle drift: expected from '${args.from}', found '${current.lifecycle}'`,
+L544: const service = createLifecycleService(ports)
+########## p7t5-helpers.ts ##########
+L3: * (Start Team from Here) tests (TaskDoc §11.8 P7-T5; DevPlan §20.5;
+L49: } from '../handoff/index.js'
+L50: import { HandoffError, createHandoffService } from '../handoff/index.js'
+L51: import type { HandoffService } from '../handoff/index.js'
+L52: import type { RemoteSafeRecord } from '../../contracts/src/index.js'
+L57: /** The P7-T5 fixture identities (distinct from P4 / P5 / P6 fixtures). */
+L263: service: createHandoffService(ports),

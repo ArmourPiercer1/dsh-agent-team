@@ -1,0 +1,37 @@
+{
+  "startA": {
+    "status": "apply",
+    "receivedGeneration": 1
+  },
+  "lossA": {
+    "status": "transport-loss",
+    "receivedGeneration": null
+  },
+  "stats2a": {
+    "framesApplied": 1,
+    "framesDuplicate": 1,
+    "framesStale": 0,
+    "framesForeign": 0,
+    "framesInconsistent": 0,
+    "rpcErrors": 0,
+    "transportLosses": 1,
+    "unexpectedRejections": 0,
+    "sinkErrors": {},
+    "pagesApplied": 0,
+    "pagesRejected": 0
+  },
+  "stats2b": {
+    "framesApplied": 1,
+    "framesDuplicate": 0,
+    "framesStale": 0,
+    "framesForeign": 0,
+    "framesInconsistent": 0,
+    "rpcErrors": 0,
+    "transportLosses": 0,
+    "unexpectedRejections": 0,
+    "sinkErrors": {},
+    "pagesApplied": 0,
+    "pagesRejected": 0
+  },
+  "session2": "dsh-auth-ffhon_jzUkVkeZHZvbEIDIFN3ORAPStecWWJsVufNwM"
+}

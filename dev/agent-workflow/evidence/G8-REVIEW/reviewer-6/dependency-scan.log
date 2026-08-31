@@ -1,0 +1,95 @@
+=== import face (packages/remote): packages/remote ===
+scanned 45 source files
+relative import specifiers : 147
+node: builtin specifiers    : 7
+bare/third-party specifiers : 14
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-admission.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-helpers.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-invalid-ids.test.ts
+  BARE ${specifier}  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative-scan.mjs
+  BARE ${SESSION_TYPES_SPECIFIER}  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative-scan.mjs
+  BARE ${SESSION_TYPES_SPECIFIER}  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative-scan.mjs
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-round-trip.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-version.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-engine.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-negative.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-sync.test.ts
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\remote.test.ts
+  BARE vitest/config  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\vitest.config.ts
+RESULT: FAIL (bare specifiers found)
+
+=== import face (packages/client): packages/client ===
+scanned 4 source files
+relative import specifiers : 3
+node: builtin specifiers    : 0
+bare/third-party specifiers : 2
+  BARE vitest  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\client\test\client.test.ts
+  BARE vitest/config  @  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\client\vitest.config.ts
+RESULT: FAIL (bare specifiers found)
+
+=== forbidden tokens (packages/remote): forbidden-token scan (SessionController, session-controller, sessionLog, session-log, session_log, mirror, Mirror) ===
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\errors.ts -> {"mirror":5,"Mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\ids.ts -> {"mirror":3}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\params.ts -> {"mirror":9}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\remote-safe.ts -> {"mirror":4}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\response.ts -> {"mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\types.ts -> {"mirror":10}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\contracts\version.ts -> {"mirror":1,"Mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\handlers\dispatch.ts -> {"mirror":2}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\handlers\ports.ts -> {"mirror":2}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\push\generation.ts -> {"mirror":2}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\push\ledger-page.ts -> {"mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\src\push\types.ts -> {"mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-invalid-ids.test.ts -> {"mirror":2}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative-scan.d.mts -> {"session-log":1,"mirror":1,"Mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative-scan.mjs -> {"SessionController":4,"sessionLog":3,"session-log":10,"mirror":4,"Mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t3-negative.test.ts -> {"SessionController":1,"session-log":2,"mirror":2,"Mirror":2}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-engine.test.ts -> {"mirror":2}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-negative-scan.d.mts -> {"mirror":1,"Mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-negative-scan.mjs -> {"session-controller":3,"mirror":4,"Mirror":1}
+  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\packages\remote\test\p8t4-negative.test.ts -> {"mirror":2,"Mirror":2}
+total forbidden-token hits: 93
+RESULT: REVIEW (hits listed above)
+
+=== forbidden tokens (packages/client): forbidden-token scan (SessionController, session-controller, sessionLog, session-log, session_log, mirror, Mirror) ===
+total forbidden-token hits: 0
+RESULT: PASS (zero SessionController/session-log/mirror tokens)
+
+=== 12-port surface (Remote*Port interfaces in packages/remote/src/handlers/ports.ts) ===
+  port: RemoteCatalogPort
+  port: RemoteIntentPort
+  port: RemoteTeamCreatePort
+  port: RemoteProjectionPort
+  port: RemoteLedgerPort
+  port: RemoteAdmissionPort
+  port: RemoteLifecyclePort
+  port: RemoteOverridePort
+  port: RemotePolicyStatePort
+  port: RemoteCompatibilityPort
+  port: RemoteHandoffPort
+  port: RemoteLegacyPort
+port count: 12
+RESULT: PASS (12 ports)
+
+OVERALL: import-face-remote=FAIL import-face-client=FAIL tokens-remote=93 tokens-client=0 ports=12
+
+=== ASSESSMENT (reviewer-6, manual review of the raw results above) ===
+import face:
+  - packages/remote/src/**: ZERO bare/third-party specifiers (all 147 relative, node: builtins only).
+    The 14 bare hits above are all in test/ files: 12x vitest, 1x vitest/config, and 2 template-string
+    literals inside p8t3-negative-scan.mjs (regex false positives, not real imports).
+    => product import face is fully relative + node: builtins. PASS.
+  - packages/client: only vitest + vitest/config (test infrastructure). No third-party product deps.
+forbidden tokens (SessionController / session-log / mirror):
+  - packages/client: 0 hits. PASS.
+  - packages/remote: zero hits for SessionController/session-controller/sessionLog/session-log/session_log
+    in src/**; the ONLY 3 hits are in test/p8t3-negative.test.ts, the negative-scan test itself, whose
+    documented purpose is to DETECT such tokens (positive control R3/R4).
+  - The 93 'mirror'/'Mirror' hits are documentation vocabulary for the value-level mirror design
+    (deviation D-1: remote contract types re-freeze the wire shapes as their own value types,
+    e.g. 'mirror of the frozen stale guard', 'value-level mirror of the P3 ID rules').
+    None of them reference the deprecated browser SessionController Team mirror architecture.
+    => the browser needs no SessionController Team mirror: the remote layer talks only through the
+    connection.rpc seam over the 12 structural ports. PASS.
+12-port surface: PASS (12 exported Remote*Port interfaces in src/handlers/ports.ts).

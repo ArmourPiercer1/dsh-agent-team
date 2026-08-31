@@ -1,0 +1,118 @@
+================================================================
+G8-REVIEW reviewer-4 (RN=R4) - boundary-checks.log
+================================================================
+git rev-parse --show-toplevel: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R4
+git rev-parse HEAD: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
+diff base: 959e36358ee7244ff8c7e1e0b8396e70dfef4562
+
+## A. zero-core
+A1. node: builtin imports in packages/**/*.ts
+    grep: from 'node: | import('node: | require('node: over packages/**/*.ts
+    -> exactly 1 hit: packages/runtime/test/p7t5-no-creation-scan.test.ts:42
+       content: "import { readFileSync } from 'node:fs'"
+       -> STRING LITERAL: synthetic POSITIVE_SAMPLE used to prove the
+          scanner's R5 rule (no node: builtin import) still matches.
+          File read in full: it is a test for the committed scanner,
+          not a module import.  REAL node: imports in packages: 0
+A2. patch mutation of upstream
+    - root package.json scripts: build/typecheck/lint/test/test:node/smoke:composition
+      -> no postinstall/preinstall/prepare/patch anywhere
+    - all 8 packages/*/package.json script sets: only tsc/vitest
+      -> no lifecycle scripts
+    - grep patch-package|pnpm patch|postinstall over all package.json:
+      -> 1 hit: scripts/fixtures/zero-core/plugins/bad-plugin-a/package.json
+         "postinstall": "patch-package"
+         -> NEGATIVE TEST FIXTURE (name @fixture/bad-plugin-a), consumed by
+            scripts/verify-zero-core.mjs (C1a rule demo)
+         -> PRE-EXISTING at base SHA: git cat-file -e
+            959e363...:scripts/fixtures/zero-core/plugins/bad-plugin-a/package.json
+            exit 0; git show of base copy is byte-identical content
+    - lockfile: git diff --stat 959e363..HEAD -- pnpm-lock.yaml package.json
+      -> EMPTY (no lockfile or root-manifest change in the P8 range)
+A3. imports into references/deepseek-harness-test-use (upstream) from packages/*
+    grep deepseek-harness-test-use|harness-test-use over packages/**/*.ts -> 0 hits
+
+A-RESULT: zero-core PASS
+
+## B. private-import
+B1. grep packages/**/*.ts for deepseek-harness|host-core|@deepseek|apps/cli|
+    apps/web|packages/bundle|references/ -> 12 hits, ALL in:
+       doc comments (@see github URL, evidence pointers to frozen fork),
+       scanner denylist string constants (p4-helpers.ts:864,
+       testkit/domain/src/import-graph.ts:52), or synthetic test string
+       samples (p6t6-bypass-scan, p7t6-teammates-adapter, p4t6 scanner test).
+       -> 0 actual import statements.
+B2. exhaustive import-specifier audit (harness/import-face-audit.mjs, own
+    reviewer harness) over ALL packages/**/*.ts (static import/export-from,
+    side-effect imports, dynamic import()):
+       TOTAL specifiers: 1692
+       RELATIVE (./ ../ intra-repo): 1518
+       vitest: 165 ; vitest/config (vitest.config.ts files): 8
+       INTRA @dsh-agent-team/*: 0
+       NODE_BUILTIN: 0
+       BARE: 9  -> 8x vitest/config (test config, same allowed vitest pkg)
+                    1x 'yaml' in packages/domain/blueprint/src/parse.ts
+       'yaml' is a DECLARED dependency of @dsh-agent-team/domain
+       (packages/domain/package.json "dependencies": { "yaml": "^2.9.0" })
+       and is documented in parse.ts as an allowed standard parser.
+       Not an upstream or private-internal import.
+B-RESULT: private-import PASS
+
+## C. owned-boundary (git diff --name-only base..HEAD -- packages/ = 97 files)
+Full list: owned-diff.txt (same dir). Classification (file count per group):
+  T1  packages/contracts/src/projection/** : 12 files
+  T1  packages/contracts/src/index.ts      : 1  (additive: +120/-0, verified)
+  T1  packages/contracts/test/p8t1-*       : 5  (fixtures + 4 suites)
+  T2  packages/runtime/projection/**       : 6
+  T2  packages/runtime/test/p8t2-*         : 6
+  T3  packages/remote/src/contracts/**     : 9
+  T3  packages/remote/src/handlers/**      : 12
+  T3  packages/remote/src/index.ts         : 1  (+374/-11; all 11 deleted
+                                                lines are skeleton comment
+                                                text; PACKAGE_ID='remote'
+                                                marker retained at line 30;
+                                                effective change additive)
+  T3  packages/remote/test/p8t3-*          : 8  (incl. p8t3-negative.test.ts
+                                                layout-pin maintenance, a
+                                                standing T4-recorded exception
+                                                - also listed under T3 prefix)
+  T4  packages/remote/src/push/**          : 6
+  T4  packages/remote/test/p8t4-*          : 7
+  G8-S1 gate-level:
+       packages/runtime/compatibility/probe.ts                  : 1
+       packages/storage/repositories/ledger.ts                  : 1
+       packages/storage/repositories/team-domain.ts             : 1
+       packages/storage/repositories/team-sessions.ts           : 1
+       packages/storage/test/g8s1-stamp-advance.test.ts         : 1
+       packages/runtime/test/g8s1-generation-stamp.test.ts      : 1
+  gate-level P4/P6 test-expectation updates:
+       packages/storage/test/p4-06-journal.test.ts              : 1
+       packages/storage/test/p4t2-conflicts.test.ts             : 1
+       packages/storage/test/p4t2-crash-recovery.test.ts        : 1
+       packages/storage/test/p4t2-helpers.ts                    : 1
+       packages/storage/test/p4t2-journal.test.ts               : 1
+       packages/storage/test/p4t4-helpers.ts                    : 1
+       packages/storage/test/p4t4-one-committed-invariant.test.ts : 1
+       packages/storage/test/p4t4-orphan-detect.test.ts         : 1
+       packages/storage/test/p4t4-per-stage-retry.test.ts       : 1
+       packages/runtime/test/p6t1-explicit.test.ts              : 1
+       packages/runtime/test/p6t1-recovery.test.ts              : 1
+       packages/runtime/test/p6t3-send-delivery.test.ts         : 1
+  gate-level testkit:
+       packages/testkit/fault-injection/fixtures/committed-world/team_domain/team_sessions.json : 1
+       packages/testkit/test/p4t5-corrupt-version.test.ts     : 1
+       packages/testkit/test/p4t5-crash-matrix.test.ts        : 1
+       packages/testkit/test/p4t5-helpers.ts                  : 1
+       packages/testkit/test/p4t5-retry-restart.test.ts       : 1
+  DEC-1 standing exception:
+       packages/testkit/test/p4t6-session-event-scan.test.ts   : 1
+  TOTAL: 12+1+5+6+6+9+12+1+8+6+7+6+9+3+1+4+1 = 97  -> ALL classified
+  OUT-OF-GLOB files: 0
+C.1 Non-packages paths changed in range (informational; outside the
+    packages/-scoped owned-boundary rule): dev/agent-workflow/** only
+    (tracked orchestration evidence for G8-S1/P8-T1..T5, logs, briefs).
+    Contents NOT read (blindness rule); paths only.
+C-RESULT: owned-boundary PASS
+
+## SUMMARY
+zero-core: PASS | private-import: PASS | owned-boundary: PASS

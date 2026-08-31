@@ -1,0 +1,24 @@
+[2026-08-31T12:29:43.231Z] apply: start
+[2026-08-31T12:29:43.235Z] effect: worker disposer armed
+[2026-08-31T12:29:43.236Z] mounted: channel '/team-remote' live (world builds on first call)
+[2026-08-31T12:29:43.236Z] apply: done
+[2026-08-31T12:31:07.222Z] apply: start
+[2026-08-31T12:31:07.225Z] effect: worker disposer armed
+[2026-08-31T12:31:07.226Z] mounted: channel '/team-remote' live (world builds on first call)
+[2026-08-31T12:31:07.226Z] apply: done
+[2026-08-31T12:33:07.581Z] syncCall: rpc 'catalog.list' timed out after 120000ms
+[2026-08-31T12:33:07.585Z] worker: rpc 'catalog.list' timed out after 120000ms
+[2026-08-31T13:07:04.168Z] apply: start
+[2026-08-31T13:07:04.171Z] effect: worker disposer armed
+[2026-08-31T13:07:04.172Z] mounted: channel '/team-remote' live (world builds on first call)
+[2026-08-31T13:07:04.172Z] apply: done
+[2026-08-31T13:07:04.754Z] worker: worker error: Cannot read properties of undefined (reading 'put')
+[2026-08-31T13:07:04.754Z] worker: worker error: Cannot read properties of undefined (reading 'put')
+[2026-08-31T13:22:46.721Z] apply: start
+[2026-08-31T13:22:46.724Z] effect: worker disposer armed
+[2026-08-31T13:22:46.724Z] mounted: channel '/team-remote' live (world builds on first call)
+[2026-08-31T13:22:46.724Z] apply: done
+[2026-08-31T13:29:38.977Z] apply: start
+[2026-08-31T13:29:38.980Z] effect: worker disposer armed
+[2026-08-31T13:29:38.980Z] mounted: channel '/team-remote' live (world builds on first call)
+[2026-08-31T13:29:38.980Z] apply: done

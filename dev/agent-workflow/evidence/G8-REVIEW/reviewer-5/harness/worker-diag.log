@@ -1,0 +1,338 @@
+[2026-08-31T13:06:12.196Z] handler entry port=catalog.list
+[2026-08-31T13:06:12.420Z] world built: ports=22
+[2026-08-31T13:06:12.420Z] pre-fn catalog.list
+[2026-08-31T13:06:12.420Z] post-fn catalog.list typeof=object
+[2026-08-31T13:06:12.421Z] reply enter
+[2026-08-31T13:06:12.421Z] json ok bytes=93
+[2026-08-31T13:06:12.421Z] stores done
+[2026-08-31T13:07:04.458Z] handler entry port=catalog.list
+[2026-08-31T13:07:04.663Z] world built: ports=22
+[2026-08-31T13:07:04.664Z] pre-fn catalog.list
+[2026-08-31T13:07:04.664Z] post-fn catalog.list typeof=object
+[2026-08-31T13:07:04.664Z] reply enter
+[2026-08-31T13:07:04.664Z] json ok bytes=93
+[2026-08-31T13:07:04.664Z] stores done
+[2026-08-31T13:07:04.729Z] handler entry port=teamCreate.create
+[2026-08-31T13:07:04.729Z] pre-fn teamCreate.create
+[2026-08-31T13:07:04.730Z] post-fn teamCreate.create typeof=object
+[2026-08-31T13:07:04.730Z] reply enter
+[2026-08-31T13:07:04.730Z] json ok bytes=66
+[2026-08-31T13:07:04.730Z] stores done
+[2026-08-31T13:22:47.031Z] handler entry port=catalog.list
+[2026-08-31T13:22:47.236Z] world built: ports=22
+[2026-08-31T13:22:47.236Z] pre-fn catalog.list
+[2026-08-31T13:22:47.236Z] post-fn catalog.list typeof=object
+[2026-08-31T13:22:47.236Z] reply enter
+[2026-08-31T13:22:47.236Z] json ok bytes=93
+[2026-08-31T13:22:47.237Z] stores done
+[2026-08-31T13:22:47.294Z] handler entry port=teamCreate.create
+[2026-08-31T13:22:47.294Z] pre-fn teamCreate.create
+[2026-08-31T13:22:47.297Z] post-fn teamCreate.create typeof=object
+[2026-08-31T13:22:47.297Z] reply enter
+[2026-08-31T13:22:47.297Z] json ok bytes=927
+[2026-08-31T13:22:47.297Z] stores done
+[2026-08-31T13:22:47.340Z] handler entry port=projection.project
+[2026-08-31T13:22:47.340Z] pre-fn projection.project
+[2026-08-31T13:22:47.342Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.342Z] reply enter
+[2026-08-31T13:22:47.342Z] json ok bytes=1789
+[2026-08-31T13:22:47.342Z] stores done
+[2026-08-31T13:22:47.403Z] handler entry port=projection.project
+[2026-08-31T13:22:47.403Z] pre-fn projection.project
+[2026-08-31T13:22:47.403Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.403Z] reply enter
+[2026-08-31T13:22:47.404Z] json ok bytes=1789
+[2026-08-31T13:22:47.404Z] stores done
+[2026-08-31T13:22:47.466Z] handler entry port=projection.project
+[2026-08-31T13:22:47.466Z] pre-fn projection.project
+[2026-08-31T13:22:47.467Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.467Z] reply enter
+[2026-08-31T13:22:47.467Z] json ok bytes=1789
+[2026-08-31T13:22:47.467Z] stores done
+[2026-08-31T13:22:47.513Z] handler entry port=projection.project
+[2026-08-31T13:22:47.513Z] pre-fn projection.project
+[2026-08-31T13:22:47.513Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.514Z] reply enter
+[2026-08-31T13:22:47.514Z] json ok bytes=1789
+[2026-08-31T13:22:47.514Z] stores done
+[2026-08-31T13:22:47.560Z] handler entry port=projection.project
+[2026-08-31T13:22:47.560Z] pre-fn projection.project
+[2026-08-31T13:22:47.561Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.561Z] reply enter
+[2026-08-31T13:22:47.561Z] json ok bytes=1789
+[2026-08-31T13:22:47.561Z] stores done
+[2026-08-31T13:22:47.607Z] handler entry port=projection.project
+[2026-08-31T13:22:47.607Z] pre-fn projection.project
+[2026-08-31T13:22:47.607Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.607Z] reply enter
+[2026-08-31T13:22:47.608Z] json ok bytes=1789
+[2026-08-31T13:22:47.608Z] stores done
+[2026-08-31T13:22:47.654Z] handler entry port=projection.project
+[2026-08-31T13:22:47.655Z] pre-fn projection.project
+[2026-08-31T13:22:47.655Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.655Z] reply enter
+[2026-08-31T13:22:47.655Z] json ok bytes=1789
+[2026-08-31T13:22:47.655Z] stores done
+[2026-08-31T13:22:47.702Z] handler entry port=admission.performAction
+[2026-08-31T13:22:47.702Z] pre-fn admission.performAction
+[2026-08-31T13:22:47.712Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:22:47.713Z] reply enter
+[2026-08-31T13:22:47.713Z] json ok bytes=409
+[2026-08-31T13:22:47.713Z] stores done
+[2026-08-31T13:22:47.749Z] handler entry port=projection.project
+[2026-08-31T13:22:47.793Z] pre-fn projection.project
+[2026-08-31T13:22:47.794Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:47.794Z] reply enter
+[2026-08-31T13:22:47.794Z] json ok bytes=2492
+[2026-08-31T13:22:47.795Z] stores done
+[2026-08-31T13:22:47.828Z] handler entry port=admission.performAction
+[2026-08-31T13:22:47.829Z] pre-fn admission.performAction
+[2026-08-31T13:22:47.834Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:22:47.834Z] reply enter
+[2026-08-31T13:22:47.834Z] json ok bytes=409
+[2026-08-31T13:22:47.834Z] stores done
+[2026-08-31T13:22:47.875Z] handler entry port=ledger.listEntries
+[2026-08-31T13:22:47.876Z] pre-fn ledger.listEntries
+[2026-08-31T13:22:47.876Z] post-fn ledger.listEntries typeof=object
+[2026-08-31T13:22:47.876Z] reply enter
+[2026-08-31T13:22:47.876Z] json ok bytes=725
+[2026-08-31T13:22:47.876Z] stores done
+[2026-08-31T13:22:47.906Z] handler entry port=ledger.countEntries
+[2026-08-31T13:22:47.907Z] pre-fn ledger.countEntries
+[2026-08-31T13:22:47.907Z] post-fn ledger.countEntries typeof=number
+[2026-08-31T13:22:47.907Z] reply enter
+[2026-08-31T13:22:47.907Z] json ok bytes=21
+[2026-08-31T13:22:47.907Z] stores done
+[2026-08-31T13:22:47.970Z] handler entry port=projection.project
+[2026-08-31T13:22:47.970Z] pre-fn projection.project
+[2026-08-31T13:22:47.971Z] call failed: Error: no TeamSession 'not-a-valid-id'
+    at typedError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:56:17)
+    at buildSource (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:436:13)
+    at Object.readProjectionSource (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:462:37)
+    at Object.project (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/packages/runtime/projection/service.ts:86:29)
+    at projection.project (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:626:32)
+    at MessagePort.<anonymous> (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-worker.mjs:166:25)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+[2026-08-31T13:22:47.971Z] reply enter
+[2026-08-31T13:22:47.971Z] json ok bytes=98
+[2026-08-31T13:22:47.971Z] stores done
+[2026-08-31T13:22:48.033Z] handler entry port=admission.performAction
+[2026-08-31T13:22:48.033Z] pre-fn admission.performAction
+[2026-08-31T13:22:48.043Z] call failed: TeamRuntimeError: TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')
+    at checkCallerRoleAuthority (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/packages/runtime/admission/resolve.ts:269:11)
+    at Object.performAction (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/packages/runtime/action-router/router.ts:86:5)
+    at admission.performAction (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:662:22)
+    at MessagePort.<anonymous> (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-worker.mjs:166:25)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+[2026-08-31T13:22:48.043Z] reply enter
+[2026-08-31T13:22:48.043Z] json ok bytes=175
+[2026-08-31T13:22:48.043Z] stores done
+[2026-08-31T13:22:48.159Z] handler entry port=catalog.list
+[2026-08-31T13:22:48.160Z] pre-fn catalog.list
+[2026-08-31T13:22:48.160Z] post-fn catalog.list typeof=object
+[2026-08-31T13:22:48.160Z] reply enter
+[2026-08-31T13:22:48.160Z] json ok bytes=93
+[2026-08-31T13:22:48.160Z] stores done
+[2026-08-31T13:22:48.207Z] handler entry port=projection.project
+[2026-08-31T13:22:48.207Z] pre-fn projection.project
+[2026-08-31T13:22:48.208Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:48.208Z] reply enter
+[2026-08-31T13:22:48.208Z] json ok bytes=3195
+[2026-08-31T13:22:48.208Z] stores done
+[2026-08-31T13:22:48.255Z] handler entry port=admission.performAction
+[2026-08-31T13:22:48.255Z] pre-fn admission.performAction
+[2026-08-31T13:22:48.256Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:22:48.257Z] reply enter
+[2026-08-31T13:22:48.257Z] json ok bytes=408
+[2026-08-31T13:22:48.257Z] stores done
+[2026-08-31T13:22:48.302Z] handler entry port=projection.project
+[2026-08-31T13:22:48.302Z] pre-fn projection.project
+[2026-08-31T13:22:48.303Z] post-fn projection.project typeof=object
+[2026-08-31T13:22:48.303Z] reply enter
+[2026-08-31T13:22:48.303Z] json ok bytes=3195
+[2026-08-31T13:22:48.303Z] stores done
+[2026-08-31T13:29:39.273Z] handler entry port=catalog.list
+[2026-08-31T13:29:39.502Z] world built: ports=22
+[2026-08-31T13:29:39.503Z] pre-fn catalog.list
+[2026-08-31T13:29:39.503Z] post-fn catalog.list typeof=object
+[2026-08-31T13:29:39.503Z] reply enter
+[2026-08-31T13:29:39.503Z] json ok bytes=78
+[2026-08-31T13:29:39.503Z] stores done
+[2026-08-31T13:29:39.583Z] handler entry port=teamCreate.create
+[2026-08-31T13:29:39.583Z] pre-fn teamCreate.create
+[2026-08-31T13:29:39.586Z] post-fn teamCreate.create typeof=object
+[2026-08-31T13:29:39.587Z] reply enter
+[2026-08-31T13:29:39.587Z] json ok bytes=927
+[2026-08-31T13:29:39.587Z] stores done
+[2026-08-31T13:29:39.620Z] handler entry port=projection.project
+[2026-08-31T13:29:39.621Z] pre-fn projection.project
+[2026-08-31T13:29:39.622Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.622Z] reply enter
+[2026-08-31T13:29:39.623Z] json ok bytes=1789
+[2026-08-31T13:29:39.623Z] stores done
+[2026-08-31T13:29:39.671Z] handler entry port=projection.project
+[2026-08-31T13:29:39.672Z] pre-fn projection.project
+[2026-08-31T13:29:39.672Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.672Z] reply enter
+[2026-08-31T13:29:39.672Z] json ok bytes=1789
+[2026-08-31T13:29:39.672Z] stores done
+[2026-08-31T13:29:39.733Z] handler entry port=projection.project
+[2026-08-31T13:29:39.733Z] pre-fn projection.project
+[2026-08-31T13:29:39.733Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.733Z] reply enter
+[2026-08-31T13:29:39.733Z] json ok bytes=1789
+[2026-08-31T13:29:39.733Z] stores done
+[2026-08-31T13:29:39.779Z] handler entry port=projection.project
+[2026-08-31T13:29:39.780Z] pre-fn projection.project
+[2026-08-31T13:29:39.780Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.780Z] reply enter
+[2026-08-31T13:29:39.780Z] json ok bytes=1789
+[2026-08-31T13:29:39.780Z] stores done
+[2026-08-31T13:29:39.826Z] handler entry port=projection.project
+[2026-08-31T13:29:39.826Z] pre-fn projection.project
+[2026-08-31T13:29:39.827Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.827Z] reply enter
+[2026-08-31T13:29:39.827Z] json ok bytes=1789
+[2026-08-31T13:29:39.827Z] stores done
+[2026-08-31T13:29:39.872Z] handler entry port=projection.project
+[2026-08-31T13:29:39.872Z] pre-fn projection.project
+[2026-08-31T13:29:39.873Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.873Z] reply enter
+[2026-08-31T13:29:39.873Z] json ok bytes=1789
+[2026-08-31T13:29:39.873Z] stores done
+[2026-08-31T13:29:39.919Z] handler entry port=projection.project
+[2026-08-31T13:29:39.919Z] pre-fn projection.project
+[2026-08-31T13:29:39.920Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:39.920Z] reply enter
+[2026-08-31T13:29:39.920Z] json ok bytes=1789
+[2026-08-31T13:29:39.920Z] stores done
+[2026-08-31T13:29:39.965Z] handler entry port=admission.performAction
+[2026-08-31T13:29:39.965Z] pre-fn admission.performAction
+[2026-08-31T13:29:39.977Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:29:39.977Z] reply enter
+[2026-08-31T13:29:39.977Z] json ok bytes=409
+[2026-08-31T13:29:39.977Z] stores done
+[2026-08-31T13:29:40.012Z] handler entry port=projection.project
+[2026-08-31T13:29:40.012Z] pre-fn projection.project
+[2026-08-31T13:29:40.013Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:40.013Z] reply enter
+[2026-08-31T13:29:40.013Z] json ok bytes=2492
+[2026-08-31T13:29:40.013Z] stores done
+[2026-08-31T13:29:40.059Z] handler entry port=admission.performAction
+[2026-08-31T13:29:40.059Z] pre-fn admission.performAction
+[2026-08-31T13:29:40.066Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:29:40.066Z] reply enter
+[2026-08-31T13:29:40.066Z] json ok bytes=409
+[2026-08-31T13:29:40.066Z] stores done
+[2026-08-31T13:29:40.105Z] handler entry port=ledger.listEntries
+[2026-08-31T13:29:40.105Z] pre-fn ledger.listEntries
+[2026-08-31T13:29:40.105Z] post-fn ledger.listEntries typeof=object
+[2026-08-31T13:29:40.105Z] reply enter
+[2026-08-31T13:29:40.106Z] json ok bytes=725
+[2026-08-31T13:29:40.106Z] stores done
+[2026-08-31T13:29:40.135Z] handler entry port=ledger.countEntries
+[2026-08-31T13:29:40.135Z] pre-fn ledger.countEntries
+[2026-08-31T13:29:40.135Z] post-fn ledger.countEntries typeof=number
+[2026-08-31T13:29:40.136Z] reply enter
+[2026-08-31T13:29:40.136Z] json ok bytes=21
+[2026-08-31T13:29:40.136Z] stores done
+[2026-08-31T13:29:40.183Z] handler entry port=admission.performAction
+[2026-08-31T13:29:40.183Z] pre-fn admission.performAction
+[2026-08-31T13:29:40.186Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:29:40.186Z] reply enter
+[2026-08-31T13:29:40.186Z] json ok bytes=279
+[2026-08-31T13:29:40.186Z] stores done
+[2026-08-31T13:29:40.231Z] handler entry port=ledger.listEntries
+[2026-08-31T13:29:40.231Z] pre-fn ledger.listEntries
+[2026-08-31T13:29:40.231Z] post-fn ledger.listEntries typeof=object
+[2026-08-31T13:29:40.231Z] reply enter
+[2026-08-31T13:29:40.231Z] json ok bytes=1179
+[2026-08-31T13:29:40.231Z] stores done
+[2026-08-31T13:29:40.261Z] handler entry port=ledger.countEntries
+[2026-08-31T13:29:40.261Z] pre-fn ledger.countEntries
+[2026-08-31T13:29:40.261Z] post-fn ledger.countEntries typeof=number
+[2026-08-31T13:29:40.261Z] reply enter
+[2026-08-31T13:29:40.262Z] json ok bytes=21
+[2026-08-31T13:29:40.262Z] stores done
+[2026-08-31T13:29:40.310Z] handler entry port=ledger.listEntries
+[2026-08-31T13:29:40.310Z] pre-fn ledger.listEntries
+[2026-08-31T13:29:40.310Z] post-fn ledger.listEntries typeof=object
+[2026-08-31T13:29:40.311Z] reply enter
+[2026-08-31T13:29:40.311Z] json ok bytes=1179
+[2026-08-31T13:29:40.311Z] stores done
+[2026-08-31T13:29:40.339Z] handler entry port=ledger.countEntries
+[2026-08-31T13:29:40.340Z] pre-fn ledger.countEntries
+[2026-08-31T13:29:40.340Z] post-fn ledger.countEntries typeof=number
+[2026-08-31T13:29:40.340Z] reply enter
+[2026-08-31T13:29:40.340Z] json ok bytes=21
+[2026-08-31T13:29:40.340Z] stores done
+[2026-08-31T13:29:40.403Z] handler entry port=projection.project
+[2026-08-31T13:29:40.403Z] pre-fn projection.project
+[2026-08-31T13:29:40.403Z] call failed: Error: no TeamSession 'not-a-valid-id'
+    at typedError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:56:17)
+    at buildSource (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:436:13)
+    at Object.readProjectionSource (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:462:37)
+    at Object.project (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/packages/runtime/projection/service.ts:86:29)
+    at projection.project (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:629:32)
+    at MessagePort.<anonymous> (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-worker.mjs:166:25)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+[2026-08-31T13:29:40.403Z] reply enter
+[2026-08-31T13:29:40.403Z] json ok bytes=98
+[2026-08-31T13:29:40.404Z] stores done
+[2026-08-31T13:29:40.466Z] handler entry port=admission.performAction
+[2026-08-31T13:29:40.466Z] pre-fn admission.performAction
+[2026-08-31T13:29:40.467Z] call failed: TeamRuntimeError: TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')
+    at checkCallerRoleAuthority (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/packages/runtime/admission/resolve.ts:269:11)
+    at Object.performAction (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/packages/runtime/action-router/router.ts:86:5)
+    at admission.performAction (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-build.mjs:665:22)
+    at MessagePort.<anonymous> (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/world-worker.mjs:166:25)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+[2026-08-31T13:29:40.467Z] reply enter
+[2026-08-31T13:29:40.467Z] json ok bytes=175
+[2026-08-31T13:29:40.468Z] stores done
+[2026-08-31T13:29:40.591Z] handler entry port=catalog.list
+[2026-08-31T13:29:40.592Z] pre-fn catalog.list
+[2026-08-31T13:29:40.592Z] post-fn catalog.list typeof=object
+[2026-08-31T13:29:40.592Z] reply enter
+[2026-08-31T13:29:40.592Z] json ok bytes=78
+[2026-08-31T13:29:40.592Z] stores done
+[2026-08-31T13:29:40.639Z] handler entry port=intent.probe
+[2026-08-31T13:29:40.639Z] pre-fn intent.probe
+[2026-08-31T13:29:40.639Z] post-fn intent.probe typeof=object
+[2026-08-31T13:29:40.639Z] reply enter
+[2026-08-31T13:29:40.639Z] json ok bytes=873
+[2026-08-31T13:29:40.639Z] stores done
+[2026-08-31T13:29:40.687Z] handler entry port=legacy.inspect
+[2026-08-31T13:29:40.687Z] pre-fn legacy.inspect
+[2026-08-31T13:29:40.688Z] post-fn legacy.inspect typeof=object
+[2026-08-31T13:29:40.688Z] reply enter
+[2026-08-31T13:29:40.688Z] json ok bytes=128
+[2026-08-31T13:29:40.688Z] stores done
+[2026-08-31T13:29:40.733Z] handler entry port=compatibility.probe
+[2026-08-31T13:29:40.734Z] pre-fn compatibility.probe
+[2026-08-31T13:29:40.736Z] post-fn compatibility.probe typeof=object
+[2026-08-31T13:29:40.834Z] reply enter
+[2026-08-31T13:29:40.834Z] json ok bytes=215
+[2026-08-31T13:29:40.835Z] stores done
+[2026-08-31T13:29:40.874Z] handler entry port=projection.project
+[2026-08-31T13:29:40.874Z] pre-fn projection.project
+[2026-08-31T13:29:40.875Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:40.875Z] reply enter
+[2026-08-31T13:29:40.875Z] json ok bytes=3223
+[2026-08-31T13:29:40.875Z] stores done
+[2026-08-31T13:29:40.920Z] handler entry port=admission.performAction
+[2026-08-31T13:29:40.920Z] pre-fn admission.performAction
+[2026-08-31T13:29:40.921Z] post-fn admission.performAction typeof=object
+[2026-08-31T13:29:40.922Z] reply enter
+[2026-08-31T13:29:40.922Z] json ok bytes=408
+[2026-08-31T13:29:40.922Z] stores done
+[2026-08-31T13:29:40.968Z] handler entry port=projection.project
+[2026-08-31T13:29:40.968Z] pre-fn projection.project
+[2026-08-31T13:29:40.968Z] post-fn projection.project typeof=object
+[2026-08-31T13:29:40.968Z] reply enter
+[2026-08-31T13:29:40.969Z] json ok bytes=3223
+[2026-08-31T13:29:40.969Z] stores done

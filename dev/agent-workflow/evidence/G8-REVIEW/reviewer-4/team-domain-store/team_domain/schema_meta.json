@@ -1,0 +1,10 @@
+{
+  "schema_meta": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.845Z\",\"store\":\"schema_meta\",\"version\":1}",
+  "team_sessions": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.845Z\",\"store\":\"team_sessions\",\"version\":1}",
+  "member_instances": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.846Z\",\"store\":\"member_instances\",\"version\":1}",
+  "session_bindings": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.846Z\",\"store\":\"session_bindings\",\"version\":1}",
+  "overrides": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.846Z\",\"store\":\"overrides\",\"version\":1}",
+  "compatibility": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.846Z\",\"store\":\"compatibility\",\"version\":1}",
+  "operations": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.847Z\",\"store\":\"operations\",\"version\":1}",
+  "ledger": "{\"schemaVersion\":1,\"stampedAt\":\"2026-08-31T13:53:38.847Z\",\"store\":\"ledger\",\"version\":1}"
+}

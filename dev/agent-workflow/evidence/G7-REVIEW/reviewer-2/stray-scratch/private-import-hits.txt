@@ -1,0 +1,46 @@
+packages/contracts/src/ids/common.ts:5: * Team contract (upstream DSH session ids, blueprint identifiers, labels,
+packages/contracts/src/ids/common.ts:7: * control characters, over-length) without inventing an upstream format:
+packages/contracts/src/ids/common.ts:8: * the upstream DSH session id is an opaque branded string minted as
+packages/contracts/src/ids/session-id.ts:15: * The upstream DSH session id is an opaque branded string (upstream public
+packages/contracts/src/ids/session-id.ts:32: * A DSH session id (generic context): the opaque upstream session identity.
+packages/contracts/src/ids/session-id.ts:33: * @see {@link https://github.com/deepseek-ai/deepseek-harness SessionId}
+packages/contracts/src/legacy-vocabulary.ts:8: * `team/control-decision`, `team/message`) written into the upstream
+packages/contracts/test/ids.test.ts:26:  it('accepts the upstream-minted session-<n> form and opaque ids', () => {
+packages/domain/policy/src/contracts-mirror.ts:58:/** A DSH session id (generic context): the opaque upstream session identity. */
+packages/domain/policy/src/contracts-mirror.ts:145: * vNext boundary rule (contracts v1 `ids/session-id.ts`): the upstream DSH
+packages/domain/policy/src/validate.ts:4: * The resolver consumes plain data structures (no runtime guards upstream
+packages/legacy/session-reader/format.ts:5: * DSH (evidence: `references/deepseek-harness`, read-only):
+packages/legacy/session-reader/types.ts:17: * Legacy on-disk evidence (frozen fork `references/deepseek-harness`,
+packages/legacy/teammates-adapter.ts:16: * Semantics ported from the frozen legacy team-local parser (references/,
+packages/legacy/test/p7t6-teammates-adapter.test.ts:438:    // vNext team object types, mutation/admission entry points, upstream
+packages/runtime/agent-setup/capability/types.ts:48: * - it NEVER uses upstream private APIs or a private registry (zero-core);
+packages/runtime/agent-setup/model/overlay.ts:42: * - no upstream source modification and no upstream-private API import
+packages/runtime/agent-setup/persona/adapter.ts:37: *    preset's own upstream assembly semantics are preserved by
+packages/runtime/agent-setup/persona/adapter.ts:214:   *    plain upstream assembly semantics);
+packages/runtime/agent-setup/persona/types.ts:122: * "upstream assembly semantics preserved" acceptance criterion holds by
+packages/runtime/agent-setup/preset/types.ts:30: *   complete), not the upstream persona package's internal assembly
+packages/runtime/agent-setup/preset/types.ts:82: *    PUBLIC outcome of the upstream persona assembly semantics, not a
+packages/runtime/compatibility/probe.ts:47: * environment-facts port; no node: builtins, no upstream imports.
+packages/runtime/compatibility/types.ts:33: * Pure-ish runtime module: no node: builtins, no upstream imports;
+packages/runtime/control/index.ts:55: * no upstream PRIVATE seam is required). `correlation` is the caller's
+packages/runtime/control/service.ts:81: * Development Plan 15 ！ no upstream PRIVATE seam is required, so there
+packages/runtime/fork-reconciliation/types.ts:26: * `CORE_SEAM_BLOCKER: FORK_LINEAGE_VISIBILITY` ！ not an upstream change.
+packages/runtime/lifecycle/types.ts:38: * This module NEVER imports upstream code and NEVER reaches into the agent
+packages/runtime/member-residency/fresh-member.ts:33: *    upstream `ensureMaterialized` is a no-op there ！ the artifact is
+packages/runtime/member-residency/fresh-member.ts:180:  // re-run; the real upstream `ensureMaterialized` is a no-op when the
+packages/runtime/member-residency/types.ts:171: * session LAZILY (the upstream persistence coordinator records intent only;
+packages/runtime/member-residency/types.ts:192: * The real public seam is the upstream
+packages/runtime/member-residency/types.ts:194: * same call the upstream ACP row makes at session creation): it flushes the
+packages/runtime/src/plugin/host.ts:8: * plugin interface: it imports no DSH internal API and no upstream-private
+packages/runtime/test/p5t2-persona-compatible.test.ts:11: * surface). The preset's own upstream assembly semantics are preserved by
+packages/runtime/test/p5t2-persona-no-persona.test.ts:9: * succeeds with the preset's plain upstream assembly semantics, no error,
+packages/storage/test/p4-08-independence-negative.test.ts:8: * contracts modules), banned-vocabulary scans (no references/**, no
+packages/storage/test/p4-08-independence-negative.test.ts:9: * upstream/deepseek-harness paths, no bare specifiers, no legacy Team
+packages/storage/test/p4-helpers.ts:864:  'deepseek-harness',
+packages/storage/test/p4-helpers.ts:873:  'upstream',
+packages/storage/test/p4t4-adapter.test.ts:168:    // Root session ids are OPAQUE (upstream contract): the structural rule
+packages/testkit/domain/src/import-graph.ts:18: *     no framework, no upstream DSH import);
+packages/testkit/domain/src/import-graph.ts:52:  'deepseek-harness',
+packages/testkit/domain/src/import-graph.ts:194: * Any other bare specifier would be a third-party/framework/upstream
+packages/testkit/test/t6-1-no-agent-dependency.test.ts:18: *    builtins, no framework, no upstream DSH import;
+packages/tools/src/types.ts:6: *   definition shape ！ this package deliberately imports NO upstream types,

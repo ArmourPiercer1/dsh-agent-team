@@ -1,0 +1,490 @@
+{
+  "reviewer": "g8r6",
+  "gate": "G8-REVIEW",
+  "round": "R61",
+  "phase": "P8 (int/P8-remote-projection @ 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86)",
+  "node": "v24.20.0",
+  "port": 3186,
+  "teamSessionId": "session-g8r6-team",
+  "startedAt": "2026-08-31T12:58:24.979Z",
+  "finishedAt": "2026-08-31T12:58:32.657Z",
+  "testUse": {
+    "dir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+    "baselinePorcelain": [],
+    "afterPorcelain": [],
+    "dirtyDelta": []
+  },
+  "devUrl": {
+    "before": {
+      "status": 200
+    },
+    "after": {
+      "status": 200
+    }
+  },
+  "lock": {
+    "acquired": true,
+    "marker": "G8-R6 2026-08-31T12:58:24.978Z"
+  },
+  "boots": {
+    "boot1": {
+      "url": "http://127.0.0.1:3186/?token=JsOdaapV7jsDRXUMxy5KPw1rV0GBxOqmGfv1ZOpAAIs",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R6\\dev\\agent-workflow\\evidence\\G8-REVIEW\\reviewer-6\\harness-output\\logs\\instance-port3186.log",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "rowMounted": true,
+      "obs": {
+        "phase": "ready",
+        "teamSessionId": "session-g8r6-team",
+        "generation": 3,
+        "seeded": true
+      }
+    },
+    "boot2": {
+      "url": "http://127.0.0.1:3186/?token=_tfSA7DMvO4Ti5ElhNdLavgW7puAC3aDX3avwbbA46E",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R6\\dev\\agent-workflow\\evidence\\G8-REVIEW\\reviewer-6\\harness-output\\logs\\instance-port3186.log",
+      "rowMounted": true,
+      "obs": {
+        "phase": "ready",
+        "teamSessionId": "session-g8r6-team",
+        "generation": 3,
+        "seeded": false
+      }
+    }
+  },
+  "compatProbeStatus": "BLOCKED_FATAL",
+  "legacyInspectStatus": "native-fallback",
+  "postStop": {
+    "killed": true,
+    "portFree": true
+  },
+  "scenarios": {
+    "E1": {
+      "name": "E1",
+      "note": "initial connect + pull + provenance + bonus RPCs",
+      "checks": [
+        {
+          "name": "E1.1 start verdict is apply",
+          "pass": true,
+          "detail": "{\"status\":\"apply\",\"receivedGeneration\":3}"
+        },
+        {
+          "name": "E1.2 frame applied",
+          "pass": true,
+          "detail": "appliedFrame() is null"
+        },
+        {
+          "name": "E1.3 provenance.origin = team-remote",
+          "pass": true,
+          "detail": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":3,\"effectSequence\":null}"
+        },
+        {
+          "name": "E1.4 provenance method/endpoint = team.getProjection",
+          "pass": true,
+          "detail": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":3,\"effectSequence\":null}"
+        },
+        {
+          "name": "E1.5 provenance.contractVersion = REMOTE_CONTRACT_VERSION",
+          "pass": true,
+          "detail": "1 vs 1"
+        },
+        {
+          "name": "E1.6 provenance.requestToken = null (read pull)",
+          "pass": true,
+          "detail": "null"
+        },
+        {
+          "name": "E1.7 provenance.projectionGeneration = received generation",
+          "pass": true,
+          "detail": "3 vs 3"
+        },
+        {
+          "name": "E1.8 projection carries all 9 REMOTE_PROJECTION_FIELDS",
+          "pass": true,
+          "detail": "missing []; keys [\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+        },
+        {
+          "name": "E1.9 teamSessionId matches",
+          "pass": true,
+          "detail": "session-g8r6-team"
+        },
+        {
+          "name": "E1.10 generation matches row obs",
+          "pass": true,
+          "detail": "3 vs 3"
+        },
+        {
+          "name": "E1.11 schemaVersion = 1",
+          "pass": true,
+          "detail": "1"
+        },
+        {
+          "name": "E1.12 generatedAt deterministic (clock C0)",
+          "pass": true,
+          "detail": "2026-08-31T09:00:00.000Z"
+        },
+        {
+          "name": "E1.13 root facts (policyState default / admission OPEN)",
+          "pass": true,
+          "detail": "{\"teamSessionId\":\"session-g8r6-team\",\"createdAt\":\"2026-08-31T09:00:00.000Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"BLOCKED_FATAL\",\"probeGeneration\":1,\"requirementFingerprint\":\"fp-v1:3551461a7e00a65c\",\"environmentFingerprint\":\"g8r6-env-empty\",\"warningCount\":0,\"fatalCount\":1,\"acknowledgedWarningCount\":0},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"C:/g8r6/work\"}"
+        },
+        {
+          "name": "E1.14 leader row present with the leader template",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-leader\",\"templateId\":\"tpl-g8r6-leader\",\"label\":\"G8R6 Leader\",\"workspace\":\"C:/g8r6/work\",\"createdAt\":\"2026-08-31T09:00:00.000Z\",\"lifecycle\":\"CREATED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"qwen3.8-27b\",\"source\":\"blueprint\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"C:/g8r6/work\",\"source\":\"instance-creation\",\"state\":\"locked\"},\"permissions\":{\"Bash\":{\"value\":\"allowed\",\"source\":\"policy-state\",\"state\":\"inherited\"},\"Web\":{\"value\":null,\"source\":\"external-hard-policy\",\"state\":\"denied\"}},\"autonomy\":{\"value\":\"web-search\",\"source\":\"autonomy-overlay\",\"state\":\"suppressed\"}},\"liveActivity\":null}"
+        },
+        {
+          "name": "E1.15 leader row carries NO childSessionId key (invariant 14)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-leader\",\"templateId\":\"tpl-g8r6-leader\",\"label\":\"G8R6 Leader\",\"workspace\":\"C:/g8r6/work\",\"createdAt\":\"2026-08-31T09:00:00.000Z\",\"lifecycle\":\"CREATED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"qwen3.8-27b\",\"source\":\"blueprint\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"C:/g8r6/work\",\"source\":\"instance-creation\",\"state\":\"locked\"},\"permissions\":{\"Bash\":{\"value\":\"allowed\",\"source\":\"policy-state\",\"state\":\"inherited\"},\"Web\":{\"value\":null,\"source\":\"external-hard-policy\",\"state\":\"denied\"}},\"autonomy\":{\"value\":\"web-search\",\"source\":\"autonomy-overlay\",\"state\":\"suppressed\"}},\"liveActivity\":null}"
+        },
+        {
+          "name": "E1.16 leader effective workspace = team default",
+          "pass": true,
+          "detail": "\"C:/g8r6/work\""
+        },
+        {
+          "name": "E1.17 worker row present with its childSessionId",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-g8r6worker\",\"templateId\":\"tpl-g8r6-worker\",\"label\":\"G8R6 Worker\",\"workspace\":\"C:/g8r6/work/worker\",\"createdAt\":\"2026-08-31T09:00:00.000Z\",\"lifecycle\":\"CREATED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"qwen3.8-27b\",\"source\":\"blueprint\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"C:/g8r6/work\",\"source\":\"instance-creation\",\"state\":\"locked\"},\"permissions\":{\"Bash\":{\"value\":\"allowed\",\"source\":\"policy-state\",\"state\":\"inherited\"},\"Web\":{\"value\":null,\"source\":\"external-hard-policy\",\"state\":\"denied\"}},\"autonomy\":{\"value\":\"web-search\",\"source\":\"autonomy-overlay\",\"state\":\"suppressed\"}},\"liveActivity\":null,\"childSessionId\":\"session-g8r6-child-worker\"}"
+        },
+        {
+          "name": "E1.18 worker effective workspace = instance workspace",
+          "pass": true,
+          "detail": "\"C:/g8r6/work/worker\""
+        },
+        {
+          "name": "E1.19 catalog.list HTTP 200",
+          "pass": true,
+          "detail": "status 200 "
+        },
+        {
+          "name": "E1.20 catalog.list ok + exact blueprint list",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"g8r6.team\",\"revisions\":[1]}]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}"
+        },
+        {
+          "name": "E1.21 catalog.list success carries provenance",
+          "pass": true,
+          "detail": "{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}"
+        },
+        {
+          "name": "E1.22 intent.probe ok + compatibility status in the closed vocab",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"data\":{\"compatibility\":{\"schemaVersion\":1,\"environmentFingerprint\":\"fp-v1:3551461a7e00a65c\",\"status\":\"BLOCKED_FATAL\",\"requirements\":[{\"requirementId\":\"req-model-model.g8r6\",\"type\":\"modelRoute\",\"complete\":true,\"outcome\":\"FATAL\",\"reasonCode\":\"COMPLETE_REQUIREMENT_NOT_MET\",\"detail\":\"complete:true requirement unmet: model.g8r6 (structural FATAL, not downgradeable)\",\"unavailableSubjects\":[\"model.g8r6\"],\"mismatchFingerprint\":\"fp-v1:b16fc93511810783\",\"acknowledgement\":null}],\"counts\":{\"pass\":0,\"warning\":0,\"fatal\":1,\"unackedWarning\":0,\"staleAcknowledgement\":0},\"unappliedAcknowledgements\":[]}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"intent.probe\",\"endpoint\":\"intent.probe\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}"
+        },
+        {
+          "name": "E1.23 legacy.inspect ok + status in the closed vocab",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"data\":{\"inspection\":{\"status\":\"native-fallback\",\"reason\":\"no-legacy-metadata\",\"native\":[],\"degradedTo\":\"native-chat-trajectory\"}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"legacy.inspect\",\"endpoint\":\"legacy.inspect\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}"
+        }
+      ],
+      "pass": true,
+      "error": null
+    },
+    "E2": {
+      "name": "E2",
+      "note": "process restart (boot 2, same DSH_HOME): reconnect + durability",
+      "checks": [
+        {
+          "name": "E2.1 boot1 stop frees the port",
+          "pass": true,
+          "detail": "{\"killed\":true,\"portFree\":true}"
+        },
+        {
+          "name": "E2.2 boot2 reopens the persisted unit (seeded=false)",
+          "pass": true,
+          "detail": "{\"phase\":\"ready\",\"teamSessionId\":\"session-g8r6-team\",\"generation\":3,\"seeded\":false}"
+        },
+        {
+          "name": "E2.3 boot2 cookie minted (302/303 + dsh-auth-<43> regex)",
+          "pass": true,
+          "detail": "{\"status\":303,\"setCookieCount\":1,\"regexOk\":true,\"prefix\":\"dsh-auth-ZMazl…\"}"
+        },
+        {
+          "name": "E2.4 fresh client after process death: apply (never duplicate)",
+          "pass": true,
+          "detail": "{\"status\":\"apply\",\"receivedGeneration\":3}"
+        },
+        {
+          "name": "E2.5 FULL projection deep-equal across the process death",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "E2.6 generation unchanged (no durable writes during E1)",
+          "pass": true,
+          "detail": "3 vs 3"
+        }
+      ],
+      "pass": true,
+      "error": null
+    },
+    "E3": {
+      "name": "E3",
+      "note": "stale response ignored; recovery to the new generation",
+      "checks": [
+        {
+          "name": "E3.1 start apply at the baseline generation",
+          "pass": true,
+          "detail": "{\"status\":\"apply\",\"receivedGeneration\":3}"
+        },
+        {
+          "name": "E3.2 transport captured the baseline getProjection response",
+          "pass": true,
+          "detail": "3"
+        },
+        {
+          "name": "E3.3 durable fact advanced the team generation (seq 3)",
+          "pass": true,
+          "detail": "{\"generation\":4,\"sequence\":3}"
+        },
+        {
+          "name": "E3.4 real sync applied the new generation (client is now ahead)",
+          "pass": true,
+          "detail": "{\"status\":\"apply\",\"receivedGeneration\":4}"
+        },
+        {
+          "name": "E3.5 stale response verdict = stale (response gen < applied gen)",
+          "pass": true,
+          "detail": "{\"status\":\"stale\",\"receivedGeneration\":3}"
+        },
+        {
+          "name": "E3.6 stale assessment receivedGeneration = baseline",
+          "pass": true,
+          "detail": "{\"status\":\"stale\",\"receivedGeneration\":3}"
+        },
+        {
+          "name": "E3.7 stats.framesStale = 1",
+          "pass": true,
+          "detail": "{\"framesApplied\":2,\"framesDuplicate\":0,\"framesStale\":1,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+        },
+        {
+          "name": "E3.8 onFrameRejected fired with the stale assessment",
+          "pass": true,
+          "detail": "[{\"status\":\"stale\",\"receivedGeneration\":3}]"
+        },
+        {
+          "name": "E3.9 applied projection UNCHANGED (a stale response never overwrites)",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "E3.10 real sync after the stale: duplicate at generation+1 (applied state held)",
+          "pass": true,
+          "detail": "{\"status\":\"duplicate\",\"receivedGeneration\":4}"
+        },
+        {
+          "name": "E3.11 applied generation still generation+1 after the stale replay",
+          "pass": true,
+          "detail": "4"
+        }
+      ],
+      "pass": true,
+      "error": null
+    },
+    "E4": {
+      "name": "E4",
+      "note": "ledger pagination: anchor guard + stable slice under growth",
+      "checks": [
+        {
+          "name": "E4.1 page(0,2) ok (fresh anchor)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"reason\":null}"
+        },
+        {
+          "name": "E4.2 page1 entries = seq 1,2",
+          "pass": true,
+          "detail": "[1,2]"
+        },
+        {
+          "name": "E4.3 page1 nextAfterSequence = 2",
+          "pass": true,
+          "detail": "2"
+        },
+        {
+          "name": "E4.4 page1 total = 3 (two seed facts + E3 fact)",
+          "pass": true,
+          "detail": "3"
+        },
+        {
+          "name": "E4.5 every entry carries the 7 frozen REMOTE_LEDGER_ENTRY_FIELDS",
+          "pass": true,
+          "detail": "{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-g8r6-team\",\"factType\":\"g8r6-seed-team\",\"payload\":{\"blueprintId\":\"g8r6.team\",\"revision\":\"1\",\"stage\":\"team-seeded\"},\"operationId\":\"op-7ee25ac2077bb3f1\",\"createdAt\":\"2026-08-31T09:00:00.000Z\"}"
+        },
+        {
+          "name": "E4.6 tracker cursor moved to 2",
+          "pass": true,
+          "detail": "2"
+        },
+        {
+          "name": "E4.7 growth fact -> generation e1Gen+2, seq 4",
+          "pass": true,
+          "detail": "{\"generation\":5,\"sequence\":4}"
+        },
+        {
+          "name": "E4.8 re-fetch of the CONSUMED anchor rejected: anchor-mismatch (tracker guard)",
+          "pass": true,
+          "detail": "{\"ok\":false,\"reason\":\"anchor-mismatch\"}"
+        },
+        {
+          "name": "E4.9 tracker cursor still 2 (a stale in-flight page never moves it)",
+          "pass": true,
+          "detail": "2"
+        },
+        {
+          "name": "E4.10 RAW same-anchor slice identical to page1 (server-side stable slice under growth)",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "E4.11 raw total = 4 (the total only moves up)",
+          "pass": true,
+          "detail": "4"
+        },
+        {
+          "name": "E4.12 raw nextAfterSequence = 2 (same slice, same cursor)",
+          "pass": true,
+          "detail": "2"
+        },
+        {
+          "name": "E4.13 page(2,2) ok (cursor continues)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"reason\":null}"
+        },
+        {
+          "name": "E4.14 page2 entries = seq 3,4",
+          "pass": true,
+          "detail": "[3,4]"
+        },
+        {
+          "name": "E4.15 page2 nextAfterSequence = null (tail reached)",
+          "pass": true,
+          "detail": "null"
+        },
+        {
+          "name": "E4.16 page2 total = 4",
+          "pass": true,
+          "detail": "4"
+        },
+        {
+          "name": "E4.17 tracker cursor HELD at 2 after the tail page (null cursor never moves it)",
+          "pass": true,
+          "detail": "2"
+        },
+        {
+          "name": "E4.18 stable re-read of the tail anchor: same slice 3,4, null cursor, total 4",
+          "pass": true,
+          "detail": "{\"ok\":true,\"reason\":null,\"seqs\":[3,4],\"next\":null,\"total\":4}"
+        }
+      ],
+      "pass": true,
+      "error": null
+    },
+    "E5": {
+      "name": "E5",
+      "note": "typed errors + envelope discipline + success provenance",
+      "checks": [
+        {
+          "name": "E5.1 absent team: HTTP 200 (typed error, not a 500)",
+          "pass": true,
+          "detail": "status 200 "
+        },
+        {
+          "name": "E5.2 absent team: result.ok = false",
+          "pass": true,
+          "detail": "{\"ok\":false,\"error\":{\"code\":\"TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND\",\"message\":\"g8r6: team session 'session-g8r6-absent' has no durable row\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND\",\"message\":\"g8r6: team session 'session-g8r6-absent' has no durable row\"}}}}"
+        },
+        {
+          "name": "E5.3 absent team: typed code TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND",
+          "pass": true,
+          "detail": "{\"code\":\"TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND\",\"message\":\"g8r6: team session 'session-g8r6-absent' has no durable row\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND\",\"message\":\"g8r6: team session 'session-g8r6-absent' has no durable row\"}}}"
+        },
+        {
+          "name": "E5.4 absent team: non-empty message",
+          "pass": true,
+          "detail": "\"g8r6: team session 'session-g8r6-absent' has no durable row\""
+        },
+        {
+          "name": "E5.5 absent team: details carry method + endpoint",
+          "pass": true,
+          "detail": "{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND\",\"message\":\"g8r6: team session 'session-g8r6-absent' has no durable row\"}}"
+        },
+        {
+          "name": "E5.6 push client sees rpc-error with the SAME pass-through code",
+          "pass": true,
+          "detail": "{\"status\":\"rpc-error\",\"code\":\"TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND\",\"receivedGeneration\":null}"
+        },
+        {
+          "name": "E5.7 contract version 2 -> contract-version-unsupported",
+          "pass": true,
+          "detail": "{\"ok\":false,\"error\":{\"code\":\"contract-version-unsupported\",\"message\":\"remote contract version 2 is not supported (supported: [1])\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"version\"}}}"
+        },
+        {
+          "name": "E5.8 member.send on an absent instance: typed INSTANCE_NOT_FOUND pass-through",
+          "pass": true,
+          "detail": "{\"ok\":false,\"error\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"member instance 'inst-g8r6absent' has no durable row\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contractVersion\":1,\"requestToken\":\"tok-g8r6-e5\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"member instance 'inst-g8r6absent' has no durable row\"}}}}"
+        },
+        {
+          "name": "E5.9 member.send error details.cause carries the domain code",
+          "pass": true,
+          "detail": "{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contractVersion\":1,\"requestToken\":\"tok-g8r6-e5\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"member instance 'inst-g8r6absent' has no durable row\"}}"
+        },
+        {
+          "name": "E5.10 unknown envelope top-level field -> malformed-request",
+          "pass": true,
+          "detail": "{\"ok\":false,\"error\":{\"code\":\"malformed-request\",\"message\":\"request envelope has unknown field 'extra' (closed fields: params, version)\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"extra\"}}}"
+        },
+        {
+          "name": "E5.11 success carries the full provenance block (origin/method/contractVersion/null token)",
+          "pass": true,
+          "detail": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":5,\"effectSequence\":null}"
+        }
+      ],
+      "pass": true,
+      "error": null
+    },
+    "E6": {
+      "name": "E6",
+      "note": "wire auth / content-type / routing rules",
+      "checks": [
+        {
+          "name": "E6.1 no cookie -> HTTP 401",
+          "pass": true,
+          "detail": "status 401 unauthorized"
+        },
+        {
+          "name": "E6.2 cookie + wrong content-type -> HTTP 415",
+          "pass": true,
+          "detail": "status 415 content type must be application/json"
+        },
+        {
+          "name": "E6.3 wire method != URL endpoint -> 200 + bad-request",
+          "pass": true,
+          "detail": "{\"ok\":false,\"error\":{\"code\":\"bad-request\",\"message\":\"method \\\"catalog.list\\\" does not match endpoint \\\"catalog.get\\\"\",\"details\":{\"issues\":[]}}}"
+        },
+        {
+          "name": "E6.4 bad-request message names the mismatch",
+          "pass": true,
+          "detail": "\"method \\\"catalog.list\\\" does not match endpoint \\\"catalog.get\\\"\""
+        },
+        {
+          "name": "E6.5 unknown endpoint -> 200 + unknown-method",
+          "pass": true,
+          "detail": "{\"ok\":false,\"error\":{\"code\":\"unknown-method\",\"message\":\"endpoint 'nope.nope' is not a method of the closed Remote contract v1 catalog\",\"details\":{\"method\":\"nope.nope\",\"endpoint\":\"nope.nope\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"unknown-endpoint\"}}}"
+        }
+      ],
+      "pass": true,
+      "error": null
+    }
+  },
+  "concerns": [],
+  "outcome": {
+    "kind": "pass",
+    "reason": null
+  },
+  "allPass": true,
+  "exitCode": 0
+}

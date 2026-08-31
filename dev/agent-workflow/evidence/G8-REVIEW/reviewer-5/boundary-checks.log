@@ -1,0 +1,126 @@
+=== BOUNDARY CHECKS — G8 reviewer 5 (blind review, round R61) ===
+git rev-parse --show-toplevel: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5
+git rev-parse HEAD: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
+base (owned-boundary diff base): 959e36358ee7244ff8c7e1e0b8396e70dfef4562 (int/P7-advanced-semantics)
+run: 2026-07-08 (session-local clock)
+
+## 1) zero-core — node: builtin imports in .ts under packages/
+
+Grep (ripgrep, include *.ts, packages/):
+  pattern: from ['"]node:|require\(['"]node:|import\(['"]node:
+Result: 1 match total.
+  - packages/runtime/test/p7t5-no-creation-scan.test.ts:42
+      "import { readFileSync } from 'node:fs'"
+  VERDICT: string constant POSITIVE_SAMPLE[] (line 41 comment: "A synthetic source
+  that VIOLATES every rule (the positive control)"). NOT an executed import.
+=> No real node: builtin import in any .ts under packages/. .mjs/.cjs harness/scan
+   scripts (e.g. p8t3/p8t4-negative-scan.mjs, tools/harness/run.mjs,
+   legacy/session-reader/e2e/*.mjs) are excluded from this rule by the brief; their
+   .d.mts companions are pure type declarations (token-free by design, see header
+   of p8t3-negative-scan.d.mts lines 1-14).
+
+Grep (all files under packages/): from ['"][^'"]*references|deepseek-harness-test-use
+Result: 29 matches, classified:
+  - p8t3-negative-scan.mjs:13,129,180 — scanner doc + deny rule (rule REJECTS such
+    specifiers) + synthesized VIOLATION sample (line 180).
+  - p8t4-negative-scan.mjs:168 — scanner deny rule.
+  - tools/harness/run.mjs:22,23,158,162,212,213 — repo-root marker detection
+    (existsSync probe for 'references/deepseek-harness-test-use'), not an import.
+  - legacy/session-reader/e2e/run.mjs:5,96,238,239,549 — same marker detection
+    (pristine host boot driver); e2e/ts-loader.mjs:22 comment.
+  - runtime/root-binding/harness/README.md:51 — doc.
+  - (second run.mjs copy, lines 159-160) — same marker detection.
+=> No import of anything under references/deepseek-harness-test-use (upstream)
+   from packages/*.
+
+Patch/postinstall mutation of upstream:
+  - package.json scan (all package.json outside node_modules) for
+    'patch-package|pnpm patch|postinstall':
+    1 hit: scripts/fixtures/zero-core/plugins/bad-plugin-a/package.json
+      {"name":"@fixture/bad-plugin-a", ..., "scripts":{"postinstall":"patch-package"}}
+    VERDICT: intentional zero-core SCANNER FIXTURE (private fixture package, used
+    to verify the scanner flags postinstall/patch-package). Not part of the build
+    chain; not modified in base..HEAD diff.
+  - git diff --stat 959e36358..HEAD -- pnpm-lock.yaml package.json: EMPTY
+    (lockfile byte-identical to base; no dependency changes in P8 integration).
+  - pnpm-lock.yaml @ HEAD: no 'patchedDependencies' / 'patches:' entries.
+=> zero-core: PASS
+
+## 2) private-import — imports referencing upstream internals or frozen legacy fork
+
+Grep (include *.ts, packages/): deepseek-harness|references/|SessionController
+Result: 13 matches, all NON-imports:
+  - comments/docstrings: legacy/session-reader/types.ts:17, format.ts:5,
+    teammates-adapter.ts:16, remote/test/p8t3-negative.test.ts:14,
+    runtime/projection/service.ts:24, contracts/src/ids/session-id.ts:33
+    (docstring @see URL to upstream github), storage/test/p4-08-independence-negative.test.ts:8-9.
+  - banned-vocabulary string constants: testkit/domain/src/import-graph.ts:52
+    (T6_BANNED_BARE_SPECIFIERS — 'deepseek-harness' is a BANNED specifier),
+    storage/test/p4-helpers.ts:864 (P4_BANNED_PATH_SEGMENTS).
+  - negative-test fixtures: contracts/test/p8t1-projection-negative.test.ts:5,72,83
+    (banned SessionController Team-mirror names asserted ABSENT from DTO).
+=> private-import: PASS (zero imports of upstream internals or the frozen legacy fork)
+
+## 3) owned-boundary — every packages/ file in base..HEAD inside an owned glob
+
+git diff --name-status 959e36358ee7244ff8c7e1e0b8396e70dfef4562..HEAD -- packages/
+= 97 entries (full list: diff-base-head-packages.txt in this dir).
+Mapping against the brief's corrected owned-glob list:
+
+T1 (packages/contracts/src/projection/** + additive packages/contracts/src/index.ts
+   + packages/contracts/test/p8t1-*): 18/18 files
+   - M packages/contracts/src/index.ts
+   - A packages/contracts/src/projection/{activity,common,compatibility,
+     effective-config,index,ledger,member,projection,root,schema,states,template}.ts
+   - A packages/contracts/test/p8t1-projection-{fixtures,generation.test,
+     negative.test,overlay.test,serialization.test}.ts
+
+T2 (packages/runtime/projection/** + packages/runtime/test/p8t2-*): 12/12 files
+   - A packages/runtime/projection/{errors,fold,index,ledger,service,types}.ts
+   - A packages/runtime/test/p8t2-{cold,fifty,helpers,negative,overlay,terminal}.test.ts
+
+T3 (packages/remote/src/contracts/** + packages/remote/src/handlers/**
+   + additive packages/remote/src/index.ts + packages/remote/test/p8t3-*): 27/27 files
+   - A packages/remote/src/contracts/{catalog,errors,ids,params,remote-safe,
+     request,response,types,version}.ts
+   - A packages/remote/src/handlers/{catalog,compatibility,dispatch,handoff,intent,
+     legacy,member,override,policy-state,ports,register,team}.ts
+   - M packages/remote/src/index.ts
+   - A packages/remote/test/p8t3-{admission.test,helpers,invalid-ids.test,
+     negative-scan.d.mts,negative-scan.mjs,negative.test,round-trip.test,version.test}.ts
+   (p8t3-negative.test.ts: also the standing layout-pin maintenance exception of
+    P8-T4 — covered by the p8t3-* glob either way)
+
+T4 (packages/remote/src/push/** + packages/remote/test/p8t4-*): 13/13 files
+   - A packages/remote/src/push/{generation,index,ledger-page,pull,reconnect,types}.ts
+   - A packages/remote/test/p8t4-{engine.test,negative-scan.d.mts,negative-scan.mjs,
+     negative.test,server.ts,sync.test,test-client.ts}.ts
+
+Gate-level (as recorded in the brief): 20/20 files
+   - M packages/runtime/compatibility/probe.ts
+   - M packages/storage/repositories/{ledger,team-domain,team-sessions}.ts
+   - A packages/storage/test/g8s1-stamp-advance.test.ts
+   - A packages/runtime/test/g8s1-generation-stamp.test.ts
+   - M packages/storage/test/{p4-06-journal.test,p4t2-conflicts.test,
+     p4t2-crash-recovery.test,p4t2-helpers.ts,p4t2-journal.test,p4t4-helpers.ts,
+     p4t4-one-committed-invariant.test,p4t4-orphan-detect.test,
+     p4t4-per-stage-retry.test}.ts/.ts
+   - M packages/runtime/test/{p6t1-explicit.test,p6t1-recovery.test,
+     p6t3-send-delivery.test}.ts
+   - M packages/testkit/test/{p4t5-corrupt-version.test,p4t5-crash-matrix.test,
+     p4t5-helpers.ts,p4t5-retry-restart.test}.ts/.ts
+   - M packages/testkit/fault-injection/fixtures/committed-world/team_domain/
+     team_sessions.json
+
+DEC-1 standing exception: 1/1 file
+   - M packages/testkit/test/p4t6-session-event-scan.test.ts (count maintenance)
+
+TOTAL: 97/97 files fall inside owned globs. 0 outside.
+=> owned-boundary: PASS
+
+Non-packages/ entries in base..HEAD (for the record; outside the -- packages/
+scope of the check): dev/agent-workflow/evidence/{G8-S1,P8-T1,P8-T2,P8-T3,P8-T4}/*
+worker evidence artifacts only (full list: diff-base-head-nonpackages.txt).
+No source, config, or upstream-path files outside packages/.
+
+SUMMARY: zero-core PASS | private-import PASS | owned-boundary PASS

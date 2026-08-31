@@ -1,0 +1,32 @@
+# G8-R4 reviewer-4 dependency scan — 2026-08-31T13:53:39.807Z
+# worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R4
+# scope: packages/remote (**/*.ts + package root .ts) — 41 files
+
+## A. import-face classification (packages/remote)
+relative specifiers:   144
+node:* builtins:       0
+absolute/file: URLs:   0
+bare specifiers:       11
+  bare 'vitest' in 10 file(s): test/p8t3-admission.test.ts, test/p8t3-helpers.ts, test/p8t3-invalid-ids.test.ts, test/p8t3-negative.test.ts, test/p8t3-round-trip.test.ts…
+  bare 'vitest/config' in 1 file(s): vitest.config.ts
+
+## B. zero-core rules
+OK    no node:* builtin imports in packages/remote (any layer)
+OK    no absolute / file: URL imports in packages/remote
+OK    bare specifiers are test-only 'vitest' (dev dependency; src/** has none)
+OK    all vitest imports are in test/ or vitest.config.ts
+
+## C. no-mirror tokens (code only, packages/remote)
+# string-literal / comment mentions are non-binding (NOTE, not FAIL)
+NOTE  non-binding string-literal mention: 'session-log (hyphen)' in test/p8t3-negative.test.ts:116
+OK    1 string-literal mention(s) noted (non-binding)
+OK    zero SessionController / session-log / session-event / mirror / host-private tokens in code + specifiers
+
+## D. structural surfaces
+OK    RemoteHandlerDeps has exactly the 12 frozen port names: catalog, intent, teamCreate, projection, ledger, admission, lifecycle, override, policyState, compatibility, handoff, legacy
+OK    TeamDomainReadPort has exactly one method: readProjectionSource (no session-log / child-log read surface)
+
+## E. P8-T4 test client import face
+OK    p8t4-test-client.ts imports only relative modules: ../src/index.js, ../src/push/index.js, ../src/contracts/types.js
+
+DEPENDENCY-SCAN-PASS

@@ -1,0 +1,91 @@
+﻿diff --git a/packages/storage/repositories/ledger.ts b/packages/storage/repositories/ledger.ts
+index 9c42de8..8a72006 100644
+--- a/packages/storage/repositories/ledger.ts
++++ b/packages/storage/repositories/ledger.ts
+@@ -14,6 +14,19 @@
+  * then incremented atomically — the increment is the only non-idempotent
+  * step, and it is serialized on the write chain.
+  *
++ * S1-A hook A (lag-tolerant stamp advance, adjudicated R60): this
++ * repository is the SINGLE choke point every durable ledger fact passes
++ * through (in-tree writers W10-W14, and any future fact writer — the
++ * operation journal redrive dedups on `findFact` before reaching `put`,
++ * so a replayed fact never appends twice). After a NEW entry is
++ * durably written, the repository advances `team_sessions.generation`
++ * +1 via the injected `TeamSessionsRepository` — one atomic `update` on
++ * the SAME `team_domain` write chain that serialized the fact put,
++ * state-durable-before-stamp by construction. The accepted crash window
++ * (fact durable, stamp not yet advanced — a lag of exactly one change,
++ * caught up at the next mutation) is the documented v1 consistency
++ * model; stamp-first ordering is never used.
++ *
+  * @module @dsh-agent-team/storage/repositories/ledger
+  */
+ 
+@@ -31,16 +44,26 @@ import {
+ } from '../schema/index.js'
+ import type { LedgerEntry, LedgerSequenceCounter, StorageDomainHandle } from '../schema/index.js'
+ import { BaseRepository } from './base.js'
++import type { TeamSessionsRepository } from './team-sessions.js'
+ 
+ /**
+  * The `ledger` repository (append-only journal).
+  */
+ export class LedgerRepository extends BaseRepository {
++  /** The `team_sessions` repository receiving the S1-A stamp advance. */
++  private readonly teamSessions: TeamSessionsRepository
++
+   /**
+    * @param handle - the open `team_domain` handle.
++   * @param teamSessions - the `team_sessions` repository of the SAME
++   *   handle (one upstream domain, one write chain); the sole
++   *   construction site is `buildDomain`, which passes its own
++   *   `teamSessions` instance so stamp and fact serialize on the same
++   *   chain.
+    */
+-  constructor(handle: StorageDomainHandle) {
++  constructor(handle: StorageDomainHandle, teamSessions: TeamSessionsRepository) {
+     super(handle, 'ledger')
++    this.teamSessions = teamSessions
+   }
+ 
+   /** Read the counter row, or `undefined` before the first allocation. */
+@@ -102,6 +125,10 @@ export class LedgerRepository extends BaseRepository {
+    * sequence must not exceed the counter (`unallocated-sequence`), and an
+    * occupied sequence raises `duplicate-ledger-entry` (identical bytes are
+    * the idempotent no-op). Gaps may be filled later (roll-forward).
++   *
++   * S1-A hook A: a NEW entry (absent before this put) durably advances
++   * `team_sessions.generation` +1 AFTER the entry write is durable; a
++   * no-op re-put of identical bytes advances nothing.
+    * @param entry - the unknown input, parsed via `parseLedgerEntry`.
+    * @returns the frozen entry.
+    */
+@@ -128,6 +155,17 @@ export class LedgerRepository extends BaseRepository {
+       )
+     }
+     const key = String(record.sequence)
++    // S1-A hook A (lag-tolerant stamp advance): pre-read BEFORE the put —
++    // `undefined` marks a NEW entry. That pre-read is the idempotency
++    // gate: `putRecord` is a silent no-op on identical bytes, so a
++    // replayed already-durable fact (journal redrive that bypassed the
++    // `findFact` dedup, or a duplicate writer) must never advance the
++    // stamp twice. Never stamp-first: the advance happens only after
++    // the fact write is durable, so the only possible crash window is
++    // "fact durable, stamp one behind" (the documented v1 lag model —
++    // a re-pull at the equal stamp returns `duplicate` and the state is
++    // untouched; the stamp catches up at the next mutation).
++    const isNewEntry = this.readRow(key) === undefined
+     await this.putRecord(key, serializeLedgerEntry(record), (existing) => {
+       try {
+         deserializeLedgerEntry(existing)
+@@ -140,6 +178,9 @@ export class LedgerRepository extends BaseRepository {
+         { store: this.storeName, key, problem: 'duplicate-ledger-entry' },
+       )
+     })
++    if (isNewEntry) {
++      await this.teamSessions.advanceGeneration(record.rootSessionId)
++    }
+     return record
+   }
+ 

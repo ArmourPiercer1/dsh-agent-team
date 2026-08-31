@@ -1,0 +1,399 @@
+[2026-08-31T12:39:52.420Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:39:52.422Z] preflight fatal: git status failed in D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use: spawnSync git EPERM
+
+
+[2026-08-31T12:39:52.423Z] g8r6 e2e driver FAIL — exit 2 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json
+[2026-08-31T12:42:08.554Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:42:08.606Z] preflight: test-use baseline = the 2 recorded pre-existing deletions only
+[2026-08-31T12:42:08.634Z] preflight: :3080 before = {"status":200}
+[2026-08-31T12:42:08.635Z] preflight: port 3186 free
+[2026-08-31T12:42:08.636Z] lock acquired (attempt 1, marker 'G8-R6 2026-08-31T12:42:08.553Z')
+[2026-08-31T12:42:08.636Z] ── attempt 1/2
+[2026-08-31T12:42:08.637Z] attempt 1: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:42:08.638Z] farm: probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+[2026-08-31T12:42:08.639Z] farm: probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+[2026-08-31T12:42:08.640Z] farm: probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness\node_modules\yaml -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\yaml@2.9.0\node_modules\yaml
+[2026-08-31T12:42:08.640Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:42:08.640Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:42:10.481Z] throwaway boot OK: http://127.0.0.1:3186/?token=32pYhsJ0vcv1tS58VRItKuHrvzP2gK7yEUSNXEU4ZwU
+[2026-08-31T12:42:10.520Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:42:12.323Z] boot1: http://127.0.0.1:3186/?token=_QMl50IG21LSG6-3t_974jiOXm4PrtJCwIooB1Z6KPc
+[2026-08-31T12:42:12.429Z] boot1: rowMounted=true
+[2026-08-31T12:42:12.436Z] TRANSIENT in attempt 1: Error: boot1: row setup-failed: TypeScript parameter property is not supported in strip-only mode (setup-failure.json: {"error":"TypeScript parameter property is not supported in strip-only mode","stack":"file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/storage/storage-domain/src/index.ts:80\n  constructor(\n    private readonly ctx: Context,\n                     ^^^^^^^^^^^^\n    private readonly config: Config,\n\nSyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeS …(+788))
+    at attemptRun (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:874:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:986:17)
+[2026-08-31T12:42:12.475Z] transient env failure (attempt 1): boot1: row setup-failed: TypeScript parameter property is not supported in strip-only mode (setup-failure.json: {"error":"TypeScript parameter property is not supported in strip-only mode","stack":"file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/storage/storage-domain/src/index.ts:80\n  constructor(\n    private readonly ctx: Context,\n                     ^^^^^^^^^^^^\n    private readonly config: Config,\n\nSyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeS …(+788)) — cleaning leftovers and retrying ONCE
+[2026-08-31T12:42:12.536Z] ── attempt 2/2
+[2026-08-31T12:42:12.537Z] attempt 2: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:42:12.539Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:42:12.539Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:42:14.371Z] throwaway boot OK: http://127.0.0.1:3186/?token=jgMdQsg17z5E_LZ_yydBsKz6RlEkOfW28iNwiwoiuYo
+[2026-08-31T12:42:14.407Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:42:16.189Z] boot1: http://127.0.0.1:3186/?token=zaKnwnD0yxdpNmGrzZMu3rWmUWvoCH_wr93VzpTCUfE
+[2026-08-31T12:42:16.336Z] boot1: rowMounted=true
+[2026-08-31T12:42:16.344Z] TRANSIENT in attempt 2: Error: boot1: row setup-failed: TypeScript parameter property is not supported in strip-only mode (setup-failure.json: {"error":"TypeScript parameter property is not supported in strip-only mode","stack":"file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/storage/storage-domain/src/index.ts:80\n  constructor(\n    private readonly ctx: Context,\n                     ^^^^^^^^^^^^\n    private readonly config: Config,\n\nSyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeS …(+788))
+    at attemptRun (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:874:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:986:17)
+[2026-08-31T12:42:16.436Z] post: test-use delta vs baseline = []
+[2026-08-31T12:42:16.440Z] post: :3080 after = {"status":200}
+[2026-08-31T12:42:16.441Z] lock released (owned marker verified)
+[2026-08-31T12:42:16.441Z] g8r6 e2e driver FAIL — exit 2 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json
+[2026-08-31T12:44:21.053Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:44:21.107Z] preflight: test-use baseline = the 2 recorded pre-existing deletions only
+[2026-08-31T12:44:21.135Z] preflight: :3080 before = {"status":200}
+[2026-08-31T12:44:21.137Z] preflight: port 3186 free
+[2026-08-31T12:44:21.138Z] lock acquired (attempt 1, marker 'G8-R6 2026-08-31T12:44:21.052Z')
+[2026-08-31T12:44:21.138Z] ── attempt 1/2
+[2026-08-31T12:44:21.188Z] attempt 1: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:44:21.189Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:44:21.190Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:44:23.051Z] throwaway boot OK: http://127.0.0.1:3186/?token=SqmwoPeJ7O1uGx0mFbZs9f_fWJOiA4Z9mJ71NUjrOVE
+[2026-08-31T12:44:23.089Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:44:24.909Z] boot1: http://127.0.0.1:3186/?token=ZiyxilTdBWwdWC0Wq1FBfXqmVgp1qtwQnZsc9-_KzGs
+[2026-08-31T12:44:25.038Z] boot1: rowMounted=true
+[2026-08-31T12:44:26.073Z] TRANSIENT in attempt 1: Error: boot1: row setup-failed: instanceId must match inst-<1..32 lowercase alphanumerics>, got "inst-g8r6-worker" (setup-failure.json: {"error":"instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r6-worker\"","stack":"TeamDomainError: instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r6-worker\"\n    at normalizeValidationError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/packages/storage/schema/errors.ts:146:12)\n    at MemberInstancesRepository.put (file:///D:/Age …(+261))
+    at attemptRun (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:874:13)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:986:17)
+[2026-08-31T12:44:26.112Z] transient env failure (attempt 1): boot1: row setup-failed: instanceId must match inst-<1..32 lowercase alphanumerics>, got "inst-g8r6-worker" (setup-failure.json: {"error":"instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r6-worker\"","stack":"TeamDomainError: instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r6-worker\"\n    at normalizeValidationError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/packages/storage/schema/errors.ts:146:12)\n    at MemberInstancesRepository.put (file:///D:/Age …(+261)) — cleaning leftovers and retrying ONCE
+[2026-08-31T12:44:26.197Z] ── attempt 2/2
+[2026-08-31T12:44:26.198Z] attempt 2: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:44:26.199Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:44:26.199Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:44:28.025Z] throwaway boot OK: http://127.0.0.1:3186/?token=pLMm09idfZw3kLQNtUrBpSfAjsezWZrcP1HMxZNd6cs
+[2026-08-31T12:44:28.063Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:44:29.888Z] boot1: http://127.0.0.1:3186/?token=yNmrrl9ta2QGpJbDY1mO0uc0KTCdc6UdhiqYWwfvDrU
+[2026-08-31T12:44:30.000Z] boot1: rowMounted=true
+[2026-08-31T12:44:30.524Z] TRANSIENT in attempt 2: Error: boot1: row setup-failed: instanceId must match inst-<1..32 lowercase alphanumerics>, got "inst-g8r6-worker" (setup-failure.json: {"error":"instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r6-worker\"","stack":"TeamDomainError: instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r6-worker\"\n    at normalizeValidationError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/packages/storage/schema/errors.ts:146:12)\n    at MemberInstancesRepository.put (file:///D:/Age …(+261))
+    at attemptRun (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:874:13)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6/dev/agent-workflow/evidence/G8-REVIEW/reviewer-6/harness/run.mjs:986:17)
+[2026-08-31T12:44:30.611Z] post: test-use delta vs baseline = []
+[2026-08-31T12:44:30.631Z] post: :3080 after = {"status":200}
+[2026-08-31T12:44:30.632Z] lock released (owned marker verified)
+[2026-08-31T12:44:30.632Z] g8r6 e2e driver FAIL — exit 2 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json
+[2026-08-31T12:45:24.808Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:45:24.856Z] preflight: test-use baseline = the 2 recorded pre-existing deletions only
+[2026-08-31T12:45:24.880Z] preflight: :3080 before = {"status":200}
+[2026-08-31T12:45:24.882Z] preflight: port 3186 free
+[2026-08-31T12:45:24.883Z] lock acquired (attempt 1, marker 'G8-R6 2026-08-31T12:45:24.808Z')
+[2026-08-31T12:45:24.883Z] ── attempt 1/2
+[2026-08-31T12:45:24.927Z] attempt 1: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:45:24.928Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:45:24.928Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:45:26.823Z] throwaway boot OK: http://127.0.0.1:3186/?token=6fdXmyQqlTT9-LbtgcSRS1P0az2hn5XWfo8LHP8APTE
+[2026-08-31T12:45:26.862Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:45:28.669Z] boot1: http://127.0.0.1:3186/?token=BHKPJC6zA6aGupuIq4PXjUjAJ33kDdnDDBqXwOigz8w
+[2026-08-31T12:45:28.805Z] boot1: rowMounted=true
+[2026-08-31T12:45:29.813Z] boot1: row ready (teamSessionId session-g8r6-team, generation 3, seeded true, compat n/a)
+[2026-08-31T12:45:29.819Z]    PASS (boot) boot1 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:45:29.819Z] ── scenario E1 — initial connect + pull + provenance + bonus RPCs
+[2026-08-31T12:45:29.834Z]    FAIL E1.1 start verdict is apply — {"status":"rpc-error","code":"bad-request","receivedGeneration":null}
+[2026-08-31T12:45:29.835Z]    FAIL E1.2 frame applied — appliedFrame() is null
+[2026-08-31T12:45:29.835Z] ── scenario E1 FAIL (2 checks)
+[2026-08-31T12:45:29.835Z] ── scenario E2 NOT RUN (earlier scenario failed)
+[2026-08-31T12:45:29.835Z] ── scenario E3 NOT RUN (earlier scenario failed)
+[2026-08-31T12:45:29.835Z] ── scenario E4 NOT RUN (earlier scenario failed)
+[2026-08-31T12:45:29.835Z] ── scenario E5 NOT RUN (earlier scenario failed)
+[2026-08-31T12:45:29.836Z] ── scenario E6 NOT RUN (earlier scenario failed)
+[2026-08-31T12:45:29.882Z] post: test-use delta vs baseline = []
+[2026-08-31T12:45:29.884Z] post: :3080 after = {"status":200}
+[2026-08-31T12:45:29.885Z] lock released (owned marker verified)
+[2026-08-31T12:45:29.885Z] g8r6 e2e driver FAIL — exit 2 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json
+[2026-08-31T12:55:13.072Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:55:13.124Z] preflight: test-use baseline = the 2 recorded pre-existing deletions only
+[2026-08-31T12:55:13.149Z] preflight: :3080 before = {"status":200}
+[2026-08-31T12:55:13.151Z] preflight: port 3186 free
+[2026-08-31T12:55:13.152Z] lock acquired (attempt 1, marker 'G8-R6 2026-08-31T12:55:13.071Z')
+[2026-08-31T12:55:13.152Z] ── attempt 1/2
+[2026-08-31T12:55:13.201Z] attempt 1: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:55:13.202Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:55:13.203Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:55:15.065Z] throwaway boot OK: http://127.0.0.1:3186/?token=Zbq7i1HVi-OBxbhFbPae4-9QGuIzEHCciqu1tFF5SXI
+[2026-08-31T12:55:15.104Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:55:16.917Z] boot1: http://127.0.0.1:3186/?token=gTaoHIlM78btzY3WwDfDbUfFJLJNV-z05mvx8RL6KJs
+[2026-08-31T12:55:17.085Z] boot1: rowMounted=true
+[2026-08-31T12:55:18.105Z] boot1: row ready (teamSessionId session-g8r6-team, generation 3, seeded true, compat n/a)
+[2026-08-31T12:55:18.111Z]    PASS (boot) boot1 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:55:18.111Z] ── scenario E1 — initial connect + pull + provenance + bonus RPCs
+[2026-08-31T12:55:18.133Z]    PASS E1.1 start verdict is apply
+[2026-08-31T12:55:18.134Z]    PASS E1.2 frame applied
+[2026-08-31T12:55:18.134Z]    PASS E1.3 provenance.origin = team-remote
+[2026-08-31T12:55:18.134Z]    PASS E1.4 provenance method/endpoint = team.getProjection
+[2026-08-31T12:55:18.134Z]    PASS E1.5 provenance.contractVersion = REMOTE_CONTRACT_VERSION
+[2026-08-31T12:55:18.134Z]    PASS E1.6 provenance.requestToken = null (read pull)
+[2026-08-31T12:55:18.134Z]    PASS E1.7 provenance.projectionGeneration = received generation
+[2026-08-31T12:55:18.135Z]    PASS E1.8 projection carries all 9 REMOTE_PROJECTION_FIELDS
+[2026-08-31T12:55:18.135Z]    PASS E1.9 teamSessionId matches
+[2026-08-31T12:55:18.135Z]    PASS E1.10 generation matches row obs
+[2026-08-31T12:55:18.135Z]    PASS E1.11 schemaVersion = 1
+[2026-08-31T12:55:18.135Z]    PASS E1.12 generatedAt deterministic (clock C0)
+[2026-08-31T12:55:18.135Z]    PASS E1.13 root facts (policyState default / admission OPEN)
+[2026-08-31T12:55:18.135Z]    PASS E1.14 leader row present with the leader template
+[2026-08-31T12:55:18.135Z]    PASS E1.15 leader row carries NO childSessionId key (invariant 14)
+[2026-08-31T12:55:18.135Z]    PASS E1.16 leader effective workspace = team default
+[2026-08-31T12:55:18.136Z]    PASS E1.17 worker row present with its childSessionId
+[2026-08-31T12:55:18.136Z]    PASS E1.18 worker effective workspace = instance workspace
+[2026-08-31T12:55:18.152Z]    PASS E1.19 catalog.list HTTP 200
+[2026-08-31T12:55:18.152Z]    PASS E1.20 catalog.list ok + exact blueprint list
+[2026-08-31T12:55:18.152Z]    PASS E1.21 catalog.list success carries provenance
+[2026-08-31T12:55:18.168Z]    PASS E1.22 intent.probe ok + compatibility status in the closed vocab
+[2026-08-31T12:55:18.185Z]    PASS E1.23 legacy.inspect ok + status in the closed vocab
+[2026-08-31T12:55:18.185Z] ── scenario E1 PASS (23 checks)
+[2026-08-31T12:55:18.185Z] ── scenario E2 — process restart (boot 2, same DSH_HOME): reconnect + durability
+[2026-08-31T12:55:18.225Z]    PASS E2.1 boot1 stop frees the port
+[2026-08-31T12:55:18.226Z] directive boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:55:20.029Z] boot2: http://127.0.0.1:3186/?token=gfKaX9I21kFajZxU2IkhIq2CMGYRPlNXlRKcSZHCBZI
+[2026-08-31T12:55:20.135Z]    PASS E2.2 boot2 reopens the persisted unit (seeded=false)
+[2026-08-31T12:55:20.140Z]    PASS E2.3 boot2 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:55:20.149Z]    PASS E2.4 fresh client after process death: apply (never duplicate)
+[2026-08-31T12:55:20.149Z]    PASS E2.5 FULL projection deep-equal across the process death
+[2026-08-31T12:55:20.150Z]    PASS E2.6 generation unchanged (no durable writes during E1)
+[2026-08-31T12:55:20.150Z] ── scenario E2 PASS (6 checks)
+[2026-08-31T12:55:20.150Z] ── scenario E3 — stale response ignored; recovery to the new generation
+[2026-08-31T12:55:20.156Z]    PASS E3.1 start apply at the baseline generation
+[2026-08-31T12:55:20.156Z]    PASS E3.2 transport captured the baseline getProjection response
+[2026-08-31T12:55:20.279Z]    PASS E3.3 durable fact advanced the team generation (seq 3)
+[2026-08-31T12:55:20.283Z]    PASS E3.4 real sync applied the new generation (client is now ahead)
+[2026-08-31T12:55:20.283Z]    PASS E3.5 stale response verdict = stale (response gen < applied gen)
+[2026-08-31T12:55:20.283Z]    PASS E3.6 stale assessment receivedGeneration = baseline
+[2026-08-31T12:55:20.283Z]    PASS E3.7 stats.framesStale = 1
+[2026-08-31T12:55:20.283Z]    PASS E3.8 onFrameRejected fired with the stale assessment
+[2026-08-31T12:55:20.284Z]    PASS E3.9 applied projection UNCHANGED (a stale response never overwrites)
+[2026-08-31T12:55:20.296Z]    PASS E3.10 real sync after the stale: duplicate at generation+1 (applied state held)
+[2026-08-31T12:55:20.296Z]    PASS E3.11 applied generation still generation+1 after the stale replay
+[2026-08-31T12:55:20.296Z] ── scenario E3 PASS (11 checks)
+[2026-08-31T12:55:20.297Z] ── scenario E4 — ledger pagination: anchor guard + stable slice under growth
+[2026-08-31T12:55:20.312Z]    PASS E4.1 page(0,2) ok (fresh anchor)
+[2026-08-31T12:55:20.312Z]    PASS E4.2 page1 entries = seq 1,2
+[2026-08-31T12:55:20.312Z]    PASS E4.3 page1 nextAfterSequence = 2
+[2026-08-31T12:55:20.312Z]    PASS E4.4 page1 total = 3 (two seed facts + E3 fact)
+[2026-08-31T12:55:20.312Z]    PASS E4.5 every entry carries the 7 frozen REMOTE_LEDGER_ENTRY_FIELDS
+[2026-08-31T12:55:20.313Z]    PASS E4.6 tracker cursor moved to 2
+[2026-08-31T12:55:20.451Z]    PASS E4.7 growth fact -> generation e1Gen+2, seq 4
+[2026-08-31T12:55:20.468Z]    PASS E4.8 re-fetch of the CONSUMED anchor rejected: anchor-mismatch (tracker guard)
+[2026-08-31T12:55:20.469Z]    PASS E4.9 tracker cursor still 2 (a stale in-flight page never moves it)
+[2026-08-31T12:55:20.483Z]    PASS E4.10 RAW same-anchor slice identical to page1 (server-side stable slice under growth)
+[2026-08-31T12:55:20.483Z]    PASS E4.11 raw total = 4 (the total only moves up)
+[2026-08-31T12:55:20.484Z]    PASS E4.12 raw nextAfterSequence = 2 (same slice, same cursor)
+[2026-08-31T12:55:20.499Z]    PASS E4.13 page(2,2) ok (cursor continues)
+[2026-08-31T12:55:20.500Z]    PASS E4.14 page2 entries = seq 3,4
+[2026-08-31T12:55:20.500Z]    PASS E4.15 page2 nextAfterSequence = null (tail reached)
+[2026-08-31T12:55:20.500Z]    PASS E4.16 page2 total = 4
+[2026-08-31T12:55:20.500Z]    FAIL E4.17 tracker cursor moved to 4 (end of the ledger) — 2
+[2026-08-31T12:55:20.500Z] ── scenario E4 FAIL (17 checks)
+[2026-08-31T12:55:20.500Z] ── scenario E5 NOT RUN (earlier scenario failed)
+[2026-08-31T12:55:20.500Z] ── scenario E6 NOT RUN (earlier scenario failed)
+[2026-08-31T12:55:20.547Z] post: test-use delta vs baseline = []
+[2026-08-31T12:55:20.549Z] post: :3080 after = {"status":200}
+[2026-08-31T12:55:20.549Z] lock released (owned marker verified)
+[2026-08-31T12:55:20.550Z] g8r6 e2e driver FAIL — exit 2 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json
+[2026-08-31T12:56:32.242Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:56:32.289Z] preflight: test-use baseline = the 2 recorded pre-existing deletions only
+[2026-08-31T12:56:32.313Z] preflight: :3080 before = {"status":200}
+[2026-08-31T12:56:32.315Z] preflight: port 3186 free
+[2026-08-31T12:56:32.316Z] lock acquired (attempt 1, marker 'G8-R6 2026-08-31T12:56:32.241Z')
+[2026-08-31T12:56:32.316Z] ── attempt 1/2
+[2026-08-31T12:56:32.357Z] attempt 1: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:56:32.359Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:56:32.359Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:56:34.228Z] throwaway boot OK: http://127.0.0.1:3186/?token=PX4MRY_ZyyRXOxPEtr7HrBCIegZ44rMzJ731tc_z-w8
+[2026-08-31T12:56:34.265Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:56:36.102Z] boot1: http://127.0.0.1:3186/?token=yjQR8XfKKy3OarG23trVAiHgiJKY7ry8YcBTo9VHDTY
+[2026-08-31T12:56:36.264Z] boot1: rowMounted=true
+[2026-08-31T12:56:37.277Z] boot1: row ready (teamSessionId session-g8r6-team, generation 3, seeded true, compat n/a)
+[2026-08-31T12:56:37.282Z]    PASS (boot) boot1 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:56:37.283Z] ── scenario E1 — initial connect + pull + provenance + bonus RPCs
+[2026-08-31T12:56:37.298Z]    PASS E1.1 start verdict is apply
+[2026-08-31T12:56:37.298Z]    PASS E1.2 frame applied
+[2026-08-31T12:56:37.299Z]    PASS E1.3 provenance.origin = team-remote
+[2026-08-31T12:56:37.299Z]    PASS E1.4 provenance method/endpoint = team.getProjection
+[2026-08-31T12:56:37.299Z]    PASS E1.5 provenance.contractVersion = REMOTE_CONTRACT_VERSION
+[2026-08-31T12:56:37.299Z]    PASS E1.6 provenance.requestToken = null (read pull)
+[2026-08-31T12:56:37.299Z]    PASS E1.7 provenance.projectionGeneration = received generation
+[2026-08-31T12:56:37.299Z]    PASS E1.8 projection carries all 9 REMOTE_PROJECTION_FIELDS
+[2026-08-31T12:56:37.299Z]    PASS E1.9 teamSessionId matches
+[2026-08-31T12:56:37.299Z]    PASS E1.10 generation matches row obs
+[2026-08-31T12:56:37.300Z]    PASS E1.11 schemaVersion = 1
+[2026-08-31T12:56:37.300Z]    PASS E1.12 generatedAt deterministic (clock C0)
+[2026-08-31T12:56:37.300Z]    PASS E1.13 root facts (policyState default / admission OPEN)
+[2026-08-31T12:56:37.300Z]    PASS E1.14 leader row present with the leader template
+[2026-08-31T12:56:37.300Z]    PASS E1.15 leader row carries NO childSessionId key (invariant 14)
+[2026-08-31T12:56:37.300Z]    PASS E1.16 leader effective workspace = team default
+[2026-08-31T12:56:37.300Z]    PASS E1.17 worker row present with its childSessionId
+[2026-08-31T12:56:37.300Z]    PASS E1.18 worker effective workspace = instance workspace
+[2026-08-31T12:56:37.308Z]    PASS E1.19 catalog.list HTTP 200
+[2026-08-31T12:56:37.309Z]    PASS E1.20 catalog.list ok + exact blueprint list
+[2026-08-31T12:56:37.309Z]    PASS E1.21 catalog.list success carries provenance
+[2026-08-31T12:56:37.323Z]    PASS E1.22 intent.probe ok + compatibility status in the closed vocab
+[2026-08-31T12:56:37.339Z]    PASS E1.23 legacy.inspect ok + status in the closed vocab
+[2026-08-31T12:56:37.340Z] ── scenario E1 PASS (23 checks)
+[2026-08-31T12:56:37.340Z] ── scenario E2 — process restart (boot 2, same DSH_HOME): reconnect + durability
+[2026-08-31T12:56:37.381Z]    PASS E2.1 boot1 stop frees the port
+[2026-08-31T12:56:37.382Z] directive boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:56:39.206Z] boot2: http://127.0.0.1:3186/?token=v4tE44CCB8ZJ6kgkI5RD8MoyHYHHeibNcYiN9hgygn0
+[2026-08-31T12:56:39.344Z]    PASS E2.2 boot2 reopens the persisted unit (seeded=false)
+[2026-08-31T12:56:39.350Z]    PASS E2.3 boot2 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:56:39.361Z]    PASS E2.4 fresh client after process death: apply (never duplicate)
+[2026-08-31T12:56:39.363Z]    PASS E2.5 FULL projection deep-equal across the process death
+[2026-08-31T12:56:39.364Z]    PASS E2.6 generation unchanged (no durable writes during E1)
+[2026-08-31T12:56:39.364Z] ── scenario E2 PASS (6 checks)
+[2026-08-31T12:56:39.365Z] ── scenario E3 — stale response ignored; recovery to the new generation
+[2026-08-31T12:56:39.383Z]    PASS E3.1 start apply at the baseline generation
+[2026-08-31T12:56:39.383Z]    PASS E3.2 transport captured the baseline getProjection response
+[2026-08-31T12:56:39.534Z]    PASS E3.3 durable fact advanced the team generation (seq 3)
+[2026-08-31T12:56:39.537Z]    PASS E3.4 real sync applied the new generation (client is now ahead)
+[2026-08-31T12:56:39.538Z]    PASS E3.5 stale response verdict = stale (response gen < applied gen)
+[2026-08-31T12:56:39.538Z]    PASS E3.6 stale assessment receivedGeneration = baseline
+[2026-08-31T12:56:39.538Z]    PASS E3.7 stats.framesStale = 1
+[2026-08-31T12:56:39.538Z]    PASS E3.8 onFrameRejected fired with the stale assessment
+[2026-08-31T12:56:39.538Z]    PASS E3.9 applied projection UNCHANGED (a stale response never overwrites)
+[2026-08-31T12:56:39.541Z]    PASS E3.10 real sync after the stale: duplicate at generation+1 (applied state held)
+[2026-08-31T12:56:39.541Z]    PASS E3.11 applied generation still generation+1 after the stale replay
+[2026-08-31T12:56:39.541Z] ── scenario E3 PASS (11 checks)
+[2026-08-31T12:56:39.541Z] ── scenario E4 — ledger pagination: anchor guard + stable slice under growth
+[2026-08-31T12:56:39.552Z]    PASS E4.1 page(0,2) ok (fresh anchor)
+[2026-08-31T12:56:39.553Z]    PASS E4.2 page1 entries = seq 1,2
+[2026-08-31T12:56:39.553Z]    PASS E4.3 page1 nextAfterSequence = 2
+[2026-08-31T12:56:39.553Z]    PASS E4.4 page1 total = 3 (two seed facts + E3 fact)
+[2026-08-31T12:56:39.553Z]    PASS E4.5 every entry carries the 7 frozen REMOTE_LEDGER_ENTRY_FIELDS
+[2026-08-31T12:56:39.553Z]    PASS E4.6 tracker cursor moved to 2
+[2026-08-31T12:56:39.710Z]    PASS E4.7 growth fact -> generation e1Gen+2, seq 4
+[2026-08-31T12:56:39.721Z]    PASS E4.8 re-fetch of the CONSUMED anchor rejected: anchor-mismatch (tracker guard)
+[2026-08-31T12:56:39.722Z]    PASS E4.9 tracker cursor still 2 (a stale in-flight page never moves it)
+[2026-08-31T12:56:39.737Z]    PASS E4.10 RAW same-anchor slice identical to page1 (server-side stable slice under growth)
+[2026-08-31T12:56:39.738Z]    PASS E4.11 raw total = 4 (the total only moves up)
+[2026-08-31T12:56:39.738Z]    PASS E4.12 raw nextAfterSequence = 2 (same slice, same cursor)
+[2026-08-31T12:56:39.753Z]    PASS E4.13 page(2,2) ok (cursor continues)
+[2026-08-31T12:56:39.753Z]    PASS E4.14 page2 entries = seq 3,4
+[2026-08-31T12:56:39.753Z]    PASS E4.15 page2 nextAfterSequence = null (tail reached)
+[2026-08-31T12:56:39.753Z]    PASS E4.16 page2 total = 4
+[2026-08-31T12:56:39.753Z]    PASS E4.17 tracker cursor HELD at 2 after the tail page (null cursor never moves it)
+[2026-08-31T12:56:39.768Z]    PASS E4.18 stable re-read of the tail anchor: same slice 3,4, null cursor, total 4
+[2026-08-31T12:56:39.770Z] ── scenario E4 PASS (18 checks)
+[2026-08-31T12:56:39.771Z] ── scenario E5 — typed errors + envelope discipline + success provenance
+[2026-08-31T12:56:39.783Z]    PASS E5.1 absent team: HTTP 200 (typed error, not a 500)
+[2026-08-31T12:56:39.783Z]    PASS E5.2 absent team: result.ok = false
+[2026-08-31T12:56:39.783Z]    PASS E5.3 absent team: typed code TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND
+[2026-08-31T12:56:39.784Z]    PASS E5.4 absent team: non-empty message
+[2026-08-31T12:56:39.784Z]    PASS E5.5 absent team: details carry method + endpoint
+[2026-08-31T12:56:39.798Z]    PASS E5.6 push client sees rpc-error with the SAME pass-through code
+[2026-08-31T12:56:39.814Z]    PASS E5.7 contract version 2 -> contract-version-unsupported
+[2026-08-31T12:56:39.830Z]    FAIL E5.8 member.send on an absent instance: typed INSTANCE_NOT_FOUND pass-through — {"ok":false,"error":{"code":"RECORD_INVALID","message":"rootSessionId must be a string, got undefined","details":{"method":"member.send","endpoint":"member.send","contractVersion":1,"requestToken":"tok-g8r6-e5","reason":"domain-error","cause":{"code":"RECORD_INVALID","message":"rootSessionId must be a string, got undefined","details":{"store":"team_sessions","contractsCode":"INVALID_ROOT_SESSION_ID"}}}}}
+[2026-08-31T12:56:39.831Z]    FAIL E5.9 member.send error details.cause carries the domain code — {"method":"member.send","endpoint":"member.send","contractVersion":1,"requestToken":"tok-g8r6-e5","reason":"domain-error","cause":{"code":"RECORD_INVALID","message":"rootSessionId must be a string, got undefined","details":{"store":"team_sessions","contractsCode":"INVALID_ROOT_SESSION_ID"}}}
+[2026-08-31T12:56:39.846Z]    PASS E5.10 unknown envelope top-level field -> malformed-request
+[2026-08-31T12:56:39.862Z]    PASS E5.11 success carries the full provenance block (origin/method/contractVersion/null token)
+[2026-08-31T12:56:39.862Z] ── scenario E5 FAIL (11 checks)
+[2026-08-31T12:56:39.862Z] ── scenario E6 NOT RUN (earlier scenario failed)
+[2026-08-31T12:56:39.910Z] post: test-use delta vs baseline = []
+[2026-08-31T12:56:39.914Z] post: :3080 after = {"status":200}
+[2026-08-31T12:56:39.914Z] lock released (owned marker verified)
+[2026-08-31T12:56:39.915Z] g8r6 e2e driver FAIL — exit 2 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json
+[2026-08-31T12:58:24.979Z] g8r6 e2e driver start (node v24.20.0, port 3186, worktree D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6)
+[2026-08-31T12:58:25.029Z] preflight: test-use baseline = the 2 recorded pre-existing deletions only
+[2026-08-31T12:58:25.053Z] preflight: :3080 before = {"status":200}
+[2026-08-31T12:58:25.054Z] preflight: port 3186 free
+[2026-08-31T12:58:25.055Z] lock acquired (attempt 1, marker 'G8-R6 2026-08-31T12:58:24.978Z')
+[2026-08-31T12:58:25.055Z] ── attempt 1/2
+[2026-08-31T12:58:25.104Z] attempt 1: fresh DSH_HOME at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6
+[2026-08-31T12:58:25.105Z] directive boot=1 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:58:25.106Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T12:58:26.958Z] throwaway boot OK: http://127.0.0.1:3186/?token=7icPu9qicdfOVsUl1tNgW1YRzYpT7xEFTcb_Yp-3EEA
+[2026-08-31T12:58:26.997Z] boot1: profile {"initialized":true,"created":true}
+[2026-08-31T12:58:28.793Z] boot1: http://127.0.0.1:3186/?token=JsOdaapV7jsDRXUMxy5KPw1rV0GBxOqmGfv1ZOpAAIs
+[2026-08-31T12:58:28.944Z] boot1: rowMounted=true
+[2026-08-31T12:58:29.967Z] boot1: row ready (teamSessionId session-g8r6-team, generation 3, seeded true, compat n/a)
+[2026-08-31T12:58:29.972Z]    PASS (boot) boot1 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:58:29.972Z] ── scenario E1 — initial connect + pull + provenance + bonus RPCs
+[2026-08-31T12:58:29.992Z]    PASS E1.1 start verdict is apply
+[2026-08-31T12:58:29.993Z]    PASS E1.2 frame applied
+[2026-08-31T12:58:29.993Z]    PASS E1.3 provenance.origin = team-remote
+[2026-08-31T12:58:29.993Z]    PASS E1.4 provenance method/endpoint = team.getProjection
+[2026-08-31T12:58:29.994Z]    PASS E1.5 provenance.contractVersion = REMOTE_CONTRACT_VERSION
+[2026-08-31T12:58:29.994Z]    PASS E1.6 provenance.requestToken = null (read pull)
+[2026-08-31T12:58:29.994Z]    PASS E1.7 provenance.projectionGeneration = received generation
+[2026-08-31T12:58:29.994Z]    PASS E1.8 projection carries all 9 REMOTE_PROJECTION_FIELDS
+[2026-08-31T12:58:29.995Z]    PASS E1.9 teamSessionId matches
+[2026-08-31T12:58:29.995Z]    PASS E1.10 generation matches row obs
+[2026-08-31T12:58:29.995Z]    PASS E1.11 schemaVersion = 1
+[2026-08-31T12:58:29.995Z]    PASS E1.12 generatedAt deterministic (clock C0)
+[2026-08-31T12:58:29.996Z]    PASS E1.13 root facts (policyState default / admission OPEN)
+[2026-08-31T12:58:29.996Z]    PASS E1.14 leader row present with the leader template
+[2026-08-31T12:58:29.996Z]    PASS E1.15 leader row carries NO childSessionId key (invariant 14)
+[2026-08-31T12:58:29.996Z]    PASS E1.16 leader effective workspace = team default
+[2026-08-31T12:58:29.996Z]    PASS E1.17 worker row present with its childSessionId
+[2026-08-31T12:58:29.996Z]    PASS E1.18 worker effective workspace = instance workspace
+[2026-08-31T12:58:30.001Z]    PASS E1.19 catalog.list HTTP 200
+[2026-08-31T12:58:30.001Z]    PASS E1.20 catalog.list ok + exact blueprint list
+[2026-08-31T12:58:30.002Z]    PASS E1.21 catalog.list success carries provenance
+[2026-08-31T12:58:30.014Z]    PASS E1.22 intent.probe ok + compatibility status in the closed vocab
+[2026-08-31T12:58:30.018Z]    PASS E1.23 legacy.inspect ok + status in the closed vocab
+[2026-08-31T12:58:30.019Z] ── scenario E1 PASS (23 checks)
+[2026-08-31T12:58:30.019Z] ── scenario E2 — process restart (boot 2, same DSH_HOME): reconnect + durability
+[2026-08-31T12:58:30.059Z]    PASS E2.1 boot1 stop frees the port
+[2026-08-31T12:58:30.061Z] directive boot=2 written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r6\g8r6-directive.json
+[2026-08-31T12:58:31.901Z] boot2: http://127.0.0.1:3186/?token=_tfSA7DMvO4Ti5ElhNdLavgW7puAC3aDX3avwbbA46E
+[2026-08-31T12:58:32.025Z]    PASS E2.2 boot2 reopens the persisted unit (seeded=false)
+[2026-08-31T12:58:32.030Z]    PASS E2.3 boot2 cookie minted (302/303 + dsh-auth-<43> regex)
+[2026-08-31T12:58:32.041Z]    PASS E2.4 fresh client after process death: apply (never duplicate)
+[2026-08-31T12:58:32.042Z]    PASS E2.5 FULL projection deep-equal across the process death
+[2026-08-31T12:58:32.042Z]    PASS E2.6 generation unchanged (no durable writes during E1)
+[2026-08-31T12:58:32.042Z] ── scenario E2 PASS (6 checks)
+[2026-08-31T12:58:32.042Z] ── scenario E3 — stale response ignored; recovery to the new generation
+[2026-08-31T12:58:32.060Z]    PASS E3.1 start apply at the baseline generation
+[2026-08-31T12:58:32.060Z]    PASS E3.2 transport captured the baseline getProjection response
+[2026-08-31T12:58:32.190Z]    PASS E3.3 durable fact advanced the team generation (seq 3)
+[2026-08-31T12:58:32.193Z]    PASS E3.4 real sync applied the new generation (client is now ahead)
+[2026-08-31T12:58:32.194Z]    PASS E3.5 stale response verdict = stale (response gen < applied gen)
+[2026-08-31T12:58:32.194Z]    PASS E3.6 stale assessment receivedGeneration = baseline
+[2026-08-31T12:58:32.194Z]    PASS E3.7 stats.framesStale = 1
+[2026-08-31T12:58:32.194Z]    PASS E3.8 onFrameRejected fired with the stale assessment
+[2026-08-31T12:58:32.194Z]    PASS E3.9 applied projection UNCHANGED (a stale response never overwrites)
+[2026-08-31T12:58:32.200Z]    PASS E3.10 real sync after the stale: duplicate at generation+1 (applied state held)
+[2026-08-31T12:58:32.200Z]    PASS E3.11 applied generation still generation+1 after the stale replay
+[2026-08-31T12:58:32.201Z] ── scenario E3 PASS (11 checks)
+[2026-08-31T12:58:32.201Z] ── scenario E4 — ledger pagination: anchor guard + stable slice under growth
+[2026-08-31T12:58:32.215Z]    PASS E4.1 page(0,2) ok (fresh anchor)
+[2026-08-31T12:58:32.216Z]    PASS E4.2 page1 entries = seq 1,2
+[2026-08-31T12:58:32.216Z]    PASS E4.3 page1 nextAfterSequence = 2
+[2026-08-31T12:58:32.217Z]    PASS E4.4 page1 total = 3 (two seed facts + E3 fact)
+[2026-08-31T12:58:32.217Z]    PASS E4.5 every entry carries the 7 frozen REMOTE_LEDGER_ENTRY_FIELDS
+[2026-08-31T12:58:32.217Z]    PASS E4.6 tracker cursor moved to 2
+[2026-08-31T12:58:32.338Z]    PASS E4.7 growth fact -> generation e1Gen+2, seq 4
+[2026-08-31T12:58:32.355Z]    PASS E4.8 re-fetch of the CONSUMED anchor rejected: anchor-mismatch (tracker guard)
+[2026-08-31T12:58:32.355Z]    PASS E4.9 tracker cursor still 2 (a stale in-flight page never moves it)
+[2026-08-31T12:58:32.371Z]    PASS E4.10 RAW same-anchor slice identical to page1 (server-side stable slice under growth)
+[2026-08-31T12:58:32.371Z]    PASS E4.11 raw total = 4 (the total only moves up)
+[2026-08-31T12:58:32.371Z]    PASS E4.12 raw nextAfterSequence = 2 (same slice, same cursor)
+[2026-08-31T12:58:32.386Z]    PASS E4.13 page(2,2) ok (cursor continues)
+[2026-08-31T12:58:32.387Z]    PASS E4.14 page2 entries = seq 3,4
+[2026-08-31T12:58:32.387Z]    PASS E4.15 page2 nextAfterSequence = null (tail reached)
+[2026-08-31T12:58:32.387Z]    PASS E4.16 page2 total = 4
+[2026-08-31T12:58:32.387Z]    PASS E4.17 tracker cursor HELD at 2 after the tail page (null cursor never moves it)
+[2026-08-31T12:58:32.402Z]    PASS E4.18 stable re-read of the tail anchor: same slice 3,4, null cursor, total 4
+[2026-08-31T12:58:32.402Z] ── scenario E4 PASS (18 checks)
+[2026-08-31T12:58:32.403Z] ── scenario E5 — typed errors + envelope discipline + success provenance
+[2026-08-31T12:58:32.418Z]    PASS E5.1 absent team: HTTP 200 (typed error, not a 500)
+[2026-08-31T12:58:32.418Z]    PASS E5.2 absent team: result.ok = false
+[2026-08-31T12:58:32.418Z]    PASS E5.3 absent team: typed code TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND
+[2026-08-31T12:58:32.418Z]    PASS E5.4 absent team: non-empty message
+[2026-08-31T12:58:32.418Z]    PASS E5.5 absent team: details carry method + endpoint
+[2026-08-31T12:58:32.433Z]    PASS E5.6 push client sees rpc-error with the SAME pass-through code
+[2026-08-31T12:58:32.448Z]    PASS E5.7 contract version 2 -> contract-version-unsupported
+[2026-08-31T12:58:32.465Z]    PASS E5.8 member.send on an absent instance: typed INSTANCE_NOT_FOUND pass-through
+[2026-08-31T12:58:32.465Z]    PASS E5.9 member.send error details.cause carries the domain code
+[2026-08-31T12:58:32.481Z]    PASS E5.10 unknown envelope top-level field -> malformed-request
+[2026-08-31T12:58:32.496Z]    PASS E5.11 success carries the full provenance block (origin/method/contractVersion/null token)
+[2026-08-31T12:58:32.497Z] ── scenario E5 PASS (11 checks)
+[2026-08-31T12:58:32.497Z] ── scenario E6 — wire auth / content-type / routing rules
+[2026-08-31T12:58:32.511Z]    PASS E6.1 no cookie -> HTTP 401
+[2026-08-31T12:58:32.527Z]    PASS E6.2 cookie + wrong content-type -> HTTP 415
+[2026-08-31T12:58:32.543Z]    PASS E6.3 wire method != URL endpoint -> 200 + bad-request
+[2026-08-31T12:58:32.543Z]    PASS E6.4 bad-request message names the mismatch
+[2026-08-31T12:58:32.559Z]    PASS E6.5 unknown endpoint -> 200 + unknown-method
+[2026-08-31T12:58:32.560Z] ── scenario E6 PASS (5 checks)
+[2026-08-31T12:58:32.600Z] post: final stop {"killed":true,"portFree":true}
+[2026-08-31T12:58:32.653Z] post: test-use delta vs baseline = []
+[2026-08-31T12:58:32.656Z] post: :3080 after = {"status":200}
+[2026-08-31T12:58:32.657Z] lock released (owned marker verified)
+[2026-08-31T12:58:32.658Z] g8r6 e2e driver PASS — exit 0 — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R6\dev\agent-workflow\evidence\G8-REVIEW\reviewer-6\harness-output\summary.json

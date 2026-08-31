@@ -1,0 +1,148 @@
+{
+  "review": "G8-REVIEW reviewer-5 (R61)",
+  "runStamp": "g8r5-1788182973950",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R5",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-g8-r5",
+  "port": 3185,
+  "row": {
+    "id": "g8r5-team-remote-host",
+    "name": "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R5/dev/agent-workflow/evidence/G8-REVIEW/reviewer-5/harness/plugin.mjs"
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "e2e": "RUN-PASS",
+  "pass": true,
+  "failures": [],
+  "build": {
+    "required": false,
+    "lib": "PRESENT",
+    "web": "SKIPPED(EPERM-BOUNDARY: esbuild service spawn blocked in sandbox; SPA dist not required for browserless e2e — report §5)"
+  },
+  "instance": {
+    "url": "http://127.0.0.1:3185/?token=weHV3ZkwOHKO3th_abE85oQ54howY3Fi_DmNOv4rQUg",
+    "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R5\\dev\\agent-workflow\\evidence\\G8-REVIEW\\reviewer-5\\harness\\logs\\boot\\instance-port3185.log"
+  },
+  "rowMounted": true,
+  "worldHealth": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r5-health",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "blueprints": [
+              {
+                "blueprintId": "P6T2-BP",
+                "revisions": [
+                  "1"
+                ],
+                "latest": "1"
+              }
+            ]
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "catalog.list",
+            "endpoint": "catalog.list",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  "e2eResults": [
+    {
+      "id": "E1",
+      "name": "provisioning + projection round-trip",
+      "pass": true,
+      "detail": "team.create path=fresh-root durable+bind; provenance exact; projection gen=1 schema=1 fields=9 members=1(leader) templates=3; provenance.projectionGeneration=1"
+    },
+    {
+      "id": "E2",
+      "name": "transport loss → reconnect + frame parity",
+      "pass": true,
+      "detail": "loss→reconnecting (transportLosses=1)→backoff→connected gen=1; fresh client on session-2 frame deep-equal to a raw pull"
+    },
+    {
+      "id": "E3",
+      "name": "stale response rejected (G8 core rule)",
+      "pass": true,
+      "detail": "mutation gen 1→2 (worker1=inst-016qynq01hdi); replayed gen-1 frame verdict=stale (framesStale=1, applied state byte-identical)"
+    },
+    {
+      "id": "E4",
+      "name": "ledger pagination stability",
+      "pass": true,
+      "detail": "page(limit=1): seqs=[1] total=2; send fact seq=3; page2 first-seq>anchor total=3=T1+1; head page deep-equal on re-read"
+    },
+    {
+      "id": "E5",
+      "name": "typed errors + provenance + zero 5xx",
+      "pass": true,
+      "detail": "malformed-params(field=teamSessionId); unknown-team code=TEAM_SESSION_NOT_FOUND; contract-version-unsupported; TEAM_RUNTIME_CALLER_AUTHORITY_DENIED; 0x 5xx in 14 requests; provenance complete on all ok:true"
+    },
+    {
+      "id": "E6",
+      "name": "transport-level negatives",
+      "pass": true,
+      "detail": "401 /unauthorized/; 415 content-type; 200 bad-request (method≠endpoint); 200 unknown-method; 200 malformed-request"
+    },
+    {
+      "id": "EXTRA-1",
+      "name": "read-surface extras (non-mandated)",
+      "pass": true,
+      "detail": "catalog.list(1 bp); intent.probe ok; legacy.inspect status=native-fallback; compatibility.reprobe NEW_ACTIVATION ok"
+    },
+    {
+      "id": "EXTRA-2",
+      "name": "idempotent same-token replay (non-mandated)",
+      "pass": true,
+      "detail": "replay of tok-g8r5-e3c: ok + effect.replayed=true + same instanceId + generation 5 unchanged"
+    }
+  ],
+  "e2eStats": {
+    "requests": 26,
+    "http5xx": 0,
+    "expected4xx": 2,
+    "okTrueWithoutFullProvenance": []
+  },
+  "ports": {
+    "released": {
+      "boot": true
+    }
+  }
+}

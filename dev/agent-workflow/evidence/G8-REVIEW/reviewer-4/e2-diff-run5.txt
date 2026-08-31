@@ -1,0 +1,17 @@
+﻿E2 content matches across reconnect
++ actual - expected
+
+  {
+    blueprint: {
+      blueprintId: 'team.g8research',
+      contentHash: 'sha256:c19ef77e9fd14ee553c56328c7da4fe5cab3df2346cce6cc236538832eb4582a',
+      revision: '1'
+    },
++   generatedAt: '2026-08-31T13:46:47.257Z',
+-   generatedAt: '2026-08-31T13:46:47.240Z',
+    generation: 6,
+    ledger: {
+      byCategory: {
+        compatibility: 0,
+        control: 1,
+

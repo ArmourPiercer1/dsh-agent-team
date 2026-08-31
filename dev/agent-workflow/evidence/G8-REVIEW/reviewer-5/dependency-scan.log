@@ -1,0 +1,127 @@
+G8-REVIEW reviewer-5 (R61) — G8 criterion-1 dependency scan
+worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R5
+package root: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R5\packages\remote
+scan time: 2026-08-31T12:24:55.960Z
+files scanned (ts+mjs): 43
+
+── 1. import specifier census ─────────────────────────────────────────
+total import specifiers: 166
+relative (./ ../): 146
+bare (workspace-eligible): 18
+other (node: / url / absolute): 2
+bare specifier breakdown:
+  node:fs  x3
+  node:path  x2
+  node:url  x2
+  vitest  x10
+  vitest/config  x1
+external (non-@dsh-agent-team) bare specifiers (whole package): vitest, node:fs, node:path, node:url, vitest/config
+
+── 2. SessionController / session-log / mirror token scan (classified) ─
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/errors.ts:11: ...Lowercase-kebab vocabulary, owned by this package.  * 2. **Mirrored frozen P3 codes** — the value-level mirror of the ID  * ...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/errors.ts:11: ...kage.  * 2. **Mirrored frozen P3 codes** — the value-level mirror of the ID  *    validation codes of contracts v1 (`package...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/errors.ts:60: ...elf throws  * (boundary codes) or its local parsers throw (mirrored frozen P3 codes).  *  * `code` is typed `string` on pur...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/errors.ts:64: ...(boundary) and  * {@link REMOTE_ID_ERROR_CODES} (`ids.ts`, mirrored P3 values). The wire  * union additionally carries pass-...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/errors.ts:69: ...r extends Error {   /** The closed error code (boundary or mirrored frozen P3 value). */   readonly code: string   /**    ...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/errors.ts:97: ...tract error.  * @param code - the closed code (boundary or mirrored frozen P3 value).  * @param message - the human-readable...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/ids.ts:4: ...ing at the Remote contract v1 boundary.  *  * Value-level mirror of the P3 ID rules in `packages/contracts/src/ids/*`  * (f...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/ids.ts:31: ... */ export const REMOTE_ID_MAX_LENGTH = 255  /**  * The mirrored frozen P3 ID error codes (exact values of  * `packages/c...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/ids.ts:82: ...e, used in the error message/detail.  * @param code - the (mirrored frozen P3) code to throw.  * @returns the input as a pla...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:11: ... * 3. validates each value — structural ID fields throw the mirrored frozen  *    P3 codes from `ids.ts` (e.g. a malformed Te...
+  HIT 'mirror' LINE-COMMENT packages/remote/src/contracts/params.ts:46: ...--------------- // Shared closed vocabularies (value-level mirrors of the frozen contracts) // -----------------------------...
+  HIT 'mirror' LINE-COMMENT packages/remote/src/contracts/params.ts:96: ...----------------------------- // Shared param value types (mirrors of the frozen domain types) // --------------------------...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:99: ...-------------  /** Admission caller (P6-T2 `ActionCaller` mirror). */ export type RemoteCaller =   | { readonly kind: 'hum...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:105: ...Mutation actor (`packages/runtime/mutation` `MutationActor` mirror):  * `member` requires the `member` identity; `human` / `l...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:120: ...g       }     }  /** Policy value (frozen `PolicyEntry` mirror). */ export type RemotePolicyEntry =   | { readonly kind:...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:125: ...e cell of a policy state view (frozen `PolicyStateCellView` mirror). */ export interface RemotePolicyStateCellValue {   read...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:132: ...y }  /**  * Policy state view (frozen `PolicyStateView` mirror): `stateId` + optional  * `cells` keyed by closed capabili...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/params.ts:1515: ...  *   checks membership first), `malformed-params`, or the mirrored frozen P3  *   ID codes on structural ID violations.  *...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/remote-safe.ts:4: ...ne for the Remote contract v1 boundary.  *  * Value-level mirror of `packages/contracts/src/remote-safe.ts` (contracts  * v...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/remote-safe.ts:6: ... authority for the shape of  * `RemoteSafeJsonValue`; this mirror exists because `packages/remote` is  * deliberately self-c...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/remote-safe.ts:24: ... /** A JSON value that round-trips losslessly (contracts v1 mirror). */ export type RemoteSafeJsonValue =   | null   | bool...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/remote-safe.ts:33: ...  /** A plain object of lossless-JSON values (contracts v1 mirror). */ export type RemoteSafeRecord = { readonly [key: strin...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/response.ts:120: ...readonly error: {     /** The closed error code (boundary, mirrored P3, or pass-through). */     readonly code: string     ...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:2: .../**  * Typed output value mirrors of the Remote contract v1.  *  * These are the `data` sh...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:5: ...shapes the dispatcher wraps in the success result.  * They mirror — at the value level (deviation D-1) — the durable DTOs and...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:65: ...ection value — the exact P8-T1 `TeamProjectionDto` (v1)  * mirrored at the value level: the nine frozen top-level fields  * ...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:95: ...  * One durable ledger fact row (the storage `LedgerEntry` mirror, closed  * wire shape: `operationId` is `string | null`, n...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:127: ...ion outcome value (the P6-T2 `TeamRuntimeActionOutcome`  * mirror, closed wire shape).  */ export interface RemoteAdmission...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:144: .../** `member.archive` value (the P7-T3 `ArchiveMemberResult` mirror). */ export interface RemoteMemberArchiveValue {   readon...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:153: .../** `member.restore` value (the P7-T3 `RestoreMemberResult` mirror). */ export interface RemoteMemberRestoreValue {   readon...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:159: .../** `member.dispose` value (the P7-T3 `DisposeMemberResult` mirror). */ export interface RemoteMemberDisposeValue {   readon...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:256: .../** The top-level fields of the P8-T1 whole-projection DTO (mirror). */ export const REMOTE_PROJECTION_FIELDS: readonly strin...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/types.ts:269: ...]  /** The top-level fields of the storage `LedgerEntry` (mirror). */ export const REMOTE_LEDGER_ENTRY_FIELDS: readonly str...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/version.ts:4: ...* Remote contract version discipline (contract v1).  *  * Mirrors the P8-T1 schema-version pattern of  * `packages/contract...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/contracts/version.ts:5: ...  * `packages/contracts/src/schema-version.ts` (value-level mirror; the frozen  * module remains the authority for the *patte...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/handlers/dispatch.ts:14: ... `malformed-params` (with `field` in  *    details) or the mirrored frozen P3 ID codes (deviation D-1/D-3);  * 4. typed doma...
+  HIT 'mirror' LINE-COMMENT packages/remote/src/handlers/dispatch.ts:99: ...typed errors keep their code —   // boundary codes and the mirrored frozen P3 ID codes (deviations D-1/D-3).   if (isRemoteC...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/handlers/ports.ts:127: ...admission action request the port receives (the remote-side mirror  * of the P6-T2 `TeamRuntimeActionRequest`; the host adapt...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/handlers/ports.ts:318: ...the handler layer: exactly 12 ports,  * none of which is a mirror of the upstream session controller, a session  * log artif...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/push/generation.ts:6: ... 1, contracts/types). The client-side rule  * is the exact mirror of the frozen P8-T1 stale guard  * (`isStaleTeamProjection...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/push/generation.ts:58: ...ct of one incoming frame against the applied  * state (the mirror of the frozen stale guard, see module doc).  * @param appl...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/push/ledger-page.ts:7: ...IFF more  * entries remain. This module is the client-side mirror of that contract  * — the "page anchor" of the card:  * ...
+  HIT 'mirror' BLOCK-COMMENT packages/remote/src/push/types.ts:17: ...8t4-*`). It defines no behavior.  *  * Frozen authorities mirrored here (no redefinition):  *   - `RemoteResponse` / `Remot...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-invalid-ids.test.ts:6: ...mplateId / BlueprintId inputs  * are rejected by the LOCAL mirror of the frozen P3 ID rule and surface at  * the remote boun...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-invalid-ids.test.ts:36: ...'../src/index.js'  /** The exact frozen P3 ID error codes mirrored onto the remote wire. */ const FROZEN = {   TEAM_SESSIO...
+  HIT 'sessioncontroller' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:15: ...   starting with `@deepseek-ai/`  *   R3  no word-bounded `SessionController` token (no mirror of the  *       upstream session control...
+  HIT 'sessioncontroller' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:59: ... = [   {     rule: 'R3',     pattern: /(?<![A-Za-z0-9_$])SessionController(?![A-Za-z0-9_$])/g,     detail: 'SessionController mirror ...
+  HIT 'sessioncontroller' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:60: ...z0-9_$])SessionController(?![A-Za-z0-9_$])/g,     detail: 'SessionController mirror token',   },   { rule: 'R4', pattern: /session\.js...
+  HIT 'sessioncontroller' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:192: ...rrorLogControlText() {   return [     'const controller = SessionController',     `const logPath = 'C:/dsh/sessions/root-1/session.jso...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:7: ...ote contract layer is built from no  * legacy / upstream / session-log source at all. Six rules, one violation  * object per hit:...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:17: ...   upstream session controller for Team state)  *   R4  no session-log artifact tokens: the `session.jsonl` substring  *       (w...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:19: ....zstd`), word-bounded `sessionLog`,  *       word-bounded `session-log`, and the `/sessions/` substring  *   R5  no frozen legacy...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:62: ...   },   { rule: 'R4', pattern: /session\.jsonl/g, detail: 'session-log artifact token' },   {     rule: 'R4',     pattern: /(?<...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:66: ...![A-Za-z0-9_$])sessionLog(?![A-Za-z0-9_$])/g,     detail: 'session-log artifact token',   },   {     rule: 'R4',     pattern: ...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:70: ...  },   {     rule: 'R4',     pattern: /(?<![A-Za-z0-9_$])session-log(?![A-Za-z0-9_$])/g,     detail: 'session-log artifact toke...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:71: ...[A-Za-z0-9_$])session-log(?![A-Za-z0-9_$])/g,     detail: 'session-log artifact token',   },   { rule: 'R4', pattern: /\/session...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:73: ...,   },   { rule: 'R4', pattern: /\/sessions\//g, detail: 'session-log artifact token' }, ]  /** Import-specifier extraction pa...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:187: ...ample that must trip R3 (the mirror token) and R4 (four  * session-log artifact tokens).  * @returns the control text.  */ expo...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:195: ...jsonl.zstd'`,     'let sessionLog = 1',     'const key = "session-log"',   ].join('\n') }  /**  * A synthetic sample that mu...
+  HIT 'sessionlog' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:18: ...string  *       (which also covers `.zstd`), word-bounded `sessionLog`,  *       word-bounded `session-log`, and the `/sessions/...
+  HIT 'sessionlog' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:65: ...' },   {     rule: 'R4',     pattern: /(?<![A-Za-z0-9_$])sessionLog(?![A-Za-z0-9_$])/g,     detail: 'session-log artifact toke...
+  HIT 'sessionlog' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:194: ...h = 'C:/dsh/sessions/root-1/session.jsonl.zstd'`,     'let sessionLog = 1',     'const key = "session-log"',   ].join('\n') }...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:15: ...i/`  *   R3  no word-bounded `SessionController` token (no mirror of the  *       upstream session controller for Team state...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:24: ... one check  *       that proves in a single stroke that no mirror / upstream /  *       builtin source is used  *  * Token...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:60: ...troller(?![A-Za-z0-9_$])/g,     detail: 'SessionController mirror token',   },   { rule: 'R4', pattern: /session\.jsonl/g, ...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:186: ...n') }  /**  * A synthetic sample that must trip R3 (the mirror token) and R4 (four  * session-log artifact tokens).  * @...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative-scan.mjs:190: ...* @returns the control text.  */ export function buildP8T3MirrorLogControlText() {   return [     'const controller = Sess...
+  HIT 'sessioncontroller' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:14: ...endency surface is exactly the 12  *      frozen ports (no SessionController mirror, no upstream session  *      API) — pinned at the t...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:4: ...ontract layer must be built from no legacy /  * upstream / session-log source at all.  *  * Three proofs:  *   1. The owned-fil...
+  HIT 'session-log' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:116: ...length).toBe(0)   })    it('detects the mirror token and session-log artifact tokens (positive control R3/R4)', () => {     con...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:14: ... exactly the 12  *      frozen ports (no SessionController mirror, no upstream session  *      API) — pinned at the type lev...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:27: ...ult-injection/session-event-scan.mjs' import {   buildP8T3MirrorLogControlText,   buildP8T3SpecifierControlText,   buildP8...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:116: ...) => r === 'R3').length).toBe(0)   })    it('detects the mirror token and session-log artifact tokens (positive control R3/...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t3-negative.test.ts:117: ..., () => {     const result = matchP8T3RulesInText(buildP8T3MirrorLogControlText())     const rules = result.violations.map((...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-engine.test.ts:12: ...r page anchor rule (the frozen D-5 slicing contract  *     mirrored client-side, incl. append-only `total` monotonicity and ...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-engine.test.ts:303: ... })  describe('P8-T4 engine: ledger page anchor rule (D-5 mirror)', () => {   it('accepts a valid full page and a valid ter...
+  HIT 'session-controller' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:17: ...checkout  *       path)  *   R3  no word-bounded upstream session-controller mirror token  *   R4  no session log artifact tokens: the ...
+  HIT 'session-controller' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:81: ...n boundedPattern(parts.join('')) }  /**  * The upstream session-controller mirror token, split so the literal  * never appears in thi...
+  HIT 'session-controller' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:98: ...[   { rule: 'R3', pattern: MIRROR_TOKEN, detail: 'upstream session-controller mirror token' },   { rule: 'R4', pattern: /session\.jsonl/...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:17: ...path)  *   R3  no word-bounded upstream session-controller mirror token  *   R4  no session log artifact tokens: the JSONL l...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:81: ...rts.join('')) }  /**  * The upstream session-controller mirror token, split so the literal  * never appears in this sourc...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:84: ...o the literal  * never appears in this source.  */ const MIRROR_TOKEN = boundedPatternFromFragments(['Session', 'Controller...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:98: ...cifiers. */ const TEXT_RULES = [   { rule: 'R3', pattern: MIRROR_TOKEN, detail: 'upstream session-controller mirror token' }...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:98: ...pattern: MIRROR_TOKEN, detail: 'upstream session-controller mirror token' },   { rule: 'R4', pattern: /session\.jsonl/g, deta...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:248: ...n') }  /**  * A synthetic sample that must trip R3 (the mirror token) and R4 (four  * session log artifact tokens). Assem...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative-scan.mjs:252: ...* @returns the control text.  */ export function buildP8T4MirrorLogControlText() {   return [     `const controller = ${['...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative.test.ts:18: ...xactly the 12  *      frozen ports (no upstream controller mirror, no upstream session  *      API) — pinned at the type lev...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative.test.ts:31: ...ult-injection/session-event-scan.mjs' import {   buildP8T4MirrorLogControlText,   buildP8T4SpecifierControlText,   buildP8...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative.test.ts:116: ...) => r === 'R3').length).toBe(0)   })    it('detects the mirror token and the log artifact tokens (positive control R3/R4)'...
+  HIT 'mirror' TEST-SURFACE packages/remote/test/p8t4-negative.test.ts:117: ..., () => {     const result = matchP8T4RulesInText(buildP8T4MirrorLogControlText())     const rules = result.violations.map((...
+token hit classification: TEST-SURFACE=47 CODE=0 LINE-COMMENT=3 BLOCK-COMMENT=40 STRING=0 REGEX=0
+code-level hits in src/ files: 0
+  no CODE hits — every token occurrence is a comment/docstring design note (D-1 value-level mirror),
+  a string, or the P8-T3 negative test surface (whose positive-control text references the tokens by design)
+
+── 3. pure surface (src/push/** + test/p8t4-test-client.ts) ───────────
+browser-consumable files: 7; node: imports: 0; I/O-ish imports: 0; external bare imports: NONE
+
+── 4. dispatcher backing surface (handlers/dispatch.ts) ───────────────
+12 port groups referenced via deps.<name> / ports.<name>: 12/12
+hidden service/global references in dispatch.ts: NONE
+
+── verdict ─────────────────────────────────────────────────────────────
+criterion-1 dependency scan: PASS
+  (the browser consumes remote responses only; the host binds the 12 ports;
+   the push engine + P8-T4 client are external-dependency-free and browser-loadable
+   without a Session mirror; src/ token hits are comment-level design notes only)

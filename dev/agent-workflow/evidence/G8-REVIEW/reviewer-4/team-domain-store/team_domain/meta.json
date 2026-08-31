@@ -1,0 +1,14 @@
+{
+  "name": "team_domain",
+  "version": 1,
+  "tables": [
+    "schema_meta",
+    "team_sessions",
+    "member_instances",
+    "session_bindings",
+    "overrides",
+    "compatibility",
+    "operations",
+    "ledger"
+  ]
+}

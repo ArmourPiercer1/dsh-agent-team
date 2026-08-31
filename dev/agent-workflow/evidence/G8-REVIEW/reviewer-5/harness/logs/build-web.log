@@ -1,0 +1,21 @@
+$ pnpm --filter @deepseek-ai/dsh-web-frontend run build
+native/landlock-run/packages/linux-arm64 | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+native/landlock-run/packages/linux-x64   | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["linux"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+$ vite build
+failed to load config from D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\apps\web\vite.config.ts
+error during build:
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:458:11)
+    at Object.spawn (node:child_process:813:9)
+    at ensureServiceIsRunning (D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1978:29)
+    at build (D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\esbuild@0.25.12\node_modules\esbuild\lib\main.js:1876:26)
+    at bundleConfigFile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/node_modules/.pnpm/vite@6.4.3_@types+node@22.2_4bec7c36be5fc002d232016bc9d16165/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:49448:24)
+    at async bundleAndLoadConfigFile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/node_modules/.pnpm/vite@6.4.3_@types+node@22.2_4bec7c36be5fc002d232016bc9d16165/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:49432:19)
+    at async loadConfigFromFile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/node_modules/.pnpm/vite@6.4.3_@types+node@22.2_4bec7c36be5fc002d232016bc9d16165/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:49396:44)
+    at async resolveConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/node_modules/.pnpm/vite@6.4.3_@types+node@22.2_4bec7c36be5fc002d232016bc9d16165/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:48891:24)
+    at async createBuilder (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/node_modules/.pnpm/vite@6.4.3_@types+node@22.2_4bec7c36be5fc002d232016bc9d16165/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:46866:18)
+    at async CAC.<anonymous> (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/node_modules/.pnpm/vite@6.4.3_@types+node@22.2_4bec7c36be5fc002d232016bc9d16165/node_modules/vite/dist/node/cli.js:862:23)
+D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\apps\web:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @deepseek-ai/dsh-web-frontend@0.1.2-alpha.1 build: `vite build`
+Exit status 1
+[ELIFECYCLE] Command failed with exit code 1.

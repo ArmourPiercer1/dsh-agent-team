@@ -1,0 +1,41 @@
+{
+  "replay": {
+    "type": "server-response",
+    "rpcId": "g8r5-r25",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "outcome": {
+            "status": "executed",
+            "action": "create-member",
+            "rootSessionId": "session-root-g8r5",
+            "callerRole": "human",
+            "effect": {
+              "kind": "member-activated",
+              "instanceId": "inst-016qynq01hdi",
+              "templateId": "worker",
+              "childSessionId": "session-child-p6t1-016qynq01hdi",
+              "operationId": "op-01hgkgy0qqx7gt0fo2jns1n9",
+              "replayed": true,
+              "ledgerSequence": 1,
+              "admissionCode": "ADMISSION_OPEN"
+            },
+            "requestToken": "tok-g8r5-e3c"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.create",
+          "endpoint": "member.create",
+          "contractVersion": 1,
+          "requestToken": "tok-g8r5-e3c",
+          "projectionGeneration": null,
+          "effectSequence": 1
+        }
+      }
+    }
+  },
+  "genBefore": 5,
+  "genAfter": 5
+}

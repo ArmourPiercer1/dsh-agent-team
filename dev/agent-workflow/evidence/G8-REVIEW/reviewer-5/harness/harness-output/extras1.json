@@ -1,0 +1,152 @@
+{
+  "catalog": {
+    "type": "server-response",
+    "rpcId": "g8r5-r20",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "blueprints": [
+            {
+              "blueprintId": "P6T2-BP",
+              "revisions": [
+                "1"
+              ],
+              "latest": "1"
+            }
+          ]
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "catalog.list",
+          "endpoint": "catalog.list",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "intentProbe": {
+    "type": "server-response",
+    "rpcId": "g8r5-r21",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "compatibility": {
+            "schemaVersion": 1,
+            "environmentFingerprint": "fp-v1:7a87edfe796aca48",
+            "status": "BLOCKED_FATAL",
+            "requirements": [
+              {
+                "requirementId": "req-tool-web",
+                "type": "tool",
+                "complete": false,
+                "outcome": "WARNING",
+                "reasonCode": "CAPABILITY_UNAVAILABLE",
+                "detail": "ordinary capability unavailable: web",
+                "unavailableSubjects": [
+                  "web"
+                ],
+                "mismatchFingerprint": "fp-v1:4e06272c0f16936a",
+                "acknowledgement": {
+                  "status": "MISSING",
+                  "acknowledgement": null
+                }
+              },
+              {
+                "requirementId": "req-skill-base",
+                "type": "skill",
+                "complete": true,
+                "outcome": "FATAL",
+                "reasonCode": "COMPLETE_REQUIREMENT_NOT_MET",
+                "detail": "complete:true requirement unmet: base (structural FATAL, not downgradeable)",
+                "unavailableSubjects": [
+                  "base"
+                ],
+                "mismatchFingerprint": "fp-v1:0e0e3dbc31a6717a",
+                "acknowledgement": null
+              }
+            ],
+            "counts": {
+              "pass": 0,
+              "warning": 1,
+              "fatal": 1,
+              "unackedWarning": 1,
+              "staleAcknowledgement": 0
+            },
+            "unappliedAcknowledgements": []
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "intent.probe",
+          "endpoint": "intent.probe",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "legacy": {
+    "type": "server-response",
+    "rpcId": "g8r5-r22",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "inspection": {
+            "status": "native-fallback",
+            "reason": "no-legacy-metadata",
+            "native": [],
+            "degradedTo": "native-chat-trajectory"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "legacy.inspect",
+          "endpoint": "legacy.inspect",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "reprobe": {
+    "type": "server-response",
+    "rpcId": "g8r5-r23",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "probe": {
+            "recordedAt": "2026-08-31T12:00:00Z",
+            "generation": 1,
+            "environmentFingerprint": "fp-v1:97fc230e9949b8d8",
+            "status": "OPEN",
+            "pass": 2,
+            "warning": 0,
+            "fatal": 0,
+            "unackedWarning": 0,
+            "trigger": "NEW_ACTIVATION"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "compatibility.reprobe",
+          "endpoint": "compatibility.reprobe",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}

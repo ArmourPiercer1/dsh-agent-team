@@ -1,0 +1,11 @@
+{
+  "1": "{\"createdAt\":\"2026-08-31T13:53:38.857Z\",\"factType\":\"team.created\",\"payload\":{\"blueprintId\":\"team.g8research\",\"blueprintRevision\":1,\"displayName\":\"G8 Research Team\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":1}",
+  "2": "{\"createdAt\":\"2026-08-31T13:53:38.858Z\",\"factType\":\"member.created\",\"payload\":{\"instanceId\":\"inst-leader\",\"label\":\"Team Lead\",\"templateId\":\"leader\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":2}",
+  "3": "{\"createdAt\":\"2026-08-31T13:53:38.859Z\",\"factType\":\"member.created\",\"payload\":{\"instanceId\":\"inst-alpha\",\"label\":\"Researcher\",\"templateId\":\"researcher\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":3}",
+  "4": "{\"createdAt\":\"2026-08-31T13:53:38.859Z\",\"factType\":\"member.created\",\"payload\":{\"instanceId\":\"inst-beta\",\"label\":\"Writer\",\"templateId\":\"writer\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":4}",
+  "5": "{\"createdAt\":\"2026-08-31T13:53:38.860Z\",\"factType\":\"control.requested\",\"payload\":{\"by\":\"human-1\",\"kind\":\"plan-approved\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":5}",
+  "6": "{\"createdAt\":\"2026-08-31T13:53:39.162Z\",\"factType\":\"member.created\",\"payload\":{\"childSessionId\":\"g8-e1-root\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\"},\"rootSessionId\":\"g8-e1-root\",\"schemaVersion\":1,\"sequence\":6}",
+  "7": "{\"createdAt\":\"2026-08-31T13:53:39.344Z\",\"factType\":\"member.created\",\"payload\":{\"childSessionId\":\"g8-child-bfb05ec1\",\"instanceId\":\"inst-0ebe162068c4\",\"templateId\":\"writer\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":7}",
+  "8": "{\"createdAt\":\"2026-08-31T13:53:39.436Z\",\"factType\":\"message.sent\",\"payload\":{\"body\":\"g8-r4 e4 probe message\",\"from\":\"human\",\"subject\":null,\"to\":\"inst-alpha\"},\"rootSessionId\":\"g8-root-1\",\"schemaVersion\":1,\"sequence\":8}",
+  "__ledger_sequence_counter": "{\"kind\":\"ledger-sequence-counter\",\"schemaVersion\":1,\"value\":8}"
+}

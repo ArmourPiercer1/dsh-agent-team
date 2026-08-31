@@ -1,0 +1,122 @@
+# G8-R6 boundary checks (brief §4 step 4)
+
+## Proof header
+git rev-parse --show-toplevel: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R6
+git rev-parse HEAD: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
+diff base: 959e36358ee7244ff8c7e1e0b8396e70dfef4562
+date: 2026-07-25T07:35Z (UTC, approx)
+
+## 1. zero-core
+
+### 1a. node: builtin imports in .ts under packages/
+Command: rg `(from|require\(|import\()\s*['"]node:` over packages/**/*.ts (456 .ts files)
+Matches: 1 total —
+  packages/runtime/test/p7t5-no-creation-scan.test.ts:42  "import { readFileSync } from 'node:fs'"
+Context: line 42 is inside `const POSITIVE_SAMPLE` — the synthetic VIOLATING control
+source of the committed no-creation scanner (positive control per that test's header,
+R5 rule "no node: builtin import"). It is a string literal, NOT an import.
+All other 83 `node:` mentions in .ts files are doc comments ("no node: builtins").
+Verdict: PASS — zero real node: builtin imports in any .ts under packages/.
+
+Cross-check: the in-chain scanners themselves pass at this SHA:
+  packages/runtime/test/p7t5-no-creation-scan.test.ts (11 tests) PASS
+  packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) PASS
+  (chain: 1773/1773, see chain-rerun.log)
+
+### 1b. patch-package / pnpm patch / postinstall mutation of upstream
+- Checked scripts of all 10 package.json (root + 9 packages): NO script named
+  preinstall/postinstall/prepare/install and NO script value containing 'patch'.
+- Root package.json / pnpm-workspace.yaml: no patch-package, no patchedDependencies,
+  no 'pnpm patch' tokens.
+- Lockfile diff vs base:
+    git diff --stat 959e36358..HEAD -- pnpm-lock.yaml pnpm-workspace.yaml package.json packages/*/package.json
+  => EMPTY. pnpm-lock.yaml and every package.json are byte-identical to base
+  959e36358. No dependency change, no patch metadata, no script change in P8.
+Verdict: PASS.
+
+### 1c. imports of references/deepseek-harness-test-use (upstream) from packages/*
+Full import-specifier enumeration over all 456 .ts files under packages/
+(2235 specifiers): every bare (non-relative) specifier is one of:
+  vitest, vitest/config, yaml   (declared root deps: vitest ^4.1.8, yaml ^2.9.0;
+  pre-existing, lockfile unchanged vs base; vitest = test-framework shim surface,
+  yaml = packages/domain/blueprint/src/parse.ts pre-P8 import)
+plus template-literal regex artifacts (no real specifiers).
+Zero specifiers reference references/, deepseek-harness, or any upstream path.
+Verdict: PASS.
+
+## 2. private-import
+Grep of all import specifiers (2235) for references|deepseek|harness|legacy|upstream:
+only intra-repo relative specifiers of the vNext repo's own modules match:
+  ../legacy-vocabulary.js, ./handlers/legacy.js, ./legacy.js, ./legacy-payloads
+These are the vNext legacy-compat modules (remote `legacy.inspect` category per
+DevPlan §21.3; testkit legacy-vocabulary scanner module). NONE reference the frozen
+legacy fork (references/deepseek-harness) or upstream internals.
+Verdict: PASS.
+
+## 3. owned-boundary
+Command: git diff --name-status 959e36358ee7244ff8c7e1e0b8396e70dfef4562..HEAD -- packages/
+Result: 97 changed files (raw list: owned-boundary-diff-raw.txt).
+Classification against the brief's corrected owned-glob list (T1/T2/T3/T4 +
+gate-level + DEC-1 standing exception): 97/97 inside owned globs, 0 violations.
+
+Breakdown:
+- T1 (A x17): packages/contracts/src/projection/* (12 modules) +
+  packages/contracts/test/p8t1-* (5 files) + M packages/contracts/src/index.ts
+- T2 (A x7): packages/runtime/projection/* (errors, fold, index, ledger, service,
+  types) + packages/runtime/test/p8t2-* (cold, fifty, helpers, negative, overlay,
+  terminal)
+- T3 (A x20 + M): packages/remote/src/contracts/* (9), packages/remote/src/handlers/*
+  (12), packages/remote/test/p8t3-* (9 incl. helpers + negative-scan pair) +
+  M packages/remote/src/index.ts
+- T4 (A x6 + A x5): packages/remote/src/push/* (generation, index, ledger-page,
+  pull, reconnect, types) + packages/remote/test/p8t4-* (engine, negative,
+  negative-scan.d.mts, negative-scan.mjs, server, sync, test-client) +
+  M packages/remote/test/p8t3-negative.test.ts (layout-pin maintenance, standing
+  exception recorded in the brief)
+- gate-level (M x12 + A x2):
+  M packages/runtime/compatibility/probe.ts (+10: S1-A hook B — compatibility
+    replaceState advances team_sessions.generation AFTER the durable put,
+    serialized on the same team_domain write chain; doc comment added)
+  M packages/storage/repositories/ledger.ts (+39/-4: S1-A hook A — after a NEW
+    ledger entry is durably written, teamSessions.advanceGeneration(rootSessionId);
+    replayed facts deduped via findFact before put, never advance twice)
+  M packages/storage/repositories/team-sessions.ts (+44: advanceGeneration() —
+    atomic update on the team_domain write chain, returns next generation)
+  M packages/storage/repositories/team-domain.ts (+7/-2: buildDomain shares ONE
+    TeamSessionsRepository instance between teamSessions and LedgerRepository —
+    same handle, same write chain, so stamp advance serializes with fact put)
+  A packages/storage/test/g8s1-stamp-advance.test.ts (+254)
+  A packages/runtime/test/g8s1-generation-stamp.test.ts (+479)
+  M packages/storage/test/{p4-06-journal,p4t2-conflicts,p4t2-crash-recovery,
+    p4t2-helpers,p4t2-journal,p4t4-helpers,p4t4-one-committed-invariant,
+    p4t4-orphan-detect,p4t4-per-stage-retry}.* — counter-expectation maintenance
+    for the new generation-stamp write (e.g. p4t2-conflicts: afterCommit delta
+    4->5, +5 -> +6 with "G8-S1" comments; 206 insertions/117 deletions across
+    the 18 P4/P6/testkit files, all expectation/count maintenance)
+  M packages/runtime/test/{p6t1-explicit,p6t1-recovery,p6t3-send-delivery}.test.ts
+    (same kind of counter-expectation updates)
+  M packages/testkit/test/{p4t5-corrupt-version,p4t5-crash-matrix,p4t5-helpers,
+    p4t5-retry-restart}.* (same kind)
+  M packages/testkit/fault-injection/fixtures/committed-world/team_domain/
+    team_sessions.json (generation value in committed-world fixture)
+- DEC-1 standing exception: M packages/testkit/test/p4t6-session-event-scan.test.ts
+  (count maintenance: filesScanned 411 -> 484 enumerating the new P8 + G8-S1
+  files; scan itself still passes at this SHA)
+
+index.ts additivity check (brief marks both "+ additive"):
+  packages/contracts/src/index.ts: +120 / -0 (purely additive export block)
+  packages/remote/src/index.ts: +374 / -11 — the 11 removed lines are ONLY the
+    P1-T4 skeleton doc-comment; the sole code export of the old file
+    (`export const PACKAGE_ID = 'remote'`) is preserved verbatim. No public
+    export removed or renamed. (diff saved: remote-index-diff.txt)
+
+Verdict: PASS — 97/97 files inside owned globs; both index.ts additive at the
+export level; gate-level files match the brief's corrected list item-for-item.
+
+## 4. pre-existing environment notes (not part of the diff)
+- references/deepseek-harness-test-use at cd5ef8148158c3a752a658978873241fdf8e2bbc
+  (pristine baseline per TEST_METHODS §1) with 2 PRE-EXISTING working-tree
+  deletions before this review: `D vendor/cordis/LICENSE`, `D vendor/cordis/bin.js`.
+  Not caused by this reviewer; will re-verify identical after e2e (TEST_METHODS §3.5
+  requires the tree to be byte-clean after test runs — recorded as pre-existing
+  state, this reviewer adds nothing to it).

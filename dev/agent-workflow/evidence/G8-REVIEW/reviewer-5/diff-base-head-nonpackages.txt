@@ -1,0 +1,44 @@
+﻿
+A	dev/agent-workflow/evidence/G8-S1/attempt-log.md
+A	dev/agent-workflow/evidence/G8-S1/design-note.md
+A	dev/agent-workflow/evidence/G8-S1/run3-chain-clean-tree.txt
+A	dev/agent-workflow/evidence/G8-S1/run3-tsc-contracts.txt
+A	dev/agent-workflow/evidence/G8-S1/run3-tsc-domain.txt
+A	dev/agent-workflow/evidence/G8-S1/run3-tsc-remote.txt
+A	dev/agent-workflow/evidence/G8-S1/run3-tsc-runtime.txt
+A	dev/agent-workflow/evidence/G8-S1/run3-tsc-storage.txt
+A	dev/agent-workflow/evidence/G8-S1/run3-tsc-testkit.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-chain-clean-tree.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-tsc-contracts.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-tsc-domain.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-tsc-remote.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-tsc-runtime.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-tsc-storage.txt
+A	dev/agent-workflow/evidence/G8-S1/run4-tsc-testkit.txt
+A	dev/agent-workflow/evidence/P8-T1/attempt1-baseline.log
+A	dev/agent-workflow/evidence/P8-T1/attempt1-install.log
+A	dev/agent-workflow/evidence/P8-T1/attempt1-post.log
+A	dev/agent-workflow/evidence/P8-T1/design-note.md
+A	dev/agent-workflow/evidence/P8-T2/attempt1-baseline.log
+A	dev/agent-workflow/evidence/P8-T2/attempt1-install.log
+A	dev/agent-workflow/evidence/P8-T2/attempt1-postchain.log
+A	dev/agent-workflow/evidence/P8-T2/design-note.md
+A	dev/agent-workflow/evidence/P8-T3/attempt1-baseline.log
+A	dev/agent-workflow/evidence/P8-T3/attempt1-post.log
+A	dev/agent-workflow/evidence/P8-T3/design-note.md
+A	dev/agent-workflow/evidence/P8-T3/install.log
+A	dev/agent-workflow/evidence/P8-T4/attempt1-baseline.log
+A	dev/agent-workflow/evidence/P8-T4/attempt1-post-prefixes.log
+A	dev/agent-workflow/evidence/P8-T4/attempt1-post.log
+A	dev/agent-workflow/evidence/P8-T4/attempt1-probe-p8t3-pin.log
+A	dev/agent-workflow/evidence/P8-T4/attempt2-post.log
+A	dev/agent-workflow/evidence/P8-T4/design-note.md
+A	dev/agent-workflow/evidence/P8-T4/install.log
+A	dev/agent-workflow/evidence/P8-T4/precheck-remote.log
+A	dev/agent-workflow/evidence/P8-T4/probe-p4t6-count.mjs
+A	dev/agent-workflow/evidence/P8-T4/probe-s2.mjs
+A	dev/agent-workflow/evidence/P8-T4/probe-scanner.mjs
+A	dev/agent-workflow/evidence/P8-T4/run-chain.ps1
+A	dev/agent-workflow/evidence/P8-T4/run-install.ps1
+
+

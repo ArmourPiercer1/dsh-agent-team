@@ -1,0 +1,97 @@
+{
+  "page1": {
+    "entries": [
+      {
+        "schemaVersion": 1,
+        "sequence": 1,
+        "rootSessionId": "session-root-g8r5",
+        "factType": "provision-member-instance",
+        "payload": {
+          "instanceId": "inst-016qynq01hdi",
+          "label": "worker-e3",
+          "rootSessionId": "session-root-g8r5",
+          "templateId": "worker",
+          "workspace": "C:/agent-team/work/g8r5"
+        },
+        "operationId": "op-01hgkgy0qqx7gt0fo2jns1n9",
+        "createdAt": "2026-08-31T13:29:39.975Z"
+      }
+    ],
+    "nextAfterSequence": 1,
+    "total": 2
+  },
+  "page2": {
+    "entries": [
+      {
+        "schemaVersion": 1,
+        "sequence": 2,
+        "rootSessionId": "session-root-g8r5",
+        "factType": "provision-member-instance",
+        "payload": {
+          "instanceId": "inst-1tk7phh084yl",
+          "label": "worker-e4",
+          "rootSessionId": "session-root-g8r5",
+          "templateId": "worker",
+          "workspace": "C:/agent-team/work/g8r5"
+        },
+        "operationId": "op-1s0dp9605dapmt1adubfk1on",
+        "createdAt": "2026-08-31T13:29:40.064Z"
+      },
+      {
+        "schemaVersion": 1,
+        "sequence": 3,
+        "rootSessionId": "session-root-g8r5",
+        "factType": "team-coordination-recorded",
+        "payload": {
+          "action": "send-message",
+          "at": "2026-08-31T12:00:00Z",
+          "body": "g8r5 e2e: coordination fact",
+          "caller": {
+            "instanceId": "inst-016qynq01hdi",
+            "kind": "instance",
+            "role": "member"
+          },
+          "recipientInstanceId": "inst-1tk7phh084yl",
+          "requestToken": "tok-g8r5-e4s",
+          "subject": "g8r5-e4",
+          "targetInstanceId": "inst-1tk7phh084yl"
+        },
+        "operationId": null,
+        "createdAt": "2026-08-31T12:00:00Z"
+      }
+    ],
+    "nextAfterSequence": null,
+    "total": 3
+  },
+  "sent": {
+    "ok": true,
+    "value": {
+      "data": {
+        "outcome": {
+          "status": "executed",
+          "action": "send-message",
+          "rootSessionId": "session-root-g8r5",
+          "callerRole": "member",
+          "targetInstanceId": "inst-1tk7phh084yl",
+          "effect": {
+            "kind": "fact-recorded",
+            "factType": "team-coordination-recorded",
+            "sequence": 3
+          },
+          "requestToken": "tok-g8r5-e4s"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "member.send",
+        "endpoint": "member.send",
+        "contractVersion": 1,
+        "requestToken": "tok-g8r5-e4s",
+        "projectionGeneration": null,
+        "effectSequence": 3
+      }
+    }
+  },
+  "worker1": "inst-016qynq01hdi",
+  "worker2": "inst-1tk7phh084yl"
+}

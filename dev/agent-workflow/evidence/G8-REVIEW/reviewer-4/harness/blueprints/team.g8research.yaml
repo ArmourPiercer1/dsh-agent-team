@@ -1,0 +1,41 @@
+---
+schemaVersion: 1
+blueprintId: team.g8research
+revision: "1"
+displayName: G8 Research Team
+description: Small research team for the G8-REVIEW remote e2e harness.
+leader:
+  templateId: leader
+  displayName: Team Lead
+  description: Coordinates the members.
+  persona: You are the team lead. You coordinate members and consolidate results.
+  modelPreference: deepseek-v4-pro
+  contextPolicy: persistent
+members:
+  - templateId: researcher
+    displayName: Researcher
+    description: Gathers sources.
+    persona: You research and cite sources.
+    contextPolicy: fresh_per_delegation
+  - templateId: writer
+    displayName: Writer
+    description: Writes the final document.
+    persona: You write and edit.
+    contextPolicy: fresh_per_delegation
+requirements:
+  - domain: tool
+    name: search
+  - domain: tool
+    name: read
+    optional: true
+memberEnvelopes: []
+policyStates: []
+quotas:
+  team:
+    maxInstances: 8
+  members:
+    maxInstances: 4
+metadata:
+  owner: g8-r4-harness
+  locale: en
+---
