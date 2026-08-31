@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 440 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 469 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -144,9 +144,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // runtime/projection: types, errors, ledger, fold, service, index +
     // 6 files under runtime/test: p8t2-helpers + 5 suites:
     // p8t2-cold, p8t2-fifty, p8t2-overlay, p8t2-terminal,
-    // p8t2-negative)).
-    expect(scanResult.filesScanned).toBe(440)
-    expect(scanResult.files.length).toBe(440)
+    // p8t2-negative)) +
+    // 29 P8-T3 remote contract files (21 module .ts under remote/src:
+    // 9 contracts/* modules + 12 handlers/* modules — the remote
+    // index.ts pre-existed as the package skeleton and is already
+    // counted in the pre-existing base — + 8 test files under
+    // remote/test: p8t3-helpers, p8t3-round-trip.test,
+    // p8t3-invalid-ids.test, p8t3-admission.test, p8t3-version.test,
+    // p8t3-negative.test, p8t3-negative-scan.mjs,
+    // p8t3-negative-scan.d.mts)).
+    expect(scanResult.filesScanned).toBe(469)
+    expect(scanResult.files.length).toBe(469)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
