@@ -314,7 +314,7 @@ try {
 
 const c2Realm = await createFileRealm('p4t5c-c2')
 const c2Base = c2Realm.seam.writeCount
-armCrashAt(c2Realm.seam, c2Base, 7) // the B9 boundary: the fact is durable, the COMMITTED row write crashes
+armCrashAt(c2Realm.seam, c2Base, 8) // the B9 boundary: the fact + stamp are durable, the COMMITTED row write crashes
 const c2Run = await capture(() => c2Realm.coordinator.provision(P4T5_REQUEST))
 const c2CrashWrites = c2Realm.seam.writeCount - c2Base
 const c2TmpBefore = listFiles(c2Realm.seam.dirFor(FAULT_DOMAIN_NAME)).filter((f) => f.endsWith('.tmp')).sort()
@@ -430,7 +430,7 @@ it('(c1) a planted crash-shaped .tmp file in the domain dir does NOT poison the 
 it('(c2) a REAL crash-leftover tmp (the seam fault fired at B9) does NOT poison the reopen: the restarted stack reopens, recovers with exactly 1 seam write, and converges to the committed world', () => {
   expect(c2).not.toBe(undefined)
   expect(c2?.runOk).toBe(false)
-  expect(c2?.crashWrites).toBe(7)
+  expect(c2?.crashWrites).toBe(8)
   expect(c2?.openOk).toBe(true)
   expect(c2?.stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
   expect(c2?.committed).toBe(true)

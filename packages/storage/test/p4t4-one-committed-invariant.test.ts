@@ -14,9 +14,10 @@
  * at that seam write, then RE-DRIVING with `recover` (real process crashes
  * are P4-T5's job). Seam-write arithmetic (fresh world):
  * W1 op PREPARED, W2 child recorded on op row, W3 member record, W4 binding,
- * W5 ledger counter boot, W6 counter bump, W7 fact, W8 COMMITTED row.
- * Boundary → offset map: B1 0, B2 1, B3 1, B4 2, B5 3, B6 4, B7 8 (no crash),
- * B8 4, B9 7, B10 8 (no crash). B2 and B3 share one seam boundary because
+ * W5 ledger counter boot, W6 counter bump, W7 fact, W8 generation stamp
+ * advance (G8-S1), W9 COMMITTED row.
+ * Boundary → offset map: B1 0, B2 1, B3 1, B4 2, B5 3, B6 4, B7 9 (no crash),
+ * B8 4, B9 8, B10 9 (no crash). B2 and B3 share one seam boundary because
  * the adapter call performs NO seam write (documented honestly in the
  * evidence). B6 and B8 share the same seam state for the same reason.
  *
@@ -47,7 +48,7 @@ import {
   type ProvisionResult,
   type ProvisioningStatus,
 } from '../provisioning/index.js'
-import { P4_FIXTURE, asTeamDomainError, capture, detail } from './p4-helpers.js'
+import { P4_FIXTURE, asTeamDomainError, capture, detail, teamSessionInput } from './p4-helpers.js'
 import {
   armCrashAt,
   createP4t4World,
@@ -103,16 +104,16 @@ interface BoundaryData {
 }
 
 const BOUNDARIES: BoundarySpec[] = [
-  { id: 'B1', boundary: 'before op prepare', offset: 0, crashes: true, expectedRecoveryWrites: 8, expectedPostCrashStage: PROVISIONING_STAGES.NONE },
-  { id: 'B2', boundary: 'after op prepare', offset: 1, crashes: true, expectedRecoveryWrites: 7, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
-  { id: 'B3', boundary: 'before child create (same seam state as B2: the adapter call performs no seam write)', offset: 1, crashes: true, expectedRecoveryWrites: 7, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
-  { id: 'B4', boundary: 'after child create', offset: 2, crashes: true, expectedRecoveryWrites: 6, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
-  { id: 'B5', boundary: 'before SessionBinding', offset: 3, crashes: true, expectedRecoveryWrites: 5, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
-  { id: 'B6', boundary: 'before MemberInstance commit', offset: 4, crashes: true, expectedRecoveryWrites: 4, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
-  { id: 'B7', boundary: 'after MemberInstance commit (no crash)', offset: 8, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
-  { id: 'B8', boundary: 'before ledger (same seam state as B6: the ledger write is the first commit write)', offset: 4, crashes: true, expectedRecoveryWrites: 4, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
-  { id: 'B9', boundary: 'before operation committed (fact durable, COMMITTED row not written)', offset: 7, crashes: true, expectedRecoveryWrites: 1, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
-  { id: 'B10', boundary: 'after committed (no crash)', offset: 8, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
+  { id: 'B1', boundary: 'before op prepare', offset: 0, crashes: true, expectedRecoveryWrites: 9, expectedPostCrashStage: PROVISIONING_STAGES.NONE },
+  { id: 'B2', boundary: 'after op prepare', offset: 1, crashes: true, expectedRecoveryWrites: 8, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
+  { id: 'B3', boundary: 'before child create (same seam state as B2: the adapter call performs no seam write)', offset: 1, crashes: true, expectedRecoveryWrites: 8, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
+  { id: 'B4', boundary: 'after child create', offset: 2, crashes: true, expectedRecoveryWrites: 7, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
+  { id: 'B5', boundary: 'before SessionBinding', offset: 3, crashes: true, expectedRecoveryWrites: 6, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
+  { id: 'B6', boundary: 'before MemberInstance commit', offset: 4, crashes: true, expectedRecoveryWrites: 5, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
+  { id: 'B7', boundary: 'after MemberInstance commit (no crash)', offset: 9, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
+  { id: 'B8', boundary: 'before ledger (same seam state as B6: the ledger write is the first commit write)', offset: 4, crashes: true, expectedRecoveryWrites: 5, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
+  { id: 'B9', boundary: 'before operation committed (fact + stamp durable, COMMITTED row not written)', offset: 8, crashes: true, expectedRecoveryWrites: 1, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
+  { id: 'B10', boundary: 'after committed (no crash)', offset: 9, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
 ]
 
 async function runBoundary(spec: BoundarySpec): Promise<BoundaryData> {
@@ -201,6 +202,9 @@ const twoBetaCount = twoMembers.filter((m) => String(m.instanceId) === BETA_INST
 const twoOrphans = two.coordinator.listOrphans()
 
 // Same instanceId under a DIFFERENT root over the SAME shared domain.
+// G8-S1: the cross-root team row must exist before the first fact — the
+// generation-stamp hook (hook A) advances it on every new fact.
+await two.domain.repositories.teamSessions.put(teamSessionInput(P4_FIXTURE.otherRootSessionId))
 const crossAdapter = new FakeAgentFactoryAdapter()
 const cross = createProvisioningCoordinator({
   domain: two.domain,
@@ -226,7 +230,7 @@ const allowedOrphans = allowed.coordinator.listOrphans()
 describe('10-boundary crash matrix (Development Plan §17.4): re-driving from every boundary converges to exactly one committed member', () => {
   for (const data of boundaryData) {
     const spec = data.spec
-    it(`${spec.id} (${spec.boundary}): ${spec.crashes ? 'the drive stops mid-protocol and recover converges with the exact remaining writes' : 'the full 8-write protocol completes without a crash'}`, () => {
+    it(`${spec.id} (${spec.boundary}): ${spec.crashes ? 'the drive stops mid-protocol and recover converges with the exact remaining writes' : 'the full 9-write protocol completes without a crash'}`, () => {
       if (spec.crashes) {
         expect(data.runOk).toBe(false)
         expect(isSeamFailure(data.runError)).toBe(true)
@@ -239,7 +243,7 @@ describe('10-boundary crash matrix (Development Plan §17.4): re-driving from ev
         expect(data.recoveryWrites).toBe(spec.expectedRecoveryWrites)
       } else {
         expect(data.runOk).toBe(true)
-        expect(data.crashWrites).toBe(8)
+        expect(data.crashWrites).toBe(9)
         expect(data.recoverOk).toBe(true)
         expect(data.recoveryWrites).toBe(0)
       }

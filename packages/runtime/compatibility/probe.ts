@@ -234,10 +234,20 @@ export function createCompatibilityProber(deps: CompatibilityProberDeps): Compat
   /**
    * Durably replace the compatibility state (delete + put: the
    * repository has no upsert; see the module docs for the crash window).
+   *
+   * S1-A hook B: the compatibility state is durable team state that
+   * never passes through a ledger fact, so this replaceState is the
+   * state's own stamp choke point. The generation advance happens only
+   * AFTER the put is durable (a failed put rejects before any advance;
+   * the delete alone never advances), serialized on the same
+   * `team_domain` write chain — the same state-durable-before-stamp
+   * order and v1 lag model as hook A. Warning-ACK writes take the same
+   * replaceState path and are covered here.
    */
   async function replaceState(record: CompatibilityStateRecord): Promise<void> {
     await repositories.compatibility.delete(rootSessionId)
     await repositories.compatibility.put(record)
+    await repositories.teamSessions.advanceGeneration(rootSessionId)
   }
 
   function verdictOf(result: CompatibilityResult, recordedAt: string, generation: number): CompatibilityVerdict {

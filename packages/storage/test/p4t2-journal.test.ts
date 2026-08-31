@@ -88,8 +88,8 @@ describe('p4t2 journal: PREPARED → effects → ledger → COMMITTED (happy pat
     expect(r1.ledgerSequence).toBe(1)
   })
 
-  it('issues exactly the protocol writes: prepare, 2 effects, counter boot, counter update, fact, commit', () => {
-    expect(afterCommit1 - base0).toBe(7)
+  it('issues exactly the protocol writes: prepare, 2 effects, counter boot, counter update, fact, stamp advance, commit', () => {
+    expect(afterCommit1 - base0).toBe(8)
   })
 
   it('persisted exactly one operation row and one ledger fact (plus the counter row)', () => {

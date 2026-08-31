@@ -175,7 +175,8 @@ describe('p4t2 conflicts: generation CAS (mandatory)', () => {
     expect(r2.effectsApplied).toBe(0)
     expect(r2.effectsSkipped).toBe(2)
     expect(r2.ledgerSequence).toBe(2)
-    expect(afterCommit2 - afterCommit1).toBe(4)
+    // G8-S1: counter bump, fact, generation-stamp advance, COMMITTED row
+    expect(afterCommit2 - afterCommit1).toBe(5)
   })
 
   it('matching and further-stale expectedGeneration on the second operation', () => {
@@ -271,7 +272,8 @@ describe('p4t2 conflicts: staged child-session window', () => {
     expect(r3.effectsApplied).toBe(2)
     expect(r3.effectsSkipped).toBe(0)
     expect(r3.ledgerSequence).toBe(3)
-    expect(afterDrive3).toBe(afterChild3 + 5)
+    // G8-S1: member, binding, counter bump, fact, generation-stamp advance, COMMITTED row
+    expect(afterDrive3).toBe(afterChild3 + 6)
     expect(lastApplied3).toBe(OP3)
   })
 

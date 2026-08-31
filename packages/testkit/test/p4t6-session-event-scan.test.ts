@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 482 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 484 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp)', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -157,9 +157,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // types, generation, pull, reconnect, ledger-page, index +
     // 7 files under remote/test: p8t4-engine.test, p8t4-sync.test,
     // p8t4-negative.test, p8t4-negative-scan.mjs,
-    // p8t4-negative-scan.d.mts, p8t4-server, p8t4-test-client)).
-    expect(scanResult.filesScanned).toBe(482)
-    expect(scanResult.files.length).toBe(482)
+    // p8t4-negative-scan.d.mts, p8t4-server, p8t4-test-client) +
+    // 2 G8-S1 gate-supplement test files (storage g8s1-stamp-advance +
+    // runtime g8s1-generation-stamp)).
+    expect(scanResult.filesScanned).toBe(484)
+    expect(scanResult.files.length).toBe(484)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

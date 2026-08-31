@@ -507,9 +507,10 @@ describe('P6-T3 send/delivery (MUST-TEST: leader→member, member→leader, nega
 
     // Nothing on any other session; the write cost is exactly two durable
     // facts — 4 seam writes plus the one-time ledger counter bootstrap on
-    // this fresh world's first allocation (= 5); the ledger stays gap-free.
+    // this fresh world's first allocation plus the two G8-S1 generation-stamp
+    // advances (one per new fact) (= 7); the ledger stays gap-free.
     expect(sd.leaderToWorker.inputCount).toBe(1)
-    expect(sd.leaderToWorker.newWrites).toBe(5)
+    expect(sd.leaderToWorker.newWrites).toBe(7)
     expect(sd.leaderToWorker.gaps).toEqual([])
   })
 
@@ -622,8 +623,9 @@ describe('P6-T3 send/delivery (MUST-TEST: leader→member, member→leader, nega
     expect(sd.failedDelivery.code).toBe(
       MESSAGING_ERROR_CODES.MESSAGING_DELIVERY_FAILED,
     )
-    // exactly ONE durable fact (the intent) — no confirmation.
-    expect(sd.failedDelivery.newWrites).toBe(2)
+    // exactly ONE durable fact (the intent) — no confirmation; the G8-S1
+    // generation-stamp advance adds one seam write per new fact.
+    expect(sd.failedDelivery.newWrites).toBe(3)
     expect(sd.failedDelivery.intentFacts).toBe(1)
     expect(sd.failedDelivery.confirmFactsBeforeRecovery).toBe(0)
     expect(sd.failedDelivery.inputsToScoutBeforeRecovery).toBe(0)

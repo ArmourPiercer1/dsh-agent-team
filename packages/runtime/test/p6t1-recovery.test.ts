@@ -154,16 +154,17 @@ describe('P6-T1 R1: crash at the child-session durable marker — recovery roll-
     expect(r1.recoveredPhase).toBe(OPERATION_PHASES.COMMITTED)
   })
 
-  it('recovery performs exactly the remaining durable writes (child marker, member, binding, 3 ledger, commit) and ONE ledger fact', () => {
+  it('recovery performs exactly the remaining durable writes (child marker, member, binding, 3 ledger, G8-S1 stamp, commit) and ONE ledger fact', () => {
     const tables = r1.recoveryTables.filter((t) => t !== 'ledger')
     expect(tables).toEqual([
       'operations',
       'member_instances',
       'session_bindings',
+      'team_sessions',
       'operations',
     ])
     expect(r1.recoveryLedgerEntries).toBe(1)
-    expect(r1.recoveryTotalWrites).toBe(7)
+    expect(r1.recoveryTotalWrites).toBe(8)
   })
 })
 
@@ -349,12 +350,12 @@ describe('P6-T1 R4: crash inside the terminal drive — the ledger fact lands ex
     expect(r4.ledgerEntriesAtCrash).toBe(0)
   })
 
-  it('recovery drives the terminal without any factory call (the commit drive: 3 ledger + 1 commit)', () => {
+  it('recovery drives the terminal without any factory call (the commit drive: 3 ledger + G8-S1 stamp + 1 commit)', () => {
     expect(r4.newFactoryCalls).toBe(0)
     expect(r4.recoverError).toBe(undefined)
     expect(r4.recovered?.kind).toBe('activated')
     expect(r4.recoveredPhase).toBe(OPERATION_PHASES.COMMITTED)
-    expect(r4.recoveryTotalWrites).toBe(4)
+    expect(r4.recoveryTotalWrites).toBe(5)
   })
 })
 

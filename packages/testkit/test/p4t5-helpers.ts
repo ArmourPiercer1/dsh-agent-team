@@ -31,6 +31,9 @@ import {
   destroyDir,
 } from '../fault-injection/file-seam.mjs'
 import {
+  parseBlueprintContentHash,
+  parseBlueprintId,
+  parseBlueprintRevision,
   parseChildSessionId,
   parseInstanceId,
   parseRootSessionId,
@@ -157,6 +160,24 @@ export async function createFileRealm(
   const dir = scratchDir(scratchBaseName)
   const seam = new FileStorageSeam(dir)
   const domain = await createTeamDomain(seam)
+  // G8-S1 (R60): a fresh realm is a full process stack for ONE team, and
+  // every new ledger fact now advances that team's generation stamp. The
+  // stamp advance rejects loudly (SEAM_FAILURE) for a missing team row —
+  // the invariant "facts belong to an existing team" — so the realm
+  // creation seeds its team row (generation 1), mirroring the storage
+  // test factories. Scratch-dir write bases captured AFTER realm creation
+  // are unaffected.
+  await domain.repositories.teamSessions.put({
+    blueprint: {
+      blueprintId: parseBlueprintId('AIUED-ALGO'),
+      revision: parseBlueprintRevision('17'),
+      contentHash: parseBlueprintContentHash('sha256-0123456789abcdef0123456789abcdef'),
+    },
+    createdAt: P4T5_FIXTURE.createdAt,
+    defaultWorkspace: 'C:/agent-team/work',
+    generation: 1,
+    rootSessionId: parseRootSessionId(String(rootSessionId)),
+  })
   return buildRealm(dir, seam, domain, rootSessionId)
 }
 
@@ -268,7 +289,7 @@ export interface BoundarySpec {
   readonly offset: number
   /** False for the no-crash boundaries (B7 "after MemberInstance commit", B10 "after committed"). */
   readonly crashes: boolean
-  /** Seam writes the post-restart recovery drive must perform (8 - offset). */
+  /** Seam writes the post-restart recovery drive must perform (9 - offset). */
   readonly expectedRecoveryWrites: number
   /** The derived stage of the durable state the crash leaves. */
   readonly expectedPostCrashStage: ProvisioningStage
@@ -278,21 +299,21 @@ export interface BoundarySpec {
  * The ten frozen Development Plan §17.4 boundaries with the seam-write
  * arithmetic (fresh world): W1 op PREPARED, W2 child recorded on op row,
  * W3 member record, W4 binding, W5 ledger counter boot, W6 counter bump,
- * W7 fact, W8 COMMITTED row. B2/B3 share one seam boundary (the adapter
- * call performs NO seam write); B6/B8 share the same seam state (the ledger
- * write is the first commit write).
+ * W7 fact, W8 generation stamp advance (G8-S1), W9 COMMITTED row. B2/B3
+ * share one seam boundary (the adapter call performs NO seam write); B6/B8
+ * share the same seam state (the ledger write is the first commit write).
  */
 export const BOUNDARIES: readonly BoundarySpec[] = [
-  { id: 'B1', boundary: 'before op prepare', offset: 0, crashes: true, expectedRecoveryWrites: 8, expectedPostCrashStage: PROVISIONING_STAGES.NONE },
-  { id: 'B2', boundary: 'after op prepare', offset: 1, crashes: true, expectedRecoveryWrites: 7, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
-  { id: 'B3', boundary: 'before child create (same seam state as B2: the adapter call performs no seam write)', offset: 1, crashes: true, expectedRecoveryWrites: 7, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
-  { id: 'B4', boundary: 'after child create', offset: 2, crashes: true, expectedRecoveryWrites: 6, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
-  { id: 'B5', boundary: 'before SessionBinding', offset: 3, crashes: true, expectedRecoveryWrites: 5, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
-  { id: 'B6', boundary: 'before MemberInstance commit', offset: 4, crashes: true, expectedRecoveryWrites: 4, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
-  { id: 'B7', boundary: 'after MemberInstance commit (no crash)', offset: 8, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
-  { id: 'B8', boundary: 'before ledger (same seam state as B6: the ledger write is the first commit write)', offset: 4, crashes: true, expectedRecoveryWrites: 4, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
-  { id: 'B9', boundary: 'before operation committed (fact durable, COMMITTED row not written)', offset: 7, crashes: true, expectedRecoveryWrites: 1, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
-  { id: 'B10', boundary: 'after committed (no crash)', offset: 8, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
+  { id: 'B1', boundary: 'before op prepare', offset: 0, crashes: true, expectedRecoveryWrites: 9, expectedPostCrashStage: PROVISIONING_STAGES.NONE },
+  { id: 'B2', boundary: 'after op prepare', offset: 1, crashes: true, expectedRecoveryWrites: 8, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
+  { id: 'B3', boundary: 'before child create (same seam state as B2: the adapter call performs no seam write)', offset: 1, crashes: true, expectedRecoveryWrites: 8, expectedPostCrashStage: PROVISIONING_STAGES.ALLOCATED },
+  { id: 'B4', boundary: 'after child create', offset: 2, crashes: true, expectedRecoveryWrites: 7, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
+  { id: 'B5', boundary: 'before SessionBinding', offset: 3, crashes: true, expectedRecoveryWrites: 6, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_SESSION_CREATED },
+  { id: 'B6', boundary: 'before MemberInstance commit', offset: 4, crashes: true, expectedRecoveryWrites: 5, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
+  { id: 'B7', boundary: 'after MemberInstance commit (no crash)', offset: 9, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
+  { id: 'B8', boundary: 'before ledger (same seam state as B6: the ledger write is the first commit write)', offset: 4, crashes: true, expectedRecoveryWrites: 5, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
+  { id: 'B9', boundary: 'before operation committed (fact + stamp durable, COMMITTED row not written)', offset: 8, crashes: true, expectedRecoveryWrites: 1, expectedPostCrashStage: PROVISIONING_STAGES.CHILD_BOUND },
+  { id: 'B10', boundary: 'after committed (no crash)', offset: 9, crashes: false, expectedRecoveryWrites: 0, expectedPostCrashStage: PROVISIONING_STAGES.INSTANCE_COMMITTED },
 ]
 
 /** The durable domain name (re-export convenience for the tests). */

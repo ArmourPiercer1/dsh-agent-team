@@ -136,17 +136,19 @@ describe('P6-T1 S1: leader-explicit happy path (full admission/provisioning orde
     expect(result.member.lifecycle).toBe('CREATED')
   })
 
-  it('persists the durable write sequence: operations → operations → member → binding → (ledger) → operations', () => {
+  it('persists the durable write sequence: operations → operations → member → binding → (ledger) → team_sessions → operations', () => {
     const tables = s1.tables.filter((t) => t !== 'ledger')
     expect(tables).toEqual([
       'operations',
       'operations',
       'member_instances',
       'session_bindings',
+      'team_sessions',
       'operations',
     ])
-    // The ledger writes (counter + the committed fact) sit strictly between
-    // the binding write and the terminal operations write.
+    // The ledger writes (counter + the committed fact) and the G8-S1
+    // generation-stamp write sit strictly between the binding write and the
+    // terminal operations write.
     const bindingIdx = s1.tables.lastIndexOf('session_bindings')
     const lastOpsIdx = s1.tables.lastIndexOf('operations')
     const ledgerIdxs = s1.tables
@@ -161,9 +163,10 @@ describe('P6-T1 S1: leader-explicit happy path (full admission/provisioning orde
     expect(s1.ledgerEntryKeys.length).toBe(1)
   })
 
-  it('writes NOTHING to team_sessions / overrides / compatibility (the admission order)', () => {
+  it('writes exactly ONE generation-stamp write to team_sessions (G8-S1) and NOTHING to overrides / compatibility', () => {
+    const stampWrites = s1.tables.filter((t) => t === 'team_sessions')
+    expect(stampWrites.length).toBe(1)
     for (const t of s1.tables) {
-      expect(t === 'team_sessions').toBe(false)
       expect(t === 'overrides').toBe(false)
       expect(t === 'compatibility').toBe(false)
     }

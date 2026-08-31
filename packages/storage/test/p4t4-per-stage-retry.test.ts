@@ -9,8 +9,9 @@
  * Protocol write counts (fresh world, per stage method): allocate = 1 (op
  * PREPARED row); createChildSession = 2 (child recorded on the op row +
  * member record); bindChildSession = 1 (the team-member binding);
- * commitInstance = 4 (ledger counter boot + counter bump + fact + COMMITTED
- * row); a full `provision` = 8. A retry of any completed stage = 0.
+ * commitInstance = 5 (ledger counter boot + counter bump + fact +
+ * generation stamp advance (G8-S1) + COMMITTED row); a full `provision` =
+ * 9. A retry of any completed stage = 0.
  *
  * Also covers: the happy path, the idempotency-conflict guard (same member,
  * different allocation token / intent → loud `RECORD_DUPLICATE` +
@@ -166,8 +167,8 @@ describe('happy path: one full provisioning drive commits the member exactly onc
     assertCommitted(happy, happyReq, happyChild)
   })
 
-  it('performs exactly the eight protocol seam writes (op, child, member, binding, counter boot, counter bump, fact, committed)', () => {
-    expect(happyWrites).toBe(8)
+  it('performs exactly the nine protocol seam writes (op, child, member, binding, counter boot, counter bump, fact, stamp advance, committed)', () => {
+    expect(happyWrites).toBe(9)
   })
 
   it('calls the external adapter exactly once and mints exactly one child', () => {
@@ -211,8 +212,8 @@ describe('per-stage retry: every stage is idempotent (no re-write, no re-effect)
     expect(wBind).toBe(1)
   })
 
-  it('commitInstance performs the 4-write terminal (counter boot, counter bump, fact, committed); the retry performs 0 writes', () => {
-    expect(wCommit).toBe(4)
+  it('commitInstance performs the 5-write terminal (counter boot, counter bump, fact, stamp advance, committed); the retry performs 0 writes', () => {
+    expect(wCommit).toBe(5)
     expect(c1.ledgerSequence).toBe(c2.ledgerSequence)
     expect(c2.effectsApplied).toBe(0)
     expect(c2.effectsSkipped).toBe(0)
@@ -237,8 +238,8 @@ describe('self-ensuring stages: the machine can be entered at any stage', () => 
     expect(selfBindMemberCount).toBe(1)
   })
 
-  it('recover then rolls forward from CHILD_BOUND with exactly the 4-write terminal', () => {
-    expect(selfBindRecoverWrites).toBe(4)
+  it('recover then rolls forward from CHILD_BOUND with exactly the 5-write terminal', () => {
+    expect(selfBindRecoverWrites).toBe(5)
     expect(selfBindRecover.stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
     assertCommitted(selfBind, selfBindReq, selfBindChild)
   })
@@ -279,11 +280,11 @@ describe('recover: re-driving from every durable state S0..S5 converges to the s
     }
   })
 
-  it('roll-forward performs exactly the REMAINING protocol writes per state (S0:8, S1:7, S2:5, S3:4, S4:1, S5:0)', () => {
-    expect(recoverByState('S0')?.writes).toBe(8)
-    expect(recoverByState('S1')?.writes).toBe(7)
-    expect(recoverByState('S2')?.writes).toBe(5)
-    expect(recoverByState('S3')?.writes).toBe(4)
+  it('roll-forward performs exactly the REMAINING protocol writes per state (S0:9, S1:8, S2:6, S3:5, S4:1, S5:0)', () => {
+    expect(recoverByState('S0')?.writes).toBe(9)
+    expect(recoverByState('S1')?.writes).toBe(8)
+    expect(recoverByState('S2')?.writes).toBe(6)
+    expect(recoverByState('S3')?.writes).toBe(5)
     expect(recoverByState('S4')?.writes).toBe(1)
     expect(recoverByState('S5')?.writes).toBe(0)
   })

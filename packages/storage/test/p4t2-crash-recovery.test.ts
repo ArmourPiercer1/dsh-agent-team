@@ -2,15 +2,19 @@
  * p4t2-crash-recovery — the CRASH MATRIX (Development Plan §17.3): a crash
  * is possible between EVERY durable write of the protocol
  * (PREPARED row, each idempotent effect, the ledger allocation, the ledger
- * fact, the COMMITTED row). Every crash point below leaves a durable state
- * that RE-DRIVING the same operation converges to the same durable result:
+ * fact, the generation stamp advance — G8-S1 — the COMMITTED row). Every
+ * crash point below leaves a durable state that RE-DRIVING the same
+ * operation converges to the same durable result:
  *
  * - C0  crash before the first write        → nothing durable; re-drive runs the full protocol
  * - C1  crash after the PREPARED row        → row only; effects run fresh
  * - C2  crash after effect 1 (binding)      → binding detected + SKIPPED, member runs
  * - C3  crash after effect 2 (member)       → both effects SKIPPED
  * - C4  crash after the sequence allocation → gap; re-drive allocates a NEW sequence, gap stays diagnosable
- * - C5  crash after the fact, before COMMIT → fact REUSED (same sequence), row completes
+ * - C5  crash after the fact, before the stamp + COMMIT → fact REUSED (same
+ *       sequence), row completes. G8-S1 v1 crash window: the stamp advance
+ *       is NOT replayed on recovery, so the stamp lags by exactly one until
+ *       the next NEW fact (lag-tolerant, monotonic — see the R60 addendum).
  * - G   staged: crash between prepare and recordChildSession (the external
  *       DSH Session/Agent creation window, Development Plan §17.4) → the
  *       orphan child is diagnosable (no TeamDomain reference); recovery
@@ -194,12 +198,12 @@ describe('p4t2 crash C0: crash before the first write', () => {
     expect(aAfterCrash).toBe(aBase)
   })
 
-  it('re-driving runs the full protocol and converges (7 writes, one fact)', () => {
+  it('re-driving runs the full protocol and converges (8 writes, one fact)', () => {
     expect(aRecover.phase).toBe('COMMITTED')
     expect(aRecover.effectsApplied).toBe(2)
     expect(aRecover.effectsSkipped).toBe(0)
     expect(aRecover.ledgerSequence).toBe(1)
-    expect(aRecoverWrites).toBe(7)
+    expect(aRecoverWrites).toBe(8)
   })
 
   it('the re-verification is a zero-write no-op on the same durable result', () => {
@@ -219,12 +223,12 @@ describe('p4t2 crash C1: crash after the PREPARED row', () => {
     expect(bState.member).toBe(undefined)
   })
 
-  it('re-driving applies both effects and converges (5 writes, fact 2)', () => {
+  it('re-driving applies both effects and converges (6 writes, fact 2)', () => {
     expect(bRecover.phase).toBe('COMMITTED')
     expect(bRecover.effectsApplied).toBe(2)
     expect(bRecover.effectsSkipped).toBe(0)
     expect(bRecover.ledgerSequence).toBe(2)
-    expect(bRecoverWrites).toBe(5)
+    expect(bRecoverWrites).toBe(6)
   })
 })
 
@@ -236,12 +240,12 @@ describe('p4t2 crash C2: crash after effect 1 (session binding)', () => {
     expect(cState.member).toBe(undefined)
   })
 
-  it('re-driving SKIPS the applied binding, runs the member effect, converges (4 writes, fact 3)', () => {
+  it('re-driving SKIPS the applied binding, runs the member effect, converges (5 writes, fact 3)', () => {
     expect(cRecover.phase).toBe('COMMITTED')
     expect(cRecover.effectsApplied).toBe(1)
     expect(cRecover.effectsSkipped).toBe(1)
     expect(cRecover.ledgerSequence).toBe(3)
-    expect(cRecoverWrites).toBe(4)
+    expect(cRecoverWrites).toBe(5)
   })
 })
 
@@ -255,12 +259,12 @@ describe('p4t2 crash C3: crash after effect 2 (member instance)', () => {
     expect(dState.counter).toBe(true)
   })
 
-  it('re-driving SKIPS both effects and converges (3 writes, fact 4)', () => {
+  it('re-driving SKIPS both effects and converges (4 writes, fact 4)', () => {
     expect(dRecover.phase).toBe('COMMITTED')
     expect(dRecover.effectsApplied).toBe(0)
     expect(dRecover.effectsSkipped).toBe(2)
     expect(dRecover.ledgerSequence).toBe(4)
-    expect(dRecoverWrites).toBe(3)
+    expect(dRecoverWrites).toBe(4)
   })
 })
 
@@ -272,12 +276,12 @@ describe('p4t2 crash C4: crash after the sequence allocation', () => {
     expect(eState.gaps).toEqual([5])
   })
 
-  it('re-driving allocates a NEW sequence, fills the fact, converges (3 writes, fact 6)', () => {
+  it('re-driving allocates a NEW sequence, fills the fact, converges (4 writes, fact 6)', () => {
     expect(eRecover.phase).toBe('COMMITTED')
     expect(eRecover.effectsApplied).toBe(0)
     expect(eRecover.effectsSkipped).toBe(2)
     expect(eRecover.ledgerSequence).toBe(6)
-    expect(eRecoverWrites).toBe(3)
+    expect(eRecoverWrites).toBe(4)
   })
 })
 
@@ -315,14 +319,14 @@ describe('p4t2 crash G: staged window (prepare → external child → drive)', (
     expect(gOrphan.row?.childSessionId).toBe(undefined)
   })
 
-  it('recovery records the child and rolls forward to COMMITTED (6 writes, fact 8)', () => {
+  it('recovery records the child and rolls forward to COMMITTED (7 writes, fact 8)', () => {
     expect(gChild.phase).toBe('PREPARED')
     expect(gChild.generation).toBe(2)
     expect(String(gChild.childSessionId)).toBe('session-child-cg')
     expect(gDrive.phase).toBe('COMMITTED')
     expect(gDrive.effectsApplied).toBe(2)
     expect(gDrive.ledgerSequence).toBe(8)
-    expect(gRecoverWrites).toBe(6)
+    expect(gRecoverWrites).toBe(7)
   })
 })
 

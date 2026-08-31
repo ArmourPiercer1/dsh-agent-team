@@ -17,10 +17,15 @@ import { describe, expect, it } from 'vitest'
 import { TEAM_DOMAIN_NAME } from '../schema/index.js'
 import { serializeOperationRecord } from '../schema/index.js'
 import { createTeamDomain, openTeamDomain } from '../repositories/index.js'
-import { InMemoryStorageSeam, P4_FIXTURE, asTeamDomainError, capture, detail, ledgerEntryRecord, operationRecord } from './p4-helpers.js'
+import { InMemoryStorageSeam, P4_FIXTURE, asTeamDomainError, capture, detail, ledgerEntryRecord, operationRecord, teamSessionInput } from './p4-helpers.js'
 
+// G8-S1 (R60): a new ledger fact also advances the TeamSession's generation
+// stamp, and a fact for a missing team row is a loud SEAM_FAILURE (invariant:
+// facts belong to an existing team). Every world below therefore seeds the
+// fixture team row before any ledger fact is put.
 const seam = new InMemoryStorageSeam()
 const domain = await createTeamDomain(seam)
+await domain.repositories.teamSessions.put(teamSessionInput())
 const ops = domain.repositories.operations
 const ledger = domain.repositories.ledger
 const root = P4_FIXTURE.rootSessionId
@@ -56,6 +61,7 @@ const ledgerGaps = ledger.gaps()
 
 const seamFresh = new InMemoryStorageSeam()
 const freshDomain = await createTeamDomain(seamFresh)
+await freshDomain.repositories.teamSessions.put(teamSessionInput())
 const freshLedger = freshDomain.repositories.ledger
 const putBeforeAlloc = await capture(() => freshLedger.put(ledgerEntryRecord(1, String(root))))
 const f1 = await freshLedger.allocateSequence()
@@ -67,6 +73,7 @@ const dupSeq = await capture(() => freshLedger.put(ledgerEntryRecord(1, String(r
 
 const seamGap = new InMemoryStorageSeam()
 const gapDomain = await createTeamDomain(seamGap)
+await gapDomain.repositories.teamSessions.put(teamSessionInput())
 const gapLedger = gapDomain.repositories.ledger
 await gapLedger.allocateSequence()
 await gapLedger.allocateSequence()
