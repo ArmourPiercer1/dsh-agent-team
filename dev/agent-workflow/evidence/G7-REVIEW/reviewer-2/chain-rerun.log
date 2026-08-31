@@ -1,0 +1,68 @@
+﻿=== chain-rerun.log — G7 blind review N=2 (reviewer-2)
+started: 2026-08-31T10:20:14.5958195+08:00
+git rev-parse --show-toplevel => D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G7-2
+git rev-parse HEAD => 298d6364d2ebcb03eff0073c352e2174b0fd433f
+---
+STEP 3a: pnpm install --ignore-scripts
+---
+
+--- install result: exit 0, "Lockfile is up to date, resolution step is skipped", 150 packages (see install.log) ---
+--- worktree git status after install: ---
+?? dev/agent-workflow/evidence/G7-REVIEW/
+?? install.log
+---
+STEP 3b: node scripts/run-tests.mjs (all 9 packages) — serial
+started: 2026-08-31T10:20:52.4444559+08:00
+---
+
+--- tests-run tail ---
+PASS packages\storage\test\p4-02-team-sessions.test.ts (9 tests)
+PASS packages\storage\test\p4-03-member-instances.test.ts (9 tests)
+PASS packages\storage\test\p4-04-session-bindings.test.ts (8 tests)
+PASS packages\storage\test\p4-05-governance.test.ts (11 tests)
+PASS packages\storage\test\p4-06-journal.test.ts (13 tests)
+PASS packages\storage\test\p4-07-durability-crash.test.ts (6 tests)
+PASS packages\storage\test\p4-08-independence-negative.test.ts (6 tests)
+PASS packages\storage\test\p4t2-conflicts.test.ts (25 tests)
+PASS packages\storage\test\p4t2-crash-recovery.test.ts (19 tests)
+PASS packages\storage\test\p4t2-journal.test.ts (12 tests)
+PASS packages\storage\test\p4t3-binding-service.test.ts (17 tests)
+PASS packages\storage\test\p4t3-fork-reconciliation.test.ts (12 tests)
+PASS packages\storage\test\p4t3-reconciler.test.ts (17 tests)
+PASS packages\storage\test\p4t4-adapter.test.ts (12 tests)
+PASS packages\storage\test\p4t4-one-committed-invariant.test.ts (21 tests)
+PASS packages\storage\test\p4t4-orphan-detect.test.ts (21 tests)
+PASS packages\storage\test\p4t4-per-stage-retry.test.ts (20 tests)
+PASS packages\storage\test\storage.test.ts (2 tests)
+PASS packages\testkit\test\p4t5-corrupt-version.test.ts (10 tests)
+PASS packages\testkit\test\p4t5-crash-matrix.test.ts (13 tests)
+PASS packages\testkit\test\p4t5-retry-restart.test.ts (10 tests)
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\p6t6-actions.test.ts (14 tests)
+PASS packages\tools\test\p6t6-bypass-scan.test.ts (10 tests)
+PASS packages\tools\test\p6t6-guard.test.ts (9 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 1588 passed, 0 failed, 1588 total, 6589 ms
+RESULT: PASS run-tests (0 failures)
+--- step 3b finished: 2026-08-31T10:20:59.1737891+08:00 exit=0 ---
+
+--- STEP 3c: tsc x5 (separate args per package) ---
+started: 2026-08-31T10:21:46.4081867+08:00
+tsc -p packages/contracts/tsconfig.json => exit=0 (2026-08-31T10:21:46.4116981+08:00)
+tsc -p packages/domain/tsconfig.json => exit=0 (2026-08-31T10:21:46.9675245+08:00)
+tsc -p packages/storage/tsconfig.json => exit=0 (2026-08-31T10:21:47.6972056+08:00)
+tsc -p packages/runtime/tsconfig.json => exit=0 (2026-08-31T10:21:48.4481469+08:00)
+tsc -p packages/testkit/tsconfig.json => exit=0 (2026-08-31T10:21:49.9698538+08:00)
+finished: 2026-08-31T10:21:50.8449420+08:00

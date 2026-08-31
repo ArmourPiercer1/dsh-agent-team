@@ -1,0 +1,78 @@
+{
+  "scenario": "L2",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "resume: tool reports isError",
+      "pass": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "resume: typed error code",
+      "pass": true,
+      "expected": "LEGACY_READER_MUTATION_REJECTED",
+      "actual": "LEGACY_READER_MUTATION_REJECTED"
+    },
+    {
+      "name": "resume: the action is echoed in details",
+      "pass": true,
+      "expected": "resume",
+      "actual": "resume"
+    },
+    {
+      "name": "restore: tool reports isError",
+      "pass": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "restore: typed error code",
+      "pass": true,
+      "expected": "LEGACY_READER_MUTATION_REJECTED",
+      "actual": "LEGACY_READER_MUTATION_REJECTED"
+    },
+    {
+      "name": "restore: the action is echoed in details",
+      "pass": true,
+      "expected": "restore",
+      "actual": "restore"
+    },
+    {
+      "name": "mutate: tool reports isError",
+      "pass": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "mutate: typed error code",
+      "pass": true,
+      "expected": "LEGACY_READER_MUTATION_REJECTED",
+      "actual": "LEGACY_READER_MUTATION_REJECTED"
+    },
+    {
+      "name": "mutate: the action is echoed in details",
+      "pass": true,
+      "expected": "mutate",
+      "actual": "mutate"
+    },
+    {
+      "name": "inspect control still succeeds",
+      "pass": true,
+      "expected": true,
+      "actual": "legacy-team"
+    },
+    {
+      "name": "home fixture snapshot identical after rejected actions (read-only)",
+      "pass": true,
+      "expected": true,
+      "actual": true
+    }
+  ],
+  "rejected": [
+    "resume",
+    "restore",
+    "mutate"
+  ],
+  "mcpPort": 3491
+}
