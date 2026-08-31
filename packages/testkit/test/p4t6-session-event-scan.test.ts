@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 411 files scanned, runtime carries the P7-T2 mutation files, legacy carries the P7-T6 adapter and the P7-T7 session reader', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 428 files scanned, runtime carries the P7-T2 mutation files, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -132,9 +132,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // p7t7-integrated-lifecycle-restore, p7t7-integrated-fork-handoff +
     // 5 real-instance harness .mjs under
     // legacy/session-reader/e2e: ts-loader, fs-seam, mini-mcp, plugin,
-    // run)).
-    expect(scanResult.filesScanned).toBe(411)
-    expect(scanResult.files.length).toBe(411)
+    // run) +
+    // 17 P8-T1 projection contract files (12 module .ts under
+    // contracts/src/projection: common, schema, states, effective-config,
+    // compatibility, activity, template, root, member, ledger, projection,
+    // index + 5 unit-test .ts under contracts/test:
+    // p8t1-projection-fixtures + 4 suites: p8t1-projection-serialization,
+    // p8t1-projection-generation, p8t1-projection-overlay,
+    // p8t1-projection-negative)).
+    expect(scanResult.filesScanned).toBe(428)
+    expect(scanResult.files.length).toBe(428)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

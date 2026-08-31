@@ -199,3 +199,123 @@ export {
   assertInstanceIdUniqueWithinTeam,
   assertChildSessionBindingUnique,
 } from './uniqueness.js'
+
+// --- projection contract v1 (P8-T1; own schema-version track) ------------------------
+export {
+  PROJECTION_SCHEMA_VERSION,
+  SUPPORTED_PROJECTION_SCHEMA_VERSIONS,
+  isSupportedProjectionSchemaVersion,
+  assertProjectionSchemaVersion,
+} from './projection/schema.js'
+export type { ProjectionSchemaVersion } from './projection/schema.js'
+
+export {
+  ADMISSION_STATES,
+  ADMISSION_STATE_VALUES,
+  isAdmissionState,
+  RESIDENCY_STATES,
+  RESIDENCY_STATE_VALUES,
+  isResidencyState,
+  TEMPLATE_KINDS,
+  TEMPLATE_KIND_VALUES,
+  isTemplateKind,
+  CONTEXT_POLICIES,
+  CONTEXT_POLICY_VALUES,
+  isContextPolicy,
+  PROGRESS_VALUES,
+  isProgressValue,
+  LEDGER_CATEGORIES,
+  LEDGER_CATEGORY_VALUES,
+  isLedgerCategory,
+} from './projection/states.js'
+export type {
+  AdmissionState,
+  ResidencyState,
+  TemplateKind,
+  ContextPolicy,
+  ProgressValue,
+  LedgerCategory,
+} from './projection/states.js'
+
+export {
+  EFFECTIVE_CONFIG_VALUE_MAX_LENGTH,
+  EFFECTIVE_CONFIG_SOURCES,
+  EFFECTIVE_CONFIG_SOURCE_VALUES,
+  isEffectiveConfigSource,
+  EFFECTIVE_CONFIG_STATES,
+  EFFECTIVE_CONFIG_STATE_VALUES,
+  isEffectiveConfigState,
+  EFFECTIVE_CONFIG_ENTRY_FIELDS,
+  parseEffectiveConfigEntry,
+  EFFECTIVE_CONFIG_FIELDS,
+  parseEffectiveConfigDto,
+} from './projection/effective-config.js'
+export type {
+  EffectiveConfigSource,
+  EffectiveConfigState,
+  EffectiveConfigEntry,
+  EffectiveConfigDto,
+} from './projection/effective-config.js'
+
+export {
+  COMPATIBILITY_FINGERPRINT_MAX_LENGTH,
+  COMPATIBILITY_SUMMARY_FIELDS,
+  parseCompatibilitySummary,
+} from './projection/compatibility.js'
+export type { CompatibilitySummaryDto } from './projection/compatibility.js'
+
+export {
+  ACTIVITY_CORRELATION_MAX_LENGTH,
+  ACTIVITY_TEXT_MAX_LENGTH,
+  ACTIVITY_SUMMARY_MAX_LENGTH,
+  ACTIVITY_INTERVAL_FIELDS,
+  parseActivityInterval,
+  MEMBER_ACTIVITY_SUMMARY_FIELDS,
+  parseMemberActivitySummary,
+  MEMBER_LIVE_ACTIVITY_FIELDS,
+  parseMemberLiveActivity,
+} from './projection/activity.js'
+export type {
+  ActivityIntervalSummary,
+  MemberActivitySummaryDto,
+  MemberLiveActivityDto,
+} from './projection/activity.js'
+
+export {
+  TEMPLATE_DESCRIPTION_MAX_LENGTH,
+  TEMPLATE_PROJECTION_FIELDS,
+  parseTemplateProjection,
+  createTemplateProjection,
+} from './projection/template.js'
+export type { TemplateProjectionDto, TemplateProjectionInput } from './projection/template.js'
+
+export {
+  TEAM_ROOT_PROJECTION_FIELDS,
+  parseTeamRootProjection,
+  createTeamRootProjection,
+} from './projection/root.js'
+export type { TeamRootProjectionDto, TeamRootProjectionInput } from './projection/root.js'
+
+export {
+  MEMBER_PROJECTION_FIELDS,
+  parseMemberProjection,
+  createMemberProjection,
+} from './projection/member.js'
+export type { MemberProjectionDto, MemberProjectionInput } from './projection/member.js'
+
+export {
+  LEDGER_SUMMARY_FIELDS,
+  parseLedgerSummary,
+  createLedgerSummary,
+} from './projection/ledger.js'
+export type { LedgerSummaryDto, LedgerCategoryCounts, LedgerSummaryInput } from './projection/ledger.js'
+
+export {
+  TEAM_PROJECTION_FIELDS,
+  parseTeamProjection,
+  createTeamProjection,
+  serializeTeamProjection,
+  deserializeTeamProjection,
+  isStaleTeamProjection,
+} from './projection/projection.js'
+export type { TeamProjectionDto, TeamProjectionInput } from './projection/projection.js'
