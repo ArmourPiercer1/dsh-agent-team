@@ -696,6 +696,18 @@
 - **状态更新**：graph：P7-T1/T3/T4/T5/T6 → INTEGRATED（attempts 1/3）；ready `[P7-T2]`（base = int tip `3aa146c`）；P7-T7、G7-REVIEW PENDING；integration_sha → `3aa146c801ed7509cc23c1b414665de5a5363180`。push #7 仍仅限 G7（origin master `6732601`；local master 领先 1 commit = 本条记账）。
 - **下一步**：R47 —— P7-T2 派发（单 worker，qiyuan-self/qwen3.8-27b；owns `packages/runtime/mutation*` + policy adapters；验收：Effective Configuration 每项有来源、非法 escalation 被拒；DevPlan 20.2；卡片 TaskDoc §11.8）。
 
+## R47 — P7-T2 worker 执行 + 主 Agent 独立审计 + 集成（int/P7 @ `c53f1b0`，1510/1510；ready → P7-T7）（2026-08-31，主 Agent）
+
+- **Brief**：`dev/agent-workflow/briefs/P7-T2-brief.md`（master `3b1c2de`，R47 kickoff commit）：TaskDoc §11.8 L1595–1608 卡片 verbatim + DevPlan 20.2 语义 + seam matrix failure codes（MODEL_SELECTION/TOOLS_SCOPE/SKILL_SCOPE/MCP_SCOPE）；基线固定 base `3aa146c` = 1399/1399 + tsc ×5、p4t6 起点 381；明示禁止 real-instance E2E（unit/integration only，注入 fake ports）；§5 工具链纪律显式写入 tsc 独立参数规则（TS5023 教训）与 p7t2 测试须落 `packages/runtime/test/` 顶层目录的发现规则。
+- **派发**：workflow 单 leaf，provider `qiyuan-self` / model `qwen3.8-27b`；worker attempts 1/3。
+- **Worker 结果（P7T2_REPORT，已 disk-verify）**：分支 `task/P7-T2-runtime-mutation` @ `.worktrees/P7-T2`；code commit `75e32ad`（parent = base `3aa146c` ✓）+ evidence commit `20f7617`；13 个新 countable 文件（`packages/runtime/mutation/{types,errors,envelope,service,index}.ts` + `policy-adapter.ts` + 7 测试文件 = helpers + 6 suites）+ p4t6；全链 1399 → **1510/1510**（+111：future-boundary 16 / escalation 40 / override-precedence 12 / policy-state 18 / creation-fields 13 / provenance 12）；tsc ×5 exit 0；p4t6 381 → **394**（N=13；withSource 9、legacy 4 不变；title 增 "runtime carries the P7-T2 mutation files" 从句——与 T6 title flip 同种的事实性扩展，不影响断言）；zero-core pass（13 个 .ts 文件 `node:` import 0 命中；主 Agent 独立复扫亦 0）。Worker 自报 deviations（与 design-note 核对一致）：suppression dedupe key = capability|layer|policyStateId；`StoredMutationRecord.member` 存 null 而非 undefined（lossless JSON）；fake-store 防御性拷贝；baseline 首次 attempt 遇瞬态 ENOTEMPTY（环境性）→ 记录在案的 baseline 为 clean 重跑（1399/1399）；index.ts re-export 重复疑虑核实为 false alarm。
+- **主 Agent 独立审计（R46 教训：在 T2 worktree 内串行执行，日志含 git toplevel/HEAD 证明）**：1510/1510、0 failures、tsc ×5 exit 0 → `evidence/P7-T2/main-audit-chain.log`；p4t6 marker 扫描 0；worktree status clean（无 stray 文件）。
+- **集成（cherry-pick -x → int/P7；本轮新建 worktree `.worktrees/int-P7`）**：`75e32ad` → `c9c3b76`（clean——T2 base 即当时 int tip，p4t6 上下文一致未冲突；pick 后 HEAD p4t6 验证：0 markers / 394 / P7-T2 enumeration comment L119，standing rule 执行）→ `20f7617` → `c53f1b0`。新 int tip = `c53f1b008d59b803f51d2c107ffffb7846a8bb9c`。
+- **int 链（主 Agent 独立，in-worktree @ 新 tip）**：**1510/1510**（=1399+111）+ tsc ×5 全 exit 0 → `evidence/int-P7/main-audit-chain-r47.log`。
+- **健康检查**：:3080=200；test-use pristine @ `cd5ef814`（0 dirty lines）；ports 3180/3181 free。
+- **状态更新**：graph：P7-T2 → INTEGRATED（attempts 1/3，head `20f7617`）；ready `[P7-T7]`（base = int tip `c53f1b0`，base_sha 已定）；P7-T7 → READY；integration_sha → `c53f1b0…`。push #7 仍仅限 G7（origin master `6732601`；local master 领先 4 commits：R45 `1d0c8d0`、R46 `e57f25a`、R47 brief `3b1c2de`、本条记账）。
+- **下一步**：R48 —— P7-T7 派发（legacy Team Session 只读 reader + G7 e2e；owns real-instance E2E + lockfile 协议；H3；criteria DevPlan 20.7 ×9；method TaskDoc 11.8 六步）→ 其后 G7 gate（3 fresh 盲审 reviewer，verdicts 以 disk 证据为准，PASS 则 push #7）。
+
 ## 重审记录
 
 （空）
