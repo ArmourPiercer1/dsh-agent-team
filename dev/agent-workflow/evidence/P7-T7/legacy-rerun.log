@@ -1,0 +1,10 @@
+﻿PASS packages\legacy\test\p7t6-teammates-adapter.test.ts (20 tests)
+PASS packages\legacy\test\p7t7-integrated-drift-ack.test.ts (8 tests)
+PASS packages\legacy\test\p7t7-integrated-fork-handoff.test.ts (15 tests)
+PASS packages\legacy\test\p7t7-integrated-lifecycle-restore.test.ts (9 tests)
+PASS packages\legacy\test\p7t7-integrated-override-admission.test.ts (7 tests)
+PASS packages\legacy\test\p7t7-legacy-read.test.ts (28 tests)
+PASS packages\legacy\test\p7t7-mutation-reject.test.ts (11 tests)
+
+run-tests (plain-node vitest-equivalent): 98 passed, 0 failed, 98 total, 309 ms
+RESULT: PASS run-tests (0 failures)
