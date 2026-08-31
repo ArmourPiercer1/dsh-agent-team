@@ -1,0 +1,44 @@
+﻿=== P8-T4 install.log ===
+ts: 2026-08-31T13:21:04.0411308+08:00
+cmd: pnpm install --ignore-scripts
+worktree: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8-T4
+head: c957f1ae18495d2f29948ca19532890cb5724754
+--- git status --porcelain ---
+?? dev/agent-workflow/evidence/P8-T4/
+----------------------------------------
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (175 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +150
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 11.7.0 → 11.24.0.    │
+   │   Changelog: https://pnpm.io/v/11.24.0   │
+   │     To update, run: pnpm self-update     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+Progress: resolved 150, reused 150, downloaded 0, added 0
+✓ Lockfile passes supply-chain policies (175 entries in 2.6s)
+Progress: resolved 150, reused 150, downloaded 0, added 1
+Progress: resolved 150, reused 150, downloaded 0, added 77
+Progress: resolved 150, reused 150, downloaded 0, added 78
+Progress: resolved 150, reused 150, downloaded 0, added 103
+Progress: resolved 150, reused 150, downloaded 0, added 104
+Progress: resolved 150, reused 150, downloaded 0, added 146
+Progress: resolved 150, reused 150, downloaded 0, added 147
+Progress: resolved 150, reused 150, downloaded 0, added 150, done
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 23.7s using pnpm v11.7.0
+exit: 0

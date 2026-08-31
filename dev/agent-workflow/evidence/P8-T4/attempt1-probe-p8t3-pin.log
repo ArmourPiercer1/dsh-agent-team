@@ -1,0 +1,14 @@
+﻿ "=== P8-T4 probe log: p8t3 file-count pin ==="; "ts: " + (Get-Date).ToString('o'); "worktree: " + (git rev-parse -
+-show-toplevel); "head: " + (git rev-parse HEAD); ""; "Purpose: verify whether adding .ts files under packages/remo
+te/src/push/ breaks the non-owned P8-T3 test p8t3-negative.test.ts ('scans exactly the 22 owned packages/remote/src
+ files')."; ""; "Step 1: created probe file packages/remote/src/push/__probe__.ts (trivial export P8T4_PROBE)."; "S
+tep 2: ran: node scripts/run-tests.mjs remote"; ""; "--- output (filtered) ---"; "FAIL packages\remote\test\p8t3-ne
+gative.test.ts (1/7 tests)"; "  x P8-T3 negative scan (Brief 87-96) > scans exactly the 22 owned packages/remote/sr
+c files"; "  Error: expectation failed: actual toBe 22 -- actual: 23"; "run-tests (plain-node vitest-equivalent): 4
+5 passed, 1 failed, 46 total"; "exit code: 1"; ""; "Step 3: deleted the probe file and the empty push dir (git stat
+us clean again)."; ""; "Conclusion: ANY .ts file under packages/remote/src/push/** is collected by p8t3-negative-sc
+an.mjs collectTsFiles (recurses all subdirs except node_modules/dist) and breaks p8t3-negative.test.ts line 80-81 (
+hardcoded 22-file list). That test file is NOT in the P8-T4 owned paths (brief section 4: test/** = NEW files only,
+ p8t4-* prefix). The P8-T4 card mandates the push engine at packages/remote/src/push/** (brief section 4; TaskDoc 1
+1.9 'packages/remote/push*'). Conflict between section 4 owned paths + card and section 5 'full chain must be green
+' -> BLOCKER:SPEC." 

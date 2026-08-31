@@ -1,0 +1,25 @@
+﻿=== P8-T4 fast pre-check (remote only, final state) ===
+ts: 2026-08-31T13:58:43.6637826+08:00
+head: c957f1ae18495d2f29948ca19532890cb5724754
+### node scripts/run-tests.mjs remote
+PASS packages\remote\test\p8t3-admission.test.ts (5 tests)
+PASS packages\remote\test\p8t3-invalid-ids.test.ts (9 tests)
+FAIL packages\remote\test\p8t3-negative.test.ts (1/7 tests)
+     ✗ P8-T3 negative scan (Brief §87–96) › scans exactly the 22 owned packages/remote/src files
+       Error: expectation failed: actual toBe 22 — actual: 28
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8-T4/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8-T4/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8-T4/packages/remote/test/p8t3-negative.test.ts:80:31
+PASS packages\remote\test\p8t3-round-trip.test.ts (10 tests)
+PASS packages\remote\test\p8t3-version.test.ts (13 tests)
+PASS packages\remote\test\p8t4-engine.test.ts (23 tests)
+PASS packages\remote\test\p8t4-negative.test.ts (7 tests)
+PASS packages\remote\test\p8t4-sync.test.ts (11 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 86 passed, 1 failed, 87 total, 113 ms
+tests-remote-exit: 1
+### tsc -p packages/remote/tsconfig.json
+(no output)
+tsc-remote-exit: 0
+=== end ===
