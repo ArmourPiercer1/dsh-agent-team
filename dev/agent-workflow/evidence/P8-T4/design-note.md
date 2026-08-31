@@ -2,7 +2,9 @@
 
 - Task card (TaskDoc §11.9): implement versioned invalidation+pull **or** whole projection generation; client stale guard fixture; ledger paging.
 - Branch `task/P8-T4-remote-push`, worktree `.worktrees/P8-T4`, base `c957f1ae18495d2f29948ca19532890cb5724754` (int/P8-remote-projection tip, post P8-T3).
-- Verdict: **BLOCKER:SPEC** — the implementation is complete and green except one non-owned P8-T3 test pin (see §BLOCKER).
+- Verdict: **DONE** (attempt 2, R57 main-agent adjudication applied) — attempt 1 reported
+  BLOCKER:SPEC (the non-owned P8-T3 layout pin, §BLOCKER); the main agent granted
+  resolution option 1 as a standing exception (§Attempt 2); full chain green 1754/1754.
 
 ## D-1 — Invalidation model: whole-projection pull (the task card's option B)
 
@@ -170,3 +172,82 @@ Resolution options for the main agent / next attempt:
 
 Reported question: *may I extend `p8t3-negative.test.ts`'s expected-file list as a
 DEC-1-style exception, or is another placement intended?*
+
+## Attempt 2 (R57 adjudication applied)
+
+**Adjudication (R57, main agent, attempt 2/3):** the BLOCKER:SPEC question above is
+**ADJUDICATED — resolution option 1 is GRANTED**; option 2 (placement change) is
+**REJECTED** (the task card owns `packages/remote/push*`; the `src/` placement is
+correct). The grant is ratified as a **STANDING exception**: every later P8 task that
+adds files under `packages/remote/src` maintains the `p8t3-negative.test.ts` layout pin
+in the same DEC-1 style as the p4t6 count maintenance (count + enumeration only).
+
+**Scope of the edit (strict, per adjudication):** only
+`packages/remote/test/p8t3-negative.test.ts` — expected-file list 22 → 28 (add the six
+new `packages/remote/src/push/*.ts` files in the scanner's sorted order, verified by a
+live probe of `scanP8T3OwnedFiles()`: 28 files, 0 R1–R6 violations — no denylist hit in
+any push file), `toBe(22)` → `toBe(28)`, and the three "22" references in the file
+header / list comment / test title → 28. Scanner logic, denylist vocabulary, and all
+other assertions are untouched; no other file changed. Exact diff (working tree vs
+d7aaff3):
+
+```diff
+diff --git a/packages/remote/test/p8t3-negative.test.ts b/packages/remote/test/p8t3-negative.test.ts
+index 8c06fbd..46c14d4 100644
+--- a/packages/remote/test/p8t3-negative.test.ts
++++ b/packages/remote/test/p8t3-negative.test.ts
+@@ -4,7 +4,7 @@
+  * upstream / session-log source at all.
+  *
+  * Three proofs:
+- *   1. The owned-file scan: exactly the 22 `packages/remote/src` files are
++ *   1. The owned-file scan: exactly the 28 `packages/remote/src` files are
+  *      scanned, every import specifier is relative, and rules R1–R6 report
+  *      zero violations.
+  *   2. Positive controls: synthetic texts (built by the scanner, never
+@@ -32,7 +32,7 @@ import {
+ } from './p8t3-negative-scan.mjs'
+ import { makeFakePorts } from './p8t3-helpers.js'
+ 
+-/** The exact 22 P8-T3-owned source files, in the scanner's sorted order. */
++/** The exact 28 P8-T3-owned source files, in the scanner's sorted order. */
+ const P8T3_EXPECTED_FILES = [
+   'packages/remote/src/contracts/catalog.ts',
+   'packages/remote/src/contracts/errors.ts',
+@@ -56,6 +56,12 @@ const P8T3_EXPECTED_FILES = [
+   'packages/remote/src/handlers/register.ts',
+   'packages/remote/src/handlers/team.ts',
+   'packages/remote/src/index.ts',
++  'packages/remote/src/push/generation.ts',
++  'packages/remote/src/push/index.ts',
++  'packages/remote/src/push/ledger-page.ts',
++  'packages/remote/src/push/pull.ts',
++  'packages/remote/src/push/reconnect.ts',
++  'packages/remote/src/push/types.ts',
+ ]
+ 
+ /** The exact 12 `RemoteHandlerDeps` port keys, sorted. */
+ const P8T3_EXPECTED_PORT_KEYS = [
+   'admission',
+   'catalog',
+@@ -75,9 +81,9 @@ const P8T3_EXPECTED_PORT_KEYS = [
+ ]
+ 
+ describe('P8-T3 negative scan (Brief §87–96)', () => {
+-  it('scans exactly the 22 owned packages/remote/src files', () => {
++  it('scans exactly the 28 owned packages/remote/src files', () => {
+     const scan = scanP8T3OwnedFiles()
+-    expect(scan.files.length).toBe(22)
++    expect(scan.files.length).toBe(28)
+     expect(scan.files).toEqual(P8T3_EXPECTED_FILES)
+   })
+```
+
+**Measured chain (sanctioned, no args / separate invocations):**
+- RUN 1 (pre-commit, working tree = d7aaff3 + the edit above):
+  `node scripts/run-tests.mjs` → **1754 passed / 0 failed / 1754 total** (exit 0; the
+  sole attempt-1 failure `p8t3-negative.test.ts` now passes); tsc ×6 (contracts,
+  domain, storage, runtime, testkit, remote) → all exit 0. Log: `attempt2-post.log`
+  (RUN 1).
+- RUN 2 (post-commit, committed clean tree at the new head): full chain re-run,
+  appended to `attempt2-post.log` (RUN 2, proof header shows the final HEAD).
