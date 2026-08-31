@@ -748,6 +748,17 @@
 - **派发**：workflow 单 leaf，`agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；worker attempts 1/3；leaf 禁止再拉子代理。
 - **下一步**：P8-T1 交付 → 主 Agent in-worktree 独立审计（int-P8 worktree：chain + tsc ×5 + import-face + p4t6 markers）→ cherry-pick -x 至 int/P8 → P8-T2（base = P8-T1 后的 int tip）→ … → G8（3 blind reviewers，同 G7 机制）→ **push #8**。注意：P8-T1 冻结新 projection contract 后，需按先例核对 graph `locks.contracts` 哈希是否需更新（P3-T1 冻结先例）。
 
+## R51 — P8-T1 worker 执行 + 主 Agent 独立审计 + 集成（int/P8 @ `48b3334`，1638/1638；ready → P8-T2）（2026-08-31，主 Agent）
+
+- **Brief**：`dev/agent-workflow/briefs/P8-T1-brief.md`（master `d8971c6`，R50 kickoff commit）：TaskDoc §11.9 P8-T1 卡片 verbatim + DevPlan §21 设计约束（21.2 source 边界 / 21.4 generation 模型 / 21.3 类别覆盖 / Arch 对象模型与冻结 lifecycle states）+ base `959e363` + owned glob + sanctioned chain + tsc 分参 + p4t6 411→411+N + 必须 3 测试 + negative tests + zero-core 红线 + code/evidence 两提交 + 固定 `P8T1_REPORT` 格式 + :3080 前后健康检查。
+- **派发**：workflow 单 leaf，`agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；worker attempts 1/3。
+- **Worker 结果（P8T1_REPORT，已 disk-verify）**：分支 `task/P8-T1-projection-dto` @ `.worktrees/P8-T1`；2 commits（`2e89897` code 17 files / `c3e5b36` evidence 4 files，parent 链 = base `959e363` ✓，worktree clean）；12 projection src 模块（schema / states / common / effective-config / compatibility / activity / template / root / member / ledger / projection / index）+ 纯增量 `packages/contracts/src/index.ts`（+123 行 export block，既有 surface 零改动）+ 5 测试文件（fixtures + serialization/generation/overlay/negative 四 suite）+ p4t6；全链 1588 → **1638/1638**（+50：serialization 11 / generation 8 / overlay 8 / negative 23）；tsc ×5 exit 0；p4t6 411 → **428**（N=17；withSource 9 不变；legacy 21 不变）。
+- **主 Agent 独立审计**：task worktree 全链 **1638/1638** + tsc ×5 exit 0（log `evidence/P8-T1/main-audit-chain.log`）；zero-core/import-face：17 新 .ts 文件 0 `node:` import、0 upstream/references import；`contracts/src/index.ts` diff 纯增量核对 ✓；**int 链**（post-pick，`.worktrees/int-P8` worktree 内运行，toplevel/HEAD 留痕） **1638/1638** + tsc ×5（log `evidence/int-P8/main-audit-chain-r51.log`）。
+- **集成**：cherry-pick -x 两提交 → int/P8（`c39cc90` code / `48b3334` evidence，clean，无 p4t6 冲突：任务分支自 int tip 分出）；post-pick HEAD 验证 0 markers / 428。
+- **Contract-freeze bookkeeping**：P3-T1 冻结核心 Team contracts（graph `locks.contracts` = `fba817c…` = 当时 int/P3 tip SHA，R10 置位）；P8-T1 为冻结 TaskDoc 指定的 "P8 shared write lock owner"，纯增量新增 `projection` 契约区（自有 schema-version track `PROJECTION_SCHEMA_VERSION`，既有冻结 export surface 零改动，negative suite 钉住字段边界）→ `locks.contracts` 保持原值（记录 P3 冻结点），P8-T1 卡片授权在此留痕。
+- **偏差/concerns**：worker 无；主 Agent 无。
+- **下一步**：R52 —— P8-T2 派发（Projection service，owns `packages/runtime/projection/**`，base = int tip `48b3334`，同协议 brief + `P8T2_REPORT`；必须测试 cold projection / 50 instances / live overlay / disposed+archived；验收 = 与 durable truth 一致、复杂度不依赖完整 child logs）。
+
 ## 重审记录
 
 （空）
