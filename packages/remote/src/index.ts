@@ -323,3 +323,61 @@ export type {
   RemoteRegistration,
   RegisterRemoteHandlersOptions,
 } from './handlers/register.js'
+
+// ---------------------------------------------------------------------------
+// P8-T4 push model (whole-projection generation, versioned invalidation +
+// pull): the pure client-side sync engine over the frozen contract v1
+// surface (Gate G8: a new state is never overwritten by a stale response).
+// ---------------------------------------------------------------------------
+
+export {
+  PushBackoffRangeError,
+  backoffCapMs,
+  defaultDelayPicker,
+  isStateChange,
+  pickBackoffDelayMs,
+  stateOnConnect,
+  stateOnLoss,
+} from './push/reconnect.js'
+
+export {
+  PUSH_MIN_GENERATION,
+  decideFrameVerdict,
+  isStrictlyNewerGeneration,
+} from './push/generation.js'
+
+export {
+  PULL_PROJECTION_ENDPOINT,
+  assessProjectionSync,
+  extractPushFrame,
+  isApplyAssessment,
+} from './push/pull.js'
+
+export {
+  createLedgerPageTracker,
+  verifyLedgerPageAnchor,
+} from './push/ledger-page.js'
+export type {
+  LedgerPageTracker,
+  LedgerPageTrackerState,
+} from './push/ledger-page.js'
+
+export { PushTransportLossError } from './push/types.js'
+export type {
+  AppliedProjectionIdentity,
+  FrameVerdict,
+  PageAnchorRequest,
+  PageCheckResult,
+  PageFetchReport,
+  PageRejectReason,
+  PushBackoffConfig,
+  PushBackoffEntry,
+  PushClientState,
+  ProjectionSyncAssessment,
+  ProjectionSyncStatus,
+  ReconnectState,
+  RemotePushFrame,
+  RemotePushTransport,
+  SeamClientRequest,
+  SeamServerResponse,
+} from './push/types.js'

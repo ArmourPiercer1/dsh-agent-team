@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 469 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 482 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -152,9 +152,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // remote/test: p8t3-helpers, p8t3-round-trip.test,
     // p8t3-invalid-ids.test, p8t3-admission.test, p8t3-version.test,
     // p8t3-negative.test, p8t3-negative-scan.mjs,
-    // p8t3-negative-scan.d.mts)).
-    expect(scanResult.filesScanned).toBe(469)
-    expect(scanResult.files.length).toBe(469)
+    // p8t3-negative-scan.d.mts) +
+    // 13 P8-T4 push model files (6 module .ts under remote/src/push:
+    // types, generation, pull, reconnect, ledger-page, index +
+    // 7 files under remote/test: p8t4-engine.test, p8t4-sync.test,
+    // p8t4-negative.test, p8t4-negative-scan.mjs,
+    // p8t4-negative-scan.d.mts, p8t4-server, p8t4-test-client)).
+    expect(scanResult.filesScanned).toBe(482)
+    expect(scanResult.files.length).toBe(482)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
