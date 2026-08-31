@@ -33,20 +33,41 @@ export interface RemoteMemberHandlerPorts {
 
 /**
  * The durable effect sequence of an admission outcome, when its effect
- * carries one: `factSequence` first (the durable ledger sequence), then
- * `deliveredSequence` (the messaging delivery sequence).
+ * carries one. The effect is the P6-T2 `RuntimeActionEffect` closed union
+ * (runtime/admission/types.ts); the canonical sequence field per kind:
+ *
+ *  - `fact-recorded`, `work-admitted`, `lifecycle-changed` → `sequence`
+ *    (the durable ledger fact sequence — always written for these kinds);
+ *  - `member-activated` → `ledgerSequence` (the provider's durable ledger
+ *    sequence, when carried; absent otherwise);
+ *  - `none`, `config-inspected`, `members-listed`, `templates-listed` →
+ *    no sequence (read effects).
+ *
+ * Any other shape (unknown or absent `kind`, non-object effect,
+ * non-safe-integer value) yields no provenance sequence (the wire cell is
+ * `null` — the frozen Remote contract v1 surface is unchanged).
  */
 function admissionEffectSequence(outcome: Record<string, unknown>): number | undefined {
   const effect = outcome['effect']
   if (effect === null || typeof effect !== 'object' || Array.isArray(effect)) return undefined
   const effectRecord = effect as Record<string, unknown>
-  const factSequence = effectRecord['factSequence']
-  if (typeof factSequence === 'number' && Number.isSafeInteger(factSequence)) {
-    return factSequence
+  let candidate: unknown
+  switch (typeof effectRecord['kind'] === 'string' ? effectRecord['kind'] : '') {
+    case 'fact-recorded':
+    case 'work-admitted':
+    case 'lifecycle-changed':
+      candidate = effectRecord['sequence']
+      break
+    case 'member-activated':
+      candidate = effectRecord['ledgerSequence']
+      break
+    default:
+      // `none`, `config-inspected`, `members-listed`, `templates-listed`,
+      // or an unknown/absent kind: the effect carries no sequence.
+      return undefined
   }
-  const deliveredSequence = effectRecord['deliveredSequence']
-  if (typeof deliveredSequence === 'number' && Number.isSafeInteger(deliveredSequence)) {
-    return deliveredSequence
+  if (typeof candidate === 'number' && Number.isSafeInteger(candidate)) {
+    return candidate
   }
   return undefined
 }

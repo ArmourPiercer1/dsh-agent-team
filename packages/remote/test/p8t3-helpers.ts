@@ -120,7 +120,7 @@ const P8T3_LEDGER_ENTRIES: readonly RemoteSafeRecord[] = [
 
 const P8T3_ADMISSION_OUTCOME: RemoteSafeRecord = {
   accepted: true,
-  effect: { factSequence: 3 },
+  effect: { kind: 'fact-recorded', factType: 'fact', sequence: 3 },
 }
 
 const P8T3_MEMBER_ARCHIVE_RESULT: RemoteSafeRecord = {

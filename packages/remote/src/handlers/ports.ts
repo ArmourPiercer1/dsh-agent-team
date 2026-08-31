@@ -342,8 +342,11 @@ export interface RemoteHandlerOutcome {
   readonly data: unknown
   /** `team.getProjection`: the whole-projection generation. */
   readonly projectionGeneration?: number
-  /** Admission outcomes: the durable effect sequence, when the effect
-   *   carries one (`factSequence`, else `deliveredSequence`). */
+  /** Admission outcomes: the durable effect sequence of the P6-T2 effect,
+   *   when it carries one — `sequence` for `fact-recorded` /
+   *   `work-admitted` / `lifecycle-changed`, `ledgerSequence` for
+   *   `member-activated` (absent otherwise); the wire cell is `null` when
+   *   the effect carries no sequence. */
   readonly effectSequence?: number
 }
 

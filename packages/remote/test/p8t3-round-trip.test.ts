@@ -13,6 +13,11 @@
  * effectSequence), override.get (the `null` cell), policyState.get,
  * compatibility.get, handoff.prepare, legacy.inspect.
  *
+ * S1-B (G8 gate supplement): a second suite drives member.create once per
+ * P6-T2 `RuntimeActionEffect` kind and pins the canonical `effectSequence`
+ * provenance rule (sequence-carrying kinds vs read effects vs malformed
+ * shapes).
+ *
  * Test pattern of this repo (the plain-node shim's `it` is synchronous):
  * every async scenario runs at MODULE level (top-level await) and captures
  * its results; the `it` bodies are pure synchronous assertions.
@@ -36,6 +41,7 @@ import {
   P8T3_TEMPLATE_ID,
 } from './p8t3-helpers.js'
 import { REMOTE_CONTRACT_VERSION } from '../src/index.js'
+import type { RemoteResponse, RemoteSafeJsonValue, RemoteSafeRecord } from '../src/index.js'
 
 /**
  * Structural key-presence check for the error details shape (the allowed
@@ -290,7 +296,7 @@ describe('P8-T3 round-trip: representative method per category', () => {
   it('member.create: human caller + token echo + effectSequence provenance', () => {
     const success = expectSuccess(RT.memberCreate)
     expect(success.value.data).toEqual({
-      outcome: { accepted: true, effect: { factSequence: 3 } },
+      outcome: { accepted: true, effect: { kind: 'fact-recorded', factType: 'fact', sequence: 3 } },
     })
     // The token echo + the durable effect sequence ride in the provenance.
     expect(success.value.provenance.requestToken).toBe(P8T3_REQUEST_TOKEN)
@@ -359,5 +365,176 @@ describe('P8-T3 round-trip: representative method per category', () => {
       },
     })
     expect(success.value.provenance.origin).toBe('team-remote')
+  })
+})
+
+// --- S1-B (G8 gate supplement): the effectSequence provenance follows the
+// --- P6-T2 `RuntimeActionEffect` closed union (brief §5;
+// --- runtime/admission/types.ts). One member.create per effect kind, over
+// --- a dispatcher whose admission port returns that kind's outcome.
+
+/** One admission outcome shape carrying the given P6-T2 effect record. */
+function efxOutcome(effect: RemoteSafeJsonValue): RemoteSafeRecord {
+  return { accepted: true, effect }
+}
+
+/** The effect table: every P6-T2 kind, plus the malformed shapes that must
+ *  NOT yield a sequence. `expected` is the wire provenance cell. */
+const EFX_TABLE: readonly {
+  readonly name: string
+  readonly effect: RemoteSafeJsonValue
+  readonly expected: number | null
+}[] = [
+  {
+    name: 'fact-recorded',
+    effect: { kind: 'fact-recorded', factType: 'fact', sequence: 5 },
+    expected: 5,
+  },
+  {
+    name: 'work-admitted',
+    effect: {
+      kind: 'work-admitted',
+      instanceId: P8T3_INSTANCE_ID,
+      fromLifecycle: 'CREATED',
+      lifecycleCommitted: true,
+      sequence: 6,
+    },
+    expected: 6,
+  },
+  {
+    name: 'lifecycle-changed',
+    effect: {
+      kind: 'lifecycle-changed',
+      instanceId: P8T3_INSTANCE_ID,
+      from: 'RUNNING',
+      to: 'SETTLED',
+      sequence: 7,
+    },
+    expected: 7,
+  },
+  {
+    name: 'member-activated-carries-ledgerSequence',
+    effect: {
+      kind: 'member-activated',
+      instanceId: P8T3_INSTANCE_ID,
+      templateId: P8T3_TEMPLATE_ID,
+      childSessionId: 'child-efx',
+      operationId: 'op-efx',
+      replayed: false,
+      ledgerSequence: 8,
+    },
+    expected: 8,
+  },
+  {
+    name: 'member-activated-without-ledgerSequence',
+    effect: {
+      kind: 'member-activated',
+      instanceId: P8T3_INSTANCE_ID,
+      templateId: P8T3_TEMPLATE_ID,
+      childSessionId: 'child-efx',
+      operationId: 'op-efx',
+      replayed: true,
+    },
+    expected: null,
+  },
+  { name: 'none', effect: { kind: 'none' }, expected: null },
+  {
+    name: 'config-inspected',
+    effect: { kind: 'config-inspected', effective: {} },
+    expected: null,
+  },
+  { name: 'members-listed', effect: { kind: 'members-listed', members: [] }, expected: null },
+  { name: 'templates-listed', effect: { kind: 'templates-listed', templates: [] }, expected: null },
+  {
+    name: 'unknown-kind',
+    effect: { kind: 'not-an-effect-kind', sequence: 9 },
+    expected: null,
+  },
+  { name: 'malformed-effect', effect: 'not-an-object', expected: null },
+  {
+    name: 'non-integer-sequence',
+    effect: { kind: 'fact-recorded', factType: 'fact', sequence: 1.5 },
+    expected: null,
+  },
+]
+
+// Module level (top-level await): one member.create per table row.
+const EFX = await (async () => {
+  const rows: { readonly name: string; readonly response: RemoteResponse }[] = []
+  for (const row of EFX_TABLE) {
+    const dispatcher = makeDispatcher({
+      admission: {
+        performAction() {
+          return efxOutcome(row.effect)
+        },
+      },
+    })
+    const response = await dispatcher.dispatch(
+      'member.create',
+      p8t3Wire({
+        teamSessionId: P8T3_TEAM_SESSION_ID,
+        caller: { kind: 'human', humanId: 'h-1' },
+        requestToken: P8T3_REQUEST_TOKEN,
+      }),
+    )
+    rows.push({ name: row.name, response })
+  }
+  return rows
+})()
+
+function efxRow(name: string): RemoteResponse {
+  const row = EFX.find((entry) => entry.name === name)
+  if (row === undefined) throw new Error(`missing effect row: ${name}`)
+  return row.response
+}
+
+describe('P8-T3 S1-B: effectSequence provenance follows the P6-T2 effect vocabulary', () => {
+  it('sequence-carrying kinds: the durable sequence rides in the provenance', () => {
+    expect(expectSuccess(efxRow('fact-recorded')).value.provenance.effectSequence).toBe(5)
+    expect(expectSuccess(efxRow('work-admitted')).value.provenance.effectSequence).toBe(6)
+    expect(expectSuccess(efxRow('lifecycle-changed')).value.provenance.effectSequence).toBe(7)
+    expect(
+      expectSuccess(efxRow('member-activated-carries-ledgerSequence')).value.provenance
+        .effectSequence,
+    ).toBe(8)
+  })
+
+  it('read effects + the absent member-activated ledgerSequence: the wire cell is null', () => {
+    for (const name of [
+      'member-activated-without-ledgerSequence',
+      'none',
+      'config-inspected',
+      'members-listed',
+      'templates-listed',
+    ]) {
+      expect(expectSuccess(efxRow(name)).value.provenance.effectSequence).toBe(null)
+    }
+  })
+
+  it('malformed shapes: unknown kind, non-object effect, non-integer sequence', () => {
+    expect(expectSuccess(efxRow('unknown-kind')).value.provenance.effectSequence).toBe(null)
+    expect(expectSuccess(efxRow('malformed-effect')).value.provenance.effectSequence).toBe(null)
+    expect(expectSuccess(efxRow('non-integer-sequence')).value.provenance.effectSequence).toBe(
+      null,
+    )
+  })
+
+  it('the outcome passes through unchanged (only the provenance is derived)', () => {
+    const success = expectSuccess(efxRow('member-activated-carries-ledgerSequence'))
+    expect(success.value.data).toEqual({
+      outcome: efxOutcome(
+        {
+          kind: 'member-activated',
+          instanceId: P8T3_INSTANCE_ID,
+          templateId: P8T3_TEMPLATE_ID,
+          childSessionId: 'child-efx',
+          operationId: 'op-efx',
+          replayed: false,
+          ledgerSequence: 8,
+        },
+      ),
+    })
+    expect(success.value.provenance.projectionGeneration).toBe(null)
+    expect(success.value.provenance.requestToken).toBe(P8T3_REQUEST_TOKEN)
   })
 })
