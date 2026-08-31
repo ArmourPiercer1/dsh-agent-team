@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 381 files scanned, legacy carries the P7-T6 adapter', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 394 files scanned, runtime carries the P7-T2 mutation files, legacy carries the P7-T6 adapter', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -115,9 +115,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // p7t5-no-creation-scan.d.mts)) +
     // + 2 real-instance harness .mjs under tools/harness: plugin, run
     // + 4 P7-T6 legacy teammates adapter files under legacy (1 core
-    // .ts + 1 fs seam .mjs + 1 .d.mts type surface + 1 unit-test .ts)).
-    expect(scanResult.filesScanned).toBe(381)
-    expect(scanResult.files.length).toBe(381)
+    // .ts + 1 fs seam .mjs + 1 .d.mts type surface + 1 unit-test .ts) +
+    // 13 P7-T2 future-boundary mutation files (5 module .ts under
+    // runtime/mutation: types, errors, envelope, service, index + the
+    // runtime/policy-adapter.ts + 7 unit-test .ts under runtime/test:
+    // p7t2-helpers + 6 suites: p7t2-future-boundary, p7t2-escalation,
+    // p7t2-override-precedence, p7t2-policy-state, p7t2-creation-fields,
+    // p7t2-provenance)).
+    expect(scanResult.filesScanned).toBe(394)
+    expect(scanResult.files.length).toBe(394)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
