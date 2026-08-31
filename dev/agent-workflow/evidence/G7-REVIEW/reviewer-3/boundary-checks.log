@@ -1,0 +1,121 @@
+=== G7-REVIEW reviewer-3 boundary checks (zero-core / private-import / owned-boundary) ===
+git rev-parse --show-toplevel: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G7-3
+git rev-parse HEAD: 298d6364d2ebcb03eff0073c352e2174b0fd433f
+base SHA: 673260198e2f90474678087fa7518bdd241403b8
+date: 2026-08-31T10:30+08:00 (reviewer-3 own run, pwsh + ripgrep scans)
+
+====================================================================
+CHECK 1 — zero-core: no node: builtin imports in any .ts under packages/
+====================================================================
+Command: rg -g '*.ts' -n "from\s+[\"']node:|require\(\s*[\"']node:" packages/
+Result: 1 match total:
+  packages/runtime/test/p7t5-no-creation-scan.test.ts:42:
+    "import { readFileSync } from 'node:fs'",
+  -> STRING LITERAL inside the test (data for the no-creation-scan rule R5),
+     NOT an import statement. Verified by reading the file context.
+Command: rg -g '*.ts' -n "^import .*node:" packages/
+Result: no matches (no top-level node: import in any .ts).
+Command: rg -g '*.mts' -n "node:" packages/
+Result: 4 matches, all in COMMENT headers of .d.mts declaration files
+  (tools/test/p6t6-bypass-scan.d.mts, runtime/test/p7t5-no-creation-scan.d.mts,
+   testkit/fault-injection/session-event-scan.d.mts, testkit/fault-injection/file-seam.d.mts),
+  each stating the repo rule "only .mjs files may import node: builtins". No imports.
+Node: imports in .mjs (excluded by rule, recorded for completeness): 53 matches, all in
+  harness/test-harness .mjs files: tools/test/p6t6-bypass-scan.mjs,
+  testkit/fault-injection/session-event-scan.mjs, legacy/session-reader/e2e/*.mjs (run, plugin, ts-loader),
+  packages/*/harness/run.mjs + plugin.mjs (P4/P5/P6 harnesses),
+  packages/legacy/teammates-adapter-fs.mjs (T6 fs-seam implementation, .mjs by design;
+  its TS consumer declares it via teammates-adapter-fs.d.mts).
+VERDICT CHECK 1: PASS
+
+====================================================================
+CHECK 2 — zero-core: no patch-package / pnpm patch / postinstall mutation of upstream
+====================================================================
+Command: rg -g 'package.json' -n "patch-package|pnpm patch|postinstall|preinstall" (whole worktree)
+Result: 1 match:
+  scripts/fixtures/zero-core/plugins/bad-plugin-a/package.json:7: "postinstall": "patch-package"
+  -> NEGATIVE-FIXTURE: deliberately bad plugin used by the zero-core compliance scan test.
+     Not a real script; lives under scripts/fixtures (outside packages/).
+Command: git diff --stat 673260198e2f90474678087fa7518bdd241403b8..HEAD -- pnpm-lock.yaml package.json
+Result: EMPTY — no lockfile or root-manifest change between base and HEAD.
+Command: git diff --name-only base..HEAD -- '*.yaml' '*.lock'
+Result: empty — no lockfile of any kind touched by the P7 range.
+VERDICT CHECK 2: PASS
+
+====================================================================
+CHECK 3 — zero-core: no import from packages/* into references/deepseek-harness-test-use
+====================================================================
+Command: rg -n "deepseek-harness" packages/
+Result: 32 matches; classification:
+  - .mjs e2e/test harnesses (tools/harness/run.mjs, legacy/session-reader/e2e/run.mjs + ts-loader.mjs,
+    runtime/*/harness/run.mjs): comments + runtime path-LOCATION logic that walks up the directory
+    tree to FIND the references/deepseek-harness-test-use marker directory so the harness can boot the
+    pristine test host. No import of upstream code into plugin TS.
+  - packages/contracts/src/ids/session-id.ts:33 — @see doc-comment URL (github.com/deepseek-ai/...).
+  - packages/legacy/session-reader/types.ts:17, format.ts:5 — comments citing the frozen fork
+    (references/deepseek-harness) as on-disk-format EVIDENCE.
+  - packages/storage/test/p4-helpers.ts:864 — entry 'deepseek-harness' inside
+    P4_BANNED_PATH_SEGMENTS: the storage negative test itself BANS these path segments
+    in its closure (enforcement, not usage).
+  - packages/storage/test/p4-08-independence-negative.test.ts:9 — comment of that negative test.
+Command: rg -g '*.ts' -n "(import|from|require)\s*\(?\s*[\"'][^\"']*deepseek-harness" packages/
+Result: NO matches — zero import specifiers referencing upstream or the frozen fork.
+Command: rg -g '*.ts' -n "from [\"'](\.\.)(/\.\.)*?/(references|\.worktrees|dev)" packages/
+Result: NO matches — no relative import escaping the packages/ tree.
+VERDICT CHECK 3: PASS
+
+====================================================================
+CHECK 4 — private-import: packages/**/*.ts imports reference only in-package or declared deps
+====================================================================
+Method: enumerated every unique single-quoted import specifier in packages/**/*.ts:
+  - all relative specifiers resolve within packages/** (contracts/domain/storage/runtime/
+    legacy/testkit/tools/remote/client internal modules; test helpers p4*/p5*/p6*/p7*);
+  - exactly three non-relative bare specifiers, all declared:
+      vitest, vitest/config  -> devDependency at repo root (vitest 4.1.11); test API surface,
+                                 run-tests.mjs resolution hook maps 'vitest' -> audited shim;
+      yaml                   -> declared dependency of packages/domain ("yaml": "^2.9.0"),
+                                 used by packages/domain/blueprint/src/parse.ts (pre-P7 file).
+  - dynamic import(...) occurrences: all are TypeScript inline TYPE imports
+    import('...') in type positions (admission/types.ts, control/types.ts, action-router/effects.ts,
+    messaging/*, contracts/*) or doc-comment links; one string literal in p7t5-no-creation-scan.test.ts
+    (test data). No runtime dynamic loading of upstream or out-of-tree code.
+  - storage negative tests (p4-08-independence-negative.test.ts + P4_BANNED_PATH_SEGMENTS)
+    independently forbid 'references'/'deepseek-harness'/'legacy'/'runtime'/'tools'/'remote'/'client'
+    path segments inside the storage closure.
+VERDICT CHECK 4: PASS
+
+====================================================================
+CHECK 5 — owned-boundary: git diff base..HEAD -- packages/ vs P7 owned globs
+====================================================================
+Command: git diff --name-status 673260198e2f90474678087fa7518bdd241403b8..HEAD -- packages/
+Total changed files: 94 (93 Added + 1 Modified). Full list: owned-boundary-diff.txt (this dir).
+Classification against TaskDoc §11.8 owned globs:
+  T1 packages/runtime/compatibility/** ........ 6 files
+     compatibility/{blueprint,drift,errors,index,probe,types}.ts
+  T2 packages/runtime/mutation* + policy adapters . 6 files
+     mutation/{envelope,errors,index,service,types}.ts, policy-adapter.ts
+  T3 packages/runtime/lifecycle* .............. 8 files
+     lifecycle/{archive,dispose,errors,index,quiesce,resolve,restore,types}.ts
+  T4 packages/runtime/fork* + persistence reconciliation . 5 files
+     fork-reconciliation/{adapter,errors,index,reconciler,types}.ts
+  T5 packages/runtime/handoff* ................ 4 files
+     handoff/{errors,index,service,types}.ts
+  T6 packages/legacy/teammates-adapter* ....... 3 files
+     teammates-adapter.ts, teammates-adapter-fs.d.mts, teammates-adapter-fs.mjs
+  T7 packages/legacy/session-reader* (incl. TEST-ONLY e2e/) . 10 files
+     session-reader/{errors,format,index,inspect,types}.ts,
+     session-reader/e2e/{fs-seam,mini-mcp,plugin,run,ts-loader}.mjs
+  P7 test files (owned by the task whose semantics they test; p7tN- naming):
+     packages/legacy/test/p7t6-teammates-adapter.test.ts (1)
+     packages/legacy/test/p7t7-*.test.ts (6) + p7t7-helpers.ts (1)
+     packages/legacy/test/fixtures/teammates-*/  (12 .md fixtures, T6)
+     packages/runtime/test/p7t1-*.ts (5), p7t2-*.ts (7), p7t3-*.ts (5),
+     p7t4-*.ts (6), p7t5-*.ts (7, incl. no-creation-scan.mjs + .d.mts)
+  DEC-1 standing exception .................... 1 file
+     packages/testkit/test/p4t6-session-event-scan.test.ts (MODIFIED, count maintenance)
+OUT-OF-SCOPE FILES: 0
+VERDICT CHECK 5: PASS (94/94 inside owned globs or the named DEC-1 exception)
+
+====================================================================
+SUMMARY
+zero-core: PASS | private-import: PASS | owned-boundary: PASS

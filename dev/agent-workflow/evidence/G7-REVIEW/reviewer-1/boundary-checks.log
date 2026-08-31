@@ -1,0 +1,294 @@
+﻿=== G7-REVIEW reviewer-1 boundary checks (round R49) ===
+(start) 2026-08-31T10:21:18.4904820+08:00
+git rev-parse --show-toplevel:
+D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G7-1
+git rev-parse HEAD:
+298d6364d2ebcb03eff0073c352e2174b0fd433f
+
+########## 1. ZERO-CORE: node: builtin imports in packages/**/*.ts (and .mts/.cts) ##########
+HIT: packages\runtime\test\p7t5-no-creation-scan.test.ts:42: "import { readFileSync } from 'node:fs'",
+(zero-core ts scan: files scanned=392, hits=1)
+
+########## 2. ZERO-CORE: patch-package / pnpm patch / postinstall mutation of upstream ##########
+--- root package.json:
+{
+  "name": "dsh-agent-team",
+  "version": "0.0.0",
+  "private": true,
+  "description": "DSH Agent Team vNext plugin set 鈥?public-seam only, CORE PATCH BUDGET = 0.",
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:node": "node scripts/run-tests.mjs",
+    "smoke:composition": "node scripts/composition-smoke.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^16.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.8"
+  }
+}
+
+HIT: scripts\fixtures\zero-core\plugins\bad-plugin-a\package.json:7: "postinstall": "patch-package"
+--- lockfile diff vs base 673260198e2f90474678087fa7518bdd241403b8:
+pnpm-lock.yaml UNCHANGED vs base
+no patchedDependencies/patched_deps in pnpm-lock.yaml
+
+########## 3. PRIVATE-IMPORT: upstream references in packages/** source ##########
+REF: packages\contracts\src\ids\session-id.ts:33: * @see {@link https://github.com/deepseek-ai/deepseek-harness SessionId}
+REF: packages\legacy\session-reader\e2e\run.mjs:5: * (`references/deepseek-harness-test-use`, pin cd5ef814) with a fresh
+REF: packages\legacy\session-reader\e2e\run.mjs:96: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+REF: packages\legacy\session-reader\e2e\run.mjs:238: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+REF: packages\legacy\session-reader\e2e\run.mjs:239: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+REF: packages\legacy\session-reader\e2e\run.mjs:361: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+REF: packages\legacy\session-reader\e2e\run.mjs:362: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+REF: packages\legacy\session-reader\e2e\run.mjs:363: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+REF: packages\legacy\session-reader\e2e\run.mjs:364: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+REF: packages\legacy\session-reader\e2e\run.mjs:365: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+REF: packages\legacy\session-reader\e2e\run.mjs:366: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+REF: packages\legacy\session-reader\e2e\run.mjs:549: const pristine = await captureGitState(join(REPO_ROOT, 'references', 'deepseek-harness-test-use'), logsDir)
+REF: packages\legacy\session-reader\e2e\ts-loader.mjs:22: * (references/deepseek-harness-test-use) are never touched, so the hook
+REF: packages\legacy\session-reader\format.ts:5: * DSH (evidence: `references/deepseek-harness`, read-only):
+REF: packages\legacy\session-reader\types.ts:17: * Legacy on-disk evidence (frozen fork `references/deepseek-harness`,
+REF: packages\legacy\test\p7t6-teammates-adapter.test.ts:448: '@deepseek-ai',
+REF: packages\legacy\teammates-adapter.ts:16: * Semantics ported from the frozen legacy team-local parser (references/,
+REF: packages\runtime\member-residency\harness\plugin.mjs:110: *     — @deepseek-ai/dsh-agent (public agent lifecycle)
+REF: packages\runtime\member-residency\harness\plugin.mjs:112: *     — @deepseek-ai/dsh-subagent (public continuable-subagent surface;
+REF: packages\runtime\member-residency\harness\plugin.mjs:115: *     — @deepseek-ai/dsh-agent-presets (public preset seam)
+REF: packages\runtime\member-residency\harness\plugin.mjs:117: *     — @deepseek-ai/dsh-system-prompt (public prompt assembly boundary)
+REF: packages\runtime\member-residency\harness\plugin.mjs:119: *     — @deepseek-ai/dsh-scope (public scope key)
+REF: packages\runtime\member-residency\harness\plugin.mjs:121: *     — @deepseek-ai/dsh-agent (public agent-scoped model selection)
+REF: packages\runtime\member-residency\harness\plugin.mjs:123: *     — @deepseek-ai/dsh-session-projections (public projection read;
+REF: packages\runtime\member-residency\harness\plugin.mjs:128: *     — @deepseek-ai/dsh-mcp-client (public MCP fiber seam)
+REF: packages\runtime\member-residency\harness\plugin.mjs:132: *     — @deepseek-ai/dsh-session (public session surfaces)
+REF: packages\runtime\member-residency\harness\plugin.mjs:134: *     — @deepseek-ai/dsh-webserver (public host route seam)
+REF: packages\runtime\member-residency\harness\plugin.mjs:136: *     — @deepseek-ai/dsh-storage-domain (public durable domain seam;
+REF: packages\runtime\member-residency\harness\plugin.mjs:148: import { SessionId } from '@deepseek-ai/dsh-session'
+REF: packages\runtime\member-residency\harness\plugin.mjs:149: import { scopeOf } from '@deepseek-ai/dsh-scope'
+REF: packages\runtime\member-residency\harness\plugin.mjs:150: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+REF: packages\runtime\member-residency\harness\plugin.mjs:151: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+REF: packages\runtime\member-residency\harness\run.mjs:20: *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
+REF: packages\runtime\member-residency\harness\run.mjs:21: *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+REF: packages\runtime\member-residency\harness\run.mjs:23: *   DSH_HOME   — REPO_ROOT/references/.dsh-test-p5t6 (FRESH per run: removed
+REF: packages\runtime\member-residency\harness\run.mjs:126: /** Walk up from `start` until the references/deepseek-harness-test-use marker. */
+REF: packages\runtime\member-residency\harness\run.mjs:130: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+REF: packages\runtime\member-residency\harness\run.mjs:224: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+REF: packages\runtime\member-residency\harness\run.mjs:225: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+REF: packages\runtime\member-residency\harness\run.mjs:293: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+REF: packages\runtime\member-residency\harness\run.mjs:294: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+REF: packages\runtime\member-residency\harness\run.mjs:295: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+REF: packages\runtime\member-residency\harness\run.mjs:296: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+REF: packages\runtime\member-residency\harness\run.mjs:297: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+REF: packages\runtime\member-residency\harness\run.mjs:298: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+REF: packages\runtime\member-residency\harness\run.mjs:358: // (member-residency/harness) both resolve their static @deepseek-ai/*
+REF: packages\runtime\member-residency\harness\run.mjs:379: "  name: '@deepseek-ai/dsh-persona'",
+REF: packages\runtime\member-residency\harness\slots-t6.mjs:45: import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+REF: packages\runtime\member-residency\harness\slots-t6.mjs:46: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+REF: packages\runtime\member-residency\harness\slots-t6.mjs:47: import { SessionId } from '@deepseek-ai/dsh-session'
+REF: packages\runtime\member-residency\harness\slots-t6.mjs:48: import { scopeOf } from '@deepseek-ai/dsh-scope'
+REF: packages\runtime\member-residency\harness\slots-t6.mjs:49: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+REF: packages\runtime\root-binding\harness\mini-mcp.mjs:7: * `@deepseek-ai/dsh-mcp-client` startup handshake and one tool round-trip.
+REF: packages\runtime\root-binding\harness\plugin.mjs:60: *     — @deepseek-ai/dsh-agent (public agent lifecycle)
+REF: packages\runtime\root-binding\harness\plugin.mjs:62: *     — @deepseek-ai/dsh-agent-presets (public preset seam)
+REF: packages\runtime\root-binding\harness\plugin.mjs:64: *     — @deepseek-ai/dsh-system-prompt (public prompt assembly boundary)
+REF: packages\runtime\root-binding\harness\plugin.mjs:66: *     — @deepseek-ai/dsh-scope (public scope key)
+REF: packages\runtime\root-binding\harness\plugin.mjs:68: *     — @deepseek-ai/dsh-agent (public agent-scoped model selection)
+REF: packages\runtime\root-binding\harness\plugin.mjs:70: *     — @deepseek-ai/dsh-session-projections (public projection read;
+REF: packages\runtime\root-binding\harness\plugin.mjs:75: *     — @deepseek-ai/dsh-mcp-client (public MCP fiber seam)
+REF: packages\runtime\root-binding\harness\plugin.mjs:79: *     — @deepseek-ai/dsh-session (public session surfaces)
+REF: packages\runtime\root-binding\harness\plugin.mjs:81: *     — @deepseek-ai/dsh-webserver (public host route seam)
+REF: packages\runtime\root-binding\harness\plugin.mjs:83: *     — @deepseek-ai/dsh-storage-domain (public durable KV domain form;
+REF: packages\runtime\root-binding\harness\plugin.mjs:92: import { SessionId } from '@deepseek-ai/dsh-session'
+REF: packages\runtime\root-binding\harness\plugin.mjs:93: import { scopeOf } from '@deepseek-ai/dsh-scope'
+REF: packages\runtime\root-binding\harness\plugin.mjs:94: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+REF: packages\runtime\root-binding\harness\plugin.mjs:95: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+REF: packages\runtime\root-binding\harness\run.mjs:17: *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
+REF: packages\runtime\root-binding\harness\run.mjs:18: *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+REF: packages\runtime\root-binding\harness\run.mjs:20: *   DSH_HOME   — REPO_ROOT/references/.dsh-test-p5t5 (FRESH per run: removed
+REF: packages\runtime\root-binding\harness\run.mjs:109: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+REF: packages\runtime\root-binding\harness\run.mjs:159: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+REF: packages\runtime\root-binding\harness\run.mjs:160: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+REF: packages\runtime\root-binding\harness\run.mjs:222: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+REF: packages\runtime\root-binding\harness\run.mjs:223: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+REF: packages\runtime\root-binding\harness\run.mjs:224: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+REF: packages\runtime\root-binding\harness\run.mjs:225: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+REF: packages\runtime\root-binding\harness\run.mjs:226: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+REF: packages\runtime\root-binding\harness\run.mjs:227: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+REF: packages\runtime\root-binding\harness\run.mjs:299: "  name: '@deepseek-ai/dsh-persona'",
+REF: packages\runtime\root-binding\harness\seam.mjs:29: * `@deepseek-ai/dsh-storage-domain` and `zod` resolve through the harness's
+REF: packages\runtime\root-binding\harness\seam.mjs:33: import { defineDomain, domainTable } from '@deepseek-ai/dsh-storage-domain'
+REF: packages\runtime\root-binding\harness\slots.mjs:39: import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+REF: packages\runtime\root-binding\harness\slots.mjs:40: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+REF: packages\runtime\root-binding\harness\slots.mjs:41: import { SessionId } from '@deepseek-ai/dsh-session'
+REF: packages\runtime\root-binding\harness\slots.mjs:42: import { scopeOf } from '@deepseek-ai/dsh-scope'
+REF: packages\runtime\root-binding\harness\slots.mjs:43: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+REF: packages\runtime\root-binding\harness\ts-loader.mjs:21: * Host-tree imports (references/deepseek-harness-test-use) are never
+REF: packages\storage\test\p4-08-independence-negative.test.ts:8: * contracts modules), banned-vocabulary scans (no references/**, no
+REF: packages\storage\test\p4-08-independence-negative.test.ts:9: * upstream/deepseek-harness paths, no bare specifiers, no legacy Team
+REF: packages\storage\test\p4-helpers.ts:864: 'deepseek-harness',
+REF: packages\testkit\domain\src\import-graph.ts:52: 'deepseek-harness',
+REF: packages\testkit\fault-injection\session-event-scan.mjs:14: * `references/deepseek-harness/packages/team/team/src/events.ts` — the
+REF: packages\testkit\fault-injection\session-event-scan.mjs:29: *    `'@deepseek-ai/dsh-session/types'` in the SAME file — the legacy
+REF: packages\testkit\fault-injection\session-event-scan.mjs:31: *    @deepseek-ai/dsh-session/types. Exactly ONE file-level hit, at the
+REF: packages\testkit\fault-injection\session-event-scan.mjs:99: export const SESSION_TYPES_SPECIFIER = '@deepseek-ai/dsh-session/types'
+REF: packages\testkit\fault-injection\session-event-scan.mjs:115: const SPECIFIER_PATTERN = /(["'\`])@deepseek-ai\/dsh-session\/types\1/g
+REF: packages\testkit\test\p4t6-session-event-scan.test.ts:5: * declaration-merging pattern on `@deepseek-ai/dsh-session/types`) is
+REF: packages\testkit\test\p4t6-session-event-scan.test.ts:201: "declare module '@deepseek-ai/dsh-session/types' {",
+REF: packages\tools\harness\plugin.mjs:55: import { SessionId } from '@deepseek-ai/dsh-session'
+REF: packages\tools\harness\plugin.mjs:56: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+REF: packages\tools\harness\plugin.mjs:57: import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
+REF: packages\tools\harness\run.mjs:22: *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
+REF: packages\tools\harness\run.mjs:23: *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+REF: packages\tools\harness\run.mjs:25: *   DSH_HOME   — REPO_ROOT/references/.dsh-test-p6t6 (task-specific; FRESH
+REF: packages\tools\harness\run.mjs:158: /** Walk up from `start` until the references/deepseek-harness-test-use marker. */
+REF: packages\tools\harness\run.mjs:162: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+REF: packages\tools\harness\run.mjs:212: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+REF: packages\tools\harness\run.mjs:213: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+REF: packages\tools\harness\run.mjs:289: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+REF: packages\tools\harness\run.mjs:290: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+REF: packages\tools\harness\run.mjs:291: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+REF: packages\tools\harness\run.mjs:292: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+REF: packages\tools\harness\run.mjs:293: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+REF: packages\tools\harness\run.mjs:294: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+REF: packages\tools\harness\run.mjs:295: { name: '@deepseek-ai/dsh-llm', dir: join(HOST_TREE, 'packages', 'llm', 'llm') },
+REF: packages\tools\harness\run.mjs:352: // runtime rows resolve their static @deepseek-ai/* imports by walking up
+REF: packages\tools\test\p6t6-bypass-scan.mjs:18: *      the P4-T6 frozen denylist (source of record: `references/deepseek-
+REF: packages\tools\test\p6t6-bypass-scan.mjs:87: export const SESSION_TYPES_SPECIFIER = '@deepseek-ai/dsh-session/types'
+REF: packages\tools\test\p6t6-bypass-scan.mjs:113: const SESSION_TYPES_SPECIFIER_PATTERN = /(["'\`])@deepseek-ai\/dsh-session\/types\1/g
+REF: packages\tools\test\p6t6-bypass-scan.test.ts:109: "const g = '@deepseek-ai/dsh-session/other'",
+(upstream-ref scan: files scanned=413, hits=121)
+
+########## 4. OWNED-BOUNDARY: diff base..HEAD -- packages/ (summary) ##########
+git diff --name-status 673260198e2f90474678087fa7518bdd241403b8..HEAD -- packages/
+entries: 94 (A=93 M=1 D=0)
+full list: owned-boundary-diff.txt (94 lines); per-glob mapping in report.md
+
+########## 5. CONTEXT: non-packages paths changed base..HEAD ##########
+dev/agent-workflow/evidence/P7-T1/attempt1-baseline.log
+dev/agent-workflow/evidence/P7-T1/attempt2-canonical-chain-rerun.log
+dev/agent-workflow/evidence/P7-T1/attempt2-canonical-chain.log
+dev/agent-workflow/evidence/P7-T1/attempt3-canonical-chain.log
+dev/agent-workflow/evidence/P7-T1/design-note.md
+dev/agent-workflow/evidence/P7-T1/hash-check.log
+dev/agent-workflow/evidence/P7-T1/survey-runtime-tree.txt
+dev/agent-workflow/evidence/P7-T1/zero-core-verification.log
+dev/agent-workflow/evidence/P7-T2/attempt-ledger.md
+dev/agent-workflow/evidence/P7-T2/attempt1-baseline.log
+dev/agent-workflow/evidence/P7-T2/attempt1-post.log
+dev/agent-workflow/evidence/P7-T2/design-note.md
+dev/agent-workflow/evidence/P7-T2/zero-core-log.md
+dev/agent-workflow/evidence/P7-T3/attempt1-leg1-install.log
+dev/agent-workflow/evidence/P7-T3/attempt1-leg2-runtests.log
+dev/agent-workflow/evidence/P7-T3/attempt1-leg3-tsc.log
+dev/agent-workflow/evidence/P7-T3/attempt2-leg1-install.log
+dev/agent-workflow/evidence/P7-T3/attempt2-leg2-runtests.log
+dev/agent-workflow/evidence/P7-T3/attempt2-leg3-tsc.log
+dev/agent-workflow/evidence/P7-T3/attempt3-leg1-install.log
+dev/agent-workflow/evidence/P7-T3/attempt3-leg2-runtests.log
+dev/agent-workflow/evidence/P7-T3/attempt3-leg3-tsc.log
+dev/agent-workflow/evidence/P7-T3/preflight-legA-runtime.log
+dev/agent-workflow/evidence/P7-T3/preflight-legA2-runtime.log
+dev/agent-workflow/evidence/P7-T3/preflight-legB-testkit.log
+dev/agent-workflow/evidence/P7-T3/zero-core-analysis.md
+dev/agent-workflow/evidence/P7-T3/zero-core-check.log
+dev/agent-workflow/evidence/P7-T3/zero-core-host.log
+dev/agent-workflow/evidence/P7-T4/attempt1-install.log
+dev/agent-workflow/evidence/P7-T4/attempt1-run-tests.log
+dev/agent-workflow/evidence/P7-T4/attempt1-tsc-contracts.log
+dev/agent-workflow/evidence/P7-T4/attempt1-tsc-domain.log
+dev/agent-workflow/evidence/P7-T4/attempt1-tsc-runtime.log
+dev/agent-workflow/evidence/P7-T4/attempt1-tsc-storage.log
+dev/agent-workflow/evidence/P7-T4/attempt1-tsc-testkit.log
+dev/agent-workflow/evidence/P7-T4/attempt2-install.log
+dev/agent-workflow/evidence/P7-T4/attempt2-run-tests.log
+dev/agent-workflow/evidence/P7-T4/attempt2-tsc-contracts.log
+dev/agent-workflow/evidence/P7-T4/attempt2-tsc-domain.log
+dev/agent-workflow/evidence/P7-T4/attempt2-tsc-runtime.log
+dev/agent-workflow/evidence/P7-T4/attempt2-tsc-storage.log
+dev/agent-workflow/evidence/P7-T4/attempt2-tsc-testkit.log
+dev/agent-workflow/evidence/P7-T4/attempt2-zero-core.json
+dev/agent-workflow/evidence/P7-T4/attempt3-install.log
+dev/agent-workflow/evidence/P7-T4/attempt3-run-tests.log
+dev/agent-workflow/evidence/P7-T4/attempt3-tsc-contracts.log
+dev/agent-workflow/evidence/P7-T4/attempt3-tsc-domain.log
+dev/agent-workflow/evidence/P7-T4/attempt3-tsc-runtime.log
+dev/agent-workflow/evidence/P7-T4/attempt3-tsc-storage.log
+dev/agent-workflow/evidence/P7-T4/attempt3-tsc-testkit.log
+dev/agent-workflow/evidence/P7-T4/attempt3-zero-core.json
+dev/agent-workflow/evidence/P7-T4/devcheck-run-tests-runtime.log
+dev/agent-workflow/evidence/P7-T4/devcheck-tsc-runtime.log
+dev/agent-workflow/evidence/P7-T5/baseline-tests-attempt1.txt
+dev/agent-workflow/evidence/P7-T5/pnpm-install.txt
+dev/agent-workflow/evidence/P7-T5/run-log.md
+dev/agent-workflow/evidence/P7-T5/self-scan-specifiers.mjs
+dev/agent-workflow/evidence/P7-T5/self-scan-specifiers.txt
+dev/agent-workflow/evidence/P7-T5/tests-attempt2.txt
+dev/agent-workflow/evidence/P7-T5/tests-attempt3.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt2-contracts.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt2-domain.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt2-runtime.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt2-storage.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt2-testkit.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt3-contracts.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt3-domain.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt3-runtime.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt3-storage.txt
+dev/agent-workflow/evidence/P7-T5/tsc-attempt3-testkit.txt
+dev/agent-workflow/evidence/P7-T5/tsc-baseline-attempt1.txt
+dev/agent-workflow/evidence/P7-T5/zero-core.txt
+dev/agent-workflow/evidence/P7-T6/attempt1-baseline-chain.log
+dev/agent-workflow/evidence/P7-T6/attempt1-pnpm-install.err.log
+dev/agent-workflow/evidence/P7-T6/attempt1-pnpm-install.log
+dev/agent-workflow/evidence/P7-T6/attempt1-tsc.log
+dev/agent-workflow/evidence/P7-T6/attempt2-post-change-chain.log
+dev/agent-workflow/evidence/P7-T6/attempt3-final-chain.log
+dev/agent-workflow/evidence/P7-T6/attempt3-tsc.log
+dev/agent-workflow/evidence/P7-T6/attempt3-zero-core.log
+dev/agent-workflow/evidence/P7-T6/frozen-doc-hashes.txt
+dev/agent-workflow/evidence/P7-T7/attempt-ledger.md
+dev/agent-workflow/evidence/P7-T7/attempt1-baseline.log
+dev/agent-workflow/evidence/P7-T7/attempt1-post.log
+dev/agent-workflow/evidence/P7-T7/baseline-tests.log
+dev/agent-workflow/evidence/P7-T7/design-note.md
+dev/agent-workflow/evidence/P7-T7/e2e-run.log
+dev/agent-workflow/evidence/P7-T7/e2e-run2.log
+dev/agent-workflow/evidence/P7-T7/e2e-run3.log
+dev/agent-workflow/evidence/P7-T7/final-testkit-rerun.log
+dev/agent-workflow/evidence/P7-T7/g7-report.md
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/dump-config.txt
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/harness-output/L1.json
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/harness-output/L2.json
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/harness-output/L3.json
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/logs/boot/dump-config-port3180.log
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/logs/boot/instance-port3180.log
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/logs/git-diff.log
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/logs/git-head.log
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/logs/git-status.log
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/run.log
+dev/agent-workflow/evidence/P7-T7/harness-output-run1/summary.json
+dev/agent-workflow/evidence/P7-T7/harness-output/dump-config.txt
+dev/agent-workflow/evidence/P7-T7/harness-output/harness-output/L1.json
+dev/agent-workflow/evidence/P7-T7/harness-output/harness-output/L2.json
+dev/agent-workflow/evidence/P7-T7/harness-output/harness-output/L3.json
+dev/agent-workflow/evidence/P7-T7/harness-output/logs/boot/dump-config-port3180.log
+dev/agent-workflow/evidence/P7-T7/harness-output/logs/boot/instance-port3180.log
+dev/agent-workflow/evidence/P7-T7/harness-output/logs/git-diff.log
+dev/agent-workflow/evidence/P7-T7/harness-output/logs/git-head.log
+dev/agent-workflow/evidence/P7-T7/harness-output/logs/git-status.log
+dev/agent-workflow/evidence/P7-T7/harness-output/run.log
+dev/agent-workflow/evidence/P7-T7/harness-output/summary.json
+dev/agent-workflow/evidence/P7-T7/install-baseline.log
+dev/agent-workflow/evidence/P7-T7/legacy-rerun.log
+dev/agent-workflow/evidence/P7-T7/zero-core-log.md
+
+(end) 2026-08-31T10:21:20.4530449+08:00
