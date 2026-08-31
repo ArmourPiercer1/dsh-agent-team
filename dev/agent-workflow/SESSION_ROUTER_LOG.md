@@ -734,6 +734,20 @@
 - **Close-out（已执行）**：(a) merge master 入 int/P7（bookkeeping catch-up，仅 dev/agent-workflow/ 路径，clean）；(b) ff master 至 int tip；(c) **push #7**（sanctioned，每 Gate 一次推送）；(d) graph.yaml：G7-REVIEW PASSED + current_phase → P8 + ready []。
 - **下一步**：R50 —— P8 kickoff（Team Remote + Projection；DevPlan §21：projection source = TeamDomain + optional live overlay，禁扫 Root+child Session logs；Remote API 类别 catalog.list/get、intent.probe 等）：读冻结文档 P8 任务卡 → 声明 P8 任务条目 + `int/P8-*` 集成分支 → brief + 派发（全部 `qiyuan-self/qwen3.8-27b`）。worktree 清理（P1–P7 任务 worktrees + G7-{1,2,3} + int-P7 + 残留 R1 日志）推迟到 P8 第一波稳定后，以保留 P7 回滚选项。
 
+## R50 — P8 kickoff（TaskDoc §11.9 P8-T1..T5 + G8；int/P8-remote-projection @ `959e363`；P8-T1 派发）（2026-08-31，主 Agent）
+
+- **P7 完结回顾（R49 收尾）**：G7-REVIEW **PASS 3/3**（R1/R2/R3 全部 通过；各自 1588/1588 + tsc ×5 + boundary 3/3 + lockfile 串行 e2e 35/35）；46 证据文件归档 `dev/agent-workflow/evidence/G7-REVIEW/reviewer-{1,2,3}/`；int/P7 并入 master（merge commit）后 ff master 至 `959e363`；**push #7 完成**（origin `6732601` → `959e363`，每 Gate 一次 sanctioned push）；graph current_phase → P8。
+- **P8 任务声明**（TaskDoc §11.9 + DevPlan §21；严格串行 DAG `T1→T2→T3→T4→T5(G8)`，无并行波）：
+  - P8-T1（I0, A）：冻结 TeamProjection DTO v1 — owns `packages/contracts/src/projection/**`；前置 P7-T7（✓）；baseline 1588/1588 + p4t6 411。
+  - P8-T2（I1, A）：Projection service — owns `packages/runtime/projection/**`；TeamDomain + live overlay only，禁扫 Session logs。
+  - P8-T3（I2, A）：Remote contract v1 + Host handlers — owns `packages/remote/contracts*` + `handlers*`；separation 按 21.3 固定。
+  - P8-T4（I3, B）：push/generation/reconnect/pagination — owns `packages/remote/push*` + test client。
+  - P8-T5（I4, A）：Remote contract 独立 review + G8 — review/e2e only；DevPlan 21.5 六准则。
+- **集成分支**：`int/P8-remote-projection` @ `959e363` + worktree `.worktrees/int-P8`（node_modules install 日志 → `dev/agent-workflow/evidence/int-P8/install-r50.log`）。
+- **Brief**：`dev/agent-workflow/briefs/P8-T1-brief.md`（§0–§12：base `959e363` / branch `task/P8-T1-projection-dto` / owned glob + DEC-1 / sanctioned chain + tsc 分参规则 / p4t6 411→411+N / 必须测试 serialization+generation monotonic+nullable overlay + negative tests / zero-core 红线 / code+evidence 两提交 / 固定 `P8T1_REPORT` 格式 / attempts 1/3 / BLOCKER 固定格式 / :3080 前后健康检查）。
+- **派发**：workflow 单 leaf，`agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；worker attempts 1/3；leaf 禁止再拉子代理。
+- **下一步**：P8-T1 交付 → 主 Agent in-worktree 独立审计（int-P8 worktree：chain + tsc ×5 + import-face + p4t6 markers）→ cherry-pick -x 至 int/P8 → P8-T2（base = P8-T1 后的 int tip）→ … → G8（3 blind reviewers，同 G7 机制）→ **push #8**。注意：P8-T1 冻结新 projection contract 后，需按先例核对 graph `locks.contracts` 哈希是否需更新（P3-T1 冻结先例）。
+
 ## 重审记录
 
 （空）
