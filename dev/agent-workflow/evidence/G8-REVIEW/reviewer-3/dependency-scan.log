@@ -1,0 +1,312 @@
+== G8R3 dependency scan (post-run) ==
+2026-08-31T07:36:26.292Z
+worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+
+scanned: 454 .ts, 23 .mjs/.cjs, 9 package.json under packages/
+
+== A. zero-core: node: builtin imports in packages/**/*.ts (rule) ==
+SAMPLE packages\runtime\test\p7t5-no-creation-scan.test.ts:42 [string-literal-sample] node:fs (not an import statement)
+PASS — no node: imports in any packages/**/*.ts (1 doc/string-literal mention(s) recorded, not imports)
+
+== A2. zero-core: node: imports in packages/**/*.mjs/.cjs (excluded, record) ==
+EXCLUDED packages\tools\test\p6t6-bypass-scan.mjs:57 [import] node:fs/promises
+EXCLUDED packages\tools\test\p6t6-bypass-scan.mjs:58 [import] node:path
+EXCLUDED packages\tools\test\p6t6-bypass-scan.mjs:59 [import] node:url
+EXCLUDED packages\tools\harness\plugin.mjs:52 [import] node:module
+EXCLUDED packages\tools\harness\plugin.mjs:53 [import] node:fs
+EXCLUDED packages\tools\harness\plugin.mjs:54 [import] node:path
+EXCLUDED packages\tools\harness\plugin.mjs:186 [doc] node:http
+EXCLUDED packages\tools\harness\plugin.mjs:193 [doc] node:http
+EXCLUDED packages\tools\harness\run.mjs:69 [import] node:fs
+EXCLUDED packages\tools\harness\run.mjs:70 [import] node:path
+EXCLUDED packages\tools\harness\run.mjs:71 [import] node:url
+EXCLUDED packages\testkit\fault-injection\file-seam.mjs:71 [import] node:fs
+EXCLUDED packages\testkit\fault-injection\file-seam.mjs:72 [import] node:path
+EXCLUDED packages\testkit\fault-injection\file-seam.mjs:73 [import] node:url
+EXCLUDED packages\testkit\fault-injection\session-event-scan.mjs:71 [import] node:fs
+EXCLUDED packages\testkit\fault-injection\session-event-scan.mjs:72 [import] node:path
+EXCLUDED packages\testkit\fault-injection\session-event-scan.mjs:73 [import] node:url
+EXCLUDED packages\runtime\test\p7t5-no-creation-scan.mjs:46 [import] node:fs
+EXCLUDED packages\runtime\test\p7t5-no-creation-scan.mjs:47 [import] node:path
+EXCLUDED packages\runtime\test\p7t5-no-creation-scan.mjs:48 [import] node:url
+EXCLUDED packages\runtime\root-binding\harness\mini-mcp.mjs:20 [import] node:http
+EXCLUDED packages\runtime\root-binding\harness\mini-mcp.mjs:72 [doc] node:http
+EXCLUDED packages\runtime\root-binding\harness\mini-mcp.mjs:131 [doc] node:http
+EXCLUDED packages\runtime\root-binding\harness\plugin.mjs:89 [import] node:module
+EXCLUDED packages\runtime\root-binding\harness\plugin.mjs:90 [import] node:fs
+EXCLUDED packages\runtime\root-binding\harness\plugin.mjs:91 [import] node:path
+EXCLUDED packages\runtime\root-binding\harness\plugin.mjs:178 [doc] node:http
+EXCLUDED packages\runtime\root-binding\harness\plugin.mjs:188 [doc] node:http
+EXCLUDED packages\runtime\root-binding\harness\run.mjs:47 [import] node:fs
+EXCLUDED packages\runtime\root-binding\harness\run.mjs:48 [import] node:crypto
+EXCLUDED packages\runtime\root-binding\harness\run.mjs:49 [import] node:path
+EXCLUDED packages\runtime\root-binding\harness\run.mjs:50 [import] node:url
+EXCLUDED packages\runtime\root-binding\harness\ts-loader.mjs:27 [import] node:fs
+EXCLUDED packages\runtime\root-binding\harness\ts-loader.mjs:28 [import] node:path
+EXCLUDED packages\runtime\root-binding\harness\ts-loader.mjs:29 [import] node:url
+EXCLUDED packages\runtime\member-residency\harness\plugin.mjs:145 [import] node:module
+EXCLUDED packages\runtime\member-residency\harness\plugin.mjs:146 [import] node:fs
+EXCLUDED packages\runtime\member-residency\harness\plugin.mjs:147 [import] node:path
+EXCLUDED packages\runtime\member-residency\harness\plugin.mjs:231 [doc] node:http
+EXCLUDED packages\runtime\member-residency\harness\plugin.mjs:241 [doc] node:http
+EXCLUDED packages\runtime\member-residency\harness\run.mjs:71 [import] node:fs
+EXCLUDED packages\runtime\member-residency\harness\run.mjs:72 [import] node:crypto
+EXCLUDED packages\runtime\member-residency\harness\run.mjs:73 [import] node:path
+EXCLUDED packages\runtime\member-residency\harness\run.mjs:74 [import] node:url
+EXCLUDED packages\runtime\member-residency\harness\run.mjs:75 [import] node:module
+EXCLUDED packages\remote\test\p8t3-negative-scan.mjs:42 [import] node:fs
+EXCLUDED packages\remote\test\p8t3-negative-scan.mjs:43 [import] node:path
+EXCLUDED packages\remote\test\p8t3-negative-scan.mjs:44 [import] node:url
+EXCLUDED packages\remote\test\p8t3-negative-scan.mjs:179 [string-literal-sample] node:fs
+EXCLUDED packages\remote\test\p8t4-negative-scan.mjs:46 [import] node:fs
+EXCLUDED packages\remote\test\p8t4-negative-scan.mjs:47 [import] node:path
+EXCLUDED packages\remote\test\p8t4-negative-scan.mjs:48 [import] node:url
+EXCLUDED packages\legacy\teammates-adapter-fs.mjs:21 [import] node:fs
+EXCLUDED packages\legacy\teammates-adapter-fs.mjs:22 [import] node:path
+EXCLUDED packages\legacy\teammates-adapter-fs.mjs:23 [import] node:url
+EXCLUDED packages\legacy\session-reader\e2e\fs-seam.mjs:21 [import] node:fs
+EXCLUDED packages\legacy\session-reader\e2e\mini-mcp.mjs:26 [import] node:http
+EXCLUDED packages\legacy\session-reader\e2e\mini-mcp.mjs:126 [doc] node:http
+EXCLUDED packages\legacy\session-reader\e2e\mini-mcp.mjs:186 [doc] node:http
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:38 [import] node:module
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:39 [import] node:crypto
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:40 [import] node:fs
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:41 [import] node:path
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:42 [import] node:url
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:107 [doc] node:http
+EXCLUDED packages\legacy\session-reader\e2e\plugin.mjs:117 [doc] node:http
+EXCLUDED packages\legacy\session-reader\e2e\run.mjs:45 [import] node:fs
+EXCLUDED packages\legacy\session-reader\e2e\run.mjs:46 [import] node:path
+EXCLUDED packages\legacy\session-reader\e2e\run.mjs:47 [import] node:url
+EXCLUDED packages\legacy\session-reader\e2e\ts-loader.mjs:28 [import] node:fs
+EXCLUDED packages\legacy\session-reader\e2e\ts-loader.mjs:29 [import] node:path
+EXCLUDED packages\legacy\session-reader\e2e\ts-loader.mjs:30 [import] node:url
+72 node: specifier line(s) in .mjs/.cjs (harness plumbing; rule-exempt)
+
+== B. bare (non-relative, non-node:) specifiers in packages/** source ==
+VIOLATION packages\tools\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\tools\test\p6t6-actions.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\tools\test\p6t6-bypass-scan.test.ts:40  vitest  (third-party specifier in code)
+VIOLATION packages\tools\test\p6t6-guard.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\tools\test\tools.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\testkit\test\p4t5-corrupt-version.test.ts:36  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\p4t5-crash-matrix.test.ts:29  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\p4t5-retry-restart.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\p4t6-session-event-scan.test.ts:18  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-1-no-agent-dependency.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-10-composition-pipeline.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-2-template-n-instances.test.ts:13  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-3-lifecycle-matrix.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-4-policy-precedence.test.ts:30  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-5-compat-complete-true.test.ts:20  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-6-snapshot-immutability.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-7-fresh-per-delegation.test.ts:19  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-8-serialization-roundtrip.test.ts:15  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\t6-9-negative-matrix.test.ts:21  vitest  (third-party specifier in code)
+VIOLATION packages\testkit\test\testkit.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\storage\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-01-schema-meta.test.ts:13  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-02-team-sessions.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-03-member-instances.test.ts:10  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-04-session-bindings.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-05-governance.test.ts:14  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-06-journal.test.ts:15  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-07-durability-crash.test.ts:14  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4-08-independence-negative.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t2-conflicts.test.ts:23  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t2-crash-recovery.test.ts:26  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t2-journal.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t3-binding-service.test.ts:20  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t3-fork-reconciliation.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t3-reconciler.test.ts:30  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t4-adapter.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t4-one-committed-invariant.test.ts:37  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t4-orphan-detect.test.ts:32  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\p4t4-per-stage-retry.test.ts:23  vitest  (third-party specifier in code)
+VIOLATION packages\storage\test\storage.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t1-binder-core.test.ts:21  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t1-double-bind.test.ts:20  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t1-fresh-cold-paths.test.ts:21  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t1-ordinary-noop.test.ts:16  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t1-overlay-slots.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t2-persona-cold-bind.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t2-persona-compatible.test.ts:19  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t2-persona-complete-fatal.test.ts:19  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t2-persona-no-persona.test.ts:16  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t3-future-boundary.test.ts:33  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t3-restart.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t4-cold-resume.test.ts:32  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t4-intersection.test.ts:18  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t5-admission.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t5-cold-root.test.ts:20  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t5-fresh-root.test.ts:22  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t6-cold-member.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t6-evict-readmit.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p5t6-fresh-member.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t1-checks.test.ts:30  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t1-delegate.test.ts:31  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t1-explicit.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t1-parallel.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t1-recovery.test.ts:34  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t2-actions.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t2-addressing.test.ts:12  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t2-authority.test.ts:14  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t2-quota.test.ts:16  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t3-mediation.test.ts:31  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t3-restart.test.ts:22  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t3-send-delivery.test.ts:42  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t4-allow-once.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t4-deny.test.ts:15  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t4-external-policy.test.ts:32  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t4-negatives.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t4-restart.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t4-stale.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t5-authority.test.ts:22  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t5-intervals.test.ts:18  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t5-progress.test.ts:12  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t5-projection.test.ts:14  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p6t5-restart.test.ts:22  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t1-ack-fingerprint.test.ts:29  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t1-cold-resume.test.ts:34  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t1-inflight-drift.test.ts:33  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t1-probe-generation.test.ts:29  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t2-creation-fields.test.ts:23  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t2-escalation.test.ts:31  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t2-future-boundary.test.ts:30  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t2-override-precedence.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t2-policy-state.test.ts:26  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t2-provenance.test.ts:26  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t3-archive-running.test.ts:14  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t3-descendant-drain.test.ts:12  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t3-dispose-race.test.ts:18  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t3-restore-no-agent.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t4-crash-sidecar.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t4-member-fork.test.ts:26  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t4-ordinary-fork.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t4-repeat-reconcile.test.ts:26  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t4-root-fork.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-failure-before-root-create.test.ts:35  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-no-creation-scan.test.ts:31  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-no-creation-scan.test.ts:43  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-no-creation-scan.test.ts:52  some-module  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-snapshot-once.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-source-mutate.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p7t5-target-inspect.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p8t2-cold.test.ts:21  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p8t2-fifty.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p8t2-negative.test.ts:34  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p8t2-overlay.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\p8t2-terminal.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\runtime\test\runtime.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\remote\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t3-admission.test.ts:29  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t3-helpers.ts:15  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t3-invalid-ids.test.ts:23  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t3-negative.test.ts:24  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t3-round-trip.test.ts:23  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t3-version.test.ts:26  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t4-engine.test.ts:21  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t4-negative.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\p8t4-sync.test.ts:21  vitest  (third-party specifier in code)
+VIOLATION packages\remote\test\remote.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t6-teammates-adapter.test.ts:17  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t7-integrated-drift-ack.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t7-integrated-fork-handoff.test.ts:35  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t7-integrated-lifecycle-restore.test.ts:28  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t7-integrated-override-admission.test.ts:29  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t7-legacy-read.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\legacy\test\p7t7-mutation-reject.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\domain\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\domain\test\domain.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t2-blueprint-catalog.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t2-blueprint-hash.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t2-blueprint-immutability.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t2-blueprint-parse.test.ts:8  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t2-blueprint-revision.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t2-blueprint-validation.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t3-lifecycle-property.test.ts:31  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t3-lifecycle-transitions.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t3-member-context-policy.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t3-member-lifecycle.test.ts:27  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t3-member-n-instances.test.ts:25  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t3-member-workspace.test.ts:22  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t4-policy-explain.test.ts:36  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t4-policy-matrix.test.ts:33  vitest  (third-party specifier in code)
+VIOLATION packages\domain\test\t4-policy-negative.test.ts:44  vitest  (third-party specifier in code)
+DOC     packages\domain\member\src\workspace.ts:32  ran and settled
+VIOLATION packages\domain\compatibility\test\t5-complete-true.test.ts:13  vitest  (third-party specifier in code)
+VIOLATION packages\domain\compatibility\test\t5-drift-invalidation.test.ts:12  vitest  (third-party specifier in code)
+VIOLATION packages\domain\compatibility\test\t5-engine-outcomes.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\domain\compatibility\test\t5-environment-facts.test.ts:10  vitest  (third-party specifier in code)
+VIOLATION packages\domain\compatibility\test\t5-purity-serialization.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\domain\compatibility\test\t5-requirement-validation.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\domain\compatibility\test\t5-warning-ack.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\domain\blueprint\src\parse.ts:34  yaml  (third-party specifier in code)
+VIOLATION packages\contracts\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\contracts\test\contracts.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\errors.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\identity.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\ids.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\negative.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\p8t1-projection-generation.test.ts:10  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\p8t1-projection-negative.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\p8t1-projection-overlay.test.ts:11  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\p8t1-projection-serialization.test.ts:9  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\remote-safe.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\serialization.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\contracts\test\types.test.ts:1  vitest  (third-party specifier in code)
+VIOLATION packages\client\vitest.config.ts:1  vitest/config  (third-party specifier in code)
+VIOLATION packages\client\test\client.test.ts:1  vitest  (third-party specifier in code)
+DOC     packages\tools\test\p6t6-bypass-scan.mjs:117  x
+DOC     packages\tools\test\p6t6-bypass-scan.mjs:117  x
+DOC     packages\tools\test\p6t6-bypass-scan.mjs:118  x
+VIOLATION packages\tools\harness\plugin.mjs:55  @deepseek-ai/dsh-session  (upstream specifier in code)
+VIOLATION packages\tools\harness\plugin.mjs:56  @deepseek-ai/dsh-agent  (upstream specifier in code)
+VIOLATION packages\tools\harness\plugin.mjs:57  @deepseek-ai/dsh-llm  (upstream specifier in code)
+ESCAPE packages\tools\harness\run.mjs:77  ../../../tests/characterization/lib/instance.mjs -> ..\tests\characterization\lib\instance.mjs
+ESCAPE packages\tools\harness\run.mjs:83  ../../../tests/characterization/lib/util.mjs -> ..\tests\characterization\lib\util.mjs
+ESCAPE packages\tools\harness\run.mjs:84  ../../../tests/characterization/lib/tree-clean.mjs -> ..\tests\characterization\lib\tree-clean.mjs
+VIOLATION packages\runtime\root-binding\harness\plugin.mjs:92  @deepseek-ai/dsh-session  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\plugin.mjs:93  @deepseek-ai/dsh-scope  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\plugin.mjs:94  @deepseek-ai/dsh-system-prompt  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\plugin.mjs:95  @deepseek-ai/dsh-agent  (upstream specifier in code)
+ESCAPE packages\runtime\root-binding\harness\run.mjs:56  ../../../../tests/characterization/lib/instance.mjs -> ..\tests\characterization\lib\instance.mjs
+ESCAPE packages\runtime\root-binding\harness\run.mjs:62  ../../../../tests/characterization/lib/util.mjs -> ..\tests\characterization\lib\util.mjs
+ESCAPE packages\runtime\root-binding\harness\run.mjs:63  ../../../../tests/characterization/lib/tree-clean.mjs -> ..\tests\characterization\lib\tree-clean.mjs
+VIOLATION packages\runtime\root-binding\harness\seam.mjs:33  @deepseek-ai/dsh-storage-domain  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\seam.mjs:34  zod  (third-party specifier in code)
+VIOLATION packages\runtime\root-binding\harness\slots.mjs:39  @deepseek-ai/dsh-mcp-client  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\slots.mjs:40  @deepseek-ai/dsh-agent  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\slots.mjs:41  @deepseek-ai/dsh-session  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\slots.mjs:42  @deepseek-ai/dsh-scope  (upstream specifier in code)
+VIOLATION packages\runtime\root-binding\harness\slots.mjs:43  @deepseek-ai/dsh-system-prompt  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\plugin.mjs:148  @deepseek-ai/dsh-session  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\plugin.mjs:149  @deepseek-ai/dsh-scope  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\plugin.mjs:150  @deepseek-ai/dsh-system-prompt  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\plugin.mjs:151  @deepseek-ai/dsh-agent  (upstream specifier in code)
+ESCAPE packages\runtime\member-residency\harness\run.mjs:81  ../../../../tests/characterization/lib/instance.mjs -> ..\tests\characterization\lib\instance.mjs
+ESCAPE packages\runtime\member-residency\harness\run.mjs:87  ../../../../tests/characterization/lib/util.mjs -> ..\tests\characterization\lib\util.mjs
+ESCAPE packages\runtime\member-residency\harness\run.mjs:88  ../../../../tests/characterization/lib/tree-clean.mjs -> ..\tests\characterization\lib\tree-clean.mjs
+VIOLATION packages\runtime\member-residency\harness\slots-t6.mjs:45  @deepseek-ai/dsh-mcp-client  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\slots-t6.mjs:46  @deepseek-ai/dsh-agent  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\slots-t6.mjs:47  @deepseek-ai/dsh-session  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\slots-t6.mjs:48  @deepseek-ai/dsh-scope  (upstream specifier in code)
+VIOLATION packages\runtime\member-residency\harness\slots-t6.mjs:49  @deepseek-ai/dsh-system-prompt  (upstream specifier in code)
+ESCAPE packages\legacy\session-reader\e2e\run.mjs:48  ../../../../tests/characterization/lib/instance.mjs -> ..\tests\characterization\lib\instance.mjs
+ESCAPE packages\legacy\session-reader\e2e\run.mjs:54  ../../../../tests/characterization/lib/util.mjs -> ..\tests\characterization\lib\util.mjs
+ESCAPE packages\legacy\session-reader\e2e\run.mjs:55  ../../../../tests/characterization/lib/tree-clean.mjs -> ..\tests\characterization\lib\tree-clean.mjs
+summary: total=213 upstream=22 thirdParty=179
+
+== C. patch-package / pnpm patch / postinstall in package.json files ==
+PASS — no patch/postinstall traces
+
+== D. pnpm-lock.yaml diff vs P7 tip 959e36358ee7244ff8c7e1e0b8396e70dfef4562 ==
+git diff --quiet exit=0 -> lockfile UNCHANGED
+
+== E. worktree tracked-file invariance ==
+status: ?? dev/agent-workflow/evidence/G8-REVIEW/
+PASS — no tracked file modified (untracked evidence only)
+
+RESULT: PASS dependency-scan (A=0 C=0 D=same E=0)

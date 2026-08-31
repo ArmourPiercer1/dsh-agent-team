@@ -1,0 +1,247 @@
+G8-REVIEW reviewer-2 (G8-R2) ！ brief section 4.4: zero-core / private-import / owned-boundary
+proof: toplevel = D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R2
+proof: HEAD = 93d2a96e3ded6a92820f78ee9de94eac9ea6fffb
+boundary-diff base = 959e36358ee7244ff8c7e1e0b8396e70dfef4562
+ts = 2026-08-31T14:32:45.311Z
+
+=== A. zero-core (brief line 60) ===
+A1. node: builtin imports in any .ts under packages/   [grep tool, ripgrep]
+    pattern: (from|import\(|require\()\s*['"]node:    include: *.ts    path: <worktree>\packages
+    matches: 1 -> packages/runtime/test/p7t5-no-creation-scan.test.ts:42
+      line: "import { readFileSync } from 'node:fs'"
+    disposition: NOT an import ！ positive-control STRING inside POSITIVE_SAMPLE (the synthetic
+      violating source the no-creation scan is required to flag). No real node: builtin import
+      exists in any .ts under packages/.
+A2. side-effect form  pattern: ^\s*import\s+['"]node:   -> 0 matches
+A3. patch-package / pnpm patch / lifecycle mutation (grep include=package.json, whole worktree):
+    pattern: patch-package|pnpm patch|preinstall|postinstall|prepare
+    matches: 2 ！ scripts/fixtures/zero-core/plugins/bad-plugin-a/package.json (postinstall: patch-package)
+                scripts/fixtures/zero-core/plugins/bad-plugin-b/package.json (prepare: writes marker.txt)
+    disposition: BOTH are positive-control fixtures of the zero-core scanner suite, not scripts of any
+      workspace package. Root + all 9 package package.json files carry no lifecycle/patch scripts.
+A4. lockfile diff vs base (pnpm-lock.yaml):
+    full diff saved -> boundary-lockfile-diff.txt (0 lines)
+    upstream-related lines in diff: 0
+A5. no import of anything under references/deepseek-harness-test-use from packages/*
+    (see B1/B2: zero import matches; all 8 mentions are comments or banned-list data).
+
+=== B. private-import (brief line 61) ===
+B1. packages/**/*.ts mentioning upstream (test-use) or frozen fork (references/deepseek-harness):
+    pattern: deepseek-harness|references/   include: *.ts   path: <worktree>\packages
+    matches: 8 lines / 7 files ！ every one a doc comment or scanner banned-list DATA; NONE is an import:
+      1. packages/contracts/src/ids/session-id.ts:33                     doc @see URL (github.com/deepseek-ai/deepseek-harness)
+      2. packages/legacy/session-reader/types.ts:17                       doc comment citing frozen fork as evidence
+      3. packages/legacy/teammates-adapter.ts:16                          doc comment (ported semantics, references/)
+      4. packages/legacy/session-reader/format.ts:5                       doc comment (evidence: references/deepseek-harness)
+      5. packages/testkit/domain/src/import-graph.ts:52                   T6_BANNED_BARE_SPECIFIERS entry (data)
+      6. packages/storage/test/p4-helpers.ts:864                          P4_BANNED_PATH_SEGMENTS entry (data)
+      7. packages/storage/test/p4-08-independence-negative.test.ts:8,9    doc comment (banned-vocabulary scan)
+B2. relative imports escaping the packages/ tree: none.
+    from ['"]\.\./\.\./\.\./(references|deepseek|apps|scripts|docs|\.worktrees)  -> 0 matches
+    \.\./\.\./\.\./\.\.  (4+ levels from any .ts)                                    -> 0 matches
+    The 58 three-level ../../../ imports are ALL intra-repo inter-package imports
+    (packages/<a>/... -> ../../../<b>/src/index.js, <b> in the 9 repo packages); zero reach
+    references/, apps/, scripts/, docs/, or the repo root.
+B3. bare upstream / legacy-fork specifiers in import statements: none.
+    (the only specifiers present: relative paths into repo packages, vitest, and workspace @dsh-agent-team/*.)
+
+=== C. owned-boundary (brief line 62) ===
+commits 959e36358ee7244ff8c7e1e0b8396e70dfef4562..HEAD:
+    93d2a96 P8-T4: evidence attempt2 (RUN 2 final clean-tree chain appended)
+    2804d04 P8-T4: evidence attempt2 (R57 adjudication applied, chain re-verified)
+    b93f5c2 P8-T4: p8t3 layout pin 22->28 per R57 main-agent adjudication (standing exception for P8 src-layout pin)
+    fe836da P8-T4: evidence (design-note, attempt1 logs)
+    b70ebf7 P8-T4: push engine + test client + sync tests (packages/remote)
+    c957f1a P8-T3: evidence (design-note, attempt1 logs)
+    3ae9c7e P8-T3: remote contract v1 + handlers (packages/remote)
+    67c3d4e P8-T2: evidence (attempt1 baseline, install, postchain)
+    ca02ffe P8-T2: projection service (runtime/projection) + 5 mandated test suites; p4t6 scan 428->440
+    ba007cf P8-T2: design note (projection service; 21.2 by-construction red line)
+    48b3334 P8-T1: evidence (design-note, attempt1 logs)
+    c39cc90 P8-T1: projection DTO v1 (contracts/src/projection)
+
+git diff --name-status 959e36358ee7244ff8c7e1e0b8396e70dfef4562..HEAD -- packages/ :
+    M	packages/contracts/src/index.ts
+    A	packages/contracts/src/projection/activity.ts
+    A	packages/contracts/src/projection/common.ts
+    A	packages/contracts/src/projection/compatibility.ts
+    A	packages/contracts/src/projection/effective-config.ts
+    A	packages/contracts/src/projection/index.ts
+    A	packages/contracts/src/projection/ledger.ts
+    A	packages/contracts/src/projection/member.ts
+    A	packages/contracts/src/projection/projection.ts
+    A	packages/contracts/src/projection/root.ts
+    A	packages/contracts/src/projection/schema.ts
+    A	packages/contracts/src/projection/states.ts
+    A	packages/contracts/src/projection/template.ts
+    A	packages/contracts/test/p8t1-projection-fixtures.ts
+    A	packages/contracts/test/p8t1-projection-generation.test.ts
+    A	packages/contracts/test/p8t1-projection-negative.test.ts
+    A	packages/contracts/test/p8t1-projection-overlay.test.ts
+    A	packages/contracts/test/p8t1-projection-serialization.test.ts
+    A	packages/remote/src/contracts/catalog.ts
+    A	packages/remote/src/contracts/errors.ts
+    A	packages/remote/src/contracts/ids.ts
+    A	packages/remote/src/contracts/params.ts
+    A	packages/remote/src/contracts/remote-safe.ts
+    A	packages/remote/src/contracts/request.ts
+    A	packages/remote/src/contracts/response.ts
+    A	packages/remote/src/contracts/types.ts
+    A	packages/remote/src/contracts/version.ts
+    A	packages/remote/src/handlers/catalog.ts
+    A	packages/remote/src/handlers/compatibility.ts
+    A	packages/remote/src/handlers/dispatch.ts
+    A	packages/remote/src/handlers/handoff.ts
+    A	packages/remote/src/handlers/intent.ts
+    A	packages/remote/src/handlers/legacy.ts
+    A	packages/remote/src/handlers/member.ts
+    A	packages/remote/src/handlers/override.ts
+    A	packages/remote/src/handlers/policy-state.ts
+    A	packages/remote/src/handlers/ports.ts
+    A	packages/remote/src/handlers/register.ts
+    A	packages/remote/src/handlers/team.ts
+    M	packages/remote/src/index.ts
+    A	packages/remote/src/push/generation.ts
+    A	packages/remote/src/push/index.ts
+    A	packages/remote/src/push/ledger-page.ts
+    A	packages/remote/src/push/pull.ts
+    A	packages/remote/src/push/reconnect.ts
+    A	packages/remote/src/push/types.ts
+    A	packages/remote/test/p8t3-admission.test.ts
+    A	packages/remote/test/p8t3-helpers.ts
+    A	packages/remote/test/p8t3-invalid-ids.test.ts
+    A	packages/remote/test/p8t3-negative-scan.d.mts
+    A	packages/remote/test/p8t3-negative-scan.mjs
+    A	packages/remote/test/p8t3-negative.test.ts
+    A	packages/remote/test/p8t3-round-trip.test.ts
+    A	packages/remote/test/p8t3-version.test.ts
+    A	packages/remote/test/p8t4-engine.test.ts
+    A	packages/remote/test/p8t4-negative-scan.d.mts
+    A	packages/remote/test/p8t4-negative-scan.mjs
+    A	packages/remote/test/p8t4-negative.test.ts
+    A	packages/remote/test/p8t4-server.ts
+    A	packages/remote/test/p8t4-sync.test.ts
+    A	packages/remote/test/p8t4-test-client.ts
+    A	packages/runtime/projection/errors.ts
+    A	packages/runtime/projection/fold.ts
+    A	packages/runtime/projection/index.ts
+    A	packages/runtime/projection/ledger.ts
+    A	packages/runtime/projection/service.ts
+    A	packages/runtime/projection/types.ts
+    A	packages/runtime/test/p8t2-cold.test.ts
+    A	packages/runtime/test/p8t2-fifty.test.ts
+    A	packages/runtime/test/p8t2-helpers.ts
+    A	packages/runtime/test/p8t2-negative.test.ts
+    A	packages/runtime/test/p8t2-overlay.test.ts
+    A	packages/runtime/test/p8t2-terminal.test.ts
+    M	packages/testkit/test/p4t6-session-event-scan.test.ts
+
+classification ！ owned globs: T1 packages/contracts/src/projection/** [+additive packages/contracts/src/index.ts];
+T2 packages/runtime/projection/**; T3 packages/remote/src/contracts/** + packages/remote/src/handlers/**
+[+additive packages/remote/src/index.ts] + packages/remote/test/p8t3-*; T4 packages/remote/src/push/** +
+packages/remote/test/p8t4-* [+ p8t3-negative.test.ts layout-pin 22->28 standing exception]; DEC-1
+packages/testkit/test/p4t6-session-event-scan.test.ts (count maintenance standing exception):
+  M      T1-additive               packages/contracts/src/index.ts
+  A      T1                        packages/contracts/src/projection/activity.ts
+  A      T1                        packages/contracts/src/projection/common.ts
+  A      T1                        packages/contracts/src/projection/compatibility.ts
+  A      T1                        packages/contracts/src/projection/effective-config.ts
+  A      T1                        packages/contracts/src/projection/index.ts
+  A      T1                        packages/contracts/src/projection/ledger.ts
+  A      T1                        packages/contracts/src/projection/member.ts
+  A      T1                        packages/contracts/src/projection/projection.ts
+  A      T1                        packages/contracts/src/projection/root.ts
+  A      T1                        packages/contracts/src/projection/schema.ts
+  A      T1                        packages/contracts/src/projection/states.ts
+  A      T1                        packages/contracts/src/projection/template.ts
+  A      UNOWNED-VIOLATION         packages/contracts/test/p8t1-projection-fixtures.ts
+  A      UNOWNED-VIOLATION         packages/contracts/test/p8t1-projection-generation.test.ts
+  A      UNOWNED-VIOLATION         packages/contracts/test/p8t1-projection-negative.test.ts
+  A      UNOWNED-VIOLATION         packages/contracts/test/p8t1-projection-overlay.test.ts
+  A      UNOWNED-VIOLATION         packages/contracts/test/p8t1-projection-serialization.test.ts
+  A      T3                        packages/remote/src/contracts/catalog.ts
+  A      T3                        packages/remote/src/contracts/errors.ts
+  A      T3                        packages/remote/src/contracts/ids.ts
+  A      T3                        packages/remote/src/contracts/params.ts
+  A      T3                        packages/remote/src/contracts/remote-safe.ts
+  A      T3                        packages/remote/src/contracts/request.ts
+  A      T3                        packages/remote/src/contracts/response.ts
+  A      T3                        packages/remote/src/contracts/types.ts
+  A      T3                        packages/remote/src/contracts/version.ts
+  A      T3                        packages/remote/src/handlers/catalog.ts
+  A      T3                        packages/remote/src/handlers/compatibility.ts
+  A      T3                        packages/remote/src/handlers/dispatch.ts
+  A      T3                        packages/remote/src/handlers/handoff.ts
+  A      T3                        packages/remote/src/handlers/intent.ts
+  A      T3                        packages/remote/src/handlers/legacy.ts
+  A      T3                        packages/remote/src/handlers/member.ts
+  A      T3                        packages/remote/src/handlers/override.ts
+  A      T3                        packages/remote/src/handlers/policy-state.ts
+  A      T3                        packages/remote/src/handlers/ports.ts
+  A      T3                        packages/remote/src/handlers/register.ts
+  A      T3                        packages/remote/src/handlers/team.ts
+  M      T3-additive               packages/remote/src/index.ts
+  A      T4                        packages/remote/src/push/generation.ts
+  A      T4                        packages/remote/src/push/index.ts
+  A      T4                        packages/remote/src/push/ledger-page.ts
+  A      T4                        packages/remote/src/push/pull.ts
+  A      T4                        packages/remote/src/push/reconnect.ts
+  A      T4                        packages/remote/src/push/types.ts
+  A      T3                        packages/remote/test/p8t3-admission.test.ts
+  A      T3                        packages/remote/test/p8t3-helpers.ts
+  A      T3                        packages/remote/test/p8t3-invalid-ids.test.ts
+  A      T3                        packages/remote/test/p8t3-negative-scan.d.mts
+  A      T3                        packages/remote/test/p8t3-negative-scan.mjs
+  A      T4-stand/T3-glob          packages/remote/test/p8t3-negative.test.ts
+  A      T3                        packages/remote/test/p8t3-round-trip.test.ts
+  A      T3                        packages/remote/test/p8t3-version.test.ts
+  A      T4                        packages/remote/test/p8t4-engine.test.ts
+  A      T4                        packages/remote/test/p8t4-negative-scan.d.mts
+  A      T4                        packages/remote/test/p8t4-negative-scan.mjs
+  A      T4                        packages/remote/test/p8t4-negative.test.ts
+  A      T4                        packages/remote/test/p8t4-server.ts
+  A      T4                        packages/remote/test/p8t4-sync.test.ts
+  A      T4                        packages/remote/test/p8t4-test-client.ts
+  A      T2                        packages/runtime/projection/errors.ts
+  A      T2                        packages/runtime/projection/fold.ts
+  A      T2                        packages/runtime/projection/index.ts
+  A      T2                        packages/runtime/projection/ledger.ts
+  A      T2                        packages/runtime/projection/service.ts
+  A      T2                        packages/runtime/projection/types.ts
+  A      UNOWNED-VIOLATION         packages/runtime/test/p8t2-cold.test.ts
+  A      UNOWNED-VIOLATION         packages/runtime/test/p8t2-fifty.test.ts
+  A      UNOWNED-VIOLATION         packages/runtime/test/p8t2-helpers.ts
+  A      UNOWNED-VIOLATION         packages/runtime/test/p8t2-negative.test.ts
+  A      UNOWNED-VIOLATION         packages/runtime/test/p8t2-overlay.test.ts
+  A      UNOWNED-VIOLATION         packages/runtime/test/p8t2-terminal.test.ts
+  M      DEC-1-stand               packages/testkit/test/p4t6-session-event-scan.test.ts
+
+owned-boundary violations (added/modified outside owned globs): 11
+=== end boundary-checks ===
+
+=== D. adjudication of the 11 flagged T1/T2 test files (added by reviewer 2) ===
+Flagged files (all status A; no deletions anywhere in range):
+  packages/contracts/test/p8t1-projection-{fixtures,generation,negative,overlay,serialization}.ts   (5)
+  packages/runtime/test/p8t2-{cold,fifty,helpers,negative,overlay,terminal}.ts                      (6)
+Facts:
+  1. All 5 contracts test files were added by commit c39cc90 "P8-T1: projection DTO v1 (contracts/src/projection)"
+     ！ the P8-T1 commit itself (single writer: P8-T1).
+  2. All 6 runtime test files were added by commit ca02ffe "P8-T2: projection service (runtime/projection)
+     + 5 mandated test suites; p4t6 scan 428->440" ！ the P8-T2 commit itself (single writer: P8-T2).
+  3. TaskDoc (frozen) P8-T1 card mandates tests (serialization; generation monotonic;
+     nullable live overlay); P8-T2 card mandates tests (cold projection; 50 instances;
+     live overlay; disposed/archived) and its output line explicitly includes "tests".
+  4. The card owned-path lines (T1: packages/contracts/src/projection/**; T2: packages/runtime/projection/**)
+     name only the src trees. T3/T4 card lines are equally src-centric (packages/remote/contracts*;
+     handlers* ; packages/remote/push*; test client) ！ the brief then CONCRETIZES test globs only for
+     T3 (packages/remote/test/p8t3-*) and T4 (packages/remote/test/p8t4-*) from the cards mandated test
+     outputs, and brief ′4.3 itself canonically locates p8t1-* in contracts/test and p8t2-* in
+     runtime/test and requires re-running those suites.
+Adjudication: the 11 files are the mandated test deliverables of the owning tasks, committed by the owning
+tasks in the same commits as the src work. Read strictly, the brief ′4.4 glob list would also forbid the
+existence of suites its own ′4.3 orders the reviewer to run ！ an internal contradiction. Per the
+AGENTS.md authority order (frozen docs above protocol docs), the frozen TaskDoc test mandates govern:
+these 11 files are NOT owned-boundary violations. The brief enumeration gap is recorded as a
+documentation discrepancy (concern, not blocker). The mechanical count above (11 flagged) stands as the
+raw scan output; effective owned-boundary violations after adjudication: 0.
+=== end boundary-checks ===

@@ -1,0 +1,5 @@
+{
+  "row": "g8r1-remote-e2e",
+  "teamSessionId": "session-root-g8r1",
+  "error": "TeamDomainError: ledger counter update returned a non-string value\n    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/packages/storage/schema/errors.ts:98:10)\n    at LedgerRepository.allocateSequence (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/packages/storage/repositories/ledger.ts:83:13)\n    at async run (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/plugin-g8.mjs:301:22)"
+}

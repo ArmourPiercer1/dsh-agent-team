@@ -1,0 +1,745 @@
+[
+  {
+    "label": "E1 team.create (raw)",
+    "at": "2026-08-31T08:10:19.694Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-1",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "path": "fresh-root",
+            "durable": {
+              "rootSessionId": "root-g8r2-e1",
+              "blueprint": {
+                "blueprintId": "BP-G8R2",
+                "revision": "17",
+                "contentHash": "sha256:g8r2-BP-G8R2"
+              },
+              "defaultWorkspace": "/ws/g8r2-root-g8r2-e1",
+              "createdAt": "2026-08-31T08:10:19.692Z",
+              "generation": 1
+            },
+            "bind": {
+              "teamSessionId": "root-g8r2-e1",
+              "rootSessionId": "root-g8r2-e1",
+              "blueprintId": "BP-G8R2",
+              "blueprintRevision": "17",
+              "boundAt": "2026-08-31T08:10:19.692Z"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.create",
+            "endpoint": "team.create",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E1 team.getProjection (raw, gen 1)",
+    "at": "2026-08-31T08:10:19.701Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-2",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "projection": {
+              "schemaVersion": 1,
+              "teamSessionId": "root-g8r2-e1",
+              "blueprint": {
+                "blueprintId": "BP-G8R2",
+                "revision": "17",
+                "contentHash": "sha256:g8r2-BP-G8R2"
+              },
+              "generation": 1,
+              "generatedAt": "2026-01-01T00:00:00.000Z",
+              "root": {
+                "teamSessionId": "root-g8r2-e1",
+                "createdAt": "2026-08-31T08:10:19.692Z",
+                "policyState": "active",
+                "admission": "OPEN",
+                "compatibility": {
+                  "status": "OPEN",
+                  "probeGeneration": 3,
+                  "requirementFingerprint": "req-p8t2",
+                  "environmentFingerprint": "env-p8t2",
+                  "warningCount": 0,
+                  "fatalCount": 0,
+                  "acknowledgedWarningCount": 0
+                },
+                "creationBudgetConsumed": 0,
+                "defaultWorkspace": "/ws/g8r2-root-g8r2-e1"
+              },
+              "templates": [
+                {
+                  "kind": "leader",
+                  "templateId": "tpl-p8t2-leader",
+                  "displayName": "Leader",
+                  "contextPolicy": "persistent"
+                },
+                {
+                  "kind": "member",
+                  "templateId": "tpl-p8t2-member",
+                  "displayName": "Worker",
+                  "contextPolicy": "fresh_per_delegation",
+                  "description": "A generic team worker",
+                  "instanceQuota": 64
+                }
+              ],
+              "members": [
+                {
+                  "instanceId": "inst-leader",
+                  "templateId": "tpl-p8t2-leader",
+                  "label": "Leader",
+                  "workspace": "/ws/g8r2-root-g8r2-e1",
+                  "createdAt": "2026-08-29T12:00:00.000Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "qwen3.8-27b",
+                      "source": "blueprint",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/ws/p8t2-team",
+                      "source": "instance-creation",
+                      "state": "locked"
+                    },
+                    "permissions": {
+                      "Bash": {
+                        "value": "allowed",
+                        "source": "policy-state",
+                        "state": "inherited"
+                      },
+                      "Web": {
+                        "value": null,
+                        "source": "external-hard-policy",
+                        "state": "denied"
+                      }
+                    },
+                    "autonomy": {
+                      "value": "web-search",
+                      "source": "autonomy-overlay",
+                      "state": "suppressed"
+                    }
+                  },
+                  "liveActivity": null
+                },
+                {
+                  "instanceId": "inst-g8r2alpha",
+                  "templateId": "tpl-p8t2-member",
+                  "label": "Alpha",
+                  "workspace": "/ws/g8r2-root-g8r2-e1",
+                  "createdAt": "2026-08-31T08:10:19.692Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "fresh_per_delegation",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "qwen3.8-27b",
+                      "source": "blueprint",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/ws/p8t2-team",
+                      "source": "instance-creation",
+                      "state": "locked"
+                    },
+                    "permissions": {
+                      "Bash": {
+                        "value": "allowed",
+                        "source": "policy-state",
+                        "state": "inherited"
+                      },
+                      "Web": {
+                        "value": null,
+                        "source": "external-hard-policy",
+                        "state": "denied"
+                      }
+                    },
+                    "autonomy": {
+                      "value": "web-search",
+                      "source": "autonomy-overlay",
+                      "state": "suppressed"
+                    }
+                  },
+                  "liveActivity": null,
+                  "childSessionId": "child-g8r2-alpha"
+                },
+                {
+                  "instanceId": "inst-g8r2bravo",
+                  "templateId": "tpl-p8t2-member",
+                  "label": "Bravo",
+                  "workspace": "/ws/g8r2-root-g8r2-e1",
+                  "createdAt": "2026-08-31T08:10:19.692Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "fresh_per_delegation",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "qwen3.8-27b",
+                      "source": "blueprint",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/ws/p8t2-team",
+                      "source": "instance-creation",
+                      "state": "locked"
+                    },
+                    "permissions": {
+                      "Bash": {
+                        "value": "allowed",
+                        "source": "policy-state",
+                        "state": "inherited"
+                      },
+                      "Web": {
+                        "value": null,
+                        "source": "external-hard-policy",
+                        "state": "denied"
+                      }
+                    },
+                    "autonomy": {
+                      "value": "web-search",
+                      "source": "autonomy-overlay",
+                      "state": "suppressed"
+                    }
+                  },
+                  "liveActivity": null,
+                  "childSessionId": "child-g8r2-bravo"
+                }
+              ],
+              "ledger": {
+                "latestSequence": 3,
+                "totalEntries": 3,
+                "byCategory": {
+                  "team": 1,
+                  "member": 2,
+                  "lifecycle": 0,
+                  "message": 0,
+                  "control": 0,
+                  "policy": 0,
+                  "compatibility": 0,
+                  "progress": 0
+                },
+                "pendingControlCount": 0
+              }
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getProjection",
+            "endpoint": "team.getProjection",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": 1,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E2 team.getProjection (durable truth, second cookie)",
+    "at": "2026-08-31T08:10:19.711Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-3",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "projection": {
+              "schemaVersion": 1,
+              "teamSessionId": "root-g8r2-e1",
+              "blueprint": {
+                "blueprintId": "BP-G8R2",
+                "revision": "17",
+                "contentHash": "sha256:g8r2-BP-G8R2"
+              },
+              "generation": 1,
+              "generatedAt": "2026-01-01T00:00:00.000Z",
+              "root": {
+                "teamSessionId": "root-g8r2-e1",
+                "createdAt": "2026-08-31T08:10:19.692Z",
+                "policyState": "active",
+                "admission": "OPEN",
+                "compatibility": {
+                  "status": "OPEN",
+                  "probeGeneration": 3,
+                  "requirementFingerprint": "req-p8t2",
+                  "environmentFingerprint": "env-p8t2",
+                  "warningCount": 0,
+                  "fatalCount": 0,
+                  "acknowledgedWarningCount": 0
+                },
+                "creationBudgetConsumed": 0,
+                "defaultWorkspace": "/ws/g8r2-root-g8r2-e1"
+              },
+              "templates": [
+                {
+                  "kind": "leader",
+                  "templateId": "tpl-p8t2-leader",
+                  "displayName": "Leader",
+                  "contextPolicy": "persistent"
+                },
+                {
+                  "kind": "member",
+                  "templateId": "tpl-p8t2-member",
+                  "displayName": "Worker",
+                  "contextPolicy": "fresh_per_delegation",
+                  "description": "A generic team worker",
+                  "instanceQuota": 64
+                }
+              ],
+              "members": [
+                {
+                  "instanceId": "inst-leader",
+                  "templateId": "tpl-p8t2-leader",
+                  "label": "Leader",
+                  "workspace": "/ws/g8r2-root-g8r2-e1",
+                  "createdAt": "2026-08-29T12:00:00.000Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "persistent",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "qwen3.8-27b",
+                      "source": "blueprint",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/ws/p8t2-team",
+                      "source": "instance-creation",
+                      "state": "locked"
+                    },
+                    "permissions": {
+                      "Bash": {
+                        "value": "allowed",
+                        "source": "policy-state",
+                        "state": "inherited"
+                      },
+                      "Web": {
+                        "value": null,
+                        "source": "external-hard-policy",
+                        "state": "denied"
+                      }
+                    },
+                    "autonomy": {
+                      "value": "web-search",
+                      "source": "autonomy-overlay",
+                      "state": "suppressed"
+                    }
+                  },
+                  "liveActivity": null
+                },
+                {
+                  "instanceId": "inst-g8r2alpha",
+                  "templateId": "tpl-p8t2-member",
+                  "label": "Alpha",
+                  "workspace": "/ws/g8r2-root-g8r2-e1",
+                  "createdAt": "2026-08-31T08:10:19.692Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "fresh_per_delegation",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "qwen3.8-27b",
+                      "source": "blueprint",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/ws/p8t2-team",
+                      "source": "instance-creation",
+                      "state": "locked"
+                    },
+                    "permissions": {
+                      "Bash": {
+                        "value": "allowed",
+                        "source": "policy-state",
+                        "state": "inherited"
+                      },
+                      "Web": {
+                        "value": null,
+                        "source": "external-hard-policy",
+                        "state": "denied"
+                      }
+                    },
+                    "autonomy": {
+                      "value": "web-search",
+                      "source": "autonomy-overlay",
+                      "state": "suppressed"
+                    }
+                  },
+                  "liveActivity": null,
+                  "childSessionId": "child-g8r2-alpha"
+                },
+                {
+                  "instanceId": "inst-g8r2bravo",
+                  "templateId": "tpl-p8t2-member",
+                  "label": "Bravo",
+                  "workspace": "/ws/g8r2-root-g8r2-e1",
+                  "createdAt": "2026-08-31T08:10:19.692Z",
+                  "lifecycle": "RUNNING",
+                  "contextPolicy": "fresh_per_delegation",
+                  "effectiveConfig": {
+                    "model": {
+                      "value": "qwen3.8-27b",
+                      "source": "blueprint",
+                      "state": "inherited"
+                    },
+                    "workspace": {
+                      "value": "/ws/p8t2-team",
+                      "source": "instance-creation",
+                      "state": "locked"
+                    },
+                    "permissions": {
+                      "Bash": {
+                        "value": "allowed",
+                        "source": "policy-state",
+                        "state": "inherited"
+                      },
+                      "Web": {
+                        "value": null,
+                        "source": "external-hard-policy",
+                        "state": "denied"
+                      }
+                    },
+                    "autonomy": {
+                      "value": "web-search",
+                      "source": "autonomy-overlay",
+                      "state": "suppressed"
+                    }
+                  },
+                  "liveActivity": null,
+                  "childSessionId": "child-g8r2-bravo"
+                }
+              ],
+              "ledger": {
+                "latestSequence": 3,
+                "totalEntries": 3,
+                "byCategory": {
+                  "team": 1,
+                  "member": 2,
+                  "lifecycle": 0,
+                  "message": 0,
+                  "control": 0,
+                  "policy": 0,
+                  "compatibility": 0,
+                  "progress": 0
+                },
+                "pendingControlCount": 0
+              }
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getProjection",
+            "endpoint": "team.getProjection",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": 1,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E3 member.create (raw, advances durable gen to 2)",
+    "at": "2026-08-31T08:10:19.715Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-5",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "accepted",
+              "instanceId": "inst-g8r2charlie",
+              "effect": {
+                "factSequence": 4
+              }
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.create",
+            "endpoint": "member.create",
+            "contractVersion": 1,
+            "requestToken": "tok-g8r2-e3",
+            "projectionGeneration": null,
+            "effectSequence": 4
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E4 first page (anchor 0, limit 3) — via test client",
+    "at": "2026-08-31T08:10:19.723Z",
+    "status": 200,
+    "body": {
+      "result": {
+        "ok": true,
+        "data": {
+          "entries": [
+            {
+              "schemaVersion": 1,
+              "sequence": 1,
+              "rootSessionId": "root-g8r2-e1",
+              "factType": "member.created",
+              "payload": {
+                "instanceId": "inst-g8r2alpha",
+                "label": "Alpha"
+              },
+              "operationId": null,
+              "createdAt": "2026-08-31T08:10:19.692Z"
+            },
+            {
+              "schemaVersion": 1,
+              "sequence": 2,
+              "rootSessionId": "root-g8r2-e1",
+              "factType": "member.created",
+              "payload": {
+                "instanceId": "inst-g8r2bravo",
+                "label": "Bravo"
+              },
+              "operationId": null,
+              "createdAt": "2026-08-31T08:10:19.692Z"
+            },
+            {
+              "schemaVersion": 1,
+              "sequence": 3,
+              "rootSessionId": "root-g8r2-e1",
+              "factType": "team.created",
+              "payload": {
+                "blueprintId": "BP-G8R2",
+                "blueprintRevision": "17"
+              },
+              "operationId": null,
+              "createdAt": "2026-08-31T08:10:19.692Z"
+            }
+          ],
+          "nextAfterSequence": 3,
+          "total": 4
+        }
+      }
+    }
+  },
+  {
+    "label": "E4 member.send (raw, appends seq 5)",
+    "at": "2026-08-31T08:10:19.724Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-6",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "accepted",
+              "deliveredTo": "inst-leader",
+              "effect": {
+                "factSequence": 5
+              }
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 1,
+            "requestToken": "tok-g8r2-e4",
+            "projectionGeneration": null,
+            "effectSequence": 5
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E4 raw re-read of anchor 0 (stability proof)",
+    "at": "2026-08-31T08:10:19.726Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-7",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "entries": [
+              {
+                "schemaVersion": 1,
+                "sequence": 1,
+                "rootSessionId": "root-g8r2-e1",
+                "factType": "member.created",
+                "payload": {
+                  "instanceId": "inst-g8r2alpha",
+                  "label": "Alpha"
+                },
+                "operationId": null,
+                "createdAt": "2026-08-31T08:10:19.692Z"
+              },
+              {
+                "schemaVersion": 1,
+                "sequence": 2,
+                "rootSessionId": "root-g8r2-e1",
+                "factType": "member.created",
+                "payload": {
+                  "instanceId": "inst-g8r2bravo",
+                  "label": "Bravo"
+                },
+                "operationId": null,
+                "createdAt": "2026-08-31T08:10:19.692Z"
+              },
+              {
+                "schemaVersion": 1,
+                "sequence": 3,
+                "rootSessionId": "root-g8r2-e1",
+                "factType": "team.created",
+                "payload": {
+                  "blueprintId": "BP-G8R2",
+                  "blueprintRevision": "17"
+                },
+                "operationId": null,
+                "createdAt": "2026-08-31T08:10:19.692Z"
+              }
+            ],
+            "nextAfterSequence": 3,
+            "total": 5
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.getLedgerPage",
+            "endpoint": "team.getLedgerPage",
+            "contractVersion": 1,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E5 invalid teamSessionId (typed error)",
+    "at": "2026-08-31T08:10:19.728Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-8",
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ROOT_SESSION_ID",
+          "message": "teamSessionId must not contain whitespace",
+          "details": {
+            "method": "team.getProjection",
+            "endpoint": "team.getProjection",
+            "contractVersion": 1,
+            "requestToken": null,
+            "field": "teamSessionId"
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E5 unsupported contract version 2",
+    "at": "2026-08-31T08:10:19.729Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-9",
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "contract-version-unsupported",
+          "message": "remote contract version 2 is not supported (supported: [1])",
+          "details": {
+            "method": "team.getProjection",
+            "endpoint": "team.getProjection",
+            "contractVersion": 1,
+            "requestToken": null,
+            "field": "version"
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E5 admission-blocked duplicate member.create",
+    "at": "2026-08-31T08:10:19.729Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-10",
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "member-already-exists",
+          "message": "member instance already exists: inst-g8r2charlie",
+          "details": {
+            "method": "member.create",
+            "endpoint": "member.create",
+            "contractVersion": 1,
+            "requestToken": "tok-g8r2-e5",
+            "reason": "domain-error",
+            "cause": {
+              "code": "member-already-exists",
+              "message": "member instance already exists: inst-g8r2charlie"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "E6 no cookie (401)",
+    "at": "2026-08-31T08:10:19.730Z",
+    "status": 401,
+    "body": {
+      "rawHead": "unauthorized"
+    }
+  },
+  {
+    "label": "E6 wrong content-type (415)",
+    "at": "2026-08-31T08:10:19.731Z",
+    "status": 415,
+    "body": {
+      "rawHead": "content type must be application/json"
+    }
+  },
+  {
+    "label": "E6 method != endpoint (bad-request)",
+    "at": "2026-08-31T08:10:19.732Z",
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g8r2-rpc-13",
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "bad-request",
+          "message": "method \"team.create\" does not match endpoint \"team.getProjection\"",
+          "details": {
+            "issues": []
+          }
+        }
+      }
+    }
+  }
+]

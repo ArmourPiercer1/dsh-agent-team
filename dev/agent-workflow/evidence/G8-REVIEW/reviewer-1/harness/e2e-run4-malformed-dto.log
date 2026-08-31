@@ -1,0 +1,58 @@
+[2026-08-31T08:38:19.737Z] G8-REVIEW reviewer-1 pristine-host e2e (driver boot-g8.mjs)
+[2026-08-31T08:38:19.737Z] worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R1
+[2026-08-31T08:38:19.827Z] proof: worktree toplevel=D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1 HEAD=93d2a96e3ded6a92820f78ee9de94eac9ea6fffb
+[2026-08-31T08:38:19.827Z] proof: test-use tree HEAD=cd5ef81481 (clientCommitHash=cd5ef814)
+[2026-08-31T08:38:19.827Z] proof: node=v24.20.0 platform=win32
+[2026-08-31T08:38:19.870Z] CHECK PASS  preflight: worktree clean (only my untracked evidence dir)
+[2026-08-31T08:38:19.920Z] CHECK PASS  preflight: test-use tree clean (pristine upstream)
+[2026-08-31T08:38:19.950Z] CHECK PASS  preflight: stable :3080 answers 200 (untouched)
+[2026-08-31T08:38:19.952Z] CHECK PASS  preflight: port 3181 free
+[2026-08-31T08:38:19.953Z] lock: acquired (immediately)
+[2026-08-31T08:38:19.954Z] boot: ensureProfile (throwaway boot on a fresh DSH_HOME when needed)
+[2026-08-31T08:38:19.954Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T08:38:21.778Z] throwaway boot OK: http://127.0.0.1:3181/?token=bIuk8huCQODtmoMwkOv9r9WWfwfTMUY29rIiieSiDPk
+[2026-08-31T08:38:21.816Z] boot: mounting row g8r1-remote-e2e via cordis.patch.yml; starting instance (120s budget)
+[2026-08-31T08:38:23.626Z] boot: marker url http://127.0.0.1:3181/?token=8bKHkro6GdvtMtPmRQQOzwosjnsxZM_flG7o3mRcaTs
+[2026-08-31T08:38:23.753Z] CHECK PASS  dump-config: row present in the composed profile
+[2026-08-31T08:38:23.753Z] boot: polling /__g8r1/health until the row finishes setup (90s deadline)
+[2026-08-31T08:38:25.331Z] boot: row ready (generation 1, seeded undefined ledger entries)
+[2026-08-31T08:38:25.420Z] CHECK PASS  auth: launch URL redirects (302/303)
+[2026-08-31T08:38:25.420Z] CHECK PASS  auth: Set-Cookie mints a dsh-auth-* cookie
+[2026-08-31T08:38:25.420Z] CHECK PASS  auth: cookie shape
+[2026-08-31T08:38:25.420Z] CHECK PASS  auth: cookie HttpOnly + SameSite=Strict
+[2026-08-31T08:38:25.420Z] E1: start() — first projection pull
+[2026-08-31T08:38:25.453Z] wire: team.getProjection -> typed error: {"code":"MALFORMED_DTO","message":"displayName must be a non-empty string of at most 128 chars","details":{"method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"MALFORMED_DTO","message":"displayName must be a non-empty string of at most 128 chars","details":{"field":"displayName"}}}}
+[2026-08-31T08:38:25.453Z] CHECK FAIL  E1: first frame verdict apply  (got: rpc-error code=MALFORMED_DTO)
+[2026-08-31T08:38:25.453Z] CHECK FAIL  E1: applied generation 1  (got: null)
+[2026-08-31T08:38:25.453Z] CHECK PASS  E1: state connected
+[2026-08-31T08:38:25.558Z] attempt 1: environment failure: TypeError: Cannot read properties of null (reading 'projection')
+    at runScenarios (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:427:35)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runOnce (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:248:5)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:749:9)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:782:3
+[2026-08-31T08:38:25.558Z] attempt 1 failed — cleaning leftovers and retrying ONCE (brief: transient env failure policy)
+[2026-08-31T08:38:25.559Z] boot: ensureProfile (throwaway boot on a fresh DSH_HOME when needed)
+[2026-08-31T08:38:25.559Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T08:38:27.371Z] throwaway boot OK: http://127.0.0.1:3181/?token=ou-qV1Qlbkvc26fHnpLrIDufOxux1fygU4jcfRSdK1Y
+[2026-08-31T08:38:27.409Z] boot: mounting row g8r1-remote-e2e via cordis.patch.yml; starting instance (120s budget)
+[2026-08-31T08:38:29.178Z] boot: marker url http://127.0.0.1:3181/?token=MMcbhsiByyDAz3b2fM3L-VywIEB1pLFZQnpAGuJ6u8M
+[2026-08-31T08:38:29.287Z] CHECK PASS  dump-config: row present in the composed profile
+[2026-08-31T08:38:29.288Z] boot: polling /__g8r1/health until the row finishes setup (90s deadline)
+[2026-08-31T08:38:30.882Z] boot: row ready (generation 1, seeded undefined ledger entries)
+[2026-08-31T08:38:30.885Z] CHECK PASS  auth: launch URL redirects (302/303)
+[2026-08-31T08:38:30.885Z] CHECK PASS  auth: Set-Cookie mints a dsh-auth-* cookie
+[2026-08-31T08:38:30.885Z] CHECK PASS  auth: cookie shape
+[2026-08-31T08:38:30.885Z] CHECK PASS  auth: cookie HttpOnly + SameSite=Strict
+[2026-08-31T08:38:30.885Z] E1: start() — first projection pull
+[2026-08-31T08:38:30.908Z] wire: team.getProjection -> typed error: {"code":"MALFORMED_DTO","message":"displayName must be a non-empty string of at most 128 chars","details":{"method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"MALFORMED_DTO","message":"displayName must be a non-empty string of at most 128 chars","details":{"field":"displayName"}}}}
+[2026-08-31T08:38:30.908Z] CHECK FAIL  E1: first frame verdict apply  (got: rpc-error code=MALFORMED_DTO)
+[2026-08-31T08:38:30.909Z] CHECK FAIL  E1: applied generation 1  (got: null)
+[2026-08-31T08:38:30.909Z] CHECK PASS  E1: state connected
+[2026-08-31T08:38:31.013Z] attempt 2: environment failure: TypeError: Cannot read properties of null (reading 'projection')
+    at runScenarios (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:427:35)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runOnce (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:248:5)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:749:9)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:782:3
+[2026-08-31T08:38:31.014Z] lock: released (marker matched)

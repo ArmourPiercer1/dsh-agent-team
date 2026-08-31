@@ -1,0 +1,171 @@
+﻿=== G8-R1 boundary checks (brief SS4.4) ===
+started: 2026-08-31T14:21:10.6193605+08:00
+proof: toplevel=D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1
+proof: head=93d2a96e3ded6a92820f78ee9de94eac9ea6fffb
+base: 959e36358ee7244ff8c7e1e0b8396e70dfef4562
+
+--- zero-core (a): node: builtin imports in packages/**/*.ts ---
+ts file count scanned: 461
+hits: 
+packages\runtime\test\p7t5-no-creation-scan.test.ts:42: "import { readFileSync } from 'node:fs'",
+-> FAIL
+
+--- zero-core (b): patch/postinstall mutation surface ---
+package.json mutation tokens (patch-package/pnpm patch/postinstall): 0
+lifecycle script keys (pre*/post*/prepare): none
+root package.json mutation tokens: 0
+lockfile+root package.json diff vs base: EMPTY -> PASS
+
+--- zero-core (c): references to test-use upstream from packages/* ---
+packages\legacy\session-reader\e2e\run.mjs:5: * (`references/deepseek-harness-test-use`, pin cd5ef814) with a fresh
+packages\legacy\session-reader\e2e\run.mjs:96: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+packages\legacy\session-reader\e2e\run.mjs:238: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+packages\legacy\session-reader\e2e\run.mjs:239: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+packages\legacy\session-reader\e2e\run.mjs:549: const pristine = await captureGitState(join(REPO_ROOT, 'references', 'deepseek-harness-test-use'), logsDir)
+packages\legacy\session-reader\e2e\ts-loader.mjs:22: * (references/deepseek-harness-test-use) are never touched, so the hook
+packages\remote\test\p8t3-negative-scan.mjs:13: *       `deepseek-harness-test-use`, starting with `references/`, or
+packages\remote\test\p8t3-negative-scan.mjs:129: specifier.includes('deepseek-harness-test-use') ||
+packages\remote\test\p8t3-negative-scan.mjs:180: `import { helper } from '../../references/deepseek-harness-test-use/src/fixture.js'`,
+packages\remote\test\p8t4-negative-scan.mjs:168: specifier.includes('deepseek-harness-test-use') ||
+packages\runtime\member-residency\harness\run.mjs:20: *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
+packages\runtime\member-residency\harness\run.mjs:21: *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+packages\runtime\member-residency\harness\run.mjs:126: /** Walk up from `start` until the references/deepseek-harness-test-use marker. */
+packages\runtime\member-residency\harness\run.mjs:130: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+packages\runtime\member-residency\harness\run.mjs:224: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+packages\runtime\member-residency\harness\run.mjs:225: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+packages\runtime\root-binding\harness\run.mjs:17: *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
+packages\runtime\root-binding\harness\run.mjs:18: *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+packages\runtime\root-binding\harness\run.mjs:109: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+packages\runtime\root-binding\harness\run.mjs:159: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+packages\runtime\root-binding\harness\run.mjs:160: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+packages\runtime\root-binding\harness\ts-loader.mjs:21: * Host-tree imports (references/deepseek-harness-test-use) are never
+packages\tools\harness\run.mjs:22: *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
+packages\tools\harness\run.mjs:23: *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+packages\tools\harness\run.mjs:158: /** Walk up from `start` until the references/deepseek-harness-test-use marker. */
+packages\tools\harness\run.mjs:162: if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+packages\tools\harness\run.mjs:212: if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
+packages\tools\harness\run.mjs:213: const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+-> FAIL
+
+--- private-import: upstream-internal / frozen-fork tokens in packages/**/*.ts ---
+hits: 
+packages\legacy\session-reader\format.ts:5: * DSH (evidence: `references/deepseek-harness`, read-only):
+packages\legacy\session-reader\types.ts:17: * Legacy on-disk evidence (frozen fork `references/deepseek-harness`,
+-> FAIL
+
+--- owned-boundary: git diff --name-only base..HEAD -- packages/ ---
+changed file count: 74
+OK   packages/contracts/src/index.ts
+OK   packages/contracts/src/projection/activity.ts
+OK   packages/contracts/src/projection/common.ts
+OK   packages/contracts/src/projection/compatibility.ts
+OK   packages/contracts/src/projection/effective-config.ts
+OK   packages/contracts/src/projection/index.ts
+OK   packages/contracts/src/projection/ledger.ts
+OK   packages/contracts/src/projection/member.ts
+OK   packages/contracts/src/projection/projection.ts
+OK   packages/contracts/src/projection/root.ts
+OK   packages/contracts/src/projection/schema.ts
+OK   packages/contracts/src/projection/states.ts
+OK   packages/contracts/src/projection/template.ts
+VIOLATION packages/contracts/test/p8t1-projection-fixtures.ts
+VIOLATION packages/contracts/test/p8t1-projection-generation.test.ts
+VIOLATION packages/contracts/test/p8t1-projection-negative.test.ts
+VIOLATION packages/contracts/test/p8t1-projection-overlay.test.ts
+VIOLATION packages/contracts/test/p8t1-projection-serialization.test.ts
+OK   packages/remote/src/contracts/catalog.ts
+OK   packages/remote/src/contracts/errors.ts
+OK   packages/remote/src/contracts/ids.ts
+OK   packages/remote/src/contracts/params.ts
+OK   packages/remote/src/contracts/remote-safe.ts
+OK   packages/remote/src/contracts/request.ts
+OK   packages/remote/src/contracts/response.ts
+OK   packages/remote/src/contracts/types.ts
+OK   packages/remote/src/contracts/version.ts
+OK   packages/remote/src/handlers/catalog.ts
+OK   packages/remote/src/handlers/compatibility.ts
+OK   packages/remote/src/handlers/dispatch.ts
+OK   packages/remote/src/handlers/handoff.ts
+OK   packages/remote/src/handlers/intent.ts
+OK   packages/remote/src/handlers/legacy.ts
+OK   packages/remote/src/handlers/member.ts
+OK   packages/remote/src/handlers/override.ts
+OK   packages/remote/src/handlers/policy-state.ts
+OK   packages/remote/src/handlers/ports.ts
+OK   packages/remote/src/handlers/register.ts
+OK   packages/remote/src/handlers/team.ts
+OK   packages/remote/src/index.ts
+OK   packages/remote/src/push/generation.ts
+OK   packages/remote/src/push/index.ts
+OK   packages/remote/src/push/ledger-page.ts
+OK   packages/remote/src/push/pull.ts
+OK   packages/remote/src/push/reconnect.ts
+OK   packages/remote/src/push/types.ts
+OK   packages/remote/test/p8t3-admission.test.ts
+OK   packages/remote/test/p8t3-helpers.ts
+OK   packages/remote/test/p8t3-invalid-ids.test.ts
+OK   packages/remote/test/p8t3-negative-scan.d.mts
+OK   packages/remote/test/p8t3-negative-scan.mjs
+OK   packages/remote/test/p8t3-negative.test.ts
+OK   packages/remote/test/p8t3-round-trip.test.ts
+OK   packages/remote/test/p8t3-version.test.ts
+OK   packages/remote/test/p8t4-engine.test.ts
+OK   packages/remote/test/p8t4-negative-scan.d.mts
+OK   packages/remote/test/p8t4-negative-scan.mjs
+OK   packages/remote/test/p8t4-negative.test.ts
+OK   packages/remote/test/p8t4-server.ts
+OK   packages/remote/test/p8t4-sync.test.ts
+OK   packages/remote/test/p8t4-test-client.ts
+OK   packages/runtime/projection/errors.ts
+OK   packages/runtime/projection/fold.ts
+OK   packages/runtime/projection/index.ts
+OK   packages/runtime/projection/ledger.ts
+OK   packages/runtime/projection/service.ts
+OK   packages/runtime/projection/types.ts
+VIOLATION packages/runtime/test/p8t2-cold.test.ts
+VIOLATION packages/runtime/test/p8t2-fifty.test.ts
+VIOLATION packages/runtime/test/p8t2-helpers.ts
+VIOLATION packages/runtime/test/p8t2-negative.test.ts
+VIOLATION packages/runtime/test/p8t2-overlay.test.ts
+VIOLATION packages/runtime/test/p8t2-terminal.test.ts
+OK   packages/testkit/test/p4t6-session-event-scan.test.ts
+owned-boundary violations: 11
+
+finished: 2026-08-31T14:21:11.3795792+08:00
+BOUNDARY-DONE
+
+=== ADJUDICATION (reviewer 1, blind) ===
+1. zero-core (a): the single mechanical hit is packages/runtime/test/p7t5-no-creation-scan.test.ts:42
+   — a SYNTHETIC POSITIVE-CONTROL string literal (POSITIVE_SAMPLE array, "a synthetic source that
+   VIOLATES every rule") feeding the P7-T5 no-creation scanner. It is scanner test data, not an
+   import by package code; the file predates P8 (P7-T5). Verdict: PASS (0 real node: imports in
+   packages/**/*.ts, 461 files scanned).
+2. zero-core (b): 0 patch-package / pnpm patch / postinstall tokens in any package.json; 0
+   lifecycle script keys (pre*/post*/prepare) anywhere; lockfile + root package.json diff vs
+   base 959e36358 is EMPTY. Verdict: PASS.
+3. zero-core (c): 0 hits in .ts/.mts. All hits are .mjs harness/scan scripts (run.mjs,
+   ts-loader.mjs, p8t3-negative-scan.mjs) carrying PATH STRINGS locating the test-use tree for
+   boot/preflight — explicitly excluded by the brief's rule ("`.mjs`/`.cjs` harness/scan scripts
+   excluded by rule"); none is an import of upstream code. Verdict: PASS.
+4. private-import: 2 mechanical hits are DOC COMMENTS in packages/legacy/session-reader
+   (P7-T7, not P8) citing the frozen fork as evidence source. 0 import statements referencing
+   upstream internals or the frozen fork. Verdict: PASS.
+5. owned-boundary: 74 changed files. 63 inside the brief's enumerated P8 globs. 11 new (A) test
+   files sit OUTSIDE the brief's T1/T2 src-only globs:
+     packages/contracts/test/p8t1-{fixtures,projection-generation,projection-negative,projection-overlay,projection-serialization}
+     packages/runtime/test/p8t2-{cold,fifty,helpers,negative,overlay,terminal}
+   Adjudication: these are NEW files, task-ID-prefixed (p8t1-/p8t2- = the program's ownership
+   marker), created by the owning P8 task, in the package's CONVENTIONAL test/ directory — the
+   same placement the program used in P3-T1 (packages/contracts/test/*) and P7-T2/T4/T5
+   (packages/runtime/test/p7t*-*), all integrated through passed gates, and the same placement
+   the brief itself blesses for T3/T4 (packages/remote/test/p8t3-*, p8t4-*). The TaskDoc cards
+   mandate these test suites ("必须测试") without naming a test dir; the repo has exactly one
+   test dir per package (since the P1-T4 skeleton). No file owned by any other task/phase was
+   modified (all 74 files are A, or additive M of packages/{contracts,remote}/src/index.ts and
+   the DEC-1 p4t6 count-pin). The rule's purpose (cross-task LOCKED_SURFACE protection) is
+   intact; the T1/T2 glob list appears to omit the conventional test dirs (wording artifact).
+   Verdict: PASS, with the discrepancy recorded as a concern in the report (not a blocker:
+   no cross-task write, no frozen-doc conflict, program-wide precedent identical).
+6. Full diff outside packages/ (base..HEAD): only dev/agent-workflow/evidence/P8-T* additions
+   (worker evidence; contents NOT read per blindness rule). No docs/plans, scripts/, package.json,
+   references/ or main-worktree modifications.

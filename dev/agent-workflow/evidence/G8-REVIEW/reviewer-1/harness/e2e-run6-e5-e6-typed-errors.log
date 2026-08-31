@@ -1,0 +1,130 @@
+[2026-08-31T08:44:54.536Z] G8-REVIEW reviewer-1 pristine-host e2e (driver boot-g8.mjs)
+[2026-08-31T08:44:54.536Z] worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R1
+[2026-08-31T08:44:54.627Z] proof: worktree toplevel=D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1 HEAD=93d2a96e3ded6a92820f78ee9de94eac9ea6fffb
+[2026-08-31T08:44:54.627Z] proof: test-use tree HEAD=cd5ef81481 (clientCommitHash=cd5ef814)
+[2026-08-31T08:44:54.627Z] proof: node=v24.20.0 platform=win32
+[2026-08-31T08:44:54.664Z] CHECK PASS  preflight: worktree clean (only my untracked evidence dir)
+[2026-08-31T08:44:54.710Z] CHECK PASS  preflight: test-use tree clean (pristine upstream)
+[2026-08-31T08:44:54.732Z] CHECK PASS  preflight: stable :3080 answers 200 (untouched)
+[2026-08-31T08:44:54.733Z] CHECK PASS  preflight: port 3181 free
+[2026-08-31T08:44:54.734Z] lock: acquired (immediately)
+[2026-08-31T08:44:54.735Z] boot: ensureProfile (throwaway boot on a fresh DSH_HOME when needed)
+[2026-08-31T08:44:54.735Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-08-31T08:44:56.557Z] throwaway boot OK: http://127.0.0.1:3181/?token=DVeRXsoen4inAy2sGEZOZgPHUa_i3dxEbZ2OJmpv8jc
+[2026-08-31T08:44:56.596Z] boot: mounting row g8r1-remote-e2e via cordis.patch.yml; starting instance (120s budget)
+[2026-08-31T08:44:58.415Z] boot: marker url http://127.0.0.1:3181/?token=TwWE7xYRIawKxYqEzsVMySGuA2hqPtDyKnSxp4ZQ1pY
+[2026-08-31T08:44:58.584Z] CHECK PASS  dump-config: row present in the composed profile
+[2026-08-31T08:44:58.584Z] boot: polling /__g8r1/health until the row finishes setup (90s deadline)
+[2026-08-31T08:45:00.161Z] boot: row ready (generation 1, seeded undefined ledger entries)
+[2026-08-31T08:45:00.225Z] CHECK PASS  auth: launch URL redirects (302/303)
+[2026-08-31T08:45:00.225Z] CHECK PASS  auth: Set-Cookie mints a dsh-auth-* cookie
+[2026-08-31T08:45:00.225Z] CHECK PASS  auth: cookie shape
+[2026-08-31T08:45:00.226Z] CHECK PASS  auth: cookie HttpOnly + SameSite=Strict
+[2026-08-31T08:45:00.226Z] E1: start() — first projection pull
+[2026-08-31T08:45:00.258Z] CHECK PASS  E1: first frame verdict apply
+[2026-08-31T08:45:00.258Z] CHECK PASS  E1: applied generation 1
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: state connected
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: projection has exactly the nine frozen top-level fields
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: schemaVersion 1
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: teamSessionId echoes the root session
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: generation 1 (seeded)
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: generatedAt = the harness clock
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: blueprint snapshot ref present
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: blueprint id/revision
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: root compatibility BLOCKED_FATAL (seeded durable state)
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: root admission OPEN
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: creation budget 0
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: three templates
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: template ordering leader/worker/scout
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: two members (leader + worker)
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: leader member row WITHOUT childSessionId (invariant 14)
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: worker member row WITH childSessionId
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: both members RUNNING
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: leader effectiveConfig carries the four frozen lanes
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: worker effectiveConfig carries the four frozen lanes
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: ledger latestSequence 7 (seeded)
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: ledger totalEntries 7
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: sum(byCategory) === totalEntries
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: byCategory matches the seeded facts
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: pendingControlCount 1 (one request-control, no resolve)
+[2026-08-31T08:45:00.259Z] CHECK PASS  E1: frame provenance (origin/method/endpoint/version/token/generation)
+[2026-08-31T08:45:00.259Z] E2: scripted transport loss, mutation while down, recovery apply
+[2026-08-31T08:45:00.259Z] CHECK PASS  E2: loss verdict
+[2026-08-31T08:45:00.259Z] CHECK PASS  E2: state reconnecting after loss
+[2026-08-31T08:45:00.259Z] CHECK PASS  E2: transportLosses 1
+[2026-08-31T08:45:00.259Z] CHECK PASS  E2: backoff entry scheduled
+[2026-08-31T08:45:00.274Z] CHECK PASS  E2: send while down -> 200 ok (server unaffected)
+[2026-08-31T08:45:00.274Z] CHECK PASS  E2: outcome executed send-message
+[2026-08-31T08:45:00.274Z] CHECK PASS  E2: callerRole human
+[2026-08-31T08:45:00.275Z] CHECK PASS  E2: targetInstanceId worker
+[2026-08-31T08:45:00.275Z] CHECK PASS  E2: durable effect fact-recorded
+[2026-08-31T08:45:00.275Z] CHECK PASS  E2: effect sequence 8 (first append)
+[2026-08-31T08:45:00.275Z] CHECK PASS  E2: provenance on the admission success (origin/method/requestToken echo)
+[2026-08-31T08:45:00.275Z] CHECK PASS  E2: provenance.effectSequence null (facade effect carries `sequence`, not factSequence — documented nuance)
+[2026-08-31T08:45:00.288Z] CHECK PASS  E2: state connected after recovery
+[2026-08-31T08:45:00.288Z] CHECK PASS  E2: recovery applied generation 2
+[2026-08-31T08:45:00.288Z] CHECK PASS  E2: framesApplied 2
+[2026-08-31T08:45:00.289Z] CHECK PASS  E2: no unexpected rejections
+[2026-08-31T08:45:00.303Z] CHECK PASS  E2: fresh raw pull shows generation 2
+[2026-08-31T08:45:00.303Z] CHECK PASS  E2: applied projection deep-equals the fresh raw pull (round-trip)
+[2026-08-31T08:45:00.303Z] CHECK PASS  E2: no rpc-error assessments
+[2026-08-31T08:45:00.303Z] E3: capture gen-2 frame, mutate to gen 3, re-inject the stale frame
+[2026-08-31T08:45:00.318Z] CHECK PASS  E3: captured gen-2 frame
+[2026-08-31T08:45:00.334Z] CHECK PASS  E3: second append -> sequence 9
+[2026-08-31T08:45:00.349Z] CHECK PASS  E3: sync applies generation 3
+[2026-08-31T08:45:00.349Z] CHECK PASS  E3: re-injected gen-2 frame verdict stale
+[2026-08-31T08:45:00.350Z] CHECK PASS  E3: framesStale 1
+[2026-08-31T08:45:00.350Z] CHECK PASS  E3: applied generation unchanged (still 3)
+[2026-08-31T08:45:00.350Z] CHECK PASS  E3: rpcId correlation intact (no inconsistent)
+[2026-08-31T08:45:00.350Z] CHECK PASS  E3: framesApplied still 3
+[2026-08-31T08:45:00.350Z] E4: pageLimit-3 walk over the current ledger, then growth + re-read
+[2026-08-31T08:45:00.350Z] E4: ledger total before the E4 append: 9
+[2026-08-31T08:45:00.365Z] CHECK PASS  E4: page 1 accepted by the tracker
+[2026-08-31T08:45:00.365Z] CHECK PASS  E4: page 1 = seq 1-3
+[2026-08-31T08:45:00.365Z] CHECK PASS  E4: page 1 cursor 3
+[2026-08-31T08:45:00.365Z] CHECK PASS  E4: page 1 total = current total
+[2026-08-31T08:45:00.365Z] CHECK PASS  E4: anchor advanced to 3
+[2026-08-31T08:45:00.380Z] CHECK PASS  E4: page 2 = seq 4-6, cursor 6
+[2026-08-31T08:45:00.380Z] CHECK PASS  E4: anchor advanced to 6
+[2026-08-31T08:45:00.397Z] CHECK PASS  E4: page 3 = seq 7-9, terminal cursor
+[2026-08-31T08:45:00.397Z] CHECK PASS  E4: anchor holds at 6 after the terminal page
+[2026-08-31T08:45:00.397Z] CHECK PASS  E4: tracker 3 applied / 0 rejected
+[2026-08-31T08:45:00.412Z] CHECK PASS  E4: growth append -> next sequence
+[2026-08-31T08:45:00.427Z] CHECK PASS  E4: off-anchor explicit re-read rejected by the tracker guard
+[2026-08-31T08:45:00.427Z] CHECK PASS  E4: re-reading anchor 0 after growth yields the SAME page (stable slicer)
+[2026-08-31T08:45:00.427Z] CHECK PASS  E4: total only moves up (append-only)
+[2026-08-31T08:45:00.427Z] CHECK PASS  E4: tracker rejected exactly the off-anchor page
+[2026-08-31T08:45:00.442Z] CHECK FAIL  E4: cursor continues from anchor 6 and now sees the growth (next = appended seq)  (got: [object Object])
+[2026-08-31T08:45:00.459Z] CHECK FAIL  E4: final empty page, terminal cursor  (got: [object Object])
+[2026-08-31T08:45:00.459Z] E5: typed domain/contract errors with provenance in details
+[2026-08-31T08:45:00.474Z] wire: member.send (side) -> typed error: {"code":"TEAM_RUNTIME_INSTANCE_NOT_FOUND","message":"TeamRuntime: no member instance 'inst-missing9' in team 'session-root-g8r1'","details":{"method":"member.send","endpoint":"member.send","contractVersion":1,"requestToken":"tok-g8r1-err1","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_INSTANCE_NOT_FOUND","message":"TeamRuntime: no member instance 'inst-missing9' in team 'session-root-g8r1'","details":{"rootSessionId":"session-root-g8r1","instanceId":"inst-missing9"}}}}
+[2026-08-31T08:45:00.474Z] CHECK PASS  E5a: 200 with typed error result (no 5xx)
+[2026-08-31T08:45:00.474Z] CHECK PASS  E5a: pass-through domain code INSTANCE_NOT_FOUND
+[2026-08-31T08:45:00.474Z] CHECK PASS  E5a: details.cause carries code + message
+[2026-08-31T08:45:00.474Z] CHECK PASS  E5a: source identity under details.cause.details
+[2026-08-31T08:45:00.474Z] CHECK PASS  E5a: provenance folded into error details (method/endpoint/version/requestToken)
+[2026-08-31T08:45:00.489Z] wire: member.followup (side) -> typed error: {"code":"TEAM_RUNTIME_COMPATIBILITY_BLOCKED","message":"TeamRuntime: the team's durable compatibility state is BLOCKED_FATAL — new work admission is blocked (invariant 50)","details":{"method":"member.followup","endpoint":"member.followup","contractVersion":1,"requestToken":"tok-g8r1-err2","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_COMPATIBILITY_BLOCKED","message":"TeamRuntime: the team's durable compatibility state is BLOCKED_FATAL — new work admission is blocked (invariant 50)","det
+[2026-08-31T08:45:00.489Z] CHECK PASS  E5b: 200 with typed error result
+[2026-08-31T08:45:00.489Z] CHECK PASS  E5b: new work (follow-up) blocked by the durable compatibility gate
+[2026-08-31T08:45:00.489Z] CHECK PASS  E5b: gate reports the durable state (status/source/fingerprint)
+[2026-08-31T08:45:00.505Z] wire: team.getProjection (side) -> typed error: {"code":"INVALID_ROOT_SESSION_ID","message":"teamSessionId must be at most 255 characters (got 300)","details":{"method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"field":"teamSessionId"}}
+[2026-08-31T08:45:00.505Z] CHECK PASS  E5c: over-255 teamSessionId -> mirrored frozen P3 code (INVALID_ROOT_SESSION_ID) with field
+[2026-08-31T08:45:00.520Z] wire: team.getProjection (side) -> typed error: {"code":"contract-version-unsupported","message":"remote contract version 99 is not supported (supported: [1])","details":{"method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"field":"version"}}
+[2026-08-31T08:45:00.520Z] CHECK PASS  E5d: unsupported contract version
+[2026-08-31T08:45:00.537Z] wire: team.nonexistent (side) -> typed error: {"code":"unknown-method","message":"endpoint 'team.nonexistent' is not a method of the closed Remote contract v1 catalog","details":{"method":"team.nonexistent","endpoint":"team.nonexistent","contractVersion":1,"requestToken":null,"reason":"unknown-endpoint"}}
+[2026-08-31T08:45:00.537Z] CHECK PASS  E5e: unknown method (endpoint matches, not in the catalog)
+[2026-08-31T08:45:00.537Z] E6: wire negatives — auth, content-type, method/endpoint mismatch
+[2026-08-31T08:45:00.540Z] CHECK PASS  E6a: no cookie -> 401 unauthorized
+[2026-08-31T08:45:00.542Z] CHECK PASS  E6b: wrong content-type -> 415
+[2026-08-31T08:45:00.553Z] wire: team.getProjection (side) -> typed error: {"code":"bad-request","message":"method \"member.send\" does not match endpoint \"team.getProjection\"","details":{"issues":[]}}
+[2026-08-31T08:45:00.553Z] CHECK PASS  E6c: method != endpoint -> 200 bad-request
+[2026-08-31T08:45:00.553Z] CHECK PASS  GLOBAL: no HTTP 5xx anywhere in the run
+[2026-08-31T08:45:00.553Z] CHECK PASS  GLOBAL: no unexpected transport rejections
+[2026-08-31T08:45:15.764Z] CHECK PASS  FINAL: row still ready
+[2026-08-31T08:45:15.765Z] CHECK PASS  FINAL: zero failed durability promises on the real host store
+[2026-08-31T08:45:15.765Z] CHECK PASS  FINAL: durability promises settled (real on-disk writes happened)
+[2026-08-31T08:45:15.765Z] CHECK FAIL  FINAL: generation advanced with the durable effects (H2)  (got: 1)
+[2026-08-31T08:45:15.927Z] CHECK PASS  postflight: test-use tree still clean
+[2026-08-31T08:45:15.927Z] CHECK PASS  postflight: fresh DSH_HOME removed
+[2026-08-31T08:45:15.929Z] CHECK PASS  postflight: stable :3080 still 200
+[2026-08-31T08:45:15.929Z] lock: released (marker matched)

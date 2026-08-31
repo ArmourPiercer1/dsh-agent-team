@@ -1,0 +1,78 @@
+=== G8 reviewer-2 criterion-1 dependency scan — start ===
+git rev-parse --show-toplevel: D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R2
+git rev-parse HEAD: 93d2a96e3ded6a92820f78ee9de94eac9ea6fffb
+
+── Part A: packages/remote/src — repo scanner (R1-R6 incl. P4-T6 denylist) ──
+scanned src files: 28
+  - packages/remote/src/contracts/catalog.ts
+  - packages/remote/src/contracts/errors.ts
+  - packages/remote/src/contracts/ids.ts
+  - packages/remote/src/contracts/params.ts
+  - packages/remote/src/contracts/remote-safe.ts
+  - packages/remote/src/contracts/request.ts
+  - packages/remote/src/contracts/response.ts
+  - packages/remote/src/contracts/types.ts
+  - packages/remote/src/contracts/version.ts
+  - packages/remote/src/handlers/catalog.ts
+  - packages/remote/src/handlers/compatibility.ts
+  - packages/remote/src/handlers/dispatch.ts
+  - packages/remote/src/handlers/handoff.ts
+  - packages/remote/src/handlers/intent.ts
+  - packages/remote/src/handlers/legacy.ts
+  - packages/remote/src/handlers/member.ts
+  - packages/remote/src/handlers/override.ts
+  - packages/remote/src/handlers/policy-state.ts
+  - packages/remote/src/handlers/ports.ts
+  - packages/remote/src/handlers/register.ts
+  - packages/remote/src/handlers/team.ts
+  - packages/remote/src/index.ts
+  - packages/remote/src/push/generation.ts
+  - packages/remote/src/push/index.ts
+  - packages/remote/src/push/ledger-page.ts
+  - packages/remote/src/push/pull.ts
+  - packages/remote/src/push/reconnect.ts
+  - packages/remote/src/push/types.ts
+PASS src: R1-R6 zero violations over 28 files
+src import specifiers: 111 (all relative per R6; distinct: 54)
+
+── Part B: packages/remote/test — R1-R6 with code-context classification ──
+  code (allowed test-infra import) R6 packages/remote/test/p8t3-admission.test.ts:29 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/p8t3-helpers.ts:15 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/p8t3-invalid-ids.test.ts:23 — non-relative import specifier ('vitest')
+  non-code (doc-comment) R4 packages/remote/test/p8t3-negative.test.ts:4 — session-log artifact token ('session-log')
+  non-code (doc-comment) R3 packages/remote/test/p8t3-negative.test.ts:14 — SessionController mirror token ('SessionController')
+  code (allowed test-infra import) R6 packages/remote/test/p8t3-negative.test.ts:24 — non-relative import specifier ('vitest')
+  non-code (string-literal) R4 packages/remote/test/p8t3-negative.test.ts:116 — session-log artifact token ('session-log')
+  code (allowed test-infra import) R6 packages/remote/test/p8t3-round-trip.test.ts:23 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/p8t3-version.test.ts:26 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/p8t4-engine.test.ts:21 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/p8t4-negative.test.ts:28 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/p8t4-sync.test.ts:21 — non-relative import specifier ('vitest')
+  code (allowed test-infra import) R6 packages/remote/test/remote.test.ts:1 — non-relative import specifier ('vitest')
+test files scanned: 12
+PASS test: zero code-context R1-R6 violations (3 doc-comment/string-literal + 10 allowed vitest test-infra import(s) listed above)
+
+── Part C: import specifier audit over packages/remote/**/*.ts ──
+files audited: 41
+  internal(remote): 141
+  sibling-vnext-package: 2
+  test-infra(vitest): 11
+  sibling vNext package imports (internal; enumerated):
+    packages/remote/test/p8t3-negative.test.ts → testkit/fault-injection/session-event-scan.mjs
+    packages/remote/test/p8t4-negative.test.ts → testkit/fault-injection/session-event-scan.mjs
+PASS import audit: zero node:/upstream/external/escape specifiers
+
+── Part D: RemoteHandlerDeps surface (src/handlers/ports.ts) ──
+declared ports (12): catalog, intent, teamCreate, projection, ledger, admission, lifecycle, override, policyState, compatibility, handoff, legacy
+PASS RemoteHandlerDeps is exactly the 12 frozen ports (no mirror port in the dispatcher wiring)
+
+── Part E: p8t4-test-client.ts side-channel proof ──
+imports (4):
+  '../src/index.js' → internal(remote)
+  '../src/push/index.js' → internal(remote)
+  '../src/push/index.js' → internal(remote)
+  '../src/contracts/types.js' → internal(remote)
+PASS p8t4 test client: every import stays inside packages/remote (no storage/runtime/domain side channel, no node: builtins, no vitest)
+
+SCAN: PASS (src R1-R6=0, test code-context=0, import audit=0, ports=12, test-client side-channel=0)
+=== G8 reviewer-2 criterion-1 dependency scan — done ===

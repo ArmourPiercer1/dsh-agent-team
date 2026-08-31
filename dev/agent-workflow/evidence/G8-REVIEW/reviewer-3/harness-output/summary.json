@@ -1,0 +1,833 @@
+{
+  "task": "G8-REVIEW",
+  "reviewer": "3 (G8-R3)",
+  "runStamp": "g8r3-1788162543615",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R3",
+  "mainRoot": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-g8-r3",
+  "e2ePort": 3183,
+  "pins": {
+    "worktree": {
+      "expected": "93d2a96e3ded6a92820f78ee9de94eac9ea6fffb",
+      "actual": "93d2a96e3ded6a92820f78ee9de94eac9ea6fffb",
+      "ok": true
+    },
+    "testUse": {
+      "expected": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "actual": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "ok": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "mainBefore": {
+      "head": "c47b1a073b24c601f73f83c9b3dab13882cc25d6",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "testUseBefore": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "mainAfter": {
+      "head": "c47b1a073b24c601f73f83c9b3dab13882cc25d6",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "testUseAfter": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "lock": {
+    "ok": true,
+    "attempts": 1
+  },
+  "farm": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R3\\node_modules",
+  "boot": {
+    "profile": {
+      "initialized": true,
+      "created": true
+    },
+    "rowMounted": true,
+    "url": "http://127.0.0.1:3183/?token=B1ZUqrYqyYe3d7EacZDVOirVWG92z_BCbjIzH_fKeWU",
+    "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R3\\dev\\agent-workflow\\evidence\\G8-REVIEW\\reviewer-3\\harness-output\\logs\\instance-port3183.log",
+    "cookie": {
+      "name": "dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE",
+      "httpOnly": true,
+      "sameSiteStrict": true
+    },
+    "health": {
+      "http": 200,
+      "body": {
+        "status": "ready",
+        "teamSessionId": "session-g8r3team01",
+        "generation": 1
+      }
+    },
+    "stop": {
+      "killed": true,
+      "portFree": true
+    }
+  },
+  "e2e": {
+    "status": "PASS",
+    "allPass": true,
+    "scenarios": [
+      {
+        "id": "E1",
+        "title": "initial projection + provenance over real HTTP",
+        "pass": true,
+        "checks": [
+          {
+            "label": "cookie is HttpOnly",
+            "ok": true,
+            "extra": "\"dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MyIsImlzc3VlZEF0IjoxNzg4MTYyNTQ4NzU1LCJleHBpcmVzQXQiOjE3OTA3NTQ1NDg3NTV9.bO9Ru8ajJNyVLTvoV728rb2i5IskntNAJl7qZUiWUiQ; Max-Age=2592000; Path=/; Expires=Wed, 30 Sep 2026 07:49:08 GMT; HttpOnly; SameSite=Strict\""
+          },
+          {
+            "label": "cookie is SameSite=Strict",
+            "ok": true,
+            "extra": "\"dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MyIsImlzc3VlZEF0IjoxNzg4MTYyNTQ4NzU1LCJleHBpcmVzQXQiOjE3OTA3NTQ1NDg3NTV9.bO9Ru8ajJNyVLTvoV728rb2i5IskntNAJl7qZUiWUiQ; Max-Age=2592000; Path=/; Expires=Wed, 30 Sep 2026 07:49:08 GMT; HttpOnly; SameSite=Strict\""
+          },
+          {
+            "label": "start() assessment apply",
+            "ok": true,
+            "extra": "{\"status\":\"apply\",\"receivedGeneration\":1}"
+          },
+          {
+            "label": "applied generation is 1",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "frame carries a projection",
+            "ok": true,
+            "extra": "[\"projection\",\"provenance\"]"
+          },
+          {
+            "label": "projection field present: blueprint",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: generation",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: generatedAt",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: ledger",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: members",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: root",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: schemaVersion",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: teamSessionId",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "projection field present: templates",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+          },
+          {
+            "label": "frame carries provenance",
+            "ok": true,
+            "extra": "[\"projection\",\"provenance\"]"
+          },
+          {
+            "label": "provenance.origin is team-remote",
+            "ok": true,
+            "extra": "\"team-remote\""
+          },
+          {
+            "label": "provenance.method",
+            "ok": true,
+            "extra": "\"team.getProjection\""
+          },
+          {
+            "label": "provenance.endpoint",
+            "ok": true,
+            "extra": "\"team.getProjection\""
+          },
+          {
+            "label": "provenance.contractVersion 1",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "provenance.projectionGeneration 1",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "provenance.effectSequence null on pull",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "provenance.requestToken shape",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "raw getProjection HTTP 200",
+            "ok": true,
+            "extra": "200"
+          },
+          {
+            "label": "raw wire echo (string rpcId)",
+            "ok": true,
+            "extra": "\"server-response\""
+          },
+          {
+            "label": "raw getProjection ok",
+            "ok": true
+          },
+          {
+            "label": "raw projection deep-equals client projection",
+            "ok": true
+          },
+          {
+            "label": "raw provenance generation 1",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":1,\"effectSequence\":null}"
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "E2",
+        "title": "reconnect + transport loss -> capped backoff -> connected",
+        "pass": true,
+        "checks": [
+          {
+            "label": "fresh client start apply",
+            "ok": true,
+            "extra": "{\"status\":\"apply\",\"receivedGeneration\":1}"
+          },
+          {
+            "label": "fresh client gen 1",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "c3 state reconnecting after loss",
+            "ok": true,
+            "extra": "\"reconnecting\""
+          },
+          {
+            "label": "transportLosses 1",
+            "ok": true,
+            "extra": "{\"framesApplied\":0,\"framesDuplicate\":0,\"framesStale\":0,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":1,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          },
+          {
+            "label": "one backoff scheduled",
+            "ok": true,
+            "extra": "[{\"attempt\":1,\"capMs\":20,\"delayMs\":10,\"atMs\":0}]"
+          },
+          {
+            "label": "backoff attempt 1",
+            "ok": true,
+            "extra": "{\"attempt\":1,\"capMs\":20,\"delayMs\":10,\"atMs\":0}"
+          },
+          {
+            "label": "backoff cap 20ms (baseMs)",
+            "ok": true,
+            "extra": "{\"attempt\":1,\"capMs\":20,\"delayMs\":10,\"atMs\":0}"
+          },
+          {
+            "label": "delay in [cap/2, cap]",
+            "ok": true,
+            "extra": "{\"attempt\":1,\"capMs\":20,\"delayMs\":10,\"atMs\":0}"
+          },
+          {
+            "label": "pending backoff equals scheduled delay",
+            "ok": true,
+            "extra": "10"
+          },
+          {
+            "label": "connected after advance",
+            "ok": true,
+            "extra": "\"connected\""
+          },
+          {
+            "label": "gen 1 after reconnect",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "framesApplied 1",
+            "ok": true,
+            "extra": "{\"framesApplied\":1,\"framesDuplicate\":0,\"framesStale\":0,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":1,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          },
+          {
+            "label": "losses still 1 (no retry loss)",
+            "ok": true,
+            "extra": "{\"framesApplied\":1,\"framesDuplicate\":0,\"framesStale\":0,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":1,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "E3",
+        "title": "stale frame ignored: duplicate on constant stamp + fixture stale guard",
+        "pass": true,
+        "checks": [
+          {
+            "label": "precondition: c1 at gen 1",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "member.create w1 ok",
+            "ok": true
+          },
+          {
+            "label": "mutation provenance method",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-w1\",\"projectionGeneration\":null,\"effectSequence\":1}"
+          },
+          {
+            "label": "mutation provenance token echo",
+            "ok": true,
+            "extra": "\"g8r3-tk-w1\""
+          },
+          {
+            "label": "mutation provenance gen null",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-w1\",\"projectionGeneration\":null,\"effectSequence\":1}"
+          },
+          {
+            "label": "mutation provenance effectSequence 1",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-w1\",\"projectionGeneration\":null,\"effectSequence\":1}"
+          },
+          {
+            "label": "outcome executed",
+            "ok": true,
+            "extra": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-g8r3team01\",\"callerRole\":\"human\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0pc3m8n0dgk4\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-inst0pc3m8n0dgk4\",\"operationId\":\"op-0nj9wtc1o1msnh06nj6mu0yq\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"g8r3-tk-w1\"}"
+          },
+          {
+            "label": "same-stamp re-pull assessed duplicate (F3: stamp constant under mutation)",
+            "ok": true,
+            "extra": "{\"status\":\"duplicate\",\"receivedGeneration\":1}"
+          },
+          {
+            "label": "c1 still at gen 1 after duplicate",
+            "ok": true,
+            "extra": "1"
+          },
+          {
+            "label": "framesDuplicate 1",
+            "ok": true,
+            "extra": "{\"framesApplied\":1,\"framesDuplicate\":1,\"framesStale\":0,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          },
+          {
+            "label": "server stamp still 1 after w1 (F3)",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":1,\"effectSequence\":null}"
+          },
+          {
+            "label": "server truth: 4 members after w1",
+            "ok": true,
+            "extra": "[{\"instanceId\":\"inst-0pc3m8n0dgk4\",\"templateId\":\"worker\",\"label\":\"g8r3 g8r3-tk-w1\",\"workspace\":\"C:/agent-team/work/g8r3\",\"createdAt\":\"2026-08-31T07:49:08.882Z\",\"lifecycle\":\"CREATED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"g8r3-model\",\"source\":\"blueprint\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"C:/agent-team/work/g8r3\",\"source\":\"instance-creation\",\"state\":\"locked\"},\"per"
+          },
+          {
+            "label": "synthetic gen-2 frame applied",
+            "ok": true,
+            "extra": "{\"status\":\"apply\",\"receivedGeneration\":2}"
+          },
+          {
+            "label": "c1 at gen 2 (fixture)",
+            "ok": true,
+            "extra": "2"
+          },
+          {
+            "label": "framesApplied 2 (gen1 + fixture gen2)",
+            "ok": true,
+            "extra": "{\"framesApplied\":2,\"framesDuplicate\":1,\"framesStale\":0,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          },
+          {
+            "label": "replayed gen-1 assessed stale",
+            "ok": true,
+            "extra": "{\"status\":\"stale\",\"receivedGeneration\":1}"
+          },
+          {
+            "label": "applied generation unchanged (2)",
+            "ok": true,
+            "extra": "2"
+          },
+          {
+            "label": "framesStale 1",
+            "ok": true,
+            "extra": "{\"framesApplied\":2,\"framesDuplicate\":1,\"framesStale\":1,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          },
+          {
+            "label": "framesApplied still 2 (stale frame not applied)",
+            "ok": true,
+            "extra": "{\"framesApplied\":2,\"framesDuplicate\":1,\"framesStale\":1,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":0,\"pagesRejected\":0}"
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "E4",
+        "title": "ledger pagination stable across a mid-walk mutation",
+        "pass": true,
+        "checks": [
+          {
+            "label": "member.create w2 ok",
+            "ok": true
+          },
+          {
+            "label": "w2 effectSequence 2",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-w2\",\"projectionGeneration\":null,\"effectSequence\":2}"
+          },
+          {
+            "label": "member.create s1 ok",
+            "ok": true
+          },
+          {
+            "label": "s1 effectSequence 3",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-s1\",\"projectionGeneration\":null,\"effectSequence\":3}"
+          },
+          {
+            "label": "page 1 ok",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "page 1 seq [1,2]",
+            "ok": true,
+            "extra": "[1,2]"
+          },
+          {
+            "label": "page 1 nextAfterSequence 2",
+            "ok": true,
+            "extra": "2"
+          },
+          {
+            "label": "page 1 total 3",
+            "ok": true,
+            "extra": "3"
+          },
+          {
+            "label": "ledger entry field createdAt",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field factType",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field operationId",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field payload",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field rootSessionId",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field schemaVersion",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field sequence",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field createdAt",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field factType",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field operationId",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field payload",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field rootSessionId",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field schemaVersion",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "ledger entry field sequence",
+            "ok": true,
+            "extra": "[\"schemaVersion\",\"sequence\",\"rootSessionId\",\"factType\",\"payload\",\"operationId\",\"createdAt\"]"
+          },
+          {
+            "label": "member.create s2 ok",
+            "ok": true
+          },
+          {
+            "label": "s2 effectSequence 4",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-s2\",\"projectionGeneration\":null,\"effectSequence\":4}"
+          },
+          {
+            "label": "page 2 ok (continues from tracker anchor 2)",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "page 2 seq [3,4]",
+            "ok": true,
+            "extra": "[3,4]"
+          },
+          {
+            "label": "page 2 nextAfterSequence null (exhausted)",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "page 2 total 4 (append-only: 3 -> 4)",
+            "ok": true,
+            "extra": "4"
+          },
+          {
+            "label": "anchor stays at 2 (terminal page carries no cursor)",
+            "ok": true,
+            "extra": "2"
+          },
+          {
+            "label": "anchor re-read ok",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "re-read of anchor 2 reproduces [3,4]",
+            "ok": true,
+            "extra": "[{\"schemaVersion\":1,\"sequence\":3,\"rootSessionId\":\"session-g8r3team01\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-1i6jgs31jn8c\",\"label\":\"g8r3 g8r3-tk-s1\",\"rootSessionId\":\"session-g8r3team01\",\"templateId\":\"scout\",\"workspace\":\"C:/agent-team/work/g8r3\"},\"operationId\":\"op-1dm2gcy18xha5z1yg5fks16c\",\"createdAt\":\"2026-08-31T07:49:09.749Z\"},{\"schemaVersion\":1,\"sequence\":4,\"rootSes"
+          },
+          {
+            "label": "re-read total 4 (never decreases)",
+            "ok": true,
+            "extra": "4"
+          },
+          {
+            "label": "walk strictly monotonic, no dup/gap",
+            "ok": true,
+            "extra": "[1,2,3,4]"
+          },
+          {
+            "label": "pagesApplied 3",
+            "ok": true,
+            "extra": "{\"framesApplied\":2,\"framesDuplicate\":1,\"framesStale\":1,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":3,\"pagesRejected\":0}"
+          },
+          {
+            "label": "pagesRejected 0",
+            "ok": true,
+            "extra": "{\"framesApplied\":2,\"framesDuplicate\":1,\"framesStale\":1,\"framesForeign\":0,\"framesInconsistent\":0,\"rpcErrors\":0,\"transportLosses\":0,\"unexpectedRejections\":0,\"sinkErrors\":{},\"pagesApplied\":3,\"pagesRejected\":0}"
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "E5",
+        "title": "typed errors + provenance on the wire",
+        "pass": true,
+        "checks": [
+          {
+            "label": "5a HTTP 200",
+            "ok": true,
+            "extra": "200"
+          },
+          {
+            "label": "5a not ok",
+            "ok": true,
+            "extra": "{\"ok\":false,\"error\":{\"code\":\"unknown-method\",\"message\":\"endpoint 'does.notexist' is not a method of the closed Remote contract v1 catalog\",\"details\":{\"method\":\"does.notexist\",\"endpoint\":\"does.notexist\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"unknown-endpoint\"}}}"
+          },
+          {
+            "label": "5a code unknown-method",
+            "ok": true,
+            "extra": "{\"code\":\"unknown-method\",\"message\":\"endpoint 'does.notexist' is not a method of the closed Remote contract v1 catalog\",\"details\":{\"method\":\"does.notexist\",\"endpoint\":\"does.notexist\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"unknown-endpoint\"}}"
+          },
+          {
+            "label": "5a details.method",
+            "ok": true,
+            "extra": "{\"method\":\"does.notexist\",\"endpoint\":\"does.notexist\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"unknown-endpoint\"}"
+          },
+          {
+            "label": "5b not ok",
+            "ok": true,
+            "extra": "{\"ok\":false,\"error\":{\"code\":\"contract-version-unsupported\",\"message\":\"remote contract version 99 is not supported (supported: [1])\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"version\"}}}"
+          },
+          {
+            "label": "5b code",
+            "ok": true,
+            "extra": "{\"code\":\"contract-version-unsupported\",\"message\":\"remote contract version 99 is not supported (supported: [1])\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"version\"}}"
+          },
+          {
+            "label": "5b details.contractVersion 1",
+            "ok": true,
+            "extra": "{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"version\"}"
+          },
+          {
+            "label": "5c not ok",
+            "ok": true,
+            "extra": "{\"ok\":false,\"error\":{\"code\":\"INVALID_ROOT_SESSION_ID\",\"message\":\"teamSessionId must not contain whitespace\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"teamSessionId\"}}}"
+          },
+          {
+            "label": "5c code",
+            "ok": true,
+            "extra": "{\"code\":\"INVALID_ROOT_SESSION_ID\",\"message\":\"teamSessionId must not contain whitespace\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"teamSessionId\"}}"
+          },
+          {
+            "label": "5c details.field",
+            "ok": true,
+            "extra": "{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"teamSessionId\"}"
+          },
+          {
+            "label": "5d not ok",
+            "ok": true,
+            "extra": "{\"ok\":false,\"error\":{\"code\":\"malformed-params\",\"message\":\"capability must be one of: model | tools | permissions | skills | mcp\",\"details\":{\"method\":\"override.get\",\"endpoint\":\"override.get\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"capability\",\"reason\":\"invalid-value\"}}}"
+          },
+          {
+            "label": "5d code malformed-params",
+            "ok": true,
+            "extra": "{\"code\":\"malformed-params\",\"message\":\"capability must be one of: model | tools | permissions | skills | mcp\",\"details\":{\"method\":\"override.get\",\"endpoint\":\"override.get\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"capability\",\"reason\":\"invalid-value\"}}"
+          },
+          {
+            "label": "5d details.field capability",
+            "ok": true,
+            "extra": "{\"method\":\"override.get\",\"endpoint\":\"override.get\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"capability\",\"reason\":\"invalid-value\"}"
+          },
+          {
+            "label": "5d details.reason",
+            "ok": true,
+            "extra": "{\"method\":\"override.get\",\"endpoint\":\"override.get\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"capability\",\"reason\":\"invalid-value\"}"
+          },
+          {
+            "label": "5e not ok",
+            "ok": true,
+            "extra": "{\"ok\":false,\"error\":{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"message\":\"activation: member quota maxInstances=3 exhausted for template 'worker' (current+reserved=3, +1 requested)\",\"details\":{\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-q\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"mess"
+          },
+          {
+            "label": "5e typed code",
+            "ok": true,
+            "extra": "{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"message\":\"activation: member quota maxInstances=3 exhausted for template 'worker' (current+reserved=3, +1 requested)\",\"details\":{\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-q\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"message\":\"activation: me"
+          },
+          {
+            "label": "5e details.reason domain-error",
+            "ok": true,
+            "extra": "{\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-q\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"message\":\"activation: member quota maxInstances=3 exhausted for template 'worker' (current+reserved=3, +1 requested)\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_QUOTA_MEMBER_MAX_INSTAN"
+          },
+          {
+            "label": "5e details.cause identity",
+            "ok": true,
+            "extra": "{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"message\":\"activation: member quota maxInstances=3 exhausted for template 'worker' (current+reserved=3, +1 requested)\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES\",\"templateId\":\"worker\",\"maxInstances\":3,\"current\":3}}"
+          },
+          {
+            "label": "5e provenance in details",
+            "ok": true,
+            "extra": "\"member.create\""
+          },
+          {
+            "label": "5e details.contractVersion",
+            "ok": true,
+            "extra": "{\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"g8r3-tk-q\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"message\":\"activation: member quota maxInstances=3 exhausted for template 'worker' (current+reserved=3, +1 requested)\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_QUOTA_MEMBER_MAX_INSTAN"
+          },
+          {
+            "label": "generation unchanged (still 1 — F3 constant stamp) after rejected create",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":1,\"effectSequence\":null}"
+          },
+          {
+            "label": "roster unchanged (7) after rejected create",
+            "ok": true,
+            "extra": "[{\"instanceId\":\"inst-0pc3m8n0dgk4\",\"templateId\":\"worker\",\"label\":\"g8r3 g8r3-tk-w1\",\"workspace\":\"C:/agent-team/work/g8r3\",\"createdAt\":\"2026-08-31T07:49:08.882Z\",\"lifecycle\":\"CREATED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"g8r3-model\",\"source\":\"blueprint\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"C:/agent-team/work/g8r3\",\"source\":\"instance-creation\",\"state\":\"locked\"},\"per"
+          },
+          {
+            "label": "ledger page ok",
+            "ok": true,
+            "extra": "{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-g8r3team01\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-0pc3m8n0dgk4\",\"label\":\"g8r3 g8r3-tk-w1\",\"rootSessionId\":\"session-g8r3team01\",\"templateId\":\"worker\",\"workspace\":\"C:/agent-team/work/g8r3\"},\"operationId\":\"op-0nj9wtc1o1msnh06nj6mu0yq\",\"createdAt\":\"2026-08-31T07:49:09.054Z\"},{"
+          },
+          {
+            "label": "ledger total still 4 after rejected create",
+            "ok": true,
+            "extra": "{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-g8r3team01\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-0pc3m8n0dgk4\",\"label\":\"g8r3 g8r3-tk-w1\",\"rootSessionId\":\"session-g8r3team01\",\"templateId\":\"worker\",\"workspace\":\"C:/agent-team/work/g8r3\"},\"operationId\":\"op-0nj9wtc1o1msnh06nj6mu0yq\",\"createdAt\":\"2026-08-31T07:49:09.054Z\"},{\"schemaVersion\":1,\"sequence"
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "E6",
+        "title": "seam negatives (no cookie / wrong content-type / method mismatch)",
+        "pass": true,
+        "checks": [
+          {
+            "label": "6a no cookie -> 401",
+            "ok": true,
+            "extra": "401"
+          },
+          {
+            "label": "6a body mentions unauthorized",
+            "ok": true,
+            "extra": "\"unauthorized\""
+          },
+          {
+            "label": "6b text/plain -> 415",
+            "ok": true,
+            "extra": "415"
+          },
+          {
+            "label": "6b body names the content type",
+            "ok": true,
+            "extra": "\"content type must be application/json\""
+          },
+          {
+            "label": "6c method mismatch -> 200 typed error",
+            "ok": true,
+            "extra": "200"
+          },
+          {
+            "label": "6c wire shape",
+            "ok": true,
+            "extra": "{\"type\":\"server-response\",\"rpcId\":\"9403\",\"result\":{\"ok\":false,\"error\":{\"code\":\"bad-request\",\"message\":\"method \\\"member.create\\\" does not match endpoint \\\"team.getProjection\\\"\",\"details\":{\"issues\":[]}}}}"
+          },
+          {
+            "label": "6c not ok",
+            "ok": true,
+            "extra": "{\"ok\":false,\"error\":{\"code\":\"bad-request\",\"message\":\"method \\\"member.create\\\" does not match endpoint \\\"team.getProjection\\\"\",\"details\":{\"issues\":[]}}}"
+          },
+          {
+            "label": "6c code bad-request",
+            "ok": true,
+            "extra": "{\"code\":\"bad-request\",\"message\":\"method \\\"member.create\\\" does not match endpoint \\\"team.getProjection\\\"\",\"details\":{\"issues\":[]}}"
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "FINAL",
+        "title": "terminal state: constant stamp 1 (F3), ledger seq 1..4, 7 members",
+        "pass": true,
+        "checks": [
+          {
+            "label": "terminal stamp 1 (F3: no product write path advances team_sessions.generation)",
+            "ok": true,
+            "extra": "{\"origin\":\"team-remote\",\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":1,\"effectSequence\":null}"
+          },
+          {
+            "label": "7 members",
+            "ok": true,
+            "extra": "[\"inst-0pc3m8n0dgk4\",\"inst-0pm37xm0d6kj\",\"inst-1i6jgs31jn8c\",\"inst-1igj2h21jd8q\",\"inst-g8r3s0\",\"inst-g8r3w0\",\"inst-leader\"]"
+          },
+          {
+            "label": "template split 1/3/3",
+            "ok": true,
+            "extra": "{\"worker\":3,\"scout\":3,\"leader\":1}"
+          },
+          {
+            "label": "leader present",
+            "ok": true,
+            "extra": "[\"inst-0pc3m8n0dgk4\",\"inst-0pm37xm0d6kj\",\"inst-1i6jgs31jn8c\",\"inst-1igj2h21jd8q\",\"inst-g8r3s0\",\"inst-g8r3w0\",\"inst-leader\"]"
+          },
+          {
+            "label": "leader projection row omits childSessionId (invariant 14)",
+            "ok": true,
+            "extra": "{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"workspace\":\"C:/agent-team/work/g8r3\",\"createdAt\":\"2026-08-29T00:00:00.000Z\",\"lifecycle\":\"RUNNING\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"g8r3-model\",\"source\":\"blueprint\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"C:/agent-team/work/g8r3\",\"source\":\"instance-creation\",\"state\":\"locked\"},\"permissions\":{},\"au"
+          },
+          {
+            "label": "terminal ledger page ok",
+            "ok": true,
+            "extra": "{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-g8r3team01\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-0pc3m8n0dgk4\",\"label\":\"g8r3 g8r3-tk-w1\",\"rootSessionId\":\"session-g8r3team01\",\"templateId\":\"worker\",\"workspace\":\"C:/agent-team/work/g8r3\"},\"operationId\":\"op-0nj9wtc1o1msnh06nj6mu0yq\",\"createdAt\":\"2026-08-31T07:49:09.054Z\"},{"
+          },
+          {
+            "label": "terminal ledger seq [1,2,3,4]",
+            "ok": true,
+            "extra": "[1,2,3,4]"
+          },
+          {
+            "label": "terminal page exhausted",
+            "ok": true,
+            "extra": "null"
+          },
+          {
+            "label": "terminal total 4",
+            "ok": true,
+            "extra": "4"
+          }
+        ],
+        "error": null
+      }
+    ]
+  },
+  "failures": []
+}

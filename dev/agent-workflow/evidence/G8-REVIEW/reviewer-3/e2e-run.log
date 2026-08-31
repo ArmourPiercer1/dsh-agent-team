@@ -1,0 +1,287 @@
+2026-08-31T07:20:06.181Z G8R3 e2e driver start: runStamp=g8r3-1788160806181
+2026-08-31T07:20:06.182Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:20:06.182Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:20:06.182Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:20:06.187Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:20:06.189Z preflight: port 3183 free
+2026-08-31T07:20:06.189Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:20:06.446Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:20:06.446Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:20:06.446Z skipping boot: e2e marked NOT-RUN in preflight
+2026-08-31T07:20:06.449Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:20:06.449Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:20:06.696Z postflight: main tree clean=true status=""
+2026-08-31T07:20:06.696Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:20:06.696Z G8R3 e2e driver RESULT: FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json
+2026-08-31T07:20:58.985Z G8R3 e2e driver start: runStamp=g8r3-1788160858985
+2026-08-31T07:20:58.986Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:20:58.986Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:20:58.986Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:20:58.991Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:20:58.992Z preflight: port 3183 free
+2026-08-31T07:20:58.993Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:20:59.217Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:20:59.217Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:20:59.218Z lock acquired (attempt 1): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock
+2026-08-31T07:20:59.219Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-08-31T07:20:59.220Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-08-31T07:20:59.220Z farm ready under D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules
+2026-08-31T07:20:59.220Z fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3
+2026-08-31T07:20:59.220Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-31T07:21:03.062Z throwaway boot OK: http://127.0.0.1:3183/?token=5AuHKSQ8cVV0u40l-oWOYYsAJrPfGqUe0dkBfwwpRAU
+2026-08-31T07:21:03.099Z row mounted via public patch seam: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3\profiles\web\cordis.patch.yml
+2026-08-31T07:21:03.206Z dump-config: row mounted = true
+2026-08-31T07:21:05.002Z instance up: http://127.0.0.1:3183/?token=RVBWyn74XtyYXpONOnyDhydTUD4Hb4BEv1rIvYgS_c0
+2026-08-31T07:21:05.008Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:23:05.390Z instance log tail:
+dsh web: http://127.0.0.1:3183/?token=RVBWyn74XtyYXpONOnyDhydTUD4Hb4BEv1rIvYgS_c0
+
+2026-08-31T07:23:05.391Z FAILURE: harness fatal: Error: boot failed: row not ready within 120s (last: http=500 body={"status":"error","error":"instanceId must match inst-<1..32 lowercase alphanumerics>, got \"inst-g8r3-w0\""})
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R3/dev/agent-workflow/evidence/G8-REVIEW/reviewer-3/harness/run.mjs:388:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-08-31T07:23:05.423Z instance stop: {"killed":true,"portFree":true}
+2026-08-31T07:23:05.423Z patch layer reset to baseline []
+2026-08-31T07:23:05.424Z port 3183 free after stop = true
+2026-08-31T07:23:05.424Z lock released (marker matched)
+2026-08-31T07:23:05.425Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:23:05.426Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:23:05.665Z postflight: main tree clean=true status=""
+2026-08-31T07:23:05.665Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:23:05.666Z G8R3 e2e driver RESULT: FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json
+2026-08-31T07:25:00.136Z G8R3 e2e driver start: runStamp=g8r3-1788161100136
+2026-08-31T07:25:00.137Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:25:00.137Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:25:00.137Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:25:00.145Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:25:00.146Z preflight: port 3183 free
+2026-08-31T07:25:00.147Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:25:00.364Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:25:00.364Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:25:00.365Z lock acquired (attempt 1): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock
+2026-08-31T07:25:00.365Z farm ready under D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules
+2026-08-31T07:25:00.400Z fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3
+2026-08-31T07:25:00.400Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-31T07:25:02.066Z throwaway boot OK: http://127.0.0.1:3183/?token=zT3zKaMzo-Sy1Frlt0c11x6QOVj7qRCtq7wzlCvlG1w
+2026-08-31T07:25:02.105Z row mounted via public patch seam: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3\profiles\web\cordis.patch.yml
+2026-08-31T07:25:02.262Z dump-config: row mounted = true
+2026-08-31T07:25:04.053Z instance up: http://127.0.0.1:3183/?token=IIQt1ejQKsjREA7IuaLcx5jXEtTILfHEcJ-0FLEdOX0
+2026-08-31T07:25:04.057Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:25:04.572Z row ready: {"status":"ready","teamSessionId":"session-g8r3team01","generation":1}
+2026-08-31T07:25:04.664Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:25:04.670Z [E1] initial projection + provenance over real HTTP -> FAIL (3 checks)
+2026-08-31T07:25:04.670Z       ASSERT FAILED: start() verdict applied :: {"status":"inconsistent","receivedGeneration":null}
+2026-08-31T07:25:04.673Z [E2] reconnect + transport loss -> capped backoff -> connected -> FAIL (1 checks)
+2026-08-31T07:25:04.673Z       ASSERT FAILED: fresh client start applied :: {"status":"inconsistent","receivedGeneration":null}
+2026-08-31T07:25:04.673Z [E3] stale response ignored (transport replay of gen 1 after gen 2) -> FAIL (1 checks)
+2026-08-31T07:25:04.674Z       ASSERT FAILED: precondition: c1 at gen 1 :: null
+2026-08-31T07:25:04.675Z [E4] ledger pagination stable across a mid-walk mutation -> FAIL (1 checks)
+2026-08-31T07:25:04.675Z       ASSERT FAILED: member.create w2 ok :: {"code":"bad-request","message":"invalid client-request message","details":{"issues":[{"expected":"string","code":"invalid_type","path":["rpcId"],"message":"Invalid input: expected string, received number"}]}}
+2026-08-31T07:25:04.677Z [E5] typed errors + provenance on the wire -> FAIL (3 checks)
+2026-08-31T07:25:04.677Z       ASSERT FAILED: 5a code unknown-method :: {"code":"bad-request","message":"invalid client-request message","details":{"issues":[{"expected":"string","code":"invalid_type","path":["rpcId"],"message":"Invalid input: expected string, received number"}]}}
+2026-08-31T07:25:04.679Z [E6] seam negatives (no cookie / wrong content-type / method mismatch) -> FAIL (3 checks)
+2026-08-31T07:25:04.679Z       ASSERT FAILED: 6b text/plain -> 415 :: 401
+2026-08-31T07:25:04.680Z [FINAL] terminal state: gen 5, ledger seq 1..4, 7 members -> FAIL (0 checks)
+2026-08-31T07:25:04.680Z       Cannot read properties of undefined (reading 'provenance')
+2026-08-31T07:25:04.681Z E2E RESULT: FAILURES PRESENT (0/7 scenarios)
+2026-08-31T07:25:04.681Z FAILURE: scenario E1 failed: ASSERT FAILED: start() verdict applied :: {"status":"inconsistent","receivedGeneration":null}
+2026-08-31T07:25:04.681Z FAILURE: scenario E2 failed: ASSERT FAILED: fresh client start applied :: {"status":"inconsistent","receivedGeneration":null}
+2026-08-31T07:25:04.681Z FAILURE: scenario E3 failed: ASSERT FAILED: precondition: c1 at gen 1 :: null
+2026-08-31T07:25:04.681Z FAILURE: scenario E4 failed: ASSERT FAILED: member.create w2 ok :: {"code":"bad-request","message":"invalid client-request message","details":{"issues":[{"expected":"string","code":"invalid_type","path":["rpcId"],"message":"Invalid input: expected string, received number"}]}}
+2026-08-31T07:25:04.681Z FAILURE: scenario E5 failed: ASSERT FAILED: 5a code unknown-method :: {"code":"bad-request","message":"invalid client-request message","details":{"issues":[{"expected":"string","code":"invalid_type","path":["rpcId"],"message":"Invalid input: expected string, received number"}]}}
+2026-08-31T07:25:04.682Z FAILURE: scenario E6 failed: ASSERT FAILED: 6b text/plain -> 415 :: 401
+2026-08-31T07:25:04.682Z FAILURE: scenario FINAL failed: Cannot read properties of undefined (reading 'provenance')
+2026-08-31T07:25:04.722Z instance stop: {"killed":true,"portFree":true}
+2026-08-31T07:25:04.723Z patch layer reset to baseline []
+2026-08-31T07:25:04.723Z port 3183 free after stop = true
+2026-08-31T07:25:04.724Z lock released (marker matched)
+2026-08-31T07:25:04.725Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:25:04.726Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:25:04.953Z postflight: main tree clean=true status=""
+2026-08-31T07:25:04.953Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:25:04.953Z G8R3 e2e driver RESULT: FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json
+2026-08-31T07:33:59.537Z G8R3 e2e driver start: runStamp=g8r3-1788161639537
+2026-08-31T07:33:59.538Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:33:59.538Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:33:59.538Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:33:59.555Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:33:59.556Z preflight: port 3183 free
+2026-08-31T07:33:59.557Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:33:59.795Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:33:59.795Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:33:59.795Z lock acquired (attempt 1): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock
+2026-08-31T07:33:59.796Z farm ready under D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules
+2026-08-31T07:33:59.834Z fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3
+2026-08-31T07:33:59.834Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-31T07:34:01.660Z throwaway boot OK: http://127.0.0.1:3183/?token=v6FXbT1v2IRQsCnzaxUinOur6ltXyW2j7feBaClXbFw
+2026-08-31T07:34:01.700Z row mounted via public patch seam: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3\profiles\web\cordis.patch.yml
+2026-08-31T07:34:01.817Z dump-config: row mounted = true
+2026-08-31T07:34:03.580Z instance up: http://127.0.0.1:3183/?token=o8SZnwsel0hbv5UdhLHZdOlTTtNs-j4UXQixaOo0s0I
+2026-08-31T07:34:03.587Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:34:04.591Z row ready: {"status":"ready","teamSessionId":"session-g8r3team01","generation":1}
+2026-08-31T07:34:04.697Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:34:04.708Z [E1] initial projection + provenance over real HTTP -> FAIL (26 checks)
+2026-08-31T07:34:04.709Z       ASSERT FAILED: raw projection deep-equals client projection
+2026-08-31T07:34:04.711Z transport scripted: loss on rpcId 1
+2026-08-31T07:34:04.712Z E2 c3 start(): assessment {"status":"transport-loss","receivedGeneration":null}
+2026-08-31T07:34:04.714Z [E2] reconnect + transport loss -> capped backoff -> connected -> PASS (13 checks)
+2026-08-31T07:34:04.716Z [E3] stale response ignored (transport replay of gen 1 after gen 2) -> FAIL (2 checks)
+2026-08-31T07:34:04.716Z       ASSERT FAILED: member.create w1 ok :: {"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w1","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"action":"create
+2026-08-31T07:34:04.718Z [E4] ledger pagination stable across a mid-walk mutation -> FAIL (1 checks)
+2026-08-31T07:34:04.718Z       ASSERT FAILED: member.create w2 ok :: {"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w2","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"action":"create
+2026-08-31T07:34:04.723Z [E5] typed errors + provenance on the wire -> FAIL (16 checks)
+2026-08-31T07:34:04.723Z       ASSERT FAILED: 5e typed code :: {"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-q","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"action":"create-
+2026-08-31T07:34:04.726Z [E6] seam negatives (no cookie / wrong content-type / method mismatch) -> PASS (8 checks)
+2026-08-31T07:34:04.727Z [FINAL] terminal state: gen 5, ledger seq 1..4, 7 members -> FAIL (1 checks)
+2026-08-31T07:34:04.728Z       ASSERT FAILED: terminal generation 5 :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:34:04.728Z E2E RESULT: FAILURES PRESENT (2/7 scenarios)
+2026-08-31T07:34:04.728Z FAILURE: scenario E1 failed: ASSERT FAILED: raw projection deep-equals client projection
+2026-08-31T07:34:04.728Z FAILURE: scenario E3 failed: ASSERT FAILED: member.create w1 ok :: {"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w1","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"action":"create
+2026-08-31T07:34:04.728Z FAILURE: scenario E4 failed: ASSERT FAILED: member.create w2 ok :: {"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w2","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"action":"create
+2026-08-31T07:34:04.728Z FAILURE: scenario E5 failed: ASSERT FAILED: 5e typed code :: {"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-q","reason":"domain-error","cause":{"code":"TEAM_RUNTIME_REQUEST_MALFORMED","message":"create-member: payload.label (a non-empty string) is required","details":{"action":"create-
+2026-08-31T07:34:04.729Z FAILURE: scenario FINAL failed: ASSERT FAILED: terminal generation 5 :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:34:04.770Z instance stop: {"killed":true,"portFree":true}
+2026-08-31T07:34:04.771Z patch layer reset to baseline []
+2026-08-31T07:34:04.772Z port 3183 free after stop = true
+2026-08-31T07:34:04.773Z lock released (marker matched)
+2026-08-31T07:34:04.775Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:34:04.775Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:34:05.004Z postflight: main tree clean=true status=""
+2026-08-31T07:34:05.005Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:34:05.005Z G8R3 e2e driver RESULT: FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json
+2026-08-31T07:36:34.713Z G8R3 e2e driver start: runStamp=g8r3-1788161794713
+2026-08-31T07:36:34.714Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:36:34.714Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:36:34.714Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:36:34.720Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:36:34.721Z preflight: port 3183 free
+2026-08-31T07:36:34.722Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:36:34.943Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:36:34.943Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:36:34.943Z lock acquired (attempt 1): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock
+2026-08-31T07:36:34.944Z farm ready under D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules
+2026-08-31T07:36:34.982Z fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3
+2026-08-31T07:36:34.982Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-31T07:36:36.820Z throwaway boot OK: http://127.0.0.1:3183/?token=7OF2QGf3jTJ3S0z3ypWOZWgxwmdXIw6qxkJ3pelJkrw
+2026-08-31T07:36:36.858Z row mounted via public patch seam: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3\profiles\web\cordis.patch.yml
+2026-08-31T07:36:36.977Z dump-config: row mounted = true
+2026-08-31T07:36:38.742Z instance up: http://127.0.0.1:3183/?token=m2zcukupyPIlB0SfY0QCCaFMo6ISkora_qTwpSqxLDY
+2026-08-31T07:36:38.746Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:36:39.749Z row ready: {"status":"ready","teamSessionId":"session-g8r3team01","generation":1}
+2026-08-31T07:36:39.839Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:36:39.849Z [E1] initial projection + provenance over real HTTP -> FAIL (26 checks)
+2026-08-31T07:36:39.849Z       ASSERT FAILED: raw projection deep-equals client projection
+2026-08-31T07:36:39.851Z transport scripted: loss on rpcId 1
+2026-08-31T07:36:39.852Z E2 c3 start(): assessment {"status":"transport-loss","receivedGeneration":null}
+2026-08-31T07:36:39.854Z [E2] reconnect + transport loss -> capped backoff -> connected -> PASS (13 checks)
+2026-08-31T07:36:40.374Z [E3] stale response ignored (transport replay of gen 1 after gen 2) -> FAIL (6 checks)
+2026-08-31T07:36:40.374Z       ASSERT FAILED: mutation provenance effectSequence 1 :: {"origin":"team-remote","method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w1","projectionGeneration":null,"effectSequence":null}
+2026-08-31T07:36:40.756Z [E4] ledger pagination stable across a mid-walk mutation -> FAIL (2 checks)
+2026-08-31T07:36:40.757Z       ASSERT FAILED: w2 effectSequence 2 :: {"origin":"team-remote","method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w2","projectionGeneration":null,"effectSequence":null}
+2026-08-31T07:36:40.763Z [E5] typed errors + provenance on the wire -> FAIL (21 checks)
+2026-08-31T07:36:40.763Z       ASSERT FAILED: generation still 5 after rejected create :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:36:40.765Z [E6] seam negatives (no cookie / wrong content-type / method mismatch) -> PASS (8 checks)
+2026-08-31T07:36:40.767Z [FINAL] terminal state: gen 5, ledger seq 1..4, 7 members -> FAIL (1 checks)
+2026-08-31T07:36:40.767Z       ASSERT FAILED: terminal generation 5 :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:36:40.767Z E2E RESULT: FAILURES PRESENT (2/7 scenarios)
+2026-08-31T07:36:40.767Z FAILURE: scenario E1 failed: ASSERT FAILED: raw projection deep-equals client projection
+2026-08-31T07:36:40.768Z FAILURE: scenario E3 failed: ASSERT FAILED: mutation provenance effectSequence 1 :: {"origin":"team-remote","method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w1","projectionGeneration":null,"effectSequence":null}
+2026-08-31T07:36:40.768Z FAILURE: scenario E4 failed: ASSERT FAILED: w2 effectSequence 2 :: {"origin":"team-remote","method":"member.create","endpoint":"member.create","contractVersion":1,"requestToken":"g8r3-tk-w2","projectionGeneration":null,"effectSequence":null}
+2026-08-31T07:36:40.768Z FAILURE: scenario E5 failed: ASSERT FAILED: generation still 5 after rejected create :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:36:40.768Z FAILURE: scenario FINAL failed: ASSERT FAILED: terminal generation 5 :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:36:40.808Z instance stop: {"killed":true,"portFree":true}
+2026-08-31T07:36:40.809Z patch layer reset to baseline []
+2026-08-31T07:36:40.809Z port 3183 free after stop = true
+2026-08-31T07:36:40.810Z lock released (marker matched)
+2026-08-31T07:36:40.812Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:36:40.812Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:36:41.033Z postflight: main tree clean=true status=""
+2026-08-31T07:36:41.033Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:36:41.034Z G8R3 e2e driver RESULT: FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json
+2026-08-31T07:40:50.264Z G8R3 e2e driver start: runStamp=g8r3-1788162050264
+2026-08-31T07:40:50.265Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:40:50.265Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:40:50.265Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:40:50.271Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:40:50.272Z preflight: port 3183 free
+2026-08-31T07:40:50.272Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:40:50.511Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:40:50.511Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:40:50.512Z lock acquired (attempt 1): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock
+2026-08-31T07:40:50.512Z farm ready under D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules
+2026-08-31T07:40:50.574Z fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3
+2026-08-31T07:40:50.574Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-31T07:40:52.391Z throwaway boot OK: http://127.0.0.1:3183/?token=caVHnwVawwXYRLUlH0ie4zJFs-kx4useZ7Q1lTudsKs
+2026-08-31T07:40:52.432Z row mounted via public patch seam: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3\profiles\web\cordis.patch.yml
+2026-08-31T07:40:52.571Z dump-config: row mounted = true
+2026-08-31T07:40:54.334Z instance up: http://127.0.0.1:3183/?token=QLaCNrwjFNtc6wZqi3xPoeeaSlPV-cnFgojIIKFTGV0
+2026-08-31T07:40:54.339Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:40:55.343Z row ready: {"status":"ready","teamSessionId":"session-g8r3team01","generation":1}
+2026-08-31T07:40:55.423Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:40:55.433Z [E1] initial projection + provenance over real HTTP -> PASS (27 checks)
+2026-08-31T07:40:55.435Z transport scripted: loss on rpcId 1
+2026-08-31T07:40:55.435Z E2 c3 start(): assessment {"status":"transport-loss","receivedGeneration":null}
+2026-08-31T07:40:55.437Z [E2] reconnect + transport loss -> capped backoff -> connected -> PASS (13 checks)
+2026-08-31T07:40:55.786Z [E3] stale response ignored (transport replay of gen 1 after gen 2) -> FAIL (8 checks)
+2026-08-31T07:40:55.787Z       ASSERT FAILED: sync applied gen 2 :: {"status":"duplicate","receivedGeneration":1}
+2026-08-31T07:40:56.685Z [E4] ledger pagination stable across a mid-walk mutation -> FAIL (29 checks)
+2026-08-31T07:40:56.685Z       ASSERT FAILED: page anchor advanced to 4 :: 2
+2026-08-31T07:40:56.692Z [E5] typed errors + provenance on the wire -> FAIL (21 checks)
+2026-08-31T07:40:56.692Z       ASSERT FAILED: generation still 5 after rejected create :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:40:56.695Z [E6] seam negatives (no cookie / wrong content-type / method mismatch) -> PASS (8 checks)
+2026-08-31T07:40:56.696Z [FINAL] terminal state: gen 5, ledger seq 1..4, 7 members -> FAIL (1 checks)
+2026-08-31T07:40:56.696Z       ASSERT FAILED: terminal generation 5 :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:40:56.696Z E2E RESULT: FAILURES PRESENT (3/7 scenarios)
+2026-08-31T07:40:56.696Z FAILURE: scenario E3 failed: ASSERT FAILED: sync applied gen 2 :: {"status":"duplicate","receivedGeneration":1}
+2026-08-31T07:40:56.696Z FAILURE: scenario E4 failed: ASSERT FAILED: page anchor advanced to 4 :: 2
+2026-08-31T07:40:56.697Z FAILURE: scenario E5 failed: ASSERT FAILED: generation still 5 after rejected create :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:40:56.697Z FAILURE: scenario FINAL failed: ASSERT FAILED: terminal generation 5 :: {"origin":"team-remote","method":"team.getProjection","endpoint":"team.getProjection","contractVersion":1,"requestToken":null,"projectionGeneration":1,"effectSequence":null}
+2026-08-31T07:40:56.736Z instance stop: {"killed":true,"portFree":true}
+2026-08-31T07:40:56.737Z patch layer reset to baseline []
+2026-08-31T07:40:56.737Z port 3183 free after stop = true
+2026-08-31T07:40:56.738Z lock released (marker matched)
+2026-08-31T07:40:56.739Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:40:56.739Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:40:56.963Z postflight: main tree clean=true status=""
+2026-08-31T07:40:56.963Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:40:56.964Z G8R3 e2e driver RESULT: FAIL — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json
+2026-08-31T07:49:03.615Z G8R3 e2e driver start: runStamp=g8r3-1788162543615
+2026-08-31T07:49:03.616Z worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3
+2026-08-31T07:49:03.616Z mainRoot=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+2026-08-31T07:49:03.616Z dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3 port=3183
+2026-08-31T07:49:03.638Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:49:03.639Z preflight: port 3183 free
+2026-08-31T07:49:03.640Z preflight: pins {"worktree":{"expected":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","actual":"93d2a96e3ded6a92820f78ee9de94eac9ea6fffb","ok":true},"testUse":{"expected":"cd5ef8148158c3a752a658978873241fdf8e2bbc","actual":"cd5ef8148158c3a752a658978873241fdf8e2bbc","ok":true}}
+2026-08-31T07:49:03.869Z preflight: main tree clean=true (head c47b1a073b24c601f73f83c9b3dab13882cc25d6)
+2026-08-31T07:49:03.870Z preflight: test-use tree clean=true (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-08-31T07:49:03.870Z lock acquired (attempt 1): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8.lock
+2026-08-31T07:49:03.871Z farm ready under D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\node_modules
+2026-08-31T07:49:03.919Z fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3
+2026-08-31T07:49:03.919Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-08-31T07:49:05.797Z throwaway boot OK: http://127.0.0.1:3183/?token=IF5MrwhXe9TT9hE91iBe6uzvLpQN6Gl_HyzmELPGnj4
+2026-08-31T07:49:05.834Z row mounted via public patch seam: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-g8-r3\profiles\web\cordis.patch.yml
+2026-08-31T07:49:05.969Z dump-config: row mounted = true
+2026-08-31T07:49:07.505Z instance up: http://127.0.0.1:3183/?token=B1ZUqrYqyYe3d7EacZDVOirVWG92z_BCbjIzH_fKeWU
+2026-08-31T07:49:07.639Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:49:08.664Z row ready: {"status":"ready","teamSessionId":"session-g8r3team01","generation":1}
+2026-08-31T07:49:08.755Z cookie minted: dsh-auth-vQDQxooHHFvxzSO5Pq7_c_16lXf1oGL-DrRubpYscDE (HttpOnly=true, SameSite=Strict=true)
+2026-08-31T07:49:08.765Z [E1] initial projection + provenance over real HTTP -> PASS (27 checks)
+2026-08-31T07:49:08.767Z transport scripted: loss on rpcId 1
+2026-08-31T07:49:08.768Z E2 c3 start(): assessment {"status":"transport-loss","receivedGeneration":null}
+2026-08-31T07:49:08.770Z [E2] reconnect + transport loss -> capped backoff -> connected -> PASS (13 checks)
+2026-08-31T07:49:09.138Z transport scripted: replay of cached gen 2 on rpcId 3
+2026-08-31T07:49:09.138Z transport scripted: replay of cached gen 1 on rpcId 4
+2026-08-31T07:49:09.138Z [E3] stale frame ignored: duplicate on constant stamp + fixture stale guard -> PASS (19 checks)
+2026-08-31T07:49:10.218Z [E4] ledger pagination stable across a mid-walk mutation -> PASS (35 checks)
+2026-08-31T07:49:10.225Z [E5] typed errors + provenance on the wire -> PASS (24 checks)
+2026-08-31T07:49:10.226Z [E6] seam negatives (no cookie / wrong content-type / method mismatch) -> PASS (8 checks)
+2026-08-31T07:49:10.228Z [FINAL] terminal state: constant stamp 1 (F3), ledger seq 1..4, 7 members -> PASS (9 checks)
+2026-08-31T07:49:10.229Z E2E RESULT: ALL PASS (7/7 scenarios)
+2026-08-31T07:49:10.268Z instance stop: {"killed":true,"portFree":true}
+2026-08-31T07:49:10.269Z patch layer reset to baseline []
+2026-08-31T07:49:10.270Z port 3183 free after stop = true
+2026-08-31T07:49:10.270Z lock released (marker matched)
+2026-08-31T07:49:10.272Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-08-31T07:49:10.272Z postflight: stable :3080 unchanged (200 -> 200)
+2026-08-31T07:49:10.498Z postflight: main tree clean=true status=""
+2026-08-31T07:49:10.499Z postflight: test-use tree clean=true status="" diffEmpty=true
+2026-08-31T07:49:10.499Z G8R3 e2e driver RESULT: PASS — summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\dev\agent-workflow\evidence\G8-REVIEW\reviewer-3\harness-output\summary.json

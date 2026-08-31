@@ -1,0 +1,204 @@
+{
+  "ranAt": "2026-08-31T08:38:19.736Z",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R1",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "port": 3181,
+  "clientCommitHash": "cd5ef814",
+  "teamSessionId": "session-root-g8r1",
+  "attempts": 2,
+  "e2e": "NOT-RUN(env failure: Cannot read properties of null (reading 'projection'))",
+  "worktreeHead": "93d2a96e3ded6a92820f78ee9de94eac9ea6fffb",
+  "hostTreeHead": "cd5ef81481",
+  "instanceLog": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R1\\dev\\agent-workflow\\evidence\\G8-REVIEW\\reviewer-1\\harness\\harness-output\\instance-port3181.log",
+  "bootUrl": "http://127.0.0.1:3181/?token=MMcbhsiByyDAz3b2fM3L-VywIEB1pLFZQnpAGuJ6u8M",
+  "healthFinal": {
+    "ready": true,
+    "error": null,
+    "teamSessionId": "session-root-g8r1",
+    "generation": 1,
+    "durability": {
+      "pending": 28,
+      "settled": 28,
+      "failed": 0
+    }
+  },
+  "sinkLog": [
+    "rejected:rpc-error",
+    "state:connected",
+    "connected"
+  ],
+  "lastStop": {
+    "killed": true,
+    "portFree": true
+  },
+  "attemptErrors": [
+    "TypeError: Cannot read properties of null (reading 'projection')\n    at runScenarios (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:427:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runOnce (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:248:5)\n    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:749:9)\n    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:782:3",
+    "TypeError: Cannot read properties of null (reading 'projection')\n    at runScenarios (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:427:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runOnce (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:248:5)\n    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:749:9)\n    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R1/dev/agent-workflow/evidence/G8-REVIEW/reviewer-1/harness/boot-g8.mjs:782:3"
+  ],
+  "checks": {
+    "passed": 16,
+    "total": 20,
+    "failed": [
+      "E1: first frame verdict apply",
+      "E1: applied generation 1",
+      "E1: first frame verdict apply",
+      "E1: applied generation 1"
+    ]
+  },
+  "checkDetails": [
+    {
+      "ok": true,
+      "label": "preflight: worktree clean (only my untracked evidence dir)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "preflight: test-use tree clean (pristine upstream)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "preflight: stable :3080 answers 200 (untouched)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "preflight: port 3181 free",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "dump-config: row present in the composed profile",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "auth: launch URL redirects (302/303)",
+      "detail": "303"
+    },
+    {
+      "ok": true,
+      "label": "auth: Set-Cookie mints a dsh-auth-* cookie",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "auth: cookie shape",
+      "detail": "dsh-auth-D1gu4AUZ6XwohD5r0eN"
+    },
+    {
+      "ok": true,
+      "label": "auth: cookie HttpOnly + SameSite=Strict",
+      "detail": ""
+    },
+    {
+      "ok": false,
+      "label": "E1: first frame verdict apply",
+      "detail": "rpc-error code=MALFORMED_DTO"
+    },
+    {
+      "ok": false,
+      "label": "E1: applied generation 1",
+      "detail": "null"
+    },
+    {
+      "ok": true,
+      "label": "E1: state connected",
+      "detail": "connected"
+    },
+    {
+      "ok": true,
+      "label": "dump-config: row present in the composed profile",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "auth: launch URL redirects (302/303)",
+      "detail": "303"
+    },
+    {
+      "ok": true,
+      "label": "auth: Set-Cookie mints a dsh-auth-* cookie",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "auth: cookie shape",
+      "detail": "dsh-auth-D1gu4AUZ6XwohD5r0eN"
+    },
+    {
+      "ok": true,
+      "label": "auth: cookie HttpOnly + SameSite=Strict",
+      "detail": ""
+    },
+    {
+      "ok": false,
+      "label": "E1: first frame verdict apply",
+      "detail": "rpc-error code=MALFORMED_DTO"
+    },
+    {
+      "ok": false,
+      "label": "E1: applied generation 1",
+      "detail": "null"
+    },
+    {
+      "ok": true,
+      "label": "E1: state connected",
+      "detail": "connected"
+    }
+  ],
+  "httpLog": [
+    {
+      "where": "GET http://127.0.0.1:3080/",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET launch /",
+      "status": 303
+    },
+    {
+      "where": "POST /team-remote/team.getProjection (client)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET launch /",
+      "status": 303
+    },
+    {
+      "where": "POST /team-remote/team.getProjection (client)",
+      "status": 200
+    }
+  ]
+}

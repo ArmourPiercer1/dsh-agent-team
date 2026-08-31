@@ -1,0 +1,76 @@
+scanned 43 TS files under packages/remote (worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R1)
+  product surface src/: 28 files | test/config: 15 files
+
+S1 — import face, src/: every specifier relative, resolving inside packages/remote
+PASS  S1.1: src/ has zero node: builtin imports (pure module)  (0)
+PASS  S1.2: src/ has zero bare (upstream/external) imports  (0)
+PASS  S1.3: src/ has zero imports escaping packages/remote  (0)
+PASS  S1.4: every src/ relative specifier resolves to an in-package file  (0)
+  (src/ total specifiers: 95; relative 95)
+
+S1.T — test/config import face (vitest runner expected; other bare or escaping specifiers flagged)
+FAIL  S1.T: test/config imports are vitest + in-package relatives only  (2)
+  (test/config total specifiers: 36)
+  packages\remote\test\p8t3-admission.test.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t3-admission.test.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t3-admission.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t3-helpers.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t3-helpers.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t3-invalid-ids.test.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t3-invalid-ids.test.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t3-invalid-ids.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t3-negative.test.ts -> ../../testkit/fault-injection/session-event-scan.mjs [relative-ESCAPES-package] FLAG
+  packages\remote\test\p8t3-negative.test.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t3-negative.test.ts -> ./p8t3-negative-scan.mjs [relative]
+  packages\remote\test\p8t3-negative.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t3-round-trip.test.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t3-round-trip.test.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t3-round-trip.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t3-version.test.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t3-version.test.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t3-version.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t4-engine.test.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t4-engine.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t4-negative.test.ts -> ../../testkit/fault-injection/session-event-scan.mjs [relative-ESCAPES-package] FLAG
+  packages\remote\test\p8t4-negative.test.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t4-negative.test.ts -> ./p8t4-negative-scan.mjs [relative]
+  packages\remote\test\p8t4-negative.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t4-server.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t4-server.ts -> ./p8t3-helpers.js [relative]
+  packages\remote\test\p8t4-sync.test.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t4-sync.test.ts -> ./p8t4-server.js [relative]
+  packages\remote\test\p8t4-sync.test.ts -> ./p8t4-test-client.js [relative]
+  packages\remote\test\p8t4-sync.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\test\p8t4-test-client.ts -> ../src/contracts/types.js [relative]
+  packages\remote\test\p8t4-test-client.ts -> ../src/index.js [relative]
+  packages\remote\test\p8t4-test-client.ts -> ../src/push/index.js [relative]
+  packages\remote\test\remote.test.ts -> ../src/index.js [relative]
+  packages\remote\test\remote.test.ts -> vitest [bare-vitest(expected)] (expected)
+  packages\remote\vitest.config.ts -> vitest/config [bare-vitest(expected)] (expected)
+
+S2 — zero session-machinery references (upstream SessionController/SessionLog/session-event vocabulary)
+PASS  S2.1: zero CODE references to the session machinery in src/  (0)
+S2.2: doc-context mentions in src/: 0 (classified, not passed silently)
+S2.3: test/config mentions (test data / negative-scan suites): 4 (reported, not product coupling)
+  packages\remote\test\p8t3-negative-scan.d.mts:81 [session-log token,test-data-or-runner]: * session-log artifact tokens).
+  packages\remote\test\p8t3-negative.test.ts:4 [session-log token,test-data-or-runner]: * upstream / session-log source at all.
+  packages\remote\test\p8t3-negative.test.ts:14 [SessionController,test-data-or-runner]: *      frozen ports (no SessionController mirror, no upstream session
+  packages\remote\test\p8t3-negative.test.ts:116 [session-log token,test-data-or-runner]: it('detects the mirror token and session-log artifact tokens (positive control R3/R4)', () => {
+
+S3 — the twelve structural ports are the only external coupling surface
+PASS  S3.1: RemoteHandlerDeps declared in handlers/ports.ts
+PASS  S3.2: all twelve ports declared on RemoteHandlerDeps  (catalog,intent,teamCreate,projection,ledger,admission,lifecycle,override,policyState,compatibility,handoff,legacy)
+S3.3: handler modules consuming the port surface: catalog.ts, compatibility.ts, dispatch.ts, handoff.ts, intent.ts, legacy.ts, member.ts, override.ts, policy-state.ts, register.ts, team.ts
+
+S4 — closed catalog: the client data needs are met by remote responses
+  catalog methods (21): catalog.get, catalog.list, compatibility.ack, compatibility.get, compatibility.reprobe, handoff.create, handoff.prepare, intent.probe, legacy.inspect, member.archive, member.create, member.dispose, member.followup, member.restore, member.send, override.get, override.reset, override.set, team.create, team.getLedgerPage, team.getProjection
+PASS  S4: whole-projection observation (E1/E2/E3) -> team.getProjection
+PASS  S4: ledger pages (E4) -> team.getLedgerPage
+PASS  S4: typed admission effects (E5): create -> member.create
+PASS  S4: typed admission effects (E5): send -> member.send
+PASS  S4: typed admission effects (E5): follow-up -> member.followup
+PASS  S4: member lifecycle -> member.archive
+PASS  S4: member lifecycle -> member.restore
+PASS  S4: member lifecycle -> member.dispose
+
+DEPENDENCY SCAN: 1 FAILURES: S1.T: test/config imports are vitest + in-package relatives only

@@ -1,0 +1,49 @@
+{
+  "head": "93d2a96e3ded6a92820f78ee9de94eac9ea6fffb",
+  "testUseSha": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+  "port": 3182,
+  "stableBefore": {
+    "ok": true,
+    "status": 200
+  },
+  "stableAfter": {
+    "ok": true,
+    "status": 200
+  },
+  "portFreeAfter": true,
+  "treeCleanAfter": true,
+  "scenarios": [
+    {
+      "name": "E1",
+      "pass": true,
+      "detail": "PASS E1.1 team.create → 200 typed server-response envelope | PASS E1.2 result.ok true (fresh root seeded in real TeamDomain) | PASS E1.3 path === fresh-root | PASS E1.4 bind.teamSessionId === rootSessionId (invariant 9) | PASS E1.5 create success carries provenance (origin/method/contractVersion; no token for this method) | PASS E1.6 first pull verdict apply (gen 1) | PASS E1.7 applied generation is 1 | PASS E1.8 applied frame is this team (teamSessionId round-trips) | PASS E1.9 frame provenance (getProjection, projectionGeneration 1, requestToken null) | PASS E1.10 raw getProjection 200 ok, projectionGeneration 1 | PASS E1.11 lossless JSON round-trip → typed P8-T1 TeamProjectionDto | PASS E1.12 all nine frozen top-level fields present"
+    },
+    {
+      "name": "E2",
+      "pass": true,
+      "detail": "PASS E2.1 loss → verdict transport-loss | PASS E2.2 state moved to reconnecting | PASS E2.3 frozen backoff entry (attempt 1, cap 20ms, delay within [cap/2, cap]) | PASS E2.4 deterministic advance → reconnect, gen 1 duplicate (idempotent) | PASS E2.5 re-minted cookie (fresh session, B2 shape) | PASS E2.6 reconnect re-pull applies the durable generation | PASS E2.7 applied content deep-equal to durable truth (over a second raw RPC) | PASS E2.8 generation equal-or-advanced across reconnect"
+    },
+    {
+      "name": "E3",
+      "pass": true,
+      "detail": "PASS E3.1 captured in-flight response carries generation 1 | PASS E3.2 member.create → 200 ok (new member durably committed) | PASS E3.3 effectSequence 4 (fourth durable ledger fact) + requestToken echo | PASS E3.4 client applies the newer generation (2) | PASS E3.5 stale frame REJECTED (verdict stale, receivedGeneration 1) | PASS E3.6 stats.framesStale === 1 | PASS E3.7 applied state untouched (still gen 2, deep-equal pre-stale frame)"
+    },
+    {
+      "name": "E4",
+      "pass": true,
+      "detail": "PASS E4.1 first page accepted: seq 1-3, cursor 3 (non-terminal), total 4 | PASS E4.2 tracker anchor advanced to 3 | PASS E4.3 member.send → 200 ok, effectSequence 5, token echo | PASS E4.4 next page from the anchor: seq 4-5, terminal, total 5 | PASS E4.5 raw re-read of anchor 0 → byte-identical first page | PASS E4.6 total only moved up (4 → 5) | PASS E4.7 tracker rejects the stale-anchor re-fetch (anchor-mismatch); cursor stays 3 | PASS E4.8 pagesApplied === 2 (both accepted pages honored)"
+    },
+    {
+      "name": "E5",
+      "pass": true,
+      "detail": "PASS E5.1 invalid id → HTTP 200, result.ok false (no 500, no raw exception) | PASS E5.2 code is a closed mirrored P3 id code | PASS E5.3 typed error carries message + method/endpoint details | PASS E5.4 version 2 → contract-version-unsupported (closed registry) | PASS E5.5 duplicate member.create → 200 ok:false member-already-exists (typed domain error pass-through) | PASS E5.6 error details carry reason domain-error + cause {code,message} | PASS E5.7 every prior SUCCESS carried full provenance (create/getProjection/member.create/member.send) | PASS E5.8 no HTTP 500 anywhere in the whole run | PASS E5.9 every 200 body is a typed server-response envelope (no raw exceptions on the wire)"
+    },
+    {
+      "name": "E6",
+      "pass": true,
+      "detail": "PASS E6.1 no cookie → 401 | PASS E6.2 401 body indicates unauthorized | PASS E6.3 wrong content-type → 415 | PASS E6.4 method≠endpoint → 200, result.ok false, code bad-request (endpoint check precedes the envelope)"
+    }
+  ],
+  "allPass": true,
+  "wireSamples": 13
+}

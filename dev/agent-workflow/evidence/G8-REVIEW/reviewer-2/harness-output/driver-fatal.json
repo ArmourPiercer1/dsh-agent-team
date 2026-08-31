@@ -1,0 +1,5 @@
+{
+  "at": "2026-08-31T07:40:05.462Z",
+  "message": "The requested module 'node:util' does not provide an export named 'deepStrictEqual'",
+  "stack": "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R2/dev/agent-workflow/evidence/G8-REVIEW/reviewer-2/harness/client.mjs:56\nimport { deepStrictEqual } from 'node:util'\n         ^^^^^^^^^^^^^^^\nSyntaxError: The requested module 'node:util' does not provide an export named 'deepStrictEqual'\n    at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)\n    at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)\n    at async node:internal/modules/esm/loader:647:26\n    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R2/dev/agent-workflow/evidence/G8-REVIEW/reviewer-2/harness/driver.mjs:263:20)"
+}

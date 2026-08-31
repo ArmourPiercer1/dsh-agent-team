@@ -1,0 +1,281 @@
+== boundary checks ==
+2026-08-31T14:19:42.8221949+08:00
+toplevel=D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/G8-R3
+HEAD=93d2a96e3ded6a92820f78ee9de94eac9ea6fffb
+ts files scanned: 454
+
+== A. zero-core: node: builtin imports in packages/**/*.ts (mjs/cjs excluded) ==
+HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\test\p7t5-no-creation-scan.test.ts:42: "import { readFileSync } from 'node:fs'",
+
+== A2. zero-core: node: imports in .mjs/.cjs (excluded by rule, listed for the record) ==
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\fs-seam.mjs:21
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\mini-mcp.mjs:26
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\mini-mcp.mjs:126
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\mini-mcp.mjs:186
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:38
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:39
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:40
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:41
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:42
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:107
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\plugin.mjs:117
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:45
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:46
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:47
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\ts-loader.mjs:28
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\ts-loader.mjs:29
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\ts-loader.mjs:30
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\teammates-adapter-fs.mjs:21
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\teammates-adapter-fs.mjs:22
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\teammates-adapter-fs.mjs:23
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:42
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:43
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:44
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:179
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t4-negative-scan.mjs:46
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t4-negative-scan.mjs:47
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t4-negative-scan.mjs:48
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\plugin.mjs:145
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\plugin.mjs:146
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\plugin.mjs:147
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\plugin.mjs:231
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\plugin.mjs:241
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:71
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:72
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:73
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:74
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:75
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\mini-mcp.mjs:20
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\mini-mcp.mjs:72
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\mini-mcp.mjs:131
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\plugin.mjs:89
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\plugin.mjs:90
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\plugin.mjs:91
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\plugin.mjs:178
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\plugin.mjs:188
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:47
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:48
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:49
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:50
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\ts-loader.mjs:27
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\ts-loader.mjs:28
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\ts-loader.mjs:29
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\test\p7t5-no-creation-scan.mjs:46
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\test\p7t5-no-creation-scan.mjs:47
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\test\p7t5-no-creation-scan.mjs:48
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\fault-injection\file-seam.mjs:71
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\fault-injection\file-seam.mjs:72
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\fault-injection\file-seam.mjs:73
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\fault-injection\session-event-scan.mjs:71
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\fault-injection\session-event-scan.mjs:72
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\fault-injection\session-event-scan.mjs:73
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\plugin.mjs:52
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\plugin.mjs:53
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\plugin.mjs:54
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\plugin.mjs:186
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\plugin.mjs:193
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:69
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:70
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:71
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\test\p6t6-bypass-scan.mjs:57
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\test\p6t6-bypass-scan.mjs:58
+EXCLUDED-HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\test\p6t6-bypass-scan.mjs:59
+
+== B. patch-package / pnpm patch / postinstall in package.json (excl node_modules) ==
+HIT: scripts\fixtures\zero-core\plugins\bad-plugin-a\package.json contains 'patch-package'
+HIT: scripts\fixtures\zero-core\plugins\bad-plugin-a\package.json contains 'postinstall'
+
+== C. pnpm-lock.yaml diff vs 959e36358ee7244ff8c7e1e0b8396e70dfef4562 (P7 int tip) ==
+(no diff)
+
+== D. imports/refs of references/deepseek-harness-test-use from packages/* ==
+none
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:5
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:96
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:238
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:239
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\run.mjs:549
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\e2e\ts-loader.mjs:22
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:13
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:129
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t3-negative-scan.mjs:180
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\remote\test\p8t4-negative-scan.mjs:168
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:20
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:21
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:126
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:130
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:224
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\member-residency\harness\run.mjs:225
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:17
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:18
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:109
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:159
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\run.mjs:160
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\runtime\root-binding\harness\ts-loader.mjs:21
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:22
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:23
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:158
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:162
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:212
+EXCLUDED-HIT(mjs): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\tools\harness\run.mjs:213
+
+== E. private-import: upstream internals / frozen legacy fork refs in packages/**/*.ts ==
+HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\format.ts:5: * DSH (evidence: `references/deepseek-harness`, read-only):
+HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\legacy\session-reader\types.ts:17: * Legacy on-disk evidence (frozen fork `references/deepseek-harness`,
+HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\storage\test\p4-helpers.ts:864: 'deepseek-harness',
+HIT: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\G8-R3\packages\testkit\domain\src\import-graph.ts:52: 'deepseek-harness',
+
+== F. owned-boundary: git diff --name-only 959e36358ee7244ff8c7e1e0b8396e70dfef4562..HEAD -- packages/ ==
+packages/contracts/src/index.ts
+packages/contracts/src/projection/activity.ts
+packages/contracts/src/projection/common.ts
+packages/contracts/src/projection/compatibility.ts
+packages/contracts/src/projection/effective-config.ts
+packages/contracts/src/projection/index.ts
+packages/contracts/src/projection/ledger.ts
+packages/contracts/src/projection/member.ts
+packages/contracts/src/projection/projection.ts
+packages/contracts/src/projection/root.ts
+packages/contracts/src/projection/schema.ts
+packages/contracts/src/projection/states.ts
+packages/contracts/src/projection/template.ts
+packages/contracts/test/p8t1-projection-fixtures.ts
+packages/contracts/test/p8t1-projection-generation.test.ts
+packages/contracts/test/p8t1-projection-negative.test.ts
+packages/contracts/test/p8t1-projection-overlay.test.ts
+packages/contracts/test/p8t1-projection-serialization.test.ts
+packages/remote/src/contracts/catalog.ts
+packages/remote/src/contracts/errors.ts
+packages/remote/src/contracts/ids.ts
+packages/remote/src/contracts/params.ts
+packages/remote/src/contracts/remote-safe.ts
+packages/remote/src/contracts/request.ts
+packages/remote/src/contracts/response.ts
+packages/remote/src/contracts/types.ts
+packages/remote/src/contracts/version.ts
+packages/remote/src/handlers/catalog.ts
+packages/remote/src/handlers/compatibility.ts
+packages/remote/src/handlers/dispatch.ts
+packages/remote/src/handlers/handoff.ts
+packages/remote/src/handlers/intent.ts
+packages/remote/src/handlers/legacy.ts
+packages/remote/src/handlers/member.ts
+packages/remote/src/handlers/override.ts
+packages/remote/src/handlers/policy-state.ts
+packages/remote/src/handlers/ports.ts
+packages/remote/src/handlers/register.ts
+packages/remote/src/handlers/team.ts
+packages/remote/src/index.ts
+packages/remote/src/push/generation.ts
+packages/remote/src/push/index.ts
+packages/remote/src/push/ledger-page.ts
+packages/remote/src/push/pull.ts
+packages/remote/src/push/reconnect.ts
+packages/remote/src/push/types.ts
+packages/remote/test/p8t3-admission.test.ts
+packages/remote/test/p8t3-helpers.ts
+packages/remote/test/p8t3-invalid-ids.test.ts
+packages/remote/test/p8t3-negative-scan.d.mts
+packages/remote/test/p8t3-negative-scan.mjs
+packages/remote/test/p8t3-negative.test.ts
+packages/remote/test/p8t3-round-trip.test.ts
+packages/remote/test/p8t3-version.test.ts
+packages/remote/test/p8t4-engine.test.ts
+packages/remote/test/p8t4-negative-scan.d.mts
+packages/remote/test/p8t4-negative-scan.mjs
+packages/remote/test/p8t4-negative.test.ts
+packages/remote/test/p8t4-server.ts
+packages/remote/test/p8t4-sync.test.ts
+packages/remote/test/p8t4-test-client.ts
+packages/runtime/projection/errors.ts
+packages/runtime/projection/fold.ts
+packages/runtime/projection/index.ts
+packages/runtime/projection/ledger.ts
+packages/runtime/projection/service.ts
+packages/runtime/projection/types.ts
+packages/runtime/test/p8t2-cold.test.ts
+packages/runtime/test/p8t2-fifty.test.ts
+packages/runtime/test/p8t2-helpers.ts
+packages/runtime/test/p8t2-negative.test.ts
+packages/runtime/test/p8t2-overlay.test.ts
+packages/runtime/test/p8t2-terminal.test.ts
+packages/testkit/test/p4t6-session-event-scan.test.ts
+(total files in diff: 74)
+
+== F2. classification against P8 owned globs (TaskDoc 11.9 + brief step 4) ==
+OK      packages/contracts/src/index.ts
+OK      packages/contracts/src/projection/activity.ts
+OK      packages/contracts/src/projection/common.ts
+OK      packages/contracts/src/projection/compatibility.ts
+OK      packages/contracts/src/projection/effective-config.ts
+OK      packages/contracts/src/projection/index.ts
+OK      packages/contracts/src/projection/ledger.ts
+OK      packages/contracts/src/projection/member.ts
+OK      packages/contracts/src/projection/projection.ts
+OK      packages/contracts/src/projection/root.ts
+OK      packages/contracts/src/projection/schema.ts
+OK      packages/contracts/src/projection/states.ts
+OK      packages/contracts/src/projection/template.ts
+VIOLATION packages/contracts/test/p8t1-projection-fixtures.ts
+VIOLATION packages/contracts/test/p8t1-projection-generation.test.ts
+VIOLATION packages/contracts/test/p8t1-projection-negative.test.ts
+VIOLATION packages/contracts/test/p8t1-projection-overlay.test.ts
+VIOLATION packages/contracts/test/p8t1-projection-serialization.test.ts
+OK      packages/remote/src/contracts/catalog.ts
+OK      packages/remote/src/contracts/errors.ts
+OK      packages/remote/src/contracts/ids.ts
+OK      packages/remote/src/contracts/params.ts
+OK      packages/remote/src/contracts/remote-safe.ts
+OK      packages/remote/src/contracts/request.ts
+OK      packages/remote/src/contracts/response.ts
+OK      packages/remote/src/contracts/types.ts
+OK      packages/remote/src/contracts/version.ts
+OK      packages/remote/src/handlers/catalog.ts
+OK      packages/remote/src/handlers/compatibility.ts
+OK      packages/remote/src/handlers/dispatch.ts
+OK      packages/remote/src/handlers/handoff.ts
+OK      packages/remote/src/handlers/intent.ts
+OK      packages/remote/src/handlers/legacy.ts
+OK      packages/remote/src/handlers/member.ts
+OK      packages/remote/src/handlers/override.ts
+OK      packages/remote/src/handlers/policy-state.ts
+OK      packages/remote/src/handlers/ports.ts
+OK      packages/remote/src/handlers/register.ts
+OK      packages/remote/src/handlers/team.ts
+OK      packages/remote/src/index.ts
+OK      packages/remote/src/push/generation.ts
+OK      packages/remote/src/push/index.ts
+OK      packages/remote/src/push/ledger-page.ts
+OK      packages/remote/src/push/pull.ts
+OK      packages/remote/src/push/reconnect.ts
+OK      packages/remote/src/push/types.ts
+OK      packages/remote/test/p8t3-admission.test.ts
+OK      packages/remote/test/p8t3-helpers.ts
+OK      packages/remote/test/p8t3-invalid-ids.test.ts
+OK      packages/remote/test/p8t3-negative-scan.d.mts
+OK      packages/remote/test/p8t3-negative-scan.mjs
+OK      packages/remote/test/p8t3-negative.test.ts
+OK      packages/remote/test/p8t3-round-trip.test.ts
+OK      packages/remote/test/p8t3-version.test.ts
+OK      packages/remote/test/p8t4-engine.test.ts
+OK      packages/remote/test/p8t4-negative-scan.d.mts
+OK      packages/remote/test/p8t4-negative-scan.mjs
+OK      packages/remote/test/p8t4-negative.test.ts
+OK      packages/remote/test/p8t4-server.ts
+OK      packages/remote/test/p8t4-sync.test.ts
+OK      packages/remote/test/p8t4-test-client.ts
+OK      packages/runtime/projection/errors.ts
+OK      packages/runtime/projection/fold.ts
+OK      packages/runtime/projection/index.ts
+OK      packages/runtime/projection/ledger.ts
+OK      packages/runtime/projection/service.ts
+OK      packages/runtime/projection/types.ts
+VIOLATION packages/runtime/test/p8t2-cold.test.ts
+VIOLATION packages/runtime/test/p8t2-fifty.test.ts
+VIOLATION packages/runtime/test/p8t2-helpers.ts
+VIOLATION packages/runtime/test/p8t2-negative.test.ts
+VIOLATION packages/runtime/test/p8t2-overlay.test.ts
+VIOLATION packages/runtime/test/p8t2-terminal.test.ts
+OK      packages/testkit/test/p4t6-session-event-scan.test.ts
+
+owned-boundary result: FAIL (violations listed)

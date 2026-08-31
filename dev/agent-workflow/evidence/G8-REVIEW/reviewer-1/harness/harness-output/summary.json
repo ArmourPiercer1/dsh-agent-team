@@ -1,0 +1,838 @@
+{
+  "ranAt": "2026-08-31T08:46:42.035Z",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R1",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "port": 3181,
+  "clientCommitHash": "cd5ef814",
+  "teamSessionId": "session-root-g8r1",
+  "attempts": 1,
+  "e2e": "RUN(PASS)",
+  "worktreeHead": "93d2a96e3ded6a92820f78ee9de94eac9ea6fffb",
+  "hostTreeHead": "cd5ef81481",
+  "instanceLog": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\G8-R1\\dev\\agent-workflow\\evidence\\G8-REVIEW\\reviewer-1\\harness\\harness-output\\instance-port3181.log",
+  "bootUrl": "http://127.0.0.1:3181/?token=nwHha8WXqGG1gzQ97DktfdkxpEI2Gd7ARkrAfkrzY50",
+  "healthFinal": {
+    "ready": true,
+    "error": null,
+    "teamSessionId": "session-root-g8r1",
+    "generation": 4,
+    "durability": {
+      "pending": 40,
+      "settled": 40,
+      "failed": 0
+    }
+  },
+  "sinkLog": [
+    "frame:1",
+    "state:connected",
+    "connected",
+    "state:reconnecting",
+    "loss",
+    "frame:2",
+    "state:connected",
+    "connected",
+    "frame:3",
+    "rejected:stale",
+    "page:3/9",
+    "page:3/9",
+    "page:3/9",
+    "page:3/10",
+    "page:1/10"
+  ],
+  "clientStats": {
+    "framesApplied": 3,
+    "framesDuplicate": 0,
+    "framesStale": 1,
+    "framesForeign": 0,
+    "framesInconsistent": 0,
+    "rpcErrors": 0,
+    "transportLosses": 1,
+    "unexpectedRejections": 0,
+    "sinkErrors": {},
+    "pagesApplied": 5,
+    "pagesRejected": 1
+  },
+  "backoffLog": [
+    {
+      "attempt": 1,
+      "capMs": 100,
+      "delayMs": 100,
+      "atMs": 0
+    }
+  ],
+  "stateHistory": [
+    "connected",
+    "reconnecting",
+    "connected"
+  ],
+  "pageAnchor": 9,
+  "lastStop": {
+    "killed": true,
+    "portFree": true
+  },
+  "checks": {
+    "passed": 104,
+    "total": 104,
+    "failed": []
+  },
+  "checkDetails": [
+    {
+      "ok": true,
+      "label": "preflight: worktree clean (only my untracked evidence dir)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "preflight: test-use tree clean (pristine upstream)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "preflight: stable :3080 answers 200 (untouched)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "preflight: port 3181 free",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "dump-config: row present in the composed profile",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "auth: launch URL redirects (302/303)",
+      "detail": "303"
+    },
+    {
+      "ok": true,
+      "label": "auth: Set-Cookie mints a dsh-auth-* cookie",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "auth: cookie shape",
+      "detail": "dsh-auth-D1gu4AUZ6XwohD5r0eN"
+    },
+    {
+      "ok": true,
+      "label": "auth: cookie HttpOnly + SameSite=Strict",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: first frame verdict apply",
+      "detail": "apply"
+    },
+    {
+      "ok": true,
+      "label": "E1: applied generation 1",
+      "detail": "1"
+    },
+    {
+      "ok": true,
+      "label": "E1: state connected",
+      "detail": "connected"
+    },
+    {
+      "ok": true,
+      "label": "E1: projection has exactly the nine frozen top-level fields",
+      "detail": "blueprint,generatedAt,generation,ledger,members,root,schemaVersion,teamSessionId,templates"
+    },
+    {
+      "ok": true,
+      "label": "E1: schemaVersion 1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: teamSessionId echoes the root session",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: generation 1 (seeded)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: generatedAt = the harness clock",
+      "detail": "2026-08-30T09:00:00Z"
+    },
+    {
+      "ok": true,
+      "label": "E1: blueprint snapshot ref present",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: blueprint id/revision",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E1: root compatibility BLOCKED_FATAL (seeded durable state)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: root admission OPEN",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: creation budget 0",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: three templates",
+      "detail": "3"
+    },
+    {
+      "ok": true,
+      "label": "E1: template ordering leader/worker/scout",
+      "detail": "leader:leader,member:worker,member:scout"
+    },
+    {
+      "ok": true,
+      "label": "E1: two members (leader + worker)",
+      "detail": "2"
+    },
+    {
+      "ok": true,
+      "label": "E1: leader member row WITHOUT childSessionId (invariant 14)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: worker member row WITH childSessionId",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E1: both members RUNNING",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E1: leader effectiveConfig carries the four frozen lanes",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E1: worker effectiveConfig carries the four frozen lanes",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E1: ledger latestSequence 7 (seeded)",
+      "detail": "7"
+    },
+    {
+      "ok": true,
+      "label": "E1: ledger totalEntries 7",
+      "detail": "7"
+    },
+    {
+      "ok": true,
+      "label": "E1: sum(byCategory) === totalEntries",
+      "detail": "7"
+    },
+    {
+      "ok": true,
+      "label": "E1: byCategory matches the seeded facts",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E1: pendingControlCount 1 (one request-control, no resolve)",
+      "detail": "1"
+    },
+    {
+      "ok": true,
+      "label": "E1: frame provenance (origin/method/endpoint/version/token/generation)",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E2: loss verdict",
+      "detail": "transport-loss"
+    },
+    {
+      "ok": true,
+      "label": "E2: state reconnecting after loss",
+      "detail": "reconnecting"
+    },
+    {
+      "ok": true,
+      "label": "E2: transportLosses 1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E2: backoff entry scheduled",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E2: send while down -> 200 ok (server unaffected)",
+      "detail": "200"
+    },
+    {
+      "ok": true,
+      "label": "E2: outcome executed send-message",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E2: callerRole human",
+      "detail": "human"
+    },
+    {
+      "ok": true,
+      "label": "E2: targetInstanceId worker",
+      "detail": "inst-g8r1w1"
+    },
+    {
+      "ok": true,
+      "label": "E2: durable effect fact-recorded",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E2: effect sequence 8 (first append)",
+      "detail": "8"
+    },
+    {
+      "ok": true,
+      "label": "E2: provenance on the admission success (origin/method/requestToken echo)",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E2: provenance.effectSequence null (facade effect carries `sequence`, not factSequence — documented nuance)",
+      "detail": "null"
+    },
+    {
+      "ok": true,
+      "label": "E2: state connected after recovery",
+      "detail": "connected"
+    },
+    {
+      "ok": true,
+      "label": "E2: recovery applied generation 2",
+      "detail": "2"
+    },
+    {
+      "ok": true,
+      "label": "E2: framesApplied 2",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E2: no unexpected rejections",
+      "detail": "0"
+    },
+    {
+      "ok": true,
+      "label": "E2: fresh raw pull shows generation 2",
+      "detail": "2"
+    },
+    {
+      "ok": true,
+      "label": "E2: applied projection deep-equals the fresh raw pull (round-trip)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E2: no rpc-error assessments",
+      "detail": "0"
+    },
+    {
+      "ok": true,
+      "label": "E3: captured gen-2 frame",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E3: second append -> sequence 9",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E3: sync applies generation 3",
+      "detail": "apply/3"
+    },
+    {
+      "ok": true,
+      "label": "E3: re-injected gen-2 frame verdict stale",
+      "detail": "stale"
+    },
+    {
+      "ok": true,
+      "label": "E3: framesStale 1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E3: applied generation unchanged (still 3)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E3: rpcId correlation intact (no inconsistent)",
+      "detail": "0"
+    },
+    {
+      "ok": true,
+      "label": "E3: framesApplied still 3",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E4: page 1 accepted by the tracker",
+      "detail": "null"
+    },
+    {
+      "ok": true,
+      "label": "E4: page 1 = seq 1-3",
+      "detail": "1,2,3"
+    },
+    {
+      "ok": true,
+      "label": "E4: page 1 cursor 3",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E4: page 1 total = current total",
+      "detail": "9"
+    },
+    {
+      "ok": true,
+      "label": "E4: anchor advanced to 3",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E4: page 2 = seq 4-6, cursor 6",
+      "detail": "4,5,6"
+    },
+    {
+      "ok": true,
+      "label": "E4: anchor advanced to 6",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E4: page 3 = seq 7-9, terminal cursor",
+      "detail": "7,8,9"
+    },
+    {
+      "ok": true,
+      "label": "E4: anchor holds at 6 after the terminal page",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E4: tracker 3 applied / 0 rejected",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E4: growth append -> next sequence",
+      "detail": "10"
+    },
+    {
+      "ok": true,
+      "label": "E4: off-anchor explicit re-read rejected by the tracker guard",
+      "detail": "anchor-mismatch"
+    },
+    {
+      "ok": true,
+      "label": "E4: re-reading anchor 0 after growth yields the SAME page (stable slicer)",
+      "detail": "1,2,3"
+    },
+    {
+      "ok": true,
+      "label": "E4: total only moves up (append-only)",
+      "detail": "10"
+    },
+    {
+      "ok": true,
+      "label": "E4: tracker rejected exactly the off-anchor page",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "E4: cursor continues from anchor 6 and sees the growth page (next = last seq of page, 9)",
+      "detail": "{\"entries\":[{\"schemaVersion\":1,\"sequence\":7,\"rootSessionId\":\"session-root-g8r1\",\"factType\":\"member-lifecycle-changed\",\"payload\":{\"action\":\"admit-work\",\"at\":\"2026-08-30T09:00:00Z\",\"from\":\"CREATED\",\"instanceId\":\"inst-g8r1w1\",\"to\":\"RUNNING\"},\"operationId\":null,\"createdAt\":\"2026-08-30T09:00:00Z\"},{\"schemaVersion\":1,\"sequence\":8,\"rootSessionId\":\"session-root-g8r1\",\"factType\":\"team-coordination-recorded\",\"payload\":{\"action\":\"send-message\",\"at\":\"2026-08-30T09:00:00Z\",\"body\":\"g8r1 e2e message 2\",\"caller\":{\"humanId\":\"g8r1-reviewer\",\"kind\":\"human\"},\"recipientInstanceId\":\"inst-g8r1w1\",\"requestToken\":\"tok-g8r1-e2\",\"subject\":\"g8r1-e2e-2\",\"targetInstanceId\":\"inst-g8r1w1\"},\"operationId\":null,\"createdAt\":\"2026-08-30T09:00:00Z\"},{\"schemaVersion\":1,\"sequence\":9,\"rootSessionId\":\"session-root-g8r1\",\"factType\":\"team-coordination-recorded\",\"payload\":{\"action\":\"send-message\",\"at\":\"2026-08-30T09:00:00Z\",\"body\":\"g8r1 e2e message 3\",\"caller\":{\"humanId\":\"g8r1-reviewer\",\"kind\":\"human\"},\"recipientInstanceId\":\"inst-g8r1w1\",\"requestToken\":\"tok-g8r1-e3\",\"subject\":\"g8r1-e2e-3\",\"targetInstanceId\":\"inst-g8r1w1\"},\"operationId\":null,\"createdAt\":\"2026-08-30T09:00:00Z\"}],\"nextAfterSequence\":9,\"total\":10}"
+    },
+    {
+      "ok": true,
+      "label": "E4: anchor advanced to 9 with the growth page",
+      "detail": "9"
+    },
+    {
+      "ok": true,
+      "label": "E4: the growth entry is served as its own terminal page",
+      "detail": "{\"entries\":[{\"schemaVersion\":1,\"sequence\":10,\"rootSessionId\":\"session-root-g8r1\",\"factType\":\"team-coordination-recorded\",\"payload\":{\"action\":\"send-message\",\"at\":\"2026-08-30T09:00:00Z\",\"body\":\"g8r1 e2e message 4\",\"caller\":{\"humanId\":\"g8r1-reviewer\",\"kind\":\"human\"},\"recipientInstanceId\":\"inst-g8r1w1\",\"requestToken\":\"tok-g8r1-e4\",\"subject\":\"g8r1-e2e-4\",\"targetInstanceId\":\"inst-g8r1w1\"},\"operationId\":null,\"createdAt\":\"2026-08-30T09:00:00Z\"}],\"nextAfterSequence\":null,\"total\":10}"
+    },
+    {
+      "ok": true,
+      "label": "E5a: 200 with typed error result (no 5xx)",
+      "detail": "200"
+    },
+    {
+      "ok": true,
+      "label": "E5a: pass-through domain code INSTANCE_NOT_FOUND",
+      "detail": "TEAM_RUNTIME_INSTANCE_NOT_FOUND"
+    },
+    {
+      "ok": true,
+      "label": "E5a: details.cause carries code + message",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E5a: source identity under details.cause.details",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E5a: provenance folded into error details (method/endpoint/version/requestToken)",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E5b: 200 with typed error result",
+      "detail": "200"
+    },
+    {
+      "ok": true,
+      "label": "E5b: new work (follow-up) blocked by the durable compatibility gate",
+      "detail": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED"
+    },
+    {
+      "ok": true,
+      "label": "E5b: gate reports the durable state (status/source/fingerprint)",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "E5c: over-255 teamSessionId -> mirrored frozen P3 code (INVALID_ROOT_SESSION_ID) with field",
+      "detail": "{\"code\":\"INVALID_ROOT_SESSION_ID\",\"message\":\"teamSessionId must be at most 255 characters (got 300)\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"teamSessionId\"}}"
+    },
+    {
+      "ok": true,
+      "label": "E5d: unsupported contract version",
+      "detail": "contract-version-unsupported"
+    },
+    {
+      "ok": true,
+      "label": "E5e: unknown method (endpoint matches, not in the catalog)",
+      "detail": "unknown-method"
+    },
+    {
+      "ok": true,
+      "label": "E6a: no cookie -> 401 unauthorized",
+      "detail": "401 unauthorized"
+    },
+    {
+      "ok": true,
+      "label": "E6b: wrong content-type -> 415",
+      "detail": "415 content type must be application/json"
+    },
+    {
+      "ok": true,
+      "label": "E6c: method != endpoint -> 200 bad-request",
+      "detail": "200 bad-request"
+    },
+    {
+      "ok": true,
+      "label": "GLOBAL: no HTTP 5xx anywhere in the run",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "GLOBAL: no unexpected transport rejections",
+      "detail": "0"
+    },
+    {
+      "ok": true,
+      "label": "FINAL: row still ready",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "FINAL: zero failed durability promises on the real host store",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "FINAL: durability promises settled (real on-disk writes happened)",
+      "detail": "[object Object]"
+    },
+    {
+      "ok": true,
+      "label": "FINAL: generation advanced with the durable effects (H2)",
+      "detail": "4"
+    },
+    {
+      "ok": true,
+      "label": "postflight: test-use tree still clean",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "postflight: fresh DSH_HOME removed",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "postflight: stable :3080 still 200",
+      "detail": ""
+    }
+  ],
+  "httpLog": [
+    {
+      "where": "GET http://127.0.0.1:3080/",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health",
+      "status": 200
+    },
+    {
+      "where": "GET launch /",
+      "status": 303
+    },
+    {
+      "where": "POST /team-remote/team.getProjection (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/member.send",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/member.send",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getLedgerPage (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getLedgerPage (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getLedgerPage (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/member.send",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getLedgerPage (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getLedgerPage (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getLedgerPage (client)",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/member.send",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/member.followup",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.nonexistent",
+      "status": 200
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 401
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 415
+    },
+    {
+      "where": "POST /team-remote/team.getProjection",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET /__g8r1/health (final)",
+      "status": 200
+    },
+    {
+      "where": "GET http://127.0.0.1:3080/",
+      "status": 200
+    }
+  ]
+}
