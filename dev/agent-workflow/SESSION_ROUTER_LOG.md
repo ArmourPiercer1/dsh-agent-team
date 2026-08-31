@@ -759,6 +759,17 @@
 - **偏差/concerns**：worker 无；主 Agent 无。
 - **下一步**：R52 —— P8-T2 派发（Projection service，owns `packages/runtime/projection/**`，base = int tip `48b3334`，同协议 brief + `P8T2_REPORT`；必须测试 cold projection / 50 instances / live overlay / disposed+archived；验收 = 与 durable truth 一致、复杂度不依赖完整 child logs）。
 
+## R53 — P8-T2 worker 执行 + 主 Agent 独立审计 + 集成（int/P8 @ `67c3d4e`，1669/1669；ready → P8-T3）（2026-08-31，主 Agent）
+
+- **Brief**：`dev/agent-workflow/briefs/P8-T2-brief.md`（master `8566d3b`，R52 kickoff commit）：TaskDoc §11.9 P8-T2 卡片 verbatim + DevPlan §21 约束（21.2 by-construction 边界 / 21.4 generation）+ P8-T1 DTO 冻结只读 + base `48b3334` + owned glob `packages/runtime/projection/**` + sanctioned chain + tsc 分参 + p4t6 428→428+N + 必须 4 测试（cold / 50 instances / live overlay / disposed+archived）+ negative（无 log-read 面 + 复杂度 guard）+ `P8T2_REPORT` 格式。
+- **派发**：workflow 单 leaf，`agent()` 显式 `provider:'qiyuan-self'` + `model:'qwen3.8-27b'`；worker attempts 1/3。
+- **Worker 结果（P8T2_REPORT，已 disk-verify）**：分支 `task/P8-T2-projection-service` @ `.worktrees/P8-T2`；3 commits（`8c9acc3` design-note / `0c51c42` code 13 files / `4f7573b` evidence 3 files，parent 链 = base `48b3334` ✓，worktree clean）；6 src（types / errors / ledger / fold / service / index）+ 6 测试文件（helpers + cold/fifty/overlay/terminal/negative）+ p4t6；全链 1638 → **1669/1669**（+31：cold 7 / fifty 6 / overlay 7 / terminal 5 / negative 6）；tsc ×5 exit 0；p4t6 428 → **440**（N=12；withSource 9 / legacy 21 不变）。
+- **主 Agent 独立审计**：task worktree 全链 **1669/1669** + tsc ×5 exit 0（log `evidence/P8-T2/main-audit-chain.log`）；zero-core/import-face：12 新 .ts 文件 0 `node:` import、0 upstream/references import；**int 链**（post-pick，`.worktrees/int-P8` worktree 内运行，toplevel/HEAD 留痕） **1669/1669** + tsc ×5（log `evidence/int-P8/main-audit-chain-r53.log`）。
+- **集成**：cherry-pick -x 三提交 → int/P8（`ba007cf` design / `ca02ffe` code / `67c3d4e` evidence，全部 clean，无 p4t6 冲突：任务分支自 int tip 分出）；post-pick HEAD 验证 0 markers / 440。
+- **验收交叉核对（主 Agent 读 design-note + 测试）**：durable 字段 = TeamDomain verbatim（fold 纯函数）；live overlay 仅进 nullable `liveActivity` lane（不触碰 identity/generation/workspace）；复杂度 guard = 读面（port + source type）无 log-read 面 + 50-member canonical JSON 在 childLogVolume 0 vs 5,000,000 下 byte-identical、21.2 trap counter = 0；ledger pagination 单独处理（ledger.ts 独立读路径，不在 whole fold 内）。
+- **偏差/concerns**：worker 将 design-note 拆为独立首提交（3 提交结构，brief 只要求 code/evidence 分离）—— cherry-pick 无碍，可接受，留痕。
+- **下一步**：R54 —— P8-T3 派发（Remote contract v1 + Host handlers，owns `packages/remote/contracts*` + `handlers*`，base = int tip `67c3d4e`；seam = P2-T6 实证 `TEAM_REMOTE`：`connection` 服务 `rpc.handle` 注册 public handlers，wire `{"type":"client-request","rpcId","method","payload"}`，envelope `result:{ok,value|error:{code,message}}`；必须测试 round-trip / invalid IDs / admission errors / version mismatch）。
+
 ## 重审记录
 
 （空）
