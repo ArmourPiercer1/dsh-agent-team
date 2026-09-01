@@ -938,13 +938,22 @@
 - **Carry-over ②**：tools tsconfig.build.json rootDir 缺陷（base 既有；若 S6/S8 需 tools dist 再处理）。
 - **下一步**：R70 — focused S5A reviewer 派发（detached worktree `P8S5A-R` @ `c902aac`，node_modules 已装；focused 审查非全 P8-S gate：四 goal 达成 + (v)/(x)/(y) 语义验证 + W2 av12 算术核验 + harness 纯消费者核查 + flake 分析锚点核验 + 自有 live 重跑 17 场景 @ fresh home `.dsh-test-p8s5ar` ports 3183/3184 mini-MCP 3492；输出 S5A-review.md；APPROVE → cherry-pick -x 集成 int → S5B 派发）。
 
+## R70 — S5A 集成门禁发现 fresh-checkout 链缺陷 → int reset → attempt-3 停止于 ADR → 主 Agent 裁决 ADR-1（2026-08-31，主 Agent）
+
+- **Review 核验（磁盘）**：`S5A-review.md`（6123B，41 ln）落盘于 `P8S5A-R` @ `c902aac`；R1–R10 全部 ✓ 带 file::line 引证（R1 单装配点 `createTeamProductionRoot` root.ts:384；R2 seams.ts:84-117 install-once + 4 命名缝；R3 plugin.mjs 纯可观测 row + run.mjs 39 对 byte-identical checks + 唯一 av8→av12 对；R4 生产 boot 零 TS tooling；R5 seed root.ts:739-807 三行幂等；R6 单一 environmentFacts thunk 402-408 + 冻结 trigger；R7 pin delta 515 独立复算一致；R8 flake 锚点 probe.ts:207-218/247-250 + gate.ts:94 + provider.ts:629 复核通过、观察 0/4；R9 红线零违规；R10 noCheck legacy build 可接受）。live2 磁盘聚合 17/17 pass、failures 空、row 4 boots mounted、:3080 前后 200、test-use 前后 clean、ports 全 released。VERDICT APPROVE（1 MINOR：evidence 与实现同 commit——约定偏差，不阻塞；1 INFO）。
+- **集成尝试与缺陷**：cherry-pick -x `c902aac` → int `19788a0`；验证 tsc 8/8 + 冻结区空 + test-use clean 全过，但 **chain RED 1903/2**：fresh 状态（无 dist）下 `p8s5a-production-assembly.test.ts` / `p8s5a-host-loadability.test.ts` 模块级 import 构建产物 `dist/.../plugin/host.js`（+ legacy dist mirror + yaml junction）而 dist/ gitignored 且 sanctioned chain **spawn-free by design**（run-tests.mjs 头：no child processes spawned anywhere in this chain）→ R22（worker 自记录裁决：guard 只 fail-fast 不构建，build 为 parent-level 步骤）使 fresh-checkout 链不再自足。reviewer 的 1913/1913 在 dist-present 环境成立（P8S5A-R 磁盘 dist 存在、chain 于 live build 后运行）——环境差异非 review 失职，但集成门禁必须 fresh 自足。**处置**：int `git reset --hard 24c4f18`（int 恒绿原则；commit 在 task 分支保全）。
+- **S5A attempt 3/3（FINAL，test-design-only 有界任务）**：worker 按 packet 第 4 条**停止并发出 ARCHITECTURE_DECISION_REQUIRED**——实证（PROBE-A/B/C）：source import 对 shape/validator 可行，但 7 个 apply 场景死于 host.ts 两处 `import.meta.url` 推导（L113–125 upstream-resolver hook；L358–361 frozen legacy reader entry）的 5×`../` 深度只适配 dist mirror（从 source 位置逃逸出 repo root → ERR_MODULE_NOT_FOUND / TEAM_PLUGIN_GLUE_UNAVAILABLE）；validator 字段集封闭、无 URL-override 通道 ⇒ test-only 不可闭合 A1。零代码变更，evidence commit `5098a14`（report + 5 logs；fresh RED 1903/2 复现 + dist-present 1913/1913 + tsc 8/8 均在案）。
+- **RULING ADR-1（主 Agent 裁决）**：**允许**——对 `packages/runtime/src/plugin/host.ts` 做最小、语义保持的 layout-agnostic 解析：仅两处 URL 推导（或一个共享 root-resolution helper），候选序 **dist 布局优先**（生产行为 bit-identical：dist 世界第一候选即命中，与今日完全一致）→ source 布局次之（仅单测 runner 世界可达）；两者皆未命中 → **与今日相同的稳定错误码 fail-closed**（无新错误面、无静默兜底）；row-config 封闭字段集 / apply 契约 / 插件导出形状一律不动。依据：(i) 该代码为 S5A 自有产物（c902aac 引入），非冻结 upstream 非冻结契约；(ii) sanctioned chain 自足性（TEST_METHODS.md install→run-tests→tsc）为更高合同，R22 的 dist-only 深度是任务内部实现细节；(iii) 冻结 Architecture 只规定单装配点 + host-loadable entry（dist-first 候选序下两者仍成立），不约束 entry 内部 URL 机制；(iv) 不修改任何冻结文档；(v) 先例 R66（S4B ADR 由主 Agent 编排层裁决，未惊动用户）。S5 谱系 3-attempt 预算已尽（1 中止 / 2 S5A / 3 ADR-stop），**裁决执行体立独立有界任务线 P8-S5A-URL（1/1）**；若该任务失败 → S5 = 协议级阻塞上报用户。
+- **Carry-over ③（tsc 集合口径）**：attempt-3 报告用含 legacy 的 8 集合（contracts/domain/storage/runtime/testkit/remote/legacy/client）并自证 legacy/tsconfig.json **untracked**（base 与 HEAD 皆然；A3 在 fresh checkout 仅 7/8 可复现）；本程序在用的 sanctioned 8 集合 = **client, contracts, domain, remote, runtime, storage, testkit, tools**（全 tracked；legacy 按设计排除——noCheck evidence-only，预存 TS2540/TS2345 见 run.mjs:475-479）。后续所有 tsc 验证一律用后者。Carry-over ④（确认）：tools tsconfig.build.json rootDir 缺陷 = base 既有（attempt-3 独立佐证 "packages/tools/src 自 24c4f18 未变 ⇒ latent, pre-S5A"）。
+- **下一步**：R71 — 派发 P8-S5A-URL 有界 coding worker（P8S5 worktree @ `5098a14`：host.ts 两处候选解析 + 两测试文件转 source import + p8s5a-artifacts.mjs guard 重定合同；验收 A1 fresh 链 1913/1913 + A2 dist-present 链同绿 + A3 tsc 8 集合 + A4 scope diff 仅 host.ts/test/结果（+pin 若文件集变）+ A5 test-use clean + **A6 全 live 重跑 17 场景**（生产代码已变，须证生产行为不变，fresh home `.dsh-test-p8s5a3`）→ 主审计 → focused 增量 review（diff-only + 自有 live）→ cherry-pick -x 三 commit（c902aac / 5098a14 / URL-fix）集成 int → S5B 派发。
+
 ## 重审记录
 
 （空）
 
 ## blocker / 阻塞记录
 
-（空）
+- **ADR-1（P8-S5A，R70）**：type ARCHITECTURE_DECISION_REQUIRED。question（worker 原文）：是否允许对 `packages/runtime/src/plugin/host.ts` 做最小、语义保持的变更，使两处 `import.meta.url` 推导 URL（upstream-resolver hook L113–125 / frozen legacy reader entry L358–361）同时可从 dist mirror（生产）与 TS-source（测试）位置解析（dist→source 候选搜索），且不触碰 row-config surface / 稳定错误码 / apply 契约？status = **RULED（主 Agent，R70）**：允许，约束见 R70 条目（dist-first、fail-closed 同码、仅两处或共享 helper、契约面零动）；执行体 P8-S5A-URL（1/1 任务线）。
 
 ## TODO 列表
 
