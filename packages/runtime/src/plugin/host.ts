@@ -29,7 +29,12 @@
  *     (row-owned `config.glueUrl`; the legacy entry is compiled separately
  *     into the runtime dist mirror — see ./legacy-surface.js) and
  *     constructs the production root (./root.js) around the opened
- *     TeamDomain;
+ *     TeamDomain; the two `import.meta.url`-derived URLs (the upstream
+ *     resolver hook and the frozen legacy entry) use a production-first
+ *     layout-agnostic candidate search, so the SAME module also runs from
+ *     TS source under the unit-test runner (fresh checkout, no dist) —
+ *     the production world always hits the first (dist) candidate, which
+ *     resolves to exactly the files the pre-candidate code computed;
  *   - provides `teamRoot` SYNCHRONOUSLY (before the first await) and arms
  *     one effect. A rejected apply fiber is absorbed into the Cordis
  *     logger — invisible to the harness — so EVERY setup failure (config,
@@ -109,19 +114,55 @@ interface GlueModule {
 /**
  * Register the upstream resolution hook exactly once per process (a second
  * `module.register` would stack a duplicate hook in the resolution chain).
+ *
+ * Layout-agnostic candidate search, production layout FIRST:
+ *
+ *   1. the DIST mirror depth (the production world) — five up from
+ *      `dist/packages/runtime/src/plugin/host.js` is
+ *      `<worktree>/packages/runtime`, so the hook resolves to the
+ *      source-tree `<worktree>/packages/runtime/src/plugin/upstream-resolver.mjs`
+ *      — the EXACT file the pre-candidate code computed (tsc never copies
+ *      the .mjs into the mirror). Production behavior is bit-identical.
+ *   2. the SOURCE depth (reachable only under the unit-test runner) —
+ *      four up from `src/plugin/host.ts` is the worktree root, so the SAME
+ *      file as `<worktree>/packages/runtime/src/plugin/upstream-resolver.mjs`.
+ *
+ * The hook file is itself world-agnostic: upstream-resolver.mjs derives its
+ * checkout candidates from its OWN path, which is identical for both
+ * candidates — registering it from either layout is the same registration.
+ *
+ * Fail closed: if NO candidate resolves, the SAME error surface as the
+ * pre-candidate single `register()` call — Node's ERR_MODULE_NOT_FOUND for
+ * the missing hook (the first candidate's error is rethrown). No new stable
+ * code, no silent fallback to a wrong file. The once-per-process flag is set
+ * only AFTER a successful registration, so a failed registration cannot
+ * poison later apply attempts.
  */
 function registerUpstreamResolverOnce(): void {
   const g = globalThis as typeof globalThis & {
     __dshAgentTeamUpstreamResolverRegistered?: boolean
   }
   if (g.__dshAgentTeamUpstreamResolverRegistered === true) return
-  g.__dshAgentTeamUpstreamResolverRegistered = true
-  // dist/.../src/plugin/host.js → five up = <worktree>/packages/runtime.
-  const hookUrl = new URL(
+  const hookCandidates: readonly string[] = [
+    // dist/.../src/plugin/host.js → five up = <worktree>/packages/runtime.
     '../../../../../src/plugin/upstream-resolver.mjs',
-    import.meta.url,
-  ).href
-  register(hookUrl)
+    // src/plugin/host.ts → four up = the worktree root.
+    '../../../../packages/runtime/src/plugin/upstream-resolver.mjs',
+  ]
+  const errors: Array<unknown> = []
+  for (const candidate of hookCandidates) {
+    try {
+      register(new URL(candidate, import.meta.url).href)
+      g.__dshAgentTeamUpstreamResolverRegistered = true
+      return
+    } catch (error) {
+      errors.push(error)
+    }
+  }
+  // Fall-through is only reachable when EVERY candidate threw, so `errors`
+  // is non-empty; rethrow the FIRST candidate's error — the exact error
+  // surface of the pre-candidate single register() call.
+  throw errors[0]
 }
 
 /**
@@ -203,6 +244,47 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (typeof c.glueUrl !== 'string' || c.glueUrl.length === 0) fail('glueUrl must be a non-empty file URL string')
   if (c.seamUrl !== undefined && typeof c.seamUrl !== 'string') fail('seamUrl must be a file URL string when present')
   return c as unknown as TeamPluginConfig
+}
+
+/**
+ * Load the frozen legacy reader entry through the layout-agnostic
+ * candidate search (the relative specifiers are resolved against THIS
+ * module's URL, so each candidate hits a different absolute file per
+ * layout — see the inline rationale at the call site for the full
+ * production-first candidate contract).
+ *
+ * Fail closed: if NO candidate loads, the SAME stable code as the
+ * pre-candidate single-URL import (TEAM_PLUGIN_GLUE_UNAVAILABLE) — no new
+ * error surface, no silent fallback to a wrong file.
+ */
+async function loadLegacyInspect(): Promise<LegacyInspectFn> {
+  const legacyEntryCandidates: readonly string[] = [
+    // dist/.../src/plugin/host.js → five up = <worktree>/packages/runtime
+    // → the BUILT mirror file (the legacy package is noCheck-built
+    // separately into the runtime dist mirror).
+    '../../../../../dist/packages/legacy/session-reader/index.js',
+    // src/plugin/host.ts → three up = <worktree>/packages → the
+    // session-reader TS source location (the unit-test runner's .js→.ts
+    // sibling hook loads the source module; a fresh checkout has no dist
+    // by definition — the layout this candidate exists for).
+    '../../../legacy/session-reader/index.js',
+  ]
+  const failures: string[] = []
+  for (const candidate of legacyEntryCandidates) {
+    try {
+      const legacyEntry = (await import(candidate)) as LegacyEntryModule
+      if (typeof legacyEntry.inspectLegacyTeam !== 'function') {
+        throw new Error('the legacy entry does not export inspectLegacyTeam')
+      }
+      return legacyEntry.inspectLegacyTeam
+    } catch (error) {
+      failures.push(`${candidate}: ${String(error)}`)
+    }
+  }
+  throw new TeamPluginError(
+    TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+    `the frozen legacy reader entry could not be loaded: ${failures.join(' | ')}`,
+  )
 }
 
 /**
@@ -352,26 +434,20 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     now: () => new Date().toISOString(),
   })
 
-  // --- the frozen legacy reader (A29): compiled separately into the --------
-  // --- runtime dist mirror; the root never imports the legacy sources -----
-  // dist/.../src/plugin/host.js → five up = <wt>/packages/runtime.
-  const legacyEntryUrl = new URL(
-    '../../../../../dist/packages/legacy/session-reader/index.js',
-    import.meta.url,
-  ).href
-  let legacyInspect: LegacyInspectFn
-  try {
-    const legacyEntry = (await import(legacyEntryUrl)) as LegacyEntryModule
-    if (typeof legacyEntry.inspectLegacyTeam !== 'function') {
-      throw new Error('the legacy entry does not export inspectLegacyTeam')
-    }
-    legacyInspect = legacyEntry.inspectLegacyTeam
-  } catch (error) {
-    throw new TeamPluginError(
-      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
-      `the frozen legacy reader entry (${legacyEntryUrl}) could not be loaded: ${String(error)}`,
-    )
-  }
+  // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
+  // --- production layout FIRST; the root never imports the legacy sources
+  // --- in the production world. Candidate 1 (dist mirror depth) resolves
+  // --- to the EXACT built mirror file the pre-candidate code computed
+  // --- (five up from dist/.../src/plugin/host.js = <worktree>/
+  // --- packages/runtime → dist/packages/legacy/session-reader/index.js);
+  // --- candidate 2 (source depth) is reachable only under the unit-test
+  // --- runner, where it resolves to the session-reader TS source location
+  // --- (the runner's .js→.ts sibling hook loads the source module). The
+  // --- specifiers are relative (not file URLs) so that hook rewrite
+  // --- applies; resolved from the DIST depth, candidate 2 points at the
+  // --- same built mirror file as candidate 1, so a corrupted-mirror
+  // --- production run still fails closed on the same file.
+  const legacyInspect = await loadLegacyInspect()
 
   // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
   const builtRoot: TeamProductionRoot = createTeamProductionRoot({

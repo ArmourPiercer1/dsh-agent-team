@@ -2,9 +2,18 @@
  * p8s5a-production-assembly.test.ts — T1 (P8-S5A): the shipped production
  * entry TRULY ASSEMBLES the backend.
  *
- * The test imports the BUILT production entry (plain JS, no TS tooling —
- * the plain-node runner loads it natively) and calls its Cordis
- * `apply(ctx, config)` with:
+ * The test imports the production entry from TS SOURCE (`../src/plugin/
+ * host.js` — NodeNext .js→.ts sibling; the runner hook and tsc resolve
+ * the same file identically) and calls its Cordis `apply(ctx, config)`
+ * with:
+ *
+ * Scope honesty (S5A-URL): in-chain this suite proves the SOURCE-level
+ * contract — the entry shape, the config validator, and the full
+ * A01–A29 assembly against the real P4 repositories. BUILT-artifact
+ * loadability (the dist-mirror entry the live harness mounts) is proven
+ * OUT-OF-CHAIN: the full live harness re-run (17/17) and the plain-Node
+ * `node --check` + import smoke over the rebuilt dist entry (see
+ * dev/agent-workflow/evidence/P8-S/S5A-url-result.md, A6/A7).
  *
  *   - a REAL storage seam (testkit `FileStorageSeam` over a scratch dir —
  *     the durable authority is the real P4 repositories);
@@ -54,6 +63,7 @@ import {
   parseBlueprintRevision,
   parseRootSessionId,
 } from '../../contracts/src/index.js'
+import type { InstanceId } from '../../contracts/src/index.js'
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import {
   destroyDir,
@@ -63,12 +73,13 @@ import {
 import {
   TEAM_PLUGIN_ERROR_CODES,
 } from '../src/plugin/types.js'
+import * as hostEntry from '../src/plugin/host.js'
 import {
-  assertArtifactsBuilt,
-  builtHostUrl,
-  builtSeamsUrl,
-  stubGlueUrl,
-} from './p8s5a-artifacts.mjs'
+  createFailClosedOverlayProxy,
+  createProjectionLiveOverlaySeam,
+} from '../src/plugin/seams.js'
+import type { LiveResidencyOverlayPort } from '../projection/index.js'
+import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 
 // --- the T1 fixture world -----------------------------------------------------------
 
@@ -214,10 +225,14 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
 }
 
 let hostModulePromise: Promise<Record<string, any>> | null = null
-/** Import the built production entry once (plain JS — no TS tooling). */
+/**
+ * Resolve the production entry (statically imported from TS source — see
+ * the file header for the source-level scope). Memoized for shape parity
+ * with the pre-S5A-URL dynamic-import form.
+ */
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
-    hostModulePromise = import(builtHostUrl())
+    hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
 }
@@ -230,9 +245,9 @@ function check(condition: boolean, label: string): void {
 /**
  * Read the thrown TeamPluginError `code` from one failing call (null when
  * it did not throw; an `unexpected-error:` string when it threw something
- * else). Duck-typed on purpose: the BUILT entry carries its own compiled
- * TeamPluginError class, so `instanceof` against the src class would fail
- * across module instances.
+ * else). Duck-typed on purpose: the stable `code` string is the contract
+ * (robust if the entry ever runs from a different module instance than
+ * the src class this file imports).
  */
 function readTeamPluginCode(fn: () => unknown): string | null {
   try {
@@ -439,15 +454,19 @@ const t12 = await (async (): Promise<T12State> => {
 
     // The fail-closed overlay proxy: throws pre-install, delegates
     // post-install (the A30 wiring the projection service consumes).
-    const seamsModule = await import(builtSeamsUrl())
-    const freshSeam = seamsModule.createProjectionLiveOverlaySeam()
-    const proxy = seamsModule.createFailClosedOverlayProxy(freshSeam)
+    const freshSeam = createProjectionLiveOverlaySeam()
+    const proxy = createFailClosedOverlayProxy(freshSeam)
     const proxyPreInstallCode = readTeamPluginCode(() => proxy.snapshot())
+    // The overlay payload is an arbitrary passthrough fixture (the seam
+    // validates nothing but non-null objectness); the cast sits at the
+    // type boundary because the seam's generic is the production port.
     const liveOverlay = {
       snapshot: () => new Map([['inst-p8s5aseedw1', { state: 'working' }]]),
-    }
+    } as unknown as LiveResidencyOverlayPort
     freshSeam.install(liveOverlay)
-    const proxyPostInstallEntry = proxy.snapshot().get('inst-p8s5aseedw1')
+    const proxyPostInstallEntry = proxy.snapshot().get(
+      'inst-p8s5aseedw1' as unknown as InstanceId,
+    )
 
     return {
       preInstallCodes,
@@ -716,9 +735,8 @@ const t17 = await (async (): Promise<T17State> => {
 
 // --- the assertions (synchronous `it` bodies over the captured state) -------------------
 
-describe('P8-S5A T1 production assembly (built entry, real storage, stub glue)', () => {
+describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)', () => {
   it('T1.1 create phase: A01-A29 assembled + reachable, 10 tools, seeded world', () => {
-    assertArtifactsBuilt()
     // The entry identity (named-export Cordis protocol).
     expect(t11.hostName).toBe('dsh-agent-team')
     expect(t11.applyType).toBe('function')

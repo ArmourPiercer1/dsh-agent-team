@@ -1,27 +1,26 @@
 /**
- * p8s5a-host-loadability.test.ts — T2 (P8-S5A): the production entry is
- * host-loadable under the S5-PRE load path.
+ * p8s5a-host-loadability.test.ts — T2 (P8-S5A): the production entry
+ * exposes the loadable Cordis surface.
  *
- *   - the entry is the DIST build artifact (`tsc -p packages/runtime/
- *     tsconfig.build.json` mirror layout:
- *     `dist/packages/runtime/src/plugin/host.js`);
- *   - it loads under PLAIN Node with zero TS tooling: this very runner is
- *     plain node — the `.test.ts` files get native type-stripping, but the
- *     imported `host.js` is a `.js` module loaded natively (no stripping,
- *     no loader hook of ours, no `node --import`, no package-exports
- *     change). The top-level `await import(...)` below is that proof: it
- *     runs at module load under the plain-node runner;
- *   - the module exposes the named Cordis exports (`name`, `apply`) plus
- *     the exported config validator.
+ * Scope honesty (S5A-URL): this in-chain suite imports the entry from TS
+ * SOURCE (`../src/plugin/host.js` — NodeNext .js→.ts sibling; the runner
+ * hook and tsc resolve the same file identically) and proves the
+ * SOURCE-level contract:
+ *
+ *   - the module exposes the named Cordis exports (`name`, `apply`), the
+ *     `inject` set, and the exported config validator;
+ *   - the validator fails closed with stable codes.
+ *
+ * BUILT-artifact loadability (the dist-mirror entry
+ * `dist/packages/runtime/src/plugin/host.js` that the live harness mounts
+ * under plain Node with zero TS tooling) is proven OUT-OF-CHAIN: the full
+ * live harness re-run (17/17) and the plain-Node `node --check` + import
+ * smoke over the rebuilt dist entry (see
+ * dev/agent-workflow/evidence/P8-S/S5A-url-result.md, A6/A7).
  *
  * Runner note: the plain-node shim (scripts/test-vitest-shim.mjs) forbids
- * async `it()` bodies — so the import happens at module top level and the
+ * async `it()` bodies — so the entry is a static module import and the
  * `it` bodies assert synchronously on the loaded module.
- *
- * The sibling parent-level evidence (logged in dev/agent-workflow/evidence/
- * P8-S/): the sanctioned `tsc -p packages/legacy/tsconfig.build.json` +
- * `tsc -p packages/runtime/tsconfig.build.json` builds exit 0, and
- * `node --check dist/packages/runtime/src/plugin/host.js` exits 0.
  *
  * `apply` is deliberately NOT invoked here (that is T1's contract; invoking
  * it would register the upstream-resolution hook into this runner process).
@@ -29,26 +28,24 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { assertArtifactsBuilt, builtHostUrl } from './p8s5a-artifacts.mjs'
+import * as host from '../src/plugin/host.js'
 
-assertArtifactsBuilt()
-// The plain-Node load itself: no TS loader, no hook — a native ESM import
-// of the built .js entry (top-level await; the shim forbids async it()).
-const host: Record<string, any> = await import(builtHostUrl())
-
-describe('P8-S5A T2 host loadability (plain node, zero TS tooling)', () => {
-  it('the built entry imports natively and exposes the named Cordis exports', () => {
+describe('P8-S5A T2 entry loadability (source entry)', () => {
+  it('the entry imports and exposes the named Cordis exports', () => {
     expect(typeof host).toBe('object')
     expect(host.name).toBe('dsh-agent-team')
     expect(typeof host.apply).toBe('function')
     expect(typeof host.validateTeamPluginConfig).toBe('function')
+    // The hard-service inject set (the Loader keeps the row inactive until
+    // all three exist — the pre-S5A harness row plus sessionPersistence).
+    expect(host.inject).toEqual(['agents', 'storageDomain', 'sessionPersistence'])
   })
 
-  it('the built entry is plain JavaScript (no TS artifacts in the emitted file)', () => {
-    // The module-load above already proves plain-Node loadability (the
-    // runner strips only .ts). The loaded module is a live record with the
-    // stable identity (a TS-emitted type surface would not load here at
-    // all, and the parent-level `node --check` covers the syntax audit).
+  it('the entry module is a live ESM namespace with a stable identity', () => {
+    // The static module import above already proves in-chain loadability
+    // of the source entry (the runner strips only .ts). The loaded module
+    // is a live record with the stable identity (the out-of-chain built
+    // artifact gets the plain-Node loadability proof — see header).
     expect(host === null).toBe(false)
     expect(typeof host.name).toBe('string')
   })
