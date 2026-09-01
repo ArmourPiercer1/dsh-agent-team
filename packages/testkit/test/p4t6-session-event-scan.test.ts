@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 517 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 525 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -190,9 +190,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // runtime p8s5a-production-assembly.test) +
     // 2 P8-S5B operation-fencing files (module
     // runtime/coordination/index + test
-    // runtime p8s5b-operation-fencing.test).
-    expect(scanResult.filesScanned).toBe(517)
-    expect(scanResult.files.length).toBe(517)
+    // runtime p8s5b-operation-fencing.test) +
+    // 8 P8-S6 remote/principal/overlay files (3 module .ts under
+    // runtime/src/plugin: s6-remote, s6-principal,
+    // s6-live-overlay + 5 unit-test .ts under runtime/test:
+    // p8s6-projection, p8s6-principal, p8s6-remote-commands,
+    // p8s6-push-reconnect, p8s6-pagination).
+    expect(scanResult.filesScanned).toBe(525)
+    expect(scanResult.files.length).toBe(525)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

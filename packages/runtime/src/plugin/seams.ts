@@ -98,7 +98,12 @@ export function createInstallSeam<T>(options: InstallSeamOptions): InstallSeam<T
           `S6 seam "${options.name}" was already installed (install-once violated)`,
         )
       }
-      if (candidate === null || typeof candidate !== 'object') {
+      // A function-typed seam (the A32 principal derivation) carries a
+      // function implementation — non-null objectness accepts both.
+      if (
+        candidate === null ||
+        (typeof candidate !== 'object' && typeof candidate !== 'function')
+      ) {
         throw new TeamPluginError(
           TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
           `S6 seam "${options.name}" install requires a non-null implementation`,

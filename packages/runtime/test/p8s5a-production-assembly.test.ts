@@ -405,10 +405,12 @@ const t11 = await (async (): Promise<T11State> => {
 // --- T1.2 — the S6 seam discipline ----------------------------------------------------
 
 interface T12State {
-  preInstallCodes: Array<string | null>
-  projectionMessageHasSourceCode: boolean
-  overlayInstalled: boolean
-  overlayCurrentIsInstalledImpl: boolean
+  seamInstalledCount: number
+  seamCurrentOkCount: number
+  projectionSucceeded: boolean
+  projectionMemberCount: number
+  projectionResidentCount: number
+  projectionColdCount: number
   secondInstallCode: string | null
   nullInstallCode: string | null
   proxyPreInstallCode: string | null
@@ -422,39 +424,64 @@ const t12 = await (async (): Promise<T12State> => {
   const { root } = await applyWorld(world, rowConfig('create'))
   try {
     const seams = root.seams
-    // Pre-install: every use throws its stable code.
-    const preInstallCodes = [
-      readTeamPluginCode(() => seams.projectionLiveOverlay.current()),
-      readTeamPluginCode(() => seams.remoteHandlerRegistration.current()),
-      readTeamPluginCode(() => seams.serverPrincipalDerivation.current()),
-      readTeamPluginCode(() => seams.remoteQueryCommandCompletion.current()),
-    ]
+    // S6: the production root installs all four seams during construction
+    // (C1 — the production flow never hits a not-installed code; the
+    // fail-closed pre-install state remains testable on fresh seams).
+    const seamInstalledCount = [
+      seams.projectionLiveOverlay.installed,
+      seams.remoteHandlerRegistration.installed,
+      seams.serverPrincipalDerivation.installed,
+      seams.remoteQueryCommandCompletion.installed,
+    ].filter(Boolean).length
+    const seamCurrentOkCount = [
+      seams.projectionLiveOverlay.current() !== null,
+      seams.remoteHandlerRegistration.current() !== null,
+      seams.serverPrincipalDerivation.current() !== null,
+      seams.remoteQueryCommandCompletion.current() !== null,
+    ].filter(Boolean).length
 
-    // The projection source port fails closed for v1 rows (S6 supplies
-    // the catalog-backed source) — before the overlay is consulted.
-    let projectionMessage = '<no-throw>'
+    // The projection works end-to-end through the production root (S6):
+    // the catalog-backed source resolves the templates + policyState, and
+    // the installed live-residency overlay maps every durable member —
+    // the stub world's live set is empty, so all three project cold.
+    let projectionSucceeded = false
+    let projectionMemberCount = -1
+    let projectionResidentCount = -1
+    let projectionColdCount = -1
     try {
-      root.projection.project(parseRootSessionId(ROOT_SID))
+      const projection = root.projection.project(parseRootSessionId(ROOT_SID))
+      projectionSucceeded = true
+      projectionMemberCount = projection.members.length
+      projectionResidentCount = projection.members.filter(
+        (member: { liveActivity: { residency: string } | null }) =>
+          member.liveActivity !== null && member.liveActivity.residency === 'resident',
+      ).length
+      projectionColdCount = projection.members.filter(
+        (member: { liveActivity: { residency: string } | null }) =>
+          member.liveActivity !== null && member.liveActivity.residency === 'cold',
+      ).length
     } catch (e) {
-      projectionMessage = e instanceof Error ? e.message : String(e)
+      // The production root must project without error (the overlay seam is
+      // installed during construction) — fail the file on the real error.
+      throw e instanceof Error
+        ? new Error(`T1.2 projection failed: ${e.name}: ${e.message}`)
+        : e
     }
 
-    // Install-once: first install activates, the second throws.
-    const overlay = { snapshot: () => new Map() }
-    seams.projectionLiveOverlay.install(overlay)
-    const overlayInstalled = seams.projectionLiveOverlay.installed === true
-    const overlayCurrentIsInstalledImpl = seams.projectionLiveOverlay.current() === overlay
+    // Install-once: a second install on any production seam throws (the
+    // root installed every seam during construction).
     const secondInstallCode = readTeamPluginCode(() =>
-      seams.projectionLiveOverlay.install(overlay),
+      seams.projectionLiveOverlay.install({ snapshot: () => new Map() }),
     )
-    // A null implementation is rejected (typed seam, non-null impl).
+    // A null implementation is rejected (typed seam, non-null impl) —
+    // checked on a fresh seam (the production ones are already installed).
+    const freshSeam = createProjectionLiveOverlaySeam()
     const nullInstallCode = readTeamPluginCode(() =>
-      seams.remoteHandlerRegistration.install(null as unknown as object),
+      freshSeam.install(null as unknown as LiveResidencyOverlayPort),
     )
 
     // The fail-closed overlay proxy: throws pre-install, delegates
     // post-install (the A30 wiring the projection service consumes).
-    const freshSeam = createProjectionLiveOverlaySeam()
     const proxy = createFailClosedOverlayProxy(freshSeam)
     const proxyPreInstallCode = readTeamPluginCode(() => proxy.snapshot())
     // The overlay payload is an arbitrary passthrough fixture (the seam
@@ -469,11 +496,12 @@ const t12 = await (async (): Promise<T12State> => {
     )
 
     return {
-      preInstallCodes,
-      projectionMessageHasSourceCode:
-        projectionMessage.includes('TEAM_PROJECTION_SOURCE_TEMPLATES_UNAVAILABLE'),
-      overlayInstalled,
-      overlayCurrentIsInstalledImpl,
+      seamInstalledCount,
+      seamCurrentOkCount,
+      projectionSucceeded,
+      projectionMemberCount,
+      projectionResidentCount,
+      projectionColdCount,
       secondInstallCode,
       nullInstallCode,
       proxyPreInstallCode,
@@ -825,20 +853,22 @@ describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)'
     expect(t11.bootCountAfterSecondBoot).toBe(1)
   })
 
-  it('T1.2 S6 seams fail closed, install-once, and activate on install', () => {
-    // Pre-install: every use throws its stable code.
-    expect(t12.preInstallCodes[0]).toBe('PROJECTION_LIVE_OVERLAY_NOT_INSTALLED')
-    expect(t12.preInstallCodes[1]).toBe('REMOTE_HANDLERS_NOT_INSTALLED')
-    expect(t12.preInstallCodes[2]).toBe('PRINCIPAL_DERIVATION_NOT_INSTALLED')
-    expect(t12.preInstallCodes[3]).toBe('REMOTE_COMPLETION_NOT_INSTALLED')
+  it('T1.2 S6 seams install at construction, stay install-once, and project live', () => {
+    // The production root installed all four S6 seams during construction
+    // (C1 — no not-installed code is reachable in the production flow).
+    expect(t12.seamInstalledCount).toBe(4)
+    expect(t12.seamCurrentOkCount).toBe(4)
 
-    // The projection source port fails closed for v1 rows (S6 supplies
-    // the catalog-backed source) — before the overlay is consulted.
-    expect(t12.projectionMessageHasSourceCode).toBe(true)
+    // The projection works end-to-end: the S6 catalog-backed source
+    // (templates + policyState) + the installed live-residency overlay.
+    expect(t12.projectionSucceeded).toBe(true)
+    // Three durable members (leader + worker + scout); the stub world's
+    // live set is empty, so every member projects cold (no resident rows).
+    expect(t12.projectionMemberCount).toBe(3)
+    expect(t12.projectionResidentCount).toBe(0)
+    expect(t12.projectionColdCount).toBe(3)
 
-    // Install-once: first install activates, the second throws.
-    expect(t12.overlayInstalled).toBe(true)
-    expect(t12.overlayCurrentIsInstalledImpl).toBe(true)
+    // Install-once: a second install on a production seam throws.
     expect(t12.secondInstallCode).toBe(
       TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SEAM_ALREADY_INSTALLED,
     )

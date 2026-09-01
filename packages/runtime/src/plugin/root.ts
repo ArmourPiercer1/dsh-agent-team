@@ -77,10 +77,12 @@ import {
   createBlueprintCatalog,
   parseBlueprint,
 } from '../../../domain/blueprint/src/index.js'
-import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
+import type { BlueprintTemplate, TeamBlueprint } from '../../../domain/blueprint/src/index.js'
+import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/src/index.js'
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import {
   CAPABILITY_NAME_VALUES,
+  DEFAULT_POLICY_STATE_ID,
 } from '../../../domain/policy/src/index.js'
 import type {
   CapabilityName,
@@ -181,7 +183,7 @@ import type {
   ForkReconciliationResult,
 } from '../../fork-reconciliation/index.js'
 import { createHandoffService } from '../../handoff/index.js'
-import type { LegacyInspectFn } from './legacy-surface.js'
+import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js'
 import { createProjectionService } from '../../projection/index.js'
 import type { ProjectionService } from '../../projection/index.js'
 import { createTeamTools } from '../../../tools/src/index.js'
@@ -215,6 +217,12 @@ import {
   createServerPrincipalDerivationSeam,
 } from './seams.js'
 import { createTeamDomainReadPort } from './projection-source.js'
+import type { TeamDomainReadPortDeps } from './projection-source.js'
+import { createLiveResidencyOverlay } from './s6-live-overlay.js'
+import { createServerPrincipalDerivation } from './s6-principal.js'
+import { createS6RemoteSurfaces } from './s6-remote.js'
+import type { DurableTemplateRow } from '../../projection/index.js'
+import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import type {
   TeamAgentBindings,
   TeamPluginConfig,
@@ -369,6 +377,13 @@ export interface TeamProductionRootParams {
    * see ./legacy-surface.js for the type contract).
    */
   readonly legacyInspect: LegacyInspectFn
+  /**
+   * The read-only legacy-home port for the A31 `legacy.inspect` remote
+   * method — ABSENT in the S5A boot world (the method then fails closed
+   * with `TEAM_REMOTE_LEGACY_HOME_UNAVAILABLE`); the host entry injects it
+   * when a legacy DSH home is bound (see ./legacy-surface.js).
+   */
+  readonly legacyHome?: LegacyHomePort
 }
 
 /**
@@ -723,12 +738,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       Promise.resolve(repos.overrides.list(rootSessionId) as readonly OverrideRecordView[]),
     put: (record) => repos.overrides.put(record),
   }
+  // Named so the A31 remote PolicyState port can read the durable
+  // transition rows (policyState.get) from the same store the service
+  // writes (policyState.set flows through the service only).
+  const mutationStore = createEphemeralMutationStore()
   const mutation = {
     service: new MutationService({
       // The S5A boot world has no step-driven mutation pipeline; the
       // StepClock reports the fixed step 0 (documented in S5A-result.md).
       clock: { currentStep: () => 0 },
-      store: createEphemeralMutationStore(),
+      store: mutationStore,
       policy: policyReader,
     }),
     admitGovernanceOverride: (
@@ -746,11 +765,90 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     serverPrincipalDerivation: createServerPrincipalDerivationSeam(),
     remoteQueryCommandCompletion: createRemoteQueryCommandCompletionSeam(),
   }
+
+  // A31 read-port resolvers (the v1 source-gap closure, plan §20.1): the
+  // template rows resolve from the bound blueprint CATALOG (the TeamDomain
+  // has no template table — the immutable snapshot IS the template truth;
+  // displayName falls back to the template id, contextPolicy falls back to
+  // the domain default when the snapshot token is absent or malformed),
+  // and the PolicyState id derives the bound blueprint's default state
+  // (the mutation service owns the transitions; at the fixed step 0 the
+  // active state is the default — the A31 policyState port reads the same
+  // transitions through the named mutation store).
+  const readPortDeps: TeamDomainReadPortDeps = {
+    templates: (row) => {
+      const resolved = catalog.resolve(row.blueprint.blueprintId, row.blueprint.revision)
+      const templateOf = (
+        kind: 'leader' | 'member',
+        template: BlueprintTemplate,
+        instanceQuota: number | undefined,
+      ): DurableTemplateRow => ({
+        kind,
+        templateId: template.templateId,
+        displayName: template.displayName ?? template.templateId,
+        ...(template.description !== undefined ? { description: template.description } : {}),
+        contextPolicy:
+          template.contextPolicy !== undefined && isContextPolicy(template.contextPolicy)
+            ? template.contextPolicy
+            : DEFAULT_CONTEXT_POLICY,
+        ...(instanceQuota !== undefined ? { instanceQuota } : {}),
+      })
+      return [
+        templateOf('leader', resolved.leader, undefined),
+        ...resolved.members.map((member) =>
+          templateOf('member', member, resolved.quotas?.members?.maxInstances),
+        ),
+      ]
+    },
+    policyState: () => DEFAULT_POLICY_STATE_ID,
+  }
   const projection: ProjectionService = createProjectionService(
-    createTeamDomainReadPort(domain),
+    createTeamDomainReadPort(domain, readPortDeps),
     createFailClosedOverlayProxy(seams.projectionLiveOverlay),
     { clock: now },
   )
+
+  // --- A32 + A30 the principal derivation + the live overlay (installed once) ----------------------
+  seams.serverPrincipalDerivation.install(
+    createServerPrincipalDerivation({
+      rootSessionId: rootSid,
+      repositories: repos,
+      leaderInstanceId: LEADER_INSTANCE_ID,
+    }),
+  )
+  seams.projectionLiveOverlay.install(
+    createLiveResidencyOverlay({ repositories: repos, live, rootSessionId: rootSid, now }),
+  )
+
+  // --- A31 + A33 + A34 the remote surfaces (built once, installed once) -----------------------------
+  const remoteSurfaces = createS6RemoteSurfaces({
+    rootSessionId: rootSid,
+    repositories: repos,
+    catalog,
+    blueprint,
+    leaderInstanceId: LEADER_INSTANCE_ID,
+    projection,
+    runtime,
+    lifecycle: lifecycleService,
+    mutationService: {
+      switchPolicyState: (request) => mutation.service.switchPolicyState(request),
+    },
+    mutationTransitions: (teamSessionId) =>
+      mutationStore.listTransitions(teamSessionId as TeamSessionId),
+    admitGovernanceOverride: (args, store) => mutation.admitGovernanceOverride(args, store),
+    overrideStore: defaultOverrideStore,
+    overrideRecords: (teamSessionId) =>
+      repos.overrides.list(teamSessionId) as unknown as readonly RemoteSafeRecord[],
+    rootBinding,
+    compatibility: prober,
+    handoff,
+    legacyInspect,
+    legacyHome: params.legacyHome,
+    principal: seams.serverPrincipalDerivation.current(),
+    now,
+  })
+  seams.remoteQueryCommandCompletion.install(remoteSurfaces.completion)
+  seams.remoteHandlerRegistration.install(remoteSurfaces.registration)
 
   // --- A04 the intent surface (the remote method catalog) --------------------------------------------
   const intent = { catalog: REMOTE_METHOD_CATALOG }

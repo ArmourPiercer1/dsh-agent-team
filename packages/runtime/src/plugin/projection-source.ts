@@ -83,6 +83,7 @@ import type {
   MemberInstanceRecordDto,
   RemoteSafeRecord,
   TeamSessionId,
+  TeamSessionRecordDto,
 } from '../../../contracts/src/index.js'
 import { DEFAULT_CONTEXT_POLICY } from '../../../domain/member/src/index.js'
 import type {
@@ -215,6 +216,36 @@ const UNRESOLVED_FINGERPRINT = 'none'
 // --- the factory ----------------------------------------------------------------
 
 /**
+ * The optional S6 catalog-backed resolvers of the two v1 limitations the
+ * plain TeamDomain read port cannot durably resolve (module docs):
+ *
+ * - {@link templates} — the bound blueprint snapshot's template rows, read
+ *   from the CATALOG (the blueprint snapshot store), replacing the
+ *   `TEMPLATES_UNAVAILABLE` fail-closed;
+ * - {@link policyState} — the durable PolicyState id, replacing the
+ *   `POLICY_STATE_UNAVAILABLE` fail-closed.
+ *
+ * Both are OPTIONAL: without them the port keeps its S5A fail-closed
+ * behavior (every read hits the matching code), so the frozen P8-T2 contract
+ * and the S5A world are unchanged. The production root (S6) installs both.
+ */
+export interface TeamDomainReadPortDeps {
+  /**
+   * Resolve the bound snapshot's template rows (leader + members) from the
+   * catalog for one durable TeamSession row.
+   * @param row - the durable `team_sessions` row (carries the snapshot ref).
+   * @returns the frozen template rows of the bound snapshot.
+   */
+  readonly templates?: (row: TeamSessionRecordDto) => readonly DurableTemplateRow[]
+  /**
+   * Derive the durable PolicyState id for one TeamSession.
+   * @param rootSessionId - the TeamSession (root session) id.
+   * @returns the current PolicyState name (opaque to the contract).
+   */
+  readonly policyState?: (rootSessionId: string) => string
+}
+
+/**
  * Adapt a real open `TeamDomain` to the P8-T2 `TeamDomainReadPort`.
  *
  * The adapter is a closure over the given domain's repositories: one
@@ -225,9 +256,14 @@ const UNRESOLVED_FINGERPRINT = 'none'
  * (invariant 45: durable state is read fresh).
  * @param domain - the open TeamDomain to read (its repositories; the port
  *   never closes it — ownership stays with the caller).
+ * @param deps - optional S6 catalog-backed resolvers (templates + policy
+ *   state); absent when the port keeps its S5A fail-closed behavior.
  * @returns the read port over that domain.
  */
-export function createTeamDomainReadPort(domain: TeamDomain): TeamDomainReadPort {
+export function createTeamDomainReadPort(
+  domain: TeamDomain,
+  deps?: TeamDomainReadPortDeps,
+): TeamDomainReadPort {
   const repositories = domain.repositories
 
   function readProjectionSource(teamSessionId: TeamSessionId): TeamDomainProjectionSource {
@@ -241,9 +277,10 @@ export function createTeamDomainReadPort(domain: TeamDomain): TeamDomainReadPort
     }
 
     // Evaluated BEFORE the root facts on purpose: the templates contract is
-    // the port-level fail-closed (every v1 domain hits it), so it is the
-    // first durable limitation a caller sees.
-    const templates = durableTemplateRows(root)
+    // the port-level fail-closed (every v1 domain hits it until the S6
+    // catalog-backed resolver is installed), so it is the first durable
+    // limitation a caller sees.
+    const templates = durableTemplateRows(row)
 
     return {
       // --- identity core: VERBATIM from the durable v1 record --------------
@@ -266,9 +303,17 @@ export function createTeamDomainReadPort(domain: TeamDomain): TeamDomainReadPort
     }
   }
 
-  // --- templates (fail-closed until S6) ---------------------------------------
+  // --- templates (S6 catalog-backed; fail-closed until the resolver is set) -----
 
-  function durableTemplateRows(root: string): readonly DurableTemplateRow[] {
+  function durableTemplateRows(row: TeamSessionRecordDto): readonly DurableTemplateRow[] {
+    // The S6 catalog-backed resolver reads the bound snapshot's template rows
+    // from the CATALOG (the blueprint snapshot store) — the only durable home
+    // of that content (module docs). When it is installed it fully replaces
+    // the fail-closed branch below.
+    const resolve = deps?.templates
+    if (resolve !== undefined) {
+      return resolve(row)
+    }
     // Derivation check (documented per the P8-S5 contract): the v1
     // TeamSessionRecordDto's closed field set is the identity core
     // (schemaVersion, rootSessionId, blueprint, defaultWorkspace?,
@@ -278,9 +323,10 @@ export function createTeamDomainReadPort(domain: TeamDomain): TeamDomainReadPort
     // in the TeamDomain sidecar, and this port has no catalog read surface.
     // The member rows' `templateId` fields are references, not template
     // content: deriving rows from them would invent displayName /
-    // contextPolicy / quota data. S6 installs the catalog-backed source.
+    // contextPolicy / quota data. The production root (S6) installs the
+    // catalog-backed resolver; without it the port fails closed.
     throw new Error(
-      `${TEAM_DOMAIN_READ_PORT_ERROR_CODES.TEMPLATES_UNAVAILABLE}: the bound blueprint snapshot content of TeamSession '${root}' is not durably readable through the TeamDomain port (a S6 catalog-backed source will supply the template rows)`,
+      `${TEAM_DOMAIN_READ_PORT_ERROR_CODES.TEMPLATES_UNAVAILABLE}: the bound blueprint snapshot content of TeamSession '${row.rootSessionId}' is not durably readable through the TeamDomain port (a S6 catalog-backed source will supply the template rows)`,
     )
   }
 
@@ -309,6 +355,14 @@ export function createTeamDomainReadPort(domain: TeamDomain): TeamDomainReadPort
   }
 
   function policyStateOf(root: string): string {
+    // The S6 durable policy-state resolver replaces the fail-closed branch
+    // below when installed (module docs). The production root installs the
+    // catalog-derived value (the blueprint's default PolicyState, the honest
+    // implicit-state constant — no v1 durable surface carries one).
+    const resolve = deps?.policyState
+    if (resolve !== undefined) {
+      return resolve(root)
+    }
     // Derivation check (documented per the P8-S5 contract) — which durable
     // surfaces were checked for the policy state:
     //   1. TeamSessionRecordDto (v1) — closed field set is the identity
@@ -416,20 +470,47 @@ export function createTeamDomainReadPort(domain: TeamDomain): TeamDomainReadPort
       // runtime, never by instance id.
       const row = record as MemberInstanceRecordDto | LeaderInstanceRecordDto
       if ('childSessionId' in row) {
-        // MemberInstanceRecordDto (v1 member row): childSessionId and
-        // lifecycle are durable and verbatim.
-        rows.push({
-          instanceId: row.instanceId,
-          templateId: row.templateId,
-          label: row.label,
-          childSessionId: row.childSessionId,
-          lifecycle: row.lifecycle,
-          createdAt: row.createdAt,
-          contextPolicy: defaultContextPolicy(),
-          effectiveConfig: EMPTY_EFFECTIVE_CONFIG,
-          ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
-          ...(row.workspace !== undefined ? { workspace: row.workspace } : {}),
-        })
+        if (String(row.childSessionId) === root) {
+          // The boot-world LEADER row (frozen scenario contract — the
+          // production root's `seedBootWorld` puts `inst-leader` as a v1
+          // MemberInstanceRecordDto whose child session IS the root session
+          // itself; the frozen W1 state check asserts exactly this shape).
+          // Invariant 14 is enforced at the FOLD (`parseMemberProjection`
+          // rejects a LeaderInstance carrying a childSessionId), so the read
+          // port normalizes the v1-shaped leader row into the canonical
+          // leader representation — exactly the v2 branch below: no
+          // childSessionId and the derived RUNNING lifecycle (the leader of
+          // a live TeamSession is the admitted-active coordinator). Ordinary
+          // members always own a child session DISTINCT from the root, so
+          // this relational structural test discriminates leader from
+          // member without consulting the instance id.
+          rows.push({
+            instanceId: row.instanceId,
+            templateId: row.templateId,
+            label: row.label,
+            lifecycle: MEMBER_LIFECYCLE_STATES.RUNNING,
+            createdAt: row.createdAt,
+            contextPolicy: defaultContextPolicy(),
+            effectiveConfig: EMPTY_EFFECTIVE_CONFIG,
+            ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
+            ...(row.workspace !== undefined ? { workspace: row.workspace } : {}),
+          })
+        } else {
+          // MemberInstanceRecordDto (v1 member row): childSessionId and
+          // lifecycle are durable and verbatim.
+          rows.push({
+            instanceId: row.instanceId,
+            templateId: row.templateId,
+            label: row.label,
+            childSessionId: row.childSessionId,
+            lifecycle: row.lifecycle,
+            createdAt: row.createdAt,
+            contextPolicy: defaultContextPolicy(),
+            effectiveConfig: EMPTY_EFFECTIVE_CONFIG,
+            ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
+            ...(row.workspace !== undefined ? { workspace: row.workspace } : {}),
+          })
+        }
       } else {
         // LeaderInstanceRecordDto (v2 leader row): no childSessionId and NO
         // lifecycle key by construction (invariant 14 — the leader row
