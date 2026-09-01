@@ -1,0 +1,8 @@
+﻿PASS packages\testkit\test\testkit.test.ts (2 tests)
+PASS packages\tools\test\p6t6-actions.test.ts (14 tests)
+PASS packages\tools\test\p6t6-bypass-scan.test.ts (10 tests)
+PASS packages\tools\test\p6t6-guard.test.ts (9 tests)
+PASS packages\tools\test\tools.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 1939 passed, 0 failed, 1939 total, 8342 ms
+RESULT: PASS run-tests (0 failures)

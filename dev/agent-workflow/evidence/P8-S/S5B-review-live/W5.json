@@ -1,0 +1,84 @@
+{
+  "criterion": "W5",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 854,
+  "assertions": [
+    {
+      "name": "pre-state: seeded worker durably SETTLED at activityVersion 2 by the W1 delegate",
+      "pass": true,
+      "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":2}"
+    },
+    {
+      "name": "follow-up executed with the work-admitted effect",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8},\"requestToken\":\"p8s3-w5-token\"}"
+    },
+    {
+      "name": "the SETTLED member re-admits via the durable CAS (lifecycleCommitted=true) and settles",
+      "pass": true,
+      "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8}"
+    },
+    {
+      "name": "row durably SETTLED at activityVersion 4 (admit av2->av3, settle av3->av4)",
+      "pass": true,
+      "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":4}"
+    },
+    {
+      "name": "the work-unit activity interval opened (in-progress) and closed (completed)",
+      "pass": true,
+      "detail": "[{\"globalSequence\":6,\"factType\":\"activity-interval-opened\",\"instanceId\":\"inst-p6t6seedw1\",\"subject\":\"work-unit\",\"sequence\":3,\"op\":\"interval-open\",\"progress\":\"in-progress\",\"correlation\":\"p8s3-w5-token\",\"requestToken\":\"p8s3-w5-token\"},{\"globalSequence\":7,\"factType\":\"activity-interval-closed\",\"instanceId\":\"inst-p6t6seedw1\",\"subject\":\"work-unit\",\"sequence\":4,\"op\":\"interval-close\",\"progress\":\"completed\",\"correlation\":\"p8s3-w5-token\",\"requestToken\":\"p8s3-w5-token\"}]"
+    },
+    {
+      "name": "the interval correlates to the request token",
+      "pass": true,
+      "detail": "{\"corr\":\"p8s3-w5-token\"}"
+    },
+    {
+      "name": "the seeded worker child log durably carries the token + prompt",
+      "pass": true,
+      "detail": "logBytes=18991"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "seedRowAfter": {
+      "instanceId": "inst-p6t6seedw1",
+      "templateId": "worker",
+      "label": "existing-worker",
+      "childSessionId": "session-child-p6t6seedw1",
+      "lifecycle": "SETTLED",
+      "activityVersion": 4
+    },
+    "intervalRows": [
+      {
+        "globalSequence": 6,
+        "factType": "activity-interval-opened",
+        "instanceId": "inst-p6t6seedw1",
+        "subject": "work-unit",
+        "sequence": 3,
+        "op": "interval-open",
+        "progress": "in-progress",
+        "correlation": "p8s3-w5-token",
+        "requestToken": "p8s3-w5-token"
+      },
+      {
+        "globalSequence": 7,
+        "factType": "activity-interval-closed",
+        "instanceId": "inst-p6t6seedw1",
+        "subject": "work-unit",
+        "sequence": 4,
+        "op": "interval-close",
+        "progress": "completed",
+        "correlation": "p8s3-w5-token",
+        "requestToken": "p8s3-w5-token"
+      }
+    ],
+    "w5LogBytes": 18991
+  }
+}
