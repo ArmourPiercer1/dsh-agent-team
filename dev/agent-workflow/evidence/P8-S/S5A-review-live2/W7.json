@@ -1,0 +1,60 @@
+{
+  "criterion": "W7",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 784,
+  "assertions": [
+    {
+      "name": "W1 state available (W1 executed on this boot)",
+      "pass": true,
+      "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"childSessionId\":\"session-child-p6t6seedw1\"}"
+    },
+    {
+      "name": "residency drop route reports a real dispose",
+      "pass": true,
+      "detail": "{\"sessionId\":\"session-child-p6t6seedw1\",\"dropped\":true}"
+    },
+    {
+      "name": "the member is no longer resident (health liveSessions)",
+      "pass": true,
+      "detail": "[\"session-child-p6t6seeds1\",\"session-p6t6root\"]"
+    },
+    {
+      "name": "cold-resume follow-up executed with the work-admitted effect",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12},\"requestToken\":\"p8s3-w7-token\"}"
+    },
+    {
+      "name": "a SETTLED member re-admits via the durable CAS and settles",
+      "pass": true,
+      "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12}"
+    },
+    {
+      "name": "row SETTLED at activityVersion 6 on the SAME child session (admit av4->av5, settle av5->av6)",
+      "pass": true,
+      "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":6}"
+    },
+    {
+      "name": "the SAME durable log now carries the W1 + W7 tokens (cold resume, not a new session)",
+      "pass": true,
+      "detail": "logBytes=33707"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "w1RowAfter": {
+      "instanceId": "inst-p6t6seedw1",
+      "templateId": "worker",
+      "label": "existing-worker",
+      "childSessionId": "session-child-p6t6seedw1",
+      "lifecycle": "SETTLED",
+      "activityVersion": 6
+    },
+    "w1LogBytes": 33707
+  }
+}

@@ -1,0 +1,36 @@
+﻿diff --git a/packages/testkit/test/p4t6-session-event-scan.test.ts b/packages/testkit/test/p4t6-session-event-scan.test.ts
+index 66e7fbc..ee76228 100644
+--- a/packages/testkit/test/p4t6-session-event-scan.test.ts
++++ b/packages/testkit/test/p4t6-session-event-scan.test.ts
+@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
+ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
+   const scanResult = scanSessionEventVocabulary()
+ 
+-  it('coverage: all nine package dirs discovered, nine carry source, 502 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files', () => {
++  it('coverage: all nine package dirs discovered, nine carry source, 515 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files)', () => {
+     expect(scanResult.packageDirs).toEqual([
+       'client',
+       'contracts',
+@@ -177,9 +177,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
+     // runtime/mutation/override-admission + tests
+     // runtime p8s4b-cell-provenance, runtime p8s4b-mcp-facet,
+     // runtime p8s4b-model-consumption,
+-    // runtime p8s4b-override-admission).
+-    expect(scanResult.filesScanned).toBe(502)
+-    expect(scanResult.files.length).toBe(502)
++    // runtime p8s4b-override-admission) +
++    // 13 P8-S5A production-assembly files (module
++    // runtime/plugin/types, runtime/plugin/seams,
++    // runtime/plugin/root, runtime/plugin/projection-source,
++    // runtime/plugin/legacy-surface, runtime/plugin/node-min.d,
++    // runtime/plugin/upstream-resolver.mjs,
++    // runtime/plugin/live/agent-bindings.mjs + tests
++    // runtime p8s5a-artifacts.mjs, runtime p8s5a-artifacts.d.mts,
++    // runtime p8s5a-stub-glue.mjs,
++    // runtime p8s5a-host-loadability.test,
++    // runtime p8s5a-production-assembly.test).
++    expect(scanResult.filesScanned).toBe(515)
++    expect(scanResult.files.length).toBe(515)
+   })
+ 
+   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

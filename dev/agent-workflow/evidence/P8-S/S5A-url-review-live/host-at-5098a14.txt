@@ -1,0 +1,455 @@
+﻿/**
+ * P8-S5A — the shipped production plugin entry (plan §19.2, S5-PRE).
+ *
+ * The harness MOUNTS this entry as a Cordis plugin row and consumes the
+ * `teamRoot` service it provides — the harness never builds a parallel
+ * backend graph (frozen invariant: production root = single assembly
+ * point, harness = consumer).
+ *
+ * Load path (S5-PRE): `tsc -p packages/runtime/tsconfig.build.json` emits
+ * the plain-JS artifact `dist/packages/runtime/src/plugin/host.js`; the
+ * DSH plugin loader imports that file with plain Node (no TS loader, no
+ * `node --import`, no package-exports change). This module therefore:
+ *
+ *   - registers the upstream resolution hook at load (the glue bundle and
+ *     the storage seam live in the worktree, OUTSIDE the DSH checkout —
+ *     their bare `@deepseek-ai/*` imports resolve through the checkout's
+ *     apps/cli workspace links; see ./upstream-resolver.mjs);
+ *   - declares `inject` for the hard host services (`agents`,
+ *     `storageDomain`, `sessionPersistence`) so the Loader defers this
+ *     row's apply until the host provides them (the pre-S5A harness row
+ *     injected the same set minus `sessionPersistence`, which it resolved
+ *     lazily); the entry still passes a lazy accessor for
+ *     `sessionPersistence` to the glue so a pre-settle call fails with a
+ *     stable code instead of a TypeError;
+ *   - validates the row `config` LOUDLY (a composition mistake rejects the
+ *     bootstrap — the driver sees the setup-failure evidence, never a
+ *     half world);
+ *   - loads the live-agent glue and the frozen legacy reader by URL
+ *     (row-owned `config.glueUrl`; the legacy entry is compiled separately
+ *     into the runtime dist mirror — see ./legacy-surface.js) and
+ *     constructs the production root (./root.js) around the opened
+ *     TeamDomain;
+ *   - provides `teamRoot` SYNCHRONOUSLY (before the first await) and arms
+ *     one effect. A rejected apply fiber is absorbed into the Cordis
+ *     logger — invisible to the harness — so EVERY setup failure (config,
+ *     services, modules, domain, boot) rejects the facade's `ready`
+ *     instead: the observability row awaits `ready` and maps the rejection
+ *     to the setup-failure evidence. On row stop the live bundle + domain
+ *     are closed (close() is idempotent).
+ * @module @dsh-agent-team/runtime/plugin/host
+ */
+import { register } from 'module'
+
+import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js'
+import { resolveDurableModelSelection } from '../../agent-setup/model/index.js'
+import {
+  createTeamDomain,
+  openTeamDomain,
+} from '../../../storage/repositories/index.js'
+import type { TeamDomain } from '../../../storage/repositories/index.js'
+import type { StorageDomainSeam } from '../../../storage/schema/index.js'
+import type { LegacyInspectFn } from './legacy-surface.js'
+import { createTeamProductionRoot } from './root.js'
+import {
+  TEAM_PLUGIN_ERROR_CODES,
+  TeamPluginError,
+} from './types.js'
+import type {
+  TeamAgentBindings,
+  TeamPluginConfig,
+  TeamPluginSeedMember,
+  TeamProductionRoot,
+} from './types.js'
+import type { TeamToolSet } from '../../../tools/src/index.js'
+
+/**
+ * The structural projection of the Cordis plugin context this entry uses
+ * (the concrete context is proxied by the loader; only these members are
+ * consumed — plan §19.2 keeps the entry independent of the Cordis types).
+ *
+ * Exported under the stable name the P1-T4 baseline test pins; only the
+ * member surface evolved (the production entry provides `teamRoot`
+ * synchronously, arms exactly one effect, and reports a missing row
+ * config through the facade's `ready` rejection).
+ */
+export interface TeamPluginHostContext {
+  get(name: string): unknown
+  provide(name: string, value: unknown): void
+  effect(factory: () => () => void, label?: string): void
+}
+
+/** The durable-consumption surface the glue bundle reads off the domain. */
+interface DomainConsumption {
+  readonly model: {
+    readonly resolveDurableModelSelection: typeof resolveDurableModelSelection
+  }
+  readonly capability: {
+    readonly resolveDurableMcpFacet: typeof resolveDurableMcpFacet
+  }
+}
+
+/** The frozen legacy reader entry as emitted into the runtime dist mirror. */
+interface LegacyEntryModule {
+  inspectLegacyTeam: LegacyInspectFn
+}
+
+/** The plain-JS glue module (config.glueUrl) export surface. */
+interface GlueModule {
+  createAgentBindings(deps: {
+    readonly agents: unknown
+    readonly sessionPersistence: unknown
+    readonly domain: TeamDomain & { readonly consumption: DomainConsumption }
+    readonly config: TeamPluginConfig
+    readonly teamToolsRef: { current: unknown }
+    readonly now: () => string
+  }): TeamAgentBindings
+}
+
+/**
+ * Register the upstream resolution hook exactly once per process (a second
+ * `module.register` would stack a duplicate hook in the resolution chain).
+ */
+function registerUpstreamResolverOnce(): void {
+  const g = globalThis as typeof globalThis & {
+    __dshAgentTeamUpstreamResolverRegistered?: boolean
+  }
+  if (g.__dshAgentTeamUpstreamResolverRegistered === true) return
+  g.__dshAgentTeamUpstreamResolverRegistered = true
+  // dist/.../src/plugin/host.js → five up = <worktree>/packages/runtime.
+  const hookUrl = new URL(
+    '../../../../../src/plugin/upstream-resolver.mjs',
+    import.meta.url,
+  ).href
+  register(hookUrl)
+}
+
+/**
+ * Validate the row `config` channel loudly (plan §19.2: the row config is
+ * the entry's ONLY input channel — a malformed composition must reject
+ * apply, not degrade).
+ * @param raw - the unvalidated `config:` of the row.
+ * @returns the validated config.
+ * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
+ */
+export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
+  // NB: function declaration, not a const arrow — TypeScript 6.0.3 control
+  // flow only treats a never-returning call as an abrupt completion when the
+  // callee is a function declaration (or ambient declaration); never-typed
+  // arrow const expressions do not narrow the guard below it (probe-verified
+  // against this repo's toolchain, see dev evidence P8-S build notes).
+  function fail(detail: string): never {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID,
+      `dsh-agent-team row config: ${detail}`,
+    )
+  }
+  const c = raw as (Partial<TeamPluginConfig> & Record<string, unknown>) | null
+  if (c === null || typeof c !== 'object' || Array.isArray(c)) fail('must be a plain object')
+  if (c.bootPhase !== 'create' && c.bootPhase !== 'resume') fail('bootPhase must be "create" or "resume"')
+  if (typeof c.rootSessionId !== 'string' || c.rootSessionId.length === 0) fail('rootSessionId must be a non-empty string')
+  if (typeof c.blueprintSource !== 'string' || c.blueprintSource.length === 0) fail('blueprintSource must be a non-empty string')
+  if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
+  if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
+  if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
+  for (const seed of c.seedMembers as readonly TeamPluginSeedMember[]) {
+    if (
+      seed === null ||
+      typeof seed !== 'object' ||
+      typeof seed.instanceId !== 'string' ||
+      typeof seed.templateId !== 'string' ||
+      typeof seed.label !== 'string' ||
+      typeof seed.childSessionId !== 'string'
+    ) {
+      fail('every seedMember needs instanceId/templateId/label/childSessionId strings')
+    }
+  }
+  if (
+    c.staticModel === null ||
+    typeof c.staticModel !== 'object' ||
+    typeof c.staticModel.provider !== 'string' ||
+    typeof c.staticModel.model !== 'string'
+  ) {
+    fail('staticModel must be { provider, model } strings')
+  }
+  if (
+    c.deniedSelection !== null &&
+    (c.deniedSelection === undefined ||
+      typeof c.deniedSelection !== 'object' ||
+      Array.isArray(c.deniedSelection))
+  ) {
+    fail('deniedSelection must be a plain object or null')
+  }
+  if (
+    c.mcpServer !== null &&
+    (c.mcpServer === undefined ||
+      typeof c.mcpServer !== 'object' ||
+      typeof c.mcpServer.name !== 'string' ||
+      (c.mcpServer.port !== null && typeof c.mcpServer.port !== 'number'))
+  ) {
+    fail('mcpServer must be { name, port: number|null } or null')
+  }
+  if (!Array.isArray(c.environmentFacts)) fail('environmentFacts must be an array')
+  if (
+    c.externalPolicyFacts === null ||
+    typeof c.externalPolicyFacts !== 'object' ||
+    c.externalPolicyFacts.hard === undefined ||
+    typeof c.externalPolicyFacts.hard !== 'object' ||
+    c.externalPolicyFacts.capabilityExists === undefined ||
+    typeof c.externalPolicyFacts.capabilityExists !== 'object'
+  ) {
+    fail('externalPolicyFacts must be { hard, capabilityExists } maps')
+  }
+  if (typeof c.glueUrl !== 'string' || c.glueUrl.length === 0) fail('glueUrl must be a non-empty file URL string')
+  if (c.seamUrl !== undefined && typeof c.seamUrl !== 'string') fail('seamUrl must be a file URL string when present')
+  return c as unknown as TeamPluginConfig
+}
+
+/**
+ * The plugin name (Cordis named-export protocol; the row id is
+ * `dsh-agent-team`).
+ */
+export const name = 'dsh-agent-team'
+
+/**
+ * The hard host service dependencies (Cordis inject protocol): the Loader
+ * keeps this row INACTIVE until all three exist and applies it once they
+ * do (the pre-S5A harness row injected the same set minus
+ * `sessionPersistence`, which it resolved lazily — its provider row is
+ * independent of this one, so waiting can only ever delay, never deadlock,
+ * the bootstrap). The entry still passes a LAZY accessor for
+ * `sessionPersistence` to the glue so any call that races the provider row
+ * fails with a stable code instead of a TypeError.
+ */
+export const inject = ['agents', 'storageDomain', 'sessionPersistence']
+
+/**
+ * The plugin entry (Cordis named-export protocol: the loader awaits the
+ * apply fiber). The apply body itself never rejects: it provides the
+ * `teamRoot` facade synchronously and tracks every setup failure through
+ * the facade's `ready` promise (a rejected apply fiber is absorbed into
+ * the Cordis logger, which the harness never observes — `ready` is the
+ * single observable failure channel).
+ * @param ctx - the plugin context (services via `ctx.get`; this entry
+ *   provides `teamRoot`).
+ * @param config - the row `config:` (validated loudly; see
+ *   {@link validateTeamPluginConfig}).
+ */
+export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promise<void> {
+  // The lazy sessionPersistence accessor: resolved per call so the first
+  // materialization — long after the stock host is fully up — observes a
+  // settled service, not a concurrent profile load.
+  const sessionPersistence = {
+    ensureMaterialized(session: unknown): Promise<unknown> {
+      const svc = ctx.get('sessionPersistence') as
+        | { ensureMaterialized?: (session: unknown) => Promise<unknown> }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.ensureMaterialized !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "sessionPersistence" public service is absent (or lacks ensureMaterialized) — it is resolved lazily per call and must be up before agent materialization runs',
+        )
+      }
+      return svc.ensureMaterialized(session)
+    },
+  }
+
+  // The bootstrap (config validation, resolver hook arming, services,
+  // seam, domain, glue, legacy reader, root construction, boot) runs as
+  // the tracked `ready` promise; its results are captured here so the
+  // facade getters and the row-stop effect can close over them.
+  let root: TeamProductionRoot | undefined
+  let openDomain: TeamDomain | undefined
+
+  async function bootstrap(): Promise<TeamProductionRoot> {
+    // A broken row must not arm the upstream resolution hook: validate the
+    // row config first, then register the resolver exactly once per process.
+    const rowConfig = validateTeamPluginConfig(config)
+    registerUpstreamResolverOnce()
+
+    const agents = ctx.get('agents')
+    if (agents === undefined || agents === null) {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+        'the "agents" public service is absent from the plugin context',
+      )
+    }
+
+  // --- the storage seam: injected service, or the real seam over the --------
+  // --- DSH public storageDomain (the row-owned seamUrl module) --------------
+  let seam: StorageDomainSeam | undefined = ctx.get('teamStorageSeam') as
+    | StorageDomainSeam
+    | undefined
+  if (seam === undefined || seam === null) {
+    if (typeof rowConfig.seamUrl !== 'string' || rowConfig.seamUrl.length === 0) {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+        'no "teamStorageSeam" service is provided and the row config carries no seamUrl',
+      )
+    }
+    const storageDomain = ctx.get('storageDomain')
+    if (storageDomain === undefined || storageDomain === null) {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+        'the "storageDomain" public service is absent (required to build the seam from seamUrl)',
+      )
+    }
+    const seamModule = (await import(rowConfig.seamUrl)) as {
+      createRealStorageDomainSeam?: (storageDomain: unknown) => StorageDomainSeam
+    }
+    if (typeof seamModule.createRealStorageDomainSeam !== 'function') {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+        'the seamUrl module does not export createRealStorageDomainSeam',
+      )
+    }
+    seam = seamModule.createRealStorageDomainSeam(storageDomain)
+  }
+
+  // --- the durable authority (A02): create stamps, open reopens ------------
+  const domain: TeamDomain =
+    rowConfig.bootPhase === 'create'
+      ? await createTeamDomain(seam)
+      : await openTeamDomain(seam)
+  openDomain = domain
+
+  // The glue reads the durable consumption resolvers off the domain
+  // (attached here — the production root's mutation node exposes the same
+  // pair, keeping ONE pair of resolvers process-wide).
+  const domainFacade: TeamDomain & { readonly consumption: DomainConsumption } = {
+    ...domain,
+    consumption: {
+      model: { resolveDurableModelSelection },
+      capability: { resolveDurableMcpFacet },
+    },
+  }
+
+  // --- the live-agent glue (plain JS, row-owned URL; construction is -------
+  // --- side-effect free — every boot effect runs inside live.boot()) -------
+  let glue: GlueModule
+  try {
+    glue = (await import(rowConfig.glueUrl)) as GlueModule
+  } catch (error) {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+      `the glue module (${rowConfig.glueUrl}) could not be loaded: ${String(error)}`,
+    )
+  }
+  if (typeof glue.createAgentBindings !== 'function') {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+      'the glue module does not export createAgentBindings',
+    )
+  }
+  const teamToolsRef: { current: TeamToolSet | undefined } = { current: undefined }
+  const live: TeamAgentBindings = glue.createAgentBindings({
+    agents,
+    sessionPersistence,
+    domain: domainFacade,
+    config: rowConfig,
+    teamToolsRef,
+    now: () => new Date().toISOString(),
+  })
+
+  // --- the frozen legacy reader (A29): compiled separately into the --------
+  // --- runtime dist mirror; the root never imports the legacy sources -----
+  // dist/.../src/plugin/host.js → five up = <wt>/packages/runtime.
+  const legacyEntryUrl = new URL(
+    '../../../../../dist/packages/legacy/session-reader/index.js',
+    import.meta.url,
+  ).href
+  let legacyInspect: LegacyInspectFn
+  try {
+    const legacyEntry = (await import(legacyEntryUrl)) as LegacyEntryModule
+    if (typeof legacyEntry.inspectLegacyTeam !== 'function') {
+      throw new Error('the legacy entry does not export inspectLegacyTeam')
+    }
+    legacyInspect = legacyEntry.inspectLegacyTeam
+  } catch (error) {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+      `the frozen legacy reader entry (${legacyEntryUrl}) could not be loaded: ${String(error)}`,
+    )
+  }
+
+  // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
+  const builtRoot: TeamProductionRoot = createTeamProductionRoot({
+    config: rowConfig,
+    domain: domainFacade,
+    storageSeam: seam,
+    live,
+    now: () => new Date().toISOString(),
+    teamToolsRef,
+    legacyInspect,
+  })
+  root = builtRoot
+  await builtRoot.boot()
+  return builtRoot
+  }
+
+  const ready: Promise<TeamProductionRoot> = bootstrap()
+  // Mark the rejection handled even when no consumer attaches (the
+  // observability row awaits `ready` through its own handler).
+  void ready.catch(() => undefined)
+
+  function requireRoot(): TeamProductionRoot {
+    if (root === undefined) {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_NOT_READY,
+        'teamRoot was read before the bootstrap settled (await `ready` first)',
+      )
+    }
+    return root
+  }
+
+  // The `teamRoot` service — provided SYNCHRONOUSLY (before the first
+  // await) so the consumer can observe every setup failure through
+  // `ready`. The harness reads the other fields after `ready` settles;
+  // the getters keep the facade live if the row is ever restarted against
+  // the same root.
+  const facade = {
+    ready,
+    get domain(): TeamDomain {
+      return requireRoot().domain
+    },
+    get live(): TeamAgentBindings {
+      return requireRoot().live
+    },
+    get tools(): TeamProductionRoot['tools'] {
+      return requireRoot().tools
+    },
+    get control(): TeamProductionRoot['control'] {
+      return requireRoot().control
+    },
+    get activity(): TeamProductionRoot['activity'] {
+      return requireRoot().activity
+    },
+    get messaging(): TeamProductionRoot['messaging'] {
+      return requireRoot().messaging
+    },
+    get config(): TeamPluginConfig {
+      return requireRoot().config
+    },
+  }
+  ctx.provide('teamRoot', facade)
+
+  // Row-stop backstop: settle the bootstrap (if it is still running), then
+  // close the live bundle + the durable domain (idempotent; the observability
+  // row may also close live — the root's close() is idempotent). When the
+  // bootstrap failed before the root was built, close the domain directly.
+  ctx.effect(
+    () => () => {
+      void ready
+        .catch(() => undefined)
+        .then((settled) => {
+          if (settled !== undefined) {
+            void settled.close().catch(() => undefined)
+          } else if (openDomain !== undefined) {
+            void openDomain.close().catch(() => undefined)
+          }
+        })
+    },
+    'dsh-agent-team production cleanup',
+  )
+}

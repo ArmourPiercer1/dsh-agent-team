@@ -1,0 +1,132 @@
+{
+  "criterion": "E1",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 1531,
+  "assertions": [
+    {
+      "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+      "pass": true,
+      "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+    },
+    {
+      "name": "boot1 state: the seeded instance ids are present",
+      "pass": true,
+      "detail": "[\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+    },
+    {
+      "name": "team_list_members executed through the registered handler",
+      "pass": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSe"
+    },
+    {
+      "name": "list effect is members-listed with the three members",
+      "pass": true,
+      "detail": "{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-child-p6t6seeds1\"},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"lifecycle\":\""
+    },
+    {
+      "name": "team_list_templates executed; worker (persistent) and scout (fresh_per_delegation) listed",
+      "pass": true,
+      "detail": "[{\"templateId\":\"leader\",\"displayName\":\"\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"worker\",\"displayName\":\"Worker\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"scout\",\"displayName\":\"Scout\",\"contextPolicy\":\"fresh_per_delegation\"}]"
+    },
+    {
+      "name": "all three concurrent creates admitted (executed)",
+      "pass": true,
+      "detail": "[{\"s\":\"executed\",\"code\":null,\"message\":null},{\"s\":\"executed\",\"code\":null,\"message\":null},{\"s\":\"executed\",\"code\":null,\"message\":null}]"
+    },
+    {
+      "name": "every create returned a member-activated effect",
+      "pass": true,
+      "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-0j3weh1176s5\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0j3weh1176s5\",\"operationId\":\"op-1f86tdr00q0rpa10a3nbl0cs\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0i9xle4180qy\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0i9xle4180qy\",\"operationId\":\"op-0gvn3290iz6yqw1h8sq0j04g\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ijx73317qrd\",\"templateId\":\"worker\",\"childSessionId\":\"sessi"
+    },
+    {
+      "name": "three distinct new instance ids",
+      "pass": true,
+      "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+    },
+    {
+      "name": "none of the new ids collides with the seeded set",
+      "pass": true,
+      "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+    },
+    {
+      "name": "every activation carries a child session id",
+      "pass": true,
+      "detail": "[\"session-child-p6t6-0j3weh1176s5\",\"session-child-p6t6-0i9xle4180qy\",\"session-child-p6t6-0ijx73317qrd\"]"
+    },
+    {
+      "name": "every activation is on the worker template",
+      "pass": true,
+      "detail": "[\"worker\",\"worker\",\"worker\"]"
+    },
+    {
+      "name": "state after E1: six members total",
+      "pass": true,
+      "detail": "[\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+    },
+    {
+      "name": "state after E1: four worker-template members (1 seed + 3 new)",
+      "pass": true,
+      "detail": "workerCount=4"
+    },
+    {
+      "name": "state after E1: the three new instance ids are present",
+      "pass": true,
+      "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 5,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "membersBefore": [
+      "inst-leader",
+      "inst-p6t6seeds1",
+      "inst-p6t6seedw1"
+    ],
+    "templates": [
+      {
+        "templateId": "leader",
+        "displayName": "",
+        "contextPolicy": "persistent"
+      },
+      {
+        "templateId": "worker",
+        "displayName": "Worker",
+        "contextPolicy": "persistent"
+      },
+      {
+        "templateId": "scout",
+        "displayName": "Scout",
+        "contextPolicy": "fresh_per_delegation"
+      }
+    ],
+    "created": [
+      {
+        "token": "p6t6-e1-1",
+        "instanceId": "inst-0j3weh1176s5",
+        "label": "e1-1",
+        "childSessionId": "session-child-p6t6-0j3weh1176s5"
+      },
+      {
+        "token": "p6t6-e1-2",
+        "instanceId": "inst-0i9xle4180qy",
+        "label": "e1-2",
+        "childSessionId": "session-child-p6t6-0i9xle4180qy"
+      },
+      {
+        "token": "p6t6-e1-3",
+        "instanceId": "inst-0ijx73317qrd",
+        "label": "e1-3",
+        "childSessionId": "session-child-p6t6-0ijx73317qrd"
+      }
+    ],
+    "w": "inst-0j3weh1176s5",
+    "wChild": "session-child-p6t6-0j3weh1176s5",
+    "memberCountAfter": 6,
+    "workerCountAfter": 4
+  }
+}

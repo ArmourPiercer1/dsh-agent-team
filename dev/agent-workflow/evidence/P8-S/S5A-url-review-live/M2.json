@@ -1,0 +1,93 @@
+{
+  "criterion": "M2",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 1127,
+  "assertions": [
+    {
+      "name": "M1 ran first (the baseline turn)",
+      "pass": true,
+      "detail": "{\"m1\":true,\"m2\":false,\"m4\":false}"
+    },
+    {
+      "name": "operator mutation admitted (human-override, generation 1)",
+      "pass": true,
+      "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-model\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"kind\":\"allow\",\"items\":[\"p6t6-static/p6t6-model-v2\"]}},\"generation\":1,\"updatedAt\":\"2026-09-01T16:17:58.104Z\",\"supersededRecordId\":null}}"
+    },
+    {
+      "name": "BEFORE any request: the backend truth lists the new record in pendingNextBoundary",
+      "pass": true,
+      "detail": "[\"p8s4b-ovr-model\"]"
+    },
+    {
+      "name": "the NEXT real request executed against the worker",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":27,\"replayed\":false,\"settled\":true,\"settledSequence\":30},\"requestToken\":\"p8s4b-m2-token\"}"
+    },
+    {
+      "name": "worker model CURRENT switched to B at the boundary",
+      "pass": true,
+      "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+    },
+    {
+      "name": "the real turn ASSEMBLED model B (live evidence: the next request runs on B)",
+      "pass": true,
+      "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+    },
+    {
+      "name": "provenance source names the granting human-override record",
+      "pass": true,
+      "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-model\"}"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 3,
+    "non200": []
+  },
+  "evidence": {
+    "mutation": {
+      "recordId": "p8s4b-ovr-model",
+      "kind": "human-override",
+      "scope": "team",
+      "values": {
+        "model": {
+          "kind": "allow",
+          "items": [
+            "p6t6-static/p6t6-model-v2"
+          ]
+        }
+      },
+      "generation": 1,
+      "updatedAt": "2026-09-01T16:17:58.104Z",
+      "supersededRecordId": null
+    },
+    "pendingBefore": [
+      "p8s4b-ovr-model"
+    ],
+    "workerModelAfter": {
+      "current": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "assembled": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "selection": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "source": {
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-model"
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "pendingNextBoundary": [],
+      "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-model) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+    }
+  }
+}

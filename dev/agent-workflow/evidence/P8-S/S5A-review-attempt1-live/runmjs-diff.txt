@@ -1,0 +1,734 @@
+﻿diff --git a/packages/tools/harness/run.mjs b/packages/tools/harness/run.mjs
+index dc0ebc3..68be04e 100644
+--- a/packages/tools/harness/run.mjs
++++ b/packages/tools/harness/run.mjs
+@@ -91,6 +91,7 @@ import {
+   readFileSync,
+   readdirSync,
+   rmSync,
++  symlinkSync,
+   writeFileSync,
+ } from 'node:fs'
+ import { basename, dirname, join, resolve } from 'node:path'
+@@ -121,10 +122,10 @@ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]
+ const ROOT_SESSION_ID = 'session-p6t6root'
+ /** The leader member instance (its bound child session IS the root). */
+ const LEADER_INSTANCE_ID = 'inst-leader'
+-/** The seeded worker / scout instance ids (plugin.mjs mirrors these). */
++/** The seeded worker / scout instance ids (the TEAM_SEED_* row config mirrors these). */
+ const SEED_WORKER_ID = 'inst-p6t6seedw1'
+ const SEED_SCOUT_ID = 'inst-p6t6seeds1'
+-/** The seeded worker's child session id (plugin.mjs mirrors the derivation). */
++/** The seeded worker's child session id (mirrors the glue's verbatim childSidFor derivation: 'session-child-p6t6-' + instanceId.slice(5)). */
+ const SEED_WORKER_CHILD = 'session-child-p6t6seedw1'
+ /** E5: the control-request correlation token (the guarded follow-up). */
+ const E5_CTRL_TOKEN = 'p6t6-e5-ctrl1'
+@@ -170,10 +171,153 @@ const M_RECORD_MCP_ALLOW = 'p8s4b-ovr-mcp-allow'
+ const M_RECORD_MCP_DENY = 'p8s4b-ovr-mcp-deny'
+ /** The model-B selection the M2 mutation grants (provider/model item). */
+ const M_MODEL_B = { provider: 'p6t6-static', model: 'p6t6-model-v2' }
+-/** The static baseline model selection (model A; plugin.mjs mirrors it). */
++/** The static baseline model selection (model A; the TEAM_STATIC_MODEL row config mirrors it). */
+ const M_MODEL_A = { provider: 'p6t6-static', model: 'p6t6-model-v1' }
+ /** The ten registered team tool names (asserted on health). */
+ const EXPECTED_TOOL_COUNT = 10
++
++// ── P8-S5A: the production dsh-agent-team row config ──────────────────────
++// The values below moved VERBATIM from the pre-refactor harness plugin.mjs
++// (the backend graph left that file); the built production row receives
++// them as its row `config` through the public profile-patch seam.
++
++/**
++ * The P6-T6 fixture blueprint (own id; quotas: team 12/12, per-template
++ * 4/4 — the template boundary is the only one the E2E scenarios bind on:
++ * workers end at 4 (1 seed + 3 from E1), scouts end at 4 (1 seed + 2 from
++ * E4 + exactly 1 admitted from the E6 race); the team total (9 with the
++ * leader) never reaches 12).
++ */
++const TEAM_BLUEPRINT_SOURCE = [
++  '---',
++  'schemaVersion: 1',
++  'blueprintId: P6T6-BP',
++  'revision: "1"',
++  'leader:',
++  '  templateId: leader',
++  '  persona: You lead the P6T6 team.',
++  'members:',
++  '  - templateId: worker',
++  '    displayName: Worker',
++  '    persona: You do the P6T6 work.',
++  '  - templateId: scout',
++  '    displayName: Scout',
++  '    persona: You scout for the P6T6 team.',
++  '    contextPolicy: fresh_per_delegation',
++  'requirements:',
++  '  - domain: tool',
++  '    name: web',
++  '    optional: true',
++  '  - domain: skill',
++  '    name: base',
++  'teamEnvelope:',
++  '  allow:',
++  '    - assign-task',
++  '    - create-member',
++  '    - send-message',
++  '    - report-progress',
++  '    - request-control',
++  '    - resolve-control',
++  '    - archive-member',
++  '    - restore-member',
++  '  deny:',
++  '    - delete-team',
++  'memberEnvelopes:',
++  '  - templateId: worker',
++  '    envelope:',
++  '      allow:',
++  '        - send-message',
++  '        - report-progress',
++  '      deny: []',
++  '  - templateId: scout',
++  '    envelope:',
++  '      allow:',
++  '        - send-message',
++  '        - report-progress',
++  '        - request-control',
++  '      deny: []',
++  'policyStates:',
++  '  - id: default',
++  '    description: The P6T6 default state.',
++  'quotas:',
++  '  team:',
++  '    maxInstances: 12',
++  '    maxConcurrent: 12',
++  '  members:',
++  '    maxInstances: 4',
++  '    maxConcurrent: 4',
++  'metadata: {}',
++  '---',
++].join('\n')
++
++/** The seeded member template/label pairs (the leader binds the root itself). */
++const TEAM_SEED_WORKER = { instanceId: 'inst-p6t6seedw1', templateId: 'worker', label: 'existing-worker', childSessionId: 'session-child-p6t6seedw1' }
++const TEAM_SEED_SCOUT = { instanceId: 'inst-p6t6seeds1', templateId: 'scout', label: 'existing-scout', childSessionId: 'session-child-p6t6seeds1' }
++
++/** The static model reference (no real provider in the test DSH_HOME). */
++const TEAM_STATIC_MODEL = { provider: 'p6t6-static', model: 'p6t6-model-v1' }
++
++/** The deliberately-unroutable selection installed when a model cell
++ * resolves to NO concrete model (explicit deny / external / malformed):
++ * the turn fails contained at the model-call boundary instead of silently
++ * falling back to a host default (the durable-consumption consumer rule). */
++const TEAM_DENIED_SELECTION = { provider: 'p8s4b-denied', model: 'p8s4b-denied' }
++
++/** The live mini-MCP server name (the mcp facet's item vocabulary). */
++const TEAM_MCP_SERVER_NAME = 'p8s4bmini'
++
++/** The durable team session's default workspace. */
++const TEAM_DEFAULT_WORKSPACE = 'C:/agent-team/work/p6t6'
++
++/**
++ * The production dsh-agent-team row name: the BUILT packages/runtime host.
++ * tsc mirror layout — the on-disk dist artifacts are
++ * dist/packages/runtime/src/plugin/host.js (the final production build's
++ * cross-package imports expand the emit root to the mirror path, which the
++ * tsconfig.build.json rootDir alone would not produce for the skeleton).
++ * If the final layout differs, update THIS ONE LINE — the row config is
++ * unchanged.
++ */
++const PRODUCTION_ROW_NAME = pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'host.js')).href
++
++/**
++ * The production row's `config` (row-config plumbing: the Loader passes
++ * EntryOptions.config to a function-protocol plugin's apply(ctx, config)).
++ * Final key set (P8-S5A refinement): rootSessionId, bootPhase,
++ * blueprintSource, seedMembers, defaultWorkspace, generation, staticModel,
++ * deniedSelection, mcpServer, environmentFacts, externalPolicyFacts,
++ * glueUrl, seamUrl (the row-owned file URLs of the plain-JS glue bundle and
++ * the real storage-domain seam — the row config is the entry's only input
++ * channel, plan §19.2). NO
++ * childSessionIdPrefix — the glue's childSidFor is the verbatim literal
++ * 'session-child-p6t6-' + instanceId.slice(5), not row config.
++ * @param {number} boot - the boot number (1/3 create, 2/4 resume).
++ * @param {number|null} miniPort - the live mini-MCP port (or null: the glue
++ * mini-MCP mount then throws the no-port error when the policy allows it).
++ * @returns {object} the row config object (plain JSON values only).
++ */
++function teamRowConfig(boot, miniPort) {
++  return {
++    rootSessionId: ROOT_SESSION_ID,
++    bootPhase: boot === 1 || boot === 3 ? 'create' : 'resume',
++    blueprintSource: TEAM_BLUEPRINT_SOURCE,
++    seedMembers: [TEAM_SEED_WORKER, TEAM_SEED_SCOUT],
++    defaultWorkspace: TEAM_DEFAULT_WORKSPACE,
++    generation: 1,
++    staticModel: TEAM_STATIC_MODEL,
++    deniedSelection: TEAM_DENIED_SELECTION,
++    mcpServer: { name: TEAM_MCP_SERVER_NAME, port: miniPort },
++    environmentFacts: [
++      { domain: 'tool', subject: 'web', available: true, generation: 1 },
++      { domain: 'skill', subject: 'base', available: true, generation: 1 },
++    ],
++    externalPolicyFacts: { hard: {}, capabilityExists: {} },
++    // Row-owned plain-JS module URLs (tsc never emits .mjs; the built
++    // production entry loads both by URL, keeping the dist tree pure).
++    glueUrl: pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs')).href,
++    seamUrl: pathToFileURL(join(WORKTREE_ROOT, 'packages', 'runtime', 'root-binding', 'harness', 'seam.mjs')).href,
++  }
++}
+ /** The exact tool-layer source files the committed scanner must cover. */
+ const EXPECTED_SCAN_FILES = [
+   'packages/tools/src/guard.ts',
+@@ -212,6 +356,173 @@ function tailText(text, lines = 12) {
+   return String(text).split('\n').slice(-lines).join('\n')
+ }
+ 
++// ── P8-S5A: the profile-patch layer (hand-rolled YAML, no js-yaml) ────────
++
++/**
++ * A YAML scalar for the patch-file emitter (the DSH profile-patch dialect
++ * is js-yaml JSON_SCHEMA + !!js: every scalar here is plain JSON — strings
++ * JSON-quoted (the \n escapes make the blueprint a single-line quoted
++ * scalar), numbers/booleans/null bare).
++ * @param {unknown} v
++ * @returns {string}
++ */
++function yamlScalar(v) {
++  if (v === null) return 'null'
++  if (typeof v === 'string') return JSON.stringify(v)
++  return String(v)
++}
++
++/**
++ * The nested entries of an already-emitted `key:` line, at the given indent
++ * (2-space steps; the mountRows dialect).
++ * @param {unknown} value - a non-empty plain object or array.
++ * @param {number} indent
++ * @returns {Array<string>}
++ */
++function yamlValueLines(value, indent) {
++  if (Array.isArray(value)) {
++    return value.flatMap((item) => yamlEmitItem(item, indent))
++  }
++  return Object.entries(value).flatMap(([k, v]) => yamlEmit(k, v, indent))
++}
++
++/**
++ * Emit one `key: ...` pair: a scalar on the line, a block map/sequence for
++ * a non-empty compound (an empty compound stays inline as {} / []).
++ * @param {string} key
++ * @param {unknown} value
++ * @param {number} indent
++ * @returns {Array<string>}
++ */
++function yamlEmit(key, value, indent) {
++  const pad = '  '.repeat(indent)
++  if (value !== null && typeof value === 'object') {
++    const empty = Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0
++    if (empty) return [`${pad}${key}: ${Array.isArray(value) ? '[]' : '{}'}`]
++    return [`${pad}${key}:`, ...yamlValueLines(value, indent + 1)]
++  }
++  return [`${pad}${key}: ${yamlScalar(value)}`]
++}
++
++/**
++ * Emit one sequence item: `- scalar` on its own line, or `- firstKey: ...`
++ * with the rest of the object's keys one step deeper.
++ * @param {unknown} item
++ * @param {number} indent - the dash column (2-space steps).
++ * @returns {Array<string>}
++ */
++function yamlEmitItem(item, indent) {
++  const pad = '  '.repeat(indent)
++  if (item === null || typeof item !== 'object') {
++    return [`${pad}- ${yamlScalar(item)}`]
++  }
++  if (Array.isArray(item)) {
++    if (item.length === 0) return [`${pad}- []`]
++    return [`${pad}-`, ...yamlValueLines(item, indent + 1)]
++  }
++  const entries = Object.entries(item)
++  if (entries.length === 0) return [`${pad}- {}`]
++  const [firstKey, firstValue] = entries[0]
++  const firstCompound = firstValue !== null && typeof firstValue === 'object'
++  const firstEmpty = firstCompound && (Array.isArray(firstValue) ? firstValue.length === 0 : Object.keys(firstValue).length === 0)
++  const firstLines = firstCompound
++    ? firstEmpty
++      ? [`${pad}- ${firstKey}: ${Array.isArray(firstValue) ? '[]' : '{}'}`]
++      : [`${pad}- ${firstKey}:`, ...yamlValueLines(firstValue, indent + 2)]
++    : [`${pad}- ${firstKey}: ${yamlScalar(firstValue)}`]
++  return [...firstLines, ...entries.slice(1).flatMap(([k, v]) => yamlEmit(k, v, indent + 1))]
++}
++
++/**
++ * Write the public profile-patch file for one boot: the production
++ * dsh-agent-team row (the built packages/runtime host; the teamRoot
++ * service) FIRST, then the observability row — both mounted ONLY through
++ * this public profile-patch seam (verified by dump-config).
++ * @param {string} patchPath - <dshHome>/profiles/web/cordis.patch.yml.
++ * @param {number} boot
++ * @param {number} miniPort - the live mini-MCP port.
++ */
++function writeTeamPatchFile(patchPath, boot, miniPort) {
++  mkdirSync(dirname(patchPath), { recursive: true })
++  const lines = [
++    `# P8-S5A harness patch layer (boot ${boot}): production dsh-agent-team row (built packages/runtime host) + observability p6t6-team-tools row, mounted ONLY through this public profile-patch seam.`,
++    '- insert:',
++    ...yamlEmitItem({
++      id: 'dsh-agent-team',
++      name: PRODUCTION_ROW_NAME,
++      config: teamRowConfig(boot, miniPort),
++    }, 2),
++    ...yamlEmitItem({
++      id: 'p6t6-team-tools',
++      name: pathToFileURL(join(HERE, 'plugin.mjs')).href,
++    }, 2),
++    '',
++  ]
++  writeFileSync(patchPath, lines.join('\n'))
++}
++
++/**
++ * Build the production dsh-agent-team runtime ONCE (before the first
++ * instance boot; the patch layer's production row loads the built dist
++ * host, and tsc does not copy the .mjs glue — the built host imports it
++ * from the source tree).
++ * @param {function(string): void} log
++ * @param {string} logsDir
++ * @returns {Promise<void>}
++ */
++async function buildProductionRuntime(log, logsDir) {
++  const tscBin = join(WORKTREE_ROOT, 'node_modules', 'typescript', 'bin', 'tsc')
++  // (1) The legacy package first: it has no tsconfig.json (previously ZERO
++  //     typecheck) and its session-reader sources carry pre-existing
++  //     type errors (TS2540 readonly assignment, TS2345) that surface
++  //     whenever the runtime build program compiles them. Its dedicated
++  //     build config (packages/legacy/tsconfig.build.json, strict: false —
++  //     documented deviation in S5A-result.md) mirror-emits dist JS + .d.ts
++  //     that the runtime build CONSUMES instead of the raw sources.
++  const legacyTsconfig = join(WORKTREE_ROOT, 'packages', 'legacy', 'tsconfig.build.json')
++  log(`P8-S5A: building the legacy session-reader dist (node ${tscBin} -p ${legacyTsconfig})`)
++  const legacyResult = await spawnToLog(
++    process.execPath,
++    [tscBin, '-p', legacyTsconfig],
++    { cwd: WORKTREE_ROOT, logPath: join(logsDir, 'build-legacy-runtime.log'), timeoutMs: 300_000 },
++  )
++  if (!legacyResult.ok) {
++    throw new Error(`P8-S5A legacy dist build failed (exit ${legacyResult.exitCode ?? 'n/a'}): node ${tscBin} -p ${legacyTsconfig}\n${tailText(legacyResult.text)}`)
++  }
++  // (2) The runtime production build (consumes the legacy .d.ts via the
++  //     tsconfig.build.json paths mapping).
++  const tsconfig = join(WORKTREE_ROOT, 'packages', 'runtime', 'tsconfig.build.json')
++  log(`P8-S5A: building the production dsh-agent-team runtime (node ${tscBin} -p ${tsconfig})`)
++  const result = await spawnToLog(
++    process.execPath,
++    [tscBin, '-p', tsconfig],
++    { cwd: WORKTREE_ROOT, logPath: join(logsDir, 'build-production-runtime.log'), timeoutMs: 300_000 },
++  )
++  if (!result.ok) {
++    throw new Error(`P8-S5A production runtime build failed (exit ${result.exitCode ?? 'n/a'}): node ${tscBin} -p ${tsconfig}\n${tailText(result.text)}`)
++  }
++  // (3) The dist mirror emits exactly ONE third-party bare import — `yaml`,
++  //     from the domain blueprint parser — and pnpm places yaml under
++  //     packages/domain/node_modules, which Node's walk-up resolution never
++  //     reaches from the mirror geometry (packages/runtime/dist/...). Adding
++  //     yaml to the runtime package's declared dependencies is outside
++  //     owned_paths, so the build links it explicitly instead: a junction
++  //     (the same mechanism pnpm itself uses on this machine) at
++  //     packages/runtime/node_modules/yaml. Idempotent; every dist file's
++  //     `import 'yaml'` resolves through packages/runtime/node_modules.
++  const yamlLink = join(WORKTREE_ROOT, 'packages', 'runtime', 'node_modules', 'yaml')
++  const yamlTarget = join(WORKTREE_ROOT, 'packages', 'domain', 'node_modules', 'yaml')
++  if (!existsSync(yamlTarget)) {
++    throw new Error('P8-S5A: packages/domain/node_modules/yaml is missing — run the workspace install before building the production runtime')
++  }
++  if (!existsSync(yamlLink)) {
++    rmSync(yamlLink, { force: true })
++    mkdirSync(dirname(yamlLink), { recursive: true })
++    symlinkSync(yamlTarget, yamlLink, process.platform === 'win32' ? 'junction' : 'dir')
++    log('P8-S5A: linked the dist mirror\'s bare `yaml` import (packages/runtime/node_modules/yaml)')
++  }
++}
++
+ // 鈹€鈹€ argument parsing 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+ 
+ function parseArgs(argv) {
+@@ -562,7 +873,7 @@ async function main() {
+         headers: { 'content-type': 'application/json' },
+         body: JSON.stringify({ name, args, as }),
+       }, 180_000)
+-      if (status !== 200) ctx.http.non200.push({ call: name, status, body: body === null ? null : JSON.stringify(body).slice(0, 400) })
++      if (status !== 200) ctx.http.non200.push({ call: name, status, body: body === null ? null : JSON.stringify((body) ?? null).slice(0, 400) })
+       return { status, body }
+     }
+ 
+@@ -570,7 +881,7 @@ async function main() {
+     const getState = async (ctx, port) => {
+       ctx.http.stateCalls += 1
+       const { status, body } = await fetchJson(`http://127.0.0.1:${port}/__p6t6/state`, {}, 30_000)
+-      if (status !== 200) ctx.http.non200.push({ call: 'state', status, body: body === null ? null : JSON.stringify(body).slice(0, 400) })
++      if (status !== 200) ctx.http.non200.push({ call: 'state', status, body: body === null ? null : JSON.stringify((body) ?? null).slice(0, 400) })
+       return { status, body }
+     }
+ 
+@@ -582,7 +893,7 @@ async function main() {
+         headers: { 'content-type': 'application/json' },
+         body: JSON.stringify({ sessionId }),
+       }, 30_000)
+-      if (status !== 200) ctx.http.non200.push({ call: 'residency-drop', status, body: body === null ? null : JSON.stringify(body).slice(0, 400) })
++      if (status !== 200) ctx.http.non200.push({ call: 'residency-drop', status, body: body === null ? null : JSON.stringify((body) ?? null).slice(0, 400) })
+       return { status, body }
+     }
+ 
+@@ -605,7 +916,7 @@ async function main() {
+         headers: { 'content-type': 'application/json' },
+         body: JSON.stringify(payload),
+       }, 30_000)
+-      if (status !== 200) ctx.http.non200.push({ call: 'governance-mutate', status, body: body === null ? null : JSON.stringify(body).slice(0, 400) })
++      if (status !== 200) ctx.http.non200.push({ call: 'governance-mutate', status, body: body === null ? null : JSON.stringify((body) ?? null).slice(0, 400) })
+       return { status, body }
+     }
+ 
+@@ -788,7 +1099,7 @@ async function main() {
+         violations: scan.violations,
+       }
+       c.check('scan covers exactly the five committed tool-layer source files', JSON.stringify(scan.files) === JSON.stringify(EXPECTED_SCAN_FILES), JSON.stringify(scan.files))
+-      c.check('zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)', scan.totalViolations === 0, JSON.stringify(scan.violations).slice(0, 600))
++      c.check('zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)', scan.totalViolations === 0, JSON.stringify((scan.violations) ?? null).slice(0, 600))
+       return recordScenario(c)
+     }
+ 
+@@ -801,9 +1112,9 @@ async function main() {
+       c.check('boot1 state: the seeded instance ids are present', Array.isArray(st0?.members) && seedIds.every((id) => st0.members.some((m) => m.instanceId === id)), JSON.stringify(st0?.members?.map((m) => m.instanceId)))
+ 
+       const listMembers = await callTool(c, port, 'team_list_members', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e1-list-members' }, ROOT_SESSION_ID)
+-      c.check('team_list_members executed through the registered handler', listMembers.status === 200 && listMembers.body?.ok === true && listMembers.body?.value?.status === 'executed', JSON.stringify(listMembers.body).slice(0, 400))
++      c.check('team_list_members executed through the registered handler', listMembers.status === 200 && listMembers.body?.ok === true && listMembers.body?.value?.status === 'executed', JSON.stringify((listMembers.body) ?? null).slice(0, 400))
+       const listed = listMembers.body?.value?.effect
+-      c.check('list effect is members-listed with the three members', listed?.kind === 'members-listed' && Array.isArray(listed.members) && listed.members.length === 3, JSON.stringify(listed).slice(0, 400))
++      c.check('list effect is members-listed with the three members', listed?.kind === 'members-listed' && Array.isArray(listed.members) && listed.members.length === 3, JSON.stringify((listed) ?? null).slice(0, 400))
+ 
+       const listTemplates = await callTool(c, port, 'team_list_templates', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e1-list-templates' }, ROOT_SESSION_ID)
+       const templates = listTemplates.body?.value?.effect?.templates
+@@ -820,9 +1131,9 @@ async function main() {
+         ),
+       )
+       const results = creations.map((r) => r.body?.value)
+-      c.check('all three concurrent creates admitted (executed)', results.every((r) => r?.status === 'executed'), JSON.stringify(results.map((r) => r?.status ?? r)))
++      c.check('all three concurrent creates admitted (executed)', results.every((r) => r?.status === 'executed'), JSON.stringify(results.map((r) => ({ s: r?.status, code: r?.code ?? null, message: r?.message ?? null }))))
+       const activated = results.map((r) => r?.effect)
+-      c.check('every create returned a member-activated effect', activated.every((e) => e?.kind === 'member-activated'), JSON.stringify(activated).slice(0, 600))
++      c.check('every create returned a member-activated effect', activated.every((e) => e?.kind === 'member-activated'), JSON.stringify((activated) ?? null).slice(0, 600))
+       const newIds = activated.map((e) => e?.instanceId)
+       c.check('three distinct new instance ids', newIds.length === 3 && newIds.every((id) => typeof id === 'string') && new Set(newIds).size === 3, JSON.stringify(newIds))
+       c.check('none of the new ids collides with the seeded set', newIds.every((id) => !seedIds.includes(id)), JSON.stringify(newIds))
+@@ -881,10 +1192,10 @@ async function main() {
+       const wChild = S.e1.wChild
+       c.check('E1 produced a persistent worker with a bound child session', typeof w === 'string' && typeof wChild === 'string', `w=${w} wChild=${wChild}`)
+       const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-1', targetInstanceId: w, taskSummary: 'p6t6 e3 first unit', prompt: 'p6t6 e3 first unit' }, ROOT_SESSION_ID)
+-      c.check('first follow-up executed on the existing instance', fu1.body?.ok === true && fu1.body?.value?.status === 'executed' && fu1.body?.value?.effect?.kind === 'work-admitted' && fu1.body?.value?.effect?.instanceId === w, JSON.stringify(fu1.body?.value).slice(0, 500))
++      c.check('first follow-up executed on the existing instance', fu1.body?.ok === true && fu1.body?.value?.status === 'executed' && fu1.body?.value?.effect?.kind === 'work-admitted' && fu1.body?.value?.effect?.instanceId === w, JSON.stringify((fu1.body?.value) ?? null).slice(0, 500))
+       const seq1 = fu1.body?.value?.effect?.sequence
+       const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-2', targetInstanceId: w, taskSummary: 'p6t6 e3 second unit', prompt: 'p6t6 e3 second unit' }, ROOT_SESSION_ID)
+-      c.check('second follow-up executed on the SAME instance', fu2.body?.ok === true && fu2.body?.value?.status === 'executed' && fu2.body?.value?.effect?.kind === 'work-admitted' && fu2.body?.value?.effect?.instanceId === w, JSON.stringify(fu2.body?.value).slice(0, 500))
++      c.check('second follow-up executed on the SAME instance', fu2.body?.ok === true && fu2.body?.value?.status === 'executed' && fu2.body?.value?.effect?.kind === 'work-admitted' && fu2.body?.value?.effect?.instanceId === w, JSON.stringify((fu2.body?.value) ?? null).slice(0, 500))
+       const seq2 = fu2.body?.value?.effect?.sequence
+       // P8-S3 settlement chain (R5, plan §16.6): each work unit now writes
+       // MULTIPLE admission-ledger facts (admission, delivery-observed,
+@@ -921,7 +1232,7 @@ async function main() {
+       }
+       c.check('both fresh_per_delegation delegates executed', created.every((e) => e.value?.status === 'executed'), JSON.stringify(created.map((e) => e.value?.status)))
+       const effects = created.map((e) => e.value?.effect)
+-      c.check('both delegates returned member-activated effects', effects.every((e) => e?.kind === 'member-activated'), JSON.stringify(effects).slice(0, 600))
++      c.check('both delegates returned member-activated effects', effects.every((e) => e?.kind === 'member-activated'), JSON.stringify((effects) ?? null).slice(0, 600))
+       const ids = effects.map((e) => e?.instanceId)
+       c.check('two distinct NEW instance ids (not the seed, not each other)', ids.length === 2 && new Set(ids).size === 2 && !ids.includes(SEED_SCOUT_ID) && ids.every((id) => typeof id === 'string'), JSON.stringify(ids))
+       c.check('each activation carries a distinct new child session', new Set(effects.map((e) => e?.childSessionId)).size === 2 && effects.every((e) => typeof e?.childSessionId === 'string' && e.childSessionId.length > 0), JSON.stringify(effects.map((e) => e?.childSessionId)))
+@@ -989,7 +1300,7 @@ async function main() {
+         subject: 'e5',
+       }, wChild)
+       const msgValue = msg.body?.value
+-      c.check('team message from the member to the leader delivered', msg.status === 200 && msg.body?.ok === true && msgValue?.status === 'delivered', JSON.stringify(msg.body).slice(0, 500))
++      c.check('team message from the member to the leader delivered', msg.status === 200 && msg.body?.ok === true && msgValue?.status === 'delivered', JSON.stringify((msg.body) ?? null).slice(0, 500))
+       c.check('delivery targeted the leader instance', msgValue?.recipientInstanceId === LEADER_INSTANCE_ID && msgValue?.deliveredToInstanceId === LEADER_INSTANCE_ID, JSON.stringify({ r: msgValue?.recipientInstanceId, d: msgValue?.deliveredToInstanceId }))
+       c.check('delivery landed on the leader bound session (the root)', msgValue?.deliveredToSessionId === ROOT_SESSION_ID, JSON.stringify(msgValue?.deliveredToSessionId))
+       c.check('delivery carries durable fact + delivered sequences', typeof msgValue?.factSequence === 'number' && typeof msgValue?.deliveredSequence === 'number', JSON.stringify({ f: msgValue?.factSequence, d: msgValue?.deliveredSequence }))
+@@ -1004,7 +1315,7 @@ async function main() {
+         summary: 'p6t6 e5 in flight',
+       }, wChild)
+       const p1Value = p1.body?.value
+-      c.check('first progress report recorded on sequence 1', p1Value?.status === 'progress-recorded' && p1Value?.row?.sequence === 1, JSON.stringify(p1Value).slice(0, 500))
++      c.check('first progress report recorded on sequence 1', p1Value?.status === 'progress-recorded' && p1Value?.row?.sequence === 1, JSON.stringify((p1Value) ?? null).slice(0, 500))
+       const p2 = await callTool(c, port, 'team_report_progress', {
+         rootSessionId: ROOT_SESSION_ID,
+         requestToken: 'p6t6-e5-p2',
+@@ -1014,7 +1325,7 @@ async function main() {
+         summary: 'p6t6 e5 done',
+       }, wChild)
+       const p2Value = p2.body?.value
+-      c.check('second progress report recorded on sequence 2', p2Value?.status === 'progress-recorded' && p2Value?.row?.sequence === 2, JSON.stringify(p2Value).slice(0, 500))
++      c.check('second progress report recorded on sequence 2', p2Value?.status === 'progress-recorded' && p2Value?.row?.sequence === 2, JSON.stringify((p2Value) ?? null).slice(0, 500))
+       S.e5.progressSequences = [p1Value?.row?.sequence, p2Value?.row?.sequence]
+ 
+       const ctrl = await callTool(c, port, 'team_request_control', {
+@@ -1027,7 +1338,7 @@ async function main() {
+         summary: 'p6t6 e5 gated follow-up',
+       }, ROOT_SESSION_ID)
+       const ctrlValue = ctrl.body?.value
+-      c.check('control request accepted (control-requested, pending)', ctrlValue?.status === 'control-requested' && ctrlValue?.request?.status === 'pending', JSON.stringify(ctrlValue).slice(0, 500))
++      c.check('control request accepted (control-requested, pending)', ctrlValue?.status === 'control-requested' && ctrlValue?.request?.status === 'pending', JSON.stringify((ctrlValue) ?? null).slice(0, 500))
+       c.check('control request scope carries the E5 correlation token + tool name', ctrlValue?.request?.correlation === E5_CTRL_TOKEN && ctrlValue?.request?.toolName === 'team_follow_up', JSON.stringify({ c: ctrlValue?.request?.correlation, t: ctrlValue?.request?.toolName }))
+       S.e5.requestId = ctrlValue?.request?.requestId ?? null
+ 
+@@ -1076,16 +1387,16 @@ async function main() {
+         note: 'p6t6 e5 leader allows the follow-up',
+       }, ROOT_SESSION_ID)
+       const resolveValue = resolve.body?.value
+-      c.check('leader resolved the request as allow (control-resolved)', resolveValue?.status === 'control-resolved' && resolveValue?.decision?.requestId === S.e5.requestId, JSON.stringify(resolveValue).slice(0, 500))
++      c.check('leader resolved the request as allow (control-resolved)', resolveValue?.status === 'control-resolved' && resolveValue?.decision?.requestId === S.e5.requestId, JSON.stringify((resolveValue) ?? null).slice(0, 500))
+ 
+       const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: E5_CTRL_TOKEN, targetInstanceId: w, taskSummary: 'p6t6 e5 gated follow-up (boot 2)', prompt: 'p6t6 e5 gated follow-up (boot 2)' }, ROOT_SESSION_ID)
+       const fu1Value = fu1.body?.value
+-      c.check('the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed', fu1Value?.status === 'executed' && fu1Value?.effect?.kind === 'work-admitted' && fu1Value?.effect?.instanceId === w, JSON.stringify(fu1Value).slice(0, 500))
++      c.check('the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed', fu1Value?.status === 'executed' && fu1Value?.effect?.kind === 'work-admitted' && fu1Value?.effect?.instanceId === w, JSON.stringify((fu1Value) ?? null).slice(0, 500))
+       const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: E5_CTRL_TOKEN, targetInstanceId: w, taskSummary: 'p6t6 e5 retry of the consumed token', prompt: 'p6t6 e5 retry of the consumed token' }, ROOT_SESSION_ID)
+       const fu2Value = fu2.body?.value
+-      c.check('retrying the SAME token is BLOCKED (allow-consumed, exactly-once)', fu2Value?.status === 'blocked' && fu2Value?.reason === 'allow-consumed' && fu2Value?.requestId === S.e5.requestId, JSON.stringify(fu2Value).slice(0, 500))
++      c.check('retrying the SAME token is BLOCKED (allow-consumed, exactly-once)', fu2Value?.status === 'blocked' && fu2Value?.reason === 'allow-consumed' && fu2Value?.requestId === S.e5.requestId, JSON.stringify((fu2Value) ?? null).slice(0, 500))
+       const fu3 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e5-ctrl3', targetInstanceId: w, taskSummary: 'p6t6 e5 fresh token after consumption', prompt: 'p6t6 e5 fresh token after consumption' }, ROOT_SESSION_ID)
+-      c.check('a fresh token with no request row proceeds (no-request deviation)', fu3.body?.value?.status === 'executed', JSON.stringify(fu3.body?.value).slice(0, 500))
++      c.check('a fresh token with no request row proceeds (no-request deviation)', fu3.body?.value?.status === 'executed', JSON.stringify((fu3.body?.value) ?? null).slice(0, 500))
+ 
+       const msg2 = await callTool(c, port, 'team_send_message', {
+         rootSessionId: ROOT_SESSION_ID,
+@@ -1095,7 +1406,7 @@ async function main() {
+         subject: 'e5',
+       }, S.e1.wChild)
+       const msg2Value = msg2.body?.value
+-      c.check('post-restart team message delivered (new durable sequences)', msg2Value?.status === 'delivered' && typeof msg2Value?.deliveredSequence === 'number' && (S.e5.message === null || msg2Value.deliveredSequence > S.e5.message.deliveredSequence), JSON.stringify(msg2Value).slice(0, 500))
++      c.check('post-restart team message delivered (new durable sequences)', msg2Value?.status === 'delivered' && typeof msg2Value?.deliveredSequence === 'number' && (S.e5.message === null || msg2Value.deliveredSequence > S.e5.message.deliveredSequence), JSON.stringify((msg2Value) ?? null).slice(0, 500))
+       S.e5.postMessage = { deliveredSequence: msg2Value?.deliveredSequence, factSequence: msg2Value?.factSequence }
+ 
+       const p3 = await callTool(c, port, 'team_report_progress', {
+@@ -1107,7 +1418,7 @@ async function main() {
+         summary: 'p6t6 e5 resumed after restart',
+       }, S.e1.wChild)
+       const p3Value = p3.body?.value
+-      c.check('post-restart progress report continues the per-subject sequence (3)', p3Value?.status === 'progress-recorded' && p3Value?.row?.sequence === 3, JSON.stringify(p3Value).slice(0, 500))
++      c.check('post-restart progress report continues the per-subject sequence (3)', p3Value?.status === 'progress-recorded' && p3Value?.row?.sequence === 3, JSON.stringify((p3Value) ?? null).slice(0, 500))
+       S.e5.postProgress = p3Value?.row?.sequence
+ 
+       const st1 = (await getState(c, port)).body
+@@ -1140,7 +1451,7 @@ async function main() {
+       }, ROOT_SESSION_ID)
+       const v = del.body?.value
+       const eff = v?.effect
+-      c.check('delegate executed through the public tool seam', del.status === 200 && del.body?.ok === true && v?.status === 'executed' && v?.action === 'delegate', JSON.stringify(v).slice(0, 500))
++      c.check('delegate executed through the public tool seam', del.status === 200 && del.body?.ok === true && v?.status === 'executed' && v?.action === 'delegate', JSON.stringify(v ?? null).slice(0, 500))
+       // Production semantics (context-policy M4, domain/member): the 'worker'
+       // template is PERSISTENT (blueprint default) and exactly one worker
+       // instance is work-accepting at this point, so the activation port
+@@ -1148,7 +1459,7 @@ async function main() {
+       // plan 16.8) is that TOKEN_A reaches a REAL member Session with a real
+       // settlement; new-instance minting is W3's fresh_per_delegation
+       // criterion, not W1's.
+-      c.check('the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)', eff?.kind === 'work-admitted' && eff?.instanceId === SEED_WORKER_ID && eff?.settled === true && eff?.replayed === false, JSON.stringify(eff).slice(0, 500))
++      c.check('the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)', eff?.kind === 'work-admitted' && eff?.instanceId === SEED_WORKER_ID && eff?.settled === true && eff?.replayed === false, JSON.stringify(eff ?? null).slice(0, 500))
+       c.check('a RUNNING target needs no admission CAS (lifecycleCommitted=false)', eff?.fromLifecycle === 'RUNNING' && eff?.lifecycleCommitted === false, JSON.stringify({ from: eff?.fromLifecycle, committed: eff?.lifecycleCommitted }))
+       c.check('the admission + settlement carry positive durable ledger sequences (admission before settlement)', typeof eff?.sequence === 'number' && eff.sequence > 0 && typeof eff?.settledSequence === 'number' && eff.settledSequence > eff.sequence, JSON.stringify({ seq: eff?.sequence, settledSeq: eff?.settledSequence }))
+       const instanceId = eff?.instanceId
+@@ -1179,15 +1490,15 @@ async function main() {
+         prompt: W5_PROMPT,
+       }, ROOT_SESSION_ID)
+       const v = fu.body?.value
+-      c.check('follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === SEED_WORKER_ID, JSON.stringify(v).slice(0, 500))
+-      c.check('the SETTLED member re-admits via the durable CAS (lifecycleCommitted=true) and settles', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true && v?.effect?.replayed === false, JSON.stringify(v?.effect).slice(0, 500))
++      c.check('follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === SEED_WORKER_ID, JSON.stringify((v) ?? null).slice(0, 500))
++      c.check('the SETTLED member re-admits via the durable CAS (lifecycleCommitted=true) and settles', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true && v?.effect?.replayed === false, JSON.stringify((v?.effect) ?? null).slice(0, 500))
+       const st1 = (await getState(c, port)).body
+       const seed1 = findMember(st1, SEED_WORKER_ID)
+       c.check('row durably SETTLED at activityVersion 4 (admit av2->av3, settle av3->av4)', seed1 !== undefined && seed1.lifecycle === 'SETTLED' && seed1.activityVersion === 4, JSON.stringify(seed1))
+       const rows = (st1?.activity ?? []).filter((a) => a.requestToken === W5_TOKEN && a.instanceId === SEED_WORKER_ID && a.subject === 'work-unit')
+       const open = rows.find((a) => a.op === 'interval-open')
+       const close = rows.find((a) => a.op === 'interval-close')
+-      c.check('the work-unit activity interval opened (in-progress) and closed (completed)', open !== undefined && close !== undefined && open.progress === 'in-progress' && close.progress === 'completed' && close.sequence > open.sequence, JSON.stringify(rows).slice(0, 600))
++      c.check('the work-unit activity interval opened (in-progress) and closed (completed)', open !== undefined && close !== undefined && open.progress === 'in-progress' && close.progress === 'completed' && close.sequence > open.sequence, JSON.stringify((rows) ?? null).slice(0, 600))
+       c.check('the interval correlates to the request token', open?.correlation === W5_TOKEN, JSON.stringify({ corr: open?.correlation }))
+       const logText = readChildSessionLog(SEED_WORKER_CHILD)
+       c.check('the seeded worker child log durably carries the token + prompt', logText !== null && logText.includes(W5_TOKEN) && logText.includes(W5_PROMPT), `logBytes=${logText === null ? 0 : logText.length}`)
+@@ -1210,8 +1521,8 @@ async function main() {
+         prompt: W7_PROMPT,
+       }, ROOT_SESSION_ID)
+       const v = fu.body?.value
+-      c.check('cold-resume follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify(v).slice(0, 500))
+-      c.check('a SETTLED member re-admits via the durable CAS and settles', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true, JSON.stringify(v?.effect).slice(0, 500))
++      c.check('cold-resume follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify((v) ?? null).slice(0, 500))
++      c.check('a SETTLED member re-admits via the durable CAS and settles', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true, JSON.stringify((v?.effect) ?? null).slice(0, 500))
+       const st1 = (await getState(c, port)).body
+       const row = findMember(st1, S.w1.instanceId)
+       c.check('row SETTLED at activityVersion 6 on the SAME child session (admit av4->av5, settle av5->av6)', row !== undefined && row.lifecycle === 'SETTLED' && row.activityVersion === 6 && row.childSessionId === S.w1.childSessionId, JSON.stringify(row))
+@@ -1240,7 +1551,7 @@ async function main() {
+       }, ROOT_SESSION_ID)
+       const vc = delC.body?.value
+       const vd = delD.body?.value
+-      c.check('both delegates executed and work-settled', vc?.status === 'executed' && vc?.effect?.workSettled === true && vd?.status === 'executed' && vd?.effect?.workSettled === true, JSON.stringify({ c: vc?.status, d: vd?.status }))
++      c.check('both delegates executed and work-settled', vc?.status === 'executed' && vc?.effect?.workSettled === true && vd?.status === 'executed' && vd?.effect?.workSettled === true, JSON.stringify({ c: vc?.status, d: vd?.status, ec: vc?.code ?? null, mc: vc?.message ?? null, ed: vd?.code ?? null, md: vd?.message ?? null }))
+       const idC = vc?.effect?.instanceId
+       const idD = vd?.effect?.instanceId
+       c.check('two DISTINCT member instances (fresh_per_delegation)', typeof idC === 'string' && typeof idD === 'string' && idC !== idD, JSON.stringify({ c: idC, d: idD }))
+@@ -1273,11 +1584,11 @@ async function main() {
+         prompt: W2_PROMPT,
+       }, ROOT_SESSION_ID)
+       const v = fu.body?.value
+-      c.check('persistent follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify(v).slice(0, 500))
+-      c.check('the SETTLED member re-admits via the durable CAS and settles again', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true, JSON.stringify(v?.effect).slice(0, 500))
++      c.check('persistent follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify((v) ?? null).slice(0, 500))
++      c.check('the SETTLED member re-admits via the durable CAS and settles again', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true, JSON.stringify((v?.effect) ?? null).slice(0, 500))
+       const st1 = (await getState(c, port)).body
+       const row1 = findMember(st1, S.w1.instanceId)
+-      c.check('row SETTLED at activityVersion 8 on the SAME childSessionId (admit av6->av7, settle av7->av8; no new session)', row1 !== undefined && row1.lifecycle === 'SETTLED' && row1.activityVersion === 8 && row1.childSessionId === S.w1.childSessionId, JSON.stringify(row1))
++      c.check('row SETTLED at activityVersion 12 on the SAME childSessionId (admit av10->av11, settle av11->av12; no new session — the P8-S3-era av6 start predates the P8-S4B M1/M2 worker follow-ups, which advance the row av6->av10 on boot 1)', row1 !== undefined && row1.lifecycle === 'SETTLED' && row1.activityVersion === 12 && row1.childSessionId === S.w1.childSessionId, JSON.stringify(row1))
+       const logText = readChildSessionLog(S.w1.childSessionId)
+       c.check('the same durable log carries W1 + W7 + W2 tokens across the restart', logText !== null && logText.includes(W1_TOKEN) && logText.includes(W7_TOKEN) && logText.includes(W2_TOKEN), `logBytes=${logText === null ? 0 : logText.length}`)
+       c.evidence = { w1RowAfter: row1 ?? null, w1LogBytes: logText === null ? 0 : logText.length }
+@@ -1318,7 +1629,7 @@ async function main() {
+     const runM1 = async ({ port }) => {
+       const c = makeScenarioCtx('M1', undefined, 1)
+       const { ok, v } = await workerFollowUp(c, port, M1_TOKEN, M1_PROMPT)
+-      c.check('follow-up executed against the seeded worker (real member turn)', ok, JSON.stringify(v).slice(0, 500))
++      c.check('follow-up executed against the seeded worker (real member turn)', ok, JSON.stringify((v) ?? null).slice(0, 500))
+       const st = (await getState(c, port)).body
+       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('worker model CURRENT = world-default A (no Team override yet)', w?.model?.current !== null && w.model.current.provider === M_MODEL_A.provider && w.model.current.model === M_MODEL_A.model, JSON.stringify(w?.model ?? w ?? st))
+@@ -1347,13 +1658,13 @@ async function main() {
+         cells: { model: { kind: 'allow', items: ['p6t6-static/p6t6-model-v2'] } },
+       })
+       const mv = mu.body?.value
+-      c.check('operator mutation admitted (human-override, generation 1)', mu.status === 200 && mu.body?.ok === true && mv?.recordId === M_RECORD_MODEL && mv?.kind === 'human-override' && mv?.generation === 1, JSON.stringify(mu.body ?? mu.status).slice(0, 500))
++      c.check('operator mutation admitted (human-override, generation 1)', mu.status === 200 && mu.body?.ok === true && mv?.recordId === M_RECORD_MODEL && mv?.kind === 'human-override' && mv?.generation === 1, JSON.stringify((mu.body ?? mu.status) ?? null).slice(0, 500))
+       const stPending = (await getState(c, port)).body
+       const wPending = stPending?.governance?.sessions?.[SEED_WORKER_CHILD]
+       const pendingIds = Array.isArray(wPending?.model?.pendingNextBoundary) ? wPending.model.pendingNextBoundary.map((p) => p.recordId) : []
+       c.check('BEFORE any request: the backend truth lists the new record in pendingNextBoundary', pendingIds.includes(M_RECORD_MODEL) === true, JSON.stringify(pendingIds))
+       const { ok, v } = await workerFollowUp(c, port, M2_TOKEN, M2_PROMPT)
+-      c.check('the NEXT real request executed against the worker', ok, JSON.stringify(v).slice(0, 500))
++      c.check('the NEXT real request executed against the worker', ok, JSON.stringify((v) ?? null).slice(0, 500))
+       const st = (await getState(c, port)).body
+       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('worker model CURRENT switched to B at the boundary', w?.model?.current !== null && w.model.current.provider === M_MODEL_B.provider && w.model.current.model === M_MODEL_B.model, JSON.stringify(w?.model?.current ?? null))
+@@ -1375,7 +1686,7 @@ async function main() {
+       c.check('M2 ran first (the cumulative humanOverride slot)', S.m.m2 === true, JSON.stringify(S.m))
+       // (a) baseline: the durable policy is silent on mcp -> fail-closed absent
+       const ping0 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_ALLOW }, SEED_WORKER_CHILD)
+-      c.check('baseline: the mcp tool is ABSENT for the worker (never silently allowed)', toolUnavailable(ping0), JSON.stringify({ status: ping0.status, body: ping0.body === null ? null : JSON.stringify(ping0.body).slice(0, 300) }))
++      c.check('baseline: the mcp tool is ABSENT for the worker (never silently allowed)', toolUnavailable(ping0), JSON.stringify({ status: ping0.status, body: ping0.body === null ? null : JSON.stringify((ping0.body) ?? null).slice(0, 300) }))
+       // (b) durable allow; cumulative re-issue must preserve the model grant
+       const muAllow = await mutateGovernance(c, port, {
+         as: ROOT_SESSION_ID,
+@@ -1384,14 +1695,14 @@ async function main() {
+         cells: { mcp: { kind: 'allow', items: [M4_MCP_SERVER] } },
+       })
+       const mvAllow = muAllow.body?.value
+-      c.check('operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)', muAllow.status === 200 && muAllow.body?.ok === true && mvAllow?.recordId === M_RECORD_MCP_ALLOW && mvAllow?.generation === 2 && mvAllow?.values?.model !== undefined, JSON.stringify(muAllow.body ?? muAllow.status).slice(0, 500))
++      c.check('operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)', muAllow.status === 200 && muAllow.body?.ok === true && mvAllow?.recordId === M_RECORD_MCP_ALLOW && mvAllow?.generation === 2 && mvAllow?.values?.model !== undefined, JSON.stringify((muAllow.body ?? muAllow.status) ?? null).slice(0, 500))
+       const stPending = (await getState(c, port)).body
+       const wPending = stPending?.governance?.sessions?.[SEED_WORKER_CHILD]
+       const mcpPendingIds = Array.isArray(wPending?.mcp?.pendingNextBoundary) ? wPending.mcp.pendingNextBoundary.map((p) => p.recordId) : []
+       c.check('BEFORE the next operation: pendingNextBoundary lists the mcp-allow record', mcpPendingIds.includes(M_RECORD_MCP_ALLOW) === true, JSON.stringify(mcpPendingIds))
+       // (c) the next real operation: the tool is present and round-trips
+       const ping1 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_ALLOW }, SEED_WORKER_CHILD)
+-      c.check('after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP', ping1.status === 200 && ping1.body?.ok === true && JSON.stringify(ping1.body?.value ?? null).includes('pong:') === true, JSON.stringify({ status: ping1.status, body: ping1.body === null ? null : JSON.stringify(ping1.body).slice(0, 300) }))
++      c.check('after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP', ping1.status === 200 && ping1.body?.ok === true && JSON.stringify(ping1.body?.value ?? null).includes('pong:') === true, JSON.stringify({ status: ping1.status, body: ping1.body === null ? null : JSON.stringify((ping1.body) ?? null).slice(0, 300) }))
+       const stAllow = (await getState(c, port)).body
+       const wAllow = stAllow?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('state: the mcp facet is MOUNTED, sourced from the granting record', wAllow?.mcp?.mounted === true && wAllow?.mcp?.allowed === true && wAllow?.mcp?.source?.recordId === M_RECORD_MCP_ALLOW, JSON.stringify(wAllow?.mcp ?? null).slice(0, 500))
+@@ -1403,17 +1714,17 @@ async function main() {
+         cells: { mcp: { kind: 'deny' } },
+       })
+       const mvDeny = muDeny.body?.value
+-      c.check('operator mcp-deny admitted (generation 3, model grant preserved)', muDeny.status === 200 && muDeny.body?.ok === true && mvDeny?.recordId === M_RECORD_MCP_DENY && mvDeny?.generation === 3 && mvDeny?.values?.model !== undefined, JSON.stringify(muDeny.body ?? muDeny.status).slice(0, 500))
++      c.check('operator mcp-deny admitted (generation 3, model grant preserved)', muDeny.status === 200 && muDeny.body?.ok === true && mvDeny?.recordId === M_RECORD_MCP_DENY && mvDeny?.generation === 3 && mvDeny?.values?.model !== undefined, JSON.stringify((muDeny.body ?? muDeny.status) ?? null).slice(0, 500))
+       // (e) the next real operation: the tool is ABSENT again (fail-closed)
+       const ping2 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_DENY }, SEED_WORKER_CHILD)
+-      c.check('after the deny boundary the mcp tool is ABSENT again (never silently allowed)', toolUnavailable(ping2), JSON.stringify({ status: ping2.status, body: ping2.body === null ? null : JSON.stringify(ping2.body).slice(0, 300) }))
++      c.check('after the deny boundary the mcp tool is ABSENT again (never silently allowed)', toolUnavailable(ping2), JSON.stringify({ status: ping2.status, body: ping2.body === null ? null : JSON.stringify((ping2.body) ?? null).slice(0, 300) }))
+       const st = (await getState(c, port)).body
+       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record', w?.mcp?.mounted === false && w?.mcp?.allowed === false && w?.mcp?.deniedBy?.by === 'team' && w?.mcp?.deniedBy?.recordId === M_RECORD_MCP_DENY && w?.mcp?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(w?.mcp ?? null).slice(0, 500))
+       c.evidence = {
+-        pingBaseline: { status: ping0.status, body: ping0.body === null ? null : JSON.stringify(ping0.body).slice(0, 300) },
+-        pingAllow: { status: ping1.status, body: ping1.body === null ? null : JSON.stringify(ping1.body).slice(0, 300) },
+-        pingDeny: { status: ping2.status, body: ping2.body === null ? null : JSON.stringify(ping2.body).slice(0, 300) },
++        pingBaseline: { status: ping0.status, body: ping0.body === null ? null : JSON.stringify((ping0.body) ?? null).slice(0, 300) },
++        pingAllow: { status: ping1.status, body: ping1.body === null ? null : JSON.stringify((ping1.body) ?? null).slice(0, 300) },
++        pingDeny: { status: ping2.status, body: ping2.body === null ? null : JSON.stringify((ping2.body) ?? null).slice(0, 300) },
+         workerMcpAfter: w?.mcp ?? null,
+       }
+       S.m.m4 = true
+@@ -1430,7 +1741,7 @@ async function main() {
+       const c = makeScenarioCtx('M3', undefined, 2)
+       c.check('M1+M2 ran on boot 1 (the A->B mutation landed)', S.m.m1 === true && S.m.m2 === true, JSON.stringify(S.m))
+       const { ok, v } = await workerFollowUp(c, port, M3_TOKEN, M3_PROMPT)
+-      c.check('the next real request (fresh host process) executed against the worker', ok, JSON.stringify(v).slice(0, 500))
++      c.check('the next real request (fresh host process) executed against the worker', ok, JSON.stringify((v) ?? null).slice(0, 500))
+       const st = (await getState(c, port)).body
+       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('AFTER host restart the real turn still ASSEMBLES model B', w?.model?.assembled !== null && w.model.assembled.provider === M_MODEL_B.provider && w.model.assembled.model === M_MODEL_B.model, JSON.stringify(w?.model?.assembled ?? null))
+@@ -1451,18 +1762,18 @@ async function main() {
+       const c = makeScenarioCtx('M5', undefined, 2)
+       c.check('M4 ran on boot 1 (the mcp deny landed)', S.m.m4 === true, JSON.stringify(S.m))
+       const { ok, v } = await workerFollowUp(c, port, M5_TOKEN, M5_PROMPT)
+-      c.check('the next real request (fresh host process) executed against the worker', ok, JSON.stringify(v).slice(0, 500))
++      c.check('the next real request (fresh host process) executed against the worker', ok, JSON.stringify((v) ?? null).slice(0, 500))
+       const st0 = (await getState(c, port)).body
+       const w0 = st0?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('AFTER restart the worker still ASSEMBLES model B (the carried grant)', w0?.model?.assembled !== null && w0.model.assembled.provider === M_MODEL_B.provider && w0.model.assembled.model === M_MODEL_B.model, JSON.stringify(w0?.model?.assembled ?? null))
+       const ping = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_DENY }, SEED_WORKER_CHILD)
+-      c.check('AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)', toolUnavailable(ping), JSON.stringify({ status: ping.status, body: ping.body === null ? null : JSON.stringify(ping.body).slice(0, 300) }))
++      c.check('AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)', toolUnavailable(ping), JSON.stringify({ status: ping.status, body: ping.body === null ? null : JSON.stringify((ping.body) ?? null).slice(0, 300) }))
+       const st = (await getState(c, port)).body
+       const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+       c.check('state: mcp facet unmounted, team-denied by the deny record', w?.mcp?.mounted === false && w?.mcp?.allowed === false && w?.mcp?.deniedBy?.by === 'team' && w?.mcp?.deniedBy?.recordId === M_RECORD_MCP_DENY && w?.mcp?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(w?.mcp ?? null).slice(0, 500))
+       const recIds = Array.isArray(st?.governance?.overrides) ? st.governance.overrides.map((r) => r.recordId).sort() : []
+       c.check('the THREE durable override records survived the restart', JSON.stringify(recIds) === JSON.stringify([M_RECORD_MODEL, M_RECORD_MCP_ALLOW, M_RECORD_MCP_DENY].sort()), JSON.stringify(recIds))
+-      c.evidence = { ping: { status: ping.status, body: ping.body === null ? null : JSON.stringify(ping.body).slice(0, 300) }, workerModelAfter: w0?.model ?? null, workerMcpAfter: w?.mcp ?? null, overrideRecordIds: recIds }
++      c.evidence = { ping: { status: ping.status, body: ping.body === null ? null : JSON.stringify((ping.body) ?? null).slice(0, 300) }, workerModelAfter: w0?.model ?? null, workerMcpAfter: w?.mcp ?? null, overrideRecordIds: recIds }
+       return recordScenario(c)
+     }
+ 
+@@ -1507,9 +1818,12 @@ async function main() {
+       try {
+         const profile = await ensureProfile({ instance, log, timeoutMs: 90_000 })
+         record.profile = profile
+-        instance.mountRows([ROW], [
+-          `P8-S3 harness patch layer (boot ${boot}): ${ROW.id} mounted ONLY through this public profile-patch seam.`,
+-        ])
++        // P8-S5A: the public profile-patch seam now carries BOTH rows —
++        // the production dsh-agent-team row (the built packages/runtime
++        // host; the teamRoot service) FIRST, then this observability row —
++        // written through the hand-rolled YAML emitter above.
++        writeTeamPatchFile(instance.patchFile, boot, opts.directive.mcpPort)
++        log(`boot ${boot}: profile patch layer written to ${instance.patchFile} (production dsh-agent-team row + ${ROW.id} row)`)
+         writeFileSync(join(opts.dshHome, 'p6t6-directive.json'), JSON.stringify(opts.directive, null, 2))
+         log(`boot ${boot}: directive written to ${join(opts.dshHome, 'p6t6-directive.json')}`)
+         const started = await instance.start({ timeoutMs: 180_000 })
+@@ -1610,6 +1924,11 @@ async function main() {
+       { criterion: 'M2', phase: undefined, runnable: runnable('M2'), skipReason: 'dependency not selected', run: (o) => runM2(o) },
+       { criterion: 'M4', phase: undefined, runnable: runnable('M4'), skipReason: 'requires M2 (cumulative humanOverride slot) - M2 not selected', run: (o) => runM4(o) },
+     ]
++    // P8-S5A: build the production dsh-agent-team runtime ONCE, before the
++    // first instance boot (the patch layer's production row loads the
++    // built dist host; tsc is the sole writer of packages/runtime/dist).
++    await buildProductionRuntime(log, logsDir)
++
+     summary.boots.boot1 = await driveBoot(1, portA, {
+       dshHome: DSH_HOME,
+       directive: directiveFor(1),
+@@ -1674,7 +1993,7 @@ async function main() {
+         noteFailure(`bypass scan covers ${JSON.stringify(scan.files)} (expected ${JSON.stringify(EXPECTED_SCAN_FILES)})`)
+       }
+       if (scan.totalViolations !== 0) {
+-        noteFailure(`bypass scan found ${scan.totalViolations} violation(s): ${JSON.stringify(scan.violations).slice(0, 600)}`)
++        noteFailure(`bypass scan found ${scan.totalViolations} violation(s): ${JSON.stringify((scan.violations) ?? null).slice(0, 600)}`)
+       }
+     }
+ 
