@@ -1,0 +1,68 @@
+{
+  "criterion": "M1",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 1072,
+  "assertions": [
+    {
+      "name": "follow-up executed against the seeded worker (real member turn)",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4},\"requestToken\":\"p8s4b-m1-token\"}"
+    },
+    {
+      "name": "worker model CURRENT = world-default A (no Team override yet)",
+      "pass": true,
+      "detail": "{\"current\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"assembled\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"selection\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"}"
+    },
+    {
+      "name": "the real turn ASSEMBLED model A (live selection evidence)",
+      "pass": true,
+      "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"}"
+    },
+    {
+      "name": "provenance: the model cell is team-unspecified (static baseline, not silently granted)",
+      "pass": true,
+      "detail": "{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null}"
+    },
+    {
+      "name": "the M1 token reached the durable member session log",
+      "pass": true,
+      "detail": "logBytes=17617"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "workerModelAfter": {
+      "current": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v1"
+      },
+      "assembled": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v1"
+      },
+      "selection": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v1"
+      },
+      "source": {
+        "layer": "unspecified",
+        "origin": "static",
+        "recordId": null
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "deniedBy": {
+        "by": "team",
+        "reason": "unspecifiedFailClosed"
+      },
+      "pendingNextBoundary": [],
+      "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+    }
+  }
+}

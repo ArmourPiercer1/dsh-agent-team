@@ -1,0 +1,93 @@
+{
+  "criterion": "M4",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 282,
+  "assertions": [
+    {
+      "name": "M2 ran first (the cumulative humanOverride slot)",
+      "pass": true,
+      "detail": "{\"m1\":true,\"m2\":true,\"m4\":false}"
+    },
+    {
+      "name": "baseline: the mcp tool is ABSENT for the worker (never silently allowed)",
+      "pass": true,
+      "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+    },
+    {
+      "name": "operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)",
+      "pass": true,
+      "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-allow\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"},\"mcp\":{\"kind\":\"allow\",\"items\":[\"p8s4bmini\"]}},\"generation\":2,\"updatedAt\":\"2026-09-01T06:42:30.084Z\",\"supersededRecordId\":\"p8s4b-ovr-model\"}}"
+    },
+    {
+      "name": "BEFORE the next operation: pendingNextBoundary lists the mcp-allow record",
+      "pass": true,
+      "detail": "[\"p8s4b-ovr-mcp-allow\"]"
+    },
+    {
+      "name": "after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP",
+      "pass": true,
+      "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"value\\\":{\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"pong:p8s4b-m4-allow\\\"}]}}\"}"
+    },
+    {
+      "name": "state: the mcp facet is MOUNTED, sourced from the granting record",
+      "pass": true,
+      "detail": "{\"mounted\":true,\"serverName\":\"p8s4bmini\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[p8s4bmini]; team humanOverride(origin=human, p8s4b-ovr-mcp-allow) allow[p8s4bmini]; external exists=yes, hard=unspecified\"}"
+    },
+    {
+      "name": "operator mcp-deny admitted (generation 3, model grant preserved)",
+      "pass": true,
+      "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-deny\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"mcp\":{\"kind\":\"deny\"},\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"}},\"generation\":3,\"updatedAt\":\"2026-09-01T06:42:30.242Z\",\"supersededRecordId\":\"p8s4b-ovr-mcp-allow\"}}"
+    },
+    {
+      "name": "after the deny boundary the mcp tool is ABSENT again (never silently allowed)",
+      "pass": true,
+      "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+    },
+    {
+      "name": "state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record",
+      "pass": true,
+      "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 3,
+    "stateCalls": 5,
+    "non200": []
+  },
+  "evidence": {
+    "pingBaseline": {
+      "status": 200,
+      "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+    },
+    "pingAllow": {
+      "status": 200,
+      "body": "{\"ok\":true,\"value\":{\"content\":[{\"type\":\"text\",\"text\":\"pong:p8s4b-m4-allow\"}]}}"
+    },
+    "pingDeny": {
+      "status": 200,
+      "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+    },
+    "workerMcpAfter": {
+      "mounted": false,
+      "serverName": "p8s4bmini",
+      "allowed": false,
+      "source": {
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-mcp-deny"
+      },
+      "unavailable": false,
+      "deniedBy": {
+        "by": "team",
+        "reason": "teamDeny",
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-mcp-deny"
+      },
+      "pendingNextBoundary": [],
+      "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+    }
+  }
+}
