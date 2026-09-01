@@ -1,0 +1,8 @@
+﻿tsc client rc=0
+tsc contracts rc=0
+tsc domain rc=0
+tsc remote rc=0
+tsc runtime rc=0
+tsc storage rc=0
+tsc testkit rc=0
+tsc tools rc=0

@@ -1,0 +1,56 @@
+{
+  "criterion": "E3",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 1878,
+  "assertions": [
+    {
+      "name": "E1 produced a persistent worker with a bound child session",
+      "pass": true,
+      "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+    },
+    {
+      "name": "first follow-up executed on the existing instance",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"replayed\":false,\"settled\":true,\"settledSequence\":7},\"requestToken\":\"p6t6-e3-1\"}"
+    },
+    {
+      "name": "second follow-up executed on the SAME instance",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":8,\"replayed\":false,\"settled\":true,\"settledSequence\":11},\"requestToken\":\"p6t6-e3-2\"}"
+    },
+    {
+      "name": "the admission sequences advance strictly (second admit follows the first unit settlement)",
+      "pass": true,
+      "detail": "seq1=4 settle1=7 seq2=8 settle2=11"
+    },
+    {
+      "name": "the bound child session id is UNCHANGED across follow-ups",
+      "pass": true,
+      "detail": "before=session-child-p6t6-0j3weh1176s5 after=session-child-p6t6-0j3weh1176s5"
+    },
+    {
+      "name": "no new instance was created (six members)",
+      "pass": true,
+      "detail": "6"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 2,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "w": "inst-0j3weh1176s5",
+    "wChild": "session-child-p6t6-0j3weh1176s5",
+    "sequences": [
+      4,
+      8
+    ],
+    "settledSequences": [
+      7,
+      11
+    ]
+  }
+}

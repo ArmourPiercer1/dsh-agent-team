@@ -1,0 +1,64 @@
+{
+  "criterion": "M3",
+  "boot": 2,
+  "pass": true,
+  "durationMs": 1070,
+  "assertions": [
+    {
+      "name": "M1+M2 ran on boot 1 (the A->B mutation landed)",
+      "pass": true,
+      "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+    },
+    {
+      "name": "the next real request (fresh host process) executed against the worker",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":35,\"replayed\":false,\"settled\":true,\"settledSequence\":38},\"requestToken\":\"p8s4b-m3-token\"}"
+    },
+    {
+      "name": "AFTER host restart the real turn still ASSEMBLES model B",
+      "pass": true,
+      "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+    },
+    {
+      "name": "provenance source still names a durable human-override (layer+origin stable across re-issues)",
+      "pass": true,
+      "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"}"
+    },
+    {
+      "name": "the durable member log carries M1+M2+M3 tokens across the restart",
+      "pass": true,
+      "detail": "logBytes=65924"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "workerModelAfter": {
+      "current": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "assembled": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "selection": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "source": {
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-mcp-deny"
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "pendingNextBoundary": [],
+      "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+    }
+  }
+}
