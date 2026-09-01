@@ -1,0 +1,3094 @@
+{
+  "task": "P8-S4B durable mutation -> actual Agent closure E2E (live criteria M1-M5; W1/W2/W3/W5/W7 + E1-E7 available for full runs)",
+  "runStamp": "p8s3-1788278622719",
+  "harness": "packages/tools/harness",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S5",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3",
+  "dshHomeE": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3-e",
+  "lock": {
+    "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3.lock",
+    "acquired": true,
+    "marker": {
+      "runStamp": "p8s3-1788278622719",
+      "pid": 67140,
+      "startedAt": "2026-09-01T16:03:42.855Z",
+      "port": 3181,
+      "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3",
+      "dshHomeE": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3-e"
+    }
+  },
+  "selectedScenarios": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "W1",
+    "W2",
+    "W3",
+    "W5",
+    "W7",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5"
+  ],
+  "ports": {
+    "boot1": 3181,
+    "boot2": 3182,
+    "boot3": 3183,
+    "boot4": 3184,
+    "mcp": 3492,
+    "released": {
+      "mcp": true,
+      "boot1": true,
+      "boot2": true,
+      "boot3": true,
+      "boot4": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "afterBuild": null,
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "build": {
+    "required": false
+  },
+  "bypassScan": {
+    "files": [
+      "packages/tools/src/guard.ts",
+      "packages/tools/src/index.ts",
+      "packages/tools/src/tokens.ts",
+      "packages/tools/src/tools.ts",
+      "packages/tools/src/types.ts"
+    ],
+    "totalImportSpecifiers": 25,
+    "totalViolations": 0,
+    "violations": []
+  },
+  "rowMounted": {
+    "p6t6-team-tools-boot1": true,
+    "p6t6-team-tools-boot2": true,
+    "p6t6-team-tools-boot3": true,
+    "p6t6-team-tools-boot4": true
+  },
+  "boots": {
+    "boot1": {
+      "port": 3181,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "url": "http://127.0.0.1:3181/?token=OkIrDOPs0BWGy6xhcIENLPVaTA1xuuIkV0ioWhkb1A0",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S5\\dev\\agent-workflow\\evidence\\P8-S\\S5A-url-live\\logs\\boot1\\instance-port3181.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3181/?token=OkIrDOPs0BWGy6xhcIENLPVaTA1xuuIkV0ioWhkb1A0",
+      "healthBefore": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6-0lu6hq60ogok",
+          "session-child-p6t6-0mo5at30pumk",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "W1": {
+          "criterion": "W1",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1221,
+          "assertions": [
+            {
+              "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+              "pass": true,
+              "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+            },
+            {
+              "name": "delegate executed through the public tool seam",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4},\"requestToken\":\"p8s3-w1-token\"}"
+            },
+            {
+              "name": "the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)",
+              "pass": true,
+              "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4}"
+            },
+            {
+              "name": "a RUNNING target needs no admission CAS (lifecycleCommitted=false)",
+              "pass": true,
+              "detail": "{\"from\":\"RUNNING\",\"committed\":false}"
+            },
+            {
+              "name": "the admission + settlement carry positive durable ledger sequences (admission before settlement)",
+              "pass": true,
+              "detail": "{\"seq\":1,\"settledSeq\":4}"
+            },
+            {
+              "name": "the target member row carries the seeded worker real child session id",
+              "pass": true,
+              "detail": "{\"i\":\"inst-p6t6seedw1\",\"c\":\"session-child-p6t6seedw1\"}"
+            },
+            {
+              "name": "the request token round-trips into the outcome",
+              "pass": true,
+              "detail": "{\"t\":\"p8s3-w1-token\"}"
+            },
+            {
+              "name": "state: the member count stays three (a persistent continue mints nothing)",
+              "pass": true,
+              "detail": "{\"n\":3}"
+            },
+            {
+              "name": "the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":2}"
+            },
+            {
+              "name": "the real child Session log durably carries TOKEN_A + the exact prompt",
+              "pass": true,
+              "detail": "logBytes=17599"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "effectKind": "work-admitted",
+            "memberCountAfter": 3,
+            "w1Row": {
+              "instanceId": "inst-p6t6seedw1",
+              "templateId": "worker",
+              "label": "existing-worker",
+              "childSessionId": "session-child-p6t6seedw1",
+              "lifecycle": "SETTLED",
+              "activityVersion": 2
+            },
+            "w1LogBytes": 17599
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W1.json"
+        },
+        "W5": {
+          "criterion": "W5",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1091,
+          "assertions": [
+            {
+              "name": "pre-state: seeded worker durably SETTLED at activityVersion 2 by the W1 delegate",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":2}"
+            },
+            {
+              "name": "follow-up executed with the work-admitted effect",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8},\"requestToken\":\"p8s3-w5-token\"}"
+            },
+            {
+              "name": "the SETTLED member re-admits via the durable CAS (lifecycleCommitted=true) and settles",
+              "pass": true,
+              "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8}"
+            },
+            {
+              "name": "row durably SETTLED at activityVersion 4 (admit av2->av3, settle av3->av4)",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":4}"
+            },
+            {
+              "name": "the work-unit activity interval opened (in-progress) and closed (completed)",
+              "pass": true,
+              "detail": "[{\"globalSequence\":6,\"factType\":\"activity-interval-opened\",\"instanceId\":\"inst-p6t6seedw1\",\"subject\":\"work-unit\",\"sequence\":3,\"op\":\"interval-open\",\"progress\":\"in-progress\",\"correlation\":\"p8s3-w5-token\",\"requestToken\":\"p8s3-w5-token\"},{\"globalSequence\":7,\"factType\":\"activity-interval-closed\",\"instanceId\":\"inst-p6t6seedw1\",\"subject\":\"work-unit\",\"sequence\":4,\"op\":\"interval-close\",\"progress\":\"completed\",\"correlation\":\"p8s3-w5-token\",\"requestToken\":\"p8s3-w5-token\"}]"
+            },
+            {
+              "name": "the interval correlates to the request token",
+              "pass": true,
+              "detail": "{\"corr\":\"p8s3-w5-token\"}"
+            },
+            {
+              "name": "the seeded worker child log durably carries the token + prompt",
+              "pass": true,
+              "detail": "logBytes=18991"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "seedRowAfter": {
+              "instanceId": "inst-p6t6seedw1",
+              "templateId": "worker",
+              "label": "existing-worker",
+              "childSessionId": "session-child-p6t6seedw1",
+              "lifecycle": "SETTLED",
+              "activityVersion": 4
+            },
+            "intervalRows": [
+              {
+                "globalSequence": 6,
+                "factType": "activity-interval-opened",
+                "instanceId": "inst-p6t6seedw1",
+                "subject": "work-unit",
+                "sequence": 3,
+                "op": "interval-open",
+                "progress": "in-progress",
+                "correlation": "p8s3-w5-token",
+                "requestToken": "p8s3-w5-token"
+              },
+              {
+                "globalSequence": 7,
+                "factType": "activity-interval-closed",
+                "instanceId": "inst-p6t6seedw1",
+                "subject": "work-unit",
+                "sequence": 4,
+                "op": "interval-close",
+                "progress": "completed",
+                "correlation": "p8s3-w5-token",
+                "requestToken": "p8s3-w5-token"
+              }
+            ],
+            "w5LogBytes": 18991
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W5.json"
+        },
+        "W7": {
+          "criterion": "W7",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1056,
+          "assertions": [
+            {
+              "name": "W1 state available (W1 executed on this boot)",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"childSessionId\":\"session-child-p6t6seedw1\"}"
+            },
+            {
+              "name": "residency drop route reports a real dispose",
+              "pass": true,
+              "detail": "{\"sessionId\":\"session-child-p6t6seedw1\",\"dropped\":true}"
+            },
+            {
+              "name": "the member is no longer resident (health liveSessions)",
+              "pass": true,
+              "detail": "[\"session-child-p6t6seeds1\",\"session-p6t6root\"]"
+            },
+            {
+              "name": "cold-resume follow-up executed with the work-admitted effect",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12},\"requestToken\":\"p8s3-w7-token\"}"
+            },
+            {
+              "name": "a SETTLED member re-admits via the durable CAS and settles",
+              "pass": true,
+              "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12}"
+            },
+            {
+              "name": "row SETTLED at activityVersion 6 on the SAME child session (admit av4->av5, settle av5->av6)",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":6}"
+            },
+            {
+              "name": "the SAME durable log now carries the W1 + W7 tokens (cold resume, not a new session)",
+              "pass": true,
+              "detail": "logBytes=33702"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "w1RowAfter": {
+              "instanceId": "inst-p6t6seedw1",
+              "templateId": "worker",
+              "label": "existing-worker",
+              "childSessionId": "session-child-p6t6seedw1",
+              "lifecycle": "SETTLED",
+              "activityVersion": 6
+            },
+            "w1LogBytes": 33702
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W7.json"
+        },
+        "W3": {
+          "criterion": "W3",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 2987,
+          "assertions": [
+            {
+              "name": "both delegates executed and work-settled",
+              "pass": true,
+              "detail": "{\"c\":\"executed\",\"d\":\"executed\",\"ec\":null,\"mc\":null,\"ed\":null,\"md\":null}"
+            },
+            {
+              "name": "two DISTINCT member instances (fresh_per_delegation)",
+              "pass": true,
+              "detail": "{\"c\":\"inst-0lu6hq60ogok\",\"d\":\"inst-0mo5at30pumk\"}"
+            },
+            {
+              "name": "two DISTINCT child sessions, each derived from its instance",
+              "pass": true,
+              "detail": "{\"c\":\"session-child-p6t6-0lu6hq60ogok\",\"d\":\"session-child-p6t6-0mo5at30pumk\"}"
+            },
+            {
+              "name": "state: five members (no W1 mint; W1 continued the seed), both fresh scouts SETTLED at activityVersion 3",
+              "pass": true,
+              "detail": "{\"n\":5,\"c\":{\"instanceId\":\"inst-0lu6hq60ogok\",\"templateId\":\"scout\",\"label\":\"p8s3-w3-scout-c\",\"childSessionId\":\"session-child-p6t6-0lu6hq60ogok\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3},\"d\":{\"instanceId\":\"inst-0mo5at30pumk\",\"templateId\":\"scout\",\"label\":\"p8s3-w3-scout-d\",\"childSessionId\":\"session-child-p6t6-0mo5at30pumk\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3}}"
+            },
+            {
+              "name": "both fresh child Session logs durably carry their tokens",
+              "pass": true,
+              "detail": "bytesC=17618 bytesD=17618"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "memberCountAfter": 5,
+            "rowC": {
+              "instanceId": "inst-0lu6hq60ogok",
+              "templateId": "scout",
+              "label": "p8s3-w3-scout-c",
+              "childSessionId": "session-child-p6t6-0lu6hq60ogok",
+              "lifecycle": "SETTLED",
+              "activityVersion": 3
+            },
+            "rowD": {
+              "instanceId": "inst-0mo5at30pumk",
+              "templateId": "scout",
+              "label": "p8s3-w3-scout-d",
+              "childSessionId": "session-child-p6t6-0mo5at30pumk",
+              "lifecycle": "SETTLED",
+              "activityVersion": 3
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W3.json"
+        },
+        "M1": {
+          "criterion": "M1",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1019,
+          "assertions": [
+            {
+              "name": "follow-up executed against the seeded worker (real member turn)",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":23,\"replayed\":false,\"settled\":true,\"settledSequence\":26},\"requestToken\":\"p8s4b-m1-token\"}"
+            },
+            {
+              "name": "worker model CURRENT = world-default A (no Team override yet)",
+              "pass": true,
+              "detail": "{\"current\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"assembled\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"selection\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"}"
+            },
+            {
+              "name": "the real turn ASSEMBLED model A (live selection evidence)",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"}"
+            },
+            {
+              "name": "provenance: the model cell is team-unspecified (static baseline, not silently granted)",
+              "pass": true,
+              "detail": "{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null}"
+            },
+            {
+              "name": "the M1 token reached the durable member session log",
+              "pass": true,
+              "detail": "logBytes=35084"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v1"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v1"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v1"
+              },
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M1.json"
+        },
+        "M2": {
+          "criterion": "M2",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1089,
+          "assertions": [
+            {
+              "name": "M1 ran first (the baseline turn)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":false,\"m4\":false}"
+            },
+            {
+              "name": "operator mutation admitted (human-override, generation 1)",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-model\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"kind\":\"allow\",\"items\":[\"p6t6-static/p6t6-model-v2\"]}},\"generation\":1,\"updatedAt\":\"2026-09-01T16:03:58.783Z\",\"supersededRecordId\":null}}"
+            },
+            {
+              "name": "BEFORE any request: the backend truth lists the new record in pendingNextBoundary",
+              "pass": true,
+              "detail": "[\"p8s4b-ovr-model\"]"
+            },
+            {
+              "name": "the NEXT real request executed against the worker",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":27,\"replayed\":false,\"settled\":true,\"settledSequence\":30},\"requestToken\":\"p8s4b-m2-token\"}"
+            },
+            {
+              "name": "worker model CURRENT switched to B at the boundary",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "the real turn ASSEMBLED model B (live evidence: the next request runs on B)",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "provenance source names the granting human-override record",
+              "pass": true,
+              "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-model\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 3,
+            "non200": []
+          },
+          "evidence": {
+            "mutation": {
+              "recordId": "p8s4b-ovr-model",
+              "kind": "human-override",
+              "scope": "team",
+              "values": {
+                "model": {
+                  "kind": "allow",
+                  "items": [
+                    "p6t6-static/p6t6-model-v2"
+                  ]
+                }
+              },
+              "generation": 1,
+              "updatedAt": "2026-09-01T16:03:58.783Z",
+              "supersededRecordId": null
+            },
+            "pendingBefore": [
+              "p8s4b-ovr-model"
+            ],
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-model"
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-model) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M2.json"
+        },
+        "M4": {
+          "criterion": "M4",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 342,
+          "assertions": [
+            {
+              "name": "M2 ran first (the cumulative humanOverride slot)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":true,\"m4\":false}"
+            },
+            {
+              "name": "baseline: the mcp tool is ABSENT for the worker (never silently allowed)",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+            },
+            {
+              "name": "operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-allow\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"},\"mcp\":{\"kind\":\"allow\",\"items\":[\"p8s4bmini\"]}},\"generation\":2,\"updatedAt\":\"2026-09-01T16:03:59.893Z\",\"supersededRecordId\":\"p8s4b-ovr-model\"}}"
+            },
+            {
+              "name": "BEFORE the next operation: pendingNextBoundary lists the mcp-allow record",
+              "pass": true,
+              "detail": "[\"p8s4b-ovr-mcp-allow\"]"
+            },
+            {
+              "name": "after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"value\\\":{\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"pong:p8s4b-m4-allow\\\"}]}}\"}"
+            },
+            {
+              "name": "state: the mcp facet is MOUNTED, sourced from the granting record",
+              "pass": true,
+              "detail": "{\"mounted\":true,\"serverName\":\"p8s4bmini\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[p8s4bmini]; team humanOverride(origin=human, p8s4b-ovr-mcp-allow) allow[p8s4bmini]; external exists=yes, hard=unspecified\"}"
+            },
+            {
+              "name": "operator mcp-deny admitted (generation 3, model grant preserved)",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-deny\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"mcp\":{\"kind\":\"deny\"},\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"}},\"generation\":3,\"updatedAt\":\"2026-09-01T16:04:00.114Z\",\"supersededRecordId\":\"p8s4b-ovr-mcp-allow\"}}"
+            },
+            {
+              "name": "after the deny boundary the mcp tool is ABSENT again (never silently allowed)",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+            },
+            {
+              "name": "state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record",
+              "pass": true,
+              "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 3,
+            "stateCalls": 5,
+            "non200": []
+          },
+          "evidence": {
+            "pingBaseline": {
+              "status": 200,
+              "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+            },
+            "pingAllow": {
+              "status": 200,
+              "body": "{\"ok\":true,\"value\":{\"content\":[{\"type\":\"text\",\"text\":\"pong:p8s4b-m4-allow\"}]}}"
+            },
+            "pingDeny": {
+              "status": 200,
+              "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+            },
+            "workerMcpAfter": {
+              "mounted": false,
+              "serverName": "p8s4bmini",
+              "allowed": false,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M4.json"
+        }
+      }
+    },
+    "boot2": {
+      "port": 3182,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3182/?token=9xVssZlDrev6h0OnPYKf1aXj0XlEnwT9z2N37U-rpG4",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S5\\dev\\agent-workflow\\evidence\\P8-S\\S5A-url-live\\logs\\boot2\\instance-port3182.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3182/?token=9xVssZlDrev6h0OnPYKf1aXj0XlEnwT9z2N37U-rpG4",
+      "healthBefore": {
+        "ok": true,
+        "boot": 2,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6-0lu6hq60ogok",
+          "session-child-p6t6-0mo5at30pumk",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 2,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6-0lu6hq60ogok",
+          "session-child-p6t6-0mo5at30pumk",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "W2": {
+          "criterion": "W2",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 1112,
+          "assertions": [
+            {
+              "name": "W1 state available (W1 executed on boot 1)",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"childSessionId\":\"session-child-p6t6seedw1\"}"
+            },
+            {
+              "name": "boot2 state: the same five members survive the process restart",
+              "pass": true,
+              "detail": "{\"n\":5,\"expected\":[\"inst-0lu6hq60ogok\",\"inst-0mo5at30pumk\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]}"
+            },
+            {
+              "name": "the W1 row survived SETTLED on its original child session",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":10}"
+            },
+            {
+              "name": "persistent follow-up executed with the work-admitted effect",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":31,\"replayed\":false,\"settled\":true,\"settledSequence\":34},\"requestToken\":\"p8s3-w2-token\"}"
+            },
+            {
+              "name": "the SETTLED member re-admits via the durable CAS and settles again",
+              "pass": true,
+              "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":31,\"replayed\":false,\"settled\":true,\"settledSequence\":34}"
+            },
+            {
+              "name": "row SETTLED at activityVersion 12 on the SAME childSessionId (admit av10->av11, settle av11->av12; no new session — the P8-S3-era av6 start predates the P8-S4B M1/M2 worker follow-ups, which advance the row av6->av10 on boot 1)",
+              "pass": true,
+              "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":12}"
+            },
+            {
+              "name": "the same durable log carries W1 + W7 + W2 tokens across the restart",
+              "pass": true,
+              "detail": "logBytes=64533"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "w1RowAfter": {
+              "instanceId": "inst-p6t6seedw1",
+              "templateId": "worker",
+              "label": "existing-worker",
+              "childSessionId": "session-child-p6t6seedw1",
+              "lifecycle": "SETTLED",
+              "activityVersion": 12
+            },
+            "w1LogBytes": 64533
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W2.json"
+        },
+        "M3": {
+          "criterion": "M3",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 965,
+          "assertions": [
+            {
+              "name": "M1+M2 ran on boot 1 (the A->B mutation landed)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+            },
+            {
+              "name": "the next real request (fresh host process) executed against the worker",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":35,\"replayed\":false,\"settled\":true,\"settledSequence\":38},\"requestToken\":\"p8s4b-m3-token\"}"
+            },
+            {
+              "name": "AFTER host restart the real turn still ASSEMBLES model B",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "provenance source still names a durable human-override (layer+origin stable across re-issues)",
+              "pass": true,
+              "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"}"
+            },
+            {
+              "name": "the durable member log carries M1+M2+M3 tokens across the restart",
+              "pass": true,
+              "detail": "logBytes=65931"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M3.json"
+        },
+        "M5": {
+          "criterion": "M5",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 924,
+          "assertions": [
+            {
+              "name": "M4 ran on boot 1 (the mcp deny landed)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+            },
+            {
+              "name": "the next real request (fresh host process) executed against the worker",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":39,\"replayed\":false,\"settled\":true,\"settledSequence\":42},\"requestToken\":\"p8s4b-m5-token\"}"
+            },
+            {
+              "name": "AFTER restart the worker still ASSEMBLES model B (the carried grant)",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+            },
+            {
+              "name": "state: mcp facet unmounted, team-denied by the deny record",
+              "pass": true,
+              "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+            },
+            {
+              "name": "the THREE durable override records survived the restart",
+              "pass": true,
+              "detail": "[\"p8s4b-ovr-mcp-allow\",\"p8s4b-ovr-mcp-deny\",\"p8s4b-ovr-model\"]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "ping": {
+              "status": 200,
+              "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+            },
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+            },
+            "workerMcpAfter": {
+              "mounted": false,
+              "serverName": "p8s4bmini",
+              "allowed": false,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+            },
+            "overrideRecordIds": [
+              "p8s4b-ovr-mcp-allow",
+              "p8s4b-ovr-mcp-deny",
+              "p8s4b-ovr-model"
+            ]
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M5.json"
+        }
+      }
+    },
+    "boot3": {
+      "port": 3183,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3-e\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "url": "http://127.0.0.1:3183/?token=y9WArMROgc7dDsIwjrDohxhQOy-SkYH9fs6IRRekxqw",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S5\\dev\\agent-workflow\\evidence\\P8-S\\S5A-url-live\\logs\\boot3\\instance-port3183.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3183/?token=y9WArMROgc7dDsIwjrDohxhQOy-SkYH9fs6IRRekxqw",
+      "healthBefore": {
+        "ok": true,
+        "boot": 3,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 3,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6-00n1eg415hhb",
+          "session-child-p6t6-01h07j114nii",
+          "session-child-p6t6-0i9xle4180qy",
+          "session-child-p6t6-0ijx73317qrd",
+          "session-child-p6t6-0j3weh1176s5",
+          "session-child-p6t6-1vmgdvq1vucs",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "E1": {
+          "criterion": "E1",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1656,
+          "assertions": [
+            {
+              "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+              "pass": true,
+              "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+            },
+            {
+              "name": "boot1 state: the seeded instance ids are present",
+              "pass": true,
+              "detail": "[\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "team_list_members executed through the registered handler",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSe"
+            },
+            {
+              "name": "list effect is members-listed with the three members",
+              "pass": true,
+              "detail": "{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-child-p6t6seeds1\"},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"lifecycle\":\""
+            },
+            {
+              "name": "team_list_templates executed; worker (persistent) and scout (fresh_per_delegation) listed",
+              "pass": true,
+              "detail": "[{\"templateId\":\"leader\",\"displayName\":\"\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"worker\",\"displayName\":\"Worker\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"scout\",\"displayName\":\"Scout\",\"contextPolicy\":\"fresh_per_delegation\"}]"
+            },
+            {
+              "name": "all three concurrent creates admitted (executed)",
+              "pass": true,
+              "detail": "[{\"s\":\"executed\",\"code\":null,\"message\":null},{\"s\":\"executed\",\"code\":null,\"message\":null},{\"s\":\"executed\",\"code\":null,\"message\":null}]"
+            },
+            {
+              "name": "every create returned a member-activated effect",
+              "pass": true,
+              "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-0j3weh1176s5\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0j3weh1176s5\",\"operationId\":\"op-1f86tdr00q0rpa10a3nbl0cs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0i9xle4180qy\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0i9xle4180qy\",\"operationId\":\"op-0gvn3290iz6yqw1h8sq0j04g\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ijx73317qrd\",\"templateId\":\"worker\",\"childSessionId\":\"sessi"
+            },
+            {
+              "name": "three distinct new instance ids",
+              "pass": true,
+              "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+            },
+            {
+              "name": "none of the new ids collides with the seeded set",
+              "pass": true,
+              "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+            },
+            {
+              "name": "every activation carries a child session id",
+              "pass": true,
+              "detail": "[\"session-child-p6t6-0j3weh1176s5\",\"session-child-p6t6-0i9xle4180qy\",\"session-child-p6t6-0ijx73317qrd\"]"
+            },
+            {
+              "name": "every activation is on the worker template",
+              "pass": true,
+              "detail": "[\"worker\",\"worker\",\"worker\"]"
+            },
+            {
+              "name": "state after E1: six members total",
+              "pass": true,
+              "detail": "[\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "state after E1: four worker-template members (1 seed + 3 new)",
+              "pass": true,
+              "detail": "workerCount=4"
+            },
+            {
+              "name": "state after E1: the three new instance ids are present",
+              "pass": true,
+              "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 5,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "membersBefore": [
+              "inst-leader",
+              "inst-p6t6seeds1",
+              "inst-p6t6seedw1"
+            ],
+            "templates": [
+              {
+                "templateId": "leader",
+                "displayName": "",
+                "contextPolicy": "persistent"
+              },
+              {
+                "templateId": "worker",
+                "displayName": "Worker",
+                "contextPolicy": "persistent"
+              },
+              {
+                "templateId": "scout",
+                "displayName": "Scout",
+                "contextPolicy": "fresh_per_delegation"
+              }
+            ],
+            "created": [
+              {
+                "token": "p6t6-e1-1",
+                "instanceId": "inst-0j3weh1176s5",
+                "label": "e1-1",
+                "childSessionId": "session-child-p6t6-0j3weh1176s5"
+              },
+              {
+                "token": "p6t6-e1-2",
+                "instanceId": "inst-0i9xle4180qy",
+                "label": "e1-2",
+                "childSessionId": "session-child-p6t6-0i9xle4180qy"
+              },
+              {
+                "token": "p6t6-e1-3",
+                "instanceId": "inst-0ijx73317qrd",
+                "label": "e1-3",
+                "childSessionId": "session-child-p6t6-0ijx73317qrd"
+              }
+            ],
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "memberCountAfter": 6,
+            "workerCountAfter": 4
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E1.json"
+        },
+        "E2": {
+          "criterion": "E2",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 56,
+          "assertions": [
+            {
+              "name": "all three out-of-namespace targets live-rejected (rejected status)",
+              "pass": true,
+              "detail": "[{\"tool\":\"team_follow_up\",\"target\":\"existing-worker\",\"status\":\"rejected\"},{\"tool\":\"team_follow_up\",\"target\":\"worker\",\"status\":\"rejected\"},{\"tool\":\"team_send_message\",\"target\":\"e1-1\",\"status\":\"rejected\"}]"
+            },
+            {
+              "name": "every rejection carries TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "pass": true,
+              "detail": "[\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\"]"
+            },
+            {
+              "name": "no side effect: member count unchanged (6)",
+              "pass": true
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 3,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "attempts": [
+              {
+                "tool": "team_follow_up",
+                "target": "existing-worker",
+                "kind": "seed member LABEL",
+                "token": "p6t6-e2-label",
+                "httpStatus": 200,
+                "value": {
+                  "status": "rejected",
+                  "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+                  "message": "TeamRuntime: target 'existing-worker' is a member label — actions are addressed by instanceId only (invariant 19)",
+                  "details": {
+                    "action": "follow-up",
+                    "targetToken": "existing-worker",
+                    "kind": "member-label",
+                    "instanceId": "inst-p6t6seedw1"
+                  }
+                }
+              },
+              {
+                "tool": "team_follow_up",
+                "target": "worker",
+                "kind": "TEMPLATE id",
+                "token": "p6t6-e2-template",
+                "httpStatus": 200,
+                "value": {
+                  "status": "rejected",
+                  "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+                  "message": "TeamRuntime: target 'worker' is a template id — actions are addressed by instanceId only (invariant 19)",
+                  "details": {
+                    "action": "follow-up",
+                    "targetToken": "worker",
+                    "kind": "template-id",
+                    "templateId": "worker"
+                  }
+                }
+              },
+              {
+                "tool": "team_send_message",
+                "target": "e1-1",
+                "kind": "E1 member LABEL",
+                "token": "p6t6-e2-label-msg",
+                "httpStatus": 200,
+                "value": {
+                  "status": "rejected",
+                  "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+                  "message": "TeamRuntime: target 'e1-1' is a member label — actions are addressed by instanceId only (invariant 19)",
+                  "details": {
+                    "action": "send-message",
+                    "targetToken": "e1-1",
+                    "kind": "member-label",
+                    "instanceId": "inst-0j3weh1176s5"
+                  }
+                }
+              }
+            ]
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E2.json"
+        },
+        "E3": {
+          "criterion": "E3",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1785,
+          "assertions": [
+            {
+              "name": "E1 produced a persistent worker with a bound child session",
+              "pass": true,
+              "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "first follow-up executed on the existing instance",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"replayed\":false,\"settled\":true,\"settledSequence\":7},\"requestToken\":\"p6t6-e3-1\"}"
+            },
+            {
+              "name": "second follow-up executed on the SAME instance",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":8,\"replayed\":false,\"settled\":true,\"settledSequence\":11},\"requestToken\":\"p6t6-e3-2\"}"
+            },
+            {
+              "name": "the admission sequences advance strictly (second admit follows the first unit settlement)",
+              "pass": true,
+              "detail": "seq1=4 settle1=7 seq2=8 settle2=11"
+            },
+            {
+              "name": "the bound child session id is UNCHANGED across follow-ups",
+              "pass": true,
+              "detail": "before=session-child-p6t6-0j3weh1176s5 after=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "no new instance was created (six members)",
+              "pass": true,
+              "detail": "6"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "sequences": [
+              4,
+              8
+            ],
+            "settledSequences": [
+              7,
+              11
+            ]
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E3.json"
+        },
+        "E4": {
+          "criterion": "E4",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 2996,
+          "assertions": [
+            {
+              "name": "both fresh_per_delegation delegates executed",
+              "pass": true,
+              "detail": "[\"executed\",\"executed\"]"
+            },
+            {
+              "name": "both delegates returned member-activated effects",
+              "pass": true,
+              "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-01h07j114nii\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-01h07j114nii\",\"operationId\":\"op-13ke21x06coo400ngzm171qk\",\"replayed\":false,\"ledgerSequence\":12,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":13,\"workSettled\":true},{\"kind\":\"member-activated\",\"instanceId\":\"inst-00n1eg415hhb\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-00n1eg415hhb\",\"operationId\":\"op-11hthzw0dnenb50wkdyve0qy\",\"replayed\":false,\"ledgerSequence\":17,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":18,\"workSettled\":true}]"
+            },
+            {
+              "name": "two distinct NEW instance ids (not the seed, not each other)",
+              "pass": true,
+              "detail": "[\"inst-01h07j114nii\",\"inst-00n1eg415hhb\"]"
+            },
+            {
+              "name": "each activation carries a distinct new child session",
+              "pass": true,
+              "detail": "[\"session-child-p6t6-01h07j114nii\",\"session-child-p6t6-00n1eg415hhb\"]"
+            },
+            {
+              "name": "state after E4: three scout-template members (1 seed + 2 new)",
+              "pass": true,
+              "detail": "scoutCount=3"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "created": [
+              {
+                "token": "p6t6-e4-1",
+                "instanceId": "inst-01h07j114nii",
+                "childSessionId": "session-child-p6t6-01h07j114nii"
+              },
+              {
+                "token": "p6t6-e4-2",
+                "instanceId": "inst-00n1eg415hhb",
+                "childSessionId": "session-child-p6t6-00n1eg415hhb"
+              }
+            ],
+            "scoutCountAfter": 3
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E4.json"
+        },
+        "E6": {
+          "criterion": "E6",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 685,
+          "assertions": [
+            {
+              "name": "pre-race state: three scout members (limit 4)",
+              "pass": true,
+              "detail": "scoutCount=3"
+            },
+            {
+              "name": "exactly ONE of the three concurrent creates admitted at ==limit",
+              "pass": true,
+              "detail": "[\"rejected\",\"rejected\",\"executed\"]"
+            },
+            {
+              "name": "the admitted create is member-activated",
+              "pass": true,
+              "detail": "[\"member-activated\"]"
+            },
+            {
+              "name": "both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES",
+              "pass": true,
+              "detail": "[\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\"]"
+            },
+            {
+              "name": "state after E6: four scout members (== limit; never over-created)",
+              "pass": true,
+              "detail": "scoutCount=4"
+            },
+            {
+              "name": "state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)",
+              "pass": true,
+              "detail": "total=9"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 3,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "scoutCountBefore": 3,
+            "outcomes": [
+              {
+                "token": "p6t6-e6-1",
+                "status": "rejected",
+                "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+              },
+              {
+                "token": "p6t6-e6-2",
+                "status": "rejected",
+                "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+              },
+              {
+                "token": "p6t6-e6-3",
+                "status": "executed",
+                "instanceId": "inst-1vmgdvq1vucs"
+              }
+            ],
+            "scoutCountAfter": 4,
+            "memberCountAfter": 9
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E6.json"
+        },
+        "E5-boot1-writes": {
+          "criterion": "E5",
+          "phase": "boot1-writes",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1313,
+          "assertions": [
+            {
+              "name": "E1 produced the persistent worker (message/progress caller)",
+              "pass": true,
+              "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "team message from the member to the leader delivered",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":23,\"deliveredSequence\":24,\"requestToken\":\"p6t6-e5-msg1\"}}"
+            },
+            {
+              "name": "delivery targeted the leader instance",
+              "pass": true,
+              "detail": "{\"r\":\"inst-leader\",\"d\":\"inst-leader\"}"
+            },
+            {
+              "name": "delivery landed on the leader bound session (the root)",
+              "pass": true,
+              "detail": "\"session-p6t6root\""
+            },
+            {
+              "name": "delivery carries durable fact + delivered sequences",
+              "pass": true,
+              "detail": "{\"f\":23,\"d\":24}"
+            },
+            {
+              "name": "first progress report recorded on sequence 1",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":26,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p1\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-09-01T16:04:18.471Z\",\"summary\":\"p6t6 e5 in flight\"}}"
+            },
+            {
+              "name": "second progress report recorded on sequence 2",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":28,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":2,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"p6t6-e5-p2\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-09-01T16:04:18.794Z\",\"summary\":\"p6t6 e5 done\"}}"
+            },
+            {
+              "name": "control request accepted (control-requested, pending)",
+              "pass": true,
+              "detail": "{\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"rootSessionId\":\"session-p6t6root\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-09-01T16:04:19.027Z\",\"requestSequence\":29,\"toolName\":\"team_follow_up\",\"summary\":\"p6t6 e5 gated follow-up\"}}"
+            },
+            {
+              "name": "control request scope carries the E5 correlation token + tool name",
+              "pass": true,
+              "detail": "{\"c\":\"p6t6-e5-ctrl1\",\"t\":\"team_follow_up\"}"
+            },
+            {
+              "name": "state after E5a: the control request is durably pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-09-01T16:04:18.948Z\"}"
+            },
+            {
+              "name": "state after E5a: both progress rows for (w, e5) are durable",
+              "pass": true,
+              "detail": "[1,2]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 4,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "message": {
+              "factSequence": 23,
+              "deliveredSequence": 24,
+              "body": "p6t6 e5 hello from worker one"
+            },
+            "progressSequences": [
+              1,
+              2
+            ],
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "correlation": "p6t6-e5-ctrl1",
+              "status": "pending"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E5-boot1-writes.json"
+        }
+      }
+    },
+    "boot4": {
+      "port": 3184,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s5a3-e\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3184/?token=lRJ683-B37rJdjOzhpuYspDUsqejrQVNpVZRICjWZM0",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S5\\dev\\agent-workflow\\evidence\\P8-S\\S5A-url-live\\logs\\boot4\\instance-port3184.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3184/?token=lRJ683-B37rJdjOzhpuYspDUsqejrQVNpVZRICjWZM0",
+      "healthBefore": {
+        "ok": true,
+        "boot": 4,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6-00n1eg415hhb",
+          "session-child-p6t6-01h07j114nii",
+          "session-child-p6t6-0i9xle4180qy",
+          "session-child-p6t6-0ijx73317qrd",
+          "session-child-p6t6-0j3weh1176s5",
+          "session-child-p6t6-1vmgdvq1vucs",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 4,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-child-p6t6-00n1eg415hhb",
+          "session-child-p6t6-01h07j114nii",
+          "session-child-p6t6-0i9xle4180qy",
+          "session-child-p6t6-0ijx73317qrd",
+          "session-child-p6t6-0j3weh1176s5",
+          "session-child-p6t6-1vmgdvq1vucs",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1",
+          "session-p6t6root"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "E5-boot2-restart": {
+          "criterion": "E5",
+          "phase": "boot2-restart",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 2777,
+          "assertions": [
+            {
+              "name": "state after restart: nine members total",
+              "pass": true,
+              "detail": "[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1vmgdvq1vucs\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "state after restart: the member id set is UNCHANGED from boot 1",
+              "pass": true,
+              "detail": "boot1=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1vmgdvq1vucs\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"] boot2=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1vmgdvq1vucs\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "the boot-1 control request SURVIVED the restart as pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-09-01T16:04:18.948Z\"}"
+            },
+            {
+              "name": "the boot-1 progress rows (sequences 1 and 2) SURVIVED the restart",
+              "pass": true,
+              "detail": "[1,2]"
+            },
+            {
+              "name": "no pending delivery was skipped at recovery (the boot-1 delivery is accounted)",
+              "pass": true,
+              "detail": "{\"recovered\":[],\"skipped\":[]}"
+            },
+            {
+              "name": "team_list_members after restart reports nine members through the tool",
+              "pass": true,
+              "detail": "9"
+            },
+            {
+              "name": "leader resolved the request as allow (control-resolved)",
+              "pass": true,
+              "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-p6t6root\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"toolName\":\"team_follow_up\"},\"requestSequence\":29,\"decisionSequence\":30,\"createdAt\":\"2026-09-01T16:04:22.177Z\",\"note\":\"p6t6 e5 leader allows the follow-up\"}}"
+            },
+            {
+              "name": "the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":32,\"replayed\":false,\"settled\":true,\"settledSequence\":35},\"requestToken\":\"p6t6-e5-ctrl1\"}"
+            },
+            {
+              "name": "retrying the SAME token is BLOCKED (allow-consumed, exactly-once)",
+              "pass": true,
+              "detail": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"reason\":\"allow-consumed\",\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decisionSequence\":30}"
+            },
+            {
+              "name": "a fresh token with no request row proceeds (no-request deviation)",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":36,\"replayed\":false,\"settled\":true,\"settledSequence\":39},\"requestToken\":\"p6t6-e5-ctrl3\"}"
+            },
+            {
+              "name": "post-restart team message delivered (new durable sequences)",
+              "pass": true,
+              "detail": "{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":40,\"deliveredSequence\":41,\"requestToken\":\"p6t6-e5-msg2\"}"
+            },
+            {
+              "name": "post-restart progress report continues the per-subject sequence (3)",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":43,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":3,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p3\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-09-01T16:04:24.705Z\",\"summary\":\"p6t6 e5 resumed after restart\"}}"
+            },
+            {
+              "name": "after consumption the request row is decided",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"decided\",\"createdAt\":\"2026-09-01T16:04:18.948Z\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 7,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "membersCountAfter": 9,
+            "memberIdsSameAsBoot1": true,
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "statusBefore": "pending",
+              "statusAfter": "decided"
+            },
+            "activitySequences": [
+              1,
+              2
+            ],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "guard": {
+              "executedToken": "p6t6-e5-ctrl1",
+              "blockedRetry": "blocked",
+              "blockedReason": "allow-consumed",
+              "freshTokenExecuted": "executed"
+            },
+            "postMessage": {
+              "deliveredSequence": 41,
+              "factSequence": 40
+            },
+            "postProgressSequence": 3
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E5-boot2-restart.json"
+        }
+      }
+    }
+  },
+  "scenarios": {
+    "E7": {
+      "criterion": "E7",
+      "pass": true,
+      "durationMs": 13,
+      "assertions": [
+        {
+          "name": "scan covers exactly the five committed tool-layer source files",
+          "pass": true,
+          "detail": "[\"packages/tools/src/guard.ts\",\"packages/tools/src/index.ts\",\"packages/tools/src/tokens.ts\",\"packages/tools/src/tools.ts\",\"packages/tools/src/types.ts\"]"
+        },
+        {
+          "name": "zero bypass violations (no direct durable-domain writes, no agent creation, no legacy vocabulary)",
+          "pass": true,
+          "detail": "[]"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 0,
+        "stateCalls": 0,
+        "non200": []
+      },
+      "evidence": {
+        "files": [
+          "packages/tools/src/guard.ts",
+          "packages/tools/src/index.ts",
+          "packages/tools/src/tokens.ts",
+          "packages/tools/src/tools.ts",
+          "packages/tools/src/types.ts"
+        ],
+        "totalImportSpecifiers": 25,
+        "totalViolations": 0,
+        "violations": []
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E7.json"
+    },
+    "W1": {
+      "criterion": "W1",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1221,
+      "assertions": [
+        {
+          "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+          "pass": true,
+          "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+        },
+        {
+          "name": "delegate executed through the public tool seam",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4},\"requestToken\":\"p8s3-w1-token\"}"
+        },
+        {
+          "name": "the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)",
+          "pass": true,
+          "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4}"
+        },
+        {
+          "name": "a RUNNING target needs no admission CAS (lifecycleCommitted=false)",
+          "pass": true,
+          "detail": "{\"from\":\"RUNNING\",\"committed\":false}"
+        },
+        {
+          "name": "the admission + settlement carry positive durable ledger sequences (admission before settlement)",
+          "pass": true,
+          "detail": "{\"seq\":1,\"settledSeq\":4}"
+        },
+        {
+          "name": "the target member row carries the seeded worker real child session id",
+          "pass": true,
+          "detail": "{\"i\":\"inst-p6t6seedw1\",\"c\":\"session-child-p6t6seedw1\"}"
+        },
+        {
+          "name": "the request token round-trips into the outcome",
+          "pass": true,
+          "detail": "{\"t\":\"p8s3-w1-token\"}"
+        },
+        {
+          "name": "state: the member count stays three (a persistent continue mints nothing)",
+          "pass": true,
+          "detail": "{\"n\":3}"
+        },
+        {
+          "name": "the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":2}"
+        },
+        {
+          "name": "the real child Session log durably carries TOKEN_A + the exact prompt",
+          "pass": true,
+          "detail": "logBytes=17599"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "effectKind": "work-admitted",
+        "memberCountAfter": 3,
+        "w1Row": {
+          "instanceId": "inst-p6t6seedw1",
+          "templateId": "worker",
+          "label": "existing-worker",
+          "childSessionId": "session-child-p6t6seedw1",
+          "lifecycle": "SETTLED",
+          "activityVersion": 2
+        },
+        "w1LogBytes": 17599
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W1.json"
+    },
+    "W5": {
+      "criterion": "W5",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1091,
+      "assertions": [
+        {
+          "name": "pre-state: seeded worker durably SETTLED at activityVersion 2 by the W1 delegate",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":2}"
+        },
+        {
+          "name": "follow-up executed with the work-admitted effect",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8},\"requestToken\":\"p8s3-w5-token\"}"
+        },
+        {
+          "name": "the SETTLED member re-admits via the durable CAS (lifecycleCommitted=true) and settles",
+          "pass": true,
+          "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8}"
+        },
+        {
+          "name": "row durably SETTLED at activityVersion 4 (admit av2->av3, settle av3->av4)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":4}"
+        },
+        {
+          "name": "the work-unit activity interval opened (in-progress) and closed (completed)",
+          "pass": true,
+          "detail": "[{\"globalSequence\":6,\"factType\":\"activity-interval-opened\",\"instanceId\":\"inst-p6t6seedw1\",\"subject\":\"work-unit\",\"sequence\":3,\"op\":\"interval-open\",\"progress\":\"in-progress\",\"correlation\":\"p8s3-w5-token\",\"requestToken\":\"p8s3-w5-token\"},{\"globalSequence\":7,\"factType\":\"activity-interval-closed\",\"instanceId\":\"inst-p6t6seedw1\",\"subject\":\"work-unit\",\"sequence\":4,\"op\":\"interval-close\",\"progress\":\"completed\",\"correlation\":\"p8s3-w5-token\",\"requestToken\":\"p8s3-w5-token\"}]"
+        },
+        {
+          "name": "the interval correlates to the request token",
+          "pass": true,
+          "detail": "{\"corr\":\"p8s3-w5-token\"}"
+        },
+        {
+          "name": "the seeded worker child log durably carries the token + prompt",
+          "pass": true,
+          "detail": "logBytes=18991"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "seedRowAfter": {
+          "instanceId": "inst-p6t6seedw1",
+          "templateId": "worker",
+          "label": "existing-worker",
+          "childSessionId": "session-child-p6t6seedw1",
+          "lifecycle": "SETTLED",
+          "activityVersion": 4
+        },
+        "intervalRows": [
+          {
+            "globalSequence": 6,
+            "factType": "activity-interval-opened",
+            "instanceId": "inst-p6t6seedw1",
+            "subject": "work-unit",
+            "sequence": 3,
+            "op": "interval-open",
+            "progress": "in-progress",
+            "correlation": "p8s3-w5-token",
+            "requestToken": "p8s3-w5-token"
+          },
+          {
+            "globalSequence": 7,
+            "factType": "activity-interval-closed",
+            "instanceId": "inst-p6t6seedw1",
+            "subject": "work-unit",
+            "sequence": 4,
+            "op": "interval-close",
+            "progress": "completed",
+            "correlation": "p8s3-w5-token",
+            "requestToken": "p8s3-w5-token"
+          }
+        ],
+        "w5LogBytes": 18991
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W5.json"
+    },
+    "W7": {
+      "criterion": "W7",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1056,
+      "assertions": [
+        {
+          "name": "W1 state available (W1 executed on this boot)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"childSessionId\":\"session-child-p6t6seedw1\"}"
+        },
+        {
+          "name": "residency drop route reports a real dispose",
+          "pass": true,
+          "detail": "{\"sessionId\":\"session-child-p6t6seedw1\",\"dropped\":true}"
+        },
+        {
+          "name": "the member is no longer resident (health liveSessions)",
+          "pass": true,
+          "detail": "[\"session-child-p6t6seeds1\",\"session-p6t6root\"]"
+        },
+        {
+          "name": "cold-resume follow-up executed with the work-admitted effect",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12},\"requestToken\":\"p8s3-w7-token\"}"
+        },
+        {
+          "name": "a SETTLED member re-admits via the durable CAS and settles",
+          "pass": true,
+          "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12}"
+        },
+        {
+          "name": "row SETTLED at activityVersion 6 on the SAME child session (admit av4->av5, settle av5->av6)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":6}"
+        },
+        {
+          "name": "the SAME durable log now carries the W1 + W7 tokens (cold resume, not a new session)",
+          "pass": true,
+          "detail": "logBytes=33702"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "w1RowAfter": {
+          "instanceId": "inst-p6t6seedw1",
+          "templateId": "worker",
+          "label": "existing-worker",
+          "childSessionId": "session-child-p6t6seedw1",
+          "lifecycle": "SETTLED",
+          "activityVersion": 6
+        },
+        "w1LogBytes": 33702
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W7.json"
+    },
+    "W3": {
+      "criterion": "W3",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 2987,
+      "assertions": [
+        {
+          "name": "both delegates executed and work-settled",
+          "pass": true,
+          "detail": "{\"c\":\"executed\",\"d\":\"executed\",\"ec\":null,\"mc\":null,\"ed\":null,\"md\":null}"
+        },
+        {
+          "name": "two DISTINCT member instances (fresh_per_delegation)",
+          "pass": true,
+          "detail": "{\"c\":\"inst-0lu6hq60ogok\",\"d\":\"inst-0mo5at30pumk\"}"
+        },
+        {
+          "name": "two DISTINCT child sessions, each derived from its instance",
+          "pass": true,
+          "detail": "{\"c\":\"session-child-p6t6-0lu6hq60ogok\",\"d\":\"session-child-p6t6-0mo5at30pumk\"}"
+        },
+        {
+          "name": "state: five members (no W1 mint; W1 continued the seed), both fresh scouts SETTLED at activityVersion 3",
+          "pass": true,
+          "detail": "{\"n\":5,\"c\":{\"instanceId\":\"inst-0lu6hq60ogok\",\"templateId\":\"scout\",\"label\":\"p8s3-w3-scout-c\",\"childSessionId\":\"session-child-p6t6-0lu6hq60ogok\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3},\"d\":{\"instanceId\":\"inst-0mo5at30pumk\",\"templateId\":\"scout\",\"label\":\"p8s3-w3-scout-d\",\"childSessionId\":\"session-child-p6t6-0mo5at30pumk\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3}}"
+        },
+        {
+          "name": "both fresh child Session logs durably carry their tokens",
+          "pass": true,
+          "detail": "bytesC=17618 bytesD=17618"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "memberCountAfter": 5,
+        "rowC": {
+          "instanceId": "inst-0lu6hq60ogok",
+          "templateId": "scout",
+          "label": "p8s3-w3-scout-c",
+          "childSessionId": "session-child-p6t6-0lu6hq60ogok",
+          "lifecycle": "SETTLED",
+          "activityVersion": 3
+        },
+        "rowD": {
+          "instanceId": "inst-0mo5at30pumk",
+          "templateId": "scout",
+          "label": "p8s3-w3-scout-d",
+          "childSessionId": "session-child-p6t6-0mo5at30pumk",
+          "lifecycle": "SETTLED",
+          "activityVersion": 3
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W3.json"
+    },
+    "M1": {
+      "criterion": "M1",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1019,
+      "assertions": [
+        {
+          "name": "follow-up executed against the seeded worker (real member turn)",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":23,\"replayed\":false,\"settled\":true,\"settledSequence\":26},\"requestToken\":\"p8s4b-m1-token\"}"
+        },
+        {
+          "name": "worker model CURRENT = world-default A (no Team override yet)",
+          "pass": true,
+          "detail": "{\"current\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"assembled\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"selection\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "name": "the real turn ASSEMBLED model A (live selection evidence)",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"}"
+        },
+        {
+          "name": "provenance: the model cell is team-unspecified (static baseline, not silently granted)",
+          "pass": true,
+          "detail": "{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null}"
+        },
+        {
+          "name": "the M1 token reached the durable member session log",
+          "pass": true,
+          "detail": "logBytes=35084"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v1"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v1"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v1"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M1.json"
+    },
+    "M2": {
+      "criterion": "M2",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1089,
+      "assertions": [
+        {
+          "name": "M1 ran first (the baseline turn)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":false,\"m4\":false}"
+        },
+        {
+          "name": "operator mutation admitted (human-override, generation 1)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-model\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"kind\":\"allow\",\"items\":[\"p6t6-static/p6t6-model-v2\"]}},\"generation\":1,\"updatedAt\":\"2026-09-01T16:03:58.783Z\",\"supersededRecordId\":null}}"
+        },
+        {
+          "name": "BEFORE any request: the backend truth lists the new record in pendingNextBoundary",
+          "pass": true,
+          "detail": "[\"p8s4b-ovr-model\"]"
+        },
+        {
+          "name": "the NEXT real request executed against the worker",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":27,\"replayed\":false,\"settled\":true,\"settledSequence\":30},\"requestToken\":\"p8s4b-m2-token\"}"
+        },
+        {
+          "name": "worker model CURRENT switched to B at the boundary",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "the real turn ASSEMBLED model B (live evidence: the next request runs on B)",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "provenance source names the granting human-override record",
+          "pass": true,
+          "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-model\"}"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 3,
+        "non200": []
+      },
+      "evidence": {
+        "mutation": {
+          "recordId": "p8s4b-ovr-model",
+          "kind": "human-override",
+          "scope": "team",
+          "values": {
+            "model": {
+              "kind": "allow",
+              "items": [
+                "p6t6-static/p6t6-model-v2"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-01T16:03:58.783Z",
+          "supersededRecordId": null
+        },
+        "pendingBefore": [
+          "p8s4b-ovr-model"
+        ],
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-model"
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-model) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M2.json"
+    },
+    "M4": {
+      "criterion": "M4",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 342,
+      "assertions": [
+        {
+          "name": "M2 ran first (the cumulative humanOverride slot)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":true,\"m4\":false}"
+        },
+        {
+          "name": "baseline: the mcp tool is ABSENT for the worker (never silently allowed)",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+        },
+        {
+          "name": "operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-allow\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"},\"mcp\":{\"kind\":\"allow\",\"items\":[\"p8s4bmini\"]}},\"generation\":2,\"updatedAt\":\"2026-09-01T16:03:59.893Z\",\"supersededRecordId\":\"p8s4b-ovr-model\"}}"
+        },
+        {
+          "name": "BEFORE the next operation: pendingNextBoundary lists the mcp-allow record",
+          "pass": true,
+          "detail": "[\"p8s4b-ovr-mcp-allow\"]"
+        },
+        {
+          "name": "after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"value\\\":{\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"pong:p8s4b-m4-allow\\\"}]}}\"}"
+        },
+        {
+          "name": "state: the mcp facet is MOUNTED, sourced from the granting record",
+          "pass": true,
+          "detail": "{\"mounted\":true,\"serverName\":\"p8s4bmini\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[p8s4bmini]; team humanOverride(origin=human, p8s4b-ovr-mcp-allow) allow[p8s4bmini]; external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "name": "operator mcp-deny admitted (generation 3, model grant preserved)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-deny\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"mcp\":{\"kind\":\"deny\"},\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"}},\"generation\":3,\"updatedAt\":\"2026-09-01T16:04:00.114Z\",\"supersededRecordId\":\"p8s4b-ovr-mcp-allow\"}}"
+        },
+        {
+          "name": "after the deny boundary the mcp tool is ABSENT again (never silently allowed)",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+        },
+        {
+          "name": "state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record",
+          "pass": true,
+          "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 3,
+        "stateCalls": 5,
+        "non200": []
+      },
+      "evidence": {
+        "pingBaseline": {
+          "status": 200,
+          "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+        },
+        "pingAllow": {
+          "status": 200,
+          "body": "{\"ok\":true,\"value\":{\"content\":[{\"type\":\"text\",\"text\":\"pong:p8s4b-m4-allow\"}]}}"
+        },
+        "pingDeny": {
+          "status": 200,
+          "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+        },
+        "workerMcpAfter": {
+          "mounted": false,
+          "serverName": "p8s4bmini",
+          "allowed": false,
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "teamDeny",
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M4.json"
+    },
+    "W2": {
+      "criterion": "W2",
+      "boot": 2,
+      "pass": true,
+      "durationMs": 1112,
+      "assertions": [
+        {
+          "name": "W1 state available (W1 executed on boot 1)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"childSessionId\":\"session-child-p6t6seedw1\"}"
+        },
+        {
+          "name": "boot2 state: the same five members survive the process restart",
+          "pass": true,
+          "detail": "{\"n\":5,\"expected\":[\"inst-0lu6hq60ogok\",\"inst-0mo5at30pumk\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]}"
+        },
+        {
+          "name": "the W1 row survived SETTLED on its original child session",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":10}"
+        },
+        {
+          "name": "persistent follow-up executed with the work-admitted effect",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":31,\"replayed\":false,\"settled\":true,\"settledSequence\":34},\"requestToken\":\"p8s3-w2-token\"}"
+        },
+        {
+          "name": "the SETTLED member re-admits via the durable CAS and settles again",
+          "pass": true,
+          "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":31,\"replayed\":false,\"settled\":true,\"settledSequence\":34}"
+        },
+        {
+          "name": "row SETTLED at activityVersion 12 on the SAME childSessionId (admit av10->av11, settle av11->av12; no new session — the P8-S3-era av6 start predates the P8-S4B M1/M2 worker follow-ups, which advance the row av6->av10 on boot 1)",
+          "pass": true,
+          "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":12}"
+        },
+        {
+          "name": "the same durable log carries W1 + W7 + W2 tokens across the restart",
+          "pass": true,
+          "detail": "logBytes=64533"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "w1RowAfter": {
+          "instanceId": "inst-p6t6seedw1",
+          "templateId": "worker",
+          "label": "existing-worker",
+          "childSessionId": "session-child-p6t6seedw1",
+          "lifecycle": "SETTLED",
+          "activityVersion": 12
+        },
+        "w1LogBytes": 64533
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/W2.json"
+    },
+    "M3": {
+      "criterion": "M3",
+      "boot": 2,
+      "pass": true,
+      "durationMs": 965,
+      "assertions": [
+        {
+          "name": "M1+M2 ran on boot 1 (the A->B mutation landed)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+        },
+        {
+          "name": "the next real request (fresh host process) executed against the worker",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":35,\"replayed\":false,\"settled\":true,\"settledSequence\":38},\"requestToken\":\"p8s4b-m3-token\"}"
+        },
+        {
+          "name": "AFTER host restart the real turn still ASSEMBLES model B",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "provenance source still names a durable human-override (layer+origin stable across re-issues)",
+          "pass": true,
+          "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"}"
+        },
+        {
+          "name": "the durable member log carries M1+M2+M3 tokens across the restart",
+          "pass": true,
+          "detail": "logBytes=65931"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M3.json"
+    },
+    "M5": {
+      "criterion": "M5",
+      "boot": 2,
+      "pass": true,
+      "durationMs": 924,
+      "assertions": [
+        {
+          "name": "M4 ran on boot 1 (the mcp deny landed)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+        },
+        {
+          "name": "the next real request (fresh host process) executed against the worker",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":39,\"replayed\":false,\"settled\":true,\"settledSequence\":42},\"requestToken\":\"p8s4b-m5-token\"}"
+        },
+        {
+          "name": "AFTER restart the worker still ASSEMBLES model B (the carried grant)",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+        },
+        {
+          "name": "state: mcp facet unmounted, team-denied by the deny record",
+          "pass": true,
+          "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "name": "the THREE durable override records survived the restart",
+          "pass": true,
+          "detail": "[\"p8s4b-ovr-mcp-allow\",\"p8s4b-ovr-mcp-deny\",\"p8s4b-ovr-model\"]"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "ping": {
+          "status": 200,
+          "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+        },
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+        },
+        "workerMcpAfter": {
+          "mounted": false,
+          "serverName": "p8s4bmini",
+          "allowed": false,
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "teamDeny",
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+        },
+        "overrideRecordIds": [
+          "p8s4b-ovr-mcp-allow",
+          "p8s4b-ovr-mcp-deny",
+          "p8s4b-ovr-model"
+        ]
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/M5.json"
+    },
+    "E1": {
+      "criterion": "E1",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1656,
+      "assertions": [
+        {
+          "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+          "pass": true,
+          "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+        },
+        {
+          "name": "boot1 state: the seeded instance ids are present",
+          "pass": true,
+          "detail": "[\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+        },
+        {
+          "name": "team_list_members executed through the registered handler",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSe"
+        },
+        {
+          "name": "list effect is members-listed with the three members",
+          "pass": true,
+          "detail": "{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-p6t6root\"},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"lifecycle\":\"RUNNING\",\"childSessionId\":\"session-child-p6t6seeds1\"},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"lifecycle\":\""
+        },
+        {
+          "name": "team_list_templates executed; worker (persistent) and scout (fresh_per_delegation) listed",
+          "pass": true,
+          "detail": "[{\"templateId\":\"leader\",\"displayName\":\"\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"worker\",\"displayName\":\"Worker\",\"contextPolicy\":\"persistent\"},{\"templateId\":\"scout\",\"displayName\":\"Scout\",\"contextPolicy\":\"fresh_per_delegation\"}]"
+        },
+        {
+          "name": "all three concurrent creates admitted (executed)",
+          "pass": true,
+          "detail": "[{\"s\":\"executed\",\"code\":null,\"message\":null},{\"s\":\"executed\",\"code\":null,\"message\":null},{\"s\":\"executed\",\"code\":null,\"message\":null}]"
+        },
+        {
+          "name": "every create returned a member-activated effect",
+          "pass": true,
+          "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-0j3weh1176s5\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0j3weh1176s5\",\"operationId\":\"op-1f86tdr00q0rpa10a3nbl0cs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0i9xle4180qy\",\"templateId\":\"worker\",\"childSessionId\":\"session-child-p6t6-0i9xle4180qy\",\"operationId\":\"op-0gvn3290iz6yqw1h8sq0j04g\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ijx73317qrd\",\"templateId\":\"worker\",\"childSessionId\":\"sessi"
+        },
+        {
+          "name": "three distinct new instance ids",
+          "pass": true,
+          "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+        },
+        {
+          "name": "none of the new ids collides with the seeded set",
+          "pass": true,
+          "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+        },
+        {
+          "name": "every activation carries a child session id",
+          "pass": true,
+          "detail": "[\"session-child-p6t6-0j3weh1176s5\",\"session-child-p6t6-0i9xle4180qy\",\"session-child-p6t6-0ijx73317qrd\"]"
+        },
+        {
+          "name": "every activation is on the worker template",
+          "pass": true,
+          "detail": "[\"worker\",\"worker\",\"worker\"]"
+        },
+        {
+          "name": "state after E1: six members total",
+          "pass": true,
+          "detail": "[\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+        },
+        {
+          "name": "state after E1: four worker-template members (1 seed + 3 new)",
+          "pass": true,
+          "detail": "workerCount=4"
+        },
+        {
+          "name": "state after E1: the three new instance ids are present",
+          "pass": true,
+          "detail": "[\"inst-0j3weh1176s5\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\"]"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 5,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "membersBefore": [
+          "inst-leader",
+          "inst-p6t6seeds1",
+          "inst-p6t6seedw1"
+        ],
+        "templates": [
+          {
+            "templateId": "leader",
+            "displayName": "",
+            "contextPolicy": "persistent"
+          },
+          {
+            "templateId": "worker",
+            "displayName": "Worker",
+            "contextPolicy": "persistent"
+          },
+          {
+            "templateId": "scout",
+            "displayName": "Scout",
+            "contextPolicy": "fresh_per_delegation"
+          }
+        ],
+        "created": [
+          {
+            "token": "p6t6-e1-1",
+            "instanceId": "inst-0j3weh1176s5",
+            "label": "e1-1",
+            "childSessionId": "session-child-p6t6-0j3weh1176s5"
+          },
+          {
+            "token": "p6t6-e1-2",
+            "instanceId": "inst-0i9xle4180qy",
+            "label": "e1-2",
+            "childSessionId": "session-child-p6t6-0i9xle4180qy"
+          },
+          {
+            "token": "p6t6-e1-3",
+            "instanceId": "inst-0ijx73317qrd",
+            "label": "e1-3",
+            "childSessionId": "session-child-p6t6-0ijx73317qrd"
+          }
+        ],
+        "w": "inst-0j3weh1176s5",
+        "wChild": "session-child-p6t6-0j3weh1176s5",
+        "memberCountAfter": 6,
+        "workerCountAfter": 4
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E1.json"
+    },
+    "E2": {
+      "criterion": "E2",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 56,
+      "assertions": [
+        {
+          "name": "all three out-of-namespace targets live-rejected (rejected status)",
+          "pass": true,
+          "detail": "[{\"tool\":\"team_follow_up\",\"target\":\"existing-worker\",\"status\":\"rejected\"},{\"tool\":\"team_follow_up\",\"target\":\"worker\",\"status\":\"rejected\"},{\"tool\":\"team_send_message\",\"target\":\"e1-1\",\"status\":\"rejected\"}]"
+        },
+        {
+          "name": "every rejection carries TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+          "pass": true,
+          "detail": "[\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\",\"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED\"]"
+        },
+        {
+          "name": "no side effect: member count unchanged (6)",
+          "pass": true
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 3,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "attempts": [
+          {
+            "tool": "team_follow_up",
+            "target": "existing-worker",
+            "kind": "seed member LABEL",
+            "token": "p6t6-e2-label",
+            "httpStatus": 200,
+            "value": {
+              "status": "rejected",
+              "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "message": "TeamRuntime: target 'existing-worker' is a member label — actions are addressed by instanceId only (invariant 19)",
+              "details": {
+                "action": "follow-up",
+                "targetToken": "existing-worker",
+                "kind": "member-label",
+                "instanceId": "inst-p6t6seedw1"
+              }
+            }
+          },
+          {
+            "tool": "team_follow_up",
+            "target": "worker",
+            "kind": "TEMPLATE id",
+            "token": "p6t6-e2-template",
+            "httpStatus": 200,
+            "value": {
+              "status": "rejected",
+              "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "message": "TeamRuntime: target 'worker' is a template id — actions are addressed by instanceId only (invariant 19)",
+              "details": {
+                "action": "follow-up",
+                "targetToken": "worker",
+                "kind": "template-id",
+                "templateId": "worker"
+              }
+            }
+          },
+          {
+            "tool": "team_send_message",
+            "target": "e1-1",
+            "kind": "E1 member LABEL",
+            "token": "p6t6-e2-label-msg",
+            "httpStatus": 200,
+            "value": {
+              "status": "rejected",
+              "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+              "message": "TeamRuntime: target 'e1-1' is a member label — actions are addressed by instanceId only (invariant 19)",
+              "details": {
+                "action": "send-message",
+                "targetToken": "e1-1",
+                "kind": "member-label",
+                "instanceId": "inst-0j3weh1176s5"
+              }
+            }
+          }
+        ]
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E2.json"
+    },
+    "E3": {
+      "criterion": "E3",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 1785,
+      "assertions": [
+        {
+          "name": "E1 produced a persistent worker with a bound child session",
+          "pass": true,
+          "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+        },
+        {
+          "name": "first follow-up executed on the existing instance",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"replayed\":false,\"settled\":true,\"settledSequence\":7},\"requestToken\":\"p6t6-e3-1\"}"
+        },
+        {
+          "name": "second follow-up executed on the SAME instance",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":8,\"replayed\":false,\"settled\":true,\"settledSequence\":11},\"requestToken\":\"p6t6-e3-2\"}"
+        },
+        {
+          "name": "the admission sequences advance strictly (second admit follows the first unit settlement)",
+          "pass": true,
+          "detail": "seq1=4 settle1=7 seq2=8 settle2=11"
+        },
+        {
+          "name": "the bound child session id is UNCHANGED across follow-ups",
+          "pass": true,
+          "detail": "before=session-child-p6t6-0j3weh1176s5 after=session-child-p6t6-0j3weh1176s5"
+        },
+        {
+          "name": "no new instance was created (six members)",
+          "pass": true,
+          "detail": "6"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "w": "inst-0j3weh1176s5",
+        "wChild": "session-child-p6t6-0j3weh1176s5",
+        "sequences": [
+          4,
+          8
+        ],
+        "settledSequences": [
+          7,
+          11
+        ]
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E3.json"
+    },
+    "E4": {
+      "criterion": "E4",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 2996,
+      "assertions": [
+        {
+          "name": "both fresh_per_delegation delegates executed",
+          "pass": true,
+          "detail": "[\"executed\",\"executed\"]"
+        },
+        {
+          "name": "both delegates returned member-activated effects",
+          "pass": true,
+          "detail": "[{\"kind\":\"member-activated\",\"instanceId\":\"inst-01h07j114nii\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-01h07j114nii\",\"operationId\":\"op-13ke21x06coo400ngzm171qk\",\"replayed\":false,\"ledgerSequence\":12,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":13,\"workSettled\":true},{\"kind\":\"member-activated\",\"instanceId\":\"inst-00n1eg415hhb\",\"templateId\":\"scout\",\"childSessionId\":\"session-child-p6t6-00n1eg415hhb\",\"operationId\":\"op-11hthzw0dnenb50wkdyve0qy\",\"replayed\":false,\"ledgerSequence\":17,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":18,\"workSettled\":true}]"
+        },
+        {
+          "name": "two distinct NEW instance ids (not the seed, not each other)",
+          "pass": true,
+          "detail": "[\"inst-01h07j114nii\",\"inst-00n1eg415hhb\"]"
+        },
+        {
+          "name": "each activation carries a distinct new child session",
+          "pass": true,
+          "detail": "[\"session-child-p6t6-01h07j114nii\",\"session-child-p6t6-00n1eg415hhb\"]"
+        },
+        {
+          "name": "state after E4: three scout-template members (1 seed + 2 new)",
+          "pass": true,
+          "detail": "scoutCount=3"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "created": [
+          {
+            "token": "p6t6-e4-1",
+            "instanceId": "inst-01h07j114nii",
+            "childSessionId": "session-child-p6t6-01h07j114nii"
+          },
+          {
+            "token": "p6t6-e4-2",
+            "instanceId": "inst-00n1eg415hhb",
+            "childSessionId": "session-child-p6t6-00n1eg415hhb"
+          }
+        ],
+        "scoutCountAfter": 3
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E4.json"
+    },
+    "E6": {
+      "criterion": "E6",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 685,
+      "assertions": [
+        {
+          "name": "pre-race state: three scout members (limit 4)",
+          "pass": true,
+          "detail": "scoutCount=3"
+        },
+        {
+          "name": "exactly ONE of the three concurrent creates admitted at ==limit",
+          "pass": true,
+          "detail": "[\"rejected\",\"rejected\",\"executed\"]"
+        },
+        {
+          "name": "the admitted create is member-activated",
+          "pass": true,
+          "detail": "[\"member-activated\"]"
+        },
+        {
+          "name": "both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES",
+          "pass": true,
+          "detail": "[\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\"]"
+        },
+        {
+          "name": "state after E6: four scout members (== limit; never over-created)",
+          "pass": true,
+          "detail": "scoutCount=4"
+        },
+        {
+          "name": "state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)",
+          "pass": true,
+          "detail": "total=9"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 3,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "scoutCountBefore": 3,
+        "outcomes": [
+          {
+            "token": "p6t6-e6-1",
+            "status": "rejected",
+            "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+          },
+          {
+            "token": "p6t6-e6-2",
+            "status": "rejected",
+            "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+          },
+          {
+            "token": "p6t6-e6-3",
+            "status": "executed",
+            "instanceId": "inst-1vmgdvq1vucs"
+          }
+        ],
+        "scoutCountAfter": 4,
+        "memberCountAfter": 9
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E6.json"
+    },
+    "E5": {
+      "criterion": "E5",
+      "pass": true,
+      "phases": {
+        "boot1-writes": {
+          "criterion": "E5",
+          "phase": "boot1-writes",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 1313,
+          "assertions": [
+            {
+              "name": "E1 produced the persistent worker (message/progress caller)",
+              "pass": true,
+              "detail": "w=inst-0j3weh1176s5 wChild=session-child-p6t6-0j3weh1176s5"
+            },
+            {
+              "name": "team message from the member to the leader delivered",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":23,\"deliveredSequence\":24,\"requestToken\":\"p6t6-e5-msg1\"}}"
+            },
+            {
+              "name": "delivery targeted the leader instance",
+              "pass": true,
+              "detail": "{\"r\":\"inst-leader\",\"d\":\"inst-leader\"}"
+            },
+            {
+              "name": "delivery landed on the leader bound session (the root)",
+              "pass": true,
+              "detail": "\"session-p6t6root\""
+            },
+            {
+              "name": "delivery carries durable fact + delivered sequences",
+              "pass": true,
+              "detail": "{\"f\":23,\"d\":24}"
+            },
+            {
+              "name": "first progress report recorded on sequence 1",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":26,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p1\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-09-01T16:04:18.471Z\",\"summary\":\"p6t6 e5 in flight\"}}"
+            },
+            {
+              "name": "second progress report recorded on sequence 2",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":28,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":2,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"p6t6-e5-p2\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-09-01T16:04:18.794Z\",\"summary\":\"p6t6 e5 done\"}}"
+            },
+            {
+              "name": "control request accepted (control-requested, pending)",
+              "pass": true,
+              "detail": "{\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"rootSessionId\":\"session-p6t6root\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-09-01T16:04:19.027Z\",\"requestSequence\":29,\"toolName\":\"team_follow_up\",\"summary\":\"p6t6 e5 gated follow-up\"}}"
+            },
+            {
+              "name": "control request scope carries the E5 correlation token + tool name",
+              "pass": true,
+              "detail": "{\"c\":\"p6t6-e5-ctrl1\",\"t\":\"team_follow_up\"}"
+            },
+            {
+              "name": "state after E5a: the control request is durably pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-09-01T16:04:18.948Z\"}"
+            },
+            {
+              "name": "state after E5a: both progress rows for (w, e5) are durable",
+              "pass": true,
+              "detail": "[1,2]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 4,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "w": "inst-0j3weh1176s5",
+            "wChild": "session-child-p6t6-0j3weh1176s5",
+            "message": {
+              "factSequence": 23,
+              "deliveredSequence": 24,
+              "body": "p6t6 e5 hello from worker one"
+            },
+            "progressSequences": [
+              1,
+              2
+            ],
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "correlation": "p6t6-e5-ctrl1",
+              "status": "pending"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E5-boot1-writes.json"
+        },
+        "boot2-restart": {
+          "criterion": "E5",
+          "phase": "boot2-restart",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 2777,
+          "assertions": [
+            {
+              "name": "state after restart: nine members total",
+              "pass": true,
+              "detail": "[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1vmgdvq1vucs\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "state after restart: the member id set is UNCHANGED from boot 1",
+              "pass": true,
+              "detail": "boot1=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1vmgdvq1vucs\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"] boot2=[\"inst-00n1eg415hhb\",\"inst-01h07j114nii\",\"inst-0i9xle4180qy\",\"inst-0ijx73317qrd\",\"inst-0j3weh1176s5\",\"inst-1vmgdvq1vucs\",\"inst-leader\",\"inst-p6t6seeds1\",\"inst-p6t6seedw1\"]"
+            },
+            {
+              "name": "the boot-1 control request SURVIVED the restart as pending",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"pending\",\"createdAt\":\"2026-09-01T16:04:18.948Z\"}"
+            },
+            {
+              "name": "the boot-1 progress rows (sequences 1 and 2) SURVIVED the restart",
+              "pass": true,
+              "detail": "[1,2]"
+            },
+            {
+              "name": "no pending delivery was skipped at recovery (the boot-1 delivery is accounted)",
+              "pass": true,
+              "detail": "{\"recovered\":[],\"skipped\":[]}"
+            },
+            {
+              "name": "team_list_members after restart reports nine members through the tool",
+              "pass": true,
+              "detail": "9"
+            },
+            {
+              "name": "leader resolved the request as allow (control-resolved)",
+              "pass": true,
+              "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-p6t6root\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"correlation\":\"p6t6-e5-ctrl1\",\"toolName\":\"team_follow_up\"},\"requestSequence\":29,\"decisionSequence\":30,\"createdAt\":\"2026-09-01T16:04:22.177Z\",\"note\":\"p6t6 e5 leader allows the follow-up\"}}"
+            },
+            {
+              "name": "the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":32,\"replayed\":false,\"settled\":true,\"settledSequence\":35},\"requestToken\":\"p6t6-e5-ctrl1\"}"
+            },
+            {
+              "name": "retrying the SAME token is BLOCKED (allow-consumed, exactly-once)",
+              "pass": true,
+              "detail": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"reason\":\"allow-consumed\",\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"decisionSequence\":30}"
+            },
+            {
+              "name": "a fresh token with no request row proceeds (no-request deviation)",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0j3weh1176s5\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":36,\"replayed\":false,\"settled\":true,\"settledSequence\":39},\"requestToken\":\"p6t6-e5-ctrl3\"}"
+            },
+            {
+              "name": "post-restart team message delivered (new durable sequences)",
+              "pass": true,
+              "detail": "{\"status\":\"delivered\",\"rootSessionId\":\"session-p6t6root\",\"action\":\"send-message\",\"callerRole\":\"member\",\"recipientInstanceId\":\"inst-leader\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-leader\",\"deliveredToSessionId\":\"session-p6t6root\",\"factSequence\":40,\"deliveredSequence\":41,\"requestToken\":\"p6t6-e5-msg2\"}"
+            },
+            {
+              "name": "post-restart progress report continues the per-subject sequence (3)",
+              "pass": true,
+              "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"row\":{\"globalSequence\":43,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-p6t6root\",\"instanceId\":\"inst-0j3weh1176s5\",\"subject\":\"e5\",\"sequence\":3,\"op\":\"progress\",\"progress\":\"in-progress\",\"requestToken\":\"p6t6-e5-p3\",\"reportedByInstanceId\":\"inst-0j3weh1176s5\",\"createdAt\":\"2026-09-01T16:04:24.705Z\",\"summary\":\"p6t6 e5 resumed after restart\"}}"
+            },
+            {
+              "name": "after consumption the request row is decided",
+              "pass": true,
+              "detail": "{\"requestId\":\"ctrl-1i8yy171hbdshk0hy6gfl05u\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-0j3weh1176s5\",\"actionName\":\"follow-up\",\"toolName\":\"team_follow_up\",\"correlation\":\"p6t6-e5-ctrl1\",\"status\":\"decided\",\"createdAt\":\"2026-09-01T16:04:18.948Z\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 7,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "membersCountAfter": 9,
+            "memberIdsSameAsBoot1": true,
+            "controlRequest": {
+              "requestId": "ctrl-1i8yy171hbdshk0hy6gfl05u",
+              "statusBefore": "pending",
+              "statusAfter": "decided"
+            },
+            "activitySequences": [
+              1,
+              2
+            ],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "guard": {
+              "executedToken": "p6t6-e5-ctrl1",
+              "blockedRetry": "blocked",
+              "blockedReason": "allow-consumed",
+              "freshTokenExecuted": "executed"
+            },
+            "postMessage": {
+              "deliveredSequence": 41,
+              "factSequence": 40
+            },
+            "postProgressSequence": 3
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S5A-url-live/E5-boot2-restart.json"
+        }
+      },
+      "reportFiles": [
+        "dev/agent-workflow/evidence/P8-S/S5A-url-live/E5-boot1-writes.json",
+        "dev/agent-workflow/evidence/P8-S/S5A-url-live/E5-boot2-restart.json"
+      ]
+    }
+  },
+  "pass": true,
+  "failures": []
+}
