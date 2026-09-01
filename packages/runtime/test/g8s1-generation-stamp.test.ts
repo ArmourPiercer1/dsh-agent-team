@@ -425,9 +425,14 @@ let w2: { readonly seed: number; readonly afterProbe1: number; readonly afterPro
 }
 
 describe('G8-S1 generation stamp — the real runtime path (P6-T2 action router)', () => {
-  it('seeds generation 1 and walks the stamp strictly 1→2→3→4 in lockstep with the ledger count (three real-router delegates)', () => {
+  it('seeds generation 1 and walks the stamp strictly 1→3→4→5 in lockstep with the ledger count (three real-router delegates)', () => {
+    // P8-S4A: the first delegate's compatibility gate re-probes inline
+    // (DevPlan §20.1 trigger 5 — first-ever evaluation), advancing the stamp
+    // 1→2 before the activation's own G8-S1 stamp advances it 2→3. The
+    // subsequent delegates find the FRESH durable state and add only the
+    // activation stamp (3→4, 4→5). The ledger lockstep is unchanged.
     expect(w1.seedGeneration).toBe(1)
-    expect(w1.stamps).toEqual([1, 2, 3, 4])
+    expect(w1.stamps).toEqual([1, 3, 4, 5])
     expect(w1.counts).toEqual([0, 1, 2, 3])
     for (let i = 1; i < w1.stamps.length; i += 1) {
       const current = w1.stamps[i]
@@ -442,12 +447,13 @@ describe('G8-S1 generation stamp — the real runtime path (P6-T2 action router)
   })
 
   it('carries the stamp verbatim into the projection; a NEW client re-pull verdicts apply (not duplicate)', () => {
-    expect(w1.projection.generation).toBe(4)
+    // P8-S4A: the terminal stamp is 5 (see the 1→3→4→5 walk above).
+    expect(w1.projection.generation).toBe(5)
     expect(String(w1.projection.teamSessionId)).toBe(P6T2_ROOT)
     expect(w1.assessments.fresh.status).toBe('apply')
-    expect(w1.assessments.fresh.receivedGeneration).toBe(4)
+    expect(w1.assessments.fresh.receivedGeneration).toBe(5)
     expect(w1.assessments.equalStamp.status).toBe('duplicate')
-    expect(w1.assessments.equalStamp.receivedGeneration).toBe(4)
+    expect(w1.assessments.equalStamp.receivedGeneration).toBe(5)
     expect(w1.assessments.stalePull.status).toBe('stale')
   })
 
@@ -462,11 +468,13 @@ describe('G8-S1 generation stamp — the real runtime path (P6-T2 action router)
   })
 
   it('a same-token delegate replay advances nothing (idempotent: no double stamp advance, zero new seam writes)', () => {
+    // P8-S4A: the terminal stamp is 5 (the replay's gate finds the fresh
+    // durable state and re-probes nothing — zero seam writes preserved).
     expect(w1.replay.effectKind).toBe('member-activated')
     expect(w1.replay.replayed).toBe(true)
     expect(w1.replay.instanceId).toBe(w1.instanceIds[0])
-    expect(w1.replay.stampBefore).toBe(4)
-    expect(w1.replay.stampAfter).toBe(4)
+    expect(w1.replay.stampBefore).toBe(5)
+    expect(w1.replay.stampAfter).toBe(5)
     expect(w1.replay.countAfter).toBe(3)
     expect(w1.replay.newWrites).toBe(0)
   })

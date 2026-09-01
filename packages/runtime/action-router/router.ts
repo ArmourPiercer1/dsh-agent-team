@@ -89,9 +89,11 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
     enforceEnvelope(spec, envelope)
 
     // Step 5 — compatibility gate for NEW WORK admissions only.
+    // (P8-S4A: the gate consults the SINGLE compatibility authority and is
+    // async — a missing/stale durable generation is re-probed inline.)
     if (isNewWorkAdmission(spec)) {
       const environmentFacts = await options.environmentFacts()
-      enforceCompatibilityGate(repositories, blueprint, rootSessionId, environmentFacts)
+      await enforceCompatibilityGate(repositories, blueprint, rootSessionId, environmentFacts, options.now)
     }
 
     // Step 6/7 — the effect phase (quota inside the provider for creation;

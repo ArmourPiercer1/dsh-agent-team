@@ -218,8 +218,11 @@ let a1: {
     const beforePositive = world.seam.writeCount
     // R3 (P8-S3): new-work admission on a non-RUNNING target REQUIRES the
     // durable CREATED/SETTLED->RUNNING commit; without a port the action
-    // fails closed with LIFECYCLE_COMMIT_UNAVAILABLE and ZERO durable
-    // writes (no partial durable success — the P8-S2 defect encoding).
+    // fails closed with LIFECYCLE_COMMIT_UNAVAILABLE. P8-S4A: the gate's
+    // inline re-probe (first-ever evaluation in this world, DevPlan §20.1
+    // trigger 5) writes the compatibility row + generation stamp BEFORE the
+    // effect-phase commit rejection (was zero writes under the read-only
+    // preflight). (no partial durable success — the P8-S2 defect encoding).
     const positiveNoPort = await run(
       makeActionRequest({
         targetInstanceId: scoutId,
@@ -334,9 +337,12 @@ describe('P6-T2 A1: instanceId-first addressing — resolution rejections are pu
     expect(a1.unknownAction.newWrites).toBe(0)
   })
 
-  it('the positive control without a commit port: SETTLED work admission fails closed (R3: no partial durable success), zero writes', () => {
+  it('the positive control without a commit port: SETTLED work admission fails closed (R3: no partial durable success), probe writes only', () => {
+    // P8-S4A: the 2 writes are the compatibility authority's inline
+    // re-probe (compatibility row + generation stamp) — the admission
+    // itself remains fail-closed with NO work/lifecycle writes.
     expect(a1.positiveNoPort.code).toBe(TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_COMMIT_UNAVAILABLE)
-    expect(a1.positiveNoPort.newWrites).toBe(0)
+    expect(a1.positiveNoPort.newWrites).toBe(2)
   })
 
   it('the positive control with a commit port: a valid instanceId target executes (SETTLED work admission commits the RUNNING transition)', () => {

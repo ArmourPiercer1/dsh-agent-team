@@ -417,31 +417,43 @@ let d2: {
 }
 
 // ---------------------------------------------------------------------------
-// D3 — the DURABLE compatibility state (authoritative over the probe)
+// D3 — a STALE durable compatibility state is never trusted (P8-S4A):
+// the single authority re-probes under the CURRENT facts and replaces the
+// stale row before any admission decision (DevPlan §20.1 trigger 5).
 // ---------------------------------------------------------------------------
 let d3: {
   readonly followUp: {
-    readonly code: string
-    readonly details?: Record<string, unknown>
+    readonly kind: string
     readonly newWrites: number
+    readonly firstTables: string[]
+  }
+  readonly rowAfter: {
+    readonly status: string
+    readonly generation: number
+    readonly fingerprint: string
   }
   readonly readsExempt: { readonly kind: string }
 }
 {
   const world = await createP6T2World('p6t2x-d3', ['leader', 'worker'])
   try {
+    // A STALE synthetic durable row (fingerprint 'fp-p6t2-durable' does not
+    // match the CURRENT environment facts — the world's facts are OPEN).
     await putDurableCompatibilityState(world, 'BLOCKED_FATAL')
     const runtime = createP6T2Runtime(world)
 
     const beforeFollowUp = world.seam.writeCount
-    const followUp = await expectRejection(
-      runtime,
+    // P8-S4A: the stale row is re-probed inline (OPEN facts) and the row is
+    // replaced — the follow-up is ADMITTED (the old gate trusted the stale
+    // durable verdict forever; that trust is the bug this task removes).
+    const followUpOutcome = await runtime.performAction(
       makeActionRequest({
         targetInstanceId: P6T2_SEEDS.worker.instanceId,
         requestToken: 'tok-p6t2-d3a',
       }),
-      TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
     )
+    const followUpWrites = world.writesSinceSeed().length
+    const rowAfter = world.domain.repositories.compatibility.get(P6T2_ROOT)
     const readsOutcome = await runtime.performAction(
       makeActionRequest({
         action: 'list-members',
@@ -449,11 +461,17 @@ let d3: {
       }),
     )
 
+    const window = world.writesSinceSeed().slice(followUpWrites - (world.seam.writeCount - beforeFollowUp))
     d3 = {
       followUp: {
-        code: followUp.code,
-        details: followUp.details,
+        kind: followUpOutcome.effect.kind,
         newWrites: world.seam.writeCount - beforeFollowUp,
+        firstTables: window.slice(0, 3).map((w) => w.table),
+      },
+      rowAfter: {
+        status: rowAfter?.status ?? 'absent',
+        generation: rowAfter?.generation ?? -1,
+        fingerprint: rowAfter?.fingerprint ?? 'absent',
       },
       readsExempt: { kind: readsOutcome.effect.kind },
     }
@@ -1039,16 +1057,28 @@ describe('P6-T2 D1: reads, coordination facts, and follow-up work admission', ()
   })
 })
 
-describe('P6-T2 D2: the live compatibility gate blocks NEW WORK (invariant 50)', () => {
-  it('delegate is blocked (source live-evaluation), zero writes', () => {
+describe('P6-T2 D2: the compatibility gate (single authority) blocks NEW WORK (invariant 50)', () => {
+  it('delegate is blocked after the inline re-probe (source durable-state), probe writes only', () => {
+    // P8-S4A: with no durable row, the authority re-probes inline (DevPlan
+    // §20.1 trigger 5) — the BLOCKED_FATAL verdict is now durable, so the
+    // rejection cites the durable state (reprobed: true) and the probe's 2
+    // writes (compatibility row + generation stamp) precede it (was 0 under
+    // the read-only live-evaluation preflight).
     expect(d2.delegate.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d2.delegate.details?.['source']).toBe('live-evaluation')
-    expect(d2.delegate.newWrites).toBe(0)
+    expect(d2.delegate.details?.['source']).toBe('durable-state')
+    expect(d2.delegate.details?.['status']).toBe('BLOCKED_FATAL')
+    expect(d2.delegate.details?.['reprobed']).toBe(true)
+    expect(d2.delegate.newWrites).toBe(2)
   })
 
-  it('follow-up is blocked (source live-evaluation), zero writes', () => {
+  it('follow-up is blocked by the FRESH durable state, zero writes', () => {
+    // The delegate's re-probe left a FRESH durable BLOCKED_FATAL row (same
+    // fingerprint as the current facts) — the follow-up consults the same
+    // single authority and is blocked WITHOUT re-probing (reprobed: false).
     expect(d2.followUp.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d2.followUp.details?.['source']).toBe('live-evaluation')
+    expect(d2.followUp.details?.['source']).toBe('durable-state')
+    expect(d2.followUp.details?.['status']).toBe('BLOCKED_FATAL')
+    expect(d2.followUp.details?.['reprobed']).toBe(false)
     expect(d2.followUp.newWrites).toBe(0)
   })
 
@@ -1058,15 +1088,23 @@ describe('P6-T2 D2: the live compatibility gate blocks NEW WORK (invariant 50)',
   })
 })
 
-describe('P6-T2 D3: the durable compatibility state is authoritative', () => {
-  it('a durable BLOCKED_FATAL blocks follow-up (source durable-state), zero writes', () => {
-    expect(d3.followUp.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED)
-    expect(d3.followUp.details?.['source']).toBe('durable-state')
-    expect(d3.followUp.details?.['status']).toBe('BLOCKED_FATAL')
-    expect(d3.followUp.newWrites).toBe(0)
+describe('P6-T2 D3: a STALE durable compatibility state is re-probed, never trusted (P8-S4A)', () => {
+  it('the stale synthetic BLOCKED_FATAL row is replaced by an inline re-probe under the current (OPEN) facts', () => {
+    // The planted row carries a fingerprint that does NOT match the current
+    // environment — it is STALE. The single authority re-probes inline
+    // (DevPlan §20.1 trigger 5): the probe writes land first, the fresh
+    // verdict (OPEN) admits the follow-up, and the row is replaced
+    // (generation 2, the real environment fingerprint).
+    expect(d3.followUp.kind).toBe('work-admitted')
+    // Re-probe over an EXISTING stale row = delete + put + advance
+    // (3 writes: two compatibility, one team_sessions stamp).
+    expect(d3.followUp.firstTables).toEqual(['compatibility', 'compatibility', 'team_sessions'])
+    expect(d3.rowAfter.status).toBe('OPEN')
+    expect(d3.rowAfter.generation).toBe(2)
+    expect(d3.rowAfter.fingerprint === 'fp-p6t2-durable').toBe(false)
   })
 
-  it('reads stay open while the durable state blocks NEW WORK', () => {
+  it('reads stay open', () => {
     expect(d3.readsExempt.kind).toBe('members-listed')
   })
 })
@@ -1113,11 +1151,16 @@ describe('P6-T2 E1: lifecycle operations (invariants 52-55)', () => {
     expect(e1.humanDispose.to).toBe('DISPOSED')
   })
 
-  it('follow-up on a DISPOSED member is rejected (terminal), zero writes', () => {
+  it('follow-up on a DISPOSED member is rejected (terminal), probe writes only', () => {
+    // P8-S4A: the compatibility gate (step 5) runs BEFORE the work-accepting
+    // state check (effect phase). The first new-work admission in this world
+    // re-probes inline (DevPlan §20.1 trigger 5) — 2 probe writes land
+    // before the WORK_STATE_REJECTED rejection (was 0 under the read-only
+    // preflight).
     expect(e1.followUpDisposed.code).toBe(
       TEAM_RUNTIME_ERROR_CODES.WORK_STATE_REJECTED,
     )
-    expect(e1.followUpDisposed.newWrites).toBe(0)
+    expect(e1.followUpDisposed.newWrites).toBe(2)
   })
 
   it('archiving a DISPOSED member is rejected (terminal lifecycle), zero writes', () => {

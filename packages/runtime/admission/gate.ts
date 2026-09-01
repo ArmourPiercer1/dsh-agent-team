@@ -3,14 +3,21 @@
  * compatibility/admission gate (invariant 50: the compatibility gate blocks
  * NEW WORK admission), plus the work-accepting state gate for work targets.
  *
- * Compatibility (reuse, don't fork — domain/compatibility engine through
- * the P6-T1 bridge `evaluateActivationCompatibility`):
- * - a DURABLE team compatibility state exists -> its status is authoritative:
- *   BLOCKED_FATAL and BLOCKED_WARNING reject NEW WORK (COMPATIBILITY_BLOCKED,
- *   `details.status` carried); OPEN and DEGRADED_ACKNOWLEDGED admit;
- * - no durable state -> a live evaluation of the bound blueprint's
- *   requirements against the injected environment facts (the exact P6-T1
- *   step-6 bridge) — the same fail-closed semantics as the provider.
+ * Compatibility (P8-S4A: the SINGLE compatibility authority —
+ * `compatibility/authority.ts` over the P7-T1 prober + P3 engine):
+ * this gate consults the authority's exact chain — fresh environment-facts
+ * read -> fingerprint -> freshness (a MISSING or STALE durable generation
+ * is never trusted: it is re-probed inline under
+ * `STALE_GENERATION_BEFORE_NEW_WORK`) -> durable state -> ACK validity ->
+ * EXACTLY ONE admission result. On `admit` the gate returns; on `block`
+ * (BLOCKED_FATAL / BLOCKED_WARNING) it throws COMPATIBILITY_BLOCKED with
+ * `details.status` / `details.fingerprint` / `details.generation` /
+ * `details.reprobed` / `details.blockingRequirementIds`; on `reprobe`
+ * (the chain itself failed: facts-unavailable / reprobe-failed /
+ * no-state-after-reprobe / state-mismatch) it fails CLOSED with
+ * COMPATIBILITY_BLOCKED `details.reason`. The provider's step 6 consumes
+ * the SAME authority — this gate runs no preflight of its own and never
+ * reads the durable compatibility record directly.
  *
  * Only the WORK and CREATION categories are gated (invariant 50 is about
  * NEW WORK admission): reads, coordination facts, and lifecycle operations
@@ -51,63 +58,75 @@ import type { TeamDomainRepositories } from '../../storage/repositories/index.js
 import {
   ACTIVATION_ERROR_CODES,
   ActivationError,
-  evaluateActivationCompatibility,
   isActivationError,
 } from '../activation/index.js'
+import { createCompatibilityAuthority } from '../compatibility/index.js'
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js'
 import type { ActionSpec } from './actions.js'
 
 /**
  * Step 4a — the compatibility gate for NEW WORK (invariant 50).
  *
+ * Consumes the SINGLE compatibility authority (P8-S4A): `admit()` runs the
+ * exact chain (fresh facts -> fingerprint -> freshness -> durable state ->
+ * ACK validity -> one result) and this gate maps that ONE result. A stale
+ * or missing durable generation is re-probed INLINE by the authority before
+ * any admission decision (DevPlan §20.1 trigger 5), so this gate is async
+ * and performs durable writes on that path.
+ *
  * @param repositories - the TeamDomain repositories (durable compat state).
  * @param blueprint - the resolved bound blueprint.
  * @param rootSessionId - the team (root) session id.
- * @param environmentFacts - the current environment probe facts.
+ * @param environmentFacts - the current environment facts (read by the
+ * router immediately before this call; the authority's re-probe re-reads
+ * the same captured value, the same logical moment).
+ * @param now - the deterministic clock, passed through to the authority's
+ * prober (defaults to the prober clock when omitted).
  * @throws {@link TeamRuntimeError} COMPATIBILITY_BLOCKED.
  */
-export function enforceCompatibilityGate(
+export async function enforceCompatibilityGate(
   repositories: TeamDomainRepositories,
   blueprint: TeamBlueprint,
   rootSessionId: string,
   environmentFacts: readonly EnvironmentFact[],
-): void {
-  const state = repositories.compatibility.get(rootSessionId)
-  if (state !== undefined) {
-    if (state.status === 'BLOCKED_FATAL' || state.status === 'BLOCKED_WARNING') {
-      throw new TeamRuntimeError(
-        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
-        `TeamRuntime: the team's durable compatibility state is ${state.status} — new work admission is blocked (invariant 50)`,
-        {
-          rootSessionId,
-          status: state.status,
-          fingerprint: state.fingerprint,
-          source: 'durable-state',
-        },
-      )
-    }
-    return
+  now?: () => string,
+): Promise<void> {
+  const authority = createCompatibilityAuthority({
+    repositories,
+    rootSessionId,
+    blueprint,
+    environmentFacts: async () => environmentFacts,
+    ...(now !== undefined ? { now } : {}),
+  })
+  const decision = await authority.admit()
+  if (decision.decision === 'admit') return
+  if (decision.decision === 'reprobe') {
+    // The chain itself failed (facts-unavailable / reprobe-failed /
+    // no-state-after-reprobe / state-mismatch): fail CLOSED (invariant 50
+    // — a compatibility failure is never an admission).
+    throw new TeamRuntimeError(
+      TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+      `TeamRuntime: compatibility could not be established (${decision.reprobeReason}) — new work admission fails closed (invariant 50)`,
+      {
+        rootSessionId,
+        source: 'compatibility-authority',
+        reason: decision.reprobeReason,
+      },
+    )
   }
-  // No durable state: live evaluation (the P6-T1 step-6 bridge, reused).
-  try {
-    evaluateActivationCompatibility(blueprint, environmentFacts, undefined)
-  } catch (error) {
-    if (isActivationError(error) && error.code === ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL) {
-      throw new TeamRuntimeError(
-        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
-        `TeamRuntime: compatibility is BLOCKED_FATAL — new work admission is blocked (invariant 50): ${error.message}`,
-        { rootSessionId, status: 'BLOCKED_FATAL', source: 'live-evaluation' },
-      )
-    }
-    if (isActivationError(error) && error.code === ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_WARNING) {
-      throw new TeamRuntimeError(
-        TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
-        `TeamRuntime: compatibility is BLOCKED_WARNING (unacknowledged) — new work admission is blocked (invariant 50): ${error.message}`,
-        { rootSessionId, status: 'BLOCKED_WARNING', source: 'live-evaluation' },
-      )
-    }
-    throw error
-  }
+  throw new TeamRuntimeError(
+    TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
+    `TeamRuntime: the team's compatibility is ${decision.status} — new work admission is blocked (invariant 50)`,
+    {
+      rootSessionId,
+      status: decision.status,
+      fingerprint: decision.fingerprint,
+      generation: decision.generation,
+      source: 'durable-state',
+      reprobed: decision.reprobed,
+      blockingRequirementIds: decision.blockingRequirements.map((requirement) => requirement.requirementId),
+    },
+  )
 }
 
 /**

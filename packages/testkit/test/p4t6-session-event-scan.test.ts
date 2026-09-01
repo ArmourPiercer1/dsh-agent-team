@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 484 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 494 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp)', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -165,9 +165,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // 4 P8-S3 work-execution files (module
     // runtime/action-router/work-execution + tests
     // runtime p8s3-work-request, runtime p8s3-work-chain,
-    // storage p8s3-member-cas).
-    expect(scanResult.filesScanned).toBe(490)
-    expect(scanResult.files.length).toBe(490)
+    // storage p8s3-member-cas) +
+    // 4 P8-S4A unified compatibility admission files (module
+    // runtime/compatibility/authority + tests
+    // runtime p8s4a-helpers, runtime p8s4a-chain,
+    // runtime p8s4a-entrypoints).
+    expect(scanResult.filesScanned).toBe(494)
+    expect(scanResult.files.length).toBe(494)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
