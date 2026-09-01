@@ -988,6 +988,12 @@
 - **P8-S5 阶段判定 = DONE**：PRE（DONE）→ S5A（INTEGRATED @ be9e1d4 前）→ S5A-URL（INTEGRATED）→ S5B（INTEGRATED @ `7bf7b09`）→ S5-REVIEW（APPROVE）。int tip `7bf7b09575f4996c2035098ed98cc29b616fb88c` = **P8-S 后端语义全部完成（P8 + P8-S 代码面）**；G8-S gate（backend complete + P9 backend surface）留 P8-S8 之后。证据归档 master（S5-REVIEW.md + S5R-review/ 4 文件）；worktree P8S5R 已删。
 - **下一步**：**执行用户许可的一次性 GitHub 推送**（R73 指令，时点已到）→ 推送记录入 log → **P8-S6 派发**（Projection / Remote / principal completion — plan 20；A30–A34 seams 的实装任务）。
 
+## R76 — 用户许可的一次性 GitHub 推送执行（S5 完成后）→ P8-S6 派发就绪（2026-09-02，主 Agent）
+
+- **推送执行（用户指令 R73；AGENTS.md 红线例外 = 用户明确许可的一次性推送）**：origin = `git@github.com:ArmourPiercer1/dsh-agent-team.git`。推送前核验：origin/master `959e363` 未动；local master `16c7c03` = origin 的 fast-forward（ancestor check 通过，+32 commits = S0..S5-REVIEW 全部 bookkeeping + 证据归档）；int 分支不在 origin。推送内容（均 fast-forward/新建，**无 force-push**）：(1) **master** `959e363..16c7c03`；(2) **int/P8-S-backend-closure** 新建 @ `7bf7b09575f4996c2035098ed98cc29b616fb88c`（integrated S5 代码状态 — 云端备份 S5 全部代码；push 非 master 分支不影响 gated master 历史）。推送后核验：origin/master = `16c7c03` ✓；`git ls-remote int/P8-S-backend-closure` = `7bf7b095…` ✓。task 分支（P8-S2..S5B 等 20+）**有意不推送**（逐任务审计历史留本地；int + master 已承载完整集成谱系；用户指令未要求）。
+- **TODO 更新**：R73 推送项 = 已完成。
+- **下一步**：P8-S6 派发（plan 20 — Projection / Remote / principal completion：A30–A34 S6 installation seams 实装 + projection/remote 生产消费；base = int tip `7bf7b09`；CR-4/CR-12 归属 S6）。
+
 ## 重审记录
 
 （空）
@@ -998,7 +1004,7 @@
 
 ## TODO 列表
 
-- [ ] **（用户指令 R73）S5 阶段结束后执行一次性 GitHub 云端推送**：时点 = S5B 集成 + S5-REVIEW 通过 + bookkeeping 落库之后；never force-push；推送分支集（master / int / 相关 task 分支）在推送时核对 plan §41/§43–45 后于 log 记录。
+- [x] **（用户指令 R73）S5 阶段结束后执行一次性 GitHub 云端推送 — 已完成（R76）**：master `959e363..16c7c03` + int/P8-S-backend-closure 新建 @ `7bf7b095…`；无 force-push；推送后 ls-remote 核验通过；task 分支有意留本地。
 
 - （已解决 R4）P1-T1/T3 host worktree `pnpm install` 磁盘空间风险：实际全部 `pnpm install --ignore-scripts` 成功（test-use 1011 packages、downstream-int、P1-T5 worktree、P1-T1/T3 树），磁盘空间未成为阻塞。
 - file-manifest baseline 旧路径（S1）：后续 Phase 重跑校验脚本前对齐 `references\deepseek-harness` 路径（不改动已冻结证据文件本身）。
