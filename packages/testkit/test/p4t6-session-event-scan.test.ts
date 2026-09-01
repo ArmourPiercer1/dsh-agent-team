@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 494 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 502 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -169,9 +169,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // 4 P8-S4A unified compatibility admission files (module
     // runtime/compatibility/authority + tests
     // runtime p8s4a-helpers, runtime p8s4a-chain,
-    // runtime p8s4a-entrypoints).
-    expect(scanResult.filesScanned).toBe(494)
-    expect(scanResult.files.length).toBe(494)
+    // runtime p8s4a-entrypoints) +
+    // 8 P8-S4B durable mutation closure files (module
+    // runtime/agent-setup/capability/mcp-facet +
+    // runtime/agent-setup/model/durable-consumption +
+    // runtime/mutation/cell-provenance +
+    // runtime/mutation/override-admission + tests
+    // runtime p8s4b-cell-provenance, runtime p8s4b-mcp-facet,
+    // runtime p8s4b-model-consumption,
+    // runtime p8s4b-override-admission).
+    expect(scanResult.filesScanned).toBe(502)
+    expect(scanResult.files.length).toBe(502)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
