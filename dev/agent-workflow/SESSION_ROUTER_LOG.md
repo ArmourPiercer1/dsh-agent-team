@@ -981,6 +981,13 @@
 - **清理**：证据归档 master（worker 7 文件 + reviewer 3 文件 + `S5B-review-live/` 25 文件，共 11 个 s5b 顶层条目）；worktrees P8S5B / P8S5B-R 已删（junction 残留走 `cmd /c rmdir /s /q` 既有模式，Test-Path 确认 gone）；branch `task/P8-S5B-operation-fencing` 保留 @ 595da23；int-P8-S @ 7bf7b09。
 - **下一步**：**S5-REVIEW 派发** — 1 fresh focused reviewer 审 integrated S5A+S5B（diff 范围 24c4f18..7bf7b09，即 S5 全部代码：生产装配 + URL 解析 + 协调器/fencing；非全 P8-S gate；完整 canonical E2E + race/crash/security 矩阵 + 全 repo 终链留 P8-S8/G8-S）。S5-REVIEW 通过后 = S5 阶段完成 → **执行用户许可的一次性 GitHub 推送（TODO, R73）** → P8-S6 派发。
 
+## R75 — S5-REVIEW APPROVE（磁盘核验）→ F1 处置 → **P8-S5 阶段 DONE**（int tip `7bf7b09`；2026-09-02，主 Agent）
+
+- **S5-REVIEW reviewer 结算（fresh focused reviewer，detached `P8S5R` @ `7bf7b09`，独立重跑）**：**APPROVE** — integrated S5（S5A + S5A-URL + S5B）整体满足 plan §19 Goals 1–4；零 CRITICAL/MAJOR。V1: 128 文件 = **28 code + 100 evidence**，全在 S5 归属内，无 package.json 改动；冻结 6 区 diff 唯一命中 = F1。V2: S5B root.ts 纯 additive（1 import + 构建 L592 + 3 接线行），A01–A29/(v)/(x)/(y) 未动，per-commit 归属清晰（S5B 未触 seams.ts/host.ts/compatibility/**/harness）；(x) boot probe L858-863 完整（guard + trigger + gen 1→2）；(y) W2 pin activityVersion===12 在 run.mjs L1591。V3: host.ts 两候选解析 dist-first 字节恒等 + fail-closed 同码，row-config/apply/export 零动。V4: 单共享链 + 生产根唯一构建点 + 严格顺序获取 + P6-T2 默认不变 + 冻结 compat 语义/p6t1 字节未动。V5: 自有 fresh 1939/1939 + dist 1939/1939。V6: tsc 8/8 + pin 517（502→515→517 算术精确）+ scanner 字节未动。V7: 自有 live **17/17**（4 boots 全部 row-mounted built dist host.js = host-loadability 证明；fresh home `.dsh-test-p8s5r`；test-use 前后 clean；无 lock；ports 释放；:3080 200）。V8: harness MOUNT 边界 + server-side principal 推导保持。主 Agent 磁盘核验：S5-REVIEW.md 40 行在盘，V1-V8 + findings + 聚合与 final message 一致。
+- **Findings 处置**：**F1 MINOR（主 Agent 处置 = ACCEPT，记录在案）**：`packages/legacy/tsconfig.build.json`（S5A 新增 tracked build 配置，位于冻结 legacy 包内）= sanctioned dist 重建 recipe（noCheck mirror emit）的必需构建管线；legacy 源码零改动、legacy 冻结语义（noCheck / evidence-only / 不参与 tsc 8-set）不受影响；S5A-result.md 已文档化；reviewer 定级 MINOR 非 MAJOR → 不返工，记为已知接受项。**F2–F5 INFO**（runtime.test.ts/tsconfig.build.json 在 V1 窄清单外但 S5-owned + documented + 非弱化；mklink 需父目录存在 — run.mjs 先 mkdir；p6t1 flake 本次未触发 9/9×2；untracked harness reports 残留 = 非跟踪产物）。
+- **P8-S5 阶段判定 = DONE**：PRE（DONE）→ S5A（INTEGRATED @ be9e1d4 前）→ S5A-URL（INTEGRATED）→ S5B（INTEGRATED @ `7bf7b09`）→ S5-REVIEW（APPROVE）。int tip `7bf7b09575f4996c2035098ed98cc29b616fb88c` = **P8-S 后端语义全部完成（P8 + P8-S 代码面）**；G8-S gate（backend complete + P9 backend surface）留 P8-S8 之后。证据归档 master（S5-REVIEW.md + S5R-review/ 4 文件）；worktree P8S5R 已删。
+- **下一步**：**执行用户许可的一次性 GitHub 推送**（R73 指令，时点已到）→ 推送记录入 log → **P8-S6 派发**（Projection / Remote / principal completion — plan 20；A30–A34 seams 的实装任务）。
+
 ## 重审记录
 
 （空）
