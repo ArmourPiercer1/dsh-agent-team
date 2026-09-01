@@ -994,6 +994,14 @@
 - **TODO 更新**：R73 推送项 = 已完成。
 - **下一步**：P8-S6 派发（plan 20 — Projection / Remote / principal completion：A30–A34 S6 installation seams 实装 + projection/remote 生产消费；base = int tip `7bf7b09`；CR-4/CR-12 归属 S6）。
 
+## R77 — P8-S6 派发 attempt 1/3（plan §20/§21；A30–A34 实装；闭合 CR-4 + CR-12；2026-09-02，主 Agent）
+
+- **派发**：worktree `.worktrees/P8S6`（@ int tip `7bf7b09`，branch `task/P8-S6-projection-remote`，deps 安装中/完成）。workflow 单 agent（qiyuan-self/qwen3.8-27b）。预算线 P8-S6 0/3（独立任务线）。
+- **包（bounded，预缩减事实）**：spec 精确范围 = P8-S plan L1354–1692（§20.1 Projection authority / §20.2 固定字段语义 / §20.3 Remote principal boundary / §20.4 Remote commands call backend authority / §20.5 Push-reconnect / §20.6 Ledger pagination + §21 surface catalog）+ S5A-node-brief.md（41 行，S6 = A30–A34）+ CR-4/CR-12 verbatim 段。精确锚点：4 条 seam（`projectionLiveOverlay` A30 / `remoteHandlerRegistration` A31 / `serverPrincipalDerivation` A32 / `remoteQueryCommandCompletion` A34，API = seams.ts named/typed/fail-closed/install-once）+ A33 = 既有模块 `remote/src/push/ledger-page::createLedgerPageTracker` 生产接线；既有模块精确路径（runtime/projection 6 文件含 read port types.ts:198；remote/src/contracts|handlers(12 ports+dispatch+register+12 handler)|push(6 文件)；harness plugin.mjs:554-564 governance principal 先例）。不重读其他文档/不重建拓扑。
+- **边界**：owned = packages/runtime/src/** + runtime/test/** + tools/harness/**（仅远程面挂载所需，additive；17 场景语义冻结）+ p4t6 pin（现 517）；frozen 零 diff = contracts + remote（**源码冻结 — port 实现在 runtime 侧**，remote 包 = 冻结库）+ storage/domain/client/legacy + probe 语义 + p6t1-parallel.test.ts + 全部 package.json。
+- **验收**：C1 四 seam 全装 + A33 接线（install-once 保持）；C2 projection（20.1/20.2：TeamDomain durable only + read-only residency diagnostic + 全字段语义 + 负测试无 log-scan/mirror/event-merge）；C3 principal（20.3：client-declared caller 不信任 + server-side 推导 + unknown fail-closed 403 形状 + spoof 拒绝测试）；C4 remote 命令走 runtime facade（S5B 共享链）+ 负测试无 direct repo mutation/Agent.followup/本地 compat recompute；C5 push/reconnect（monotonic gen + stale 拒 + dup-invalidation 安全 + reconnect pull 权威投影）；C6 pagination（stable cursor + load-earlier + 新事件不失效窗口）；C7 §21 mapping 表；C8 无回归（fresh+dist 双链 1939+新 + tsc 8/8 + 冻结区空 + pin + test-use clean）；C9 live 17 场景回归（fresh home `.dsh-test-p8s6`）。升级条件：需改冻结包语义 → ADR-stop。
+- **下一步**：worker 结算 → 主审计 → focused S6 reviewer（自有双链 + 自有 live）→ cherry-pick -x → 集成门禁 → S7。
+
 ## 重审记录
 
 （空）
