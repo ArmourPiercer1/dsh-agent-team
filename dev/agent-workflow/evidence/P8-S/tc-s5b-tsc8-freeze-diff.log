@@ -1,0 +1,22 @@
+﻿B4 tsc 8-set separate invocations (legacy excluded) — all exit 0:
+client=0 contracts=0 domain=0 remote=0 runtime=0 storage=0 testkit=0 tools=0
+
+B5 git diff be9e1d4f9d5357be0f97547280e25b1734610aa2 -- packages/contracts packages/remote (must be empty):
+<empty output — diff-line-count=0>
+
+git status --porcelain (worktree, before commit):
+ M packages/runtime/action-router/effects.ts
+ M packages/runtime/action-router/router.ts
+ M packages/runtime/activity/ledger.ts
+ M packages/runtime/activity/types.ts
+ M packages/runtime/admission/types.ts
+ M packages/runtime/lifecycle/index.ts
+ M packages/runtime/src/plugin/root.ts
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? dev-sweep-diag.txt
+?? dev/agent-workflow/evidence/P8-S/tc-s5b-build-dist-1.log
+?? dev/agent-workflow/evidence/P8-S/tc-s5b-chain-full-1.log
+?? dev/agent-workflow/evidence/P8-S/tc-s5b-chain-full-2.log
+?? dev/agent-workflow/evidence/P8-S/tc-s5b-tsc8-freeze-diff.log
+?? packages/runtime/coordination/
+?? packages/runtime/test/p8s5b-operation-fencing.test.ts
