@@ -106,7 +106,7 @@ let a2: {
           action: 'delegate',
           caller: memberCaller(workerId),
           delegationTemplateId: 'scout',
-          payload: { label: 'member-delegated' },
+          payload: { label: 'member-delegated', prompt: 'p6t2 b2d delegate prompt' },
           requestToken: 'tok-p6t2-b2d',
         },
         TEAM_RUNTIME_ERROR_CODES.CALLER_AUTHORITY_DENIED,

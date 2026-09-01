@@ -60,6 +60,8 @@ export type {
   TeamRuntimeActionOutcome,
   TeamRuntimeActionRequest,
   TeamRuntimeOptions,
+  WorkActivityPort,
+  WorkDeliveryPort,
 } from './types.js'
 
 export {

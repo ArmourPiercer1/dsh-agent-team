@@ -107,6 +107,9 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
       caller,
       blueprint,
       lifecycleCommit: options.lifecycleCommit,
+      workDelivery: options.workDelivery,
+      workActivity: options.workActivity,
+      lifecyclePorts: options.lifecyclePorts,
       ...(resolved.target !== undefined ? { target: resolved.target } : {}),
     }
     const effect = await executeEffect(teamLocks, ctx)

@@ -59,7 +59,7 @@ export {
   projectTeamFromRows,
 } from './projection.js'
 
-export { createActivityLedger } from './ledger.js'
+export { createActivityLedger, createWorkActivityWriter } from './ledger.js'
 
 // The closed status vocabulary (reused from P6-T2 admission — no new
 // status words are invented here; telemetry is not authority).

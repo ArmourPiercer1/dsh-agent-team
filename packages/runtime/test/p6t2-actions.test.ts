@@ -154,7 +154,7 @@ let d1: {
     const firstOutcome = await runtime.performAction(
       makeActionRequest({
         targetInstanceId: workerId,
-        payload: { taskSummary: 'continue p6t2 work' },
+        payload: { taskSummary: 'continue p6t2 work', prompt: 'p6t2 d1a follow-up prompt' },
         requestToken: 'tok-p6t2-d1a',
       }),
     )
@@ -372,7 +372,7 @@ let d2: {
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'blocked-scout' },
+        payload: { label: 'blocked-scout', prompt: 'p6t2 d2a delegate prompt' },
         requestToken: 'tok-p6t2-d2a',
       }),
       TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCKED,
@@ -747,7 +747,7 @@ let e2: {
       makeActionRequest({
         action: 'delegate',
         delegationInstanceId: workerId,
-        payload: { label: 'delegate-cont' },
+        payload: { label: 'delegate-cont', prompt: 'p6t2 e2a continue prompt' },
         requestToken: 'tok-p6t2-e2a',
       }),
     )
@@ -769,7 +769,7 @@ let e2: {
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'scout-delegated' },
+        payload: { label: 'scout-delegated', prompt: 'p6t2 e2b fresh prompt' },
         requestToken: 'tok-p6t2-e2b',
       }),
     )
@@ -796,7 +796,7 @@ let e2: {
       makeActionRequest({
         action: 'delegate',
         delegationInstanceId: 'inst-p6t2gone01',
-        payload: { label: 'ghost' },
+        payload: { label: 'ghost', prompt: 'p6t2 e2c ghost prompt' },
         requestToken: 'tok-p6t2-e2c',
       }),
       TEAM_RUNTIME_ERROR_CODES.DELEGATION_TARGET_UNRESOLVED,

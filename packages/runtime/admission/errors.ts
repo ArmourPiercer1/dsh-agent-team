@@ -115,6 +115,20 @@ export const TEAM_RUNTIME_ERROR_CODES = {
    * writes.
    */
   LIFECYCLE_COMMIT_UNAVAILABLE: 'TEAM_RUNTIME_LIFECYCLE_COMMIT_UNAVAILABLE',
+  /**
+   * The P7-T3 lifecycle procedure could not reach quiescence before the
+   * durable commit (the frozen §30.1 order: quiesce/drain FIRST, then
+   * commit): the live steps failed closed with ZERO durable writes.
+   * `details` carries the P7-T3 lifecycle code and step trace.
+   */
+  LIFECYCLE_NOT_QUIESCENT: 'TEAM_RUNTIME_LIFECYCLE_NOT_QUIESCENT',
+  /**
+   * A live lifecycle step (interrupt/drain/residency release) faulted
+   * after partial execution; the procedure aborted before any durable
+   * commit (ZERO durable writes). `details` carries the P7-T3 lifecycle
+   * code and step trace.
+   */
+  LIFECYCLE_LIVE_EFFECT_FAILED: 'TEAM_RUNTIME_LIFECYCLE_LIVE_EFFECT_FAILED',
   /** Effective policy resolution failed (fail closed). */
   POLICY_RESOLUTION_FAILED: 'TEAM_RUNTIME_POLICY_RESOLUTION_FAILED',
   /**
@@ -122,6 +136,15 @@ export const TEAM_RUNTIME_ERROR_CODES = {
    * partial-commit semantics: see `action-router/effects.ts`.
    */
   DURABLE_WRITE_FAILED: 'TEAM_RUNTIME_DURABLE_WRITE_FAILED',
+  /**
+   * The admitted work unit's model-visible delivery to the member's child
+   * session failed (P8-S3 work chain, R6): the chain has already settled
+   * fail-closed (RUNNING -> SETTLED through the lifecycle commit port; the
+   * settlement fact carries `workOutcome: 'delivery-failed'`) — no fake
+   * RUNNING success is left behind, and the frozen FSM has no
+   * RUNNING -> CREATED edge. `details.cause` carries the delivery fault.
+   */
+  WORK_DELIVERY_FAILED: 'TEAM_RUNTIME_WORK_DELIVERY_FAILED',
 } as const
 
 /** One of the closed TeamRuntime error codes. */

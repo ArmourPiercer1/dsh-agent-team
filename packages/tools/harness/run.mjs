@@ -1,61 +1,87 @@
 #!/usr/bin/env node
 /**
- * P6-T6 real-instance harness — drives a REAL DSH test instance through the
- * team-tools layer end-to-end (G6 criteria E1-E7) using PUBLIC surfaces only:
- * the profile-patch row mount (verified by dump-config), webServer-scoped
- * row routes, and DSH_HOME durable files. The driver NEVER calls the
- * TeamRuntime API: every team action travels driver -> HTTP /__p6t6/tool ->
- * the registered tool handler (public Cordis tool registration + execution
- * seams) -> TeamRuntime/guard/messaging/activity (criterion 7).
+ * P8-S3 real-instance harness 鈥?drives a REAL DSH test instance through the
+ * team-tools layer end-to-end (P8-S3 criteria W1-W7) using PUBLIC surfaces
+ * only: the profile-patch row mount (verified by dump-config),
+ * webServer-scoped row routes, and DSH_HOME durable files. The driver NEVER
+ * calls the TeamRuntime API: every team action travels driver -> HTTP
+ * /__p6t6/tool -> the registered tool handler (public Cordis tool
+ * registration + execution seams) -> the TeamRuntime work execution chain
+ * (admission -> ensure/resume Member Agent -> submit model-visible prompt ->
+ * real child Session -> real turn -> observe completion -> durable settle ->
+ * activity interval closure).
+ *
+ * W4 (delivery failure), W6 (activity interval), W8 (durable CAS version
+ * mismatch) and W9 (same-logical-work retry) are covered at the package
+ * level (packages/runtime/test/p8s3-work-chain.test.ts,
+ * packages/storage/test/p8s3-member-cas.test.ts) and are NOT live criteria.
  *
  * No real LLM calls are made: the row installs a static model reference
  * (p6t6-static/p6t6-model-v1) that no provider in the fresh test DSH_HOME
- * serves, so followup turns fail contained and the quiescence wait settles.
+ * serves, so child turns fail contained at the driver boundary and the
+ * quiescence wait settles 鈥?the model-visible prompt still lands in the
+ * durable session log before the settle (fail-closed on true anomalies).
  *
  * Usage:
  *   node packages/tools/harness/run.mjs \
- *     --report-dir dev/agent-workflow/evidence/P6-T6/harness-output \
- *     [--scenarios E1,E2,E3,E4,E5,E6,E7] \
- *     [--port 3180]
+ *     --report-dir packages/tools/harness/reports/p8s3-<ts> \
+  *     [--scenarios E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7] \
+ *     [--port 3181] \
+ *     [--dsh-home .dsh-test-p8s3] \
+  *     [--dsh-home-e .dsh-test-p8s3-e] \
+ *     [--lock-file references/.dsh-test-p8s3.lock]
  *
- * Layout (resolved by walking up from this file):
- *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
- *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
- *                upstream test-use tree; git-clean asserted before AND after)
- *   DSH_HOME   — REPO_ROOT/references/.dsh-test-p6t6 (task-specific; FRESH
- *                per run: removed and recreated; gitignored; workspace-internal)
+  * Layout (resolved by walking up from this file):
+  *   REPO_ROOT  - the ancestor containing references/deepseek-harness-test-use
+  *   HOST_TREE  - REPO_ROOT/references/deepseek-harness-test-use (pristine
+  *                upstream test-use tree; git-clean asserted before AND after)
+  *   DSH_HOME   - REPO_ROOT/references/<--dsh-home> (default .dsh-test-p8s3);
+  *                the W world's home; must be FRESH (missing or empty) or the
+  *                run aborts fail-closed; gitignored; workspace-internal
+  *   DSH_HOME_E - REPO_ROOT/references/<--dsh-home-e> (default
+  *                .dsh-test-p8s3-e); the E world's home; same freshness rule
+  *   LOCK       - REPO_ROOT/<--lock-file> (default references/.dsh-test-p8s3.lock);
+  *                acquired only when free (exclusive create), released only
+  *                when the marker still names this runStamp.
  *
- * Boot plan (serial; ports alternate; each boot is a fresh OS process over
- * the SAME DSH_HOME, so boot 2 reads boot 1's durable state):
- *   boot 1 (port, default 3180): the P6-T6 team-tools row (plugin.mjs)
- *        creates the team root + seeds three members (leader bound to the
- *        root, one worker, one scout), then the driver runs:
- *        E1 same-template concurrent creates (3 workers, distinct tokens),
- *        E2 instance-addressed actions live-rejected on label/template
- *        addressing (ACTION_ADDRESSING_REJECTED), E3 persistent follow-up
- *        (same child session), E4 fresh_per_delegation new instances,
- *        E6 template quota race (==limit admitted, >limit rejected, never
- *        over-created), E5 boot-1 write phase (team message to the leader,
- *        two progress reports, one pending control request) — then the
- *        process is KILLED (ordinary stop; the durable state must survive).
- *   boot 2 (port+1, default 3181): the SAME row over the SAME DSH_HOME
- *        resumes the root + every bound member child; the driver runs the
- *        E5 restart phase: durable read-back (members, control request
- *        still pending, activity sequences intact, no skipped deliveries),
- *        leader resolution of the request, the guarded follow-up consuming
- *        the persisted allow exactly once (retry blocked
- *        'allow-consumed', a fresh token proceeds as no-request), and the
- *        per-subject progress sequence continuing (3).
- *   E7 (driver process, no boot): the committed static bypass scan
- *        (packages/tools/test/p6t6-bypass-scan.mjs) re-run over the live
- *        worktree sources: zero violations across the five tool-layer
- *        source files.
- *
- * Pristine self-checks recorded in summary.json:
- *   - test-use tree git status clean before (and after) the run;
- *   - stable :3080 development instance probed (GET only) before and after
- *     — must be reachable/200 both times (never touched);
- *   - the junction farm under packages/node_modules is removed post-flight.
+  * Boot plan (serial; ports alternate; each boot is a fresh OS process):
+  *   Two durable worlds, two boots each. The frozen per-template instance
+  *   quota (4 per template in the p6t6 blueprint) makes it impossible to
+  *   run the E and W criteria inside one team, so each world gets its own
+  *   DSH_HOME; within a world, boot 2 reads boot 1's durable state.
+  *   boot 1 (port, default 3181; DSH_HOME): the P8-S3 team row (plugin.mjs)
+  *        creates the team root + seeds three members (leader bound to the
+  *        root, one worker, one scout), then the driver runs:
+  *        W1 delegate TOKEN_A -> a real new Member Session receives TOKEN_A
+  *           (executed, member-activated, work settled, the durable child
+  *           log carries the exact prompt; row SETTLED at activityVersion 3),
+  *        W5 persistent follow-up on the seeded resident worker -> SETTLED
+  *           (RUNNING needs no admission CAS) with the work-unit activity
+  *           interval opened and closed,
+  *        W7 residency drop + cold resume of the W1 member -> the SAME
+  *           childSessionId resumes (no re-mint; no new session),
+  *        W3 two fresh_per_delegation delegates -> two NEW instances and
+  *           two NEW child sessions, both carrying their tokens.
+  *   boot 2 (port+1, default 3182; DSH_HOME): the SAME row over the SAME
+  *        home; W2's persistent follow-up on the W1 member across a real
+  *        process restart lands on the SAME childSessionId and the same
+  *        six-member roster.
+  *   boot 3 (port+2, default 3183; DSH_HOME_E): the E-world row creates the
+  *        E team + the same three seeds, then E1 (three concurrent worker
+  *        creates), E2 (label/template addressing probes, live-rejected),
+  *        E3 (two follow-ups on the E1 worker, monotonic sequences), E4
+  *        (two fresh_per_delegation scout creates), E6 (the scout over-quota
+  *        race: exactly one of three admits at ==limit), and the E5 write
+  *        phase (E5a: message + two progress reports + one PENDING control
+  *        request, all durable).
+  *   boot 4 (port+3, default 3184; DSH_HOME_E): the E5 restart phase (E5b):
+  *        after the real process restart, the durable read-back, the control
+  *        resolution, and the post-restart message/progress land durably.
+  *   E7 (static; no instance): the committed bypass scan over the live tree,
+  *        run before boot 1.
+  *   Hygiene asserted before/after: test-use tree pristine, stable :3080
+  *   reachable/200, DSH_HOME(E) freshness, the lockfile handshake, port
+  *   release for every boot, and row mount on every boot.
  */
 
 import {
@@ -69,6 +95,7 @@ import {
 } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { zstdDecompressSync } from 'node:zlib'
 
 import {
   DshInstance,
@@ -90,18 +117,37 @@ const CLIENT_COMMIT_HASH = 'cd5ef814'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
-/** The team root session id (directive-carried; boot 1 creates, boot 2 resumes). */
+/** The team root session id (directive-carried; create-phase boots seed it, resume-phase boots re-open it). */
 const ROOT_SESSION_ID = 'session-p6t6root'
 /** The leader member instance (its bound child session IS the root). */
 const LEADER_INSTANCE_ID = 'inst-leader'
 /** The seeded worker / scout instance ids (plugin.mjs mirrors these). */
 const SEED_WORKER_ID = 'inst-p6t6seedw1'
 const SEED_SCOUT_ID = 'inst-p6t6seeds1'
-/** The E5 control-plane correlation token (boot 1 request, boot 2 consume). */
+/** The seeded worker's child session id (plugin.mjs mirrors the derivation). */
+const SEED_WORKER_CHILD = 'session-child-p6t6seedw1'
+/** E5: the control-request correlation token (the guarded follow-up). */
 const E5_CTRL_TOKEN = 'p6t6-e5-ctrl1'
+/** W1: the delegate token the fresh member session must receive. */
+const W1_TOKEN = 'p8s3-w1-token'
+const W1_PROMPT = 'the p8s3 W1 exact model-visible prompt'
+/** W2: the persistent follow-up token across the process restart. */
+const W2_TOKEN = 'p8s3-w2-token'
+const W2_PROMPT = 'the p8s3 W2 exact model-visible follow-up prompt'
+/** W3: two fresh_per_delegation delegate tokens (distinct instances). */
+const W3_C_TOKEN = 'p8s3-w3-token-c'
+const W3_C_PROMPT = 'the p8s3 W3-C exact model-visible prompt'
+const W3_D_TOKEN = 'p8s3-w3-token-d'
+const W3_D_PROMPT = 'the p8s3 W3-D exact model-visible prompt'
+/** W5: the follow-up token on the seeded resident worker. */
+const W5_TOKEN = 'p8s3-w5-token'
+const W5_PROMPT = 'the p8s3 W5 exact model-visible follow-up prompt'
+/** W7: the cold-resume follow-up token after the residency drop. */
+const W7_TOKEN = 'p8s3-w7-token'
+const W7_PROMPT = 'the p8s3 W7 exact model-visible follow-up prompt'
 /** The ten registered team tool names (asserted on health). */
 const EXPECTED_TOOL_COUNT = 10
-/** E7: the exact tool-layer source files the committed scanner must cover. */
+/** The exact tool-layer source files the committed scanner must cover. */
 const EXPECTED_SCAN_FILES = [
   'packages/tools/src/guard.ts',
   'packages/tools/src/index.ts',
@@ -118,8 +164,13 @@ const SCENARIO_DEPS = {
   E5: ['E1'],
   E6: ['E4'],
   E7: [],
+  W1: [],
+  W2: ['W1'],
+  W3: [],
+  W5: [],
+  W7: ['W1'],
 }
-const ALL_SCENARIOS = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7']
+const ALL_SCENARIOS = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'W1', 'W2', 'W3', 'W5', 'W7']
 
 /** Tail of an in-memory log string (up to `lines` last lines). */
 function tailText(text, lines = 12) {
@@ -127,20 +178,43 @@ function tailText(text, lines = 12) {
   return String(text).split('\n').slice(-lines).join('\n')
 }
 
-// ── argument parsing ────────────────────────────────────────────────────────
+// 鈹€鈹€ argument parsing 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 function parseArgs(argv) {
-  const args = { reportDir: null, scenarios: ALL_SCENARIOS.join(','), port: 3180 }
+  const args = {
+    reportDir: null,
+    scenarios: ALL_SCENARIOS.join(','),
+    port: 3181,
+    dshHome: '.dsh-test-p8s3',
+    dshHomeE: null,
+    lockFile: 'references/.dsh-test-p8s3.lock',
+  }
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i]
     if (token === '--report-dir') args.reportDir = argv[++i]
     else if (token === '--scenarios') args.scenarios = argv[++i]
     else if (token === '--port') args.port = Number.parseInt(argv[++i], 10)
+    else if (token === '--dsh-home') args.dshHome = argv[++i]
+    else if (token === '--dsh-home-e') args.dshHomeE = argv[++i]
+    else if (token === '--lock-file') args.lockFile = argv[++i]
     else throw new Error(`unknown argument: ${token}`)
   }
   if (args.reportDir === null) throw new Error('--report-dir is required')
   if (!Number.isInteger(args.port) || args.port < 1 || args.port > 65535) {
     throw new Error(`invalid --port: ${args.port}`)
+  }
+  if (args.dshHomeE === null) args.dshHomeE = `${args.dshHome}-e`
+  if (typeof args.dshHome !== 'string' || args.dshHome.length === 0 || args.dshHome.includes('..') || args.dshHome.includes('/') || args.dshHome.includes('\\')) {
+    throw new Error(`invalid --dsh-home (a bare basename under references/): ${args.dshHome}`)
+  }
+  if (typeof args.dshHomeE !== 'string' || args.dshHomeE.length === 0 || args.dshHomeE.includes('..') || args.dshHomeE.includes('/') || args.dshHomeE.includes('\\')) {
+    throw new Error(`invalid --dsh-home-e (a bare basename under references/): ${args.dshHomeE}`)
+  }
+  if (args.dshHomeE === args.dshHome) {
+    throw new Error('--dsh-home-e must differ from --dsh-home (two separate team lifetimes)')
+  }
+  if (typeof args.lockFile !== 'string' || args.lockFile.length === 0 || args.lockFile.includes('..')) {
+    throw new Error(`invalid --lock-file (a path relative to the repo root): ${args.lockFile}`)
   }
   const selected = String(args.scenarios)
     .split(',')
@@ -153,7 +227,7 @@ function parseArgs(argv) {
   return args
 }
 
-// ── path discovery ──────────────────────────────────────────────────────────
+// 鈹€鈹€ path discovery 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 /** Walk up from `start` until the references/deepseek-harness-test-use marker. */
 function findRepoRoot(start) {
@@ -182,7 +256,7 @@ function findZodDir(hostTree) {
   return existsSync(fallback) ? fallback : null
 }
 
-// ── stable-instance probe (GET only — never mutates) ───────────────────────
+// 鈹€鈹€ stable-instance probe (GET only 鈥?never mutates) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 async function probeStableInstance() {
   try {
@@ -193,7 +267,7 @@ async function probeStableInstance() {
   }
 }
 
-// ── main ────────────────────────────────────────────────────────────────────
+// 鈹€鈹€ main 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
@@ -211,27 +285,34 @@ async function main() {
   const REPO_ROOT = findRepoRoot(HERE)
   if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
   const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
-  const DSH_HOME = join(REPO_ROOT, 'references', '.dsh-test-p6t6')
+  const DSH_HOME = join(REPO_ROOT, 'references', args.dshHome)
+  const DSH_HOME_E = join(REPO_ROOT, 'references', args.dshHomeE)
+  const LOCK_PATH = resolve(REPO_ROOT, args.lockFile)
   const portA = args.port
   const portB = args.port + 1
+  const portC = args.port + 2
+  const portD = args.port + 3
 
-  const runStamp = `p6t6-${Date.now()}`
-  log(`P6-T6 harness start: runStamp=${runStamp} worktree=${WORKTREE_ROOT}`)
-  log(`repo root=${REPO_ROOT} hostTree=${HOST_TREE} dshHome=${DSH_HOME}`)
-  log(`ports: boot1=${portA} boot2=${portB}; selected scenarios: ${args.selected.join(',')}`)
+  const runStamp = `p8s3-${Date.now()}`
+  log(`P8-S3 harness start: runStamp=${runStamp} worktree=${WORKTREE_ROOT}`)
+  log(`repo root=${REPO_ROOT} hostTree=${HOST_TREE} dshHome=${DSH_HOME} dshHomeE=${DSH_HOME_E}`)
+  log(`ports: boot1=${portA} boot2=${portB} (W world) boot3=${portC} boot4=${portD} (E world); selected scenarios: ${args.selected.join(',')}`)
 
   const summary = {
-    task: 'P6-T6 team tools + orchestration E2E (G6 criteria E1-E7)',
+    task: 'P8-S3 team work execution + lifecycle closure E2E (live criteria E1-E7 + W1,W2,W3,W5,W7; W4/W6/W8/W9 package-level)',
     runStamp,
     harness: 'packages/tools/harness',
     worktree: WORKTREE_ROOT,
     hostTree: HOST_TREE,
     dshHome: DSH_HOME,
+    dshHomeE: DSH_HOME_E,
+    lock: null,
     selectedScenarios: args.selected,
-    ports: { boot1: portA, boot2: portB, mcp: null, released: {} },
+    ports: { boot1: portA, boot2: portB, boot3: portC, boot4: portD, mcp: null, released: {} },
     stable3080: { before: null, after: null },
     pristine: { before: null, afterBuild: null, after: null },
     build: null,
+    bypassScan: null,
     rowMounted: {},
     boots: {},
     scenarios: {},
@@ -243,12 +324,27 @@ async function main() {
     summary.pass = pass
     if (extra !== undefined) Object.assign(summary, extra)
     writeFileSync(join(reportDir, 'summary.json'), JSON.stringify(summary, null, 2))
-    log(`P6-T6 harness ${pass ? 'PASS' : 'FAIL'} — summary: ${join(reportDir, 'summary.json')}`)
+    log(`P8-S3 harness ${pass ? 'PASS' : 'FAIL'} 鈥?summary: ${join(reportDir, 'summary.json')}`)
     process.exit(pass ? 0 : 1)
   }
   const noteFailure = (why) => {
     summary.failures.push(why)
     log(`FAILURE: ${why}`)
+  }
+
+  /** Release the lock only when its marker still names THIS run. */
+  const releaseLock = () => {
+    try {
+      const marker = JSON.parse(readFileSync(LOCK_PATH, 'utf8'))
+      if (marker !== null && typeof marker === 'object' && marker.runStamp === runStamp) {
+        rmSync(LOCK_PATH, { force: true })
+        log('postflight: lock released (own marker matched)')
+      } else {
+        noteFailure(`lock marker at ${LOCK_PATH} does not name this run (marker=${JSON.stringify(marker)}) 鈥?NOT removing it`)
+      }
+    } catch {
+      /* lock file absent or unreadable: nothing to release */
+    }
   }
 
   let mini = null
@@ -263,7 +359,7 @@ async function main() {
   }
 
   try {
-    // ── pre-flight: pristine tree, stable instance, ports ───────────────────
+    // 鈹€鈹€ pre-flight: pristine tree, stable instance, ports 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     summary.pristine.before = await captureGitState(HOST_TREE, logsDir)
     const beforeClean = summary.pristine.before.statusEmpty && summary.pristine.before.diffEmpty
     if (!beforeClean) throw new Error(`test-use tree not pristine before run: ${JSON.stringify(summary.pristine.before.errors)}`)
@@ -272,19 +368,43 @@ async function main() {
     summary.stable3080.before = await probeStableInstance()
     log(`preflight: stable :3080 ${JSON.stringify(summary.stable3080.before)}`)
     if (!(summary.stable3080.before.reachable === true && summary.stable3080.before.status === 200)) {
-      throw new Error(`stable :3080 instance is not reachable/200 before the run — refusing to proceed (brief §6c)`)
+      throw new Error(`stable :3080 instance is not reachable/200 before the run 鈥?refusing to proceed (brief 搂6c)`)
     }
 
-    if ((await portInUse(portA)) || (await portInUse(portB))) {
-      throw new Error(`ports ${portA}/${portB} are already in use — aborting`)
+    if ((await portInUse(portA)) || (await portInUse(portB)) || (await portInUse(portC)) || (await portInUse(portD))) {
+      throw new Error(`ports ${portA}/${portB}/${portC}/${portD} are already in use - aborting`)
     }
 
-    // ── fresh task-specific DSH_HOME per run (never .dsh-test-p5t6) ─────────
-    rmSync(DSH_HOME, { recursive: true, force: true })
-    mkdirSync(DSH_HOME, { recursive: true })
-    log(`preflight: fresh DSH_HOME created at ${DSH_HOME}`)
+    // -- fresh task-specific DSH_HOMEs (fail-closed on non-fresh) + lock --
+    // The W world (W1/W2/W3/W5/W7) runs against DSH_HOME; the E world
+    // (E1-E7) runs against DSH_HOME_E, because the frozen per-template
+    // quota of 4 makes E and W impossible in one durable team.
+    for (const home of [DSH_HOME, DSH_HOME_E]) {
+      if (existsSync(home) && readdirSync(home).length > 0) {
+        throw new Error(`DSH_HOME ${home} exists and is not empty - the freshness rule forbids reusing it; aborting fail-closed`)
+      }
+      rmSync(home, { recursive: true, force: true })
+      mkdirSync(home, { recursive: true })
+      log(`preflight: fresh DSH_HOME created at ${home}`)
+    }
 
-    // ── build artifacts (only when missing; TEST_METHODS §2 bypass chain) ──
+    const lockMarker = { runStamp, pid: process.pid, startedAt: new Date().toISOString(), port: portA, dshHome: DSH_HOME, dshHomeE: DSH_HOME_E }
+    try {
+      writeFileSync(LOCK_PATH, JSON.stringify(lockMarker, null, 2), { flag: 'wx' })
+      summary.lock = { path: LOCK_PATH, acquired: true, marker: lockMarker }
+      log(`preflight: lock acquired at ${LOCK_PATH}`)
+    } catch {
+      let existing = null
+      try {
+        existing = JSON.parse(readFileSync(LOCK_PATH, 'utf8'))
+      } catch {
+        existing = null
+      }
+      summary.lock = { path: LOCK_PATH, acquired: false, existingMarker: existing }
+      throw new Error(`lock file ${LOCK_PATH} is held (marker: ${existing === null ? 'unreadable' : JSON.stringify(existing)}) 鈥?another run is in progress; aborting fail-closed`)
+    }
+
+    // 鈹€鈹€ build artifacts (only when missing; TEST_METHODS 搂2 bypass chain) 鈹€鈹€
     const farm = [
       { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
       { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
@@ -315,15 +435,15 @@ async function main() {
         },
       )
       if (!build.ok) {
-        // TEST_METHODS §3: build:web (vite → esbuild service spawn) is NOT
+        // TEST_METHODS 搂3: build:web (vite 鈫?esbuild service spawn) is NOT
         // buildable in-sandbox (piped-stdio spawn EPERM) and does not affect
         // host-side functionality. Tolerate the failure ONLY when the
         // complete build:lib artifact set the harness needs is present.
         const missingAfterBuild = farm.filter((p) => !existsSync(join(p.dir, 'lib', 'index.js')))
         if (missingAfterBuild.length > 0) {
-          throw new Error(`node scripts/build.ts failed and build:lib artifacts are missing: ${missingAfterBuild.map((p) => p.name).join(', ')} — ${tailText(build.text)}`)
+          throw new Error(`node scripts/build.ts failed and build:lib artifacts are missing: ${missingAfterBuild.map((p) => p.name).join(', ')} 鈥?${tailText(build.text)}`)
         }
-        log('build:web failed in-sandbox (vite→esbuild spawn EPERM, documented in TEST_METHODS §3); build:lib artifacts complete — continuing')
+        log('build:web failed in-sandbox (vite鈫抏sbuild spawn EPERM, documented in TEST_METHODS 搂3); build:lib artifacts complete 鈥?continuing')
         webSandboxLimited = true
       }
       summary.build = {
@@ -331,7 +451,7 @@ async function main() {
         missingBefore: missing.map((p) => p.name),
         installLog: 'logs/build-install.log',
         buildLog: 'logs/build-main.log',
-        webBuildSandboxLimited,
+        webSandboxLimited,
       }
       summary.pristine.afterBuild = await captureGitState(HOST_TREE, logsDir)
       if (!(summary.pristine.afterBuild.statusEmpty && summary.pristine.afterBuild.diffEmpty)) {
@@ -346,7 +466,7 @@ async function main() {
       throw new Error(`build artifacts still missing after build chain: ${stillMissing.map((p) => p.name).join(', ')}`)
     }
 
-    // ── junction farm for bare specifiers (packages/node_modules) ───────────
+    // 鈹€鈹€ junction farm for bare specifiers (packages/node_modules) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     // The farm lives at the COMMON ANCESTOR of every harness dir
     // (packages/): the tools row (packages/tools/harness) and the reused
     // runtime rows resolve their static @deepseek-ai/* imports by walking up
@@ -361,12 +481,12 @@ async function main() {
     })
     log('junction farm ready (shared packages/node_modules)')
 
-    // ── mini MCP server (127.0.0.1, ports 3491-3495 candidates) ─────────────
+    // 鈹€鈹€ mini MCP server (127.0.0.1, ports 3491-3495 candidates) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     mini = await startMiniMcpServer([3491, 3492, 3493, 3494, 3495])
     summary.ports.mcp = mini.port
     log(`mini MCP server up on 127.0.0.1:${mini.port}`)
 
-    // ── driver core ──────────────────────────────────────────────────────────
+    // 鈹€鈹€ driver core 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     /** Fetch + tolerant JSON parse (records the raw body when not JSON). */
     const fetchJson = async (url, init, timeoutMs) => {
@@ -401,6 +521,24 @@ async function main() {
       return { status, body }
     }
 
+    /** Drop one member child residency through the row's public route. */
+    const dropResidencyHttp = async (ctx, port, sessionId) => {
+      ctx.http.stateCalls += 1
+      const { status, body } = await fetchJson(`http://127.0.0.1:${port}/__p6t6/residency/drop`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      }, 30_000)
+      if (status !== 200) ctx.http.non200.push({ call: 'residency-drop', status, body: body === null ? null : JSON.stringify(body).slice(0, 400) })
+      return { status, body }
+    }
+
+    /** One row health probe (no tool/state accounting). */
+    const getHealth = async (port) => {
+      const { status, body } = await fetchJson(`http://127.0.0.1:${port}/__p6t6/health`, {}, 10_000)
+      return { status, body }
+    }
+
     /**
      * One scenario context: assertion collector + HTTP accounting + shared
      * cross-scenario state. `check` records and returns the predicate.
@@ -428,6 +566,7 @@ async function main() {
 
     /** Shared mutable state carried across scenarios within one run. */
     const S = {
+      w1: { instanceId: null, childSessionId: null },
       memberIdsBoot1Final: null,
       e1: { created: [], w: null, wChild: null },
       e4: { created: [] },
@@ -449,7 +588,7 @@ async function main() {
       }
       const fileName = `${c.criterion}${c.phase !== undefined ? `-${c.phase}` : ''}.json`
       writeFileSync(join(reportDir, fileName), JSON.stringify(entry, null, 2))
-      entry.reportFile = `harness-output/${fileName}`
+      entry.reportFile = `${args.reportDir.replace(WORKTREE_ROOT, '').replace(/^[/\\]/, '')}/${fileName}`
       if (c.criterion === 'E5') {
         // E5 spans two boots; merge every phase into ONE summary entry with
         // a phases map so the verdict and the boot-1 sanity check see it.
@@ -496,7 +635,70 @@ async function main() {
       return entry
     }
 
-    // ── scenario implementations (driver-side; every action via /__p6t6/tool)
+    // 鈹€鈹€ scenario implementations (driver-side; every action via /__p6t6/tool)
+
+    /** Mirror of the row's child-session derivation (plugin.mjs childSidFor). */
+    const childSidFor = (instanceId) => `session-child-p6t6-${String(instanceId).slice(5)}`
+
+    /**
+     * Decompress a multi-frame zstd stream (the durable session log format).
+     * Each materialized append is a NEW zstd frame without a content size,
+     * and node:zlib's zstdDecompressSync only decodes the FIRST frame of a
+     * stream — so the frames are walked by magic and each chunk decompressed
+     * separately. If a magic hit is spurious (inside a frame payload) the
+     * chunk fails to decode and is merged with its successor.
+     */
+    const decompressZstdStream = (buf) => {
+      const MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd])
+      const starts = []
+      let off = 0
+      for (;;) {
+        const i = buf.indexOf(MAGIC, off)
+        if (i === -1) break
+        starts.push(i)
+        off = i + 4
+      }
+      if (starts.length === 0) throw new Error('no zstd frame in stream')
+      const bounds = [...starts, buf.length]
+      const parts = []
+      let pending = undefined
+      for (let k = 0; k < bounds.length - 1; k++) {
+        const chunk = buf.subarray(bounds[k], bounds[k + 1])
+        const candidate = pending === undefined ? chunk : Buffer.concat([pending, chunk])
+        try {
+          parts.push(zstdDecompressSync(candidate))
+          pending = undefined
+        } catch {
+          pending = candidate
+        }
+      }
+      if (pending !== undefined) parts.push(zstdDecompressSync(pending))
+      return Buffer.concat(parts)
+    }
+
+    /** Read one child session's durable log (multi-frame zstd) from the test DSH_HOME. */
+    const readChildSessionLog = (sessionId) => {
+      if (typeof sessionId !== 'string' || sessionId.length === 0) return null
+      const sessionsRoot = join(DSH_HOME, 'sessions')
+      if (!existsSync(sessionsRoot)) return null
+      for (const profileDir of readdirSync(sessionsRoot)) {
+        const file = join(sessionsRoot, profileDir, sessionId, 'session.jsonl.zstd')
+        if (existsSync(file)) {
+          try {
+            return decompressZstdStream(readFileSync(file)).toString('utf8')
+          } catch {
+            return null
+          }
+        }
+      }
+      return null
+    }
+
+    /** Find one member row in a state snapshot (undefined when absent). */
+    const findMember = (state, instanceId) =>
+      state !== null && state !== undefined && Array.isArray(state.members)
+        ? state.members.find((m) => m.instanceId === instanceId)
+        : undefined
 
     /** E7 (criterion 7, static): the committed bypass scan over the live tree. */
     const runE7 = async () => {
@@ -585,7 +787,7 @@ async function main() {
       for (const a of attempts) {
         const args = a.tool === 'team_send_message'
           ? { rootSessionId: ROOT_SESSION_ID, requestToken: a.token, recipientInstanceId: a.target, body: 'p6t6 e2 addressing probe' }
-          : { rootSessionId: ROOT_SESSION_ID, requestToken: a.token, targetInstanceId: a.target, taskSummary: 'p6t6 e2 addressing probe' }
+          : { rootSessionId: ROOT_SESSION_ID, requestToken: a.token, targetInstanceId: a.target, taskSummary: 'p6t6 e2 addressing probe', prompt: 'p6t6 e2 addressing probe' }
         const r = await callTool(c, port, a.tool, args, ROOT_SESSION_ID)
         results.push({ ...a, httpStatus: r.status, value: r.body?.value })
       }
@@ -602,21 +804,27 @@ async function main() {
       const w = S.e1.w
       const wChild = S.e1.wChild
       c.check('E1 produced a persistent worker with a bound child session', typeof w === 'string' && typeof wChild === 'string', `w=${w} wChild=${wChild}`)
-      const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-1', targetInstanceId: w, taskSummary: 'p6t6 e3 first unit' }, ROOT_SESSION_ID)
+      const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-1', targetInstanceId: w, taskSummary: 'p6t6 e3 first unit', prompt: 'p6t6 e3 first unit' }, ROOT_SESSION_ID)
       c.check('first follow-up executed on the existing instance', fu1.body?.ok === true && fu1.body?.value?.status === 'executed' && fu1.body?.value?.effect?.kind === 'work-admitted' && fu1.body?.value?.effect?.instanceId === w, JSON.stringify(fu1.body?.value).slice(0, 500))
       const seq1 = fu1.body?.value?.effect?.sequence
-      const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-2', targetInstanceId: w, taskSummary: 'p6t6 e3 second unit' }, ROOT_SESSION_ID)
+      const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e3-2', targetInstanceId: w, taskSummary: 'p6t6 e3 second unit', prompt: 'p6t6 e3 second unit' }, ROOT_SESSION_ID)
       c.check('second follow-up executed on the SAME instance', fu2.body?.ok === true && fu2.body?.value?.status === 'executed' && fu2.body?.value?.effect?.kind === 'work-admitted' && fu2.body?.value?.effect?.instanceId === w, JSON.stringify(fu2.body?.value).slice(0, 500))
       const seq2 = fu2.body?.value?.effect?.sequence
-      // The work-admitted sequence is the root admission-ledger sequence:
-      // E1's three activations already consumed 1-3, so E3's units continue
-      // the counter (4, 5). The criterion is monotonic advance, not the base.
-      c.check('the admission sequences advance by one (monotonic per admission)', Number.isInteger(seq1) && Number.isInteger(seq2) && seq1 >= 1 && seq2 === seq1 + 1, `seq1=${seq1} seq2=${seq2}`)
+      // P8-S3 settlement chain (R5, plan §16.6): each work unit now writes
+      // MULTIPLE admission-ledger facts (admission, delivery-observed,
+      // lifecycle SETTLED, activity interval), so the G6-era "+1 per
+      // admission" encoding no longer holds. The meaningful invariant is
+      // strict monotonicity ordered by settlement: the second admission may
+      // only occur AFTER the first unit fully settled (the settlement owner
+      // runs to completion before the next admit).
+      const settle1 = fu1.body?.value?.effect?.settledSequence
+      const settle2 = fu2.body?.value?.effect?.settledSequence
+      c.check('the admission sequences advance strictly (second admit follows the first unit settlement)', Number.isInteger(seq1) && Number.isInteger(seq2) && Number.isInteger(settle1) && Number.isInteger(settle2) && seq1 >= 1 && settle1 > seq1 && seq2 > settle1 && settle2 > seq2, `seq1=${seq1} settle1=${settle1} seq2=${seq2} settle2=${settle2}`)
       const st1 = (await getState(c, port)).body
       const wAfter = st1?.members?.find((m) => m.instanceId === w)
       c.check('the bound child session id is UNCHANGED across follow-ups', wAfter?.childSessionId === wChild, `before=${wChild} after=${wAfter?.childSessionId}`)
       c.check('no new instance was created (six members)', st1?.members?.length === 6, JSON.stringify(st1?.members?.length))
-      c.evidence = { w, wChild, sequences: [seq1, seq2] }
+      c.evidence = { w, wChild, sequences: [seq1, seq2], settledSequences: [settle1, settle2] }
       return recordScenario(c)
     }
 
@@ -631,6 +839,7 @@ async function main() {
           label: `e4-${i}`,
           delegationTemplateId: 'scout',
           taskSummary: `p6t6 e4 delegation ${i}`,
+          prompt: `p6t6 e4 delegation ${i}`,
         }, ROOT_SESSION_ID)
         created.push({ token: `p6t6-e4-${i}`, value: r.body?.value })
       }
@@ -793,13 +1002,13 @@ async function main() {
       const resolveValue = resolve.body?.value
       c.check('leader resolved the request as allow (control-resolved)', resolveValue?.status === 'control-resolved' && resolveValue?.decision?.requestId === S.e5.requestId, JSON.stringify(resolveValue).slice(0, 500))
 
-      const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: E5_CTRL_TOKEN, targetInstanceId: w, taskSummary: 'p6t6 e5 gated follow-up (boot 2)' }, ROOT_SESSION_ID)
+      const fu1 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: E5_CTRL_TOKEN, targetInstanceId: w, taskSummary: 'p6t6 e5 gated follow-up (boot 2)', prompt: 'p6t6 e5 gated follow-up (boot 2)' }, ROOT_SESSION_ID)
       const fu1Value = fu1.body?.value
       c.check('the guarded follow-up (same correlation token) EXECUTED — the persisted allow was consumed', fu1Value?.status === 'executed' && fu1Value?.effect?.kind === 'work-admitted' && fu1Value?.effect?.instanceId === w, JSON.stringify(fu1Value).slice(0, 500))
-      const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: E5_CTRL_TOKEN, targetInstanceId: w, taskSummary: 'p6t6 e5 retry of the consumed token' }, ROOT_SESSION_ID)
+      const fu2 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: E5_CTRL_TOKEN, targetInstanceId: w, taskSummary: 'p6t6 e5 retry of the consumed token', prompt: 'p6t6 e5 retry of the consumed token' }, ROOT_SESSION_ID)
       const fu2Value = fu2.body?.value
       c.check('retrying the SAME token is BLOCKED (allow-consumed, exactly-once)', fu2Value?.status === 'blocked' && fu2Value?.reason === 'allow-consumed' && fu2Value?.requestId === S.e5.requestId, JSON.stringify(fu2Value).slice(0, 500))
-      const fu3 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e5-ctrl3', targetInstanceId: w, taskSummary: 'p6t6 e5 fresh token after consumption' }, ROOT_SESSION_ID)
+      const fu3 = await callTool(c, port, 'team_follow_up', { rootSessionId: ROOT_SESSION_ID, requestToken: 'p6t6-e5-ctrl3', targetInstanceId: w, taskSummary: 'p6t6 e5 fresh token after consumption', prompt: 'p6t6 e5 fresh token after consumption' }, ROOT_SESSION_ID)
       c.check('a fresh token with no request row proceeds (no-request deviation)', fu3.body?.value?.status === 'executed', JSON.stringify(fu3.body?.value).slice(0, 500))
 
       const msg2 = await callTool(c, port, 'team_send_message', {
@@ -841,14 +1050,173 @@ async function main() {
       return recordScenario(c)
     }
 
-    // ── the boot driver ──────────────────────────────────────────────────────
+    /** W1 (boot 1): delegate TOKEN_A -> a real Member Session receives it. */
+    const runW1 = async ({ port }) => {
+      const c = makeScenarioCtx('W1', undefined, 1)
+      const st0 = (await getState(c, port)).body
+      c.check('boot1 state: exactly the three seeded members (leader + worker + scout)', st0 !== null && Array.isArray(st0.members) && st0.members.length === 3, JSON.stringify(st0?.members ?? st0))
+      const del = await callTool(c, port, 'team_delegate', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: W1_TOKEN,
+        delegationTemplateId: 'worker',
+        label: 'p8s3-w1-worker',
+        prompt: W1_PROMPT,
+      }, ROOT_SESSION_ID)
+      const v = del.body?.value
+      const eff = v?.effect
+      c.check('delegate executed through the public tool seam', del.status === 200 && del.body?.ok === true && v?.status === 'executed' && v?.action === 'delegate', JSON.stringify(v).slice(0, 500))
+      // Production semantics (context-policy M4, domain/member): the 'worker'
+      // template is PERSISTENT (blueprint default) and exactly one worker
+      // instance is work-accepting at this point, so the activation port
+      // CONTINUES the seeded worker. The canonical W1 criterion (closure
+      // plan 16.8) is that TOKEN_A reaches a REAL member Session with a real
+      // settlement; new-instance minting is W3's fresh_per_delegation
+      // criterion, not W1's.
+      c.check('the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)', eff?.kind === 'work-admitted' && eff?.instanceId === SEED_WORKER_ID && eff?.settled === true && eff?.replayed === false, JSON.stringify(eff).slice(0, 500))
+      c.check('a RUNNING target needs no admission CAS (lifecycleCommitted=false)', eff?.fromLifecycle === 'RUNNING' && eff?.lifecycleCommitted === false, JSON.stringify({ from: eff?.fromLifecycle, committed: eff?.lifecycleCommitted }))
+      c.check('the admission + settlement carry positive durable ledger sequences (admission before settlement)', typeof eff?.sequence === 'number' && eff.sequence > 0 && typeof eff?.settledSequence === 'number' && eff.settledSequence > eff.sequence, JSON.stringify({ seq: eff?.sequence, settledSeq: eff?.settledSequence }))
+      const instanceId = eff?.instanceId
+      const st1 = (await getState(c, port)).body
+      const row0 = findMember(st1, instanceId)
+      const childSessionId = row0?.childSessionId
+      c.check('the target member row carries the seeded worker real child session id', typeof instanceId === 'string' && childSessionId === SEED_WORKER_CHILD, JSON.stringify({ i: instanceId, c: childSessionId }))
+      c.check('the request token round-trips into the outcome', v?.requestToken === W1_TOKEN, JSON.stringify({ t: v?.requestToken }))
+      S.w1 = { instanceId: instanceId === undefined ? null : instanceId, childSessionId: childSessionId === undefined ? null : childSessionId }
+      c.check('state: the member count stays three (a persistent continue mints nothing)', st1 !== null && Array.isArray(st1.members) && st1.members.length === 3, JSON.stringify({ n: st1?.members?.length }))
+      c.check('the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)', row0 !== undefined && row0.lifecycle === 'SETTLED' && row0.activityVersion === 2, JSON.stringify(row0))
+      const logText = readChildSessionLog(S.w1.childSessionId)
+      c.check('the real child Session log durably carries TOKEN_A + the exact prompt', logText !== null && logText.includes(W1_TOKEN) && logText.includes(W1_PROMPT), `logBytes=${logText === null ? 0 : logText.length}`)
+      c.evidence = { effectKind: eff?.kind ?? null, memberCountAfter: st1?.members?.length ?? null, w1Row: row0 ?? null, w1LogBytes: logText === null ? 0 : logText.length }
+      return recordScenario(c)
+    }
+
+    /** W5 (boot 1): follow-up on the seeded resident worker settles it. */
+    const runW5 = async ({ port }) => {
+      const c = makeScenarioCtx('W5', undefined, 1)
+      const st0 = (await getState(c, port)).body
+      const seed0 = findMember(st0, SEED_WORKER_ID)
+      c.check('pre-state: seeded worker durably SETTLED at activityVersion 2 by the W1 delegate', seed0 !== undefined && seed0.lifecycle === 'SETTLED' && seed0.activityVersion === 2, JSON.stringify(seed0))
+      const fu = await callTool(c, port, 'team_follow_up', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: W5_TOKEN,
+        targetInstanceId: SEED_WORKER_ID,
+        prompt: W5_PROMPT,
+      }, ROOT_SESSION_ID)
+      const v = fu.body?.value
+      c.check('follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === SEED_WORKER_ID, JSON.stringify(v).slice(0, 500))
+      c.check('the SETTLED member re-admits via the durable CAS (lifecycleCommitted=true) and settles', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true && v?.effect?.replayed === false, JSON.stringify(v?.effect).slice(0, 500))
+      const st1 = (await getState(c, port)).body
+      const seed1 = findMember(st1, SEED_WORKER_ID)
+      c.check('row durably SETTLED at activityVersion 4 (admit av2->av3, settle av3->av4)', seed1 !== undefined && seed1.lifecycle === 'SETTLED' && seed1.activityVersion === 4, JSON.stringify(seed1))
+      const rows = (st1?.activity ?? []).filter((a) => a.requestToken === W5_TOKEN && a.instanceId === SEED_WORKER_ID && a.subject === 'work-unit')
+      const open = rows.find((a) => a.op === 'interval-open')
+      const close = rows.find((a) => a.op === 'interval-close')
+      c.check('the work-unit activity interval opened (in-progress) and closed (completed)', open !== undefined && close !== undefined && open.progress === 'in-progress' && close.progress === 'completed' && close.sequence > open.sequence, JSON.stringify(rows).slice(0, 600))
+      c.check('the interval correlates to the request token', open?.correlation === W5_TOKEN, JSON.stringify({ corr: open?.correlation }))
+      const logText = readChildSessionLog(SEED_WORKER_CHILD)
+      c.check('the seeded worker child log durably carries the token + prompt', logText !== null && logText.includes(W5_TOKEN) && logText.includes(W5_PROMPT), `logBytes=${logText === null ? 0 : logText.length}`)
+      c.evidence = { seedRowAfter: seed1 ?? null, intervalRows: rows, w5LogBytes: logText === null ? 0 : logText.length }
+      return recordScenario(c)
+    }
+
+    /** W7 (boot 1): residency drop -> cold resume lands on the SAME session. */
+    const runW7 = async ({ port }) => {
+      const c = makeScenarioCtx('W7', undefined, 1)
+      c.check('W1 state available (W1 executed on this boot)', S.w1.instanceId !== null && S.w1.childSessionId !== null, JSON.stringify(S.w1))
+      const drop = await dropResidencyHttp(c, port, S.w1.childSessionId)
+      c.check('residency drop route reports a real dispose', drop.status === 200 && drop.body?.dropped === true && drop.body?.sessionId === S.w1.childSessionId, JSON.stringify(drop.body))
+      const health = (await getHealth(port)).body
+      c.check('the member is no longer resident (health liveSessions)', health !== null && health !== undefined && Array.isArray(health.liveSessions) && health.liveSessions.includes(S.w1.childSessionId) === false, JSON.stringify(health?.liveSessions))
+      const fu = await callTool(c, port, 'team_follow_up', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: W7_TOKEN,
+        targetInstanceId: S.w1.instanceId,
+        prompt: W7_PROMPT,
+      }, ROOT_SESSION_ID)
+      const v = fu.body?.value
+      c.check('cold-resume follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify(v).slice(0, 500))
+      c.check('a SETTLED member re-admits via the durable CAS and settles', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true, JSON.stringify(v?.effect).slice(0, 500))
+      const st1 = (await getState(c, port)).body
+      const row = findMember(st1, S.w1.instanceId)
+      c.check('row SETTLED at activityVersion 6 on the SAME child session (admit av4->av5, settle av5->av6)', row !== undefined && row.lifecycle === 'SETTLED' && row.activityVersion === 6 && row.childSessionId === S.w1.childSessionId, JSON.stringify(row))
+      const logText = readChildSessionLog(S.w1.childSessionId)
+      c.check('the SAME durable log now carries the W1 + W7 tokens (cold resume, not a new session)', logText !== null && logText.includes(W1_TOKEN) && logText.includes(W7_TOKEN), `logBytes=${logText === null ? 0 : logText.length}`)
+      c.evidence = { w1RowAfter: row ?? null, w1LogBytes: logText === null ? 0 : logText.length }
+      return recordScenario(c)
+    }
+
+    /** W3 (boot 1): two fresh_per_delegation delegates -> two new sessions. */
+    const runW3 = async ({ port }) => {
+      const c = makeScenarioCtx('W3', undefined, 1)
+      const delC = await callTool(c, port, 'team_delegate', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: W3_C_TOKEN,
+        delegationTemplateId: 'scout',
+        label: 'p8s3-w3-scout-c',
+        prompt: W3_C_PROMPT,
+      }, ROOT_SESSION_ID)
+      const delD = await callTool(c, port, 'team_delegate', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: W3_D_TOKEN,
+        delegationTemplateId: 'scout',
+        label: 'p8s3-w3-scout-d',
+        prompt: W3_D_PROMPT,
+      }, ROOT_SESSION_ID)
+      const vc = delC.body?.value
+      const vd = delD.body?.value
+      c.check('both delegates executed and work-settled', vc?.status === 'executed' && vc?.effect?.workSettled === true && vd?.status === 'executed' && vd?.effect?.workSettled === true, JSON.stringify({ c: vc?.status, d: vd?.status }))
+      const idC = vc?.effect?.instanceId
+      const idD = vd?.effect?.instanceId
+      c.check('two DISTINCT member instances (fresh_per_delegation)', typeof idC === 'string' && typeof idD === 'string' && idC !== idD, JSON.stringify({ c: idC, d: idD }))
+      c.check('two DISTINCT child sessions, each derived from its instance', vc?.effect?.childSessionId === childSidFor(idC) && vd?.effect?.childSessionId === childSidFor(idD) && vc?.effect?.childSessionId !== vd?.effect?.childSessionId, JSON.stringify({ c: vc?.effect?.childSessionId, d: vd?.effect?.childSessionId }))
+      const st1 = (await getState(c, port)).body
+      const rowC = findMember(st1, idC)
+      const rowD = findMember(st1, idD)
+      c.check('state: five members (no W1 mint; W1 continued the seed), both fresh scouts SETTLED at activityVersion 3', st1 !== null && st1.members.length === 5 && rowC?.lifecycle === 'SETTLED' && rowC?.activityVersion === 3 && rowD?.lifecycle === 'SETTLED' && rowD?.activityVersion === 3, JSON.stringify({ n: st1?.members?.length, c: rowC, d: rowD }).slice(0, 600))
+      const logC = readChildSessionLog(vc?.effect?.childSessionId)
+      const logD = readChildSessionLog(vd?.effect?.childSessionId)
+      c.check('both fresh child Session logs durably carry their tokens', logC !== null && logC.includes(W3_C_TOKEN) && logD !== null && logD.includes(W3_D_TOKEN), `bytesC=${logC === null ? 0 : logC.length} bytesD=${logD === null ? 0 : logD.length}`)
+      S.memberIdsBoot1Final = st1?.members === undefined ? null : st1.members.map((m) => m.instanceId)
+      c.evidence = { memberCountAfter: st1?.members?.length ?? null, rowC: rowC ?? null, rowD: rowD ?? null }
+      return recordScenario(c)
+    }
+
+    /** W2 (boot 2): persistent follow-up lands on the SAME child session. */
+    const runW2 = async ({ port }) => {
+      const c = makeScenarioCtx('W2', undefined, 2)
+      c.check('W1 state available (W1 executed on boot 1)', S.w1.instanceId !== null && S.w1.childSessionId !== null, JSON.stringify(S.w1))
+      const st0 = (await getState(c, port)).body
+      const ids0 = st0 !== null && Array.isArray(st0.members) ? st0.members.map((m) => m.instanceId) : []
+      c.check('boot2 state: the same five members survive the process restart', st0 !== null && st0.members.length === 5 && S.memberIdsBoot1Final !== null && JSON.stringify([...ids0].sort()) === JSON.stringify([...S.memberIdsBoot1Final].sort()), JSON.stringify({ n: ids0.length, expected: S.memberIdsBoot1Final }))
+      const row0 = findMember(st0, S.w1.instanceId)
+      c.check('the W1 row survived SETTLED on its original child session', row0 !== undefined && row0.lifecycle === 'SETTLED' && row0.childSessionId === S.w1.childSessionId, JSON.stringify(row0))
+      const fu = await callTool(c, port, 'team_follow_up', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: W2_TOKEN,
+        targetInstanceId: S.w1.instanceId,
+        prompt: W2_PROMPT,
+      }, ROOT_SESSION_ID)
+      const v = fu.body?.value
+      c.check('persistent follow-up executed with the work-admitted effect', fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === S.w1.instanceId, JSON.stringify(v).slice(0, 500))
+      c.check('the SETTLED member re-admits via the durable CAS and settles again', v?.effect?.fromLifecycle === 'SETTLED' && v?.effect?.lifecycleCommitted === true && v?.effect?.settled === true, JSON.stringify(v?.effect).slice(0, 500))
+      const st1 = (await getState(c, port)).body
+      const row1 = findMember(st1, S.w1.instanceId)
+      c.check('row SETTLED at activityVersion 8 on the SAME childSessionId (admit av6->av7, settle av7->av8; no new session)', row1 !== undefined && row1.lifecycle === 'SETTLED' && row1.activityVersion === 8 && row1.childSessionId === S.w1.childSessionId, JSON.stringify(row1))
+      const logText = readChildSessionLog(S.w1.childSessionId)
+      c.check('the same durable log carries W1 + W7 + W2 tokens across the restart', logText !== null && logText.includes(W1_TOKEN) && logText.includes(W7_TOKEN) && logText.includes(W2_TOKEN), `logBytes=${logText === null ? 0 : logText.length}`)
+      c.evidence = { w1RowAfter: row1 ?? null, w1LogBytes: logText === null ? 0 : logText.length }
+      return recordScenario(c)
+    }
+
+    // 鈹€鈹€ the boot driver 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     const ROW = { id: 'p6t6-team-tools', name: pathToFileURL(join(HERE, 'plugin.mjs')).href }
 
     /**
      * One boot: mount the row through the public patch seam, start, verify
      * the row mount via dump-config, poll row health, drive the scenario
-     * plan, stop (the E5 kill is boot 1's ordinary stop).
+     * plan, then stop (boot 1's stop is the process-restart boundary W2
+     * reads through).
      * @param {number} boot
      * @param {number} port
      * @param {object} opts
@@ -859,7 +1227,7 @@ async function main() {
       mkdirSync(instLogDir, { recursive: true })
       const instance = new DshInstance({
         hostTree: HOST_TREE,
-        dshHome: DSH_HOME,
+        dshHome: opts.dshHome,
         port,
         clientCommitHash: CLIENT_COMMIT_HASH,
         logDir: instLogDir,
@@ -882,10 +1250,10 @@ async function main() {
         const profile = await ensureProfile({ instance, log, timeoutMs: 90_000 })
         record.profile = profile
         instance.mountRows([ROW], [
-          `P6-T6 harness patch layer (boot ${boot}): ${ROW.id} mounted ONLY through this public profile-patch seam.`,
+          `P8-S3 harness patch layer (boot ${boot}): ${ROW.id} mounted ONLY through this public profile-patch seam.`,
         ])
-        writeFileSync(join(DSH_HOME, 'p6t6-directive.json'), JSON.stringify(opts.directive, null, 2))
-        log(`boot ${boot}: directive written to ${join(DSH_HOME, 'p6t6-directive.json')}`)
+        writeFileSync(join(opts.dshHome, 'p6t6-directive.json'), JSON.stringify(opts.directive, null, 2))
+        log(`boot ${boot}: directive written to ${join(opts.dshHome, 'p6t6-directive.json')}`)
         const started = await instance.start({ timeoutMs: 180_000 })
         record.url = started.url
         record.logPath = started.logPath
@@ -897,7 +1265,7 @@ async function main() {
         record.rowMounted = { [ROW.id]: DshInstance.rowInDump(dump.text, ROW) }
         const mounted = record.rowMounted[ROW.id]
         summary.rowMounted[`${ROW.id}-boot${boot}`] = mounted
-        if (!mounted) noteFailure(`boot ${boot}: row ${ROW.id} not present in dump-config — the public patch seam did not mount the plugin`)
+        if (!mounted) noteFailure(`boot ${boot}: row ${ROW.id} not present in dump-config 鈥?the public patch seam did not mount the plugin`)
 
         // Row setup (dynamic TS imports + TeamDomain open + session
         // create/resume) completes AFTER the boot marker; the health route
@@ -923,7 +1291,7 @@ async function main() {
         {
           const hb = record.healthBefore
           if (hb?.ok === true) {
-            log(`boot ${boot}: ready — toolCount=${hb.toolCount} liveSessions=${(hb.liveSessions ?? []).length} (expected ${EXPECTED_TOOL_COUNT} tools)`)
+            log(`boot ${boot}: ready 鈥?toolCount=${hb.toolCount} liveSessions=${(hb.liveSessions ?? []).length} (expected ${EXPECTED_TOOL_COUNT} tools)`)
             if (hb.toolCount !== EXPECTED_TOOL_COUNT) {
               noteFailure(`boot ${boot}: expected ${EXPECTED_TOOL_COUNT} registered tools, health reports ${hb.toolCount}`)
             }
@@ -936,7 +1304,7 @@ async function main() {
             ? await plan.run({ port })
             : skipEntry(plan.criterion, plan.phase, boot, rowReady
               ? plan.skipReason
-              : `row routes not ready on boot ${boot} — scenario not executed against a dead row`)
+              : `row routes not ready on boot ${boot} 鈥?scenario not executed against a dead row`)
           record.scenarios[`${plan.criterion}${plan.phase !== undefined ? `-${plan.phase}` : ''}`] = entry
         }
 
@@ -954,9 +1322,9 @@ async function main() {
       return record
     }
 
-    // ── the boot plan ────────────────────────────────────────────────────────
-    // E7 first (static; no instance involved), then boot 1 (E1..E6 + the E5
-    // write phase, then the kill), then boot 2 (the E5 restart phase).
+    // -- the boot plan -------------------------------------------------------
+    // E7 first (static; no instance involved), then the W world (boots 1-2
+    // on DSH_HOME) and the E world (boots 3-4 on DSH_HOME_E).
     if (runnable('E7')) {
       await runE7()
     } else if (selected('E7')) {
@@ -965,6 +1333,7 @@ async function main() {
 
     const directiveFor = (boot) => ({
       boot,
+      phase: boot === 1 || boot === 3 ? 'create' : 'resume',
       reportDir,
       runStamp,
       rootSessionId: ROOT_SESSION_ID,
@@ -972,30 +1341,72 @@ async function main() {
     })
 
     const boot1Plan = [
-      { criterion: 'E1', phase: undefined, runnable: runnable('E1'), skipReason: 'dependency not selected', run: (o) => runE1(o) },
-      { criterion: 'E2', phase: undefined, runnable: runnable('E2'), skipReason: 'requires E1 (its labels) — E1 not selected', run: (o) => runE2(o) },
-      { criterion: 'E3', phase: undefined, runnable: runnable('E3'), skipReason: 'requires E1 (its worker) — E1 not selected', run: (o) => runE3(o) },
-      { criterion: 'E4', phase: undefined, runnable: runnable('E4'), skipReason: 'dependency not selected', run: (o) => runE4(o) },
-      { criterion: 'E6', phase: undefined, runnable: runnable('E6'), skipReason: 'requires E4 (scout count 3) — E4 not selected', run: (o) => runE6(o) },
-      { criterion: 'E5', phase: 'boot1-writes', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) — E1 not selected', run: (o) => runE5a(o) },
+      { criterion: 'W1', phase: undefined, runnable: runnable('W1'), skipReason: 'dependency not selected', run: (o) => runW1(o) },
+      { criterion: 'W5', phase: undefined, runnable: runnable('W5'), skipReason: 'dependency not selected', run: (o) => runW5(o) },
+      { criterion: 'W7', phase: undefined, runnable: runnable('W7'), skipReason: 'requires W1 (its member) - W1 not selected', run: (o) => runW7(o) },
+      { criterion: 'W3', phase: undefined, runnable: runnable('W3'), skipReason: 'dependency not selected', run: (o) => runW3(o) },
     ]
     summary.boots.boot1 = await driveBoot(1, portA, {
+      dshHome: DSH_HOME,
       directive: directiveFor(1),
       plan: boot1Plan,
+    })
+
+    const boot2Plan = [
+      { criterion: 'W2', phase: undefined, runnable: runnable('W2'), skipReason: 'requires W1 (its member) - W1 not selected', run: (o) => runW2(o) },
+    ]
+    summary.boots.boot2 = await driveBoot(2, portB, {
+      dshHome: DSH_HOME,
+      directive: directiveFor(2),
+      plan: boot2Plan,
+    })
+
+    const boot3Plan = [
+      { criterion: 'E1', phase: undefined, runnable: runnable('E1'), skipReason: 'dependency not selected', run: (o) => runE1(o) },
+      { criterion: 'E2', phase: undefined, runnable: runnable('E2'), skipReason: 'requires E1 (its labels) - E1 not selected', run: (o) => runE2(o) },
+      { criterion: 'E3', phase: undefined, runnable: runnable('E3'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE3(o) },
+      { criterion: 'E4', phase: undefined, runnable: runnable('E4'), skipReason: 'dependency not selected', run: (o) => runE4(o) },
+      { criterion: 'E6', phase: undefined, runnable: runnable('E6'), skipReason: 'requires E4 (scout count 3) - E4 not selected', run: (o) => runE6(o) },
+      { criterion: 'E5', phase: 'boot1-writes', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE5a(o) },
+    ]
+    summary.boots.boot3 = await driveBoot(3, portC, {
+      dshHome: DSH_HOME_E,
+      directive: directiveFor(3),
+      plan: boot3Plan,
     })
     if (runnable('E5') && (summary.scenarios.E5?.phases?.['boot1-writes'] === undefined)) {
       noteFailure('E5 boot-1 write phase did not record an entry')
     }
 
-    const boot2Plan = [
-      { criterion: 'E5', phase: 'boot2-restart', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) — E1 not selected', run: (o) => runE5b(o) },
+    const boot4Plan = [
+      { criterion: 'E5', phase: 'boot2-restart', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE5b(o) },
     ]
-    summary.boots.boot2 = await driveBoot(2, portB, {
-      directive: directiveFor(2),
-      plan: boot2Plan,
+    summary.boots.boot4 = await driveBoot(4, portD, {
+      dshHome: DSH_HOME_E,
+      directive: directiveFor(4),
+      plan: boot4Plan,
     })
 
-    // ── post-flight: mini MCP, ports, pristine, stable instance ─────────────
+    // 鈹€鈹€ postflight hygiene: the committed static bypass scan (no boot) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+    {
+      const scanner = await import(pathToFileURL(join(HERE, '..', 'test', 'p6t6-bypass-scan.mjs')).href)
+      const scan = await scanner.scanToolsBypass()
+      summary.bypassScan = {
+        files: scan.files,
+        totalImportSpecifiers: scan.totalImportSpecifiers,
+        totalViolations: scan.totalViolations,
+        violations: scan.violations,
+      }
+      log(`postflight: bypass scan files=${scan.files.length} violations=${scan.totalViolations}`)
+      if (JSON.stringify(scan.files) !== JSON.stringify(EXPECTED_SCAN_FILES)) {
+        noteFailure(`bypass scan covers ${JSON.stringify(scan.files)} (expected ${JSON.stringify(EXPECTED_SCAN_FILES)})`)
+      }
+      if (scan.totalViolations !== 0) {
+        noteFailure(`bypass scan found ${scan.totalViolations} violation(s): ${JSON.stringify(scan.violations).slice(0, 600)}`)
+      }
+    }
+
+    // 鈹€鈹€ post-flight: mini MCP, ports, pristine, stable instance 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     if (mini !== null) {
       closeMiniServer(mini)
       summary.ports.released.mcp = !(await portInUse(mini.port))
@@ -1011,7 +1422,7 @@ async function main() {
     log(`postflight: test-use pristine after=${summary.pristine.after.statusEmpty && summary.pristine.after.diffEmpty}`)
     removeFarm()
 
-    // ── verdict ──────────────────────────────────────────────────────────────
+    // 鈹€鈹€ verdict 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     if (!(summary.pristine.after.statusEmpty && summary.pristine.after.diffEmpty)) {
       noteFailure('test-use tree not pristine after run')
     }
@@ -1022,11 +1433,12 @@ async function main() {
       const e = summary.scenarios[sc]
       if (e === undefined || e.pass !== true) noteFailure(`scenario ${sc} missing or failing`)
     }
-    for (const boot of ['boot1', 'boot2']) {
+    for (const boot of ['boot1', 'boot2', 'boot3', 'boot4']) {
       if (summary.rowMounted[`${ROW.id}-${boot}`] !== true) noteFailure(`${ROW.id} not mounted via the public patch seam on ${boot}`)
     }
-    if (summary.ports.released.boot1 === false) noteFailure('boot1 port not released')
-    if (summary.ports.released.boot2 === false) noteFailure('boot2 port not released')
+    for (const boot of ['boot1', 'boot2', 'boot3', 'boot4']) {
+      if (summary.ports.released[boot] === false) noteFailure(`${boot} port not released`)
+    }
     if (summary.ports.released.mcp === false) noteFailure('mini MCP port not released')
     for (const hb of Object.values(summary.boots)) {
       if (hb?.healthBefore?.ok === true && hb.healthBefore.toolCount !== EXPECTED_TOOL_COUNT) {
@@ -1034,6 +1446,7 @@ async function main() {
       }
     }
 
+    releaseLock()
     finish(summary.failures.length === 0)
   } catch (error) {
     noteFailure(`harness fatal: ${error instanceof Error ? error.stack ?? error.message : String(error)}`)
@@ -1045,6 +1458,7 @@ async function main() {
       }
     }
     removeFarm()
+    releaseLock()
     try {
       summary.pristine.after ??= await captureGitState(HOST_TREE, logsDir)
       summary.stable3080.after ??= await probeStableInstance()
@@ -1056,6 +1470,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(`P6-T6 harness fatal: ${error?.stack ?? error}`)
+  console.error(`P8-S3 harness fatal: ${error?.stack ?? error}`)
   process.exit(1)
 })

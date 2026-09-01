@@ -312,7 +312,8 @@ let w1: {
         makeActionRequest({
           action: 'delegate',
           delegationTemplateId: step.templateId,
-          payload: { label: step.label },
+          // P8-S3 R2 conformance: the work request carries an explicit prompt.
+          payload: { label: step.label, prompt: 'g8s1 stamp probe' },
           requestToken: step.token,
         }),
       )
@@ -335,7 +336,8 @@ let w1: {
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'g8s1-scout-1' },
+        // P8-S3 R2 conformance: the work request carries an explicit prompt.
+        payload: { label: 'g8s1-scout-1', prompt: 'g8s1 stamp probe' },
         requestToken: 'tok-g8s1-d1',
       }),
     )

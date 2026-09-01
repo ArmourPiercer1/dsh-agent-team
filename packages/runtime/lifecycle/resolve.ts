@@ -170,11 +170,17 @@ export function durableWriteFailure(step: LifecycleStepName, error: unknown): Li
  * {@link LifecycleCommitPort} — this module's documented surface for the
  * durable lifecycle commit; the `member_instances` store itself is
  * append-only per record and is never rewritten by this module).
+ *
+ * The commit is a compare-and-swap (R4/CR-10): `expectedActivityVersion`
+ * is the version the probed record carried when this step planned the
+ * transition; a concurrent writer that moved the row first makes the
+ * commit fail instead of silently overwriting.
  * @param ports - the lifecycle ports.
  * @param identity - the composite member identity (addressed by the port).
  * @param from - the current durable lifecycle state (the probe's source).
  * @param operation - the FSM operation being committed.
  * @param to - the committed target state (the probe's output `lifecycle`).
+ * @param expectedActivityVersion - the probed row's activityVersion (CAS).
  * @param step - the commit step name (for the fault details).
  * @throws {@link LifecycleRuntimeError} (`LIFECYCLE_DURABLE_STATE_FAILED`,
  *   phase `write`, with the failing step).
@@ -185,12 +191,14 @@ export async function commitDurable(
   from: MemberLifecycleState,
   operation: LifecycleOperation,
   to: MemberLifecycleState,
+  expectedActivityVersion: number,
   step: LifecycleStepName,
 ): Promise<void> {
   try {
     await ports.commit.commitTransition({
       rootSessionId: identity.rootSessionId,
       instanceId: identity.instanceId,
+      expectedActivityVersion,
       from,
       operation,
       to,

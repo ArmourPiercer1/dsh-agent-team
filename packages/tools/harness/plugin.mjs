@@ -208,8 +208,14 @@ function readDirective() {
   const home = process.env.DSH_HOME
   if (home === undefined) throw new Error('p6t6: DSH_HOME is not set (expected from the harness-spawned host process environment)')
   const parsed = JSON.parse(readFileSync(join(home, DIRECTIVE_NAME), 'utf8'))
-  if (parsed?.boot !== 1 && parsed?.boot !== 2) {
-    throw new Error(`p6t6: directive.boot must be 1 or 2 (got ${JSON.stringify(parsed?.boot)})`)
+  if (!(parsed?.boot === 1 || parsed?.boot === 2 || parsed?.boot === 3 || parsed?.boot === 4)) {
+    throw new Error(`p6t6: directive.boot must be 1-4 (got ${JSON.stringify(parsed?.boot)})`)
+  }
+  // 'phase' is the semantic boot mode; the boot number is world-specific.
+  // Backward-compat fallback: boot 1/3 create a fresh team, boot 2/4 resume.
+  const phase = parsed?.phase ?? (parsed.boot === 1 || parsed.boot === 3 ? 'create' : 'resume')
+  if (phase !== 'create' && phase !== 'resume') {
+    throw new Error(`p6t6: directive.phase must be 'create' or 'resume' (got ${JSON.stringify(parsed?.phase)})`)
   }
   if (typeof parsed?.reportDir !== 'string' || parsed.reportDir.length === 0) {
     throw new Error('p6t6: directive.reportDir must be a non-empty string')
@@ -219,6 +225,7 @@ function readDirective() {
   }
   return {
     boot: parsed.boot,
+    phase,
     reportDir: parsed.reportDir,
     runStamp: typeof parsed?.runStamp === 'string' ? parsed.runStamp : null,
     rootSessionId: parsed.rootSessionId,
@@ -389,7 +396,7 @@ async function run(ctx) {
   const toolsMod = await import('../src/index.js')
 
   const realSeam = seamMod.createRealStorageDomainSeam(storageDomain)
-  domain = directive.boot === 2
+  domain = directive.phase === 'resume'
     ? await reposMod.openTeamDomain(realSeam)
     : await reposMod.createTeamDomain(realSeam)
   ctx.effect(() => () => {
@@ -402,7 +409,7 @@ async function run(ctx) {
   const blueprint = blueprintMod.parseBlueprint(P6T6_BLUEPRINT_SOURCE)
   const catalog = blueprintMod.createBlueprintCatalog([blueprint])
 
-  if (directive.boot === 1) {
+  if (directive.phase === 'create') {
     // Seed the durable TeamSession + team-root binding + the three seeded
     // members (leader binds the root session itself as its residency).
     const repositories = domain.repositories
@@ -540,6 +547,100 @@ async function run(ctx) {
     surface,
     now,
   })
+  // ── P8-S3 production work-chain ports (R1–R7) ──
+  // The durable lifecycle commit is the P8-S3 CAS repository surface
+  // (R4/CR-10): identity + expectedActivityVersion + from-state
+  // compare-and-swap in the durable layer.
+  const lifecycleCommitPort = {
+    async commitTransition(args) {
+      await domain.repositories.memberInstances.commitTransition(args)
+    },
+  }
+  // The P7-T3 lifecycle ports (R7/CR-9) over the REAL production surfaces:
+  // close-admission is a no-op in this row because it has no separate
+  // in-process admission gate — the router's per-team lock serializes the
+  // whole procedure and the durable terminal-state commit is what durably
+  // blocks new work (documented in S3-result.md); interrupt is the public
+  // Agent cancel (upstream contract: no-op when the phase is idle); drain
+  // quiesces on the public whenIdle; residency is the live-agent handle
+  // map (drop = forget the resident handle, the durable session stays on
+  // disk under DSH_HOME).
+  const lifecyclePorts = {
+    teamDomain: domain,
+    commit: lifecycleCommitPort,
+    admission: {
+      async closeNewWork(_target) {
+        // no separate admission gate in this row (see above)
+      },
+    },
+    activity: {
+      async interrupt(target) {
+        const row = domain.repositories.memberInstances.list(rootSid).find(
+          (m) => String(m.instanceId) === String(target.instanceId),
+        )
+        const handle = row !== undefined ? liveAgents.get(String(row.childSessionId)) : undefined
+        if (handle === undefined) return // no activity in flight: no-op by contract
+        handle.agent.cancel({ kind: 'user' })
+      },
+    },
+    descendants: {
+      async drainDescendants(childSessionId) {
+        const handle = liveAgents.get(String(childSessionId))
+        if (handle !== undefined) {
+          try {
+            await handle.agent.whenIdle()
+          } catch {
+            // a rejected turn is over (idle or failed): the member is
+            // quiescent either way; a non-turn fault still propagates
+          }
+        }
+        return { drained: 0, quiescent: true }
+      },
+    },
+    residency: {
+      hasResidency(sessionId) { return liveAgents.has(String(sessionId)) },
+      dropResidency(sessionId) {
+        const sid = String(sessionId)
+        const handle = liveAgents.get(sid)
+        if (handle === undefined) return false // the handle may be absent: no-op by contract
+        liveAgents.delete(sid)
+        // The sync port cannot await: the public handle dispose (stop the
+        // loop, unregister, remove the session from the store) proceeds
+        // in flight. Quiescence was already observed at the previous step,
+        // so no model-visible write can follow the unregister.
+        handle.dispose().catch((error) => {
+          observations.push(`p6t6: residency dispose failed for '${sid}': ${error instanceof Error ? error.message : String(error)}`)
+        })
+        return true
+      },
+    },
+  }
+  // The work-delivery port (R1/R6): the ONLY model-visible delivery path —
+  // the requestToken rides visibly so at-least-once deliveries stay
+  // dedupe-able from the durable child log, and the turn is observed to
+  // idle before the chain settles. A fault here throws: the chain settles
+  // fail-closed, never a fake RUNNING success.
+  const workDelivery = {
+    async deliver(args) {
+      const handle = await ensureLiveAgent(String(args.childSessionId))
+      const text = args.attachedContext !== undefined && args.attachedContext.length > 0
+        ? `${args.prompt}\n\n[attached-context]\n${args.attachedContext}`
+        : args.prompt
+      const message = createUserMessage({
+        content: [{ type: 'text', text: `[team-work requestToken=${args.requestToken}] ${text}` }],
+        source: { kind: 'user' },
+      })
+      handle.agent.followup(message)
+      await handle.agent.whenIdle()
+      // Materialize the durable log (the same public persistence seam the
+      // activation barrier uses) so the delivered turn's model-visible
+      // content is on disk before the chain settles. A contained upstream
+      // turn failure does NOT reject whenIdle (errors are contained at the
+      // driver boundary and reported, not propagated), so reaching here
+      // means the model-visible message was submitted and the turn is over.
+      await persistence.ensureMaterialized(handle.agent.session)
+    },
+  }
   const runtime = routerMod.createTeamRuntime({
     teamDomain: domain,
     activationProvider: provider,
@@ -547,6 +648,10 @@ async function run(ctx) {
     environmentFacts,
     externalPolicyFacts,
     now,
+    lifecycleCommit: lifecycleCommitPort,
+    lifecyclePorts,
+    workDelivery,
+    workActivity: activityMod.createWorkActivityWriter({ teamDomain: domain, now }),
   })
   const control = controlMod.createControlService({
     teamDomain: domain,
@@ -597,7 +702,7 @@ async function run(ctx) {
   // Order matters: the agent setup callback (which registers the tools)
   // runs INSIDE create/resume, so the tool stack must exist before the
   // first agent is created.
-  const rootHandle = directive.boot === 1
+  const rootHandle = directive.phase === 'create'
     ? await agentsSVC.create({
       sessionId: SessionId(rootSid),
       meta: { cwd: process.env.DSH_HOME },
@@ -608,7 +713,7 @@ async function run(ctx) {
       setup: makeAgentSetup(),
     })
   liveAgents.set(rootSid, rootHandle)
-  if (directive.boot === 1) {
+  if (directive.phase === 'create') {
     await persistence.ensureMaterialized(rootHandle.agent.session)
     for (const seed of [SEED_WORKER, SEED_SCOUT]) {
       const handle = await agentsSVC.create({
@@ -744,6 +849,7 @@ async function run(ctx) {
         const recovery = await messaging.recoverPendingDeliveries(rootSid)
         sendJson(res, 200, {
           boot: directive.boot,
+          phase: directive.phase,
           rootSessionId: rootSid,
           teamSession: teamSessionRow === undefined ? null : {
             rootSessionId: String(teamSessionRow.rootSessionId),
@@ -804,6 +910,57 @@ async function run(ctx) {
       }
     },
   }, 'p6t6 state route'))
+
+  ctx.effect(() => webServer.register({
+    kind: 'exact',
+    path: '/__p6t6/residency/drop',
+    handler: async (req, res) => {
+      if (req.method !== 'POST') {
+        sendJson(res, 405, { error: 'POST only' })
+        return
+      }
+      let body
+      try {
+        body = JSON.parse((await readBody(req)) || '{}')
+      } catch (error) {
+        sendJson(res, 400, { error: `bad JSON body: ${String(error?.message ?? error)}` })
+        return
+      }
+      try {
+        await readyGate
+        if (setupError !== null) {
+          sendJson(res, 503, { error: 'row setup failed', setupError })
+          return
+        }
+        const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : null
+        if (sessionId === null) {
+          sendJson(res, 400, { error: 'body.sessionId is required string' })
+          return
+        }
+        // The real production dropResidency semantics (P5-T6): dispose the
+        // live agent handle — stop the loop, unregister, remove the session
+        // from the store — and forget the residency. Awaiting the teardown
+        // first guarantees no second live agent on the same session when the
+        // next execution cold-resumes from the durable log (W7). The durable
+        // session stays under DSH_HOME.
+        const handle = liveAgents.get(sessionId)
+        if (handle === undefined) {
+          sendJson(res, 200, { sessionId, dropped: false })
+          return
+        }
+        liveAgents.delete(sessionId)
+        try {
+          await handle.dispose()
+        } catch (error) {
+          sendJson(res, 500, { error: `dispose failed: ${String(error?.message ?? error)}` })
+          return
+        }
+        sendJson(res, 200, { sessionId, dropped: true })
+      } catch (error) {
+        sendJson(res, 500, { error: String(error?.message ?? error) })
+      }
+    },
+  }, 'p6t6 residency-drop route'))
 
   resolveReady()
 }

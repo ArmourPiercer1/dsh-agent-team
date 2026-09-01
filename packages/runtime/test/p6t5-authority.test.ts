@@ -361,6 +361,7 @@ describe('P6-T5 NO WORKFLOW AUTHORITY (the closed telemetry surface)', () => {
       'OP_TO_FACT_TYPE',
       'PROGRESS_VALUES',
       'createActivityLedger',
+      'createWorkActivityWriter',
       'isActivityError',
       'isActivityFactType',
       'parseActivityFact',

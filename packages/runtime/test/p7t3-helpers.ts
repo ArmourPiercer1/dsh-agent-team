@@ -368,6 +368,7 @@ export interface P7T3CommitCall {
   readonly seq: number
   readonly rootSessionId: string
   readonly instanceId: string
+  readonly expectedActivityVersion: number
   readonly from: string
   readonly operation: string
   readonly to: string
@@ -376,13 +377,16 @@ export interface P7T3CommitCall {
 /**
  * The test binding of the P6-T2 {@link LifecycleCommitPort}: the durable
  * lifecycle commit over the REAL P4 repositories — the established P6-T2
- * pattern (tombstone `delete` + re-`put` of the transitioned record: the
- * `member_instances` store is append-only per record, P4).
+ * pattern. Since P8-S3 (R4/CR-10) the commit is the repository's CAS
+ * `commitTransition` (atomic read-modify-write with the expected
+ * activityVersion + from-state check), not the P8-S2-era
+ * delete+put tombstone pattern that lost to concurrent writers.
  *
  * Fail-closed like the real binding: it reads the record FRESH, verifies
  * `current.lifecycle === args.from` (a drift is a hard fault), and only
- * then writes the transitioned record (`activityVersion + 1`, the
- * domain D3 rule). Call recording + per-call fault injection (the
+ * then commits the transitioned record (the repository CAS enforces
+ * `expectedActivityVersion` and bumps `activityVersion + 1`, the domain
+ * D3 rule). Call recording + per-call fault injection (the
  * crash-window arm).
  */
 export class P7T3CommitFake implements LifecycleCommitPort {
@@ -410,6 +414,7 @@ export class P7T3CommitFake implements LifecycleCommitPort {
   async commitTransition(args: {
     readonly rootSessionId: string
     readonly instanceId: string
+    readonly expectedActivityVersion: number
     readonly from: MemberLifecycleState
     readonly operation: string
     readonly to: MemberLifecycleState
@@ -419,6 +424,7 @@ export class P7T3CommitFake implements LifecycleCommitPort {
       seq,
       rootSessionId: args.rootSessionId,
       instanceId: args.instanceId,
+      expectedActivityVersion: args.expectedActivityVersion,
       from: args.from,
       operation: args.operation,
       to: args.to,
@@ -444,18 +450,13 @@ export class P7T3CommitFake implements LifecycleCommitPort {
         `p7t3 commit fake: lifecycle drift: expected from '${args.from}', found '${current.lifecycle}'`,
       )
     }
-    await repo.delete(args.rootSessionId, args.instanceId)
-    await repo.put({
-      rootSessionId: current.rootSessionId,
-      instanceId: current.instanceId,
-      templateId: current.templateId,
-      label: current.label,
-      ...(current.groupId !== undefined ? { groupId: current.groupId } : {}),
-      childSessionId: current.childSessionId,
-      ...(current.workspace !== undefined ? { workspace: current.workspace } : {}),
-      lifecycle: args.to,
-      createdAt: current.createdAt,
-      activityVersion: current.activityVersion + 1,
+    await repo.commitTransition({
+      rootSessionId: args.rootSessionId,
+      instanceId: args.instanceId,
+      expectedActivityVersion: args.expectedActivityVersion,
+      from: args.from,
+      operation: args.operation,
+      to: args.to,
     })
   }
 }

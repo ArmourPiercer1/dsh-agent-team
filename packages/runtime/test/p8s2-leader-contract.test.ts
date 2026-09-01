@@ -414,7 +414,7 @@ try {
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'p8s2-scout' },
+        payload: { label: 'p8s2-scout', prompt: 'p8s2 b1 delegate prompt' },
         requestToken: 'tok-p8s2-b1-delegate',
       }),
     )
@@ -516,7 +516,7 @@ const b3World = await createP6T2World('p8s2-b3-no-row', ['worker'])
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'p8s2-b3-scout' },
+        payload: { label: 'p8s2-b3-scout', prompt: 'p8s2 b3 delegate prompt' },
         requestToken: 'tok-p8s2-b3-delegate',
       }),
     )

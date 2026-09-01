@@ -98,6 +98,8 @@ const SUMMARY_MAX_LENGTH = 512
 const LAST_ACTION_MAX_LENGTH = 256
 const CORRELATION_MAX_LENGTH = 128
 const TASK_SUMMARY_MAX_LENGTH = 512
+const WORK_PROMPT_MAX_LENGTH = 16384
+const ATTACHED_CONTEXT_MAX_LENGTH = 32768
 const LABEL_MAX_LENGTH = 256
 const TEMPLATE_ID_MAX_LENGTH = 256
 const INSTANCE_ID_MAX_LENGTH = 256
@@ -513,10 +515,20 @@ function delegateSpec(): ToolSpec {
         type: 'string',
         description: 'Optional short summary of the delegated work unit (audit context).',
       },
+      prompt: {
+        type: 'string',
+        description:
+          "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts.",
+      },
+      attachedContext: {
+        type: 'string',
+        description: 'Optional explicit context attached to the work unit and delivered with the prompt.',
+      },
     },
-    required: ['rootSessionId', 'requestToken', 'label'],
+    required: ['rootSessionId', 'requestToken', 'label', 'prompt'],
     async run(ctx, args) {
       const label = requireStringField(args, 'label', LABEL_MAX_LENGTH)
+      const prompt = requireStringField(args, 'prompt', WORK_PROMPT_MAX_LENGTH)
       const templateId = optionalStringField(args, 'delegationTemplateId', TEMPLATE_ID_MAX_LENGTH)
       const instanceId = optionalStringField(args, 'delegationInstanceId', INSTANCE_ID_MAX_LENGTH)
       if (templateId === undefined && instanceId === undefined) {
@@ -529,13 +541,19 @@ function delegateSpec(): ToolSpec {
           "team-tools: delegate accepts exactly one of delegationTemplateId / delegationInstanceId, not both",
         )
       }
-      const payload: Record<string, unknown> = { label }
+      const payload: Record<string, unknown> = { label, prompt }
       const groupId = optionalStringField(args, 'groupId', 256)
       if (groupId !== undefined) payload.groupId = groupId
       const workspace = optionalStringField(args, 'workspace', 512)
       if (workspace !== undefined) payload.workspace = workspace
       const taskSummary = optionalStringField(args, 'taskSummary', TASK_SUMMARY_MAX_LENGTH)
       if (taskSummary !== undefined) payload.taskSummary = taskSummary
+      const attachedContext = optionalStringField(
+        args,
+        'attachedContext',
+        ATTACHED_CONTEXT_MAX_LENGTH,
+      )
+      if (attachedContext !== undefined) payload.attachedContext = attachedContext
       const request: TeamRuntimeActionRequest = {
         rootSessionId: ctx.rootSessionId,
         action: ACTION_NAMES.DELEGATE,
@@ -571,13 +589,29 @@ function followUpSpec(): ToolSpec {
         type: 'string',
         description: 'Optional short summary of the follow-up work unit (audit context).',
       },
+      prompt: {
+        type: 'string',
+        description:
+          "REQUIRED: the exact follow-up work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts.",
+      },
+      attachedContext: {
+        type: 'string',
+        description: 'Optional explicit context attached to the work unit and delivered with the prompt.',
+      },
     },
-    required: ['rootSessionId', 'requestToken', 'targetInstanceId'],
+    required: ['rootSessionId', 'requestToken', 'targetInstanceId', 'prompt'],
     async run(ctx, args) {
       const targetInstanceId = requireStringField(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH)
-      const payload: Record<string, unknown> = {}
+      const prompt = requireStringField(args, 'prompt', WORK_PROMPT_MAX_LENGTH)
+      const payload: Record<string, unknown> = { prompt }
       const taskSummary = optionalStringField(args, 'taskSummary', TASK_SUMMARY_MAX_LENGTH)
       if (taskSummary !== undefined) payload.taskSummary = taskSummary
+      const attachedContext = optionalStringField(
+        args,
+        'attachedContext',
+        ATTACHED_CONTEXT_MAX_LENGTH,
+      )
+      if (attachedContext !== undefined) payload.attachedContext = attachedContext
       return executeGuarded(ctx, targetInstanceId, ACTION_NAMES.FOLLOW_UP, async () =>
         toExecutedResult(
           await ctx.options.teamRuntime.performAction({

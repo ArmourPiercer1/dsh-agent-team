@@ -55,6 +55,12 @@
  * lifecycle state, member records, or quota counters; nothing downstream
  * may consume an activity row as a lifecycle/completion decision
  * (DevPlan §19.5).
+ *
+ * P8-S3: the in-facade work writer (`createWorkActivityWriter`) commits
+ * the work-unit interval facts through the SAME guarded write path
+ * (fresh re-read + interval guards + head + 1 claim + shared durable
+ * write) but WITHOUT the report-progress facade stage — its caller (the
+ * work chain) already holds the router's non-reentrant per-team lock.
  */
 
 import {
@@ -64,8 +70,14 @@ import {
 } from '../../contracts/src/index.js'
 import type { InstanceId, RootSessionId } from '../../contracts/src/index.js'
 import type { LedgerEntry } from '../../storage/schema/index.js'
+import type { TeamDomain } from '../../storage/repositories/index.js'
 import { ACTION_NAMES, PROGRESS_VALUES } from '../admission/actions.js'
-import type { ActionCaller, ProgressValue, TeamRuntimeActionRequest } from '../admission/index.js'
+import type {
+  ActionCaller,
+  ProgressValue,
+  TeamRuntimeActionRequest,
+  WorkActivityPort,
+} from '../admission/index.js'
 import { withTeamLock } from '../action-router/effects.js'
 import { ACTIVITY_ERROR_CODES, ActivityError } from './errors.js'
 import { buildActivityEntry, parseActivityFact } from './facts.js'
@@ -232,6 +244,148 @@ function validateBase(input: {
 }
 
 /**
+ * The durable row list shared by the guarded commit and the in-facade
+ * work writer (deterministic order — the single source of truth for a
+ * subject's activity state; no optional-filter call sites exist
+ * internally, but the query shape mirrors `ActivityFactQuery`).
+ */
+function listSubjectActivityRows(
+  repositories: TeamDomain['repositories'],
+  query: ActivityFactQuery,
+): readonly ActivityFactRow[] {
+  const rootSessionId = parseRootOrFail(query.rootSessionId)
+  const instanceId =
+    query.instanceId !== undefined ? parseInstanceOrFail(query.instanceId) : undefined
+  const rows: ActivityFactRow[] = []
+  for (const entry of repositories.ledger.list()) {
+    const row = parseActivityFact(entry)
+    if (row === undefined) continue
+    if (row.rootSessionId !== rootSessionId) continue
+    if (instanceId !== undefined && row.instanceId !== instanceId) continue
+    if (query.subject !== undefined && row.subject !== query.subject) continue
+    rows.push(row)
+  }
+  rows.sort((a, b) => a.globalSequence - b.globalSequence)
+  return rows
+}
+
+/**
+ * The interval state guards shared by the guarded commit and the
+ * in-facade work writer: at most one open interval per
+ * `(instanceId, subject, correlation)` — open-while-open fails with
+ * `ACTIVITY_INTERVAL_ALREADY_OPEN`, close-without-open fails with
+ * `ACTIVITY_INTERVAL_NOT_OPEN` (zero durable writes in either case).
+ */
+function assertIntervalGuards(
+  rows: readonly ActivityFactRow[],
+  args: {
+    readonly op: 'interval-open' | 'interval-close'
+    readonly correlation: string
+    readonly subject: string
+    readonly instanceId: string
+  },
+): void {
+  const lastIntervalOp = new Map<string, ActivityFactRow>()
+  for (const row of rows) {
+    if (row.op === 'interval-open' || row.op === 'interval-close') {
+      lastIntervalOp.set(row.correlation as string, row)
+    }
+  }
+  const last = lastIntervalOp.get(args.correlation)
+  const open = last !== undefined && last.op === 'interval-open'
+  if (args.op === 'interval-open' && open) {
+    throw new ActivityError(
+      ACTIVITY_ERROR_CODES.ACTIVITY_INTERVAL_ALREADY_OPEN,
+      `activity: interval '${args.correlation}' of '${args.subject}' for '${args.instanceId}' is already open (since per-subject sequence ${last?.sequence})`,
+      {
+        kind: 'already-open',
+        correlation: args.correlation,
+        instanceId: args.instanceId,
+        subject: args.subject,
+        openSinceSequence: last?.sequence,
+      },
+    )
+  }
+  if (args.op === 'interval-close' && !open) {
+    throw new ActivityError(
+      ACTIVITY_ERROR_CODES.ACTIVITY_INTERVAL_NOT_OPEN,
+      `activity: interval '${args.correlation}' of '${args.subject}' for '${args.instanceId}' is not open — close-without-open fails closed`,
+      {
+        kind: 'no-open-interval',
+        correlation: args.correlation,
+        instanceId: args.instanceId,
+        subject: args.subject,
+      },
+    )
+  }
+}
+
+/**
+ * The durable write shared by the guarded commit and the in-facade
+ * work writer (TeamLedger — invariant 41/44): allocate the global
+ * sequence, build the closed entry shape, put, and re-parse the
+ * committed row (any fault → `ACTIVITY_DURABLE_WRITE_FAILED`).
+ */
+async function commitActivityEntry(args: {
+  readonly repositories: TeamDomain['repositories']
+  readonly input: {
+    readonly rootSessionId: RootSessionId
+    readonly op: 'progress' | 'interval-open' | 'interval-close'
+    readonly instanceId: string
+    readonly subject: string
+    readonly sequence: number
+    readonly progress: ProgressValue
+    readonly summary?: string
+    readonly lastAction?: string
+    readonly correlation?: string
+    readonly note?: string
+    readonly closeNote?: string
+    readonly requestToken: string
+    readonly reportedByInstanceId: string
+    readonly createdAt: string
+  }
+}): Promise<ActivityFactRow> {
+  const globalSequence = await args.repositories.ledger.allocateSequence()
+  const entry: LedgerEntry = buildActivityEntry({
+    rootSessionId: args.input.rootSessionId,
+    globalSequence,
+    op: args.input.op,
+    instanceId: args.input.instanceId,
+    subject: args.input.subject,
+    sequence: args.input.sequence,
+    progress: args.input.progress,
+    summary: args.input.summary,
+    lastAction: args.input.lastAction,
+    correlation: args.input.correlation,
+    note: args.input.note,
+    closeNote: args.input.closeNote,
+    requestToken: args.input.requestToken,
+    reportedByInstanceId: args.input.reportedByInstanceId,
+    createdAt: args.input.createdAt,
+  })
+  let put: LedgerEntry
+  try {
+    put = await args.repositories.ledger.put(entry)
+  } catch (error) {
+    throw new ActivityError(
+      ACTIVITY_ERROR_CODES.ACTIVITY_DURABLE_WRITE_FAILED,
+      `activity: the TeamLedger durable write failed: ${error instanceof Error ? error.message : String(error)}`,
+      { globalSequence },
+    )
+  }
+  const row = parseActivityFact(put)
+  if (row === undefined) {
+    // unreachable: the builder emits the closed shape the parser accepts
+    throw new ActivityError(
+      ACTIVITY_ERROR_CODES.ACTIVITY_DURABLE_WRITE_FAILED,
+      'activity: the committed entry failed re-parse (internal invariant)',
+      { globalSequence },
+    )
+  }
+  return row
+}
+
+/**
  * Build one activity ledger over an injected TeamDomain + TeamRuntime
  * facade (the production wiring — both dependencies are injected ports,
  * so the ledger is testable without a live team and carries no
@@ -247,22 +401,8 @@ export function createActivityLedger(options: ActivityLedgerOptions): ActivityLe
   /** The ledger's OWN per-team lock map (separate from the facade's). */
   const teamLocks = new Map<string, Promise<unknown>>()
 
-  const listActivityFacts = (query: ActivityFactQuery): readonly ActivityFactRow[] => {
-    const rootSessionId = parseRootOrFail(query.rootSessionId)
-    const instanceId =
-      query.instanceId !== undefined ? parseInstanceOrFail(query.instanceId) : undefined
-    const rows: ActivityFactRow[] = []
-    for (const entry of repositories.ledger.list()) {
-      const row = parseActivityFact(entry)
-      if (row === undefined) continue
-      if (row.rootSessionId !== rootSessionId) continue
-      if (instanceId !== undefined && row.instanceId !== instanceId) continue
-      if (query.subject !== undefined && row.subject !== query.subject) continue
-      rows.push(row)
-    }
-    rows.sort((a, b) => a.globalSequence - b.globalSequence)
-    return rows
-  }
+  const listActivityFacts = (query: ActivityFactQuery): readonly ActivityFactRow[] =>
+    listSubjectActivityRows(repositories, query)
 
   /**
    * The guarded commit (critical section 2): fresh durable re-read under
@@ -308,80 +448,34 @@ export function createActivityLedger(options: ActivityLedgerOptions): ActivityLe
       }
       // (b) the interval guards (per-correlation fold in sequence order)
       if (args.op !== 'progress' && args.correlation !== undefined) {
-        const lastIntervalOp = new Map<string, ActivityFactRow>()
-        for (const row of rows) {
-          if (row.op === 'interval-open' || row.op === 'interval-close') {
-            lastIntervalOp.set(row.correlation as string, row)
-          }
-        }
-        const last = lastIntervalOp.get(args.correlation)
-        const open = last !== undefined && last.op === 'interval-open'
-        if (args.op === 'interval-open' && open) {
-          throw new ActivityError(
-            ACTIVITY_ERROR_CODES.ACTIVITY_INTERVAL_ALREADY_OPEN,
-            `activity: interval '${args.correlation}' of '${base.subject}' for '${base.instanceId}' is already open (since per-subject sequence ${last?.sequence})`,
-            {
-              kind: 'already-open',
-              correlation: args.correlation,
-              instanceId: base.instanceId,
-              subject: base.subject,
-              openSinceSequence: last?.sequence,
-            },
-          )
-        }
-        if (args.op === 'interval-close' && !open) {
-          throw new ActivityError(
-            ACTIVITY_ERROR_CODES.ACTIVITY_INTERVAL_NOT_OPEN,
-            `activity: interval '${args.correlation}' of '${base.subject}' for '${base.instanceId}' is not open — close-without-open fails closed`,
-            {
-              kind: 'no-open-interval',
-              correlation: args.correlation,
-              instanceId: base.instanceId,
-              subject: base.subject,
-            },
-          )
-        }
+        assertIntervalGuards(rows, {
+          op: args.op,
+          correlation: args.correlation,
+          subject: base.subject,
+          instanceId: base.instanceId,
+        })
       }
       // (c) the durable write (TeamLedger — invariant 41/44)
-      const globalSequence = await repositories.ledger.allocateSequence()
-      const entry: LedgerEntry = buildActivityEntry({
-        rootSessionId: base.rootSessionId,
-        globalSequence,
-        op: args.op,
-        instanceId: base.instanceId,
-        subject: base.subject,
-        sequence: base.sequence,
-        progress: base.progress,
-        summary: args.summary,
-        lastAction: args.lastAction,
-        correlation: args.correlation,
-        note: args.note,
-        closeNote: args.closeNote,
-        requestToken: base.requestToken,
-        reportedByInstanceId:
-          base.caller.kind === 'instance' ? base.caller.instanceId : 'human',
-        createdAt: now(),
+      return commitActivityEntry({
+        repositories,
+        input: {
+          rootSessionId: base.rootSessionId,
+          op: args.op,
+          instanceId: base.instanceId,
+          subject: base.subject,
+          sequence: base.sequence,
+          progress: base.progress,
+          summary: args.summary,
+          lastAction: args.lastAction,
+          correlation: args.correlation,
+          note: args.note,
+          closeNote: args.closeNote,
+          requestToken: base.requestToken,
+          reportedByInstanceId:
+            base.caller.kind === 'instance' ? base.caller.instanceId : 'human',
+          createdAt: now(),
+        },
       })
-      let put: LedgerEntry
-      try {
-        put = await repositories.ledger.put(entry)
-      } catch (error) {
-        throw new ActivityError(
-          ACTIVITY_ERROR_CODES.ACTIVITY_DURABLE_WRITE_FAILED,
-          `activity: the TeamLedger durable write failed: ${error instanceof Error ? error.message : String(error)}`,
-          { globalSequence },
-        )
-      }
-      const row = parseActivityFact(put)
-      if (row === undefined) {
-        // unreachable: the builder emits the closed shape the parser accepts
-        throw new ActivityError(
-          ACTIVITY_ERROR_CODES.ACTIVITY_DURABLE_WRITE_FAILED,
-          'activity: the committed entry failed re-parse (internal invariant)',
-          { globalSequence },
-        )
-      }
-      return row
     })
   }
 
@@ -462,4 +556,91 @@ export function createActivityLedger(options: ActivityLedgerOptions): ActivityLe
   }
 
   return { recordProgress, openInterval, closeInterval, listActivityFacts }
+}
+
+/**
+ * Build the in-facade work-activity writer (P8-S3).
+ *
+ * Opens/closes the activity interval of one admitted work unit by
+ * committing the guarded interval fact DIRECTLY — WITHOUT the
+ * report-progress facade (whose `performAction` stage would re-enter
+ * the router's NON-reentrant per-team lock and deadlock) and WITHOUT a
+ * second lock map (the caller — the work chain — already holds the
+ * router's team lock, so the fresh re-read, the head + 1 claim, and
+ * the interval guards observe the same durable state the router
+ * observed).
+ *
+ * Contract differences from the facade-driven ledger writes:
+ *   - NO authorization stage: the work chain IS the runtime (the
+ *     admission + delivery owner), so the reporter is the fixed
+ *     runtime sentinel `'team-runtime'`;
+ *   - NO caller-claimed sequence: the writer claims head + 1 itself
+ *     from the fresh read (there is no stale/gap surface);
+ *   - the `progress` value is audit context only ('in-progress' on
+ *     open, 'completed' on close); the projected status still derives
+ *     from the progress facts — interval rows carry no authority of
+ *     their own (telemetry, not authority — DevPlan §19.5).
+ *
+ * @param options - the wiring (the TeamDomain, the display clock).
+ * @returns the closed `WorkActivityPort` surface.
+ */
+export function createWorkActivityWriter(options: {
+  readonly teamDomain: TeamDomain
+  readonly now?: () => string
+}): WorkActivityPort {
+  const repositories = options.teamDomain.repositories
+  const now = options.now ?? (() => new Date().toISOString())
+
+  const commitInterval = async (
+    op: 'interval-open' | 'interval-close',
+    args: {
+      readonly rootSessionId: string
+      readonly instanceId: string
+      readonly subject: string
+      readonly requestToken: string
+      readonly correlation: string
+      readonly note?: string
+      readonly closeNote?: string
+    },
+  ): Promise<void> => {
+    // parse-or-fail the durable ids (ACTIVITY_INPUT_INVALID when malformed)
+    const rootSessionId = parseRootOrFail(args.rootSessionId)
+    const instanceId = parseInstanceOrFail(args.instanceId)
+    const rows = listSubjectActivityRows(repositories, {
+      rootSessionId: args.rootSessionId,
+      instanceId: args.instanceId,
+      subject: args.subject,
+    })
+    const head = rows.reduce((max, row) => Math.max(max, row.sequence), 0)
+    assertIntervalGuards(rows, {
+      op,
+      correlation: args.correlation,
+      subject: args.subject,
+      instanceId: args.instanceId,
+    })
+    await commitActivityEntry({
+      repositories,
+      input: {
+        rootSessionId,
+        instanceId,
+        op,
+        subject: args.subject,
+        sequence: head + 1,
+        progress: op === 'interval-open' ? 'in-progress' : 'completed',
+        correlation: args.correlation,
+        note: op === 'interval-open' ? args.note : undefined,
+        closeNote: op === 'interval-close' ? args.closeNote : undefined,
+        requestToken: args.requestToken,
+        reportedByInstanceId: 'team-runtime',
+        createdAt: now(),
+      },
+    })
+  }
+
+  return {
+    openInterval: (args) =>
+      commitInterval('interval-open', { ...args, closeNote: undefined }),
+    closeInterval: (args) =>
+      commitInterval('interval-close', { ...args, note: undefined }),
+  }
 }

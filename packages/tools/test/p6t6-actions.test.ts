@@ -238,13 +238,13 @@ const A = await (async (): Promise<ScenarioA> => {
     const followOne = await runTool(
       env,
       'team_follow_up',
-      base({ requestToken: 'tok-a-f1', targetInstanceId: WORKER_ID, taskSummary: 'first follow-up' }),
+      base({ requestToken: 'tok-a-f1', targetInstanceId: WORKER_ID, prompt: 'first follow-up prompt', taskSummary: 'first follow-up' }),
       P6T2_ROOT,
     )
     const followTwo = await runTool(
       env,
       'team_follow_up',
-      base({ requestToken: 'tok-a-f2', targetInstanceId: WORKER_ID, taskSummary: 'second follow-up' }),
+      base({ requestToken: 'tok-a-f2', targetInstanceId: WORKER_ID, prompt: 'second follow-up prompt', taskSummary: 'second follow-up' }),
       P6T2_ROOT,
     )
     const followOneEffect =
@@ -261,7 +261,7 @@ const A = await (async (): Promise<ScenarioA> => {
     const labelAddressing = await runTool(
       env,
       'team_follow_up',
-      base({ requestToken: 'tok-a-la', targetInstanceId: 'existing-worker' }),
+      base({ requestToken: 'tok-a-la', targetInstanceId: 'existing-worker', prompt: 'label addressing probe' }),
       P6T2_ROOT,
     )
     const templateAddressing = await runTool(
@@ -383,6 +383,7 @@ const C1 = await (async (): Promise<{
         requestToken: 'tok-c1-d1',
         delegationTemplateId: 'scout',
         label: 'scout-delegate-one',
+        prompt: 'fresh instance per delegation prompt (1/2)',
         taskSummary: 'fresh instance per delegation (1/2)',
       }),
       P6T2_ROOT,
@@ -399,6 +400,7 @@ const C1 = await (async (): Promise<{
         requestToken: 'tok-c1-d2',
         delegationTemplateId: 'scout',
         label: 'scout-delegate-two',
+        prompt: 'fresh instance per delegation prompt (2/2)',
         taskSummary: 'fresh instance per delegation (2/2, at both limits)',
       }),
       P6T2_ROOT,
@@ -418,6 +420,7 @@ const C1 = await (async (): Promise<{
           requestToken: 'tok-c1-d3',
           delegationTemplateId: 'scout',
           label: 'scout-delegate-three',
+          prompt: 'over-team quota prompt',
         }),
         P6T2_ROOT,
       ),
@@ -591,7 +594,7 @@ const B = await (async (): Promise<ScenarioB> => {
     const delegateTool = env.findTool('team_delegate')
     const delegateNeither = rejectedOf(
       await delegateTool.execute(
-        base({ requestToken: 'tok-b-dn', label: 'neither' }),
+        base({ requestToken: 'tok-b-dn', label: 'neither', prompt: 'neither delegation probe' }),
         execFor(P6T2_ROOT),
       ),
       'delegateNeither',
@@ -601,6 +604,7 @@ const B = await (async (): Promise<ScenarioB> => {
         base({
           requestToken: 'tok-b-db',
           label: 'both',
+          prompt: 'both delegation probe',
           delegationTemplateId: 'worker',
           delegationInstanceId: WORKER_ID,
         }),
@@ -653,7 +657,7 @@ const B = await (async (): Promise<ScenarioB> => {
     // runtime is never called (no second, looser check behind the guard).
     const notFound = blockedOf(
       await followUpTool.execute(
-        base({ requestToken: 'tok-b-nf', targetInstanceId: 'inst-p6t6ghost' }),
+        base({ requestToken: 'tok-b-nf', targetInstanceId: 'inst-p6t6ghost', prompt: 'ghost target probe' }),
         execFor(P6T2_ROOT),
       ),
       'notFound',

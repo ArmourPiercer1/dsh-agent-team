@@ -71,9 +71,15 @@ import type {
   LifecycleCommitPort,
   RuntimeActionEffect,
   TeamRuntimeActionRequest,
+  WorkActivityPort,
+  WorkDeliveryPort,
 } from '../admission/types.js'
+import type { LifecyclePorts } from '../lifecycle/types.js'
+import { archiveMember, disposeMember, restoreMember } from '../lifecycle/index.js'
+import { isLifecycleRuntimeError } from '../lifecycle/errors.js'
 import { effectivePolicyView, memberSummary } from '../admission/types.js'
 import { ACTION_NAMES } from '../admission/actions.js'
+import { executeWorkChain } from './work-execution.js'
 
 /** The durable fact families (see admission/actions.ts for the contract). */
 const FACT_WORK_ADMITTED = 'team-work-admitted'
@@ -94,6 +100,15 @@ export interface EffectContext {
   /** The injected lifecycle transition commit port (absent in the P6-T2
    *  default wiring — see the module docs). */
   readonly lifecycleCommit?: LifecycleCommitPort
+  /** The model-visible work delivery port (P8-S3 work chain; absent in the
+   *  P6-T2 default wiring). */
+  readonly workDelivery?: WorkDeliveryPort
+  /** The in-facade activity interval writer (P8-S3 work chain; absent in
+   *  the P6-T2 default wiring). */
+  readonly workActivity?: WorkActivityPort
+  /** The P7-T3 lifecycle step ports (P8-S3 R7/CR-9): router lifecycle
+   *  actions run the P7-T3 step ordering through these ports. */
+  readonly lifecyclePorts?: LifecyclePorts
   /** The read-phase target (instance-targeted actions; re-read fresh in the
    *  effect — the fresh view is authoritative). */
   readonly target?: MemberInstanceRecordDto
@@ -229,6 +244,35 @@ function callerRef(caller: ResolvedCaller): Record<string, unknown> {
   return { kind: 'instance', instanceId: caller.callerMember?.instanceId, role: caller.role }
 }
 
+/**
+ * Map one P7-T3 lifecycle-core {@link LifecycleRuntimeError} onto the
+ * facade's closed TeamRuntime code set (the router's closed contract:
+ * every caller-visible rejection is a TeamRuntimeError). Non-lifecycle
+ * faults rethrow unchanged.
+ */
+function mapLifecycleCoreError(error: unknown): never {
+  if (isLifecycleRuntimeError(error)) {
+    const details: Record<string, unknown> = { lifecycleCode: error.code, ...error.details }
+    const message = `TeamRuntime: ${error.message}`
+    switch (error.code) {
+      case 'LIFECYCLE_MEMBER_NOT_FOUND':
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.INSTANCE_NOT_FOUND, message, details)
+      case 'LIFECYCLE_ILLEGAL_STATE':
+      case 'LIFECYCLE_LEADER_NOT_OPERABLE':
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_TRANSITION_REJECTED, message, details)
+      case 'LIFECYCLE_NOT_QUIESCENT':
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_NOT_QUIESCENT, message, details)
+      case 'LIFECYCLE_LIVE_EFFECT_FAILED':
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_LIVE_EFFECT_FAILED, message, details)
+      case 'LIFECYCLE_DURABLE_STATE_FAILED':
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED, message, details)
+      default:
+        throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.REQUEST_MALFORMED, message, details)
+    }
+  }
+  throw error
+}
+
 /** A fresh (locked) read of the action target; it must still exist. */
 function requireFreshTarget(ctx: EffectContext): MemberInstanceRecordDto {
   const target = ctx.target
@@ -255,11 +299,19 @@ function requireLiveTarget(ctx: EffectContext): MemberInstanceRecordDto {
  * The work-admission effect (follow-up + delegate-continue): the SAME child
  * session is kept (invariant 24); a CREATED/SETTLED target is validated
  * against the domain FSM for the ADMIT_WORK edge; the durable fact is
- * `team-work-admitted`. The RUNNING transition — when the target is not
- * already RUNNING — is durably committed ONLY through the injected
- * lifecycle commit port (absent in the P6-T2 default wiring: the admission
- * still commits, `lifecycleCommitted` is false; the P7-T3 lifecycle module
- * provides the port, TaskDoc P7-T3).
+ * `team-work-admitted`. Two wirings:
+ *
+ * - P8-S3 work chain (ALL THREE of the lifecycle commit port, the work
+ *   delivery port and the work activity port are injected — the production
+ *   row): the full vertical chain of `work-execution.ts` runs — required
+ *   CAS admission, the fact (with the exact model-visible prompt/context),
+ *   the activity interval, the model-visible delivery, the fail-closed
+ *   settlement (`settleAdmittedWork`, R5) and the retry protocol (W9);
+ * - P6-T2 default wiring (any port absent): the admission commits its
+ *   evidence fact, the RUNNING transition — when needed — is durably
+ *   committed ONLY through the injected lifecycle commit port (absent port
+ *   + needed transition fails closed per R3; already-RUNNING targets
+ *   report `lifecycleCommitted: false`); no delivery, no settlement.
  */
 async function runWorkAdmission(ctx: EffectContext, actionLabel: string): Promise<RuntimeActionEffect> {
   const fresh = requireLiveTarget(ctx)
@@ -272,6 +324,10 @@ async function admitWorkOn(
   fresh: MemberInstanceRecordDto,
   actionLabel: string,
 ): Promise<RuntimeActionEffect> {
+  const chain = workChainPorts(ctx)
+  if (chain !== undefined) {
+    return runWorkChainOn(ctx, fresh, actionLabel, chain)
+  }
   const from = fresh.lifecycle
   let lifecycleCommitted = false
   if (from !== 'RUNNING') {
@@ -279,9 +335,11 @@ async function admitWorkOn(
     lifecycleCommitted = await commitTransition(
       ctx,
       fresh.instanceId,
+      fresh.activityVersion,
       from,
       LIFECYCLE_OPERATIONS.ADMIT_WORK,
       next.lifecycle,
+      { required: true },
     )
   }
   const sequence = await commitFact(ctx, FACT_WORK_ADMITTED, {
@@ -299,12 +357,83 @@ async function admitWorkOn(
 }
 
 /**
- * The lifecycle effect (archive/restore/dispose): the transition is
- * validated by the domain/lifecycle FSM (illegal pairs ->
- * LIFECYCLE_TRANSITION_REJECTED, zero writes); without an injected commit
- * port it fails closed (LIFECYCLE_COMMIT_UNAVAILABLE, zero writes); the
- * durable commit goes through the port (state first) and the durable fact
- * is `member-lifecycle-changed` (evidence second).
+ * The three injected ports the P8-S3 work chain requires (the production
+ * row installs them together; a partial install falls back to the P6-T2
+ * admission so no work chain ever runs without its settlement owner).
+ */
+function workChainPorts(ctx: EffectContext):
+  | {
+      readonly lifecycleCommit: LifecycleCommitPort
+      readonly workDelivery: WorkDeliveryPort
+      readonly workActivity: WorkActivityPort
+    }
+  | undefined {
+  const lifecycleCommit = ctx.lifecycleCommit
+  const workDelivery = ctx.workDelivery
+  const workActivity = ctx.workActivity
+  if (lifecycleCommit === undefined || workDelivery === undefined || workActivity === undefined) {
+    return undefined
+  }
+  return { lifecycleCommit, workDelivery, workActivity }
+}
+
+/** The P8-S3 vertical chain on an admitted target (R1). */
+async function runWorkChainOn(
+  ctx: EffectContext,
+  fresh: MemberInstanceRecordDto,
+  actionLabel: string,
+  chain: {
+    readonly lifecycleCommit: LifecycleCommitPort
+    readonly workDelivery: WorkDeliveryPort
+    readonly workActivity: WorkActivityPort
+  },
+): Promise<RuntimeActionEffect> {
+  const result = await executeWorkChain({
+    repositories: ctx.repositories,
+    lifecycleCommit: chain.lifecycleCommit,
+    workDelivery: chain.workDelivery,
+    workActivity: chain.workActivity,
+    now: ctx.now,
+    rootSessionId: ctx.rootSessionId,
+    instanceId: fresh.instanceId,
+    action: actionLabel,
+    caller: ctx.caller,
+    requestToken: ctx.request.requestToken,
+    prompt: String(ctx.request.payload?.['prompt'] ?? ''),
+    ...(optionalStringField(ctx.request.payload, 'attachedContext')),
+    ...(optionalStringField(ctx.request.payload, 'taskSummary')),
+  })
+  return {
+    kind: 'work-admitted',
+    instanceId: result.instanceId,
+    fromLifecycle: result.fromLifecycle,
+    lifecycleCommitted: result.lifecycleCommitted,
+    sequence: result.sequence,
+    replayed: result.mode === 'replay',
+    settled: result.settled,
+    ...(result.settledSequence !== undefined ? { settledSequence: result.settledSequence } : {}),
+  }
+}
+
+/**
+ * The lifecycle effect (archive/restore/dispose). Two wirings:
+ *
+ * - P7-T3 step ports installed (P8-S3 R7/CR-9, the production row): the
+ *   UNLOCKED P7-T3 cores (`archiveMember` / `restoreMember` /
+ *   `disposeMember`) run the frozen §20.3/§30.1 ordering — close
+ *   admission -> interrupt -> quiesce/drain FIRST -> release residency ->
+ *   commit — through the REAL production ports, under the ROUTER's own
+ *   team lock (the service's internal lock map is deliberately not used:
+ *   it would serialize against a second map and desynchronize from the
+ *   router's work effects; the cores take no lock of their own). The
+ *   `member-lifecycle-changed` fact is committed after the core returns
+ *   (evidence second; `from` is the pre-call fresh read).
+ * - P6-T2 default wiring (no step ports): the transition is validated by
+ *   the domain/lifecycle FSM (illegal pairs -> LIFECYCLE_TRANSITION_
+ *   REJECTED, zero writes); without an injected commit port it fails
+ *   closed (LIFECYCLE_COMMIT_UNAVAILABLE, zero writes); the durable commit
+ *   goes through the port (state first) and the durable fact is
+ *   `member-lifecycle-changed` (evidence second).
  */
 async function runLifecycle(
   ctx: EffectContext,
@@ -312,6 +441,41 @@ async function runLifecycle(
   requestedTo: 'ARCHIVED' | 'SETTLED' | 'DISPOSED',
 ): Promise<RuntimeActionEffect> {
   const fresh = requireFreshTarget(ctx)
+  const ports = ctx.lifecyclePorts
+  if (ports !== undefined) {
+    const target = { rootSessionId: ctx.rootSessionId, instanceId: fresh.instanceId }
+    let result: { readonly member: MemberInstanceRecordDto; readonly steps: readonly string[] }
+    try {
+      if (operation === LIFECYCLE_OPERATIONS.ARCHIVE) {
+        result = await archiveMember(ports, target)
+      } else if (operation === LIFECYCLE_OPERATIONS.RESTORE) {
+        result = await restoreMember(ports, target)
+      } else if (operation === LIFECYCLE_OPERATIONS.DISPOSE) {
+        result = await disposeMember(ports, target)
+      } else {
+        internalInvariant(`lifecycle operation '${operation}' is not a router lifecycle action`)
+      }
+    } catch (error) {
+      throw mapLifecycleCoreError(error)
+    }
+    const sequence = await commitFact(ctx, FACT_LIFECYCLE_CHANGED, {
+      action: ctx.spec.name,
+      caller: callerRef(ctx.caller),
+      instanceId: fresh.instanceId,
+      from: fresh.lifecycle,
+      to: result.member.lifecycle,
+      steps: [...result.steps],
+      requestToken: ctx.request.requestToken,
+      at: ctx.now(),
+    })
+    return {
+      kind: 'lifecycle-changed',
+      instanceId: fresh.instanceId,
+      from: fresh.lifecycle,
+      to: result.member.lifecycle,
+      sequence,
+    }
+  }
   let next: MemberInstanceRecordDto
   try {
     next = applyLifecycleOperation(fresh, operation)
@@ -330,7 +494,9 @@ async function runLifecycle(
     }
     throw error
   }
-  await commitTransition(ctx, fresh.instanceId, fresh.lifecycle, operation, next.lifecycle, { required: true })
+  await commitTransition(ctx, fresh.instanceId, fresh.activityVersion, fresh.lifecycle, operation, next.lifecycle, {
+    required: true,
+  })
   const sequence = await commitFact(ctx, FACT_LIFECYCLE_CHANGED, {
     action: ctx.spec.name,
     caller: callerRef(ctx.caller),
@@ -372,8 +538,8 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect> {
   }
   const result = await callProvider(ctx, activationRequest)
   if (result.kind === 'activated') {
-    return {
-      kind: 'member-activated',
+    const activated = {
+      kind: 'member-activated' as const,
       instanceId: result.instanceId,
       templateId: result.templateId,
       childSessionId: result.childSessionId,
@@ -381,6 +547,38 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect> {
       replayed: result.replayed,
       ...(result.ledgerSequence !== undefined ? { ledgerSequence: result.ledgerSequence } : {}),
       admissionCode: result.admission.code,
+    }
+    const chain = workChainPorts(ctx)
+    if (chain === undefined) {
+      return activated
+    }
+    // R1 (closure plan §16.2): the create form does NOT stop at activation —
+    // it continues into the work chain on the new instance (admission,
+    // delivery, settlement). The effect kind stays `member-activated` (the
+    // creation is the headline effect; the work fields extend it).
+    const fresh = ctx.repositories.memberInstances.get(ctx.rootSessionId, result.instanceId)
+    if (fresh === undefined) {
+      internalInvariant('the provider activated an instance but its member row is missing')
+    }
+    const work = await executeWorkChain({
+      repositories: ctx.repositories,
+      lifecycleCommit: chain.lifecycleCommit,
+      workDelivery: chain.workDelivery,
+      workActivity: chain.workActivity,
+      now: ctx.now,
+      rootSessionId: ctx.rootSessionId,
+      instanceId: result.instanceId,
+      action: 'delegate',
+      caller: ctx.caller,
+      requestToken: ctx.request.requestToken,
+      prompt: String(ctx.request.payload?.['prompt'] ?? ''),
+      ...(optionalStringField(ctx.request.payload, 'attachedContext')),
+      ...(optionalStringField(ctx.request.payload, 'taskSummary')),
+    })
+    return {
+      ...activated,
+      workSequence: work.sequence,
+      workSettled: work.settled,
     }
   }
   // continued: the provider did NO durable write; the router admits the
@@ -479,10 +677,16 @@ function validateAdmitWork(record: MemberInstanceRecordDto): MemberInstanceRecor
  * `{ required: true }` an absent port is a caller-visible failure
  * (LIFECYCLE_COMMIT_UNAVAILABLE) because the action's whole effect IS the
  * commit.
+ *
+ * The commit is a compare-and-swap in the durable layer (R4/CR-10):
+ * `expectedActivityVersion` is the version the freshly read record carried;
+ * a concurrent writer that moved the row first makes the commit fail
+ * instead of silently overwriting (W8).
  */
 async function commitTransition(
   ctx: EffectContext,
   instanceId: string,
+  expectedActivityVersion: number,
   from: MemberInstanceRecordDto['lifecycle'],
   operation: LifecycleOperation,
   to: MemberInstanceRecordDto['lifecycle'],
@@ -503,12 +707,13 @@ async function commitTransition(
     await port.commitTransition({
       rootSessionId: ctx.rootSessionId,
       instanceId,
+      expectedActivityVersion,
       from,
       operation,
       to,
     })
   } catch (error) {
-    throw durableFailure('lifecycle transition commit', error, { instanceId, from, operation, to })
+    throw durableFailure('lifecycle transition commit', error, { instanceId, expectedActivityVersion, from, operation, to })
   }
   return true
 }
@@ -519,34 +724,54 @@ async function commitTransition(
  * the ledger's atomic counter (the repository rejects unallocated or
  * above-counter sequences — `RECORD_INVALID`).
  */
-async function commitFact(
-  ctx: EffectContext,
+/**
+ * Commit one durable fact to the TeamLedger (the evidence half of a
+ * two-write effect, or the whole effect for coordination actions). The
+ * sequence is ALLOCATED through the ledger's atomic counter (the
+ * repository rejects unallocated or above-counter sequences —
+ * `RECORD_INVALID`); a durable fault surfaces as
+ * `DURABLE_WRITE_FAILED` with the downstream cause in `details`.
+ *
+ * Exported (P8-S3): the work chain (`work-execution.ts`) commits its
+ * admission/settlement facts through the SAME protocol from the same
+ * module — one sequence-allocation owner, one fault mapping. The caller
+ * must already hold the router's per-team lock for the root session.
+ */
+export async function commitDurableFact(
+  repositories: TeamDomainRepositories,
+  rootSessionId: string,
+  now: () => string,
   factType: string,
   payload: Record<string, unknown>,
 ): Promise<number> {
-  const sequence = await allocateSequenceGuarded(ctx)
+  let sequence: number
+  try {
+    sequence = await repositories.ledger.allocateSequence()
+  } catch (error) {
+    throw durableFailure('sequence allocation', error, { factType })
+  }
   const entry = {
     schemaVersion: 1,
     sequence,
-    rootSessionId: ctx.rootSessionId,
+    rootSessionId,
     factType,
     payload,
-    createdAt: ctx.now(),
+    createdAt: now(),
   }
   try {
-    await ctx.repositories.ledger.put(entry)
+    await repositories.ledger.put(entry)
   } catch (error) {
     throw durableFailure('fact commit', error, { factType, sequence })
   }
   return sequence
 }
 
-async function allocateSequenceGuarded(ctx: EffectContext): Promise<number> {
-  try {
-    return await ctx.repositories.ledger.allocateSequence()
-  } catch (error) {
-    throw durableFailure('sequence allocation', error, {})
-  }
+async function commitFact(
+  ctx: EffectContext,
+  factType: string,
+  payload: Record<string, unknown>,
+): Promise<number> {
+  return commitDurableFact(ctx.repositories, ctx.rootSessionId, ctx.now, factType, payload)
 }
 
 /**
