@@ -965,6 +965,14 @@
 - **不变量**：CORE PATCH BUDGET 0；contracts+remote 零 diff；owned = packages/runtime/src/** + packages/runtime/test/** + p4t6 pin；无第二 Team authority / 无 SessionEvent authority / 无 S5A (v)(x)(y)/admission FSM/work chain/单一 compat authority/per-request mutation 消费 回归；never push；never touch 稳定实例。
 - **下一步**：worker 结算 → 主 Agent 审计（双链 + tsc + frozen + live 聚合 + scope）→ focused S5B reviewer（自有 detached worktree + 自有 live 重跑）→ cherry-pick -x → 集成 → **S5-REVIEW**（1 fresh focused reviewer 审 integrated S5A+S5B；非全 gate；canonical E2E + race/crash/security 矩阵 + 全 repo 终链留 P8-S8/G8-S）。
 
+## R73 — 用户指令（S5B 独立预算确认 + S5 结束后一次性 GitHub 推送）→ S5B worker PASS → 主 Agent 磁盘审计全绿 → focused S5B reviewer 派发（2026-09-02，主 Agent）
+
+- **用户指令（记录于 R73，效力优先于 plan 推送条款）**：(a) P8-S5B 有单独的三次补充机会，一开始整体执行与 S5A 阶段的尝试次数不计入其中 —— 与 R72 主 Agent 裁决一致，用户予以确认；(b) **S5 阶段结束后进行一次向 GitHub 云端的推送**（用户明确许可的一次性推送，AGENTS.md 红线例外；执行时点 = S5B 集成 + S5-REVIEW 通过 + bookkeeping 落库之后；never force-push；推送范围与分支集在推送时按 plan §41/§43–45 核对后记录）。已入 TODO。
+- **S5B worker 结算（workflow 单 agent，settled，final message 已收）**：**PASS**。R1/R2/R3/R4/R6 = PROVE sufficient（controlled-interleaving race tests，纯 microtask 确定性引擎，无 wall-clock）；R5 = **COORDINATOR IMPLEMENTED**（NEW `packages/runtime/coordination/index.ts` 88 行：`createTeamOperationCoordinator()` 单 Map 共享 per-team 链，P6-T1 promise-chain 模式复用，非重入、严格顺序获取已文档化）；生产根一次性构建并接线 router facade + activity ledger + P7-T3 lifecycle；ActivationProvider map disposition = subsumed（留私有，其操作集是链覆盖点的严格子集）。SHAs：impl `c4d13a8bd4521073c1c6ad40b03ebeadbe1cab53`（10 文件 +1345/−30，全在 owned 内）+ evidence `595da231a1b3c7edd52dca35695b15c4cd0e6f83`（7 文件）。
+- **R5 证据（磁盘可读：tc-s5b-r5-grid-sweep.txt）**：2D 受控网格 S=0..12 × D=0..6（fresh real TeamDomain world per cell）；无协调器 half：(S=0,D=4) 命中 `A=reprobe(no-state-after-reprobe)`（CR-8 真窗口）；同网格协调器 half：ZERO NO_STATE、exactly one re-probe per cell、final gen = initial+1、双 fail-closed block。router 层面 0..24 stagger sweep 与对称双 authority sweep 0..32 均 0 命中（定位真窗口 = 独立 consultation 站点间的 facts-delivery 滞后）。
+- **主 Agent 磁盘审计（全部独立重跑，全过）**：fresh 链（wipe dist + yaml junction）1939/1939（1913 基线 + 26 新）；dist 链（sanctioned 三步重建）1939/1939；tsc 8/8；冻结区 contracts+remote **EMPTY**；非 owned 包（storage/domain/client/legacy/tools）diff **EMPTY**；pin 515→517（恰 2 个新扫描文件 = coordination + race test；链内 p4t6 绿 = 计数一致）；`p6t1-parallel.test.ts` **未动**（git diff 空）；live worker 17/17（summary.json 磁盘 `pass:true, failures:[]`）+ 环境 clean（ports 3181–3186/3492/3493 全空、无 stale lock、test-use `cd5ef814` porcelain 空、:3080=200、homes `.dsh-test-p8s5b/-e` 完好）；接线逐行核验：`options.teamLocks ?? new Map()`（P6-T2 默认不变）、router new-work gate+effect **单次** team-chain 获取（R5 形状，非重入纪律）、ledger/lifecycle 顺序获取（release 再 re-acquire）、additive optional 类型参数 ×2（admission/activity types 各 +8，零行为回归）、无新全局、无第二 authority、无新 public seam。
+- **下一步**：focused S5B reviewer 派发（fresh detached worktree @ `595da23`，diff vs `be9e1d4` 聚焦审：协调器设计/接线正确性、R1-R6 测试强度与断言零弱化、自有 fresh+dist 双链 + tsc 8/8 + 自有 live 17 场景 fresh home `.dsh-test-p8s5br`；非全 gate）→ APPROVE 后 cherry-pick -x 两 commit 入 int → 集成终验 → 证据归档 → **S5-REVIEW**（1 fresh focused reviewer 审 integrated S5A+S5B）→ S5 完成 → **执行用户许可的一次性 GitHub 推送** → S6。
+
 ## 重审记录
 
 （空）
@@ -974,6 +982,8 @@
 - **ADR-1（P8-S5A，R70）**：type ARCHITECTURE_DECISION_REQUIRED。question（worker 原文）：是否允许对 `packages/runtime/src/plugin/host.ts` 做最小、语义保持的变更，使两处 `import.meta.url` 推导 URL（upstream-resolver hook L113–125 / frozen legacy reader entry L358–361）同时可从 dist mirror（生产）与 TS-source（测试）位置解析（dist→source 候选搜索），且不触碰 row-config surface / 稳定错误码 / apply 契约？status = **RULED（主 Agent，R70）**：允许，约束见 R70 条目（dist-first、fail-closed 同码、仅两处或共享 helper、契约面零动）；执行体 P8-S5A-URL（1/1 任务线）。
 
 ## TODO 列表
+
+- [ ] **（用户指令 R73）S5 阶段结束后执行一次性 GitHub 云端推送**：时点 = S5B 集成 + S5-REVIEW 通过 + bookkeeping 落库之后；never force-push；推送分支集（master / int / 相关 task 分支）在推送时核对 plan §41/§43–45 后于 log 记录。
 
 - （已解决 R4）P1-T1/T3 host worktree `pnpm install` 磁盘空间风险：实际全部 `pnpm install --ignore-scripts` 成功（test-use 1011 packages、downstream-int、P1-T5 worktree、P1-T1/T3 树），磁盘空间未成为阻塞。
 - file-manifest baseline 旧路径（S1）：后续 Phase 重跑校验脚本前对齐 `references\deepseek-harness` 路径（不改动已冻结证据文件本身）。
