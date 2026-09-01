@@ -1,0 +1,558 @@
+2026-09-01T13:41:30.416Z P8-S3 harness start: runStamp=p8s3-1788270090416 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T13:41:30.417Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T13:41:30.417Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T13:41:30.537Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T13:41:30.547Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T13:41:30.549Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T13:41:30.549Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T13:41:30.549Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T13:41:30.552Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T13:41:30.552Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T13:41:30.553Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T13:41:30.554Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T13:41:30.555Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T13:41:30.555Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T13:41:30.556Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T13:41:30.557Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T13:41:30.557Z junction farm ready (shared packages/node_modules)
+2026-09-01T13:41:30.567Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T13:41:30.589Z scenario E7: pass=true assertions=2 failing=[] (22ms)
+2026-09-01T13:41:30.651Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T13:41:30.970Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T13:41:32.550Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T13:41:35.391Z throwaway boot OK: http://127.0.0.1:3181/?token=7PF5DJHu58R1hBWwylPGs4h4OMgI4vM-bZdereHcT1A
+2026-09-01T13:41:35.434Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:41:35.434Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T13:44:39.202Z FAILURE: boot 1: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:44:39.203Z FAILURE: scenario W1 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.203Z FAILURE: scenario W5 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.203Z FAILURE: scenario W7 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.203Z FAILURE: scenario W3 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.204Z FAILURE: scenario M1 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.204Z FAILURE: scenario M2 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.204Z FAILURE: scenario M4 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.240Z boot 1: stopped killed=true portFree=true
+2026-09-01T13:44:39.241Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:44:39.241Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T13:47:41.198Z FAILURE: boot 2: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:47:41.199Z FAILURE: scenario W2 skipped: row routes not ready on boot 2 鈥?scenario not executed against a dead row
+2026-09-01T13:47:41.199Z FAILURE: scenario M3 skipped: row routes not ready on boot 2 鈥?scenario not executed against a dead row
+2026-09-01T13:47:41.200Z FAILURE: scenario M5 skipped: row routes not ready on boot 2 鈥?scenario not executed against a dead row
+2026-09-01T13:47:41.236Z boot 2: stopped killed=true portFree=true
+2026-09-01T13:47:41.237Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T13:47:43.050Z throwaway boot OK: http://127.0.0.1:3183/?token=XyKNWBsWGNydbMlzv-zaZKgk10NlmIHMYv3KcnmA4Zk
+2026-09-01T13:47:43.090Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:47:43.090Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T13:50:45.970Z FAILURE: boot 3: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:50:45.970Z FAILURE: scenario E1 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E2 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E3 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E4 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E6 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.971Z FAILURE: scenario E5(boot1-writes) skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:46.004Z boot 3: stopped killed=true portFree=true
+2026-09-01T13:50:46.005Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:50:46.005Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T13:53:48.684Z FAILURE: boot 4: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:53:48.684Z FAILURE: scenario E5(boot2-restart) skipped: row routes not ready on boot 4 鈥?scenario not executed against a dead row
+2026-09-01T13:53:48.721Z boot 4: stopped killed=true portFree=true
+2026-09-01T13:53:48.723Z postflight: bypass scan files=5 violations=0
+2026-09-01T13:53:48.724Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T13:53:48.854Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T13:53:48.854Z postflight: test-use pristine after=true
+2026-09-01T13:53:48.857Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T13:53:48.857Z FAILURE: scenario E1 missing or failing
+2026-09-01T13:53:48.857Z FAILURE: scenario E2 missing or failing
+2026-09-01T13:53:48.858Z FAILURE: scenario E3 missing or failing
+2026-09-01T13:53:48.858Z FAILURE: scenario E4 missing or failing
+2026-09-01T13:53:48.858Z FAILURE: scenario E5 missing or failing
+2026-09-01T13:53:48.859Z FAILURE: scenario E6 missing or failing
+2026-09-01T13:53:48.859Z FAILURE: scenario W1 missing or failing
+2026-09-01T13:53:48.859Z FAILURE: scenario W2 missing or failing
+2026-09-01T13:53:48.860Z FAILURE: scenario W3 missing or failing
+2026-09-01T13:53:48.860Z FAILURE: scenario W5 missing or failing
+2026-09-01T13:53:48.860Z FAILURE: scenario W7 missing or failing
+2026-09-01T13:53:48.860Z FAILURE: scenario M1 missing or failing
+2026-09-01T13:53:48.861Z FAILURE: scenario M2 missing or failing
+2026-09-01T13:53:48.861Z FAILURE: scenario M3 missing or failing
+2026-09-01T13:53:48.861Z FAILURE: scenario M4 missing or failing
+2026-09-01T13:53:48.861Z FAILURE: scenario M5 missing or failing
+2026-09-01T13:53:48.861Z postflight: lock released (own marker matched)
+2026-09-01T13:53:48.862Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:03:53.159Z P8-S3 harness start: runStamp=p8s3-1788271433159 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:03:53.160Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:03:53.160Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T14:03:53.307Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:03:53.317Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:03:53.320Z FAILURE: harness fatal: Error: DSH_HOME D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a exists and is not empty - the freshness rule forbids reusing it; aborting fail-closed
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:748:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-09-01T14:03:53.320Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:03:53.498Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:04:16.301Z P8-S3 harness start: runStamp=p8s3-1788271456301 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:04:16.302Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:04:16.302Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T14:04:16.450Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:04:16.460Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:04:16.463Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:04:16.463Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:04:16.464Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:04:16.466Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:04:16.467Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:04:16.468Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:04:16.468Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:04:16.469Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:04:16.470Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:04:16.470Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:04:16.471Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:04:16.471Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:04:16.483Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:04:16.492Z scenario E7: pass=true assertions=2 failing=[] (8ms)
+2026-09-01T14:04:16.492Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:04:16.827Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:04:18.287Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:04:19.854Z throwaway boot OK: http://127.0.0.1:3181/?token=h_yvYBVa90a0hOe-_R24Jui1zrGwR099cPz-AzqZt_Q
+2026-09-01T14:04:19.893Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:04:19.894Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:04:23.184Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:04:23.421Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:04:23.421Z FAILURE: harness fatal: TypeError: Cannot read properties of undefined (reading 'slice')
+    at runW1 (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:1462:263)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async driveBoot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:1876:15)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:1932:27)
+2026-09-01T14:04:23.423Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:04:23.423Z postflight: lock released (own marker matched)
+2026-09-01T14:04:23.543Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:09:14.774Z P8-S3 harness start: runStamp=p8s3-1788271754774 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:09:14.775Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:09:14.775Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: W1
+2026-09-01T14:09:14.916Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:09:14.925Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:09:14.927Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:09:14.928Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:09:14.930Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:09:14.931Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:09:14.932Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:09:14.933Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:09:14.933Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:09:14.934Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:09:14.935Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:09:14.935Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:09:14.936Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:09:14.947Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:09:14.948Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:09:15.287Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:09:16.854Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:09:18.644Z throwaway boot OK: http://127.0.0.1:3181/?token=vFJTe1rj2ZTH6MjJd5GayknGFXaqLh0Ws7akkUFY0MI
+2026-09-01T14:09:18.686Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:09:18.687Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:09:21.937Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:09:22.251Z scenario W1: pass=false assertions=10 failing=["boot1 state: exactly the three seeded members (leader + worker + scout)","delegate executed through the public tool seam","the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)","a RUNNING target needs no admission CAS (lifecycleCommitted=false)","the admission + settlement carry positive durable ledger sequences (admission before settlement)","the target member row carries the seeded worker real child session id","the request token round-trips into the outcome","state: the member count stays three (a persistent continue mints nothing)","the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)","the real child Session log durably carries TOKEN_A + the exact prompt"] (314ms)
+2026-09-01T14:09:22.308Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:09:22.309Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:09:22.309Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:09:24.502Z boot 2: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:09:24.556Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:09:24.561Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:09:24.562Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:09:24.693Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:09:24.693Z postflight: test-use pristine after=true
+2026-09-01T14:09:24.695Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:09:24.696Z FAILURE: scenario W1 missing or failing
+2026-09-01T14:09:24.696Z postflight: lock released (own marker matched)
+2026-09-01T14:09:24.697Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:14:16.366Z P8-S3 harness start: runStamp=p8s3-1788272056366 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:14:16.367Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:14:16.367Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T14:14:16.492Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:14:16.501Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:14:16.503Z FAILURE: harness fatal: Error: DSH_HOME D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a exists and is not empty - the freshness rule forbids reusing it; aborting fail-closed
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:748:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-09-01T14:14:16.503Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:14:16.643Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:14:40.135Z P8-S3 harness start: runStamp=p8s3-1788272080135 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:14:40.136Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:14:40.136Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T14:14:40.258Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:14:40.267Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:14:40.270Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:14:40.270Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:14:40.270Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:14:40.272Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:14:40.273Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:14:40.274Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:14:40.275Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:14:40.276Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:14:40.276Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:14:40.277Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:14:40.278Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:14:40.278Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:14:40.290Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:14:40.300Z scenario E7: pass=true assertions=2 failing=[] (9ms)
+2026-09-01T14:14:40.300Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:14:40.645Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:14:42.133Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:14:43.942Z throwaway boot OK: http://127.0.0.1:3181/?token=gaqO-facVoFs1i6n2DKfXosWqmdQ5WCJ7sf4Vz147vM
+2026-09-01T14:14:43.990Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:14:43.991Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:14:47.000Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:14:48.053Z scenario W1: pass=true assertions=10 failing=[] (1052ms)
+2026-09-01T14:14:48.997Z scenario W5: pass=true assertions=7 failing=[] (943ms)
+2026-09-01T14:14:50.152Z scenario W7: pass=true assertions=7 failing=[] (1154ms)
+2026-09-01T14:14:50.254Z scenario W3: pass=false assertions=5 failing=["both delegates executed and work-settled","two DISTINCT member instances (fresh_per_delegation)","two DISTINCT child sessions, each derived from its instance","state: five members (no W1 mint; W1 continued the seed), both fresh scouts SETTLED at activityVersion 3","both fresh child Session logs durably carry their tokens"] (101ms)
+2026-09-01T14:14:51.233Z scenario M1: pass=true assertions=5 failing=[] (978ms)
+2026-09-01T14:14:52.233Z scenario M2: pass=true assertions=7 failing=[] (1000ms)
+2026-09-01T14:14:52.443Z scenario M4: pass=true assertions=9 failing=[] (210ms)
+2026-09-01T14:14:52.492Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:14:52.493Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:14:52.493Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:14:55.016Z boot 2: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:14:55.960Z scenario W2: pass=false assertions=7 failing=["boot2 state: the same five members survive the process restart","row SETTLED at activityVersion 8 on the SAME childSessionId (admit av6->av7, settle av7->av8; no new session)"] (944ms)
+2026-09-01T14:14:56.820Z scenario M3: pass=true assertions=5 failing=[] (859ms)
+2026-09-01T14:14:57.686Z scenario M5: pass=true assertions=6 failing=[] (865ms)
+2026-09-01T14:14:57.726Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:14:57.727Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:14:59.529Z throwaway boot OK: http://127.0.0.1:3183/?token=gmY2R6RoR3zGHBFGWz-oDsmSLD9_PbdgGj8GqVFL1b8
+2026-09-01T14:14:59.570Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:14:59.570Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:15:02.654Z boot 3: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:15:03.215Z scenario E1: pass=false assertions=14 failing=["all three concurrent creates admitted (executed)","every create returned a member-activated effect","three distinct new instance ids","every activation carries a child session id","every activation is on the worker template","state after E1: six members total","state after E1: four worker-template members (1 seed + 3 new)","state after E1: the three new instance ids are present"] (560ms)
+2026-09-01T14:15:03.278Z scenario E2: pass=false assertions=3 failing=["no side effect: member count unchanged (6)"] (61ms)
+2026-09-01T14:15:03.305Z scenario E3: pass=false assertions=6 failing=["E1 produced a persistent worker with a bound child session","first follow-up executed on the existing instance","second follow-up executed on the SAME instance","the admission sequences advance strictly (second admit follows the first unit settlement)","the bound child session id is UNCHANGED across follow-ups","no new instance was created (six members)"] (26ms)
+2026-09-01T14:15:03.429Z scenario E4: pass=false assertions=5 failing=["both fresh_per_delegation delegates executed","both delegates returned member-activated effects","two distinct NEW instance ids (not the seed, not each other)","each activation carries a distinct new child session","state after E4: three scout-template members (1 seed + 2 new)"] (123ms)
+2026-09-01T14:15:03.529Z scenario E6: pass=false assertions=6 failing=["pre-race state: three scout members (limit 4)","exactly ONE of the three concurrent creates admitted at ==limit","both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES","state after E6: four scout members (== limit; never over-created)","state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)"] (100ms)
+2026-09-01T14:15:03.598Z boot 3: stopped killed=true portFree=true
+2026-09-01T14:15:03.598Z FAILURE: harness fatal: TypeError: Cannot read properties of undefined (reading 'slice')
+    at runE5a (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:1318:159)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async driveBoot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:1876:15)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S5/packages/tools/harness/run.mjs:1962:29)
+2026-09-01T14:15:03.599Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:15:03.600Z postflight: lock released (own marker matched)
+2026-09-01T14:15:03.723Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:17:37.197Z P8-S3 harness start: runStamp=p8s3-1788272257197 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:17:37.199Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:17:37.199Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: W3,E1
+2026-09-01T14:17:37.323Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:17:37.333Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:17:37.335Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:17:37.335Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:17:37.335Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:17:37.337Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:17:37.338Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:17:37.339Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:17:37.340Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:17:37.340Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:17:37.341Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:17:37.341Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:17:37.342Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:17:37.342Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:17:37.353Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:17:37.353Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:17:37.679Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:17:39.181Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:17:41.205Z throwaway boot OK: http://127.0.0.1:3181/?token=gcPLCo4M_2eN8SLnc8ZY25gRfoHomjtlPxPXUSX6hX8
+2026-09-01T14:17:41.248Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:17:41.249Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:17:44.278Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:17:44.506Z scenario W3: pass=false assertions=5 failing=["both delegates executed and work-settled","two DISTINCT member instances (fresh_per_delegation)","two DISTINCT child sessions, each derived from its instance","state: five members (no W1 mint; W1 continued the seed), both fresh scouts SETTLED at activityVersion 3","both fresh child Session logs durably carry their tokens"] (226ms)
+2026-09-01T14:17:44.557Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:17:44.558Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:17:44.558Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:17:46.740Z boot 2: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:17:46.784Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:17:46.784Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:17:48.569Z throwaway boot OK: http://127.0.0.1:3183/?token=G8g7M2edn97iEm-JibIcbGZ423p47rYLO0Jm1gWioWg
+2026-09-01T14:17:48.609Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:17:48.610Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:17:51.612Z boot 3: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:17:52.103Z scenario E1: pass=false assertions=14 failing=["all three concurrent creates admitted (executed)","every create returned a member-activated effect","three distinct new instance ids","every activation carries a child session id","every activation is on the worker template","state after E1: six members total","state after E1: four worker-template members (1 seed + 3 new)","state after E1: the three new instance ids are present"] (489ms)
+2026-09-01T14:17:52.161Z boot 3: stopped killed=true portFree=true
+2026-09-01T14:17:52.162Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:17:52.163Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:17:54.397Z boot 4: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:17:54.498Z boot 4: stopped killed=true portFree=true
+2026-09-01T14:17:54.503Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:17:54.503Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:17:54.628Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:17:54.628Z postflight: test-use pristine after=true
+2026-09-01T14:17:54.630Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:17:54.630Z FAILURE: scenario W3 missing or failing
+2026-09-01T14:17:54.630Z FAILURE: scenario E1 missing or failing
+2026-09-01T14:17:54.631Z postflight: lock released (own marker matched)
+2026-09-01T14:17:54.632Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:20:53.064Z P8-S3 harness start: runStamp=p8s3-1788272453064 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:20:53.065Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:20:53.065Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: W3,E1
+2026-09-01T14:20:53.185Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:20:53.194Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:20:53.197Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:20:53.197Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:20:53.197Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:20:53.200Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:20:53.201Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:20:53.202Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:20:53.202Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:20:53.203Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:20:53.204Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:20:53.204Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:20:53.205Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:20:53.205Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:20:53.217Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:20:53.217Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:20:53.555Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:20:55.034Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:20:57.089Z throwaway boot OK: http://127.0.0.1:3181/?token=XKXK_EMsJrWXfInZa3h7I8IiSSfbNxnMyX-i7zVCQgw
+2026-09-01T14:20:57.130Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:20:57.131Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:21:00.177Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:21:03.043Z scenario W3: pass=true assertions=5 failing=[] (2865ms)
+2026-09-01T14:21:03.099Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:21:03.100Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:21:03.100Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:21:05.821Z boot 2: ready 鈥?toolCount=10 liveSessions=5 (expected 10 tools)
+2026-09-01T14:21:05.867Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:21:05.867Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:21:07.684Z throwaway boot OK: http://127.0.0.1:3183/?token=DjDTx4ax1A89kj5ivr-Pi1O4R6qZyYtve4i3VCTQZw4
+2026-09-01T14:21:07.724Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:21:07.724Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:21:10.730Z boot 3: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:21:12.311Z scenario E1: pass=false assertions=14 failing=["all three concurrent creates admitted (executed)","every create returned a member-activated effect","three distinct new instance ids","every activation carries a child session id","every activation is on the worker template","state after E1: six members total","state after E1: four worker-template members (1 seed + 3 new)","state after E1: the three new instance ids are present"] (1579ms)
+2026-09-01T14:21:12.364Z boot 3: stopped killed=true portFree=true
+2026-09-01T14:21:12.365Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:21:12.365Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:21:14.902Z boot 4: ready 鈥?toolCount=10 liveSessions=5 (expected 10 tools)
+2026-09-01T14:21:14.946Z boot 4: stopped killed=true portFree=true
+2026-09-01T14:21:14.950Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:21:14.951Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:21:15.069Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:21:15.069Z postflight: test-use pristine after=true
+2026-09-01T14:21:15.071Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:21:15.071Z FAILURE: scenario E1 missing or failing
+2026-09-01T14:21:15.072Z postflight: lock released (own marker matched)
+2026-09-01T14:21:15.074Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:28:49.153Z P8-S3 harness start: runStamp=p8s3-1788272929153 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:28:49.154Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:28:49.154Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1
+2026-09-01T14:28:49.285Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:28:49.295Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:28:49.297Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:28:49.298Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:28:49.298Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:28:49.300Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:28:49.301Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:28:49.302Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:28:49.302Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:28:49.303Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:28:49.303Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:28:49.304Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:28:49.305Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:28:49.305Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:28:49.315Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:28:49.316Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:28:49.650Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:28:51.065Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:28:53.127Z throwaway boot OK: http://127.0.0.1:3181/?token=WQK5p6RVQAq8E1V0TevJwhM32q9AZLK-Io50OPBU4z0
+2026-09-01T14:28:53.165Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:28:53.166Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:28:56.155Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:28:56.198Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:28:56.198Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:28:56.199Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:28:59.518Z boot 2: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:28:59.561Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:28:59.563Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:29:01.353Z throwaway boot OK: http://127.0.0.1:3183/?token=YwBQNjKeIuxpTQA-446bXGgXhI1HFOMxhXy1CYNOwkk
+2026-09-01T14:29:01.393Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:29:01.393Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:29:04.907Z boot 3: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:29:06.721Z scenario E1: pass=true assertions=14 failing=[] (1814ms)
+2026-09-01T14:29:06.777Z boot 3: stopped killed=true portFree=true
+2026-09-01T14:29:06.778Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:29:06.778Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:29:09.276Z boot 4: ready 鈥?toolCount=10 liveSessions=6 (expected 10 tools)
+2026-09-01T14:29:09.324Z boot 4: stopped killed=true portFree=true
+2026-09-01T14:29:09.328Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:29:09.329Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:29:09.445Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:29:09.445Z postflight: test-use pristine after=true
+2026-09-01T14:29:09.447Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:29:09.447Z postflight: lock released (own marker matched)
+2026-09-01T14:29:09.448Z P8-S3 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:29:18.829Z P8-S3 harness start: runStamp=p8s3-1788272958829 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:29:18.830Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:29:18.830Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T14:29:18.951Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:29:18.961Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:29:18.963Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:29:18.963Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:29:18.964Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:29:18.966Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:29:18.967Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:29:18.967Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:29:18.968Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:29:18.969Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:29:18.969Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:29:18.970Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:29:18.971Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:29:18.971Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:29:18.981Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:29:18.992Z scenario E7: pass=true assertions=2 failing=[] (10ms)
+2026-09-01T14:29:18.993Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:29:19.329Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:29:20.829Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:29:22.617Z throwaway boot OK: http://127.0.0.1:3181/?token=CScMKAeFfKIxDGdthRofKvi4bEcoJFwYgZyQMupec60
+2026-09-01T14:29:22.658Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:29:22.658Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:29:25.702Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:29:26.581Z scenario W1: pass=true assertions=10 failing=[] (877ms)
+2026-09-01T14:29:27.615Z scenario W5: pass=true assertions=7 failing=[] (1034ms)
+2026-09-01T14:29:28.729Z scenario W7: pass=true assertions=7 failing=[] (1114ms)
+2026-09-01T14:29:31.450Z scenario W3: pass=true assertions=5 failing=[] (2719ms)
+2026-09-01T14:29:32.326Z scenario M1: pass=true assertions=5 failing=[] (875ms)
+2026-09-01T14:29:33.396Z scenario M2: pass=true assertions=7 failing=[] (1070ms)
+2026-09-01T14:29:33.599Z scenario M4: pass=true assertions=9 failing=[] (202ms)
+2026-09-01T14:29:33.652Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:29:33.719Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:29:33.719Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:29:36.491Z boot 2: ready 鈥?toolCount=10 liveSessions=5 (expected 10 tools)
+2026-09-01T14:29:37.239Z scenario W2: pass=false assertions=7 failing=["row SETTLED at activityVersion 8 on the SAME childSessionId (admit av6->av7, settle av7->av8; no new session)"] (748ms)
+2026-09-01T14:29:38.157Z scenario M3: pass=true assertions=5 failing=[] (916ms)
+2026-09-01T14:29:39.070Z scenario M5: pass=true assertions=6 failing=[] (912ms)
+2026-09-01T14:29:39.124Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:29:39.124Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:29:40.956Z throwaway boot OK: http://127.0.0.1:3183/?token=YIBhEZaD3mLajrrlusTGi2n1Nz1e_UfoDTw3rVLbR-k
+2026-09-01T14:29:40.996Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:29:40.996Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:29:43.993Z boot 3: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:29:45.606Z scenario E1: pass=true assertions=14 failing=[] (1613ms)
+2026-09-01T14:29:45.670Z scenario E2: pass=true assertions=3 failing=[] (63ms)
+2026-09-01T14:29:47.591Z scenario E3: pass=true assertions=6 failing=[] (1919ms)
+2026-09-01T14:29:50.305Z scenario E4: pass=true assertions=5 failing=[] (2713ms)
+2026-09-01T14:29:50.853Z scenario E6: pass=true assertions=6 failing=[] (547ms)
+2026-09-01T14:29:52.171Z scenario E5(boot1-writes): pass=true assertions=11 failing=[] (1317ms)
+2026-09-01T14:29:52.215Z boot 3: stopped killed=true portFree=true
+2026-09-01T14:29:52.216Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:29:52.216Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:29:55.285Z boot 4: ready 鈥?toolCount=10 liveSessions=9 (expected 10 tools)
+2026-09-01T14:29:58.616Z scenario E5(boot2-restart): pass=true assertions=13 failing=[] (3330ms)
+2026-09-01T14:29:58.661Z boot 4: stopped killed=true portFree=true
+2026-09-01T14:29:58.664Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:29:58.665Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:29:58.797Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:29:58.797Z postflight: test-use pristine after=true
+2026-09-01T14:29:58.799Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:29:58.799Z FAILURE: scenario W2 missing or failing
+2026-09-01T14:29:58.800Z postflight: lock released (own marker matched)
+2026-09-01T14:29:58.802Z P8-S3 harness FAIL 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:33:22.687Z P8-S3 harness start: runStamp=p8s3-1788273202687 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:33:22.688Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:33:22.688Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: W1,W5,W7,W3,M1,M2,M4,W2
+2026-09-01T14:33:22.812Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:33:22.822Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:33:22.824Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:33:22.824Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:33:22.826Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:33:22.827Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:33:22.828Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:33:22.828Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:33:22.829Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:33:22.830Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:33:22.830Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:33:22.831Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:33:22.831Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:33:22.842Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:33:22.843Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:33:23.170Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:33:24.610Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:33:26.378Z throwaway boot OK: http://127.0.0.1:3181/?token=VBRJVnJs9QGNV3EDdFg2F9UsnQiGqeDCU-5K3M42Czk
+2026-09-01T14:33:26.417Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:33:26.417Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:33:29.402Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:33:30.434Z scenario W1: pass=true assertions=10 failing=[] (1018ms)
+2026-09-01T14:33:31.579Z scenario W5: pass=true assertions=7 failing=[] (1144ms)
+2026-09-01T14:33:32.659Z scenario W7: pass=true assertions=7 failing=[] (1078ms)
+2026-09-01T14:33:35.766Z scenario W3: pass=true assertions=5 failing=[] (3107ms)
+2026-09-01T14:33:36.859Z scenario M1: pass=true assertions=5 failing=[] (1092ms)
+2026-09-01T14:33:37.856Z scenario M2: pass=true assertions=7 failing=[] (996ms)
+2026-09-01T14:33:38.107Z scenario M4: pass=true assertions=9 failing=[] (250ms)
+2026-09-01T14:33:38.162Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:33:38.163Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:33:38.163Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:33:40.997Z boot 2: ready 鈥?toolCount=10 liveSessions=5 (expected 10 tools)
+2026-09-01T14:33:41.947Z scenario W2: pass=true assertions=7 failing=[] (949ms)
+2026-09-01T14:33:41.993Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:33:42.001Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:33:42.002Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:33:42.156Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:33:42.156Z postflight: test-use pristine after=true
+2026-09-01T14:33:42.157Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:33:42.157Z postflight: lock released (own marker matched)
+2026-09-01T14:33:42.158Z P8-S3 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json
+2026-09-01T14:33:48.063Z P8-S3 harness start: runStamp=p8s3-1788273228063 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T14:33:48.064Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:33:48.064Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T14:33:48.179Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T14:33:48.189Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:33:48.191Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T14:33:48.192Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T14:33:48.192Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T14:33:48.194Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T14:33:48.195Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T14:33:48.196Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T14:33:48.196Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T14:33:48.197Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T14:33:48.197Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T14:33:48.198Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T14:33:48.199Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T14:33:48.199Z junction farm ready (shared packages/node_modules)
+2026-09-01T14:33:48.210Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T14:33:48.224Z scenario E7: pass=true assertions=2 failing=[] (14ms)
+2026-09-01T14:33:48.224Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T14:33:48.569Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T14:33:50.203Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:33:52.011Z throwaway boot OK: http://127.0.0.1:3181/?token=s6VU2yrBTVPWJxBzpmhjiBtgA5M21RNwqBr12ww0dsI
+2026-09-01T14:33:52.052Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:33:52.052Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:33:55.029Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:33:55.926Z scenario W1: pass=true assertions=10 failing=[] (896ms)
+2026-09-01T14:33:56.926Z scenario W5: pass=true assertions=7 failing=[] (1000ms)
+2026-09-01T14:33:57.939Z scenario W7: pass=true assertions=7 failing=[] (1012ms)
+2026-09-01T14:34:00.904Z scenario W3: pass=true assertions=5 failing=[] (2965ms)
+2026-09-01T14:34:01.839Z scenario M1: pass=true assertions=5 failing=[] (933ms)
+2026-09-01T14:34:02.870Z scenario M2: pass=true assertions=7 failing=[] (1029ms)
+2026-09-01T14:34:03.100Z scenario M4: pass=true assertions=9 failing=[] (229ms)
+2026-09-01T14:34:03.153Z boot 1: stopped killed=true portFree=true
+2026-09-01T14:34:03.154Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:34:03.154Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T14:34:05.916Z boot 2: ready 鈥?toolCount=10 liveSessions=5 (expected 10 tools)
+2026-09-01T14:34:06.851Z scenario W2: pass=true assertions=7 failing=[] (933ms)
+2026-09-01T14:34:07.571Z scenario M3: pass=true assertions=5 failing=[] (719ms)
+2026-09-01T14:34:08.376Z scenario M5: pass=true assertions=6 failing=[] (805ms)
+2026-09-01T14:34:08.428Z boot 2: stopped killed=true portFree=true
+2026-09-01T14:34:08.428Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T14:34:10.005Z throwaway boot OK: http://127.0.0.1:3183/?token=IUTngVb4TQd7l66dwch-RAJdjco-XbY5KseMd8ztA4E
+2026-09-01T14:34:10.044Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:34:10.045Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:34:13.050Z boot 3: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T14:34:14.619Z scenario E1: pass=true assertions=14 failing=[] (1568ms)
+2026-09-01T14:34:14.677Z scenario E2: pass=true assertions=3 failing=[] (56ms)
+2026-09-01T14:34:16.664Z scenario E3: pass=true assertions=6 failing=[] (1986ms)
+2026-09-01T14:34:19.175Z scenario E4: pass=true assertions=5 failing=[] (2511ms)
+2026-09-01T14:34:19.720Z scenario E6: pass=true assertions=6 failing=[] (545ms)
+2026-09-01T14:34:21.038Z scenario E5(boot1-writes): pass=true assertions=11 failing=[] (1308ms)
+2026-09-01T14:34:21.087Z boot 3: stopped killed=true portFree=true
+2026-09-01T14:34:21.088Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T14:34:21.088Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T14:34:24.098Z boot 4: ready 鈥?toolCount=10 liveSessions=9 (expected 10 tools)
+2026-09-01T14:34:28.213Z scenario E5(boot2-restart): pass=true assertions=13 failing=[] (4114ms)
+2026-09-01T14:34:28.266Z boot 4: stopped killed=true portFree=true
+2026-09-01T14:34:28.270Z postflight: bypass scan files=5 violations=0
+2026-09-01T14:34:28.271Z postflight: mini MCP server closed; port 3492 released=true
+2026-09-01T14:34:28.404Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T14:34:28.404Z postflight: test-use pristine after=true
+2026-09-01T14:34:28.405Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T14:34:28.406Z postflight: lock released (own marker matched)
+2026-09-01T14:34:28.408Z P8-S3 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\dev\agent-workflow\evidence\P8-S\S5A-live\summary.json

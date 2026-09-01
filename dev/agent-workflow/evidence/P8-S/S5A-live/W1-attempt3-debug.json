@@ -1,0 +1,80 @@
+{
+  "criterion": "W1",
+  "boot": 1,
+  "pass": false,
+  "durationMs": 314,
+  "assertions": [
+    {
+      "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+      "pass": false,
+      "detail": "[{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+    },
+    {
+      "name": "delegate executed through the public tool seam",
+      "pass": false,
+      "detail": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"TeamRuntime: durable fact commit failed: RECORD_INVALID\",\"details\":{\"phase\":\"fact commit\",\"factType\":\"team-work-admitted\",\"sequence\":1}}"
+    },
+    {
+      "name": "the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)",
+      "pass": false,
+      "detail": "null"
+    },
+    {
+      "name": "a RUNNING target needs no admission CAS (lifecycleCommitted=false)",
+      "pass": false,
+      "detail": "{}"
+    },
+    {
+      "name": "the admission + settlement carry positive durable ledger sequences (admission before settlement)",
+      "pass": false,
+      "detail": "{}"
+    },
+    {
+      "name": "the target member row carries the seeded worker real child session id",
+      "pass": false,
+      "detail": "{}"
+    },
+    {
+      "name": "the request token round-trips into the outcome",
+      "pass": false,
+      "detail": "{}"
+    },
+    {
+      "name": "state: the member count stays three (a persistent continue mints nothing)",
+      "pass": false,
+      "detail": "{\"n\":2}"
+    },
+    {
+      "name": "the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)",
+      "pass": false
+    },
+    {
+      "name": "the real child Session log durably carries TOKEN_A + the exact prompt",
+      "pass": false,
+      "detail": "logBytes=0"
+    }
+  ],
+  "failing": [
+    "boot1 state: exactly the three seeded members (leader + worker + scout)",
+    "delegate executed through the public tool seam",
+    "the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)",
+    "a RUNNING target needs no admission CAS (lifecycleCommitted=false)",
+    "the admission + settlement carry positive durable ledger sequences (admission before settlement)",
+    "the target member row carries the seeded worker real child session id",
+    "the request token round-trips into the outcome",
+    "state: the member count stays three (a persistent continue mints nothing)",
+    "the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)",
+    "the real child Session log durably carries TOKEN_A + the exact prompt"
+  ],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "effectKind": null,
+    "memberCountAfter": 2,
+    "w1Row": null,
+    "w1LogBytes": 0
+  }
+}

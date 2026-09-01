@@ -1,0 +1,784 @@
+/**
+ * P8-S5A — the live-agent binding substrate for the production
+ * `dsh-agent-team` plugin.
+ *
+ * Verbatim port (zero behavior change) of the live-agent glue out of the
+ * P6-T6 harness row (packages/tools/harness/plugin.mjs): the idempotent
+ * child-session factory, the invariant-46 session-durability barrier, the
+ * per-session durable-consumption state (row-owned ModelSelectionRef +
+ * mini-MCP fiber + §18.3 applied-record set), the session-input and
+ * work-delivery ports, the lifecycle ports (interrupt / drain / residency),
+ * the caller map, and the row-owned tool execution budget.
+ *
+ * Plain JS ESM: node: builtins + prebuilt @deepseek-ai/* packages only (no
+ * TypeScript, no loader hooks — the production host row runs as built
+ * host.js under plain Node). The built production host dynamically imports
+ * this module at apply() and passes the deps below; every mutable piece of
+ * state (live agent handles, disposers, call counter, consumption state,
+ * observations) lives in the closure — one bindings object per row
+ * instance, per boot. No module-level mutable state.
+ *
+ * deps (all required; `now` is a documented parity field):
+ *   agents             - the DSH agents service (create/resume; AgentHandle seam)
+ *   sessionPersistence - the DSH sessionPersistence service (ensureMaterialized)
+ *   domain             - the OPENED TeamDomain: repositories (memberInstances,
+ *                        overrides) plus consumption { model:
+ *                        {resolveDurableModelSelection}, capability:
+ *                        {resolveDurableMcpFacet} } (the pure governance
+ *                        admission authority is NOT part of it — the harness
+ *                        row imports it from the built runtime dist itself)
+ *   config             - the row config (run.mjs teamRowConfig): rootSessionId,
+ *                        mcpServer {name, port}, staticModel, deniedSelection
+ *   teamToolsRef       - the plain { current: <teamTools | undefined> } object
+ *                        the production host fills AFTER root assembly; the
+ *                        setup callback reads teamToolsRef.current when it
+ *                        runs — never before (absent -> the registration
+ *                        loop is skipped, as before)
+ *   now                - parity field (the row's clock); unused by the ported
+ *                        glue paths, which derive time from the services
+ *
+ * Returned bindings (the harness observability surface first — the
+ * production host exposes this WHOLE bundle as the teamRoot.live field):
+ *   listLiveSessions()                  (sorted live session id strings)
+ *   hasLive(sessionId)                  (boolean)
+ *   ensureLiveAgent(sessionId)          (the live-agent-or-resume resolver)
+ *   prepareAgentForRequest(sessionId)   (the request-boundary reconciliation)
+ *   executeTool(sessionId, {name, args, callId})
+ *   getConsumptionState(sessionId)      (the per-session state or undefined)
+ *   resolveConsumptionViews(sessionId)  (the PURE consumption-view derivation)
+ *   observations                        (string[]; noteworthy async observations)
+ *   governanceAuthority(asSessionId)    (operator | member | undefined)
+ *   dropResidency(sessionId)            (-> {dropped, disposeError?})
+ *   close()                             (idempotent dispose of every owned side effect)
+ * Provider-facing ports (verbatim port):
+ *   childFactory.createChildSession(request) -> {childSessionId}
+ *   sessionDurability.ensureDurable(childSessionId)
+ *   surface                      (TeamAgentSetupSurface; no-op per SD-SURFACE)
+ *   sessionInput.submitAttributedInput(input)
+ *   workDelivery.deliver(args)
+ *   interrupt(target)            (agent.cancel({kind:'user'}))
+ *   drainDescendants(childSessionId) -> {drained:0, quiescent:true}
+ *   residency {has, hasResidency, dropResidency} (sync boolean port)
+ *   resolveCaller(sessionId)     (root -> leader, else bound member)
+ * Additive surface (the production root bootstrap):
+ *   boot()                           (idempotent full live-agent boot: create
+ *                                     or resume the root + every bound member
+ *                                     child, materializing each; the
+ *                                     production root calls it exactly once,
+ *                                     AFTER the tool stack is in teamToolsRef
+ *                                     — construction itself never creates or
+ *                                     resumes any agent)
+ *   agentSetup(sessionId)        (the AgentSetup callback; root bootstrap)
+ *   rootSessionId                (config.rootSessionId)
+ */
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { SessionId } from '@deepseek-ai/dsh-session'
+import { installModelSelection } from '@deepseek-ai/dsh-agent'
+import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
+import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+
+/**
+ * The leader instance id (packages/contracts LEADER_INSTANCE_ID). The
+ * plain-JS substrate cannot import the TS contracts package (no loader in
+ * the production host row), so the constant is mirrored here.
+ */
+const LEADER_INSTANCE_ID = 'inst-leader'
+
+/** The per-tool-call execution budget (activation involves real agent work). */
+const TOOL_EXEC_TIMEOUT_MS = 120_000
+
+/**
+ * Create the bindings closure over one row instance's deps.
+ * @param {object} deps - see the module header.
+ * @returns {object} the bindings (see the module header).
+ */
+export function createAgentBindings(deps) {
+  const { agents, sessionPersistence, domain, config, teamToolsRef } = deps
+  if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
+  if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
+  if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
+  if (domain === undefined || domain === null) throw new Error('agent-bindings: deps.domain is required (the opened TeamDomain)')
+  if (teamToolsRef === undefined || teamToolsRef === null || typeof teamToolsRef !== 'object') {
+    throw new Error('agent-bindings: deps.teamToolsRef is required (a { current } object the production host fills after root assembly)')
+  }
+  // The durable-consumption resolvers ride on the opened domain.
+  const consumption = domain.consumption
+  if (consumption === undefined || consumption === null) {
+    throw new Error('agent-bindings: domain.consumption is required ({ model, capability } durable resolvers)')
+  }
+
+  const rootSid = config.rootSessionId
+
+  // ── closure state (one row instance per process = per boot) ───────────
+
+  /** @type {Map<string, object>} live agent handles keyed by session id. */
+  const liveAgents = new Map()
+  /** @type {Array<() => void>} tool-registration + model-selection disposers. */
+  const toolDisposers = []
+  /** @type {number} synthetic callId counter (the driver may omit callIds). */
+  let callCounter = 0
+  /** @type {string[]} noteworthy async observations (e.g. whenIdle quirks). */
+  const observations = []
+  /**
+   * @type {Map<string, object>} per-session durable consumption state, keyed
+   * by session id: `{ instanceId, ref, modelView, mcpView, mcpFiber,
+   * mcpActivationError, appliedRecordIds: Set<string> }`. The `ref` is the
+   * row-owned ModelSelectionRef installed on the public model-selection seam;
+   * the views are the last APPLIED consumption views; `appliedRecordIds` is
+   * the §18.3 boundary record set (which durable records this session has
+   * already applied at its last request boundary).
+   */
+  const consumptionState = new Map()
+  /**
+   * @type {Promise<void> | undefined} the single boot() promise; boot() is
+   * idempotent — a second call re-awaits the same promise.
+   */
+  let bootPromise = undefined
+
+  // ── the durable-mutation consumption boundary (ported) ─────────────────
+
+  /**
+   * The deterministic child session id for one activated instance (the
+   * factory idempotency contract: same (root, instanceId) -> same child id).
+   * @param {string} instanceId - an `inst-`-prefixed instance id.
+   * @returns {string} the derived child session id.
+   */
+  function childSessionIdFor(instanceId) {
+    // VERBATIM port: the prefix is a literal, not row config — the
+    // provider's provisioning coordinator calls the factory with the
+    // ALLOCATED instanceId and the W3 assertions mirror this derivation.
+    return `session-child-p6t6-${instanceId.slice(5)}`
+  }
+
+  /**
+   * Whether a session already has FINAL durable artifacts on disk
+   * (`session.jsonl.zstd` under <DSH_HOME>/sessions/<project>/<sessionId>/) —
+   * the cold-resume eligibility check (the write-behind publication is long
+   * settled by the time a restarted boot asks).
+   * @param {string} sessionId
+   * @returns {boolean}
+   */
+  function sessionIsDurable(sessionId) {
+    const home = process.env.DSH_HOME
+    if (home === undefined) return false
+    const sessionsRoot = join(home, 'sessions')
+    let profiles
+    try {
+      profiles = readdirSync(sessionsRoot, { withFileTypes: true }).filter((e) => e.isDirectory())
+    } catch {
+      return false
+    }
+    for (const pd of profiles) {
+      const dir = join(sessionsRoot, pd.name, sessionId)
+      let entries
+      try {
+        entries = readdirSync(dir, { withFileTypes: true })
+      } catch {
+        continue
+      }
+      if (entries.some((e) => e.isFile() && e.name === 'session.jsonl.zstd')) return true
+    }
+    return false
+  }
+
+  /**
+   * The durable instance binding for one session (the root embodies the
+   * leader instance; every other live session is a bound member child).
+   * @param {string} sessionId
+   * @returns {string} the clean instance id.
+   */
+  function instanceIdForSession(sessionId) {
+    if (sessionId === rootSid) return String(LEADER_INSTANCE_ID)
+    const members = domain.repositories.memberInstances.list(rootSid)
+    for (const member of members) {
+      if (String(member.childSessionId) === sessionId) return String(member.instanceId)
+    }
+    throw new Error(`p6t6 consumption: no team instance for session '${sessionId}'`)
+  }
+
+  /**
+   * Re-read the backend truth (the durable governance overrides) and resolve
+   * the session's model + mcp consumption views. PURE — no live-agent side
+   * effects — so boot setup, every request boundary, and the state route's
+   * next-boundary projection all share the same derivation.
+   * @param {string} sessionId
+   * @param {string} [instanceIdHint] - the instance id the activation flow
+   *   allocated for a FRESH child session: between the frozen flow's
+   *   child-session creation (provider step 13) and the MemberInstance
+   *   commit (step 15) the domain row does not exist yet, so the domain
+   *   lookup would fail closed; the hint bridges exactly that window and
+   *   carries the same value step 15 commits. The lookup stays
+   *   authoritative for every other caller (boot, request boundary,
+   *   projection).
+   * @returns {{instanceId: string, modelView: object, mcpView: object}}
+   */
+  function resolveConsumptionViews(sessionId, instanceIdHint) {
+    const existing = consumptionState.get(sessionId)
+    let instanceId
+    if (existing !== undefined) instanceId = existing.instanceId
+    else if (instanceIdHint !== undefined) instanceId = String(instanceIdHint)
+    else instanceId = instanceIdForSession(sessionId)
+    const overrides = domain.repositories.overrides.list(rootSid)
+    const external = { hard: {}, capabilityExists: {} }
+    const applied = existing !== undefined ? [...existing.appliedRecordIds] : []
+    const modelArgs = {
+      rootSessionId: rootSid,
+      instanceId,
+      overrides,
+      external,
+      baseline: { ...config.staticModel },
+    }
+    const mcpArgs = { rootSessionId: rootSid, instanceId, overrides, external, serverName: config.mcpServer.name }
+    if (applied.length > 0) {
+      modelArgs.appliedRecordIds = applied
+      mcpArgs.appliedRecordIds = applied
+    }
+    const { view: modelView } = consumption.model.resolveDurableModelSelection(modelArgs)
+    const { view: mcpView } = consumption.capability.resolveDurableMcpFacet(mcpArgs)
+    return { instanceId, modelView, mcpView }
+  }
+
+  /**
+   * Mark every record the just-applied boundary consumed as applied (the
+   * §18.3 `appliedRecordIds` set advances to "everything admitted for the
+   * cells this boundary resolved").
+   * @param {object} state
+   * @param {object} modelView
+   * @param {object} mcpView
+   */
+  function applyBoundaryRecords(state, modelView, mcpView) {
+    for (const pending of [...modelView.pendingNextBoundary, ...mcpView.pendingNextBoundary]) {
+      state.appliedRecordIds.add(pending.recordId)
+    }
+  }
+
+  /**
+   * Mount (or dispose) the live mini-MCP server on one agent per the durable
+   * mcp facet. The fiber is a thenable: awaiting it completes activation
+   * (connection + tool discovery); `.dispose()` unregisters the tools. A
+   * rejected activation is recorded, the fiber is dropped, and the error
+   * propagates (fail-closed: the tool is simply absent — never a half mount).
+   * @param {object} agentCtx
+   * @param {object} state - the session's consumption state (holds the fiber).
+   * @param {boolean} allowed - the facet's mount decision.
+   */
+  async function reconcileMcp(agentCtx, state, allowed) {
+    if (allowed && state.mcpFiber === undefined) {
+      if (config.mcpServer.port === null) {
+        throw new Error(`p6t6: the durable policy allows mcp server '${config.mcpServer.name}' but no mini-MCP port is configured (config.mcpServer.port)`)
+      }
+      const fiber = agentCtx.plugin(mcpClient, {
+        transport: 'streamable-http',
+        serverName: config.mcpServer.name,
+        url: `http://127.0.0.1:${config.mcpServer.port}/mcp`,
+        headers: {},
+        toolCallTimeoutMs: 15_000,
+        failOnStartupError: true,
+      })
+      try {
+        await fiber
+        state.mcpFiber = fiber
+      } catch (error) {
+        state.mcpActivationError = error instanceof Error ? error.message : String(error)
+        observations.push(`p6t6: mcp activation failed: ${state.mcpActivationError}`)
+        try { fiber.dispose() } catch { /* the fiber is already dead */ }
+        throw error
+      }
+      return
+    }
+    if (!allowed && state.mcpFiber !== undefined) {
+      const fiber = state.mcpFiber
+      state.mcpFiber = undefined
+      state.mcpActivationError = undefined
+      try {
+        fiber.dispose()
+      } catch (error) {
+        observations.push(`p6t6: mcp fiber dispose failed: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+  }
+
+  /**
+   * The shared agent setup (create OR resume): resolve the durable model
+   * selection + the mcp facet from the backend truth NOW, install the
+   * row-owned ModelSelectionRef on the public model-selection seam, register
+   * every team tool, and mount the live mini-MCP server when the durable
+   * policy allows it. The disposers are collected for row-stop cleanup (the
+   * agent-scope unwind covers them on disposal as well).
+   * @param {string} sessionId - the session this agent embodies.
+   * @param {string} [instanceIdHint] - the fresh-child instance id carried
+   *   by the child factory (see resolveConsumptionViews); only that caller
+   *   passes it.
+   * @returns {function(object): Promise<void>} the AgentSetup callback.
+   */
+  function agentSetup(sessionId, instanceIdHint) {
+    return async (agentCtx) => {
+      const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint)
+      const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
+      const state = {
+        instanceId,
+        ref,
+        modelView,
+        mcpView,
+        mcpFiber: undefined,
+        mcpActivationError: undefined,
+        appliedRecordIds: new Set(),
+      }
+      consumptionState.set(sessionId, state)
+      toolDisposers.push(installModelSelection(agentCtx, ref))
+      // The host fills teamToolsRef.current AFTER root assembly; the setup
+      // callback reads it when it runs — never before. Absent -> the
+      // registration loop is skipped, as before.
+      const teamTools = teamToolsRef.current
+      if (teamTools) {
+        for (const def of teamTools.tools) {
+          toolDisposers.push(agentCtx.tools.register(def))
+        }
+      }
+      // The mcp facet's fail-closed baseline: no durable allow -> no mount.
+      // At a fresh create no overrides exist yet (unspecified), so this is
+      // the resume/restart path that re-applies the durable truth on boot.
+      if (mcpView.allowed) {
+        await reconcileMcp(agentCtx, state, mcpView.allowed)
+      }
+      applyBoundaryRecords(state, modelView, mcpView)
+    }
+  }
+
+  /**
+   * The live-agent-or-resume resolver for one session id (a not-live-but-
+   * durable session is resumed first; a session that is neither live nor
+   * durable has no agent to run on).
+   * @param {string} sessionId
+   * @returns {Promise<object>} the AgentHandle.
+   */
+  async function ensureLiveAgent(sessionId) {
+    const existing = liveAgents.get(sessionId)
+    if (existing !== undefined) return existing
+    if (!sessionIsDurable(sessionId)) {
+      throw new Error(`p6t6: session '${sessionId}' is neither live nor durable — no agent to execute a tool on`)
+    }
+    const handle = await agents.resume({
+      resumeSessionId: SessionId(sessionId),
+      setup: agentSetup(sessionId),
+    })
+    liveAgents.set(sessionId, handle)
+    return handle
+  }
+
+  /**
+   * The request-boundary reconciliation (P8-S4B §18.2): re-read the backend
+   * truth and bring the live agent's model selection + mcp mount in line with
+   * it BEFORE the next real request. Future-boundary semantics come from the
+   * public seam itself: an in-flight turn keeps its own assembly snapshot
+   * (`assembled`); only the NEXT assembly sees the new `current`.
+   * @param {string} sessionId
+   * @returns {Promise<void>}
+   */
+  async function prepareAgentForRequest(sessionId) {
+    const state = consumptionState.get(sessionId)
+    if (state === undefined) return // defensive: every row agent has consumption state
+    const { modelView, mcpView } = resolveConsumptionViews(sessionId)
+    const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
+    if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
+      state.ref.current = selection
+    }
+    const handle = liveAgents.get(sessionId)
+    if (handle !== undefined) {
+      await reconcileMcp(handle.agent.ctx, state, mcpView.allowed)
+    }
+    applyBoundaryRecords(state, modelView, mcpView)
+    state.modelView = modelView
+    state.mcpView = mcpView
+  }
+
+  // ── the activation ports (real external effects, minimal surface) ─────
+
+  const childFactory = {
+    async createChildSession(request) {
+      const childSid = childSessionIdFor(String(request.instanceId))
+      // The fresh-child instance id, carried into the setup callback: the
+      // frozen activation flow creates the child session BEFORE the
+      // MemberInstance row is committed (crash-window semantics — the
+      // child artifact is durable before the member record), so the setup's
+      // consumption resolution cannot derive the id from the domain yet.
+      // The hint is exactly the value the flow commits moments later.
+      const instanceIdHint = String(request.instanceId)
+      const live = liveAgents.get(childSid)
+      if (live !== undefined) return { childSessionId: childSid }
+      if (sessionIsDurable(childSid)) {
+        const handle = await agents.resume({
+          resumeSessionId: SessionId(childSid),
+          setup: agentSetup(childSid, instanceIdHint),
+        })
+        liveAgents.set(childSid, handle)
+        return { childSessionId: childSid }
+      }
+      const handle = await agents.create({
+        sessionId: SessionId(childSid),
+        meta: { cwd: process.env.DSH_HOME },
+        setup: agentSetup(childSid, instanceIdHint),
+      })
+      liveAgents.set(childSid, handle)
+      return { childSessionId: childSid }
+    },
+  }
+
+  const sessionDurability = {
+    async ensureDurable(childSessionId) {
+      const handle = liveAgents.get(String(childSessionId))
+      if (handle === undefined) {
+        throw new Error(`p6t6: no live agent for child session '${childSessionId}' — the invariant-46 durability barrier is impossible`)
+      }
+      await sessionPersistence.ensureMaterialized(handle.agent.session)
+    },
+  }
+
+  /**
+   * The full live-agent boot (the sequence the P6-T6 harness ran after the
+   * tool stack existed; the production root calls it exactly once, after
+   * filling teamToolsRef, because the setup callback registers tools INSIDE
+   * create/resume). Idempotent: a second call re-awaits the same promise.
+   *   create phase: create the root agent (deterministic root session id,
+   *     DSH_HOME cwd) -> liveAgents -> ensureMaterialized -> then every
+   *     seeded NON-leader member (config.seedMembers, leader excluded —
+   *     the leader IS the root session): create the child agent on its
+   *     config childSessionId -> liveAgents -> ensureMaterialized.
+   *   resume phase: resume the root (same call shape), then re-bind every
+   *     bound member child from the domain truth (dedupe by childSessionId,
+   *     seen set starting {rootSid}): resume -> liveAgents ->
+   *     ensureMaterialized.
+   * @returns {Promise<void>}
+   */
+  function boot() {
+    if (bootPromise !== undefined) return bootPromise
+    bootPromise = (async () => {
+      if (config.bootPhase !== 'create' && config.bootPhase !== 'resume') {
+        throw new Error(`agent-bindings: config.bootPhase must be 'create' or 'resume' (got ${JSON.stringify(config.bootPhase)})`)
+      }
+      const rootHandle = config.bootPhase === 'create'
+        ? await agents.create({
+          sessionId: SessionId(rootSid),
+          meta: { cwd: process.env.DSH_HOME },
+          setup: agentSetup(rootSid),
+        })
+        : await agents.resume({
+          resumeSessionId: SessionId(rootSid),
+          setup: agentSetup(rootSid),
+        })
+      liveAgents.set(rootSid, rootHandle)
+      if (config.bootPhase === 'create') {
+        await sessionPersistence.ensureMaterialized(rootHandle.agent.session)
+        for (const seed of config.seedMembers) {
+          // The leader instance IS the root session — never a child.
+          if (String(seed.instanceId) === LEADER_INSTANCE_ID) continue
+          const child = String(seed.childSessionId)
+          const handle = await agents.create({
+            sessionId: SessionId(child),
+            meta: { cwd: process.env.DSH_HOME },
+            setup: agentSetup(child),
+          })
+          liveAgents.set(child, handle)
+          await sessionPersistence.ensureMaterialized(handle.agent.session)
+        }
+      } else {
+        // Resume phase: re-bind every bound member child (the leader's is
+        // the root, already resumed; dedupe by child session id).
+        const members = domain.repositories.memberInstances.list(rootSid)
+        const seen = new Set([rootSid])
+        for (const member of members) {
+          const child = String(member.childSessionId)
+          if (seen.has(child)) continue
+          seen.add(child)
+          const handle = await agents.resume({
+            resumeSessionId: SessionId(child),
+            setup: agentSetup(child),
+          })
+          liveAgents.set(child, handle)
+          await sessionPersistence.ensureMaterialized(handle.agent.session)
+        }
+      }
+    })()
+    return bootPromise
+  }
+
+  // SD-SURFACE: the minimal no-op TeamAgentSetupSurface with the port's real
+  // signatures (the harness needs no overlay slots; the post-commit binder
+  // resolves the durable member record through the read handle).
+  const surface = {
+    getInstalledSlots(_sessionId) { return [] },
+    installOverlay(_sessionId, _slot) {},
+    restoreScope(_sessionId, _scope) {},
+    recordSessionEvent(_sessionId, _event) {},
+  }
+
+  // The REAL SessionInputPort over the public Session input API: the
+  // followup commit point is the inbox acceptance; the quiescence wait
+  // follows. Commit-or-throw: a rejection means the input was not
+  // delivered (the coordinator keeps the intent pending).
+  const sessionInput = {
+    async submitAttributedInput(input) {
+      const handle = await ensureLiveAgent(String(input.sessionId))
+      // P8-S4B: request boundary — re-apply the durable truth first.
+      await prepareAgentForRequest(String(input.sessionId))
+      const message = createUserMessage({
+        content: [{ type: 'text', text: input.text }],
+        source: { kind: 'user' },
+      })
+      handle.agent.followup(message)
+      try {
+        await handle.agent.whenIdle()
+      } catch (error) {
+        const note = `p6t6: whenIdle rejected after an accepted followup on ${input.sessionId}: ${error instanceof Error ? error.message : String(error)}`
+        observations.push(note)
+        throw error
+      }
+    },
+  }
+
+  // The work-delivery port (R1/R6): the ONLY model-visible delivery path —
+  // the requestToken rides visibly so at-least-once deliveries stay
+  // dedupe-able from the durable child log, and the turn is observed to
+  // idle before the chain settles. A fault here throws: the chain settles
+  // fail-closed, never a fake RUNNING success.
+  const workDelivery = {
+    async deliver(args) {
+      const handle = await ensureLiveAgent(String(args.childSessionId))
+      // P8-S4B: request boundary — re-apply the durable truth first.
+      await prepareAgentForRequest(String(args.childSessionId))
+      const text = args.attachedContext !== undefined && args.attachedContext.length > 0
+        ? `${args.prompt}\n\n[attached-context]\n${args.attachedContext}`
+        : args.prompt
+      const message = createUserMessage({
+        content: [{ type: 'text', text: `[team-work requestToken=${args.requestToken}] ${text}` }],
+        source: { kind: 'user' },
+      })
+      handle.agent.followup(message)
+      await handle.agent.whenIdle()
+      // Materialize the durable log (the same public persistence seam the
+      // activation barrier uses) so the delivered turn's model-visible
+      // content is on disk before the chain settles. A contained upstream
+      // turn failure does NOT reject whenIdle (errors are contained at the
+      // driver boundary and reported, not propagated), so reaching here
+      // means the model-visible message was submitted and the turn is over.
+      await sessionPersistence.ensureMaterialized(handle.agent.session)
+    },
+  }
+
+  // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
+  // admission stays with the production row (no separate in-process
+  // admission gate — the router's per-team lock serializes the whole
+  // procedure); interrupt is the public Agent cancel (upstream contract:
+  // no-op when the phase is idle); drain quiesces on the public whenIdle;
+  // residency is the live-agent handle map (drop = forget the resident
+  // handle, the durable session stays on disk under DSH_HOME).
+  async function interrupt(target) {
+    const row = domain.repositories.memberInstances.list(rootSid).find(
+      (m) => String(m.instanceId) === String(target.instanceId),
+    )
+    const handle = row !== undefined ? liveAgents.get(String(row.childSessionId)) : undefined
+    if (handle === undefined) return // no activity in flight: no-op by contract
+    handle.agent.cancel({ kind: 'user' })
+  }
+
+  async function drainDescendants(childSessionId) {
+    const handle = liveAgents.get(String(childSessionId))
+    if (handle !== undefined) {
+      try {
+        await handle.agent.whenIdle()
+      } catch {
+        // a rejected turn is over (idle or failed): the member is
+        // quiescent either way; a non-turn fault still propagates
+      }
+    }
+    return { drained: 0, quiescent: true }
+  }
+
+  const residency = {
+    has(sessionId) { return liveAgents.has(String(sessionId)) },
+    // alias: the frozen port name
+    hasResidency(sessionId) { return liveAgents.has(String(sessionId)) },
+    dropResidency(sessionId) {
+      const sid = String(sessionId)
+      const handle = liveAgents.get(sid)
+      if (handle === undefined) return false // the handle may be absent: no-op by contract
+      liveAgents.delete(sid)
+      // The sync port cannot await: the public handle dispose (stop the
+      // loop, unregister, remove the session from the store) proceeds
+      // in flight. Quiescence was already observed at the previous step,
+      // so no model-visible write can follow the unregister.
+      handle.dispose().catch((error) => {
+        observations.push(`p6t6: residency dispose failed for '${sid}': ${error instanceof Error ? error.message : String(error)}`)
+      })
+      return true
+    },
+  }
+
+  // SD-CALLER: the tool layer only LOOKS UP the caller identity from the
+  // durable domain; the runtime re-validates it on every call.
+  const resolveCaller = async (sessionId) => {
+    if (sessionId === rootSid) {
+      return { kind: 'instance', instanceId: String(LEADER_INSTANCE_ID) }
+    }
+    const members = domain.repositories.memberInstances.list(rootSid)
+    for (const member of members) {
+      if (String(member.childSessionId) === sessionId) {
+        return { kind: 'instance', instanceId: String(member.instanceId) }
+      }
+    }
+    throw new Error(`p6t6 caller map: no caller for session ${sessionId}`)
+  }
+
+  // ── the live-handle surface (harness routes + root bootstrap) ─────────
+
+  /**
+   * The governance authority for the principal session (verbatim from the
+   * P6-T6 governance route): the root session is the host-known operator
+   * (human overrides); a bound member child is a member (own-instance
+   * autonomy overlays only); anything else has no authorized team principal.
+   * @param {string} asSessionId
+   * @returns {{kind: string, instanceId?: string} | undefined}
+   */
+  function governanceAuthority(asSessionId) {
+    if (asSessionId === rootSid) return { kind: 'operator' }
+    const member = domain.repositories.memberInstances
+      .list(rootSid)
+      .find((m) => String(m.childSessionId) === asSessionId)
+    if (member === undefined) return undefined
+    return { kind: 'member', instanceId: String(member.instanceId) }
+  }
+
+  /**
+   * Forget + dispose one live handle with the route-facing result object:
+   * absent -> {dropped:false}; present -> delete + await the teardown,
+   * surfacing a dispose rejection as disposeError (and an observation).
+   * Awaiting the teardown first guarantees no second live agent on the same
+   * session when the next execution cold-resumes from the durable log (W7).
+   * @param {string} sessionId
+   * @returns {Promise<{dropped: boolean, disposeError?: string}>}
+   */
+  async function dropResidency(sessionId) {
+    const sid = String(sessionId)
+    const handle = liveAgents.get(sid)
+    if (handle === undefined) return { dropped: false } // the handle may be absent: no-op by contract
+    liveAgents.delete(sid)
+    try {
+      await handle.dispose()
+      return { dropped: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      observations.push(`p6t6: residency dispose failed for '${sid}': ${message}`)
+      return { dropped: true, disposeError: message }
+    }
+  }
+
+  // ── the row-owned tool execution budget (the tool-route internals) ────
+
+  /** A route-facing execution fault: `code` maps to the harness status. */
+  function toolRouteError(code, message) {
+    return Object.assign(new Error(message), { code })
+  }
+
+  /**
+   * One registered-tool execution on the agent bound to `sessionId`
+   * (ensure-live -> request boundary -> synthetic callId -> the public
+   * tools.execute with the row-owned budget). Faults surface as an Error
+   * with a `code`: NO_LIVE_AGENT (harness 422), CONSUMPTION_BOUNDARY
+   * (harness 500), TOOLS_EXECUTE (harness 500).
+   * @param {string} sessionId
+   * @param {{name: string, args?: object, callId?: string}} request
+   * @returns {Promise<object>} the tools.execute result ({isError, value, error}).
+   */
+  async function executeTool(sessionId, request) {
+    const { name, args, callId } = request
+    let handle
+    try {
+      handle = await ensureLiveAgent(String(sessionId))
+    } catch (error) {
+      throw toolRouteError('NO_LIVE_AGENT', error instanceof Error ? error.message : String(error))
+    }
+    // P8-S4B: request boundary — the next real request runs on the
+    // durable truth (an in-flight turn on `sessionId` keeps its own snapshot).
+    try {
+      await prepareAgentForRequest(String(sessionId))
+    } catch (error) {
+      throw toolRouteError('CONSUMPTION_BOUNDARY', error instanceof Error ? error.message : String(error))
+    }
+    callCounter += 1
+    const resolvedCallId = ToolCallId(typeof callId === 'string' && callId.length > 0 ? callId : `p6t6-call-${callCounter}`)
+    try {
+      return await handle.agent.ctx.tools.execute({
+        callId: resolvedCallId,
+        name,
+        arguments: args ?? {},
+        agent: handle.agent,
+        signal: AbortSignal.timeout(TOOL_EXEC_TIMEOUT_MS),
+      })
+    } catch (error) {
+      throw toolRouteError('TOOLS_EXECUTE', `tools.execute failed: ${error instanceof Error ? `${error.message}${error.stack ? `\n${error.stack}` : ''}` : String(error)}`)
+    }
+  }
+
+  // ── row-stop cleanup (idempotent) ──────────────────────────────────────
+
+  /**
+   * Dispose every owned side effect (idempotent — the row-stop backstop;
+   * safe if the production root also calls it on its own stop): the live
+   * agent handles, the tool-registration + model-selection disposers, every
+   * mounted mini-MCP fiber (the agent-scope unwind covers each one on
+   * disposal as well), and the per-session consumption state. The TeamDomain
+   * close stays with the production root.
+   * @returns {Promise<void>}
+   */
+  async function close() {
+    for (const [sid, handle] of [...liveAgents]) {
+      liveAgents.delete(sid)
+      try {
+        await handle.dispose()
+      } catch (error) {
+        observations.push(`p6t6: close: agent dispose failed for '${sid}': ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+    for (const dispose of toolDisposers.splice(0)) {
+      try { dispose() } catch { /* the scope unwind covers it */ }
+    }
+    for (const state of consumptionState.values()) {
+      if (state.mcpFiber !== undefined) {
+        try { state.mcpFiber.dispose() } catch { /* the scope unwind covers it */ }
+        state.mcpFiber = undefined
+      }
+    }
+    consumptionState.clear()
+  }
+
+  return {
+    // the harness observability surface (the production host exposes this
+    // whole bundle as the teamRoot.live field)
+    listLiveSessions: () => [...liveAgents.keys()].sort(),
+    hasLive: (sessionId) => liveAgents.has(String(sessionId)),
+    ensureLiveAgent,
+    prepareAgentForRequest,
+    executeTool,
+    getConsumptionState: (sessionId) => consumptionState.get(String(sessionId)),
+    resolveConsumptionViews,
+    observations,
+    governanceAuthority,
+    dropResidency,
+    close,
+    // the provider-facing ports (verbatim port)
+    childFactory,
+    sessionDurability,
+    surface,
+    sessionInput,
+    workDelivery,
+    interrupt,
+    drainDescendants,
+    residency,
+    resolveCaller,
+    // additive: the production root bootstrap
+    boot,
+    agentSetup,
+    rootSessionId: rootSid,
+  }
+}
