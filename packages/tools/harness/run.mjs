@@ -348,7 +348,7 @@ async function main() {
   log(`ports: boot1=${portA} boot2=${portB} (W world) boot3=${portC} boot4=${portD} (E world); selected scenarios: ${args.selected.join(',')}`)
 
   const summary = {
-    task: 'P8-S3 team work execution + lifecycle closure E2E (live criteria E1-E7 + W1,W2,W3,W5,W7; W4/W6/W8/W9 package-level)',
+    task: 'P8-S4B durable mutation -> actual Agent closure E2E (live criteria M1-M5; W1/W2/W3/W5/W7 + E1-E7 available for full runs)',
     runStamp,
     harness: 'packages/tools/harness',
     worktree: WORKTREE_ROOT,

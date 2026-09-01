@@ -1,0 +1,74 @@
+2026-09-01T06:16:32.745Z P8-S3 harness start: runStamp=p8s3-1788243392745 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B
+2026-09-01T06:16:32.746Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b-e
+2026-09-01T06:16:32.746Z ports: boot1=3185 boot2=3186 (W world) boot3=3187 boot4=3188 (E world); selected scenarios: M1,M2,M3,M4,M5
+2026-09-01T06:16:40.154Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T06:16:40.171Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T06:16:40.174Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b
+2026-09-01T06:16:40.175Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b.lock
+2026-09-01T06:16:40.179Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T06:16:40.180Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T06:16:40.181Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T06:16:40.182Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T06:16:40.183Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T06:16:40.184Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T06:16:40.185Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T06:16:40.186Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T06:16:40.186Z junction farm ready (shared packages/node_modules)
+2026-09-01T06:16:40.205Z mini MCP server up on 127.0.0.1:3493
+2026-09-01T06:16:40.207Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T06:16:44.039Z throwaway boot OK: http://127.0.0.1:3185/?token=b0COvPFUdhYZ44bxKaCBXXHoVsfo81r5VqltHnD_StA
+2026-09-01T06:16:44.079Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b\p6t6-directive.json
+2026-09-01T06:16:51.613Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T06:16:52.647Z scenario M1: pass=true assertions=5 failing=[] (1032ms)
+2026-09-01T06:16:53.611Z scenario M2: pass=true assertions=7 failing=[] (964ms)
+2026-09-01T06:16:53.835Z scenario M4: pass=true assertions=9 failing=[] (222ms)
+2026-09-01T06:16:53.891Z boot 1: stopped killed=true portFree=true
+2026-09-01T06:16:53.894Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b\p6t6-directive.json
+2026-09-01T06:16:56.077Z boot 2: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T06:16:56.968Z scenario M3: pass=true assertions=5 failing=[] (890ms)
+2026-09-01T06:16:58.125Z scenario M5: pass=true assertions=6 failing=[] (1156ms)
+2026-09-01T06:16:58.171Z boot 2: stopped killed=true portFree=true
+2026-09-01T06:16:58.176Z postflight: bypass scan files=5 violations=0
+2026-09-01T06:16:58.177Z postflight: mini MCP server closed; port 3493 released=true
+2026-09-01T06:17:05.232Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T06:17:05.232Z postflight: test-use pristine after=true
+2026-09-01T06:17:05.234Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T06:17:05.235Z postflight: lock released (own marker matched)
+2026-09-01T06:17:05.236Z P8-S3 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\dev\agent-workflow\evidence\P8-S\S4B-live\summary.json
+2026-09-01T06:17:56.421Z P8-S3 harness start: runStamp=p8s3-1788243476421 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B
+2026-09-01T06:17:56.422Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b-e
+2026-09-01T06:17:56.422Z ports: boot1=3185 boot2=3186 (W world) boot3=3187 boot4=3188 (E world); selected scenarios: M1,M2,M3,M4,M5
+2026-09-01T06:17:56.543Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T06:17:56.552Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T06:17:56.553Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b
+2026-09-01T06:17:56.554Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b.lock
+2026-09-01T06:17:56.556Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T06:17:56.557Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T06:17:56.558Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T06:17:56.558Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T06:17:56.559Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T06:17:56.559Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T06:17:56.560Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T06:17:56.561Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T06:17:56.561Z junction farm ready (shared packages/node_modules)
+2026-09-01T06:17:56.571Z mini MCP server up on 127.0.0.1:3493
+2026-09-01T06:17:56.572Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T06:17:58.135Z throwaway boot OK: http://127.0.0.1:3185/?token=GUtNHeR1B4wUYlDn3S03gFUFVKpCuHDd_5pEnA7Hbjs
+2026-09-01T06:17:58.174Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b\p6t6-directive.json
+2026-09-01T06:18:01.445Z boot 1: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T06:18:02.375Z scenario M1: pass=true assertions=5 failing=[] (928ms)
+2026-09-01T06:18:03.314Z scenario M2: pass=true assertions=7 failing=[] (939ms)
+2026-09-01T06:18:03.590Z scenario M4: pass=true assertions=9 failing=[] (275ms)
+2026-09-01T06:18:03.646Z boot 1: stopped killed=true portFree=true
+2026-09-01T06:18:03.647Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s4b\p6t6-directive.json
+2026-09-01T06:18:05.857Z boot 2: ready 鈥?toolCount=10 liveSessions=3 (expected 10 tools)
+2026-09-01T06:18:06.719Z scenario M3: pass=true assertions=5 failing=[] (860ms)
+2026-09-01T06:18:07.574Z scenario M5: pass=true assertions=6 failing=[] (854ms)
+2026-09-01T06:18:07.625Z boot 2: stopped killed=true portFree=true
+2026-09-01T06:18:07.630Z postflight: bypass scan files=5 violations=0
+2026-09-01T06:18:07.631Z postflight: mini MCP server closed; port 3493 released=true
+2026-09-01T06:18:07.764Z postflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T06:18:07.765Z postflight: test-use pristine after=true
+2026-09-01T06:18:07.767Z postflight: junction farm removed (packages/node_modules)
+2026-09-01T06:18:07.768Z postflight: lock released (own marker matched)
+2026-09-01T06:18:07.770Z P8-S3 harness PASS 鈥?summary: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S4B\dev\agent-workflow\evidence\P8-S\S4B-live\summary.json
