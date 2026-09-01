@@ -46,3 +46,16 @@ export {
   type CapabilityOverlaySlot,
   type CapabilityOverlaySlotOptions,
 } from './slot.js'
+
+// P8-S4B — the durable CONSUMPTION of the MCP facet: the mount decision
+// the live agent applies at every boundary, re-read from the durable
+// governance overrides (backend truth) — fail-closed, restart-effective
+// (DevPlan P8-S §18.1/§18.2).
+export {
+  MCP_FACET_WILDCARD,
+  mcpFacetView,
+  resolveDurableMcpFacet,
+  type DurableMcpFacet,
+  type DurableMcpFacetArgs,
+  type McpFacetView,
+} from './mcp-facet.js'

@@ -145,6 +145,33 @@ const W5_PROMPT = 'the p8s3 W5 exact model-visible follow-up prompt'
 /** W7: the cold-resume follow-up token after the residency drop. */
 const W7_TOKEN = 'p8s3-w7-token'
 const W7_PROMPT = 'the p8s3 W7 exact model-visible follow-up prompt'
+// ── P8-S4B: the durable-mutation -> actual-Agent-behavior criteria (M1-M5) ──
+/** M1: the baseline model-A follow-up token (in-flight stays A). */
+const M1_TOKEN = 'p8s4b-m1-token'
+const M1_PROMPT = 'the p8s4b M1 baseline model-visible prompt'
+/** M2: the model-B follow-up token after the durable allow mutation. */
+const M2_TOKEN = 'p8s4b-m2-token'
+const M2_PROMPT = 'the p8s4b M2 model-B follow-up prompt'
+/** M3: the post-restart model-B follow-up token (restart-effective). */
+const M3_TOKEN = 'p8s4b-m3-token'
+const M3_PROMPT = 'the p8s4b M3 post-restart model-B follow-up prompt'
+/** M5: the post-restart follow-up token proving the model survives boot 2. */
+const M5_TOKEN = 'p8s4b-m5-token'
+const M5_PROMPT = 'the p8s4b M5 post-restart model-B prompt'
+/** M4: the mini-MCP ping payloads (allowed vs denied boundaries). */
+const M4_PING_MSG_ALLOW = 'p8s4b-m4-allow'
+const M4_PING_MSG_DENY = 'p8s4b-m4-deny'
+/** The live mini-MCP server name + the row-owned mini endpoint path. */
+const M4_MCP_SERVER = 'p8s4bmini'
+const M4_PING_TOOL = `mcp__${M4_MCP_SERVER}__ping`
+/** The durable override record ids the M scenarios admit (cumulative re-issue). */
+const M_RECORD_MODEL = 'p8s4b-ovr-model'
+const M_RECORD_MCP_ALLOW = 'p8s4b-ovr-mcp-allow'
+const M_RECORD_MCP_DENY = 'p8s4b-ovr-mcp-deny'
+/** The model-B selection the M2 mutation grants (provider/model item). */
+const M_MODEL_B = { provider: 'p6t6-static', model: 'p6t6-model-v2' }
+/** The static baseline model selection (model A; plugin.mjs mirrors it). */
+const M_MODEL_A = { provider: 'p6t6-static', model: 'p6t6-model-v1' }
 /** The ten registered team tool names (asserted on health). */
 const EXPECTED_TOOL_COUNT = 10
 /** The exact tool-layer source files the committed scanner must cover. */
@@ -169,8 +196,15 @@ const SCENARIO_DEPS = {
   W3: [],
   W5: [],
   W7: ['W1'],
+  // P8-S4B: the M chain (M3 proves restart of M1/M2's work; M4's deny
+  // generation builds on M2's allow; M5 proves restart of M4's deny).
+  M1: [],
+  M2: [],
+  M3: ['M1', 'M2'],
+  M4: ['M2'],
+  M5: ['M4'],
 }
-const ALL_SCENARIOS = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'W1', 'W2', 'W3', 'W5', 'W7']
+const ALL_SCENARIOS = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'W1', 'W2', 'W3', 'W5', 'W7', 'M1', 'M2', 'M3', 'M4', 'M5']
 
 /** Tail of an in-memory log string (up to `lines` last lines). */
 function tailText(text, lines = 12) {
@@ -188,6 +222,7 @@ function parseArgs(argv) {
     dshHome: '.dsh-test-p8s3',
     dshHomeE: null,
     lockFile: 'references/.dsh-test-p8s3.lock',
+    mcpPorts: '3491,3492,3493,3494,3495',
   }
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i]
@@ -197,12 +232,22 @@ function parseArgs(argv) {
     else if (token === '--dsh-home') args.dshHome = argv[++i]
     else if (token === '--dsh-home-e') args.dshHomeE = argv[++i]
     else if (token === '--lock-file') args.lockFile = argv[++i]
+    else if (token === '--mcp-ports') args.mcpPorts = argv[++i]
     else throw new Error(`unknown argument: ${token}`)
   }
   if (args.reportDir === null) throw new Error('--report-dir is required')
   if (!Number.isInteger(args.port) || args.port < 1 || args.port > 65535) {
     throw new Error(`invalid --port: ${args.port}`)
   }
+  const mcpPorts = String(args.mcpPorts)
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+    .map((s) => Number.parseInt(s, 10))
+  if (mcpPorts.length === 0 || mcpPorts.some((p) => !Number.isInteger(p) || p < 1 || p > 65535)) {
+    throw new Error(`invalid --mcp-ports: ${args.mcpPorts}`)
+  }
+  args.mcpPorts = mcpPorts
   if (args.dshHomeE === null) args.dshHomeE = `${args.dshHome}-e`
   if (typeof args.dshHome !== 'string' || args.dshHome.length === 0 || args.dshHome.includes('..') || args.dshHome.includes('/') || args.dshHome.includes('\\')) {
     throw new Error(`invalid --dsh-home (a bare basename under references/): ${args.dshHome}`)
@@ -292,6 +337,10 @@ async function main() {
   const portB = args.port + 1
   const portC = args.port + 2
   const portD = args.port + 3
+  // P8-S4B: the E world (boots 3-4 on DSH_HOME_E) only runs when a scenario
+  // of that world is selected; an M/W-only run leaves boots 3-4 (and the E
+  // world home + ports) completely unused.
+  const eWorldUsed = args.selected.some((sc) => sc.startsWith('E'))
 
   const runStamp = `p8s3-${Date.now()}`
   log(`P8-S3 harness start: runStamp=${runStamp} worktree=${WORKTREE_ROOT}`)
@@ -371,15 +420,19 @@ async function main() {
       throw new Error(`stable :3080 instance is not reachable/200 before the run 鈥?refusing to proceed (brief 搂6c)`)
     }
 
-    if ((await portInUse(portA)) || (await portInUse(portB)) || (await portInUse(portC)) || (await portInUse(portD))) {
-      throw new Error(`ports ${portA}/${portB}/${portC}/${portD} are already in use - aborting`)
+    if ((await portInUse(portA)) || (await portInUse(portB))) {
+      throw new Error(`ports ${portA}/${portB} are already in use - aborting`)
+    }
+    if (eWorldUsed && ((await portInUse(portC)) || (await portInUse(portD)))) {
+      throw new Error(`ports ${portC}/${portD} are already in use - aborting`)
     }
 
     // -- fresh task-specific DSH_HOMEs (fail-closed on non-fresh) + lock --
     // The W world (W1/W2/W3/W5/W7) runs against DSH_HOME; the E world
     // (E1-E7) runs against DSH_HOME_E, because the frozen per-template
     // quota of 4 makes E and W impossible in one durable team.
-    for (const home of [DSH_HOME, DSH_HOME_E]) {
+    // P8-S4B: an M/W-only run never creates or touches the E-world home.
+    for (const home of [DSH_HOME, ...(eWorldUsed ? [DSH_HOME_E] : [])]) {
       if (existsSync(home) && readdirSync(home).length > 0) {
         throw new Error(`DSH_HOME ${home} exists and is not empty - the freshness rule forbids reusing it; aborting fail-closed`)
       }
@@ -482,7 +535,7 @@ async function main() {
     log('junction farm ready (shared packages/node_modules)')
 
     // 鈹€鈹€ mini MCP server (127.0.0.1, ports 3491-3495 candidates) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-    mini = await startMiniMcpServer([3491, 3492, 3493, 3494, 3495])
+    mini = await startMiniMcpServer(args.mcpPorts)
     summary.ports.mcp = mini.port
     log(`mini MCP server up on 127.0.0.1:${mini.port}`)
 
@@ -540,6 +593,23 @@ async function main() {
     }
 
     /**
+     * P8-S4B: one durable governance mutation through the row's admission
+     * route (the backend authority; the driver never touches a repository).
+     * `payload.as` is the acting session id; the row derives the authority
+     * server-side (root session -> operator, bound member -> member).
+     */
+    const mutateGovernance = async (ctx, port, payload) => {
+      ctx.http.stateCalls += 1
+      const { status, body } = await fetchJson(`http://127.0.0.1:${port}/__p6t6/governance/mutate`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      }, 30_000)
+      if (status !== 200) ctx.http.non200.push({ call: 'governance-mutate', status, body: body === null ? null : JSON.stringify(body).slice(0, 400) })
+      return { status, body }
+    }
+
+    /**
      * One scenario context: assertion collector + HTTP accounting + shared
      * cross-scenario state. `check` records and returns the predicate.
      */
@@ -567,6 +637,8 @@ async function main() {
     /** Shared mutable state carried across scenarios within one run. */
     const S = {
       w1: { instanceId: null, childSessionId: null },
+      // P8-S4B: cross-boot completion flags for the M chain.
+      m: { m1: false, m2: false, m4: false },
       memberIdsBoot1Final: null,
       e1: { created: [], w: null, wChild: null },
       e4: { created: [] },
@@ -631,7 +703,11 @@ async function main() {
       } else {
         summary.scenarios[sc] = entry
       }
-      noteFailure(`scenario ${sc}${phase !== undefined ? `(${phase})` : ''} skipped: ${reason}`)
+      // P8-S4B: skipping an UNSELECTED scenario is normal (partial runs),
+      // not a failure; only skipped-but-selected scenarios fail the verdict.
+      if (selected(sc)) {
+        noteFailure(`scenario ${sc}${phase !== undefined ? `(${phase})` : ''} skipped: ${reason}`)
+      }
       return entry
     }
 
@@ -1208,6 +1284,188 @@ async function main() {
       return recordScenario(c)
     }
 
+    // ── P8-S4B scenarios: durable mutation -> actual future agent behavior ──
+    // The M scenarios drive the SEEDED worker (inst-p6t6seedw1 /
+    // session-child-p6t6seedw1) - a real member Session whose NEXT requests
+    // must run on the mutated durable truth. Every mutation acts `as` the
+    // ROOT session: the row maps that to operator authority, i.e.
+    // human-override records - the only v1 authority that can GRANT a cell
+    // (frozen empty-envelope ruling: autonomy-overlay grants are rejected).
+
+    /** A tool call counts as blocked/absent (never silently allowed). */
+    const toolUnavailable = (r) =>
+      (r.status === 500 && typeof r.body?.error === 'string' && r.body.error.includes('unknown tool')) ||
+      (r.status === 200 && r.body?.ok === false)
+
+    /** One real follow-up turn into the seeded worker, issued by the root. */
+    const workerFollowUp = async (c, port, token, prompt) => {
+      const fu = await callTool(c, port, 'team_follow_up', {
+        rootSessionId: ROOT_SESSION_ID,
+        requestToken: token,
+        targetInstanceId: SEED_WORKER_ID,
+        prompt,
+      }, ROOT_SESSION_ID)
+      const v = fu.body?.value
+      const ok = fu.status === 200 && fu.body?.ok === true && v?.status === 'executed' && v?.effect?.kind === 'work-admitted' && v?.effect?.instanceId === SEED_WORKER_ID
+      return { fu, v, ok }
+    }
+
+    /**
+     * M1 (boot 1, baseline): a real turn on the seeded worker assembles the
+     * world-default model A; provenance says "unspecified" (the Team did
+     * not speak). The token reaches the durable member session log.
+     */
+    const runM1 = async ({ port }) => {
+      const c = makeScenarioCtx('M1', undefined, 1)
+      const { ok, v } = await workerFollowUp(c, port, M1_TOKEN, M1_PROMPT)
+      c.check('follow-up executed against the seeded worker (real member turn)', ok, JSON.stringify(v).slice(0, 500))
+      const st = (await getState(c, port)).body
+      const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('worker model CURRENT = world-default A (no Team override yet)', w?.model?.current !== null && w.model.current.provider === M_MODEL_A.provider && w.model.current.model === M_MODEL_A.model, JSON.stringify(w?.model ?? w ?? st))
+      c.check('the real turn ASSEMBLED model A (live selection evidence)', w?.model?.assembled !== null && w.model.assembled.provider === M_MODEL_A.provider && w.model.assembled.model === M_MODEL_A.model, JSON.stringify(w?.model?.assembled ?? null))
+      c.check('provenance: the model cell is team-unspecified (static baseline, not silently granted)', w?.model?.source !== undefined && w.model.source.layer === 'unspecified' && w.model.source.recordId === null, JSON.stringify(w?.model?.source ?? null))
+      const logText = readChildSessionLog(SEED_WORKER_CHILD)
+      c.check('the M1 token reached the durable member session log', logText !== null && logText.includes(M1_TOKEN), `logBytes=${logText === null ? 0 : logText.length}`)
+      c.evidence = { workerModelAfter: w?.model ?? null }
+      S.m.m1 = true
+      return recordScenario(c)
+    }
+
+    /**
+     * M2 (boot 1, model A -> B): an authorized team-scope human-override
+     * grants model B. BEFORE any request the backend truth lists the new
+     * record in pendingNextBoundary (§18.3); the NEXT real request
+     * assembles B and carries the granting record in its provenance source.
+     */
+    const runM2 = async ({ port }) => {
+      const c = makeScenarioCtx('M2', undefined, 1)
+      c.check('M1 ran first (the baseline turn)', S.m.m1 === true, JSON.stringify(S.m))
+      const mu = await mutateGovernance(c, port, {
+        as: ROOT_SESSION_ID,
+        recordId: M_RECORD_MODEL,
+        scope: 'team',
+        cells: { model: { kind: 'allow', items: ['p6t6-static/p6t6-model-v2'] } },
+      })
+      const mv = mu.body?.value
+      c.check('operator mutation admitted (human-override, generation 1)', mu.status === 200 && mu.body?.ok === true && mv?.recordId === M_RECORD_MODEL && mv?.kind === 'human-override' && mv?.generation === 1, JSON.stringify(mu.body ?? mu.status).slice(0, 500))
+      const stPending = (await getState(c, port)).body
+      const wPending = stPending?.governance?.sessions?.[SEED_WORKER_CHILD]
+      const pendingIds = Array.isArray(wPending?.model?.pendingNextBoundary) ? wPending.model.pendingNextBoundary.map((p) => p.recordId) : []
+      c.check('BEFORE any request: the backend truth lists the new record in pendingNextBoundary', pendingIds.includes(M_RECORD_MODEL) === true, JSON.stringify(pendingIds))
+      const { ok, v } = await workerFollowUp(c, port, M2_TOKEN, M2_PROMPT)
+      c.check('the NEXT real request executed against the worker', ok, JSON.stringify(v).slice(0, 500))
+      const st = (await getState(c, port)).body
+      const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('worker model CURRENT switched to B at the boundary', w?.model?.current !== null && w.model.current.provider === M_MODEL_B.provider && w.model.current.model === M_MODEL_B.model, JSON.stringify(w?.model?.current ?? null))
+      c.check('the real turn ASSEMBLED model B (live evidence: the next request runs on B)', w?.model?.assembled !== null && w.model.assembled.provider === M_MODEL_B.provider && w.model.assembled.model === M_MODEL_B.model, JSON.stringify(w?.model?.assembled ?? null))
+      c.check('provenance source names the granting human-override record', w?.model?.source !== undefined && w.model.source.layer === 'humanOverride' && w.model.source.origin === 'human' && w.model.source.recordId === M_RECORD_MODEL, JSON.stringify(w?.model?.source ?? null))
+      c.evidence = { mutation: mv ?? null, pendingBefore: pendingIds, workerModelAfter: w?.model ?? null }
+      S.m.m2 = true
+      return recordScenario(c)
+    }
+
+    /**
+     * M4 (boot 1, after M2, capability facet `mcp`): baseline the tool is
+     * ABSENT (never silently allowed); a durable allow mounts the real
+     * mini-MCP (one tool: ping -> pong); a durable deny unmounts it again,
+     * with team provenance (layer/origin/recordId) on the denied cell.
+     */
+    const runM4 = async ({ port }) => {
+      const c = makeScenarioCtx('M4', undefined, 1)
+      c.check('M2 ran first (the cumulative humanOverride slot)', S.m.m2 === true, JSON.stringify(S.m))
+      // (a) baseline: the durable policy is silent on mcp -> fail-closed absent
+      const ping0 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_ALLOW }, SEED_WORKER_CHILD)
+      c.check('baseline: the mcp tool is ABSENT for the worker (never silently allowed)', toolUnavailable(ping0), JSON.stringify({ status: ping0.status, body: ping0.body === null ? null : JSON.stringify(ping0.body).slice(0, 300) }))
+      // (b) durable allow; cumulative re-issue must preserve the model grant
+      const muAllow = await mutateGovernance(c, port, {
+        as: ROOT_SESSION_ID,
+        recordId: M_RECORD_MCP_ALLOW,
+        scope: 'team',
+        cells: { mcp: { kind: 'allow', items: [M4_MCP_SERVER] } },
+      })
+      const mvAllow = muAllow.body?.value
+      c.check('operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)', muAllow.status === 200 && muAllow.body?.ok === true && mvAllow?.recordId === M_RECORD_MCP_ALLOW && mvAllow?.generation === 2 && mvAllow?.values?.model !== undefined, JSON.stringify(muAllow.body ?? muAllow.status).slice(0, 500))
+      const stPending = (await getState(c, port)).body
+      const wPending = stPending?.governance?.sessions?.[SEED_WORKER_CHILD]
+      const mcpPendingIds = Array.isArray(wPending?.mcp?.pendingNextBoundary) ? wPending.mcp.pendingNextBoundary.map((p) => p.recordId) : []
+      c.check('BEFORE the next operation: pendingNextBoundary lists the mcp-allow record', mcpPendingIds.includes(M_RECORD_MCP_ALLOW) === true, JSON.stringify(mcpPendingIds))
+      // (c) the next real operation: the tool is present and round-trips
+      const ping1 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_ALLOW }, SEED_WORKER_CHILD)
+      c.check('after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP', ping1.status === 200 && ping1.body?.ok === true && JSON.stringify(ping1.body?.value ?? null).includes('pong:') === true, JSON.stringify({ status: ping1.status, body: ping1.body === null ? null : JSON.stringify(ping1.body).slice(0, 300) }))
+      const stAllow = (await getState(c, port)).body
+      const wAllow = stAllow?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('state: the mcp facet is MOUNTED, sourced from the granting record', wAllow?.mcp?.mounted === true && wAllow?.mcp?.allowed === true && wAllow?.mcp?.source?.recordId === M_RECORD_MCP_ALLOW, JSON.stringify(wAllow?.mcp ?? null).slice(0, 500))
+      // (d) durable deny (tighten); generation 3, model grant still preserved
+      const muDeny = await mutateGovernance(c, port, {
+        as: ROOT_SESSION_ID,
+        recordId: M_RECORD_MCP_DENY,
+        scope: 'team',
+        cells: { mcp: { kind: 'deny' } },
+      })
+      const mvDeny = muDeny.body?.value
+      c.check('operator mcp-deny admitted (generation 3, model grant preserved)', muDeny.status === 200 && muDeny.body?.ok === true && mvDeny?.recordId === M_RECORD_MCP_DENY && mvDeny?.generation === 3 && mvDeny?.values?.model !== undefined, JSON.stringify(muDeny.body ?? muDeny.status).slice(0, 500))
+      // (e) the next real operation: the tool is ABSENT again (fail-closed)
+      const ping2 = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_DENY }, SEED_WORKER_CHILD)
+      c.check('after the deny boundary the mcp tool is ABSENT again (never silently allowed)', toolUnavailable(ping2), JSON.stringify({ status: ping2.status, body: ping2.body === null ? null : JSON.stringify(ping2.body).slice(0, 300) }))
+      const st = (await getState(c, port)).body
+      const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record', w?.mcp?.mounted === false && w?.mcp?.allowed === false && w?.mcp?.deniedBy?.by === 'team' && w?.mcp?.deniedBy?.recordId === M_RECORD_MCP_DENY && w?.mcp?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(w?.mcp ?? null).slice(0, 500))
+      c.evidence = {
+        pingBaseline: { status: ping0.status, body: ping0.body === null ? null : JSON.stringify(ping0.body).slice(0, 300) },
+        pingAllow: { status: ping1.status, body: ping1.body === null ? null : JSON.stringify(ping1.body).slice(0, 300) },
+        pingDeny: { status: ping2.status, body: ping2.body === null ? null : JSON.stringify(ping2.body).slice(0, 300) },
+        workerMcpAfter: w?.mcp ?? null,
+      }
+      S.m.m4 = true
+      return recordScenario(c)
+    }
+
+    /**
+     * M3 (boot 2, restart-effective model): the SAME durable team in a NEW
+     * host process: the next real request still assembles model B (durable
+     * truth, not projection state), and the durable member log carries the
+     * M1+M2+M3 tokens across the restart.
+     */
+    const runM3 = async ({ port }) => {
+      const c = makeScenarioCtx('M3', undefined, 2)
+      c.check('M1+M2 ran on boot 1 (the A->B mutation landed)', S.m.m1 === true && S.m.m2 === true, JSON.stringify(S.m))
+      const { ok, v } = await workerFollowUp(c, port, M3_TOKEN, M3_PROMPT)
+      c.check('the next real request (fresh host process) executed against the worker', ok, JSON.stringify(v).slice(0, 500))
+      const st = (await getState(c, port)).body
+      const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('AFTER host restart the real turn still ASSEMBLES model B', w?.model?.assembled !== null && w.model.assembled.provider === M_MODEL_B.provider && w.model.assembled.model === M_MODEL_B.model, JSON.stringify(w?.model?.assembled ?? null))
+      c.check('provenance source still names a durable human-override (layer+origin stable across re-issues)', w?.model?.source !== undefined && w.model.source.layer === 'humanOverride' && w.model.source.origin === 'human', JSON.stringify(w?.model?.source ?? null))
+      const logText = readChildSessionLog(SEED_WORKER_CHILD)
+      c.check('the durable member log carries M1+M2+M3 tokens across the restart', logText !== null && logText.includes(M1_TOKEN) && logText.includes(M2_TOKEN) && logText.includes(M3_TOKEN), `logBytes=${logText === null ? 0 : logText.length}`)
+      c.evidence = { workerModelAfter: w?.model ?? null }
+      return recordScenario(c)
+    }
+
+    /**
+     * M5 (boot 2, restart-effective mcp deny): in the NEW host process the
+     * durable deny is still in force - the next real operation finds the
+     * tool absent, the three durable overrides survived, and the model
+     * grant (carried by the latest re-issue) still selects B.
+     */
+    const runM5 = async ({ port }) => {
+      const c = makeScenarioCtx('M5', undefined, 2)
+      c.check('M4 ran on boot 1 (the mcp deny landed)', S.m.m4 === true, JSON.stringify(S.m))
+      const { ok, v } = await workerFollowUp(c, port, M5_TOKEN, M5_PROMPT)
+      c.check('the next real request (fresh host process) executed against the worker', ok, JSON.stringify(v).slice(0, 500))
+      const st0 = (await getState(c, port)).body
+      const w0 = st0?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('AFTER restart the worker still ASSEMBLES model B (the carried grant)', w0?.model?.assembled !== null && w0.model.assembled.provider === M_MODEL_B.provider && w0.model.assembled.model === M_MODEL_B.model, JSON.stringify(w0?.model?.assembled ?? null))
+      const ping = await callTool(c, port, M4_PING_TOOL, { msg: M4_PING_MSG_DENY }, SEED_WORKER_CHILD)
+      c.check('AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)', toolUnavailable(ping), JSON.stringify({ status: ping.status, body: ping.body === null ? null : JSON.stringify(ping.body).slice(0, 300) }))
+      const st = (await getState(c, port)).body
+      const w = st?.governance?.sessions?.[SEED_WORKER_CHILD]
+      c.check('state: mcp facet unmounted, team-denied by the deny record', w?.mcp?.mounted === false && w?.mcp?.allowed === false && w?.mcp?.deniedBy?.by === 'team' && w?.mcp?.deniedBy?.recordId === M_RECORD_MCP_DENY && w?.mcp?.source?.recordId === M_RECORD_MCP_DENY, JSON.stringify(w?.mcp ?? null).slice(0, 500))
+      const recIds = Array.isArray(st?.governance?.overrides) ? st.governance.overrides.map((r) => r.recordId).sort() : []
+      c.check('the THREE durable override records survived the restart', JSON.stringify(recIds) === JSON.stringify([M_RECORD_MODEL, M_RECORD_MCP_ALLOW, M_RECORD_MCP_DENY].sort()), JSON.stringify(recIds))
+      c.evidence = { ping: { status: ping.status, body: ping.body === null ? null : JSON.stringify(ping.body).slice(0, 300) }, workerModelAfter: w0?.model ?? null, workerMcpAfter: w?.mcp ?? null, overrideRecordIds: recIds }
+      return recordScenario(c)
+    }
+
     // 鈹€鈹€ the boot driver 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     const ROW = { id: 'p6t6-team-tools', name: pathToFileURL(join(HERE, 'plugin.mjs')).href }
@@ -1345,6 +1603,12 @@ async function main() {
       { criterion: 'W5', phase: undefined, runnable: runnable('W5'), skipReason: 'dependency not selected', run: (o) => runW5(o) },
       { criterion: 'W7', phase: undefined, runnable: runnable('W7'), skipReason: 'requires W1 (its member) - W1 not selected', run: (o) => runW7(o) },
       { criterion: 'W3', phase: undefined, runnable: runnable('W3'), skipReason: 'dependency not selected', run: (o) => runW3(o) },
+      // P8-S4B: M1 (baseline model A assembled) -> M2 (model A->B mutation
+      // + pendingNextBoundary) -> M4 (mcp facet: fail-closed baseline,
+      // allow grants the tool, deny unmounts it) run in this order.
+      { criterion: 'M1', phase: undefined, runnable: runnable('M1'), skipReason: 'dependency not selected', run: (o) => runM1(o) },
+      { criterion: 'M2', phase: undefined, runnable: runnable('M2'), skipReason: 'dependency not selected', run: (o) => runM2(o) },
+      { criterion: 'M4', phase: undefined, runnable: runnable('M4'), skipReason: 'requires M2 (cumulative humanOverride slot) - M2 not selected', run: (o) => runM4(o) },
     ]
     summary.boots.boot1 = await driveBoot(1, portA, {
       dshHome: DSH_HOME,
@@ -1354,6 +1618,10 @@ async function main() {
 
     const boot2Plan = [
       { criterion: 'W2', phase: undefined, runnable: runnable('W2'), skipReason: 'requires W1 (its member) - W1 not selected', run: (o) => runW2(o) },
+      // P8-S4B: boot2 = fresh host process, same durable team home:
+      // M3 (restart-effective model B) then M5 (restart-effective mcp deny).
+      { criterion: 'M3', phase: undefined, runnable: runnable('M3'), skipReason: 'requires M1+M2 (the A->B mutation) - not selected', run: (o) => runM3(o) },
+      { criterion: 'M5', phase: undefined, runnable: runnable('M5'), skipReason: 'requires M4 (the mcp deny) - not selected', run: (o) => runM5(o) },
     ]
     summary.boots.boot2 = await driveBoot(2, portB, {
       dshHome: DSH_HOME,
@@ -1361,31 +1629,35 @@ async function main() {
       plan: boot2Plan,
     })
 
-    const boot3Plan = [
-      { criterion: 'E1', phase: undefined, runnable: runnable('E1'), skipReason: 'dependency not selected', run: (o) => runE1(o) },
-      { criterion: 'E2', phase: undefined, runnable: runnable('E2'), skipReason: 'requires E1 (its labels) - E1 not selected', run: (o) => runE2(o) },
-      { criterion: 'E3', phase: undefined, runnable: runnable('E3'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE3(o) },
-      { criterion: 'E4', phase: undefined, runnable: runnable('E4'), skipReason: 'dependency not selected', run: (o) => runE4(o) },
-      { criterion: 'E6', phase: undefined, runnable: runnable('E6'), skipReason: 'requires E4 (scout count 3) - E4 not selected', run: (o) => runE6(o) },
-      { criterion: 'E5', phase: 'boot1-writes', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE5a(o) },
-    ]
-    summary.boots.boot3 = await driveBoot(3, portC, {
-      dshHome: DSH_HOME_E,
-      directive: directiveFor(3),
-      plan: boot3Plan,
-    })
-    if (runnable('E5') && (summary.scenarios.E5?.phases?.['boot1-writes'] === undefined)) {
-      noteFailure('E5 boot-1 write phase did not record an entry')
-    }
+    // P8-S4B: boots 3-4 serve the E world (DSH_HOME_E) only; an M/W-only
+    // run skips them entirely (ports + home stay untouched).
+    if (eWorldUsed) {
+      const boot3Plan = [
+        { criterion: 'E1', phase: undefined, runnable: runnable('E1'), skipReason: 'dependency not selected', run: (o) => runE1(o) },
+        { criterion: 'E2', phase: undefined, runnable: runnable('E2'), skipReason: 'requires E1 (its labels) - E1 not selected', run: (o) => runE2(o) },
+        { criterion: 'E3', phase: undefined, runnable: runnable('E3'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE3(o) },
+        { criterion: 'E4', phase: undefined, runnable: runnable('E4'), skipReason: 'dependency not selected', run: (o) => runE4(o) },
+        { criterion: 'E6', phase: undefined, runnable: runnable('E6'), skipReason: 'requires E4 (scout count 3) - E4 not selected', run: (o) => runE6(o) },
+        { criterion: 'E5', phase: 'boot1-writes', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE5a(o) },
+      ]
+      summary.boots.boot3 = await driveBoot(3, portC, {
+        dshHome: DSH_HOME_E,
+        directive: directiveFor(3),
+        plan: boot3Plan,
+      })
+      if (runnable('E5') && (summary.scenarios.E5?.phases?.['boot1-writes'] === undefined)) {
+        noteFailure('E5 boot-1 write phase did not record an entry')
+      }
 
-    const boot4Plan = [
-      { criterion: 'E5', phase: 'boot2-restart', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE5b(o) },
-    ]
-    summary.boots.boot4 = await driveBoot(4, portD, {
-      dshHome: DSH_HOME_E,
-      directive: directiveFor(4),
-      plan: boot4Plan,
-    })
+      const boot4Plan = [
+        { criterion: 'E5', phase: 'boot2-restart', runnable: runnable('E5'), skipReason: 'requires E1 (its worker) - E1 not selected', run: (o) => runE5b(o) },
+      ]
+      summary.boots.boot4 = await driveBoot(4, portD, {
+        dshHome: DSH_HOME_E,
+        directive: directiveFor(4),
+        plan: boot4Plan,
+      })
+    }
 
     // 鈹€鈹€ postflight hygiene: the committed static bypass scan (no boot) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€
     {
@@ -1433,10 +1705,12 @@ async function main() {
       const e = summary.scenarios[sc]
       if (e === undefined || e.pass !== true) noteFailure(`scenario ${sc} missing or failing`)
     }
-    for (const boot of ['boot1', 'boot2', 'boot3', 'boot4']) {
+    // P8-S4B: only verdict the boots this run actually performed.
+    const VERDICT_BOOTS = eWorldUsed ? ['boot1', 'boot2', 'boot3', 'boot4'] : ['boot1', 'boot2']
+    for (const boot of VERDICT_BOOTS) {
       if (summary.rowMounted[`${ROW.id}-${boot}`] !== true) noteFailure(`${ROW.id} not mounted via the public patch seam on ${boot}`)
     }
-    for (const boot of ['boot1', 'boot2', 'boot3', 'boot4']) {
+    for (const boot of VERDICT_BOOTS) {
       if (summary.ports.released[boot] === false) noteFailure(`${boot} port not released`)
     }
     if (summary.ports.released.mcp === false) noteFailure('mini MCP port not released')

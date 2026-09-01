@@ -48,6 +48,17 @@
  *   GET  /__p6t6/state  — durable read-back: members, teamSession, control
  *                         (requests/decisions/consumptions), activity facts,
  *                         and the messaging restart-recovery scan result
+ *   POST /__p6t6/governance/mutate — {as, recordId, scope, instanceId?,
+ *                         cells, expectedGeneration?} -> the owned
+ *                         governance-override ADMISSION authority (P8-S4B;
+ *                         the backend truth the live agents re-consume at
+ *                         every request boundary)
+ *
+ * P8-S4B: every live agent re-derives its model selection (public
+ * installModelSelection seam) and its mini-MCP mount from the durable
+ * governance overrides at boot AND at every request boundary (tool
+ * execution / followup delivery); a mutation admitted by the governance
+ * route takes effect on the NEXT real request and survives a host restart.
  */
 import { register } from 'node:module'
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -55,6 +66,7 @@ import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
+import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 
 // The TS resolution hook MUST be registered before the first dynamic TS
 // import (it rewrites worktree-relative .js specifiers that have a .ts
@@ -181,6 +193,36 @@ let callCounter = 0
 /** @type {string[]} noteworthy async observations (e.g. whenIdle quirks). */
 const observations = []
 
+// ── P8-S4B: the durable-mutation consumption state ───────────────────────
+
+/**
+ * @type {Map<string, object>} per-session durable consumption state, keyed
+ * by session id: `{ instanceId, ref, modelView, mcpView, mcpFiber,
+ * mcpActivationError, appliedRecordIds: Set<string> }`. The `ref` is the
+ * row-owned ModelSelectionRef installed on the public model-selection seam;
+ * the views are the last APPLIED consumption views; `appliedRecordIds` is
+ * the §18.3 boundary record set (which durable records this session has
+ * already applied at its last request boundary).
+ */
+const consumptionState = new Map()
+/**
+ * @type {{model: object, capability: object, mutation: object, contracts: object} | null}
+ * the worktree TS modules backing the consumption boundary (set in run,
+ * after the dynamic imports, before the first agent is created).
+ */
+let consumptionMods = null
+/** @type {Promise<unknown>} the governance-mutation route's serialize chain. */
+let governanceQueue = Promise.resolve()
+
+/** The live mini-MCP server name (the mcp facet's item vocabulary). */
+const MCP_SERVER_NAME = 'p8s4bmini'
+
+/** The deliberately-unroutable selection installed when a model cell resolves
+ * to NO concrete model (explicit deny / external / malformed): the turn
+ * fails contained at the model-call boundary instead of silently falling
+ * back to a host default (the durable-consumption consumer rule). */
+const DENIED_SELECTION = { provider: 'p8s4b-denied', model: 'p8s4b-denied' }
+
 // ── small helpers ─────────────────────────────────────────────────────────
 
 /** @param {import('node:http').ServerResponse} res @param {number} status @param {object} body */
@@ -275,20 +317,42 @@ function sessionIsDurable(sessionId) {
 }
 
 /**
- * The shared agent setup (create OR resume): install the static model
- * reference and register every team tool in the agent scope. The
- * disposers are collected for row-stop cleanup (the agent-scope unwind
- * covers them on disposal as well).
+ * The shared agent setup (create OR resume): resolve the durable model
+ * selection + the mcp facet from the backend truth NOW, install the
+ * row-owned ModelSelectionRef on the public model-selection seam, register
+ * every team tool, and mount the live mini-MCP server when the durable
+ * policy allows it. The disposers are collected for row-stop cleanup (the
+ * agent-scope unwind covers them on disposal as well).
+ * @param {string} sessionId - the session this agent embodies.
  * @returns {function(object): Promise<void>} the AgentSetup callback.
  */
-function makeAgentSetup() {
+function makeAgentSetup(sessionId) {
   return async (agentCtx) => {
-    installModelSelection(agentCtx, { current: { ...STATIC_MODEL }, assembled: undefined })
+    const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId)
+    const ref = { current: modelView.selection === undefined ? { ...DENIED_SELECTION } : modelView.selection, assembled: undefined }
+    const state = {
+      instanceId,
+      ref,
+      modelView,
+      mcpView,
+      mcpFiber: undefined,
+      mcpActivationError: undefined,
+      appliedRecordIds: new Set(),
+    }
+    consumptionState.set(sessionId, state)
+    toolDisposers.push(installModelSelection(agentCtx, ref))
     if (toolsResult) {
       for (const def of toolsResult.tools) {
         toolDisposers.push(agentCtx.tools.register(def))
       }
     }
+    // The mcp facet's fail-closed baseline: no durable allow -> no mount.
+    // At a fresh create no overrides exist yet (unspecified), so this is
+    // the resume/restart path that re-applies the durable truth on boot.
+    if (mcpView.allowed) {
+      await reconcileMcp(agentCtx, state, mcpView.allowed)
+    }
+    applyBoundaryRecords(state, modelView, mcpView)
   }
 }
 
@@ -307,10 +371,144 @@ async function ensureLiveAgent(sessionId) {
   }
   const handle = await agentsSVC.resume({
     resumeSessionId: SessionId(sessionId),
-    setup: makeAgentSetup(),
+    setup: makeAgentSetup(sessionId),
   })
   liveAgents.set(sessionId, handle)
   return handle
+}
+
+/**
+ * The durable instance binding for one session (the root embodies the
+ * leader instance; every other live session is a bound member child).
+ * @param {string} sessionId
+ * @returns {string} the clean instance id.
+ */
+function instanceIdForSession(sessionId) {
+  const rootSid = directive.rootSessionId
+  if (sessionId === rootSid) return String(consumptionMods.contracts.LEADER_INSTANCE_ID)
+  const members = domain.repositories.memberInstances.list(rootSid)
+  for (const member of members) {
+    if (String(member.childSessionId) === sessionId) return String(member.instanceId)
+  }
+  throw new Error(`p6t6 consumption: no team instance for session '${sessionId}'`)
+}
+
+/**
+ * Re-read the backend truth (the durable governance overrides) and resolve
+ * the session's model + mcp consumption views. PURE — no live-agent side
+ * effects — so boot setup, every request boundary, and the state route's
+ * next-boundary projection all share the same derivation.
+ * @param {string} sessionId
+ * @returns {{instanceId: string, modelView: object, mcpView: object}}
+ */
+function resolveConsumptionViews(sessionId) {
+  const existing = consumptionState.get(sessionId)
+  const instanceId = existing !== undefined ? existing.instanceId : instanceIdForSession(sessionId)
+  const rootSid = directive.rootSessionId
+  const overrides = domain.repositories.overrides.list(rootSid)
+  const external = { hard: {}, capabilityExists: {} }
+  const applied = existing !== undefined ? [...existing.appliedRecordIds] : []
+  const modelArgs = {
+    rootSessionId: rootSid,
+    instanceId,
+    overrides,
+    external,
+    baseline: { ...STATIC_MODEL },
+  }
+  const mcpArgs = { rootSessionId: rootSid, instanceId, overrides, external, serverName: MCP_SERVER_NAME }
+  if (applied.length > 0) {
+    modelArgs.appliedRecordIds = applied
+    mcpArgs.appliedRecordIds = applied
+  }
+  const { view: modelView } = consumptionMods.model.resolveDurableModelSelection(modelArgs)
+  const { view: mcpView } = consumptionMods.capability.resolveDurableMcpFacet(mcpArgs)
+  return { instanceId, modelView, mcpView }
+}
+
+/**
+ * Mark every record the just-applied boundary consumed as applied (the
+ * §18.3 `appliedRecordIds` set advances to "everything admitted for the
+ * cells this boundary resolved").
+ * @param {object} state
+ * @param {object} modelView
+ * @param {object} mcpView
+ */
+function applyBoundaryRecords(state, modelView, mcpView) {
+  for (const pending of [...modelView.pendingNextBoundary, ...mcpView.pendingNextBoundary]) {
+    state.appliedRecordIds.add(pending.recordId)
+  }
+}
+
+/**
+ * Mount (or dispose) the live mini-MCP server on one agent per the durable
+ * mcp facet. The fiber is a thenable: awaiting it completes activation
+ * (connection + tool discovery); `.dispose()` unregisters the tools. A
+ * rejected activation is recorded, the fiber is dropped, and the error
+ * propagates (fail-closed: the tool is simply absent — never a half mount).
+ * @param {object} agentCtx
+ * @param {object} state - the session's consumption state (holds the fiber).
+ * @param {boolean} allowed - the facet's mount decision.
+ */
+async function reconcileMcp(agentCtx, state, allowed) {
+  if (allowed && state.mcpFiber === undefined) {
+    if (directive.mcpPort === null) {
+      throw new Error(`p6t6: the durable policy allows mcp server '${MCP_SERVER_NAME}' but no mini-MCP port is configured (directive.mcpPort)`)
+    }
+    const fiber = agentCtx.plugin(mcpClient, {
+      transport: 'streamable-http',
+      serverName: MCP_SERVER_NAME,
+      url: `http://127.0.0.1:${directive.mcpPort}/mcp`,
+      headers: {},
+      toolCallTimeoutMs: 15_000,
+      failOnStartupError: true,
+    })
+    try {
+      await fiber
+      state.mcpFiber = fiber
+    } catch (error) {
+      state.mcpActivationError = error instanceof Error ? error.message : String(error)
+      observations.push(`p6t6: mcp activation failed: ${state.mcpActivationError}`)
+      try { fiber.dispose() } catch { /* the fiber is already dead */ }
+      throw error
+    }
+    return
+  }
+  if (!allowed && state.mcpFiber !== undefined) {
+    const fiber = state.mcpFiber
+    state.mcpFiber = undefined
+    state.mcpActivationError = undefined
+    try {
+      fiber.dispose()
+    } catch (error) {
+      observations.push(`p6t6: mcp fiber dispose failed: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+}
+
+/**
+ * The request-boundary reconciliation (P8-S4B §18.2): re-read the backend
+ * truth and bring the live agent's model selection + mcp mount in line with
+ * it BEFORE the next real request. Future-boundary semantics come from the
+ * public seam itself: an in-flight turn keeps its own assembly snapshot
+ * (`assembled`); only the NEXT assembly sees the new `current`.
+ * @param {string} sessionId
+ * @returns {Promise<void>}
+ */
+async function prepareAgentForRequest(sessionId) {
+  const state = consumptionState.get(sessionId)
+  if (state === undefined) return // defensive: every row agent has consumption state
+  const { modelView, mcpView } = resolveConsumptionViews(sessionId)
+  const selection = modelView.selection === undefined ? { ...DENIED_SELECTION } : modelView.selection
+  if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
+    state.ref.current = selection
+  }
+  const handle = liveAgents.get(sessionId)
+  if (handle !== undefined) {
+    await reconcileMcp(handle.agent.ctx, state, mcpView.allowed)
+  }
+  applyBoundaryRecords(state, modelView, mcpView)
+  state.modelView = modelView
+  state.mcpView = mcpView
 }
 
 /**
@@ -394,6 +592,16 @@ async function run(ctx) {
   const messagingMod = await import('../../runtime/messaging/index.js')
   const activityMod = await import('../../runtime/activity/index.js')
   const toolsMod = await import('../src/index.js')
+  // P8-S4B: the owned consumption + admission modules (backend truth).
+  const mutationMod = await import('../../runtime/mutation/index.js')
+  const modelSetupMod = await import('../../runtime/agent-setup/model/index.js')
+  const capabilitySetupMod = await import('../../runtime/agent-setup/capability/index.js')
+  consumptionMods = {
+    model: modelSetupMod,
+    capability: capabilitySetupMod,
+    mutation: mutationMod,
+    contracts: contractsMod,
+  }
 
   const realSeam = seamMod.createRealStorageDomainSeam(storageDomain)
   domain = directive.phase === 'resume'
@@ -404,6 +612,14 @@ async function run(ctx) {
     for (const dispose of toolDisposers.splice(0)) {
       try { dispose() } catch { /* the scope unwind covers it */ }
     }
+    // P8-S4B: drop every mounted mini-MCP fiber (the agent-scope unwind
+    // covers each one on disposal; this is the row-stop backstop).
+    for (const state of consumptionState.values()) {
+      if (state.mcpFiber !== undefined) {
+        try { state.mcpFiber.dispose() } catch { /* the scope unwind covers it */ }
+      }
+    }
+    consumptionState.clear()
   }, 'p6t6 team-domain + tool registrations cleanup')
 
   const blueprint = blueprintMod.parseBlueprint(P6T6_BLUEPRINT_SOURCE)
@@ -479,7 +695,7 @@ async function run(ctx) {
       if (sessionIsDurable(childSid)) {
         const handle = await agentsSVC.resume({
           resumeSessionId: SessionId(childSid),
-          setup: makeAgentSetup(),
+          setup: makeAgentSetup(childSid),
         })
         liveAgents.set(childSid, handle)
         return { childSessionId: childSid }
@@ -487,7 +703,7 @@ async function run(ctx) {
       const handle = await agentsSVC.create({
         sessionId: SessionId(childSid),
         meta: { cwd: process.env.DSH_HOME },
-        setup: makeAgentSetup(),
+        setup: makeAgentSetup(childSid),
       })
       liveAgents.set(childSid, handle)
       return { childSessionId: childSid }
@@ -521,6 +737,8 @@ async function run(ctx) {
   const sessionInput = {
     async submitAttributedInput(input) {
       const handle = await ensureLiveAgent(String(input.sessionId))
+      // P8-S4B: request boundary — re-apply the durable truth first.
+      await prepareAgentForRequest(String(input.sessionId))
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
         source: { kind: 'user' },
@@ -623,6 +841,8 @@ async function run(ctx) {
   const workDelivery = {
     async deliver(args) {
       const handle = await ensureLiveAgent(String(args.childSessionId))
+      // P8-S4B: request boundary — re-apply the durable truth first.
+      await prepareAgentForRequest(String(args.childSessionId))
       const text = args.attachedContext !== undefined && args.attachedContext.length > 0
         ? `${args.prompt}\n\n[attached-context]\n${args.attachedContext}`
         : args.prompt
@@ -706,11 +926,11 @@ async function run(ctx) {
     ? await agentsSVC.create({
       sessionId: SessionId(rootSid),
       meta: { cwd: process.env.DSH_HOME },
-      setup: makeAgentSetup(),
+      setup: makeAgentSetup(rootSid),
     })
     : await agentsSVC.resume({
       resumeSessionId: SessionId(rootSid),
-      setup: makeAgentSetup(),
+      setup: makeAgentSetup(rootSid),
     })
   liveAgents.set(rootSid, rootHandle)
   if (directive.phase === 'create') {
@@ -719,7 +939,7 @@ async function run(ctx) {
       const handle = await agentsSVC.create({
         sessionId: SessionId(seed.childSessionId),
         meta: { cwd: process.env.DSH_HOME },
-        setup: makeAgentSetup(),
+        setup: makeAgentSetup(seed.childSessionId),
       })
       liveAgents.set(seed.childSessionId, handle)
       await persistence.ensureMaterialized(handle.agent.session)
@@ -735,7 +955,7 @@ async function run(ctx) {
       seen.add(child)
       const handle = await agentsSVC.resume({
         resumeSessionId: SessionId(child),
-        setup: makeAgentSetup(),
+        setup: makeAgentSetup(child),
       })
       liveAgents.set(child, handle)
     }
@@ -790,6 +1010,14 @@ async function run(ctx) {
           handle = await ensureLiveAgent(as)
         } catch (error) {
           sendJson(res, 422, { error: `no live agent for '${as}': ${error instanceof Error ? error.message : String(error)}` })
+          return
+        }
+        // P8-S4B: request boundary — the next real request runs on the
+        // durable truth (an in-flight turn on `as` keeps its own snapshot).
+        try {
+          await prepareAgentForRequest(as)
+        } catch (error) {
+          sendJson(res, 500, { error: `durable consumption boundary failed for '${as}': ${error instanceof Error ? error.message : String(error)}` })
           return
         }
         callCounter += 1
@@ -847,6 +1075,55 @@ async function run(ctx) {
         const controlState = await control.listControlState(rootSid)
         const activityRows = activity.listActivityFacts({ rootSessionId: rootSid })
         const recovery = await messaging.recoverPendingDeliveries(rootSid)
+        // P8-S4B: the backend-truth projection. The durable overrides are
+        // read fresh from the store; every live session's views are
+        // re-resolved NOW (pure) against its applied record set, so a
+        // mutation that landed after the last boundary shows up in
+        // pendingNextBoundary before any request applies it.
+        const governanceOverrides = repositories.overrides.list(rootSid).map((r) => ({
+          recordId: String(r.recordId),
+          kind: r.kind,
+          scope: r.scope,
+          ...(r.instanceId !== undefined ? { instanceId: String(r.instanceId) } : {}),
+          ...(r.origin !== undefined ? { origin: r.origin } : {}),
+          values: r.values,
+          generation: Number(r.generation),
+          updatedAt: String(r.updatedAt),
+        }))
+        const governanceSessions = {}
+        for (const sid of liveAgents.keys()) {
+          const state = consumptionState.get(sid)
+          const views = state !== undefined ? resolveConsumptionViews(sid) : undefined
+          governanceSessions[sid] = {
+            instanceId: state !== undefined ? state.instanceId : null,
+            model: {
+              current: state !== undefined ? state.ref.current : null,
+              assembled: state !== undefined ? state.ref.assembled : null,
+              ...(views !== undefined ? {
+                selection: views.modelView.selection,
+                source: views.modelView.source,
+                suppressed: views.modelView.suppressed,
+                unavailable: views.modelView.unavailable,
+                ...(views.modelView.deniedBy !== undefined ? { deniedBy: views.modelView.deniedBy } : {}),
+                pendingNextBoundary: views.modelView.pendingNextBoundary,
+                explanation: views.modelView.explanation,
+              } : {}),
+            },
+            mcp: {
+              mounted: state !== undefined && state.mcpFiber !== undefined,
+              serverName: MCP_SERVER_NAME,
+              ...(state !== undefined && state.mcpActivationError !== undefined ? { activationError: state.mcpActivationError } : {}),
+              ...(views !== undefined ? {
+                allowed: views.mcpView.allowed,
+                source: views.mcpView.source,
+                unavailable: views.mcpView.unavailable,
+                ...(views.mcpView.deniedBy !== undefined ? { deniedBy: views.mcpView.deniedBy } : {}),
+                pendingNextBoundary: views.mcpView.pendingNextBoundary,
+                explanation: views.mcpView.explanation,
+              } : {}),
+            },
+          }
+        }
         sendJson(res, 200, {
           boot: directive.boot,
           phase: directive.phase,
@@ -903,6 +1180,10 @@ async function run(ctx) {
             recovered: recovery.recovered,
             skipped: recovery.skipped,
           },
+          governance: {
+            overrides: governanceOverrides,
+            sessions: governanceSessions,
+          },
           observations: [...observations],
         })
       } catch (error) {
@@ -910,6 +1191,120 @@ async function run(ctx) {
       }
     },
   }, 'p6t6 state route'))
+
+  // P8-S4B: the owned governance-override ADMISSION route — the backend
+  // authority writer (§20.3/§20.4: the remote handler calls the runtime
+  // admission module, never the repository directly). Authority is derived
+  // SERVER-SIDE from the principal the driver presents as `as`: the root
+  // session is the host-known operator (human overrides); a bound member
+  // child is a member (own-instance autonomy overlays only).
+  ctx.effect(() => webServer.register({
+    kind: 'exact',
+    path: '/__p6t6/governance/mutate',
+    handler: async (req, res) => {
+      if (req.method !== 'POST') {
+        sendJson(res, 405, { error: 'POST only' })
+        return
+      }
+      let body
+      try {
+        body = JSON.parse((await readBody(req)) || '{}')
+      } catch (error) {
+        sendJson(res, 400, { error: `bad JSON body: ${String(error?.message ?? error)}` })
+        return
+      }
+      try {
+        await readyGate
+        if (setupError !== null) {
+          sendJson(res, 503, { error: 'row setup failed', setupError })
+          return
+        }
+        const as = typeof body?.as === 'string' ? body.as : null
+        const recordId = typeof body?.recordId === 'string' ? body.recordId : null
+        const scope = body?.scope === 'team' || body?.scope === 'instance' ? body.scope : null
+        const cells = body?.cells
+        if (as === null || recordId === null || scope === null || typeof cells !== 'object' || cells === null || Array.isArray(cells)) {
+          sendJson(res, 400, { error: 'body.as, body.recordId, body.scope (team|instance) and body.cells (object) are required' })
+          return
+        }
+        const args = {
+          authority: as === rootSid
+            ? { kind: 'operator' }
+            : (() => {
+                const member = domain.repositories.memberInstances.list(rootSid)
+                  .find((m) => String(m.childSessionId) === as)
+                if (member === undefined) return undefined
+                return { kind: 'member', instanceId: String(member.instanceId) }
+              })(),
+          rootSessionId: rootSid,
+          recordId,
+          scope,
+          cells,
+          now,
+        }
+        if (args.authority === undefined) {
+          sendJson(res, 403, { error: `no authorized team principal for session '${as}' (not the root and no bound member)` })
+          return
+        }
+        if (scope === 'instance') {
+          const instanceId = typeof body?.instanceId === 'string' ? body.instanceId : null
+          if (instanceId === null) {
+            sendJson(res, 400, { error: 'body.instanceId is a required string for instance scope' })
+            return
+          }
+          args.instanceId = instanceId
+        }
+        if (typeof body?.expectedGeneration === 'number') args.expectedGeneration = body.expectedGeneration
+        // The row-level serialize chain: the admit list-then-put critical
+        // section never interleaves with a racing mutation (the optimistic
+        // generation guard on top still surfaces concurrent slot writers).
+        // The chain itself never rejects: each request awaits its own
+        // continuation, so one failure cannot poison the queued next one.
+        const admittedRun = governanceQueue.then(() =>
+          consumptionMods.mutation.admitGovernanceOverride(args, {
+            list: async (root) => domain.repositories.overrides.list(String(root)),
+            put: (record) => domain.repositories.overrides.put(record),
+          }),
+        )
+        governanceQueue = admittedRun.then(
+          () => undefined,
+          () => undefined,
+        )
+        let admitted
+        try {
+          admitted = await admittedRun
+        } catch (error) {
+          if (consumptionMods.mutation.isMutationError(error)) {
+            const status = error.code === 'MALFORMED_MUTATION_INPUT'
+              ? 400
+              : error.code === 'UNAUTHORIZED_MUTATION'
+                ? 403
+                : 409
+            sendJson(res, status, { error: error.message, code: error.code, ...(error.details !== undefined ? { details: error.details } : {}) })
+            return
+          }
+          sendJson(res, 500, { error: String(error?.message ?? error) })
+          return
+        }
+        sendJson(res, 200, {
+          ok: true,
+          value: {
+            recordId: admitted.recordId,
+            kind: admitted.kind,
+            scope: admitted.scope,
+            ...(admitted.instanceId !== undefined ? { instanceId: admitted.instanceId } : {}),
+            ...(admitted.origin !== undefined ? { origin: admitted.origin } : {}),
+            values: admitted.values,
+            generation: admitted.generation,
+            updatedAt: admitted.updatedAt,
+            supersededRecordId: admitted.supersededRecordId,
+          },
+        })
+      } catch (error) {
+        sendJson(res, 500, { error: String(error?.message ?? error) })
+      }
+    },
+  }, 'p6t6 governance mutation route'))
 
   ctx.effect(() => webServer.register({
     kind: 'exact',
