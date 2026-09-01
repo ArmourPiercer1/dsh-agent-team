@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 515 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 517 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -187,9 +187,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // runtime p8s5a-artifacts.mjs, runtime p8s5a-artifacts.d.mts,
     // runtime p8s5a-stub-glue.mjs,
     // runtime p8s5a-host-loadability.test,
-    // runtime p8s5a-production-assembly.test).
-    expect(scanResult.filesScanned).toBe(515)
-    expect(scanResult.files.length).toBe(515)
+    // runtime p8s5a-production-assembly.test) +
+    // 2 P8-S5B operation-fencing files (module
+    // runtime/coordination/index + test
+    // runtime p8s5b-operation-fencing.test).
+    expect(scanResult.filesScanned).toBe(517)
+    expect(scanResult.files.length).toBe(517)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

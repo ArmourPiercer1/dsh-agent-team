@@ -367,6 +367,14 @@ export interface TeamRuntimeOptions {
   /** The in-facade activity-interval writer (P8-S3). Absent in the P6-T2
    *  default wiring: no work-unit activity interval is opened/closed. */
   readonly workActivity?: WorkActivityPort
+  /** The P8-S5B shared team operation chain (the single CR-8 coordinator
+   *  map). When installed, this runtime's per-team effect lock IS that
+   *  shared chain: every durable effect — and, for NEW WORK admissions,
+   *  the compatibility gate together with the effect in ONE acquisition
+   *  (R5) — serializes with the other team-mutating operations the
+   *  production root wires through the same map. Absent in the P6-T2
+   *  default wiring: the runtime owns a private map (previous behavior). */
+  readonly teamLocks?: Map<string, Promise<unknown>>
 }
 
 /**

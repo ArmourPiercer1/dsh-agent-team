@@ -78,16 +78,26 @@ import type { LifecyclePorts, LifecycleService } from './types.js'
  * (caller-serialized) use.
  *
  * @param ports - the lifecycle ports (shared by all three operations).
+ * @param teamLocks - optional: the P8-S5B shared coordinator chain (the
+ *   production root installs one, CR-8); when absent, a private map
+ *   (previous behavior).
  * @returns the locked {@link LifecycleService}.
  */
-export function createLifecycleService(ports: LifecyclePorts): LifecycleService {
-  const teamLocks = new Map<string, Promise<unknown>>()
+export function createLifecycleService(
+  ports: LifecyclePorts,
+  teamLocks?: Map<string, Promise<unknown>>,
+): LifecycleService {
+  // P8-S5B (CR-8): when the production root installs the shared coordinator
+  // chain, the locked service serializes on it; otherwise a private map
+  // (previous behavior). The production row itself runs the UNLOCKED cores
+  // under the router's chain — this lock fences standalone service use.
+  const locks = teamLocks ?? new Map<string, Promise<unknown>>()
   return {
     archiveMember: (target) =>
-      withTeamLock(teamLocks, target.rootSessionId, () => archiveMember(ports, target)),
+      withTeamLock(locks, target.rootSessionId, () => archiveMember(ports, target)),
     restoreMember: (target) =>
-      withTeamLock(teamLocks, target.rootSessionId, () => restoreMember(ports, target)),
+      withTeamLock(locks, target.rootSessionId, () => restoreMember(ports, target)),
     disposeMember: (target) =>
-      withTeamLock(teamLocks, target.rootSessionId, () => disposeMember(ports, target)),
+      withTeamLock(locks, target.rootSessionId, () => disposeMember(ports, target)),
   }
 }

@@ -13,7 +13,7 @@
  *      commits its `team-coordination-recorded` audit fact (the
  *      authorization evidence: action / caller / target / progress /
  *      summary / token / at).
- *   2. THE GUARDED COMMIT (this module's own per-team lock, `withTeamLock`
+ *   2. THE GUARDED COMMIT (this module's per-team lock, `withTeamLock` — the P8-S5B shared coordinator chain when the production root installs one, otherwise a private map
  *      from `action-router/effects.js`): a FRESH durable re-read of the
  *      subject's rows, then
  *        a. the OUT-OF-ORDER GUARD (REJECT policy): the claimed per-subject
@@ -389,7 +389,7 @@ async function commitActivityEntry(args: {
  * Build one activity ledger over an injected TeamDomain + TeamRuntime
  * facade (the production wiring — both dependencies are injected ports,
  * so the ledger is testable without a live team and carries no
- * router-owned state beyond its own per-team lock map).
+ * router-owned state beyond its per-team lock map (the P8-S5B shared coordinator chain when installed, otherwise its own)).
  *
  * @param options - the wiring (TeamDomain repositories, the facade, the
  *        display clock).
@@ -398,8 +398,11 @@ async function commitActivityEntry(args: {
 export function createActivityLedger(options: ActivityLedgerOptions): ActivityLedger {
   const repositories = options.teamDomain.repositories
   const now = options.now ?? (() => new Date().toISOString())
-  /** The ledger's OWN per-team lock map (separate from the facade's). */
-  const teamLocks = new Map<string, Promise<unknown>>()
+  /** P8-S5B (CR-8): the guarded commit serializes on the shared coordinator
+   * chain when the production root installs one (strictly sequential with
+   * the facade critical section — release, then re-acquire, never nested);
+   * otherwise a private map (previous behavior). */
+  const teamLocks = options.teamLocks ?? new Map<string, Promise<unknown>>()
 
   const listActivityFacts = (query: ActivityFactQuery): readonly ActivityFactRow[] =>
     listSubjectActivityRows(repositories, query)

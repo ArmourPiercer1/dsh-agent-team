@@ -287,4 +287,12 @@ export interface ActivityLedgerOptions {
   readonly runtime: TeamRuntime
   /** The display clock (deterministic in tests; ISO-8601 labels). */
   readonly now?: () => string
+  /** The P8-S5B shared team operation chain (the single CR-8 coordinator
+   *  map). When installed, the guarded commit serializes on that shared
+   *  chain instead of a private map. The two ledger critical sections
+   *  stay strictly SEQUENTIAL either way — the facade audit fact releases
+   *  the chain before the guarded commit re-acquires it (never nested, so
+   *  sharing cannot deadlock). Absent in the default wiring: the ledger
+   *  owns a private map (previous behavior). */
+  readonly teamLocks?: Map<string, Promise<unknown>>
 }

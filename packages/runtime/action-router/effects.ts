@@ -128,6 +128,20 @@ export function executeEffect(
   return withTeamLock(teamLocks, ctx.rootSessionId, () => runEffect(ctx))
 }
 
+/**
+ * Execute the action's effect WITHOUT acquiring the per-team lock — the
+ * caller must already hold this runtime's team chain for
+ * `ctx.rootSessionId` (P8-S5B: the new-work admission path holds the chain
+ * across the compatibility gate AND the effect in one acquisition, so the
+ * effect itself must not re-acquire it — chains are not re-entrant).
+ *
+ * @param ctx - the effect context.
+ * @returns the durable effect (lossless JSON).
+ */
+export function executeEffectLocked(ctx: EffectContext): Promise<RuntimeActionEffect> {
+  return runEffect(ctx)
+}
+
 /** The per-team promise chain (the P6-T1 lock pattern, reused). */
 export function withTeamLock<T>(
   teamLocks: Map<string, Promise<unknown>>,

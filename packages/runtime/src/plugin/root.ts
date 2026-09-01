@@ -158,6 +158,7 @@ import { createActivationProvider } from '../../activation/index.js'
 import { enforceCompatibilityGate } from '../../admission/index.js'
 import type { LifecycleCommitPort } from '../../admission/index.js'
 import { createTeamRuntime } from '../../action-router/index.js'
+import { createTeamOperationCoordinator } from '../../coordination/index.js'
 import { createLifecycleService } from '../../lifecycle/index.js'
 import type { LifecyclePorts } from '../../lifecycle/index.js'
 import {
@@ -567,6 +568,29 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
   })
 
+  // --- P8-S5B the shared team operation coordinator (CR-8: ONE seam) -------
+  // Every team-MUTATING operation the production row runs serializes on this
+  // one per-team chain:
+  //   - the router facade's critical section (new-work admissions hold the
+  //     chain across the compatibility gate AND the effect — closes the R5
+  //     window: two concurrent consultations can never interleave their
+  //     inline re-probes);
+  //   - the activity ledger's guarded commit (strictly sequential with the
+  //     facade critical section — release, then re-acquire, never nested);
+  //   - the lifecycle service's locked surface (standalone-use fence; the
+  //     production row itself runs the UNLOCKED cores under the router's
+  //     chain — the service's lock is deliberately not a second seam).
+  // The activation provider deliberately keeps its PRIVATE map: sharing
+  // this chain would DEADLOCK the router-mediated flow (the router effect
+  // holds the chain across callProvider; the provider's steps 7–15 would
+  // queue behind the router's own pending tail). That deadlock is itself
+  // the proof every production provider write already sits inside this
+  // chain's critical section — provably subsumed (no production caller
+  // reaches the provider directly: the facade is the sole creation path,
+  // invariant 26). The provider's private map remains for direct-
+  // construction test worlds (e.g. the frozen p6t1 parallel suite).
+  const coordination = createTeamOperationCoordinator()
+
   // --- A20 + A21 the lifecycle service + commit port ---------------------------------------
   const lifecycleCommit: LifecycleCommitPort = {
     // The repository put returns the committed record; the commit port's
@@ -594,7 +618,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     },
     residency: live.residency,
   }
-  const lifecycleService = createLifecycleService(lifecyclePorts)
+  const lifecycleService = createLifecycleService(lifecyclePorts, coordination.chains)
 
   // --- A17 + A18 + A19 the TeamRuntime facade (the P8-S3 work chain) -----------------------
   const workActivity = createWorkActivityWriter({ teamDomain: domain, now })
@@ -607,6 +631,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
     lifecycleCommit,
     lifecyclePorts,
+    teamLocks: coordination.chains,
     workDelivery: live.workDelivery,
     workActivity,
   })
@@ -628,7 +653,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   })
 
   // --- A26 the activity ledger ------------------------------------------------------------------
-  const activity = createActivityLedger({ teamDomain: domain, runtime, now })
+  const activity = createActivityLedger({
+    teamDomain: domain,
+    runtime,
+    now,
+    teamLocks: coordination.chains,
+  })
 
   // --- A27 the fork reconciliation ----------------------------------------------------------------
   const forkPort = createTeamDomainForkPort(repos)
