@@ -15,6 +15,9 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "yaml": "^2.9.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
