@@ -94,6 +94,7 @@ import {
 } from '../../../remote/src/contracts/types.js'
 import { REMOTE_CONTRACT_VERSION } from '../../../remote/src/contracts/version.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
+import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteHandlerOutcome } from '../../../remote/src/handlers/ports.js'
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
@@ -1572,13 +1573,16 @@ function toS6RemoteErrorResult(error: unknown, ctx: RemoteProvenanceContext): Re
         : undefined
     return buildRemoteError(error.code, error.message, ctx, { field, reason })
   }
-  // Invariant 4b: a backing-service typed error (own non-empty string
-  // `code`) passes through unchanged in code + message; the source
-  // identity rides under details.cause (never its stack, never a live
-  // object — lossless-checked under cause.details).
+  // Invariant 4b (T12-H4): ONLY an error whose string `code` is a member of
+  // the closed backing vocabulary (REMOTE_BACKING_ERROR_CODE_SET, the single
+  // definition shared with the pure remote dispatcher) passes through with
+  // code + message; the source identity rides under details.cause (never its
+  // stack, never a live object — lossless-checked under cause.details). An
+  // `Error` with an out-of-vocabulary `code` (a Node ENOENT with a path in
+  // the message, a synthetic code, …) degrades to invariant 5.
   if (error instanceof Error) {
     const typed = error as Error & { readonly code?: unknown; readonly details?: unknown }
-    if (typeof typed.code === 'string' && typed.code.length > 0) {
+    if (typeof typed.code === 'string' && REMOTE_BACKING_ERROR_CODE_SET.has(typed.code)) {
       return buildRemoteError(typed.code, typed.message, ctx, {
         reason: 'domain-error',
         cause: { code: typed.code, message: typed.message },

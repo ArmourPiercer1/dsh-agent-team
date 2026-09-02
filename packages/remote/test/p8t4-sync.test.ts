@@ -375,8 +375,11 @@ const RT = await (async () => {
             throw new Error('boom')
           }
           if (s7mode === 'domain') {
-            const err = new Error('projection unavailable')
-            ;(err as Error & { code: string }).code = 'team-projection-unavailable'
+            // T12-H4: the fixture uses a REAL closed backing code (the
+            // synthetic 'team-projection-unavailable' no longer passes the
+            // narrowed invariant 4b allowlist).
+            const err = new Error('the team session is not a durable row of this host')
+            ;(err as Error & { code: string }).code = 'TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND'
             throw err
           }
           return syncDto(1, teamSessionId)
@@ -523,7 +526,7 @@ describe('P8-T4 sync: typed errors only across the wire', () => {
   it('maps untyped and domain throws to typed results; the client records, never applies', () => {
     expect(RT.s7.untypedStatus).toBe('rpc-error')
     expect(RT.s7.untypedCode).toBe(REMOTE_CONTRACT_ERROR_CODES.INTERNAL_ERROR)
-    expect(RT.s7.domainCode).toBe('team-projection-unavailable')
+    expect(RT.s7.domainCode).toBe('TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND')
     expect(RT.s7.stateAfter).toBe('connected')
     expect(RT.s7.transportLosses).toBe(0)
     expect(RT.s7.appliedGeneration).toBe(1)

@@ -66,7 +66,12 @@ const RT = await (async () => {
     }),
   )
 
-  const plain = Object.assign(new Error('member is busy'), { code: 'MEMBER_BUSY' })
+  // T12-H4: the fixture must use a REAL closed backing code (the synthetic
+  // 'MEMBER_BUSY' no longer passes the narrowed invariant 4b allowlist).
+  const plain = Object.assign(
+    new Error('the work state does not admit the action'),
+    { code: 'TEAM_RUNTIME_WORK_STATE_REJECTED' },
+  )
   const plainDispatcher = makeDispatcher({
     admission: {
       performAction() {
@@ -83,6 +88,26 @@ const RT = await (async () => {
       body: 'hello',
       requestToken: P8T3_REQUEST_TOKEN,
     }),
+  )
+
+  // T12-H4 regression: a plain Node-style failure (code 'ENOENT' + a
+  // filesystem path in the message) raised inside a handler. 'ENOENT' is NOT
+  // a member of the closed backing vocabulary, so it must degrade to
+  // internal-error and the wire must carry neither the code nor the path.
+  const enoent = Object.assign(
+    new Error('ENOENT: no such file or directory, open /secret/path/legacy.json'),
+    { code: 'ENOENT' },
+  )
+  const enoentDispatcher = makeDispatcher({
+    legacy: {
+      inspect() {
+        throw enoent
+      },
+    },
+  })
+  const enoentLegacyInspect = await enoentDispatcher.dispatch(
+    'legacy.inspect',
+    p8t3Wire({ dshHome: 'D:/home' }),
   )
 
   const untypedDispatcher = makeDispatcher({
@@ -128,6 +153,7 @@ const RT = await (async () => {
   return {
     blockedCreate,
     plainSend,
+    enoentLegacyInspect,
     untypedCreate,
     bareStringProjection,
     unsafeLegacyInspect,
@@ -164,13 +190,33 @@ describe('P8-T3 admission errors at the remote boundary', () => {
 
   it('a typed domain error WITHOUT details → cause without a details key', () => {
     const error = expectError(RT.plainSend)
-    expect(error.error.code).toBe('MEMBER_BUSY')
+    expect(error.error.code).toBe('TEAM_RUNTIME_WORK_STATE_REJECTED')
     const cause = (error.error.details as unknown as Record<string, unknown>)['cause'] as Record<
       string,
       unknown
     >
-    expect(cause).toEqual({ code: 'MEMBER_BUSY', message: 'member is busy' })
+    expect(cause).toEqual({
+      code: 'TEAM_RUNTIME_WORK_STATE_REJECTED',
+      message: 'the work state does not admit the action',
+    })
     expect(Object.prototype.hasOwnProperty.call(cause, 'details')).toBe(false)
+  })
+
+  it('T12-H4: a plain Error with code ENOENT + a path in the message → internal-error, and the wire carries neither the code nor the path', () => {
+    // The assertion runs on the ACTUAL wire envelope produced by the real
+    // dispatcher (invariant 7: it resolved; the envelope IS the wire reply).
+    const error = expectError(RT.enoentLegacyInspect)
+    // Invariant 5 (the narrowed 4b gate): not a typed domain error.
+    expect(error.error.code).toBe('internal-error')
+    expect(error.error.message).toBe('internal error in remote handler')
+    const details = error.error.details as unknown as Record<string, unknown>
+    expect(details['reason']).toBe('untyped-error')
+    // No leak of the Node code or the filesystem path — anywhere in the
+    // client-facing envelope.
+    const wire = JSON.stringify(error)
+    expect(wire.includes('ENOENT')).toBe(false)
+    expect(wire.includes('/secret/path')).toBe(false)
+    expect(wire.includes('legacy.json')).toBe(false)
   })
 
   it('an untyped throw → internal-error with a generic message (no leak, no reject)', () => {
