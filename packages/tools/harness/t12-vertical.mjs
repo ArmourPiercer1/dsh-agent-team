@@ -1115,15 +1115,34 @@ const RUNTIME_LINKS = [
   [null, 'zod'],
 ]
 
-function linkRuntimeNodeModules() {
-  const base = join(WORKTREE_ROOT, 'packages', 'runtime', 'node_modules')
+// Packages-level bridge (T12-V5, integrator directive): the same pnpm-style
+// junctions one directory up, in packages/node_modules. The standard upward
+// walk from packages/runtime/** already hits packages/runtime/node_modules
+// first, so this is belt-and-braces for anything imported from elsewhere in
+// the worktree scope (and it mirrors the placement P9P used — its 7-link
+// packages-level bridge is the precedent). The two extra entries, dsh-scope
+// and dsh-system-prompt, are @deepseek-ai plugin names the DSH host
+// composition references; bridging them removes any resolution ambiguity for
+// the whole worktree. Still gitignored worktree-only artifacts; host tree
+// untouched.
+const PACKAGES_LINKS = [
+  ['@deepseek-ai', 'dsh-agent'],
+  ['@deepseek-ai', 'dsh-llm'],
+  ['@deepseek-ai', 'dsh-mcp-client'],
+  ['@deepseek-ai', 'dsh-session'],
+  ['@deepseek-ai', 'dsh-storage-domain'],
+  ['@deepseek-ai', 'dsh-scope'],
+  ['@deepseek-ai', 'dsh-system-prompt'],
+]
+
+function ensureJunctions(base, links, logTag) {
   const hoist = join(HOST_TREE, 'node_modules', '.pnpm', 'node_modules')
   mkdirSync(base, { recursive: true })
-  for (const [scope, name] of RUNTIME_LINKS) {
+  for (const [scope, name] of links) {
     const label = scope ? `${scope}/${name}` : name
     const target = scope ? join(hoist, scope, name) : join(hoist, name)
     if (!existsSync(target)) {
-      throw new Error(`host tree pnpm hoist has no link for ${label} at ${target} — cannot wire runtime module links`)
+      throw new Error(`host tree pnpm hoist has no link for ${label} at ${target} — cannot wire ${logTag} module links`)
     }
     const scopeDir = scope ? join(base, scope) : base
     mkdirSync(scopeDir, { recursive: true })
@@ -1145,8 +1164,16 @@ function linkRuntimeNodeModules() {
       }
     }
     symlinkSync(target, link, 'junction')
-    log(`runtime link: packages/runtime/node_modules/${label} -> ${target}`)
+    log(`${logTag} link: ${label} -> ${target}`)
   }
+}
+
+function linkRuntimeNodeModules() {
+  ensureJunctions(join(WORKTREE_ROOT, 'packages', 'runtime', 'node_modules'), RUNTIME_LINKS, 'runtime')
+}
+
+function linkPackagesNodeModules() {
+  ensureJunctions(join(WORKTREE_ROOT, 'packages', 'node_modules'), PACKAGES_LINKS, 'packages')
 }
 
 // ── pre/post-flight probes ─────────────────────────────────────────────────
@@ -1200,10 +1227,14 @@ async function main() {
   assertFreshHome(HOME_C, 'world C')
   log('fresh homes A/B/C asserted (non-empty would fail CLOSED)')
 
-  // Wire worktree runtime module links (gitignored node_modules junctions)
-  // so the dynamic seam/glue imports resolve in real boots.
+  // Wire worktree module links (gitignored node_modules junctions) so the
+  // dynamic seam/glue imports resolve in real boots. Two placements: the
+  // runtime-level 5+1 links (proven across all T12 boots) and the
+  // packages-level 7-link bridge (T12-V5 directive; P9P-style placement).
   linkRuntimeNodeModules()
+  linkPackagesNodeModules()
   log('runtime node_modules links verified (packages/runtime/node_modules)')
+  log('packages node_modules links verified (packages/node_modules, 7 links)')
 
   // Workspace dirs for the agent cwds (best effort — the cwd is recorded in
   // the session header regardless).
