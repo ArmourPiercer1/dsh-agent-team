@@ -1,0 +1,13 @@
+﻿DEBUG-S7R1 {"deletedFresh":true,"snapFresh":{"ok":false,"replyKeys":[],"error":{"code":"ROOT_BINDING_TEAM_SESSION_CONFLICT","causeCode":"ROOT_BINDING_TEAM_SESSION_CONFLICT"},"workFacts":0,"teamRowPresent":false},"memberInstances":["inst-leader","inst-p6t2seedw01"],"teamRows":[]}
+FAIL [P8-S7R1 R1-A C1: team.create optional initialWork (runtime admission)] C1d: the FRESH path (TeamSession row absent) binds fresh and admits exactly ONE work fact
+Error: expectation failed: actual toBe true — actual: false
+    at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/scripts/test-vitest-shim.mjs:96:20)
+    at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/scripts/test-vitest-shim.mjs:109:18)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/packages/runtime/test/p8s7r1-initial-work.test.ts:301:26
+    at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/scripts/test-vitest-shim.mjs:69:15)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/packages/runtime/test/p8s7r1-initial-work.test.ts:299:3
+    at describe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/scripts/test-vitest-shim.mjs:59:5)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P8S7-R1/packages/runtime/test/p8s7r1-initial-work.test.ts:269:1
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+file p8s7r1-initial-work.test.ts executed 5 it() records
+TOTAL pass=4 fail=1

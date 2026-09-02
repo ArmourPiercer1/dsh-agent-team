@@ -1,0 +1,77 @@
+{
+  "criterion": "W1",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 1045,
+  "assertions": [
+    {
+      "name": "boot1 state: exactly the three seeded members (leader + worker + scout)",
+      "pass": true,
+      "detail": "[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"session-p6t6root\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seeds1\",\"templateId\":\"scout\",\"label\":\"existing-scout\",\"childSessionId\":\"session-child-p6t6seeds1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1},{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"RUNNING\",\"activityVersion\":1}]"
+    },
+    {
+      "name": "delegate executed through the public tool seam",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4},\"requestToken\":\"p8s3-w1-token\"}"
+    },
+    {
+      "name": "the persistent worker delegate CONTINUES the seeded worker with a real work settlement (no fake success)",
+      "pass": true,
+      "detail": "{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4}"
+    },
+    {
+      "name": "a RUNNING target needs no admission CAS (lifecycleCommitted=false)",
+      "pass": true,
+      "detail": "{\"from\":\"RUNNING\",\"committed\":false}"
+    },
+    {
+      "name": "the admission + settlement carry positive durable ledger sequences (admission before settlement)",
+      "pass": true,
+      "detail": "{\"seq\":1,\"settledSeq\":4}"
+    },
+    {
+      "name": "the target member row carries the seeded worker real child session id",
+      "pass": true,
+      "detail": "{\"i\":\"inst-p6t6seedw1\",\"c\":\"session-child-p6t6seedw1\"}"
+    },
+    {
+      "name": "the request token round-trips into the outcome",
+      "pass": true,
+      "detail": "{\"t\":\"p8s3-w1-token\"}"
+    },
+    {
+      "name": "state: the member count stays three (a persistent continue mints nothing)",
+      "pass": true,
+      "detail": "{\"n\":3}"
+    },
+    {
+      "name": "the seeded worker row is durably SETTLED at activityVersion 2 (RUNNING av1 -> settle-only CAS)",
+      "pass": true,
+      "detail": "{\"instanceId\":\"inst-p6t6seedw1\",\"templateId\":\"worker\",\"label\":\"existing-worker\",\"childSessionId\":\"session-child-p6t6seedw1\",\"lifecycle\":\"SETTLED\",\"activityVersion\":2}"
+    },
+    {
+      "name": "the real child Session log durably carries TOKEN_A + the exact prompt",
+      "pass": true,
+      "detail": "logBytes=17591"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 1,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "effectKind": "work-admitted",
+    "memberCountAfter": 3,
+    "w1Row": {
+      "instanceId": "inst-p6t6seedw1",
+      "templateId": "worker",
+      "label": "existing-worker",
+      "childSessionId": "session-child-p6t6seedw1",
+      "lifecycle": "SETTLED",
+      "activityVersion": 2
+    },
+    "w1LogBytes": 17591
+  }
+}

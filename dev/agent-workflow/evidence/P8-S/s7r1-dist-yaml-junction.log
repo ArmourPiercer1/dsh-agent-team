@@ -1,0 +1,9 @@
+﻿cmd : The system cannot find the path specified.
+At line:1 char:213
++ ... | Out-Null; cmd /c mklink /J packages\runtime\node_modules\yaml packa ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The system cann...path specified.:String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Junction created for packages\runtime\node_modules\yaml <<===>> packages\domain\node_modules\yaml

@@ -1,0 +1,98 @@
+{
+  "criterion": "M5",
+  "boot": 2,
+  "pass": true,
+  "durationMs": 1119,
+  "assertions": [
+    {
+      "name": "M4 ran on boot 1 (the mcp deny landed)",
+      "pass": true,
+      "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+    },
+    {
+      "name": "the next real request (fresh host process) executed against the worker",
+      "pass": true,
+      "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":39,\"replayed\":false,\"settled\":true,\"settledSequence\":42},\"requestToken\":\"p8s4b-m5-token\"}"
+    },
+    {
+      "name": "AFTER restart the worker still ASSEMBLES model B (the carried grant)",
+      "pass": true,
+      "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+    },
+    {
+      "name": "AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)",
+      "pass": true,
+      "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+    },
+    {
+      "name": "state: mcp facet unmounted, team-denied by the deny record",
+      "pass": true,
+      "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+    },
+    {
+      "name": "the THREE durable override records survived the restart",
+      "pass": true,
+      "detail": "[\"p8s4b-ovr-mcp-allow\",\"p8s4b-ovr-mcp-deny\",\"p8s4b-ovr-model\"]"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 2,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "ping": {
+      "status": 200,
+      "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+    },
+    "workerModelAfter": {
+      "current": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "assembled": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "selection": {
+        "provider": "p6t6-static",
+        "model": "p6t6-model-v2"
+      },
+      "source": {
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-mcp-deny"
+      },
+      "suppressed": [],
+      "unavailable": false,
+      "pendingNextBoundary": [],
+      "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+    },
+    "workerMcpAfter": {
+      "mounted": false,
+      "serverName": "p8s4bmini",
+      "allowed": false,
+      "source": {
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-mcp-deny"
+      },
+      "unavailable": false,
+      "deniedBy": {
+        "by": "team",
+        "reason": "teamDeny",
+        "layer": "humanOverride",
+        "origin": "human",
+        "recordId": "p8s4b-ovr-mcp-deny"
+      },
+      "pendingNextBoundary": [],
+      "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+    },
+    "overrideRecordIds": [
+      "p8s4b-ovr-mcp-allow",
+      "p8s4b-ovr-mcp-deny",
+      "p8s4b-ovr-model"
+    ]
+  }
+}

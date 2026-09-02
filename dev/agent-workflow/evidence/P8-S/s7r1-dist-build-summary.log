@@ -1,0 +1,3 @@
+﻿legacy-dist=False runtime-dist=True
+legacy-tsc-exit=1
+junction-present=True
