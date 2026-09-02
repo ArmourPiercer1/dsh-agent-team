@@ -40,6 +40,16 @@
  *                        loop is skipped, as before)
  *   now                - parity field (the row's clock); unused by the ported
  *                        glue paths, which derive time from the services
+ *   subagents (OPTIONAL) - the DSH subagents service (SubagentRuntime):
+ *                        { drainContinuableDescendants, listDescendants }.
+ *                        T12-M3: the recursive drain needs it; ABSENT -> the
+ *                        drain fails closed with the typed
+ *                        recursive-drain-unavailable error (the
+ *                        archive/dispose procedure refuses). NOTE: host.ts
+ *                        does not pass it yet — the integrator must add
+ *                        `subagents: ctx.get('subagents')` to the glue deps
+ *                        (additive; the glue reads deps.subagents
+ *                        defensively).
  *
  * Returned bindings (the harness observability surface first — the
  * production host exposes this WHOLE bundle as the teamRoot.live field):
@@ -62,7 +72,14 @@
  *   sessionInput.submitAttributedInput(input)
  *   workDelivery.deliver(args)
  *   interrupt(target)            (agent.cancel({kind:'user'}))
- *   drainDescendants(childSessionId) -> {drained:0, quiescent:true}
+ *   drainDescendants(childSessionId) -> {drained, quiescent}
+ *                                 (T12-M3: the REAL recursive drain — whenIdle
+ *                                  + subagents.drainContinuableDescendants +
+ *                                  the honest listDescendants count; a drain
+ *                                  failure reports {drained, quiescent:false};
+ *                                  a drain that cannot establish quiescence
+ *                                  rejects with code
+ *                                  'recursive-drain-unavailable')
  *   residency {has, hasResidency, dropResidency} (sync boolean port)
  *   resolveCaller(sessionId)     (root -> leader, else bound member)
  * Additive surface (the production root bootstrap):
@@ -673,9 +690,10 @@ export function createAgentBindings(deps) {
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
   // procedure); interrupt is the public Agent cancel (upstream contract:
-  // no-op when the phase is idle); drain quiesces on the public whenIdle;
-  // residency is the live-agent handle map (drop = forget the resident
-  // handle, the durable session stays on disk under DSH_HOME).
+  // no-op when the phase is idle); drain is the REAL recursive descendant
+  // drain (T12-M3: whenIdle + the subagents service, honest count, typed
+  // fail-closed); residency is the live-agent handle map (drop = forget the
+  // resident handle, the durable session stays on disk under DSH_HOME).
   async function interrupt(target) {
     const row = domain.repositories.memberInstances.list(rootSid).find(
       (m) => String(m.instanceId) === String(target.instanceId),
@@ -685,17 +703,96 @@ export function createAgentBindings(deps) {
     handle.agent.cancel({ kind: 'user' })
   }
 
+  // T12-M3: the typed fail-closed error for a drain that cannot ESTABLISH
+  // quiescence (no live agent, subagents service absent/unusable,
+  // infrastructural rejection). Carries code 'recursive-drain-unavailable';
+  // the lifecycle layer (lifecycle/quiesce.ts) maps the REJECTION to a
+  // live-effect failure and the archive/dispose procedure REFUSES
+  // completion — quiescence is never faked.
+  function recursiveDrainUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: recursive drain unavailable for '${sessionId}': ${reason} (code: recursive-drain-unavailable)`)
+    error.code = 'recursive-drain-unavailable'
+    observations.push(`p6t6: recursive-drain-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  /**
+   * T12-M3: the REAL recursive descendant drain (stop + quiesce).
+   *
+   * Cancel semantics: this is invoked BEFORE any dropResidency /
+   * handle.dispose (a disposed agent cannot be quiesced — the durable
+   * session on disk is not quiescence). The sequence:
+   *   (a) `await handle.agent.whenIdle()` — the member's own in-flight turn
+   *       settles first (a rejection PROPAGATES as a fault: a rejected
+   *       settle is not quiescence);
+   *   (b) `await subagents.drainContinuableDescendants([handle.agent])` —
+   *       the SubagentRuntime closes admission below the member, stops its
+   *       visible descendant Activations, and awaits them; it REJECTS with
+   *       an aggregate AFTER ALL BRANCHES SETTLE when any failed — that
+   *       rejection is a DRAIN FAILURE: the report is
+   *       `{drained: <count>, quiescent: false}`, never `quiescent: true`;
+   *   (c) `await subagents.listDescendants(handle.agent.session.id)` — the
+   *       HONEST descendant count (the complete tree after the drain).
+   *
+   * `quiescent: true` is returned ONLY when (a) and (b) settled without
+   * rejection and (c) listed successfully.
+   *
+   * Throws the typed `recursive-drain-unavailable` error (the lifecycle
+   * maps the rejection to LIFECYCLE_LIVE_EFFECT_FAILED; the procedure
+   * refuses before any commit) when:
+   *   - there is no live agent for the session (quiescence cannot be
+   *     established for a member that has no resident agent);
+   *   - the subagents service is absent or structurally unusable (the
+   *     production host seam is not wired yet — integrator note: host.ts
+   *     must pass `subagents: ctx.get('subagents')` into the glue deps for
+   *     this drain to be active in production);
+   *   - the drain or the listing fails for an infrastructural reason (as
+   *     opposed to the (b) aggregate drain FAILURE, which reports
+   *     `quiescent: false` with the best-effort count).
+   *
+   * @param {string} childSessionId
+   * @returns {Promise<{drained: number, quiescent: boolean}>}
+   */
   async function drainDescendants(childSessionId) {
-    const handle = liveAgents.get(String(childSessionId))
-    if (handle !== undefined) {
-      try {
-        await handle.agent.whenIdle()
-      } catch {
-        // a rejected turn is over (idle or failed): the member is
-        // quiescent either way; a non-turn fault still propagates
-      }
+    const sid = String(childSessionId)
+    const handle = liveAgents.get(sid)
+    if (handle === undefined) {
+      throw recursiveDrainUnavailable(sid, 'no live agent (quiescence cannot be established)')
     }
-    return { drained: 0, quiescent: true }
+    // (a) the member's own turn settles first.
+    await handle.agent.whenIdle()
+    // (b) the real recursive drain of every continuable descendant.
+    const subagents = deps.subagents
+    if (
+      subagents === undefined ||
+      typeof subagents.drainContinuableDescendants !== 'function' ||
+      typeof subagents.listDescendants !== 'function'
+    ) {
+      throw recursiveDrainUnavailable(sid, 'the subagents service is absent or unusable')
+    }
+    let drainFailed = false
+    try {
+      await subagents.drainContinuableDescendants([handle.agent])
+    } catch {
+      // The aggregate settles only AFTER all branches: a rejection here is
+      // a DRAIN FAILURE (residual descendant activity), not a fault — it
+      // reports quiescent: false, never a throw and never quiescent: true.
+      drainFailed = true
+    }
+    // (c) the honest descendant count (the tree after the drain).
+    let drained
+    try {
+      const entries = await subagents.listDescendants(handle.agent.session.id)
+      drained = entries.length
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      throw recursiveDrainUnavailable(
+        sid,
+        drainFailed ? `the drain failed and the descendant listing rejected: ${detail}` : `the descendant listing rejected: ${detail}`,
+      )
+    }
+    if (drainFailed) return { drained, quiescent: false }
+    return { drained, quiescent: true }
   }
 
   const residency = {

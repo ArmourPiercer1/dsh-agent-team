@@ -541,3 +541,29 @@ export interface TeamAgentBindings {
   /** Close the glue (dispose every live agent handle; idempotent). */
   close(): Promise<void>
 }
+
+/**
+ * T12-M3: the structural seam for the DSH subagents service
+ * (SubagentRuntime) that the live glue consumes as the OPTIONAL dep
+ * `deps.subagents`. Only the two methods the recursive drain
+ * (agent-bindings.mjs `drainDescendants`) invokes are required:
+ *
+ *   - `drainContinuableDescendants` — closes admission below the exact live
+ *     parent agents, stops their visible descendant Activations, and awaits
+ *     them; it REJECTS with an aggregate AFTER ALL BRANCHES SETTLE when any
+ *     failed (a drain failure, reported as `quiescent: false`);
+ *   - `listDescendants` — the complete descendant tree below one session id
+ *     (the honest drained count).
+ *
+ * Absent or structurally unusable, the drain fails closed with the typed
+ * `recursive-drain-unavailable` error (the archive/dispose procedure
+ * refuses). The production host (host.ts) does not pass it yet: the
+ * integrator must add `subagents: ctx.get('subagents')` to the glue deps
+ * (additive; the glue reads `deps.subagents` defensively).
+ */
+export interface SubagentsDrainPort {
+  /** Drain every continuable descendant below the exact live parent agents. */
+  drainContinuableDescendants(parents: readonly unknown[]): Promise<void>
+  /** Enumerate the complete descendant tree below one session id. */
+  listDescendants(rootSessionId: string): Promise<readonly unknown[]>
+}
