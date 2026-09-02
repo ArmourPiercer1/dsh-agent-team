@@ -117,7 +117,9 @@ import type {
   TeamRuntimeActionOutcome,
   TeamRuntimeActionRequest,
 } from '../../admission/index.js'
+import { validateActionRequest } from '../../admission/index.js'
 import type { InstanceId, TeamSessionId } from '../../../contracts/src/index.js'
+import { canonicalJsonStringify } from '../../../contracts/src/index.js'
 import type { LifecycleService } from '../../lifecycle/index.js'
 import { activePolicyState } from '../../mutation/index.js'
 import type {
@@ -142,6 +144,7 @@ import type {
   BlueprintTemplate,
   TeamBlueprint,
 } from '../../../domain/blueprint/src/index.js'
+import { sha256Hex } from '../../../domain/blueprint/src/index.js'
 import { DEFAULT_POLICY_STATE_ID } from '../../../domain/policy/src/index.js'
 import type {
   ColdRootBindingInput,
@@ -247,7 +250,22 @@ export interface S6RemoteIntentPort {
 }
 /** Port 3/12 — TeamSession creation via the root binding (`team.create`). */
 export interface S6RemoteTeamCreatePort {
-  create(rootSessionId: string, blueprintId: string, blueprintRevision?: number): Promise<RemoteSafeRecord>
+  /**
+   * Bind a fresh root or rehydrate a cold root for the requested
+   * blueprint. `initialWork` (BC-03 / R1-A) is optional: when present it
+   * is admitted through the existing work-admission path (the facade's
+   * `follow-up` action on the leader instance) as part of the creation;
+   * absent, the behavior is unchanged.
+   * @returns the value object
+   *   `{ path: 'fresh-root' | 'cold-root', durable: <state> | null,
+   *   bind: <bind result> }` (lossless JSON).
+   */
+  create(
+    rootSessionId: string,
+    blueprintId: string,
+    blueprintRevision?: number,
+    initialWork?: RemoteSafeRecord,
+  ): Promise<RemoteSafeRecord>
 }
 /** Port 4/12 — the whole-projection observation (`team.getProjection`). */
 export interface S6RemoteProjectionPort {
@@ -390,6 +408,20 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 /** A safe non-negative integer. */
 function isSafeInt(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+}
+
+/**
+ * BC-03 / R1-A — the stable logical-operation token of one creation-time
+ * work admission: the content hash of the initial work's canonical JSON.
+ * The work chain's token protocol (closure plan §CR2) then makes a retried
+ * `team.create` carrying the SAME initial work a replay/resume (zero
+ * duplicate `team-work-admitted` facts), while a different payload is a
+ * distinct logical operation (a fresh admission through the same gates).
+ * The token scan is root-scoped, so identical payloads on different teams
+ * never collide.
+ */
+function initialWorkRequestToken(initialWork: RemoteSafeRecord): string {
+  return `team-create:initial-work:sha256:${sha256Hex(canonicalJsonStringify(initialWork))}`
 }
 
 /** Map the derived caller to the mutation authority (server-side). */
@@ -715,10 +747,40 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         requestedRootSessionId: string,
         blueprintId: string,
         blueprintRevision: number | undefined,
+        initialWork: RemoteSafeRecord | undefined,
       ): Promise<RemoteSafeRecord> {
         assertBoundRoot('team.create', requestedRootSessionId)
         const resolved = resolveBlueprint(blueprintId, blueprintRevision)
+        // BC-03 / R1-A: optional initial work admitted through the EXISTING
+        // work-admission path (facade follow-up on the leader instance).
+        // Pure step 0 BEFORE any durable bind (malformed work fails without
+        // partial creation); the full chain AFTER the bind, under facade
+        // authority (gates + work-chain token replay/resume included).
+        let initialWorkRequest: TeamRuntimeActionRequest | undefined
+        if (initialWork !== undefined) {
+          initialWorkRequest = {
+            rootSessionId,
+            action: 'follow-up',
+            caller: await options.principal({
+              method: 'team.create',
+              request: {
+                version: REMOTE_CONTRACT_VERSION,
+                params: {
+                  rootSessionId,
+                  blueprintId,
+                  ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
+                  initialWork,
+                },
+              },
+            }),
+            targetInstanceId: leaderInstanceId,
+            requestToken: initialWorkRequestToken(initialWork),
+            payload: { ...initialWork },
+          }
+          validateActionRequest(initialWorkRequest)
+        }
         const durableRow = repositories.teamSessions.get(rootSessionId)
+        let result: RootBindingResult
         if (durableRow !== undefined) {
           // The cold path: the durable row's bound snapshot is the truth;
           // a request naming a different snapshot is a foreign intent.
@@ -733,21 +795,20 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
               { reason: 'blueprint-mismatch' },
             )
           }
-          const result = await options.rootBinding.rehydrateCold({ rootSessionId: rootSessionId as TeamSessionId })
-          return {
-            path: result.path,
-            durable: result.durable ?? null,
-            bind: result.bind as unknown as RemoteSafeRecord,
-          } as unknown as RemoteSafeRecord
+          result = await options.rootBinding.rehydrateCold({ rootSessionId: rootSessionId as TeamSessionId })
+        } else {
+          result = await options.rootBinding.bindFresh({
+            rootSessionId: rootSessionId as TeamSessionId,
+            blueprint: {
+              blueprintId: resolved.blueprintId,
+              revision: resolved.revision,
+              contentHash: resolved.contentHash,
+            },
+          })
         }
-        const result = await options.rootBinding.bindFresh({
-          rootSessionId: rootSessionId as TeamSessionId,
-          blueprint: {
-            blueprintId: resolved.blueprintId,
-            revision: resolved.revision,
-            contentHash: resolved.contentHash,
-          },
-        })
+        if (initialWorkRequest !== undefined) {
+          await options.runtime.performAction(initialWorkRequest)
+        }
         return {
           path: result.path,
           durable: result.durable ?? null,
@@ -1156,7 +1217,12 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
           case 'team.create': {
             const createParams = params as RemoteTeamCreateParams
             return ports
-              .teamCreate.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision)
+              .teamCreate.create(
+                createParams.rootSessionId,
+                createParams.blueprintId,
+                createParams.blueprintRevision,
+                createParams.initialWork,
+              )
               .then((created) => ({ data: { path: created['path'], durable: created['durable'], bind: created['bind'] } }))
           }
           case 'team.getProjection': {

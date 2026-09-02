@@ -17,6 +17,7 @@
 
 import { remoteContractError, type RemoteContractError } from '../contracts/errors.js'
 import type {
+  RemoteLosslessRecord,
   RemoteTeamCreateParams,
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
@@ -39,6 +40,24 @@ export interface RemoteTeamHandlerPorts {
   readonly teamCreate: RemoteTeamCreatePort
   readonly projection: RemoteProjectionPort
   readonly ledger: RemoteLedgerPort
+}
+
+/**
+ * The `team.create` port as this handler consumes it (BC-03 / R1-A): the
+ * frozen {@link RemoteTeamCreatePort} plus the optional `initialWork`
+ * parameter. A frozen 3-argument implementation is assignable here (the
+ * extra argument is ignored by arity), so pre-existing fakes keep
+ * byte-identical behavior; the production runtime (s6-remote) declares the
+ * fourth parameter and admits the work through the existing
+ * work-admission path.
+ */
+interface TeamCreatePortWithInitialWork {
+  create(
+    rootSessionId: string,
+    blueprintId: string,
+    blueprintRevision: number | undefined,
+    initialWork: RemoteLosslessRecord | undefined,
+  ): RemoteSafeRecord
 }
 
 /** Is `value` a plain (non-array) object? */
@@ -146,10 +165,12 @@ export function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts) {
     switch (method) {
       case 'team.create': {
         const createParams = params as RemoteTeamCreateParams
-        const created = ports.teamCreate.create(
+        const teamCreate: TeamCreatePortWithInitialWork = ports.teamCreate
+        const created = teamCreate.create(
           createParams.rootSessionId,
           createParams.blueprintId,
           createParams.blueprintRevision,
+          createParams.initialWork,
         )
         if (!isPlainRecord(created)) {
           throw portContractError('teamCreate', `expected an object, got ${String(created)}`)

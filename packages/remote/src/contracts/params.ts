@@ -164,11 +164,16 @@ export interface RemoteIntentProbeParams {
   readonly environmentFacts: readonly RemoteSafeRecord[]
 }
 
-/** `team.create`. */
+/**
+ * `team.create`. `initialWork` is optional: when present, the materialized
+ * team admits it through the existing work-admission path (a `follow-up`
+ * action targeting the leader instance) as part of the creation.
+ */
 export interface RemoteTeamCreateParams {
   readonly rootSessionId: string
   readonly blueprintId: string
   readonly blueprintRevision?: number
+  readonly initialWork?: RemoteLosslessRecord
 }
 
 /** `team.getProjection`. */
@@ -344,6 +349,7 @@ export const REMOTE_INTENT_PROBE_FIELDS: readonly string[] = [
 export const REMOTE_TEAM_CREATE_FIELDS: readonly string[] = [
   'blueprintId',
   'blueprintRevision',
+  'initialWork',
   'rootSessionId',
 ]
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS: readonly string[] = ['teamSessionId']
@@ -1047,6 +1053,7 @@ export function parseRemoteTeamCreateParams(
 ): RemoteTeamCreateParams {
   assertNoUnknownFields(method, params, REMOTE_TEAM_CREATE_FIELDS)
   const rawRevision = optionalField(method, params, 'blueprintRevision')
+  const rawInitialWork = optionalField(method, params, 'initialWork')
   return {
     rootSessionId: parseRemoteRootSessionId(
       requiredField(method, params, 'rootSessionId'),
@@ -1059,6 +1066,9 @@ export function parseRemoteTeamCreateParams(
     ...(rawRevision === undefined
       ? {}
       : { blueprintRevision: parseRemoteBlueprintRevision(rawRevision, 'blueprintRevision') }),
+    ...(rawInitialWork === undefined
+      ? {}
+      : { initialWork: parseRemoteLosslessRecord(rawInitialWork, method, 'initialWork') }),
   }
 }
 
