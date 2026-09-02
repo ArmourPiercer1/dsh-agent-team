@@ -1510,8 +1510,13 @@ async function runFresh1() {
     })
     const setVal = remoteValue(setRes, 'override.set')
     v3.evidence.overrideSet = setVal
+    // Run #5/#6: the dispatch envelope's data IS the durable override record
+    // itself ({recordId, kind, scope, values, ...}) — no {record} wrapper in
+    // the shipped runtime. Accept both shapes so the check tracks the value,
+    // not a guessed envelope.
+    const overrideRec = setVal?.record ?? setVal
     v3.check('member override ALLOW mcp[t12vmini] admitted (durable override record returned)',
-      setVal?.record !== null && typeof setVal.record === 'object', JSON.stringify(setVal).slice(0, 400))
+      overrideRec !== null && typeof overrideRec === 'object' && typeof overrideRec.recordId === 'string', JSON.stringify(setVal).slice(0, 400))
     // Drive the worker to actually TRY the mcp tool.
     const useRes = await remoteCall(a.origin, a.cookie, 'member.send', {
       teamSessionId: a.teamSession,
@@ -1521,8 +1526,20 @@ async function runFresh1() {
       requestToken: `t12v-v3-use-${NONCE}`,
     })
     admissionOutcome(remoteValue(useRes, 'member.send'), 'member.send')
-    const deniedAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_MCP_DENIED_ACK_${NONCE}`), 180_000)
-    v3.check('turn settled after the mcp tool call was handled by the real agent loop', deniedAck !== null, deniedAck === null ? '<denied-ack not in child log within 180s>' : 'settled')
+    // 480 s (was 180 s): run #6 showed the fresh-child non-idle window PERSISTS
+    // past the first turn — V2-A's turn 1 took ~47 s, V3's turn 2 (USE_MCP) took
+    // ~181 s and the denied-ack landed 1.3 s past a 180 s deadline. The window
+    // is per-agent-materialization but spans MULTIPLE turns until convergence
+    // (turn 3 on the same agent was immediate, 0.25 s). t12v-finding-360s-first-turn.md.
+    const v3AdmittedAt = Date.now()
+    const deniedAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_MCP_DENIED_ACK_${NONCE}`), 480_000)
+    v3.check('turn settled after the mcp tool call was handled by the real agent loop', deniedAck !== null, deniedAck === null ? '<denied-ack not in child log within 480s>' : 'settled')
+    // Measure the USE_MCP turn's own opener (NOT the child's first turn/start,
+    // which belongs to V2-A's CHILD_FIRST turn): nearest preceding turn/start
+    // for the turn containing the USE_MCP relay text.
+    const v3TurnStartMs = turnStartBeforeText(HOME_A, workerA.childSessionId, `T12V_USE_MCP_${NONCE}`)
+    v3.evidence.denyTurnStartMs = v3TurnStartMs
+    v3.evidence.denyTurnLatencyMs = v3TurnStartMs !== null ? v3TurnStartMs - v3AdmittedAt : null
     const childLogText = logTextOf(HOME_A, workerA.childSessionId) ?? ''
     const toolAttemptVisible = childLogText.includes(MCP_PING_TOOL)
     v3.check('child session log records the mcp tool attempt at the consumption boundary',
@@ -1612,17 +1629,18 @@ async function runFresh1() {
     admissionOutcome(remoteValue(subRes, 'member.send'), 'member.send (subspawn)')
     const lcAdmittedAt = Date.now()
     // Wait for the DESCENDANT session to appear (discovered via durable logs)
-    // and to settle its own real turn against the mock. 480 s budgets: the
-    // descendant session materialization + its first turn on a freshly
-    // materialized subagent agent showed a ~360 s start delay in run #5
-    // (t12v-finding-360s-first-turn.md).
-    const descendant = await waitForDescendantSession(HOME_A, workerA.childSessionId, 480_000)
+    // and to settle its own real turn against the mock. 900 s budgets: run #5
+    // showed a ~360 s first-turn gap on a freshly materialized subagent agent
+    // and run #6 showed the SUBSPAWN turn (4th turn on the same worker agent)
+    // never reaching the mock within 480 s — the non-idle window class
+    // persists across turns (t12v-finding-360s-first-turn.md).
+    const descendant = await waitForDescendantSession(HOME_A, workerA.childSessionId, 900_000)
     lc.evidence.descendantSession = descendant
-    lc.check('a real descendant session was created under the member child session (real subagent lifecycle)', descendant !== null, descendant?.id ?? '<not found within 480s>')
+    lc.check('a real descendant session was created under the member child session (real subagent lifecycle)', descendant !== null, descendant?.id ?? '<not found within 900s>')
     lc.check('descendant session header marks origin=subagent with parentSession == member child (durable session meta)',
       descendant !== null && descendant.origin === 'subagent', `origin=${descendant?.origin} (parentSession match was the discovery criterion)`)
-    const descAck = descendant === null ? null : await waitForLogLineJson(HOME_A, descendant.id, (l) => JSON.stringify(l).includes(`T12V_DESC_ACK_${NONCE}`), 480_000)
-    lc.check('descendant turn settled against the mock (real subagent agent loop + session log)', descAck !== null, descAck === null ? '<desc ack not in descendant log within 480s>' : 'settled')
+    const descAck = descendant === null ? null : await waitForLogLineJson(HOME_A, descendant.id, (l) => JSON.stringify(l).includes(`T12V_DESC_ACK_${NONCE}`), 900_000)
+    lc.check('descendant turn settled against the mock (real subagent agent loop + session log)', descAck !== null, descAck === null ? '<desc ack not in descendant log within 900s>' : 'settled')
     if (descendant !== null) lc.evidence.descendantFirstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, descendant.id, lcAdmittedAt)
     await new Promise((r) => setTimeout(r, 3000)) // let the descendant registry settle to idle
     // Archive: the quiescence gate requires a TRUE quiescent drain of the
@@ -1653,7 +1671,10 @@ async function runFresh1() {
       caller: humanCaller(ROOT_A),
       targetInstanceId: workerA.instanceId,
       requestToken: `t12v-lc-followup-${NONCE}`,
-      payload: { body: `T12V_FOLLOWUP_${NONCE}` },
+      // The shipped follow-up action requires payload.prompt (run #6:
+      // TEAM_RUNTIME_REQUEST_MALFORMED "payload.prompt (a non-empty string)
+      // is required" when payload.body was sent).
+      payload: { prompt: `T12V_FOLLOWUP_${NONCE}` },
     })
     const followed = admissionOutcome(remoteValue(fuRes, 'member.followup'), 'member.followup')
     lc.evidence.followupOutcome = followed
@@ -1809,10 +1830,12 @@ async function runFresh2() {
     })
     admissionOutcome(remoteValue(sendRes, 'member.send'), 'member.send (world B)')
     const v2bAdmittedAt = Date.now()
-    // 480 s budget: first relayed turn on world B's freshly materialized child
-    // agent (~360 s gap class, t12v-finding-360s-first-turn.md).
-    const childAck = await waitForLogLineJson(HOME_B, workerB.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 480_000)
-    v2b.check('child turn settled against the mock (no crash from mcpServer:null)', childAck !== null, childAck === null ? '<ack missing after 480s>' : 'settled')
+    // 900 s budget: run #6 showed world B's child first turn not reaching the
+    // mock within 480 s (run-level window curse; every root turn in runs #4-#6
+    // was <= 2 s — the class is specific to freshly materialized children).
+    // t12v-finding-360s-first-turn.md.
+    const childAck = await waitForLogLineJson(HOME_B, workerB.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 900_000)
+    v2b.check('child turn settled against the mock (no crash from mcpServer:null)', childAck !== null, childAck === null ? '<ack missing after 900s>' : 'settled')
     v2b.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_B, workerB.childSessionId, v2bAdmittedAt)
     const childReq = mock.requests.find((r) => r.body?.model === 't12v-model-b' && (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
     v2b.check('effective model = t12v-model-b (row static selection, mcpServer:null variant)', childReq !== undefined, `found=${childReq !== undefined}`)
@@ -1967,7 +1990,9 @@ async function runRestart1() {
         caller: humanCaller(ROOT_A),
         targetInstanceId: wA?.instanceId,
         requestToken: `t12v-restart-followup-${NONCE}`,
-        payload: { body: `T12V_RESTART_FOLLOWUP_${NONCE}` },
+        // payload.prompt is the shipped follow-up contract field (run #6
+        // rejected payload.body with TEAM_RUNTIME_REQUEST_MALFORMED).
+        payload: { prompt: `T12V_RESTART_FOLLOWUP_${NONCE}` },
       })
       const followed = admissionOutcome(remoteValue(fuRes, 'member.followup'), 'member.followup (restart)')
       rs.check('real follow-up turn admitted after restart', followed.status === 'executed', JSON.stringify(followed).slice(0, 300))
