@@ -883,7 +883,15 @@ export function createAgentBindings(deps) {
         const members = domain.repositories.memberInstances.list(rootSid)
         const seen = new Set([rootSid])
         for (const member of members) {
-          const child = String(member.childSessionId)
+          // T12-V10: the production create path mints the v2 leader row with
+          // NO childSessionId key (the leader IS the root session, resumed
+          // above) — String(undefined) produced SessionId("undefined") and
+          // killed every resume boot (T12 vertical runs #6-#10). Structural
+          // guard in the shape used by projection-source.ts /
+          // s6-live-overlay.ts ('childSessionId' in row).
+          const childRaw = member?.childSessionId
+          if (typeof childRaw !== 'string' || childRaw.length === 0) continue
+          const child = childRaw
           if (seen.has(child)) continue
           seen.add(child)
           resumingSessions.add(child)
