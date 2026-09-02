@@ -524,6 +524,62 @@ function logTextOf(dshHome, sessionId) {
   return log.lines.map((l) => JSON.stringify(l)).join('\n')
 }
 
+/**
+ * Epoch-ms timestamp of the FIRST `turn/start` record in one session's durable
+ * log, or null. Records are {type:'turn/start', seq, time, data:{turn}} — the
+ * `time` field is the durable turn-open timestamp (verified against the real
+ * DSH log, e.g. run #5 world-A worker child).
+ */
+function firstTurnStartMs(dshHome, sessionId) {
+  const log = readSessionLog(dshHome, sessionId)
+  if (log === null) return null
+  for (const rec of log.lines) {
+    if (rec !== null && typeof rec === 'object' && rec.type === 'turn/start' && typeof rec.time === 'number') return rec.time
+  }
+  return null
+}
+
+/**
+ * Epoch-ms timestamp of the `turn/start` record that OPENS the turn containing
+ * `text` in the durable log, or null. Log order per turn (verified against the
+ * real DSH log): `turn/start` is written first, then the relayed `user/message`
+ * carrying the text is appended — so the opener is the nearest `turn/start`
+ * record immediately preceding the first record containing `text`.
+ */
+function turnStartBeforeText(dshHome, sessionId, text) {
+  const log = readSessionLog(dshHome, sessionId)
+  if (log === null) return null
+  for (let i = 0; i < log.lines.length; i++) {
+    if (JSON.stringify(log.lines[i]).includes(text)) {
+      for (let j = i - 1; j >= 0; j--) {
+        const rec = log.lines[j]
+        if (rec !== null && typeof rec === 'object' && rec.type === 'turn/start' && typeof rec.time === 'number') return rec.time
+      }
+      return null
+    }
+  }
+  return null
+}
+
+/**
+ * Measured first-turn latency evidence: the gap between when the RUNNER issued
+ * the admission call (`admittedAtMs`, epoch ms) and when the target session's
+ * durable log first recorded a `turn/start`. This isolates the observed
+ * intermittent ~360 s first-turn delay on freshly materialized child agents
+ * (t12v-finding-360s-first-turn.md): the session log is SILENT between
+ * admission and the delayed turn, so only this (admission clock, durable
+ * turn/start) pair brackets the latency. Returns null when the turn never
+ * started (the wait timed out).
+ */
+function firstTurnLatencyEvidence(dshHome, sessionId, admittedAtMs) {
+  const startMs = firstTurnStartMs(dshHome, sessionId)
+  return {
+    admittedAtMs,
+    firstTurnStartMs: startMs,
+    latencyMs: startMs !== null ? startMs - admittedAtMs : null,
+  }
+}
+
 /** Poll a session log until `predicate(line)` matches or the timeout passes. */
 async function waitForLogLineJson(dshHome, sessionId, predicate, timeoutMs, intervalMs = 1000) {
   const deadline = Date.now() + timeoutMs
@@ -1358,9 +1414,15 @@ async function runFresh1() {
     v1.check('session/prompt accepted (browser-facing chat path)',
       promptRes.status === 200 && promptRes.body?.result?.ok === true,
       `status=${promptRes.status} body=${JSON.stringify(promptRes.body).slice(0, 300)}`)
-    const rootAck = await waitForLogLineJson(HOME_A, ROOT_A, (l) => JSON.stringify(l).includes(`T12V_ROOT_FIRST_ACK_${NONCE}`), 180_000)
+    const v1AdmittedAt = Date.now()
+    // 480 s budget: first turn on a freshly materialized agent can hit the
+    // intermittent ~360 s start delay (t12v-finding-360s-first-turn.md); the
+    // root agent was observed immediate in runs #4/#5 — the budget only
+    // protects against the intermittent gap, it costs nothing on pass.
+    const rootAck = await waitForLogLineJson(HOME_A, ROOT_A, (l) => JSON.stringify(l).includes(`T12V_ROOT_FIRST_ACK_${NONCE}`), 480_000)
     v1.check('root agent turn settled against the mock (real dsh-llm adapter + agent loop + session log)',
-      rootAck !== null, rootAck === null ? '<ack not in log within 180s>' : 'ack found in durable root log')
+      rootAck !== null, rootAck === null ? '<ack not in log within 480s>' : 'ack found in durable root log')
+    v1.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, ROOT_A, v1AdmittedAt)
     const rootModelReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_ROOT_FIRST_${NONCE}`)))
     v1.evidence.rootModelRequest = rootModelReq === undefined ? null : { seq: rootModelReq.seq, model: rootModelReq.body?.model, endpoint: `http://127.0.0.1:${MOCK_PORT}` }
     v1.check('model call reached the mock endpoint with the row static model (mock-env path)',
@@ -1405,6 +1467,9 @@ async function runFresh1() {
     v2a.evidence.childSessionHeader = childHeader?.header ?? null
     v2a.check('child session header cwd == W_child', childHeader?.header?.cwd === W_CHILD_A, `header.cwd=${childHeader?.header?.cwd} expected=${W_CHILD_A}`)
     // A real turn on the child via the browser-facing public Remote.
+    // 480 s budget: first relayed turn on a freshly materialized child agent
+    // showed a ~360 s start delay in run #5 (t12v-finding-360s-first-turn.md).
+    const v2aAdmittedAt = Date.now()
     const sendRes = await remoteCall(a.origin, a.cookie, 'member.send', {
       teamSessionId: a.teamSession,
       caller: humanCaller(ROOT_A),
@@ -1415,8 +1480,9 @@ async function runFresh1() {
     const sent = admissionOutcome(remoteValue(sendRes, 'member.send'), 'member.send')
     v2a.evidence.sendResult = { outcome: sent }
     v2a.check('member.send delivered (admission executed)', sent.status === 'executed' && sent.targetInstanceId === workerA.instanceId, JSON.stringify(sent).slice(0, 300))
-    const childAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 180_000)
-    v2a.check('child turn settled against the mock', childAck !== null, childAck === null ? '<ack not in child log within 180s>' : 'ack found in durable child log')
+    const childAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 480_000)
+    v2a.check('child turn settled against the mock', childAck !== null, childAck === null ? '<ack not in child log within 480s>' : 'ack found in durable child log')
+    v2a.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, workerA.childSessionId, v2aAdmittedAt)
     const childReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
     const systemTexts = (childReq?.body?.messages ?? []).filter((m) => m.role === 'system').map((m) => String(m.content ?? ''))
     v2a.evidence.childModelRequest = childReq === undefined ? null : { seq: childReq.seq, model: childReq.body?.model, systemMessages: systemTexts.map((t) => t.slice(0, 1200)), tools: (childReq.body?.tools ?? []).map((t) => t?.function?.name ?? t?.name).filter(Boolean) }
@@ -1497,6 +1563,7 @@ async function runFresh1() {
       workspace: W_CHILD_A,
     }, ROOT_A)
     const delegated = toolValue(delRes, 'team_delegate')
+    const v4AdmittedAt = Date.now()
     v4.evidence.delegateResult = delegated
     // The frozen work-admitted effect shape carries the instanceId but NOT the
     // childSessionId (observed: {kind:'work-admitted', instanceId, fromLifecycle,
@@ -1515,10 +1582,11 @@ async function runFresh1() {
       }
     }
     v4.check('childSessionId resolved for the delegated instance (live state discovery)', typeof workerV4?.childSessionId === 'string' && workerV4.childSessionId !== 'undefined', `resolved=${workerV4?.childSessionId}`)
-    const v4LogText = await waitForLogTextContains(HOME_A, workerV4.childSessionId, TASK_TEXT, 180_000)
-    v4.check('exact task text reached the REAL child session log', v4LogText !== null, v4LogText === null ? '<task text not in child log within 180s>' : 'exact task present in durable child log')
-    const v4Ack = await waitForLogLineJson(HOME_A, workerV4.childSessionId, (l) => JSON.stringify(l).includes(`T12V_TASK_ACK_${NONCE}`), 180_000)
-    v4.check('real turn against the mock completed and settled', v4Ack !== null, v4Ack === null ? '<task ack not in child log within 180s>' : 'ack settled in durable child log')
+    const v4LogText = await waitForLogTextContains(HOME_A, workerV4.childSessionId, TASK_TEXT, 480_000)
+    v4.check('exact task text reached the REAL child session log', v4LogText !== null, v4LogText === null ? '<task text not in child log within 480s>' : 'exact task present in durable child log')
+    const v4Ack = await waitForLogLineJson(HOME_A, workerV4.childSessionId, (l) => JSON.stringify(l).includes(`T12V_TASK_ACK_${NONCE}`), 480_000)
+    v4.check('real turn against the mock completed and settled', v4Ack !== null, v4Ack === null ? '<task ack not in child log within 480s>' : 'ack settled in durable child log')
+    v4.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, workerV4.childSessionId, v4AdmittedAt)
     const v4Req = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(TASK_TEXT)))
     v4.evidence.v4ModelRequest = v4Req === undefined ? null : { seq: v4Req.seq, model: v4Req.body?.model }
     v4.check('model request carried the exact task text', v4Req !== undefined, `found=${v4Req !== undefined}`)
@@ -1542,15 +1610,20 @@ async function runFresh1() {
       requestToken: `t12v-lc-subspawn-${NONCE}`,
     })
     admissionOutcome(remoteValue(subRes, 'member.send'), 'member.send (subspawn)')
+    const lcAdmittedAt = Date.now()
     // Wait for the DESCENDANT session to appear (discovered via durable logs)
-    // and to settle its own real turn against the mock.
-    const descendant = await waitForDescendantSession(HOME_A, workerA.childSessionId, 180_000)
+    // and to settle its own real turn against the mock. 480 s budgets: the
+    // descendant session materialization + its first turn on a freshly
+    // materialized subagent agent showed a ~360 s start delay in run #5
+    // (t12v-finding-360s-first-turn.md).
+    const descendant = await waitForDescendantSession(HOME_A, workerA.childSessionId, 480_000)
     lc.evidence.descendantSession = descendant
-    lc.check('a real descendant session was created under the member child session (real subagent lifecycle)', descendant !== null, descendant?.id ?? '<not found within 180s>')
+    lc.check('a real descendant session was created under the member child session (real subagent lifecycle)', descendant !== null, descendant?.id ?? '<not found within 480s>')
     lc.check('descendant session header marks origin=subagent with parentSession == member child (durable session meta)',
       descendant !== null && descendant.origin === 'subagent', `origin=${descendant?.origin} (parentSession match was the discovery criterion)`)
-    const descAck = descendant === null ? null : await waitForLogLineJson(HOME_A, descendant.id, (l) => JSON.stringify(l).includes(`T12V_DESC_ACK_${NONCE}`), 180_000)
-    lc.check('descendant turn settled against the mock (real subagent agent loop + session log)', descAck !== null, descAck === null ? '<desc ack not in descendant log within 180s>' : 'settled')
+    const descAck = descendant === null ? null : await waitForLogLineJson(HOME_A, descendant.id, (l) => JSON.stringify(l).includes(`T12V_DESC_ACK_${NONCE}`), 480_000)
+    lc.check('descendant turn settled against the mock (real subagent agent loop + session log)', descAck !== null, descAck === null ? '<desc ack not in descendant log within 480s>' : 'settled')
+    if (descendant !== null) lc.evidence.descendantFirstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, descendant.id, lcAdmittedAt)
     await new Promise((r) => setTimeout(r, 3000)) // let the descendant registry settle to idle
     // Archive: the quiescence gate requires a TRUE quiescent drain of the
     // descendant tree — a failed drain rejects the archive with
@@ -1585,8 +1658,14 @@ async function runFresh1() {
     const followed = admissionOutcome(remoteValue(fuRes, 'member.followup'), 'member.followup')
     lc.evidence.followupOutcome = followed
     lc.check('member.followup admitted after restore (work admitted)', followed.status === 'executed', JSON.stringify(followed).slice(0, 300))
-    const fuAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_FOLLOWUP_ACK_${NONCE}`), 180_000)
-    lc.check('real follow-up turn settled on the restored member', fuAck !== null, fuAck === null ? '<followup ack not in child log within 180s>' : 'settled')
+    // 480 s: after archive→restore the member agent is re-materialized, so the
+    // follow-up can be a first turn on a fresh agent handle (~360 s gap class).
+    const lcFuAdmittedAt = Date.now()
+    const fuAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_FOLLOWUP_ACK_${NONCE}`), 480_000)
+    lc.check('real follow-up turn settled on the restored member', fuAck !== null, fuAck === null ? '<followup ack not in child log within 480s>' : 'settled')
+    const fuTurnStartMs = turnStartBeforeText(HOME_A, workerA.childSessionId, `T12V_FOLLOWUP_${NONCE}`)
+    lc.evidence.followupTurnStartMs = fuTurnStartMs
+    lc.evidence.followupLatencyMs = fuTurnStartMs !== null ? fuTurnStartMs - lcFuAdmittedAt : null
   } catch (error) {
     lc.error = error
     lc.check('LIFECYCLE scenario completed without fatal error', false, String(error?.message ?? error))
@@ -1605,7 +1684,16 @@ async function runFresh1() {
     v5.evidence.projectionKeys = projValue === undefined ? null : Object.keys(projValue)
     v5.check('team.getProjection answered through the public Remote (HTTP 200 + ok result)', projRes.status === 200 && projRes.body?.result?.ok === true, `status=${projRes.status}`)
     v5.check('projection teamSessionId matches the durable TeamSession', projection?.teamSessionId === a.teamSession, `projection=${projection?.teamSessionId} expected=${a.teamSession}`)
-    v5.check('projection carries schemaVersion 1', projection?.schemaVersion === 1, `schemaVersion=${projection?.schemaVersion}`)
+    // Frozen contract: v1 field set (TEAM_PROJECTION_FIELDS) or v2 (S7-R2:
+    // additive optional disposedHistory) — contracts/src/projection/projection.ts.
+    // The shipped runtime currently stamps 2; accept the frozen set, require
+    // the nine v1 top-level fields to be present either way.
+    const V1_FIELDS = ['schemaVersion', 'teamSessionId', 'blueprint', 'generation', 'generatedAt', 'root', 'templates', 'members', 'ledger']
+    const sv = projection?.schemaVersion
+    v5.check('projection carries a frozen schemaVersion (1 or 2) with the nine v1 top-level fields',
+      sv === 1 || sv === 2, `schemaVersion=${sv}`)
+    v5.check('projection top-level field set matches the frozen v1 contract (superset for v2)',
+      projection !== undefined && V1_FIELDS.every((f) => f in projection), `keys=${JSON.stringify(projection === undefined ? null : Object.keys(projection))}`)
     const projMembers = projection?.members ?? []
     // The delegate targets the existing worker instance (template resolution),
     // so V2's and V4's instances may be the SAME row — expect leader plus every
@@ -1616,9 +1704,11 @@ async function runFresh1() {
       && expectedInstances.length > 0
       && expectedInstances.every((iid) => projMembers.some((m) => m?.instanceId === iid && typeof m?.childSessionId === 'string' && m.childSessionId !== 'undefined')),
       `members=${JSON.stringify(projMembers.map((m) => ({ instanceId: m?.instanceId, lifecycle: m?.lifecycle })))} expected=${JSON.stringify(expectedInstances)}`)
+    // ledger is the frozen LedgerSummaryDto {latestSequence,totalEntries,byCategory,pendingControlCount}
+    // (contracts/src/projection/ledger.ts) — "non-empty" means totalEntries > 0.
     const ledger = projection?.ledger
-    const ledgerLen = Array.isArray(ledger) ? ledger.length : (Array.isArray(ledger?.entries) ? ledger.entries.length : null)
-    v5.check('projection ledger non-empty (durable event truth projected)', ledgerLen !== null && ledgerLen > 0, `ledgerEntries=${ledgerLen}`)
+    const ledgerTotal = typeof ledger?.totalEntries === 'number' ? ledger.totalEntries : null
+    v5.check('projection ledger non-empty (durable event truth projected)', ledgerTotal !== null && ledgerTotal > 0, `ledger=${JSON.stringify(ledger)} totalEntries=${ledgerTotal}`)
     v5.evidence.projection = projection
   } catch (error) {
     v5.error = error
@@ -1718,8 +1808,12 @@ async function runFresh2() {
       requestToken: `t12v-v2b-send-${NONCE}`,
     })
     admissionOutcome(remoteValue(sendRes, 'member.send'), 'member.send (world B)')
-    const childAck = await waitForLogLineJson(HOME_B, workerB.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 180_000)
-    v2b.check('child turn settled against the mock (no crash from mcpServer:null)', childAck !== null, childAck === null ? '<ack missing>' : 'settled')
+    const v2bAdmittedAt = Date.now()
+    // 480 s budget: first relayed turn on world B's freshly materialized child
+    // agent (~360 s gap class, t12v-finding-360s-first-turn.md).
+    const childAck = await waitForLogLineJson(HOME_B, workerB.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 480_000)
+    v2b.check('child turn settled against the mock (no crash from mcpServer:null)', childAck !== null, childAck === null ? '<ack missing after 480s>' : 'settled')
+    v2b.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_B, workerB.childSessionId, v2bAdmittedAt)
     const childReq = mock.requests.find((r) => r.body?.model === 't12v-model-b' && (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
     v2b.check('effective model = t12v-model-b (row static selection, mcpServer:null variant)', childReq !== undefined, `found=${childReq !== undefined}`)
     const childHeader = readSessionHeader(HOME_B, workerB.childSessionId)
@@ -1878,8 +1972,10 @@ async function runRestart1() {
       const followed = admissionOutcome(remoteValue(fuRes, 'member.followup'), 'member.followup (restart)')
       rs.check('real follow-up turn admitted after restart', followed.status === 'executed', JSON.stringify(followed).slice(0, 300))
       rs.evidence.restartFollowup = followed
-      const ack = await waitForLogLineJson(HOME_A, wA?.childSessionId, (l) => JSON.stringify(l).includes(`T12V_RESTART_ACK_${NONCE}`), 180_000)
-      rs.check('restart follow-up turn settled against the mock (durable child log)', ack !== null, ack === null ? '<ack missing>' : 'settled')
+      // 480 s budget: a resumed agent handle is re-materialized, so the
+      // follow-up can be a first turn on a fresh agent (~360 s gap class).
+      const ack = await waitForLogLineJson(HOME_A, wA?.childSessionId, (l) => JSON.stringify(l).includes(`T12V_RESTART_ACK_${NONCE}`), 480_000)
+      rs.check('restart follow-up turn settled against the mock (durable child log)', ack !== null, ack === null ? '<ack missing after 480s>' : 'settled')
     } catch (error) {
       // Capture the row's own failure report if the failure landed after
       // row-ready (bootstrap can reject between the health gate and the
@@ -1937,14 +2033,19 @@ async function runHandoff() {
     // ── leg 1: world C root C1 -> target B1 ─────────────────────────────────
     const p1 = await apiPrompt(c.origin, c.cookie, ROOT_C1, C_TEXT)
     ho.check('context C delivered to source team C1 root (session/prompt accepted)', p1.status === 200 && p1.body?.result?.ok === true, JSON.stringify(p1.body).slice(0, 200))
-    const c1Ack = await waitForLogLineJson(HOME_C, ROOT_C1, (l) => JSON.stringify(l).includes(`T12V_HANDBACK_ACK_${NONCE}`), 180_000)
-    ho.check('source C1 turn settled with C in the durable log', c1Ack !== null, c1Ack === null ? '<ack missing>' : 'settled')
+    const c1AdmittedAt = Date.now()
+    // 480 s budget: first relayed turn on world C's freshly materialized root
+    // agent (~360 s gap class, t12v-finding-360s-first-turn.md).
+    const c1Ack = await waitForLogLineJson(HOME_C, ROOT_C1, (l) => JSON.stringify(l).includes(`T12V_HANDBACK_ACK_${NONCE}`), 480_000)
+    ho.check('source C1 turn settled with C in the durable log', c1Ack !== null, c1Ack === null ? '<ack missing after 480s>' : 'settled')
+    ho.evidence.sourceC1FirstTurnLatencyMs = firstTurnLatencyEvidence(HOME_C, ROOT_C1, c1AdmittedAt)
     const prep1 = remoteValue(await remoteCall(c.origin, c.cookie, 'handoff.prepare', { sourceSessionId: ROOT_C1 }), 'handoff.prepare')
     ho.evidence.prepare1 = prep1
     ho.check('handoff.prepare returned a deterministic source summary for C1 (title + non-empty bullets)',
       prep1?.sourceSessionId === ROOT_C1 && typeof prep1?.summary?.title === 'string' && Array.isArray(prep1?.summary?.bullets) && prep1.summary.bullets.length > 0,
       `summary=${JSON.stringify(prep1?.summary).slice(0, 400)}`)
     ho.evidence.prepare1CarriesC = JSON.stringify(prep1?.summary ?? {}).includes(C_TEXT)
+    const create1AdmittedAt = Date.now()
     const create1 = remoteValue(await remoteCall(c.origin, c.cookie, 'handoff.create', { sourceSessionId: ROOT_C1, requestToken: REQUEST_TOKEN_X }), 'handoff.create')
     ho.evidence.create1 = create1
     b1 = create1?.state
@@ -1955,21 +2056,28 @@ async function runHandoff() {
     ho.check('invariant 9: B1 teamSessionId === B1 rootSessionId', b1?.team?.teamSessionId === b1?.team?.rootSessionId, `team=${b1?.team?.teamSessionId} root=${b1?.team?.rootSessionId}`)
     const b1Header = readSessionHeader(HOME_C, b1?.team?.teamSessionId)
     ho.check('target B1 real Root Agent exists (durable root session log materialized under home C)', b1Header !== null, b1Header?.file ?? '<not found>')
-    const b1Text = await waitForLogTextContains(HOME_C, b1?.team?.teamSessionId, C_TEXT, 180_000)
-    ho.check('context C reached the REAL target Agent B1 (durable root session log)', b1Text !== null, b1Text === null ? '<C not in B1 log within 180s>' : 'C present in B1 durable log')
+    // 480 s budget: B1 is a freshly materialized handoff target root agent —
+    // its first turn can hit the ~360 s gap (t12v-finding-360s-first-turn.md).
+    const b1Text = await waitForLogTextContains(HOME_C, b1?.team?.teamSessionId, C_TEXT, 480_000)
+    ho.check('context C reached the REAL target Agent B1 (durable root session log)', b1Text !== null, b1Text === null ? '<C not in B1 log within 480s>' : 'C present in B1 durable log')
+    ho.evidence.targetB1FirstTurnLatencyMs = firstTurnLatencyEvidence(HOME_C, b1?.team?.teamSessionId, create1AdmittedAt)
     ho.check('B1 durable log carries the handoff provenance (sourceSessionId === C1 in the delivered context)',
       (logTextOf(HOME_C, b1?.team?.teamSessionId) ?? '').includes(ROOT_C1), 'provenance sourceSessionId containment')
 
     // ── leg 2: world B root (a DIFFERENT source team) + SAME token X -> B2 ──
     const p2 = await apiPrompt(b.origin, b.cookie, ROOT_B, C_TEXT)
     ho.check('context C delivered to the DIFFERENT source team (world B root)', p2.status === 200 && p2.body?.result?.ok === true, JSON.stringify(p2.body).slice(0, 200))
-    const c2Ack = await waitForLogLineJson(HOME_B, ROOT_B, (l) => JSON.stringify(l).includes(`T12V_HANDBACK_ACK_${NONCE}`), 180_000)
-    ho.check('second source turn settled with C in the durable log', c2Ack !== null, c2Ack === null ? '<ack missing>' : 'settled')
+    const c2AdmittedAt = Date.now()
+    // 480 s budget: first relayed turn on world B's root agent (~360 s gap class).
+    const c2Ack = await waitForLogLineJson(HOME_B, ROOT_B, (l) => JSON.stringify(l).includes(`T12V_HANDBACK_ACK_${NONCE}`), 480_000)
+    ho.check('second source turn settled with C in the durable log', c2Ack !== null, c2Ack === null ? '<ack missing after 480s>' : 'settled')
+    ho.evidence.sourceBFirstTurnLatencyMs = firstTurnLatencyEvidence(HOME_B, ROOT_B, c2AdmittedAt)
     const prep2 = remoteValue(await remoteCall(b.origin, b.cookie, 'handoff.prepare', { sourceSessionId: ROOT_B }), 'handoff.prepare')
     ho.evidence.prepare2 = prep2
     ho.check('handoff.prepare returned a source summary for the second source team',
       prep2?.sourceSessionId === ROOT_B && Array.isArray(prep2?.summary?.bullets), `summary=${JSON.stringify(prep2?.summary).slice(0, 300)}`)
     ho.evidence.prepare2CarriesC = JSON.stringify(prep2?.summary ?? {}).includes(C_TEXT)
+    const create2AdmittedAt = Date.now()
     const create2 = remoteValue(await remoteCall(b.origin, b.cookie, 'handoff.create', { sourceSessionId: ROOT_B, requestToken: REQUEST_TOKEN_X }), 'handoff.create')
     ho.evidence.create2 = create2
     b2 = create2?.state
@@ -1982,8 +2090,11 @@ async function runHandoff() {
       `B1=${b1?.team?.teamSessionId} B2=${b2?.team?.teamSessionId} X=${REQUEST_TOKEN_X}`)
     const b2Header = readSessionHeader(HOME_B, b2?.team?.teamSessionId)
     ho.check('target B2 real Root Agent exists (durable root session log materialized under home B)', b2Header !== null, b2Header?.file ?? '<not found>')
-    const b2Text = await waitForLogTextContains(HOME_B, b2?.team?.teamSessionId, C_TEXT, 180_000)
-    ho.check('context C reached the REAL target Agent B2 (durable root session log)', b2Text !== null, b2Text === null ? '<C not in B2 log within 180s>' : 'C present in B2 durable log')
+    // 480 s budget: B2 is a freshly materialized handoff target root agent
+    // (~360 s gap class, t12v-finding-360s-first-turn.md).
+    const b2Text = await waitForLogTextContains(HOME_B, b2?.team?.teamSessionId, C_TEXT, 480_000)
+    ho.check('context C reached the REAL target Agent B2 (durable root session log)', b2Text !== null, b2Text === null ? '<C not in B2 log within 480s>' : 'C present in B2 durable log')
+    ho.evidence.targetB2FirstTurnLatencyMs = firstTurnLatencyEvidence(HOME_B, b2?.team?.teamSessionId, create2AdmittedAt)
     ho.check('B2 durable log carries the handoff provenance (sourceSessionId === world B root in the delivered context)',
       (logTextOf(HOME_B, b2?.team?.teamSessionId) ?? '').includes(ROOT_B), 'provenance sourceSessionId containment')
   } catch (error) {
