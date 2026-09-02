@@ -161,3 +161,75 @@ invariant). A change requires:
 
 Consumers write code against the frozen v1 surface and treat it as stable for
 the lifetime of the vNext line.
+
+## [projection v2] — effective-config / model-state / disposed-history lanes (task P8-S7-R2, 2026-09)
+
+**Status: ACTIVE.** The projection DTO family (P8-T1) carries its OWN
+`schemaVersion` track, independent of the package-wide
+`TEAM_CONTRACT_SCHEMA_VERSION` (see `projection/schema.ts`). This section
+records that track's advance from `1` to `2`. v1 is untouched: every v1
+projection record stays parseable byte-identically through the v1 field
+sets — `parseTeamProjection` branches on the stamp, and a v2 record may
+omit every additive key (all of them are DURATIONAL-optional: absent,
+never own-undefined), so the default projection is byte-identical to the
+pre-repair shape.
+
+Authority: frozen UI Design §surface contracts (BQ-08 / BQ-11 / BQ-16),
+P8-S plan §21 (BQ-08 L1573–1586, BQ-11 L1600–1607, BQ-16 L1634–1645) and
+§26 coverage matrix; main-agent adjudication R80
+(`dev/agent-workflow/SESSION_ROUTER_LOG.md`); P8-S7-R2 task packet with
+main-agent approval (dev/agent-workflow evidence).
+
+### Added in projection v2
+
+**Schema version (projection track only)**
+- `PROJECTION_SCHEMA_VERSION_V2 = 2` (+ type `ProjectionSchemaVersionV2`).
+- `SUPPORTED_PROJECTION_SCHEMA_VERSIONS = [1, 2]`;
+  `isSupportedProjectionSchemaVersion` / `assertProjectionSchemaVersion`.
+- No new error codes: the shared closed set
+  (`MALFORMED_DTO` / `SCHEMA_VERSION_MISMATCH` /
+  `SCHEMA_VERSION_UNSUPPORTED`) is unchanged.
+- The REMOTE catalog is UNCHANGED by this version: it stays v1-CLOSED at
+  9 categories / 23 methods (`remote/src/contracts/catalog.ts`).
+
+**Top-level field set**
+- `TEAM_PROJECTION_FIELDS_V2 = [...TEAM_PROJECTION_FIELDS,
+  'disposedHistory']` — one DURATIONAL-optional additive top-level key
+  (R2-6, D14). `disposedHistory` is ABSENT iff the team has zero DISPOSED
+  members.
+
+**Member field set**
+- `MEMBER_PROJECTION_FIELDS_V2 = [...MEMBER_PROJECTION_FIELDS,
+  'modelState']` — one DURATIONAL-optional additive member key (R2-3,
+  BQ-11), validated by `parseMemberModelState`.
+
+**New modules**
+- `projection/effective-config.ts` (BQ-08) — the resolved per-field
+  effective-config entry: closed field sets
+  `EFFECTIVE_CONFIG_ENTRY_FIELDS = ['value', 'source', 'state']` (v1 core)
+  and `EFFECTIVE_CONFIG_ENTRY_FIELDS_V2` (adds the DURATIONAL-optional
+  `suppressed`, `unavailable`, `deniedBy`, `effectiveFrom`, `locked`);
+  closed source/state value sets; `parseEffectiveConfigEntry` /
+  `parseEffectiveConfigDto`.
+- `projection/model-state.ts` (BQ-11) — the member model-state view:
+  `parseMemberModelState` with the closed `MODEL_STATE_FIELDS` /
+  `MODEL_STATE_ENTRY_FIELDS` / `MODEL_STATE_PROVENANCE_FIELDS` sets, the
+  closed `MODEL_STATE_LAYER_VALUES` / `MODEL_STATE_ORIGIN_VALUES` /
+  `MODEL_STATE_AVAILABILITY_VALUES` domains (`availability` is REQUIRED:
+  `available` | `unavailable`), and the length caps (value 512, deniedBy
+  128, explanation 512).
+- `projection/disposed-history.ts` (D14) — the retained DISPOSED-member
+  digest: `DisposedMemberHistoryDto` (+ input), closed
+  `DISPOSED_MEMBER_HISTORY_FIELDS` /
+  `DISPOSED_MEMBER_HISTORY_OPTIONAL_FIELDS`, `parseDisposedMemberHistory`
+  / `createDisposedMemberHistory`.
+
+**Producers (runtime, P8-S7-R2)**
+- The production projection service stamps `schemaVersion: 2` (R2-2).
+- R2-1: the root facts report the DURABLE `policyState` (the
+  durable-mutation-store ledger fact, not a hardcoded default).
+- R2-4 (F11): the workspace provenance lane is resolved per member
+  (remote resolver in `s6-remote.ts`).
+- R2-5 (F12): the live-residency overlay reports the `isResuming`
+  derivation; the 24-key `TeamAgentBindings` gains `isResuming`.
+- The p4t6 scanner lock moved 525 → 537 (R1 +2 files, R2 +10 files).
