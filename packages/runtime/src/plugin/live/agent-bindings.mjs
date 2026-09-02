@@ -490,9 +490,17 @@ export function createAgentBindings(deps) {
         liveAgents.set(childSid, handle)
         return { childSessionId: childSid }
       }
+      // T12-M1: the actual Agent cwd is the member's EFFECTIVE workspace —
+      // the contract-explicit request.workspace, falling back to the team's
+      // default workspace (config.defaultWorkspace). DSH_HOME is the
+      // session store, never the working directory.
+      const memberCwd =
+        typeof request.workspace === 'string' && request.workspace !== ''
+          ? request.workspace
+          : config.defaultWorkspace
       const handle = await agents.create({
         sessionId: SessionId(childSid),
-        meta: { cwd: process.env.DSH_HOME },
+        meta: { cwd: memberCwd },
         setup: agentSetup(childSid, instanceIdHint),
       })
       liveAgents.set(childSid, handle)
@@ -516,7 +524,8 @@ export function createAgentBindings(deps) {
    * filling teamToolsRef, because the setup callback registers tools INSIDE
    * create/resume). Idempotent: a second call re-awaits the same promise.
    *   create phase: create the root agent (deterministic root session id,
-   *     DSH_HOME cwd) -> liveAgents -> ensureMaterialized -> then every
+   *     the team's default-workspace cwd — T12-M1: never DSH_HOME) ->
+   *     liveAgents -> ensureMaterialized -> then every
    *     seeded NON-leader member (config.seedMembers, leader excluded —
    *     the leader IS the root session): create the child agent on its
    *     config childSessionId -> liveAgents -> ensureMaterialized.
@@ -539,7 +548,9 @@ export function createAgentBindings(deps) {
         rootHandle = config.bootPhase === 'create'
           ? await agents.create({
             sessionId: SessionId(rootSid),
-            meta: { cwd: process.env.DSH_HOME },
+            // T12-M1: the root agent works in the team's effective default
+            // workspace (config.defaultWorkspace) — never DSH_HOME.
+            meta: { cwd: config.defaultWorkspace },
             setup: agentSetup(rootSid),
           })
           : await agents.resume({
@@ -558,7 +569,11 @@ export function createAgentBindings(deps) {
           const child = String(seed.childSessionId)
           const handle = await agents.create({
             sessionId: SessionId(child),
-            meta: { cwd: process.env.DSH_HOME },
+            // T12-M1: seeded members carry no per-member workspace in the
+            // boot config — they work in the team's effective default
+            // workspace (never DSH_HOME); the child factory path uses the
+            // request-explicit workspace when one is passed.
+            meta: { cwd: config.defaultWorkspace },
             setup: agentSetup(child),
           })
           liveAgents.set(child, handle)
