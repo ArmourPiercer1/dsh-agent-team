@@ -493,7 +493,12 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
    * `(sourceSessionId, requestToken)` pair — a replay re-derives the
    * same stable token (the idempotency contract), and a different
    * source can never collide with it (the BC: `(A,X)` and `(B,X)` are
-   * different operations with different target roots).
+   * different operations with different target roots). T12-B6 (plan
+   * §7-B4): the with-handoff intent ALSO carries the frozen
+   * `context` itself (lossless-JSON, the same value the `handoff`
+   * provenance describes) — the creation entry delivers it into the
+   * target Root Agent through the real Agent input/context seam; the
+   * `handoff` field stays the identity-only provenance.
    */
   function buildIntent(record: OpRecord): HandoffTeamIntent {
     const context = record.context
@@ -506,6 +511,7 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
           contextToken: context.contextToken,
           capturedAt: context.capturedAt,
         },
+        context,
       }
     }
     return {

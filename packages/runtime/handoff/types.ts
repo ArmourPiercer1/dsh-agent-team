@@ -229,6 +229,13 @@ export interface HandoffTeamIntent {
    *  absent on the explicit "continue without handoff" decision
    *  (Architecture §7.2: OPTIONAL handoff provenance). */
   readonly handoff?: HandoffProvenance
+  /** T12-B6 (plan §7-B4): present exactly when `handoff` is — the
+   *  FROZEN one-shot context itself (lossless-JSON; the same value the
+   *  provenance describes). The creation entry delivers it into the
+   *  target Root Agent through the real Agent input/context seam
+   *  (at-least-once, deduped by its contextToken in the target); the
+   *  `handoff` field above stays the identity-only durable provenance. */
+  readonly context?: HandoffContext
 }
 
 /**

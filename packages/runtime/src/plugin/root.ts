@@ -195,6 +195,7 @@ import type {
 } from '../../fork-reconciliation/index.js'
 import { createHandoffService } from '../../handoff/index.js'
 import type {
+  HandoffContext,
   HandoffOperationState,
   HandoffOperationView,
   HandoffTeamIntent,
@@ -470,6 +471,17 @@ function sameSnapshotRef(
     String(a.revision) === String(b.revision) &&
     String(a.contentHash) === String(b.contentHash)
   )
+}
+
+/**
+ * T12-B6 (plan §7-B4) — the deterministic delivery payload of one
+ * frozen handoff context: the contextToken LEADS (the explicit request
+ * identity of the at-least-once delivery — the target dedupes on it),
+ * followed by the canonical lossless-JSON body (key-sorted, byte-stable:
+ * a re-drive delivers identical bytes).
+ */
+function handoffContextText(context: HandoffContext): string {
+  return `handoff-context ${context.contextToken}\n${canonicalJsonStringify(context)}`
 }
 
 // --- the root factory ----------------------------------------------------------------
@@ -964,14 +976,96 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     return query
   }
 
-  // The handoff team creation (W1/BQ-16): it reuses the SAME fresh-root
-  // binding path the `team.create` entry drives — mint the new root B
-  // DETERMINISTICALLY from the stable intentToken, pre-put the TeamSession
-  // record with the handoff source provenance attached (with-handoff only),
-  // then run the standard fresh binding (record match-check, binding row,
-  // leader mint). The idempotency contract (re-drive with the same
-  // intentToken) lands on `bindFreshTeamRoot`'s existing-record branch —
-  // no re-put, no duplicate.
+  // --- T12-B6 — the ONE formal create-and-start primitive (plan §7-B4) ----
+  // BOTH the production `create` boot phase and the handoff target
+  // creation run through this single primitive: the canonical fresh-root
+  // binding (durable TeamSession + team-root binding + honest-v2 Leader
+  // mint) and, ONLY for a with-context handoff, the target Root Agent
+  // start plus the frozen-context acceptance through the real Agent
+  // input/context seam. The boot create passes no initialContext (the
+  // live layer's one-shot `boot()` owns the boot-time root agent); the
+  // handoff passes the frozen HandoffContext (at-least-once delivery,
+  // deduped by contextToken in the target). There is NO second Team
+  // runtime for the handoff: the target is a plain fresh-bound team
+  // root of THIS row's domain.
+  /**
+   * T12-B6 — the with-context fail-closed preflight: a handoff carrying
+   * a frozen context requires the live glue to provide BOTH the target
+   * Root Agent creation and the context delivery seam. Runs BEFORE any
+   * durable mutation (a failed preflight leaves no partial team).
+   */
+  const requireHandoffAgentPorts = (): {
+    readonly start: (rootSessionId: string) => Promise<void>
+    readonly deliver: (input: {
+      readonly rootSessionId: string
+      readonly contextToken: string
+      readonly text: string
+    }) => Promise<void>
+  } => {
+    const start = live.createRootAgent
+    const deliver = live.deliverRootContext
+    if (start === undefined || deliver === undefined) {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE,
+        'a handoff with a frozen context requires the live glue to create the target Root Agent and accept the context through the real Agent input/context seam (the createRootAgent / deliverRootContext ports); this glue does not provide them — failing closed before any durable effect',
+      )
+    }
+    return { start, deliver }
+  }
+
+  /**
+   * T12-B6 (plan §7-B4) — the ONE formal team-create-and-start entry:
+   * the canonical fresh-root binding, then — only when `initialContext`
+   * is present — the target Root Agent start (create-or-ensure,
+   * idempotent per rootSessionId) and the frozen-context acceptance
+   * through the real Agent input/context seam (at-least-once, the
+   * contextToken is the explicit request identity the target dedupes
+   * on). A with-context handoff is COMPLETE only after both succeeded.
+   */
+  const createAndStartTeam = async (input: {
+    readonly rootSessionId: FreshRootBindingInput['rootSessionId']
+    readonly blueprint: FreshRootBindingInput['blueprint']
+    readonly generation: number
+    readonly defaultWorkspace?: string
+    readonly initialContext?: HandoffContext
+  }): Promise<TeamCreationOutcome> => {
+    const context = input.initialContext
+    const ports = context !== undefined ? requireHandoffAgentPorts() : undefined
+    const result = await rootBinding.bindFresh({
+      rootSessionId: input.rootSessionId,
+      blueprint: input.blueprint,
+      generation: input.generation,
+      ...(input.defaultWorkspace !== undefined
+        ? { defaultWorkspace: input.defaultWorkspace }
+        : {}),
+    })
+    const rootSessionId = result.durable?.teamSession.rootSessionId
+    if (rootSessionId === undefined) {
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CREATE_FAILED,
+        `the fresh binding of root "${String(input.rootSessionId)}" reported no durable state`,
+      )
+    }
+    if (context !== undefined && ports !== undefined) {
+      await ports.start(rootSessionId)
+      await ports.deliver({
+        rootSessionId,
+        contextToken: context.contextToken,
+        text: handoffContextText(context),
+      })
+    }
+    return { teamSessionId: rootSessionId, rootSessionId }
+  }
+
+  // The handoff team creation (W1/BQ-16; T12-B6 re-routed through the
+  // shared create-and-start primitive above): it reuses the SAME
+  // fresh-root binding path the `team.create` entry drives — mint the
+  // new root B DETERMINISTICALLY from the stable intentToken, pre-put
+  // the TeamSession record with the handoff source provenance attached
+  // (with-handoff only), then run the standard fresh binding (record
+  // match-check, binding row, leader mint). The idempotency contract
+  // (re-drive with the same intentToken) lands on `bindFreshTeamRoot`'s
+  // existing-record branch — no re-put, no duplicate.
   const createHandoffTeam = async (intent: HandoffTeamIntent): Promise<TeamCreationOutcome> => {
     // The v1 CLOSED remote params carry no blueprint field on
     // handoff.create: the new team pins THIS row's bound blueprint
@@ -980,6 +1074,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     const minted = parseRootSessionId(
       `session-handoff-${sha256Hex(canonicalJsonStringify({ intentToken: intent.intentToken })).slice(0, 40)}`,
     )
+    const context = intent.context
+    // T12-B6 — the with-context fail-closed preflight BEFORE the
+    // pre-put (no partial durable record when the glue cannot start the
+    // target agent); the shared primitive re-checks after the pre-put.
+    if (context !== undefined) {
+      requireHandoffAgentPorts()
+    }
     const existing = repos.teamSessions.get(minted)
     if (existing === undefined) {
       await repos.teamSessions.put({
@@ -1002,23 +1103,20 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       // A pre-existing record that is not THIS creation's record: a stable
       // identity collision, not a re-drive.
       throw new TeamPluginError(
-        'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
+        TEAM_PLUGIN_ERROR_CODES.TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE,
         `handoff intent "${intent.intentToken}" mints root "${String(minted)}", which already carries an incompatible TeamSession record (stable identity collision — not a re-drive)`,
       )
     }
-    const result = await rootBinding.bindFresh({
+    // T12-B6 — the shared formal primitive: the standard fresh binding,
+    // then (with-context only) the target Root Agent start + the
+    // frozen-context acceptance through the real Agent input/context
+    // seam (at-least-once, deduped by contextToken in the target).
+    return createAndStartTeam({
       rootSessionId: minted,
       blueprint: snapshot,
       generation: 1,
+      initialContext: context,
     })
-    const rootSessionId = result.durable?.teamSession.rootSessionId
-    if (rootSessionId === undefined) {
-      throw new TeamPluginError(
-        'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
-        `the fresh binding of handoff root "${String(minted)}" reported no durable state`,
-      )
-    }
-    return { teamSessionId: rootSessionId, rootSessionId }
   }
 
   const handoff = createHandoffService({
@@ -1434,18 +1532,19 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         await seedBootWorld()
       } else {
         // T12-B1 — the REAL production create (plan §7-B1 target flow):
-        // the canonical fresh-root binding (bindFreshTeamRoot) mints the
+        // the shared create-and-start primitive (T12-B6) mints the
         // durable Team identity — TeamSession record + team-root binding
         // + Leader instance (honest v2 shape) — from the row's bound
         // blueprint and generation, with the row clock as createdAt.
         // Idempotent on re-run (existing-record verification branch):
         // re-booting a create over an already-created root re-verifies,
         // it never re-mints. ZERO fabricated members: nothing beyond the
-        // canonical leader is seeded. The real Root Agent is created by
-        // live.boot() below (the live layer's one-shot create phase
-        // creates the root agent for rootSid; an empty seedMembers
-        // creates no member children).
-        const result = await rootBinding.bindFresh({
+        // canonical leader is seeded. No initialContext here: the real
+        // Root Agent is created by live.boot() below (the live layer's
+        // one-shot create phase creates the root agent for rootSid; an
+        // empty seedMembers creates no member children) — the
+        // target-agent ports stay untouched by the boot create.
+        await createAndStartTeam({
           rootSessionId: parseRootSessionId(rootSid),
           blueprint: boundSnapshot,
           generation: config.generation,
@@ -1453,12 +1552,6 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             ? { defaultWorkspace: config.defaultWorkspace }
             : {}),
         })
-        if (result.durable?.teamSession.rootSessionId === undefined) {
-          throw new TeamPluginError(
-            TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CREATE_FAILED,
-            `the fresh-root binding of the production create for root "${rootSid}" reported no durable state`,
-          )
-        }
       }
     } else {
       // T12-B2 — the REAL production resume (plan §7-B2 target flow):

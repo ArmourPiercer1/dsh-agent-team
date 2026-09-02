@@ -260,6 +260,16 @@ export const TEAM_PLUGIN_ERROR_CODES = {
    * never re-mints one; the loud failure replaces the silent pass-through.
    */
   TEAM_PLUGIN_RESUME_STATE_MISSING: 'TEAM_PLUGIN_RESUME_STATE_MISSING',
+  /**
+   * T12-B6 — the handoff target team cannot be created-and-started
+   * through the live glue: either a with-context handoff ran on a glue
+   * that lacks the target-agent ports (`createRootAgent` /
+   * `deliverRootContext`), or the deterministic target root already
+   * carries an incompatible durable record (stable identity collision,
+   * not a re-drive). Fail-closed: the preflight runs before any
+   * durable mutation, so nothing is reported as created.
+   */
+  TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE: 'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
 } as const
 
 export type TeamPluginErrorCode = (typeof TEAM_PLUGIN_ERROR_CODES)[keyof typeof TEAM_PLUGIN_ERROR_CODES]
@@ -557,6 +567,33 @@ export interface TeamAgentBindings {
   readonly isResuming: (sessionId: string) => boolean
   /** Create-or-resume the live agent of one session (the route helper). */
   readonly ensureLiveAgent: (sessionId: string) => Promise<unknown>
+  /**
+   * T12-B6 — create-or-ensure the live Root Agent of a team whose
+   * durable identity already exists (the handoff target's create path;
+   * the boot-time create/resume stays owned by `boot()`). The contract
+   * is IDEMPOTENT per rootSessionId: the at-least-once re-drive must
+   * not mint a second agent for the same root. OPTIONAL — a glue that
+   * cannot start a target agent on demand leaves it undefined, and a
+   * with-context handoff then fails closed (the root's preflight,
+   * `TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE`).
+   */
+  readonly createRootAgent?: (rootSessionId: string) => Promise<void>
+  /**
+   * T12-B6 — accept the frozen handoff context into the target Root
+   * Agent through the REAL Agent input/context seam. AT-LEAST-ONCE: a
+   * re-drive may deliver again, and the implementation MUST dedupe by
+   * `contextToken` (the explicit request identity carried in every
+   * delivery) — a duplicate delivery of one contextToken must not leave
+   * two context entries in the target. The `text` payload is
+   * deterministic (the token leads, followed by the canonical
+   * lossless-JSON context), so a re-drive delivers identical bytes.
+   * OPTIONAL — same contract as `createRootAgent`.
+   */
+  readonly deliverRootContext?: (input: {
+    readonly rootSessionId: string
+    readonly contextToken: string
+    readonly text: string
+  }) => Promise<void>
   /** The P8-S4B request boundary (re-apply the durable truth). */
   readonly prepareAgentForRequest: (sessionId: string) => Promise<void>
   /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */
