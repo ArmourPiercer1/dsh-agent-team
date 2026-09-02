@@ -114,7 +114,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { randomBytes } from 'node:crypto'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
@@ -411,35 +411,6 @@ async function buildProductionRuntime(log) {
   copyFileSync(glueSrc, glueDist)
   stamp(`== glue placed: ${glueDist} (byte-identical copy of the source .mjs) ==`)
 
-  // ── dist mirror → source .js copy (BLOCKER #3 environment prep) ──────────
-  // The FINAL glue (source .mjs run under plain Node) has two relative
-  // tsc-style .js-specifier imports INTO the TS source tree (blueprint L145,
-  // persona L146). Every tsconfig in this repo is noEmit:true, so a fresh
-  // worktree has no in-source .js and a boot that loads the glue from the
-  // SOURCE tree (the legacy source-URL design) dies with
-  // `Cannot find module '.../packages/domain/blueprint/src/index.js'`. The
-  // dist mirror (rootDir = repo root since P8-S5A) is a replica of the source
-  // layout, so copying every dist .js back to its repo path makes BOTH glue
-  // placements (dist mirror — what this runner's glueUrl uses — and source)
-  // resolve identically; relative imports keep resolving after the copy and
-  // bare imports resolve from each package's own node_modules. Untracked
-  // build output: never committed, same class as the junction bridges.
-  {
-    const distMirror = join(WORKTREE_ROOT, 'packages', 'runtime', 'dist', 'packages')
-    if (!existsSync(distMirror)) throw new Error(`dist mirror missing: ${distMirror}`)
-    let count = 0
-    for (const entry of walk(distMirror)) {
-      // walk() yields {path, name} objects (tests/characterization/lib/util.mjs)
-      const file = entry.path
-      if (!file.endsWith('.js')) continue // skips .d.ts and non-js output
-      const target = join(WORKTREE_ROOT, 'packages', relative(distMirror, file))
-      mkdirSync(dirname(target), { recursive: true })
-      copyFileSync(file, target)
-      count += 1
-    }
-    if (count === 0) throw new Error('dist mirror has no .js files — build output missing?')
-    stamp(`== dist mirror -> source .js copy: ${count} files (untracked build output, overwritten in place) ==`)
-  }
   // Import probe: the built dist host must load under plain node (the yaml
   // bare import resolves from packages/runtime/node_modules).
   const probe = await spawnToLog(
