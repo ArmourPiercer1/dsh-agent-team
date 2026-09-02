@@ -18,13 +18,13 @@ p9_prototype:
     proto_core_fail_line: 2026-09-02T21:09:03+08:00
     hard_freeze: 2026-09-03T03:39:03+08:00
   worktrees:
-    P9P: { branch: task/P9-proto-real-backend, head: 7d07330cca7bb3df416e3a82359d4307d9ab4a64, role: real-execution-slice+driver }
-    P9P-UI: { branch: task/P9-proto-ui, head: 7d07330cca7bb3df416e3a82359d4307d9ab4a64, role: client-half(seam+fixture+UI+adapter+bundle) }
-  baseline: { fresh: "2091/2091 rc=0 @7d07330 (re-verified 2026-09-02, 58903ms)", dist: pending-F1, tsc: "8/8 (re-verify F1)", live: "17/17 (re-verify F1)", pin: 543 }
+    P9P: { branch: task/P9-proto-real-backend, head: f2c8adc, role: real-execution-slice+driver+F1-merge(f2c8adc = merge e695628 + 0f001f5) }
+    P9P-UI: { branch: task/P9-proto-ui, head: 0f001f588d3dbc1e24fa48e33e347e6ad0637855, role: client-half(seam+fixture+UI+adapter+bundle) }
+  baseline: { fresh: "2091/2091 rc=0 @7d07330 (re-verified 2026-09-02, 58903ms)", dist: "rebuilt F1 (runtime+client tsc + lib bundle, smoke double PASS)", tsc: "8/8 (F1 re-verified on merged tree f2c8adc)", live: "17/17 (F1 re-verified on merged tree, homes i/ie)", pin: 543, pin_merged_f2c8adc: 575 }
   rulings: [R-PROTO-1 connection effect, R-PROTO-2 exports./client+nested dsh.client+prebuilt bundle, R-PROTO-3 playwright+system chrome, R-PROTO-4 superseded, R-PROTO-5 fixture=2091+tsc8+live17, R-PROTO-6 superseded-detail, R-PROTO-7 launch params ?teamMode&teamSessionId, R-PROTO-8 workspaceCwd knob mandatory, R-PROTO-9 superseded, R-PROTO-10 real model qiyuan-self/qwen3.8-27b (verified 200+PONG), R-PROTO-11 minimal core command surface]
   gates:
     execution_gate_2039: { status: GREEN, owner: P1-X, confirmed: 2026-09-02T19:20+08:00, evidence: "X driver 11-10-17 4/4 + 主 Agent 独立重跑 11-14-29 4/4 (确定性身份一致) + fresh 2114/2114 独立复跑 + tsc 8/8 独立复跑 + live17 p9c (F1 再跑)" }
-    F1: { status: PENDING, after: [P1-X-persona-commit, P1-A, P1-Y-integration] }
+    F1: { status: GREEN, owner: main-agent, confirmed: 2026-09-02T21:37+08:00, evidence: "merged head f2c8adc (parents e695628 + 0f001f5); p4t6 pin conflict resolved 575 = 543+8+24 (R89 ruling, additive file-count class); pnpm --frozen-lockfile in P9P (lockfile byte-unchanged, +8 packages: react/react-dom/@types/react via file: links); chain 2223/0 (exact merged expectation) + tsc 8-set 8/8 + dist fresh (runtime tsc 2s + client tsc + build-bundle lib 69186B) + composition-smoke double PASS (host teamRoot/1 effect, client 0/0) + live-17 17/17 homes i/ie (rowMounted 4/4, bypass 0/25, per-criterion E1:14 E2:3 E3:6 E4:5 E6:6 E7:2 W1:10 W5:7 W7:7 W3:5 M1:5 M2:7 M4:9 W2:7 M3:5 M5:6 == p9c baseline) + E2E driver 13-34-28 GATE-GREEN (a-e + negatives 5/5 + restart rehydrated) + zero-core cd5ef814 before/after + diff 7d07330..f2c8adc = 50 files = X12 + D10 + A34 owned union (no unowned) + :3080 200 + ports 3181-3184/3491-3495 released" }
     canonical_e2e: { status: GREEN, owner: P9PROTO-E2E, since: 2026-09-02T19:55+08:00, confirmed: 2026-09-02T21:22+08:00, evidence: "e2e-2026-09-02T13-06-30 a-e PASS + RESTART ok + N1-N5 5/5; 主 Agent 独立复验 e695628: chain 2134/0 + tsc 8/8 + live-17 17/17 homes h/he dist=p9c + driver re-run 13-18-57 GATE-GREEN + pin 551 + test-use pristine + ports released" }
     pass_full_restart: { status: PENDING }
     F2: { status: PENDING, before: hard_freeze }
