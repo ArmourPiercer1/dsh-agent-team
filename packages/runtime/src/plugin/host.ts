@@ -46,6 +46,11 @@
  */
 import { register } from 'module'
 
+import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
+import type {
+  ConnectionLike,
+  RemoteRegistration,
+} from '../../../remote/src/handlers/register.js'
 import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js'
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js'
 import {
@@ -110,6 +115,19 @@ interface GlueModule {
     readonly now: () => string
   }): TeamAgentBindings
 }
+
+/**
+ * T12-M4 — the Remote mount outcome recorded on the facade. The state is
+ * authoritative once the facade's `ready` promise settles: `mounted` when
+ * the production wiring owns the `/team-remote` channel on the public
+ * connection seam, `skipped` when the headless host provides no
+ * `connection` service (the remote surface stays unmounted without
+ * failing the boot). `undefined` means the bootstrap never reached the
+ * mount step (an earlier failure).
+ */
+type RemoteMountState =
+  | { readonly state: 'mounted'; readonly channel: string }
+  | { readonly state: 'skipped'; readonly reason: string }
 
 /**
  * Register the upstream resolution hook exactly once per process (a second
@@ -343,6 +361,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // facade getters and the row-stop effect can close over them.
   let root: TeamProductionRoot | undefined
   let openDomain: TeamDomain | undefined
+  // T12-M4: the remote registration set by the production mount inside
+  // bootstrap (undefined until the mount step; disposed by the row-stop
+  // backstop below).
+  let remoteRegistration: RemoteRegistration | undefined
+  let remoteMountState: RemoteMountState | undefined
 
   async function bootstrap(): Promise<TeamProductionRoot> {
     // A broken row must not arm the upstream resolution hook: validate the
@@ -465,6 +488,63 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   })
   root = builtRoot
   await builtRoot.boot()
+
+  // --- T12-M4: the production Remote mount (the Remote contract v1
+  // dispatcher onto the public connection seam, plan §20) --------------
+  //
+  // The web profile always provides the 'connection' public service, so
+  // the mount is the production default there. A headless host provides
+  // no such service: the remote surface stays UNMOUNTED and the boot
+  // keeps succeeding (the durable domain and the agent tools work
+  // without a remote surface) — the outcome is recorded on the facade,
+  // never a boot throw. A PRESENT-but-malformed service is a boot
+  // failure (fail closed: a broken web profile must not silently lose
+  // the remote surface), as is a channel-conflict rejection (one owner
+  // per channel).
+  //
+  // No adapter: the dispatcher answers with the frozen RemoteResponse
+  // envelope — {ok:true, value:{data, provenance}} or {ok:false,
+  // error:{code, message, details}} with `details` ALWAYS a present
+  // object — which is structurally a ConnectionRpcResult<unknown>; the
+  // DSH-shaped handler's extra `signal` argument is ignored by the
+  // dispatcher (RemoteResponse ⊂ ConnectionRpcResult<unknown>).
+  const connection = ctx.get('connection') as
+    | ConnectionLike
+    | null
+    | undefined
+  if (connection === undefined || connection === null) {
+    remoteMountState = {
+      state: 'skipped',
+      reason: 'the "connection" public service is absent (headless host)',
+    }
+  } else if (
+    typeof connection !== 'object' ||
+    typeof connection.rpc !== 'object' ||
+    connection.rpc === null ||
+    typeof connection.rpc.handle !== 'function'
+  ) {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+      'the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service',
+    )
+  } else {
+    // The production root installs the registration seam during its
+    // construction (A31); current() throws the seam's stable
+    // not-installed code if that ever regresses (propagated as-is).
+    const registerRemote = builtRoot.seams.remoteHandlerRegistration.current()
+    let registration: RemoteRegistration
+    try {
+      registration = registerRemote(connection)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SEAM_ALREADY_INSTALLED,
+        `the remote handler registration onto channel ${REMOTE_RPC_CHANNEL} failed (one owner per channel): ${message}`,
+      )
+    }
+    remoteRegistration = registration
+    remoteMountState = { state: 'mounted', channel: registration.channel }
+  }
   return builtRoot
   }
 
@@ -511,6 +591,9 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     get config(): TeamPluginConfig {
       return requireRoot().config
     },
+    get remote(): RemoteMountState | undefined {
+      return remoteMountState
+    },
   }
   ctx.provide('teamRoot', facade)
 
@@ -523,6 +606,14 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       void ready
         .catch(() => undefined)
         .then((settled) => {
+          // T12-M4: release the /team-remote channel ownership first (the
+          // disposer must never fail the row teardown — the underlying
+          // DSH effect disposal runs in the connection fiber).
+          try {
+            remoteRegistration?.dispose()
+          } catch {
+            // a throwing disposer is swallowed: the row teardown proceeds
+          }
           if (settled !== undefined) {
             void settled.close().catch(() => undefined)
           } else if (openDomain !== undefined) {
