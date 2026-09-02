@@ -1331,7 +1331,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   teamToolsRef.current = tools
 
   // --- boot (create phase: fixture seed OR real fresh-root create + live
-  // --- boot; resume phase: live boot + cold rehydration) ------------------------------
+  // --- boot; resume phase: durable-identity load (T12-B2) + live boot) ---------------
   /**
    * The frozen deterministic SEED world (T12-B1: fixture-mode ONLY).
    *
@@ -1460,6 +1460,37 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           )
         }
       }
+    } else {
+      // T12-B2 — the REAL production resume (plan §7-B2 target flow):
+      // LOAD the existing durable Team identity — the TeamSession
+      // record, the team-root binding, the member residency (the Leader
+      // row at minimum) — and fail closed when any of it is missing.
+      // A resume NEVER re-mints: by construction this branch writes
+      // nothing (the mint paths are the create branches only), and the
+      // acceptance after create -> restart -> resume is the same
+      // RootSessionId, the same MemberInstance, the same deterministic
+      // child SessionIds, and no duplicate Team/member rows. The live
+      // layer then reconciles the real Agents below (root resume + the
+      // bound children, through the agents service only).
+      if (repos.teamSessions.get(rootSid) === undefined) {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_RESUME_STATE_MISSING,
+          `the resume of root "${rootSid}" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)`,
+        )
+      }
+      const binding = repos.sessionBindings.get(rootSid)
+      if (binding === undefined || binding.kind !== 'team-root') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_RESUME_STATE_MISSING,
+          `the resume of root "${rootSid}" found no durable team-root binding — a resume loads the existing Team identity, it never mints one`,
+        )
+      }
+      if (repos.memberInstances.get(rootSid, LEADER_INSTANCE_ID) === undefined) {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_RESUME_STATE_MISSING,
+          `the resume of root "${rootSid}" found no durable Leader member row — a resume loads the existing member residency, it never mints one`,
+        )
+      }
     }
     // Boot-time initial compatibility state (wiring decision (x)): the
     // frozen runtime's new-work gate (admission/gate.ts) and activation
@@ -1480,14 +1511,17 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     if ((await repos.compatibility.get(rootSid)) === undefined) {
       await prober.probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK)
     }
-    // Boot-phase durable content (T12-B1): the FIXTURE create seeds the
-    // frozen scenario rows (teamSessions row + team-root binding + leader
-    // + seed member rows, no child `team-member` bindings); the REAL
-    // create runs the canonical fresh-root binding (TeamSession +
-    // team-root binding + Leader mint — no fabricated members); the
-    // RESUME phase writes nothing new — it reopens the existing durable
-    // rows and re-establishes the live residency through the agents
-    // service only (create / resume of the root + the bound children).
+    // Boot-phase durable content (T12-B1 / T12-B2): the FIXTURE create
+    // seeds the frozen scenario rows (teamSessions row + team-root
+    // binding + leader + seed member rows, no child `team-member`
+    // bindings); the REAL create runs the canonical fresh-root binding
+    // (TeamSession + team-root binding + Leader mint — no fabricated
+    // members); the RESUME phase writes nothing new — it LOADS the
+    // existing durable Team identity (TeamSession + team-root binding +
+    // Leader member row, fail-closed when any is missing — T12-B2: a
+    // resume never re-mints) and then re-establishes the live residency
+    // through the agents service only (resume of the root + the bound
+    // children; create of the root happens in the create phase only).
     // The cold rehydration nodes (A06 / A09) remain assembled and
     // reachable on the root surface (T1-proven against a consistent
     // fresh world) but are DORMANT in the boot flow: driving them at

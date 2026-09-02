@@ -252,6 +252,14 @@ export const TEAM_PLUGIN_ERROR_CODES = {
    * reported as created.
    */
   TEAM_PLUGIN_CREATE_FAILED: 'TEAM_PLUGIN_CREATE_FAILED',
+  /**
+   * T12-B2 — the production resume (`resume` boot phase) could not LOAD
+   * the existing durable Team identity (the TeamSession record, the
+   * team-root binding, or the Leader member row) for the configured
+   * root. Fail-closed: a resume loads the existing Team identity — it
+   * never re-mints one; the loud failure replaces the silent pass-through.
+   */
+  TEAM_PLUGIN_RESUME_STATE_MISSING: 'TEAM_PLUGIN_RESUME_STATE_MISSING',
 } as const
 
 export type TeamPluginErrorCode = (typeof TEAM_PLUGIN_ERROR_CODES)[keyof typeof TEAM_PLUGIN_ERROR_CODES]
