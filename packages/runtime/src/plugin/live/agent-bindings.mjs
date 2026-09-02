@@ -71,7 +71,12 @@
  *                                     resumes any agent)
  *   agentSetup(sessionId)        (the AgentSetup callback; root bootstrap)
  *   rootSessionId                (config.rootSessionId)
+ *   childSessionIdFor(rootSessionId, instanceId)
+ *                                 (T12-B2: the deterministic (root, instance)
+ *                                  -> child session id derivation, exposed for
+ *                                  provider/cold-reconciliation verification)
  */
+import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
@@ -152,16 +157,25 @@ export function createAgentBindings(deps) {
   // ── the durable-mutation consumption boundary (ported) ─────────────────
 
   /**
-   * The deterministic child session id for one activated instance (the
-   * factory idempotency contract: same (root, instanceId) -> same child id).
+   * The deterministic child session id for one (root session, instance)
+   * pair — the factory idempotency contract: same pair -> same child id,
+   * across restarts (the derivation is stateless; a re-driven activation
+   * re-derives the SAME id, never a second child). T12-B2: the identity
+   * input is the PAIR, never the instance id alone — the same instanceId
+   * under a different root gets a different child.
+   *
+   * Canonical tuple `${rootSessionId}\u0000${instanceId}` -> SHA-256 ->
+   * first 32 hex chars: fixed-length, stable, no random UUID. The NUL
+   * separator removes the concatenation ambiguity.
+   * @param {string} rootSessionId - the team root session id.
    * @param {string} instanceId - an `inst-`-prefixed instance id.
    * @returns {string} the derived child session id.
    */
-  function childSessionIdFor(instanceId) {
-    // VERBATIM port: the prefix is a literal, not row config — the
-    // provider's provisioning coordinator calls the factory with the
-    // ALLOCATED instanceId and the W3 assertions mirror this derivation.
-    return `session-child-p6t6-${instanceId.slice(5)}`
+  function childSessionIdFor(rootSessionId, instanceId) {
+    const digest = createHash('sha256')
+      .update(`${String(rootSessionId)}\u0000${String(instanceId)}`, 'utf8')
+      .digest('hex')
+    return `session-team-child-${digest.slice(0, 32)}`
   }
 
   /**
@@ -415,7 +429,14 @@ export function createAgentBindings(deps) {
 
   const childFactory = {
     async createChildSession(request) {
-      const childSid = childSessionIdFor(String(request.instanceId))
+      // T12-B2: the derivation key is the (root, instance) pair. The request
+      // carries the root (the provider passes it); the row's own root is the
+      // contract fallback when the field is absent.
+      const childRoot =
+        typeof request.rootSessionId === 'string' && request.rootSessionId !== ''
+          ? request.rootSessionId
+          : rootSid
+      const childSid = childSessionIdFor(childRoot, String(request.instanceId))
       // The fresh-child instance id, carried into the setup callback: the
       // frozen activation flow creates the child session BEFORE the
       // MemberInstance row is committed (crash-window semantics — the
@@ -812,5 +833,7 @@ export function createAgentBindings(deps) {
     boot,
     agentSetup,
     rootSessionId: rootSid,
+    // additive (T12-B2): the deterministic child-id derivation
+    childSessionIdFor,
   }
 }
