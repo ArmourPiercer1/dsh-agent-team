@@ -37,6 +37,37 @@ export interface RecordedCancel {
   readonly args: unknown
 }
 
+/** One active listener registration on the agent ctx double. */
+export interface AgentListenerEntry {
+  readonly event: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- waterfall listeners are positional
+  listener: (...args: any[]) => unknown
+  active: boolean
+}
+
+/** The agent-scoped ctx double (the service surface the live glue consumes). */
+export interface AgentCtxDouble {
+  readonly listeners: AgentListenerEntry[]
+  on(event: string, listener: AgentListenerEntry['listener']): () => void
+  plugin(pluginSpec: unknown, options?: unknown): unknown
+  readonly tools: {
+    register(def: unknown): () => void
+    execute(name: string, args: unknown, callId?: string): Promise<unknown>
+  }
+}
+
+/** One settled live-agent handle (the DSH handle seam the glue stores). */
+export interface LiveAgentHandle {
+  readonly agent: {
+    readonly session: { readonly id: string }
+    readonly ctx: AgentCtxDouble
+    followup(message: unknown): void
+    whenIdle(): Promise<void>
+    cancel(args?: unknown): void
+  }
+  dispose(): Promise<void>
+}
+
 /** The agents service double (the DSH agents create/resume seam). */
 export interface AgentsDouble {
   readonly creates: RecordedCreate[]
@@ -44,7 +75,7 @@ export interface AgentsDouble {
   readonly disposals: string[]
   readonly followups: RecordedFollowup[]
   readonly cancels: RecordedCancel[]
-  readonly handles: Map<string, object>
+  readonly handles: Map<string, LiveAgentHandle>
   create(req: { sessionId: unknown; meta?: Record<string, unknown>; setup?: (ctx: object) => unknown }): Promise<object>
   resume(req: { resumeSessionId: unknown; setup?: (ctx: object) => unknown }): Promise<object>
 }
@@ -190,7 +221,7 @@ export declare function createSubagentsDouble(options?: SubagentsDoubleOptions):
  * `variables.model` carry the installed selection, or are absent when no
  * model may be selected.
  */
-export declare function observeAssembly(agentCtx: object): Promise<{
+export declare function observeAssembly(agentCtx: AgentCtxDouble): Promise<{
   readonly variables?: Record<string, unknown>
 } | undefined>
 

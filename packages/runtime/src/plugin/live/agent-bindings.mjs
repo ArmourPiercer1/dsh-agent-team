@@ -28,7 +28,10 @@
  *                        admission authority is NOT part of it — the harness
  *                        row imports it from the built runtime dist itself)
  *   config             - the row config (run.mjs teamRowConfig): rootSessionId,
- *                        mcpServer {name, port}, staticModel, deniedSelection
+ *                        mcpServer {name, port}, staticModel, deniedSelection,
+ *                        externalPolicyFacts {hard, capabilityExists} (T12-B3:
+ *                        the injected external hard facts; normalized —
+ *                        never re-interpreted — into the resolvers)
  *   teamToolsRef       - the plain { current: <teamTools | undefined> } object
  *                        the production host fills AFTER root assembly; the
  *                        setup callback reads teamToolsRef.current when it
@@ -247,7 +250,19 @@ export function createAgentBindings(deps) {
     else if (instanceIdHint !== undefined) instanceId = String(instanceIdHint)
     else instanceId = instanceIdForSession(sessionId)
     const overrides = domain.repositories.overrides.list(rootSid)
-    const external = { hard: {}, capabilityExists: {} }
+    // T12-B3: the external hard facts come from the boot config (the host
+    // injects them at plugin construction). This is schema normalization
+    // ONLY — shallow copies so a mutation of the normalized object cannot
+    // reach the config, and undefined-safe for a config that predates the
+    // field. The POLICY semantics stay in the resolvers: an external hard
+    // entry wins over every Team layer (including human overrides —
+    // invariant 34), and a capabilityExists:false cell denies with
+    // 'capabilityMissing'.
+    const facts = config.externalPolicyFacts
+    const external = {
+      hard: { ...(facts?.hard ?? {}) },
+      capabilityExists: { ...(facts?.capabilityExists ?? {}) },
+    }
     const applied = existing !== undefined ? [...existing.appliedRecordIds] : []
     const modelArgs = {
       rootSessionId: rootSid,
