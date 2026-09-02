@@ -38,12 +38,15 @@ import type {
   ChildSessionId,
   CompatibilitySummaryDto,
   ContextPolicy,
+  DisposedMemberHistoryInput,
   EffectiveConfigDto,
+  EffectiveConfigDtoV2,
   InstanceId,
   LedgerCategoryCounts,
   MemberActivitySummaryDto,
   MemberLifecycleState,
   MemberLiveActivityDto,
+  MemberModelStateDto,
   SessionId,
   TemplateId,
   TemplateKind,
@@ -86,6 +89,17 @@ export interface TeamDomainProjectionSource {
   readonly members: readonly DurableMemberRow[]
   /** The TeamLedger summary (UI §27); the entries themselves stay durable. */
   readonly ledger: DurableLedgerSummary
+  /**
+   * S7-R2 (R2-6, D14): the retained-history digest of EVERY DISPOSED member
+   * — derived by the production read port from the durable member rows +
+   * the root ledger (closed addressing rule — see `projection-source.ts`).
+   * DURATIONAL-optional: ABSENT when the team has no DISPOSED member (the
+   * fold then stamps no `disposedHistory` key — the default projection is
+   * byte-identical to the pre-repair shape; the live view (BQ-04)
+   * semantics are unchanged). The read port is the ONLY producer; the fold
+   * passes the bundles through to the v2 projection verbatim.
+   */
+  readonly disposedHistory?: readonly DisposedMemberHistoryInput[]
 }
 
 /**
@@ -160,10 +174,25 @@ export interface DurableMemberRow {
   readonly createdAt: string
   /** The effective per-instance context policy (invariant 29). */
   readonly contextPolicy: ContextPolicy
-  /** The four-lane effective configuration view with provenance (UI §18.2). */
-  readonly effectiveConfig: EffectiveConfigDto
+  /**
+   * The four-lane effective configuration view with provenance (UI §18.2).
+   * S7-R2 (R2-2): the production source now resolves the v2 entries
+   * (additive provenance keys) — the declared type stays the v1 DTO by the
+   * documented type-lie pattern (a v2 entry is a structural superset of a
+   * v1 entry, and the projection pipeline validates each record through
+   * its own schema version).
+   */
+  readonly effectiveConfig: EffectiveConfigDto | EffectiveConfigDtoV2
   /** The durable activity summary; absent when no durable facts exist. */
   readonly activity?: MemberActivitySummaryDto
+  /**
+   * S7-R2 (R2-3, BQ-11): the model state view — the current model with its
+   * Team provenance, the next-boundary pending model, and availability.
+   * ABSENT when the view cannot be derived (the DURATIONAL-optional key is
+   * dropped, never `undefined`); the production read port derives it from
+   * the mutation store, the governance overrides, and the static config.
+   */
+  readonly modelState?: MemberModelStateDto
 }
 
 /**

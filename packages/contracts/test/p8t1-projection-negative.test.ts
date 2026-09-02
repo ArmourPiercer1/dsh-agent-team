@@ -343,8 +343,11 @@ describe('p8t1 projection cross-invariants (Architecture §42)', () => {
   })
 
   it('a foreign schemaVersion is a mismatch; a corrupt one is unsupported', () => {
+    // P8-S7-R2 premise update: `2` is now the additive v2 projection schema
+    // (the R2-2..R2-6 effective-config / history lanes); a genuinely
+    // foreign version is 3.
     expectCode(
-      () => parseTeamProjection(rawProjection({ schemaVersion: 2 })),
+      () => parseTeamProjection(rawProjection({ schemaVersion: 3 })),
       'SCHEMA_VERSION_MISMATCH',
     )
     expectCode(

@@ -64,6 +64,9 @@ import type {
  *   member's `liveActivity` is `null`).
  * @param generatedAt - the produced-at stamp (ISO-8601), stamped by the
  *   caller (the service injects the clock so the fold stays pure).
+ * @param schemaVersion - the projection schema version to stamp (S7-R2):
+ *   `2` for the additive repair fields, `1` (default) for the frozen v1
+ *   shape.
  * @returns the frozen whole projection (validated by the P8-T1 pipeline).
  * @throws the frozen P8-T1 DTO contract error (`MALFORMED_DTO` or a
  *   field-specific code) when the source is malformed; or a
@@ -74,6 +77,7 @@ export function projectTeam(
   source: TeamDomainProjectionSource,
   overlay: ReadonlyMap<InstanceId, MemberLiveActivityDto> | null,
   generatedAt: string,
+  schemaVersion: 1 | 2 = 1,
 ): TeamProjectionDto {
   const root = buildRoot(source)
   const templates = source.templates.map((template) => buildTemplate(template))
@@ -81,6 +85,13 @@ export function projectTeam(
     buildMember(member, source.defaultWorkspace, overlay),
   )
   const ledger = projectLedgerSummary(source.ledger)
+  // R2-6 (S7-R2, D14): the additive retained-history bundle. Stamped only
+  // for schema version 2 (a v1 projection never carries the key — the v1
+  // field set rejects it) and only when the read port derived bundles
+  // (ABSENT when the team has no DISPOSED member — the default projection
+  // stays byte-identical; the live view (BQ-04) semantics are unchanged).
+  const disposedHistory =
+    schemaVersion === 2 && source.disposedHistory !== undefined ? source.disposedHistory : undefined
 
   return createTeamProjection({
     teamSessionId: source.teamSessionId,
@@ -91,6 +102,8 @@ export function projectTeam(
     templates,
     members,
     ledger,
+    ...(disposedHistory !== undefined ? { disposedHistory } : {}),
+    ...(schemaVersion === 2 ? { schemaVersion: 2 as const } : {}),
   })
 }
 
@@ -168,6 +181,9 @@ function buildMember(
   }
   if (member.activity !== undefined) {
     row.activity = member.activity
+  }
+  if (member.modelState !== undefined) {
+    row.modelState = member.modelState
   }
   return row
 }

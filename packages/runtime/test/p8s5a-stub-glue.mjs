@@ -4,7 +4,7 @@
  * production-assembly test through the production entry's
  * `config.glueUrl` channel (exactly the row-owned loading path).
  *
- * Contract: exports `createAgentBindings(deps)` returning the 23-key
+ * Contract: exports `createAgentBindings(deps)` returning the 24-key
  * `TeamAgentBindings` shape (types.ts) with shape parity to the real glue:
  *
  *   - the runtime ports (childFactory / sessionDurability / surface /
@@ -42,7 +42,7 @@ function throwingPort(name) {
 /**
  * The stub bundle factory (same signature as the real glue).
  * @param {object} deps — `{ agents, sessionPersistence, domain, config, teamToolsRef, now }`.
- * @returns {object} the 23-key TeamAgentBindings-shaped bundle (+ `__t1`).
+ * @returns {object} the 24-key TeamAgentBindings-shaped bundle (+ `__t1`).
  */
 export function createAgentBindings(deps) {
   const { config, teamToolsRef } = deps
@@ -96,6 +96,7 @@ export function createAgentBindings(deps) {
     },
     listLiveSessions: () => [...state.live],
     hasLive: (sessionId) => state.live.has(sessionId),
+    isResuming: () => false,
     ensureLiveAgent: throwingFn('ensureLiveAgent'),
     prepareAgentForRequest: throwingFn('prepareAgentForRequest'),
     executeTool: throwingFn('executeTool'),

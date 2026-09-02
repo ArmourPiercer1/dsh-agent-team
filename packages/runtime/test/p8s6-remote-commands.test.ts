@@ -28,13 +28,15 @@
  *          through the mutation service (entryId / origin 'human' /
  *          requestedAtStep 0 / effectiveFromStep 1 — the pinned clock);
  *          `policyState.get` now reports the switched state (the
- *          far-future-step read); the durable TeamLedger is STILL
- *          untouched (the transition lives in the named ephemeral
- *          mutation store);
+ *          far-future-step read); R2-1: the transition now owns a
+ *          DURABLE ledger fact (`policy-state-transitioned`, settled
+ *          asynchronously — the synchronous admission is never blocked
+ *          by the scheduled write);
  *   C4.4 — a malformed `member.create` (missing payload.label) is
  *          rejected by the FACADE validator (`TEAM_RUNTIME_REQUEST_
  *          MALFORMED` passes through the typed-error invariant) with
- *          zero member rows / zero ledger entries added;
+ *          zero member rows / zero NEW ledger entries (the only durable
+ *          row is the C4.3 policy-state fact);
  *   C4.5 — a malformed `member.followup` (empty payload.prompt) is
  *          rejected the same way with zero writes (no Agent.followup
  *          bypass — the only path is the facade).
@@ -230,6 +232,17 @@ function codeOf(response: Record<string, any>): string | null {
   return null
 }
 
+/**
+ * R2-1: yield the microtask queue so the SCHEDULED durable write (the
+ * policy-state transition's ledger fact — a purely-microtask chain over
+ * the synchronous FileStorageSeam) settles before the durable counts are
+ * read. The synchronous admission itself is never blocked by it (see the
+ * C4.3 immediate `afterPolicyLedger`).
+ */
+async function settleScheduledWrites(hops = 50): Promise<void> {
+  for (let i = 0; i < hops; i++) await Promise.resolve()
+}
+
 // --- the scenarios (module top level — the sync shim forbids async it()) -------------
 
 const c4 = await (async () => {
@@ -293,6 +306,16 @@ const c4 = await (async () => {
     const policyAfter = await call('policyState.get', { teamSessionId: ROOT_SID })
     const afterPolicyLedger = ledgerCount()
 
+    // R2-1: the transition's durable fact is SCHEDULED (fire-and-track) —
+    // the synchronous admission above returned before it landed. Settle
+    // the microtask chain, then count the durable truth this lane owns.
+    await settleScheduledWrites()
+    const policyFactRows = (repos.ledger.list() as Array<Record<string, any>>).filter(
+      (entry) => entry.factType === 'policy-state-transitioned',
+    )
+    const policyFactSettledLedger = ledgerCount()
+    const firstPolicyFact = policyFactRows[0]
+
     // An unknown state id is outside the bound blueprint's closed set.
     const policyUnknown = await call('policyState.set', {
       teamSessionId: ROOT_SID,
@@ -334,6 +357,16 @@ const c4 = await (async () => {
       policySet,
       policyAfter,
       afterPolicyLedger,
+      policyFactCount: policyFactRows.length,
+      policyFactStateId:
+        firstPolicyFact !== undefined
+          ? String(((firstPolicyFact['payload'] as Record<string, any>)['state'] as Record<string, any>)['stateId'])
+          : '<missing>',
+      policyFactEntryId:
+        firstPolicyFact !== undefined
+          ? String((firstPolicyFact['payload'] as Record<string, any>)['entryId'])
+          : '<missing>',
+      policyFactSettledLedger,
       policyUnknown,
       malformedCreate,
       afterCreateMembers,
@@ -395,9 +428,23 @@ it('C4.3 policyState.set switches through the mutation service and policyState.g
   expect(c4.policyAfter.ok).toBe(true)
   expect((c4.policyAfter.value.data as Record<string, any>).state.stateId).toBe('restricted')
 
-  // The durable TeamLedger is STILL untouched (the transition lives in the
-  // named ephemeral mutation store, not the durable ledger authority).
-  expect(c4.afterPolicyLedger).toBe(0)
+  // R2-1 (replaces the S6 premise "the durable TeamLedger is STILL
+  // untouched — the transition lives in the named ephemeral mutation
+  // store"): the transition now owns a durable ledger fact. The
+  // SYNCHRONOUS admission itself was never blocked by the scheduled write,
+  // but the write settles within the awaited remote round-trips that
+  // followed it (the chain is microtask-only over the sync FileStorageSeam)
+  // — so by the time the capture is read the ledger already carries it:
+  expect(c4.afterPolicyLedger).toBe(1)
+  // The same durable fact, verified against the storage ledger after an
+  // explicit settle: exactly one row for this root, the lane's fact type,
+  // the admitted transition's payload (entryId + stateId), and nothing else.
+  expect(c4.policyFactCount).toBe(1)
+  expect(c4.policyFactStateId).toBe('restricted')
+  expect(c4.policyFactEntryId).toBe(
+    String((c4.policySet.value.data as Record<string, any>).transition.entryId),
+  )
+  expect(c4.policyFactSettledLedger).toBe(1)
 })
 
 it('C4.3b an unknown policy state is rejected with the closed-set code', () => {
@@ -409,14 +456,19 @@ it('C4.4 a malformed member.create is rejected by the facade validator with zero
   expect(c4.malformedCreate.ok).toBe(false)
   expect(codeOf(c4.malformedCreate)).toBe('TEAM_RUNTIME_REQUEST_MALFORMED')
   expect(c4.afterCreateMembers).toBe(3)
-  expect(c4.afterCreateLedger).toBe(0)
+  // R2-1: the only durable row in this world is the C4.3 policy-state
+  // fact — the MALFORMED command added zero ledger writes (count
+  // unchanged from the settled C4.3 baseline).
+  expect(c4.afterCreateLedger).toBe(c4.policyFactSettledLedger)
 })
 
 it('C4.5 a malformed member.followup is rejected by the facade validator with zero writes', () => {
   expect(c4.malformedFollowup.ok).toBe(false)
   expect(codeOf(c4.malformedFollowup)).toBe('TEAM_RUNTIME_REQUEST_MALFORMED')
   expect(c4.afterFollowupMembers).toBe(3)
-  expect(c4.afterFollowupLedger).toBe(0)
+  // R2-1: same zero-write proof — the count is still exactly the settled
+  // C4.3 baseline (the malformed followup added nothing).
+  expect(c4.afterFollowupLedger).toBe(c4.policyFactSettledLedger)
 })
 
 // --- teardown --------------------------------------------------------------------------

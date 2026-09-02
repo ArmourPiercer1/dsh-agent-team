@@ -52,8 +52,12 @@ import { teamContractError } from '../errors.js'
 import { canonicalJsonStringify, deepFreeze } from '../remote-safe.js'
 import type { RemoteSafeRecord } from '../remote-safe.js'
 import { toRecord } from './common.js'
-import { PROJECTION_SCHEMA_VERSION, assertProjectionSchemaVersion } from './schema.js'
-import type { ProjectionSchemaVersion } from './schema.js'
+import {
+  PROJECTION_SCHEMA_VERSION,
+  PROJECTION_SCHEMA_VERSION_V2,
+  assertProjectionSchemaVersion,
+} from './schema.js'
+import type { ProjectionSchemaVersion, ProjectionSchemaVersionV2 } from './schema.js'
 import { parseTeamRootProjection } from './root.js'
 import type { TeamRootProjectionDto, TeamRootProjectionInput } from './root.js'
 import { parseTemplateProjection } from './template.js'
@@ -62,6 +66,12 @@ import { parseMemberProjection } from './member.js'
 import type { MemberProjectionDto, MemberProjectionInput } from './member.js'
 import { parseLedgerSummary } from './ledger.js'
 import type { LedgerSummaryDto, LedgerSummaryInput } from './ledger.js'
+import { parseDisposedMemberHistory } from './disposed-history.js'
+import type {
+  DisposedMemberHistoryDto,
+  DisposedMemberHistoryInput,
+} from './disposed-history.js'
+import { MEMBER_LIFECYCLE_STATES } from '../dto/member-instance-record.js'
 
 /** The exact frozen fields of a TeamProjectionDto (v1). */
 export const TEAM_PROJECTION_FIELDS: readonly string[] = [
@@ -77,11 +87,29 @@ export const TEAM_PROJECTION_FIELDS: readonly string[] = [
 ]
 
 /**
+ * The top-level projection fields of schema version 2 (S7-R2, repairs
+ * R2-2..R2-6): the v1 set plus the DURATIONAL-optional additive key
+ * `disposedHistory` (R2-6, D14 — the retained-history bundle of every
+ * DISPOSED member; see disposed-history.ts). A v2 record may carry exactly
+ * the v1 key set — every additive key is optional (absent, never
+ * own-undefined; the key is ABSENT when the team has no DISPOSED member, so
+ * the default projection is byte-identical to the pre-repair shape). The
+ * member-level v2 additions live in `MEMBER_PROJECTION_FIELDS_V2`.
+ */
+export const TEAM_PROJECTION_FIELDS_V2: readonly string[] = [
+  ...TEAM_PROJECTION_FIELDS,
+  'disposedHistory',
+]
+
+/**
  * The whole read-only view of one TeamSession (projection contract v1).
  */
 export interface TeamProjectionDto {
-  /** The projection schema version; v1 projections carry `1`. */
-  readonly schemaVersion: ProjectionSchemaVersion
+  /**
+   * The projection schema version: v1 carries `1`; the additive S7-R2
+   * repairs stamp `2` (R2-2..R2-6; v1 semantics immutable — see schema.ts).
+   */
+  readonly schemaVersion: ProjectionSchemaVersion | ProjectionSchemaVersionV2
   /** The TeamSession id — which IS the root DSH session id (invariant 9). */
   readonly teamSessionId: TeamSessionId
   /** The immutable blueprint snapshot the TeamSession binds (invariant 10). */
@@ -98,11 +126,21 @@ export interface TeamProjectionDto {
   readonly members: readonly MemberProjectionDto[]
   /** The TeamLedger summary (UI §27). */
   readonly ledger: LedgerSummaryDto
+  /**
+   * S7-R2 (R2-6, D14): the retained-history bundle of EVERY DISPOSED member
+   * (schema version 2 only — the v1 field set rejects the key). DURATIONAL-
+   * optional: ABSENT when the team has no DISPOSED member (the live view
+   * (BQ-04) semantics are unchanged); PRESENT (non-empty) exactly when one
+   * exists. The bundle's instance ids are exactly the DISPOSED member rows
+   * (validated cross-field at parse).
+   */
+  readonly disposedHistory?: readonly DisposedMemberHistoryDto[]
 }
 
 /**
  * Producer input for {@link createTeamProjection}: all fields except
- * `schemaVersion` (stamped by the factory). Input records must not carry
+ * `schemaVersion` (stamped by the factory from the optional
+ * `input.schemaVersion`, defaulting to v1). Input records must not carry
  * own `undefined` keys (lossless-JSON discipline).
  */
 export interface TeamProjectionInput {
@@ -122,6 +160,17 @@ export interface TeamProjectionInput {
   members: readonly MemberProjectionInput[]
   /** The ledger summary (or a plain record for it). */
   ledger: LedgerSummaryInput
+  /**
+   * S7-R2 (R2-6, D14): the retained-history bundle of every DISPOSED member
+   * (stamped only for schema version 2 — a v1 projection never carries the
+   * key; ABSENT when there is no DISPOSED member).
+   */
+  disposedHistory?: readonly DisposedMemberHistoryInput[]
+  /**
+   * The projection schema version to stamp (S7-R2): `2` for the additive
+   * repair fields (R2-2..R2-6); defaults to `1` (v1).
+   */
+  schemaVersion?: 1 | 2
 }
 
 function assertDtoArray(value: unknown, field: string): unknown[] {
@@ -143,11 +192,22 @@ function assertCrossFieldInvariant(condition: boolean, reason: string, message: 
 
 function validateTeamProjection(record: RemoteSafeRecord): TeamProjectionDto {
   assertNoLegacyFields(record, 'TeamProjection')
-  assertNoUnknownFields(record, TEAM_PROJECTION_FIELDS, 'TeamProjection')
-  for (const field of TEAM_PROJECTION_FIELDS) {
-    assertFieldPresent(record, field, 'TeamProjection')
+  // R2-2 (S7-R2): the field set and the per-member parse version follow the
+  // record's own schema version (v1 set for `1`, the additive v2 set for
+  // `2`). `assertProjectionSchemaVersion` accepts the supported [1, 2].
+  const fields =
+    record['schemaVersion'] === 2 ? TEAM_PROJECTION_FIELDS_V2 : TEAM_PROJECTION_FIELDS
+  assertNoUnknownFields(record, fields, 'TeamProjection')
+  for (const field of fields) {
+    // R2-6 (S7-R2): `disposedHistory` is DURATIONAL-optional (absent when
+    // the team has no DISPOSED member) — admitted by the v2 set, exempt
+    // from the presence loop.
+    if (field !== 'disposedHistory') {
+      assertFieldPresent(record, field, 'TeamProjection')
+    }
   }
   assertProjectionSchemaVersion(record['schemaVersion'])
+  const schemaVersion: 1 | 2 = record['schemaVersion'] === 2 ? 2 : 1
   const teamSessionId = parseTeamSessionId(record['teamSessionId'])
   const generation = assertPositiveInteger(record['generation'], 'generation')
   const generatedAt = parseIso8601TimestampField(record['generatedAt'])
@@ -162,7 +222,7 @@ function validateTeamProjection(record: RemoteSafeRecord): TeamProjectionDto {
     parseTemplateProjection(item),
   )
   const members = assertDtoArray(record['members'], 'members').map((item) =>
-    parseMemberProjection(item),
+    parseMemberProjection(item, schemaVersion),
   )
 
   // Invariant 13: exactly one leader template.
@@ -224,8 +284,57 @@ function validateTeamProjection(record: RemoteSafeRecord): TeamProjectionDto {
     'members must contain exactly one LeaderInstance (inst-leader)',
   )
 
+  // R2-6 (S7-R2, D14): the additive v2 retained-history bundle. The v1
+  // field set rejected the key above, so its presence implies schema
+  // version 2. DURATIONAL-optional semantics: ABSENT when no DISPOSED
+  // member exists; PRESENT means non-empty, and the bundle must be EXACTLY
+  // the set of DISPOSED member rows (live view (BQ-04) semantics unchanged
+  // — the member rows themselves are untouched).
+  let disposedHistory: readonly DisposedMemberHistoryDto[] | undefined
+  if (record['disposedHistory'] !== undefined) {
+    const entries = assertDtoArray(record['disposedHistory'], 'disposedHistory').map((item) =>
+      parseDisposedMemberHistory(item),
+    )
+    if (entries.length === 0) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        'disposedHistory must be non-empty when present (a team with no DISPOSED member carries no key)',
+        { field: 'disposedHistory', reason: 'DISPOSED_HISTORY_EMPTY' },
+      )
+    }
+    const disposedIds = new Set(
+      members
+        .filter((member) => member.lifecycle === MEMBER_LIFECYCLE_STATES.DISPOSED)
+        .map((member) => member.instanceId),
+    )
+    const seen = new Set<string>()
+    for (const entry of entries) {
+      if (seen.has(entry.instanceId)) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `disposedHistory carries duplicate instance id ${entry.instanceId}`,
+          { field: 'disposedHistory', reason: 'DISPOSED_HISTORY_DUPLICATE_INSTANCE' },
+        )
+      }
+      seen.add(entry.instanceId)
+      if (!disposedIds.has(entry.instanceId)) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `disposedHistory entry ${entry.instanceId} does not reference a DISPOSED member row`,
+          { field: 'disposedHistory', reason: 'DISPOSED_HISTORY_UNKNOWN_INSTANCE' },
+        )
+      }
+    }
+    assertCrossFieldInvariant(
+      seen.size === disposedIds.size,
+      'DISPOSED_HISTORY_INCOMPLETE',
+      `disposedHistory must cover every DISPOSED member row exactly once (bundle: ${entries.length}, DISPOSED rows: ${disposedIds.size})`,
+    )
+    disposedHistory = entries
+  }
+
   return deepFreeze({
-    schemaVersion: record['schemaVersion'] as ProjectionSchemaVersion,
+    schemaVersion: schemaVersion,
     teamSessionId,
     blueprint,
     generation,
@@ -234,11 +343,15 @@ function validateTeamProjection(record: RemoteSafeRecord): TeamProjectionDto {
     templates,
     members,
     ledger: parseLedgerSummary(record['ledger']),
+    ...(disposedHistory !== undefined ? { disposedHistory } : {}),
   })
 }
 
 /**
- * Parse and validate a TeamProjectionDto from an untrusted value.
+ * Parse and validate a TeamProjectionDto from an untrusted value. The
+ * schema version is read from the record itself: v1 records parse through
+ * the v1 field sets, v2 records (S7-R2, R2-2..R2-6) through the additive
+ * v2 field sets.
  * @param value - the unknown input (e.g. a value decoded from the wire).
  * @returns the frozen projection.
  * @throws `MALFORMED_DTO`, `SCHEMA_VERSION_MISMATCH`,
@@ -255,12 +368,14 @@ export function parseTeamProjection(value: unknown): TeamProjectionDto {
  * ids; input records must not carry own `undefined` keys). The result is
  * validated through the same pipeline as `parseTeamProjection`.
  * @param input - the projection fields.
- * @returns the frozen projection stamped with the v1 projection schema
- *   version.
+ * @returns the frozen projection stamped with the requested projection
+ *   schema version (v1 by default; v2 for the additive S7-R2 repair
+ *   fields).
  */
 export function createTeamProjection(input: TeamProjectionInput): TeamProjectionDto {
   const record: RemoteSafeRecord = {
-    schemaVersion: PROJECTION_SCHEMA_VERSION,
+    schemaVersion:
+      input.schemaVersion === 2 ? PROJECTION_SCHEMA_VERSION_V2 : PROJECTION_SCHEMA_VERSION,
     teamSessionId: input.teamSessionId,
     blueprint: {
       blueprintId: input.blueprint.blueprintId,
@@ -273,6 +388,13 @@ export function createTeamProjection(input: TeamProjectionInput): TeamProjection
     templates: input.templates.map((template) => toRecord(template)),
     members: input.members.map((member) => toRecord(member)),
     ledger: toRecord(input.ledger),
+  }
+  // R2-6 (S7-R2, D14): the additive retained-history bundle. Stamped only
+  // for schema version 2 (a v1 projection never carries the key) and only
+  // when the producer derived bundles (ABSENT when no DISPOSED member
+  // exists — the default projection stays byte-identical).
+  if (input.schemaVersion === 2 && input.disposedHistory !== undefined) {
+    record['disposedHistory'] = input.disposedHistory.map((entry) => toRecord(entry))
   }
   return validateTeamProjection(record)
 }

@@ -82,7 +82,6 @@ import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import {
   CAPABILITY_NAME_VALUES,
-  DEFAULT_POLICY_STATE_ID,
 } from '../../../domain/policy/src/index.js'
 import type {
   CapabilityName,
@@ -98,7 +97,9 @@ import {
   parseBlueprintRevision,
 } from '../../../contracts/src/index.js'
 import type {
+  EffectiveConfigDtoV2,
   MemberIdentity,
+  MemberModelStateDto,
   TeamSessionId,
 } from '../../../contracts/src/index.js'
 import type { TeamSessionRecordInput } from '../../../contracts/src/index.js'
@@ -217,7 +218,11 @@ import {
   createServerPrincipalDerivationSeam,
 } from './seams.js'
 import { createTeamDomainReadPort } from './projection-source.js'
+import { createEffectiveConfigView } from './effective-config-view.js'
+import { createModelStateView } from './model-state-view.js'
 import type { TeamDomainReadPortDeps } from './projection-source.js'
+import { createDurableMutationStore } from './durable-mutation-store.js'
+import { activePolicyState } from '../../policy-adapter.js'
 import { createLiveResidencyOverlay } from './s6-live-overlay.js'
 import { createServerPrincipalDerivation } from './s6-principal.js'
 import { createS6RemoteSurfaces } from './s6-remote.js'
@@ -332,10 +337,16 @@ function createEphemeralMutationStore(): MutationStore {
 /**
  * Map the bound blueprint's closed capability policy (domain →
  * allow/deny decision) into the frozen policy-reader's per-capability
- * value map. An `allow` decision maps to an EMPTY item set (conservative:
- * the blueprint carries no per-cell item lists, so no item may be
- * inferred); a `deny` decision maps exactly. Keys that are not closed
- * capability names are skipped (the decision map is closed by contract).
+ * value map. Only an explicit `deny` decision is expressible losslessly:
+ * the frozen resolver input VALIDATION rejects an itemless `allow`
+ * ("'allow' items must be a non-empty array") and a blueprint `allow`
+ * decision carries no item list to fill it with, so `allow` decisions are
+ * dropped as unspecified. The drop is observationally identical at every
+ * consumer: the envelope computation maps absent / empty-allow / deny all
+ * to the empty item set, stage 2 fails an unspecified item capability
+ * closed, and the model consumer keeps the baseline for an unspecified
+ * model cell. Keys that are not closed capability names are skipped (the
+ * decision map is closed by contract).
  */
 function capabilityValuesOf(
   policy: Readonly<Record<string, 'allow' | 'deny'>> | undefined,
@@ -343,9 +354,9 @@ function capabilityValuesOf(
   if (policy === undefined) return undefined
   const values: Partial<Record<CapabilityName, PolicyEntry>> = {}
   for (const capabilityName of CAPABILITY_NAME_VALUES) {
-    const decision = policy[capabilityName]
-    if (decision === 'allow') values[capabilityName] = { kind: 'allow', items: [] }
-    else if (decision === 'deny') values[capabilityName] = { kind: 'deny' }
+    if (policy[capabilityName] === 'deny') {
+      values[capabilityName] = { kind: 'deny' }
+    }
   }
   return values
 }
@@ -741,8 +752,28 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // Named so the A31 remote PolicyState port can read the durable
   // transition rows (policyState.get) from the same store the service
   // writes (policyState.set flows through the service only).
-  const mutationStore = createEphemeralMutationStore()
+  // R2-1 (P8-S7-R2): the transitions lane of that store is DURABLE — the
+  // `ledger` fact rows of the OPENED TeamDomain (the existing storage
+  // authority the mutation plane already uses for its durable homes);
+  // every other lane keeps the S5A documented ephemeral wiring. The
+  // production `boot()` preloads the durable rows into the in-memory
+  // cache before the live flow; the production `close()` flushes the
+  // scheduled durable writes (module: ./durable-mutation-store.js).
+  const durableMutation = createDurableMutationStore(
+    createEphemeralMutationStore(),
+    repos,
+    rootSid,
+    now,
+  )
+  const mutationStore = durableMutation.store
   const mutation = {
+    // R2-1: the durable-backed store is exposed on the root surface (an
+    // additive read-side seam): the remote policyState surface, the
+    // projection read-port dep, and the C1 three-way-agreement verification
+    // all read the transitions lane through this single authoritative
+    // cache (the process-local lanes keep their documented ephemeral
+    // semantics — see ./durable-mutation-store.js).
+    store: mutationStore,
     service: new MutationService({
       // The S5A boot world has no step-driven mutation pipeline; the
       // StepClock reports the fixed step 0 (documented in S5A-result.md).
@@ -770,11 +801,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // template rows resolve from the bound blueprint CATALOG (the TeamDomain
   // has no template table — the immutable snapshot IS the template truth;
   // displayName falls back to the template id, contextPolicy falls back to
-  // the domain default when the snapshot token is absent or malformed),
-  // and the PolicyState id derives the bound blueprint's default state
-  // (the mutation service owns the transitions; at the fixed step 0 the
-  // active state is the default — the A31 policyState port reads the same
-  // transitions through the named mutation store).
+  // the domain default when the snapshot token is absent or malformed).
+  // R2-1: the PolicyState id no longer returns the constant default — the
+  // projection reads the DURABLE transition rows of the same store the
+  // mutation service writes (preloaded into the in-memory cache at boot),
+  // evaluated at the maximum step horizon: the production step clock is
+  // pinned to 0 (documented in S5A), and the remote policyState.read
+  // surface uses the same horizon, so projection and remote agree that
+  // an explicitly admitted transition is the active state.
   const readPortDeps: TeamDomainReadPortDeps = {
     templates: (row) => {
       const resolved = catalog.resolve(row.blueprint.blueprintId, row.blueprint.revision)
@@ -800,12 +834,81 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         ),
       ]
     },
-    policyState: () => DEFAULT_POLICY_STATE_ID,
+    policyState: (rootSessionId) =>
+      activePolicyState(
+        mutationStore.listTransitions(rootSessionId as TeamSessionId),
+        Number.MAX_SAFE_INTEGER,
+      ).stateId,
+    // R2-2 (P8-S7-R2): the BQ-08 resolved effective-config view (F01-F08,
+    // G01, G02, G05, G06, G09, H04, H12, L11). The resolver runs the
+    // two-stage policy resolution over the SAME durable transition rows the
+    // mutation service writes (the R2-1 cache), the merged mutation-store +
+    // governance-override records, and the bound policy reader, at the
+    // maximum step horizon: the process-local applied-record state is not
+    // durable, so boundary-pending changes are reported conservatively as
+    // pending (appliedRecordIds empty). A resolver failure degrades the
+    // lane to the closed default, never the row (fail closed).
+    effectiveConfig: (rootSessionId, member): EffectiveConfigDtoV2 | null => {
+      try {
+        return createEffectiveConfigView({
+          teamSessionId: rootSessionId,
+          instanceId: member.instanceId,
+          lifecycle: member.lifecycle,
+          memberWorkspace: member.workspace,
+          teamDefaultWorkspace: repos.teamSessions.get(rootSessionId)?.defaultWorkspace,
+          staticModel: {
+            provider: config.staticModel.provider,
+            model: config.staticModel.model,
+          },
+          transitions: mutationStore.listTransitions(rootSessionId as TeamSessionId),
+          records: mutationStore.listRecords(rootSessionId as TeamSessionId),
+          overrides: repos.overrides.list(rootSessionId),
+          policyReader,
+        })
+      } catch {
+        return null
+      }
+    },
+    // R2-3 (P8-S7-R2): the BQ-11 per-member model state view (D09/H06/H09/
+    // H10/H12). Dual-horizon resolution over the SAME durable transition
+    // rows, the merged mutation-store + governance-override records, and
+    // the bound policy reader: the NOW horizon (the production step clock
+    // is pinned to 0 — a transition requested at step 0 takes effect from
+    // step 1, so at the current step the admitted team model is always the
+    // pre-transition state) resolves `current` + `provenance` +
+    // `availability`; the MAX horizon resolves the next-boundary winner,
+    // and a pending transition (or a winner backed by an admitted-but-
+    // unapplied record) fills `pendingNextBoundary`. A resolver failure
+    // drops the `modelState` key (DURATIONAL-optional — absent, never
+    // undefined), never the row.
+    modelState: (rootSessionId, instanceId): MemberModelStateDto | undefined => {
+      try {
+        return createModelStateView({
+          teamSessionId: rootSessionId,
+          instanceId,
+          currentStep: 0,
+          staticModel: {
+            provider: config.staticModel.provider,
+            model: config.staticModel.model,
+          },
+          transitions: mutationStore.listTransitions(rootSessionId as TeamSessionId),
+          records: mutationStore.listRecords(rootSessionId as TeamSessionId),
+          overrides: repos.overrides.list(rootSessionId),
+          policyReader,
+        })
+      } catch {
+        return undefined
+      }
+    },
   }
+  // R2-2 (P8-S7-R2): the production projection is stamped v2 — the
+  // effective-config lane of the v2 member row is a closed field set of the
+  // v1 row (the v2 entry is a structural superset of the v1 entry,
+  // validated per schema version by the pipeline).
   const projection: ProjectionService = createProjectionService(
     createTeamDomainReadPort(domain, readPortDeps),
     createFailClosedOverlayProxy(seams.projectionLiveOverlay),
-    { clock: now },
+    { clock: now, schemaVersion: 2 },
   )
 
   // --- A32 + A30 the principal derivation + the live overlay (installed once) ----------------------
@@ -970,6 +1073,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // root surface (T1-proven against a consistent fresh world) but are
     // DORMANT in the boot flow: driving them at resume would require
     // durable state the frozen contract does not seed.
+    // R2-1: restore the durable PolicyState transitions of this root
+    // (admitted by a previous process) into the in-memory mutation cache
+    // BEFORE the live flow — the projection and the remote surface must
+    // already report the durable state on the first read of a resumed
+    // root (the durable ledger is the source of truth; module docs:
+    // ./durable-mutation-store.js). No-op on a fresh world (empty
+    // ledger lane).
+    await durableMutation.preload()
     await live.boot()
   }
 
@@ -978,6 +1089,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const close = async (): Promise<void> => {
     if (closeStarted) return
     closeStarted = true
+    // R2-1: flush the scheduled durable PolicyState writes BEFORE the
+    // live / domain close (a write to an already-closed domain would
+    // fail; the flush surfaces any recorded failure to the caller).
+    await durableMutation.flush()
     await live.close()
     await domain.close()
   }

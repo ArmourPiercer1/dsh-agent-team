@@ -1040,7 +1040,29 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
           options.mutationTransitions(rootSessionId),
           Number.MAX_SAFE_INTEGER,
         )
-        return view as unknown as RemoteSafeRecord
+        // R2-1 (BQ-10): the surface reports the CURRENT state plus the
+        // AVAILABLE AUTHORIZED TRANSITIONS — the bound blueprint's closed
+        // state set (default + the declared states, declaration order)
+        // minus the state already active (a self-transition is a no-op
+        // the surface does not advertise). The frozen
+        // RemotePolicyStateGetValue.state is an open RemoteSafeRecord, so
+        // the additive key passes the remote plane unchanged. No impact
+        // PREVIEW is invented: the backend provides no preview surface
+        // for a not-yet-admitted transition (adjudication, documented in
+        // S7R2-result.md). The A31 rejection semantics are untouched: an
+        // out-of-closed-set target still fails POLICY_STATE_UNKNOWN and a
+        // member actor still fails UNAUTHORIZED_TRANSITION (switchState).
+        const closedStates = new Set<string>([
+          DEFAULT_POLICY_STATE_ID,
+          ...blueprint.policyStates.map((state) => state.id),
+        ])
+        const availableTransitions = [...closedStates].filter(
+          (stateId) => stateId !== view.stateId,
+        )
+        return {
+          ...(view as unknown as RemoteSafeRecord),
+          availableTransitions,
+        }
       },
       async switchState(
         request: S6RemotePolicyStateSwitchRequest,

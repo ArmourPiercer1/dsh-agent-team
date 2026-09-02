@@ -28,8 +28,28 @@ export const PROJECTION_SCHEMA_VERSION = 1 as const
 /** Type of the v1 projection schema version field: exactly `1`. */
 export type ProjectionSchemaVersion = typeof PROJECTION_SCHEMA_VERSION
 
-/** All projection schema versions this build reads and writes. Frozen: `[1]`. */
-export const SUPPORTED_PROJECTION_SCHEMA_VERSIONS: readonly number[] = [1]
+/**
+ * The schema version stamped by projection v2 records (S7-R2, repair
+ * R2-2..R2-6): v1 plus ADDITIVE optional fields — the per-entry
+ * provenance fields of the effective-config view (effective-config.ts)
+ * and the version-gated optional member/top-level fields of the same
+ * repair line. v1 records remain valid and are parsed byte-identically
+ * through the v1 field sets; a v2 record may carry the additive keys
+ * (and may also omit them — every v2 addition is DURATIONAL-optional).
+ *
+ * This is the version-track change required by the contracts freeze rule
+ * (CHANGELOG.md): a new version, new stamp, v1 semantics untouched.
+ */
+export const PROJECTION_SCHEMA_VERSION_V2 = 2 as const
+
+/** Type of the v2 projection schema version field: exactly `2`. */
+export type ProjectionSchemaVersionV2 = typeof PROJECTION_SCHEMA_VERSION_V2
+
+/**
+ * All projection schema versions this build reads and writes:
+ * `[1, 2]` (S7-R2 R2-2 additive v2).
+ */
+export const SUPPORTED_PROJECTION_SCHEMA_VERSIONS: readonly number[] = [1, 2]
 
 /**
  * Is `value` a supported projection schema version (a positive integer in

@@ -60,6 +60,9 @@ import { deepFreeze } from '../remote-safe.js'
 import type { RemoteSafeRecord } from '../remote-safe.js'
 import { toRecord } from './common.js'
 import { parseEffectiveConfigDto } from './effective-config.js'
+import type { EffectiveConfigDtoV2 } from './effective-config.js'
+import { parseMemberModelState } from './model-state.js'
+import type { MemberModelStateDto } from './model-state.js'
 import type { EffectiveConfigDto } from './effective-config.js'
 import {
   parseMemberActivitySummary,
@@ -88,6 +91,17 @@ export const MEMBER_PROJECTION_FIELDS: readonly string[] = [
 ]
 
 /**
+ * The exact frozen fields of a MemberProjectionDto under projection v2
+ * (S7-R2). v2 is ADDITIVE: the v1 set plus the optional v2 member fields
+ * (repair R2-3 adds `modelState`; every addition is DURATIONAL-optional).
+ * v1 rows remain valid through the v1 field set above.
+ */
+export const MEMBER_PROJECTION_FIELDS_V2: readonly string[] = [
+  ...MEMBER_PROJECTION_FIELDS,
+  'modelState',
+]
+
+/**
  * The projection row of one MemberInstance or the LeaderInstance (v1).
  */
 export interface MemberProjectionDto {
@@ -112,10 +126,22 @@ export interface MemberProjectionDto {
   readonly lifecycle: MemberLifecycleState
   /** The effective per-instance context policy (invariant 29). */
   readonly contextPolicy: ContextPolicy
-  /** The four-lane effective configuration view with provenance. */
+  /**
+   * The four-lane effective configuration view with provenance. Under
+   * projection v2 (S7-R2 R2-2) the entries are `EffectiveConfigEntryV2`
+   * (same v1 core fields plus additive optional provenance keys); the v1
+   * type here is the documented type lie — v1-typed reads of `value` /
+   * `source` / `state` remain structurally sound for v2 rows.
+   */
   readonly effectiveConfig: EffectiveConfigDto
   /** The durable activity summary; key absent when no durable facts exist. */
   readonly activity?: MemberActivitySummaryDto
+  /**
+   * The BQ-11 model state view (projection v2, S7-R2 repair R2-3).
+   * DURATIONAL-optional: the key is ABSENT when the view cannot be derived
+   * (v1 rows never carry it; the v1 field set rejects the key).
+   */
+  readonly modelState?: MemberModelStateDto
   /** The nullable live overlay: always present, `null` when no live facts. */
   readonly liveActivity: MemberLiveActivityDto | null
 }
@@ -144,19 +170,41 @@ export interface MemberProjectionInput {
   lifecycle: MemberLifecycleState
   /** The effective per-instance context policy. */
   contextPolicy: ContextPolicy
-  /** The four-lane effective configuration view (or a plain record for it). */
-  effectiveConfig: EffectiveConfigDto
+  /**
+   * The four-lane effective configuration view (or a plain record for it).
+   * v2 entries (S7-R2 R2-2) are accepted by `createTeamProjection`, which
+   * stamps the enclosing version; `createMemberProjection` stays
+   * v1-stamped and rejects additive v2 entry fields by design.
+   */
+  effectiveConfig: EffectiveConfigDto | EffectiveConfigDtoV2
   /** The durable activity summary (optional; key absent when undefined). */
   activity?: MemberActivitySummaryDto
+  /**
+   * The BQ-11 model state view (projection v2, S7-R2 repair R2-3).
+   * DURATIONAL-optional: the key is ABSENT when the view cannot be derived
+   * (v1 rows never carry it; the v1 field set rejects the key).
+   */
+  modelState?: MemberModelStateDto
   /** The live overlay, or `null` when the live source has no facts. */
   liveActivity: MemberLiveActivityDto | null
 }
 
-function validateMemberProjection(record: RemoteSafeRecord): MemberProjectionDto {
+function validateMemberProjection(record: RemoteSafeRecord, schemaVersion: 1 | 2 = 1): MemberProjectionDto {
+  // R2-2 (S7-R2): schema version 2 admits the additive `MEMBER_PROJECTION_FIELDS_V2`
+  // set and threads the version into the effective-config parse. The declared
+  // return type stays `MemberProjectionDto` (v1-typed `effectiveConfig`) by the
+  // documented type-lie precedent: v2 entries carry the same v1 core fields
+  // plus additive optional keys, so v1-typed reads remain structurally sound.
+  const fields = schemaVersion === 2 ? MEMBER_PROJECTION_FIELDS_V2 : MEMBER_PROJECTION_FIELDS
   assertNoLegacyFields(record, 'MemberProjection')
-  assertNoUnknownFields(record, MEMBER_PROJECTION_FIELDS, 'MemberProjection')
-  for (const field of MEMBER_PROJECTION_FIELDS) {
-    if (field !== 'groupId' && field !== 'childSessionId' && field !== 'activity') {
+  assertNoUnknownFields(record, fields, 'MemberProjection')
+  for (const field of fields) {
+    if (
+      field !== 'groupId' &&
+      field !== 'childSessionId' &&
+      field !== 'activity' &&
+      field !== 'modelState'
+    ) {
       assertFieldPresent(record, field, 'MemberProjection')
     }
   }
@@ -208,7 +256,7 @@ function validateMemberProjection(record: RemoteSafeRecord): MemberProjectionDto
       return raw
     })(),
     contextPolicy: parseContextPolicyField(record['contextPolicy'], 'contextPolicy'),
-    effectiveConfig: parseEffectiveConfigDto(record['effectiveConfig']),
+    effectiveConfig: parseEffectiveConfigDto(record['effectiveConfig'], schemaVersion),
     liveActivity:
       record['liveActivity'] === null
         ? null
@@ -224,19 +272,29 @@ function validateMemberProjection(record: RemoteSafeRecord): MemberProjectionDto
     record['activity'] === undefined
       ? {}
       : { activity: parseMemberActivitySummary(record['activity']) }
-  return deepFreeze({ ...base, ...groupId, ...child, ...activity })
+  // R2-3 (S7-R2): the v2 model-state view (BQ-11). The key is DURATIONAL-
+  // optional: absent when the producer could not derive the view (or the
+  // row is v1 — the v1 field set rejects the key above).
+  const modelState =
+    record['modelState'] === undefined
+      ? {}
+      : { modelState: parseMemberModelState(record['modelState']) }
+  return deepFreeze({ ...base, ...groupId, ...child, ...activity, ...modelState })
 }
 
 /**
  * Parse and validate a MemberProjectionDto from an untrusted value.
  * @param value - the unknown input.
+ * @param schemaVersion - the enclosing projection schema version: `2`
+ *   admits the additive v2 field set and parses the effective-config
+ *   entries as v2; defaults to `1` (v1, byte-identical behavior).
  * @returns the frozen member row.
  * @throws `MALFORMED_DTO`, `LEGACY_MEMBER_ID_REJECTED`,
  *   `INVALID_INSTANCE_ID`, `INVALID_TEMPLATE_ID`,
  *   `INVALID_CHILD_SESSION_ID`, or the field-specific codes.
  */
-export function parseMemberProjection(value: unknown): MemberProjectionDto {
-  return validateMemberProjection(assertPlainRecord(value, 'MemberProjection'))
+export function parseMemberProjection(value: unknown, schemaVersion: 1 | 2 = 1): MemberProjectionDto {
+  return validateMemberProjection(assertPlainRecord(value, 'MemberProjection'), schemaVersion)
 }
 
 /**
@@ -245,9 +303,19 @@ export function parseMemberProjection(value: unknown): MemberProjectionDto {
  * optionals, which are omitted when `undefined`).
  * @param input - the member fields.
  * @returns the frozen member row, validated through the same pipeline as
- *   `parseMemberProjection`.
+ *   `parseMemberProjection`. Always v1-stamped; v2 member rows are
+ *   produced through `createTeamProjection` (S7-R2).
  */
 export function createMemberProjection(input: MemberProjectionInput): MemberProjectionDto {
+  // R2-3 (S7-R2): the v1-stamped builder cannot produce a v2 field — fail
+  // closed instead of silently dropping the view.
+  if (input.modelState !== undefined) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      "createMemberProjection is v1-stamped and must not carry the v2 'modelState' field",
+      { field: 'modelState' },
+    )
+  }
   const record: RemoteSafeRecord = {
     instanceId: input.instanceId,
     templateId: input.templateId,

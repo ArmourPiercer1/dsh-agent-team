@@ -155,6 +155,29 @@ export function parseEffectiveConfigStateField(raw: unknown, field: string): Eff
 export const EFFECTIVE_CONFIG_ENTRY_FIELDS: readonly string[] = ['value', 'source', 'state']
 
 /**
+ * The exact frozen fields of an EffectiveConfigEntry under projection v2
+ * (S7-R2, repair R2-2): the v1 core plus the ADDITIVE optional
+ * provenance fields (UI §18.1: `suppressed?`, `unavailable?`, `deniedBy?`,
+ * "when change takes effect" = `effectiveFrom`, plus `locked?`). Every
+ * additive field is DURATIONAL-optional: the KEY is absent when the fact
+ * does not hold (never an own `undefined` key). v1 records remain valid
+ * through the v1 field set above.
+ */
+export const EFFECTIVE_CONFIG_ENTRY_FIELDS_V2: readonly string[] = [
+  'value',
+  'source',
+  'state',
+  'suppressed',
+  'unavailable',
+  'deniedBy',
+  'effectiveFrom',
+  'locked',
+]
+
+/** Max length of the v2 `deniedBy` provenance string (opaque reason). */
+export const EFFECTIVE_CONFIG_DENIED_BY_MAX_LENGTH = 128
+
+/**
  * One resolved effective configuration value with its provenance.
  */
 export interface EffectiveConfigEntry {
@@ -171,16 +194,71 @@ export interface EffectiveConfigEntry {
 }
 
 /**
+ * The projection v2 effective-config entry (S7-R2, repair R2-2): the v1
+ * core plus the additive optional provenance fields. A v2 entry is
+ * structurally a supertype of the v1 entry (every v1 consumer reading
+ * `value` / `source` / `state` keeps working).
+ */
+export interface EffectiveConfigEntryV2 {
+  /** The resolved display value (v1 semantics). */
+  readonly value: string | null
+  /** The frozen source that produced the value (or the denial). */
+  readonly source: EffectiveConfigSource
+  /** The frozen state of the value (UI §18.3). */
+  readonly state: EffectiveConfigState
+  /**
+   * A stored autonomy overlay is currently SUPPRESSED for this cell
+   * (§19.4 non-destructive: stored but hidden from the effective set).
+   * Key absent when nothing is suppressed.
+   */
+  readonly suppressed?: boolean
+  /**
+   * The value is currently unavailable (capability absent or unusable).
+   * Key absent when available.
+   */
+  readonly unavailable?: boolean
+  /**
+   * Who/what denied the value: the frozen denial reason (opaque
+   * lossless-JSON string, ≤ 128 chars, no control characters). Key
+   * absent when the value is not denied.
+   */
+  readonly deniedBy?: string
+  /**
+   * The step boundary at which a pending change takes effect
+   * (UI §18.1 "when change takes effect"): a positive safe integer.
+   * Key absent when the value is not pending or when the pending
+   * change is boundary-based without a step (documented per producer).
+   */
+  readonly effectiveFrom?: number
+  /**
+   * The value is locked (e.g. the workspace after first run, W2). Key
+   * absent when not locked.
+   */
+  readonly locked?: boolean
+}
+
+/**
  * Parse and validate an EffectiveConfigEntry from an untrusted value.
  * @param value - the unknown input.
  * @returns the frozen entry.
  * @throws `MALFORMED_DTO` for a malformed container, field set, or value.
  */
-export function parseEffectiveConfigEntry(value: unknown): EffectiveConfigEntry {
+export function parseEffectiveConfigEntry(
+  value: unknown,
+  schemaVersion: 1 | 2 = 1,
+): EffectiveConfigEntry | EffectiveConfigEntryV2 {
   const record = assertPlainRecord(value, 'EffectiveConfigEntry')
-  assertNoUnknownFields(record, EFFECTIVE_CONFIG_ENTRY_FIELDS, 'EffectiveConfigEntry')
-  for (const field of EFFECTIVE_CONFIG_ENTRY_FIELDS) {
-    assertFieldPresent(record, field, 'EffectiveConfigEntry')
+  if (schemaVersion === 2) {
+    assertNoUnknownFields(record, EFFECTIVE_CONFIG_ENTRY_FIELDS_V2, 'EffectiveConfigEntry')
+    for (const field of EFFECTIVE_CONFIG_ENTRY_FIELDS) {
+      assertFieldPresent(record, field, 'EffectiveConfigEntry')
+    }
+  } else {
+    // v1 path — byte-identical frozen behavior (P8-T1).
+    assertNoUnknownFields(record, EFFECTIVE_CONFIG_ENTRY_FIELDS, 'EffectiveConfigEntry')
+    for (const field of EFFECTIVE_CONFIG_ENTRY_FIELDS) {
+      assertFieldPresent(record, field, 'EffectiveConfigEntry')
+    }
   }
   const rawValue = record['value']
   let parsedValue: string | null
@@ -201,11 +279,89 @@ export function parseEffectiveConfigEntry(value: unknown): EffectiveConfigEntry 
     }
     parsedValue = rawValue
   }
-  return deepFreeze({
+  const core = {
     value: parsedValue,
     source: parseEffectiveConfigSourceField(record['source'], 'source'),
     state: parseEffectiveConfigStateField(record['state'], 'state'),
-  })
+  }
+  if (schemaVersion === 2) {
+    // The additive v2 provenance fields (all DURATIONAL-optional).
+    let suppressed: boolean | undefined
+    if (record['suppressed'] !== undefined) {
+      if (typeof record['suppressed'] !== 'boolean') {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          'EffectiveConfigEntry suppressed must be a boolean',
+          { field: 'suppressed' },
+        )
+      }
+      suppressed = record['suppressed'] as boolean
+    }
+    let unavailable: boolean | undefined
+    if (record['unavailable'] !== undefined) {
+      if (typeof record['unavailable'] !== 'boolean') {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          'EffectiveConfigEntry unavailable must be a boolean',
+          { field: 'unavailable' },
+        )
+      }
+      unavailable = record['unavailable'] as boolean
+    }
+    let deniedBy: string | undefined
+    if (record['deniedBy'] !== undefined) {
+      const rawDeniedBy = record['deniedBy']
+      if (
+        typeof rawDeniedBy !== 'string' ||
+        rawDeniedBy.length === 0 ||
+        rawDeniedBy.length > EFFECTIVE_CONFIG_DENIED_BY_MAX_LENGTH ||
+        hasControlChars(rawDeniedBy)
+      ) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `EffectiveConfigEntry deniedBy must be a non-empty string of at most ${EFFECTIVE_CONFIG_DENIED_BY_MAX_LENGTH} chars without control characters`,
+          { field: 'deniedBy' },
+        )
+      }
+      deniedBy = rawDeniedBy
+    }
+    let effectiveFrom: number | undefined
+    if (record['effectiveFrom'] !== undefined) {
+      const rawEffectiveFrom = record['effectiveFrom']
+      if (
+        typeof rawEffectiveFrom !== 'number' ||
+        !Number.isSafeInteger(rawEffectiveFrom) ||
+        rawEffectiveFrom < 1
+      ) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          'EffectiveConfigEntry effectiveFrom must be a safe integer >= 1',
+          { field: 'effectiveFrom' },
+        )
+      }
+      effectiveFrom = rawEffectiveFrom
+    }
+    let locked: boolean | undefined
+    if (record['locked'] !== undefined) {
+      if (typeof record['locked'] !== 'boolean') {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          'EffectiveConfigEntry locked must be a boolean',
+          { field: 'locked' },
+        )
+      }
+      locked = record['locked'] as boolean
+    }
+    return deepFreeze({
+      ...core,
+      ...(suppressed !== undefined ? { suppressed } : {}),
+      ...(unavailable !== undefined ? { unavailable } : {}),
+      ...(deniedBy !== undefined ? { deniedBy } : {}),
+      ...(effectiveFrom !== undefined ? { effectiveFrom } : {}),
+      ...(locked !== undefined ? { locked } : {}),
+    })
+  }
+  return deepFreeze(core)
 }
 
 // --- the four-lane container ----------------------------------------------------------
@@ -235,28 +391,49 @@ export interface EffectiveConfigDto {
 }
 
 /**
+ * The projection v2 four-lane effective config (S7-R2, repair R2-2): the
+ * same frozen lanes as v1, with v2 entries (additive optional provenance
+ * fields). Structurally a supertype of the v1 DTO.
+ */
+export interface EffectiveConfigDtoV2 {
+  /** The effective model selection. */
+  readonly model: EffectiveConfigEntryV2
+  /** The effective workspace (locked after first run: state `locked`). */
+  readonly workspace: EffectiveConfigEntryV2
+  /** Permission name -> effective entry. */
+  readonly permissions: { readonly [permissionName: string]: EffectiveConfigEntryV2 }
+  /** The effective autonomy overlay. */
+  readonly autonomy: EffectiveConfigEntryV2
+}
+
+/**
  * Parse and validate an EffectiveConfigDto from an untrusted value.
  * @param value - the unknown input.
  * @returns the frozen effective config.
  * @throws `MALFORMED_DTO` for a malformed container, lane set, permission
  *   key, or entry.
  */
-export function parseEffectiveConfigDto(value: unknown): EffectiveConfigDto {
+export function parseEffectiveConfigDto(
+  value: unknown,
+  schemaVersion: 1 | 2 = 1,
+): EffectiveConfigDto | EffectiveConfigDtoV2 {
   const record = assertPlainRecord(value, 'EffectiveConfig')
   assertNoUnknownFields(record, EFFECTIVE_CONFIG_FIELDS, 'EffectiveConfig')
   for (const field of EFFECTIVE_CONFIG_FIELDS) {
     assertFieldPresent(record, field, 'EffectiveConfig')
   }
   const permissionsRecord = assertPlainRecord(record['permissions'], 'EffectiveConfig.permissions')
-  const permissions: { [permissionName: string]: EffectiveConfigEntry } = {}
+  const permissions: {
+    [permissionName: string]: EffectiveConfigEntry | EffectiveConfigEntryV2
+  } = {}
   for (const name of Object.keys(permissionsRecord)) {
     parseLabelLikeField(name, `permissions['${name}']`, LABEL_MAX_LENGTH)
-    permissions[name] = parseEffectiveConfigEntry(permissionsRecord[name])
+    permissions[name] = parseEffectiveConfigEntry(permissionsRecord[name], schemaVersion)
   }
   return deepFreeze({
-    model: parseEffectiveConfigEntry(record['model']),
-    workspace: parseEffectiveConfigEntry(record['workspace']),
+    model: parseEffectiveConfigEntry(record['model'], schemaVersion),
+    workspace: parseEffectiveConfigEntry(record['workspace'], schemaVersion),
     permissions,
-    autonomy: parseEffectiveConfigEntry(record['autonomy']),
+    autonomy: parseEffectiveConfigEntry(record['autonomy'], schemaVersion),
   })
 }

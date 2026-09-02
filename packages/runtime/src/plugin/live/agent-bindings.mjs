@@ -41,6 +41,7 @@
  * production host exposes this WHOLE bundle as the teamRoot.live field):
  *   listLiveSessions()                  (sorted live session id strings)
  *   hasLive(sessionId)                  (boolean)
+ *   isResuming(sessionId)               (boolean; the resuming marker, P8-S7 R2-5)
  *   ensureLiveAgent(sessionId)          (the live-agent-or-resume resolver)
  *   prepareAgentForRequest(sessionId)   (the request-boundary reconciliation)
  *   executeTool(sessionId, {name, args, callId})
@@ -135,6 +136,18 @@ export function createAgentBindings(deps) {
    * idempotent — a second call re-awaits the same promise.
    */
   let bootPromise = undefined
+  /**
+   * @type {Set<string>} Session ids with a live resume in flight (the
+   * resuming marker, P8-S7 R2-5 / F12): written at the production resume
+   * points (ensureLiveAgent + the boot resume phase) and cleared when the
+   * resume settles (success or failure). The projection live-residency
+   * overlay reads it through isResuming; it is ephemeral by design (the
+   * frozen residency vocabulary is a non-durable overlay fact — UI §24).
+   * The childFactory durable-child resume is deliberately UNMARKED: it
+   * runs in the member-creation crash window, BEFORE the MemberInstance
+   * row is committed, so no projection row exists to carry the fact.
+   */
+  const resumingSessions = new Set()
 
   // ── the durable-mutation consumption boundary (ported) ─────────────────
 
@@ -359,12 +372,17 @@ export function createAgentBindings(deps) {
     if (!sessionIsDurable(sessionId)) {
       throw new Error(`p6t6: session '${sessionId}' is neither live nor durable — no agent to execute a tool on`)
     }
-    const handle = await agents.resume({
-      resumeSessionId: SessionId(sessionId),
-      setup: agentSetup(sessionId),
-    })
-    liveAgents.set(sessionId, handle)
-    return handle
+    resumingSessions.add(sessionId)
+    try {
+      const handle = await agents.resume({
+        resumeSessionId: SessionId(sessionId),
+        setup: agentSetup(sessionId),
+      })
+      liveAgents.set(sessionId, handle)
+      return handle
+    } finally {
+      resumingSessions.delete(sessionId)
+    }
   }
 
   /**
@@ -457,16 +475,23 @@ export function createAgentBindings(deps) {
       if (config.bootPhase !== 'create' && config.bootPhase !== 'resume') {
         throw new Error(`agent-bindings: config.bootPhase must be 'create' or 'resume' (got ${JSON.stringify(config.bootPhase)})`)
       }
-      const rootHandle = config.bootPhase === 'create'
-        ? await agents.create({
-          sessionId: SessionId(rootSid),
-          meta: { cwd: process.env.DSH_HOME },
-          setup: agentSetup(rootSid),
-        })
-        : await agents.resume({
-          resumeSessionId: SessionId(rootSid),
-          setup: agentSetup(rootSid),
-        })
+      const rootResuming = config.bootPhase === 'resume'
+      if (rootResuming) resumingSessions.add(rootSid)
+      let rootHandle
+      try {
+        rootHandle = config.bootPhase === 'create'
+          ? await agents.create({
+            sessionId: SessionId(rootSid),
+            meta: { cwd: process.env.DSH_HOME },
+            setup: agentSetup(rootSid),
+          })
+          : await agents.resume({
+            resumeSessionId: SessionId(rootSid),
+            setup: agentSetup(rootSid),
+          })
+      } finally {
+        if (rootResuming) resumingSessions.delete(rootSid)
+      }
       liveAgents.set(rootSid, rootHandle)
       if (config.bootPhase === 'create') {
         await sessionPersistence.ensureMaterialized(rootHandle.agent.session)
@@ -491,10 +516,16 @@ export function createAgentBindings(deps) {
           const child = String(member.childSessionId)
           if (seen.has(child)) continue
           seen.add(child)
-          const handle = await agents.resume({
-            resumeSessionId: SessionId(child),
-            setup: agentSetup(child),
-          })
+          resumingSessions.add(child)
+          let handle
+          try {
+            handle = await agents.resume({
+              resumeSessionId: SessionId(child),
+              setup: agentSetup(child),
+            })
+          } finally {
+            resumingSessions.delete(child)
+          }
           liveAgents.set(child, handle)
           await sessionPersistence.ensureMaterialized(handle.agent.session)
         }
@@ -757,6 +788,7 @@ export function createAgentBindings(deps) {
     // whole bundle as the teamRoot.live field)
     listLiveSessions: () => [...liveAgents.keys()].sort(),
     hasLive: (sessionId) => liveAgents.has(String(sessionId)),
+    isResuming: (sessionId) => resumingSessions.has(String(sessionId)),
     ensureLiveAgent,
     prepareAgentForRequest,
     executeTool,

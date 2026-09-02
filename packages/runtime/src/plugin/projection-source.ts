@@ -76,11 +76,15 @@ import type {
   AdmissionState,
   CompatibilitySummaryDto,
   ContextPolicy,
+  DisposedMemberHistoryInput,
   EffectiveConfigDto,
+  EffectiveConfigDtoV2,
   EffectiveConfigEntry,
   LedgerCategoryCounts,
   LeaderInstanceRecordDto,
   MemberInstanceRecordDto,
+  MemberLifecycleState,
+  MemberModelStateDto,
   RemoteSafeRecord,
   TeamSessionId,
   TeamSessionRecordDto,
@@ -112,6 +116,14 @@ export const TEAM_DOMAIN_READ_PORT_ERROR_CODES = {
   LEDGER_CATEGORY_UNKNOWN: 'TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN',
   /** A durable compatibility status outside the frozen admission vocabulary. */
   ADMISSION_STATE_INVALID: 'TEAM_PROJECTION_SOURCE_ADMISSION_STATE_INVALID',
+  /**
+   * A DISPOSED member row without a durable child session (S7-R2 R2-6):
+   * structurally unreachable (invariant 23 — every MemberInstance binds
+   * exactly one durable child session, and the record validator requires
+   * the field), but the port fails closed on the drift instead of
+   * fabricating a bundle key.
+   */
+  DISPOSED_CHILD_SESSION_ABSENT: 'TEAM_PROJECTION_SOURCE_DISPOSED_CHILD_SESSION_ABSENT',
 } as const
 
 /** One of the closed read-port error codes. */
@@ -137,12 +149,12 @@ export type TeamDomainReadPortErrorCode =
 //   'activity-progress-recorded'    runtime/activity ledger                  → progress
 //   'activity-interval-opened'      runtime/activity ledger                  → progress
 //   'activity-interval-closed'      runtime/activity ledger                  → progress
+//   'policy-state-transitioned'     plugin/durable-mutation-store (R2-1)     → policy
 //
-// The `policy` and `compatibility` categories have no production writer in
-// v1 (the compatibility state is its own store and never passes through a
-// ledger fact; the policy state has no durable fact family yet). Their
-// counts stay 0 until a writing task lands — at which point its fact type
-// MUST be added to this table or the read fails closed with
+// The `compatibility` category has no production writer in v1 (the
+// compatibility state is its own store and never passes through a ledger
+// fact). Its count stays 0 until a writing task lands — at which point its
+// fact type MUST be added to this table or the read fails closed with
 // LEDGER_CATEGORY_UNKNOWN.
 
 const FACT_TEAM_WORK_ADMITTED = 'team-work-admitted'
@@ -156,6 +168,7 @@ const FACT_CONTROL_ALLOW_CONSUMED = 'control-allow-consumed'
 const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded'
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened'
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed'
+const FACT_POLICY_STATE_TRANSITIONED = 'policy-state-transitioned'
 
 /** The closed fact-type → frozen-category map (see the vocabulary above). */
 const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new Map([
@@ -170,6 +183,7 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_ACTIVITY_PROGRESS_RECORDED, 'progress'],
   [FACT_ACTIVITY_INTERVAL_OPENED, 'progress'],
   [FACT_ACTIVITY_INTERVAL_CLOSED, 'progress'],
+  [FACT_POLICY_STATE_TRANSITIONED, 'policy'],
 ])
 
 // --- structurally valid empty views (never fabricated values) ------------------
@@ -243,6 +257,38 @@ export interface TeamDomainReadPortDeps {
    * @returns the current PolicyState name (opaque to the contract).
    */
   readonly policyState?: (rootSessionId: string) => string
+  /**
+   * Resolve the per-member effective-config view (projection v2, S7-R2
+   * repair R2-2 — the UI §18.1 per-field provenance surface) from the
+   * production mutation + governance state.
+   * @param rootSessionId - the TeamSession (root session) id.
+   * @param member - the durable member row's identity, lifecycle, and
+   *   (optional) own workspace.
+   * @returns the resolved v2 four-lane view, or `null` when the view
+   *   cannot be derived (the row keeps the fail-closed empty view).
+   */
+  readonly effectiveConfig?: (
+    rootSessionId: string,
+    member: {
+      readonly instanceId: string
+      readonly lifecycle: MemberLifecycleState
+      readonly workspace?: string
+    },
+  ) => EffectiveConfigDto | EffectiveConfigDtoV2 | null
+  /**
+   * Resolve the per-member BQ-11 model state view (projection v2, S7-R2
+   * repair R2-3 — current model / next-boundary pending model / Team
+   * constraint+provenance / availability) from the production mutation +
+   * governance state.
+   * @param rootSessionId - the TeamSession (root session) id.
+   * @param instanceId - the member's stable instance id.
+   * @returns the resolved view, or `undefined` when the view cannot be
+   *   derived (the row carries NO `modelState` key — DURATIONAL-optional).
+   */
+  readonly modelState?: (
+    rootSessionId: string,
+    instanceId: string,
+  ) => MemberModelStateDto | undefined
 }
 
 /**
@@ -257,7 +303,8 @@ export interface TeamDomainReadPortDeps {
  * @param domain - the open TeamDomain to read (its repositories; the port
  *   never closes it — ownership stays with the caller).
  * @param deps - optional S6 catalog-backed resolvers (templates + policy
- *   state); absent when the port keeps its S5A fail-closed behavior.
+ *   state + the S7-R2 per-member effective-config view); absent when the
+ *   port keeps its S5A fail-closed behavior.
  * @returns the read port over that domain.
  */
 export function createTeamDomainReadPort(
@@ -282,6 +329,17 @@ export function createTeamDomainReadPort(
     // limitation a caller sees.
     const templates = durableTemplateRows(row)
 
+    // The four durable reads, hoisted in the frozen call order pinned by
+    // p8s6-projection C2.3d (teamSessions.get → compatibility.get →
+    // memberInstances.list → ledger.list — each exactly once, no other
+    // channel). S7-R2 (R2-6): the DISPOSED retained-history digest reuses
+    // the root ledger list read here — it adds no repository call.
+    const rootFacts = rootFactsOf(root)
+    const memberRows = memberRowsOf(repositories, root)
+    const rootEntries = rootLedgerEntriesOf(repositories, root)
+    const ledger = ledgerSummaryOf(root, rootEntries)
+    const disposedHistory = disposedHistoryOf(root, memberRows, rootEntries)
+
     return {
       // --- identity core: VERBATIM from the durable v1 record --------------
       // (TeamSessionId = RootSessionId, invariant 9 — the port parameter is
@@ -297,9 +355,13 @@ export function createTeamDomainReadPort(
       // missing key, never an own-undefined key).
 
       templates,
-      root: rootFactsOf(root),
-      members: memberRowsOf(repositories, root),
-      ledger: ledgerSummaryOf(repositories, root),
+      root: rootFacts,
+      members: memberRows,
+      ledger,
+      // S7-R2 (R2-6, D14): the additive retained-history bundle — ABSENT
+      // when the team has no DISPOSED member (the default projection stays
+      // byte-identical; the live view (BQ-04) semantics are unchanged).
+      ...(disposedHistory !== undefined ? { disposedHistory } : {}),
     }
   }
 
@@ -457,6 +519,38 @@ export function createTeamDomainReadPort(
 
   // --- member rows ---------------------------------------------------------------
 
+  function effectiveConfigFor(
+    root: string,
+    instanceId: string,
+    lifecycle: MemberLifecycleState,
+    workspace: string | undefined,
+  ): EffectiveConfigDto | EffectiveConfigDtoV2 {
+    const resolve = deps?.effectiveConfig
+    if (resolve === undefined) return EMPTY_EFFECTIVE_CONFIG
+    try {
+      return resolve(root, { instanceId, lifecycle, workspace }) ?? EMPTY_EFFECTIVE_CONFIG
+    } catch {
+      // Fail closed (module discipline): a resolver error (e.g. a
+      // malformed stored payload rejected by the frozen policy resolver)
+      // keeps the row on the v1 empty view — never a partial view.
+      return EMPTY_EFFECTIVE_CONFIG
+    }
+  }
+
+  function modelStateFor(root: string, instanceId: string): MemberModelStateDto | undefined {
+    const resolve = deps?.modelState
+    if (resolve === undefined) return undefined
+    try {
+      return resolve(root, instanceId)
+    } catch {
+      // Fail closed (module discipline): a resolver error (e.g. a malformed
+      // stored payload rejected by the frozen policy resolver) drops the
+      // `modelState` key (DURATIONAL-optional — absent, never undefined) —
+      // never a partial view; the row's other fields are untouched.
+      return undefined
+    }
+  }
+
   function memberRowsOf(
     repos: TeamDomainRepositories,
     root: string,
@@ -484,6 +578,7 @@ export function createTeamDomainReadPort(
           // members always own a child session DISTINCT from the root, so
           // this relational structural test discriminates leader from
           // member without consulting the instance id.
+          const modelState = modelStateFor(root, row.instanceId)
           rows.push({
             instanceId: row.instanceId,
             templateId: row.templateId,
@@ -491,13 +586,15 @@ export function createTeamDomainReadPort(
             lifecycle: MEMBER_LIFECYCLE_STATES.RUNNING,
             createdAt: row.createdAt,
             contextPolicy: defaultContextPolicy(),
-            effectiveConfig: EMPTY_EFFECTIVE_CONFIG,
+            effectiveConfig: effectiveConfigFor(root, row.instanceId, MEMBER_LIFECYCLE_STATES.RUNNING, row.workspace),
+            ...(modelState !== undefined ? { modelState } : {}),
             ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
             ...(row.workspace !== undefined ? { workspace: row.workspace } : {}),
           })
         } else {
           // MemberInstanceRecordDto (v1 member row): childSessionId and
           // lifecycle are durable and verbatim.
+          const modelState = modelStateFor(root, row.instanceId)
           rows.push({
             instanceId: row.instanceId,
             templateId: row.templateId,
@@ -506,7 +603,8 @@ export function createTeamDomainReadPort(
             lifecycle: row.lifecycle,
             createdAt: row.createdAt,
             contextPolicy: defaultContextPolicy(),
-            effectiveConfig: EMPTY_EFFECTIVE_CONFIG,
+            effectiveConfig: effectiveConfigFor(root, row.instanceId, row.lifecycle, row.workspace),
+            ...(modelState !== undefined ? { modelState } : {}),
             ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
             ...(row.workspace !== undefined ? { workspace: row.workspace } : {}),
           })
@@ -520,6 +618,7 @@ export function createTeamDomainReadPort(
         // default — `DurableMemberRow.lifecycle` is a required field, so a
         // structurally valid default (documented here) is the honest
         // derivation; the S6 overlay refines live state.
+        const modelState = modelStateFor(root, row.instanceId)
         rows.push({
           instanceId: row.instanceId,
           templateId: row.templateId,
@@ -527,7 +626,8 @@ export function createTeamDomainReadPort(
           lifecycle: MEMBER_LIFECYCLE_STATES.RUNNING,
           createdAt: row.createdAt,
           contextPolicy: defaultContextPolicy(),
-          effectiveConfig: EMPTY_EFFECTIVE_CONFIG,
+          effectiveConfig: effectiveConfigFor(root, row.instanceId, MEMBER_LIFECYCLE_STATES.RUNNING, row.workspace),
+          ...(modelState !== undefined ? { modelState } : {}),
           ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
           ...(row.workspace !== undefined ? { workspace: row.workspace } : {}),
         })
@@ -554,10 +654,11 @@ export function createTeamDomainReadPort(
 
   // --- ledger summary --------------------------------------------------------------
 
-  function ledgerSummaryOf(repos: TeamDomainRepositories, root: string): DurableLedgerSummary {
-    // One bounded read of the whole store; the summary is PER-ROOT — a
-    // shared-domain deployment may carry other teams' entries, so every
-    // number below is computed over the root-filtered list (the control
+  function rootLedgerEntriesOf(repos: TeamDomainRepositories, root: string): LedgerEntry[] {
+    // One bounded read of the whole store; the result is PER-ROOT — a
+    // shared-domain deployment may carry other teams' entries, so the
+    // root-filtered list is the only list the summary (and the S7-R2 R2-6
+    // DISPOSED retained-history digest) may compute over (the control
     // service's loadControlState root-filters the same way).
     const entries = repos.ledger.list()
     const rootEntries: LedgerEntry[] = []
@@ -566,7 +667,10 @@ export function createTeamDomainReadPort(
         rootEntries.push(entry)
       }
     }
+    return rootEntries
+  }
 
+  function ledgerSummaryOf(root: string, rootEntries: readonly LedgerEntry[]): DurableLedgerSummary {
     let latestSequence = 0
     for (const entry of rootEntries) {
       if (entry.sequence > latestSequence) {
@@ -633,6 +737,150 @@ export function createTeamDomainReadPort(
       byCategory,
       pendingControlCount,
     }
+  }
+
+  // --- S7-R2 (R2-6, D14): the DISPOSED retained-history digest ---------------
+  //
+  // The CLOSED addressing keys at which a durable fact payload names a
+  // member instance, verified against every production writer:
+  //
+  //   `instanceId`             member-lifecycle-changed (from/to transition
+  //                            facts), the three activity facts (the
+  //                            instanceId-first telemetry payloads),
+  //                            provision-member-instance
+  //   `targetInstanceId`       team-work-admitted, team-coordination-
+  //                            recorded (the action's target member),
+  //                            control-request / control-decision /
+  //                            control-allow-consumed
+  //   `recipientInstanceId`    team-coordination-recorded (send-message),
+  //                            team-message-delivered intent payloads
+  //   `deliveredToInstanceId`  team-message-delivered (the delivered fact)
+  //
+  // Team-level facts (policy-state-transitioned, compatibility probes,
+  // team-session facts) carry no instance key and are therefore never
+  // attributed to any member.
+
+  const FACT_ADDRESSING_KEYS: readonly string[] = [
+    'instanceId',
+    'targetInstanceId',
+    'recipientInstanceId',
+    'deliveredToInstanceId',
+  ]
+
+  /** True when the fact payload names `instanceId` at any closed addressing key. */
+  function factAddressesInstance(payload: RemoteSafeRecord, instanceId: string): boolean {
+    for (const key of FACT_ADDRESSING_KEYS) {
+      const value = payload[key]
+      if (typeof value === 'string' && value === instanceId) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * Derive the retained-history digest of EVERY DISPOSED member (S7-R2
+   * R2-6, D14) from the durable member rows + the root ledger list (the
+   * SAME list the summary computed over — no extra repository read).
+   *
+   * @returns `undefined` when the team has no DISPOSED member (the
+   *   DURATIONAL-optional `disposedHistory` key stays ABSENT — the default
+   *   projection is byte-identical to the pre-repair shape); otherwise one
+   *   bundle per DISPOSED row, in the durable member row order. Each bundle
+   *   digests the member's attributed ledger share (per-category counts
+   *   over the eight frozen categories + the first/last attributed
+   *   sequence — the client's navigation span into `team.getLedgerPage`)
+   *   and anchors the timeline (durable creation stamp + the LATEST
+   *   `to: 'DISPOSED'` lifecycle-fact `at` stamp as `disposedAt`, ABSENT
+   *   when not derivable). Fact payloads are NEVER duplicated into the
+   *   bundle (invariant 41 — the full facts stay on the TeamLedger).
+   */
+  function disposedHistoryOf(
+    root: string,
+    memberRows: readonly DurableMemberRow[],
+    rootEntries: readonly LedgerEntry[],
+  ): readonly DisposedMemberHistoryInput[] | undefined {
+    const disposed = memberRows.filter(
+      (row) => row.lifecycle === MEMBER_LIFECYCLE_STATES.DISPOSED,
+    )
+    if (disposed.length === 0) {
+      return undefined
+    }
+    const bundles: DisposedMemberHistoryInput[] = []
+    for (const row of disposed) {
+      // Invariant 23: every DISPOSED row is a MemberInstance and therefore
+      // carries its durable child session (the leader has no lifecycle and
+      // cannot be DISPOSED). Fail closed on the structurally unreachable
+      // drift — never fabricate a bundle key.
+      if (row.childSessionId === undefined) {
+        throw new Error(
+          `${TEAM_DOMAIN_READ_PORT_ERROR_CODES.DISPOSED_CHILD_SESSION_ABSENT}: the DISPOSED member row '${row.instanceId}' of TeamSession '${root}' carries no durable child session (invariant 23) — refusing to project its retained-history bundle`,
+        )
+      }
+      const byCategory = {
+        team: 0,
+        member: 0,
+        lifecycle: 0,
+        message: 0,
+        control: 0,
+        policy: 0,
+        compatibility: 0,
+        progress: 0,
+      } satisfies LedgerCategoryCounts
+      let factCount = 0
+      let firstSequence: number | undefined
+      let lastSequence: number | undefined
+      let disposedAt: string | undefined
+      for (const entry of rootEntries) {
+        if (!factAddressesInstance(entry.payload, row.instanceId)) {
+          continue
+        }
+        const category = FACT_TYPE_CATEGORY.get(entry.factType)
+        if (category === undefined) {
+          continue
+          // Unreachable: the summary pass above already fail-closed on
+          // every unmapped fact type of this root (the same list is read
+          // once). Kept as the defense-in-depth skip, never a
+          // misclassification.
+        }
+        byCategory[category] += 1
+        factCount += 1
+        if (firstSequence === undefined || entry.sequence < firstSequence) {
+          firstSequence = entry.sequence
+        }
+        if (lastSequence === undefined || entry.sequence > lastSequence) {
+          lastSequence = entry.sequence
+        }
+        if (entry.factType === FACT_MEMBER_LIFECYCLE_CHANGED) {
+          const to = stringField(entry.payload, 'to')
+          if (to === MEMBER_LIFECYCLE_STATES.DISPOSED) {
+            const at = stringField(entry.payload, 'at')
+            // ISO-8601 lexical order == time order: keep the LATEST stamp.
+            if (at !== undefined && (disposedAt === undefined || at > disposedAt)) {
+              disposedAt = at
+            }
+          }
+        }
+      }
+      bundles.push({
+        instanceId: row.instanceId,
+        label: row.label,
+        templateId: row.templateId,
+        childSessionId: row.childSessionId,
+        ...(row.groupId !== undefined ? { groupId: row.groupId } : {}),
+        createdAt: row.createdAt,
+        ...(disposedAt !== undefined ? { disposedAt } : {}),
+        factCount,
+        byCategory,
+        ...(factCount > 0
+          ? {
+              firstSequence: firstSequence as number,
+              lastSequence: lastSequence as number,
+            }
+          : {}),
+      })
+    }
+    return bundles
   }
 
   return { readProjectionSource }

@@ -22,13 +22,17 @@
  *   `liveActivity: null`);
  * - a v2 leader row carrying no `childSessionId` is resolved against the
  *   root session (the leader's session is the root) by the same rule;
- * - `resuming` is NOT derivable here (a transient mid-resume state the
- *   durable row + the residency flag do not encode); it is left to the
- *   live surface that owns the resume, so this overlay never invents it.
+ * - `resuming` IS derivable (P8-S7 R2-5 / F12): the live glue owns a
+ *   per-session resuming marker (agent-bindings.mjs `resumingSessions` —
+ *   written at the production resume points, `ensureLiveAgent` and the
+ *   boot resume phase; cleared when the resume settles, success or
+ *   failure). This overlay reads it through `live.isResuming`; it never
+ *   invents the state — a row is `resuming` only while the glue
+ *   reports an in-flight resume for that row's session.
  *
- * Pure read: no I/O beyond the repository list + the residency flag, no
- * `node:` builtins, no clock writes (the injected clock only stamps the
- * `lastActivityAt` of a resident row).
+ * Pure read: no I/O beyond the repository list + the residency flag + the
+ * resuming marker, no `node:` builtins, no clock writes (the injected
+ * clock only stamps the `lastActivityAt` of a resident row).
  * @module @dsh-agent-team/runtime/plugin/s6-live-overlay
  */
 
@@ -99,6 +103,13 @@ export function createLiveResidencyOverlay(
           residency: RESIDENCY_STATES.resident,
           lastActivityAt: now(),
         })
+      } else if (live.isResuming(childSessionId)) {
+        // F12 (P8-S7 R2-5): a cold agent with an in-flight resume at the
+        // live glue (the resuming marker — written at the production
+        // resume points, cleared when the resume settles). No clock
+        // stamp: the row is not live yet, so it carries no live facts
+        // beyond the residency state.
+        result.set(instanceId, { residency: RESIDENCY_STATES.resuming })
       } else {
         result.set(instanceId, { residency: RESIDENCY_STATES.cold })
       }

@@ -491,6 +491,10 @@ export interface TeamAgentBindings {
   readonly listLiveSessions: () => readonly string[]
   /** Whether one session has a live residency (health/drop observability). */
   readonly hasLive: (sessionId: string) => boolean
+  /** Whether one session has a resume in flight (the resuming marker,
+   *  P8-S7 R2-5: written at the production resume points, cleared when
+   *  the resume settles; ephemeral by design). */
+  readonly isResuming: (sessionId: string) => boolean
   /** Create-or-resume the live agent of one session (the route helper). */
   readonly ensureLiveAgent: (sessionId: string) => Promise<unknown>
   /** The P8-S4B request boundary (re-apply the durable truth). */

@@ -58,6 +58,11 @@ export interface ProjectionServiceOptions {
    * deterministic clock.
    */
   readonly clock?: ProjectionClock
+  /**
+   * The projection schema version to stamp (S7-R2): `2` for the additive
+   * repair fields (R2-2..R2-6), `1` (default) for the frozen v1 shape.
+   */
+  readonly schemaVersion?: 1 | 2
 }
 
 /** The host-side default clock (ambient `Date`, host runtime only). */
@@ -81,13 +86,14 @@ export function createProjectionService(
   options: ProjectionServiceOptions = {},
 ): ProjectionService {
   const clock = options.clock ?? DEFAULT_CLOCK
+  const schemaVersion: 1 | 2 = options.schemaVersion === 2 ? 2 : 1
   return {
     project(teamSessionId: TeamSessionId): TeamProjectionDto {
       const source = domain.readProjectionSource(teamSessionId)
       // A fresh live overlay snapshot per projection (the current live state);
       // `null` for a cold service. The fold treats `null` as "no live facts".
       const overlaySnapshot = overlay === null ? null : overlay.snapshot()
-      return projectTeam(source, overlaySnapshot, clock())
+      return projectTeam(source, overlaySnapshot, clock(), schemaVersion)
     },
   }
 }

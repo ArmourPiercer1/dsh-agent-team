@@ -41,7 +41,7 @@ import {
   TEAM_PROJECTION_FIELDS,
   TEAM_ROOT_PROJECTION_FIELDS,
   TEMPLATE_PROJECTION_FIELDS,
-  MEMBER_PROJECTION_FIELDS,
+  MEMBER_PROJECTION_FIELDS_V2,
   LEDGER_SUMMARY_FIELDS,
   parseRootSessionId,
 } from '../../contracts/src/index.js'
@@ -279,7 +279,10 @@ const c2p = c2world.projection as Record<string, any>
 
 it('C2.1a the production projection is the frozen whole TeamProjectionDto (closed top-level fields)', () => {
   expect(keysOf(c2p)).toEqual([...TEAM_PROJECTION_FIELDS].sort())
-  expect(c2p.schemaVersion).toBe(1)
+  // P8-S7-R2 premise update (R2-2): the production projection service is
+  // now stamped v2 (the additive effective-config lane; the top-level field
+  // set is unchanged — every v2 additive key is DURATIONAL-optional).
+  expect(c2p.schemaVersion).toBe(2)
   expect(c2p.teamSessionId).toBe(ROOT_SID)
   // The generation is the DURE row's generation, verbatim: the production
   // boot establishes the initial compatibility state (wiring decision (x)),
@@ -348,7 +351,10 @@ it('C2.1e the three member rows carry invariant 14 + inherited workspace + cold 
     (c2p.members as Array<Record<string, any>>).map((row) => [row.instanceId, row]),
   )
   for (const row of c2p.members as Array<Record<string, any>>) {
-    within(row, MEMBER_PROJECTION_FIELDS, 'member')
+    // Premise update (S7-R2 R2-3): the production projection is v2-stamped
+    // and every member row carries the additive DURATIONAL-optional
+    // `modelState` key — the closed-field check moves to the v2 field set.
+    within(row, MEMBER_PROJECTION_FIELDS_V2, 'member')
     expect(row.lifecycle).toBe(MEMBER_LIFECYCLE_STATES.RUNNING)
     expect(row.workspace).toBe('C:/agent-team/work/p8s6proj') // inherited default
     expect(row.liveActivity).toEqual({ residency: RESIDENCY_STATES.cold })
@@ -401,12 +407,16 @@ it('C2.1g the A30 overlay seam is installed and reports all three members cold i
 
 interface LiveFlag {
   hasLive: (sessionId: string) => boolean
+  /** Premise update (S7-R2 R2-5): the overlay also reads the resuming
+   *  marker (`live.isResuming`); the fakes below default it to false (no
+   *  resume in flight in the C2 worlds). */
+  isResuming?: (sessionId: string) => boolean
 }
 
 function makeOverlay(live: LiveFlag): ReadonlyMap<string, Record<string, any>> {
   const port = createLiveResidencyOverlay({
     repositories: c2world.repos,
-    live: live as never,
+    live: { isResuming: () => false, ...live } as never,
     rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })
@@ -447,7 +457,10 @@ const c2overlay = await (async () => {
   }
   const port = createLiveResidencyOverlay({
     repositories: fakeRepos as never,
-    live: { hasLive: (sid: string) => sid === ROOT_SID || sid === 'session-child-p8s6v2' } as never,
+    live: {
+      hasLive: (sid: string) => sid === ROOT_SID || sid === 'session-child-p8s6v2',
+      isResuming: () => false, // premise update (S7-R2 R2-5)
+    } as never,
     rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })

@@ -13,14 +13,15 @@
  * @module @dsh-agent-team/contracts/projection
  */
 
-// --- projection schema version (own track, frozen at 1 by P8-T1) -------------------
+// --- projection schema version (own track; v1 frozen by P8-T1, v2 additive by S7-R2) ----
 export {
   PROJECTION_SCHEMA_VERSION,
+  PROJECTION_SCHEMA_VERSION_V2,
   SUPPORTED_PROJECTION_SCHEMA_VERSIONS,
   isSupportedProjectionSchemaVersion,
   assertProjectionSchemaVersion,
 } from './schema.js'
-export type { ProjectionSchemaVersion } from './schema.js'
+export type { ProjectionSchemaVersion, ProjectionSchemaVersionV2 } from './schema.js'
 
 // --- closed state vocabularies -------------------------------------------------------
 export {
@@ -64,12 +65,16 @@ export {
   parseEffectiveConfigEntry,
   EFFECTIVE_CONFIG_FIELDS,
   parseEffectiveConfigDto,
+  EFFECTIVE_CONFIG_ENTRY_FIELDS_V2,
+  EFFECTIVE_CONFIG_DENIED_BY_MAX_LENGTH,
 } from './effective-config.js'
 export type {
   EffectiveConfigSource,
   EffectiveConfigState,
   EffectiveConfigEntry,
   EffectiveConfigDto,
+  EffectiveConfigEntryV2,
+  EffectiveConfigDtoV2,
 } from './effective-config.js'
 
 // --- compatibility / admission summary (UI §18.1) -------------------------------------
@@ -118,10 +123,44 @@ export type { TeamRootProjectionDto, TeamRootProjectionInput } from './root.js'
 // --- member rows (unified leader/member, invariant 14) -----------------------------------
 export {
   MEMBER_PROJECTION_FIELDS,
+  MEMBER_PROJECTION_FIELDS_V2,
   parseMemberProjection,
   createMemberProjection,
 } from './member.js'
 export type { MemberProjectionDto, MemberProjectionInput } from './member.js'
+
+// --- member model state view (BQ-11, projection v2, S7-R2 R2-3) --------------------------
+export {
+  MODEL_STATE_FIELDS,
+  MODEL_STATE_OPTIONAL_FIELDS,
+  MODEL_STATE_ENTRY_FIELDS,
+  MODEL_STATE_ENTRY_OPTIONAL_FIELDS,
+  MODEL_STATE_PROVENANCE_FIELDS,
+  MODEL_STATE_VALUE_MAX_LENGTH,
+  MODEL_STATE_DENIED_BY_MAX_LENGTH,
+  MODEL_STATE_EXPLANATION_MAX_LENGTH,
+  MODEL_STATE_LAYER_VALUES,
+  MODEL_STATE_ORIGIN_VALUES,
+  MODEL_STATE_AVAILABILITY_VALUES,
+  parseModelStateEntry,
+  parseModelStateProvenance,
+  parseMemberModelState,
+} from './model-state.js'
+export type {
+  ModelStateEntryDto,
+  ModelStateProvenanceDto,
+  MemberModelStateDto,
+  ModelStateAvailability,
+} from './model-state.js'
+
+// --- the DISPOSED retained-history bundle (S7-R2 R2-6, D14) -----------------------
+export {
+  DISPOSED_MEMBER_HISTORY_FIELDS,
+  DISPOSED_MEMBER_HISTORY_OPTIONAL_FIELDS,
+  parseDisposedMemberHistory,
+  createDisposedMemberHistory,
+} from './disposed-history.js'
+export type { DisposedMemberHistoryDto, DisposedMemberHistoryInput } from './disposed-history.js'
 
 // --- ledger summary (UI §27) ---------------------------------------------------------------
 export {
@@ -134,6 +173,7 @@ export type { LedgerSummaryDto, LedgerCategoryCounts, LedgerSummaryInput } from 
 // --- the whole projection + stale-overwrite guard (DevPlan §21) ----------------------------
 export {
   TEAM_PROJECTION_FIELDS,
+  TEAM_PROJECTION_FIELDS_V2,
   parseTeamProjection,
   createTeamProjection,
   serializeTeamProjection,
