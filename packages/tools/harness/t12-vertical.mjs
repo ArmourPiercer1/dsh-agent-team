@@ -1253,44 +1253,40 @@ async function main() {
   if (mini.port !== MINI_PORT) throw new Error(`mini MCP server landed on ${mini.port}, expected ${MINI_PORT}`)
   log(`mini MCP server up on 127.0.0.1:${MINI_PORT}`)
 
+  // Phase-level failure continuity (T12-V9): a phase FATAL is recorded
+  // (summary.phaseFailures + t12v-phase-failures.json) and the chain
+  // CONTINUES to the remaining phases, so each iteration yields a full
+  // pass/fail matrix instead of a partial one. Exit code 1 when any phase
+  // fatally failed. Pre-flight failures (ports, homes, mock, bridges) still
+  // abort hard — those are environmental, not scenario-level.
   let exitCode = 0
-  try {
-    if (hasPhase('smoke')) {
-      setPhase('smoke')
-      await runSmoke()
+  const phaseFailures = []
+  const runPhase = async (name, fn) => {
+    if (!hasPhase(name)) return
+    setPhase(name)
+    try {
+      await fn()
+    } catch (error) {
+      exitCode = 1
+      const detail = String(error?.stack ?? error)
+      phaseFailures.push({ phase: name, at: new Date().toISOString(), error: detail })
+      log(`PHASE ${name} FATAL (continuing to remaining phases): ${detail}`)
+      try {
+        writeFileSync(join(EVIDENCE_DIR, 't12v-phase-failures.json'),
+          JSON.stringify({ nonce: NONCE, phaseFailures }, null, 2))
+      } catch { /* ignore */ }
     }
-    if (hasPhase('build')) {
-      setPhase('build')
+  }
+  try {
+    await runPhase('smoke', runSmoke)
+    await runPhase('build', async () => {
       await buildProductionRuntime(log)
       log('build: production dist built + import-probed OK')
-    }
-
-    if (hasPhase('fresh1')) {
-      setPhase('fresh1')
-      await runFresh1()
-    }
-
-    if (hasPhase('fresh2')) {
-      setPhase('fresh2')
-      await runFresh2()
-    }
-
-    if (hasPhase('restart1')) {
-      setPhase('restart1')
-      await runRestart1()
-    }
-
-    if (hasPhase('handoff')) {
-      setPhase('handoff')
-      await runHandoff()
-    }
-  } catch (error) {
-    exitCode = 1
-    log(`FATAL: ${error?.stack ?? error}`)
-    try {
-      writeFileSync(join(EVIDENCE_DIR, 't12v-blocker.md'),
-        `# T12 vertical runner blocker\n\nat: ${new Date().toISOString()}\nphases requested: ${PHASES.join(',')}\nsee t12v-run.log for the full trace\n\n## error\n\n\`\`\`\n${String(error?.stack ?? error)}\n\`\`\`\n`)
-    } catch { /* ignore */ }
+    })
+    await runPhase('fresh1', runFresh1)
+    await runPhase('fresh2', runFresh2)
+    await runPhase('restart1', runRestart1)
+    await runPhase('handoff', runHandoff)
   } finally {
     await sweepLiveWorlds()
   }
@@ -1360,6 +1356,7 @@ async function main() {
     ports,
     homes: { a: HOME_A, b: HOME_B, c: HOME_C },
     scenarios,
+    phaseFailures,
     testUsePristine: {
       pre: { head: gitPre.head, statusEmpty: gitPre.statusEmpty, diffEmpty: gitPre.diffEmpty },
       post: { head: gitPost.head, statusEmpty: gitPost.statusEmpty, diffEmpty: gitPost.diffEmpty },
