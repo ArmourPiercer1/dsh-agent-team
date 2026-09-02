@@ -48,6 +48,8 @@ export interface AgentListenerEntry {
 /** The agent-scoped ctx double (the service surface the live glue consumes). */
 export interface AgentCtxDouble {
   readonly listeners: AgentListenerEntry[]
+  /** Every agentCtx.plugin() fiber recorded (the mini-MCP mount point). */
+  readonly plugins: unknown[]
   on(event: string, listener: AgentListenerEntry['listener']): () => void
   plugin(pluginSpec: unknown, options?: unknown): unknown
   readonly tools: {

@@ -28,7 +28,8 @@
  *                        admission authority is NOT part of it — the harness
  *                        row imports it from the built runtime dist itself)
  *   config             - the row config (run.mjs teamRowConfig): rootSessionId,
- *                        mcpServer {name, port}, staticModel, deniedSelection,
+ *                        mcpServer {name, port} | null (null = no MCP server
+ *                        configured — T12-H1), staticModel, deniedSelection,
  *                        externalPolicyFacts {hard, capabilityExists} (T12-B3:
  *                        the injected external hard facts; normalized —
  *                        never re-interpreted — into the resolvers)
@@ -131,7 +132,8 @@ export function createAgentBindings(deps) {
   const observations = []
   /**
    * @type {Map<string, object>} per-session durable consumption state, keyed
-   * by session id: `{ instanceId, ref, modelView, mcpView, mcpFiber,
+   * by session id: `{ instanceId, ref, modelView, mcpView (null = no MCP
+   * facet, T12-H1), mcpFiber,
    * mcpActivationError, appliedRecordIds: Set<string> }`. The `ref` is the
    * row-owned ModelSelectionRef installed on the public model-selection seam;
    * the views are the last APPLIED consumption views; `appliedRecordIds` is
@@ -241,7 +243,10 @@ export function createAgentBindings(deps) {
    *   carries the same value step 15 commits. The lookup stays
    *   authoritative for every other caller (boot, request boundary,
    *   projection).
-   * @returns {{instanceId: string, modelView: object, mcpView: object}}
+   * @returns {{instanceId: string, modelView: object, mcpView: object | null}}
+   *   `mcpView` is `null` when no Team MCP server is configured
+   *   (config.mcpServer === null — T12-H1): no MCP facet exists, so
+   *   consumers must treat null as "no MCP" (never dereference).
    */
   function resolveConsumptionViews(sessionId, instanceIdHint) {
     const existing = consumptionState.get(sessionId)
@@ -271,13 +276,25 @@ export function createAgentBindings(deps) {
       external,
       baseline: { ...config.staticModel },
     }
-    const mcpArgs = { rootSessionId: rootSid, instanceId, overrides, external, serverName: config.mcpServer.name }
     if (applied.length > 0) {
       modelArgs.appliedRecordIds = applied
-      mcpArgs.appliedRecordIds = applied
     }
     const { view: modelView } = consumption.model.resolveDurableModelSelection(modelArgs)
-    const { view: mcpView } = consumption.capability.resolveDurableMcpFacet(mcpArgs)
+    // T12-H1: mcpServer === null means NO Team MCP server is configured —
+    // no dereference of the server config, no facet resolution, no
+    // reconcile/create attempt downstream. The consumption view stays
+    // valid with mcpView: null (no MCP facet).
+    const mcpView =
+      config.mcpServer === null
+        ? null
+        : consumption.capability.resolveDurableMcpFacet({
+            rootSessionId: rootSid,
+            instanceId,
+            overrides,
+            external,
+            serverName: config.mcpServer.name,
+            ...(applied.length > 0 ? { appliedRecordIds: applied } : {}),
+          }).view
     return { instanceId, modelView, mcpView }
   }
 
@@ -287,10 +304,11 @@ export function createAgentBindings(deps) {
    * cells this boundary resolved").
    * @param {object} state
    * @param {object} modelView
-   * @param {object} mcpView
+   * @param {object | null} mcpView (null = no MCP facet, T12-H1)
    */
   function applyBoundaryRecords(state, modelView, mcpView) {
-    for (const pending of [...modelView.pendingNextBoundary, ...mcpView.pendingNextBoundary]) {
+    const mcpPending = mcpView === null ? [] : mcpView.pendingNextBoundary
+    for (const pending of [...modelView.pendingNextBoundary, ...mcpPending]) {
       state.appliedRecordIds.add(pending.recordId)
     }
   }
@@ -306,6 +324,9 @@ export function createAgentBindings(deps) {
    * @param {boolean} allowed - the facet's mount decision.
    */
   async function reconcileMcp(agentCtx, state, allowed) {
+    // T12-H1: no configured server — nothing to mount or dispose (the
+    // port-null throw below stays for a CONFIGURED server without port).
+    if (config.mcpServer === null) return
     if (allowed && state.mcpFiber === undefined) {
       if (config.mcpServer.port === null) {
         throw new Error(`p6t6: the durable policy allows mcp server '${config.mcpServer.name}' but no mini-MCP port is configured (config.mcpServer.port)`)
@@ -381,7 +402,7 @@ export function createAgentBindings(deps) {
       // The mcp facet's fail-closed baseline: no durable allow -> no mount.
       // At a fresh create no overrides exist yet (unspecified), so this is
       // the resume/restart path that re-applies the durable truth on boot.
-      if (mcpView.allowed) {
+      if (mcpView !== null && mcpView.allowed) {
         await reconcileMcp(agentCtx, state, mcpView.allowed)
       }
       applyBoundaryRecords(state, modelView, mcpView)
@@ -432,7 +453,7 @@ export function createAgentBindings(deps) {
       state.ref.current = selection
     }
     const handle = liveAgents.get(sessionId)
-    if (handle !== undefined) {
+    if (handle !== undefined && mcpView !== null) {
       await reconcileMcp(handle.agent.ctx, state, mcpView.allowed)
     }
     applyBoundaryRecords(state, modelView, mcpView)
