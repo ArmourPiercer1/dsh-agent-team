@@ -113,6 +113,14 @@ interface GlueModule {
     readonly config: TeamPluginConfig
     readonly teamToolsRef: { current: unknown }
     readonly now: () => string
+    /**
+     * T12-M3 (optional additive): the DSH `subagents` public service,
+     * structurally a superset of the glue's SubagentsDrainPort
+     * (drainContinuableDescendants + listDescendants). Absent → the glue's
+     * recursive drain fails closed with the typed
+     * `recursive-drain-unavailable` (documented in the glue).
+     */
+    readonly subagents?: unknown
   }): TeamAgentBindings
 }
 
@@ -455,6 +463,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     config: rowConfig,
     teamToolsRef,
     now: () => new Date().toISOString(),
+    subagents: ctx.get('subagents'),
   })
 
   // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
