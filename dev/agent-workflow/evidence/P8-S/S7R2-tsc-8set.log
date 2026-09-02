@@ -1,0 +1,9 @@
+﻿=== tsc -p packages\client\tsconfig.json ===
+=== tsc -p packages\contracts\tsconfig.json ===
+=== tsc -p packages\domain\tsconfig.json ===
+=== tsc -p packages\remote\tsconfig.json ===
+=== tsc -p packages\runtime\tsconfig.json ===
+=== tsc -p packages\storage\tsconfig.json ===
+=== tsc -p packages\testkit\tsconfig.json ===
+=== tsc -p packages\tools\tsconfig.json ===
+ALL 8 PACKAGES EXIT 0
