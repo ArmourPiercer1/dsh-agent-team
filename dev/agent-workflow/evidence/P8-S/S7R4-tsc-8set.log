@@ -1,0 +1,19 @@
+﻿=== S7R4 tsc 8-set (worktree .worktrees/P8S7-R4 @ task/P8-S7-R4-handoff-fork, base f04f583) ===
+
+=== tsc -p packages\client\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\contracts\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\domain\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\remote\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\runtime\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\storage\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\testkit\tsconfig.json (exit 0) ===
+
+=== tsc -p packages\tools\tsconfig.json (exit 0) ===
+
+FAILS: 0 / 8 (legacy has no tsconfig.json; the 8-set is exactly the 8 listed)
