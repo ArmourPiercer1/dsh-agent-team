@@ -33,7 +33,7 @@ import { createLiveWorld, createSubagentsDouble } from './t12a-live-bridge.mjs'
 const ROOT = 'session-t12a-m3-root'
 const INSTANCE = 'inst-t12am3member'
 const CHILD = 'session-team-child-m3seed'
-const memberRow = { childSessionId: CHILD, instanceId: INSTANCE }
+const memberRow = { childSessionId: CHILD, instanceId: INSTANCE, templateId: 'tpl-t12a' }
 const seed = [{ instanceId: INSTANCE, templateId: 'tpl-t12a', label: 'member M3', childSessionId: CHILD }]
 
 async function buildWorld(options: Record<string, unknown>) {

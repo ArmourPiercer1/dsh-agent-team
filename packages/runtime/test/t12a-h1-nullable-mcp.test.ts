@@ -28,7 +28,7 @@ const ROOT = 'session-t12a-h1-root'
 const INSTANCE = 'inst-t12ah1member'
 const CHILD = 'session-team-child-h1seed'
 
-const memberRow = { childSessionId: CHILD, instanceId: INSTANCE }
+const memberRow = { childSessionId: CHILD, instanceId: INSTANCE, templateId: 'tpl-t12a' }
 
 // Acceptance world: no MCP server configured at all.
 const world = await createLiveWorld({

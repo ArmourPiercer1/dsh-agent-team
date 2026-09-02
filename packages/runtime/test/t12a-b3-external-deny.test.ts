@@ -53,7 +53,7 @@ function humanAllow(recordId: string, items: string[]): GovernanceOverrideRecord
 }
 
 const rAllow = humanAllow('t12a-b3-allow', [ALLOWED_ITEM])
-const memberRow = { childSessionId: CHILD, instanceId: INSTANCE }
+const memberRow = { childSessionId: CHILD, instanceId: INSTANCE, templateId: 'tpl-t12a' }
 
 async function buildWorld(externalPolicyFacts: Record<string, unknown>) {
   const world = await createLiveWorld({

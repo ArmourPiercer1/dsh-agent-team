@@ -98,19 +98,61 @@ export async function loadGlueModule() {
 /**
  * One agent-scoped ctx double: records every `on(event, listener)`
  * registration (with a working disposer), every plugin() fiber (a thenable
- * that resolves immediately, with a recording .dispose()), and the tools
- * register/execute surface the glue uses.
+ * that resolves immediately, with a recording .dispose()), the tools
+ * register/execute surface the glue uses, and — T12-M2 — the DSH
+ * systemPrompt builtin double (agent-scoped sections that shadow
+ * same-named globals; duplicate scoped names in one agent scope throw;
+ * assemble() composes the prompt layer the assertions read).
+ *
+ * @param {Array<{name: string, order: number, text: string}>} [globalSections]
+ *   the world's global prompt layer (one shared array per world).
  */
-function makeAgentCtx() {
+function makeAgentCtx(globalSections) {
   const listeners = []
   const registeredTools = []
   const toolExecutions = []
   const plugins = []
+  const scopedSections = []
+  const systemPrompt = {
+    globals: globalSections,
+    section(spec) {
+      if (spec === null || typeof spec !== 'object' || typeof spec.name !== 'string' || spec.name === '') {
+        throw new TypeError('systemPrompt.section: spec.name (non-empty string) is required')
+      }
+      if (typeof spec.order !== 'number' || !Number.isFinite(spec.order)) {
+        throw new TypeError('systemPrompt.section: spec.order must be a finite number')
+      }
+      const existing = scopedSections.find((entry) => !entry.disposed && entry.name === spec.name)
+      if (existing !== undefined) {
+        throw new Error(`systemPrompt.section: duplicate scoped section name '${spec.name}' in one agent scope`)
+      }
+      const entry = {
+        name: spec.name,
+        order: spec.order,
+        text: typeof spec.text === 'function' ? spec.text({}) : String(spec.text ?? ''),
+        scope: 'scoped',
+        disposed: false,
+      }
+      scopedSections.push(entry)
+      return () => {
+        entry.disposed = true
+      }
+    },
+    assemble() {
+      const activeScoped = scopedSections.filter((entry) => !entry.disposed)
+      return globalSections
+        .filter((section) => !activeScoped.some((entry) => entry.name === section.name))
+        .map((section) => ({ ...section, scope: 'global' }))
+        .concat(activeScoped.map((entry) => ({ ...entry, scope: 'scoped' })))
+        .sort((a, b) => a.order - b.order || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    },
+  }
   return {
     listeners,
     registeredTools,
     toolExecutions,
     plugins,
+    systemPrompt,
     on(event, listener) {
       const entry = { event, listener, active: true }
       listeners.push(entry)
@@ -162,6 +204,9 @@ function makeAgentCtx() {
  * @param {object} [options]
  * @param {(agent: object) => Promise<void>} [options.whenIdleBehavior]
  *   the per-agent whenIdle() behavior (default: resolves immediately).
+ * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
+ *   the world's global prompt layer for every agent ctx (T12-M2; default:
+ *   the DSH service pair harness:identity + a global deployment:persona).
  */
 export function createAgentsDouble(options = {}) {
   const creates = []
@@ -171,9 +216,16 @@ export function createAgentsDouble(options = {}) {
   const cancels = []
   const handles = new Map()
   const whenIdleBehavior = options.whenIdleBehavior ?? (() => Promise.resolve())
+  // T12-M2: one shared global prompt layer per world (the DSH service
+  // registers harness:identity + a global deployment:persona section at
+  // construction; the persona glue's scoped installs shadow that global).
+  const globalSections = options.systemPromptGlobals ?? [
+    { name: 'harness:identity', order: -1000, text: 'You are an AI agent powered by DeepSeek Harness.' },
+    { name: 'deployment:persona', order: 0, text: '' },
+  ]
 
   async function makeHandle(sessionId, { setup }) {
-    const ctx = makeAgentCtx()
+    const ctx = makeAgentCtx(globalSections)
     const agent = {
       session: { id: sessionId },
       ctx,
@@ -207,6 +259,7 @@ export function createAgentsDouble(options = {}) {
     followups,
     cancels,
     handles,
+    globalSections,
     async create(req) {
       const sessionId = String(req.sessionId)
       creates.push({ sessionId, meta: req.meta, setupProvided: req.setup !== undefined })
@@ -233,15 +286,19 @@ export function createSessionPersistenceDouble() {
 }
 
 /**
- * The opened-TeamDomain double: the two repository lists the glue reads
- * plus the REAL durable-consumption resolvers (the glue's consumption
- * boundary stays the production code path).
+ * The opened-TeamDomain double: the repository lists the glue reads
+ * (memberInstances + overrides + teamSessions, T12-M2) plus the REAL
+ * durable-consumption resolvers (the glue's consumption boundary stays the
+ * production code path).
  *
  * @param {object} [params]
  * @param {object[]} [params.members] memberInstance rows (childSessionId/instanceId)
  * @param {object[]} [params.overrides] governance override records
+ * @param {object} [params.teamSession] the durable TeamSession row (T12-M2:
+ *   always exposed as repositories.teamSessions — the persona step record
+ *   for the root)
  */
-export async function createDomainDouble({ members = [], overrides = [] } = {}) {
+export async function createDomainDouble({ members = [], overrides = [], teamSession = undefined } = {}) {
   const [modelModule, capabilityModule] = await Promise.all([
     import('../agent-setup/model/index.js'),
     import('../agent-setup/capability/index.js'),
@@ -250,6 +307,7 @@ export async function createDomainDouble({ members = [], overrides = [] } = {}) 
     repositories: {
       memberInstances: { list: () => members },
       overrides: { list: () => overrides },
+      teamSessions: { get: () => teamSession, list: () => (teamSession === undefined ? [] : [teamSession]) },
     },
     consumption: {
       model: { resolveDurableModelSelection: modelModule.resolveDurableModelSelection },
@@ -315,6 +373,10 @@ export async function observeAssembly(agentCtx) {
  * @param {string} [options.rootSessionId]
  * @param {object[]} [options.members] domain memberInstance rows
  * @param {object[]} [options.overrides] domain governance override records
+ * @param {object} [options.teamSession] the durable TeamSession row (T12-M2)
+ * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
+ *   the world's global prompt layer (T12-M2; default: harness:identity +
+ *   a global deployment:persona with empty text)
  * @param {object} [options.configOverrides] extra TeamPluginConfig fields
  *   (bootPhase, seedMembers, mcpServer, externalPolicyFacts, ...)
  * @param {object} [options.teamTools] the tool stack (teamToolsRef.current)
@@ -326,16 +388,45 @@ export async function observeAssembly(agentCtx) {
 export async function createLiveWorld(options = {}) {
   const glue = await loadGlueModule()
   const rootSessionId = options.rootSessionId ?? 'session-t12a-root'
-  const agents = createAgentsDouble(options.agents ?? {})
+  const agents = createAgentsDouble({
+    ...(options.agents ?? {}),
+    systemPromptGlobals: options.systemPromptGlobals,
+  })
   const sessionPersistence = createSessionPersistenceDouble()
   const domain = await createDomainDouble({
     members: options.members ?? [],
     overrides: options.overrides ?? [],
+    teamSession:
+      options.teamSession ??
+      { rootSessionId, sessionId: rootSessionId, blueprintId: 'team.t12a', generation: 1 },
   })
   const config = {
     bootPhase: 'create',
     rootSessionId,
-    blueprintSource: 'team: {}\n',
+    // T12-M2: a VALID closed-v1 blueprint document (the persona glue parses
+    // it lazily — the previous malformed 'team: {}' default broke the
+    // parse). The default carries distinct leader/member personas so the
+    // persona assertions have stable text to expect.
+    blueprintSource: [
+      '---',
+      'schemaVersion: 1',
+      'blueprintId: team.t12a',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "You are the leader of the t12a test team."',
+      'members:',
+      '  - templateId: tpl-t12a',
+      '    persona: "You are member tpl-t12a of the t12a test team."',
+      '  - templateId: t12a-worker',
+      '    persona: "You are member t12a-worker of the t12a test team."',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n'),
     generation: 1,
     defaultWorkspace: join(WORKTREE_ROOT, 'default-workspace'),
     seedMembers: [],

@@ -45,6 +45,21 @@ export interface AgentListenerEntry {
   active: boolean
 }
 
+/** One global prompt-layer section (the DSH service registrations). */
+export interface GlobalPromptSection {
+  readonly name: string
+  readonly order: number
+  readonly text: string
+}
+
+/** One assembled prompt section (scoped entries shadow same-named globals). */
+export interface AssembledPromptSection {
+  readonly name: string
+  readonly order: number
+  readonly text: string
+  readonly scope: 'global' | 'scoped'
+}
+
 /** The agent-scoped ctx double (the service surface the live glue consumes). */
 export interface AgentCtxDouble {
   readonly listeners: AgentListenerEntry[]
@@ -55,6 +70,15 @@ export interface AgentCtxDouble {
   readonly tools: {
     register(def: unknown): () => void
     execute(name: string, args: unknown, callId?: string): Promise<unknown>
+  }
+  /** The DSH systemPrompt builtin double (T12-M2: the persona layer). */
+  readonly systemPrompt: {
+    /** The world's shared global prompt layer (asserted untouched). */
+    readonly globals: GlobalPromptSection[]
+    /** Register an agent-scoped section (duplicate scoped name throws). */
+    section(spec: { name: string; order: number; text: string | (() => string) }): () => void
+    /** The composed prompt layer (globals + active scoped, ordered). */
+    assemble(): AssembledPromptSection[]
   }
 }
 
@@ -78,6 +102,8 @@ export interface AgentsDouble {
   readonly followups: RecordedFollowup[]
   readonly cancels: RecordedCancel[]
   readonly handles: Map<string, LiveAgentHandle>
+  /** The world's shared global prompt layer (T12-M2). */
+  readonly globalSections: GlobalPromptSection[]
   create(req: { sessionId: unknown; meta?: Record<string, unknown>; setup?: (ctx: object) => unknown }): Promise<object>
   resume(req: { resumeSessionId: unknown; setup?: (ctx: object) => unknown }): Promise<object>
 }
@@ -86,6 +112,8 @@ export interface AgentsDouble {
 export interface AgentsDoubleOptions {
   /** The per-agent whenIdle() behavior (default: resolves immediately). */
   readonly whenIdleBehavior?: (agent: object) => Promise<void>
+  /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
+  readonly systemPromptGlobals?: GlobalPromptSection[]
 }
 
 /** The sessionPersistence service double (records materializations). */
@@ -99,6 +127,7 @@ export interface DomainDouble {
   readonly repositories: {
     readonly memberInstances: { list(rootSessionId: string): object[] }
     readonly overrides: { list(rootSessionId: string): object[] }
+    readonly teamSessions: { get(rootSessionId: string): object | undefined; list(rootSessionId: string): object[] }
   }
   readonly consumption: {
     readonly model: {
@@ -120,6 +149,8 @@ export interface DomainDouble {
 export interface DomainDoubleParams {
   readonly members?: object[]
   readonly overrides?: object[]
+  /** The durable TeamSession row (T12-M2: exposed as repositories.teamSessions). */
+  readonly teamSession?: object
 }
 
 /** The subagents service double options (see the `.mjs` createSubagentsDouble). */
@@ -162,6 +193,11 @@ export interface LiveWorld {
       readonly mcpView: { readonly allowed: boolean; readonly [k: string]: unknown } | null
     }
     readonly observations: readonly string[]
+    /** The REAL scoped-prompt persona surface (T12-M2). */
+    readonly personaSurface: {
+      installScopedPersona(sessionId: string, identity: unknown): void
+      restoreScopedPersona(sessionId: string): void
+    }
     boot(): Promise<void>
     close(): Promise<void>
     [k: string]: unknown
@@ -186,6 +222,10 @@ export interface LiveWorldOptions {
   readonly rootSessionId?: string
   readonly members?: object[]
   readonly overrides?: object[]
+  /** The durable TeamSession row (T12-M2). */
+  readonly teamSession?: object
+  /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
+  readonly systemPromptGlobals?: GlobalPromptSection[]
   readonly configOverrides?: Record<string, unknown>
   readonly teamTools?: { readonly tools: readonly unknown[] }
   readonly agents?: AgentsDoubleOptions

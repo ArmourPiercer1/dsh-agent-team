@@ -28,11 +28,20 @@
  *                        admission authority is NOT part of it — the harness
  *                        row imports it from the built runtime dist itself)
  *   config             - the row config (run.mjs teamRowConfig): rootSessionId,
+ *                        blueprintSource (T12-M2: the Team Blueprint document —
+ *                        the closed-v1 frontmatter source whose leader/member
+ *                        persona fields the persona resolver composes onto the
+ *                        real DSH Agent prompt; the glue parses it lazily),
  *                        mcpServer {name, port} | null (null = no MCP server
  *                        configured — T12-H1), staticModel, deniedSelection,
  *                        externalPolicyFacts {hard, capabilityExists} (T12-B3:
  *                        the injected external hard facts; normalized —
- *                        never re-interpreted — into the resolvers)
+ *                        never re-interpreted — into the resolvers),
+ *                        presetSubstrate (T12-M2, OPTIONAL: {presetId,
+ *                        personaKind} — the AgentPreset substrate fact the
+ *                        persona resolver evaluates; absent = the S5A A11
+ *                        decision {presetId: 'dsh-agent-team', personaKind:
+ *                        'standard'})
  *   teamToolsRef       - the plain { current: <teamTools | undefined> } object
  *                        the production host fills AFTER root assembly; the
  *                        setup callback reads teamToolsRef.current when it
@@ -90,12 +99,23 @@
  *                                     AFTER the tool stack is in teamToolsRef
  *                                     — construction itself never creates or
  *                                     resumes any agent)
- *   agentSetup(sessionId)        (the AgentSetup callback; root bootstrap)
+ *   agentSetup(sessionId, [hints]) (the AgentSetup callback: create OR resume)
  *   rootSessionId                (config.rootSessionId)
  *   childSessionIdFor(rootSessionId, instanceId)
  *                                 (T12-B2: the deterministic (root, instance)
  *                                  -> child session id derivation, exposed for
  *                                  provider/cold-reconciliation verification)
+ *   personaSurface                 (T12-M2: the REAL scoped-prompt persona
+ *                                 surface — installScopedPersona(sessionId,
+ *                                 identity) registers the composed identity as
+ *                                 the agent-scoped 'deployment:persona'
+ *                                 system-prompt section on that session's
+ *                                 live agent ctx (a pre-setup install is
+ *                                 queued and flushed by the setup, still
+ *                                 before any work); restoreScopedPersona(
+ *                                 sessionId) disposes exactly that scoped
+ *                                 entry — the global prompt layer is never
+ *                                 touched; idempotent)
  */
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
@@ -104,6 +124,11 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
 import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+// T12-M2: READ-ONLY reuse of the persona resolver (agent-setup/persona) and
+// the blueprint parser (the domain facade) — the composition that puts the
+// blueprint persona onto the real DSH Agent at create/setup.
+import { parseBlueprint } from '../../../../domain/blueprint/src/index.js'
+import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 
 /**
  * The leader instance id (packages/contracts LEADER_INSTANCE_ID). The
@@ -175,6 +200,15 @@ export function createAgentBindings(deps) {
    * row is committed, so no projection row exists to carry the fact.
    */
   const resumingSessions = new Set()
+  // T12-M2: the persona surface state — the agent-scoped 'deployment:persona'
+  // section disposers per session id, the identities installed before the
+  // session's setup captured its agent ctx (queued until the setup flushes
+  // them — still before any work on the session), the per-session live agent
+  // ctx captured by the shared setup, and the lazy persona overlay slot.
+  const personaDisposers = new Map()
+  const personaPending = new Map()
+  const liveAgentCtxs = new Map()
+  let personaSlot
 
   // ── the durable-mutation consumption boundary (ported) ─────────────────
 
@@ -390,10 +424,26 @@ export function createAgentBindings(deps) {
    * @param {string} [instanceIdHint] - the fresh-child instance id carried
    *   by the child factory (see resolveConsumptionViews); only that caller
    *   passes it.
+   * @param {string} [templateIdHint] - the member template id the child
+   *   factory request carries (T12-M2: the fresh-create window, before the
+   *   MemberInstance row commits the same value).
+   * @param {string} [bindPath] - one of the four T1 bind paths (the persona
+   *   overlay step context carries it).
+   *
+   * T12-M2: the setup also installs the blueprint persona into the REAL DSH
+   * Agent prompt — the agent-scoped 'deployment:persona' system-prompt
+   * section — through the reused persona resolver (the resolver evaluates
+   * the preset substrate and composes the scoped identity; this glue is the
+   * last layer it installs onto). A pre-setup
+   * personaSurface.installScopedPersona for the same session flushes here
+   * too. Both installs precede any work on the session.
    * @returns {function(object): Promise<void>} the AgentSetup callback.
    */
-  function agentSetup(sessionId, instanceIdHint) {
+  function agentSetup(sessionId, instanceIdHint, templateIdHint, bindPath) {
     return async (agentCtx) => {
+      // T12-M2: capture the agent ctx for the persona surface (the
+      // production-facing installs and the overlay slot resolve through it).
+      liveAgentCtxs.set(sessionId, agentCtx)
       const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint)
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
@@ -416,6 +466,19 @@ export function createAgentBindings(deps) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
+      // T12-M2: the persona boundary — the blueprint persona enters the REAL
+      // DSH Agent prompt here (the agent-scoped 'deployment:persona'
+      // section), after the tools and before the mcp mount: before ANY work
+      // can run on this session. The reused resolver evaluates the preset
+      // substrate first (complete -> FATAL, thrown before any install).
+      installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath)
+      // A pre-setup personaSurface.installScopedPersona for this session
+      // (the pending window) flushes here too — still before any work.
+      const pendingIdentity = personaPending.get(sessionId)
+      if (pendingIdentity !== undefined) {
+        personaPending.delete(sessionId)
+        registerPersonaSection(sessionId, agentCtx, pendingIdentity)
+      }
       // The mcp facet's fail-closed baseline: no durable allow -> no mount.
       // At a fresh create no overrides exist yet (unspecified), so this is
       // the resume/restart path that re-applies the durable truth on boot.
@@ -424,6 +487,180 @@ export function createAgentBindings(deps) {
       }
       applyBoundaryRecords(state, modelView, mcpView)
     }
+  }
+
+  // ── T12-M2: the persona boundary (the reused resolver + the REAL layer) ──
+  //
+  // The persona resolver (agent-setup/persona, READ-ONLY) is the S5A-frozen
+  // authority: preset substrate fact + blueprint persona fields -> the scoped
+  // identity (PASS) or a FATAL TeamPersonaOverlayError (a complete preset is
+  // never downgraded — thrown before any install, so no Team work starts).
+  // This glue provides the LAST layer the resolver installs onto: the real
+  // DSH Agent prompt surface — the agent-scoped 'deployment:persona'
+  // system-prompt section on the session's live agent ctx (ctx.systemPrompt
+  // is the public DSH builtin the agent loop always injects). Restore disposes
+  // exactly that scoped entry; the global prompt layer is never touched.
+  const personaSubstrate = () => {
+    // config.presetSubstrate is the OPTIONAL additive override the production
+    // root can pass (absent today) — the S5A A11 decision for the
+    // dsh-agent-team preset: a standard (non-complete) substrate.
+    return config.presetSubstrate ?? { presetId: 'dsh-agent-team', personaKind: 'standard' }
+  }
+
+  /**
+   * Register (or re-register) the agent-scoped 'deployment:persona' section
+   * on one agent ctx — the real DSH prompt-surface installation. An empty
+   * persona text is a no-op (nothing to scope); a ctx without the
+   * systemPrompt builtin fails loud (the pinned DSH agent ctx ALWAYS has it —
+   * a missing seam is a broken host, never a silent skip). Re-installing
+   * disposes the previous scoped entry for the same session first, so
+   * repeated installs converge to exactly one scoped section (a later
+   * delegation by the production root cannot double-register).
+   */
+  function registerPersonaSection(sessionId, agentCtx, identity) {
+    const text = String(identity.personaText ?? '')
+    const previous = personaDisposers.get(sessionId)
+    if (previous !== undefined) {
+      personaDisposers.delete(sessionId)
+      try { previous() } catch { /* the scope unwind covers it */ }
+    }
+    if (text === '') return
+    const systemPrompt = agentCtx.systemPrompt
+    if (systemPrompt === undefined || typeof systemPrompt !== 'object' || typeof systemPrompt.section !== 'function') {
+      throw new Error(`agent-bindings: persona install for '${sessionId}': the agent ctx has no systemPrompt.section seam (broken host — the pinned DSH agent ctx always has it)`)
+    }
+    const dispose = systemPrompt.section({
+      name: 'deployment:persona',
+      order: 0,
+      text,
+    })
+    personaDisposers.set(sessionId, () => {
+      try { dispose() } catch { /* the scope unwind covers it */ }
+    })
+  }
+
+  const personaSurface = {
+    /**
+     * The production-facing install seam (the slot the production root's
+     * binder currently fills through its own in-memory map): register one
+     * composed identity on the session's live agent ctx. When the session's
+     * agent ctx is not captured yet (the pre-setup window), the identity is
+     * queued and flushed by the shared setup the moment it runs — the install
+     * still precedes any work on the session.
+     */
+    installScopedPersona(sessionId, identity) {
+      const key = String(sessionId)
+      const agentCtx = liveAgentCtxs.get(key)
+      if (agentCtx === undefined) {
+        personaPending.set(key, identity)
+        return
+      }
+      registerPersonaSection(key, agentCtx, identity)
+    },
+    /**
+     * Remove exactly the agent-scoped 'deployment:persona' entry for one
+     * session — the global prompt layer (the harness:identity + the global
+     * deployment:persona sections the DSH service registered) is never
+     * touched. Idempotent: restoring an already-restored session is a no-op.
+     */
+    restoreScopedPersona(sessionId) {
+      const key = String(sessionId)
+      const dispose = personaDisposers.get(key)
+      if (dispose === undefined) return
+      personaDisposers.delete(key)
+      try {
+        dispose()
+      } catch (error) {
+        observations.push(`p6t6: persona restore for '${key}' failed: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    },
+  }
+
+  /**
+   * The lazy persona overlay slot — built once, on first use, over the
+   * config.blueprintSource document (parsed through the domain blueprint
+   * facade) and the preset substrate fact. Its apply() IS the reused persona
+   * resolver: it evaluates the requirement against the substrate (complete ->
+   * FATAL TeamPersonaOverlayError BEFORE any install), composes the scoped
+   * identity from the blueprint persona fields (member: the template persona
+   * — the templateId is REQUIRED, absent -> the resolver's loud TypeError),
+   * and installs it through the prompt surface below.
+   */
+  function getPersonaSlot() {
+    if (personaSlot !== undefined) return personaSlot
+    const blueprint = parseBlueprint(String(config.blueprintSource ?? ''))
+    const substrate = personaSubstrate()
+    personaSlot = createPersonaOverlaySlot({
+      presetSeam: {
+        // The seam is keyed by the root session id ONLY (Architecture §13.1 —
+        // members inherit the root substrate); one substrate for the team.
+        getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
+      },
+      personaSource: {
+        getLeaderPersona: () => String(blueprint.leader.persona ?? ''),
+        getMemberPersona: (_rootSessionId, templateId) => {
+          const member = blueprint.members.find((entry) => entry.templateId === String(templateId))
+          if (member === undefined) {
+            throw new Error(`agent-bindings: persona overlay: template '${templateId}' is not a member template of the team blueprint`)
+          }
+          return String(member.persona ?? '')
+        },
+      },
+      promptSurface: {
+        // The REAL installation: the agent-scoped section on the session's
+        // live agent ctx (captured by the shared setup — the slot only ever
+        // applies from inside a setup).
+        installScopedPersona: (sessionId, identity) => {
+          const agentCtx = liveAgentCtxs.get(String(sessionId))
+          if (agentCtx === undefined) {
+            throw new Error(`agent-bindings: persona overlay install for '${sessionId}': no live agent ctx (the overlay slot only installs at setup time)`)
+          }
+          registerPersonaSection(String(sessionId), agentCtx, identity)
+        },
+      },
+    })
+    return personaSlot
+  }
+
+  /**
+   * The setup-time persona install for one session (agentSetup calls it AFTER
+   * the team tools are registered and BEFORE the mcp reconcile — the persona
+   * must be in the prompt before any work on the session):
+   *  - an empty blueprintSource -> no persona authority exists, skip;
+   *  - the root: the substrate target is the root identity; the durable
+   *    teamSessions row (when the repository carries it) is the step record;
+   *  - a member: the MemberInstance row looked up by childSessionId is the
+   *    step record; in the fresh-create window the row is not committed yet,
+   *    so the templateIdHint the child factory carries (exactly the value the
+   *    flow commits moments later) stands in for the row — a member with
+   *    neither a row nor a hint fails closed with a loud error (no silent
+   *    persona-less member).
+   */
+  function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath) {
+    if (String(config.blueprintSource ?? '') === '') return
+    const slot = getPersonaSlot()
+    let target
+    let record
+    if (sessionId === rootSid) {
+      const row =
+        domain.repositories.teamSessions !== undefined ? domain.repositories.teamSessions.get(rootSid) : undefined
+      target = { kind: 'root', sessionId: rootSid, rootSessionId: rootSid, instanceId: LEADER_INSTANCE_ID }
+      record = row ?? {}
+    } else {
+      const members = domain.repositories.memberInstances.list(rootSid)
+      const row = members.find((member) => String(member.childSessionId) === sessionId)
+      if (row !== undefined) {
+        target = { kind: 'member', sessionId, rootSessionId: rootSid, instanceId: String(row.instanceId) }
+        record = row
+      } else if (templateIdHint !== undefined && templateIdHint !== '') {
+        // The fresh-create window: the row commits AFTER this setup runs.
+        target = { kind: 'member', sessionId, rootSessionId: rootSid, instanceId }
+        record = { childSessionId: sessionId, instanceId, templateId: templateIdHint }
+      } else {
+        throw new Error(`agent-bindings: persona install for member '${sessionId}': no committed MemberInstance row and no templateId hint (fail closed — no silent persona-less member)`)
+      }
+    }
+    slot.apply({ target, record, path: bindPath })
   }
 
   /**
@@ -443,7 +680,7 @@ export function createAgentBindings(deps) {
     try {
       const handle = await agents.resume({
         resumeSessionId: SessionId(sessionId),
-        setup: agentSetup(sessionId),
+        setup: agentSetup(sessionId, undefined, undefined, 'cold-member'),
       })
       liveAgents.set(sessionId, handle)
       return handle
@@ -497,12 +734,20 @@ export function createAgentBindings(deps) {
       // consumption resolution cannot derive the id from the domain yet.
       // The hint is exactly the value the flow commits moments later.
       const instanceIdHint = String(request.instanceId)
+      // T12-M2: the template id hint — the factory request carries the
+      // member's static template identity (exactly the value the flow
+      // commits into the MemberInstance row moments after this setup
+      // runs); the persona resolver needs it in the fresh-create window.
+      const templateIdHint =
+        typeof request.templateId === 'string' && request.templateId !== ''
+          ? request.templateId
+          : undefined
       const live = liveAgents.get(childSid)
       if (live !== undefined) return { childSessionId: childSid }
       if (sessionIsDurable(childSid)) {
         const handle = await agents.resume({
           resumeSessionId: SessionId(childSid),
-          setup: agentSetup(childSid, instanceIdHint),
+          setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'cold-member'),
         })
         liveAgents.set(childSid, handle)
         return { childSessionId: childSid }
@@ -518,7 +763,7 @@ export function createAgentBindings(deps) {
       const handle = await agents.create({
         sessionId: SessionId(childSid),
         meta: { cwd: memberCwd },
-        setup: agentSetup(childSid, instanceIdHint),
+        setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'fresh-member'),
       })
       liveAgents.set(childSid, handle)
       return { childSessionId: childSid }
@@ -568,11 +813,11 @@ export function createAgentBindings(deps) {
             // T12-M1: the root agent works in the team's effective default
             // workspace (config.defaultWorkspace) — never DSH_HOME.
             meta: { cwd: config.defaultWorkspace },
-            setup: agentSetup(rootSid),
+            setup: agentSetup(rootSid, undefined, undefined, 'fresh-root'),
           })
           : await agents.resume({
             resumeSessionId: SessionId(rootSid),
-            setup: agentSetup(rootSid),
+            setup: agentSetup(rootSid, undefined, undefined, 'cold-root'),
           })
       } finally {
         if (rootResuming) resumingSessions.delete(rootSid)
@@ -591,7 +836,7 @@ export function createAgentBindings(deps) {
             // workspace (never DSH_HOME); the child factory path uses the
             // request-explicit workspace when one is passed.
             meta: { cwd: config.defaultWorkspace },
-            setup: agentSetup(child),
+            setup: agentSetup(child, String(seed.instanceId), seed.templateId, 'fresh-member'),
           })
           liveAgents.set(child, handle)
           await sessionPersistence.ensureMaterialized(handle.agent.session)
@@ -610,7 +855,7 @@ export function createAgentBindings(deps) {
           try {
             handle = await agents.resume({
               resumeSessionId: SessionId(child),
-              setup: agentSetup(child),
+              setup: agentSetup(child, undefined, undefined, 'cold-member'),
             })
           } finally {
             resumingSessions.delete(child)
@@ -943,6 +1188,15 @@ export function createAgentBindings(deps) {
     for (const dispose of toolDisposers.splice(0)) {
       try { dispose() } catch { /* the scope unwind covers it */ }
     }
+    // T12-M2: the persona scope — dispose every agent-scoped
+    // 'deployment:persona' entry (exactly the scoped sections; the global
+    // prompt layer is never touched) and clear the persona surface state.
+    for (const dispose of [...personaDisposers.values()]) {
+      try { dispose() } catch { /* the scope unwind covers it */ }
+    }
+    personaDisposers.clear()
+    personaPending.clear()
+    liveAgentCtxs.clear()
     for (const state of consumptionState.values()) {
       if (state.mcpFiber !== undefined) {
         try { state.mcpFiber.dispose() } catch { /* the scope unwind covers it */ }
@@ -983,5 +1237,7 @@ export function createAgentBindings(deps) {
     rootSessionId: rootSid,
     // additive (T12-B2): the deterministic child-id derivation
     childSessionIdFor,
+    // additive (T12-M2): the REAL scoped-prompt persona surface
+    personaSurface,
   }
 }

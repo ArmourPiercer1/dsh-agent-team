@@ -33,7 +33,7 @@ const MEMBER_WS = `${WORKTREE_ROOT}/m1-member-ws`
 
 const world = await createLiveWorld({
   rootSessionId: ROOT,
-  members: [{ childSessionId: SEED_CHILD, instanceId: 'inst-t12am1seed' }],
+  members: [{ childSessionId: SEED_CHILD, instanceId: 'inst-t12am1seed', templateId: 'tpl-t12a' }],
   configOverrides: {
     defaultWorkspace: TEAM_WS,
     seedMembers: [

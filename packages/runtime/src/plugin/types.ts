@@ -195,6 +195,18 @@ export interface TeamPluginConfig {
    * object itself).
    */
   readonly seamUrl?: string
+  /**
+   * T12-M2 (optional additive): the AgentPreset substrate facts the persona
+   * resolver evaluates — the effective-persona three-state of the preset
+   * composing the team agents. Absent = the S5A A11 decision for the
+   * dsh-agent-team preset ({ presetId: 'dsh-agent-team',
+   * personaKind: 'standard' }); a `complete` substrate is a structural
+   * FATAL inside the resolver (no downgrade, no Continue Anyway).
+   */
+  readonly presetSubstrate?: {
+    readonly presetId: string
+    readonly personaKind: 'absent' | 'standard' | 'complete'
+  }
 }
 
 // --- plugin-level error codes ------------------------------------------------------
@@ -495,6 +507,9 @@ export interface TeamAgentBindings {
   readonly residency: import('../../member-residency/index.js').ResidencyPort
   /** Resolve the calling authority from the calling session id (tools). */
   readonly resolveCaller: (sessionId: string) => Promise<ActionCaller>
+  /** T12-M2: the REAL scoped-prompt persona surface — the agent-scoped
+   *  'deployment:persona' system-prompt section installs and restores. */
+  readonly personaSurface: LivePersonaSurface
 
   // --- boot + observability (harness-facing) ---
   /** Create/resume the root agent (+ the seeded member agents) ONCE, after
@@ -566,4 +581,35 @@ export interface SubagentsDrainPort {
   drainContinuableDescendants(parents: readonly unknown[]): Promise<void>
   /** Enumerate the complete descendant tree below one session id. */
   listDescendants(rootSessionId: string): Promise<readonly unknown[]>
+}
+
+/**
+ * T12-M2: the REAL scoped-prompt persona surface the live glue exposes
+ * (the last layer the reused persona resolver installs onto — the real DSH
+ * Agent prompt surface):
+ *
+ *   - `installScopedPersona` — registers one composed identity (the
+ *     resolver's ScopedPersonaIdentity: `personaText` + provenance) as an
+ *     AGENT-SCOPED 'deployment:persona' system-prompt section on the
+ *     session's live agent ctx; an install that runs before the session's
+ *     agent setup captured its ctx is queued and flushed by the setup — the
+ *     install still precedes any work on the session; repeated installs for
+ *     the same session converge to exactly one scoped section (re-install
+ *     disposes the previous scoped entry first);
+ *   - `restoreScopedPersona` — disposes EXACTLY that agent-scoped entry for
+ *     the session: the global prompt layer (the harness:identity + the
+ *     global deployment:persona sections the DSH service registered) is
+ *     never touched; idempotent (a second restore is a no-op).
+ *
+ * The resolver itself stays READ-ONLY (agent-setup/persona): it evaluates
+ * the preset substrate (a complete preset is a structural FATAL
+ * TeamPersonaOverlayError BEFORE any install) and composes the scoped
+ * identity from the blueprint persona fields; this surface is where the
+ * composed identity becomes a real DSH Agent prompt effect.
+ */
+export interface LivePersonaSurface {
+  /** Register one composed identity as the agent-scoped persona section. */
+  installScopedPersona(sessionId: string, identity: unknown): void
+  /** Dispose exactly the agent-scoped persona section for the session. */
+  restoreScopedPersona(sessionId: string): void
 }
