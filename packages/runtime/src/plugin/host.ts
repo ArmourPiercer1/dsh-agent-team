@@ -458,6 +458,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     now: () => new Date().toISOString(),
     teamToolsRef,
     legacyInspect,
+    // P8-S7-R4 A28: the DSH public sessionQuery service, resolved lazily
+    // at handoff use time (absent in this host entry → the handoff source
+    // surface fails closed exactly as the S5A boot world does).
+    getSessionQuery: () => ctx.get('sessionQuery'),
   })
   root = builtRoot
   await builtRoot.boot()

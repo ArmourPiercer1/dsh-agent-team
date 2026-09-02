@@ -81,6 +81,14 @@ import type {
   MemberIdentityInput,
 } from '../../member-residency/index.js'
 import type { TeamToolSet } from '../../../tools/src/index.js'
+// P8-S7-R4: the BQ-17 / BQ-18 read-surface types (type-only — root.ts
+// imports the VALUE types from here; a value import back would cycle).
+import type {
+  ForkDescribeInput,
+  ForkDescribeState,
+  HandoffDescribeInput,
+  HandoffDescribeState,
+} from './root.js'
 
 // --- JSON-safe row config ---------------------------------------------------------
 
@@ -386,9 +394,15 @@ export interface TeamProductionRoot {
   /** A27 — the fork reconciliation (sidecar recognition + child team). */
   readonly fork: {
     readonly reconcile: (input: ForkReconciliationInput) => Promise<ForkReconciliationResult>
+    /** BQ-18 (P8-S7-R4 W3) — the read-only fork reconciliation state. */
+    readonly describe: (input: ForkDescribeInput) => ForkDescribeState
   }
   /** A28 — the handoff service. */
   readonly handoff: HandoffService
+  /** BQ-17 (P8-S7-R4 W2) — the handoff state/provenance read surface. */
+  readonly handoffRead: {
+    readonly describe: (input: HandoffDescribeInput) => HandoffDescribeState
+  }
   /** A29 — the legacy read-only session reader. */
   readonly legacy: {
     readonly inspect: (port: LegacyHomePort, request: unknown) => LegacyTeamInspection

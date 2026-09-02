@@ -37,7 +37,7 @@
  * | A25  | control service                         | `createControlService`                        |
  * | A26  | activity ledger                         | `createActivityLedger` (+ work-activity writer) |
  * | A27  | fork reconciliation                     | `reconcileForkSidecar` + `createTeamDomainForkPort` |
- * | A28  | handoff service                         | `createHandoffService` (fail-closed ports)    |
+ * | A28  | handoff service                         | `createHandoffService` (production wiring, P8-S7-R4) |
  * | A29  | legacy reader                           | `legacyInspect` (frozen reader, entry-loaded) |
  * | A30  | projection + S6 overlay seam            | `createProjectionService` + fail-closed proxy |
  * | A31  | remote handler registration seam        | install seam (S6)                             |
@@ -58,10 +58,16 @@
  *   (every facet `available: false`; the slot resolves fail-closed and
  *   records the reason — there are no G2-proven facet seams in the static
  *   test world).
- * - **The handoff service ports are fail-closed** (the S5A boot world
- *   exposes no DSH public session read surface, no host summarizer, and
- *   no new-team creation entry; the frozen scenarios never perform a
- *   handoff).
+ * - **The handoff service ports are production-wired** (P8-S7-R4):
+ *   `sourceSurface` reads the source through the DSH public
+ *   `sessionQuery` service (lazy resolution at use time — ABSENT there
+ *   still fails closed with `TEAM_HANDOFF_SOURCE_SURFACE_UNAVAILABLE`,
+ *   which is the S5A boot world and every test world without the
+ *   service), `summarizer` is the deterministic NON-MODEL digest of
+ *   ./handoff-surface.js, and `teamCreation` reuses the existing
+ *   fresh-root binding path (the same binding the `team.create` entry
+ *   uses) with the handoff attached as the new team's source provenance
+ *   (the `handoffSourceSessionId` TeamSession record field, BQ-16).
  * - **The A22 mutation service carries an ephemeral store**: the durable
  *   backend for mutation records is not part of the frozen S5A seam set;
  *   the frozen world's mutation consumption flows through
@@ -76,6 +82,7 @@
 import {
   createBlueprintCatalog,
   parseBlueprint,
+  sha256Hex,
 } from '../../../domain/blueprint/src/index.js'
 import type { BlueprintTemplate, TeamBlueprint } from '../../../domain/blueprint/src/index.js'
 import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/src/index.js'
@@ -89,12 +96,15 @@ import type {
   PolicyEntry,
 } from '../../../domain/policy/src/index.js'
 import {
+  canonicalJsonStringify,
   createBlueprintSnapshotRef,
   LEADER_INSTANCE_ID,
   leaderMemberIdentityOf,
   parseBlueprintContentHash,
   parseBlueprintId,
   parseBlueprintRevision,
+  parseRootSessionId,
+  parseSessionId,
 } from '../../../contracts/src/index.js'
 import type {
   EffectiveConfigDtoV2,
@@ -184,7 +194,18 @@ import type {
   ForkReconciliationResult,
 } from '../../fork-reconciliation/index.js'
 import { createHandoffService } from '../../handoff/index.js'
+import type {
+  HandoffOperationState,
+  HandoffOperationView,
+  HandoffTeamIntent,
+  TeamCreationOutcome,
+} from '../../handoff/index.js'
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js'
+import {
+  readCanonicalSourceSurface,
+  summarizeSourceSurface,
+} from './handoff-surface.js'
+import type { SessionQueryPort } from './handoff-surface.js'
 import { createProjectionService } from '../../projection/index.js'
 import type { ProjectionService } from '../../projection/index.js'
 import { createTeamTools } from '../../../tools/src/index.js'
@@ -361,6 +382,96 @@ function capabilityValuesOf(
   return values
 }
 
+// --- BQ-17 / BQ-18 read surfaces (P8-S7-R4 W2 / W3) ----------------------------------------
+
+/** BQ-18 (W3): the read-only fork reconciliation state query input. */
+export interface ForkDescribeInput {
+  readonly parentSessionId: string
+  readonly childSessionId: string
+}
+
+/**
+ * BQ-18 (W3): the EXACT fork reconciliation state vocabulary (plan
+ * BQ-18, frozen). `root-fork-recovering` covers BOTH crash windows: the
+ * reconciler's record-only durable phase AND a not-yet-reconciled fork
+ * sidecar (`details.phase` disambiguates).
+ */
+export type ForkDescribeStateName =
+  | 'ordinary'
+  | 'root-fork-reconciled'
+  | 'root-fork-recovering'
+  | 'member-fork-ordinary'
+  | 'integrity-conflict'
+
+/**
+ * BQ-18 (W3): the read-only fork reconciliation state (a pure read over
+ * the TeamDomain SYNC repositories — zero writes; the write path stays
+ * the unchanged `fork.reconcile`).
+ */
+export interface ForkDescribeState {
+  readonly parentSessionId: string
+  readonly childSessionId: string
+  readonly state: ForkDescribeStateName
+  /**
+   * JSON-safe state details (no Host references). For
+   * `integrity-conflict`, `details.conflict` names the conflict kind
+   * (`binding-without-record` / `parent-binding-without-record` /
+   * `blueprint-mismatch` / `reconciled-child-carries-members`).
+   */
+  readonly details: RemoteSafeRecord
+}
+
+/** BQ-17 (W2): the handoff operation state/provenance query input. */
+export interface HandoffDescribeInput {
+  readonly sourceSessionId: string
+  readonly requestToken: string
+}
+
+/**
+ * BQ-17 (W2): the handoff state/provenance view — the source Session
+ * provenance, the snapshot/summary status, the failure choices/state,
+ * and the created Team's provenance (joined with the durable
+ * `handoffSourceSessionId` record field — TeamDomain is the sole durable
+ * authority, invariant 41; the handoff module itself owns no durable
+ * state).
+ */
+export interface HandoffDescribeState {
+  readonly sourceSessionId: string
+  readonly requestToken: string
+  /** `false` for an unknown (sourceSessionId, requestToken) pair. */
+  readonly known: boolean
+  /** The operation's snapshot/summary freeze status. */
+  readonly snapshotStatus: 'absent' | 'surface-frozen' | 'context-frozen'
+  /** The operation's current state (`null` for an unknown operation). */
+  readonly state: HandoffOperationState | null
+  /**
+   * The created team's identity + durable provenance (`undefined` when
+   * the operation created no team yet).
+   */
+  readonly createdTeam?: {
+    readonly teamSessionId: string
+    readonly rootSessionId: string
+    readonly handoffSourceSessionId?: string
+  }
+}
+
+/**
+ * Snapshot-ref equality (the same comparison the fresh-root binding uses
+ * privately in `bindFreshTeamRoot` — blueprintId + revision +
+ * contentHash, String-compared; root-binding is OUT OF SCOPE for this
+ * task, so a local mirror instead of a shared export).
+ */
+function sameSnapshotRef(
+  a: { readonly blueprintId: string; readonly revision: string; readonly contentHash: string },
+  b: { readonly blueprintId: string; readonly revision: string; readonly contentHash: string },
+): boolean {
+  return (
+    String(a.blueprintId) === String(b.blueprintId) &&
+    String(a.revision) === String(b.revision) &&
+    String(a.contentHash) === String(b.contentHash)
+  )
+}
+
 // --- the root factory ----------------------------------------------------------------
 
 /** The construction inputs of the production root (all injected). */
@@ -395,6 +506,16 @@ export interface TeamProductionRootParams {
    * when a legacy DSH home is bound (see ./legacy-surface.js).
    */
   readonly legacyHome?: LegacyHomePort
+  /**
+   * The DSH public `sessionQuery` service accessor (P8-S7-R4 A28):
+   * resolved LAZILY at handoff use time (the service is registered by
+   * the host before any handoff is started; the root never assumes a
+   * registration order at construction time). ABSENT at use time → the
+   * handoff source surface fails closed with
+   * `TEAM_HANDOFF_SOURCE_SURFACE_UNAVAILABLE` (the S5A boot world and
+   * every test world without the service keep the old behavior).
+   */
+  readonly getSessionQuery?: () => unknown
 }
 
 /**
@@ -409,7 +530,7 @@ export interface TeamProductionRootParams {
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params: TeamProductionRootParams): TeamProductionRoot {
-  const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect } = params
+  const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
 
@@ -688,39 +809,268 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
 
   // --- A27 the fork reconciliation ----------------------------------------------------------------
   const forkPort = createTeamDomainForkPort(repos)
+
+  // BQ-18 (P8-S7-R4 W3): the read-only fork reconciliation state. Every
+  // read goes through the TeamDomain SYNC repository getters (zero
+  // writes; the write path stays the unchanged `reconcile` above). The
+  // exact state vocabulary (plan BQ-18): ordinary / root-fork-reconciled /
+  // root-fork-recovering / member-fork-ordinary / integrity-conflict.
+  const forkDescribe = (parentSessionId: string, childSessionId: string): ForkDescribeState => {
+    const childBinding = repos.sessionBindings.get(childSessionId)
+    const childRecord = repos.teamSessions.get(childSessionId)
+    const parentBinding = repos.sessionBindings.get(parentSessionId)
+
+    // Integrity conflicts FIRST — a corrupted durable state must never be
+    // reported as an ordinary state:
+    if (childBinding !== undefined && childBinding.kind === 'team-root' && childRecord === undefined) {
+      return {
+        parentSessionId,
+        childSessionId,
+        state: 'integrity-conflict',
+        details: { conflict: 'binding-without-record' },
+      }
+    }
+    if (childRecord !== undefined) {
+      if (parentBinding !== undefined && parentBinding.kind === 'team-root') {
+        const parentRecord = repos.teamSessions.get(parentSessionId)
+        if (parentRecord === undefined) {
+          return {
+            parentSessionId,
+            childSessionId,
+            state: 'integrity-conflict',
+            details: { conflict: 'parent-binding-without-record' },
+          }
+        }
+        // BQ-04/Q02: a root fork must pin the SAME immutable Blueprint
+        // snapshot as the parent (invariant 10).
+        if (!sameSnapshotRef(childRecord.blueprint, parentRecord.blueprint)) {
+          return {
+            parentSessionId,
+            childSessionId,
+            state: 'integrity-conflict',
+            details: {
+              conflict: 'blueprint-mismatch',
+              parent: {
+                blueprintId: parentRecord.blueprint.blueprintId,
+                revision: parentRecord.blueprint.revision,
+                contentHash: parentRecord.blueprint.contentHash,
+              },
+              child: {
+                blueprintId: childRecord.blueprint.blueprintId,
+                revision: childRecord.blueprint.revision,
+                contentHash: childRecord.blueprint.contentHash,
+              },
+            },
+          }
+        }
+      }
+      if (childBinding !== undefined && childBinding.kind === 'team-root') {
+        const memberCount = repos.memberInstances.list(childSessionId).length
+        if (memberCount > 0) {
+          return {
+            parentSessionId,
+            childSessionId,
+            state: 'integrity-conflict',
+            details: { conflict: 'reconciled-child-carries-members', memberCount },
+          }
+        }
+        // Fully settled: the record AND the binding exist, memberless
+        // (durableWrites 2/2 of the reconciler).
+        return {
+          parentSessionId,
+          childSessionId,
+          state: 'root-fork-reconciled',
+          details: { memberCount: 0, durableWrites: 2 },
+        }
+      }
+      // Record present WITHOUT the binding: the reconciler's crash window
+      // (durableWrites 1/2 — record written, binding still pending).
+      return {
+        parentSessionId,
+        childSessionId,
+        state: 'root-fork-recovering',
+        details: { phase: 'record-only', durableWrites: 1 },
+      }
+    }
+    if (parentBinding !== undefined && parentBinding.kind === 'team-root') {
+      // The parent is a team root and the child carries nothing yet: the
+      // fork sidecar has not been reconciled (the lazy pending operation).
+      return {
+        parentSessionId,
+        childSessionId,
+        state: 'root-fork-recovering',
+        details: { phase: 'not-reconciled' },
+      }
+    }
+    if (childBinding !== undefined && childBinding.kind === 'team-member') {
+      // A forked member child stays an unbound ordinary session (BQ-01:
+      // zero Team-state writes) — the binding row records where it came
+      // from, nothing more.
+      return {
+        parentSessionId,
+        childSessionId,
+        state: 'member-fork-ordinary',
+        details: {
+          rootSessionId: childBinding.rootSessionId,
+          instanceId: childBinding.instanceId,
+        },
+      }
+    }
+    return { parentSessionId, childSessionId, state: 'ordinary', details: {} }
+  }
+
   const fork = {
     reconcile: (input: ForkReconciliationInput): Promise<ForkReconciliationResult> =>
       reconcileForkSidecar(input, { teamDomain: forkPort, now }),
+    /** BQ-18 — the read-only fork reconciliation state (P8-S7-R4 W3). */
+    describe: (input: ForkDescribeInput): ForkDescribeState =>
+      forkDescribe(input.parentSessionId, input.childSessionId),
   }
 
-  // --- A28 the handoff service (fail-closed ports — documented boot-world wiring) ---------------
+  // --- A28 the handoff service (production wiring — P8-S7-R4) ---------------------------------------
+  // The DSH public `sessionQuery` service is resolved LAZILY (at handoff
+  // use time, never at construction time): the registration order at root
+  // construction is never assumed, and a handoff is user-triggered — by
+  // the time one runs, the service is registered. Absence at use time
+  // fails closed (the S5A boot world and every test world without the
+  // service keep the documented fail-closed behavior).
+  const resolveSessionQuery = (): SessionQueryPort | undefined => {
+    const accessor = getSessionQuery
+    if (accessor === undefined) return undefined
+    const candidate = accessor()
+    if (typeof candidate !== 'object' || candidate === null) return undefined
+    const maybe = candidate as { readSurface?: unknown }
+    if (typeof maybe.readSurface !== 'function') return undefined
+    return candidate as SessionQueryPort
+  }
+  const requireSessionQuery = (): SessionQueryPort => {
+    const query = resolveSessionQuery()
+    if (query === undefined) {
+      throw new TeamPluginError(
+        'TEAM_HANDOFF_SOURCE_SURFACE_UNAVAILABLE',
+        'the DSH public "sessionQuery" service is not registered in this process (the boot/test world does not perform handoffs)',
+      )
+    }
+    return query
+  }
+
+  // The handoff team creation (W1/BQ-16): it reuses the SAME fresh-root
+  // binding path the `team.create` entry drives — mint the new root B
+  // DETERMINISTICALLY from the stable intentToken, pre-put the TeamSession
+  // record with the handoff source provenance attached (with-handoff only),
+  // then run the standard fresh binding (record match-check, binding row,
+  // leader mint). The idempotency contract (re-drive with the same
+  // intentToken) lands on `bindFreshTeamRoot`'s existing-record branch —
+  // no re-put, no duplicate.
+  const createHandoffTeam = async (intent: HandoffTeamIntent): Promise<TeamCreationOutcome> => {
+    // The v1 CLOSED remote params carry no blueprint field on
+    // handoff.create: the new team pins THIS row's bound blueprint
+    // (single-blueprint row; the `staged` record stays opaque here).
+    const snapshot = createBlueprintSnapshotRef({
+      blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
+      revision: parseBlueprintRevision(String(blueprint.revision)),
+      contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
+    })
+    const minted = parseRootSessionId(
+      `session-handoff-${sha256Hex(canonicalJsonStringify({ intentToken: intent.intentToken })).slice(0, 40)}`,
+    )
+    const existing = repos.teamSessions.get(minted)
+    if (existing === undefined) {
+      await repos.teamSessions.put({
+        rootSessionId: minted,
+        blueprint: snapshot,
+        // With-handoff: the stable per-operation capture stamp keeps a
+        // re-drive put identical-bytes (the idempotency contract);
+        // without-handoff uses the root clock (a re-drive then hits the
+        // existing-record branch and never re-puts).
+        createdAt: intent.handoff !== undefined ? intent.handoff.capturedAt : now(),
+        generation: 1,
+        ...(intent.handoff !== undefined
+          ? { handoffSourceSessionId: parseSessionId(intent.handoff.sourceSessionId) }
+          : {}),
+      })
+    } else if (
+      !sameSnapshotRef(existing.blueprint, snapshot) ||
+      existing.generation !== 1
+    ) {
+      // A pre-existing record that is not THIS creation's record: a stable
+      // identity collision, not a re-drive.
+      throw new TeamPluginError(
+        'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
+        `handoff intent "${intent.intentToken}" mints root "${String(minted)}", which already carries an incompatible TeamSession record (stable identity collision — not a re-drive)`,
+      )
+    }
+    const result = await rootBinding.bindFresh({
+      rootSessionId: minted,
+      blueprint: snapshot,
+      generation: 1,
+    })
+    const rootSessionId = result.durable?.teamSession.rootSessionId
+    if (rootSessionId === undefined) {
+      throw new TeamPluginError(
+        'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
+        `the fresh binding of handoff root "${String(minted)}" reported no durable state`,
+      )
+    }
+    return { teamSessionId: rootSessionId, rootSessionId }
+  }
+
   const handoff = createHandoffService({
     sourceSurface: {
-      readCanonicalSurface: async (sourceSessionId) => {
-        throw new TeamPluginError(
-          'TEAM_HANDOFF_SOURCE_SURFACE_UNAVAILABLE',
-          `the production root exposes no DSH public session read surface for handoff (source session "${sourceSessionId}"); the S5A boot world does not perform handoffs`,
-        )
-      },
+      // Stage 1: the EXACTLY-ONE canonical surface freeze through the DSH
+      // public session-read authority (./handoff-surface.js).
+      readCanonicalSurface: (sourceSessionId) =>
+        readCanonicalSourceSurface(requireSessionQuery(), sourceSessionId),
     },
     summarizer: {
-      summarize: async () => {
-        throw new TeamPluginError(
-          'TEAM_HANDOFF_SUMMARIZER_UNAVAILABLE',
-          'the production root exposes no host summarizer capability for handoff; the S5A boot world does not perform handoffs',
-        )
-      },
+      // Stage 2: the one-shot NON-MODEL deterministic digest (pure — the
+      // same frozen surface always yields the same summary).
+      summarize: (surface) => Promise.resolve(summarizeSourceSurface(surface)),
     },
     teamCreation: {
-      createTeam: async () => {
-        throw new TeamPluginError(
-          'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
-          'new-team creation from handoff is not exposed by the S5A production root (the fresh-root binding + the activation provider remain the creation entries)',
-        )
-      },
+      // Stage 4: the new Root B through the existing fresh-root binding
+      // (the team.create creation entry's binding) with the handoff as the
+      // new team's source provenance.
+      createTeam: (intent) => createHandoffTeam(intent),
     },
     clock: now,
   })
+
+  // BQ-17 (P8-S7-R4 W2): the handoff state/provenance read surface — the
+  // service's in-memory operation view (source Session provenance,
+  // snapshot/summary status, failure choices/state, created Team identity)
+  // joined with the durable provenance of the created team (the
+  // `handoffSourceSessionId` record field — TeamDomain is the sole durable
+  // authority, invariant 41).
+  const handoffRead = {
+    describe(input: HandoffDescribeInput): HandoffDescribeState {
+      const view: HandoffOperationView = handoff.describeOperation(
+        input.sourceSessionId,
+        input.requestToken,
+      )
+      const createdTeamId = view.team === null ? undefined : view.team.rootSessionId
+      const record =
+        createdTeamId === undefined ? undefined : repos.teamSessions.get(createdTeamId)
+      const createdTeam =
+        view.team === null || record === undefined
+          ? undefined
+          : {
+              teamSessionId: view.team.teamSessionId,
+              rootSessionId: view.team.rootSessionId,
+              ...(record.handoffSourceSessionId !== undefined
+                ? { handoffSourceSessionId: record.handoffSourceSessionId }
+                : {}),
+            }
+      return {
+        sourceSessionId: view.sourceSessionId,
+        requestToken: view.requestToken,
+        known: view.known,
+        snapshotStatus: view.snapshotStatus,
+        state: view.state,
+        ...(createdTeam !== undefined ? { createdTeam } : {}),
+      }
+    },
+  }
 
   // --- A29 the legacy read-only session reader -----------------------------------------------------
   // The production ENTRY loads the frozen reader's emitted JS by computed
@@ -945,6 +1295,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     rootBinding,
     compatibility: prober,
     handoff,
+    // A28 (P8-S7-R4): the handoff prepare producer — the EXACTLY-ONE
+    // canonical surface freeze through the DSH public sessionQuery
+    // service + the one-shot NON-MODEL deterministic digest (remote-safe
+    // `summary` payload for `handoff.prepare`).
+    handoffPrepare: (sourceSessionId) =>
+      readCanonicalSourceSurface(requireSessionQuery(), sourceSessionId).then((surface) =>
+        summarizeSourceSurface(surface) as unknown as RemoteSafeRecord,
+      ),
     legacyInspect,
     legacyHome: params.legacyHome,
     principal: seams.serverPrincipalDerivation.current(),
@@ -1119,6 +1477,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     activity,
     fork,
     handoff,
+    handoffRead,
     legacy,
     projection,
     seams,

@@ -42,7 +42,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -204,9 +204,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // model-state-view + 5 unit-test .ts under runtime/test:
     // p8s7r2-policy-state-durable, p8s7r2-effective-config,
     // p8s7r2-model-state, p8s7r2-residency-resuming,
-    // p8s7r2-disposed-history).
-    expect(scanResult.filesScanned).toBe(537)
-    expect(scanResult.files.length).toBe(537)
+    // p8s7r2-disposed-history). +
+    // 1 P8-S7-R4 handoff-surface production module (module
+    // runtime/src/plugin/handoff-surface: readCanonicalSourceSurface +
+    // summarizeSourceSurface) +
+    // 5 P8-S7-R4 handoff/fork test files (tests
+    // runtime p8s7r4-handoff-surface, runtime p8s7r4-handoff-wiring,
+    // runtime p8s7r4-bc22-idempotency,
+    // runtime p8s7r4-bc23-24-no-mutation,
+    // runtime p8s7r4-fork-describe).
+    expect(scanResult.filesScanned).toBe(543)
+    expect(scanResult.files.length).toBe(543)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

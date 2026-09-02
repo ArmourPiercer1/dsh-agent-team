@@ -20,7 +20,10 @@
  * timestamp, version/generation). Category A's remaining fields
  * (PolicyState, overrides, admission state, ledger refs, handoff provenance)
  * are added by later versions with their owning tasks — the freeze rule in
- * CHANGELOG.md governs how.
+ * CHANGELOG.md governs how. P8-S7-R4 adds the first of them: the
+ * one-shot handoff provenance field `handoffSourceSessionId` (optional;
+ * present exactly for teams created through a Start-Team-from-Here
+ * handoff — Architecture §34, BQ-16).
  *
  * Pure module: no I/O, no live Agent, no runtime environment assumptions.
  * @module @dsh-agent-team/contracts/dto/team-session-record
@@ -28,8 +31,8 @@
 
 import { TEAM_CONTRACT_SCHEMA_VERSION, assertSchemaVersion } from '../schema-version.js'
 import type { TeamContractSchemaVersion } from '../schema-version.js'
-import { parseRootSessionId } from '../ids/session-id.js'
-import type { RootSessionId } from '../ids/session-id.js'
+import { parseRootSessionId, parseSessionId } from '../ids/session-id.js'
+import type { RootSessionId, SessionId } from '../ids/session-id.js'
 import {
   assertFieldPresent,
   assertNoUnknownFields,
@@ -53,6 +56,7 @@ export const TEAM_SESSION_RECORD_FIELDS: readonly string[] = [
   'defaultWorkspace',
   'createdAt',
   'generation',
+  'handoffSourceSessionId',
 ]
 
 /**
@@ -72,6 +76,15 @@ export interface TeamSessionRecordDto {
   readonly createdAt: string
   /** Record version/generation counter (starts at 1, monotonically increases). */
   readonly generation: number
+  /**
+   * One-shot handoff provenance (Architecture §34, BQ-16): the source
+   * SessionId of the "Start-Team-from-Here" handoff that created this
+   * TeamSession. Present exactly for teams created through a handoff;
+   * absent for every other team. This is provenance/navigation metadata
+   * ONLY — it grants NO read access to the source session (§34.3: the
+   * sourceSessionId is a provenance fact, not a read grant).
+   */
+  readonly handoffSourceSessionId?: SessionId
 }
 
 /**
@@ -89,13 +102,17 @@ export interface TeamSessionRecordInput {
   createdAt: string
   /** Record generation; must be >= 1. */
   generation: number
+  /** One-shot handoff provenance (optional; see {@link TeamSessionRecordDto.handoffSourceSessionId}). */
+  handoffSourceSessionId?: SessionId
 }
 
 function validateTeamSessionRecord(record: RemoteSafeRecord): TeamSessionRecordDto {
   assertNoLegacyFields(record, 'TeamSessionRecord')
   assertNoUnknownFields(record, TEAM_SESSION_RECORD_FIELDS, 'TeamSessionRecord')
   for (const field of TEAM_SESSION_RECORD_FIELDS) {
-    if (field !== 'defaultWorkspace') assertFieldPresent(record, field, 'TeamSessionRecord')
+    if (field !== 'defaultWorkspace' && field !== 'handoffSourceSessionId') {
+      assertFieldPresent(record, field, 'TeamSessionRecord')
+    }
   }
   assertSchemaVersion(record['schemaVersion'])
   const base = {
@@ -107,12 +124,19 @@ function validateTeamSessionRecord(record: RemoteSafeRecord): TeamSessionRecordD
   }
   // An absent optional field must not become an own `undefined` key: the
   // frozen DTO is a lossless-JSON value (remote-safe.ts rejects undefined).
-  return deepFreeze(
+  const withWorkspace =
     record['defaultWorkspace'] === undefined
       ? base
       : {
           ...base,
           defaultWorkspace: parseWorkspaceField(record['defaultWorkspace'], 'defaultWorkspace'),
+        }
+  return deepFreeze(
+    record['handoffSourceSessionId'] === undefined
+      ? withWorkspace
+      : {
+          ...withWorkspace,
+          handoffSourceSessionId: parseSessionId(record['handoffSourceSessionId']),
         },
   )
 }
@@ -148,6 +172,9 @@ export function createTeamSessionRecord(input: TeamSessionRecordInput): TeamSess
   }
   if (input.defaultWorkspace !== undefined) {
     record['defaultWorkspace'] = input.defaultWorkspace
+  }
+  if (input.handoffSourceSessionId !== undefined) {
+    record['handoffSourceSessionId'] = input.handoffSourceSessionId
   }
   return validateTeamSessionRecord(record)
 }

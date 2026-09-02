@@ -362,6 +362,38 @@ export type HandoffOperationState =
     }
 
 /**
+ * The READ-ONLY view of one handoff operation (BQ-17, P8-S7-R4 W2):
+ * the source Session provenance, the snapshot/summary status, the
+ * failure choices/state, and the created team identity.
+ *
+ * The view is a pure read over the in-memory operation registry — it
+ * performs NO mutation and NO I/O. An unknown
+ * (sourceSessionId, requestToken) pair is reported as `known: false`
+ * with a null state (NOT an error: the pair is a valid query shape).
+ */
+export interface HandoffOperationView {
+  /** The queried source session id (echoed). */
+  readonly sourceSessionId: string
+  /** The queried request token (echoed). */
+  readonly requestToken: string
+  /** `false` when the pair keys no registered operation. */
+  readonly known: boolean
+  /**
+   * The snapshot/summary freeze status of the operation:
+   * `absent` (no surface/context frozen yet — includes unknown ops),
+   * `surface-frozen` (the canonical surface snapshot is held, the
+   * one-shot summary/context not yet materialized), `context-frozen`
+   * (the one-shot HandoffContext is materialized and replayed for
+   * re-invocations).
+   */
+  readonly snapshotStatus: 'absent' | 'surface-frozen' | 'context-frozen'
+  /** The operation's current state (`null` for an unknown op). */
+  readonly state: HandoffOperationState | null
+  /** The created team identity (`null` until a team exists). */
+  readonly team: TeamCreationOutcome | null
+}
+
+/**
  * The source-side query the target team might attempt against the
  * source session (mode `history-read` or `search`). Any such query is
  * ALWAYS rejected (Architecture §34.3: B cannot history_read(A); B

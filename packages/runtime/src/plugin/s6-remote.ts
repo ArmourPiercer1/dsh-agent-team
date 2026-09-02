@@ -388,6 +388,14 @@ export interface S6RemoteOptions {
   readonly compatibility: CompatibilityProber
   /** The handoff service (the ONLY handoff authority). */
   readonly handoff: HandoffService
+  /**
+   * The handoff prepare source producer (P8-S7-R4 A28 un-wiring): the
+   * EXACTLY-ONE canonical surface freeze + the one-shot NON-MODEL
+   * deterministic digest, returned as the remote-safe `summary` payload.
+   * ABSENT → `handoff.prepare` fails closed exactly as before (the S5A
+   * boot world and test worlds without the DSH session read service).
+   */
+  readonly handoffPrepare?: (sourceSessionId: string) => Promise<RemoteSafeRecord>
   /** The frozen legacy reader's operational entry. */
   readonly legacyInspect: LegacyInspectFn
   /** The legacy home port (ABSENT in the boot world: fail-closed). */
@@ -1139,15 +1147,19 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     // --- 11/12 handoff: the handoff service (§34.4 fail-closed triad) ---------------
     handoff: {
       async prepareSource(sourceSessionId: string): Promise<RemoteSafeRecord> {
-        // The production root exposes NO DSH session read surface: prepare
-        // is fail-closed with the same stable code as the S5A boot-world
-        // handoff ports (the source surface is unavailable — the root
-        // cause is identical).
-        throw new TeamPluginError(
-          S6_REMOTE_ERROR_CODES.HANDOFF_PREPARE_UNAVAILABLE,
-          `the production root exposes no DSH public session read surface for handoff prepare (source session '${sourceSessionId}')`,
-          { reason: 'source-surface-unavailable' },
-        )
+        // P8-S7-R4 A28: the producer is injected by the production root
+        // (the DSH public sessionQuery authority + the deterministic
+        // digest). ABSENT (the S5A boot world / test worlds without the
+        // session read service) → fail closed exactly as before.
+        const producer = options.handoffPrepare
+        if (producer === undefined) {
+          throw new TeamPluginError(
+            S6_REMOTE_ERROR_CODES.HANDOFF_PREPARE_UNAVAILABLE,
+            `the production root exposes no DSH public session read surface for handoff prepare (source session '${sourceSessionId}')`,
+            { reason: 'source-surface-unavailable' },
+          )
+        }
+        return producer(sourceSessionId)
       },
       async start(
         sourceSessionId: string,

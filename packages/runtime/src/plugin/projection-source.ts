@@ -86,6 +86,7 @@ import type {
   MemberLifecycleState,
   MemberModelStateDto,
   RemoteSafeRecord,
+  SessionId,
   TeamSessionId,
   TeamSessionRecordDto,
 } from '../../../contracts/src/index.js'
@@ -334,7 +335,7 @@ export function createTeamDomainReadPort(
     // memberInstances.list → ledger.list — each exactly once, no other
     // channel). S7-R2 (R2-6): the DISPOSED retained-history digest reuses
     // the root ledger list read here — it adds no repository call.
-    const rootFacts = rootFactsOf(root)
+    const rootFacts = rootFactsOf(root, row.handoffSourceSessionId)
     const memberRows = memberRowsOf(repositories, root)
     const rootEntries = rootLedgerEntriesOf(repositories, root)
     const ledger = ledgerSummaryOf(root, rootEntries)
@@ -350,9 +351,11 @@ export function createTeamDomainReadPort(
       ...(row.defaultWorkspace !== undefined ? { defaultWorkspace: row.defaultWorkspace } : {}),
       createdAt: row.createdAt,
       generation: row.generation,
-      // handoffSourceSessionId: ABSENT — the v1 record carries no handoff
-      // provenance (its later version adds the durable field; absence is a
-      // missing key, never an own-undefined key).
+      // handoffSourceSessionId: NOT exposed at the top level by design —
+      // the P8-S7-R4 durable record field is carried on the ROOT facts
+      // (rootFactsOf below; the fold reads source.root.handoffSource-
+      // SessionId). The v1 top-level shape stays byte-identical (fresh
+      // teams stamp no key at either level).
 
       templates,
       root: rootFacts,
@@ -394,7 +397,7 @@ export function createTeamDomainReadPort(
 
   // --- root facts ---------------------------------------------------------------
 
-  function rootFactsOf(root: string): TeamRootFacts {
+  function rootFactsOf(root: string, handoffSourceSessionId?: SessionId): TeamRootFacts {
     const compatibility = compatibilitySummaryOf(repositories.compatibility.get(root))
     return {
       // policyState: see policyStateOf — fail-closed (checked surfaces
@@ -412,7 +415,13 @@ export function createTeamDomainReadPort(
       // 0 when absent (the later record version with its owning task
       // carries the durable counter).
       creationBudgetConsumed: 0,
-      // handoffSourceSessionId: ABSENT (v1 carries no handoff provenance).
+      // P12 (P8-S7-R4, BQ-16): the one-shot handoff source provenance —
+      // carried VERBATIM from the durable record field (BQ-16: additive
+      // record field, NO new factType). ABSENT key when the team was
+      // created fresh (absence = missing key, never an own-undefined key).
+      ...(handoffSourceSessionId !== undefined
+        ? { handoffSourceSessionId }
+        : {}),
     }
   }
 

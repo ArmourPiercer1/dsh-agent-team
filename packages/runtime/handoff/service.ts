@@ -70,6 +70,7 @@ import type {
   HandoffFailure,
   HandoffOperationRef,
   HandoffOperationState,
+  HandoffOperationView,
   HandoffPorts,
   HandoffSummary,
   HandoffTeamIntent,
@@ -148,6 +149,19 @@ export interface HandoffService {
     contextToken: string,
     query: SourceHistoryQuery,
   ): Promise<never>
+
+  /**
+   * BQ-17 (P8-S7-R4 W2): the READ-ONLY view of one handoff operation —
+   * the source Session provenance, the snapshot/summary status, the
+   * failure choices/state, and the created team identity. A pure
+   * registry read: NO mutation, NO I/O, no source re-read; an unknown
+   * (sourceSessionId, requestToken) pair reports `known: false` with a
+   * null state (NOT an error — the pair is a valid query shape).
+   */
+  describeOperation(
+    sourceSessionId: string,
+    requestToken: string,
+  ): HandoffOperationView
 }
 
 /** The in-memory record of one operation (process-lifetime only). */
@@ -323,6 +337,40 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
           record.state = state
           return state
         }
+      }
+    },
+
+    /**
+     * BQ-17 (P8-S7-R4 W2): the READ-ONLY operation state/provenance
+     * view — a pure registry read (no mutation, no I/O, no source
+     * re-read). An unknown (sourceSessionId, requestToken) pair is NOT
+     * an error: it reports `known: false` with a null state.
+     */
+    describeOperation(sourceSessionId: string, requestToken: string): HandoffOperationView {
+      const record = operations.get(operationKey(sourceSessionId, requestToken))
+      if (record === undefined) {
+        return {
+          sourceSessionId,
+          requestToken,
+          known: false,
+          snapshotStatus: 'absent',
+          state: null,
+          team: null,
+        }
+      }
+      const snapshotStatus: HandoffOperationView['snapshotStatus'] =
+        record.context !== undefined
+          ? 'context-frozen'
+          : record.surface !== undefined
+            ? 'surface-frozen'
+            : 'absent'
+      return {
+        sourceSessionId,
+        requestToken,
+        known: true,
+        snapshotStatus,
+        state: record.state ?? null,
+        team: record.team ?? null,
       }
     },
 
