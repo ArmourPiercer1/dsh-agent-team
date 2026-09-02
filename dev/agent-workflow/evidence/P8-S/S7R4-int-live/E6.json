@@ -1,0 +1,66 @@
+{
+  "criterion": "E6",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 468,
+  "assertions": [
+    {
+      "name": "pre-race state: three scout members (limit 4)",
+      "pass": true,
+      "detail": "scoutCount=3"
+    },
+    {
+      "name": "exactly ONE of the three concurrent creates admitted at ==limit",
+      "pass": true,
+      "detail": "[\"executed\",\"rejected\",\"rejected\"]"
+    },
+    {
+      "name": "the admitted create is member-activated",
+      "pass": true,
+      "detail": "[\"member-activated\"]"
+    },
+    {
+      "name": "both over-limit creates rejected with TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES",
+      "pass": true,
+      "detail": "[\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\",\"TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES\"]"
+    },
+    {
+      "name": "state after E6: four scout members (== limit; never over-created)",
+      "pass": true,
+      "detail": "scoutCount=4"
+    },
+    {
+      "name": "state after E6: nine members total (leader + 4 workers + 4 scouts; team limit 12 untouched)",
+      "pass": true,
+      "detail": "total=9"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 3,
+    "stateCalls": 2,
+    "non200": []
+  },
+  "evidence": {
+    "scoutCountBefore": 3,
+    "outcomes": [
+      {
+        "token": "p6t6-e6-1",
+        "status": "executed",
+        "instanceId": "inst-1v2h6hs1webz"
+      },
+      {
+        "token": "p6t6-e6-2",
+        "status": "rejected",
+        "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+      },
+      {
+        "token": "p6t6-e6-3",
+        "status": "rejected",
+        "code": "TEAM_RUNTIME_QUOTA_EXCEEDED_TEMPLATE_INSTANCES"
+      }
+    ],
+    "scoutCountAfter": 4,
+    "memberCountAfter": 9
+  }
+}

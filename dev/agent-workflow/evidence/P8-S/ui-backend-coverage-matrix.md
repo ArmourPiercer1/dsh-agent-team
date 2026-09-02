@@ -289,3 +289,47 @@ COVERED 148 (A6 B12 C8 D12 E11 G4 H3 I15 J12 K6 L10 M17 N8 O5 P3 Q1 R8 S7) · PA
 4. Prod handoff fail-closed by design (service+tests complete) — largest gap cluster.
 5. policyState non-durable; effectiveConfig EMPTY; 'resuming' not derivable (live:25-26); BC-09→BC-08 (I02).
 6. Per plan §26: all 49 PARTIAL rows must generate repair tasks; none may carry into P9.
+
+---
+
+## S7 closure addendum (R83, 2026-09-02 — main agent; status supersession)
+
+The status column above reflects the S7-MAP snapshot @ `15da6b5` (pre-repair).
+The closure repairs (S7-R1/R2/R4, integrated @ int tip `4441852`) and the R80
+adjudication supersede it as follows (row-level evidence in
+`S7R1-result.md` / `S7R2-result.md` / `S7R4-result.md`; contract reference in
+`backend-contract-freeze.md`):
+
+- **R80 rulings (no repair task)**: A07/S06/S07 (R5 cluster) reclassified
+  COVERED per plan BS-02 permissive form (generation invalidation + pull +
+  stale-reject + frame verdicts, all tested); I08 →
+  NOT_APPLICABLE_WITH_REASON (frozen Architecture §29 FSM has no
+  CREATED→ARCHIVED edge — the backend FSM is correct; the constraint is a P9
+  UI one).
+- **S7-R1 (COVERED)**: B05, B07 (team.create optional `initialWork`, R80
+  additive-param ruling), C08/ND-02 → NATIVE_PROVEN (public
+  `remote.agentPresets` seam; no adapter, catalog unchanged).
+- **S7-R2 (COVERED, 29 rows)**: C07/D09/D14/F01–F12/G01/G02/G05/G06/G09/H01/
+  H02/H03/H04/H06/H09/H10/H12/L11 — BQ-08 resolved effective-config view,
+  BQ-10 durable PolicyState, BQ-11 model-state view, F11 workspace provenance
+  lane, F12 residency 'resuming', D14 disposed-history digest (projection
+  track v2, additive-only; note supersession of matrix note 5).
+- **S7-R4 (COVERED, 13 rows)**: M11/P02/P05/P06/P07/P08/P09/P11/P12/Q02/Q03/
+  Q04/Q06 — the three A28 handoff production ports un-fail-closed
+  (sourceSurface via the public sessionQuery seam, non-model summarizer
+  digest, fresh-root teamCreation with provenance pre-put + bindFresh),
+  BQ-16 provenance (additive optional `handoffSourceSessionId` on the
+  TeamSession record + rootFacts — NOT a new factType), BQ-17
+  `handoffRead.describe` state/provenance read, BQ-18 fork reconciliation
+  read (`fork.describe`, incl. the handoff-root-vs-settled-fork
+  integrity-conflict pin), BC-22 retry = `handoff.create` idempotency on
+  (sourceSessionId, requestToken) (verified + pinned), BC-23/BC-24 =
+  client-side decisions with NO backend mutation (verified + pinned).
+  Note supersession of matrix note 4 (handoff is no longer fail-closed in
+  production).
+- **Residuals (documented, not gaps)**: R2 (g) W2 `lifecycle !== 'CREATED'`
+  over-approximation — MINOR, P10 tightening candidate; R2 (f) glue-marker
+  in-chain untestable — known test-infra limit (dist smoke + live M4 cover).
+- **Result**: every backend-semantic row is now COVERED,
+  NATIVE_PROVEN, CLIENT_LOCAL, or NOT_APPLICABLE_WITH_REASON. The matrix +
+  `backend-contract-freeze.md` form the P9 backend contract reference.
