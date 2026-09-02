@@ -30,6 +30,9 @@ import { describe, expect, it } from 'vitest'
 import {
   P7T5_FIXTURE,
   createP7T5World,
+  expectedContextToken,
+  expectedIntentToken,
+  expectedTargetRoot,
 } from './p7t5-helpers.js'
 import { HANDOFF_ERROR_CODES } from '../handoff/errors.js'
 import type { HandoffOperationState } from '../handoff/types.js'
@@ -100,6 +103,29 @@ const s3recovered: StateOf<'completed'> = narrow(
 const s4known = w1.service.describeOperation(SRC, TOKEN)
 const s4unknown = w1.service.describeOperation(SRC, TOKEN_ALT)
 
+// --- S5: T12-B5 cross-source BC — SAME request token, DIFFERENT sources -------------
+// `(A, X)` and `(B, X)` are two DISTINCT operations: different context
+// tokens, different intent tokens, and — through the deterministic
+// target-root derivation — different target roots (the pre-B5
+// requestToken-only derivation collided on the token for both sources).
+// Replay stability (same source + same token) is the S2/S3 acceptance.
+
+const SRC_A = 'session-p8s7r4-bc22-src-a'
+const SRC_B = 'session-p8s7r4-bc22-src-b'
+const TOKEN_BOTH = 'tok-p8s7r4-bc22-both'
+const w5a = createP7T5World()
+const s5a: StateOf<'completed'> = narrow(
+  await w5a.service.startTeamFromHere({ sourceSessionId: SRC_A, requestToken: TOKEN_BOTH, staged: {} }),
+  'completed',
+  'S5 (A,X)',
+)
+const w5b = createP7T5World()
+const s5b: StateOf<'completed'> = narrow(
+  await w5b.service.startTeamFromHere({ sourceSessionId: SRC_B, requestToken: TOKEN_BOTH, staged: {} }),
+  'completed',
+  'S5 (B,X)',
+)
+
 // --- assertions ----------------------------------------------------------------------
 
 describe('p8s7r4 W5 (BC-22) — the handoff.create idempotency per (sourceSessionId, requestToken)', () => {
@@ -110,7 +136,9 @@ describe('p8s7r4 W5 (BC-22) — the handoff.create idempotency per (sourceSessio
     expect(w1.source.readCount).toBe(1)
     expect(w1.summarizer.summarizeCount).toBe(1)
     expect(w1.creation.callCount).toBe(1)
-    checkIntent(w1.creation.intents, 0, `handoff-intent-${TOKEN}`, SRC)
+    // T12-B5: the expected token is the composite identity of
+    // (sourceSessionId, requestToken) — re-derived here independently.
+    checkIntent(w1.creation.intents, 0, expectedIntentToken(SRC, TOKEN), SRC)
   })
 
   it('S2: the same-token replay returns the stored state marked replayed — zero re-read, zero re-summary, zero duplicate creation', () => {
@@ -139,8 +167,9 @@ describe('p8s7r4 W5 (BC-22) — the handoff.create idempotency per (sourceSessio
     expect(w3.creation.callCount).toBe(2)
     expect(w3.source.readCount).toBe(1)
     expect(w3.summarizer.summarizeCount).toBe(1)
-    checkIntent(w3.creation.intents, 0, `handoff-intent-${TOKEN}`, SRC)
-    checkIntent(w3.creation.intents, 1, `handoff-intent-${TOKEN}`, SRC)
+    // T12-B5: the re-drive carries the SAME stable composite intentToken.
+    checkIntent(w3.creation.intents, 0, expectedIntentToken(SRC, TOKEN), SRC)
+    checkIntent(w3.creation.intents, 1, expectedIntentToken(SRC, TOKEN), SRC)
   })
 
   it('S4: describeOperation reports the operation state/provenance (known: context-frozen + completed + team)', () => {
@@ -157,6 +186,30 @@ describe('p8s7r4 W5 (BC-22) — the handoff.create idempotency per (sourceSessio
     expect(s4unknown.snapshotStatus).toBe('absent')
     expect(s4unknown.state).toBe(null)
     expect(s4unknown.team).toBe(null)
+  })
+
+  it('S5: T12-B5 — (A,X) and (B,X) are different operations: different tokens AND different target roots', () => {
+    const intentA = w5a.creation.intents[0]
+    const intentB = w5b.creation.intents[0]
+    if (intentA === undefined || intentB === undefined) {
+      throw new Error('S5: both cross-source operations must record exactly one creation intent')
+    }
+    // The tokens are the composite identity of (source, requestToken) —
+    // each re-derived independently from the plan contract.
+    expect(intentA.intentToken).toBe(expectedIntentToken(SRC_A, TOKEN_BOTH))
+    expect(intentB.intentToken).toBe(expectedIntentToken(SRC_B, TOKEN_BOTH))
+    // The BC: same request token, different sources → different tokens.
+    expect(intentA.intentToken).not.toBe(intentB.intentToken)
+    expect(s5a.context.contextToken).toBe(expectedContextToken(SRC_A, TOKEN_BOTH))
+    expect(s5b.context.contextToken).toBe(expectedContextToken(SRC_B, TOKEN_BOTH))
+    expect(s5a.context.contextToken).not.toBe(s5b.context.contextToken)
+    // And through the deterministic target-root derivation (root.ts
+    // createHandoffTeam, re-derived here independently) — different
+    // target roots: the cross-source collision is closed end to end.
+    expect(expectedTargetRoot(intentA.intentToken)).not.toBe(expectedTargetRoot(intentB.intentToken))
+    // The provenance still names its own source.
+    expect(intentA.handoff?.sourceSessionId).toBe(SRC_A)
+    expect(intentB.handoff?.sourceSessionId).toBe(SRC_B)
   })
 })
 

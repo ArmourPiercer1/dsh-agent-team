@@ -52,6 +52,8 @@ import {
   P7T5_FIXTURE,
   assertHandoffCode,
   createP7T5World,
+  expectedContextToken,
+  expectedIntentToken,
 } from './p7t5-helpers.js'
 
 // ---------------------------------------------------------------------------
@@ -458,7 +460,7 @@ describe('p7t5 failure-before-root-create', () => {
     expect(s1.postRetryCreations).toBe(1)
     expect(s1.retriedIntentHandoff).toEqual({
       sourceSessionId: P7T5_FIXTURE.sourceSessionId,
-      contextToken: 'handoff-ctx-tok-p7t5-fail',
+      contextToken: expectedContextToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-fail'),
       capturedAt: DEFAULT_CLOCK,
     })
   })
@@ -472,7 +474,7 @@ describe('p7t5 failure-before-root-create', () => {
     })
     expect(s2.creationCalls).toBe(1)
     expect(s2.readCount).toBe(1)
-    expect(s2.intentTokens).toEqual(['handoff-intent-tok-p7t5-cwoh'])
+    expect(s2.intentTokens).toEqual([expectedIntentToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-cwoh')])
     expect(s2.intentHandoffPresent).toBe(false)
   })
 
@@ -502,7 +504,10 @@ describe('p7t5 failure-before-root-create', () => {
     expect(s4.retriedKind).toBe('completed')
     expect(s4.postRetryCreations).toBe(2)
     expect(s4.postRetryReads).toBe(1)
-    expect(s4.intentTokens).toEqual(['handoff-intent-tok-p7t5-cfail', 'handoff-intent-tok-p7t5-cfail'])
+    expect(s4.intentTokens).toEqual([
+      expectedIntentToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-cfail'),
+      expectedIntentToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-cfail'),
+    ])
     expect(s4.retriedSameContext).toBe(true)
   })
 

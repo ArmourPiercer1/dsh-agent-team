@@ -35,6 +35,8 @@ import {
   P7T5_FIXTURE,
   assertHandoffCode,
   createP7T5World,
+  expectedContextToken,
+  expectedIntentToken,
   makeSurface,
 } from './p7t5-helpers.js'
 
@@ -273,7 +275,7 @@ describe('p7t5 snapshot-once', () => {
     // functions, no live handles (the target gains no read grant,
     // Architecture §34.3).
     expect(s1.isRemoteSafe).toBe(true)
-    expect(s1.contextToken).toBe('handoff-ctx-tok-p7t5-once')
+    expect(s1.contextToken).toBe(expectedContextToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-once'))
     expect(s1.capturedAt).toBe(DEFAULT_CLOCK)
     expect(s1.summaryTitle).toBe(`handoff:${P7T5_FIXTURE.sourceSessionId}`)
     expect(s1.bullets).toEqual(['user: build the baseline', 'assistant: baseline committed'])
@@ -284,11 +286,11 @@ describe('p7t5 snapshot-once', () => {
 
   it('S1: the staged TeamIntent carries the one-shot handoff provenance (Architecture §7.2)', () => {
     if (s1 === undefined) throw new Error('S1 did not run')
-    expect(s1.intentToken).toBe('handoff-intent-tok-p7t5-once')
+    expect(s1.intentToken).toBe(expectedIntentToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-once'))
     expect(s1.intentStagedJson).toBe('{}')
     expect(s1.intentHandoff).toEqual({
       sourceSessionId: P7T5_FIXTURE.sourceSessionId,
-      contextToken: 'handoff-ctx-tok-p7t5-once',
+      contextToken: expectedContextToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-once'),
       capturedAt: DEFAULT_CLOCK,
     })
     // Invariant 9: TeamSessionId = RootSessionId.
@@ -314,7 +316,7 @@ describe('p7t5 snapshot-once', () => {
     expect(s1.freshReads).toBe(2)
     expect(s1.freshSummaries).toBe(2)
     expect(s1.freshCreations).toBe(2)
-    expect(s1.freshContextToken).toBe('handoff-ctx-tok-p7t5-fresh')
+    expect(s1.freshContextToken).toBe(expectedContextToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-fresh'))
   })
 
   it('S2: a non lossless-JSON surface fails with HANDOFF_SOURCE_SURFACE_UNAVAILABLE before summary and creation', () => {

@@ -58,6 +58,7 @@ import {
   parseSessionId,
 } from '../../contracts/src/index.js'
 import type { RemoteSafeRecord } from '../../contracts/src/index.js'
+import { sha256Hex } from '../../domain/blueprint/src/index.js'
 import {
   HANDOFF_ERROR_CODES,
   HandoffError,
@@ -435,7 +436,7 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
     }
 
     const context = deepFreeze({
-      contextToken: `handoff-ctx-${record.requestToken}`,
+      contextToken: contextTokenOf(record),
       sourceSessionId: record.sourceSessionId,
       capturedAt: ports.clock(),
       surface,
@@ -486,12 +487,19 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
     }
   }
 
-  /** Build the staged TeamIntent for the next creation call. */
+  /**
+   * Build the staged TeamIntent for the next creation call. T12-B5
+   * (plan §7-B3): the intentToken is the composite identity of the
+   * `(sourceSessionId, requestToken)` pair — a replay re-derives the
+   * same stable token (the idempotency contract), and a different
+   * source can never collide with it (the BC: `(A,X)` and `(B,X)` are
+   * different operations with different target roots).
+   */
   function buildIntent(record: OpRecord): HandoffTeamIntent {
     const context = record.context
     if (record.creationMode === 'with-handoff' && context !== undefined) {
       return {
-        intentToken: `handoff-intent-${record.requestToken}`,
+        intentToken: intentTokenOf(record),
         staged: record.staged,
         handoff: {
           sourceSessionId: record.sourceSessionId,
@@ -501,7 +509,7 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
       }
     }
     return {
-      intentToken: `handoff-intent-${record.requestToken}`,
+      intentToken: intentTokenOf(record),
       staged: record.staged,
     }
   }
@@ -649,6 +657,32 @@ function assertOutcome(outcome: TeamCreationOutcome): void {
 /** One registry key per `(sourceSessionId, requestToken)` pair. */
 function operationKey(sourceSessionId: string, requestToken: string): string {
   return `${sourceSessionId}\u0000${requestToken}`
+}
+
+/**
+ * T12-B5 (plan §7-B3) — the canonical composite identity: the ONE
+ * digest over the canonical JSON of the `(sourceSessionId, requestToken)`
+ * pair, carried as the 40-hex-digit suffix of BOTH handoff tokens under
+ * different prefixes (`handoff-ctx-…` and `handoff-intent-…`) and,
+ * through the intentToken, of the deterministic target root (the public
+ * Team creation entry derives it). A replay (same source, same request
+ * token) therefore re-derives the SAME logical operation and the SAME
+ * target; a different source with the same request token is a
+ * DIFFERENT operation with a different token and a different target
+ * root (no cross-source collision).
+ */
+function compositeIdentityDigest(sourceSessionId: string, requestToken: string): string {
+  return sha256Hex(canonicalJsonStringify({ requestToken, sourceSessionId })).slice(0, 40)
+}
+
+/** The one-shot handoff context token of one operation (T12-B5). */
+function contextTokenOf(record: OpRecord): string {
+  return `handoff-ctx-${compositeIdentityDigest(record.sourceSessionId, record.requestToken)}`
+}
+
+/** The stable team intent token of one operation (T12-B5). */
+function intentTokenOf(record: OpRecord): string {
+  return `handoff-intent-${compositeIdentityDigest(record.sourceSessionId, record.requestToken)}`
 }
 
 /** Map one thrown value onto the closed failure record of a code. */

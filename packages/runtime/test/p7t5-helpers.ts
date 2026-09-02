@@ -49,10 +49,43 @@ import type {
 } from '../handoff/index.js'
 import { HandoffError, createHandoffService } from '../handoff/index.js'
 import type { HandoffService } from '../handoff/index.js'
+import { canonicalJsonStringify } from '../../contracts/src/index.js'
 import type { RemoteSafeRecord } from '../../contracts/src/index.js'
+import { sha256Hex } from '../../domain/blueprint/src/index.js'
 
 /** The deterministic fixture clock (ISO-8601). */
 export const DEFAULT_CLOCK = '2026-08-29T12:00:00.000Z'
+
+/**
+ * T12-B5 (plan §7-B3) — the canonical composite identity, re-derived
+ * here INDEPENDENTLY of the service (the tests pin the plan contract,
+ * not the implementation): the ONE digest over the canonical JSON of
+ * the `(sourceSessionId, requestToken)` pair, carried as the 40-hex
+ * digit suffix of both tokens (different prefixes, same digest).
+ */
+export function compositeHandoffDigest(sourceSessionId: string, requestToken: string): string {
+  return sha256Hex(canonicalJsonStringify({ requestToken, sourceSessionId })).slice(0, 40)
+}
+
+/** The expected one-shot handoff context token of one operation. */
+export function expectedContextToken(sourceSessionId: string, requestToken: string): string {
+  return `handoff-ctx-${compositeHandoffDigest(sourceSessionId, requestToken)}`
+}
+
+/** The expected stable team intent token of one operation. */
+export function expectedIntentToken(sourceSessionId: string, requestToken: string): string {
+  return `handoff-intent-${compositeHandoffDigest(sourceSessionId, requestToken)}`
+}
+
+/**
+ * The deterministic target root derivation (root.ts `createHandoffTeam`,
+ * re-derived here independently for the T12-B5 cross-source BC):
+ * `session-handoff-` + the 40-hex-digit digest of the canonical
+ * `{ intentToken }`.
+ */
+export function expectedTargetRoot(intentToken: string): string {
+  return `session-handoff-${sha256Hex(canonicalJsonStringify({ intentToken })).slice(0, 40)}`
+}
 
 /** The P7-T5 fixture identities (distinct from P4 / P5 / P6 fixtures). */
 export const P7T5_FIXTURE = {

@@ -41,6 +41,7 @@ import {
   P7T5_FIXTURE,
   createP7T5World,
   assertHandoffCode,
+  expectedIntentToken,
 } from './p7t5-helpers.js'
 import { HANDOFF_ERROR_CODES } from '../handoff/errors.js'
 import { HANDOFF_DECISION_OPTIONS } from '../handoff/types.js'
@@ -212,7 +213,7 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     const intent = w2.creation.intents[0]
     if (intent === undefined) throw new Error('S2: the staged intent is missing')
     expect(intent.handoff === undefined).toBe(true)
-    expect(intent.intentToken).toBe(`handoff-intent-${TOKEN}`)
+    expect(intent.intentToken).toBe(expectedIntentToken(SRC, TOKEN))
   })
 
   it('S3: retry re-runs the one-shot summarization from the FROZEN snapshot (no source re-read) and recovers the handoff', () => {
