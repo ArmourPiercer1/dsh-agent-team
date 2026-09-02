@@ -165,9 +165,12 @@ UI-only state with NO backend surface (P9 owns it entirely):
 216 fixed rows (plan §26): **148 COVERED / 49 PARTIAL→repaired or
 documented / 0 MISSING / 14 NATIVE_PROVEN / 5 CLIENT_LOCAL / 0
 NOT_APPLICABLE_WITH_REASON** (see `ui-backend-coverage-matrix.md` addendum,
-R83). Repairs delivered in S7: R1 (B05/B07/ND-02), R2 (25 rows: BQ-08/10/11
+R83). Repairs delivered in S7: R1 (B05/B07/ND-02), R2 (29 rows: BQ-08/10/11
 views, durable PolicyState, F11/F12, D14), R4 (13 rows: handoff production
-wiring, BQ-16/17/18 reads, BC-22/23/24 verification). Residuals are
+wiring, BQ-16/17/18 reads, BC-22/23/24 verification). Closure arithmetic
+(verified against the matrix on disk, R83): the 49 MAP-time PARTIAL rows =
+R80 reclassifications 4 (A07/S06/S07→COVERED, I08→NAWR) + R1 3 + R2 29 +
+R4 13; every PARTIAL row is now resolved. Residuals are
 documented design boundaries or P10 hardening candidates (R2 residual (g):
 W2 `lifecycle !== 'CREATED'` over-approximation — MINOR, P10 tightening
 candidate; (f): glue-marker in-chain untestable — known test-infra limit).
