@@ -198,6 +198,14 @@ export interface LiveWorld {
       installScopedPersona(sessionId: string, identity: unknown): void
       restoreScopedPersona(sessionId: string): void
     }
+    /** The B6 handoff port: start (or re-attach) the team root's REAL DSH Agent (T12-GLUE). */
+    readonly createRootAgent(rootSessionId: string): Promise<void>
+    /** The B6 handoff port: deliver the frozen context as a REAL model-visible input turn (T12-GLUE). */
+    readonly deliverRootContext(input: {
+      readonly rootSessionId: string
+      readonly contextToken: string
+      readonly text: string
+    }): Promise<void>
     boot(): Promise<void>
     close(): Promise<void>
     [k: string]: unknown

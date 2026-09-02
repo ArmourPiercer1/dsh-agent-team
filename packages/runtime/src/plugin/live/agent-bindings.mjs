@@ -80,6 +80,21 @@
  *   surface                      (TeamAgentSetupSurface; no-op per SD-SURFACE)
  *   sessionInput.submitAttributedInput(input)
  *   workDelivery.deliver(args)
+ *   createRootAgent(rootSessionId)
+ *                                 (T12-GLUE: the B6 handoff target Root
+ *                                  Agent start — create-or-ensure on one
+ *                                  team root of this row's domain; the
+ *                                  effective workspace from the durable
+ *                                  TeamSession row, the leader model
+ *                                  resolution + persona through the shared
+ *                                  setup; a durable session re-attaches via
+ *                                  resume)
+ *   deliverRootContext({rootSessionId, contextToken, text})
+ *                                 (T12-GLUE: the frozen handoff context as
+ *                                  a REAL model-visible input turn on the
+ *                                  same path the delegate work uses;
+ *                                  at-least-once — NO dedupe here, B6
+ *                                  dedupes by contextToken durably)
  *   interrupt(target)            (agent.cancel({kind:'user'}))
  *   drainDescendants(childSessionId) -> {drained, quiescent}
  *                                 (T12-M3: the REAL recursive drain — whenIdle
@@ -269,11 +284,16 @@ export function createAgentBindings(deps) {
    * The durable instance binding for one session (the root embodies the
    * leader instance; every other live session is a bound member child).
    * @param {string} sessionId
+   * @param {string} [teamRootSid] - the team root the session belongs to
+   *   (T12-GLUE: the row's domain hosts every team root of the row — the
+   *   handoff target is a NEW team root; absent = this row's boot root, as
+   *   before).
    * @returns {string} the clean instance id.
    */
-  function instanceIdForSession(sessionId) {
-    if (sessionId === rootSid) return String(LEADER_INSTANCE_ID)
-    const members = domain.repositories.memberInstances.list(rootSid)
+  function instanceIdForSession(sessionId, teamRootSid) {
+    const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
+    if (sessionId === teamRoot) return String(LEADER_INSTANCE_ID)
+    const members = domain.repositories.memberInstances.list(teamRoot)
     for (const member of members) {
       if (String(member.childSessionId) === sessionId) return String(member.instanceId)
     }
@@ -294,18 +314,24 @@ export function createAgentBindings(deps) {
    *   carries the same value step 15 commits. The lookup stays
    *   authoritative for every other caller (boot, request boundary,
    *   projection).
+   * @param {string} [teamRootSid] - the team root the session belongs to
+   *   (T12-GLUE; absent = this row's boot root, as before).
    * @returns {{instanceId: string, modelView: object, mcpView: object | null}}
    *   `mcpView` is `null` when no Team MCP server is configured
    *   (config.mcpServer === null — T12-H1): no MCP facet exists, so
    *   consumers must treat null as "no MCP" (never dereference).
    */
-  function resolveConsumptionViews(sessionId, instanceIdHint) {
+  function resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid) {
     const existing = consumptionState.get(sessionId)
+    // T12-GLUE: the consumption cell is keyed by the TEAM ROOT the session
+    // belongs to — the handoff target resolves under its own root's durable
+    // truth (its own governance overrides, never the boot team's).
+    const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
     let instanceId
     if (existing !== undefined) instanceId = existing.instanceId
     else if (instanceIdHint !== undefined) instanceId = String(instanceIdHint)
-    else instanceId = instanceIdForSession(sessionId)
-    const overrides = domain.repositories.overrides.list(rootSid)
+    else instanceId = instanceIdForSession(sessionId, teamRoot)
+    const overrides = domain.repositories.overrides.list(teamRoot)
     // T12-B3: the external hard facts come from the boot config (the host
     // injects them at plugin construction). This is schema normalization
     // ONLY — shallow copies so a mutation of the normalized object cannot
@@ -321,7 +347,7 @@ export function createAgentBindings(deps) {
     }
     const applied = existing !== undefined ? [...existing.appliedRecordIds] : []
     const modelArgs = {
-      rootSessionId: rootSid,
+      rootSessionId: teamRoot,
       instanceId,
       overrides,
       external,
@@ -339,7 +365,7 @@ export function createAgentBindings(deps) {
       config.mcpServer === null
         ? null
         : consumption.capability.resolveDurableMcpFacet({
-            rootSessionId: rootSid,
+            rootSessionId: teamRoot,
             instanceId,
             overrides,
             external,
@@ -437,14 +463,16 @@ export function createAgentBindings(deps) {
    * last layer it installs onto). A pre-setup
    * personaSurface.installScopedPersona for the same session flushes here
    * too. Both installs precede any work on the session.
+   * @param {string} [teamRootSid] - the team root the session belongs to
+   *   (T12-GLUE; absent = this row's boot root, as before).
    * @returns {function(object): Promise<void>} the AgentSetup callback.
    */
-  function agentSetup(sessionId, instanceIdHint, templateIdHint, bindPath) {
+  function agentSetup(sessionId, instanceIdHint, templateIdHint, bindPath, teamRootSid) {
     return async (agentCtx) => {
       // T12-M2: capture the agent ctx for the persona surface (the
       // production-facing installs and the overlay slot resolve through it).
       liveAgentCtxs.set(sessionId, agentCtx)
-      const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint)
+      const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
@@ -471,7 +499,7 @@ export function createAgentBindings(deps) {
       // section), after the tools and before the mcp mount: before ANY work
       // can run on this session. The reused resolver evaluates the preset
       // substrate first (complete -> FATAL, thrown before any install).
-      installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath)
+      installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid)
       // A pre-setup personaSurface.installScopedPersona for this session
       // (the pending window) flushes here too — still before any work.
       const pendingIdentity = personaPending.get(sessionId)
@@ -636,15 +664,21 @@ export function createAgentBindings(deps) {
    *    neither a row nor a hint fails closed with a loud error (no silent
    *    persona-less member).
    */
-  function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath) {
+  function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
     if (String(config.blueprintSource ?? '') === '') return
     const slot = getPersonaSlot()
+    // T12-GLUE: the session may be the root of its OWN team in this row's
+    // domain (the handoff target) — it then embodies that team's leader
+    // instance, exactly as the boot root does.
+    const teamRoot = teamRootSid !== undefined
+      ? String(teamRootSid)
+      : (sessionId === rootSid ? rootSid : undefined)
     let target
     let record
-    if (sessionId === rootSid) {
+    if (teamRoot !== undefined && teamRoot === sessionId) {
       const row =
-        domain.repositories.teamSessions !== undefined ? domain.repositories.teamSessions.get(rootSid) : undefined
-      target = { kind: 'root', sessionId: rootSid, rootSessionId: rootSid, instanceId: LEADER_INSTANCE_ID }
+        domain.repositories.teamSessions !== undefined ? domain.repositories.teamSessions.get(teamRoot) : undefined
+      target = { kind: 'root', sessionId: teamRoot, rootSessionId: teamRoot, instanceId: LEADER_INSTANCE_ID }
       record = row ?? {}
     } else {
       const members = domain.repositories.memberInstances.list(rootSid)
@@ -696,12 +730,14 @@ export function createAgentBindings(deps) {
    * public seam itself: an in-flight turn keeps its own assembly snapshot
    * (`assembled`); only the NEXT assembly sees the new `current`.
    * @param {string} sessionId
+   * @param {string} [teamRootSid] - the team root the session belongs to
+   *   (T12-GLUE; absent = this row's boot root, as before).
    * @returns {Promise<void>}
    */
-  async function prepareAgentForRequest(sessionId) {
+  async function prepareAgentForRequest(sessionId, teamRootSid) {
     const state = consumptionState.get(sessionId)
     if (state === undefined) return // defensive: every row agent has consumption state
-    const { modelView, mcpView } = resolveConsumptionViews(sessionId)
+    const { modelView, mcpView } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
     const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
     if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
       state.ref.current = selection
@@ -929,6 +965,129 @@ export function createAgentBindings(deps) {
       // means the model-visible message was submitted and the turn is over.
       await sessionPersistence.ensureMaterialized(handle.agent.session)
     },
+  }
+
+  // ── T12-GLUE: the handoff Root Agent ports (B6's createAndStartTeam) ────
+  //
+  // The with-context handoff drives the ONE formal createAndStartTeam
+  // primitive in the production root: after the canonical fresh-root binding
+  // (durable TeamSession + team-root binding + leader mint), the target Root
+  // Agent is started here (createRootAgent) and the frozen context is
+  // delivered into it here (deliverRootContext) — through the SAME real
+  // agent factory the boot path uses and the SAME real input path the
+  // delegate work uses. At-least-once semantics are owned by B6's durable
+  // side (the contextToken is the dedupe identity the target keeps); these
+  // ports submit and propagate rejections — a rejected delivery maps to
+  // creation-failed and the caller retries.
+  //
+  // The target is a team root of THIS row's domain (there is no second Team
+  // runtime): it is not this row's boot root, so the shared setup resolves
+  // its leader identity + consumption under its OWN root (the teamRootSid
+  // threaded through) and its cwd comes from its own durable TeamSession
+  // row.
+  //
+  /**
+   * The effective workspace of one team root (T12-GLUE; never DSH_HOME,
+   * T12-M1): the durable TeamSession row's defaultWorkspace — the value the
+   * B6 bindFresh persisted for the handoff team — with the row config's
+   * defaultWorkspace as the fallback (the boot root's M1 contract).
+   * @param {string} rootSessionId
+   * @returns {string}
+   */
+  function effectiveRootWorkspace(rootSessionId) {
+    const row =
+      domain.repositories.teamSessions !== undefined
+        ? domain.repositories.teamSessions.get(rootSessionId)
+        : undefined
+    if (row !== undefined && typeof row.defaultWorkspace === 'string' && row.defaultWorkspace !== '') {
+      return row.defaultWorkspace
+    }
+    return config.defaultWorkspace
+  }
+
+  /**
+   * Start (or re-attach) the REAL DSH Agent for one team root of this row's
+   * domain — the B6 handoff target (create-or-ensure, idempotent per root
+   * session id). The freshly-minted handoff root has no DSH session
+   * artifact yet (bindFresh writes the durable TEAM rows, not the session
+   * log) — so the fresh path is agents.create on the root session id,
+   * exactly the boot 'create' shape: meta.cwd = the root's effective
+   * workspace (never DSH_HOME) and the shared setup — the leader's durable
+   * model selection, the team tools, and the root's persona (M2) — all
+   * installed before the first prompt assembly. A root whose session
+   * artifact IS durable (a restart between a failed start and the B6
+   * retry) re-attaches through agents.resume with the same setup. The
+   * public persistence seam materializes the fresh session immediately (the
+   * boot create does the same), so the started root is durable at once.
+   * @param {string} rootSessionId
+   * @returns {Promise<void>}
+   */
+  async function createRootAgent(rootSessionId) {
+    const sid = String(rootSessionId)
+    if (sid === '') {
+      throw new Error('agent-bindings: createRootAgent requires a non-empty rootSessionId')
+    }
+    const live = liveAgents.get(sid)
+    if (live !== undefined) return // create-or-ensure: the agent already runs
+    let handle
+    if (sessionIsDurable(sid)) {
+      resumingSessions.add(sid)
+      try {
+        handle = await agents.resume({
+          resumeSessionId: SessionId(sid),
+          setup: agentSetup(sid, undefined, undefined, 'cold-root', sid),
+        })
+      } finally {
+        resumingSessions.delete(sid)
+      }
+    } else {
+      handle = await agents.create({
+        sessionId: SessionId(sid),
+        meta: { cwd: effectiveRootWorkspace(sid) },
+        setup: agentSetup(sid, undefined, undefined, 'fresh-root', sid),
+      })
+    }
+    liveAgents.set(sid, handle)
+    await sessionPersistence.ensureMaterialized(handle.agent.session)
+  }
+
+  /**
+   * Deliver the frozen handoff context into the target Root Agent (the B6
+   * at-least-once seam): `text` — token-leading, so the target side dedupes
+   * on the contextToken — goes in as a REAL model-visible input turn on the
+   * same path the delegate work uses: the request-boundary reconciliation
+   * under the root's own team truth, createUserMessage + agent.followup,
+   * observe-to-idle (a rejection PROPAGATES — B6 maps it to creation-failed
+   * and retries), then the public persistence seam materializes the durable
+   * log so the delivered turn is on disk before the primitive settles. NO
+   * dedupe here: at-least-once is B6's durable contract.
+   * @param {{rootSessionId: string, contextToken: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverRootContext(input) {
+    const sid = String(input?.rootSessionId ?? '')
+    const token = String(input?.contextToken ?? '')
+    const text = String(input?.text ?? '')
+    if (sid === '') {
+      throw new Error('agent-bindings: deliverRootContext requires a non-empty rootSessionId')
+    }
+    if (token === '') {
+      throw new Error('agent-bindings: deliverRootContext requires a non-empty contextToken')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverRootContext requires a non-empty text (the token-leading frozen context)')
+    }
+    const handle = await ensureLiveAgent(sid)
+    // The target root IS the team root of its own team — the boundary
+    // reconciliation resolves under that root's durable truth.
+    await prepareAgentForRequest(sid, sid)
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'user' },
+    })
+    handle.agent.followup(message)
+    await handle.agent.whenIdle()
+    await sessionPersistence.ensureMaterialized(handle.agent.session)
   }
 
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
@@ -1239,5 +1398,10 @@ export function createAgentBindings(deps) {
     childSessionIdFor,
     // additive (T12-M2): the REAL scoped-prompt persona surface
     personaSurface,
+    // additive (T12-GLUE): the handoff Root Agent ports (B6's
+    // createAndStartTeam drives them; a bundle without them fails closed
+    // with TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE before any durable effect)
+    createRootAgent,
+    deliverRootContext,
   }
 }

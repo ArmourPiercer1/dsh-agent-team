@@ -213,11 +213,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // runtime p8s7r4-bc22-idempotency,
     // runtime p8s7r4-bc23-24-no-mutation,
     // runtime p8s7r4-fork-describe).
-    // T12 lane A +8 files: t12a-live-bridge.mjs + t12a-live-bridge.d.mts +
-    // the six t12a-b2/b3/h1/m1/m2/m3 test files under runtime/test
+    // T12 lane A +9 files: t12a-live-bridge.mjs + t12a-live-bridge.d.mts +
+    // the seven t12a-b2/b3/h1/m1/m2/m3/glue test files under runtime/test
     // (.ts/.mts/.mjs are all scanned by the frozen scanner).
-    expect(scanResult.filesScanned).toBe(551)
-    expect(scanResult.files.length).toBe(551)
+    expect(scanResult.filesScanned).toBe(552)
+    expect(scanResult.files.length).toBe(552)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
