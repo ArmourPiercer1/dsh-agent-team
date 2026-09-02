@@ -1,0 +1,8 @@
+﻿node_modules\.bin\tsc.cmd : The system cannot find the path specified.
+At line:1 char:129
++ ... ew($false); node_modules\.bin\tsc.cmd -p packages\remote\tsconfig.jso ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The system cann...path specified.:String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 

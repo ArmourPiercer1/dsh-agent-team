@@ -1,0 +1,58 @@
+{
+  "criterion": "W3",
+  "boot": 1,
+  "pass": true,
+  "durationMs": 3095,
+  "assertions": [
+    {
+      "name": "both delegates executed and work-settled",
+      "pass": true,
+      "detail": "{\"c\":\"executed\",\"d\":\"executed\",\"ec\":null,\"mc\":null,\"ed\":null,\"md\":null}"
+    },
+    {
+      "name": "two DISTINCT member instances (fresh_per_delegation)",
+      "pass": true,
+      "detail": "{\"c\":\"inst-0lu6hq60ogok\",\"d\":\"inst-0mo5at30pumk\"}"
+    },
+    {
+      "name": "two DISTINCT child sessions, each derived from its instance",
+      "pass": true,
+      "detail": "{\"c\":\"session-child-p6t6-0lu6hq60ogok\",\"d\":\"session-child-p6t6-0mo5at30pumk\"}"
+    },
+    {
+      "name": "state: five members (no W1 mint; W1 continued the seed), both fresh scouts SETTLED at activityVersion 3",
+      "pass": true,
+      "detail": "{\"n\":5,\"c\":{\"instanceId\":\"inst-0lu6hq60ogok\",\"templateId\":\"scout\",\"label\":\"p8s3-w3-scout-c\",\"childSessionId\":\"session-child-p6t6-0lu6hq60ogok\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3},\"d\":{\"instanceId\":\"inst-0mo5at30pumk\",\"templateId\":\"scout\",\"label\":\"p8s3-w3-scout-d\",\"childSessionId\":\"session-child-p6t6-0mo5at30pumk\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3}}"
+    },
+    {
+      "name": "both fresh child Session logs durably carry their tokens",
+      "pass": true,
+      "detail": "bytesC=17618 bytesD=17618"
+    }
+  ],
+  "failing": [],
+  "http": {
+    "toolCalls": 2,
+    "stateCalls": 1,
+    "non200": []
+  },
+  "evidence": {
+    "memberCountAfter": 5,
+    "rowC": {
+      "instanceId": "inst-0lu6hq60ogok",
+      "templateId": "scout",
+      "label": "p8s3-w3-scout-c",
+      "childSessionId": "session-child-p6t6-0lu6hq60ogok",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    "rowD": {
+      "instanceId": "inst-0mo5at30pumk",
+      "templateId": "scout",
+      "label": "p8s3-w3-scout-d",
+      "childSessionId": "session-child-p6t6-0mo5at30pumk",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    }
+  }
+}
