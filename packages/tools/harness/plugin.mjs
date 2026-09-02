@@ -430,7 +430,12 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
             },
             mcp: {
               mounted: state !== undefined && state.mcpFiber !== undefined,
-              serverName: teamRoot.config.mcpServer.name,
+              // T12-V11: mcpServer: null is row-config-legal (host.ts row
+              // validation accepts it) — the null guard keeps the p6t6 state
+              // route well-formed for the mcp-less variant (parent-authorized
+              // harness-row bug fix; T12 runs #6-#10: deterministic 500
+              // "Cannot read properties of null (reading 'name')").
+              serverName: teamRoot.config.mcpServer?.name ?? null,
               ...(state !== undefined && state.mcpActivationError !== undefined ? { activationError: state.mcpActivationError } : {}),
               ...(views !== undefined ? {
                 allowed: views.mcpView.allowed,
