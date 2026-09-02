@@ -845,6 +845,7 @@ function makeScenarioCtx(criterion) {
     criterion,
     t0: Date.now(),
     assertions: [],
+    deferred: [],
     evidence: {},
     notes: [],
     error: null,
@@ -853,6 +854,11 @@ function makeScenarioCtx(criterion) {
     c.assertions.push({ name, ok: ok === true, detail: detail === undefined ? undefined : String(detail).slice(0, 2000) })
     return ok === true
   }
+  // T12-V13: content/contract checks that can only be evaluated once the
+  // FINAL mock capture + durable logs are in (a latched turn may settle AFTER
+  // the inline deadline — t12v-finding-360s-first-turn.md) are deferred to
+  // runCalibration(). The fn returns [ok, detail].
+  c.defer = (name, fn) => { c.deferred.push({ name, fn }) }
   c.note = (text) => c.notes.push(String(text))
   c.finish = (extraEvidence) => ({
     criterion,
@@ -917,6 +923,47 @@ function hasPhase(name) {
 }
 
 const scenarioResults = {}
+// T12-V13: deferred scenario contexts — { ctx, snapshot, prefix } where
+// snapshot is the scenarioResults key that receives the calibrated checks
+// (the composed V2 snapshot gets the [A]/[B]-prefixed names of its parts).
+const scenarioCtxs = []
+const registerScenarioCtx = (ctx, snapshot, prefix = '') => { scenarioCtxs.push({ ctx, snapshot, prefix }) }
+
+// Calibration pass (T12-V13): runs after every phase, before the summary.
+// Each deferred fn() returns [ok, detail]; the check is appended to the
+// composed snapshot and pass is recomputed (a fatal-errored part keeps
+// pass=false, mirroring makeScenarioCtx.finish()).
+function runCalibration(log) {
+  const lines = []
+  for (const { ctx, snapshot, prefix } of scenarioCtxs) {
+    if (ctx.deferred.length === 0) continue
+    const snap = scenarioResults[snapshot]
+    if (snap === undefined) {
+      lines.push(`${snapshot}: snapshot missing — ${ctx.deferred.length} deferred check(s) skipped`)
+      continue
+    }
+    for (const { name, fn } of ctx.deferred) {
+      let ok = false
+      let detail = '<deferred fn threw>'
+      try {
+        const r = fn()
+        ok = r?.[0] === true
+        detail = r?.[1] === undefined ? '' : String(r[1])
+      } catch (e) {
+        detail = String(e?.message ?? e)
+      }
+      const a = { name: prefix + name, ok: ok === true, detail: detail.slice(0, 2000) }
+      snap.assertions.push(a)
+      lines.push(`${a.name} -> ${a.ok ? 'PASS' : 'FAIL'} :: ${a.detail}`)
+    }
+    const partSnaps = snapshot === 'V2' ? [scenarioResults.__v2a, scenarioResults.__v2b] : [snap]
+    const anyFatal = partSnaps.some((p) => p !== undefined && p.error !== undefined)
+    snap.pass = !anyFatal && snap.assertions.length > 0 && snap.assertions.every((x) => x.ok)
+    lines.push(`${snapshot}: pass=${snap.pass} after calibration`)
+  }
+  for (const l of lines) log(`calibration: ${l}`)
+  return lines
+}
 const liveWorlds = new Set()
 let mock = null
 let mini = null
@@ -1290,6 +1337,10 @@ async function main() {
   } finally {
     await sweepLiveWorlds()
   }
+  // T12-V13: calibration-time content checks against the FINAL mock capture +
+  // durable logs — by now every latched turn has had its bounded chance to
+  // settle (or demonstrably never did).
+  runCalibration(log)
 
   // ── post-flight + summary ─────────────────────────────────────────────────
   const gitPost = await writeGitState('post')
@@ -1303,6 +1354,11 @@ async function main() {
   const mockCapture = {
     endpoint: `http://127.0.0.1:${MOCK_PORT}`,
     totalRequests: mock.requests.length,
+    // T12-V12: VERBATIM capture fidelity — messages (role + full content +
+    // tool-call fields) and the FULL tools schema are recorded exactly as
+    // sent, with no truncation: the persona-in-system-prompt and
+    // denied-at-model-boundary (tool schema) assertions must be auditable
+    // from the capture alone.
     requests: mock.requests.map((r) => ({
       seq: r.seq,
       receivedAt: r.receivedAt,
@@ -1311,11 +1367,14 @@ async function main() {
       stream: r.body?.stream,
       messages: (r.body?.messages ?? []).map((m) => ({
         role: m.role,
-        content: typeof m.content === 'string' ? m.content.slice(0, 4000) : m.content,
-        ...(Array.isArray(m.tool_calls) ? { tool_calls: m.tool_calls.map((tc) => ({ id: tc.id, name: tc.function?.name, arguments: String(tc.function?.arguments ?? '').slice(0, 2000) })) } : {}),
+        content: m.content,
+        ...(Array.isArray(m.tool_calls) ? { tool_calls: m.tool_calls.map((tc) => ({ id: tc.id, name: tc.function?.name, arguments: String(tc.function?.arguments ?? '') })) } : {}),
         ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
       })),
-      tools: (r.body?.tools ?? []).map((t) => t?.function?.name ?? t?.name).filter(Boolean),
+      tools: (r.body?.tools ?? []).map((t) => ({
+        type: t?.type,
+        function: { name: t?.function?.name, description: t?.function?.description, parameters: t?.function?.parameters },
+      })),
       reply: r.reply,
     })),
   }
@@ -1470,6 +1529,7 @@ async function runFresh1() {
 
   // ── V2: real Member (world A) ────────────────────────────────────────────
   const v2a = makeScenarioCtx('V2 real Member (world A): real DSH child Session; cwd == W_child; persona installed and visible in real prompt assembly (mock capture); effective model = row static selection')
+  registerScenarioCtx(v2a, 'V2', '[A] ')
   try {
     const createRes = await p6t6Tool(a.port, 'team_create_member', {
       rootSessionId: ROOT_A,
@@ -1512,13 +1572,27 @@ async function runFresh1() {
     const childAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 480_000)
     v2a.check('child turn settled against the mock', childAck !== null, childAck === null ? '<ack not in child log within 480s>' : 'ack found in durable child log')
     v2a.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, workerA.childSessionId, v2aAdmittedAt)
-    const childReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
-    const systemTexts = (childReq?.body?.messages ?? []).filter((m) => m.role === 'system').map((m) => String(m.content ?? ''))
-    v2a.evidence.childModelRequest = childReq === undefined ? null : { seq: childReq.seq, model: childReq.body?.model, systemMessages: systemTexts.map((t) => t.slice(0, 1200)), tools: (childReq.body?.tools ?? []).map((t) => t?.function?.name ?? t?.name).filter(Boolean) }
-    v2a.check('persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request)',
-      systemTexts.some((t) => t.includes('T12V worker persona world A')),
-      `system texts=${JSON.stringify(systemTexts.map((t) => t.slice(0, 200)))}`)
-    v2a.check('effective model = row static selection (deepseek-official/t12v-model-a)', childReq?.body?.model === 't12v-model-a', `model=${childReq?.body?.model}`)
+    // T12-V13: these two are CONTRACT checks, not latency checks — the
+    // CHILD_FIRST turn's model request may land AFTER the 480 s inline
+    // deadline under the shipped window latch (run #10: the whole burst
+    // replayed ~957 s after admission, 477 s past this deadline). Calibrate
+    // against the FINAL mock capture at run end; only the turn-settling
+    // check above stays deadline-bound.
+    v2a.defer('persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request)', () => {
+      const childReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
+      if (childReq === undefined) return [false, 'no mock request carrying the CHILD_FIRST marker reached the endpoint within the run (latched turn never settled)']
+      const systemTexts = (childReq.body?.messages ?? []).filter((m) => m.role === 'system').map((m) => String(m.content ?? ''))
+      const ev = { seq: childReq.seq, model: childReq.body?.model, systemMessages: systemTexts.map((t) => t.slice(0, 1200)), tools: (childReq.body?.tools ?? []).map((t) => t?.function?.name ?? t?.name).filter(Boolean) }
+      v2a.evidence.childModelRequest = ev
+      const partA = scenarioResults.__v2a
+      if (partA !== undefined) partA.evidence.childModelRequest = ev
+      return [systemTexts.some((t) => t.includes('T12V worker persona world A')), `system texts=${JSON.stringify(systemTexts.map((t) => t.slice(0, 200)))}`]
+    })
+    v2a.defer('effective model = row static selection (deepseek-official/t12v-model-a)', () => {
+      const childReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
+      if (childReq === undefined) return [false, 'no mock request carrying the CHILD_FIRST marker reached the endpoint within the run (latched turn never settled)']
+      return [childReq.body?.model === 't12v-model-a', `model=${childReq.body?.model} seq=${childReq.seq}`]
+    })
   } catch (error) {
     v2a.error = error
     v2a.check('V2 (world A) completed without fatal error', false, String(error?.message ?? error))
@@ -1528,6 +1602,7 @@ async function runFresh1() {
 
   // ── V3: real policy — external hard deny beats the override ──────────────
   const v3 = makeScenarioCtx('V3 real policy: external hard DENY of mcp + member override ALLOW mcp => mcp remains denied at the ACTUAL consumption boundary (model tool schema omits the mcp tool; the agent loop fails the call; no mcp mount established) — not just the projection')
+  registerScenarioCtx(v3, 'V3')
   try {
     const setRes = await remoteCall(a.origin, a.cookie, 'override.set', {
       teamSessionId: a.teamSession,
@@ -1569,18 +1644,35 @@ async function runFresh1() {
     const v3TurnStartMs = turnStartBeforeText(HOME_A, workerA.childSessionId, `T12V_USE_MCP_${NONCE}`)
     v3.evidence.denyTurnStartMs = v3TurnStartMs
     v3.evidence.denyTurnLatencyMs = v3TurnStartMs !== null ? v3TurnStartMs - v3AdmittedAt : null
-    const childLogText = logTextOf(HOME_A, workerA.childSessionId) ?? ''
-    const toolAttemptVisible = childLogText.includes(MCP_PING_TOOL)
-    v3.check('child session log records the mcp tool attempt at the consumption boundary',
-      toolAttemptVisible, `log contains attempted tool name ${MCP_PING_TOOL}: ${toolAttemptVisible}`)
+    // T12-V13: the USE_MCP turn's model traffic lands WITH the turn — under
+    // the shipped window latch that can be past the 480 s inline deadline
+    // (run #10: the denied-ack arrived ~1.3 s past it, so every log/capture
+    // check executed here saw nothing). Calibrate the boundary content
+    // checks at run end; only the turn-settling check above stays
+    // deadline-bound.
+    v3.defer('child session log records the mcp tool attempt at the consumption boundary', () => {
+      const childLogText = logTextOf(HOME_A, workerA.childSessionId) ?? ''
+      const visible = childLogText.includes(MCP_PING_TOOL)
+      return [visible, `log contains attempted tool name ${MCP_PING_TOOL}: ${visible}`]
+    })
+    v3.defer('the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id)', () => {
+      const mcpTurnReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_USE_MCP_${NONCE}`)))
+      if (mcpTurnReq === undefined) return [false, 'no mock request carrying the USE_MCP marker reached the endpoint within the run (latched turn never settled)']
+      const call = (mcpTurnReq.reply?.toolCalls ?? []).find((tc) => tc?.name === MCP_PING_TOOL)
+      const attempted = mcpTurnReq.reply?.kind === 'tool-call' && call !== undefined
+      const denialRelayed = call !== undefined && mock.requests.some((r) => (r.body?.messages ?? []).some((m) => m?.role === 'tool' && m?.tool_call_id === call.id))
+      return [attempted && denialRelayed, `attempted=${attempted} denialRelayed=${denialRelayed} reply=${JSON.stringify(mcpTurnReq.reply).slice(0, 240)}`]
+    })
     // The ACTUAL consumption boundary at the model level: the tool schema
     // sent to the model on that turn must NOT include the mcp tool.
-    const mcpTurnReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_USE_MCP_${NONCE}`)))
-    const toolNames = (mcpTurnReq?.body?.tools ?? []).map((t) => t?.function?.name ?? t?.name).filter(Boolean)
-    v3.evidence.mcpTurnTools = toolNames
-    v3.check('model request tool schema omits the mcp tool (denied at the model-consumption boundary)',
-      mcpTurnReq !== undefined && toolNames.length > 0 && !toolNames.includes(MCP_PING_TOOL),
-      `tools=${JSON.stringify(toolNames)}`)
+    v3.defer('model request tool schema omits the mcp tool (denied at the model-consumption boundary)', () => {
+      const mcpTurnReq = mock.requests.find((r) => (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_USE_MCP_${NONCE}`)))
+      if (mcpTurnReq === undefined) return [false, 'no mock request carrying the USE_MCP marker reached the endpoint within the run (latched turn never settled)']
+      const toolNames = (mcpTurnReq.body?.tools ?? []).map((t) => t?.function?.name ?? t?.name).filter(Boolean)
+      v3.evidence.mcpTurnTools = toolNames
+      if (scenarioResults.V3 !== undefined) scenarioResults.V3.evidence.mcpTurnTools = toolNames
+      return [toolNames.length > 0 && !toolNames.includes(MCP_PING_TOOL), `tools=${JSON.stringify(toolNames)}`]
+    })
     // Diagnostics (never the assertion source): the override is recorded but
     // the effective mcp cell stays denied (mounted === false) — i.e. no real
     // mcp mount was established, so no mcp request could have been served.
@@ -1734,14 +1826,16 @@ async function runFresh1() {
     v5.evidence.projectionKeys = projValue === undefined ? null : Object.keys(projValue)
     v5.check('team.getProjection answered through the public Remote (HTTP 200 + ok result)', projRes.status === 200 && projRes.body?.result?.ok === true, `status=${projRes.status}`)
     v5.check('projection teamSessionId matches the durable TeamSession', projection?.teamSessionId === a.teamSession, `projection=${projection?.teamSessionId} expected=${a.teamSession}`)
-    // Frozen contract: v1 field set (TEAM_PROJECTION_FIELDS) or v2 (S7-R2:
-    // additive optional disposedHistory) — contracts/src/projection/projection.ts.
-    // The shipped runtime currently stamps 2; accept the frozen set, require
-    // the nine v1 top-level fields to be present either way.
+    // T12-V13 strict, per P8-S backend-contract-freeze.md: SUPPORTED_PROJECTION_
+    // SCHEMA_VERSIONS = [1, 2] (v1 records stay parseable), but "the production
+    // projection service stamps schemaVersion: 2" and the remote contract lists
+    // team.getProjection as carrying the "v2-stamped in production" DTO. A
+    // PRODUCTION read through this endpoint must therefore be exactly 2; a
+    // 1 here would be a contract contradiction to be recorded, not accepted.
     const V1_FIELDS = ['schemaVersion', 'teamSessionId', 'blueprint', 'generation', 'generatedAt', 'root', 'templates', 'members', 'ledger']
     const sv = projection?.schemaVersion
-    v5.check('projection carries a frozen schemaVersion (1 or 2) with the nine v1 top-level fields',
-      sv === 1 || sv === 2, `schemaVersion=${sv}`)
+    v5.check('projection carries the production schemaVersion 2 (P8-S contract freeze: production projection service stamps schemaVersion: 2)',
+      sv === 2, `schemaVersion=${sv}`)
     v5.check('projection top-level field set matches the frozen v1 contract (superset for v2)',
       projection !== undefined && V1_FIELDS.every((f) => f in projection), `keys=${JSON.stringify(projection === undefined ? null : Object.keys(projection))}`)
     const projMembers = projection?.members ?? []
@@ -1809,16 +1903,14 @@ async function runFresh2() {
     label: 'B1', world: 'b', dshHome: HOME_B, port: PORT_B, boot: 3,
     bootPhase: 'create', rootSessionId: ROOT_B, mcpPort: null,
   })
-  // World B carries the mcpServer:null row variant. The SHIPPED state route
-  // (plugin.mjs L433: `serverName: teamRoot.config.mcpServer.name`)
-  // dereferences config.mcpServer unconditionally, so for this variant the
-  // state route 500s deterministically with
-  // `Cannot read properties of null (reading 'name')` — a shipped-code defect
-  // against a row-config-legal value (host.ts row validation accepts
-  // mcpServer: null). Boot health is already gated by bootWorld, and the
-  // remote teamSessionId parameter is the ROOT session id itself (invariant 9,
-  // ids.ts L15-19), so probe LENIENTLY: the state-route failure is recorded as
-  // evidence, not a run abort.
+  // World B carries the mcpServer:null row variant. HISTORY: the p6t6 state
+  // route (plugin.mjs L433) dereferenced config.mcpServer unconditionally and
+  // 500'd deterministically with `Cannot read properties of null (reading
+  // 'name')` (T12 runs #6-#10); T12-V11 added the null guard, so the route is
+  // expected WELL-FORMED here (serverName: null). The probe still records a
+  // failed route as evidence rather than aborting, and the remote
+  // teamSessionId parameter remains the ROOT session id itself (invariant 9,
+  // ids.ts L15-19).
   const st0 = await p6t6StateProbe(b.port, { rootSessionId: ROOT_B, phase: 'create', timeoutMs: 10_000 })
   b.teamSession = (st0.ok === true && st0.body?.teamSession?.rootSessionId === ROOT_B) ? st0.body.teamSession.rootSessionId : ROOT_B
   if (st0.ok !== true) {
@@ -1829,13 +1921,14 @@ async function runFresh2() {
     throw new Error('fresh #2 requires the fresh #1 state (scenarioResults.__a1 or t12v-state.json) — run the fresh1 phase first')
   }
   const v2b = makeScenarioCtx('V2 variant (world B): config mcpServer:null does not crash — real boot, real member, real child turn')
+  registerScenarioCtx(v2b, 'V2', '[B] ')
   let workerB = null
   try {
     v2b.evidence.state = st0.ok === true
       ? { boot: st0.body?.boot, phase: st0.body?.phase, rootSessionId: st0.body?.rootSessionId, teamSession: st0.body?.teamSession, memberCount: (st0.body?.members ?? []).length }
       : { probeFailed: true, error: st0.error, teamSessionVia: 'invariant 9 (teamSessionId === rootSessionId)' }
     v2b.check('world B booted with mcpServer:null (instance up, row mounted, health ok — bootWorld gate)', typeof b.url === 'string' && b.port === PORT_B, `url=${b.url} port=${b.port}`)
-    v2b.check('state route well-formed for the mcpServer:null row (shipped-code expectation — KNOWN DEFECT: plugin.mjs L433 dereferences config.mcpServer.name)', st0.ok === true, st0.ok === true ? JSON.stringify(v2b.evidence.state) : `state route failed: ${st0.error}`)
+    v2b.check('state route well-formed for the mcpServer:null row (harness-row null guard, T12-V11)', st0.ok === true, st0.ok === true ? JSON.stringify(v2b.evidence.state) : `state route failed: ${st0.error}`)
     const createRes = await p6t6Tool(b.port, 'team_create_member', {
       rootSessionId: ROOT_B,
       requestToken: `t12v-v2b-create-${NONCE}`,
@@ -1866,8 +1959,14 @@ async function runFresh2() {
     const childAck = await waitForLogLineJson(HOME_B, workerB.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 900_000)
     v2b.check('child turn settled against the mock (no crash from mcpServer:null)', childAck !== null, childAck === null ? '<ack missing after 900s>' : 'settled')
     v2b.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_B, workerB.childSessionId, v2bAdmittedAt)
-    const childReq = mock.requests.find((r) => r.body?.model === 't12v-model-b' && (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
-    v2b.check('effective model = t12v-model-b (row static selection, mcpServer:null variant)', childReq !== undefined, `found=${childReq !== undefined}`)
+    // T12-V13: calibrated at run end — the world-B child turn may settle
+    // past the 900 s inline deadline or never settle; the honest FAIL then
+    // names the reason (the model request never reached the endpoint).
+    v2b.defer('effective model = t12v-model-b (row static selection, mcpServer:null variant)', () => {
+      const childReq = mock.requests.find((r) => r.body?.model === 't12v-model-b' && (r.body?.messages ?? []).some((m) => typeof m.content === 'string' && m.content.includes(`T12V_CHILD_FIRST_${NONCE}`)))
+      if (childReq === undefined) return [false, 'no model-b mock request carrying the CHILD_FIRST marker reached the endpoint within the run (latched turn never settled)']
+      return [childReq.body?.model === 't12v-model-b', `model=${childReq.body?.model} seq=${childReq.seq}`]
+    })
     const childHeader = readSessionHeader(HOME_B, workerB.childSessionId)
     v2b.check('child session header cwd == W_child (world B)', childHeader?.header?.cwd === W_CHILD_B, `cwd=${childHeader?.header?.cwd}`)
   } catch (error) {
@@ -1964,15 +2063,13 @@ async function runRestart1() {
   }
   if (a2 === null) {
     // Honest record of the resume failure + durable root-cause evidence.
-    // The shipped glue's resume loop (agent-bindings.mjs L883-890) does
-    // String(member.childSessionId) for every durable member row WITHOUT the
-    // structural guard the projection/overlay ports have ('childSessionId' in
-    // row, projection-source.ts L575 / s6-live-overlay.ts L99). The production
-    // create path mints a v2 leader row carrying NO childSessionId (the leader
-    // IS the root session), so the loop attempts agents.resume(SessionId(
-    // "undefined")) and the boot dies. The v1-shaped leader row (childSessionId
-    // === root) only exists on the fixture seedBootWorld path, where the
-    // seen-set skip happens to work.
+    // HISTORY: runs #6-#10 died here because the glue resume loop did
+    // String(member.childSessionId) without a structural guard while the v2
+    // leader row carries NO childSessionId (the leader IS the root session) —
+    // agents.resume(SessionId("undefined")). T12-V10 added the guard in
+    // agent-bindings.mjs, so this branch now fires only for OTHER boot
+    // failures; the durable-leader-row evidence check below still documents
+    // the row shape for the record.
     const leaderRow = readDurableLeaderRow(HOME_A, ROOT_A)
     rs.evidence.resumeBootFailure = String(bootError?.message ?? bootError)
     rs.evidence.durableLeaderRow = leaderRow
