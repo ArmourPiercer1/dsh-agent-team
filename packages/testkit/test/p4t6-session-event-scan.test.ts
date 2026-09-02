@@ -216,6 +216,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // T12 lane A +9 files: t12a-live-bridge.mjs + t12a-live-bridge.d.mts +
     // the seven t12a-b2/b3/h1/m1/m2/m3/glue test files under runtime/test
     // (.ts/.mts/.mjs are all scanned by the frozen scanner).
+    // (T12 lane B/C files land with the integration pin finalization.)
     expect(scanResult.filesScanned).toBe(552)
     expect(scanResult.files.length).toBe(552)
   })

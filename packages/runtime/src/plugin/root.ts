@@ -543,6 +543,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const blueprint: TeamBlueprint = parseBlueprint(config.blueprintSource)
   const catalog = createBlueprintCatalog([blueprint])
 
+  // --- A03b the bound blueprint snapshot ref (T12-B1/B6) --------------------------------
+  // Every fresh-root binding of THIS row binds the same immutable identity:
+  // the real create boot (T12-B1) and the handoff target creation (T12-B6)
+  // both go through this single ref — no per-path re-derivation.
+  const boundSnapshot = createBlueprintSnapshotRef({
+    blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
+    revision: parseBlueprintRevision(String(blueprint.revision)),
+    contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
+  })
+
   // --- A07 leader identity -------------------------------------------------------------
   const leaderIdentity: MemberIdentity = leaderMemberIdentityOf(rootSid as TeamSessionId)
 
@@ -966,11 +976,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // The v1 CLOSED remote params carry no blueprint field on
     // handoff.create: the new team pins THIS row's bound blueprint
     // (single-blueprint row; the `staged` record stays opaque here).
-    const snapshot = createBlueprintSnapshotRef({
-      blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
-      revision: parseBlueprintRevision(String(blueprint.revision)),
-      contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
-    })
+    const snapshot = boundSnapshot
     const minted = parseRootSessionId(
       `session-handoff-${sha256Hex(canonicalJsonStringify({ intentToken: intent.intentToken })).slice(0, 40)}`,
     )
@@ -1324,16 +1330,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   })
   teamToolsRef.current = tools
 
-  // --- boot (create phase: seed + live boot; resume phase: live boot + cold rehydration) ------------
+  // --- boot (create phase: fixture seed OR real fresh-root create + live
+  // --- boot; resume phase: live boot + cold rehydration) ------------------------------
+  /**
+   * The frozen deterministic SEED world (T12-B1: fixture-mode ONLY).
+   *
+   * Reachable only through the explicit `fixtureWorld` opt-in or the
+   * documented legacy-compatibility trigger (non-empty `seedMembers` —
+   * the old dev harness / legacy tests, plan §7-B1 "保留 helper 供旧
+   * test/harness 使用"). The normal shipped create NEVER calls this.
+   *
+   * The deterministic seed puts of the frozen scenario contract (the
+   * exact rows the previous harness seeded, moved INTO the production
+   * root so the harness stays a pure consumer): the team root row, the
+   * team-root binding, the leader member row (inst-leader — seeded
+   * structurally from the frozen constants; its child session IS the
+   * root session, matching the P6-T6-era seed the frozen W1 state
+   * check asserts), and the row-config seed member pairs. Each put is
+   * idempotent (skipped when the row already exists).
+   */
   async function seedBootWorld(): Promise<void> {
-    // The deterministic seed puts of the frozen scenario contract (the
-    // exact rows the previous harness seeded, moved INTO the production
-    // root so the harness stays a pure consumer): the team root row, the
-    // team-root binding, the leader member row (inst-leader — seeded
-    // structurally from the frozen constants; its child session IS the
-    // root session, matching the P6-T6-era seed the frozen W1 state
-    // check asserts), and the row-config seed member pairs. Each put is
-    // idempotent (skipped when the row already exists).
     const teamSessions = repos.teamSessions
     const sessionBindings = repos.sessionBindings
     const memberInstances = repos.memberInstances
@@ -1395,12 +1411,55 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     }
   }
 
+  // --- T12-B1 — the fixture-world trigger (plan §7-B1) -------------------------------
+  // The frozen deterministic seed world is reachable ONLY through:
+  //   1. explicit opt-in — `fixtureWorld: true` (the plan's "test fixture
+  //      mode": the preferred, explicit separation), or
+  //   2. the documented legacy-compatibility trigger — a NON-EMPTY
+  //      `seedMembers` (plan §7-B1 "保留 helper 供旧 test/harness 使用":
+  //      the old dev harness and the legacy test worlds keep their
+  //      seeded scenario rows).
+  // The normal SHIPPED create sets neither (no flag, empty seedMembers)
+  // and therefore NEVER reaches seedBootWorld: it runs the real
+  // production create below.
+  const fixtureWorld = config.fixtureWorld === true || config.seedMembers.length > 0
+
   let bootStarted = false
   const boot = async (): Promise<void> => {
     if (bootStarted) return
     bootStarted = true
     if (config.bootPhase === 'create') {
-      await seedBootWorld()
+      if (fixtureWorld) {
+        // The legacy/test fixture world (unchanged frozen contract).
+        await seedBootWorld()
+      } else {
+        // T12-B1 — the REAL production create (plan §7-B1 target flow):
+        // the canonical fresh-root binding (bindFreshTeamRoot) mints the
+        // durable Team identity — TeamSession record + team-root binding
+        // + Leader instance (honest v2 shape) — from the row's bound
+        // blueprint and generation, with the row clock as createdAt.
+        // Idempotent on re-run (existing-record verification branch):
+        // re-booting a create over an already-created root re-verifies,
+        // it never re-mints. ZERO fabricated members: nothing beyond the
+        // canonical leader is seeded. The real Root Agent is created by
+        // live.boot() below (the live layer's one-shot create phase
+        // creates the root agent for rootSid; an empty seedMembers
+        // creates no member children).
+        const result = await rootBinding.bindFresh({
+          rootSessionId: parseRootSessionId(rootSid),
+          blueprint: boundSnapshot,
+          generation: config.generation,
+          ...(config.defaultWorkspace !== undefined
+            ? { defaultWorkspace: config.defaultWorkspace }
+            : {}),
+        })
+        if (result.durable?.teamSession.rootSessionId === undefined) {
+          throw new TeamPluginError(
+            TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CREATE_FAILED,
+            `the fresh-root binding of the production create for root "${rootSid}" reported no durable state`,
+          )
+        }
+      }
     }
     // Boot-time initial compatibility state (wiring decision (x)): the
     // frozen runtime's new-work gate (admission/gate.ts) and activation
@@ -1421,16 +1480,18 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     if ((await repos.compatibility.get(rootSid)) === undefined) {
       await prober.probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK)
     }
-    // The boot flow is LIVE-ONLY in both phases. The frozen scenario
-    // contract defines the seeded world as exactly the teamSessions row +
-    // the team-root binding + the seeded member rows (no child
-    // `team-member` bindings), and the previous harness's resume boot
-    // re-established the live residency through the agents service only
-    // (create / resume of the root + the bound children). The cold
-    // rehydration nodes (A06 / A09) remain assembled and reachable on the
-    // root surface (T1-proven against a consistent fresh world) but are
-    // DORMANT in the boot flow: driving them at resume would require
-    // durable state the frozen contract does not seed.
+    // Boot-phase durable content (T12-B1): the FIXTURE create seeds the
+    // frozen scenario rows (teamSessions row + team-root binding + leader
+    // + seed member rows, no child `team-member` bindings); the REAL
+    // create runs the canonical fresh-root binding (TeamSession +
+    // team-root binding + Leader mint — no fabricated members); the
+    // RESUME phase writes nothing new — it reopens the existing durable
+    // rows and re-establishes the live residency through the agents
+    // service only (create / resume of the root + the bound children).
+    // The cold rehydration nodes (A06 / A09) remain assembled and
+    // reachable on the root surface (T1-proven against a consistent
+    // fresh world) but are DORMANT in the boot flow: driving them at
+    // resume would require durable state the boot flow does not own.
     // R2-1: restore the durable PolicyState transitions of this root
     // (admitted by a previous process) into the in-memory mutation cache
     // BEFORE the live flow — the projection and the remote surface must

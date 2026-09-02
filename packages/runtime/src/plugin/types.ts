@@ -207,6 +207,22 @@ export interface TeamPluginConfig {
     readonly presetId: string
     readonly personaKind: 'absent' | 'standard' | 'complete'
   }
+  /**
+   * T12-B1 — explicit TEST FIXTURE mode (plan §7-B1 "test fixture mode"):
+   * when `true`, the `create` boot phase seeds the frozen deterministic
+   * scenario world (`seedBootWorld`: frozen TeamSession/root binding/leader/
+   * seed member rows) instead of running the REAL production create
+   * (the canonical fresh-root binding — durable TeamSession + root binding
+   * + Leader mint, no fabricated members).
+   *
+   * The normal shipped create MUST NOT set this: it is unreachable from
+   * the production path by construction. Additionally, a NON-EMPTY
+   * `seedMembers` remains the documented legacy-compatibility trigger for
+   * the old dev harness / legacy tests (plan §7-B1 "保留 helper 供旧
+   * test/harness 使用"); the shipped row passes an empty `seedMembers`
+   * and no fixture flag, so its create is the real one.
+   */
+  readonly fixtureWorld?: boolean(T12-B1: normal production create no longer runs seedBootWorld (plan 7-B1: real create = bindFreshTeamRoot durable TeamSession + team-root binding + honest-v2 Leader mint + live.boot real Root Agent, zero fabricated members; frozen seed world reachable ONLY via explicit fixtureWorld flag or the documented non-empty seedMembers legacy trigger) + t12b1-real-create test (W1 real create / W2 fixture flag / W3 legacy seed / W4 second create fails closed); types.ts additive (fixtureWorld config field, TEAM_PLUGIN_CREATE_FAILED); scan pin 543->544; runtime chain 1013/1013; tsc 0)
 }
 
 // --- plugin-level error codes ------------------------------------------------------
@@ -229,6 +245,13 @@ export const TEAM_PLUGIN_ERROR_CODES = {
   TEAM_PLUGIN_SEAM_UNKNOWN: 'TEAM_PLUGIN_SEAM_UNKNOWN',
   /** A facade field was read before `ready` settled (await `ready` first). */
   TEAM_PLUGIN_NOT_READY: 'TEAM_PLUGIN_NOT_READY',
+  /**
+   * T12-B1 — the real production create (the canonical fresh-root binding
+   * of the `create` boot phase) failed in a way that leaves the durable
+   * Team identity unproven. Fail-closed: the boot rejects; nothing is
+   * reported as created.
+   */
+  TEAM_PLUGIN_CREATE_FAILED: 'TEAM_PLUGIN_CREATE_FAILED',
 } as const
 
 export type TeamPluginErrorCode = (typeof TEAM_PLUGIN_ERROR_CODES)[keyof typeof TEAM_PLUGIN_ERROR_CODES]
