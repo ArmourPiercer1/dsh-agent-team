@@ -428,7 +428,9 @@ async function buildProductionRuntime(log) {
     const distMirror = join(WORKTREE_ROOT, 'packages', 'runtime', 'dist', 'packages')
     if (!existsSync(distMirror)) throw new Error(`dist mirror missing: ${distMirror}`)
     let count = 0
-    for (const file of walk(distMirror)) {
+    for (const entry of walk(distMirror)) {
+      // walk() yields {path, name} objects (tests/characterization/lib/util.mjs)
+      const file = entry.path
       if (!file.endsWith('.js')) continue // skips .d.ts and non-js output
       const target = join(WORKTREE_ROOT, 'packages', relative(distMirror, file))
       mkdirSync(dirname(target), { recursive: true })
