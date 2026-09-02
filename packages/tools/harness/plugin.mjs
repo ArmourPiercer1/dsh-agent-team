@@ -437,7 +437,12 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
               // "Cannot read properties of null (reading 'name')").
               serverName: teamRoot.config.mcpServer?.name ?? null,
               ...(state !== undefined && state.mcpActivationError !== undefined ? { activationError: state.mcpActivationError } : {}),
-              ...(views !== undefined ? {
+              // T12-V14: with mcpServer: null the consumption views object exists but its
+              // mcpView is null — the T12-V11 serverName guard only removed the FIRST
+              // deref, so the state route 500d again one line further down ("Cannot read
+              // properties of null (reading 'allowed')", run #11 B1 23:05:43Z / C1
+              // 23:21:03Z). An mcp-less row reports no mcp view fields at all.
+              ...(views !== undefined && views.mcpView !== undefined && views.mcpView !== null ? {
                 allowed: views.mcpView.allowed,
                 source: views.mcpView.source,
                 unavailable: views.mcpView.unavailable,
