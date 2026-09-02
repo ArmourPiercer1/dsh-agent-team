@@ -222,7 +222,7 @@ export interface TeamPluginConfig {
    * test/harness 使用"); the shipped row passes an empty `seedMembers`
    * and no fixture flag, so its create is the real one.
    */
-  readonly fixtureWorld?: boolean(T12-B1: normal production create no longer runs seedBootWorld (plan 7-B1: real create = bindFreshTeamRoot durable TeamSession + team-root binding + honest-v2 Leader mint + live.boot real Root Agent, zero fabricated members; frozen seed world reachable ONLY via explicit fixtureWorld flag or the documented non-empty seedMembers legacy trigger) + t12b1-real-create test (W1 real create / W2 fixture flag / W3 legacy seed / W4 second create fails closed); types.ts additive (fixtureWorld config field, TEAM_PLUGIN_CREATE_FAILED); scan pin 543->544; runtime chain 1013/1013; tsc 0)
+  readonly fixtureWorld?: boolean
 }
 
 // --- plugin-level error codes ------------------------------------------------------
