@@ -25,6 +25,17 @@
  *
  * Read-only: the derivation only READS the durable member rows (to resolve
  * instance claims); it never writes.
+ *
+ * T12-B4 — the trusted PrincipalContext: the transport (the DSH web seam)
+ * provides NO per-caller identity at the plugin handler boundary; every
+ * call that reaches a mounted handler has already passed the connection
+ * gate (HMAC-signed per-home cookie + loopback/Host fence + same-origin,
+ * enforced 401/403 upstream of dispatch; the host binds 127.0.0.1 only).
+ * The authority basis of every derivation is therefore "the single
+ * anonymous authenticated OPERATOR of this DSH_HOME," recorded by a
+ * {@link ServerPrincipalContext} token — never by the payload's `caller` /
+ * `actor` claims, which remain CLAIMS that only select/validate scope
+ * against host-owned durable facts (A32, unchanged).
  * @module @dsh-agent-team/runtime/plugin/s6-principal
  */
 
@@ -43,6 +54,100 @@ export const S6_PRINCIPAL_ERROR_CODES = {
 
 export type S6PrincipalErrorCode = (typeof S6_PRINCIPAL_ERROR_CODES)[keyof typeof S6_PRINCIPAL_ERROR_CODES]
 
+// --- the trusted PrincipalContext (T12-B4) -----------------------------------------------
+
+/**
+ * The closed transport vocabulary of the server principal context.
+ * The ONLY supported transport is the DSH web seam's connection gate
+ * (the authenticated-operator gate upstream of dispatch).
+ */
+export const SERVER_PRINCIPAL_TRANSPORTS = {
+  /** The DSH web seam's connection gate: HMAC-signed per-home cookie +
+   *  loopback/Host fence + same-origin, enforced 401/403 BEFORE dispatch;
+   *  the host binds 127.0.0.1 only. */
+  CONNECTION_GATE: 'connection-gate',
+} as const
+
+export type ServerPrincipalTransport =
+  (typeof SERVER_PRINCIPAL_TRANSPORTS)[keyof typeof SERVER_PRINCIPAL_TRANSPORTS]
+
+/**
+ * The trusted PrincipalContext of the server (T12-B4) — the seam contract
+ * for every call that reaches a mounted remote handler.
+ *
+ * Authority model:
+ *
+ * 1. **The gate is upstream.** No authenticated principal can reach a
+ *    mounted handler unauthenticated: the transport enforces 401/403
+ *    BEFORE dispatch (the connection gate). The context records that basis
+ *    — it is NOT a per-caller identity, and it carries none.
+ * 2. **The operator class is the trust ceiling.** The transport provides
+ *    NO per-caller identity at the plugin handler boundary: one anonymous
+ *    authenticated OPERATOR per DSH_HOME. No finer-grained caller class
+ *    exists, so no payload claim can be granted more than the operator
+ *    ceiling.
+ * 3. **Per-request scope comes from host-owned durable facts only.** The
+ *    payload's `caller` / `actor` fields are CLAIMS: they select/validate
+ *    scope against the bound root session and the durable member rows
+ *    (A32). An inconsistent claim is a typed rejection under the EXISTING
+ *    `TEAM_REMOTE_PRINCIPAL_INVALID` / `TEAM_REMOTE_FOREIGN_TEAM` codes —
+ *    claims NEVER grant authority, and no new wire code is introduced.
+ *
+ * The token carries NO identity data (no per-caller ids, no accounts, no
+ * cookie parsing): it is a basis record and a structural trust marker,
+ * verified by {@link isServerPrincipalContext} on the derivation path.
+ */
+export interface ServerPrincipalContext {
+  /** The transport that mounted the handler (the closed vocabulary). */
+  readonly transport: ServerPrincipalTransport
+  /** The trust ceiling: the single authenticated operator class. */
+  readonly operatorClass: 'operator'
+}
+
+/**
+ * Structural trust guard for a {@link ServerPrincipalContext} token.
+ * A token is trusted only when it structurally carries the
+ * connection-gate basis AND the operator ceiling — a forged or partial
+ * object (a missing field, a different transport) is NOT trusted, and
+ * every consumer that consults the context fails closed on it.
+ */
+export function isServerPrincipalContext(value: unknown): value is ServerPrincipalContext {
+  if (!isPlainRecord(value)) return false
+  return (
+    value['transport'] === SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE &&
+    value['operatorClass'] === 'operator'
+  )
+}
+
+/**
+ * Create the trusted PrincipalContext for the transport that mounted the
+ * remote handler (T12-B4).
+ *
+ * Only the connection gate is a supported transport: it is the sole
+ * authority basis under which a derivation may run (see the
+ * {@link ServerPrincipalContext} authority model). Any other transport
+ * value is rejected at creation with the existing typed code — there is
+ * no wire-visible consequence, the context never crosses the wire.
+ *
+ * @param options - the closed transport vocabulary entry.
+ * @returns the frozen, identity-free basis token.
+ */
+export function createServerPrincipalContext(options: {
+  readonly transport: ServerPrincipalTransport
+}): ServerPrincipalContext {
+  if (options.transport !== SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE) {
+    throw new TeamPluginError(
+      S6_PRINCIPAL_ERROR_CODES.PRINCIPAL_INVALID,
+      `unknown principal-context transport '${String(options.transport)}' — the only supported transport is the connection gate`,
+      { reason: 'principal-context-unknown-transport' },
+    )
+  }
+  return Object.freeze({
+    transport: SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE,
+    operatorClass: 'operator' as const,
+  })
+}
+
 /** The construction inputs of the production principal derivation. */
 export interface ServerPrincipalDerivationOptions {
   /** The bound root session id (this host's single TeamSession). */
@@ -51,6 +156,14 @@ export interface ServerPrincipalDerivationOptions {
   readonly repositories: TeamDomainRepositories
   /** The bound leader's instance id (the leader authority). */
   readonly leaderInstanceId: string
+  /** T12-B4 — the trusted PrincipalContext of the transport that mounted
+   *  this derivation (the connection-gate authority basis). OPTIONAL so
+   *  the pre-B4 installation keeps its exact A32 behavior; when present
+   *  it is consulted on EVERY derivation (construction fail-fast + per
+   *  call, before any payload claim is read). A broken token is a typed
+   *  rejection under the existing `TEAM_REMOTE_PRINCIPAL_INVALID` code —
+   *  no new wire code. */
+  readonly principalContext?: ServerPrincipalContext
 }
 
 /** True for a plain (non-array, non-null) object. */
@@ -65,13 +178,34 @@ const MUTATION_METHODS = new Set(['override.set', 'override.reset', 'policyState
 
 /**
  * Build the production {@link ServerPrincipalDerivation}.
- * @param options - the bound root + the durable member rows + the leader id.
+ *
+ * T12-B4: when installed with a {@link ServerPrincipalContext} (the
+ * production remote surfaces do), the context is consulted on the
+ * derivation path itself — at construction (fail-fast: a broken token is
+ * impossible to install) and on EVERY call (the live token is re-verified
+ * BEFORE any payload claim is read). The context is the transport's
+ * authority basis; the payload claims only select/validate scope (A32).
+ *
+ * @param options - the bound root + the durable member rows + the leader
+ *   id + (optionally) the trusted principal context.
  * @returns the derivation: `(method, request) => ActionCaller`.
  */
 export function createServerPrincipalDerivation(
   options: ServerPrincipalDerivationOptions,
 ): (input: { readonly method: string; readonly request: RemoteRequest }) => ActionCaller {
-  const { rootSessionId, repositories, leaderInstanceId } = options
+  const { rootSessionId, repositories, leaderInstanceId, principalContext } = options
+
+  // T12-B4 — fail-fast: a derivation installed with a BROKEN context is
+  // impossible to build (the token must structurally carry the
+  // connection-gate authority basis). An absent context is the pre-B4
+  // installation path: behavior unchanged.
+  if (principalContext !== undefined && !isServerPrincipalContext(principalContext)) {
+    throw new TeamPluginError(
+      S6_PRINCIPAL_ERROR_CODES.PRINCIPAL_INVALID,
+      'the principal derivation was installed with a context that does not carry the connection-gate authority basis',
+      { reason: 'principal-context-broken' },
+    )
+  }
 
   function paramsOf(request: RemoteRequest): Record<string, unknown> {
     return request.params as unknown as Record<string, unknown>
@@ -209,6 +343,17 @@ export function createServerPrincipalDerivation(
   }
 
   return (input: { readonly method: string; readonly request: RemoteRequest }): ActionCaller => {
+    // T12-B4 — the context is consulted on the derivation path itself, on
+    // every call, BEFORE any payload claim is read: the transport's
+    // authority basis is re-verified against the live token. The payload
+    // NEVER supplies or repairs the basis — a broken context is a typed
+    // rejection under the existing code (fail-closed).
+    if (principalContext !== undefined && !isServerPrincipalContext(principalContext)) {
+      principalInvalid(
+        'the transport principal context no longer carries the connection-gate authority basis',
+        'principal-context-broken',
+      )
+    }
     const method = input.method
     const params = paramsOf(input.request)
     if (ADMISSION_METHODS.has(method)) return deriveAdmissionCaller(method, params)

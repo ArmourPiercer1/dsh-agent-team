@@ -110,7 +110,13 @@ import type {
   RemoteQueryCommandCompletion,
   ServerPrincipalDerivation,
 } from './types.js'
-import { S6_PRINCIPAL_ERROR_CODES } from './s6-principal.js'
+import {
+  S6_PRINCIPAL_ERROR_CODES,
+  SERVER_PRINCIPAL_TRANSPORTS,
+  createServerPrincipalContext,
+  isServerPrincipalContext,
+} from './s6-principal.js'
+import type { ServerPrincipalContext } from './s6-principal.js'
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js'
 import type {
   ActionCaller,
@@ -1602,15 +1608,33 @@ function toS6RemoteErrorResult(error: unknown, ctx: RemoteProvenanceContext): Re
 /**
  * Create the production throw-proof dispatcher (the frozen seven
  * invariants; the async mirror).
+ *
+ * T12-B4 — the mounted entry owns the transport's trusted
+ * {@link ServerPrincipalContext}: the default is the connection-gate basis
+ * (the DSH web seam's gate enforced 401/403 upstream of dispatch, so every
+ * request reaching this dispatcher already passed it). A caller may pass an
+ * explicit context (the production surfaces do); one that fails the
+ * structural guard typed-rejects EVERY request under the existing
+ * `TEAM_REMOTE_PRINCIPAL_INVALID` code — before any claim is read, with no
+ * new wire code. See the `ServerPrincipalContext` authority model in
+ * s6-principal for the full seam contract.
+ *
  * @param ports - the twelve production ports.
  * @param principal - the installed A32 principal derivation.
+ * @param principalContext - the trusted PrincipalContext of the mounting
+ *   transport (defaults to the connection-gate basis).
  * @returns the seam entry point: `(endpoint, payload) => Promise<RemoteResponse>`.
  */
 export function createS6RemoteDispatcher(
   ports: S6RemotePorts,
   principal: ServerPrincipalDerivation,
+  principalContext?: ServerPrincipalContext,
 ): RemoteDispatcher {
   const handlers = buildS6CategoryHandlers(ports, principal)
+  const context: ServerPrincipalContext =
+    principalContext ??
+    createServerPrincipalContext({ transport: SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE })
+  const contextValid = isServerPrincipalContext(context)
   return async (endpoint: string, payload: unknown): Promise<RemoteResponse> => {
     let ctx: RemoteProvenanceContext = {
       method: endpoint,
@@ -1620,6 +1644,16 @@ export function createS6RemoteDispatcher(
     }
     let response: RemoteResponse
     try {
+      // T12-B4: the trusted PrincipalContext is consulted at the mounted
+      // entry, BEFORE invariant 1 — fail-closed. No derivation, no claim
+      // read, no new wire code.
+      if (!contextValid) {
+        throw new TeamPluginError(
+          S6_PRINCIPAL_ERROR_CODES.PRINCIPAL_INVALID,
+          'the remote mount does not carry the connection-gate authority basis',
+          { reason: 'principal-context-broken' },
+        )
+      }
       // Invariant 1: unknown endpoint (checked before the envelope).
       if (!isRemoteMethod(endpoint)) {
         throw remoteContractError(
@@ -1656,13 +1690,16 @@ export function createS6RemoteDispatcher(
  * register semantics, mirrored: one channel, the idempotent disposer).
  * @param ports - the twelve production ports.
  * @param principal - the installed A32 principal derivation.
+ * @param principalContext - the trusted PrincipalContext of the mounting
+ *   transport (T12-B4; defaults to the connection-gate basis).
  * @returns the `RemoteHandlerRegistration` the A31 seam installs.
  */
 export function createS6RemoteRegistration(
   ports: S6RemotePorts,
   principal: ServerPrincipalDerivation,
+  principalContext?: ServerPrincipalContext,
 ): RemoteHandlerRegistration {
-  const dispatcher = createS6RemoteDispatcher(ports, principal)
+  const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext)
   return (connection: ConnectionLike): RemoteRegistration => {
     const channel = REMOTE_RPC_CHANNEL
     const handleResult = connection.rpc.handle(channel, dispatcher)
@@ -1836,15 +1873,25 @@ export interface S6RemoteSurfaces {
 /**
  * Build the complete S6 remote surface set (A31 + A33 + A34) over one
  * bound root (the single entry point the production root calls).
+ *
+ * T12-B4: the production surface owns the transport's trusted
+ * PrincipalContext EXPLICITLY — the DSH web seam's connection gate is the
+ * authority basis of every call reaching the mounted dispatcher (and the
+ * completion surface), recorded here at construction, never taken from a
+ * payload claim.
+ *
  * @param options - the root-bound inputs.
  * @returns the registration (A31) + the completion (A34, A33-gated).
  */
 export function createS6RemoteSurfaces(options: S6RemoteOptions): S6RemoteSurfaces {
   const ports = createS6RemotePorts(options)
-  const dispatcher = createS6RemoteDispatcher(ports, options.principal)
+  const principalContext = createServerPrincipalContext({
+    transport: SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE,
+  })
+  const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext)
   const completion = createS6RemoteQueryCommandCompletion(ports, options, dispatcher)
   return {
-    registration: createS6RemoteRegistration(ports, options.principal),
+    registration: createS6RemoteRegistration(ports, options.principal, principalContext),
     completion,
   }
 }
