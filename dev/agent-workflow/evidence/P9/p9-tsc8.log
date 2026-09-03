@@ -1,0 +1,10 @@
+﻿tsc 8-set typecheck | HEAD b2b7bb6 | 2026-09-03T08:32:42.8514052+08:00
+PKG client : exit 0
+PKG contracts : exit 0
+PKG domain : exit 0
+PKG remote : exit 0
+PKG runtime : exit 0
+PKG storage : exit 0
+PKG testkit : exit 0
+PKG tools : exit 0
+SUMMARY: 8/8 exit 0
