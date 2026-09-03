@@ -146,6 +146,11 @@ function snapshotWith(resident: readonly string[], resuming: readonly string[]) 
   const { live, calls } = makeLive(resident, resuming)
   let listCalls = 0
   const repos = {
+    // P9-S8 — the overlay also reads the owned-root registry (single-root
+    // fixture: no TeamSession rows beyond the bound root's own).
+    teamSessions: {
+      list: () => [],
+    },
     memberInstances: {
       list: (_root: string) => {
         listCalls += 1

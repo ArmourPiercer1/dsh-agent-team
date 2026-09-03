@@ -32,7 +32,26 @@
  *          durable override record exists (recordId / kind / generation);
  *   C3.10 — the VALID human caller on `member.create` passes the boundary
  *           (no principal / foreign code — the stub world's downstream
- *           failure is a different, non-boundary code).
+ *           failure is a different, non-boundary code);
+ *
+ * P9-S8 — the owned-root semantics (a team created after boot is servable
+ * by this same remote; a genuinely foreign root is still rejected):
+ *
+ *   C3.11 — `team.create` for a NEW root (the client's minted id) succeeds
+ *           with the fresh path (the creation method is host-authority; the
+ *           host owns the new team from the bind on);
+ *   C3.12 — the owned root is servable: `team.getProjection` accepts it;
+ *   C3.13 — the owned root is servable: `team.getLedgerPage` (the A33
+ *           completion pre-gate) accepts it;
+ *   C3.14 — the owned root's OWN human identity (invariant 9: humanId =
+ *           the team's root session id) passes the boundary on
+ *           `member.create` (no principal / foreign code);
+ *   C3.15 — `team.create` against the now-owned root takes the COLD path
+ *           (rehydrate; the durable bound snapshot matches);
+ *   C3.16 — a FOREIGN root is still rejected by the projection guard with
+ *           `TEAM_REMOTE_FOREIGN_TEAM` (fail-closed; CR-4);
+ *   C3.17 — a FOREIGN root is still rejected by the admission method's
+ *           team-scoped check with `TEAM_REMOTE_FOREIGN_TEAM` (fail-closed).
  *
  * World: own scratch seam + own root session id + own seed ids.
  * @module @dsh-agent-team/runtime/test/p8s6-principal
@@ -51,6 +70,12 @@ import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 
 /** The C3 root session id (distinct from every other phase fixture). */
 const ROOT_SID = 'session-p8s6prinroot'
+/** The P9-S8 owned-root fixture: the root of a team created after boot
+ *  through the public remote `team.create` face (distinct from every other
+ *  phase fixture). */
+const NEW_ROOT = 'session-p8s6prinnew'
+/** The P9-S8 foreign fixture: a root this host never owns. */
+const FOREIGN_ROOT = 'session-p8s6prinforeign'
 /** The C3 seeded worker / scout (the leader is implied by the root). */
 const SEED_WORKER_ID = 'inst-p8s6prinw1'
 const SEED_WORKER_CHILD = 'session-child-p8s6prinw1'
@@ -337,6 +362,58 @@ const c3 = await (async () => {
       payload: { label: 'c3-valid' },
     })
 
+    // --- P9-S8 — the owned-root semantics (teams created after boot) -------------
+
+    // C3.11: team.create for a NEW root (the standard UI flow — the
+    // client's minted id, host-validated creation): the fresh bind
+    // succeeds and the host OWNS the new team from this point on.
+    const ownedTeamCreate = await call('team.create', {
+      rootSessionId: NEW_ROOT,
+      blueprintId: 'P8S6PRIN-BP',
+      blueprintRevision: 1,
+    })
+
+    // C3.12: the owned root is servable — the projection guard accepts it
+    // (the full projection folds: the created team inherits the host
+    // default workspace, so the leader's effective workspace resolves).
+    const ownedProjection = await call('team.getProjection', { teamSessionId: NEW_ROOT })
+
+    // C3.13: the owned root is servable — the ledger-page completion guard
+    // (the A33 pre-gate) accepts it.
+    const ownedLedgerPage = await call('team.getLedgerPage', { teamSessionId: NEW_ROOT })
+
+    // C3.14: the owned root's OWN human identity is accepted (invariant 9:
+    // the human id is the team's root session id) — no principal/foreign
+    // boundary code.
+    const ownedMemberCreate = await call('member.create', {
+      teamSessionId: NEW_ROOT,
+      caller: { kind: 'human', humanId: NEW_ROOT },
+      requestToken: 'req-c314',
+      payload: { label: 'c3-owned' },
+    })
+
+    // C3.15: team.create against the NOW-OWNED root takes the COLD path
+    // (rehydrate; the durable bound snapshot matches the request).
+    const ownedTeamRecreate = await call('team.create', {
+      rootSessionId: NEW_ROOT,
+      blueprintId: 'P8S6PRIN-BP',
+      blueprintRevision: 1,
+    })
+
+    // C3.16: a genuinely FOREIGN root is still rejected fail-closed — the
+    // projection guard (the browser payload cannot self-appoint authority).
+    const stillForeignProjection = await call('team.getProjection', { teamSessionId: FOREIGN_ROOT })
+
+    // C3.17: a genuinely FOREIGN root is still rejected fail-closed — the
+    // admission method's team-scoped check (the foreign id is neither the
+    // bound root nor an owned root, so its human claim is a spoof too).
+    const stillForeignMemberCreate = await call('member.create', {
+      teamSessionId: FOREIGN_ROOT,
+      caller: { kind: 'human', humanId: FOREIGN_ROOT },
+      requestToken: 'req-c317',
+      payload: { label: 'c3-foreign' },
+    })
+
     // The durable override record written by C3.9.
     const durableOverrides = root.domain.repositories.overrides.list(ROOT_SID) as Array<Record<string, any>>
 
@@ -364,6 +441,13 @@ const c3 = await (async () => {
       foreignProjection,
       validOverride,
       validCreate,
+      ownedTeamCreate,
+      ownedProjection,
+      ownedLedgerPage,
+      ownedMemberCreate,
+      ownedTeamRecreate,
+      stillForeignProjection,
+      stillForeignMemberCreate,
       durableOverrides,
     }
   } catch (err) {
@@ -440,6 +524,44 @@ it('C3.10 the valid human caller passes the boundary (no principal / foreign cod
   // The stub world's admission glue is unavailable downstream (a different,
   // non-boundary failure); the boundary itself let the authority through.
   check(code === null || code.length > 0, 'the response carries a code or succeeds')
+})
+
+// --- P9-S8 — the owned-root semantics (teams created after boot) ------------------
+
+it('C3.11 team.create for a NEW root succeeds (fresh bind; the host owns the new team)', () => {
+  expect(c3.ownedTeamCreate.ok).toBe(true)
+  const data = c3.ownedTeamCreate.value.data as Record<string, any>
+  expect(data.path).toBe('fresh-root')
+})
+
+it('C3.12 the owned root is servable (the projection guard accepts it)', () => {
+  expect(c3.ownedProjection.ok).toBe(true)
+})
+
+it('C3.13 the owned root is servable (the ledger-page completion guard accepts it)', () => {
+  expect(c3.ownedLedgerPage.ok).toBe(true)
+})
+
+it('C3.14 the owned root\'s own human identity passes the boundary', () => {
+  const code = codeOf(c3.ownedMemberCreate)
+  check(code !== 'TEAM_REMOTE_PRINCIPAL_INVALID', 'an owned-root human id must not hit the principal boundary')
+  check(code !== 'TEAM_REMOTE_FOREIGN_TEAM', 'an owned-root request must not hit the foreign boundary')
+})
+
+it('C3.15 team.create against the now-owned root takes the cold path', () => {
+  expect(c3.ownedTeamRecreate.ok).toBe(true)
+  const data = c3.ownedTeamRecreate.value.data as Record<string, any>
+  expect(data.path).toBe('cold-root')
+})
+
+it('C3.16 a foreign root is still rejected by the projection guard (fail-closed)', () => {
+  expect(c3.stillForeignProjection.ok).toBe(false)
+  expect(codeOf(c3.stillForeignProjection)).toBe('TEAM_REMOTE_FOREIGN_TEAM')
+})
+
+it('C3.17 a foreign root is still rejected by the admission team-scoped check (fail-closed)', () => {
+  expect(c3.stillForeignMemberCreate.ok).toBe(false)
+  expect(codeOf(c3.stillForeignMemberCreate)).toBe('TEAM_REMOTE_FOREIGN_TEAM')
 })
 
 // --- teardown --------------------------------------------------------------------------

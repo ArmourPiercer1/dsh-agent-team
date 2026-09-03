@@ -8,14 +8,16 @@
  * `actor` fields are CLAIMS, never trusted. The host derives the principal
  * from its own durable identity:
  *
- * - Human authority → the host-known operator principal, identified by the
- *   bound root session (the same identity channel as the live glue's
- *   `governanceAuthority` operator branch). A client-claimed `humanId` other
- *   than the bound root is a spoof and is rejected.
- * - Leader/Member authority → the bound Session + TeamDomain identity: the
- *   claimed instance must resolve to a durable member row of the bound root
- *   (the leader through its durable leader row; a member never through the
- *   leader row).
+ * - Human authority → the host-known operator principal, identified by an
+ *   OWNED root session — the bound root OR any TeamSession root this host
+ *   durably owns (P9-S8: teams created after boot through `team.create` /
+ *   `handoff.create` are addressable with their own root identity channel).
+ *   A client-claimed `humanId` of a root the host does not own is a spoof
+ *   and is rejected.
+ * - Leader/Member authority → the Session + TeamDomain identity: the
+ *   claimed instance must resolve to a durable member row of one of the
+ *   host's owned roots (the leader through its durable leader row; a member
+ *   never through the leader row).
  *
  * Every rejection is a typed {@link TeamPluginError} (a string `code`), so
  * the remote dispatcher's pass-through invariant (a typed domain error keeps
@@ -150,8 +152,18 @@ export function createServerPrincipalContext(options: {
 
 /** The construction inputs of the production principal derivation. */
 export interface ServerPrincipalDerivationOptions {
-  /** The bound root session id (this host's single TeamSession). */
+  /** The bound root session id (this host's boot root TeamSession). */
   readonly rootSessionId: string
+  /**
+   * P9-S8 — the durable-ownership predicate over TeamSession roots (the
+   * roots this host durably owns). The claim checks accept a principal id
+   * of the bound root OR of any owned root, so teams created after boot
+   * through `team.create` / `handoff.create` are addressable with their
+   * own human identity (invariant 9: the team's root session id). Absent:
+   * the T12 single-root semantics (bound root only). A claimed id neither
+   * bound nor owned is still a spoof (fail-closed).
+   */
+  readonly isOwnedRoot?: (teamSessionId: string) => boolean
   /** The durable member rows (to resolve instance claims). */
   readonly repositories: TeamDomainRepositories
   /** The bound leader's instance id (the leader authority). */
@@ -193,7 +205,15 @@ const MUTATION_METHODS = new Set(['override.set', 'override.reset', 'policyState
 export function createServerPrincipalDerivation(
   options: ServerPrincipalDerivationOptions,
 ): (input: { readonly method: string; readonly request: RemoteRequest }) => ActionCaller {
-  const { rootSessionId, repositories, leaderInstanceId, principalContext } = options
+  const { rootSessionId, repositories, leaderInstanceId, principalContext, isOwnedRoot } = options
+
+  /** The bound-root acceptance: the bound root OR a durably owned root
+   *  (P9-S8 — a team created after boot by this host). Without the
+   *  predicate (single-root fixtures) this is the T12 bound-root-only
+   *  check. */
+  function ownsRoot(teamSessionId: string): boolean {
+    return teamSessionId === rootSessionId || (isOwnedRoot?.(teamSessionId) ?? false)
+  }
 
   // T12-B4 — fail-fast: a derivation installed with a BROKEN context is
   // impossible to build (the token must structurally carry the
@@ -214,7 +234,7 @@ export function createServerPrincipalDerivation(
   function foreignTeam(method: string, claimed: unknown): never {
     throw new TeamPluginError(
       S6_PRINCIPAL_ERROR_CODES.FOREIGN_TEAM,
-      `remote method '${method}' addresses TeamSession '${String(claimed)}' but this host is bound to '${rootSessionId}'`,
+      `remote method '${method}' addresses TeamSession '${String(claimed)}' which this host does not own (bound root '${rootSessionId}')`,
       { reason: 'foreign-team', requested: String(claimed), bound: rootSessionId },
     )
   }
@@ -225,15 +245,23 @@ export function createServerPrincipalDerivation(
 
   function assertTeamScoped(method: string, params: Record<string, unknown>): void {
     const teamSessionId = params['teamSessionId']
-    if (typeof teamSessionId !== 'string' || teamSessionId !== rootSessionId) {
+    if (typeof teamSessionId !== 'string' || !ownsRoot(teamSessionId)) {
       foreignTeam(method, teamSessionId)
     }
   }
 
-  /** Does a durable member row (leader OR member) exist under this id? */
+  /** Does a durable member row (leader OR member) exist under ANY owned
+   *  root (P9-S8 — instance claims on a team created after boot resolve
+   *  against that team's own durable rows)? */
   function durableInstanceExists(instanceId: string): boolean {
-    for (const record of repositories.memberInstances.list(rootSessionId)) {
-      if (record.instanceId === instanceId) return true
+    const roots = new Set<string>([rootSessionId])
+    for (const record of repositories.teamSessions.list()) {
+      roots.add(record.rootSessionId)
+    }
+    for (const root of roots) {
+      for (const record of repositories.memberInstances.list(root)) {
+        if (record.instanceId === instanceId) return true
+      }
     }
     return false
   }
@@ -248,19 +276,19 @@ export function createServerPrincipalDerivation(
     const kind = caller['kind']
     if (kind === 'human') {
       const humanId = caller['humanId']
-      if (typeof humanId !== 'string' || humanId !== rootSessionId) {
+      if (typeof humanId !== 'string' || !ownsRoot(humanId)) {
         principalInvalid(
-          `remote method '${method}' claims human principal '${String(humanId)}' but the host-known operator is '${rootSessionId}'`,
+          `remote method '${method}' claims human principal '${String(humanId)}' which is not an owned root (bound root '${rootSessionId}')`,
           'spoofed-human',
         )
       }
-      return { kind: 'human', humanId: rootSessionId }
+      return { kind: 'human', humanId }
     }
     if (kind === 'instance') {
       const instanceId = caller['instanceId']
       if (typeof instanceId !== 'string' || !durableInstanceExists(instanceId)) {
         principalInvalid(
-          `remote method '${method}' claims instance principal '${String(instanceId)}' that does not resolve to a durable member of '${rootSessionId}'`,
+          `remote method '${method}' claims instance principal '${String(instanceId)}' that does not resolve to a durable member of this host's owned roots (bound root '${rootSessionId}')`,
           'unknown-instance',
         )
       }
@@ -281,8 +309,10 @@ export function createServerPrincipalDerivation(
     }
     const kind = actor['kind']
     if (kind === 'human') {
-      // A human mutation actor is the host-known operator (bound root).
-      return { kind: 'human', humanId: rootSessionId }
+      // A human mutation actor is the host-known operator: the human id of
+      // the addressed (assertTeamScoped-validated, owned) root (P9-S8 —
+      // invariant 9 identity channel; single-root worlds: the bound root).
+      return { kind: 'human', humanId: String(params['teamSessionId']) }
     }
     if (kind === 'leader') {
       if (!durableInstanceExists(leaderInstanceId)) {
@@ -300,9 +330,9 @@ export function createServerPrincipalDerivation(
       }
       const memberRoot = member['rootSessionId']
       const memberInstance = member['instanceId']
-      if (typeof memberRoot !== 'string' || memberRoot !== rootSessionId) {
+      if (typeof memberRoot !== 'string' || !ownsRoot(memberRoot)) {
         principalInvalid(
-          `remote method '${method}' claims a member of TeamSession '${String(memberRoot)}' but this host is bound to '${rootSessionId}'`,
+          `remote method '${method}' claims a member of TeamSession '${String(memberRoot)}' which this host does not own (bound root '${rootSessionId}')`,
           'wrong-team',
         )
       }
@@ -333,13 +363,13 @@ export function createServerPrincipalDerivation(
   function deriveAckCaller(params: Record<string, unknown>): ActionCaller {
     assertTeamScoped('compatibility.ack', params)
     const acknowledgedBy = params['acknowledgedBy']
-    if (typeof acknowledgedBy !== 'string' || acknowledgedBy !== rootSessionId) {
+    if (typeof acknowledgedBy !== 'string' || !ownsRoot(acknowledgedBy)) {
       principalInvalid(
-        `compatibility.ack claims acknowledgedBy '${String(acknowledgedBy)}' but the host-known operator is '${rootSessionId}'`,
+        `compatibility.ack claims acknowledgedBy '${String(acknowledgedBy)}' which is not an owned root (bound root '${rootSessionId}')`,
         'spoofed-ack-by',
       )
     }
-    return { kind: 'human', humanId: rootSessionId }
+    return { kind: 'human', humanId: acknowledgedBy }
   }
 
   return (input: { readonly method: string; readonly request: RemoteRequest }): ActionCaller => {

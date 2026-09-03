@@ -10,18 +10,21 @@
  *
  * Derivation (documented per the §20.1 fixed field semantics):
  *
- * - the snapshot iterates the DURABLE member rows of the bound root
- *   (`memberInstances.list(root)`), NEVER scanning child Session logs and
- *   NEVER touching the (ephemeral) SessionController Team mirror — the
- *   residency fact is the live glue's own `hasLive` state (the agent
- *   handle's residency), not a reconstructed session-log fact;
+ * - the snapshot iterates the DURABLE member rows of the host's OWNED roots
+ *   (P9-S8: the bound root + any TeamSession root the host durably owns —
+ *   teams created after boot through `team.create` / `handoff.create`),
+ *   via `memberInstances.list(root)` per owned root, NEVER scanning child
+ *   Session logs and NEVER touching the (ephemeral) SessionController Team
+ *   mirror — the residency fact is the live glue's own `hasLive` state
+ *   (the agent handle's residency), not a reconstructed session-log fact;
  * - a row with a durable `childSessionId` (every boot-world row, including
  *   the leader — its child session IS the root session) is `resident` when
  *   `live.hasLive(childSessionId)`, else `cold`; a `DISPOSED` row is
  *   excluded (it has no live facts — the fold maps absence to
  *   `liveActivity: null`);
  * - a v2 leader row carrying no `childSessionId` is resolved against the
- *   root session (the leader's session is the root) by the same rule;
+ *   root session of its OWN team (the leader's session is the root) by the
+ *   same rule;
  * - `resuming` IS derivable (P8-S7 R2-5 / F12): the live glue owns a
  *   per-session resuming marker (agent-bindings.mjs `resumingSessions` —
  *   written at the production resume points, `ensureLiveAgent` and the
@@ -56,14 +59,16 @@ export interface LiveResidencyOverlayOptions {
   readonly repositories: TeamDomainRepositories
   /** The live-agent glue bundle (the residency flag source). */
   readonly live: TeamAgentBindings
-  /** The bound root session id (the TeamSession being projected). */
+  /** The bound root session id (the boot root; the snapshot additionally
+   *  covers every TeamSession root the host durably owns — P9-S8). */
   readonly rootSessionId: string
   /** The deterministic clock (ISO-8601) stamping resident rows. */
   readonly now: () => string
 }
 
 /**
- * Build the production {@link LiveResidencyOverlayPort} over one bound root.
+ * Build the production {@link LiveResidencyOverlayPort} over the host's
+ * owned roots (the bound root + every durably owned TeamSession — P9-S8).
  * @param options - the repositories + the live glue + the root + the clock.
  * @returns the read-only overlay port.
  */
@@ -74,44 +79,56 @@ export function createLiveResidencyOverlay(
 
   function snapshot(): ReadonlyMap<InstanceId, MemberLiveActivityDto> {
     const result = new Map<InstanceId, MemberLiveActivityDto>()
-    for (const record of repositories.memberInstances.list(rootSessionId)) {
-      // The repository deserializes every row through the documented type
-      // lie (a v2 LeaderInstanceRecordDto can arrive under the member
-      // record type — its absent `childSessionId` / `lifecycle` keys are
-      // invisible to the declared type), so discriminate STRUCTURALLY at
-      // runtime, never by instance id (mirrors the durable read port).
-      const row = record as MemberInstanceRecordDto | LeaderInstanceRecordDto
-      const instanceId = row.instanceId as InstanceId
+    // P9-S8 — the overlay covers the host's OWNED roots, not only the bound
+    // root: teams created after boot through `team.create` /
+    // `handoff.create` carry their own durable rows and their own live
+    // children, and their projections must carry their own residency.
+    // Instance ids are globally unique rows, so merging across owned roots
+    // is well-defined; each team's projection fold reads only its own
+    // members from the map.
+    const roots = new Set<string>([rootSessionId])
+    for (const record of repositories.teamSessions.list()) {
+      roots.add(record.rootSessionId)
+    }
+    for (const root of roots) {
+      for (const record of repositories.memberInstances.list(root)) {
+        // The repository deserializes every row through the documented type
+        // lie (a v2 LeaderInstanceRecordDto can arrive under the member
+        // record type — its absent `childSessionId` / `lifecycle` keys are
+        // invisible to the declared type), so discriminate STRUCTURALLY at
+        // runtime, never by instance id (mirrors the durable read port).
+        const row = record as MemberInstanceRecordDto | LeaderInstanceRecordDto
+        const instanceId = row.instanceId as InstanceId
 
-      // A DISPOSED instance has no live facts: excluded (the fold maps its
-      // absence to `liveActivity: null`). Only structurally durable rows
-      // carry a lifecycle; a v2 leader row (absent lifecycle) is live by
-      // construction and never excluded.
-      if ('lifecycle' in row && row.lifecycle === MEMBER_LIFECYCLE_STATES.DISPOSED) {
-        continue
-      }
+        // A DISPOSED instance has no live facts: excluded (the fold maps its
+        // absence to `liveActivity: null`). Only structurally durable rows
+        // carry a lifecycle; a v2 leader row (absent lifecycle) is live by
+        // construction and never excluded.
+        if ('lifecycle' in row && row.lifecycle === MEMBER_LIFECYCLE_STATES.DISPOSED) {
+          continue
+        }
 
-      // The session whose residency defines this instance: the durable child
-      // session when present (every boot-world row, including the leader —
-      // its child session IS the root), else the root session (a v2 leader
-      // row carries no child session).
-      const childSessionId =
-        'childSessionId' in row ? row.childSessionId : rootSessionId
+        // The session whose residency defines this instance: the durable child
+        // session when present (every boot-world row, including the leader —
+        // its child session IS the root), else the root session of the row's
+        // own team (a v2 leader row carries no child session).
+        const childSessionId = 'childSessionId' in row ? row.childSessionId : root
 
-      if (live.hasLive(childSessionId)) {
-        result.set(instanceId, {
-          residency: RESIDENCY_STATES.resident,
-          lastActivityAt: now(),
-        })
-      } else if (live.isResuming(childSessionId)) {
-        // F12 (P8-S7 R2-5): a cold agent with an in-flight resume at the
-        // live glue (the resuming marker — written at the production
-        // resume points, cleared when the resume settles). No clock
-        // stamp: the row is not live yet, so it carries no live facts
-        // beyond the residency state.
-        result.set(instanceId, { residency: RESIDENCY_STATES.resuming })
-      } else {
-        result.set(instanceId, { residency: RESIDENCY_STATES.cold })
+        if (live.hasLive(childSessionId)) {
+          result.set(instanceId, {
+            residency: RESIDENCY_STATES.resident,
+            lastActivityAt: now(),
+          })
+        } else if (live.isResuming(childSessionId)) {
+          // F12 (P8-S7 R2-5): a cold agent with an in-flight resume at the
+          // live glue (the resuming marker — written at the production
+          // resume points, cleared when the resume settles). No clock
+          // stamp: the row is not live yet, so it carries no live facts
+          // beyond the residency state.
+          result.set(instanceId, { residency: RESIDENCY_STATES.resuming })
+        } else {
+          result.set(instanceId, { residency: RESIDENCY_STATES.cold })
+        }
       }
     }
     return result

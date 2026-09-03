@@ -369,8 +369,28 @@ export interface S6RootBindingPort {
 
 /** The construction inputs of the S6 remote surfaces (all injected). */
 export interface S6RemoteOptions {
-  /** The bound root session id (this host's single TeamSession). */
+  /** The bound root session id (this host's boot root TeamSession). */
   readonly rootSessionId: string
+  /**
+   * P9-S8 — the durable-ownership predicate over TeamSession roots: the
+   * roots this host durably owns (a TeamSession record exists for the id).
+   * The bound-root guard accepts the bound root AND any owned root, so a
+   * team created after boot through the public remote creation faces
+   * (`team.create` / `handoff.create`) is servable by this same remote.
+   * Absent (tests, single-root fixtures): the T12 single-root semantics —
+   * bound root only. Genuinely foreign TeamSession ids are rejected either
+   * way (fail-closed; CR-4 — the browser payload still cannot self-appoint
+   * authority; ownership is host-owned durable state, never a claim).
+   */
+  readonly isOwnedRoot?: (teamSessionId: string) => boolean
+  /**
+   * P9-S8 — the host default workspace (the row config): a team created
+   * through this remote inherits it on its fresh bind (the team's
+   * `defaultWorkspace` — inherited by its members; the projection fold
+   * resolves the effective workspace against it). Absent: the created
+   * team carries no default workspace.
+   */
+  readonly defaultWorkspace?: string
   /** The open TeamDomain repositories (the durable rows). */
   readonly repositories: TeamDomainRepositories
   /** The host blueprint catalog (the single bound blueprint). */
@@ -692,13 +712,16 @@ function compatibilityCurrentOf(state: Record<string, unknown>): RemoteSafeRecor
 // --- the port builders ---------------------------------------------------------------------
 
 /**
- * Build the thirteen production remote ports over one bound root (the
- * frozen twelve + the T12-V16 messaging coordinator port).
+ * Build the thirteen production remote ports over the host's owned roots
+ * (the bound root + any TeamSession root the host durably owns — P9-S8:
+ * teams created after boot through `team.create` / `handoff.create` are
+ * servable by this same remote; the frozen twelve + the T12-V16 messaging
+ * coordinator port).
  *
- * Every port asserts the bound root first (the foreign-team guard — the
- * A32 seam re-asserts it for the claim-carrying methods; the other methods
- * assert it here, so NO team-scoped remote method can address another
- * TeamSession). Every authority call goes to the runtime facade; the
+ * Every port asserts the bound-root guard first (the foreign-team guard —
+ * the A32 seam re-asserts it for the claim-carrying methods; the other
+ * methods assert it here, so NO team-scoped remote method can address a
+ * TeamSession this host does not own). Every authority call goes to the runtime facade; the
  * ports themselves perform no repository writes except the single
  * `override.reset` deletion of the ADDRESS-RESOLVED record (the reset
  * authority: the admission's identity resolution + the durable delete —
@@ -708,13 +731,21 @@ function compatibilityCurrentOf(state: Record<string, unknown>): RemoteSafeRecor
  * @returns the thirteen ports.
  */
 export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
-  const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, now } = options
+  const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, now, isOwnedRoot } = options
+
+  /** The bound-root guard's acceptance: the bound root OR a durably owned
+   *  root (P9-S8 — a team created after boot by this host). Without the
+   *  predicate (single-root fixtures) this is the T12 bound-root-only
+   *  check. */
+  function ownsRoot(teamSessionId: string): boolean {
+    return teamSessionId === rootSessionId || (isOwnedRoot?.(teamSessionId) ?? false)
+  }
 
   function assertBoundRoot(method: string, teamSessionId: unknown): string {
-    if (typeof teamSessionId !== 'string' || teamSessionId !== rootSessionId) {
+    if (typeof teamSessionId !== 'string' || !ownsRoot(teamSessionId)) {
       throw new TeamPluginError(
         S6_PRINCIPAL_ERROR_CODES.FOREIGN_TEAM,
-        `remote method '${method}' addresses TeamSession '${String(teamSessionId)}' but this host is bound to '${rootSessionId}'`,
+        `remote method '${method}' addresses TeamSession '${String(teamSessionId)}' which this host does not own (bound root '${rootSessionId}')`,
         { reason: 'foreign-team', requested: String(teamSessionId), bound: rootSessionId },
       )
     }
@@ -789,7 +820,17 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         blueprintRevision: number | undefined,
         initialWork: RemoteSafeRecord | undefined,
       ): Promise<RemoteSafeRecord> {
-        assertBoundRoot('team.create', requestedRootSessionId)
+        // P9-S8 — team.create is the CREATION method: the bound-root guard
+        // does not apply to it. The requested root is either NEW (the
+        // client's minted id — the standard UI flow, UI §4.3: fresh bind,
+        // the host creates and then OWNS the team) or already host-OWNED
+        // (the cold rehydrate path — the durable row's bound snapshot must
+        // match, enforced below). The frozen request parser already
+        // validated the id shape. CR-4 is preserved: creation is a
+        // host-authority operation (blueprint snapshot, uniqueness,
+        // admission all host-validated) and grants NO authority over
+        // existing teams — every other team-scoped method still asserts
+        // ownership.
         const resolved = resolveBlueprint(blueprintId, blueprintRevision)
         // BC-03 / R1-A: optional initial work admitted through the EXISTING
         // work-admission path (facade follow-up on the leader instance).
@@ -798,15 +839,19 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // authority (gates + work-chain token replay/resume included).
         let initialWorkRequest: TeamRuntimeActionRequest | undefined
         if (initialWork !== undefined) {
+          // P9-S8 — the initial work targets the REQUESTED root (the team
+          // being created), not the bound root: the leader instance id is
+          // the fixed leader identity (per-team rows, one id), so only the
+          // root scoping follows the request.
           initialWorkRequest = {
-            rootSessionId,
+            rootSessionId: requestedRootSessionId,
             action: 'follow-up',
             caller: await options.principal({
               method: 'team.create',
               request: {
                 version: REMOTE_CONTRACT_VERSION,
                 params: {
-                  rootSessionId,
+                  rootSessionId: requestedRootSessionId,
                   blueprintId,
                   ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
                   initialWork,
@@ -819,7 +864,10 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
           }
           validateActionRequest(initialWorkRequest)
         }
-        const durableRow = repositories.teamSessions.get(rootSessionId)
+        // P9-S8 — the durable-row check addresses the REQUESTED root (a
+        // NEW root has no row → the fresh path; an already-owned root →
+        // the cold path with the snapshot match above).
+        const durableRow = repositories.teamSessions.get(requestedRootSessionId)
         let result: RootBindingResult
         if (durableRow !== undefined) {
           // The cold path: the durable row's bound snapshot is the truth;
@@ -835,15 +883,22 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
               { reason: 'blueprint-mismatch' },
             )
           }
-          result = await options.rootBinding.rehydrateCold({ rootSessionId: rootSessionId as TeamSessionId })
+          result = await options.rootBinding.rehydrateCold({ rootSessionId: requestedRootSessionId as TeamSessionId })
         } else {
           result = await options.rootBinding.bindFresh({
-            rootSessionId: rootSessionId as TeamSessionId,
+            rootSessionId: requestedRootSessionId as TeamSessionId,
             blueprint: {
               blueprintId: resolved.blueprintId,
               revision: resolved.revision,
               contentHash: resolved.contentHash,
             },
+            // P9-S8 — inherit the host default workspace (the projection
+            // fold resolves the created team's effective workspace against
+            // it; the team is host-scoped, so the host default IS the
+            // team default).
+            ...(options.defaultWorkspace !== undefined
+              ? { defaultWorkspace: options.defaultWorkspace }
+              : {}),
           })
         }
         if (initialWorkRequest !== undefined) {
@@ -1823,11 +1878,16 @@ function createS6TrackerCache(): S6TrackerCache {
  */
 export function createS6RemoteQueryCommandCompletion(
   ports: S6RemotePorts,
-  options: Pick<S6RemoteOptions, 'rootSessionId'>,
+  options: Pick<S6RemoteOptions, 'rootSessionId' | 'isOwnedRoot'>,
   dispatcher: RemoteDispatcher,
 ): RemoteQueryCommandCompletion {
-  const { rootSessionId } = options
+  const { rootSessionId, isOwnedRoot } = options
   const trackers = createS6TrackerCache()
+
+  /** The bound-root guard's acceptance (same semantics as the port guard). */
+  function ownsRoot(teamSessionId: string): boolean {
+    return teamSessionId === rootSessionId || (isOwnedRoot?.(teamSessionId) ?? false)
+  }
 
   return (input: { readonly method: string; readonly request: RemoteRequest }): Promise<unknown> => {
     const { method, request } = input
@@ -1845,11 +1905,11 @@ export function createS6RemoteQueryCommandCompletion(
     // 1. The bound-root guard (before anything else — a foreign TeamSession
     //    never reaches the ledger).
     const rawTeamSessionId = (request.params as Record<string, unknown>)['teamSessionId']
-    if (typeof rawTeamSessionId !== 'string' || rawTeamSessionId !== rootSessionId) {
+    if (typeof rawTeamSessionId !== 'string' || !ownsRoot(rawTeamSessionId)) {
       return Promise.resolve(
         buildRemoteError(
           S6_PRINCIPAL_ERROR_CODES.FOREIGN_TEAM,
-          `remote method '${method}' addresses TeamSession '${String(rawTeamSessionId)}' but this host is bound to '${rootSessionId}'`,
+          `remote method '${method}' addresses TeamSession '${String(rawTeamSessionId)}' which this host does not own (bound root '${rootSessionId}')`,
           ctx,
           { reason: 'foreign-team' },
         ),
@@ -1922,8 +1982,9 @@ export interface S6RemoteSurfaces {
 }
 
 /**
- * Build the complete S6 remote surface set (A31 + A33 + A34) over one
- * bound root (the single entry point the production root calls).
+ * Build the complete S6 remote surface set (A31 + A33 + A34) over the
+ * host's owned roots — the bound root + any TeamSession root the host
+ * durably owns (P9-S8; the single entry point the production root calls).
  *
  * T12-B4: the production surface owns the transport's trusted
  * PrincipalContext EXPLICITLY — the DSH web seam's connection gate is the

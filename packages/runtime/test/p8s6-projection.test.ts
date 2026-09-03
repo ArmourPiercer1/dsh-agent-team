@@ -454,6 +454,9 @@ const c2overlay = await (async () => {
   const realRows = c2world.repos.memberInstances.list(ROOT_SID)
   const fakeRepos = {
     memberInstances: { list: (root: string) => [...realRows, disposedRow, v2Row] },
+    // P9-S8 F1-lite: the overlay iterates every root the host durably owns;
+    // this unit's world is single-root (the bound ROOT_SID), so no extras.
+    teamSessions: { list: () => [] },
   }
   const port = createLiveResidencyOverlay({
     repositories: fakeRepos as never,

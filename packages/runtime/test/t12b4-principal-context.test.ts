@@ -93,6 +93,9 @@ const B4 = await (async () => {
 
   // (4)/(5)/(6) The derivation path consults the context.
   const repositories = {
+    // P9-S8 — the derivation's instance scan also reads the owned-root
+    // registry (single-root fixture: no TeamSession rows at all).
+    teamSessions: { list: () => [] },
     memberInstances: { list: () => [] },
   } as unknown as TeamDomainRepositories
 

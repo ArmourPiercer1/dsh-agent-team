@@ -1115,6 +1115,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       rootSessionId: minted,
       blueprint: snapshot,
       generation: 1,
+      // P9-S8 — the created team inherits the host default workspace (the
+      // boot create passes it too; without it the created team's projection
+      // fold cannot resolve the leader's effective workspace and fails
+      // closed).
+      ...(config.defaultWorkspace !== undefined
+        ? { defaultWorkspace: config.defaultWorkspace }
+        : {}),
       initialContext: context,
     })
   }
@@ -1365,11 +1372,27 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     { clock: now, schemaVersion: 2 },
   )
 
+  /** P9-S8 — durable ownership of a TeamSession root: the host owns the
+   *  root when a TeamSession record exists for it (the boot root gets its
+   *  record at boot; teams created after boot through the public remote
+   *  creation faces — `team.create` / `handoff.create` — get theirs in the
+   *  binding). The remote bound-root guard and the principal claim checks
+   *  accept the bound root AND any owned root; a malformed id is NOT owned
+   *  (fail-closed). */
+  function ownsTeamSessionRoot(teamSessionId: string): boolean {
+    try {
+      return repos.teamSessions.get(teamSessionId) !== undefined
+    } catch {
+      return false
+    }
+  }
+
   // --- A32 + A30 the principal derivation + the live overlay (installed once) ----------------------
   seams.serverPrincipalDerivation.install(
     createServerPrincipalDerivation({
       rootSessionId: rootSid,
       repositories: repos,
+      isOwnedRoot: ownsTeamSessionRoot,
       leaderInstanceId: LEADER_INSTANCE_ID,
     }),
   )
@@ -1380,6 +1403,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // --- A31 + A33 + A34 the remote surfaces (built once, installed once) -----------------------------
   const remoteSurfaces = createS6RemoteSurfaces({
     rootSessionId: rootSid,
+    isOwnedRoot: ownsTeamSessionRoot,
+    ...(config.defaultWorkspace !== undefined
+      ? { defaultWorkspace: config.defaultWorkspace }
+      : {}),
     repositories: repos,
     catalog,
     blueprint,
