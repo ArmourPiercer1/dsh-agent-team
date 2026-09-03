@@ -141,7 +141,7 @@ describe('P9-T10 (P9-S7) client package surface (legacy spec ADAPT)', () => {
   it('the static plugin contract is the frozen shape (PACKAGE_ID + name/inject/apply)', () => {
     expect(PACKAGE_ID).toBe('client')
     expect(name).toBe('dsh-agent-team-client')
-    expect(inject).toEqual(['slots', 'locale', 'sessions', 'connection', 'remote'])
+    expect(inject).toEqual(['slots', 'locale', 'sessions', 'connection', 'remote', 'remote.agentPresets'])
     expect(typeof apply).toBe('function')
   })
 

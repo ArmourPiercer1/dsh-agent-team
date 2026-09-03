@@ -269,8 +269,12 @@ export interface TeamMountComponents {
  * The injected services (only the seams the mount actually reads — the
  * legacy precedent's `uiConversation` edge is dropped: vNext registers no
  * conversation chat node, so the marker event face is never consumed).
+ * `remote.agentPresets` is the dotted traced-namespace service itself: a
+ * `ctx.remote.<ns>` read is authorized by the context proxy under that
+ * dotted key, so the bare `remote` service alone does not open the
+ * namespace.
  */
-export const inject = ['slots', 'locale', 'sessions', 'connection', 'remote'] as const
+export const inject = ['slots', 'locale', 'sessions', 'connection', 'remote', 'remote.agentPresets'] as const
 
 /** Stable Cordis plugin name of the dsh-agent-team client half. */
 export const name = 'dsh-agent-team-client'
