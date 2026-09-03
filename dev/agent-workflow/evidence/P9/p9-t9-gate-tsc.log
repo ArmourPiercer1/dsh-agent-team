@@ -1,0 +1,7 @@
+gate: tsc -p packages/client/tsconfig.json (expect silent)
+exit: 0
+stdout+stderr: []
+
+gate: tsc -p packages/testkit/tsconfig.json (expect silent)
+exit: 0
+stdout+stderr: []

@@ -1,0 +1,5 @@
+gate: tsc -p packages/client/tsconfig.build.json (expect EMITS, then dist removal)
+exit: 0
+stdout+stderr: []
+dist files emitted: 356
+packages/client/dist removed after gate: True

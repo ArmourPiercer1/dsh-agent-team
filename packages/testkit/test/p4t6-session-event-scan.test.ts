@@ -282,8 +282,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // new CSS module, and the T7 .tsx/.css edits are outside the
     // scanner's extension set; all six scanned files carry zero
     // denylist vocabulary (the scan over them passes).
-    expect(scanResult.filesScanned).toBe(596)
-    expect(scanResult.files.length).toBe(596)
+    // P9-T9 client mount pin (+2): the D-T9-13 core/glue split adds two
+    // scannable .ts (src/plugin/team-mount-core — the pure-.ts mount core —
+    // and test/client-plugin-mount.test — its behavior spec); the glue
+    // rewrite (src/plugin/client) and the test/client.test.ts rewrite are
+    // in-place edits (no count change); the .tsx component entries and
+    // their CSS modules are outside the scanner's extension set; both new
+    // files carry zero denylist vocabulary (the scan over them passes).
+    expect(scanResult.filesScanned).toBe(598)
+    expect(scanResult.files.length).toBe(598)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
