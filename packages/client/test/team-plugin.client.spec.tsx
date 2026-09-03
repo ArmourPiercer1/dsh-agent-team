@@ -47,6 +47,7 @@ import {
 } from '../src/plugin/client.js'
 import type {
   TeamAgentPresetRow,
+  TeamAgentPresetsListResult,
   TeamPluginEffect,
   TeamSlots,
 } from '../src/plugin/team-mount-core.js'
@@ -123,11 +124,16 @@ function makeFixture(): Fixture {
     },
   }
 
-  // The public remote seam double (Seam 6).
+  // The public remote seam double (Seam 6). The upstream public contract
+  // answers the RemoteResult envelope (roster in `value`), so the double
+  // wraps the rows accordingly.
   const presets: readonly TeamAgentPresetRow[] = []
   const remote = {
     agentPresets: {
-      list: async (): Promise<readonly TeamAgentPresetRow[]> => presets,
+      list: async (): Promise<TeamAgentPresetsListResult> => ({
+        ok: true,
+        value: { presets, authorable: false },
+      }),
     },
   }
 

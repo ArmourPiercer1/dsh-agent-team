@@ -174,12 +174,38 @@ export interface TeamAgentPresetRow {
   readonly broken?: unknown
 }
 
+/**
+ * The frozen public seam's `agentPresets/list` payload — the upstream
+ * generated remote client answers `RemoteResult<AgentPresetRoster>` (the
+ * gateway facade never unwraps): the roster rides in `value` and carries
+ * the row list plus the `authorable` flag. The error side is the typed
+ * Remote failure (`code` + `message`, e.g. `invocation-unavailable`).
+ */
+export type TeamAgentPresetsListResult =
+  | {
+      readonly ok: true
+      readonly value: {
+        readonly presets: readonly TeamAgentPresetRow[]
+        readonly authorable: boolean
+      }
+    }
+  | {
+      readonly ok: false
+      readonly error: { readonly code: string; readonly message: string }
+    }
+
 /** The public remote seam face (Seam 6, SAME): the agent-preset list only. */
 export interface TeamRemote {
   /** The runtime agent preset rows. */
   readonly agentPresets: {
-    /** List the runtime agent preset rows. */
-    list(): Promise<readonly TeamAgentPresetRow[]>
+    /**
+     * List the runtime agent preset rows.
+     *
+     * The upstream public contract answers the RemoteResult envelope (the
+     * roster in `value`), not the row array — the seam-6 mapping that
+     * follows unwraps it before the `broken` filter.
+     */
+    list(): Promise<TeamAgentPresetsListResult>
   }
 }
 
@@ -411,15 +437,25 @@ export function applyTeamMount(
     probeCompatibility: (params) => teamRemote.intentProbe(params),
     teamCreate: (params) => teamRemote.teamCreate(params),
     createRootSession: (opts) => ctx.sessions.create(opts),
-    listAgentPresets: async () =>
-      (await ctx.remote.agentPresets.list())
+    listAgentPresets: async () => {
+      // The frozen public seam answers the RemoteResult envelope (the roster
+      // rides in `value` — the gateway facade never unwraps), so unwrap
+      // before the seam-6 row mapping. A refused envelope rejects: the
+      // panel's catch degrades to the empty-roster state, the same failure
+      // treatment the upstream `ui-agent-preset` consumer applies.
+      const result = await ctx.remote.agentPresets.list()
+      if (result.ok === false) {
+        throw new Error(`agentPresets/list: ${result.error.code} ${result.error.message}`)
+      }
+      return result.value.presets
         .filter((row) => row.broken === undefined)
         .map((row) => ({
           id: row.id,
           name: row.name,
           description: row.description,
           isDefault: row.isDefault,
-        })),
+        }))
+    },
   }
 
   // (13) The S5-B member command face (frozen Remote wrappers verbatim).

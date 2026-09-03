@@ -38,6 +38,7 @@ import {
 import {
   applyTeamMount,
   type TeamAgentPresetRow,
+  type TeamAgentPresetsListResult,
   type TeamMountComponents,
   type TeamPluginClientConfig,
   type TeamPluginClientContext,
@@ -226,11 +227,16 @@ function makeMount(
     },
   }
 
-  // The public remote seam double (Seam 6, SAME).
+  // The public remote seam double (Seam 6, SAME). The upstream public
+  // contract answers the RemoteResult envelope (roster in `value`), so the
+  // double wraps the rows accordingly.
   const presets: readonly TeamAgentPresetRow[] = opts.presets ?? []
   const remote = {
     agentPresets: {
-      list: async (): Promise<readonly TeamAgentPresetRow[]> => presets,
+      list: async (): Promise<TeamAgentPresetsListResult> => ({
+        ok: true,
+        value: { presets, authorable: false },
+      }),
     },
   }
 
