@@ -139,6 +139,7 @@ function buildOptions(world: P6T1World, runtime: TeamRuntime): S6RemoteOptions {
     handoff: {} as unknown as HandoffService,
     legacyInspect: unused as unknown as LegacyInspectFn,
     legacyHome: undefined,
+    messaging: { sendTeamMessage: unused, recoverPendingDeliveries: unused },
     principal: createServerPrincipalDerivation({
       rootSessionId: P6T2_ROOT,
       repositories: world.domain.repositories,

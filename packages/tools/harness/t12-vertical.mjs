@@ -829,10 +829,15 @@ function status0(result) {
   return result.status
 }
 
-/** Unwrap a remote admission outcome value: {outcome:{status:'executed',...}}. */
+/**
+ * Unwrap a remote admission/delivery outcome value:
+ * {outcome:{status:'executed',...}} (facade admission, e.g. member.followup)
+ * or {outcome:{status:'delivered',...}} (T12-V16: member.send now runs the
+ * full P6-T3 coordinator path — facade + live delivery + confirmation).
+ */
 function admissionOutcome(value, method) {
   const outcome = value?.outcome
-  if (outcome === undefined || outcome?.status !== 'executed') {
+  if (outcome === undefined || (outcome?.status !== 'executed' && outcome?.status !== 'delivered')) {
     throw new Error(`${method}: unexpected outcome value: ${JSON.stringify(value).slice(0, 600)}`)
   }
   return outcome
@@ -1556,8 +1561,11 @@ async function runFresh1() {
     v2a.evidence.childSessionHeader = childHeader?.header ?? null
     v2a.check('child session header cwd == W_child', childHeader?.header?.cwd === W_CHILD_A, `header.cwd=${childHeader?.header?.cwd} expected=${W_CHILD_A}`)
     // A real turn on the child via the browser-facing public Remote.
-    // 480 s budget: first relayed turn on a freshly materialized child agent
-    // showed a ~360 s start delay in run #5 (t12v-finding-360s-first-turn.md).
+    // 480 s budget: run #5 showed a ~360 s start delay on the first relayed
+    // turn (t12v-finding-360s-first-turn.md). Root-caused in T12-V16 as the
+    // admission-only remote member.send window latch (row-owned): delivery
+    // now happens AT ADMISSION via the P6-T3 coordinator, so the ack is
+    // expected within seconds — the 480 s stays as the safe inline bound.
     const v2aAdmittedAt = Date.now()
     const sendRes = await remoteCall(a.origin, a.cookie, 'member.send', {
       teamSessionId: a.teamSession,
@@ -1568,7 +1576,10 @@ async function runFresh1() {
     })
     const sent = admissionOutcome(remoteValue(sendRes, 'member.send'), 'member.send')
     v2a.evidence.sendResult = { outcome: sent }
-    v2a.check('member.send delivered (admission executed)', sent.status === 'executed' && sent.targetInstanceId === workerA.instanceId, JSON.stringify(sent).slice(0, 300))
+    const sentToWorkerA =
+      (sent.status === 'delivered' && sent.recipientInstanceId === workerA.instanceId) ||
+      (sent.status === 'executed' && sent.targetInstanceId === workerA.instanceId)
+    v2a.check('member.send delivered (coordinator outcome targets worker A)', sentToWorkerA, JSON.stringify(sent).slice(0, 300))
     const childAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_CHILD_FIRST_ACK_${NONCE}`), 480_000)
     v2a.check('child turn settled against the mock', childAck !== null, childAck === null ? '<ack not in child log within 480s>' : 'ack found in durable child log')
     v2a.evidence.firstTurnLatencyMs = firstTurnLatencyEvidence(HOME_A, workerA.childSessionId, v2aAdmittedAt)

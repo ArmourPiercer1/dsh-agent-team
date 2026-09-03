@@ -1410,6 +1410,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     legacyInspect,
     legacyHome: params.legacyHome,
     principal: seams.serverPrincipalDerivation.current(),
+    // T12-V16: remote member.send routes through the P6-T3 messaging
+    // coordinator (facade admission + live delivery + confirmation),
+    // closing the admission-only silence window pinned by run #13.
+    messaging,
     now,
   })
   seams.remoteQueryCommandCompletion.install(remoteSurfaces.completion)
