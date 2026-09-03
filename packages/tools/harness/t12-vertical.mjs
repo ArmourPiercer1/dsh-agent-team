@@ -1641,14 +1641,15 @@ async function runFresh1() {
       requestToken: `t12v-v3-use-${NONCE}`,
     })
     admissionOutcome(remoteValue(useRes, 'member.send'), 'member.send')
-    // 480 s (was 180 s): run #6 showed the fresh-child non-idle window PERSISTS
-    // past the first turn — V2-A's turn 1 took ~47 s, V3's turn 2 (USE_MCP) took
-    // ~181 s and the denied-ack landed 1.3 s past a 180 s deadline. The window
-    // is per-agent-materialization but spans MULTIPLE turns until convergence
-    // (turn 3 on the same agent was immediate, 0.25 s). t12v-finding-360s-first-turn.md.
+    // 600 s (was 480 s, which was 180 s): parent final directive — the pre-T12-V16
+    // denied-ack misses were SYSTEMATIC (three consecutive runs, 1.1-1.5 s past the
+    // 480 s deadline; the window converged at ~481-482 s). A 600 s budget with margin
+    // is the honest bound; since T12-V16 (delivery at admission) the denied-ack has
+    // landed in ~0.3-1 s (runs #14/#15), so the bound now has wide margin. Every other
+    // budget unchanged (V1/V2-A/V4/RESTART/handoff stay 480 s; LIFECYCLE 900 s).
     const v3AdmittedAt = Date.now()
-    const deniedAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_MCP_DENIED_ACK_${NONCE}`), 480_000)
-    v3.check('turn settled after the mcp tool call was handled by the real agent loop', deniedAck !== null, deniedAck === null ? '<denied-ack not in child log within 480s>' : 'settled')
+    const deniedAck = await waitForLogLineJson(HOME_A, workerA.childSessionId, (l) => JSON.stringify(l).includes(`T12V_MCP_DENIED_ACK_${NONCE}`), 600_000)
+    v3.check('turn settled after the mcp tool call was handled by the real agent loop', deniedAck !== null, deniedAck === null ? '<denied-ack not in child log within 600s>' : 'settled')
     // Measure the USE_MCP turn's own opener (NOT the child's first turn/start,
     // which belongs to V2-A's CHILD_FIRST turn): nearest preceding turn/start
     // for the turn containing the USE_MCP relay text.
