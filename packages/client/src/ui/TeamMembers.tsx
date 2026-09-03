@@ -18,8 +18,8 @@ import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
 import {
   deriveTeamMembers,
   type TeamMemberGroupRow, type TeamMemberInstanceRow,
-} from './team-members-model.ts'
-import type { TeamKey } from './locales.ts'
+} from '../model/team-members-model.js'
+import type { TeamKey } from './locales.js'
 import styles from './TeamMembers.module.css'
 
 /** The members section props: the team view, the current session, the D9 navigation callback, and the team dictionary. */

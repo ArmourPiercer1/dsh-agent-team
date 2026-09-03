@@ -13,8 +13,8 @@ import type {
   RpcResult, SessionId, TeamMessagePage, TeamMirror, TeamView as TeamWireView,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import { resolveTeamView } from '@deepseek-ai/dsh-client-runtime/client'
-import { TeamView, type TeamViewProps } from '../src/client/TeamView.tsx'
-import { zh } from '../src/client/locales.ts'
+import { TeamView, type TeamViewProps } from '../src/ui/TeamView.js'
+import { zh } from '../src/ui/locales.js'
 
 afterEach(cleanup)
 beforeEach(() => {
@@ -93,6 +93,17 @@ function viewProps(mirror: TeamMirror, sessionId: SessionId = LEADER): TeamViewP
     pageTeamMessages: unprogrammedPage(),
     openSession: vi.fn(),
     t: makeTranslate(zh),
+    // Current DSH requires the conversation.view owner props (viewRequest/openView/completeViewRequest);
+    // legacy fixtures predate them. TeamView renders them as a degraded jump surface (Seam 4), so no-op stubs.
+    viewRequest: null,
+    openView: () => {},
+    completeViewRequest: () => {},
+    // SessionStandardProps merges (ui-conversation: useConversation; ui-chat: useChat) and the
+    // GlobalStandardProps merge (ui-session: useSessionPendingInteraction) are absent from legacy
+    // fixtures; TeamView never reads them in these specs, so empty stubs.
+    useConversation: (() => undefined) as TeamViewProps['useConversation'],
+    useChat: (() => undefined) as TeamViewProps['useChat'],
+    useSessionPendingInteraction: (() => undefined) as TeamViewProps['useSessionPendingInteraction'],
   }
 }
 

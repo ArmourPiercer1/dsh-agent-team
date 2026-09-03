@@ -17,7 +17,7 @@ import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
 import {
   deriveTeamTimeline, formatTeamClock, formatTeamDuration, teamTimelineTicks,
   type TeamTimelineSpan,
-} from './team-timeline-model.ts'
+} from '../model/team-timeline-model.js'
 import styles from './TeamTimeline.module.css'
 
 /** The deepest zoom of the visible domain (ms). */

@@ -10,7 +10,7 @@
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
-import type { TeamKey } from './locales.ts'
+import type { TeamKey } from './locales.js'
 import styles from './TeamTasks.module.css'
 
 /** The task-board section props: the team view and the team dictionary. */

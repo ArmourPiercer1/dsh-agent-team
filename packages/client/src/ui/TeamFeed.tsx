@@ -28,13 +28,13 @@ import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primiti
 import type {
   MessageAnchor, RpcError, RpcResult, TeamMessagePage, TeamMessageView, TeamView,
 } from '@deepseek-ai/dsh-client-runtime/client'
-import type { TeamKey } from './locales.ts'
+import type { TeamKey } from './locales.js'
 import {
   TEAM_FEED_INITIAL_LIMIT, TEAM_FEED_STEP,
   deriveTeamFeed,
   type TeamFeedRow,
-} from './team-feed-model.ts'
-import { formatTeamClock } from './team-timeline-model.ts'
+} from '../model/team-feed-model.js'
+import { formatTeamClock } from '../model/team-timeline-model.js'
 import styles from './TeamFeed.module.css'
 
 /** The event-stream section props: the team view, the pagination callback, the D9 navigation callback, and the team dictionary. */

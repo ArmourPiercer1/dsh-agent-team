@@ -16,10 +16,10 @@ import type {
   MessageAnchor, ObservableSnapshot, RpcResult, SessionId, TeamMessagePage, TeamMirror,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import { resolveTeamView } from '@deepseek-ai/dsh-client-runtime/client'
-import { TeamTimeline } from './TeamTimeline.tsx'
-import { TeamMembers } from './TeamMembers.tsx'
-import { TeamTasks } from './TeamTasks.tsx'
-import { TeamFeed } from './TeamFeed.tsx'
+import { TeamTimeline } from './TeamTimeline.js'
+import { TeamMembers } from './TeamMembers.js'
+import { TeamTasks } from './TeamTasks.js'
+import { TeamFeed } from './TeamFeed.js'
 import styles from './TeamView.module.css'
 
 /**

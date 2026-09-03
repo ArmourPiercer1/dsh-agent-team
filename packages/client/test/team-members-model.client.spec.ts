@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
-import { deriveTeamMembers } from '../src/client/team-members-model.ts'
+import { deriveTeamMembers } from '../src/model/team-members-model.js'
 
 type MemberRow = TeamView['members'][number]
 

@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
-import { deriveTeamDockContent, deriveTeamDockCounts } from '../src/client/team-dock-model.ts'
+import { deriveTeamDockContent, deriveTeamDockCounts } from '../src/model/team-dock-model.js'
 
 const LEADER = 'leader-s'
 const SA = 'sa'

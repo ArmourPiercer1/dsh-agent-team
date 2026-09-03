@@ -12,6 +12,19 @@
  * `scripts/composition-smoke.mjs` (built output).
  * @module @dsh-agent-team/client/plugin/client
  */
+import type { TeamKey } from '../ui/locales.js'
+
+/**
+ * Locale namespace declaration merge (moved verbatim from the legacy
+ * `src/client/index.ts` package entry, which P9 does not carry): the
+ * `'team'` namespace typed by the migrated `ui/locales.ts` dictionary.
+ */
+declare module '@deepseek-ai/dsh-client-ui-slots' {
+  interface LocaleNamespaceMap {
+    /** Team UI copy: view tab, dock, members, tasks, timeline, and ledger. */
+    team: TeamKey
+  }
+}
 
 /**
  * Minimal structural view of the Cordis client plugin context handed to

@@ -23,8 +23,8 @@ import {
 import {
   deriveTeamDockContent, deriveTeamDockCounts,
   type TeamDockMemberRow, type TeamDockTaskRow,
-} from './team-dock-model.ts'
-import type { TeamKey } from './locales.ts'
+} from '../model/team-dock-model.js'
+import type { TeamKey } from './locales.js'
 import styles from './TeamDock.module.css'
 
 /** Injected share of the team dock entry. */

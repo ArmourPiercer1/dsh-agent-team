@@ -16,9 +16,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type { MessageAnchor, RpcResult, TeamMessagePage, TeamView } from '@deepseek-ai/dsh-client-runtime/client'
-import { TeamFeed } from '../src/client/TeamFeed.tsx'
-import { formatTeamClock } from '../src/client/team-timeline-model.ts'
-import { en, zh } from '../src/client/locales.ts'
+import { TeamFeed } from '../src/ui/TeamFeed.js'
+import { formatTeamClock } from '../src/model/team-timeline-model.js'
+import { en, zh } from '../src/ui/locales.js'
 
 const LEADER = 'leader-s'
 

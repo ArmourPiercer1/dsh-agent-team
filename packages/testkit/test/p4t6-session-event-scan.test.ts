@@ -21,10 +21,17 @@ import {
   scanSessionEventVocabulary,
 } from '../fault-injection/session-event-scan.mjs'
 
-/** The only files allowed to carry denylist tokens (frozen quarantine). */
+/**
+ * The only files allowed to carry denylist tokens (frozen quarantine).
+ * P9-T2 temporary entry: the P9-T1 verbatim copy of the legacy
+ * team-marker-definition spec carries six legacy event-string fixture
+ * tokens; the spec is on the frozen DROP list, so P9-T10 removes both the
+ * spec and this entry, restoring the original two-file set.
+ */
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
+  'packages/client/test/team-marker-definition.client.spec.ts',
 ])
 
 /** The required P4 suites this audit cites as executed evidence. */
@@ -42,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -226,8 +233,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // bridge, budget ledger, deferred-content calibration) and
     // mock-deepseek.mjs (spec-strict mock model + verbatim capture); both
     // carry zero denylist vocabulary (the denylist scan over them passes).
-    expect(scanResult.filesScanned).toBe(560)
-    expect(scanResult.files.length).toBe(560)
+    // P9-T1 legacy-copy pin (560 + 11): the verbatim legacy team UI copy
+    // adds eleven scannable files under packages/client — four model .ts
+    // (team-dock-model, team-feed-model, team-members-model,
+    // team-timeline-model), the ui locales.ts, and six legacy-copy spec
+    // .ts (client-bundle, team-dock-model, team-feed-model,
+    // team-marker-definition, team-members-model, team-timeline-model);
+    // the .tsx and .css copies are outside the frozen scanner's extension
+    // set. team-marker-definition.client.spec.ts carries six legacy
+    // event-string fixture tokens and is quarantined until the P9-T10
+    // DROP removes it.
+    // P9-T2 build-wiring pin (+1): packages/client/src/css-modules.d.ts.
+    expect(scanResult.filesScanned).toBe(572)
+    expect(scanResult.files.length).toBe(572)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
@@ -252,7 +270,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     expect(scanResult.summary.declarationMerge).toBe(0)
   })
 
-  it('quarantine hits pinned exactly: fifteen event-string occurrences, the recorded adjudication', () => {
+  it('quarantine hits pinned exactly: twenty-one event-string occurrences, the recorded adjudication (incl. the six P9-T1 marker-spec fixture tokens quarantined until the P9-T10 DROP)', () => {
     // The frozen detection vocabulary (invariant 42: vNext has no Team
     // SessionEvents) lives in the v1 quarantine module and in the
     // contracts negative test that exercises the detection function.
@@ -261,6 +279,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       (h) => h.kind + '|' + h.file + ':' + h.line + ':' + h.column + '|' + h.token,
     )
     expect(pinned).toEqual([
+      // P9-T1 temporary quarantine (dropped with the spec at P9-T10):
+      // six legacy event-string fixture tokens in the verbatim copy of
+      // the legacy team-marker-definition spec.
+      'event-string|packages/client/test/team-marker-definition.client.spec.ts:83:18|team/progress',
+      'event-string|packages/client/test/team-marker-definition.client.spec.ts:90:18|team/control-request',
+      'event-string|packages/client/test/team-marker-definition.client.spec.ts:97:18|team/control-decision',
+      'event-string|packages/client/test/team-marker-definition.client.spec.ts:104:18|team/message',
+      'event-string|packages/client/test/team-marker-definition.client.spec.ts:132:45|team/member-bound',
+      'event-string|packages/client/test/team-marker-definition.client.spec.ts:194:13|team/member-bound',
       'event-string|packages/contracts/src/legacy-vocabulary.ts:7:5|team/member-bound',
       'event-string|packages/contracts/src/legacy-vocabulary.ts:7:26|team/progress',
       'event-string|packages/contracts/src/legacy-vocabulary.ts:7:43|team/control-request',
@@ -277,8 +304,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'event-string|packages/contracts/test/negative.test.ts:122:7|team/control-decision',
       'event-string|packages/contracts/test/negative.test.ts:123:7|team/message',
     ])
-    expect(scanResult.summary.eventString).toBe(15)
-    expect(scanResult.summary.total).toBe(15)
+    // 15 frozen-quarantine occurrences + 6 P9-T1 marker-spec fixture tokens
+    // (temporary; see QUARANTINE_FILES note and the P9-T10 DROP).
+    expect(scanResult.summary.eventString).toBe(21)
+    expect(scanResult.summary.total).toBe(21)
   })
 
   it('positive control: a legacy declaration-merge sample is detected (events + payload symbols + one file-level merge)', () => {

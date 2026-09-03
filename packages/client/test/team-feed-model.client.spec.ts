@@ -15,7 +15,7 @@ import { describe, expect, it } from 'vitest'
 import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
 import {
   TEAM_FEED_INITIAL_LIMIT, TEAM_FEED_STEP, deriveTeamFeed, type TeamFeedRow,
-} from '../src/client/team-feed-model.ts'
+} from '../src/model/team-feed-model.js'
 
 type MemberRow = TeamView['members'][number]
 type ApprovalRow = TeamView['approvals'][number]

@@ -10,7 +10,7 @@ import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
 import {
   deriveTeamTimeline, formatTeamClock, formatTeamDuration, teamTimelineTicks,
   TEAM_LANE_COLOR_SLOTS,
-} from '../src/client/team-timeline-model.ts'
+} from '../src/model/team-timeline-model.js'
 
 const T = 1_700_000_000_000
 
