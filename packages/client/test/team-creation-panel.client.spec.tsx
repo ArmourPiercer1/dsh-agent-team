@@ -173,6 +173,8 @@ function PanelHarness(props: {
   readonly openSession?: ((sessionId: string) => void) | undefined
   readonly workspaces?: readonly TeamWorkspaceOption[]
   readonly initialDraft?: TeamIntentDraft
+  readonly onCancel?: (() => void) | undefined
+  readonly onDraftChangeSpy?: ((draft: TeamIntentDraft) => void) | undefined
 }) {
   const [draft, setDraft] = useState<TeamIntentDraft>(props.initialDraft ?? emptyTeamIntentDraft)
   return (
@@ -186,8 +188,11 @@ function PanelHarness(props: {
       openSession={props.openSession ?? (() => undefined)}
       workspaces={props.workspaces ?? []}
       draft={draft}
-      onDraftChange={setDraft}
-      onCancel={() => undefined}
+      onDraftChange={(next) => {
+        props.onDraftChangeSpy?.(next)
+        setDraft(next)
+      }}
+      onCancel={props.onCancel ?? (() => undefined)}
       t={makeTranslate(zh)}
     />
   )
@@ -509,5 +514,40 @@ describe('TeamCreationPanel', () => {
     expect(view.container.querySelector('[data-intent-compatibility]')?.textContent)
       .toContain('兼容性结果无法识别：INTERNAL: boom')
     expect(createButton(view.container).disabled).toBe(true)
+  })
+
+  it('create-cancel: closing the panel mutates nothing (no team.create, no native root, draft intact)', async () => {
+    const face = makeFace()
+    const onCancel = vi.fn(() => undefined)
+    const draftChanges: TeamIntentDraft[] = []
+    const view = render(
+      <PanelHarness
+        face={face}
+        initialDraft={{ ...BP_DRAFT, initialWork: 'check in with the team' }}
+        onCancel={onCancel}
+        onDraftChangeSpy={(next) => {
+          draftChanges.push(next)
+        }}
+      />,
+    )
+    await vi.waitFor(() => {
+      expect(blueprintSelect(view.container).disabled).toBe(false)
+    })
+    const cancel = view.container.querySelector<HTMLElement>('[data-intent-cancel]')
+    expect(cancel).not.toBeNull()
+    await act(async () => {
+      fireEvent.click(cancel!)
+    })
+    // The seam fired exactly once…
+    expect(onCancel).toHaveBeenCalledTimes(1)
+    // …and nothing on the backend moved.
+    expect(face.teamCreate).toHaveBeenCalledTimes(0)
+    expect(face.createRootSession).toHaveBeenCalledTimes(0)
+    // …and the parent-held draft never changed (the panel routes every
+    // control through onDraftChange; cancel is not one of them).
+    expect(draftChanges).toEqual([])
+    expect(blueprintSelect(view.container).value).toBe(BP)
+    expect(view.container.querySelector<HTMLTextAreaElement>('[data-intent-initial-work]')?.value)
+      .toBe('check in with the team')
   })
 })

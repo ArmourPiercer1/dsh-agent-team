@@ -8,11 +8,5 @@
     "src",
     "test",
     "vitest.config.ts"
-  ],
-  "exclude": [
-    "test/client-bundle.client.spec.ts",
-    "test/team-plugin.client.spec.tsx",
-    "test/team-marker.client.spec.tsx",
-    "test/team-marker-definition.client.spec.ts"
   ]
 }

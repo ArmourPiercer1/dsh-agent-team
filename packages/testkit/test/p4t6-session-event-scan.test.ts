@@ -22,16 +22,16 @@ import {
 } from '../fault-injection/session-event-scan.mjs'
 
 /**
- * The only files allowed to carry denylist tokens (frozen quarantine).
- * P9-T2 temporary entry: the P9-T1 verbatim copy of the legacy
- * team-marker-definition spec carries six legacy event-string fixture
- * tokens; the spec is on the frozen DROP list, so P9-T10 removes both the
- * spec and this entry, restoring the original two-file set.
+ * The only files allowed to carry denylist tokens (frozen quarantine):
+ * the v1 quarantine module and the contracts negative test that
+ * exercises the detection function. P9-T10 (P9-S7 DROP) removed the
+ * temporary P9-T1 entry (team-marker-definition.client.spec.ts and its
+ * six fixture tokens) together with the spec itself, restoring this
+ * original two-file set.
  */
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
-  'packages/client/test/team-marker-definition.client.spec.ts',
 ])
 
 /** The required P4 suites this audit cites as executed evidence. */
@@ -289,8 +289,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // in-place edits (no count change); the .tsx component entries and
     // their CSS modules are outside the scanner's extension set; both new
     // files carry zero denylist vocabulary (the scan over them passes).
-    expect(scanResult.filesScanned).toBe(598)
-    expect(scanResult.files.length).toBe(598)
+    // P9-T10 test-migration pin (598 + 3 - 1): the P9-S7 test migration
+    // adds three scannable .test.ts under packages/client (
+    // test/client-architecture-negatives.test, test/team-remote-categories.
+    // test, test/team-command-flow.test) and deletes the quarantined
+    // team-marker-definition.client.spec.ts (its six fixture tokens leave
+    // the scan with it); the client-bundle.client.spec.ts and
+    // team-plugin.client.spec.tsx rewrites are in-place (no count change);
+    // the new jsdom specs and the CSS modules are outside the scanner's
+    // extension set; all three new files carry zero denylist vocabulary
+    // (the scan over them passes).
+    expect(scanResult.filesScanned).toBe(600)
+    expect(scanResult.files.length).toBe(600)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
@@ -315,7 +325,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     expect(scanResult.summary.declarationMerge).toBe(0)
   })
 
-  it('quarantine hits pinned exactly: twenty-one event-string occurrences, the recorded adjudication (incl. the six P9-T1 marker-spec fixture tokens quarantined until the P9-T10 DROP)', () => {
+  it('quarantine hits pinned exactly: fifteen event-string occurrences, the recorded adjudication', () => {
     // The frozen detection vocabulary (invariant 42: vNext has no Team
     // SessionEvents) lives in the v1 quarantine module and in the
     // contracts negative test that exercises the detection function.
@@ -324,15 +334,6 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       (h) => h.kind + '|' + h.file + ':' + h.line + ':' + h.column + '|' + h.token,
     )
     expect(pinned).toEqual([
-      // P9-T1 temporary quarantine (dropped with the spec at P9-T10):
-      // six legacy event-string fixture tokens in the verbatim copy of
-      // the legacy team-marker-definition spec.
-      'event-string|packages/client/test/team-marker-definition.client.spec.ts:83:18|team/progress',
-      'event-string|packages/client/test/team-marker-definition.client.spec.ts:90:18|team/control-request',
-      'event-string|packages/client/test/team-marker-definition.client.spec.ts:97:18|team/control-decision',
-      'event-string|packages/client/test/team-marker-definition.client.spec.ts:104:18|team/message',
-      'event-string|packages/client/test/team-marker-definition.client.spec.ts:132:45|team/member-bound',
-      'event-string|packages/client/test/team-marker-definition.client.spec.ts:194:13|team/member-bound',
       'event-string|packages/contracts/src/legacy-vocabulary.ts:7:5|team/member-bound',
       'event-string|packages/contracts/src/legacy-vocabulary.ts:7:26|team/progress',
       'event-string|packages/contracts/src/legacy-vocabulary.ts:7:43|team/control-request',
@@ -349,10 +350,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'event-string|packages/contracts/test/negative.test.ts:122:7|team/control-decision',
       'event-string|packages/contracts/test/negative.test.ts:123:7|team/message',
     ])
-    // 15 frozen-quarantine occurrences + 6 P9-T1 marker-spec fixture tokens
-    // (temporary; see QUARANTINE_FILES note and the P9-T10 DROP).
-    expect(scanResult.summary.eventString).toBe(21)
-    expect(scanResult.summary.total).toBe(21)
+    // 15 frozen-quarantine occurrences (the P9-T1 temporary entry and its
+    // six fixture tokens left the scan with the spec at the P9-T10 DROP).
+    expect(scanResult.summary.eventString).toBe(15)
+    expect(scanResult.summary.total).toBe(15)
   })
 
   it('positive control: a legacy declaration-merge sample is detected (events + payload symbols + one file-level merge)', () => {

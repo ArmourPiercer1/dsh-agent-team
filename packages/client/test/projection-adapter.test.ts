@@ -351,4 +351,41 @@ describe('adaptTeamProjection — G3 roster rules', () => {
     expect(snapshot.policyState).toBe('open')
     expect(snapshot.ledgerSummary.pendingControlCount).toBe(0)
   })
+
+  it('multiple instances of one template stay separate rows (no template-keyed collapse)', () => {
+    const wire = wireFrame({
+      members: [
+        wireMember({ instanceId: 'i-1', templateId: 'tpl-lead', childSessionId: 'child-1' }),
+        wireMember({ instanceId: 'i-2', templateId: 'tpl-lead', childSessionId: 'child-2' }),
+      ],
+    })
+    const snapshot = adaptTeamProjection(projectionFromWire(wire), ROOT_PERSPECTIVE)
+    expect(snapshot.members.length).toBe(2)
+    const first = must(snapshot.members[0], 'member row 0')
+    const second = must(snapshot.members[1], 'member row 1')
+    // Same templateId, distinct instanceIds: the roster is keyed by the
+    // instanceId, never collapsed or de-duplicated per template.
+    expect(first.instanceId).toBe('i-1')
+    expect(second.instanceId).toBe('i-2')
+    expect(first.templateId).toBe('tpl-lead')
+    expect(second.templateId).toBe('tpl-lead')
+    expect(first.childSessionId).toBe('child-1')
+    expect(second.childSessionId).toBe('child-2')
+  })
+
+  it('groupId is an opaque passthrough: present verbatim only when set (invariant 20)', () => {
+    const wire = wireFrame({
+      members: [
+        wireMember({ instanceId: 'i-g', groupId: 'grp-7' }),
+        wireMember({ instanceId: 'i-plain' }),
+      ],
+    })
+    const snapshot = adaptTeamProjection(projectionFromWire(wire), ROOT_PERSPECTIVE)
+    const grouped = must(snapshot.members[0], 'member row 0')
+    const plain = must(snapshot.members[1], 'member row 1')
+    expect(grouped.groupId).toBe('grp-7')
+    // Absent on the wire → absent on the row (never materialized to null/
+    // ''/a placeholder — the client never interprets the opaque value).
+    expect('groupId' in plain).toBe(false)
+  })
 })
