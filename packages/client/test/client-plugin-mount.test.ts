@@ -497,7 +497,13 @@ const bScenario = await (async () => {
     (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't1',
   ).length
   const mirrorT1 = viewFace.hooks.projectionMirror.getSnapshot()['t1' as TeamSessionId]
-  return { t1Calls, mirrorT1 }
+  // Ledger liveness: the applied frame advancing the generation (gen 1 ->
+  // 2) re-pulls the ledger page at the tracker's anchor — one more call in
+  // this double world (the default typed failure).
+  const ledgerLogAfterGenAdvance = a.log.filter(
+    (c) => c.endpoint === 'team.getLedgerPage',
+  ).length
+  return { t1Calls, mirrorT1, ledgerLogAfterGenAdvance }
 })()
 
 // ---------------------------------------------------------------------------
@@ -700,6 +706,13 @@ describe('P9-T9 (P9-S6) client mount — generation rebaseline (scenario B)', ()
 
   it('the restore pull applies the newer generation to the mirror', () => {
     expect(bScenario.mirrorT1?.generation).toBe(2)
+  })
+
+  it('the generation advance re-pulls the ledger page (ledger liveness)', () => {
+    // Scenario A: the open catch-up + the manual refresh = 2 calls; the
+    // gen 1 -> 2 applied frame adds exactly one refresh re-read at the
+    // tracker's current anchor (the UI doc §27.5 real-time append).
+    expect(bScenario.ledgerLogAfterGenAdvance).toBe(3)
   })
 })
 

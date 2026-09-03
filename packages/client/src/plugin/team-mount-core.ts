@@ -309,11 +309,15 @@ export function applyTeamMount(
   const ledgerStores = new Map<string, TeamLedgerStore>()
   const storeDisposers: Array<() => void> = []
   const ledgerOpened = new Set<string>()
+  // Last applied projection generation per team (drives the ledger re-pull:
+  // a generation advance means the durable ledger may hold new entries).
+  const ledgerRefreshGeneration = new Map<string, number>()
   ctx.effect(
     () => () => {
       for (const dispose of storeDisposers.splice(0).reverse()) dispose()
       for (const store of projectionStores.values()) store.reset()
       for (const store of ledgerStores.values()) store.reset()
+      ledgerRefreshGeneration.clear()
     },
     'dsh-agent-team: store teardown',
   )
@@ -380,6 +384,23 @@ export function applyTeamMount(
       if (!ledgerOpened.has(teamSessionId)) {
         ledgerOpened.add(teamSessionId)
         void ledgerStoreOf(teamSessionId).open(teamSessionId)
+      }
+      // Ledger liveness (UI doc §27.2/§27.5: the Team Events section is the
+      // Team-wide aggregate chronology and real-time new events append to
+      // it): an applied frame advancing the generation means the durable
+      // ledger may hold new entries (member.create, member.send, lifecycle,
+      // policy…). Refresh re-reads at the tracker's current anchor (frozen
+      // stable re-read; the dedupe merge keeps the loaded window
+      // un-reordered; single-flight coalesces bursts). The first frame's
+      // catch-up from the head already covers everything up to it, so no
+      // refresh is issued there.
+      const appliedGeneration = store.getState().appliedGeneration
+      if (appliedGeneration !== null) {
+        const lastGeneration = ledgerRefreshGeneration.get(teamSessionId)
+        if (lastGeneration !== undefined && appliedGeneration > lastGeneration) {
+          void ledgerStoreOf(teamSessionId).refresh()
+        }
+        ledgerRefreshGeneration.set(teamSessionId, appliedGeneration)
       }
     })
     storeDisposers.push(dispose)
