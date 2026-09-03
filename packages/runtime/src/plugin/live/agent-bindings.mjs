@@ -177,6 +177,18 @@ export function createAgentBindings(deps) {
 
   const rootSid = config.rootSessionId
 
+  // T12-V15 (run #7 postmortem, item 3): additive window-latch
+  // instrumentation. Log-only lines (marker `t12v-wl`) with ISO timestamps
+  // around the row-owned subsystems on the child-first-turn path —
+  // model-selection durable-consumption resolution, persona overlay
+  // installation, mini-MCP fiber bring-up, the agents create/resume calls,
+  // and the whenIdle quiescence waits — so the durable session-log silence
+  // window can be correlated against what the row (not core) was doing on
+  // that timescale. Zero behavior change; removable as a single chunk.
+  const wl = (event, sessionId, extra) => {
+    console.log(`[t12v-wl] ${new Date().toISOString()} ${event} sid=${sessionId}${extra !== undefined && extra !== '' ? ' ' + extra : ''}`)
+  }
+
   // ── closure state (one row instance per process = per boot) ───────────
 
   /** @type {Map<string, object>} live agent handles keyed by session id. */
@@ -404,6 +416,8 @@ export function createAgentBindings(deps) {
     // T12-H1: no configured server — nothing to mount or dispose (the
     // port-null throw below stays for a CONFIGURED server without port).
     if (config.mcpServer === null) return
+    const wlT0 = Date.now()
+    wl('mcp:enter', state.instanceId || '?', `allowed=${allowed} hasFiber=${state.mcpFiber !== undefined}`)
     if (allowed && state.mcpFiber === undefined) {
       if (config.mcpServer.port === null) {
         throw new Error(`p6t6: the durable policy allows mcp server '${config.mcpServer.name}' but no mini-MCP port is configured (config.mcpServer.port)`)
@@ -417,8 +431,10 @@ export function createAgentBindings(deps) {
         failOnStartupError: true,
       })
       try {
+        wl('mcp:await-fiber-start', state.instanceId || '?', `ms=${Date.now() - wlT0} server=${config.mcpServer.name} port=${config.mcpServer.port}`)
         await fiber
         state.mcpFiber = fiber
+        wl('mcp:await-fiber-done', state.instanceId || '?', `ms=${Date.now() - wlT0}`)
       } catch (error) {
         state.mcpActivationError = error instanceof Error ? error.message : String(error)
         observations.push(`p6t6: mcp activation failed: ${state.mcpActivationError}`)
@@ -428,6 +444,7 @@ export function createAgentBindings(deps) {
       return
     }
     if (!allowed && state.mcpFiber !== undefined) {
+      wl('mcp:unmount', state.instanceId || '?', `ms=${Date.now() - wlT0}`)
       const fiber = state.mcpFiber
       state.mcpFiber = undefined
       state.mcpActivationError = undefined
@@ -472,7 +489,10 @@ export function createAgentBindings(deps) {
       // T12-M2: capture the agent ctx for the persona surface (the
       // production-facing installs and the overlay slot resolve through it).
       liveAgentCtxs.set(sessionId, agentCtx)
+      const wlT0 = Date.now()
+      wl('setup:enter', sessionId, `bind=${bindPath}`)
       const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
+      wl('setup:consumption-resolved', sessionId, `ms=${Date.now() - wlT0} model=${modelView.selection === undefined ? 'denied' : `${modelView.selection.provider}/${modelView.selection.model}`} mcp=${mcpView === null ? 'none' : (mcpView.allowed ? 'allowed' : 'denied')}`)
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
@@ -485,6 +505,7 @@ export function createAgentBindings(deps) {
       }
       consumptionState.set(sessionId, state)
       toolDisposers.push(installModelSelection(agentCtx, ref))
+      wl('setup:model-selection-installed', sessionId, `ms=${Date.now() - wlT0}`)
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
       // registration loop is skipped, as before.
@@ -494,12 +515,14 @@ export function createAgentBindings(deps) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
+      wl('setup:tools-registered', sessionId, `ms=${Date.now() - wlT0} tools=${teamTools !== undefined ? teamTools.tools.length : 0}`)
       // T12-M2: the persona boundary — the blueprint persona enters the REAL
       // DSH Agent prompt here (the agent-scoped 'deployment:persona'
       // section), after the tools and before the mcp mount: before ANY work
       // can run on this session. The reused resolver evaluates the preset
       // substrate first (complete -> FATAL, thrown before any install).
       installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid)
+      wl('setup:persona-installed', sessionId, `ms=${Date.now() - wlT0}`)
       // A pre-setup personaSurface.installScopedPersona for this session
       // (the pending window) flushes here too — still before any work.
       const pendingIdentity = personaPending.get(sessionId)
@@ -511,9 +534,12 @@ export function createAgentBindings(deps) {
       // At a fresh create no overrides exist yet (unspecified), so this is
       // the resume/restart path that re-applies the durable truth on boot.
       if (mcpView !== null && mcpView.allowed) {
+        wl('setup:mcp-mount-start', sessionId, `ms=${Date.now() - wlT0}`)
         await reconcileMcp(agentCtx, state, mcpView.allowed)
+        wl('setup:mcp-mount-done', sessionId, `ms=${Date.now() - wlT0}`)
       }
       applyBoundaryRecords(state, modelView, mcpView)
+      wl('setup:exit', sessionId, `ms=${Date.now() - wlT0}`)
     }
   }
 
@@ -711,12 +737,14 @@ export function createAgentBindings(deps) {
       throw new Error(`p6t6: session '${sessionId}' is neither live nor durable — no agent to execute a tool on`)
     }
     resumingSessions.add(sessionId)
+    wl('ensure:resume-start', sessionId)
     try {
       const handle = await agents.resume({
         resumeSessionId: SessionId(sessionId),
         setup: agentSetup(sessionId, undefined, undefined, 'cold-member'),
       })
       liveAgents.set(sessionId, handle)
+      wl('ensure:resume-done', sessionId)
       return handle
     } finally {
       resumingSessions.delete(sessionId)
@@ -735,9 +763,12 @@ export function createAgentBindings(deps) {
    * @returns {Promise<void>}
    */
   async function prepareAgentForRequest(sessionId, teamRootSid) {
+    const wlT0 = Date.now()
     const state = consumptionState.get(sessionId)
     if (state === undefined) return // defensive: every row agent has consumption state
+    wl('boundary:enter', sessionId)
     const { modelView, mcpView } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
+    wl('boundary:consumption-resolved', sessionId, `ms=${Date.now() - wlT0} model=${modelView.selection === undefined ? 'denied' : `${modelView.selection.provider}/${modelView.selection.model}`} mcp=${mcpView === null ? 'none' : (mcpView.allowed ? 'allowed' : 'denied')}`)
     const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
     if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
       state.ref.current = selection
@@ -749,6 +780,7 @@ export function createAgentBindings(deps) {
     applyBoundaryRecords(state, modelView, mcpView)
     state.modelView = modelView
     state.mcpView = mcpView
+    wl('boundary:exit', sessionId, `ms=${Date.now() - wlT0}`)
   }
 
   // ── the activation ports (real external effects, minimal surface) ─────
@@ -778,14 +810,17 @@ export function createAgentBindings(deps) {
         typeof request.templateId === 'string' && request.templateId !== ''
           ? request.templateId
           : undefined
+      const wlT0 = Date.now()
       const live = liveAgents.get(childSid)
       if (live !== undefined) return { childSessionId: childSid }
       if (sessionIsDurable(childSid)) {
+        wl('child:create:resume-start', childSid, `instance=${instanceIdHint ?? '?'}`)
         const handle = await agents.resume({
           resumeSessionId: SessionId(childSid),
           setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'cold-member'),
         })
         liveAgents.set(childSid, handle)
+        wl('child:create:resume-done', childSid, `ms=${Date.now() - wlT0} instance=${instanceIdHint ?? '?'}`)
         return { childSessionId: childSid }
       }
       // T12-M1: the actual Agent cwd is the member's EFFECTIVE workspace —
@@ -796,12 +831,14 @@ export function createAgentBindings(deps) {
         typeof request.workspace === 'string' && request.workspace !== ''
           ? request.workspace
           : config.defaultWorkspace
+      wl('child:create:create-start', childSid, `instance=${instanceIdHint ?? '?'} template=${templateIdHint ?? 'none'}`)
       const handle = await agents.create({
         sessionId: SessionId(childSid),
         meta: { cwd: memberCwd },
         setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'fresh-member'),
       })
       liveAgents.set(childSid, handle)
+      wl('child:create:create-done', childSid, `ms=${Date.now() - wlT0} instance=${instanceIdHint ?? '?'}`)
       return { childSessionId: childSid }
     },
   }
@@ -835,6 +872,7 @@ export function createAgentBindings(deps) {
    */
   function boot() {
     if (bootPromise !== undefined) return bootPromise
+    const wlT0 = Date.now()
     bootPromise = (async () => {
       if (config.bootPhase !== 'create' && config.bootPhase !== 'resume') {
         throw new Error(`agent-bindings: config.bootPhase must be 'create' or 'resume' (got ${JSON.stringify(config.bootPhase)})`)
@@ -842,6 +880,7 @@ export function createAgentBindings(deps) {
       const rootResuming = config.bootPhase === 'resume'
       if (rootResuming) resumingSessions.add(rootSid)
       let rootHandle
+      wl('boot:enter', rootSid, `phase=${config.bootPhase}`)
       try {
         rootHandle = config.bootPhase === 'create'
           ? await agents.create({
@@ -859,6 +898,7 @@ export function createAgentBindings(deps) {
         if (rootResuming) resumingSessions.delete(rootSid)
       }
       liveAgents.set(rootSid, rootHandle)
+      wl('boot:root-ready', rootSid, `phase=${config.bootPhase} ms=${Date.now() - wlT0}`)
       if (config.bootPhase === 'create') {
         await sessionPersistence.ensureMaterialized(rootHandle.agent.session)
         for (const seed of config.seedMembers) {
@@ -896,6 +936,7 @@ export function createAgentBindings(deps) {
           seen.add(child)
           resumingSessions.add(child)
           let handle
+          wl('boot:member-resume-start', child, `member=${member?.instanceId ?? '?'}`)
           try {
             handle = await agents.resume({
               resumeSessionId: SessionId(child),
@@ -905,9 +946,12 @@ export function createAgentBindings(deps) {
             resumingSessions.delete(child)
           }
           liveAgents.set(child, handle)
+          wl('boot:member-resume-done', child, `member=${member?.instanceId ?? '?'} ms=${Date.now() - wlT0}`)
           await sessionPersistence.ensureMaterialized(handle.agent.session)
+          wl('boot:member-materialized', child, `member=${member?.instanceId ?? '?'} ms=${Date.now() - wlT0}`)
         }
       }
+      wl('boot:exit', rootSid, `phase=${config.bootPhase} ms=${Date.now() - wlT0}`)
     })()
     return bootPromise
   }
@@ -928,14 +972,19 @@ export function createAgentBindings(deps) {
   // delivered (the coordinator keeps the intent pending).
   const sessionInput = {
     async submitAttributedInput(input) {
-      const handle = await ensureLiveAgent(String(input.sessionId))
+      const wlT0 = Date.now()
+      const sid = String(input.sessionId)
+      wl('followup:enter', sid)
+      const handle = await ensureLiveAgent(sid)
       // P8-S4B: request boundary — re-apply the durable truth first.
-      await prepareAgentForRequest(String(input.sessionId))
+      await prepareAgentForRequest(sid)
+      wl('followup:boundary-done', sid, `ms=${Date.now() - wlT0}`)
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
         source: { kind: 'user' },
       })
       handle.agent.followup(message)
+      wl('followup:followup-submitted', sid, `ms=${Date.now() - wlT0}`)
       try {
         await handle.agent.whenIdle()
       } catch (error) {
@@ -943,6 +992,7 @@ export function createAgentBindings(deps) {
         observations.push(note)
         throw error
       }
+      wl('followup:whenIdle-done', sid, `ms=${Date.now() - wlT0}`)
     },
   }
 
@@ -953,9 +1003,13 @@ export function createAgentBindings(deps) {
   // fail-closed, never a fake RUNNING success.
   const workDelivery = {
     async deliver(args) {
-      const handle = await ensureLiveAgent(String(args.childSessionId))
+      const wlT0 = Date.now()
+      const childSid = String(args.childSessionId)
+      wl('deliver:enter', childSid, `token=${args.requestToken}`)
+      const handle = await ensureLiveAgent(childSid)
       // P8-S4B: request boundary — re-apply the durable truth first.
-      await prepareAgentForRequest(String(args.childSessionId))
+      await prepareAgentForRequest(childSid)
+      wl('deliver:boundary-done', childSid, `ms=${Date.now() - wlT0}`)
       const text = args.attachedContext !== undefined && args.attachedContext.length > 0
         ? `${args.prompt}\n\n[attached-context]\n${args.attachedContext}`
         : args.prompt
@@ -964,7 +1018,9 @@ export function createAgentBindings(deps) {
         source: { kind: 'user' },
       })
       handle.agent.followup(message)
+      wl('deliver:followup-submitted', childSid, `ms=${Date.now() - wlT0}`)
       await handle.agent.whenIdle()
+      wl('deliver:whenIdle-done', childSid, `ms=${Date.now() - wlT0}`)
       // Materialize the durable log (the same public persistence seam the
       // activation barrier uses) so the delivered turn's model-visible
       // content is on disk before the chain settles. A contained upstream
@@ -1085,16 +1141,21 @@ export function createAgentBindings(deps) {
     if (text === '') {
       throw new Error('agent-bindings: deliverRootContext requires a non-empty text (the token-leading frozen context)')
     }
+    const wlT0 = Date.now()
+    wl('rootctx:enter', sid, `token=${token}`)
     const handle = await ensureLiveAgent(sid)
     // The target root IS the team root of its own team — the boundary
     // reconciliation resolves under that root's durable truth.
     await prepareAgentForRequest(sid, sid)
+    wl('rootctx:boundary-done', sid, `ms=${Date.now() - wlT0}`)
     const message = createUserMessage({
       content: [{ type: 'text', text }],
       source: { kind: 'user' },
     })
     handle.agent.followup(message)
+    wl('rootctx:followup-submitted', sid, `ms=${Date.now() - wlT0}`)
     await handle.agent.whenIdle()
+    wl('rootctx:whenIdle-done', sid, `ms=${Date.now() - wlT0}`)
     await sessionPersistence.ensureMaterialized(handle.agent.session)
   }
 
@@ -1303,7 +1364,9 @@ export function createAgentBindings(deps) {
    * @returns {Promise<object>} the tools.execute result ({isError, value, error}).
    */
   async function executeTool(sessionId, request) {
+    const wlT0 = Date.now()
     const { name, args, callId } = request
+    wl('tool:enter', String(sessionId), `name=${name}`)
     let handle
     try {
       handle = await ensureLiveAgent(String(sessionId))
@@ -1320,14 +1383,17 @@ export function createAgentBindings(deps) {
     callCounter += 1
     const resolvedCallId = ToolCallId(typeof callId === 'string' && callId.length > 0 ? callId : `p6t6-call-${callCounter}`)
     try {
-      return await handle.agent.ctx.tools.execute({
+      const result = await handle.agent.ctx.tools.execute({
         callId: resolvedCallId,
         name,
         arguments: args ?? {},
         agent: handle.agent,
         signal: AbortSignal.timeout(TOOL_EXEC_TIMEOUT_MS),
       })
+      wl('tool:exit', String(sessionId), `name=${name} ms=${Date.now() - wlT0}`)
+      return result
     } catch (error) {
+      wl('tool:exit-error', String(sessionId), `name=${name} ms=${Date.now() - wlT0} err=${error instanceof Error ? error.message : String(error)}`)
       throw toolRouteError('TOOLS_EXECUTE', `tools.execute failed: ${error instanceof Error ? `${error.message}${error.stack ? `\n${error.stack}` : ''}` : String(error)}`)
     }
   }
