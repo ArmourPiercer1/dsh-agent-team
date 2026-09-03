@@ -1,8 +1,9 @@
 /**
  * P9-T4 (S3-A) — team-session resolution over the vNext projection mirror.
  *
- * The vNext successor of the legacy `resolveTeamView` (bridge:
- * `model/team-view-compat.ts`): same two-stage derivation, same
+ * The vNext successor of the legacy `resolveTeamView` (the frozen legacy
+ * fork's derivation, evidence only — the transitional client bridge was
+ * folded away in P9-T6): same two-stage derivation, same
  * identity-stable references, plus the vNext additions the legacy
  * surface did not need:
  *

@@ -1,0 +1,3 @@
+tsc -p packages/client/tsconfig.json --noEmit (full face: src + test + vitest.config.ts)
+
+EXIT=0 (no error output)

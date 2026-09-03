@@ -30,27 +30,43 @@ export type TeamKey =
   | 'view.members.noInstances'
   | 'view.members.action.empty'
   | 'view.members.waiting'
-  | 'view.tasks.title'
-  | 'view.tasks.empty'
-  | 'view.tasks.assignee'
-  | 'view.task.pending'
-  | 'view.task.in_progress'
-  | 'view.task.completed'
-  | 'view.task.blocked'
-  | 'view.events.title'
-  | 'view.events.empty'
-  | 'view.events.loadEarlier'
-  | 'view.events.loadFailed'
-  | 'view.events.truncated'
-  | 'view.events.approval'
-  | 'view.events.approval.plan'
-  | 'view.events.message'
-  | 'view.events.waiting'
-  | 'view.events.decision.allow_once'
-  | 'view.events.decision.deny'
-  | 'view.events.decision.escalate_to_user'
-  | 'view.events.decision.approve_plan'
-  | 'view.events.decision.request_revision'
+  | 'view.activity.title'
+  | 'view.activity.empty'
+  | 'view.activity.member'
+  | 'view.activity.in_progress'
+  | 'view.activity.completed'
+  | 'view.activity.blocked'
+  | 'view.ledger.title'
+  | 'view.ledger.empty'
+  | 'view.ledger.loading'
+  | 'view.ledger.remaining'
+  | 'view.ledger.retry'
+  | 'view.ledger.loadEarlier'
+  | 'view.ledger.loadFailed'
+  | 'view.ledger.pending'
+  | 'view.ledger.filter.all'
+  | 'view.ledger.filter.team'
+  | 'view.ledger.filter.members'
+  | 'view.ledger.filter.lifecycle'
+  | 'view.ledger.filter.messages'
+  | 'view.ledger.filter.controls'
+  | 'view.ledger.filter.policy'
+  | 'view.ledger.filter.compatibility'
+  | 'view.ledger.filter.progress'
+  | 'view.ledger.fact.work_admitted'
+  | 'view.ledger.fact.member_created'
+  | 'view.ledger.fact.lifecycle'
+  | 'view.ledger.fact.message'
+  | 'view.ledger.fact.control_request'
+  | 'view.ledger.fact.control_decision'
+  | 'view.ledger.fact.control_consumed'
+  | 'view.ledger.fact.progress'
+  | 'view.ledger.fact.interval_opened'
+  | 'view.ledger.fact.interval_closed'
+  | 'view.ledger.fact.policy'
+  | 'view.ledger.decision.allow'
+  | 'view.ledger.decision.deny'
+  | 'view.ledger.decision.stale_denied'
   | 'dock.title'
   | 'dock.running'
   | 'dock.pending'
@@ -93,27 +109,43 @@ export const zh: Record<TeamKey, string> = {
   'view.members.noInstances': '尚无实例',
   'view.members.action.empty': '暂无动作',
   'view.members.waiting': '{count} 项待裁决',
-  'view.tasks.title': '任务板',
-  'view.tasks.empty': '暂无任务进度',
-  'view.tasks.assignee': '负责人 {member}',
-  'view.task.pending': '待开始',
-  'view.task.in_progress': '进行中',
-  'view.task.completed': '已完成',
-  'view.task.blocked': '受阻',
-  'view.events.title': '事件流',
-  'view.events.empty': '暂无审批与消息记录',
-  'view.events.loadEarlier': '加载更早',
-  'view.events.loadFailed': '更早消息加载失败：{message}',
-  'view.events.truncated': '还有 {count} 条更早的消息暂无法加载',
-  'view.events.approval': '审批',
-  'view.events.approval.plan': '计划审批',
-  'view.events.message': '消息',
-  'view.events.waiting': '等待裁决',
-  'view.events.decision.allow_once': '单次允许',
-  'view.events.decision.deny': '拒绝',
-  'view.events.decision.escalate_to_user': '升级给用户',
-  'view.events.decision.approve_plan': '批准计划',
-  'view.events.decision.request_revision': '要求修订',
+  'view.activity.title': '活动与进度',
+  'view.activity.empty': '暂无活动进度',
+  'view.activity.member': '负责人 {member}',
+  'view.activity.in_progress': '进行中',
+  'view.activity.completed': '已完成',
+  'view.activity.blocked': '受阻',
+  'view.ledger.title': '团队事件',
+  'view.ledger.empty': '暂无团队事件',
+  'view.ledger.loading': '正在加载团队事件…',
+  'view.ledger.remaining': '还有 {count} 条事件未加载',
+  'view.ledger.retry': '重试',
+  'view.ledger.loadEarlier': '加载更早',
+  'view.ledger.loadFailed': '事件加载失败：{message}',
+  'view.ledger.pending': '等待裁决',
+  'view.ledger.filter.all': '全部',
+  'view.ledger.filter.team': '团队',
+  'view.ledger.filter.members': '成员',
+  'view.ledger.filter.lifecycle': '生命周期',
+  'view.ledger.filter.messages': '消息',
+  'view.ledger.filter.controls': '控制',
+  'view.ledger.filter.policy': '策略',
+  'view.ledger.filter.compatibility': '兼容',
+  'view.ledger.filter.progress': '进度',
+  'view.ledger.fact.work_admitted': '工作准入',
+  'view.ledger.fact.member_created': '成员创建',
+  'view.ledger.fact.lifecycle': '生命周期',
+  'view.ledger.fact.message': '消息',
+  'view.ledger.fact.control_request': '控制请求',
+  'view.ledger.fact.control_decision': '控制裁决',
+  'view.ledger.fact.control_consumed': '裁决消费',
+  'view.ledger.fact.progress': '进度',
+  'view.ledger.fact.interval_opened': '活动开始',
+  'view.ledger.fact.interval_closed': '活动结束',
+  'view.ledger.fact.policy': '策略变更',
+  'view.ledger.decision.allow': '允许',
+  'view.ledger.decision.deny': '拒绝',
+  'view.ledger.decision.stale_denied': '过期拒绝',
   'dock.title': '团队',
   'dock.running': '{count} 运行中',
   'dock.pending': '{count} 待裁决',
@@ -157,27 +189,43 @@ export const en: Record<TeamKey, string> = {
   'view.members.noInstances': 'No instances yet',
   'view.members.action.empty': 'No action yet',
   'view.members.waiting': '{count} pending',
-  'view.tasks.title': 'Task board',
-  'view.tasks.empty': 'No task progress yet',
-  'view.tasks.assignee': 'Assignee {member}',
-  'view.task.pending': 'Pending',
-  'view.task.in_progress': 'In progress',
-  'view.task.completed': 'Completed',
-  'view.task.blocked': 'Blocked',
-  'view.events.title': 'Event stream',
-  'view.events.empty': 'No approvals or messages yet',
-  'view.events.loadEarlier': 'Load earlier',
-  'view.events.loadFailed': 'Loading earlier messages failed: {message}',
-  'view.events.truncated': '{count} earlier message(s) can\'t be loaded yet',
-  'view.events.approval': 'Approval',
-  'view.events.approval.plan': 'Plan approval',
-  'view.events.message': 'Message',
-  'view.events.waiting': 'Pending decision',
-  'view.events.decision.allow_once': 'Allowed once',
-  'view.events.decision.deny': 'Denied',
-  'view.events.decision.escalate_to_user': 'Escalated to user',
-  'view.events.decision.approve_plan': 'Plan approved',
-  'view.events.decision.request_revision': 'Revision requested',
+  'view.activity.title': 'Activity & Progress',
+  'view.activity.empty': 'No activity progress yet',
+  'view.activity.member': 'Assignee {member}',
+  'view.activity.in_progress': 'In progress',
+  'view.activity.completed': 'Completed',
+  'view.activity.blocked': 'Blocked',
+  'view.ledger.title': 'Team events',
+  'view.ledger.empty': 'No team events yet',
+  'view.ledger.loading': 'Loading team events…',
+  'view.ledger.remaining': '{count} event(s) not loaded yet',
+  'view.ledger.retry': 'Retry',
+  'view.ledger.loadEarlier': 'Load earlier',
+  'view.ledger.loadFailed': 'Loading events failed: {message}',
+  'view.ledger.pending': 'Pending decision',
+  'view.ledger.filter.all': 'All',
+  'view.ledger.filter.team': 'Team',
+  'view.ledger.filter.members': 'Members',
+  'view.ledger.filter.lifecycle': 'Lifecycle',
+  'view.ledger.filter.messages': 'Messages',
+  'view.ledger.filter.controls': 'Controls',
+  'view.ledger.filter.policy': 'Policy',
+  'view.ledger.filter.compatibility': 'Compatibility',
+  'view.ledger.filter.progress': 'Progress',
+  'view.ledger.fact.work_admitted': 'Work admitted',
+  'view.ledger.fact.member_created': 'Member created',
+  'view.ledger.fact.lifecycle': 'Lifecycle',
+  'view.ledger.fact.message': 'Message',
+  'view.ledger.fact.control_request': 'Control request',
+  'view.ledger.fact.control_decision': 'Control decision',
+  'view.ledger.fact.control_consumed': 'Decision consumed',
+  'view.ledger.fact.progress': 'Progress',
+  'view.ledger.fact.interval_opened': 'Interval opened',
+  'view.ledger.fact.interval_closed': 'Interval closed',
+  'view.ledger.fact.policy': 'Policy change',
+  'view.ledger.decision.allow': 'Allowed',
+  'view.ledger.decision.deny': 'Denied',
+  'view.ledger.decision.stale_denied': 'Stale denied',
   'dock.title': 'Team',
   'dock.running': '{count} running',
   'dock.pending': '{count} pending',

@@ -256,8 +256,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // test .ts (test/team-session-resolution.test, test/projection-adapter.test,
     // test/ledger-adapter.test, test/team-ledger-store.test); all ten carry
     // zero denylist vocabulary (the scan over them passes).
-    expect(scanResult.filesScanned).toBe(587)
-    expect(scanResult.files.length).toBe(587)
+    // P9-T6 UI-adaptation pin (587 - 1): the T6 collapse deletes two
+    // scannable src .ts (model/team-view-compat, model/team-feed-model)
+    // and their spec .ts (test/team-feed-model.client.spec) and adds one
+    // scannable src .ts (model/team-ledger-model) plus one spec .ts
+    // (test/team-ledger-model.client.spec); the .tsx/.css adaptations
+    // (TeamFeed -> TeamLedger, TeamTasks -> TeamActivity, the rewritten
+    // team-view spec) are outside the scanner's extension set; the net
+    // scan-target count drops by one and the new files carry zero
+    // denylist vocabulary (the scan over them passes).
+    expect(scanResult.filesScanned).toBe(586)
+    expect(scanResult.files.length).toBe(586)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

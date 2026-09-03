@@ -1,23 +1,50 @@
 // @vitest-environment jsdom
 /**
- * Team conversation view entry — the transitional dual path (T5/T6 split):
- * the frozen team-ness derivation over the leader-keyed mirror still drives
- * the zero state, the task board, and the event stream, while the interval
- * timeline and the member groups read the vNext projection path (the
- * per-session projection mirror plus the per-team ledger store) and appear
- * once the snapshot lands. Coverage: the zero state for a non-team session
- * (both cold pulls fire once), the complete four-section body for a team
- * session (all live), the D9 bar-click / member-row / feed-row session
- * switch wiring, the D10 leader-row return, and the mirror/projection-gap
- * cold pull (landing frames win, no re-fire).
+ * Team conversation view entry — projection-only (P9-T6 collapse): the
+ * per-session projection mirror drives every section (zero state,
+ * timeline, member groups, activity, and the durable-ledger Events
+ * surface); the compat mirror path (TeamMirror / `resolveTeamView` /
+ * `ensureTeam` / `pageTeamMessages`) is gone. Coverage: the one-line
+ * zero state for a non-team session (the single projection cold pull),
+ * the four UI §12.1 sections live from ONE input for a leader session
+ * and a member session, the D9 member-row session switch, the D10
+ * leader-row return, the activity rows from the snapshot's current-work
+ * face, the ledger rows from the per-team ledger store (with the D9
+ * ledger-row navigation), and the landing-frames-win cold pull.
+ *
+ * Legacy spec evidence (T5 commit, 8 tests -> 8 tests):
+ *  - "resolveTeamView (frozen team-ness derivation)" DROPPED: the compat
+ *    module is folded away in T6; team-ness is now the projection
+ *    resolution alone (the zero-state and landing tests cover the view's
+ *    half; the T5 projection-mirror spec covers `resolveTeamProjection`).
+ *  - "zero state + cold-pull both paths once" MIGRATED: the dual cold
+ *    pull (`ensureTeam` + `ensureProjection`) becomes the single
+ *    `ensureProjection` pull; the zero state is unchanged.
+ *  - "four sections live for a team session" MIGRATED: the mirror-fed
+ *    tasks/events sections become the snapshot-fed activity section and
+ *    the ledger-store-fed ledger section; the four UI §12.1 sections
+ *    (timeline/members/activity/ledger) render from ONE input for both
+ *    the leader and the member session (plus the member-session
+ *    current-instance highlight).
+ *  - "timeline bar click (D9)" DROPPED: the bar click wiring is covered
+ *    by the T5 team-timeline spec at component level; the view-level D9
+ *    wiring is proven here by the member-row and ledger-row clicks.
+ *  - "member instance row click (D9)" MIGRATED as-is (the instance row
+ *    still switches to the child session).
+ *  - "leading leader row click (D10)" MIGRATED as-is.
+ *  - "task board + event stream from the view, feed-row click (D9)"
+ *    REPLACED by three tests: the activity rows from `snapshot.activity`
+ *    (the task board's row layout reused by TeamActivity), the ledger
+ *    rows from the per-team ledger store (the feed's row layout reused
+ *    by TeamLedger), and the ledger-row click navigation (the legacy
+ *    approval/message session switches become the ledger rows' D9
+ *    navigation).
+ *  - "landing frames win" MIGRATED: the dual mirror gains become the
+ *    single projection mirror; no re-fire.
  */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import type {
-  RpcResult, SessionId, TeamMessagePage, TeamMirror, TeamView as TeamWireView,
-} from '../src/model/team-view-compat.js'
-import { resolveTeamView } from '../src/model/team-view-compat.js'
 import type { TeamProjectionMirror } from '../src/state/team-session-resolution.js'
 import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
 import type { RemoteLedgerEntryValue } from '../../remote/src/index.js'
@@ -26,52 +53,22 @@ import { TeamView, type TeamViewProps } from '../src/ui/TeamView.js'
 import { zh } from '../src/ui/locales.js'
 
 afterEach(cleanup)
-beforeEach(() => {
-  Element.prototype.setPointerCapture = vi.fn()
-})
-afterEach(() => {
-  delete (Element.prototype as { setPointerCapture?: unknown }).setPointerCapture
-})
 
-const LEADER = 'team-leader' as SessionId
-const MEMBER = 'team-member' as SessionId
-const OUTSIDER = 'plain-session' as SessionId
+const LEADER = 'team-leader'
+const MEMBER = 'team-member'
+const OUTSIDER = 'plain-session'
 
 const T = 1_700_000_000_000
 function iso(ms: number): string {
   return new Date(ms).toISOString()
 }
 
-function wireView(leader: string, delegations: TeamWireView['delegations'] = []): TeamWireView {
-  return {
-    teamId: leader,
-    leaderSessionId: leader,
-    rosterMemberCount: 2,
-    members: [
-      {
-        memberId: 'leader', name: 'leader', role: 'leader', sessionIds: [leader],
-        status: 'bound', pendingControlCount: 0,
-      },
-      {
-        memberId: 'mate', name: 'mate', role: 'teammate', sessionIds: [MEMBER],
-        status: 'running', pendingControlCount: 0,
-      },
-    ],
-    delegations,
-    tasks: [],
-    approvals: [],
-    messages: [],
-    messageCount: 0,
-  }
-}
-
-const LEADER_MIRROR: TeamMirror = { [LEADER]: wireView(LEADER) }
-
 /** One wire member DTO row (plain object; `childSessionId` null = the leader, field omitted). */
 function wireMember(
   instanceId: string,
   childSessionId: string | null,
   lifecycle: 'CREATED' | 'RUNNING' | 'SETTLED' | 'ARCHIVED' | 'DISPOSED' = 'CREATED',
+  overrides: Record<string, unknown> = {},
 ): Record<string, unknown> {
   return {
     instanceId,
@@ -84,6 +81,7 @@ function wireMember(
     contextPolicy: 'persistent',
     effectiveConfig: { model: 'm', workspace: 'wsp', permissions: {}, autonomy: 'full' },
     liveActivity: null,
+    ...overrides,
   }
 }
 
@@ -112,18 +110,17 @@ function mirrorOf(...frames: Array<[string, TeamProjectionDto]>): TeamProjection
   return plain as unknown as TeamProjectionMirror
 }
 
-/**
- * The team frame: a leader-kind lead (child session absent) plus a running
- * mate bound to the member session, with the two template kinds the
- * sections key on.
- */
+/** The two template kinds the member-group section keys on. */
+const TEMPLATES: readonly Record<string, unknown>[] = [
+  { kind: 'leader', templateId: 'tpl-lead', displayName: 'Lead', contextPolicy: 'persistent' },
+  { kind: 'member', templateId: 'tpl-mate', displayName: 'Mate', contextPolicy: 'persistent' },
+]
+
+/** The team frame: a leader-kind lead (child session absent) plus a running mate bound to the member session. */
 const TEAM_FRAME = frame(
   LEADER,
   [wireMember('lead', null), wireMember('mate', MEMBER, 'RUNNING')],
-  [
-    { kind: 'leader', templateId: 'tpl-lead', displayName: 'Lead', contextPolicy: 'persistent' },
-    { kind: 'member', templateId: 'tpl-mate', displayName: 'Mate', contextPolicy: 'persistent' },
-  ],
+  TEMPLATES,
 )
 const TEAM_PROJECTION_MIRROR = mirrorOf([LEADER, TEAM_FRAME])
 
@@ -142,14 +139,8 @@ function entry(
     payload,
     operationId: null,
     createdAt,
-  } as RemoteLedgerEntryValue
+  } as unknown as RemoteLedgerEntryValue
 }
-
-/** One settled interval over the mate instance (open then close, correlation-joined). */
-const MATE_INTERVAL: RemoteLedgerEntryValue[] = [
-  entry(1, 'activity-interval-opened', iso(T), { correlation: 'corr-1', instanceId: 'mate', subject: 'First span' }),
-  entry(2, 'activity-interval-closed', iso(T + 90_000), { correlation: 'corr-1', closeNote: 'done' }),
-]
 
 /** One published ledger-store state over the loaded facts (known complete). */
 function ledgerState(entries: readonly RemoteLedgerEntryValue[]): TeamLedgerState {
@@ -166,33 +157,21 @@ function ledgerState(entries: readonly RemoteLedgerEntryValue[]): TeamLedgerStat
   }
 }
 
-describe('resolveTeamView (frozen team-ness derivation)', () => {
-  it('resolves a session by its own leader key or any binding member row, and nothing otherwise', () => {
-    expect(resolveTeamView(LEADER_MIRROR, LEADER)).toBe(LEADER_MIRROR[LEADER])
-    expect(resolveTeamView(LEADER_MIRROR, MEMBER)).toBe(LEADER_MIRROR[LEADER])
-    expect(resolveTeamView(LEADER_MIRROR, OUTSIDER)).toBeUndefined()
-    expect(resolveTeamView({}, OUTSIDER)).toBeUndefined()
-  })
-})
-
-/** An unprogrammed pagination stub fails loud so an accidental page call is visible. */
-function unprogrammedPage(): TeamViewProps['pageTeamMessages'] {
-  return vi.fn(async (): Promise<RpcResult<TeamMessagePage>> => ({
-    ok: false,
-    error: { code: 'internal', message: 'page not programmed', details: {} },
-  }))
-}
-
+/**
+ * The projection-only view props: the framework session kit (empty stubs —
+ * TeamView never reads them) plus the injected face — the two
+ * ObservableSnapshot hooks and the cold-pull / ledger-refresh /
+ * navigation callbacks.
+ */
 function viewProps(
-  mirror: TeamMirror,
-  sessionId: SessionId = LEADER,
   projectionMirror: TeamProjectionMirror = {},
+  sessionId: string = LEADER,
   teamLedgers: Readonly<Record<string, TeamLedgerState>> = {},
 ): TeamViewProps {
   return {
     // PropsRuntime<'conversation.view'> carries the framework branded
-    // SessionId; the bridge SessionId is a bare string, so the boundary
-    // cast is the single bridge-to-framework narrowing in this helper.
+    // SessionId; the fixtures are bare strings, so the boundary cast is
+    // the single fixture-to-framework narrowing in this helper.
     sessionId: sessionId as TeamViewProps['sessionId'],
     useSession: (() => undefined) as TeamViewProps['useSession'],
     useProjection: () => undefined,
@@ -200,22 +179,23 @@ function viewProps(
     inputActions: { setDraft: () => {}, submit: () => {} } as unknown as TeamViewProps['inputActions'],
     useSessions: () => { throw new Error('unused') },
     useWorkspaces: () => { throw new Error('unused') },
-    useTeamMirror: selector => selector(mirror),
+    // The injected face (projection-only after the T6 collapse).
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
-    ensureTeam: vi.fn(() => Promise.resolve()),
     ensureProjection: vi.fn(() => Promise.resolve()),
-    pageTeamMessages: unprogrammedPage(),
+    refreshTeamLedger: vi.fn(() => Promise.resolve()),
     openSession: vi.fn(),
     t: makeTranslate(zh),
-    // Current DSH requires the conversation.view owner props (viewRequest/openView/completeViewRequest);
-    // legacy fixtures predate them. TeamView renders them as a degraded jump surface (Seam 4), so no-op stubs.
+    // Current DSH requires the conversation.view owner props
+    // (viewRequest/openView/completeViewRequest); TeamView renders them
+    // as a degraded jump surface (Seam 4), so no-op stubs.
     viewRequest: null,
     openView: () => {},
     completeViewRequest: () => {},
-    // SessionStandardProps merges (ui-conversation: useConversation; ui-chat: useChat) and the
-    // GlobalStandardProps merge (ui-session: useSessionPendingInteraction) are absent from legacy
-    // fixtures; TeamView never reads them in these specs, so empty stubs.
+    // SessionStandardProps merges (ui-conversation: useConversation;
+    // ui-chat: useChat) and the GlobalStandardProps merge (ui-session:
+    // useSessionPendingInteraction) are absent from these fixtures;
+    // TeamView never reads them, so empty stubs.
     useConversation: (() => undefined) as TeamViewProps['useConversation'],
     useChat: (() => undefined) as TeamViewProps['useChat'],
     useSessionPendingInteraction: (() => undefined) as TeamViewProps['useSessionPendingInteraction'],
@@ -223,68 +203,52 @@ function viewProps(
 }
 
 describe('TeamView', () => {
-  it('renders the one-line zero state for a non-team session and cold-pulls both paths once', () => {
+  it('renders the one-line zero state for a non-team session and cold-pulls the projection once', () => {
     const props = viewProps({}, OUTSIDER)
-    render(<TeamView {...props} />)
+    const view = render(<TeamView {...props} />)
+    expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
     expect(screen.getByText('当前会话未加入任何团队')).toBeTruthy()
-    expect(props.ensureTeam).toHaveBeenCalledTimes(1)
-    expect(props.ensureTeam).toHaveBeenCalledWith(OUTSIDER)
     expect(props.ensureProjection).toHaveBeenCalledTimes(1)
     expect(props.ensureProjection).toHaveBeenCalledWith(OUTSIDER)
   })
 
-  it('renders all four sections live for a team session', () => {
-    const leader = render(<TeamView {...viewProps(LEADER_MIRROR, LEADER, TEAM_PROJECTION_MIRROR)} />)
-    expect(leader.container.querySelector('[data-team-view]')).toBeTruthy()
+  it('renders all four UI §12.1 sections live from one input for a leader session', () => {
+    const view = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER)} />)
+    expect(view.container.querySelector('[data-team-view]')).toBeTruthy()
     expect(screen.queryByText('当前会话未加入任何团队')).toBeNull()
-    expect(leader.container.querySelectorAll('[data-team-section]')).toHaveLength(4)
-    // The timeline section is live from the projection path: its heading and,
-    // with no loaded ledger facts, the one-line cold state (no lane matrix).
+    // The fixed UI §12.1 order from one input.
+    const sections = [...view.container.querySelectorAll<HTMLElement>('[data-team-section]')]
+      .map(el => el.dataset.teamSection)
+    expect(sections).toEqual(['timeline', 'members', 'activity', 'ledger'])
+    // Timeline: heading + the one-line cold state (no loaded ledger facts).
     expect(screen.getByText('时间线')).toBeTruthy()
     expect(screen.getByText('暂无委派记录')).toBeTruthy()
-    expect(leader.container.querySelector('[data-team-section="timeline"] [data-team-timeline]')).toBeTruthy()
-    // The member-group section is live from the projection path: its heading
-    // and the group container rows (the leading leader group + the mate group).
+    expect(view.container.querySelector('[data-team-section="timeline"] [data-team-timeline]')).toBeTruthy()
+    // Members: heading + the two group rows (the leading leader group + the mate group).
     expect(screen.getByText('成员组')).toBeTruthy()
-    expect(leader.container.querySelector('[data-team-section="members"] [data-team-members]')).toBeTruthy()
-    expect(leader.container.querySelectorAll('[data-member-group-row]')).toHaveLength(2)
-    // The task-board section is live from the mirror path: its heading and the
-    // one-line empty state.
-    expect(screen.getByText('任务板')).toBeTruthy()
-    expect(leader.container.querySelector('[data-team-section="tasks"] [data-tasks-empty]')).toBeTruthy()
-    // The event-stream section is live from the mirror path: its heading and the
-    // one-line empty state.
-    expect(screen.getByText('事件流')).toBeTruthy()
-    expect(leader.container.querySelector('[data-team-section="events"] [data-feed-empty]')).toBeTruthy()
-    leader.unmount()
+    expect(view.container.querySelectorAll('[data-team-section="members"] [data-member-group-row]')).toHaveLength(2)
+    // Activity: heading + the one-line empty state (no current-work facts).
+    expect(screen.getByText('活动与进度')).toBeTruthy()
+    expect(view.container.querySelector('[data-team-section="activity"] [data-activity-empty]')).toBeTruthy()
+    // Ledger: heading + the one-line empty state (no loaded ledger facts).
+    expect(screen.getByText('团队事件')).toBeTruthy()
+    expect(view.container.querySelector('[data-team-section="ledger"] [data-ledger-empty]')).toBeTruthy()
+    view.unmount()
 
-    const member = render(<TeamView {...viewProps(LEADER_MIRROR, MEMBER, TEAM_PROJECTION_MIRROR)} />)
+    // The member session resolves to the same frame (the member-child
+    // perspective) and highlights the current instance row.
+    const member = render(<TeamView {...viewProps(TEAM_PROJECTION_MIRROR, MEMBER)} />)
     expect(member.container.querySelector('[data-team-view]')).toBeTruthy()
-    expect(member.container.querySelector('[data-team-section="timeline"]')).toBeTruthy()
-    expect(member.container.querySelector('[data-team-section="members"] [data-team-members]')).toBeTruthy()
-    expect(member.container.querySelector('[data-team-section="tasks"] [data-team-tasks]')).toBeTruthy()
-    expect(member.container.querySelector('[data-team-section="events"] [data-team-feed]')).toBeTruthy()
-  })
-
-  it('switches to the member session when a timeline bar is clicked (D9)', () => {
-    const openSession = vi.fn()
-    const props = {
-      ...viewProps(LEADER_MIRROR, LEADER, TEAM_PROJECTION_MIRROR, { [LEADER]: ledgerState(MATE_INTERVAL) }),
-      openSession,
+    for (const value of ['timeline', 'members', 'activity', 'ledger']) {
+      expect(member.container.querySelector(`[data-team-section="${value}"]`)).toBeTruthy()
     }
-    const view = render(<TeamView {...props} />)
-    const bar = view.container.querySelector<HTMLElement>('[data-team-timeline-bar]')
-    if (bar === null) throw new Error('the interval bar did not render')
-    fireEvent.pointerDown(bar, { button: 0, clientX: 5, pointerId: 1 })
-    fireEvent.pointerUp(bar, { clientX: 5, pointerId: 1 })
-    expect(openSession).toHaveBeenCalledTimes(1)
-    expect(openSession).toHaveBeenCalledWith(MEMBER)
+    expect(member.container.querySelector('[data-team-section="members"] [data-member-instance][data-current]')).toBeTruthy()
+    member.unmount()
   })
 
   it('switches to the member session when a member instance row is clicked (D9)', () => {
     const openSession = vi.fn()
-    const props = { ...viewProps(LEADER_MIRROR, LEADER, TEAM_PROJECTION_MIRROR), openSession }
-    const view = render(<TeamView {...props} />)
+    const view = render(<TeamView {...{ ...viewProps(TEAM_PROJECTION_MIRROR, LEADER), openSession }} />)
     const instance = view.container.querySelector<HTMLButtonElement>('[data-member-instance][data-status="running"]')
     if (instance === null) throw new Error('the running member instance row did not render')
     fireEvent.click(instance)
@@ -294,8 +258,7 @@ describe('TeamView', () => {
 
   it('switches back to the leader session when the leading leader row is clicked (D10)', () => {
     const openSession = vi.fn()
-    const props = { ...viewProps(LEADER_MIRROR, MEMBER, TEAM_PROJECTION_MIRROR), openSession }
-    const view = render(<TeamView {...props} />)
+    const view = render(<TeamView {...{ ...viewProps(TEAM_PROJECTION_MIRROR, MEMBER), openSession }} />)
     const leader = view.container.querySelector<HTMLButtonElement>('[data-member-group-row][data-leader]')
     if (leader === null) throw new Error('the leading leader row did not render')
     fireEvent.click(leader)
@@ -303,56 +266,74 @@ describe('TeamView', () => {
     expect(openSession).toHaveBeenCalledWith(LEADER)
   })
 
-  it('renders the task board and event stream from the view and switches sessions on feed-row click (D9)', () => {
-    const openSession = vi.fn()
-    const dataView = {
-      ...wireView(LEADER),
-      tasks: [{
-        taskId: 't1', subject: 'Wire the mirror', status: 'in_progress' as const,
-        summary: 'Half done', memberId: 'mate', seq: 1, at: 1000,
-      }],
-      approvals: [{
-        requestId: 'r1', memberId: 'mate', toolName: 'write_file', reason: 'need write',
-        requestedAt: 2000,
-      }],
-      messages: [{
-        from: 'leader', to: 'mate', message: 'go ahead', at: 3000, seq: 1, sessionId: LEADER,
-      }],
-      messageCount: 1,
-    }
-    const props = { ...viewProps({ [LEADER]: dataView }, LEADER), openSession }
-    const view = render(<TeamView {...props} />)
-    // The task board renders the projection row: subject, status, assignee, summary.
-    const taskSection = view.container.querySelector('[data-team-section="tasks"]')
-    expect(taskSection?.querySelector('[data-task-subject]')?.textContent).toBe('Wire the mirror')
-    expect(taskSection?.querySelector('[data-task-status-text]')?.textContent).toBe('进行中')
-    expect(taskSection?.querySelector('[data-task-assignee]')?.textContent).toBe('负责人 mate')
-    expect(taskSection?.querySelector('[data-task-summary]')?.textContent).toBe('Half done')
-    // The event stream mixes both rows in ascending order: the approval at
-    // 2000 ahead of the message at 3000.
-    const feedRows = view.container.querySelectorAll<HTMLElement>('[data-feed-row]')
-    expect(feedRows).toHaveLength(2)
-    expect(feedRows[0]?.dataset.feedKind).toBe('approval')
-    expect(feedRows[1]?.dataset.feedKind).toBe('message')
-    expect(screen.getByText('等待裁决')).toBeTruthy()
-    // The approval row opens the requesting member's session; the message
-    // row opens the recording session.
-    fireEvent.click(feedRows[0]!)
-    expect(openSession).toHaveBeenLastCalledWith(MEMBER)
-    fireEvent.click(feedRows[1]!)
-    expect(openSession).toHaveBeenLastCalledWith(LEADER)
-    expect(openSession).toHaveBeenCalledTimes(2)
+  it('renders the activity section from the snapshot current-work face', () => {
+    const frameWithActivity = frame(
+      LEADER,
+      [
+        wireMember('lead', null),
+        wireMember('mate', MEMBER, 'RUNNING', {
+          activity: {
+            status: 'in-progress',
+            subject: 'Wiring the mirror',
+            summary: 'Half done',
+            lastAction: 'typing',
+          },
+        }),
+      ],
+      TEMPLATES,
+    )
+    const view = render(<TeamView {...viewProps(mirrorOf([LEADER, frameWithActivity]), LEADER)} />)
+    const section = view.container.querySelector('[data-team-section="activity"]')
+    expect(section?.querySelector('[data-activity-row][data-activity-status="in-progress"]')).toBeTruthy()
+    expect(section?.querySelector('[data-activity-subject]')?.textContent).toBe('Wiring the mirror')
+    expect(section?.querySelector('[data-activity-status-text]')?.textContent).toBe('进行中')
+    expect(section?.querySelector('[data-activity-member]')?.textContent).toBe('负责人 mate')
+    expect(section?.querySelector('[data-activity-summary]')?.textContent).toBe('Half done')
   })
 
-  it('stops cold-pulling once the mirrors gain the session (landing frames win)', () => {
-    const ensureTeam = vi.fn(() => Promise.resolve())
+  it('renders the ledger section from the per-team ledger store', () => {
+    const messageEntry = entry(1, 'team-message-delivered', iso(T), {
+      recipientInstanceId: 'mate',
+      subject: 'go ahead',
+    })
+    const view = render(
+      <TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, { [LEADER]: ledgerState([messageEntry]) })} />,
+    )
+    const section = view.container.querySelector('[data-team-section="ledger"]')
+    expect(section?.querySelector('[data-ledger-row][data-ledger-kind="message"]')).toBeTruthy()
+    // The marker text (scoped to the section: the category filter option
+    // carries the same label).
+    expect(section?.querySelector('[data-ledger-marker]')?.textContent).toBe('消息')
+    expect(section?.querySelector('[data-ledger-summary]')?.textContent).toBe('go ahead')
+    expect(section?.querySelector('[data-ledger-actor]')?.textContent).toBe('mate')
+  })
+
+  it('switches to the actor session when a ledger row is clicked (D9)', () => {
+    const openSession = vi.fn()
+    const messageEntry = entry(1, 'team-message-delivered', iso(T), {
+      recipientInstanceId: 'mate',
+      subject: 'go ahead',
+    })
+    const view = render(
+      <TeamView {...{
+        ...viewProps(TEAM_PROJECTION_MIRROR, LEADER, { [LEADER]: ledgerState([messageEntry]) }),
+        openSession,
+      }} />,
+    )
+    const row = view.container.querySelector<HTMLButtonElement>('[data-ledger-row]')
+    if (row === null) throw new Error('the ledger row did not render')
+    fireEvent.click(row)
+    expect(openSession).toHaveBeenCalledTimes(1)
+    expect(openSession).toHaveBeenCalledWith(MEMBER)
+  })
+
+  it('stops cold-pulling once the projection mirror gains the session (landing frames win)', () => {
     const ensureProjection = vi.fn(() => Promise.resolve())
-    const view = render(<TeamView {...{ ...viewProps({}, LEADER), ensureTeam, ensureProjection }} />)
-    expect(ensureTeam).toHaveBeenCalledTimes(1)
+    const view = render(<TeamView {...{ ...viewProps({}, LEADER), ensureProjection }} />)
+    expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
     expect(ensureProjection).toHaveBeenCalledTimes(1)
-    view.rerender(<TeamView {...{ ...viewProps(LEADER_MIRROR, LEADER, TEAM_PROJECTION_MIRROR), ensureTeam, ensureProjection }} />)
+    view.rerender(<TeamView {...{ ...viewProps(TEAM_PROJECTION_MIRROR, LEADER), ensureProjection }} />)
     expect(view.container.querySelector('[data-team-view]')).toBeTruthy()
-    expect(ensureTeam).toHaveBeenCalledTimes(1)
     expect(ensureProjection).toHaveBeenCalledTimes(1)
   })
 })

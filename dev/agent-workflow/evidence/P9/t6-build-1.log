@@ -1,0 +1,4 @@
+tsc -p packages/client/tsconfig.build.json (build face: src only, outDir dist)
+
+EXIT=0 (no error output)
+dist removed after emit

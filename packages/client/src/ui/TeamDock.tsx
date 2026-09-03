@@ -72,14 +72,14 @@ const MEMBER_STATUS_KEYS = {
 } as const satisfies Record<TeamDockMemberRow['status'], TeamKey>
 
 /**
- * The activity status reuses the admitted-work vocabulary keys (the values
- * are the same frozen ProgressValues the task board renders; the hyphenated
- * wire value maps onto the underscore key).
+ * The activity status reuses the Activity section's progress vocabulary
+ * keys (the values are the same frozen ProgressValues the Activity rows
+ * render; the hyphenated wire value maps onto the underscore key).
  */
 const ACTIVITY_STATUS_KEYS = {
-  'in-progress': 'view.task.in_progress',
-  completed: 'view.task.completed',
-  blocked: 'view.task.blocked',
+  'in-progress': 'view.activity.in_progress',
+  completed: 'view.activity.completed',
+  blocked: 'view.activity.blocked',
 } as const satisfies Record<NonNullable<TeamDockActivityRow['status']>, TeamKey>
 
 /**
