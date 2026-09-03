@@ -118,6 +118,7 @@ describe('deriveTeamMembers', () => {
       instances: [{
         key: 'lead:leader-s:0',
         childSessionId: LEADER,
+        label: 'Lead',
         lifecycle: 'RUNNING',
         status: 'running',
         pendingControlCount: 0,
@@ -181,6 +182,7 @@ describe('deriveTeamMembers', () => {
       instances: [{
         key: 'b::0',
         childSessionId: '',
+        label: B,
         lifecycle: 'CREATED',
         status: 'created',
         pendingControlCount: 0,
@@ -220,6 +222,7 @@ describe('deriveTeamMembers', () => {
     expect(model.groups[0]?.instances).toEqual([{
       key: 'b:sb:0',
       childSessionId: 'sb',
+      label: B,
       lifecycle: 'RUNNING',
       status: 'running',
       currentAction: 'Bash',
@@ -233,6 +236,7 @@ describe('deriveTeamMembers', () => {
     expect(plain.groups[0]?.instances[0]).toEqual({
       key: 'a:sa:0',
       childSessionId: 'sa',
+      label: A,
       lifecycle: 'CREATED',
       status: 'created',
       pendingControlCount: 0,
