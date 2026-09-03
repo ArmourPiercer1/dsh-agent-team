@@ -53,6 +53,21 @@
  *   C3.17 — a FOREIGN root is still rejected by the admission method's
  *           team-scoped check with `TEAM_REMOTE_FOREIGN_TEAM` (fail-closed).
  *
+ * P9-S8 (F1-lite v3, bug #7 — the team-scoped ports addressed the CLOSURE
+ * BOUND root instead of the guarded ADDRESSED root; attempt-25 S5: a
+ * member created against a handoff root committed under the bound root and
+ * the owned team's pages served the bound root's data): after the fresh
+ * bind, one durable ledger fact is seeded per root (the stub world commits
+ * no operation facts, so the pages would be empty and could not
+ * discriminate the root filter):
+ *
+ *   C3.18 — the owned root's `team.getLedgerPage` carries exactly the
+ *           owned root's seeded fact (pre-fix: the bound root's fact
+ *           leaked into the page);
+ *   C3.19 — the bound root's `team.getLedgerPage` stays the bound root's
+ *           own fact (the symmetric side; the filter must follow the
+ *           asserted addressed root in both directions).
+ *
  * World: own scratch seam + own root session id + own seed ids.
  * @module @dsh-agent-team/runtime/test/p8s6-principal
  */
@@ -373,6 +388,36 @@ const c3 = await (async () => {
       blueprintRevision: 1,
     })
 
+    // F1-lite v3 (bug #7 pin, the seed): the stub world commits no
+    // operation facts (the fresh bind is a record commit, not an
+    // operation), so both ledger pages would be empty and could not
+    // discriminate the root filter. Seed one durable fact per root
+    // through the production ledger repository — the same rows the
+    // port slices — so the page for one root must carry exactly that
+    // root's fact. Pre-fix (attempt-25 S5 forensics) the bound root's
+    // fact leaked into every host-owned team's page. The factType is a
+    // frozen ledger category type (the projection read port fails
+    // closed on an unmapped type, LEDGER_CATEGORY_UNKNOWN).
+    const ledger = root.domain.repositories.ledger
+    const boundSeedSequence = await ledger.allocateSequence()
+    await ledger.put({
+      schemaVersion: 1,
+      sequence: boundSeedSequence,
+      rootSessionId: ROOT_SID,
+      factType: 'team-work-admitted',
+      payload: { origin: 'bound-root-seed' },
+      createdAt: '2026-09-03T18:00:00.000Z',
+    })
+    const ownedSeedSequence = await ledger.allocateSequence()
+    await ledger.put({
+      schemaVersion: 1,
+      sequence: ownedSeedSequence,
+      rootSessionId: NEW_ROOT,
+      factType: 'team-work-admitted',
+      payload: { origin: 'owned-root-seed' },
+      createdAt: '2026-09-03T18:00:01.000Z',
+    })
+
     // C3.12: the owned root is servable — the projection guard accepts it
     // (the full projection folds: the created team inherits the host
     // default workspace, so the leader's effective workspace resolves).
@@ -414,6 +459,13 @@ const c3 = await (async () => {
       payload: { label: 'c3-foreign' },
     })
 
+    // C3.19: the bound root's ledger page stays the bound root's own
+    // (F1-lite v3, the symmetric side — attempt-25 forensics: the bound
+    // root's ledger leaked into every host-owned team's page because the
+    // root filter followed the closure bound root, not the asserted
+    // addressed root).
+    const boundLedgerPage = await call('team.getLedgerPage', { teamSessionId: ROOT_SID })
+
     // The durable override record written by C3.9.
     const durableOverrides = root.domain.repositories.overrides.list(ROOT_SID) as Array<Record<string, any>>
 
@@ -448,6 +500,7 @@ const c3 = await (async () => {
       ownedTeamRecreate,
       stillForeignProjection,
       stillForeignMemberCreate,
+      boundLedgerPage,
       durableOverrides,
     }
   } catch (err) {
@@ -562,6 +615,30 @@ it('C3.16 a foreign root is still rejected by the projection guard (fail-closed)
 it('C3.17 a foreign root is still rejected by the admission team-scoped check (fail-closed)', () => {
   expect(c3.stillForeignMemberCreate.ok).toBe(false)
   expect(codeOf(c3.stillForeignMemberCreate)).toBe('TEAM_REMOTE_FOREIGN_TEAM')
+})
+
+it('C3.18 the owned root\'s ledger page carries exactly the OWNED root\'s fact (F1-lite v3)', () => {
+  expect(c3.ownedLedgerPage.ok).toBe(true)
+  const data = c3.ownedLedgerPage.value.data as Record<string, any>
+  const entries = data.entries as Array<Record<string, any>>
+  check(entries.length === 1, 'the owned root\'s page carries exactly the seeded owned-root fact')
+  const entry = entries[0]
+  defined(entry, 'the owned root\'s page entry is missing')
+  expect(entry.rootSessionId).toBe(NEW_ROOT)
+  expect((entry.payload as Record<string, any>).origin).toBe('owned-root-seed')
+  expect(data.total).toBe(1)
+})
+
+it('C3.19 the bound root\'s ledger page stays the bound root\'s own fact (F1-lite v3)', () => {
+  expect(c3.boundLedgerPage.ok).toBe(true)
+  const data = c3.boundLedgerPage.value.data as Record<string, any>
+  const entries = data.entries as Array<Record<string, any>>
+  check(entries.length === 1, 'the bound root\'s page carries exactly the seeded bound-root fact')
+  const entry = entries[0]
+  defined(entry, 'the bound root\'s page entry is missing')
+  expect(entry.rootSessionId).toBe(ROOT_SID)
+  expect((entry.payload as Record<string, any>).origin).toBe('bound-root-seed')
+  expect(data.total).toBe(1)
 })
 
 // --- teardown --------------------------------------------------------------------------

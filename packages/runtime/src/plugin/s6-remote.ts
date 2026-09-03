@@ -764,10 +764,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     return catalog.resolve(blueprintId, String(revision))
   }
 
-  function rootLedgerEntries(): readonly Record<string, unknown>[] {
+  // P9-S8 (F1-lite v3): filter by the ASSERTED addressed root — the bound
+  // root alone would serve the boot team's ledger to every host-owned team.
+  function rootLedgerEntries(addressedRoot: string): readonly Record<string, unknown>[] {
     return repositories.ledger
       .list()
-      .filter((entry) => entry.rootSessionId === rootSessionId) as unknown as readonly Record<string, unknown>[]
+      .filter((entry) => entry.rootSessionId === addressedRoot) as unknown as readonly Record<string, unknown>[]
   }
 
   return {
@@ -924,12 +926,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     // --- 5/12 ledger: the durable rows behind the D-5 slicer (root-filtered) --------
     ledger: {
       async listEntries(teamSessionId: string): Promise<readonly RemoteLedgerEntryValue[]> {
-        assertBoundRoot('team.getLedgerPage', teamSessionId)
-        return rootLedgerEntries().map((record) => ledgerEntryWire(record))
+        const root = assertBoundRoot('team.getLedgerPage', teamSessionId)
+        return rootLedgerEntries(root).map((record) => ledgerEntryWire(record))
       },
       async countEntries(teamSessionId: string): Promise<number> {
-        assertBoundRoot('team.getLedgerPage', teamSessionId)
-        return rootLedgerEntries().length
+        const root = assertBoundRoot('team.getLedgerPage', teamSessionId)
+        return rootLedgerEntries(root).length
       },
     },
 
@@ -939,8 +941,23 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         request: S6RemoteAdmissionRequest,
         caller: ActionCaller,
       ): Promise<TeamRuntimeActionOutcome> {
+        // P9-S8 (F1-lite v3): admit on the ADDRESSED root (guard-asserted),
+        // never the closure bound root — F1-lite v1 fixed team.create but
+        // left this port on the bound root, so every host-owned team's
+        // member action executed on the boot team (attempt-25 S5: the
+        // worker instance + ledger landed on the bound root while the UI
+        // projected the handoff root, whose static generation then made the
+        // post-create pull a G2 duplicate).
+        const addressedRoot = assertBoundRoot(
+          request.action === 'create-member'
+            ? 'member.create'
+            : request.action === 'send-message'
+              ? 'member.send'
+              : 'member.followup',
+          request.rootSessionId,
+        )
         const base = {
-          rootSessionId: rootSessionId as TeamSessionId,
+          rootSessionId: addressedRoot as TeamSessionId,
           caller,
           requestToken: request.requestToken,
         }
@@ -986,25 +1003,28 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     // --- 7/12 lifecycle: the LifecycleService (the only lifecycle authority) --------
     lifecycle: {
       async archive(teamSessionId: string, instanceId: string): Promise<RemoteSafeRecord> {
-        assertBoundRoot('member.archive', teamSessionId)
+        // F1-lite v3: the asserted addressed root (host-owned teams).
+        const root = assertBoundRoot('member.archive', teamSessionId)
         const result = await options.lifecycle.archiveMember({
-          rootSessionId: rootSessionId as TeamSessionId,
+          rootSessionId: root as TeamSessionId,
           instanceId: instanceId as InstanceId,
         })
         return result as unknown as RemoteSafeRecord
       },
       async restore(teamSessionId: string, instanceId: string): Promise<RemoteSafeRecord> {
-        assertBoundRoot('member.restore', teamSessionId)
+        // F1-lite v3: the asserted addressed root (host-owned teams).
+        const root = assertBoundRoot('member.restore', teamSessionId)
         const result = await options.lifecycle.restoreMember({
-          rootSessionId: rootSessionId as TeamSessionId,
+          rootSessionId: root as TeamSessionId,
           instanceId: instanceId as InstanceId,
         })
         return result as unknown as RemoteSafeRecord
       },
       async dispose(teamSessionId: string, instanceId: string): Promise<RemoteSafeRecord> {
-        assertBoundRoot('member.dispose', teamSessionId)
+        // F1-lite v3: the asserted addressed root (host-owned teams).
+        const root = assertBoundRoot('member.dispose', teamSessionId)
         const result = await options.lifecycle.disposeMember({
-          rootSessionId: rootSessionId as TeamSessionId,
+          rootSessionId: root as TeamSessionId,
           instanceId: instanceId as InstanceId,
         })
         return result as unknown as RemoteSafeRecord
@@ -1019,8 +1039,8 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         scope?: 'team' | 'instance',
         targetInstanceId?: string,
       ): Promise<RemoteSafeRecord | null> {
-        assertBoundRoot('override.get', teamSessionId)
-        const records = options.overrideRecords(rootSessionId)
+        const root = assertBoundRoot('override.get', teamSessionId)
+        const records = options.overrideRecords(root)
         const effectiveScope = scope ?? 'team'
         const matches = records.filter((record) => {
           if (record['scope'] !== effectiveScope) return false
@@ -1039,7 +1059,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         return winner
       },
       async set(request: S6RemoteOverrideSetRequest, caller: ActionCaller): Promise<RemoteSafeRecord> {
-        assertBoundRoot('override.set', request.teamSessionId)
+        const root = assertBoundRoot('override.set', request.teamSessionId)
         const authority = authorityOf(caller, leaderInstanceId)
         const scope = request.scope ?? 'team'
         const instanceId = scope === 'instance' ? request.targetInstanceId : undefined
@@ -1051,7 +1071,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
           )
         }
         const kind = authority.kind === 'operator' ? 'human-override' : 'autonomy-overlay'
-        const records = options.overrideRecords(rootSessionId)
+        const records = options.overrideRecords(root)
         const slotMatches = records.filter(
           (record) =>
             record['kind'] === kind &&
@@ -1071,7 +1091,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         const admitted = await options.admitGovernanceOverride(
           {
             authority,
-            rootSessionId,
+            rootSessionId: root,
             recordId,
             scope,
             ...(instanceId !== undefined ? { instanceId } : {}),
@@ -1097,12 +1117,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         request: S6RemoteOverrideResetRequest,
         caller: ActionCaller,
       ): Promise<{ readonly removed: boolean }> {
-        assertBoundRoot('override.reset', request.teamSessionId)
+        const root = assertBoundRoot('override.reset', request.teamSessionId)
         const authority = authorityOf(caller, leaderInstanceId)
         const scope = request.scope ?? 'team'
         const instanceId = scope === 'instance' ? request.targetInstanceId : undefined
         const kind = authority.kind === 'operator' ? 'human-override' : 'autonomy-overlay'
-        const records = options.overrideRecords(rootSessionId)
+        const records = options.overrideRecords(root)
         const slotMatches = records.filter(
           (record) =>
             record['kind'] === kind &&
@@ -1120,7 +1140,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
           kind: winner['kind'] as 'human-override' | 'autonomy-overlay',
           recordId: winner['recordId'] as string,
           scope: winner['scope'] as 'team' | 'instance',
-          rootSessionId,
+          rootSessionId: root,
           ...(scope === 'instance' ? { instanceId } : {}),
         })
         return { removed }
@@ -1130,9 +1150,9 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     // --- 9/12 policyState: the mutation service (invariant 40: explicit only) -------
     policyState: {
       async read(teamSessionId: string): Promise<RemoteSafeRecord> {
-        assertBoundRoot('policyState.get', teamSessionId)
+        const root = assertBoundRoot('policyState.get', teamSessionId)
         const view = policyStateReadOf(
-          options.mutationTransitions(rootSessionId),
+          options.mutationTransitions(root),
           Number.MAX_SAFE_INTEGER,
         )
         // R2-1 (BQ-10): the surface reports the CURRENT state plus the
@@ -1163,7 +1183,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         request: S6RemotePolicyStateSwitchRequest,
         caller: ActionCaller,
       ): Promise<RemoteSafeRecord> {
-        assertBoundRoot('policyState.set', request.teamSessionId)
+        const root = assertBoundRoot('policyState.set', request.teamSessionId)
         const target = request.target
         const stateId = target['stateId']
         const closed = new Set<string>([DEFAULT_POLICY_STATE_ID, ...blueprint.policyStates.map((state) => state.id)])
@@ -1175,9 +1195,9 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
           )
         }
         const transition = options.mutationService.switchPolicyState({
-          teamSessionId: rootSessionId as TeamSessionId,
+          teamSessionId: root as TeamSessionId,
           target: target as unknown as PolicyStateView,
-          actor: actorOf(caller, rootSessionId, leaderInstanceId),
+          actor: actorOf(caller, root, leaderInstanceId),
         })
         return {
           entryId: transition.entryId,

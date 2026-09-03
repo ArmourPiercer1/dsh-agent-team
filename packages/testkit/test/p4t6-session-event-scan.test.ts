@@ -299,8 +299,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // the new jsdom specs and the CSS modules are outside the scanner's
     // extension set; all three new files carry zero denylist vocabulary
     // (the scan over them passes).
-    expect(scanResult.filesScanned).toBe(600)
-    expect(scanResult.files.length).toBe(600)
+    // P9-S8 bug #5 regression-test pin (+1): the bug #5 fix commit
+    // (48d7330) added packages/client/test/team-members-model.test.ts
+    // (the zero-instance template-rows regression spec; zero denylist
+    // vocabulary — the scan over it passes) without recording the
+    // increment; this commit records the missed pin.
+    expect(scanResult.filesScanned).toBe(601)
+    expect(scanResult.files.length).toBe(601)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
