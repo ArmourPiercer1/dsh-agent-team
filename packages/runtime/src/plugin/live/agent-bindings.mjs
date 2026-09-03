@@ -923,6 +923,10 @@ export function createAgentBindings(deps) {
         const members = domain.repositories.memberInstances.list(rootSid)
         const seen = new Set([rootSid])
         for (const member of members) {
+          // T12-V17 (parent run #7 postmortem item 1): mirror the create path's
+          // leader exclusion (the create loop skips LEADER_INSTANCE_ID because the
+          // leader IS the root session, resumed above) — explicit by instance id.
+          if (String(member?.instanceId) === LEADER_INSTANCE_ID) continue
           // T12-V10: the production create path mints the v2 leader row with
           // NO childSessionId key (the leader IS the root session, resumed
           // above) — String(undefined) produced SessionId("undefined") and
