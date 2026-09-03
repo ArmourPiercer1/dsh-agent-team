@@ -130,6 +130,11 @@ import { canonicalJsonStringify } from '../../../contracts/src/index.js'
 import type { LifecycleService } from '../../lifecycle/index.js'
 import { activePolicyState } from '../../mutation/index.js'
 import type {
+  MessagingCoordinator,
+  SendTeamMessageOutcome,
+  SendTeamMessageRequest,
+} from '../../messaging/index.js'
+import type {
   AdmittedGovernanceOverride,
   AdmitGovernanceOverrideArgs,
   MutationActor,
@@ -328,7 +333,7 @@ export interface S6RemoteLegacyPort {
   inspect(dshHome: string, workspaceCwd?: string, projectDir?: string): Promise<RemoteSafeRecord>
 }
 
-/** The twelve production ports (the async mirror of the frozen `RemoteHandlerDeps`). */
+/** The thirteen production ports (the frozen twelve + the T12-V16 messaging coordinator port). */
 export interface S6RemotePorts {
   readonly catalog: S6RemoteCatalogPort
   readonly intent: S6RemoteIntentPort
@@ -342,6 +347,16 @@ export interface S6RemotePorts {
   readonly compatibility: S6RemoteCompatibilityPort
   readonly handoff: S6RemoteHandoffPort
   readonly legacy: S6RemoteLegacyPort
+  /** T12-V16 — the P6-T3 messaging coordinator behind `member.send`:
+   *  facade admission + LIVE delivery at admission time (the window-latch
+   *  fix; t12v-finding-360s-first-turn.md). The bound-root guard lives in
+   *  the port (fail-closed FOREIGN_TEAM on a foreign teamSessionId). */
+  readonly messaging: S6RemoteMessagingPort
+}
+
+/** The P6-T3 messaging coordinator port (T12-V16). */
+export interface S6RemoteMessagingPort {
+  sendTeamMessage(request: SendTeamMessageRequest): Promise<SendTeamMessageOutcome>
 }
 
 // --- the construction inputs ------------------------------------------------------------
@@ -409,6 +424,15 @@ export interface S6RemoteOptions {
   readonly legacyHome: LegacyHomePort | undefined
   /** The installed A32 principal derivation (the seam's `current()`). */
   readonly principal: ServerPrincipalDerivation
+  /**
+   * The P6-T3 messaging coordinator (the live send path: facade admission
+   * + the durable intent fact, LIVE delivery of the attributed input, the
+   * confirmation fact). The `member.send` remote method routes through it
+   * (T12-V16: the pre-fix admission-only facade call left every relay
+   * intent undelivered until a `recoverPendingDeliveries` scan happened to
+   * run — the T12 window latch of runs #5-#13).
+   */
+  readonly messaging: MessagingCoordinator
   /** The deterministic clock (ISO-8601). */
   readonly now: () => string
 }
@@ -668,7 +692,8 @@ function compatibilityCurrentOf(state: Record<string, unknown>): RemoteSafeRecor
 // --- the port builders ---------------------------------------------------------------------
 
 /**
- * Build the twelve production remote ports over one bound root.
+ * Build the thirteen production remote ports over one bound root (the
+ * frozen twelve + the T12-V16 messaging coordinator port).
  *
  * Every port asserts the bound root first (the foreign-team guard — the
  * A32 seam re-asserts it for the claim-carrying methods; the other methods
@@ -680,7 +705,7 @@ function compatibilityCurrentOf(state: Record<string, unknown>): RemoteSafeRecor
  * the mutation admission is the set authority, the delete is the
  * audit-preserving revoke the frozen contract names).
  * @param options - the root-bound inputs.
- * @returns the twelve ports.
+ * @returns the thirteen ports.
  */
 export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
   const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, now } = options
@@ -1200,6 +1225,24 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         return inspection as unknown as RemoteSafeRecord
       },
     },
+
+    // --- 13/13 messaging: the P6-T3 coordinator (T12-V16) ------------------------
+    // `member.send` is the ONLY team-scoped remote method that needs live
+    // delivery at admission time: the pre-fix facade-only path left every
+    // relay intent undelivered until a `recoverPendingDeliveries` scan
+    // happened to run (the T12 window latch, runs #5-#13). The port asserts
+    // the bound root (fail-closed) and hands the FULL request — caller
+    // included — to the injected coordinator, whose self-send policy,
+    // direct/mediated plan, and at-least-once contract match the team tool
+    // path exactly.
+    messaging: {
+      sendTeamMessage(request: SendTeamMessageRequest): Promise<SendTeamMessageOutcome> {
+        return options.messaging.sendTeamMessage({
+          ...request,
+          rootSessionId: assertBoundRoot('member.send', request.rootSessionId),
+        })
+      },
+    },
   }
 }
 
@@ -1213,7 +1256,7 @@ type S6CategoryHandler = (
 ) => Promise<RemoteHandlerOutcome>
 
 /**
- * Wire the twelve ports into the nine category handlers.
+ * Wire the thirteen ports into the nine category handlers.
  *
  * Every value shape mirrors the frozen handler byte-for-byte (the wire
  * contract). The claim-carrying methods derive the principal through the
@@ -1334,21 +1377,29 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
           }
           case 'member.send': {
             const sendParams = params as RemoteMemberSendParams
-            const request: S6RemoteAdmissionRequest = {
-              rootSessionId: sendParams.teamSessionId,
-              action: 'send-message',
-              callerClaim: sendParams.caller,
-              requestToken: sendParams.requestToken,
-              targetInstanceId: sendParams.recipientInstanceId,
-              body: sendParams.body,
-              ...(sendParams.subject !== undefined ? { subject: sendParams.subject } : {}),
-              ...(sendParams.payload !== undefined ? { payload: sendParams.payload } : {}),
-            }
+            // T12-V16: the FULL coordinator path — facade admission (the
+            // durable `team-coordination-recorded` intent fact) + LIVE
+            // delivery of the attributed input to the bound child session
+            // + the `team-message-delivered` confirmation fact. The
+            // pre-fix admission-only facade call left every relay intent
+            // undelivered until a `recoverPendingDeliveries` scan happened
+            // to run (the T12 window latch: runs #5-#13,
+            // t12v-finding-360s-first-turn.md). Self-send policy, the
+            // direct/mediated plan, and the at-least-once contract all
+            // come from the coordinator, exactly as for the team tool
+            // path. The bound-root guard lives in the messaging port.
             return Promise.resolve(
               principal({ method, request: envelope }),
-            ).then((caller) => ports.admission.performAction(request, caller)).then((outcome) => ({
+            ).then((caller) => ports.messaging.sendTeamMessage({
+              rootSessionId: sendParams.teamSessionId,
+              caller,
+              recipientInstanceId: sendParams.recipientInstanceId,
+              body: sendParams.body,
+              ...(sendParams.subject !== undefined ? { subject: sendParams.subject } : {}),
+              requestToken: sendParams.requestToken,
+            })).then((outcome) => ({
               data: { outcome: outcome as unknown as RemoteSafeRecord },
-              effectSequence: admissionEffectSequence(outcome as unknown as Record<string, unknown>),
+              effectSequence: outcome.factSequence,
             }))
           }
           case 'member.followup': {
@@ -1619,7 +1670,7 @@ function toS6RemoteErrorResult(error: unknown, ctx: RemoteProvenanceContext): Re
  * new wire code. See the `ServerPrincipalContext` authority model in
  * s6-principal for the full seam contract.
  *
- * @param ports - the twelve production ports.
+ * @param ports - the thirteen production ports.
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (defaults to the connection-gate basis).
@@ -1688,7 +1739,7 @@ export function createS6RemoteDispatcher(
 /**
  * Register the production dispatcher on the public seam (the frozen
  * register semantics, mirrored: one channel, the idempotent disposer).
- * @param ports - the twelve production ports.
+ * @param ports - the thirteen production ports.
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (T12-B4; defaults to the connection-gate basis).
