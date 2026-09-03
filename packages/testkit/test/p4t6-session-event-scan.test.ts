@@ -244,8 +244,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // event-string fixture tokens and is quarantined until the P9-T10
     // DROP removes it.
     // P9-T2 build-wiring pin (+1): packages/client/src/css-modules.d.ts.
-    expect(scanResult.filesScanned).toBe(572)
-    expect(scanResult.files.length).toBe(572)
+    // P9-T3 frozen-remote client pin (+5): the S2-A/S2-B sources and their
+    // two specs — three src .ts (transport/host-seams,
+    // transport/team-remote-client, state/team-projection-store) plus
+    // test/team-remote-client.test.ts and test/team-projection-store.test.ts;
+    // all five carry zero denylist vocabulary (the scan over them passes).
+    expect(scanResult.filesScanned).toBe(577)
+    expect(scanResult.files.length).toBe(577)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
