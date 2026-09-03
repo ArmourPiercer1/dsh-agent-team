@@ -182,6 +182,12 @@ const HOME_C = join(REPO_ROOT, 'references', '.dsh-test-t12-c')
 const ROOT_A = `session-t12v-a-root-${NONCE}`
 const ROOT_B = `session-t12v-b-root-${NONCE}`
 const ROOT_C1 = `session-t12v-c1-root-${NONCE}`
+const HOME_PROBE_A = join(REPO_ROOT, 'references', '.dsh-test-t12-probe-a')
+const HOME_PROBE_B = join(REPO_ROOT, 'references', '.dsh-test-t12-probe-b')
+const PORT_PROBE_A = 3186
+const PORT_PROBE_B = 3185
+const ROOT_PROBE_A = `session-t12v-sprobe-a-${NONCE}`
+const ROOT_PROBE_B = `session-t12v-sprobe-b-${NONCE}`
 
 const W_ROOT_A = 'C:/agent-team/work/t12v/a'
 const W_CHILD_A = 'C:/agent-team/work/t12v/child-a'
@@ -1274,11 +1280,26 @@ async function main() {
   }
   log(`ports free: ${JSON.stringify(ports)}`)
 
-  // Fresh homes (fail closed on non-empty).
-  assertFreshHome(HOME_A, 'world A')
-  assertFreshHome(HOME_B, 'world B')
-  assertFreshHome(HOME_C, 'world C')
-  log('fresh homes A/B/C asserted (non-empty would fail CLOSED)')
+  // Fresh homes (fail closed on non-empty) — asserted only for the homes the
+  // requested phases actually boot on. stateprobe (T12-V21) boots on its own
+  // throwaway probe homes and must stay runnable after the final run left the
+  // run homes populated; the per-boot fail-closed inside bootWorld remains
+  // unconditional for every boot.
+  const freshHomeNeeds = [
+    [HOME_A, 'world A', ['smoke', 'fresh1', 'restart1']],
+    [HOME_B, 'world B', ['fresh2', 'handoff']],
+    [HOME_C, 'world C', ['handoff']],
+  ]
+  let freshHomeAsserted = 0
+  for (const [home, homeLabel, phases] of freshHomeNeeds) {
+    if (phases.some((p) => hasPhase(p))) {
+      assertFreshHome(home, homeLabel)
+      freshHomeAsserted += 1
+    } else {
+      log(`${homeLabel} home NOT asserted fresh (no requested phase boots there)`)
+    }
+  }
+  log(`fresh homes asserted: ${freshHomeAsserted}/3 (non-empty would fail CLOSED where asserted)`)
 
   // Wire worktree module links (gitignored node_modules junctions) so the
   // dynamic seam/glue imports resolve in real boots. Two placements: the
@@ -1339,6 +1360,7 @@ async function main() {
     await runPhase('fresh2', runFresh2)
     await runPhase('restart1', runRestart1)
     await runPhase('handoff', runHandoff)
+    await runPhase('stateprobe', runStateProbe)
   } finally {
     await sweepLiveWorlds()
   }
@@ -2271,6 +2293,76 @@ async function runHandoff() {
   if (worldB !== undefined) await stopWorld(worldB)
 }
 
+// ── phase: stateprobe — targeted state-route verification (parent "run11b" = my
+//    run16b; closure evidence for vertical defect #7, second site — T12-V14) ─────
+// Boots two throwaway worlds on dedicated probe homes + ports (run homes A/B/C
+// are never touched, so this runs even after the final run left them populated)
+// and records the RAW state-route request/response for each:
+//   SPROBE-B: world-B variant (mcpServer: null). Expectation after T12-V14:
+//             HTTP 200 (no 500), serverName: null, mcp view fields omitted,
+//             TEAM row state well-formed.
+//   SPROBE-A: world-A style (mcp configured against the in-process mini MCP).
+//             Expectation: HTTP 200, real serverName, mcp view fields intact.
+async function runStateProbe() {
+  const sp = makeScenarioCtx('STATEPROBE targeted state-route verification (mcp-less world-B variant + mcp-configured world-A style; vertical defect #7 closure, run16b)')
+  const recs = []
+  try {
+    for (const [label, world, dshHome, port, root, mcpPort, kind] of [
+      ['SPROBE-B', 'b', HOME_PROBE_B, PORT_PROBE_B, ROOT_PROBE_B, null, 'mcp-less world-B variant (mcpServer: null)'],
+      ['SPROBE-A', 'a', HOME_PROBE_A, PORT_PROBE_A, ROOT_PROBE_A, MINI_PORT, 'mcp-configured world-A style'],
+    ]) {
+      rmSync(dshHome, { recursive: true, force: true })
+      mkdirSync(dshHome, { recursive: true })
+      await waitForPortFree(port, 30_000)
+      const rec = await bootWorld({ label, world, dshHome, port, boot: 1, bootPhase: 'create', rootSessionId: root, mcpPort })
+      recs.push(rec)
+      // Row boot is async w.r.t. the health gate: wait for a well-formed state
+      // body, then take one more RAW read as the recorded request/response.
+      await p6t6StateReady(port, { rootSessionId: root, phase: 'create', timeoutMs: 120_000 })
+      const raw = await p6t6State(port)
+      sp.evidence[label] = {
+        kind,
+        port,
+        request: { method: 'GET', url: `http://127.0.0.1:${port}/__p6t6/state` },
+        response: { status: raw.status, body: raw.body },
+        rowHealth: rec.health,
+        rowMounted: rec.rowMounted,
+      }
+      sp.check(`${label}: state route responds 200 (no 500) — ${kind}`, raw.status === 200, `status=${raw.status}`)
+      sp.check(`${label}: TEAM row state well-formed (rootSessionId/phase/teamSession)`,
+        raw.status === 200
+        && raw.body?.rootSessionId === root
+        && raw.body?.phase === 'create'
+        && raw.body?.teamSession !== null
+        && typeof raw.body?.teamSession === 'object'
+        && raw.body?.teamSession?.rootSessionId === root,
+        `root=${raw.body?.rootSessionId} phase=${raw.body?.phase} teamSession=${JSON.stringify(raw.body?.teamSession).slice(0, 200)}`)
+      sp.check(`${label}: row health ok=true with the frozen tool count (10)`,
+        rec.health?.body?.ok === true && rec.health?.body?.toolCount === EXPECTED_TOOL_COUNT,
+        `health=${JSON.stringify(rec.health).slice(0, 200)}`)
+      if (kind.startsWith('mcp-less')) {
+        sp.check(`${label}: mcp-less variant reports serverName: null (T12-V14 — no 500, mcp view fields omitted)`,
+          raw.body?.serverName === null, `serverName=${JSON.stringify(raw.body?.serverName)}`)
+      } else {
+        sp.check(`${label}: mcp-configured variant reports a real serverName`,
+          typeof raw.body?.serverName === 'string' && raw.body.serverName.length > 0,
+          `serverName=${JSON.stringify(raw.body?.serverName)}`)
+      }
+    }
+  } finally {
+    for (const rec of recs) { try { await stopWorld(rec) } catch { /* keep cleaning up */ } }
+    for (const h of [HOME_PROBE_B, HOME_PROBE_A]) {
+      rmSync(h, { recursive: true, force: true })
+      mkdirSync(h, { recursive: true })
+    }
+    log('stateprobe: probe instances stopped; throwaway probe homes reset to empty')
+  }
+  const done = sp.finish()
+  writeFileSync(join(EVIDENCE_DIR, `t12v-stateprobe-run16b-${NONCE}.json`),
+    JSON.stringify({ nonce: NONCE, phase: 'stateprobe', scenario: done }, null, 2))
+  log(`stateprobe: pass=${done.pass} (${done.assertions.filter((a) => a.ok).length}/${done.assertions.length} ok)`)
+  scenarioResults.__stateprobe = done
+}
 main().catch((error) => {
   console.error(`t12-vertical fatal: ${error?.stack ?? error}`)
   try {
