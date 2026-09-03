@@ -424,6 +424,12 @@ describe('t12b6 handoff agent start', () => {
     expect(teamRecord1!.handoffSourceSessionId).toBe(SRC)
     expect(teamRecord1!.generation).toBe(1)
     expect(ISO_RE.test(String(teamRecord1!.createdAt))).toBe(true)
+    // P9-S8 (F1-lite v2): the workspace inheritance rides the PRE-PUT
+    // record — `bindFreshTeamRoot`'s existing-record branch keeps that
+    // row as-is (it matches blueprint + generation only), so without it
+    // the created team's projection fold cannot resolve the leader's
+    // effective workspace and fails closed.
+    expect(teamRecord1!.defaultWorkspace).toBe('C:/agent-team/work/t12b6')
     // The team-root binding + the honest-v2 Leader (NO childSessionId).
     expect(binding1 !== undefined).toBe(true)
     expect(binding1!.kind).toBe('team-root')

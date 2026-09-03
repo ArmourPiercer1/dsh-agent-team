@@ -1092,6 +1092,17 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         // existing-record branch and never re-puts).
         createdAt: intent.handoff !== undefined ? intent.handoff.capturedAt : now(),
         generation: 1,
+        // P9-S8 (F1-lite v2) — this pre-put IS the durable record identity:
+        // `bindFreshTeamRoot`'s existing-record branch matches blueprint +
+        // generation only and keeps the row as-is, so the workspace
+        // inheritance the create-and-start primitive forwards to the binding
+        // lands on THIS row. Without it the created team's projection fold
+        // cannot resolve the leader's effective workspace (member row carries
+        // no workspace AND the team carries no defaultWorkspace) and fails
+        // closed (service-level ProjectionError → remote untyped-error).
+        ...(config.defaultWorkspace !== undefined
+          ? { defaultWorkspace: config.defaultWorkspace }
+          : {}),
         ...(intent.handoff !== undefined
           ? { handoffSourceSessionId: parseSessionId(intent.handoff.sourceSessionId) }
           : {}),
