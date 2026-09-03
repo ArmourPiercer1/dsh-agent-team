@@ -1,92 +1,112 @@
 /**
- * Pure projection of the leader-keyed team view into the input dock bar:
- * the D23 team-wide counts (running member sessions, unpaired control
- * requests) for the collapsed readout, plus the compact expanded content
- * (member status rows and task rows). React-free; the renderer supplies the
- * snapshot. Every field is read straight from the projection — the log
- * baseline with the live running overlay already applied — and never
- * re-derived here (D20).
+ * Pure projection of the vNext team snapshot into the input dock bar: the
+ * D23 team-wide counts (running member instances, the frozen pending
+ * control count) for the collapsed readout, plus the compact expanded
+ * content (current-roster member status rows and current-work activity
+ * rows). React-free; the renderer supplies the snapshot. Every field is
+ * read straight from the projection — the raw frozen lifecycle plus the
+ * §7.2 display status — and never re-derived here (D20).
+ *
+ * P9-T5 (S3-C) mechanical adaptation of the legacy dock model (plan §8.6):
+ * the running count moves from the session-log overlay to the projection
+ * lifecycle (never from the session log); the pending count moves from the
+ * per-row sum to the frozen team-wide `ledgerSummary.pendingControlCount`
+ * read directly; the compact task rows become the snapshot's current-work
+ * activity rows. History-only (disposed) rows are excluded from the live
+ * readout.
  */
-import type { TeamView } from './team-view-compat.js'
+import type {
+  TeamUiMemberInstance, TeamUiSnapshot,
+} from './team-ui-snapshot.js'
+import type { ProgressValue } from '../../../contracts/src/index.js'
 
 /** The D23 dock readout counts over the whole team. */
 export interface TeamDockCounts {
-  /** N: the running member rows' bound sessions (the leader row included). */
+  /** N: the member instances in the running lifecycle (multi-instance counts per instance; history-only rows excluded). */
   readonly runningSessions: number
-  /** M: every member row's pendingControlCount summed (the leader row included). */
+  /** M: the frozen team-wide pending control count (read directly from the ledger summary, never summed). */
   readonly pendingControls: number
 }
 
-/** One expanded member status row (unbound rows carry no status and are skipped). */
+/** One expanded member status row (current-roster instances; history-only rows skipped). */
 export interface TeamDockMemberRow {
-  /** Stable React key across mirror frames (rows can share a memberId). */
+  /** Stable React key across projection frames (the instance id is unique within one team). */
   readonly key: string
-  /** The projection row's member id (the D19 authority). */
-  readonly memberId: string
-  /** The roster name (the row's own field, never re-resolved). */
+  /** The instance id (the D19 authority). */
+  readonly instanceId: string
+  /** The instance label (the row's own field, never re-resolved). */
   readonly name: string
-  /** The projection status of the row (log baseline with the live overlay applied). */
-  readonly status: 'bound' | 'running' | 'settled'
+  /** The §7.2 display status of the row. */
+  readonly status: TeamUiMemberInstance['displayStatus']
 }
 
-/** One expanded task row (the projection's task list, compact). */
-export interface TeamDockTaskRow {
-  /** Stable task identity from the projection. */
-  readonly taskId: string
-  /** The task subject from the projection. */
-  readonly subject: string
-  /** The task status from the projection. */
-  readonly status: 'pending' | 'in_progress' | 'completed' | 'blocked'
+/** One expanded activity row (the snapshot's current-work row, compact). */
+export interface TeamDockActivityRow {
+  /** Stable React key across projection frames (one current-work row per instance). */
+  readonly key: string
+  /** The instance the row belongs to. */
+  readonly instanceId: string
+  /** The instance label. */
+  readonly label: string
+  /** The admitted-work progress status; absent = no dot and no status text. */
+  readonly status?: ProgressValue
+  /** The row text (the subject, else the summary, else the live current action). */
+  readonly subject?: string
 }
 
-/** The dock's expanded content: the member status rows plus the task rows. */
+/** The dock's expanded content: the member status rows plus the activity rows. */
 export interface TeamDockContent {
-  /** The bound member rows in `members` order (the leader row included). */
+  /** The current-roster member instances in snapshot order (the leader instance included). */
   readonly members: readonly TeamDockMemberRow[]
-  /** The task rows in first-seen order. */
-  readonly tasks: readonly TeamDockTaskRow[]
+  /** The current-work activity rows in snapshot order. */
+  readonly activities: readonly TeamDockActivityRow[]
 }
 
 /**
- * Count the D23 readout over the whole team: N is the running member rows'
- * bound sessions (a running row contributes its `sessionIds` length — one
- * under this phase's single-instance limit), M is the pending control-request
- * sum over every row, leader and unbound alike.
- * @param view - the leader-keyed team view snapshot.
+ * Count the D23 readout over the whole team: N is the member instances in
+ * the running lifecycle (the raw frozen lifecycle — never the session-log
+ * overlay — and archived/disposed instances are never counted), M is the
+ * frozen team-wide pending control count read directly from the ledger
+ * summary.
+ * @param snapshot - the normalized team snapshot.
  * @returns the team-wide counts.
  */
-export function deriveTeamDockCounts(view: TeamView): TeamDockCounts {
+export function deriveTeamDockCounts(snapshot: TeamUiSnapshot): TeamDockCounts {
   let runningSessions = 0
-  let pendingControls = 0
-  for (const row of view.members) {
-    if (row.status === 'running') runningSessions += row.sessionIds.length
-    pendingControls += row.pendingControlCount
+  for (const member of snapshot.members) {
+    if (member.fromHistory) continue
+    if (member.lifecycle === 'RUNNING') runningSessions += 1
   }
-  return { runningSessions, pendingControls }
+  return { runningSessions, pendingControls: snapshot.ledgerSummary.pendingControlCount }
 }
 
 /**
- * Project the expanded content: every bound member row (unbound rows carry
- * no status and are skipped, the leader row included) plus every task row,
- * each field read straight from the projection.
- * @param view - the leader-keyed team view snapshot.
- * @returns the compact member status rows and task rows.
+ * Project the expanded content: every current-roster member instance
+ * (history-only rows skipped, the leader instance included) plus every
+ * current-work activity row, each field read straight from the snapshot.
+ * @param snapshot - the normalized team snapshot.
+ * @returns the compact member status rows and activity rows.
  */
-export function deriveTeamDockContent(view: TeamView): TeamDockContent {
+export function deriveTeamDockContent(snapshot: TeamUiSnapshot): TeamDockContent {
   const members: TeamDockMemberRow[] = []
-  for (const row of view.members) {
-    if (row.status === 'unbound') continue
+  for (const member of snapshot.members) {
+    if (member.fromHistory) continue
     members.push({
-      key: `${row.memberId}:${row.sessionIds[0] ?? ''}:${members.length}`,
-      memberId: row.memberId,
-      name: row.name,
-      status: row.status,
+      key: member.instanceId,
+      instanceId: member.instanceId,
+      name: member.label,
+      status: member.displayStatus,
     })
   }
-  const tasks: TeamDockTaskRow[] = view.tasks.map(task => ({
-    taskId: task.taskId,
-    subject: task.subject,
-    status: task.status,
+  const activities: TeamDockActivityRow[] = snapshot.activity.map(row => ({
+    key: row.instanceId,
+    instanceId: row.instanceId,
+    label: row.label,
+    ...(row.status !== undefined ? { status: row.status } : {}),
+    ...(row.subject !== undefined ? { subject: row.subject }
+      : row.summary !== undefined ? { subject: row.summary }
+      : row.currentAction !== undefined ? { subject: row.currentAction }
+      : {}),
   }))
-  return { members, tasks }
+  return { members, activities }
 }

@@ -1,0 +1,4 @@
+tsc -p packages/client/tsconfig.build.json (build face, emit-only)
+
+
+EXIT=0 (no error output); dist emitted to gitignored packages/client/dist, removed after verification

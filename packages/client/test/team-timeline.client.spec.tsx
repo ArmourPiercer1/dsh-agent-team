@@ -1,58 +1,111 @@
 // @vitest-environment jsdom
 /**
- * Team timeline section: the one-line cold state without delegations, the
- * teammate-only lane matrix with stable colors, multi-span and running-span
- * geometry against the local clock, wheel zoom / drag pan / keyboard
- * gestures, the bar tooltip, the D9 click-to-switch, and the D7 lane
- * highlight.
+ * Team timeline section (P9-T5, plan §8.2): the one-line cold state without
+ * intervals, the member-instance-only lane matrix with stable colors,
+ * multi-span and running-span geometry against the local clock, wheel zoom
+ * / drag pan / keyboard gestures, the bar tooltip, the D9 click-to-switch
+ * (child sessions), and the D7 lane highlight. The interaction and geometry
+ * behavior is kept verbatim; only the input changed (the ledger intervals
+ * replace the leader-keyed delegations).
  */
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import type { TeamView } from '../src/model/team-view-compat.js'
+import type {
+  TeamUiActivityIntervalRow, TeamUiLedgerModel, TeamUiMemberInstance, TeamUiSnapshot,
+} from '../src/model/team-ui-snapshot.js'
 import { TeamTimeline, type TeamTimelineProps } from '../src/ui/TeamTimeline.js'
 import { zh } from '../src/ui/locales.js'
 
 const T = 1_700_000_000_000
 
-const baseView: TeamView = {
-  teamId: 'leader-s',
-  leaderSessionId: 'leader-s',
-  rosterMemberCount: 3,
-  members: [
-    {
-      memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: ['leader-s'],
-      status: 'bound', pendingControlCount: 0,
-    },
-    {
-      memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: ['sa'],
-      status: 'bound', pendingControlCount: 0,
-    },
-    {
-      memberId: 'b', name: 'Beta', role: 'teammate', sessionIds: ['sb'],
-      status: 'bound', pendingControlCount: 0,
-    },
-  ],
-  delegations: [
-    { memberId: 'a', childSessionId: 'sa', startedAt: T, endedAt: T + 90_000, inProgress: false },
-    {
-      memberId: 'a', childSessionId: 'sa', startedAt: T + 200_000,
-      endedAt: T + 290_000, inProgress: false,
-    },
-    { memberId: 'b', childSessionId: 'sb', startedAt: T + 100_000, inProgress: true },
-  ],
-  tasks: [],
-  approvals: [],
-  messages: [],
-  messageCount: 0,
+const iso = (ms: number): string => new Date(ms).toISOString()
+
+const ZERO_CATEGORIES = {
+  team: 0, member: 0, lifecycle: 0, message: 0, control: 0, policy: 0, compatibility: 0, progress: 0,
+} as const
+
+function instance(
+  overrides: Partial<TeamUiMemberInstance> & Pick<TeamUiMemberInstance, 'instanceId' | 'templateId' | 'label'>,
+): TeamUiMemberInstance {
+  return {
+    childSessionId: null,
+    lifecycle: 'CREATED',
+    displayStatus: 'created',
+    liveActivity: null,
+    pendingControlCount: null,
+    fromHistory: false,
+    createdAt: iso(T),
+    ...overrides,
+  } as unknown as TeamUiMemberInstance
 }
 
+function snapshot(overrides: Partial<TeamUiSnapshot> = {}): TeamUiSnapshot {
+  return {
+    teamSessionId: 'leader-s',
+    generation: 1,
+    blueprint: { blueprintId: 'bp-1', revision: '1', contentHash: 'h-1' },
+    perspective: { kind: 'team-root' },
+    templates: [
+      { kind: 'leader', templateId: 'tpl-lead', displayName: 'Lead', contextPolicy: 'persistent' },
+      { kind: 'member', templateId: 'tpl-a', displayName: 'Alpha', contextPolicy: 'persistent' },
+      { kind: 'member', templateId: 'tpl-b', displayName: 'Beta', contextPolicy: 'persistent' },
+    ],
+    members: [
+      instance({ instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: 'leader-s' }),
+      instance({ instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: 'sa' }),
+      instance({ instanceId: 'b', templateId: 'tpl-b', label: 'Beta', childSessionId: 'sb' }),
+    ],
+    compatibility: {
+      status: 'OPEN', probeGeneration: 1, requirementFingerprint: 'rf-1', environmentFingerprint: 'ef-1',
+      warningCount: 0, fatalCount: 0, acknowledgedWarningCount: 0,
+    },
+    policyState: 'open',
+    ledgerSummary: { latestSequence: 0, totalEntries: 0, byCategory: { ...ZERO_CATEGORIES }, pendingControlCount: 0 },
+    activity: [],
+    disposedHistory: [],
+    ...overrides,
+  } as unknown as TeamUiSnapshot
+}
+
+function interval(
+  overrides: Partial<TeamUiActivityIntervalRow> & Pick<TeamUiActivityIntervalRow, 'instanceId' | 'openedAt'>,
+): TeamUiActivityIntervalRow {
+  return {
+    correlation: 'corr-1',
+    openedSequence: 1,
+    isOpen: false,
+    ...overrides,
+  } as unknown as TeamUiActivityIntervalRow
+}
+
+function ledger(overrides: Partial<TeamUiLedgerModel> = {}): TeamUiLedgerModel {
+  return {
+    completeness: 'partial',
+    entries: [],
+    controls: [],
+    messages: [],
+    intervals: [
+      interval({ instanceId: 'a', openedAt: iso(T), closedAt: iso(T + 90_000) }),
+      interval({ instanceId: 'a', openedAt: iso(T + 200_000), closedAt: iso(T + 290_000) }),
+      interval({ instanceId: 'b', openedAt: iso(T + 100_000), isOpen: true }),
+    ],
+    progress: [],
+    pendingControlByInstance: {},
+    ...overrides,
+  } as unknown as TeamUiLedgerModel
+}
+
+const baseSnapshot = snapshot()
+const baseLedger = ledger()
+
 function makeProps(
-  view: TeamView = baseView,
+  team: TeamUiSnapshot = baseSnapshot,
+  ledgerModel: TeamUiLedgerModel = baseLedger,
   onSelectSession: (sessionId: string) => void = vi.fn(),
-  currentMemberId?: string,
+  currentInstanceId?: string,
 ): TeamTimelineProps {
-  return { view, currentMemberId, onSelectSession, t: makeTranslate(zh) }
+  return { snapshot: team, ledger: ledgerModel, currentInstanceId, onSelectSession, t: makeTranslate(zh) }
 }
 
 function trackOf(container: HTMLElement): HTMLElement {
@@ -92,13 +145,13 @@ afterEach(() => {
 
 describe('TeamTimeline', () => {
   it('shows the one-line cold state without a lane matrix', () => {
-    const { container } = render(<TeamTimeline {...makeProps({ ...baseView, delegations: [] })} />)
+    const { container } = render(<TeamTimeline {...makeProps(baseSnapshot, ledger({ intervals: [] }))} />)
     expect(screen.getByText('暂无委派记录')).toBeTruthy()
     expect(container.querySelector('[data-team-lane]')).toBeNull()
     expect(container.querySelector('[data-team-timeline-track]')).toBeNull()
   })
 
-  it('draws one labeled lane per teammate in members order, never the leader', () => {
+  it('draws one labeled lane per member instance in members order, never the leader', () => {
     const { container } = render(<TeamTimeline {...makeProps()} />)
     const labels = container.querySelectorAll<HTMLElement>('[data-team-lane-label]')
     expect(labels).toHaveLength(2)
@@ -111,7 +164,7 @@ describe('TeamTimeline', () => {
     expect(container.querySelectorAll('[data-team-timeline-bar]')).toHaveLength(3)
   })
 
-  it('lays a member\u2019s multiple spans along the axis without overlap', () => {
+  it('lays a member’s multiple spans along the axis without overlap', () => {
     const { container } = render(<TeamTimeline {...makeProps()} />)
     const bars = container.querySelectorAll<HTMLElement>('[data-team-timeline-bar]')
     const [first, second] = bars
@@ -140,11 +193,8 @@ describe('TeamTimeline', () => {
     act(() => { vi.advanceTimersByTime(30_000) })
     expect(runningBar()?.style.getPropertyValue('--team-bar-width')).toBe(fraction(230_000, 330_000))
 
-    const settled = {
-      ...baseView,
-      delegations: baseView.delegations.filter(delegation => !delegation.inProgress),
-    }
-    const staticView = render(<TeamTimeline {...makeProps(settled)} />)
+    const settled = ledger({ intervals: baseLedger.intervals.filter(row => !row.isOpen) })
+    const staticView = render(<TeamTimeline {...makeProps(baseSnapshot, settled)} />)
     const settledBar = () => staticView.container.querySelectorAll<HTMLElement>('[data-team-timeline-bar]')[1]
     expect(settledBar()?.style.getPropertyValue('--team-bar-width')).toBe(fraction(90_000, 290_000))
     act(() => { vi.advanceTimersByTime(60_000) })
@@ -184,7 +234,7 @@ describe('TeamTimeline', () => {
 
   it('pans a zoomed viewport with a left-button drag without selecting', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps(baseView, onSelectSession)} />)
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, onSelectSession)} />)
     mockTrackRect(view.container)
     const track = trackOf(view.container)
     const domain = domainOf(view.container)
@@ -208,7 +258,7 @@ describe('TeamTimeline', () => {
 
   it('pans with the right button and suppresses the context menu', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps(baseView, onSelectSession)} />)
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, onSelectSession)} />)
     mockTrackRect(view.container)
     const track = trackOf(view.container)
     const domain = domainOf(view.container)
@@ -228,7 +278,7 @@ describe('TeamTimeline', () => {
 
   it('ignores moves from another pointer and a sub-threshold jiggle', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps(baseView, onSelectSession)} />)
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, onSelectSession)} />)
     mockTrackRect(view.container)
     const track = trackOf(view.container)
     fireEvent.pointerDown(track, { button: 0, clientX: 300, pointerId: 1 })
@@ -254,7 +304,7 @@ describe('TeamTimeline', () => {
 
   it('ignores middle-button presses', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps(baseView, onSelectSession)} />)
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, onSelectSession)} />)
     mockTrackRect(view.container)
     const track = trackOf(view.container)
     fireEvent.pointerDown(track, { button: 1, clientX: 300, pointerId: 1 })
@@ -263,9 +313,9 @@ describe('TeamTimeline', () => {
     expect(onSelectSession).not.toHaveBeenCalled()
   })
 
-  it('switches to the member session on a bar click', () => {
+  it('switches to the child session on a bar click', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps(baseView, onSelectSession)} />)
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, onSelectSession)} />)
     const bars = view.container.querySelectorAll<HTMLElement>('[data-team-timeline-bar]')
     const barA = bars[0]
     if (barA === undefined) throw new Error('the first bar did not render')
@@ -277,7 +327,7 @@ describe('TeamTimeline', () => {
 
   it('treats a bar press that moves as a pan, not a click', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps(baseView, onSelectSession)} />)
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, onSelectSession)} />)
     mockTrackRect(view.container)
     const track = trackOf(view.container)
     const bars = view.container.querySelectorAll<HTMLElement>('[data-team-timeline-bar]')
@@ -357,8 +407,8 @@ describe('TeamTimeline', () => {
     expect(settledTooltip.textContent).not.toContain('（进行中）')
   })
 
-  it('highlights the current session\u2019s member lane', () => {
-    const view = render(<TeamTimeline {...makeProps(baseView, vi.fn(), 'a')} />)
+  it('highlights the current session’s member lane', () => {
+    const view = render(<TeamTimeline {...makeProps(baseSnapshot, baseLedger, vi.fn(), 'a')} />)
     const labels = view.container.querySelectorAll<HTMLElement>('[data-team-lane-label]')
     const lanes = view.container.querySelectorAll<HTMLElement>('[data-team-lane]')
     expect(labels[0]?.dataset.current).toBe('true')
@@ -367,33 +417,31 @@ describe('TeamTimeline', () => {
     expect(lanes[1]?.dataset.current).toBeUndefined()
   })
 
-  it('keeps an unbound member on the matrix with a non-interactive bar', () => {
+  it('keeps a sessionless instance on the matrix with a non-interactive bar', () => {
     const onSelectSession = vi.fn()
-    const view = render(<TeamTimeline {...makeProps({
-      ...baseView,
-      members: [
-        ...baseView.members,
-        {
-          memberId: 'c', name: 'Gamma', role: 'teammate', sessionIds: [],
-          status: 'unbound', pendingControlCount: 0,
-        },
-      ],
-      delegations: [
-        ...baseView.delegations,
-        {
-          memberId: 'c', childSessionId: '', startedAt: T + 100_000,
-          endedAt: T + 120_000, inProgress: false,
-        },
-      ],
-    }, onSelectSession)} />)
-    // The unbound member still gets a lane and its bar renders.
+    const view = render(<TeamTimeline {...makeProps(
+      snapshot({
+        members: [
+          ...baseSnapshot.members,
+          instance({ instanceId: 'c', templateId: 'tpl-c', label: 'Gamma' }),
+        ],
+      }),
+      ledger({
+        intervals: [
+          ...baseLedger.intervals,
+          interval({ instanceId: 'c', openedAt: iso(T + 100_000), closedAt: iso(T + 120_000) }),
+        ],
+      }),
+      onSelectSession,
+    )} />)
+    // The sessionless instance still gets a lane and its bar renders.
     const lanes = view.container.querySelectorAll('[data-team-lane]')
     expect(lanes).toHaveLength(3)
     expect(view.container.textContent).toContain('Gamma')
-    // Without a bound session the bar carries no session attribute, so a
+    // Without a child session the bar carries no session attribute, so a
     // click switches nowhere.
     const inertBar = lanes[lanes.length - 1]?.querySelector('span')
-    if (inertBar === null || inertBar === undefined) throw new Error('the unbound bar did not render')
+    if (inertBar === null || inertBar === undefined) throw new Error('the sessionless bar did not render')
     expect(inertBar.hasAttribute('data-team-timeline-bar')).toBe(false)
     fireEvent.pointerDown(inertBar, { button: 0, clientX: 10, pointerId: 1 })
     fireEvent.pointerUp(inertBar, { clientX: 10, pointerId: 1 })

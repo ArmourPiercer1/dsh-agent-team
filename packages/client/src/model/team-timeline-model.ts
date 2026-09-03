@@ -1,43 +1,52 @@
 /**
- * Pure projection of the leader-keyed team view into the "团队" tab's
- * timeline section: one lane per teammate in `members` order (the lane's
- * color slot walks the fixed CSS ramp by index), one bar per delegation
- * span, and the linear honest time domain — the earliest team timestamp
- * (a delegation start, or a task event when a task was recorded before its
- * delegation) to the last settlement, extended to the caller's clock while
- * any span runs. Idle gaps stay gaps: nothing here compresses, clamps, or
- * reads a wall clock. React-free; the renderer supplies the snapshot and
- * the clock.
+ * Pure projection of the vNext team snapshot plus the durable ledger model
+ * onto the "团队" tab's timeline section: one lane per non-leader member
+ * instance in `members` order (the lane's color slot walks the fixed CSS
+ * ramp by index; fallback lanes cover activity intervals from instances
+ * without a roster row), one bar per activity interval, and the linear
+ * honest time domain — the earliest known activity time (an interval open,
+ * or a durable progress fact over a known-complete ledger) to the last
+ * closure, extended to the caller's clock while any interval runs. Idle
+ * gaps stay gaps: nothing here compresses, clamps, or reads a wall clock.
+ * React-free; the renderer supplies the snapshot, the ledger model, and the
+ * clock.
+ *
+ * P9-T5 (S3-C) mechanical adaptation of the legacy delegation-timeline
+ * model (plan §8.2): the interaction and geometry algorithm is preserved
+ * byte-for-byte; only the inputs change — the legacy `delegations` rows
+ * become the ledger's activity-interval rows, and the roster `members` rows
+ * become the snapshot's member instances.
  */
-import type { TeamView } from './team-view-compat.js'
+import type { TeamUiLedgerModel, TeamUiSnapshot } from './team-ui-snapshot.js'
 
-/** One delegation bar inside a lane (the effective end folds in "now"). */
+/** One activity-interval bar inside a lane (the effective end folds in "now"). */
 export interface TeamTimelineSpan {
-  /** Stable React key across mirror frames. */
+  /** Stable React key across projection frames. */
   readonly key: string
-  /** The delegate call's event time (epoch ms). */
+  /** The interval's open time (epoch ms). */
   readonly startedAt: number
-  /** The settlement time; the caller's clock while the span runs. */
+  /** The closure time; the caller's clock while the interval is open. */
   readonly endedAt: number
-  /** True while no settlement has closed the span (drives the running motion). */
+  /** True while no closure has ended the interval (drives the running motion). */
   readonly inProgress: boolean
 }
 
-/** One teammate lane: the side label plus its bars in start-time order. */
+/** One member-instance lane: the side label plus its bars in start-time order. */
 export interface TeamTimelineLane {
-  readonly memberId: string
-  /** Roster name; a not-rostered fallback lane shows the raw member id. */
+  /** The lane's instance id (lane identity; the frozen id, never the label). */
+  readonly instanceId: string
+  /** Roster label; a not-rostered fallback lane shows the raw instance id. */
   readonly name: string
   /** Row index, top to bottom. */
   readonly lane: number
   /** Palette slot: the lane's position modulo the ramp length below. */
   readonly colorSlot: number
-  /** The member's bound session for the click-to-switch; '' when unbound. */
-  readonly sessionId: string
+  /** The lane's durable child session for the click-to-switch; `''` when absent. */
+  readonly childSessionId: string
   readonly spans: readonly TeamTimelineSpan[]
 }
 
-/** The rendered projection; `null` means "no delegations" (one-line empty state). */
+/** The rendered projection; `null` means "no activity intervals" (one-line empty state). */
 export interface TeamTimelineModel {
   readonly start: number
   readonly end: number
@@ -51,75 +60,95 @@ export const TEAM_LANE_COLOR_SLOTS = 8
 interface LaneBuild {
   id: string
   name: string
-  sessionId: string
+  childSessionId: string
   spans: TeamTimelineSpan[]
 }
 
 /**
- * Project the view's delegations onto teammate lanes over the linear time
- * domain.
- * @param view - the leader-keyed team view snapshot.
- * @param now - the caller's clock (epoch ms); read by running spans only.
- * @returns the lane model, or `null` when the view carries no delegations
- *   (the renderer then shows the one-line empty state instead of a lane
- *   matrix).
+ * Project the ledger's activity intervals onto member-instance lanes over
+ * the linear time domain.
+ * @param snapshot - the normalized team snapshot (the roster lanes).
+ * @param ledger - the durable ledger model (the interval rows; durable
+ *   progress facts extend the domain only when the ledger is known complete).
+ * @param now - the caller's clock (epoch ms); read by open intervals only.
+ * @returns the lane model, or `null` when the ledger carries no activity
+ *   intervals (the renderer then shows the one-line empty state instead of
+ *   a lane matrix).
  */
-export function deriveTeamTimeline(view: TeamView, now: number): TeamTimelineModel | null {
-  const delegations = view.delegations
-  if (delegations.length === 0) return null
+export function deriveTeamTimeline(
+  snapshot: TeamUiSnapshot,
+  ledger: TeamUiLedgerModel,
+  now: number,
+): TeamTimelineModel | null {
+  const intervals = ledger.intervals
+  if (intervals.length === 0) return null
 
   let start = Infinity
   let end = -Infinity
-  for (const delegation of delegations) {
-    if (delegation.startedAt < start) start = delegation.startedAt
-    const settled = delegation.endedAt ?? delegation.startedAt
-    const closing = delegation.inProgress ? Math.max(settled, now) : settled
+  for (const interval of intervals) {
+    const openedAt = Date.parse(interval.openedAt)
+    if (openedAt < start) start = openedAt
+    const settled = interval.isOpen ? openedAt : Date.parse(interval.closedAt ?? interval.openedAt)
+    const closing = interval.isOpen ? Math.max(settled, now) : settled
     if (closing > end) end = closing
   }
-  for (const task of view.tasks) {
-    if (task.at < start) start = task.at
-    if (task.at > end) end = task.at
+  // Plan §7.4: durable progress facts extend the domain only over a
+  // known-complete ledger — the mechanical successor of the legacy task-at
+  // extension; a partial ledger never claims a wider board.
+  if (ledger.completeness === 'complete') {
+    for (const progress of ledger.progress) {
+      const at = Date.parse(progress.at)
+      if (at < start) start = at
+      if (at > end) end = at
+    }
   }
   if (end <= start) end = start + 1
 
   const builds: LaneBuild[] = []
   const buildById = new Map<string, LaneBuild>()
-  for (const member of view.members) {
-    if (member.role !== 'teammate') continue
+  const kindByTemplate = new Map(
+    snapshot.templates.map(template => [template.templateId, template.kind] as const),
+  )
+  for (const member of snapshot.members) {
+    // Leader-kind instances carry no lane (the fixed leading leader entry
+    // lives in the members section); unknown templates read as teammates.
+    if (kindByTemplate.get(member.templateId) === 'leader') continue
     const build: LaneBuild = {
-      id: member.memberId,
-      name: member.name,
-      sessionId: member.sessionIds[0] ?? '',
+      id: member.instanceId,
+      name: member.label,
+      childSessionId: member.childSessionId ?? '',
       spans: [],
     }
     builds.push(build)
-    buildById.set(member.memberId, build)
+    buildById.set(member.instanceId, build)
   }
-  delegations.forEach((delegation, index) => {
-    let build = buildById.get(delegation.memberId)
-    // A delegation id that never reached a member row still renders: a
-    // fallback lane named by the raw id, appended after the roster lanes in
-    // first-seen order, instead of silently dropping the bar.
+  intervals.forEach((interval, index) => {
+    let build = buildById.get(interval.instanceId)
+    // An activity interval whose instance never reached a roster row still
+    // renders: a fallback lane named by the raw id, appended after the
+    // roster lanes in first-seen order, instead of silently dropping the
+    // bar.
     if (build === undefined) {
-      build = { id: delegation.memberId, name: delegation.memberId, sessionId: '', spans: [] }
+      build = { id: interval.instanceId, name: interval.instanceId, childSessionId: '', spans: [] }
       builds.push(build)
-      buildById.set(delegation.memberId, build)
+      buildById.set(interval.instanceId, build)
     }
-    const settled = delegation.endedAt ?? delegation.startedAt
+    const openedAt = Date.parse(interval.openedAt)
+    const settled = interval.isOpen ? openedAt : Date.parse(interval.closedAt ?? interval.openedAt)
     build.spans.push({
-      key: `${delegation.memberId}:${delegation.startedAt}:${index}`,
-      startedAt: delegation.startedAt,
-      endedAt: delegation.inProgress ? Math.max(settled, now) : settled,
-      inProgress: delegation.inProgress,
+      key: `${interval.instanceId}:${openedAt}:${index}`,
+      startedAt: openedAt,
+      endedAt: interval.isOpen ? Math.max(settled, now) : settled,
+      inProgress: interval.isOpen,
     })
   })
 
   const lanes: TeamTimelineLane[] = builds.map((build, lane) => ({
-    memberId: build.id,
+    instanceId: build.id,
     name: build.name,
     lane,
     colorSlot: lane % TEAM_LANE_COLOR_SLOTS,
-    sessionId: build.sessionId,
+    childSessionId: build.childSessionId,
     spans: build.spans.sort((left, right) => left.startedAt - right.startedAt),
   }))
   return { start, end, lanes }

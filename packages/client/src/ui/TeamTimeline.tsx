@@ -1,11 +1,11 @@
 /**
  * The "团队" tab's timeline section (the first of the four sections): one
- * lane per teammate (side labels carry the name and the stable lane color;
- * the leader gets no lane), one bar per delegation span over the linear
- * honest time domain, wheel zoom at the pointer, drag pan, keyboard
- * pan/zoom/reset, hover tooltips (name, range, duration), and
- * bar-click-to-switch into the member's session. The running span's "now"
- * is a component-local clock — no external subscription here.
+ * lane per member instance (side labels carry the name and the stable lane
+ * color; leader-kind instances get no lane), one bar per activity interval
+ * span over the linear honest time domain, wheel zoom at the pointer, drag
+ * pan, keyboard pan/zoom/reset, hover tooltips (name, range, duration), and
+ * bar-click-to-switch into the member's child session. The running span's
+ * "now" is a component-local clock — no external subscription here.
  */
 import {
   useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent,
@@ -13,7 +13,7 @@ import {
 } from 'react'
 import { Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
-import type { TeamView } from '../model/team-view-compat.js'
+import type { TeamUiLedgerModel, TeamUiSnapshot } from '../model/team-ui-snapshot.js'
 import {
   deriveTeamTimeline, formatTeamClock, formatTeamDuration, teamTimelineTicks,
   type TeamTimelineSpan,
@@ -42,13 +42,15 @@ interface PanGesture {
   moved: boolean
 }
 
-/** The timeline section props: the team view, the D9 navigation callback, and the team dictionary. */
+/** The timeline section props: the team snapshot + ledger, the D9 navigation callback, and the team dictionary. */
 export interface TeamTimelineProps {
-  /** The leader-keyed team view snapshot (the mirror's own reference). */
-  view: TeamView
-  /** The member row the current session binds to; that lane is highlighted. */
-  currentMemberId?: string | undefined
-  /** Switch the current session to the clicked bar's member session. */
+  /** The vNext team UI snapshot (the projection's own reference). */
+  snapshot: TeamUiSnapshot
+  /** The vNext ledger model: intervals feed the bars, progress rows may extend the domain. */
+  ledger: TeamUiLedgerModel
+  /** The member instance the current session binds to; that lane is highlighted. */
+  currentInstanceId?: string | undefined
+  /** Switch the current session to the clicked bar's member child session. */
   onSelectSession: (sessionId: string) => void
   /** The team dictionary translate seat. */
   t: PropsLocale<'team'>['t']
@@ -71,14 +73,14 @@ function barTooltipLabel(name: string, span: TeamTimelineSpan, t: PropsLocale<'t
 
 /**
  * The team timeline section (D8a–D8d, D9).
- * @param props - the team view, the current member highlight, the session-switch callback, and the dictionary.
+ * @param props - the team snapshot + ledger, the current instance highlight, the session-switch callback, and the dictionary.
  * @returns the timeline section.
  */
 export function TeamTimeline({
-  view, currentMemberId, onSelectSession, t,
+  snapshot, ledger, currentInstanceId, onSelectSession, t,
 }: TeamTimelineProps): React.JSX.Element {
   const [now, setNow] = useState(() => Date.now())
-  const model = useMemo(() => deriveTeamTimeline(view, now), [view, now])
+  const model = useMemo(() => deriveTeamTimeline(snapshot, ledger, now), [snapshot, ledger, now])
   const hasRunning = model !== null
     && model.lanes.some(lane => lane.spans.some(span => span.inProgress))
   useEffect(() => {
@@ -286,12 +288,12 @@ export function TeamTimeline({
         <div className={styles.gutter}>
           {model.lanes.map(lane => (
             <div
-              key={lane.memberId}
+              key={lane.instanceId}
               className={styles.gutterRow}
               data-team-lane-label
               data-lane={lane.lane}
               data-lane-color={lane.colorSlot}
-              data-current={lane.memberId === currentMemberId || undefined}
+              data-current={lane.instanceId === currentInstanceId || undefined}
             >
               <span className={styles.swatch} aria-hidden="true" />
               <span className={styles.laneName}>{lane.name}</span>
@@ -323,11 +325,11 @@ export function TeamTimeline({
           >
             {model.lanes.map(lane => (
               <div
-                key={lane.memberId}
+                key={lane.instanceId}
                 className={styles.lane}
                 data-team-lane
                 data-lane-color={lane.colorSlot}
-                data-current={lane.memberId === currentMemberId || undefined}
+                data-current={lane.instanceId === currentInstanceId || undefined}
               >
                 {lane.spans.map(span => (
                   <Tooltip
@@ -338,7 +340,7 @@ export function TeamTimeline({
                   >
                     <span
                       className={styles.bar}
-                      data-team-timeline-bar={lane.sessionId === '' ? undefined : lane.sessionId}
+                      data-team-timeline-bar={lane.childSessionId === '' ? undefined : lane.childSessionId}
                       data-running={span.inProgress || undefined}
                       aria-hidden="true"
                       style={{

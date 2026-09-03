@@ -42,6 +42,7 @@ import type {
 } from '../../../remote/src/index.js'
 import { adaptTeamProjection } from './projection-adapter.js'
 import type { TeamPerspective } from '../state/team-session-resolution.js'
+import type { TeamLedgerState } from '../state/team-ledger-store.js'
 import type {
   TeamUiActivityIntervalRow,
   TeamUiControlChain,
@@ -449,4 +450,31 @@ export function adaptTeamUi(
     pendingControlCount: ledger.pendingControlByInstance[member.instanceId] ?? 0,
   }))
   return { snapshot: { ...base, members }, ledger }
+}
+
+/**
+ * P9-T5 (S3-C) — lift one `TeamLedgerState` (the T4 store's published
+ * snapshot) into the UI ledger model: the loaded entries are replayed
+ * through the same pure `adaptTeamLedger`, and completeness is the
+ * store's own verdict rule — known complete iff the last accepted `total`
+ * is non-null and the catch-up frontier has reached it. `undefined` (no
+ * binding yet) yields the empty partial model: a partial ledger clearly
+ * represented (gate G3), never a claim over an unknown ledger.
+ *
+ * Type-only import of the store state (no runtime cycle: the store module
+ * imports nothing from `model/`).
+ * @param state - the store's published snapshot, or `undefined` for no binding.
+ * @returns the UI ledger model over the loaded entries.
+ */
+export function ledgerModelFromStoreState(
+  state: TeamLedgerState | undefined,
+): TeamUiLedgerModel {
+  if (state === undefined) return adaptTeamLedger([], false)
+  const entries: RemoteLedgerEntryValue[] = []
+  for (const sequence of state.orderedSequences) {
+    const entry = state.entriesBySequence.get(sequence)
+    if (entry !== undefined) entries.push(entry)
+  }
+  const complete = state.total !== null && state.completeThrough >= state.total
+  return adaptTeamLedger(entries, complete)
 }

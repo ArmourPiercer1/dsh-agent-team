@@ -105,3 +105,27 @@ export function resolveTeamProjection(
   }
   return undefined
 }
+
+/**
+ * Equality comparator for the resolution selector (the slot selector
+ * hook's optional `eq` seat): `resolveTeamProjection` returns a fresh
+ * wrapper object per call, so the default Object.is comparison would
+ * re-render on every notification even when nothing changed. Two
+ * resolutions are equal when they name the same team reference (the
+ * projection frames are identity-stable) and the same viewer perspective.
+ * @param a - the previously selected resolution (or `undefined`).
+ * @param b - the freshly selected resolution (or `undefined`).
+ * @returns whether both selections name the same team + perspective.
+ */
+export function sameTeamProjectionResolution(
+  a: TeamProjectionResolution | undefined,
+  b: TeamProjectionResolution | undefined,
+): boolean {
+  if (a === b) return true
+  if (a === undefined || b === undefined) return false
+  if (a.team !== b.team) return false
+  if (a.perspective.kind === 'member-child' && b.perspective.kind === 'member-child') {
+    return a.perspective.memberInstanceId === b.perspective.memberInstanceId
+  }
+  return a.perspective.kind === 'team-root' && b.perspective.kind === 'team-root'
+}

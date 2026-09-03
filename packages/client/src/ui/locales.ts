@@ -22,9 +22,11 @@ export type TeamKey =
   | 'view.timeline.running'
   | 'view.members.title'
   | 'view.members.active'
-  | 'view.members.bound'
+  | 'view.members.created'
   | 'view.members.running'
   | 'view.members.settled'
+  | 'view.members.archived'
+  | 'view.members.disposed'
   | 'view.members.noInstances'
   | 'view.members.action.empty'
   | 'view.members.waiting'
@@ -56,7 +58,7 @@ export type TeamKey =
   | 'dock.expand'
   | 'dock.collapse'
   | 'dock.members.empty'
-  | 'dock.tasks.empty'
+  | 'dock.activities.empty'
   | 'marker.progress'
   | 'marker.decision'
 
@@ -83,9 +85,11 @@ export const zh: Record<TeamKey, string> = {
   'view.timeline.running': '进行中',
   'view.members.title': '成员组',
   'view.members.active': '{count} 活跃',
-  'view.members.bound': '已绑定',
+  'view.members.created': '已创建',
   'view.members.running': '运行中',
   'view.members.settled': '已结算',
+  'view.members.archived': '已归档',
+  'view.members.disposed': '已处置',
   'view.members.noInstances': '尚无实例',
   'view.members.action.empty': '暂无动作',
   'view.members.waiting': '{count} 项待裁决',
@@ -117,7 +121,7 @@ export const zh: Record<TeamKey, string> = {
   'dock.expand': '展开团队概览',
   'dock.collapse': '收起团队概览',
   'dock.members.empty': '暂无成员状态',
-  'dock.tasks.empty': '暂无任务进度',
+  'dock.activities.empty': '暂无活动进度',
   'marker.progress': '进度',
   'marker.decision': '裁决',
 }
@@ -145,9 +149,11 @@ export const en: Record<TeamKey, string> = {
   'view.timeline.running': 'In progress',
   'view.members.title': 'Members',
   'view.members.active': '{count} active',
-  'view.members.bound': 'Bound',
+  'view.members.created': 'Created',
   'view.members.running': 'Running',
   'view.members.settled': 'Settled',
+  'view.members.archived': 'Archived',
+  'view.members.disposed': 'Disposed',
   'view.members.noInstances': 'No instances yet',
   'view.members.action.empty': 'No action yet',
   'view.members.waiting': '{count} pending',
@@ -179,7 +185,7 @@ export const en: Record<TeamKey, string> = {
   'dock.expand': 'Expand the team overview',
   'dock.collapse': 'Collapse the team overview',
   'dock.members.empty': 'No member status yet',
-  'dock.tasks.empty': 'No task progress yet',
+  'dock.activities.empty': 'No activity progress yet',
   'marker.progress': 'Progress',
   'marker.decision': 'Decision',
 }

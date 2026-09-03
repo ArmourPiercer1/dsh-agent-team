@@ -1,20 +1,26 @@
 /**
  * The "团队" tab's member-group section (the second of the four sections):
  * the fixed leading leader row (the "回到 leader" entry, anchored to the
- * view's `leaderSessionId` — rendered even when the member rows carry no
- * leader) plus one group per member. A group's container row reads
- * `Name · N 活跃`; its expansion lists the member's instance rows —
- * three-state status (bound/running/settled, read straight from the
- * projection), the latest tool call or the action placeholder, and a
- * waiting badge while a control request is unpaired. Unbound members keep
- * their container row with the no-instances note. Clicking the leading row
- * or an instance row switches the current session to the bound session
- * (D9); the group and instance rows whose session is the current one
- * highlight (D7).
+ * first leader-kind instance — synthesized from the team session when the
+ * rows carry none, rendered even then) plus one group per member template.
+ * A group's container row reads `Name · N 活跃`; its expansion lists the
+ * member's instance rows — the five-state display status
+ * (created/running/settled/archived/disposed, read straight from the
+ * snapshot per plan §7.2), the latest tool call or the action placeholder,
+ * and a waiting badge while control requests are unresolved (the badge is
+ * completeness-aware per plan §7.3: hidden under a partial ledger).
+ * Clicking the leading row or an instance row switches the current session
+ * to the child session (D9); the group and instance rows whose session is
+ * the current one highlight (D7).
+ *
+ * P9-T5 (S3-C) mechanical adaptation (plan §8.4): the section reads the
+ * vNext snapshot + durable-ledger model instead of the leader-keyed view;
+ * the three-state status vocabulary becomes the five-state §7.2 display
+ * status (the "bound" state is superseded by "created").
  */
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { TeamView } from '../model/team-view-compat.js'
+import type { TeamUiLedgerModel, TeamUiSnapshot } from '../model/team-ui-snapshot.js'
 import {
   deriveTeamMembers,
   type TeamMemberGroupRow, type TeamMemberInstanceRow,
@@ -22,34 +28,42 @@ import {
 import type { TeamKey } from './locales.js'
 import styles from './TeamMembers.module.css'
 
-/** The members section props: the team view, the current session, the D9 navigation callback, and the team dictionary. */
+/** The members section props: the vNext snapshot pair, the current session, the D9 navigation callback, and the team dictionary. */
 export interface TeamMembersProps {
-  /** The leader-keyed team view snapshot (the mirror's own reference). */
-  view: TeamView
+  /** The normalized team snapshot (the projection side of the §7.1 pair). */
+  snapshot: TeamUiSnapshot
+  /** The durable ledger model (the completeness-aware badge authority). */
+  ledger: TeamUiLedgerModel
   /** The current session id (the framework session kit); its group and instance rows highlight. */
   currentSessionId: string
-  /** Switch the current session to the clicked row's bound session. */
+  /** Switch the current session to the clicked row's child session. */
   onSelectSession: (sessionId: string) => void
   /** The team dictionary translate seat. */
   t: PropsLocale<'team'>['t']
 }
 
 const INSTANCE_STATUS_KEYS = {
-  bound: 'view.members.bound',
+  created: 'view.members.created',
   running: 'view.members.running',
   settled: 'view.members.settled',
+  archived: 'view.members.archived',
+  disposed: 'view.members.disposed',
 } as const satisfies Record<TeamMemberInstanceRow['status'], TeamKey>
 
 /**
- * Map an instance status onto the four StateDot states.
- * @param status - the instance row's projection status.
- * @returns the dot state (bound: amber, running: blue, settled: green).
+ * Map an instance display status onto the four StateDot states.
+ * Provisional T5 mapping (T6 may refine lifecycle colors): created: amber,
+ * running: blue, settled/archived/disposed: green (terminal states).
+ * @param status - the instance row's display status.
+ * @returns the dot state.
  */
 function memberDot(status: TeamMemberInstanceRow['status']): StateDotState {
   switch (status) {
-    case 'bound': return 'warning'
+    case 'created': return 'warning'
     case 'running': return 'ongoing'
     case 'settled': return 'done'
+    case 'archived': return 'done'
+    case 'disposed': return 'done'
   }
 }
 
@@ -65,6 +79,7 @@ interface InstanceRowProps {
 
 /** One instance row: status dot and label, latest tool call, waiting badge. */
 function InstanceRow({ instance, current, onSelect, t }: InstanceRowProps): React.JSX.Element {
+  const pending = instance.pendingControlCount
   return (
     <button
       type="button"
@@ -82,8 +97,8 @@ function InstanceRow({ instance, current, onSelect, t }: InstanceRowProps): Reac
       <span className={styles.instanceAction} data-member-action>
         {instance.currentAction ?? t('view.members.action.empty')}
       </span>
-      {instance.pendingControlCount > 0
-        ? <span className={styles.waitingBadge} data-member-waiting>{t('view.members.waiting', { count: instance.pendingControlCount })}</span>
+      {pending !== null && pending > 0
+        ? <span className={styles.waitingBadge} data-member-waiting>{t('view.members.waiting', { count: pending })}</span>
         : null}
     </button>
   )
@@ -92,13 +107,13 @@ function InstanceRow({ instance, current, onSelect, t }: InstanceRowProps): Reac
 /** The group props: the model group, the resolved highlight, the current session, the switch callback, and the dictionary. */
 interface MemberGroupProps {
   readonly group: TeamMemberGroupRow
-  /** The group-row highlight (the caller resolves the leader against the view anchor). */
+  /** The group-row highlight (the caller resolves the leader against the team session). */
   readonly current: boolean
   /** The current session id (the per-instance highlight). */
   readonly currentSessionId: string
-  /** Switch the current session to the named bound session. */
+  /** Switch the current session to the named child session. */
   readonly onSelectSession: (sessionId: string) => void
-  /** Switch to the leader session (D10); present only on the leading row. */
+  /** Switch to the team session (D10); present only on the leading row. */
   readonly onSelectLeader?: () => void
   readonly t: PropsLocale<'team'>['t']
 }
@@ -135,8 +150,8 @@ function MemberGroup({
             <InstanceRow
               key={instance.key}
               instance={instance}
-              current={instance.sessionId !== '' && instance.sessionId === currentSessionId}
-              onSelect={instance.sessionId === '' ? undefined : () => { onSelectSession(instance.sessionId) }}
+              current={instance.childSessionId !== '' && instance.childSessionId === currentSessionId}
+              onSelect={instance.childSessionId === '' ? undefined : () => { onSelectSession(instance.childSessionId) }}
               t={t}
             />
           ))}
@@ -147,28 +162,28 @@ function MemberGroup({
 
 /**
  * The team member-group section (D8e, D8f, D9, D10) with the D7 highlight.
- * @param props - the team view, the current session, the session-switch callback, and the dictionary.
+ * @param props - the vNext snapshot pair, the current session, the session-switch callback, and the dictionary.
  * @returns the members section.
  */
 export function TeamMembers({
-  view, currentSessionId, onSelectSession, t,
+  snapshot, ledger, currentSessionId, onSelectSession, t,
 }: TeamMembersProps): React.JSX.Element {
-  const model = deriveTeamMembers(view)
+  const model = deriveTeamMembers(snapshot, ledger)
   return (
     <div className={styles.root} data-team-members>
       <MemberGroup
         group={model.leader}
-        current={view.leaderSessionId === currentSessionId}
+        current={snapshot.teamSessionId === currentSessionId}
         currentSessionId={currentSessionId}
         onSelectSession={onSelectSession}
-        onSelectLeader={() => { onSelectSession(view.leaderSessionId) }}
+        onSelectLeader={() => { onSelectSession(snapshot.teamSessionId) }}
         t={t}
       />
       {model.groups.map(group => (
         <MemberGroup
-          key={group.memberId}
+          key={group.templateId}
           group={group}
-          current={group.instances.some(instance => instance.sessionId === currentSessionId)}
+          current={group.instances.some(instance => instance.childSessionId === currentSessionId)}
           currentSessionId={currentSessionId}
           onSelectSession={onSelectSession}
           t={t}

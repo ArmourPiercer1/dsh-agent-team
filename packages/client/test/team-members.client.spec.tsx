@@ -1,16 +1,22 @@
 // @vitest-environment jsdom
 /**
- * Team member-group section: the `Name · N 活跃` container rows, the fixed
- * leading leader row (including the roster-absent fallback), the three-state
- * instance rows with the action placeholder and the waiting badge, the
- * unbound no-instances note, the D9 click-to-switch (leader row and per
- * instance), the D7 current-session highlight, the non-interactive
- * non-leader rows, and the en/zh dictionary pairing.
+ * Team member-group section (P9-T5, plan §8.4): the `Name · N 活跃` container
+ * rows, the fixed leading leader row (anchored to the first leader-kind
+ * instance, synthesized from the team session when the rows carry none), the
+ * five-state instance rows with the action placeholder and the
+ * completeness-aware waiting badge (plan §7.3), the D9 click-to-switch
+ * (leader row and per instance, child sessions), the D7 current-session
+ * highlight, the non-interactive non-leader rows, and the en/zh dictionary
+ * pairing. The legacy "unbound" vocabulary is abolished: every snapshot
+ * instance is a real row (the CREATED lifecycle replaces the absent bound
+ * session).
  */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import type { TeamView } from '../src/model/team-view-compat.js'
+import type {
+  TeamUiDisplayStatus, TeamUiLedgerModel, TeamUiMemberInstance, TeamUiSnapshot,
+} from '../src/model/team-ui-snapshot.js'
 import { TeamMembers } from '../src/ui/TeamMembers.js'
 import { en, zh } from '../src/ui/locales.js'
 
@@ -18,41 +24,98 @@ const LEADER = 'leader-s'
 const SA = 'sa'
 const SB = 'sb'
 
-function view(overrides: Partial<TeamView> = {}): TeamView {
+const iso = (ms: number): string => new Date(ms).toISOString()
+
+const ZERO_CATEGORIES = {
+  team: 0, member: 0, lifecycle: 0, message: 0, control: 0, policy: 0, compatibility: 0, progress: 0,
+} as const
+
+/** The §7.2 display → raw lifecycle pairing for fixture rows. */
+const LIFECYCLE: Record<TeamUiDisplayStatus, TeamUiMemberInstance['lifecycle']> = {
+  created: 'CREATED',
+  running: 'RUNNING',
+  settled: 'SETTLED',
+  archived: 'ARCHIVED',
+  disposed: 'DISPOSED',
+}
+
+function instance(
+  overrides: Partial<TeamUiMemberInstance> & Pick<TeamUiMemberInstance, 'instanceId' | 'templateId' | 'label'>,
+): TeamUiMemberInstance {
   return {
-    teamId: LEADER,
-    leaderSessionId: LEADER,
-    rosterMemberCount: 3,
-    members: [
-      {
-        memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-        status: 'bound', pendingControlCount: 0,
-      },
-      {
-        memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [SA],
-        status: 'running', currentAction: 'Bash', pendingControlCount: 1,
-      },
-      {
-        memberId: 'b', name: 'Beta', role: 'teammate', sessionIds: [],
-        status: 'unbound', pendingControlCount: 0,
-      },
-    ],
-    delegations: [],
-    tasks: [],
-    approvals: [],
-    messages: [],
-    messageCount: 0,
+    childSessionId: null,
+    lifecycle: 'CREATED',
+    displayStatus: 'created',
+    liveActivity: null,
+    pendingControlCount: null,
+    fromHistory: false,
+    createdAt: iso(1_700_000_000_000),
     ...overrides,
-  }
+  } as unknown as TeamUiMemberInstance
+}
+
+function snapshot(
+  members: readonly TeamUiMemberInstance[],
+  overrides: Partial<TeamUiSnapshot> = {},
+): TeamUiSnapshot {
+  return {
+    teamSessionId: LEADER,
+    generation: 1,
+    blueprint: { blueprintId: 'bp-1', revision: '1', contentHash: 'h-1' },
+    perspective: { kind: 'team-root' },
+    templates: [
+      { kind: 'leader', templateId: 'tpl-lead', displayName: 'Lead', contextPolicy: 'persistent' },
+      { kind: 'member', templateId: 'tpl-a', displayName: 'Alpha', contextPolicy: 'persistent' },
+      { kind: 'member', templateId: 'tpl-b', displayName: 'Beta', contextPolicy: 'persistent' },
+    ],
+    members,
+    compatibility: {
+      status: 'OPEN', probeGeneration: 1, requirementFingerprint: 'rf-1', environmentFingerprint: 'ef-1',
+      warningCount: 0, fatalCount: 0, acknowledgedWarningCount: 0,
+    },
+    policyState: 'open',
+    ledgerSummary: { latestSequence: 0, totalEntries: 0, byCategory: { ...ZERO_CATEGORIES }, pendingControlCount: 0 },
+    activity: [],
+    disposedHistory: [],
+    ...overrides,
+  } as unknown as TeamUiSnapshot
+}
+
+function ledger(overrides: Partial<TeamUiLedgerModel> = {}): TeamUiLedgerModel {
+  return {
+    completeness: 'partial',
+    entries: [],
+    controls: [],
+    messages: [],
+    intervals: [],
+    progress: [],
+    pendingControlByInstance: {},
+    ...overrides,
+  } as unknown as TeamUiLedgerModel
+}
+
+/** The default team: the leader bound to the team session, one running
+ * instance with the current tool call and one pending control request, and
+ * one created instance without a session. */
+function defaultTeam(): TeamUiSnapshot {
+  return snapshot([
+    instance({ instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: LEADER }),
+    instance({
+      instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA,
+      lifecycle: LIFECYCLE.running, displayStatus: 'running', currentAction: 'Bash',
+    }),
+    instance({ instanceId: 'b', templateId: 'tpl-b', label: 'Beta' }),
+  ])
 }
 
 function makeProps(
-  team: TeamView = view(),
+  team: TeamUiSnapshot = defaultTeam(),
+  ledgerModel: TeamUiLedgerModel = ledger(),
   currentSessionId: string = LEADER,
   onSelectSession: (sessionId: string) => void = vi.fn(),
   dict: Record<string, string> = zh,
 ): Parameters<typeof TeamMembers>[0] {
-  return { view: team, currentSessionId, onSelectSession, t: makeTranslate(dict) }
+  return { snapshot: team, ledger: ledgerModel, currentSessionId, onSelectSession, t: makeTranslate(dict) }
 }
 
 function groupRows(container: HTMLElement): HTMLElement[] {
@@ -79,80 +142,69 @@ describe('TeamMembers', () => {
     expect(groupRows(container)[0]?.tagName).toBe('BUTTON')
   })
 
-  it('switches back to the leader session when the leading row is clicked (D10)', () => {
+  it('switches back to the team session when the leading row is clicked (D10)', () => {
     const openSession = vi.fn()
-    const { container } = render(<TeamMembers {...makeProps(view(), SA, openSession)} />)
+    const { container } = render(<TeamMembers {...makeProps(defaultTeam(), ledger(), SA, openSession)} />)
     fireEvent.click(leaderRow(container))
     expect(openSession).toHaveBeenCalledTimes(1)
     expect(openSession).toHaveBeenCalledWith(LEADER)
   })
 
-  it('keeps the leading row when the member rows lack a leader (roster-absent fallback)', () => {
+  it('keeps the leading row when the instances lack a leader-kind row (roster-absent fallback)', () => {
     const openSession = vi.fn()
-    const team = view({
-      members: [
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [SA],
-          status: 'bound', pendingControlCount: 0,
-        },
-      ],
-    })
-    const { container } = render(<TeamMembers {...makeProps(team, SA, openSession)} />)
+    const team = snapshot([
+      instance({
+        instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA,
+        lifecycle: LIFECYCLE.running, displayStatus: 'running',
+      }),
+    ])
+    const { container } = render(<TeamMembers {...makeProps(team, ledger(), LEADER, openSession)} />)
     expect(leaderRow(container).textContent).toBe('领导者 · 0 活跃')
     expect(screen.getByText('尚无实例')).toBeTruthy()
     fireEvent.click(leaderRow(container))
     expect(openSession).toHaveBeenCalledWith(LEADER)
   })
 
-  it('shows the three-state instance labels and the state dots', () => {
-    const team = view({
-      members: [
-        {
-          memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-          status: 'settled', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [SA],
-          status: 'bound', pendingControlCount: 0,
-        },
-        {
-          memberId: 'b', name: 'Beta', role: 'teammate', sessionIds: [SB],
-          status: 'running', pendingControlCount: 0,
-        },
-      ],
-    })
+  it('shows the five-state instance labels and the state dots', () => {
+    const team = snapshot([
+      instance({
+        instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: LEADER,
+        lifecycle: LIFECYCLE.settled, displayStatus: 'settled',
+      }),
+      instance({ instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA }),
+      instance({
+        instanceId: 'b', templateId: 'tpl-b', label: 'Beta', childSessionId: SB,
+        lifecycle: LIFECYCLE.running, displayStatus: 'running',
+      }),
+    ])
     const { container } = render(<TeamMembers {...makeProps(team)} />)
     expect(screen.getByText('已结算')).toBeTruthy()
-    expect(screen.getByText('已绑定')).toBeTruthy()
+    expect(screen.getByText('已创建')).toBeTruthy()
     expect(screen.getByText('运行中')).toBeTruthy()
     const byStatus = (status: string): HTMLElement | null =>
       container.querySelector(`[data-member-instance][data-status="${status}"]`)
-    expect(byStatus('bound')?.querySelector('[data-member-status-text]')?.textContent).toBe('已绑定')
+    expect(byStatus('created')?.querySelector('[data-member-status-text]')?.textContent).toBe('已创建')
     expect(byStatus('running')?.querySelector('[data-member-status-text]')?.textContent).toBe('运行中')
     expect(byStatus('settled')?.querySelector('[data-member-status-text]')?.textContent).toBe('已结算')
   })
 
-  it('lists an unbound member as a container row with the no-instances note', () => {
+  it('lists a created instance as a real row in its group (the unbound vocabulary is abolished)', () => {
     const { container } = render(<TeamMembers {...makeProps()} />)
     expect(screen.getByText('Beta · 0 活跃')).toBeTruthy()
-    expect(screen.getByText('尚无实例')).toBeTruthy()
     const beta = container.querySelectorAll<HTMLElement>('[data-member-group]')[2]
-    expect(beta?.querySelector('[data-member-instance]')).toBeNull()
+    const betaInstance = beta?.querySelector<HTMLElement>('[data-member-instance]')
+    expect(betaInstance?.dataset.status).toBe('created')
+    expect(betaInstance?.querySelector('[data-member-status-text]')?.textContent).toBe('已创建')
   })
 
   it('shows the current action and falls back to the action placeholder', () => {
-    const team = view({
-      members: [
-        {
-          memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-          status: 'bound', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [SA],
-          status: 'bound', currentAction: 'Bash', pendingControlCount: 0,
-        },
-      ],
-    })
+    const team = snapshot([
+      instance({ instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: LEADER }),
+      instance({
+        instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA,
+        currentAction: 'Bash',
+      }),
+    ])
     const { container } = render(<TeamMembers {...makeProps(team)} />)
     expect(screen.getByText('Bash')).toBeTruthy()
     expect(screen.getByText('暂无动作')).toBeTruthy()
@@ -160,58 +212,40 @@ describe('TeamMembers', () => {
     expect(leaderInstance?.querySelector('[data-member-action]')?.textContent).toBe('暂无动作')
   })
 
-  it('badges the waiting instances with the pending control-request count', () => {
-    const team = view({
-      members: [
-        {
-          memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-          status: 'bound', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [SA],
-          status: 'running', pendingControlCount: 2,
-        },
-      ],
-    })
-    const { container } = render(<TeamMembers {...makeProps(team)} />)
+  it('badges the waiting instances with the pending control-request count, completeness-aware (plan §7.3)', () => {
+    const team = snapshot([
+      instance({ instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: LEADER }),
+      instance({
+        instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA,
+        lifecycle: LIFECYCLE.running, displayStatus: 'running',
+      }),
+    ])
+    const complete = ledger({ completeness: 'complete', pendingControlByInstance: { a: 2 } })
+    const { container } = render(<TeamMembers {...makeProps(team, complete)} />)
     expect(screen.getByText('2 项待裁决')).toBeTruthy()
     expect(container.querySelectorAll('[data-member-waiting]')).toHaveLength(1)
-    const plain = view({
-      members: [
-        {
-          memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-          status: 'bound', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [SA],
-          status: 'bound', pendingControlCount: 0,
-        },
-      ],
-    })
-    const plainRender = render(<TeamMembers {...makeProps(plain)} />)
-    expect(plainRender.container.querySelectorAll('[data-member-waiting]')).toHaveLength(0)
-    plainRender.unmount()
+    const partialRender = render(<TeamMembers {...makeProps(team, ledger())} />)
+    expect(partialRender.container.querySelectorAll('[data-member-waiting]')).toHaveLength(0)
+    const zeroRender = render(<TeamMembers {...makeProps(team, ledger({ completeness: 'complete' }))} />)
+    expect(zeroRender.container.querySelectorAll('[data-member-waiting]')).toHaveLength(0)
+    partialRender.unmount()
+    zeroRender.unmount()
   })
 
   it('switches to the instance session on click, per instance for a multi-instance member (D9)', () => {
     const openSession = vi.fn()
-    const team = view({
-      members: [
-        {
-          memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-          status: 'bound', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: ['sa1'],
-          status: 'running', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: ['sa2'],
-          status: 'running', pendingControlCount: 0,
-        },
-      ],
-    })
-    const { container } = render(<TeamMembers {...makeProps(team, LEADER, openSession)} />)
+    const team = snapshot([
+      instance({ instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: LEADER }),
+      instance({
+        instanceId: 'a1', templateId: 'tpl-a', label: 'Alpha', childSessionId: 'sa1',
+        lifecycle: LIFECYCLE.running, displayStatus: 'running',
+      }),
+      instance({
+        instanceId: 'a2', templateId: 'tpl-a', label: 'Alpha', childSessionId: 'sa2',
+        lifecycle: LIFECYCLE.running, displayStatus: 'running',
+      }),
+    ])
+    const { container } = render(<TeamMembers {...makeProps(team, ledger(), LEADER, openSession)} />)
     const instances = container.querySelectorAll<HTMLButtonElement>('[data-member-instance]')
     expect(instances).toHaveLength(3)
     fireEvent.click(instances[0]!)
@@ -226,7 +260,7 @@ describe('TeamMembers', () => {
   })
 
   it('highlights the current session\'s group and instance rows only (D7)', () => {
-    const { container } = render(<TeamMembers {...makeProps(view(), SA)} />)
+    const { container } = render(<TeamMembers {...makeProps(defaultTeam(), ledger(), SA)} />)
     const groups = container.querySelectorAll<HTMLElement>('[data-member-group]')
     expect(groups[1]?.dataset.current).toBe('true')
     expect(groups[0]?.dataset.current).toBeUndefined()
@@ -235,7 +269,7 @@ describe('TeamMembers', () => {
     expect(rows[0]?.dataset.current).toBeUndefined()
     expect(rows[1]?.dataset.current).toBe('true')
 
-    const leaderView = render(<TeamMembers {...makeProps(view(), LEADER)} />)
+    const leaderView = render(<TeamMembers {...makeProps(defaultTeam(), ledger(), LEADER)} />)
     const leaderGroups = leaderView.container.querySelectorAll<HTMLElement>('[data-member-group]')
     expect(leaderGroups[0]?.dataset.current).toBe('true')
     expect(leaderGroups[1]?.dataset.current).toBeUndefined()
@@ -247,7 +281,7 @@ describe('TeamMembers', () => {
 
   it('keeps the non-leader container rows non-interactive', () => {
     const openSession = vi.fn()
-    const { container } = render(<TeamMembers {...makeProps(view(), SA, openSession)} />)
+    const { container } = render(<TeamMembers {...makeProps(defaultTeam(), ledger(), SA, openSession)} />)
     const rows = groupRows(container)
     expect(rows[1]?.tagName).toBe('DIV')
     expect(rows[2]?.tagName).toBe('DIV')
@@ -257,19 +291,11 @@ describe('TeamMembers', () => {
 
   it('renders a session-less instance row as a disabled, inert row', () => {
     const openSession = vi.fn()
-    const team = view({
-      members: [
-        {
-          memberId: 'lead', name: 'Lead', role: 'leader', sessionIds: [LEADER],
-          status: 'bound', pendingControlCount: 0,
-        },
-        {
-          memberId: 'a', name: 'Alpha', role: 'teammate', sessionIds: [],
-          status: 'bound', pendingControlCount: 0,
-        },
-      ],
-    })
-    const { container } = render(<TeamMembers {...makeProps(team, LEADER, openSession)} />)
+    const team = snapshot([
+      instance({ instanceId: 'lead', templateId: 'tpl-lead', label: 'Lead', childSessionId: LEADER }),
+      instance({ instanceId: 'a', templateId: 'tpl-a', label: 'Alpha' }),
+    ])
+    const { container } = render(<TeamMembers {...makeProps(team, ledger(), LEADER, openSession)} />)
     const instances = container.querySelectorAll<HTMLButtonElement>('[data-member-instance]')
     expect(instances).toHaveLength(2)
     expect(instances[0]?.disabled).toBe(false)
@@ -279,10 +305,18 @@ describe('TeamMembers', () => {
     expect(openSession).not.toHaveBeenCalled()
   })
 
-  it('renders the English dictionary pairing', () => {
-    const { container } = render(<TeamMembers {...makeProps(view(), LEADER, vi.fn(), en)} />)
+  it('renders the English dictionary pairing (with the synthesized leader note)', () => {
+    const complete = ledger({ completeness: 'complete', pendingControlByInstance: { a: 1 } })
+    const team = snapshot([
+      instance({
+        instanceId: 'a', templateId: 'tpl-a', label: 'Alpha', childSessionId: SA,
+        lifecycle: LIFECYCLE.running, displayStatus: 'running', currentAction: 'Bash',
+      }),
+      instance({ instanceId: 'b', templateId: 'tpl-b', label: 'Beta' }),
+    ])
+    const { container } = render(<TeamMembers {...makeProps(team, complete, LEADER, vi.fn(), en)} />)
     expect(groupRows(container).map(row => row.textContent)).toEqual([
-      'Lead · 0 active',
+      'Leader · 0 active',
       'Alpha · 1 active',
       'Beta · 0 active',
     ])
