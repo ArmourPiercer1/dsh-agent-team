@@ -3,7 +3,10 @@
  * onto the "团队" tab's member-group section: the fixed leading leader row
  * (anchored to the first leader-kind instance, or synthesized from the team
  * session when the rows carry none — the "回到 leader" entry) plus one group
- * per non-leader template in `members` order. A group's container row
+ * per non-leader template (UI §16.1 fixed hierarchy): the groups fold from
+ * the instance rows in `members` order, and every non-leader template with
+ * no instances yet still gets its fixed row (the §17 "+" first-instance
+ * entry; the renderer shows the "尚无实例" expansion). A group's container row
  * tallies its running instances for the `Name · N 活跃` label; its expansion
  * lists the group's instance rows — the snapshot member instances, each
  * carrying the raw frozen lifecycle, the §7.2 display status, the latest
@@ -66,7 +69,7 @@ export interface TeamMemberGroupRow {
 export interface TeamMembersModel {
   /** The leading leader row (the "回到 leader" entry). */
   readonly leader: TeamMemberGroupRow
-  /** The non-leader groups in `members` order. */
+  /** The non-leader template groups: the instance-folded groups in `members` order, then the fixed zero-instance template rows in `templates` order (UI §16.1). */
   readonly groups: readonly TeamMemberGroupRow[]
 }
 
@@ -119,8 +122,11 @@ function appendRow(group: GroupBuild, member: TeamUiMemberInstance, ledger: Team
  * @param snapshot - the normalized team snapshot.
  * @param ledger - the durable ledger model.
  * @returns the leading leader row — synthesized from the team session when
- *   the rows carry no leader kind — plus the non-leader groups in `members`
- *   order, instances sharing a templateId folded into one group.
+ *   the rows carry no leader kind — plus the non-leader groups: the
+ *   instance-folded groups in `members` order (instances sharing a
+ *   templateId folded into one group), then the fixed rows of the
+ *   zero-instance templates in `templates` order (UI §16.1/§17.1: the §17
+ *   "+" first-instance entry must exist before any instance does).
  */
 export function deriveTeamMembers(
   snapshot: TeamUiSnapshot,
@@ -160,6 +166,23 @@ export function deriveTeamMembers(
       groups.push(group)
     }
     appendRow(group, member, ledger)
+  }
+  // UI §16.1 fixed hierarchy: the template rows are constant — every
+  // non-leader template gets its group row even with zero instances (the
+  // §17 "+" is the first-instance entry; the renderer shows the
+  // "尚无实例" expansion and the create dialog binds the template).
+  for (const template of snapshot.templates) {
+    if (template.kind === 'leader') continue
+    if (groupById.has(template.templateId)) continue
+    const group: GroupBuild = {
+      templateId: template.templateId,
+      name: template.displayName,
+      role: 'teammate',
+      activeCount: 0,
+      instances: [],
+    }
+    groupById.set(template.templateId, group)
+    groups.push(group)
   }
   return {
     leader: leader ?? {
