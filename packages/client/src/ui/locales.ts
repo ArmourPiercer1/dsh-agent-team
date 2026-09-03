@@ -67,6 +67,77 @@ export type TeamKey =
   | 'view.ledger.decision.allow'
   | 'view.ledger.decision.deny'
   | 'view.ledger.decision.stale_denied'
+  | 'intent.startHere'
+  | 'intent.title'
+  | 'intent.blueprint'
+  | 'intent.blueprint.placeholder'
+  | 'intent.blueprint.loading'
+  | 'intent.blueprint.error'
+  | 'intent.blueprint.empty'
+  | 'intent.revision'
+  | 'intent.workspace'
+  | 'intent.workspace.placeholder'
+  | 'intent.preset'
+  | 'intent.preset.hint'
+  | 'intent.initialWork'
+  | 'intent.initialWork.placeholder'
+  | 'intent.compatibility'
+  | 'intent.compatibility.checking'
+  | 'intent.compatibility.ready'
+  | 'intent.compatibility.degraded'
+  | 'intent.compatibility.fatal'
+  | 'intent.compatibility.unknown'
+  | 'intent.compatibility.owner'
+  | 'intent.compatibility.subjects'
+  | 'intent.ack'
+  | 'intent.create'
+  | 'intent.createAndSend'
+  | 'intent.acknowledge'
+  | 'intent.creating'
+  | 'intent.error'
+  | 'intent.retry'
+  | 'intent.cancel'
+  | 'intent.rootKept'
+  | 'intent.fatal.preset'
+  | 'member.action.sendWork'
+  | 'member.action.followup'
+  | 'member.action.resume'
+  | 'member.action.message'
+  | 'member.action.archive'
+  | 'member.action.restore'
+  | 'member.action.dispose'
+  | 'member.action.create'
+  | 'member.command.pending'
+  | 'member.command.error'
+  | 'member.create.title'
+  | 'member.create.template'
+  | 'member.create.label'
+  | 'member.create.label.placeholder'
+  | 'member.create.group'
+  | 'member.create.workspace'
+  | 'member.create.fresh'
+  | 'member.create.submit'
+  | 'member.create.cancel'
+  | 'member.send.title'
+  | 'member.send.prompt'
+  | 'member.send.prompt.placeholder'
+  | 'member.send.submit'
+  | 'member.send.cancel'
+  | 'member.message.title'
+  | 'member.message.subject'
+  | 'member.message.body'
+  | 'member.message.body.placeholder'
+  | 'member.message.submit'
+  | 'member.message.cancel'
+  | 'member.archive.title'
+  | 'member.archive.running'
+  | 'member.archive.plain'
+  | 'member.archive.confirm'
+  | 'member.archive.cancel'
+  | 'member.dispose.title'
+  | 'member.dispose.body'
+  | 'member.dispose.confirm'
+  | 'member.dispose.cancel'
   | 'dock.title'
   | 'dock.running'
   | 'dock.pending'
@@ -146,6 +217,77 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.decision.allow': '允许',
   'view.ledger.decision.deny': '拒绝',
   'view.ledger.decision.stale_denied': '过期拒绝',
+  'intent.startHere': '从此处开始团队',
+  'intent.title': '新建团队',
+  'intent.blueprint': '团队蓝图',
+  'intent.blueprint.placeholder': '选择蓝图…',
+  'intent.blueprint.loading': '正在加载蓝图目录…',
+  'intent.blueprint.error': '蓝图目录加载失败：{message}',
+  'intent.blueprint.empty': '没有可用蓝图',
+  'intent.revision': '修订',
+  'intent.workspace': '默认工作区',
+  'intent.workspace.placeholder': '(未选择)',
+  'intent.preset': '运行时预设',
+  'intent.preset.hint': '选择团队运行的 Agent 预设；切换会重新运行兼容性检查。',
+  'intent.initialWork': '初始任务（可选）',
+  'intent.initialWork.placeholder': '交给 Leader 的初始任务…',
+  'intent.compatibility': '兼容性',
+  'intent.compatibility.checking': '正在检查兼容性…',
+  'intent.compatibility.ready': '✓ 就绪',
+  'intent.compatibility.degraded': '已按确认降级运行',
+  'intent.compatibility.fatal': '✕ 团队无法创建',
+  'intent.compatibility.unknown': '兼容性结果无法识别：{message}',
+  'intent.compatibility.owner': '需求',
+  'intent.compatibility.subjects': '不可用',
+  'intent.ack': '我已了解上述降级，继续创建',
+  'intent.create': '创建团队',
+  'intent.createAndSend': '创建并发送',
+  'intent.acknowledge': '确认警告并创建',
+  'intent.creating': '正在创建…',
+  'intent.error': '创建失败：{message}',
+  'intent.retry': '重试',
+  'intent.cancel': '取消',
+  'intent.rootKept': 'Root 会话已创建；团队创建失败，可重试（会话保留）。',
+  'intent.fatal.preset': '该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。',
+  'member.action.sendWork': '发送任务…',
+  'member.action.followup': '发送跟进',
+  'member.action.resume': '恢复…',
+  'member.action.message': '发送消息…',
+  'member.action.archive': '归档',
+  'member.action.restore': '恢复',
+  'member.action.dispose': '处置',
+  'member.action.create': '创建成员实例',
+  'member.command.pending': '处理中…',
+  'member.command.error': '命令失败：{code} {message}',
+  'member.create.title': '创建成员实例',
+  'member.create.template': '模板',
+  'member.create.label': '标签',
+  'member.create.label.placeholder': '例如：研究员-1',
+  'member.create.group': '分组（可选）',
+  'member.create.workspace': '工作区（可选）',
+  'member.create.fresh': '新的委派会创建新实例。',
+  'member.create.submit': '创建',
+  'member.create.cancel': '取消',
+  'member.send.title': '向 {member} 发送任务',
+  'member.send.prompt': '任务内容',
+  'member.send.prompt.placeholder': '描述要交给该成员的工作…',
+  'member.send.submit': '发送',
+  'member.send.cancel': '取消',
+  'member.message.title': '给 {member} 发消息',
+  'member.message.subject': '主题（可选）',
+  'member.message.body': '消息内容',
+  'member.message.body.placeholder': '消息正文…',
+  'member.message.submit': '发送消息',
+  'member.message.cancel': '取消',
+  'member.archive.title': '归档该成员？',
+  'member.archive.running': '该成员正在运行。归档将停止当前工作，并在归档前排空其驻留子成员。',
+  'member.archive.plain': '归档后，该成员将不再接收新的团队任务，直到恢复。',
+  'member.archive.confirm': '归档',
+  'member.archive.cancel': '取消',
+  'member.dispose.title': '处置该成员？',
+  'member.dispose.body': '该成员无法再恢复或接收新的团队任务。其会话历史、Chat、Trajectory 与团队审计历史将保留。',
+  'member.dispose.confirm': '处置',
+  'member.dispose.cancel': '取消',
   'dock.title': '团队',
   'dock.running': '{count} 运行中',
   'dock.pending': '{count} 待裁决',
@@ -226,6 +368,77 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.decision.allow': 'Allowed',
   'view.ledger.decision.deny': 'Denied',
   'view.ledger.decision.stale_denied': 'Stale denied',
+  'intent.startHere': 'Start Team from Here',
+  'intent.title': 'New Team',
+  'intent.blueprint': 'Team blueprint',
+  'intent.blueprint.placeholder': 'Select a blueprint…',
+  'intent.blueprint.loading': 'Loading the blueprint catalog…',
+  'intent.blueprint.error': 'Failed to load the blueprint catalog: {message}',
+  'intent.blueprint.empty': 'No blueprints available',
+  'intent.revision': 'Revision',
+  'intent.workspace': 'Default workspace',
+  'intent.workspace.placeholder': '(none)',
+  'intent.preset': 'Runtime preset',
+  'intent.preset.hint': 'Choose the AgentPreset the team runs with; switching re-runs compatibility.',
+  'intent.initialWork': 'Initial work (optional)',
+  'intent.initialWork.placeholder': 'The initial work for the leader…',
+  'intent.compatibility': 'Compatibility',
+  'intent.compatibility.checking': 'Checking compatibility…',
+  'intent.compatibility.ready': '✓ Ready',
+  'intent.compatibility.degraded': 'Running degraded per acknowledgements',
+  'intent.compatibility.fatal': '✕ Team cannot be created',
+  'intent.compatibility.unknown': 'Unrecognized compatibility result: {message}',
+  'intent.compatibility.owner': 'Requirement',
+  'intent.compatibility.subjects': 'Unavailable',
+  'intent.ack': 'I understand the degradations above and want to continue',
+  'intent.create': 'Create Team',
+  'intent.createAndSend': 'Create & Send',
+  'intent.acknowledge': 'Acknowledge warnings and create',
+  'intent.creating': 'Creating…',
+  'intent.error': 'Creation failed: {message}',
+  'intent.retry': 'Retry',
+  'intent.cancel': 'Cancel',
+  'intent.rootKept': 'The Root session was created; team creation failed — retry it (the session is kept).',
+  'intent.fatal.preset': "This runtime preset owns a complete system persona and cannot host this Team Blueprint's Leader/Member identity without changing DSH core semantics.",
+  'member.action.sendWork': 'Send work…',
+  'member.action.followup': 'Send follow-up',
+  'member.action.resume': 'Resume…',
+  'member.action.message': 'Message…',
+  'member.action.archive': 'Archive',
+  'member.action.restore': 'Restore',
+  'member.action.dispose': 'Dispose',
+  'member.action.create': 'Create a MemberInstance',
+  'member.command.pending': 'Pending…',
+  'member.command.error': 'Command failed: {code} {message}',
+  'member.create.title': 'Create MemberInstance',
+  'member.create.template': 'Template',
+  'member.create.label': 'Label',
+  'member.create.label.placeholder': 'e.g. researcher-1',
+  'member.create.group': 'Group (optional)',
+  'member.create.workspace': 'Workspace (optional)',
+  'member.create.fresh': 'New delegation creates a new instance.',
+  'member.create.submit': 'Create',
+  'member.create.cancel': 'Cancel',
+  'member.send.title': 'Send work to {member}',
+  'member.send.prompt': 'Work / prompt',
+  'member.send.prompt.placeholder': 'Describe the work for this member…',
+  'member.send.submit': 'Send',
+  'member.send.cancel': 'Cancel',
+  'member.message.title': 'Message {member}',
+  'member.message.subject': 'Subject (optional)',
+  'member.message.body': 'Message',
+  'member.message.body.placeholder': 'Message body…',
+  'member.message.submit': 'Send message',
+  'member.message.cancel': 'Cancel',
+  'member.archive.title': 'Archive this member?',
+  'member.archive.running': 'This member is currently running. Archiving will stop current work and drain resident descendants before the member is archived.',
+  'member.archive.plain': 'The member will not receive new Team work until restored.',
+  'member.archive.confirm': 'Archive',
+  'member.archive.cancel': 'Cancel',
+  'member.dispose.title': 'Dispose this member?',
+  'member.dispose.body': 'This member cannot be restored or receive new Team work. Its Session history, Chat, Trajectory, and Team audit history will be retained.',
+  'member.dispose.confirm': 'Dispose',
+  'member.dispose.cancel': 'Cancel',
   'dock.title': 'Team',
   'dock.running': '{count} running',
   'dock.pending': '{count} pending',

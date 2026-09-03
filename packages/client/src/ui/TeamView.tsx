@@ -11,12 +11,18 @@
  * the UI §12.1 fixed order — Timeline → Members → Activity → Events —
  * from ONE input.
  */
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the conversation.view slot declaration (declared by
 // ui-conversation's session body) must be in the program for this props type.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+import type {
+  RemoteCatalogGetParams,
+  RemoteIntentProbeParams,
+  RemoteResponse,
+  RemoteTeamCreateParams,
+} from '../../../remote/src/index.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
 import {
   resolveTeamProjection, sameTeamProjectionResolution,
@@ -24,11 +30,37 @@ import {
 import type { TeamLedgerState } from '../state/team-ledger-store.js'
 import { adaptTeamProjection } from '../model/projection-adapter.js'
 import { ledgerModelFromStoreState } from '../model/ledger-adapter.js'
+import type { TeamIntentDraft, TeamPresetRow } from '../model/team-intent-model.js'
+import {
+  emptyTeamIntentDraft, teamWorkspaceOptions,
+} from '../model/team-intent-model.js'
 import { TeamTimeline } from './TeamTimeline.js'
-import { TeamMembers } from './TeamMembers.js'
+import { TeamMembers, type TeamMembersCommandFace } from './TeamMembers.js'
 import { TeamActivity } from './TeamActivity.js'
 import { TeamLedger } from './TeamLedger.js'
+import { TeamCreationPanel } from './TeamCreationPanel.js'
 import styles from './TeamView.module.css'
+
+/**
+ * The S5-A New Team creation face (UI §3–§9): the frozen Remote catalog /
+ * probe / create wrappers (raw RemoteResponse; parsing stays in the model
+ * layer) plus the native seam members. Absent → the zero-state "Start
+ * Team from Here" entry hides (the T6 projection-only view is unchanged).
+ */
+export interface TeamViewCreationFace {
+  /** `catalog.list` (raw RemoteResponse). */
+  readonly listCatalog: () => Promise<RemoteResponse>
+  /** `catalog.get` (one blueprint at one revision). */
+  readonly getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
+  /** `intent.probe` (the pre-creation compatibility probe). */
+  readonly probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
+  /** `team.create` (binds the TeamSession on the named root). */
+  readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  /** Native root-session creation (the public `ISessions.create`). */
+  readonly createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
+  /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
+  readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
+}
 
 export interface TeamViewInjected {
   /** Bare mirror sources; the renderer binds them to the `use*` selector hooks. */
@@ -44,6 +76,10 @@ export interface TeamViewInjected {
   refreshTeamLedger: () => Promise<void>
   /** Switch the current session to the named member session (D9 navigation). */
   openSession: (sessionId: string) => void
+  /** S5-A: the New Team creation face (absent → the zero-state entry hides). */
+  creation?: TeamViewCreationFace
+  /** S5-B: the member command face (absent → the members section stays display-only). */
+  memberCommands?: TeamMembersCommandFace
 }
 
 /** Full team-view props: the view-slot runtime share, injected face, and locale seat. */
@@ -54,7 +90,9 @@ export type TeamViewProps =
 
 /**
  * The team tab body: the one-line zero state for a non-team session (or a
- * team session whose frame has not landed yet); otherwise the UI §12.1
+ * team session whose frame has not landed yet) — carrying the S5-A "Start
+ * Team from Here" entry and New Team panel when the injected creation face
+ * is present; otherwise the UI §12.1
  * four sections from one input — the timeline and the member groups, the
  * activity / progress rows from the snapshot's current-work face, and the
  * durable-ledger Events surface from the per-team ledger store — with the
@@ -67,8 +105,16 @@ export type TeamViewProps =
 export function TeamView(props: TeamViewProps): React.JSX.Element {
   const {
     sessionId, useProjectionMirror, useTeamLedgers,
-    ensureProjection, refreshTeamLedger, openSession, t,
+    ensureProjection, refreshTeamLedger, openSession,
+    creation, memberCommands, useWorkspaces, t,
   } = props
+  const [creationOpen, setCreationOpen] = useState(false)
+  // UI §5.3: the intent draft is page-run UI state only (never authority) —
+  // held here so the panel can open and close in the zero state without
+  // losing the in-flight selection.
+  const [intentDraft, setIntentDraft] = useState<TeamIntentDraft>(emptyTeamIntentDraft)
+  const workspaceViews = useWorkspaces(s => s.items)
+  const workspaceOptions = useMemo(() => teamWorkspaceOptions(workspaceViews), [workspaceViews])
   const resolution = useProjectionMirror(
     mirror => resolveTeamProjection(mirror, sessionId),
     sameTeamProjectionResolution,
@@ -87,7 +133,44 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? ''])
   const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState])
   if (resolution === undefined || snapshot === null) {
-    return <div className={styles.zero} data-team-zero>{t('view.zero')}</div>
+    if (creation === undefined) {
+      return <div className={styles.zero} data-team-zero>{t('view.zero')}</div>
+    }
+    // UI §3: a non-team session (or an unlanded team frame) offers the New
+    // Team entry; the panel replaces the entry while open, and the intent
+    // draft persists in view state across open/close.
+    return (
+      <div className={styles.zero} data-team-zero>
+        <div className={styles.zeroInner}>
+          <p className={styles.zeroText}>{t('view.zero')}</p>
+          {creationOpen
+            ? <TeamCreationPanel
+                listCatalog={creation.listCatalog}
+                getCatalog={creation.getCatalog}
+                probeCompatibility={creation.probeCompatibility}
+                teamCreate={creation.teamCreate}
+                createRootSession={creation.createRootSession}
+                listAgentPresets={creation.listAgentPresets}
+                openSession={openSession}
+                workspaces={workspaceOptions}
+                draft={intentDraft}
+                onDraftChange={setIntentDraft}
+                onCancel={() => setCreationOpen(false)}
+                t={t}
+              />
+            : (
+              <button
+                type="button"
+                className={styles.zeroStart}
+                data-intent-start-here
+                onClick={() => setCreationOpen(true)}
+              >
+                {t('intent.startHere')}
+              </button>
+            )}
+        </div>
+      </div>
+    )
   }
   const currentInstanceId = resolution.perspective.kind === 'member-child'
     ? resolution.perspective.memberInstanceId
@@ -111,6 +194,8 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           ledger={ledger}
           currentSessionId={sessionId}
           onSelectSession={openSession}
+          memberCommands={memberCommands}
+          workspaces={workspaceOptions}
           t={t}
         />
       </section>

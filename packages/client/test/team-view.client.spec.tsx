@@ -41,6 +41,17 @@
  *    navigation).
  *  - "landing frames win" MIGRATED: the dual mirror gains become the
  *    single projection mirror; no re-fire.
+  *
+  * T7 note (P9): the zero state now carries the S5-A "Start Team from
+  * Here" entry and the New Team panel when the injected `creation` face
+  * is present (UI §3); without it the one-line T6 zero state is
+  * unchanged (the zero-state entry tests below cover both faces). The
+  * D9 member-row click target MIGRATES from the row to the
+  * `button[data-member-instance-nav]` inside the new row wrapper (the
+  * S5-B action cluster sits beside the nav button). The `useWorkspaces`
+  * framework seat is now READ by the view (the creation panel's
+  * workspace options; the fixtures return an undefined feed → empty
+  * options).
  */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -49,7 +60,11 @@ import type { TeamProjectionMirror } from '../src/state/team-session-resolution.
 import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
 import type { RemoteLedgerEntryValue } from '../../remote/src/index.js'
 import type { TeamProjectionDto } from '../../contracts/src/index.js'
-import { TeamView, type TeamViewProps } from '../src/ui/TeamView.js'
+import type {
+  RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue, RemoteTeamCreateParams,
+} from '../../remote/src/index.js'
+import type { TeamPresetRow } from '../src/model/team-intent-model.js'
+import { TeamView, type TeamViewCreationFace, type TeamViewProps } from '../src/ui/TeamView.js'
 import { zh } from '../src/ui/locales.js'
 
 afterEach(cleanup)
@@ -57,6 +72,50 @@ afterEach(cleanup)
 const LEADER = 'team-leader'
 const MEMBER = 'team-member'
 const OUTSIDER = 'plain-session'
+
+/** One provenance-bearing success envelope (the wire shape, verbatim). */
+function okResponse(data: unknown, method: string): RemoteResponse {
+  return {
+    ok: true,
+    value: {
+      data: data as RemoteSafeJsonValue,
+      provenance: {
+        origin: 'team-remote', method, endpoint: method, contractVersion: 1,
+        requestToken: null, projectionGeneration: null, effectSequence: null,
+      },
+    },
+  }
+}
+
+/**
+ * A happy-path creation face (S5-A): the catalog / detail / probe / create
+ * spies all resolve to the frozen wire shapes; the panel mounts and
+ * settles without failure so the entry/open/close behavior is testable.
+ */
+function makeCreationFace(): TeamViewCreationFace {
+  return {
+    listCatalog: vi.fn(() => Promise.resolve(
+      okResponse({ blueprints: [{ blueprintId: 'bp-1', revisions: [1, 2] }] }, 'catalog.list'),
+    )),
+    getCatalog: vi.fn((params: RemoteCatalogGetParams) => Promise.resolve(
+      okResponse({
+        blueprint: {
+          blueprintId: params.blueprintId, revision: params.blueprintRevision ?? 2,
+          displayName: 'Atlas', metadata: { source: 'builtin' },
+          members: [{ templateId: 'tpl-lead' }],
+        },
+      }, 'catalog.get'),
+    )),
+    probeCompatibility: vi.fn(() => Promise.resolve(
+      okResponse({ compatibility: { status: 'OPEN', requirements: [] } }, 'intent.probe'),
+    )),
+    teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'root' }, 'team.create'))),
+    createRootSession: vi.fn(() => Promise.resolve('root')),
+    listAgentPresets: vi.fn(() => Promise.resolve([
+      { id: 'team', name: 'Team', isDefault: false },
+    ] satisfies readonly TeamPresetRow[])),
+  }
+}
 
 const T = 1_700_000_000_000
 function iso(ms: number): string {
@@ -158,10 +217,11 @@ function ledgerState(entries: readonly RemoteLedgerEntryValue[]): TeamLedgerStat
 }
 
 /**
- * The projection-only view props: the framework session kit (empty stubs —
- * TeamView never reads them) plus the injected face — the two
- * ObservableSnapshot hooks and the cold-pull / ledger-refresh /
- * navigation callbacks.
+ * The projection-only view props: the framework session kit plus the
+ * injected face — the two ObservableSnapshot hooks and the cold-pull /
+ * ledger-refresh / navigation callbacks. TeamView reads only
+ * `useWorkspaces` from the kit (the creation panel's workspace options);
+ * the fixture feed is undefined → empty options.
  */
 function viewProps(
   projectionMirror: TeamProjectionMirror = {},
@@ -178,7 +238,7 @@ function viewProps(
     useInput: () => { throw new Error('unused') },
     inputActions: { setDraft: () => {}, submit: () => {} } as unknown as TeamViewProps['inputActions'],
     useSessions: () => { throw new Error('unused') },
-    useWorkspaces: () => { throw new Error('unused') },
+    useWorkspaces: (() => undefined) as TeamViewProps['useWorkspaces'],
     // The injected face (projection-only after the T6 collapse).
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
@@ -210,6 +270,67 @@ describe('TeamView', () => {
     expect(screen.getByText('当前会话未加入任何团队')).toBeTruthy()
     expect(props.ensureProjection).toHaveBeenCalledTimes(1)
     expect(props.ensureProjection).toHaveBeenCalledWith(OUTSIDER)
+  })
+
+  it('keeps the plain zero state without the creation face (S5-A: entry hidden, T6 view unchanged)', () => {
+    const view = render(<TeamView {...viewProps({}, OUTSIDER)} />)
+    expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
+    expect(view.container.querySelector('[data-intent-start-here]')).toBeNull()
+    expect(view.container.querySelector('[data-team-creation-panel]')).toBeNull()
+  })
+
+  it('offers the New Team entry in the zero state when the creation face is present (S5-A, UI §3)', () => {
+    const view = render(<TeamView {...{ ...viewProps({}, OUTSIDER), creation: makeCreationFace() }} />)
+    expect(view.container.querySelector('[data-team-zero]')).toBeTruthy()
+    const start = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (start === null) throw new Error('the Start Team from Here entry did not render')
+    expect(start.textContent).toBe('从此处开始团队')
+    expect(view.container.querySelector('[data-team-creation-panel]')).toBeNull()
+  })
+
+  it('opens the New Team panel from the entry and returns to the entry on cancel (S5-A, UI §3/§5.3)', async () => {
+    const view = render(<TeamView {...{ ...viewProps({}, OUTSIDER), creation: makeCreationFace() }} />)
+    const start = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (start === null) throw new Error('the Start Team from Here entry did not render')
+    fireEvent.click(start)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    const cancel = view.container.querySelector<HTMLButtonElement>('[data-intent-cancel]')
+    if (cancel === null) throw new Error('the panel cancel button did not render')
+    fireEvent.click(cancel)
+    expect(view.container.querySelector('[data-team-creation-panel]')).toBeNull()
+    expect(view.container.querySelector('[data-intent-start-here]')).not.toBeNull()
+  })
+
+  it('persists the intent draft in view state across panel close/reopen (S5-A, UI §5.3)', async () => {
+    const view = render(<TeamView {...{ ...viewProps({}, OUTSIDER), creation: makeCreationFace() }} />)
+    const start = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (start === null) throw new Error('the Start Team from Here entry did not render')
+    fireEvent.click(start)
+    await vi.waitFor(() => {
+      const select = view.container.querySelector<HTMLSelectElement>('[data-intent-blueprint]')
+      expect(select).not.toBeNull()
+      expect(select?.disabled).toBe(false)
+    })
+    const select = view.container.querySelector<HTMLSelectElement>('[data-intent-blueprint]')
+    if (select === null) throw new Error('the blueprint select did not render')
+    fireEvent.change(select, { target: { value: 'bp-1' } })
+    const cancel = view.container.querySelector<HTMLButtonElement>('[data-intent-cancel]')
+    if (cancel === null) throw new Error('the panel cancel button did not render')
+    fireEvent.click(cancel)
+    expect(view.container.querySelector('[data-team-creation-panel]')).toBeNull()
+    const reopen = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (reopen === null) throw new Error('the entry did not return after cancel')
+    fireEvent.click(reopen)
+    await vi.waitFor(() => {
+      const reopened = view.container.querySelector<HTMLSelectElement>('[data-intent-blueprint]')
+      expect(reopened).not.toBeNull()
+      expect(reopened?.disabled).toBe(false)
+    })
+    const reopened = view.container.querySelector<HTMLSelectElement>('[data-intent-blueprint]')
+    if (reopened === null) throw new Error('the blueprint select did not re-render')
+    expect(reopened.value).toBe('bp-1')
   })
 
   it('renders all four UI §12.1 sections live from one input for a leader session', () => {
@@ -249,7 +370,10 @@ describe('TeamView', () => {
   it('switches to the member session when a member instance row is clicked (D9)', () => {
     const openSession = vi.fn()
     const view = render(<TeamView {...{ ...viewProps(TEAM_PROJECTION_MIRROR, LEADER), openSession }} />)
-    const instance = view.container.querySelector<HTMLButtonElement>('[data-member-instance][data-status="running"]')
+    // T7: the row itself is no longer the click target; the nav button
+    // inside the row wrapper switches the session (S5-B actions sit
+    // beside it).
+    const instance = view.container.querySelector<HTMLButtonElement>('[data-member-instance][data-status="running"] [data-member-instance-nav]')
     if (instance === null) throw new Error('the running member instance row did not render')
     fireEvent.click(instance)
     expect(openSession).toHaveBeenCalledTimes(1)

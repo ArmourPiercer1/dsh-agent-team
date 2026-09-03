@@ -1,0 +1,10 @@
+tsc -p packages/client/tsconfig.json --noEmit (full face: src + test + vitest.config.ts)
+
+Round 1 (first check of the two new T7 jsdom specs + the team-view spec
+edits): 11 errors, all mechanical, all in the NEW spec files (one missing
+export — emptyTeamIntentDraft imported from the model module instead of
+the panel; ten missing element generics for dataset/disabled/placeholder
+access; one un-narrowed MemberCommandOutcome union access). No source
+changes were needed.
+
+Round 2 (after the spec fixes): EXIT=0 (no error output)

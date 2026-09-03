@@ -265,8 +265,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // team-view spec) are outside the scanner's extension set; the net
     // scan-target count drops by one and the new files carry zero
     // denylist vocabulary (the scan over them passes).
-    expect(scanResult.filesScanned).toBe(586)
-    expect(scanResult.files.length).toBe(586)
+    // P9-T7 new-team + member-command flows pin (+4): two src .ts
+    // (model/team-intent-model, model/team-member-commands) plus two
+    // spec .ts (test/team-intent-model.test,
+    // test/team-member-commands.test); the two new .tsx jsdom specs
+    // (team-creation-panel.client.spec, team-members-actions.client.spec)
+    // and the CSS modules are outside the scanner's extension set; all
+    // four scanned files carry zero denylist vocabulary (the scan over
+    // them passes).
+    expect(scanResult.filesScanned).toBe(590)
+    expect(scanResult.files.length).toBe(590)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

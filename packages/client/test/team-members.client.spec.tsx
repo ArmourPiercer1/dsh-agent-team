@@ -10,6 +10,12 @@
  * pairing. The legacy "unbound" vocabulary is abolished: every snapshot
  * instance is a real row (the CREATED lifecycle replaces the absent bound
  * session).
+ * T7 note (P9): the instance row is now a `div[data-member-instance]`
+ * wrapper holding the `button[data-member-instance-nav]` (the D9 click
+ * target, disabled when the row binds no session) plus the S5-B action
+ * cluster; the D9 click-to-switch assertions below MIGRATE from clicking
+ * the row itself to clicking the nav button. The S5-B command behaviors
+ * live in `team-members-actions.client.spec.tsx`.
  */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -246,7 +252,7 @@ describe('TeamMembers', () => {
       }),
     ])
     const { container } = render(<TeamMembers {...makeProps(team, ledger(), LEADER, openSession)} />)
-    const instances = container.querySelectorAll<HTMLButtonElement>('[data-member-instance]')
+    const instances = container.querySelectorAll<HTMLButtonElement>('[data-member-instance-nav]')
     expect(instances).toHaveLength(3)
     fireEvent.click(instances[0]!)
     expect(openSession).toHaveBeenLastCalledWith(LEADER)
@@ -296,7 +302,7 @@ describe('TeamMembers', () => {
       instance({ instanceId: 'a', templateId: 'tpl-a', label: 'Alpha' }),
     ])
     const { container } = render(<TeamMembers {...makeProps(team, ledger(), LEADER, openSession)} />)
-    const instances = container.querySelectorAll<HTMLButtonElement>('[data-member-instance]')
+    const instances = container.querySelectorAll<HTMLButtonElement>('[data-member-instance-nav]')
     expect(instances).toHaveLength(2)
     expect(instances[0]?.disabled).toBe(false)
     const sessionless = instances[1]!

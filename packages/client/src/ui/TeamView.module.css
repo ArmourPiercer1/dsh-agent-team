@@ -7,6 +7,39 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
+.zeroInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.zeroText {
+  margin: 0;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.zeroStart {
+  padding: 6px 14px;
+  border: 1px solid var(--dsw-alias-state-business-primary);
+  border-radius: 6px;
+  background: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-bg-layer-1);
+  font: var(--dsw-font-xs-13);
+  cursor: pointer;
+}
+
+.zeroStart:hover {
+  opacity: 0.88;
+}
+
+.zeroStart:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
 .body {
   display: flex;
   flex-direction: column;

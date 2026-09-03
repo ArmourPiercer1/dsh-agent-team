@@ -33,6 +33,8 @@ export interface TeamMemberInstanceRow {
   readonly childSessionId: string
   /** The raw frozen lifecycle (read straight from the snapshot row). */
   readonly lifecycle: TeamUiMemberInstance['lifecycle']
+  /** The instance label (read straight from the snapshot row; the dialog copy). */
+  readonly label: string
   /** The §7.2 display status (read straight from the snapshot row). */
   readonly status: TeamUiMemberInstance['displayStatus']
   /** The latest tool call from the activity facts; absent before any call. */
@@ -103,6 +105,7 @@ function appendRow(group: GroupBuild, member: TeamUiMemberInstance, ledger: Team
     key: `${member.instanceId}:${member.childSessionId ?? ''}:${group.instances.length}`,
     childSessionId: member.childSessionId ?? '',
     lifecycle: member.lifecycle,
+    label: member.label,
     status: member.displayStatus,
     ...(member.currentAction !== undefined ? { currentAction: member.currentAction } : {}),
     pendingControlCount: pendingOf(member, ledger),
