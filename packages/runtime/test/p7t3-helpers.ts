@@ -62,6 +62,7 @@ import type {
   AdmissionClosePort,
   DescendantDrainPort,
   DescendantDrainReport,
+  LifecycleEvidencePort,
   LifecyclePorts,
   LifecycleService,
   LifecycleTarget,
@@ -481,6 +482,8 @@ export interface P7T3WorldOptions {
   readonly seedMembers?: readonly P7T3SeedMember[]
   /** The drain report of the descendant seam (default: quiescent, 0). */
   readonly drainReport?: DescendantDrainReport
+  /** The optional durable evidence port (carried across restarts). */
+  readonly evidence?: LifecycleEvidencePort
 }
 
 /** One durable TeamDomain world + the mock-first live ports. */
@@ -534,6 +537,7 @@ function finishWorld(
     readonly targets: Record<string, LifecycleTarget>
     readonly childSessions: Record<string, string>
   },
+  evidence?: LifecycleEvidencePort,
 ): P7T3World {
   const admission = new P7T3AdmissionFake(clock)
   const activity = new P7T3ActivityFake(clock)
@@ -541,7 +545,10 @@ function finishWorld(
   const residency = new P7T3ResidencyFake(clock)
   const commit = new P7T3CommitFake(clock, domain)
   if (drainReport !== undefined) descendants.report = drainReport
-  const ports: LifecyclePorts = { teamDomain: domain, commit, admission, activity, descendants, residency }
+  const ports: LifecyclePorts =
+    evidence === undefined
+      ? { teamDomain: domain, commit, admission, activity, descendants, residency }
+      : { teamDomain: domain, commit, admission, activity, descendants, residency, evidence }
   const service = createLifecycleService(ports)
   const targets: Record<string, LifecycleTarget> = carry ? { ...carry.targets } : {}
   const childSessions: Record<string, string> = carry ? { ...carry.childSessions } : {}
@@ -589,7 +596,7 @@ export async function createLifecycleWorld(
   const dir = scratchDir(basename)
   const seam = new FileStorageSeam(dir)
   const domain = await createTeamDomain(seam)
-  const world = finishWorld(dir, seam, domain, new P7T3Clock(), options.drainReport)
+  const world = finishWorld(dir, seam, domain, new P7T3Clock(), options.drainReport, undefined, options.evidence)
   await seedRows(world, options)
   return world
 }
@@ -609,7 +616,7 @@ export async function restartLifecycleWorld(world: P7T3World): Promise<P7T3World
   return finishWorld(world.scratchDir, seam, domain, world.clock, undefined, {
     targets: world.targets,
     childSessions: world.childSessions,
-  })
+  }, world.ports.evidence)
 }
 
 /**

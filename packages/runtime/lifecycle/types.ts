@@ -42,7 +42,7 @@
  * @module @dsh-agent-team/runtime/lifecycle/types
  */
 
-import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
+import type { MemberInstanceRecordDto, MemberLifecycleState } from '../../contracts/src/index.js'
 import type { TeamDomain } from '../../storage/repositories/index.js'
 import type { ResidencyPort } from '../member-residency/index.js'
 import type { LifecycleCommitPort } from '../admission/index.js'
@@ -210,7 +210,57 @@ export interface DescendantDrainPort {
  * The RESTORE path NEVER consults `admission`, `activity`, `descendants`,
  * or `residency` — the G7 criterion "Restore does not create/resume Agent"
  * is structural here and asserted by the p7t3-restore-no-agent suite.
+ *
+ * `evidence` — the OPTIONAL durable evidence port: after each committed
+ * standalone operation the service commits the `member-lifecycle-changed`
+ * fact (UI doc §27.2). The ledger append is the generation-advancing
+ * durable write — without it the member-row transition would never
+ * advance the team generation, and the post-op projection pull would
+ * return the pre-op generation: the client's frozen pull verdict would
+ * classify the fresh data as a `duplicate` and drop the updated frame
+ * (the S7 die of the attempt-31 vertical, bug #9). Absent → the service
+ * commits no evidence (the P7-T3 test worlds without a ledger binding).
  */
+
+/**
+ * The evidence of one committed standalone lifecycle operation: the
+ * pre-op `from` (the durable read under the same team lock) and the
+ * committed `to` + the full step trace. The service passes exactly ONE
+ * of these per successful operation — the RUNNING archive's settle +
+ * archive are ONE operation, ONE fact.
+ */
+export interface LifecycleEvidenceArgs {
+  readonly rootSessionId: string
+  readonly instanceId: string
+  /** Which service operation committed the transition. */
+  readonly operation: 'archive' | 'restore' | 'dispose'
+  /** The lifecycle before the operation (the pre-op durable read). */
+  readonly from: MemberLifecycleState
+  /** The lifecycle after the operation (the committed record). */
+  readonly to: MemberLifecycleState
+  /** The full executed trace, in order (live steps + commit step(s)). */
+  readonly steps: readonly LifecycleStepName[]
+}
+
+/**
+ * The durable evidence port for committed standalone lifecycle
+ * operations (see the {@link LifecyclePorts} note). The production
+ * binding commits the `member-lifecycle-changed` ledger fact; the append
+ * advances the team generation, so the post-op projection is strictly
+ * newer than any pre-op frame. The action-router effect and the work-
+ * chain settlement commit their OWN facts through the UNLOCKED cores
+ * and never call this port — no double append on either surface.
+ */
+export interface LifecycleEvidencePort {
+  /**
+   * Commit the durable evidence of one committed standalone lifecycle
+   * operation. Fail-closed: a durable write fault rejects the whole
+   * call (the transition is already committed; the caller surfaces the
+   * typed failure — never a silent evidence loss).
+   */
+  commitLifecycleChanged(args: LifecycleEvidenceArgs): Promise<number>
+}
+
 export interface LifecyclePorts {
   /** The TeamDomain (durable authority, invariant 41; read-only for this module). */
   readonly teamDomain: TeamDomain
@@ -224,6 +274,8 @@ export interface LifecyclePorts {
   readonly descendants: DescendantDrainPort
   /** The P5-T6 residency port (step `release-residency`). */
   readonly residency: ResidencyPort
+  /** The durable evidence port (optional; see above). */
+  readonly evidence?: LifecycleEvidencePort
 }
 
 /**

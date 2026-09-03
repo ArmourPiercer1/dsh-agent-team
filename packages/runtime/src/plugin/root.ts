@@ -168,9 +168,9 @@ import type {
   CapabilityOverlayConfig,
 } from '../../agent-setup/capability/index.js'
 import { createActivationProvider } from '../../activation/index.js'
-import { enforceCompatibilityGate } from '../../admission/index.js'
+import { ACTION_NAMES, enforceCompatibilityGate } from '../../admission/index.js'
 import type { LifecycleCommitPort } from '../../admission/index.js'
-import { createTeamRuntime } from '../../action-router/index.js'
+import { commitDurableFact, createTeamRuntime } from '../../action-router/index.js'
 import { createTeamOperationCoordinator } from '../../coordination/index.js'
 import { createLifecycleService } from '../../lifecycle/index.js'
 import type { LifecyclePorts } from '../../lifecycle/index.js'
@@ -786,6 +786,36 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       drainDescendants: (childSessionId) => live.drainDescendants(childSessionId),
     },
     residency: live.residency,
+    // The durable evidence port (the UI-direct lifecycle surface): the
+    // s6-remote archive/restore/dispose commands commit through this
+    // locked service — WITHOUT the `member-lifecycle-changed` fact the
+    // member-row transition would never advance the team generation
+    // (the generation advances only on a ledger-fact append or the
+    // compatibility state replace), and the post-op projection pull
+    // would return the pre-op generation: the client's frozen pull
+    // verdict would classify the fresh data as a `duplicate` and drop
+    // the updated frame (the S7 die of the attempt-31 vertical, bug #9).
+    // The router effect and the work-chain settlement commit their own
+    // facts through the UNLOCKED cores — no double append on either
+    // surface.
+    evidence: {
+      commitLifecycleChanged: async (args) => {
+        return commitDurableFact(repos, args.rootSessionId, now, 'member-lifecycle-changed', {
+          action:
+            args.operation === 'archive'
+              ? ACTION_NAMES.ARCHIVE_MEMBER
+              : args.operation === 'restore'
+                ? ACTION_NAMES.RESTORE_MEMBER
+                : ACTION_NAMES.DISPOSE_MEMBER,
+          caller: { kind: 'human', humanId: args.rootSessionId },
+          instanceId: args.instanceId,
+          from: args.from,
+          to: args.to,
+          steps: [...args.steps],
+          at: now(),
+        })
+      },
+    },
   }
   const lifecycleService = createLifecycleService(lifecyclePorts, coordination.chains)
 

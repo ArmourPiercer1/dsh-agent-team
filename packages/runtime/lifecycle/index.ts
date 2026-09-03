@@ -50,6 +50,8 @@ export type {
   DescendantDrainPort,
   DescendantDrainReport,
   DisposeMemberResult,
+  LifecycleEvidenceArgs,
+  LifecycleEvidencePort,
   LifecyclePorts,
   LifecycleService,
   LifecycleStepName,
@@ -68,7 +70,14 @@ import { withTeamLock } from '../action-router/index.js'
 import { archiveMember } from './archive.js'
 import { disposeMember } from './dispose.js'
 import { restoreMember } from './restore.js'
-import type { LifecyclePorts, LifecycleService } from './types.js'
+import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
+import type {
+  LifecycleEvidenceArgs,
+  LifecyclePorts,
+  LifecycleService,
+  LifecycleStepName,
+  LifecycleTarget,
+} from './types.js'
 
 /**
  * Create the locked lifecycle service: the three operations wrapped in
@@ -92,12 +101,69 @@ export function createLifecycleService(
   // (previous behavior). The production row itself runs the UNLOCKED cores
   // under the router's chain — this lock fences standalone service use.
   const locks = teamLocks ?? new Map<string, Promise<unknown>>()
+  /**
+   * The pre-op durable read (under the same team lock) that supplies the
+   * evidence `from`. GUARDED: a malformed identity or a read fault must
+   * NOT surface the storage-layer error — the core's fail-closed prologue
+   * (identity → guard → read → dry-run) owns the typed error channel
+   * (LIFECYCLE_INVALID_INPUT / MEMBER_NOT_FOUND / DURABLE_STATE_FAILED);
+   * a swallowed read simply yields `from === undefined`, and the core
+   * either rejects (no evidence) or re-reads successfully.
+   */
+  const preRead = (target: LifecycleTarget): MemberInstanceRecordDto | undefined => {
+    try {
+      return ports.teamDomain.repositories.memberInstances.get(target.rootSessionId, target.instanceId)
+    } catch {
+      return undefined
+    }
+  }
+  /**
+   * Commit the durable evidence AFTER a committed standalone operation,
+   * under the same team lock, from the pre-op durable read. Exactly ONE
+   * fact per operation (the RUNNING archive's settle + archive is one
+   * operation). Rejected operations never reach this point (the core
+   * throws before any commit). The evidence commit is fail-closed: a
+   * durable write fault rejects the whole call (the transition is
+   * already committed; the typed failure is surfaced, never swallowed).
+   */
+  const evidenceAfter = async (
+    target: LifecycleTarget,
+    operation: LifecycleEvidenceArgs['operation'],
+    from: MemberInstanceRecordDto | undefined,
+    member: MemberInstanceRecordDto,
+    steps: readonly LifecycleStepName[],
+  ): Promise<void> => {
+    if (ports.evidence === undefined || from === undefined) return
+    await ports.evidence.commitLifecycleChanged({
+      rootSessionId: target.rootSessionId,
+      instanceId: target.instanceId,
+      operation,
+      from: from.lifecycle,
+      to: member.lifecycle,
+      steps: [...steps],
+    })
+  }
   return {
     archiveMember: (target) =>
-      withTeamLock(locks, target.rootSessionId, () => archiveMember(ports, target)),
+      withTeamLock(locks, target.rootSessionId, async () => {
+        const from = preRead(target)
+        const result = await archiveMember(ports, target)
+        await evidenceAfter(target, 'archive', from, result.member, result.steps)
+        return result
+      }),
     restoreMember: (target) =>
-      withTeamLock(locks, target.rootSessionId, () => restoreMember(ports, target)),
+      withTeamLock(locks, target.rootSessionId, async () => {
+        const from = preRead(target)
+        const result = await restoreMember(ports, target)
+        await evidenceAfter(target, 'restore', from, result.member, result.steps)
+        return result
+      }),
     disposeMember: (target) =>
-      withTeamLock(locks, target.rootSessionId, () => disposeMember(ports, target)),
+      withTeamLock(locks, target.rootSessionId, async () => {
+        const from = preRead(target)
+        const result = await disposeMember(ports, target)
+        await evidenceAfter(target, 'dispose', from, result.member, result.steps)
+        return result
+      }),
   }
 }
