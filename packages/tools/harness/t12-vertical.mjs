@@ -2340,13 +2340,17 @@ async function runStateProbe() {
       sp.check(`${label}: row health ok=true with the frozen tool count (10)`,
         rec.health?.body?.ok === true && rec.health?.body?.toolCount === EXPECTED_TOOL_COUNT,
         `health=${JSON.stringify(rec.health).slice(0, 200)}`)
+      // serverName lives in the governance mcp cell for the root session —
+      // governance.sessions.<rootSessionId>.mcp — not at the body top level
+      // (the first run16b probe asserted the wrong path; T12-V22 corrects it).
+      const rootMcpCell = raw.body?.governance?.sessions?.[root]?.mcp
       if (kind.startsWith('mcp-less')) {
-        sp.check(`${label}: mcp-less variant reports serverName: null (T12-V14 — no 500, mcp view fields omitted)`,
-          raw.body?.serverName === null, `serverName=${JSON.stringify(raw.body?.serverName)}`)
+        sp.check(`${label}: mcp-less variant reports serverName: null in the governance mcp cell (T12-V14 — no 500, mcp view fields omitted)`,
+          rootMcpCell?.serverName === null && rootMcpCell?.mounted === false, `mcp cell=${JSON.stringify(rootMcpCell)}`)
       } else {
-        sp.check(`${label}: mcp-configured variant reports a real serverName`,
-          typeof raw.body?.serverName === 'string' && raw.body.serverName.length > 0,
-          `serverName=${JSON.stringify(raw.body?.serverName)}`)
+        sp.check(`${label}: mcp-configured variant reports a real serverName in the governance mcp cell`,
+          typeof rootMcpCell?.serverName === 'string' && rootMcpCell.serverName.length > 0,
+          `mcp cell=${JSON.stringify(rootMcpCell)}`)
       }
     }
   } finally {
