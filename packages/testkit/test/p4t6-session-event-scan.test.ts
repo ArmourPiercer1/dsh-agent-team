@@ -273,8 +273,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // and the CSS modules are outside the scanner's extension set; all
     // four scanned files carry zero denylist vocabulary (the scan over
     // them passes).
-    expect(scanResult.filesScanned).toBe(590)
-    expect(scanResult.files.length).toBe(590)
+    // P9-T8 governance/handoff/legacy model pin (+6): three src .ts
+    // (model/team-governance, model/team-handoff, model/team-legacy)
+    // plus three spec .ts (test/team-governance.test,
+    // test/team-handoff.test, test/team-legacy.test); the three new
+    // .tsx jsdom specs (team-governance.client.spec,
+    // team-creation-handoff.client.spec, team-legacy.client.spec), the
+    // new CSS module, and the T7 .tsx/.css edits are outside the
+    // scanner's extension set; all six scanned files carry zero
+    // denylist vocabulary (the scan over them passes).
+    expect(scanResult.filesScanned).toBe(596)
+    expect(scanResult.files.length).toBe(596)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

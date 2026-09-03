@@ -148,6 +148,65 @@ export type TeamKey =
   | 'dock.activities.empty'
   | 'marker.progress'
   | 'marker.decision'
+  // P9-T8 (S5-C/S5-D): governance surfaces + handoff + legacy zero-state.
+  | 'governance.compatibility'
+  | 'governance.title'
+  | 'governance.compatibility.badge.pass'
+  | 'governance.compatibility.badge.degraded'
+  | 'governance.compatibility.badge.actionRequired'
+  | 'governance.compatibility.badge.fatal'
+  | 'governance.compatibility.counts'
+  | 'governance.compatibility.generation'
+  | 'governance.compatibility.probed'
+  | 'governance.compatibility.freshRead'
+  | 'governance.compatibility.readCounts'
+  | 'governance.compatibility.review'
+  | 'governance.compatibility.recheck'
+  | 'governance.compatibility.recheckHelp'
+  | 'governance.compatibility.ack'
+  | 'governance.compatibility.ackDisabled'
+  | 'governance.policy.header'
+  | 'governance.policy.help'
+  | 'governance.policy.review'
+  | 'governance.policy.commit'
+  | 'governance.policy.preview'
+  | 'governance.policy.cell.locked'
+  | 'governance.policy.entry.none'
+  | 'governance.policy.entry.allow'
+  | 'governance.policy.entry.deny'
+  | 'governance.policy.items'
+  | 'governance.effectiveConfig'
+  | 'governance.effectiveConfig.empty'
+  | 'governance.lane.suppressed'
+  | 'governance.lane.unavailable'
+  | 'governance.lane.effectiveFrom'
+  | 'governance.hardPolicy'
+  | 'governance.override.show'
+  | 'governance.override.set'
+  | 'governance.override.reset'
+  | 'governance.override.none'
+  | 'governance.override.reading'
+  | 'governance.reading'
+  | 'governance.pending'
+  | 'governance.error'
+  | 'handoff.title'
+  | 'handoff.source'
+  | 'handoff.generate'
+  | 'handoff.preparing'
+  | 'handoff.ready'
+  | 'handoff.preview'
+  | 'handoff.failed'
+  | 'handoff.retry'
+  | 'handoff.continue'
+  | 'handoff.cancel'
+  | 'handoff.canceled'
+  | 'handoff.provenance'
+  | 'legacy.banner.line1'
+  | 'legacy.banner.line2'
+  | 'legacy.banner.line3'
+  | 'legacy.summary'
+  | 'legacy.counts'
+  | 'legacy.inspectError'
 
 /** Simplified Chinese UI strings for every {@link TeamKey}. */
 export const zh: Record<TeamKey, string> = {
@@ -298,6 +357,64 @@ export const zh: Record<TeamKey, string> = {
   'dock.activities.empty': '暂无活动进度',
   'marker.progress': '进度',
   'marker.decision': '裁决',
+  'governance.compatibility': '兼容性',
+  'governance.title': '治理',
+  'governance.compatibility.badge.pass': '✓ 兼容',
+  'governance.compatibility.badge.degraded': '⚠ 降级',
+  'governance.compatibility.badge.actionRequired': '⚠ 需要处理',
+  'governance.compatibility.badge.fatal': '✕ 结构性错误',
+  'governance.compatibility.counts': '{warning} 项警告 · {fatal} 项致命 · {acknowledged} 项已确认',
+  'governance.compatibility.generation': '代数 {generation}',
+  'governance.compatibility.probed': '最后探测于 {at}',
+  'governance.compatibility.freshRead': '最新兼容性读取',
+  'governance.compatibility.readCounts': '{pass} 项通过 · {warning} 项警告 · {fatal} 项致命 · {unacked} 项未确认警告 · {stale} 项过期确认',
+  'governance.compatibility.review': '审查',
+  'governance.compatibility.recheck': '重新检查',
+  'governance.compatibility.recheckHelp': '重新检查会生成新的兼容性代数；旧的确认不会自动覆盖新代数。',
+  'governance.compatibility.ack': '确认警告',
+  'governance.compatibility.ackDisabled': '兼容汇总只暴露聚合计数，未暴露逐项确认标识；无法逐项确认。',
+  'governance.policy.header': '策略 [ {state} ]',
+  'governance.policy.help': '策略控制团队当前的运行时治理范围，不代表任务进度。',
+  'governance.policy.review': '审查',
+  'governance.policy.commit': '提交',
+  'governance.policy.preview': '将提交：{capabilities}',
+  'governance.policy.cell.locked': '已锁定',
+  'governance.policy.entry.none': '未设置',
+  'governance.policy.entry.allow': '允许',
+  'governance.policy.entry.deny': '拒绝',
+  'governance.policy.items': '条目',
+  'governance.effectiveConfig': '生效配置',
+  'governance.effectiveConfig.empty': '该成员暂无生效配置数据',
+  'governance.lane.suppressed': '已抑制',
+  'governance.lane.unavailable': '不可用',
+  'governance.lane.effectiveFrom': '自 {step} 生效',
+  'governance.hardPolicy': '请求：{requested} / 生效：{effective} / 原因：{reason}',
+  'governance.override.show': '查看覆盖',
+  'governance.override.set': '设置覆盖',
+  'governance.override.reset': '重置覆盖',
+  'governance.override.none': '无显式人工覆盖',
+  'governance.override.reading': '正在读取覆盖…',
+  'governance.reading': '正在读取…',
+  'governance.pending': '处理中…',
+  'governance.error': '错误：{message}',
+  'handoff.title': '上下文交接',
+  'handoff.source': '源会话："{id}"',
+  'handoff.generate': '生成一次性摘要',
+  'handoff.preparing': '正在生成摘要…',
+  'handoff.ready': '摘要已就绪',
+  'handoff.preview': '预览',
+  'handoff.failed': '上下文交接失败：{message}',
+  'handoff.retry': '重试',
+  'handoff.continue': '不带交接继续',
+  'handoff.cancel': '取消',
+  'handoff.canceled': '交接已取消',
+  'handoff.provenance': '源自会话：{id}',
+  'legacy.banner.line1': '本会话由旧版 Team 实现创建。',
+  'legacy.banner.line2': 'Team vNext 不会将其作为 vNext 团队恢复或变更。',
+  'legacy.banner.line3': '历史 Chat 与 Trajectory 仍可访问。',
+  'legacy.summary': '已解码的旧版团队摘要（只读）',
+  'legacy.counts': '{roster} 名花名册成员 · {sessions} 个扫描会话',
+  'legacy.inspectError': '旧版团队检查失败：{message}',
 }
 
 /** English UI strings for every {@link TeamKey}. */
@@ -449,4 +566,62 @@ export const en: Record<TeamKey, string> = {
   'dock.activities.empty': 'No activity progress yet',
   'marker.progress': 'Progress',
   'marker.decision': 'Decision',
+  'governance.compatibility': 'Compatibility',
+  'governance.title': 'Governance',
+  'governance.compatibility.badge.pass': '✓ Compatible',
+  'governance.compatibility.badge.degraded': '⚠ Degraded',
+  'governance.compatibility.badge.actionRequired': '⚠ Action required',
+  'governance.compatibility.badge.fatal': '✕ Structural error',
+  'governance.compatibility.counts': '{warning} warning(s) · {fatal} fatal · {acknowledged} acknowledged',
+  'governance.compatibility.generation': 'Generation {generation}',
+  'governance.compatibility.probed': 'Last probed at {at}',
+  'governance.compatibility.freshRead': 'Latest compatibility read',
+  'governance.compatibility.readCounts': '{pass} pass · {warning} warning · {fatal} fatal · {unacked} unacknowledged · {stale} stale acknowledgements',
+  'governance.compatibility.review': 'Review',
+  'governance.compatibility.recheck': 'Recheck',
+  'governance.compatibility.recheckHelp': 'Rechecking starts a new compatibility generation; old acknowledgements never cover it.',
+  'governance.compatibility.ack': 'Acknowledge warning',
+  'governance.compatibility.ackDisabled': 'The compatibility summary exposes aggregate counts only; per-requirement acknowledgement is not exposed on the wire.',
+  'governance.policy.header': 'Policy [ {state} ]',
+  'governance.policy.help': 'Policy controls the Team\'s current runtime governance envelope. It does not represent task progress.',
+  'governance.policy.review': 'Review',
+  'governance.policy.commit': 'Commit',
+  'governance.policy.preview': 'Will commit: {capabilities}',
+  'governance.policy.cell.locked': 'locked',
+  'governance.policy.entry.none': 'not set',
+  'governance.policy.entry.allow': 'Allow',
+  'governance.policy.entry.deny': 'Deny',
+  'governance.policy.items': 'items',
+  'governance.effectiveConfig': 'Effective config',
+  'governance.effectiveConfig.empty': 'No effective config data for this member yet',
+  'governance.lane.suppressed': 'Suppressed',
+  'governance.lane.unavailable': 'Unavailable',
+  'governance.lane.effectiveFrom': 'effective from {step}',
+  'governance.hardPolicy': 'Requested: {requested} / Effective: {effective} / Reason: {reason}',
+  'governance.override.show': 'Show override',
+  'governance.override.set': 'Set override',
+  'governance.override.reset': 'Reset override',
+  'governance.override.none': 'No explicit human override',
+  'governance.override.reading': 'Reading override…',
+  'governance.reading': 'Reading…',
+  'governance.pending': 'Pending…',
+  'governance.error': 'Error: {message}',
+  'handoff.title': 'Context handoff',
+  'handoff.source': 'Source: "{id}"',
+  'handoff.generate': 'Generate a one-shot summary',
+  'handoff.preparing': 'Generating summary…',
+  'handoff.ready': 'Summary ready',
+  'handoff.preview': 'Preview',
+  'handoff.failed': 'Context handoff failed: {message}',
+  'handoff.retry': 'Retry',
+  'handoff.continue': 'Continue without handoff',
+  'handoff.cancel': 'Cancel',
+  'handoff.canceled': 'Handoff canceled',
+  'handoff.provenance': 'Started from Session: {id}',
+  'legacy.banner.line1': 'This Session was created by the previous Team implementation.',
+  'legacy.banner.line2': 'Team vNext will not resume or mutate it as a vNext Team.',
+  'legacy.banner.line3': 'Historical Chat and Trajectory remain available.',
+  'legacy.summary': 'Decoded legacy team summary (read-only)',
+  'legacy.counts': '{roster} roster members · {sessions} scanned sessions',
+  'legacy.inspectError': 'Legacy inspection failed: {message}',
 }

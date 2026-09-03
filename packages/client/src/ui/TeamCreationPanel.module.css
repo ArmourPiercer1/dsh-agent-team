@@ -255,3 +255,108 @@
   opacity: 0.5;
   cursor: default;
 }
+
+/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */
+
+.handoff {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.handoffTitle {
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+}
+
+.handoff > span:not(.handoffTitle) {
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}
+
+.handoff > label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+}
+
+.handoff > label:has(input:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.handoffNote {
+  margin: 0;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.handoffReady {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.handoffReady > span {
+  color: var(--dsw-alias-state-success-primary);
+  font: var(--dsw-font-xxxs-11);
+  font-weight: 600;
+}
+
+.handoffPreview {
+  width: 100%;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.handoffPreview > p {
+  margin: 0 0 3px;
+  color: var(--dsw-alias-label-primary);
+  font-weight: 600;
+}
+
+.handoffPreview ul {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+
+.handoffPreview li {
+  margin: 1px 0;
+  word-break: break-word;
+}
+
+.handoffError,
+.handoffFailed > p {
+  margin: 0;
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}
+
+.handoffFailed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--dsw-alias-state-error-secondary);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.handoffTriad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

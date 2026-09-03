@@ -32,6 +32,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
   RemoteCatalogGetParams,
+  RemoteHandoffCreateParams,
+  RemoteHandoffPrepareParams,
   RemoteIntentProbeParams,
   RemoteResponse,
   RemoteTeamCreateParams,
@@ -56,6 +58,19 @@ import {
   parseCompatibilityResult,
   selectDefaultPresetId,
 } from '../model/team-intent-model.js'
+import {
+  createRequestTokenGenerator,
+} from '../model/team-member-commands.js'
+import {
+  HANDOFF_DECISION_OPTIONS,
+  handoffDecisionActions,
+  handoffRetryPlan,
+  parseHandoffCreateState,
+  parseHandoffPrepareValue,
+  type HandoffCreateStateWire,
+  type HandoffDecisionOption,
+  type HandoffPrepareValueWire,
+} from '../model/team-handoff.js'
 import type { TeamKey } from './locales.js'
 import styles from './TeamCreationPanel.module.css'
 
@@ -73,6 +88,28 @@ type PanelCompatStatus = IntentCompatibilityStatus | 'checking' | 'unknown' | 'n
 export interface TeamCreateError {
   readonly code: string
   readonly message: string
+}
+
+/**
+ * The handoff source (UI §32.2: the current Session A + its workspace).
+ * Absent (with the face) → no handoff block; the panel is the T7 surface.
+ */
+export interface TeamCreationHandoffSource {
+  /** The source Session A (never converted, never mutated — §32.2). */
+  readonly sourceSessionId: string
+  /** A's workspace (the default-workspace prefill; null when unknown). */
+  readonly sourceWorkspaceId: string | null
+}
+
+/**
+ * The frozen `handoff.*` face (wired at T9): raw `RemoteResponse`, typed
+ * error intact (G5). `handoff.prepare` is the read-only one-shot summary
+ * preview; `handoff.create` is the start-team-from-here command (the host
+ * snapshots the source itself — NO native root on this path).
+ */
+export interface TeamCreationHandoffFace {
+  readonly prepare: (params: RemoteHandoffPrepareParams) => Promise<RemoteResponse>
+  readonly create: (params: RemoteHandoffCreateParams) => Promise<RemoteResponse>
 }
 
 /** The New Team panel props (the injected face members are wired at T9). */
@@ -95,6 +132,13 @@ export interface TeamCreationPanelProps {
   readonly openSession: (sessionId: string) => void
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
+  /**
+   * P9-T8 (S5-D): the handoff source (UI §32.2). Absent (or the face
+   * absent) → no handoff block; the panel renders exactly as T7.
+   */
+  readonly handoffSource?: TeamCreationHandoffSource
+  /** P9-T8 (S5-D): the frozen handoff face (see {@link TeamCreationHandoffFace}). */
+  readonly handoffFace?: TeamCreationHandoffFace
   /** The native workspace feed options (absent/empty → the picker hides). */
   readonly workspaces: readonly TeamWorkspaceOption[]
   /** The draft (held by TeamView: persists within the page run, UI §5.3). */
@@ -139,6 +183,7 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   const {
     listCatalog, getCatalog, probeCompatibility, teamCreate,
     createRootSession, openSession, listAgentPresets, workspaces,
+    handoffSource, handoffFace,
     draft, onDraftChange, onCancel, t,
   } = props
 
@@ -156,6 +201,22 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   const [creating, setCreating] = useState(false)
   const [createdRootId, setCreatedRootId] = useState<string | null>(null)
   const [createError, setCreateError] = useState<TeamCreateError | null>(null)
+  // -- handoff (P9-T8 S5-D, UI §32): inert when the face or the source is
+  // absent; enabled by default (§32.2) when both are present. -------------
+  const [handoffEnabled, setHandoffEnabled] = useState<boolean>(
+    handoffFace !== undefined && handoffSource !== undefined,
+  )
+  const [handoffPreparing, setHandoffPreparing] = useState(false)
+  const [handoffSummary, setHandoffSummary] = useState<HandoffPrepareValueWire | null>(null)
+  const [handoffPreviewOpen, setHandoffPreviewOpen] = useState(false)
+  const [handoffPrepareError, setHandoffPrepareError] = useState<TeamCreateError | null>(null)
+  const [handoffCreateBusy, setHandoffCreateBusy] = useState(false)
+  const [handoffCreateState, setHandoffCreateState] = useState<HandoffCreateStateWire | null>(null)
+  /** A typed `handoff.create` RESPONSE failure (no stored state). */
+  const [handoffFailed, setHandoffFailed] = useState<TeamCreateError | null>(null)
+  const [handoffRequestToken, setHandoffRequestToken] = useState<string | null>(null)
+  const [handoffCanceled, setHandoffCanceled] = useState(false)
+  const handoffTokenGen = useRef(createRequestTokenGenerator('handoff-create'))
 
   // Latest draft/face refs: async settlements must never act on a stale
   // closure, and the settle-time ack reset must not feed the probe effect.
@@ -163,6 +224,53 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   useEffect(() => { draftRef.current = draft }, [draft])
   const probeSeq = useRef(0)
   const detailSeq = useRef(0)
+
+  const handoffActive = handoffFace !== undefined && handoffSource !== undefined
+
+  // §32.2 prefill: the default workspace = the source session's workspace
+  // (only when the native feed carries it and the user has not picked one
+  // yet; the draft is page-run UI state, never authority).
+  useEffect(() => {
+    const source = handoffSource
+    if (!handoffActive || source === undefined) return
+    const workspaceId = source.sourceWorkspaceId
+    if (workspaceId === null) return
+    if (draftRef.current.workspaceId !== null) return
+    if (!workspaces.some(option => option.id === workspaceId)) return
+    onDraftChange({ ...draftRef.current, workspaceId })
+  }, [handoffActive, handoffSource, workspaces, onDraftChange])
+
+  // §32.3: enabling the handoff runs the read-only `handoff.prepare` once
+  // (the one-shot summary PREVIEW). Its failure — including the production
+  // fail-closed source surface — is rendered verbatim and NEVER blocks the
+  // create: the `handoff.create` path snapshots the source itself.
+  useEffect(() => {
+    const face = handoffFace
+    const source = handoffSource
+    if (face === undefined || source === undefined || !handoffEnabled) return
+    let live = true
+    setHandoffPreparing(true)
+    setHandoffPrepareError(null)
+    setHandoffSummary(null)
+    void face
+      .prepare({ sourceSessionId: source.sourceSessionId })
+      .then(response => {
+        if (!live) return
+        if (!response.ok) {
+          setHandoffPrepareError({ code: response.error.code, message: response.error.message })
+          return
+        }
+        setHandoffSummary(parseHandoffPrepareValue(response.value.data))
+      })
+      .catch(error => {
+        if (!live) return
+        setHandoffPrepareError({ code: 'native-error', message: throwableMessage(error) })
+      })
+      .finally(() => {
+        if (live) setHandoffPreparing(false)
+      })
+    return () => { live = false }
+  }, [handoffFace, handoffSource, handoffEnabled])
 
   // The catalog load (mount once): the rows, then one `catalog.get` per
   // row's latest revision for the picker display names (fail-safe per row:
@@ -372,6 +480,124 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
     })()
   }
 
+  // -- the handoff create flow (P9-T8 S5-D, Gate P9-G5) ---------------------
+  // The frozen `handoff.create` is a command flow: NO optimistic authority
+  // patch (the panel renders the stored state / typed error verbatim), the
+  // typed Remote result preserved (G5(b)), the new team's projection
+  // cold-pulled exactly once — by the NEW session's TeamView after
+  // `openSession(rootSessionId)` (G5(c)) — and the rendered final state
+  // comes from that Projection (G5(d)).
+
+  /** The display failure: the typed response failure, else the stored
+   * failing create state's code/message (verbatim, G5(b)). */
+  const handoffFailure: TeamCreateError | null =
+    handoffFailed !== null
+      ? handoffFailed
+      : handoffCreateState !== null &&
+          (handoffCreateState.kind === 'awaiting-decision' || handoffCreateState.kind === 'creation-failed')
+        ? { code: handoffCreateState.failureCode, message: handoffCreateState.failureMessage }
+        : null
+
+  const handoffActions: readonly HandoffDecisionOption[] =
+    handoffCreateState !== null
+      ? handoffDecisionActions(handoffCreateState)
+      : handoffFailed !== null
+        ? HANDOFF_DECISION_OPTIONS
+        : []
+
+  const invokeHandoffCreate = (token: string): void => {
+    const face = handoffFace
+    const source = handoffSource
+    if (face === undefined || source === undefined || handoffCreateBusy || creating) return
+    setHandoffCreateBusy(true)
+    setHandoffFailed(null)
+    setHandoffCanceled(false)
+    setHandoffRequestToken(token)
+    void face
+      .create({ sourceSessionId: source.sourceSessionId, requestToken: token })
+      .then(response => {
+        if (!response.ok) {
+          // Typed create failure (no stored state): the §32.4 triad with a
+          // fresh-token retry (no operation exists under the used token).
+          setHandoffFailed({ code: response.error.code, message: response.error.message })
+          return
+        }
+        const state = parseHandoffCreateState(response.value.data)
+        setHandoffCreateState(state)
+        if (state.kind === 'completed' || state.kind === 'completed-without-handoff') {
+          // Root + TeamSession exist (invariant 9: the same id) → open the
+          // Root; the new session's TeamView cold-pulls the projection.
+          openSession(state.rootSessionId)
+        }
+      })
+      .catch(error => {
+        // Channel loss (the only Remote rejection kind): a local marker.
+        setHandoffFailed({ code: 'native-error', message: throwableMessage(error) })
+      })
+      .finally(() => {
+        setHandoffCreateBusy(false)
+      })
+  }
+
+  const runHandoffRetry = (): void => {
+    const face = handoffFace
+    const source = handoffSource
+    if (face === undefined || source === undefined) return
+    if (handoffCreateState === null) {
+      // Typed response failure: nothing stored to replay → a fresh token.
+      invokeHandoffCreate(handoffTokenGen.current())
+      return
+    }
+    // §10.5 idempotency mapping: creation-failed → SAME token (the host
+    // re-drives creation only); awaiting-decision → FRESH token.
+    const plan = handoffRetryPlan(
+      handoffCreateState,
+      source.sourceSessionId,
+      handoffRequestToken ?? '',
+      handoffTokenGen.current(),
+    )
+    if (plan !== null) invokeHandoffCreate(plan.requestToken)
+  }
+
+  const continueWithoutHandoff = (): void => {
+    // Client-local EXPLICIT user decision (§32.4; plan §10.5: no backend
+    // method): the standard non-handoff create sequence (native root +
+    // `team.create`) — a new team WITHOUT handoff provenance.
+    setHandoffFailed(null)
+    setHandoffCreateState(null)
+    setHandoffRequestToken(null)
+    setHandoffCanceled(false)
+    setHandoffEnabled(false)
+    runCreate(false)
+  }
+
+  const cancelHandoff = (): void => {
+    // Client-local: the attempt is discarded; NO Remote call (plan §10.5).
+    setHandoffFailed(null)
+    setHandoffCreateState(null)
+    setHandoffRequestToken(null)
+    setHandoffCanceled(true)
+  }
+
+  /** The create button: with the handoff on (and no stored attempt and no
+   * canceled decision) the frozen `handoff.create` runs (NO native root);
+   * otherwise the T7 standard sequence. A CANCELED handoff (the user's
+   * explicit no-handoff decision) routes every later create to the
+   * standard path: cancel is terminal within the panel run (the checkbox
+   * is disabled after it), so a plain create click must not silently
+   * re-open the handoff attempt. */
+  const handleCreateClick = (): void => {
+    if (
+      handoffActive && handoffEnabled && !handoffCanceled &&
+      handoffCreateState === null && handoffFailed === null &&
+      !handoffCreateBusy && !creating
+    ) {
+      invokeHandoffCreate(handoffTokenGen.current())
+      return
+    }
+    runCreate(false)
+  }
+
   const status = panelCompatStatus(draft.blueprintId, checking, compat)
   const selectedRow = rows.find(row => row.blueprintId === draft.blueprintId)
 
@@ -462,6 +688,126 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
             ))}
           </select>
         </label>
+      )}
+
+      {handoffActive && handoffSource !== undefined && (
+        <div className={styles.handoff} data-intent-handoff>
+          <span className={styles.handoffTitle} data-intent-handoff-title>
+            {t('handoff.title')}
+          </span>
+          <span data-intent-handoff-source>
+            {t('handoff.source', { id: handoffSource.sourceSessionId })}
+          </span>
+          <label data-intent-handoff-generate>
+            <input
+              type="checkbox"
+              data-intent-handoff-checkbox
+              checked={handoffEnabled}
+              disabled={
+                creating || handoffCreateBusy ||
+                handoffCreateState !== null || handoffFailed !== null || handoffCanceled
+              }
+              onChange={event => {
+                const enabled = event.target.checked
+                setHandoffEnabled(enabled)
+                setHandoffPreparing(false)
+                setHandoffSummary(null)
+                setHandoffPrepareError(null)
+                setHandoffPreviewOpen(false)
+              }}
+            />
+            <span>{t('handoff.generate')}</span>
+          </label>
+          {handoffPreparing && (
+            <p className={styles.handoffNote} data-intent-handoff-preparing>
+              {t('handoff.preparing')}
+            </p>
+          )}
+          {handoffSummary !== null && (
+            <div className={styles.handoffReady} data-intent-handoff-ready>
+              <span data-intent-handoff-ready-label>{t('handoff.ready')}</span>
+              <button
+                type="button"
+                className={styles.secondary}
+                data-intent-handoff-preview
+                onClick={() => setHandoffPreviewOpen(open => !open)}
+              >
+                {t('handoff.preview')}
+              </button>
+              {handoffPreviewOpen && (
+                <div className={styles.handoffPreview} data-intent-handoff-preview-body>
+                  <p data-intent-handoff-summary-title>{handoffSummary.title}</p>
+                  <ul data-intent-handoff-summary-bullets>
+                    {handoffSummary.bullets.map(bullet => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          {handoffPrepareError !== null && (
+            <p className={styles.handoffError} data-intent-handoff-prepare-error>
+              {t('governance.error', {
+                message: `${handoffPrepareError.code}: ${handoffPrepareError.message}`,
+              })}
+            </p>
+          )}
+          {handoffFailure !== null && (
+            <div
+              className={styles.handoffFailed}
+              data-intent-handoff-failed
+              data-intent-handoff-failed-code={handoffFailure.code}
+              data-intent-handoff-failed-token={handoffRequestToken ?? ''}
+            >
+              <p>
+                {t('handoff.failed', {
+                  message: `${handoffFailure.code}: ${handoffFailure.message}`,
+                })}
+              </p>
+              <div className={styles.handoffTriad}>
+                {handoffActions.includes('retry') && (
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    data-intent-handoff-retry
+                    disabled={handoffCreateBusy}
+                    onClick={runHandoffRetry}
+                  >
+                    {t('handoff.retry')}
+                  </button>
+                )}
+                {handoffActions.includes('continue-without-handoff') && (
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    data-intent-handoff-continue
+                    disabled={handoffCreateBusy}
+                    onClick={continueWithoutHandoff}
+                  >
+                    {t('handoff.continue')}
+                  </button>
+                )}
+                {handoffActions.includes('cancel') && (
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    data-intent-handoff-cancel
+                    disabled={handoffCreateBusy}
+                    onClick={cancelHandoff}
+                  >
+                    {t('handoff.cancel')}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {handoffCanceled && (
+            <p className={styles.handoffNote} data-intent-handoff-canceled>
+              {t('handoff.canceled')}
+            </p>
+          )}
+        </div>
       )}
 
       <label className={styles.field}>
@@ -572,8 +918,8 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
           type="button"
           className={styles.primary}
           data-intent-create
-          disabled={!gate.enabled || creating}
-          onClick={() => runCreate(false)}
+          disabled={!gate.enabled || creating || handoffCreateBusy}
+          onClick={handleCreateClick}
         >
           {creating ? t('intent.creating') : t(CREATE_LABEL_KEYS[gate.label])}
         </button>

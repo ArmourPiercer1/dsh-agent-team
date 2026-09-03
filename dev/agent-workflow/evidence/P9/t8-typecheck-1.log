@@ -1,0 +1,13 @@
+tsc -p packages/client/tsconfig.json --noEmit (full face: src + test + vitest.config.ts)
+
+Round 1 (first check of the two new T8 jsdom specs, team-governance.client.spec.tsx
+and team-creation-handoff.client.spec.tsx): 13 errors, all mechanical, all in the
+NEW spec files (handoff spec: four dataset accesses on untyped Element - missing
+querySelector element generic; governance spec: the effectiveConfig fixture return
+type vs EffectiveConfigDto - boundary cast; two noUncheckedIndexedAccess indexes on
+a Record<string, ...> state map - re-typed as a closed Record; a partial policy
+cells map against the over-constrained frozen TS mirror - the host parser accepts
+the partial map, so the boundary cast carries the wire truth; one title access on
+untyped Element). No source changes were needed.
+
+Round 2 (after the spec fixes): EXIT=0 (no error output)

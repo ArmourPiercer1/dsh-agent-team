@@ -61,3 +61,64 @@
   font: var(--dsw-font-xs-13);
   font-weight: 600;
 }
+
+/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */
+
+.legacyBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-state-warn-primary);
+  border-radius: 6px;
+  background: var(--dsw-alias-state-warn-tertiary);
+}
+
+.legacyBanner p {
+  margin: 0;
+  color: var(--dsw-alias-state-warn-label);
+  font: var(--dsw-font-xs-13);
+  line-height: 1.4;
+}
+
+.legacySummary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.legacySummaryTitle {
+  margin: 0;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+}
+
+.legacySummary p {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}
+
+.legacySummary ul {
+  margin: 0;
+  padding-left: 16px;
+  list-style: none;
+}
+
+.legacySummary li {
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.legacyNote {
+  margin: 0;
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}
