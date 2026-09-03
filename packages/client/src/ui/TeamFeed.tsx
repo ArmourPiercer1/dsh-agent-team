@@ -27,7 +27,7 @@ import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
 import type {
   MessageAnchor, RpcError, RpcResult, TeamMessagePage, TeamMessageView, TeamView,
-} from '@deepseek-ai/dsh-client-runtime/client'
+} from '../model/team-view-compat.js'
 import type { TeamKey } from './locales.js'
 import {
   TEAM_FEED_INITIAL_LIMIT, TEAM_FEED_STEP,

@@ -7,7 +7,7 @@
  * baseline with the live running overlay already applied — and never
  * re-derived here (D20).
  */
-import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
+import type { TeamView } from './team-view-compat.js'
 
 /** The D23 dock readout counts over the whole team. */
 export interface TeamDockCounts {

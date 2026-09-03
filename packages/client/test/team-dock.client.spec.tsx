@@ -8,7 +8,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import type { SessionId, TeamMirror, TeamView } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId, TeamMirror, TeamView } from '../src/model/team-view-compat.js'
 import { TeamDock, TeamDockPanel, type TeamDockProps } from '../src/ui/TeamDock.js'
 import { en, zh } from '../src/ui/locales.js'
 

@@ -9,7 +9,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
+import type { TeamView } from '../src/model/team-view-compat.js'
 import { TeamTimeline, type TeamTimelineProps } from '../src/ui/TeamTimeline.js'
 import { zh } from '../src/ui/locales.js'
 

@@ -249,8 +249,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // transport/team-remote-client, state/team-projection-store) plus
     // test/team-remote-client.test.ts and test/team-projection-store.test.ts;
     // all five carry zero denylist vocabulary (the scan over them passes).
-    expect(scanResult.filesScanned).toBe(577)
-    expect(scanResult.files.length).toBe(577)
+    // P9-T4 ledger cursor store + vNext UI adapters pin (+10): six src
+    // .ts (model/team-view-compat, model/team-ui-snapshot,
+    // model/projection-adapter, model/ledger-adapter,
+    // state/team-session-resolution, state/team-ledger-store) plus four
+    // test .ts (test/team-session-resolution.test, test/projection-adapter.test,
+    // test/ledger-adapter.test, test/team-ledger-store.test); all ten carry
+    // zero denylist vocabulary (the scan over them passes).
+    expect(scanResult.filesScanned).toBe(587)
+    expect(scanResult.files.length).toBe(587)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -38,6 +38,9 @@ importers:
       '@deepseek-ai/dsh-client-locale':
         specifier: link:../../../../references/deepseek-harness-test-use/packages/client/locale
         version: link:../../../../references/deepseek-harness-test-use/packages/client/locale
+      '@deepseek-ai/dsh-client-store':
+        specifier: link:../../../../references/deepseek-harness-test-use/packages/client/store
+        version: link:../../../../references/deepseek-harness-test-use/packages/client/store
       '@deepseek-ai/dsh-client-test-runtime':
         specifier: link:../../../../references/deepseek-harness-test-use/packages/test-support/client-runtime
         version: link:../../../../references/deepseek-harness-test-use/packages/test-support/client-runtime
@@ -50,6 +53,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-slots':
         specifier: link:../../../../references/deepseek-harness-test-use/packages/client/ui-slots
         version: link:../../../../references/deepseek-harness-test-use/packages/client/ui-slots
+      '@dsh-agent-team/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@dsh-agent-team/remote':
         specifier: workspace:*
         version: link:../remote

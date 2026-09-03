@@ -11,8 +11,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
   RpcResult, SessionId, TeamMessagePage, TeamMirror, TeamView as TeamWireView,
-} from '@deepseek-ai/dsh-client-runtime/client'
-import { resolveTeamView } from '@deepseek-ai/dsh-client-runtime/client'
+} from '../src/model/team-view-compat.js'
+import { resolveTeamView } from '../src/model/team-view-compat.js'
 import { TeamView, type TeamViewProps } from '../src/ui/TeamView.js'
 import { zh } from '../src/ui/locales.js'
 
@@ -81,7 +81,10 @@ function unprogrammedPage(): TeamViewProps['pageTeamMessages'] {
 
 function viewProps(mirror: TeamMirror, sessionId: SessionId = LEADER): TeamViewProps {
   return {
-    sessionId,
+    // PropsRuntime<'conversation.view'> carries the framework branded
+    // SessionId; the bridge SessionId is a bare string, so the boundary
+    // cast is the single bridge-to-framework narrowing in this helper.
+    sessionId: sessionId as TeamViewProps['sessionId'],
     useSession: (() => undefined) as TeamViewProps['useSession'],
     useProjection: () => undefined,
     useInput: () => { throw new Error('unused') },

@@ -12,7 +12,7 @@
  * the window re-derives over the new snapshot).
  */
 import { describe, expect, it } from 'vitest'
-import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
+import type { TeamView } from '../src/model/team-view-compat.js'
 import {
   TEAM_FEED_INITIAL_LIMIT, TEAM_FEED_STEP, deriveTeamFeed, type TeamFeedRow,
 } from '../src/model/team-feed-model.js'

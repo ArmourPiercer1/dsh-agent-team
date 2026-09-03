@@ -15,8 +15,8 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
   ObservableSnapshot, SessionId, TeamMirror, TeamView,
-} from '@deepseek-ai/dsh-client-runtime/client'
-import { resolveTeamView } from '@deepseek-ai/dsh-client-runtime/client'
+} from '../model/team-view-compat.js'
+import { resolveTeamView } from '../model/team-view-compat.js'
 import {
   IconChevronDownOutline14, IconChevronUpOutline14, StateDot, type StateDotState,
 } from '@deepseek-ai/dsh-client-ui-primitives'

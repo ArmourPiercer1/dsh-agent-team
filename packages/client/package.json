@@ -21,9 +21,11 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@dsh-agent-team/contracts": "workspace:*",
     "@dsh-agent-team/remote": "workspace:*",
     "@deepseek-ai/cordis": "link:../../../../references/deepseek-harness-test-use/vendor/cordis",
     "@deepseek-ai/dsh-client-locale": "link:../../../../references/deepseek-harness-test-use/packages/client/locale",
+    "@deepseek-ai/dsh-client-store": "link:../../../../references/deepseek-harness-test-use/packages/client/store",
     "@deepseek-ai/dsh-client-test-runtime": "link:../../../../references/deepseek-harness-test-use/packages/test-support/client-runtime",
     "@deepseek-ai/dsh-client-ui-conversation": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-conversation",
     "@deepseek-ai/dsh-client-ui-primitives": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-primitives",

@@ -6,7 +6,7 @@
  * and the locale-free clock/duration formatters.
  */
 import { describe, expect, it } from 'vitest'
-import type { TeamView } from '@deepseek-ai/dsh-client-runtime/client'
+import type { TeamView } from '../src/model/team-view-compat.js'
 import {
   deriveTeamTimeline, formatTeamClock, formatTeamDuration, teamTimelineTicks,
   TEAM_LANE_COLOR_SLOTS,

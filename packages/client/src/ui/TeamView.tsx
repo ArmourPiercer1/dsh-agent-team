@@ -14,8 +14,8 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
   MessageAnchor, ObservableSnapshot, RpcResult, SessionId, TeamMessagePage, TeamMirror,
-} from '@deepseek-ai/dsh-client-runtime/client'
-import { resolveTeamView } from '@deepseek-ai/dsh-client-runtime/client'
+} from '../model/team-view-compat.js'
+import { resolveTeamView } from '../model/team-view-compat.js'
 import { TeamTimeline } from './TeamTimeline.js'
 import { TeamMembers } from './TeamMembers.js'
 import { TeamTasks } from './TeamTasks.js'
