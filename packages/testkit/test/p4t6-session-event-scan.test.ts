@@ -220,8 +220,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // + lane C +3 (tests t12h4-s6-fail-closed, t12b4-principal-context,
     // t12m4-remote-mount); all under packages/runtime/test (.ts/.mts/.mjs
     // are all scanned by the frozen scanner).
-    expect(scanResult.filesScanned).toBe(558)
-    expect(scanResult.files.length).toBe(558)
+    // T12-V vertical pin (558 + 2 vertical harness files): the T12-V
+    // vertical-slice work adds two scanned files under
+    // packages/tools/harness — t12-vertical.mjs (phase runner, 7-junction
+    // bridge, budget ledger, deferred-content calibration) and
+    // mock-deepseek.mjs (spec-strict mock model + verbatim capture); both
+    // carry zero denylist vocabulary (the denylist scan over them passes).
+    expect(scanResult.filesScanned).toBe(560)
+    expect(scanResult.files.length).toBe(560)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
