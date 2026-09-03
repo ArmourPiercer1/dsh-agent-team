@@ -923,17 +923,19 @@ export function createAgentBindings(deps) {
         const members = domain.repositories.memberInstances.list(rootSid)
         const seen = new Set([rootSid])
         for (const member of members) {
-          // T12-V17 (parent run #7 postmortem item 1): mirror the create path's
-          // leader exclusion (the create loop skips LEADER_INSTANCE_ID because the
-          // leader IS the root session, resumed above) — explicit by instance id.
-          if (String(member?.instanceId) === LEADER_INSTANCE_ID) continue
-          // T12-V10: the production create path mints the v2 leader row with
-          // NO childSessionId key (the leader IS the root session, resumed
-          // above) — String(undefined) produced SessionId("undefined") and
-          // killed every resume boot (T12 vertical runs #6-#10). Structural
-          // guard in the shape used by projection-source.ts /
-          // s6-live-overlay.ts ('childSessionId' in row).
-          const childRaw = member?.childSessionId
+          // T12-V18 (parent final directive; literal form of the T12-V17/T12-V10
+          // resume fix): mirror the create path's exclusion (the create loop
+          // skips LEADER_INSTANCE_ID because the leader IS the root session,
+          // resumed above) — explicit by instance id, plus the explicit keyless-row
+          // guard before any stringification (String(undefined) produced
+          // SessionId("undefined") and killed every resume boot: T12 vertical
+          // runs #6-#10; T12-B2 repair family).
+          if (String(member.instanceId) === LEADER_INSTANCE_ID) continue
+          if (member.childSessionId === undefined || member.childSessionId === null) continue
+          // T12-V10 structural guard (shape used by projection-source.ts /
+          // s6-live-overlay.ts): second line of defense vs empty-string or
+          // non-string values.
+          const childRaw = member.childSessionId
           if (typeof childRaw !== 'string' || childRaw.length === 0) continue
           const child = childRaw
           if (seen.has(child)) continue
