@@ -2086,7 +2086,7 @@ async function runRestart1() {
     rs.evidence.resumeBootFailure = String(bootError?.message ?? bootError)
     rs.evidence.durableLeaderRow = leaderRow
     rs.check('resume boot: A2 instance booted (phase=resume, same root)', false, `boot failed: ${String(bootError?.message ?? bootError).slice(0, 300)}`)
-    rs.check('resume boot: root-cause evidence — durable leader row is the v2 shape (no childSessionId key) the shipped resume loop stringifies to "undefined"', leaderRow !== null && typeof leaderRow === 'object' && !('childSessionId' in leaderRow), `leaderRow=${JSON.stringify(leaderRow)}`)
+    rs.check('resume boot: root-cause evidence — durable leader row is the v2 shape (no childSessionId key) the pre-fix T12 resume loop (T12-B2 family) stringified to "undefined"; the T12-V18 guard skips such rows', leaderRow !== null && typeof leaderRow === 'object' && !('childSessionId' in leaderRow), `leaderRow=${JSON.stringify(leaderRow)}`)
     rs.check('resume boot: same durable TeamSession id on resume', false, 'not evaluated — A2 resume boot failed')
     rs.check('resume boot: SAME MemberInstance re-opened (instanceId + childSessionId stable across restart)', false, 'not evaluated — A2 resume boot failed')
     rs.check('resume boot: NO duplicate members (each instanceId exactly once)', false, 'not evaluated — A2 resume boot failed')
@@ -2095,7 +2095,7 @@ async function runRestart1() {
     rs.check('projection resumes after restart (same TeamSession, members intact)', false, 'not evaluated — A2 resume boot failed')
     rs.check('real follow-up turn admitted after restart', false, 'not evaluated — A2 resume boot failed')
     rs.check('restart follow-up turn settled against the mock (durable child log)', false, 'not evaluated — A2 resume boot failed')
-    rs.note('resume part failed inside the shipped glue (agent-bindings.mjs L883-890): the v2 leader row (no childSessionId) is stringified to "undefined"; plan §12 restart is not satisfiable by the shipped code — divergence recorded with durable evidence')
+    rs.note('resume part failed inside the T12-added row glue (agent-bindings.mjs resume re-bind branch; T12-B2 family — NOT upstream code, whose pristine state CORE PATCH BUDGET = 0 protects): a leader or keyless row escaped the T12-V18 guard (leader skip + null/undefined childSessionId guard mirroring the create-branch exclusion L864-866) and was stringified to "undefined" — guard regression; durable evidence recorded')
   } else {
     try {
       const st = await p6t6StateReady(a2.port, { rootSessionId: ROOT_A, phase: 'resume' })
