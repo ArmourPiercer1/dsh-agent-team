@@ -7,9 +7,11 @@
 | 项 | 值 |
 | --- | --- |
 | DSH 源码 | `D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use` |
-| 基线 | upstream `deepseek-ai/deepseek-harness` master @ `cd5ef8148158c3a752a658978873241fdf8e2bbc`（= 本程序审计基线；checkout 保持 pristine 角色，工作树必须保持 clean） |
+| 基线 | upstream `deepseek-ai/deepseek-harness` master @ `76fda729799fe9b3848dbe2c211d4b231032b81e`（= 本程序审计基线；checkout 保持 pristine 角色，工作树必须保持 clean） |
 | DSH_HOME | `D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test`（测试实例专用 harness home，**位于会话工作区内**——见 §6 沙箱约束；与稳定实例的默认 `~/.dsh` 完全隔离；`references/` 已被 `.gitignore` 覆盖） |
 | 端口 | `3180`（稳定实例占 3080；测试实例禁止使用 3080） |
+
+> **留痕变更（2026-09-04，R122，SESSION_ROUTER_LOG）**：基线随用户对 upstream 的 in-place 更新移至 0.1.2-rc.1 @ `76fda72979`；全仓库兼容适配在 `task/upstream-rc1-compat`（upstream 零改动，全部适配在本仓库侧；其中一处 host-service-registry 语义缝隙 `sessionPersistence.ensureMaterialized` → `sessions.flush` 为上游 rc.1 自有替换，非 CORE_SEAM_BLOCKER）。Boot/gentry 证据：`dev/agent-workflow/evidence/upstream-rc1-compat/`（compat-matrix、L2 裁决、闸日志）与 `dev/agent-workflow/evidence/P9/s8/`（state.json、gentry-report.json `failures []`、干净世界冒烟）。
 
 ## 2. 启动 / 停止 / 验证
 
@@ -20,7 +22,7 @@ pnpm install --ignore-scripts   # node ^22.19 || >=24；packageManager pnpm@11.7
                                 # --ignore-scripts：沙箱禁止 piped-stdio 子进程 spawn（lifecycle 脚本 EPERM）；
                                 # 预编译原生包（node-pty/koffi/esbuild 平台二进制）不受影响（P1-T1 已验证）
 # 构建（必须；web 运行时从 lib/ 加载，且需 client 产物）：
-$env:DSH_CLIENT_COMMIT_HASH = 'cd5ef814'   # 跳过构建内的 git spawn（沙箱 EPERM）
+$env:DSH_CLIENT_COMMIT_HASH = '76fda72979'   # 跳过构建内的 git spawn（沙箱 EPERM）
 $env:ESBUILD_WORKER_THREADS = '1'          # esbuild 用 worker_threads 替代子进程
 node scripts/build.ts                       # 直接 node 跑 TS orchestrator（v24 原生 type-stripping），绕开 tsx
 # 启动（DSH_HOME 必须显式设置；用构建产物入口，绕开 tsx 的同步 esbuild spawn）：
@@ -30,7 +32,7 @@ node apps/cli/lib/bin.js web --port 3180 --no-open
 
 > **为什么不是 `pnpm dsh web`**：`pnpm dsh` 经 `node --import tsx/esm` 启动，tsx 走 esbuild 同步 API（强制子进程 spawn），在 workspace-write 沙箱下必然 EPERM。构建产物入口 `apps/cli/lib/bin.js` 是纯 Node ESM，运行期插件均从 `lib/` 加载，无 spawn 依赖。
 
-- **验证**（2026-08-29 实测语义，0.1.2-alpha.1）：
+- **验证**（2026-08-29 实测语义，0.1.2-alpha.1；2026-09-04 于 0.1.2-rc.1 复测成立，R122）：
   1. 启动行 `dsh web: http://127.0.0.1:3180/?token=...` 出现 = host boot 完成（plugin tree loaded）。
   2. `GET /`（无 token）→ **401** = 启动 token 鉴权门生效（稳定实例 0.1.1-rc.2 无此门）。
   3. `GET /?token=<launch-token>` → 200 需前端 bundle（`apps/web/dist`）；沙箱内不可构建（vite→esbuild spawn EPERM，见 §5），故当前为 **404**——**不影响 G1 判据**（DevPlan §13.6 无浏览器 GUI 项）。如某 Phase 确需渲染 GUI：用户在工作区外手动 `pnpm build:web` 一次（gitignored 产物，不违反 pristine 角色），并在 evidence 登记。
