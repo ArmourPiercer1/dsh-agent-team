@@ -81,7 +81,7 @@ let c1: {
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'scout-a' },
+        payload: { label: 'scout-a', prompt: 'p6t2 c1 scout-a prompt' },
         requestToken: 'tok-p6t2-c1a',
       }),
     )
@@ -95,7 +95,7 @@ let c1: {
         makeActionRequest({
           action: 'delegate',
           delegationTemplateId: 'scout',
-          payload: { label: 'scout-b' },
+          payload: { label: 'scout-b', prompt: 'p6t2 c1 scout-b prompt' },
           requestToken: 'tok-p6t2-c1b',
         }),
       )
@@ -151,7 +151,7 @@ let c2: {
       makeActionRequest({
         action: 'delegate',
         delegationTemplateId: 'scout',
-        payload: { label: 'scout-a' },
+        payload: { label: 'scout-a', prompt: 'p6t2 c1 scout-a prompt' },
         requestToken: 'tok-p6t2-c2a',
       }),
     )
@@ -168,7 +168,7 @@ let c2: {
         makeActionRequest({
           action: 'delegate',
           delegationTemplateId: 'scout',
-          payload: { label: 'scout-b' },
+          payload: { label: 'scout-b', prompt: 'p6t2 c1 scout-b prompt' },
           requestToken: 'tok-p6t2-c2b',
         }),
       )
@@ -224,7 +224,7 @@ let c3: {
           makeActionRequest({
             action: 'delegate',
             delegationTemplateId: 'scout',
-            payload: { label },
+            payload: { label, prompt: `p6t2 c3 race ${label} prompt` },
             requestToken: `tok-p6t2-c3r${index + 1}`,
           }),
         ),

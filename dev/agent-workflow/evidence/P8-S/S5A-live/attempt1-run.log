@@ -1,0 +1,55 @@
+2026-09-01T13:41:30.416Z P8-S3 harness start: runStamp=p8s3-1788270090416 worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5
+2026-09-01T13:41:30.417Z repo root=D:\AgentDev\dsh-plugins\dsh-agent-team hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use dshHome=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a dshHomeE=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T13:41:30.417Z ports: boot1=3181 boot2=3182 (W world) boot3=3183 boot4=3184 (E world); selected scenarios: E1,E2,E3,E4,E5,E6,E7,W1,W2,W3,W5,W7,M1,M2,M3,M4,M5
+2026-09-01T13:41:30.537Z preflight: test-use tree pristine (head cd5ef8148158c3a752a658978873241fdf8e2bbc)
+2026-09-01T13:41:30.547Z preflight: stable :3080 {"reachable":true,"status":200}
+2026-09-01T13:41:30.549Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a
+2026-09-01T13:41:30.549Z preflight: fresh DSH_HOME created at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e
+2026-09-01T13:41:30.549Z preflight: lock acquired at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a.lock
+2026-09-01T13:41:30.552Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\agent
+2026-09-01T13:41:30.552Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\session
+2026-09-01T13:41:30.553Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\scope
+2026-09-01T13:41:30.554Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\core\system-prompt
+2026-09-01T13:41:30.555Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\mcp\mcp-client
+2026-09-01T13:41:30.555Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\storage\storage-domain
+2026-09-01T13:41:30.556Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\@deepseek-ai\dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\packages\llm\llm
+2026-09-01T13:41:30.557Z probe resolution link ready: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\node_modules\zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\zod@4.4.3\node_modules\zod
+2026-09-01T13:41:30.557Z junction farm ready (shared packages/node_modules)
+2026-09-01T13:41:30.567Z mini MCP server up on 127.0.0.1:3492
+2026-09-01T13:41:30.589Z scenario E7: pass=true assertions=2 failing=[] (22ms)
+2026-09-01T13:41:30.651Z P8-S5A: building the legacy session-reader dist (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\legacy\tsconfig.build.json)
+2026-09-01T13:41:30.970Z P8-S5A: building the production dsh-agent-team runtime (node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\node_modules\typescript\bin\tsc -p D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P8S5\packages\runtime\tsconfig.build.json)
+2026-09-01T13:41:32.550Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T13:41:35.391Z throwaway boot OK: http://127.0.0.1:3181/?token=7PF5DJHu58R1hBWwylPGs4h4OMgI4vM-bZdereHcT1A
+2026-09-01T13:41:35.434Z boot 1: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:41:35.434Z boot 1: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T13:44:39.202Z FAILURE: boot 1: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:44:39.203Z FAILURE: scenario W1 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.203Z FAILURE: scenario W5 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.203Z FAILURE: scenario W7 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.203Z FAILURE: scenario W3 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.204Z FAILURE: scenario M1 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.204Z FAILURE: scenario M2 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.204Z FAILURE: scenario M4 skipped: row routes not ready on boot 1 鈥?scenario not executed against a dead row
+2026-09-01T13:44:39.240Z boot 1: stopped killed=true portFree=true
+2026-09-01T13:44:39.241Z boot 2: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:44:39.241Z boot 2: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a\p6t6-directive.json
+2026-09-01T13:47:41.198Z FAILURE: boot 2: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:47:41.199Z FAILURE: scenario W2 skipped: row routes not ready on boot 2 鈥?scenario not executed against a dead row
+2026-09-01T13:47:41.199Z FAILURE: scenario M3 skipped: row routes not ready on boot 2 鈥?scenario not executed against a dead row
+2026-09-01T13:47:41.200Z FAILURE: scenario M5 skipped: row routes not ready on boot 2 鈥?scenario not executed against a dead row
+2026-09-01T13:47:41.236Z boot 2: stopped killed=true portFree=true
+2026-09-01T13:47:41.237Z profile not initialized yet — running a throwaway boot to let the host create it
+2026-09-01T13:47:43.050Z throwaway boot OK: http://127.0.0.1:3183/?token=XyKNWBsWGNydbMlzv-zaZKgk10NlmIHMYv3KcnmA4Zk
+2026-09-01T13:47:43.090Z boot 3: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:47:43.090Z boot 3: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json
+2026-09-01T13:50:45.970Z FAILURE: boot 3: row routes not ready within 180s (last probe http=404 body=null)
+2026-09-01T13:50:45.970Z FAILURE: scenario E1 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E2 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E3 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E4 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.970Z FAILURE: scenario E6 skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:45.971Z FAILURE: scenario E5(boot1-writes) skipped: row routes not ready on boot 3 鈥?scenario not executed against a dead row
+2026-09-01T13:50:46.004Z boot 3: stopped killed=true portFree=true
+2026-09-01T13:50:46.005Z boot 4: profile patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\profiles\web\cordis.patch.yml (production dsh-agent-team row + p6t6-team-tools row)
+2026-09-01T13:50:46.005Z boot 4: directive written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-p8s5a-e\p6t6-directive.json

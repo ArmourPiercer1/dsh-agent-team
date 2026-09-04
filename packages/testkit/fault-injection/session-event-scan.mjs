@@ -112,7 +112,7 @@ function boundedIdentifier(name) {
 
 const PAYLOAD_SYMBOL_PATTERNS = LEGACY_PAYLOAD_SYMBOLS.map(boundedIdentifier)
 const SESSION_EVENT_MAP_PATTERN = boundedIdentifier(SESSION_EVENT_MAP_IDENTIFIER)
-const SPECIFIER_PATTERN = /(["'\`])@deepseek-ai\/dsh-session\/types\1/g
+const SPECIFIER_PATTERN = /(["'`])@deepseek-ai\/dsh-session\/types\1/g
 
 /**
  * Match the denylist inside one text.
@@ -216,7 +216,15 @@ export function scanSessionEventVocabulary(options = {}) {
     }
     if (visited.has(real)) return
     visited.add(real)
-    const entries = readdirSync(dir, { withFileTypes: true }).sort((a, b) => compareNames(a.name, b.name))
+    let entries
+    try {
+      entries = readdirSync(dir, { withFileTypes: true }).sort((a, b) => compareNames(a.name, b.name))
+    } catch (error) {
+      // A concurrent fault-injection suite may tear down transient scratch
+      // (test/.tmp-fault/) between the parent listing and this descent.
+      if (error && error.code === 'ENOENT') return
+      throw error
+    }
     for (const entry of entries) {
       const abs = join(dir, entry.name)
       let isDir = entry.isDirectory()
@@ -228,7 +236,7 @@ export function scanSessionEventVocabulary(options = {}) {
         }
       }
       if (isDir) {
-        if (entry.name === 'node_modules' || entry.name === 'dist') {
+        if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.tmp-fault') {
           skippedDirs.push({ name: entry.name, path: toPosix(relative(repoRoot, abs)) })
           continue
         }

@@ -157,7 +157,7 @@ let e2: {
 // E3 — non-SETTLED lifecycle: fail-closed, residency untouched
 // ---------------------------------------------------------------------------
 const E3_LIFECYCLES = ['RUNNING', 'CREATED', 'ARCHIVED', 'DISPOSED'] as const
-let e3: Array<{
+const e3: Array<{
   readonly lifecycle: string
   readonly error: unknown
   readonly residencyAfter: boolean

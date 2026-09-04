@@ -98,6 +98,50 @@ export class TeamSessionsRepository extends BaseRepository {
   }
 
   /**
+   * Durably advance the team's `generation` stamp by exactly one — the
+   * S1-A lag-tolerant push stamp (Gate G8 supplement, adjudicated R60).
+   *
+   * The increment is one atomic `update` on the domain write chain (the
+   * established `allocateSequence` pattern): the write is durable before
+   * the in-memory row changes, and two advances of the same team
+   * serialize on that chain (monotonic; no concurrent lost update). The
+   * stamp is the EXISTING `team_sessions.generation` field — no new row,
+   * field, store, or contract.
+   *
+   * A missing team row rejects through the public seam `missing-key`
+   * code and surfaces as `SEAM_FAILURE` (the closed v1 error set has no
+   * `RECORD_MISSING`; a stamp advance for a team that does not exist is
+   * a domain-invariant violation the real wiring cannot produce, so the
+   * loud failure is the intended behavior).
+   * @param rootSessionId - the team root to stamp (plain string, parsed).
+   * @returns the new generation (a freshly seeded team advances 1 → 2).
+   */
+  async advanceGeneration(rootSessionId: string): Promise<number> {
+    let key: string
+    try {
+      key = String(parseRootSessionId(rootSessionId))
+    } catch (error) {
+      throw normalizeValidationError(error, this.storeName, rootSessionId)
+    }
+    const nextRaw = await this.updateRaw(key, (current) => {
+      let record: TeamSessionRecordDto
+      try {
+        record = deserializeTeamSessionRecord(String(current))
+      } catch (error) {
+        throw normalizeValidationError(error, this.storeName, key)
+      }
+      return serializeTeamSessionRecord({ ...record, generation: record.generation + 1 })
+    })
+    let next: TeamSessionRecordDto
+    try {
+      next = deserializeTeamSessionRecord(String(nextRaw))
+    } catch (error) {
+      throw normalizeValidationError(error, this.storeName, key)
+    }
+    return next.generation
+  }
+
+  /**
    * Durably delete one TeamSession record.
    * @returns `true` when the record existed, `false` otherwise.
    */

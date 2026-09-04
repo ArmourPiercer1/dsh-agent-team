@@ -19,7 +19,10 @@
  *     `RECORD_INVALID` preserving contractsCode `MALFORMED_DTO`;
  *   - (b3) a record `schemaVersion` tampered 1→2 (canonical bytes kept) →
  *     open succeeds, the hydration READ fails with `RECORD_INVALID`
- *     preserving contractsCode `SCHEMA_VERSION_MISMATCH`;
+ *     preserving contractsCode `MALFORMED_DTO` (P8-S2: stamp 2 now names
+ *     the v2 LeaderInstance record, so a member row stamped 2 is a
+ *     malformed leader record carrying forbidden keys, not a version
+ *     mismatch — the read still fails loudly, never silently);
  * - **(c) tmp garbage must NOT poison reopen**:
  *   - (c1) a planted crash-shaped `.tmp` file in the domain dir is ignored
  *     by the reopened seam (the committed world stays intact);
@@ -314,7 +317,7 @@ try {
 
 const c2Realm = await createFileRealm('p4t5c-c2')
 const c2Base = c2Realm.seam.writeCount
-armCrashAt(c2Realm.seam, c2Base, 7) // the B9 boundary: the fact is durable, the COMMITTED row write crashes
+armCrashAt(c2Realm.seam, c2Base, 8) // the B9 boundary: the fact + stamp are durable, the COMMITTED row write crashes
 const c2Run = await capture(() => c2Realm.coordinator.provision(P4T5_REQUEST))
 const c2CrashWrites = c2Realm.seam.writeCount - c2Base
 const c2TmpBefore = listFiles(c2Realm.seam.dirFor(FAULT_DOMAIN_NAME)).filter((f) => f.endsWith('.tmp')).sort()
@@ -403,14 +406,17 @@ it('(b2) a garbage record body: the open SUCCEEDS (the table file is valid JSON)
   expect(b2?.details?.['contractsCode']).toBe('MALFORMED_DTO')
 })
 
-it('(b3) a record schemaVersion tampered 1→2 (canonical bytes kept): the open SUCCEEDS but the hydration read fails with TYPED RECORD_INVALID preserving contractsCode SCHEMA_VERSION_MISMATCH', () => {
+it('(b3) a record schemaVersion tampered 1→2 (canonical bytes kept): the open SUCCEEDS but the hydration read fails with TYPED RECORD_INVALID preserving contractsCode MALFORMED_DTO (a v2-stamped member row is a malformed leader record — P8-S2 defect-encoding update from SCHEMA_VERSION_MISMATCH, which encoded the v1-only supported set)', () => {
   expect(b3).not.toBe(undefined)
   expect(b3?.openOk).toBe(true)
   expect(b3?.readOk).toBe(false)
   expect(b3?.readErrorCode).toBe('RECORD_INVALID')
   expect(b3?.details?.['store']).toBe('member_instances')
   expect(b3?.details?.['key']).toBe(MEMBER_KEY)
-  expect(b3?.details?.['contractsCode']).toBe('SCHEMA_VERSION_MISMATCH')
+  // P8-S2: the parse dispatcher routes stamp-2 rows to the v2 LeaderInstance
+  // validator; the member row carries the forbidden childSessionId key →
+  // MALFORMED_DTO (reason LEADER_INSTANCE_MUST_NOT_CARRY_CHILD_SESSION).
+  expect(b3?.details?.['contractsCode']).toBe('MALFORMED_DTO')
 })
 
 it('(c1) a planted crash-shaped .tmp file in the domain dir does NOT poison the reopen: the committed world stays intact and recover is a 0-write no-op', () => {
@@ -430,7 +436,7 @@ it('(c1) a planted crash-shaped .tmp file in the domain dir does NOT poison the 
 it('(c2) a REAL crash-leftover tmp (the seam fault fired at B9) does NOT poison the reopen: the restarted stack reopens, recovers with exactly 1 seam write, and converges to the committed world', () => {
   expect(c2).not.toBe(undefined)
   expect(c2?.runOk).toBe(false)
-  expect(c2?.crashWrites).toBe(7)
+  expect(c2?.crashWrites).toBe(8)
   expect(c2?.openOk).toBe(true)
   expect(c2?.stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
   expect(c2?.committed).toBe(true)

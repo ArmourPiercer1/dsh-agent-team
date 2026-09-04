@@ -1,0 +1,1142 @@
+{
+  "task": "P8-S4B durable mutation -> actual Agent closure E2E (live criteria M1-M5; W1/W2/W3/W5/W7 + E1-E7 available for full runs)",
+  "runStamp": "p8s3-1788243476421",
+  "harness": "packages/tools/harness",
+  "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S4B",
+  "hostTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b",
+  "dshHomeE": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b-e",
+  "lock": {
+    "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b.lock",
+    "acquired": true,
+    "marker": {
+      "runStamp": "p8s3-1788243476421",
+      "pid": 93752,
+      "startedAt": "2026-09-01T06:17:56.554Z",
+      "port": 3185,
+      "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b",
+      "dshHomeE": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b-e"
+    }
+  },
+  "selectedScenarios": [
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5"
+  ],
+  "ports": {
+    "boot1": 3185,
+    "boot2": 3186,
+    "boot3": 3187,
+    "boot4": 3188,
+    "mcp": 3493,
+    "released": {
+      "mcp": true,
+      "boot1": true,
+      "boot2": true
+    }
+  },
+  "stable3080": {
+    "before": {
+      "reachable": true,
+      "status": 200
+    },
+    "after": {
+      "reachable": true,
+      "status": 200
+    }
+  },
+  "pristine": {
+    "before": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "afterBuild": null,
+    "after": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "build": {
+    "required": false
+  },
+  "bypassScan": {
+    "files": [
+      "packages/tools/src/guard.ts",
+      "packages/tools/src/index.ts",
+      "packages/tools/src/tokens.ts",
+      "packages/tools/src/tools.ts",
+      "packages/tools/src/types.ts"
+    ],
+    "totalImportSpecifiers": 25,
+    "totalViolations": 0,
+    "violations": []
+  },
+  "rowMounted": {
+    "p6t6-team-tools-boot1": true,
+    "p6t6-team-tools-boot2": true
+  },
+  "boots": {
+    "boot1": {
+      "port": 3185,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": true
+      },
+      "url": "http://127.0.0.1:3185/?token=pOoyVUIS0lzZhthLGamzSN9Rr-KP8OUiO6OvHYKX5k4",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S4B\\dev\\agent-workflow\\evidence\\P8-S\\S4B-live\\logs\\boot1\\instance-port3185.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3185/?token=pOoyVUIS0lzZhthLGamzSN9Rr-KP8OUiO6OvHYKX5k4",
+      "healthBefore": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6seedw1",
+          "session-child-p6t6seeds1"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6seedw1",
+          "session-child-p6t6seeds1"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "W1": {
+          "criterion": "W1",
+          "boot": 1,
+          "pass": false,
+          "skipped": true,
+          "reason": "dependency not selected",
+          "assertions": [],
+          "failing": [
+            "dependency not selected"
+          ]
+        },
+        "W5": {
+          "criterion": "W5",
+          "boot": 1,
+          "pass": false,
+          "skipped": true,
+          "reason": "dependency not selected",
+          "assertions": [],
+          "failing": [
+            "dependency not selected"
+          ]
+        },
+        "W7": {
+          "criterion": "W7",
+          "boot": 1,
+          "pass": false,
+          "skipped": true,
+          "reason": "requires W1 (its member) - W1 not selected",
+          "assertions": [],
+          "failing": [
+            "requires W1 (its member) - W1 not selected"
+          ]
+        },
+        "W3": {
+          "criterion": "W3",
+          "boot": 1,
+          "pass": false,
+          "skipped": true,
+          "reason": "dependency not selected",
+          "assertions": [],
+          "failing": [
+            "dependency not selected"
+          ]
+        },
+        "M1": {
+          "criterion": "M1",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 928,
+          "assertions": [
+            {
+              "name": "follow-up executed against the seeded worker (real member turn)",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4},\"requestToken\":\"p8s4b-m1-token\"}"
+            },
+            {
+              "name": "worker model CURRENT = world-default A (no Team override yet)",
+              "pass": true,
+              "detail": "{\"current\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"assembled\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"selection\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"}"
+            },
+            {
+              "name": "the real turn ASSEMBLED model A (live selection evidence)",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"}"
+            },
+            {
+              "name": "provenance: the model cell is team-unspecified (static baseline, not silently granted)",
+              "pass": true,
+              "detail": "{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null}"
+            },
+            {
+              "name": "the M1 token reached the durable member session log",
+              "pass": true,
+              "detail": "logBytes=17609"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v1"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v1"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v1"
+              },
+              "source": {
+                "layer": "unspecified",
+                "origin": "static",
+                "recordId": null
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "unspecifiedFailClosed"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M1.json"
+        },
+        "M2": {
+          "criterion": "M2",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 939,
+          "assertions": [
+            {
+              "name": "M1 ran first (the baseline turn)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":false,\"m4\":false}"
+            },
+            {
+              "name": "operator mutation admitted (human-override, generation 1)",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-model\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"kind\":\"allow\",\"items\":[\"p6t6-static/p6t6-model-v2\"]}},\"generation\":1,\"updatedAt\":\"2026-09-01T06:18:02.380Z\",\"supersededRecordId\":null}}"
+            },
+            {
+              "name": "BEFORE any request: the backend truth lists the new record in pendingNextBoundary",
+              "pass": true,
+              "detail": "[\"p8s4b-ovr-model\"]"
+            },
+            {
+              "name": "the NEXT real request executed against the worker",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8},\"requestToken\":\"p8s4b-m2-token\"}"
+            },
+            {
+              "name": "worker model CURRENT switched to B at the boundary",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "the real turn ASSEMBLED model B (live evidence: the next request runs on B)",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "provenance source names the granting human-override record",
+              "pass": true,
+              "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-model\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 3,
+            "non200": []
+          },
+          "evidence": {
+            "mutation": {
+              "recordId": "p8s4b-ovr-model",
+              "kind": "human-override",
+              "scope": "team",
+              "values": {
+                "model": {
+                  "kind": "allow",
+                  "items": [
+                    "p6t6-static/p6t6-model-v2"
+                  ]
+                }
+              },
+              "generation": 1,
+              "updatedAt": "2026-09-01T06:18:02.380Z",
+              "supersededRecordId": null
+            },
+            "pendingBefore": [
+              "p8s4b-ovr-model"
+            ],
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-model"
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-model) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M2.json"
+        },
+        "M4": {
+          "criterion": "M4",
+          "boot": 1,
+          "pass": true,
+          "durationMs": 275,
+          "assertions": [
+            {
+              "name": "M2 ran first (the cumulative humanOverride slot)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":true,\"m4\":false}"
+            },
+            {
+              "name": "baseline: the mcp tool is ABSENT for the worker (never silently allowed)",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+            },
+            {
+              "name": "operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-allow\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"},\"mcp\":{\"kind\":\"allow\",\"items\":[\"p8s4bmini\"]}},\"generation\":2,\"updatedAt\":\"2026-09-01T06:18:03.337Z\",\"supersededRecordId\":\"p8s4b-ovr-model\"}}"
+            },
+            {
+              "name": "BEFORE the next operation: pendingNextBoundary lists the mcp-allow record",
+              "pass": true,
+              "detail": "[\"p8s4b-ovr-mcp-allow\"]"
+            },
+            {
+              "name": "after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"value\\\":{\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"pong:p8s4b-m4-allow\\\"}]}}\"}"
+            },
+            {
+              "name": "state: the mcp facet is MOUNTED, sourced from the granting record",
+              "pass": true,
+              "detail": "{\"mounted\":true,\"serverName\":\"p8s4bmini\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[p8s4bmini]; team humanOverride(origin=human, p8s4b-ovr-mcp-allow) allow[p8s4bmini]; external exists=yes, hard=unspecified\"}"
+            },
+            {
+              "name": "operator mcp-deny admitted (generation 3, model grant preserved)",
+              "pass": true,
+              "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-deny\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"mcp\":{\"kind\":\"deny\"},\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"}},\"generation\":3,\"updatedAt\":\"2026-09-01T06:18:03.478Z\",\"supersededRecordId\":\"p8s4b-ovr-mcp-allow\"}}"
+            },
+            {
+              "name": "after the deny boundary the mcp tool is ABSENT again (never silently allowed)",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+            },
+            {
+              "name": "state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record",
+              "pass": true,
+              "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 3,
+            "stateCalls": 5,
+            "non200": []
+          },
+          "evidence": {
+            "pingBaseline": {
+              "status": 200,
+              "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+            },
+            "pingAllow": {
+              "status": 200,
+              "body": "{\"ok\":true,\"value\":{\"content\":[{\"type\":\"text\",\"text\":\"pong:p8s4b-m4-allow\"}]}}"
+            },
+            "pingDeny": {
+              "status": 200,
+              "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+            },
+            "workerMcpAfter": {
+              "mounted": false,
+              "serverName": "p8s4bmini",
+              "allowed": false,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M4.json"
+        }
+      }
+    },
+    "boot2": {
+      "port": 3186,
+      "rows": [
+        "p6t6-team-tools"
+      ],
+      "patchFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-p8s4b\\profiles\\web\\cordis.patch.yml",
+      "profile": {
+        "initialized": true,
+        "created": false
+      },
+      "url": "http://127.0.0.1:3186/?token=dwsA3f26rF5tSyssOKA7B1zd2Yyvwuf2pppNDeSu0fk",
+      "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P8S4B\\dev\\agent-workflow\\evidence\\P8-S\\S4B-live\\logs\\boot2\\instance-port3186.log",
+      "bootMarkerLine": "dsh web: http://127.0.0.1:3186/?token=dwsA3f26rF5tSyssOKA7B1zd2Yyvwuf2pppNDeSu0fk",
+      "healthBefore": {
+        "ok": true,
+        "boot": 2,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1"
+        ],
+        "toolCount": 10
+      },
+      "healthAfter": {
+        "ok": true,
+        "boot": 2,
+        "ready": true,
+        "rootSessionId": "session-p6t6root",
+        "liveSessions": [
+          "session-p6t6root",
+          "session-child-p6t6seeds1",
+          "session-child-p6t6seedw1"
+        ],
+        "toolCount": 10
+      },
+      "rowMounted": {
+        "p6t6-team-tools": true
+      },
+      "stop": {
+        "killed": true,
+        "portFree": true
+      },
+      "scenarios": {
+        "W2": {
+          "criterion": "W2",
+          "boot": 2,
+          "pass": false,
+          "skipped": true,
+          "reason": "requires W1 (its member) - W1 not selected",
+          "assertions": [],
+          "failing": [
+            "requires W1 (its member) - W1 not selected"
+          ]
+        },
+        "M3": {
+          "criterion": "M3",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 860,
+          "assertions": [
+            {
+              "name": "M1+M2 ran on boot 1 (the A->B mutation landed)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+            },
+            {
+              "name": "the next real request (fresh host process) executed against the worker",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12},\"requestToken\":\"p8s4b-m3-token\"}"
+            },
+            {
+              "name": "AFTER host restart the real turn still ASSEMBLES model B",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "provenance source still names a durable human-override (layer+origin stable across re-issues)",
+              "pass": true,
+              "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"}"
+            },
+            {
+              "name": "the durable member log carries M1+M2+M3 tokens across the restart",
+              "pass": true,
+              "detail": "logBytes=47062"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 1,
+            "stateCalls": 1,
+            "non200": []
+          },
+          "evidence": {
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+            }
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M3.json"
+        },
+        "M5": {
+          "criterion": "M5",
+          "boot": 2,
+          "pass": true,
+          "durationMs": 854,
+          "assertions": [
+            {
+              "name": "M4 ran on boot 1 (the mcp deny landed)",
+              "pass": true,
+              "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+            },
+            {
+              "name": "the next real request (fresh host process) executed against the worker",
+              "pass": true,
+              "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":13,\"replayed\":false,\"settled\":true,\"settledSequence\":16},\"requestToken\":\"p8s4b-m5-token\"}"
+            },
+            {
+              "name": "AFTER restart the worker still ASSEMBLES model B (the carried grant)",
+              "pass": true,
+              "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+            },
+            {
+              "name": "AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)",
+              "pass": true,
+              "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+            },
+            {
+              "name": "state: mcp facet unmounted, team-denied by the deny record",
+              "pass": true,
+              "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+            },
+            {
+              "name": "the THREE durable override records survived the restart",
+              "pass": true,
+              "detail": "[\"p8s4b-ovr-mcp-allow\",\"p8s4b-ovr-mcp-deny\",\"p8s4b-ovr-model\"]"
+            }
+          ],
+          "failing": [],
+          "http": {
+            "toolCalls": 2,
+            "stateCalls": 2,
+            "non200": []
+          },
+          "evidence": {
+            "ping": {
+              "status": 200,
+              "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+            },
+            "workerModelAfter": {
+              "current": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "assembled": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "selection": {
+                "provider": "p6t6-static",
+                "model": "p6t6-model-v2"
+              },
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "suppressed": [],
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+            },
+            "workerMcpAfter": {
+              "mounted": false,
+              "serverName": "p8s4bmini",
+              "allowed": false,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "unavailable": false,
+              "deniedBy": {
+                "by": "team",
+                "reason": "teamDeny",
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "p8s4b-ovr-mcp-deny"
+              },
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+            },
+            "overrideRecordIds": [
+              "p8s4b-ovr-mcp-allow",
+              "p8s4b-ovr-mcp-deny",
+              "p8s4b-ovr-model"
+            ]
+          },
+          "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M5.json"
+        }
+      }
+    }
+  },
+  "scenarios": {
+    "W1": {
+      "criterion": "W1",
+      "boot": 1,
+      "pass": false,
+      "skipped": true,
+      "reason": "dependency not selected",
+      "assertions": [],
+      "failing": [
+        "dependency not selected"
+      ]
+    },
+    "W5": {
+      "criterion": "W5",
+      "boot": 1,
+      "pass": false,
+      "skipped": true,
+      "reason": "dependency not selected",
+      "assertions": [],
+      "failing": [
+        "dependency not selected"
+      ]
+    },
+    "W7": {
+      "criterion": "W7",
+      "boot": 1,
+      "pass": false,
+      "skipped": true,
+      "reason": "requires W1 (its member) - W1 not selected",
+      "assertions": [],
+      "failing": [
+        "requires W1 (its member) - W1 not selected"
+      ]
+    },
+    "W3": {
+      "criterion": "W3",
+      "boot": 1,
+      "pass": false,
+      "skipped": true,
+      "reason": "dependency not selected",
+      "assertions": [],
+      "failing": [
+        "dependency not selected"
+      ]
+    },
+    "M1": {
+      "criterion": "M1",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 928,
+      "assertions": [
+        {
+          "name": "follow-up executed against the seeded worker (real member turn)",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":1,\"replayed\":false,\"settled\":true,\"settledSequence\":4},\"requestToken\":\"p8s4b-m1-token\"}"
+        },
+        {
+          "name": "worker model CURRENT = world-default A (no Team override yet)",
+          "pass": true,
+          "detail": "{\"current\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"assembled\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"selection\":{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "name": "the real turn ASSEMBLED model A (live selection evidence)",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v1\"}"
+        },
+        {
+          "name": "provenance: the model cell is team-unspecified (static baseline, not silently granted)",
+          "pass": true,
+          "detail": "{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null}"
+        },
+        {
+          "name": "the M1 token reached the durable member session log",
+          "pass": true,
+          "detail": "logBytes=17609"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v1"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v1"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v1"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M1.json"
+    },
+    "M2": {
+      "criterion": "M2",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 939,
+      "assertions": [
+        {
+          "name": "M1 ran first (the baseline turn)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":false,\"m4\":false}"
+        },
+        {
+          "name": "operator mutation admitted (human-override, generation 1)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-model\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"kind\":\"allow\",\"items\":[\"p6t6-static/p6t6-model-v2\"]}},\"generation\":1,\"updatedAt\":\"2026-09-01T06:18:02.380Z\",\"supersededRecordId\":null}}"
+        },
+        {
+          "name": "BEFORE any request: the backend truth lists the new record in pendingNextBoundary",
+          "pass": true,
+          "detail": "[\"p8s4b-ovr-model\"]"
+        },
+        {
+          "name": "the NEXT real request executed against the worker",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":5,\"replayed\":false,\"settled\":true,\"settledSequence\":8},\"requestToken\":\"p8s4b-m2-token\"}"
+        },
+        {
+          "name": "worker model CURRENT switched to B at the boundary",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "the real turn ASSEMBLED model B (live evidence: the next request runs on B)",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "provenance source names the granting human-override record",
+          "pass": true,
+          "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-model\"}"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 3,
+        "non200": []
+      },
+      "evidence": {
+        "mutation": {
+          "recordId": "p8s4b-ovr-model",
+          "kind": "human-override",
+          "scope": "team",
+          "values": {
+            "model": {
+              "kind": "allow",
+              "items": [
+                "p6t6-static/p6t6-model-v2"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-01T06:18:02.380Z",
+          "supersededRecordId": null
+        },
+        "pendingBefore": [
+          "p8s4b-ovr-model"
+        ],
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-model"
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-model) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M2.json"
+    },
+    "M4": {
+      "criterion": "M4",
+      "boot": 1,
+      "pass": true,
+      "durationMs": 275,
+      "assertions": [
+        {
+          "name": "M2 ran first (the cumulative humanOverride slot)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":true,\"m4\":false}"
+        },
+        {
+          "name": "baseline: the mcp tool is ABSENT for the worker (never silently allowed)",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+        },
+        {
+          "name": "operator mcp-allow admitted (generation 2, model grant preserved in the re-issue)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-allow\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"},\"mcp\":{\"kind\":\"allow\",\"items\":[\"p8s4bmini\"]}},\"generation\":2,\"updatedAt\":\"2026-09-01T06:18:03.337Z\",\"supersededRecordId\":\"p8s4b-ovr-model\"}}"
+        },
+        {
+          "name": "BEFORE the next operation: pendingNextBoundary lists the mcp-allow record",
+          "pass": true,
+          "detail": "[\"p8s4b-ovr-mcp-allow\"]"
+        },
+        {
+          "name": "after the boundary the mcp tool EXECUTES: pong round-trip against the real mini-MCP",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"value\\\":{\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"pong:p8s4b-m4-allow\\\"}]}}\"}"
+        },
+        {
+          "name": "state: the mcp facet is MOUNTED, sourced from the granting record",
+          "pass": true,
+          "detail": "{\"mounted\":true,\"serverName\":\"p8s4bmini\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective allow[p8s4bmini]; team humanOverride(origin=human, p8s4b-ovr-mcp-allow) allow[p8s4bmini]; external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "name": "operator mcp-deny admitted (generation 3, model grant preserved)",
+          "pass": true,
+          "detail": "{\"ok\":true,\"value\":{\"recordId\":\"p8s4b-ovr-mcp-deny\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"mcp\":{\"kind\":\"deny\"},\"model\":{\"items\":[\"p6t6-static/p6t6-model-v2\"],\"kind\":\"allow\"}},\"generation\":3,\"updatedAt\":\"2026-09-01T06:18:03.478Z\",\"supersededRecordId\":\"p8s4b-ovr-mcp-allow\"}}"
+        },
+        {
+          "name": "after the deny boundary the mcp tool is ABSENT again (never silently allowed)",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+        },
+        {
+          "name": "state: the mcp facet is UNMOUNTED and the cell is team-denied by the deny record",
+          "pass": true,
+          "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 3,
+        "stateCalls": 5,
+        "non200": []
+      },
+      "evidence": {
+        "pingBaseline": {
+          "status": 200,
+          "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+        },
+        "pingAllow": {
+          "status": 200,
+          "body": "{\"ok\":true,\"value\":{\"content\":[{\"type\":\"text\",\"text\":\"pong:p8s4b-m4-allow\"}]}}"
+        },
+        "pingDeny": {
+          "status": 200,
+          "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+        },
+        "workerMcpAfter": {
+          "mounted": false,
+          "serverName": "p8s4bmini",
+          "allowed": false,
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "teamDeny",
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M4.json"
+    },
+    "W2": {
+      "criterion": "W2",
+      "boot": 2,
+      "pass": false,
+      "skipped": true,
+      "reason": "requires W1 (its member) - W1 not selected",
+      "assertions": [],
+      "failing": [
+        "requires W1 (its member) - W1 not selected"
+      ]
+    },
+    "M3": {
+      "criterion": "M3",
+      "boot": 2,
+      "pass": true,
+      "durationMs": 860,
+      "assertions": [
+        {
+          "name": "M1+M2 ran on boot 1 (the A->B mutation landed)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+        },
+        {
+          "name": "the next real request (fresh host process) executed against the worker",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":9,\"replayed\":false,\"settled\":true,\"settledSequence\":12},\"requestToken\":\"p8s4b-m3-token\"}"
+        },
+        {
+          "name": "AFTER host restart the real turn still ASSEMBLES model B",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "provenance source still names a durable human-override (layer+origin stable across re-issues)",
+          "pass": true,
+          "detail": "{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"}"
+        },
+        {
+          "name": "the durable member log carries M1+M2+M3 tokens across the restart",
+          "pass": true,
+          "detail": "logBytes=47062"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 1,
+        "stateCalls": 1,
+        "non200": []
+      },
+      "evidence": {
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+        }
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M3.json"
+    },
+    "M5": {
+      "criterion": "M5",
+      "boot": 2,
+      "pass": true,
+      "durationMs": 854,
+      "assertions": [
+        {
+          "name": "M4 ran on boot 1 (the mcp deny landed)",
+          "pass": true,
+          "detail": "{\"m1\":true,\"m2\":true,\"m4\":true}"
+        },
+        {
+          "name": "the next real request (fresh host process) executed against the worker",
+          "pass": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-p6t6root\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-p6t6seedw1\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-p6t6seedw1\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":13,\"replayed\":false,\"settled\":true,\"settledSequence\":16},\"requestToken\":\"p8s4b-m5-token\"}"
+        },
+        {
+          "name": "AFTER restart the worker still ASSEMBLES model B (the carried grant)",
+          "pass": true,
+          "detail": "{\"provider\":\"p6t6-static\",\"model\":\"p6t6-model-v2\"}"
+        },
+        {
+          "name": "AFTER restart the mcp tool is STILL ABSENT (the durable deny remains effective)",
+          "pass": true,
+          "detail": "{\"status\":200,\"body\":\"{\\\"ok\\\":false,\\\"error\\\":{\\\"message\\\":\\\"unknown tool \\\\\\\"mcp__p8s4bmini__ping\\\\\\\"\\\",\\\"info\\\":{\\\"name\\\":\\\"ToolNotFoundError\\\",\\\"code\\\":\\\"UNKNOWN_TOOL\\\"}}}\"}"
+        },
+        {
+          "name": "state: mcp facet unmounted, team-denied by the deny record",
+          "pass": true,
+          "detail": "{\"mounted\":false,\"serverName\":\"p8s4bmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"teamDeny\",\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"p8s4b-ovr-mcp-deny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified\"}"
+        },
+        {
+          "name": "the THREE durable override records survived the restart",
+          "pass": true,
+          "detail": "[\"p8s4b-ovr-mcp-allow\",\"p8s4b-ovr-mcp-deny\",\"p8s4b-ovr-model\"]"
+        }
+      ],
+      "failing": [],
+      "http": {
+        "toolCalls": 2,
+        "stateCalls": 2,
+        "non200": []
+      },
+      "evidence": {
+        "ping": {
+          "status": 200,
+          "body": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"mcp__p8s4bmini__ping\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+        },
+        "workerModelAfter": {
+          "current": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "assembled": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "selection": {
+            "provider": "p6t6-static",
+            "model": "p6t6-model-v2"
+          },
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "pendingNextBoundary": [],
+          "explanation": "model: effective allow[p6t6-static/p6t6-model-v2]; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) allow[p6t6-static/p6t6-model-v2]; external exists=yes, hard=unspecified"
+        },
+        "workerMcpAfter": {
+          "mounted": false,
+          "serverName": "p8s4bmini",
+          "allowed": false,
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "teamDeny",
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "p8s4b-ovr-mcp-deny"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team humanOverride(origin=human, p8s4b-ovr-mcp-deny) deny; external exists=yes, hard=unspecified"
+        },
+        "overrideRecordIds": [
+          "p8s4b-ovr-mcp-allow",
+          "p8s4b-ovr-mcp-deny",
+          "p8s4b-ovr-model"
+        ]
+      },
+      "reportFile": "dev/agent-workflow/evidence/P8-S/S4B-live/M5.json"
+    }
+  },
+  "pass": true,
+  "failures": []
+}

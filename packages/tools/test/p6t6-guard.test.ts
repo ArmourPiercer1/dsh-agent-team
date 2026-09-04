@@ -96,6 +96,7 @@ function followUpArgs(requestToken: string): Record<string, unknown> {
     rootSessionId: P6T2_ROOT,
     requestToken,
     targetInstanceId: WORKER_ID,
+    prompt: 'p6t6-guard follow-up prompt',
     taskSummary: 'p6t6-guard scenario follow-up',
   }
 }

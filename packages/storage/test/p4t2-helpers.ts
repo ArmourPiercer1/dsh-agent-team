@@ -34,7 +34,7 @@ import {
 } from '../operations/index.js'
 import { createTeamDomain, type TeamDomain } from '../repositories/index.js'
 import { isTeamDomainError, teamDomainError, type OperationRecord } from '../schema/index.js'
-import { InMemoryStorageSeam, P4_FIXTURE, memberInstanceInput } from './p4-helpers.js'
+import { InMemoryStorageSeam, P4_FIXTURE, memberInstanceInput, teamSessionInput } from './p4-helpers.js'
 
 /** The provisioning operation's durable identity (stable across all p4t2 tests). */
 export const P4T2_PROVISION = {
@@ -157,6 +157,12 @@ export async function createP4t2Journal(
   effects: EffectsResolver | undefined = provisioningEffects(),
 ): Promise<P4t2Domain> {
   const domain = await createTeamDomain(seam)
+  // G8-S1 (R60): every new ledger fact now also advances the TeamSession's
+  // generation stamp, and a fact for a missing team row is a loud
+  // SEAM_FAILURE (invariant: facts belong to an existing team). The factory
+  // therefore seeds the team row the journal's root addresses, before any
+  // test captures its write-count base.
+  await domain.repositories.teamSessions.put(teamSessionInput(parseRootSessionId(String(rootSessionId))))
   return { ...domain, journal: createOperationJournal(domain, rootSessionId, effects) }
 }
 

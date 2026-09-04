@@ -295,7 +295,7 @@ describe('crash right after the child was recorded (boundary 4): orphan names re
       expect(b4Recover.value.stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
       expect(b4Recover.value.committed).toBe(true)
     }
-    expect(b4RecoverWrites).toBe(6)
+    expect(b4RecoverWrites).toBe(7)
     expect(b4.adapter.createCalls).toBe(1)
     expect(b4.adapter.childrenCreated).toBe(1)
   })

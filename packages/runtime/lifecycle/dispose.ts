@@ -94,6 +94,7 @@ export async function disposeMember(
     member.lifecycle,
     LIFECYCLE_OPERATIONS.DISPOSE,
     probed.lifecycle,
+    member.activityVersion,
     LIFECYCLE_STEP_NAMES.COMMIT_DISPOSE,
   )
 

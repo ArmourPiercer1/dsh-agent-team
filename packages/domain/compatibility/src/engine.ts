@@ -47,7 +47,6 @@ import { parseWarningAcknowledgements } from './acknowledgement.js'
 import type { WarningAcknowledgement } from './acknowledgement.js'
 import { computeFingerprint, NO_PROBE_GENERATION } from './fingerprint.js'
 import type {
-  AckStatus,
   CompatibilityResult,
   CompatibilityResultCounts,
   CompatibilityStatus,

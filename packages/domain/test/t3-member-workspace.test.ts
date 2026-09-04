@@ -38,7 +38,7 @@ import {
   templateId,
 } from './t3-helpers.js'
 
-const { CREATED, RUNNING, SETTLED, ARCHIVED, DISPOSED } = MEMBER_LIFECYCLE_STATES
+const { CREATED, RUNNING, DISPOSED } = MEMBER_LIFECYCLE_STATES
 
 const ROOT = rootSessionId('session-root-p3t3-ws')
 const TEMPLATE = templateId('researcher')

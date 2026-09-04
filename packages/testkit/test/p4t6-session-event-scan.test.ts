@@ -21,7 +21,14 @@ import {
   scanSessionEventVocabulary,
 } from '../fault-injection/session-event-scan.mjs'
 
-/** The only files allowed to carry denylist tokens (frozen quarantine). */
+/**
+ * The only files allowed to carry denylist tokens (frozen quarantine):
+ * the v1 quarantine module and the contracts negative test that
+ * exercises the detection function. P9-T10 (P9-S7 DROP) removed the
+ * temporary P9-T1 entry (team-marker-definition.client.spec.ts and its
+ * six fixture tokens) together with the spec itself, restoring this
+ * original two-file set.
+ */
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -42,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 411 files scanned, runtime carries the P7-T2 mutation files, legacy carries the P7-T6 adapter and the P7-T7 session reader', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -132,9 +139,178 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // p7t7-integrated-lifecycle-restore, p7t7-integrated-fork-handoff +
     // 5 real-instance harness .mjs under
     // legacy/session-reader/e2e: ts-loader, fs-seam, mini-mcp, plugin,
-    // run)).
-    expect(scanResult.filesScanned).toBe(411)
-    expect(scanResult.files.length).toBe(411)
+    // run) +
+    // 17 P8-T1 projection contract files (12 module .ts under
+    // contracts/src/projection: common, schema, states, effective-config,
+    // compatibility, activity, template, root, member, ledger, projection,
+    // index + 5 unit-test .ts under contracts/test:
+    // p8t1-projection-fixtures + 4 suites: p8t1-projection-serialization,
+    // p8t1-projection-generation, p8t1-projection-overlay,
+    // p8t1-projection-negative) +
+    // 12 P8-T2 projection service files (6 module .ts under
+    // runtime/projection: types, errors, ledger, fold, service, index +
+    // 6 files under runtime/test: p8t2-helpers + 5 suites:
+    // p8t2-cold, p8t2-fifty, p8t2-overlay, p8t2-terminal,
+    // p8t2-negative)) +
+    // 29 P8-T3 remote contract files (21 module .ts under remote/src:
+    // 9 contracts/* modules + 12 handlers/* modules — the remote
+    // index.ts pre-existed as the package skeleton and is already
+    // counted in the pre-existing base — + 8 test files under
+    // remote/test: p8t3-helpers, p8t3-round-trip.test,
+    // p8t3-invalid-ids.test, p8t3-admission.test, p8t3-version.test,
+    // p8t3-negative.test, p8t3-negative-scan.mjs,
+    // p8t3-negative-scan.d.mts) +
+    // 13 P8-T4 push model files (6 module .ts under remote/src/push:
+    // types, generation, pull, reconnect, ledger-page, index +
+    // 7 files under remote/test: p8t4-engine.test, p8t4-sync.test,
+    // p8t4-negative.test, p8t4-negative-scan.mjs,
+    // p8t4-negative-scan.d.mts, p8t4-server, p8t4-test-client) +
+    // 2 G8-S1 gate-supplement test files (storage g8s1-stamp-advance +
+    // runtime g8s1-generation-stamp) +
+    // 2 P8-S2 leader-contract test files (contracts
+    // leader-instance-record.test + runtime p8s2-leader-contract.test) +
+    // 4 P8-S3 work-execution files (module
+    // runtime/action-router/work-execution + tests
+    // runtime p8s3-work-request, runtime p8s3-work-chain,
+    // storage p8s3-member-cas) +
+    // 4 P8-S4A unified compatibility admission files (module
+    // runtime/compatibility/authority + tests
+    // runtime p8s4a-helpers, runtime p8s4a-chain,
+    // runtime p8s4a-entrypoints) +
+    // 8 P8-S4B durable mutation closure files (module
+    // runtime/agent-setup/capability/mcp-facet +
+    // runtime/agent-setup/model/durable-consumption +
+    // runtime/mutation/cell-provenance +
+    // runtime/mutation/override-admission + tests
+    // runtime p8s4b-cell-provenance, runtime p8s4b-mcp-facet,
+    // runtime p8s4b-model-consumption,
+    // runtime p8s4b-override-admission) +
+    // 13 P8-S5A production-assembly files (module
+    // runtime/plugin/types, runtime/plugin/seams,
+    // runtime/plugin/root, runtime/plugin/projection-source,
+    // runtime/plugin/legacy-surface, runtime/plugin/node-min.d,
+    // runtime/plugin/upstream-resolver.mjs,
+    // runtime/plugin/live/agent-bindings.mjs + tests
+    // runtime p8s5a-artifacts.mjs, runtime p8s5a-artifacts.d.mts,
+    // runtime p8s5a-stub-glue.mjs,
+    // runtime p8s5a-host-loadability.test,
+    // runtime p8s5a-production-assembly.test) +
+    // 2 P8-S5B operation-fencing files (module
+    // runtime/coordination/index + test
+    // runtime p8s5b-operation-fencing.test) +
+    // 8 P8-S6 remote/principal/overlay files (3 module .ts under
+    // runtime/src/plugin: s6-remote, s6-principal,
+    // s6-live-overlay + 5 unit-test .ts under runtime/test:
+    // p8s6-projection, p8s6-principal, p8s6-remote-commands,
+    // p8s6-push-reconnect, p8s6-pagination) +
+    // 2 P8-S7R1 creation/preflight test files (tests
+    // runtime p8s7r1-create-params, runtime p8s7r1-initial-work) +
+    // 10 P8-S7-R2 policy/model-state view files (module
+    // contracts/src/projection/model-state + contracts/src/projection/disposed-history + runtime/src/plugin:
+    // durable-mutation-store, effective-config-view,
+    // model-state-view + 5 unit-test .ts under runtime/test:
+    // p8s7r2-policy-state-durable, p8s7r2-effective-config,
+    // p8s7r2-model-state, p8s7r2-residency-resuming,
+    // p8s7r2-disposed-history). +
+    // 1 P8-S7-R4 handoff-surface production module (module
+    // runtime/src/plugin/handoff-surface: readCanonicalSourceSurface +
+    // summarizeSourceSurface) +
+    // 5 P8-S7-R4 handoff/fork test files (tests
+    // runtime p8s7r4-handoff-surface, runtime p8s7r4-handoff-wiring,
+    // runtime p8s7r4-bc22-idempotency,
+    // runtime p8s7r4-bc23-24-no-mutation,
+    // runtime p8s7r4-fork-describe).
+    // T12 integration pin (543 baseline + 15 merged lane files):
+    // lane A +9 (t12a-live-bridge.mjs + t12a-live-bridge.d.mts + the seven
+    // t12a-b2/b3/h1/m1/m2/m3/glue test files) + lane B +3 (tests
+    // t12b1-real-create, t12b2-resume-separation, t12b6-handoff-agent-start)
+    // + lane C +3 (tests t12h4-s6-fail-closed, t12b4-principal-context,
+    // t12m4-remote-mount); all under packages/runtime/test (.ts/.mts/.mjs
+    // are all scanned by the frozen scanner).
+    // T12-V vertical pin (558 + 2 vertical harness files): the T12-V
+    // vertical-slice work adds two scanned files under
+    // packages/tools/harness — t12-vertical.mjs (phase runner, 7-junction
+    // bridge, budget ledger, deferred-content calibration) and
+    // mock-deepseek.mjs (spec-strict mock model + verbatim capture); both
+    // carry zero denylist vocabulary (the denylist scan over them passes).
+    // P9-T1 legacy-copy pin (560 + 11): the verbatim legacy team UI copy
+    // adds eleven scannable files under packages/client — four model .ts
+    // (team-dock-model, team-feed-model, team-members-model,
+    // team-timeline-model), the ui locales.ts, and six legacy-copy spec
+    // .ts (client-bundle, team-dock-model, team-feed-model,
+    // team-marker-definition, team-members-model, team-timeline-model);
+    // the .tsx and .css copies are outside the frozen scanner's extension
+    // set. team-marker-definition.client.spec.ts carries six legacy
+    // event-string fixture tokens and is quarantined until the P9-T10
+    // DROP removes it.
+    // P9-T2 build-wiring pin (+1): packages/client/src/css-modules.d.ts.
+    // P9-T3 frozen-remote client pin (+5): the S2-A/S2-B sources and their
+    // two specs — three src .ts (transport/host-seams,
+    // transport/team-remote-client, state/team-projection-store) plus
+    // test/team-remote-client.test.ts and test/team-projection-store.test.ts;
+    // all five carry zero denylist vocabulary (the scan over them passes).
+    // P9-T4 ledger cursor store + vNext UI adapters pin (+10): six src
+    // .ts (model/team-view-compat, model/team-ui-snapshot,
+    // model/projection-adapter, model/ledger-adapter,
+    // state/team-session-resolution, state/team-ledger-store) plus four
+    // test .ts (test/team-session-resolution.test, test/projection-adapter.test,
+    // test/ledger-adapter.test, test/team-ledger-store.test); all ten carry
+    // zero denylist vocabulary (the scan over them passes).
+    // P9-T6 UI-adaptation pin (587 - 1): the T6 collapse deletes two
+    // scannable src .ts (model/team-view-compat, model/team-feed-model)
+    // and their spec .ts (test/team-feed-model.client.spec) and adds one
+    // scannable src .ts (model/team-ledger-model) plus one spec .ts
+    // (test/team-ledger-model.client.spec); the .tsx/.css adaptations
+    // (TeamFeed -> TeamLedger, TeamTasks -> TeamActivity, the rewritten
+    // team-view spec) are outside the scanner's extension set; the net
+    // scan-target count drops by one and the new files carry zero
+    // denylist vocabulary (the scan over them passes).
+    // P9-T7 new-team + member-command flows pin (+4): two src .ts
+    // (model/team-intent-model, model/team-member-commands) plus two
+    // spec .ts (test/team-intent-model.test,
+    // test/team-member-commands.test); the two new .tsx jsdom specs
+    // (team-creation-panel.client.spec, team-members-actions.client.spec)
+    // and the CSS modules are outside the scanner's extension set; all
+    // four scanned files carry zero denylist vocabulary (the scan over
+    // them passes).
+    // P9-T8 governance/handoff/legacy model pin (+6): three src .ts
+    // (model/team-governance, model/team-handoff, model/team-legacy)
+    // plus three spec .ts (test/team-governance.test,
+    // test/team-handoff.test, test/team-legacy.test); the three new
+    // .tsx jsdom specs (team-governance.client.spec,
+    // team-creation-handoff.client.spec, team-legacy.client.spec), the
+    // new CSS module, and the T7 .tsx/.css edits are outside the
+    // scanner's extension set; all six scanned files carry zero
+    // denylist vocabulary (the scan over them passes).
+    // P9-T9 client mount pin (+2): the D-T9-13 core/glue split adds two
+    // scannable .ts (src/plugin/team-mount-core — the pure-.ts mount core —
+    // and test/client-plugin-mount.test — its behavior spec); the glue
+    // rewrite (src/plugin/client) and the test/client.test.ts rewrite are
+    // in-place edits (no count change); the .tsx component entries and
+    // their CSS modules are outside the scanner's extension set; both new
+    // files carry zero denylist vocabulary (the scan over them passes).
+    // P9-T10 test-migration pin (598 + 3 - 1): the P9-S7 test migration
+    // adds three scannable .test.ts under packages/client (
+    // test/client-architecture-negatives.test, test/team-remote-categories.
+    // test, test/team-command-flow.test) and deletes the quarantined
+    // team-marker-definition.client.spec.ts (its six fixture tokens leave
+    // the scan with it); the client-bundle.client.spec.ts and
+    // team-plugin.client.spec.tsx rewrites are in-place (no count change);
+    // the new jsdom specs and the CSS modules are outside the scanner's
+    // extension set; all three new files carry zero denylist vocabulary
+    // (the scan over them passes).
+    // P9-S8 bug #5 regression-test pin (+1): the bug #5 fix commit
+    // (48d7330) added packages/client/test/team-members-model.test.ts
+    // (the zero-instance template-rows regression spec; zero denylist
+    // vocabulary — the scan over it passes) without recording the
+    // increment; this commit records the missed pin.
+    // P9-S8 bug #9 regression-test pin (+1): the bug #9 fix commit
+    // (47b41df) added packages/runtime/test/p7t3-lifecycle-fact.test.ts
+    // (the lifecycle-evidence-port regression spec; zero denylist
+    // vocabulary — the scan over it passes) after the pin was last
+    // recorded; this commit records the increment.
+    expect(scanResult.filesScanned).toBe(602)
+    expect(scanResult.files.length).toBe(602)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
@@ -184,6 +360,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'event-string|packages/contracts/test/negative.test.ts:122:7|team/control-decision',
       'event-string|packages/contracts/test/negative.test.ts:123:7|team/message',
     ])
+    // 15 frozen-quarantine occurrences (the P9-T1 temporary entry and its
+    // six fixture tokens left the scan with the spec at the P9-T10 DROP).
     expect(scanResult.summary.eventString).toBe(15)
     expect(scanResult.summary.total).toBe(15)
   })

@@ -84,12 +84,20 @@ describe('p7t5 no-creation static scan', () => {
       f.importSpecifiers.every((s) => s.startsWith('./') || s.startsWith('../')),
     )
     expect(allRelative).toBe(true)
-    // contracts is the only cross-package dependency (the shared seam).
+    // The only cross-package dependencies are the shared seam
+    // (contracts) and, since T12-B5, the pure identity digest primitive
+    // (domain/blueprint): the composite handoff identity tokens are
+    // derived from the canonical (sourceSessionId, requestToken) digest,
+    // and domain/blueprint owns the repo's pure sha256 helper. No other
+    // cross-package import may appear.
     const specifiers = scanResult.fileResults.flatMap((f) => [...f.importSpecifiers])
-    const nonContracts = specifiers.filter(
-      (s) => !s.startsWith('../../contracts/') && !s.startsWith('./'),
+    const nonSharedSeams = specifiers.filter(
+      (s) =>
+        !s.startsWith('../../contracts/') &&
+        !s.startsWith('../../domain/blueprint/') &&
+        !s.startsWith('./'),
     )
-    expect(nonContracts).toEqual([])
+    expect(nonSharedSeams).toEqual([])
   })
 
   it('positive control: the synthetic violation sample is caught by ALL SEVEN rules', () => {

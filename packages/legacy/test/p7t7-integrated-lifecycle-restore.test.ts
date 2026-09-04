@@ -67,25 +67,6 @@ const RESTORE_STEPS: readonly string[] = [S.COMMIT_RESTORE]
 // S4 — criterion 4: lifecycle quiescence (archive a RUNNING member)
 // ---------------------------------------------------------------------------
 
-interface S4 {
-  readonly steps: string[]
-  readonly drainBeforeWait: boolean
-  readonly quiescenceBeforeCommit: boolean
-  readonly settledCommitted: boolean | undefined
-  readonly residencyDropped: boolean | undefined
-  readonly drained: boolean | undefined
-  readonly resultLifecycle: string
-  readonly resultAv: number
-  readonly durableLifecycle: string | null
-  readonly clockKinds: string[]
-  readonly commitOps: string[]
-  readonly admissionCalls: number
-  readonly interruptCalls: number
-  readonly drainCalls: number
-  readonly dropCalls: number
-  readonly viewIdentical: boolean
-  readonly homeIdentical: boolean
-}
 const s4 = await (async () => {
   const home = makeLegacyHome()
   // Clear any leftover scratch dir from a crashed prior run: the seam is
@@ -135,22 +116,6 @@ const s4 = await (async () => {
 // S5 — criterion 5: restore does not create/resume Agent
 // ---------------------------------------------------------------------------
 
-interface S5 {
-  readonly steps: string[]
-  readonly resultLifecycle: string
-  readonly resultAv: number
-  readonly durableLifecycle: string | null
-  readonly clockKinds: string[]
-  readonly commitOps: string[]
-  readonly admissionCalls: number
-  readonly interruptCalls: number
-  readonly drainCalls: number
-  readonly dropCalls: number
-  readonly resumeAgentCalls: number
-  readonly createAgentCalls: number
-  readonly viewIdentical: boolean
-  readonly homeIdentical: boolean
-}
 const s5 = await (async () => {
   const home = makeLegacyHome()
   destroyDir(scratchDir('p7t7-lc-s5'))

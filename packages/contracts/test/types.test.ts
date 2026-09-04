@@ -48,6 +48,8 @@ type _TSTR_INST = Assert<Eq<InstanceId extends string ? true : false, true>>
 type _TSTR_TPL = Assert<Eq<TemplateId extends string ? true : false, true>>
 
 // the DTO field sets are exactly the frozen v1 field sets
+// (P8-S7-R4: the additive one-shot handoff provenance field
+// `handoffSourceSessionId` joins the TeamSession record field set)
 type _TEAM_FIELDS = Assert<
   Eq<
     keyof TeamSessionRecordDto,
@@ -57,6 +59,7 @@ type _TEAM_FIELDS = Assert<
     | 'defaultWorkspace'
     | 'createdAt'
     | 'generation'
+    | 'handoffSourceSessionId'
   >
 >
 type _MEMBER_FIELDS = Assert<

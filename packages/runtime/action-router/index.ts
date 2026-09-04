@@ -19,5 +19,12 @@
  */
 
 export { createTeamRuntime } from './router.js'
-export { executeEffect, withTeamLock } from './effects.js'
+export { executeEffect, withTeamLock, commitDurableFact } from './effects.js'
 export type { EffectContext } from './effects.js'
+export {
+  executeWorkChain,
+  scanWorkUnitFacts,
+  settleAdmittedWork,
+  WORK_ACTIVITY_SUBJECT,
+} from './work-execution.js'
+export type { WorkChainDeps, WorkChainResult, WorkUnitFacts, SettleOutcome } from './work-execution.js'

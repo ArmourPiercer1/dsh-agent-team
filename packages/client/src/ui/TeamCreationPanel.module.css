@@ -1,0 +1,362 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.title {
+  margin: 0;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-s-14);
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.select,
+.textarea {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+}
+
+.textarea {
+  min-height: 54px;
+  resize: vertical;
+}
+
+.select:focus-visible,
+.textarea:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: -1px;
+}
+
+.select:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hint {
+  margin: -6px 0 0;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxxs-11);
+  line-height: 1.4;
+}
+
+.detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.detailName {
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+}
+
+.detailSource {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.detailDescription {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xs-13);
+  line-height: 1.5;
+}
+
+.detailTemplates {
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.compat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.compatTitle {
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.compatNote,
+.compatReady,
+.compatUnknown {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xs-13);
+  line-height: 1.5;
+}
+
+.compatReady {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.compatUnknown {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.warningList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.warningRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--dsw-alias-state-warn-tertiary);
+  color: var(--dsw-alias-state-warn-label);
+}
+
+.warningOwner {
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+}
+
+.warningSubjects,
+.warningDetail {
+  color: var(--dsw-alias-state-warn-label);
+  font: var(--dsw-font-xxxs-11);
+  line-height: 1.4;
+}
+
+.ack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  cursor: pointer;
+}
+
+.ack input {
+  margin: 0;
+}
+
+.fatal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--dsw-alias-state-error-secondary);
+}
+
+.fatalTitle,
+.fatalRow {
+  margin: 0;
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xs-13);
+  line-height: 1.5;
+}
+
+.fatalRow {
+  font: var(--dsw-font-xxxs-11);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.fatalPreset {
+  margin: 0;
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xxxs-11);
+  line-height: 1.5;
+}
+
+.error {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--dsw-alias-state-error-secondary);
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xs-13);
+  line-height: 1.5;
+}
+
+.rootKept {
+  margin: 4px 0 0;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.primary,
+.secondary {
+  padding: 6px 14px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--dsw-alias-state-business-primary);
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-bg-layer-1);
+}
+
+.primary:hover:not(:disabled),
+.secondary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */
+
+.handoff {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.handoffTitle {
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+}
+
+.handoff > span:not(.handoffTitle) {
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}
+
+.handoff > label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+}
+
+.handoff > label:has(input:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.handoffNote {
+  margin: 0;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.handoffReady {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.handoffReady > span {
+  color: var(--dsw-alias-state-success-primary);
+  font: var(--dsw-font-xxxs-11);
+  font-weight: 600;
+}
+
+.handoffPreview {
+  width: 100%;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.handoffPreview > p {
+  margin: 0 0 3px;
+  color: var(--dsw-alias-label-primary);
+  font-weight: 600;
+}
+
+.handoffPreview ul {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+
+.handoffPreview li {
+  margin: 1px 0;
+  word-break: break-word;
+}
+
+.handoffError,
+.handoffFailed > p {
+  margin: 0;
+  color: var(--dsw-alias-state-error-primary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}
+
+.handoffFailed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--dsw-alias-state-error-secondary);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.handoffTriad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

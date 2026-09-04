@@ -92,18 +92,22 @@ describe('P5-T1 constructor validation (fail-fast TypeError)', () => {
       restoreScope: () => {},
       // recordSessionEvent missing
     }
-    expectThrownError(() =>
-      new TeamAgentBinder({ surface: missingOne, teamDomain: readHandle } as unknown as TeamAgentBinderOptions),
-    ) instanceof TypeError
+    expect(
+      expectThrownError(() =>
+        new TeamAgentBinder({ surface: missingOne, teamDomain: readHandle } as unknown as TeamAgentBinderOptions),
+      ) instanceof TypeError,
+    ).toBe(true)
     const notAFunction = {
       getInstalledSlots: 'nope',
       installOverlay: () => {},
       restoreScope: () => {},
       recordSessionEvent: () => {},
     }
-    expectThrownError(() =>
-      new TeamAgentBinder({ surface: notAFunction, teamDomain: readHandle } as unknown as TeamAgentBinderOptions),
-    ) instanceof TypeError
+    expect(
+      expectThrownError(() =>
+        new TeamAgentBinder({ surface: notAFunction, teamDomain: readHandle } as unknown as TeamAgentBinderOptions),
+      ) instanceof TypeError,
+    ).toBe(true)
   })
 
   it('rejects a read handle missing any of the three members', () => {
@@ -112,9 +116,11 @@ describe('P5-T1 constructor validation (fail-fast TypeError)', () => {
       getMemberInstance: () => undefined,
       // getSessionBinding missing
     }
-    expectThrownError(() =>
-      new TeamAgentBinder({ surface, teamDomain: missingOne } as unknown as TeamAgentBinderOptions),
-    ) instanceof TypeError
+    expect(
+      expectThrownError(() =>
+        new TeamAgentBinder({ surface, teamDomain: missingOne } as unknown as TeamAgentBinderOptions),
+      ) instanceof TypeError,
+    ).toBe(true)
   })
 
   it('rejects a slot override whose name does not match its key', () => {
@@ -123,7 +129,7 @@ describe('P5-T1 constructor validation (fail-fast TypeError)', () => {
       teamDomain: readHandle,
       slots: { persona: identityOverlaySlot('model') },
     }
-    expectThrownError(() => new TeamAgentBinder(options as unknown as TeamAgentBinderOptions)) instanceof TypeError
+    expect(expectThrownError(() => new TeamAgentBinder(options as unknown as TeamAgentBinderOptions)) instanceof TypeError).toBe(true)
   })
 
   it('rejects an unknown slot key', () => {
@@ -135,7 +141,7 @@ describe('P5-T1 constructor validation (fail-fast TypeError)', () => {
         prompt: identityOverlaySlot('persona'),
       },
     }
-    expectThrownError(() => new TeamAgentBinder(options as unknown as TeamAgentBinderOptions)) instanceof TypeError
+    expect(expectThrownError(() => new TeamAgentBinder(options as unknown as TeamAgentBinderOptions)) instanceof TypeError).toBe(true)
   })
 
   it('rejects a slot without an apply function', () => {
@@ -144,15 +150,17 @@ describe('P5-T1 constructor validation (fail-fast TypeError)', () => {
       teamDomain: readHandle,
       slots: { persona: { name: 'persona' } },
     }
-    expectThrownError(() => new TeamAgentBinder(options as unknown as TeamAgentBinderOptions)) instanceof TypeError
+    expect(expectThrownError(() => new TeamAgentBinder(options as unknown as TeamAgentBinderOptions)) instanceof TypeError).toBe(true)
   })
 
   it('rejects an admission guard without a decide function', () => {
-    expectThrownError(() =>
-      new TeamAgentBinder(
-        { surface, teamDomain: readHandle, admissionGuard: {} } as unknown as TeamAgentBinderOptions,
-      ),
-    ) instanceof TypeError
+    expect(
+      expectThrownError(() =>
+        new TeamAgentBinder(
+          { surface, teamDomain: readHandle, admissionGuard: {} } as unknown as TeamAgentBinderOptions,
+        ),
+      ) instanceof TypeError,
+    ).toBe(true)
   })
 
   it('accepts a well-formed options object', () => {

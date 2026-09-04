@@ -29,10 +29,7 @@ import {
   parseInstanceId,
   parseTemplateId,
 } from '../../contracts/src/index.js'
-import type {
-  MemberInstanceRecordDto,
-  MemberInstanceRecordInput,
-} from '../../contracts/src/index.js'
+import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
 import type { CompatibilityStatus } from '../../storage/schema/index.js'
 import {
   LEADER_INSTANCE_ID,
@@ -295,18 +292,20 @@ export function createP6T2Runtime(
 export interface P6T2LifecycleCommitCall {
   readonly rootSessionId: string
   readonly instanceId: string
+  readonly expectedActivityVersion: number
   readonly from: string
   readonly operation: string
   readonly to: string
 }
 
 /**
- * A FAKE lifecycle commit port for the P6-T2 suites: it emulates the P7-T3
- * durable transition commit with the only rewrite the append-only store
- * supports (delete + fresh put, executed under the router lock by the
- * caller) and records every call for assertions. Test-only double — the
- * real commit (quiesce-then-commit, Architecture §30) is the P7-T3
- * lifecycle module.
+ * A FAKE lifecycle commit port for the P6-T2 suites: since P8-S3 (R4/
+ * CR-10) it commits through the REAL repository CAS
+ * (`memberInstances.commitTransition` with the expected activityVersion +
+ * from-state check), not the P8-S2-era delete+put pattern that lost to
+ * concurrent writers. It records every call for assertions. Test-only
+ * double — the production durable commit (quiesce-then-commit,
+ * Architecture §30) is the P7-T3 lifecycle module.
  *
  * @param world - the P6-T2 world whose member store the port commits to.
  * @returns the port plus the recorded calls.
@@ -320,6 +319,7 @@ export function createFakeLifecycleCommitPort(
       calls.push({
         rootSessionId: args.rootSessionId,
         instanceId: args.instanceId,
+        expectedActivityVersion: args.expectedActivityVersion,
         from: args.from,
         operation: args.operation,
         to: args.to,
@@ -331,20 +331,14 @@ export function createFakeLifecycleCommitPort(
           `fake-lifecycle-port: member '${args.instanceId}' vanished between validation and commit`,
         )
       }
-      const input: MemberInstanceRecordInput = {
-        rootSessionId: current.rootSessionId,
-        instanceId: current.instanceId,
-        templateId: current.templateId,
-        label: current.label,
-        ...(current.groupId !== undefined ? { groupId: current.groupId } : {}),
-        childSessionId: current.childSessionId,
-        ...(current.workspace !== undefined ? { workspace: current.workspace } : {}),
-        lifecycle: args.to,
-        createdAt: current.createdAt,
-        activityVersion: current.activityVersion + 1,
-      }
-      await repo.delete(args.rootSessionId, args.instanceId)
-      await repo.put(input)
+      await repo.commitTransition({
+        rootSessionId: args.rootSessionId,
+        instanceId: args.instanceId,
+        expectedActivityVersion: args.expectedActivityVersion,
+        from: args.from,
+        operation: args.operation,
+        to: args.to,
+      })
     },
   }
   return { ...port, calls }
@@ -369,6 +363,13 @@ export function humanCaller(humanId = 'human-p6t2-owner'): ActionCaller {
  * Build a P6-T2 action request with the defaults (a leader follow-up to
  * the default token); every field is overridable.
  *
+ * The default `payload.prompt` conforms to the P8-S3 R2 work-request
+ * contract (explicit prompt, no transcript inheritance) so the historical
+ * follow-up/delegate suites keep expressing their ORIGINAL subject (which
+ * was never the payload). Tests that exercise the payload contract itself
+ * must build the request explicitly (bypassing this helper's default) or
+ * override `payload`.
+ *
  * @param overrides - the per-test overrides.
  * @returns the action request.
  */
@@ -380,6 +381,7 @@ export function makeActionRequest(
     action: 'follow-up',
     caller: leaderCaller(),
     requestToken: 'tok-p6t2-default',
+    payload: { prompt: 'p6t2 default work prompt' },
     ...overrides,
   }
 }

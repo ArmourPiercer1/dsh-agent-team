@@ -364,8 +364,6 @@ const pendingMounts = []
 const mountErrors = []
 /** @type {Array<object>} admission guard inputs (policy + live facts). */
 const guardFacts = []
-/** @type {number} installOverlay call count (fresh-side-effect detector). */
-let installOverlayCallCount = 0
 /** @type {number} restoreScope call count (cold-path detector). */
 let restoreScopeCallCount = 0
 /**
@@ -646,7 +644,6 @@ function createSurface(ctx) {
       return surfaceResidency.get(sessionId)?.installed ?? []
     },
     installOverlay(sessionId, slot) {
-      installOverlayCallCount += 1
       const entry = surfaceResidency.get(sessionId) ?? { installed: [] }
       if (!entry.installed.includes(slot)) entry.installed.push(slot)
       surfaceResidency.set(sessionId, entry)
@@ -734,27 +731,28 @@ function makePorts(ctx, opts = {}) {
 
 /**
  * The REAL SessionDurabilityPort: the upstream public
- * `sessionPersistence.ensureMaterialized(liveSession)` seam (the same
- * call the ACP row makes at session creation — it flushes the session's
- * pending write-behind batches and materializes the header-only artifact
- * for an empty session). Fail-closed: a missing service or a missing
- * live child agent throws before any durable TeamDomain write.
+ * `sessions.flush(liveSession)` seam (the same call the ACP row makes at
+ * session creation — the attached log writer's flush materializes the
+ * header-only artifact for an empty session; R122: rc.1 removed
+ * `sessionPersistence.ensureMaterialized` in favor of it). Fail-closed:
+ * a missing service or a missing live child agent throws before any
+ * durable TeamDomain write.
  * @param {object} ctx
  * @returns {object} a SessionDurabilityPort implementation.
  */
 function makeSessionDurability(ctx) {
   return {
     async ensureDurable(childSessionId) {
-      const persistence = ctx.get('sessionPersistence')
-      if (persistence === undefined) {
-        throw new Error('p5t6: sessionPersistence service missing — the durability barrier seam is unavailable')
+      const sessions = ctx.get('sessions')
+      if (sessions === undefined) {
+        throw new Error('p5t6: sessions service missing — the durability barrier seam is unavailable')
       }
       const svc = resolveServices(ctx)
       const agent = svc.agents.get(SessionId(childSessionId))
       if (agent === undefined) {
         throw new Error(`p5t6: child session '${childSessionId}' has no live agent handle — the barrier cannot materialize it`)
       }
-      await persistence.ensureMaterialized(agent.session)
+      await sessions.flush(agent.session)
     },
   }
 }
@@ -890,8 +888,8 @@ async function settleMounts(effects) {
     .map((r) => String(r.reason?.message ?? r.reason))
 }
 
-/** @param {object} svc @param {object} handle @param {string} sessionId @returns {Promise<object>} the assembly + persona section. */
-async function assemblePersona(svc, handle, sessionId) {
+/** @param {object} svc @param {object} handle @returns {Promise<object>} the assembly + persona section. */
+async function assemblePersona(svc, handle) {
   const scope = scopeOf(handle.agent.ctx)
   const assembly = await svc.systemPrompt.assemble({ scope })
   const personaSection = assembly.sections.find((s) => s.name === PERSONA_SECTION)
@@ -1170,7 +1168,7 @@ async function runColdMember(ctx) {
       instanceId: identity.instanceId,
     })
 
-    const { assembly, personaSection } = await assemblePersona(svc, handle, identity.childSessionId)
+    const { personaSection } = await assemblePersona(svc, handle, identity.childSessionId)
     const expectedModel = directive.blueprint.defaultModel
     const expectedPersona = directive.blueprint.memberPersonas[MEMBER_TEMPLATE]
     const member = readHandle.getMemberInstance(root, identity.instanceId)
@@ -1350,7 +1348,7 @@ async function runCrashReplay(ctx) {
  * @returns {Promise<object>} the scenario report.
  */
 async function runEvictSettled(ctx) {
-  const svc = resolveServices(ctx)
+  const _svc = resolveServices(ctx)
   const spec = directive.specs.A
   const identity = modules.memberMod.deriveMemberIdentity(spec)
   const root = directive.rootSessionId

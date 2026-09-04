@@ -91,6 +91,63 @@ what is forbidden: business mutation, Cordis service, storage, React).
   solely to recognize and reject legacy values (`LEGACY_TEAM_SESSION_EVENT_REJECTED`).
   vNext defines NO Team SessionEvents (invariant 42).
 
+## [v2] — LeaderInstance record (task P8-S2, 2026-09)
+
+**Status: ACTIVE.** This is a NEW version added under the freeze rule —
+v1 is untouched: every v1 record (including legacy harness-style leader
+rows that carry `childSessionId` + `lifecycle`) stays parseable, and no v1
+field, code, id rule, or encoding changed.
+
+Authority: frozen Architecture §9.1/§9.2 (the LeaderInstance is the Root
+Agent + the Root Session: exactly one, no child Session, no ordinary
+member lifecycle, cannot be independently archived/disposed) and invariants
+13/14/15/18/23; P8-S plan §15.2 (P8-S2 Leader + Core Contract Repair);
+P8-S2 task packet with main-agent approval (dev/agent-workflow evidence).
+
+### Added in v2
+
+**Schema version**
+- `LEADER_INSTANCE_RECORD_SCHEMA_VERSION = 2` (+ type
+  `LeaderInstanceRecordSchemaVersion`).
+- `SUPPORTED_SCHEMA_VERSIONS` grew from `[1]` to `[1, 2]` (the supported
+  set only ever grows through an explicit contract change). The global
+  `TEAM_CONTRACT_SCHEMA_VERSION` stays `1` (the current v1 member shape).
+
+**DTO**
+- `LeaderInstanceRecordDto` — `schemaVersion: 2, rootSessionId,
+  instanceId, templateId, label, groupId?, workspace?, createdAt,
+  activityVersion`. `childSessionId` and `lifecycle` are ABSENT keys:
+  validation rejects their presence (reasons
+  `LEADER_INSTANCE_MUST_NOT_CARRY_CHILD_SESSION` /
+  `LEADER_INSTANCE_MUST_NOT_CARRY_LIFECYCLE` in `details.reason`), they are
+  never defaulted, and they are absent from the canonical serialization —
+  the same key rule the frozen P8-T1 member projection enforces for
+  `inst-leader`.
+- `LeaderInstanceRecordInput` — the creation input (no `schemaVersion`;
+  stamped `2` by the factory). Any `schemaVersion`/`childSessionId`/
+  `lifecycle` key on the input fails closed (`MALFORMED_DTO`).
+- `LEADER_INSTANCE_RECORD_FIELDS` / `LEADER_INSTANCE_RECORD_INPUT_FIELDS` —
+  the exact frozen v2 field sets (the v1 set minus `childSessionId` and
+  `lifecycle`).
+- `createLeaderInstanceRecord` — the v2 creation factory (rejects a
+  non-leader `instanceId` with `MALFORMED_DTO`).
+
+**Factories**
+- `createMemberInstanceRecord` now accepts the union
+  `MemberInstanceRecordInput | LeaderInstanceRecordInput`. The shape
+  branch mints the honest v2 leader record only for the structurally
+  leader input (reserved `inst-leader` id AND no `childSessionId` AND no
+  `lifecycle`); every other input takes the v1 path byte-identical. A
+  half-hack input (the leader id with exactly one of the two fields) falls
+  to the v1 path and is rejected fail-closed.
+- `parseMemberInstanceRecord` branches on `schemaVersion === 2` to the v2
+  validator. Both branches keep the v1 `MemberInstanceRecordDto` declared
+  return type (the unowned storage/domain consumers assign to it); a v2
+  result is a `LeaderInstanceRecordDto` whose shared identity core makes
+  those assignments safe (documented type lie, confined to the return
+  types of `createMemberInstanceRecord` / `parseMemberInstanceRecord` /
+  `deserializeMemberInstanceRecord`).
+
 ### Freeze rule
 
 As of v1, **no other task may modify contracts v1 semantics** (add/remove
@@ -104,3 +161,75 @@ invariant). A change requires:
 
 Consumers write code against the frozen v1 surface and treat it as stable for
 the lifetime of the vNext line.
+
+## [projection v2] — effective-config / model-state / disposed-history lanes (task P8-S7-R2, 2026-09)
+
+**Status: ACTIVE.** The projection DTO family (P8-T1) carries its OWN
+`schemaVersion` track, independent of the package-wide
+`TEAM_CONTRACT_SCHEMA_VERSION` (see `projection/schema.ts`). This section
+records that track's advance from `1` to `2`. v1 is untouched: every v1
+projection record stays parseable byte-identically through the v1 field
+sets — `parseTeamProjection` branches on the stamp, and a v2 record may
+omit every additive key (all of them are DURATIONAL-optional: absent,
+never own-undefined), so the default projection is byte-identical to the
+pre-repair shape.
+
+Authority: frozen UI Design §surface contracts (BQ-08 / BQ-11 / BQ-16),
+P8-S plan §21 (BQ-08 L1573–1586, BQ-11 L1600–1607, BQ-16 L1634–1645) and
+§26 coverage matrix; main-agent adjudication R80
+(`dev/agent-workflow/SESSION_ROUTER_LOG.md`); P8-S7-R2 task packet with
+main-agent approval (dev/agent-workflow evidence).
+
+### Added in projection v2
+
+**Schema version (projection track only)**
+- `PROJECTION_SCHEMA_VERSION_V2 = 2` (+ type `ProjectionSchemaVersionV2`).
+- `SUPPORTED_PROJECTION_SCHEMA_VERSIONS = [1, 2]`;
+  `isSupportedProjectionSchemaVersion` / `assertProjectionSchemaVersion`.
+- No new error codes: the shared closed set
+  (`MALFORMED_DTO` / `SCHEMA_VERSION_MISMATCH` /
+  `SCHEMA_VERSION_UNSUPPORTED`) is unchanged.
+- The REMOTE catalog is UNCHANGED by this version: it stays v1-CLOSED at
+  9 categories / 23 methods (`remote/src/contracts/catalog.ts`).
+
+**Top-level field set**
+- `TEAM_PROJECTION_FIELDS_V2 = [...TEAM_PROJECTION_FIELDS,
+  'disposedHistory']` — one DURATIONAL-optional additive top-level key
+  (R2-6, D14). `disposedHistory` is ABSENT iff the team has zero DISPOSED
+  members.
+
+**Member field set**
+- `MEMBER_PROJECTION_FIELDS_V2 = [...MEMBER_PROJECTION_FIELDS,
+  'modelState']` — one DURATIONAL-optional additive member key (R2-3,
+  BQ-11), validated by `parseMemberModelState`.
+
+**New modules**
+- `projection/effective-config.ts` (BQ-08) — the resolved per-field
+  effective-config entry: closed field sets
+  `EFFECTIVE_CONFIG_ENTRY_FIELDS = ['value', 'source', 'state']` (v1 core)
+  and `EFFECTIVE_CONFIG_ENTRY_FIELDS_V2` (adds the DURATIONAL-optional
+  `suppressed`, `unavailable`, `deniedBy`, `effectiveFrom`, `locked`);
+  closed source/state value sets; `parseEffectiveConfigEntry` /
+  `parseEffectiveConfigDto`.
+- `projection/model-state.ts` (BQ-11) — the member model-state view:
+  `parseMemberModelState` with the closed `MODEL_STATE_FIELDS` /
+  `MODEL_STATE_ENTRY_FIELDS` / `MODEL_STATE_PROVENANCE_FIELDS` sets, the
+  closed `MODEL_STATE_LAYER_VALUES` / `MODEL_STATE_ORIGIN_VALUES` /
+  `MODEL_STATE_AVAILABILITY_VALUES` domains (`availability` is REQUIRED:
+  `available` | `unavailable`), and the length caps (value 512, deniedBy
+  128, explanation 512).
+- `projection/disposed-history.ts` (D14) — the retained DISPOSED-member
+  digest: `DisposedMemberHistoryDto` (+ input), closed
+  `DISPOSED_MEMBER_HISTORY_FIELDS` /
+  `DISPOSED_MEMBER_HISTORY_OPTIONAL_FIELDS`, `parseDisposedMemberHistory`
+  / `createDisposedMemberHistory`.
+
+**Producers (runtime, P8-S7-R2)**
+- The production projection service stamps `schemaVersion: 2` (R2-2).
+- R2-1: the root facts report the DURABLE `policyState` (the
+  durable-mutation-store ledger fact, not a hardcoded default).
+- R2-4 (F11): the workspace provenance lane is resolved per member
+  (remote resolver in `s6-remote.ts`).
+- R2-5 (F12): the live-residency overlay reports the `isResuming`
+  derivation; the 24-key `TeamAgentBindings` gains `isResuming`.
+- The p4t6 scanner lock moved 525 → 537 (R1 +2 files, R2 +10 files).

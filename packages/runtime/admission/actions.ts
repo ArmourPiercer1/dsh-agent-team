@@ -332,7 +332,21 @@ export function validateActionRequest(request: TeamRuntimeActionRequest): Action
   // Per-action payload contracts (closed, minimal; the payload is stored
   // verbatim in the durable fact — downstream P6-T3/T4/T5 may extend their
   // own payload fields within these same closed actions).
-  if (spec.name === ACTION_NAMES.SEND_MESSAGE) {
+  if (spec.name === ACTION_NAMES.FOLLOW_UP || spec.name === ACTION_NAMES.DELEGATE) {
+    // P8-S3 R2: a work request MUST explicitly carry the model-visible
+    // prompt; work requests have NO default transcript context (no
+    // Leader/sibling/group transcript inheritance — the closure plan
+    // §16.3 minimum semantics). `attachedContext`, when present, is the
+    // one explicit context channel and must be a non-empty string.
+    const prompt = request.payload?.['prompt']
+    if (typeof prompt !== 'string' || prompt.length === 0) {
+      fail(`${spec.name}: payload.prompt (a non-empty string) is required`, { action: spec.name })
+    }
+    const attachedContext = request.payload?.['attachedContext']
+    if (attachedContext !== undefined && (typeof attachedContext !== 'string' || attachedContext.length === 0)) {
+      fail(`${spec.name}: payload.attachedContext, when present, must be a non-empty string`, { action: spec.name })
+    }
+  } else if (spec.name === ACTION_NAMES.SEND_MESSAGE) {
     const recipient = request.payload?.['recipientInstanceId']
     if (typeof recipient !== 'string' || recipient.length === 0) {
       fail('send-message: payload.recipientInstanceId is required', { action: spec.name })

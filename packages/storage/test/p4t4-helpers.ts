@@ -40,7 +40,8 @@ import {
   type ProvisionRequest,
   type ProvisioningCoordinator,
 } from '../provisioning/index.js'
-import { InMemoryStorageSeam, P4_FIXTURE } from './p4-helpers.js'
+import { parseRootSessionId } from '../../contracts/src/index.js'
+import { InMemoryStorageSeam, P4_FIXTURE, teamSessionInput } from './p4-helpers.js'
 
 /** The P4-T4 test world: the TeamDomain, the fake adapter, the coordinator. */
 export interface P4t4World {
@@ -92,6 +93,13 @@ export async function createP4t4World(
 ): Promise<P4t4World> {
   const seam = new InMemoryStorageSeam()
   const domain = await createTeamDomain(seam)
+  // G8-S1 (R60): every new ledger fact now also advances the TeamSession's
+  // generation stamp, and a fact for a missing team row is a loud
+  // SEAM_FAILURE (invariant: facts belong to an existing team). The factory
+  // therefore seeds the team row the coordinator's root addresses, before
+  // any test captures its write-count base (the `armCrashAt` docs'
+  // "after world creation" snapshot).
+  await domain.repositories.teamSessions.put(teamSessionInput(parseRootSessionId(String(rootSessionId))))
   const adapter = new FakeAgentFactoryAdapter()
   const coordinator = createProvisioningCoordinator({ domain, rootSessionId, adapter })
   return { seam, domain, adapter, coordinator }

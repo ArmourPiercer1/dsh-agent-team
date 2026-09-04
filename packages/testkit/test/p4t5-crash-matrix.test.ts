@@ -3,9 +3,9 @@
  * (P4-T5, ruling R22). For every Development Plan §17.4 durable-write
  * boundary:
  *
- * 1. FRESH realm: file seam + `createTeamDomain` (8 stamp writes) over a
- *    fresh scratch dir;
- * 2. ARM the seam crash after `8 + offset` total writes; drive
+ * 1. FRESH realm: file seam + `createTeamDomain` (8 stamp writes) plus one
+ *    seeded team_sessions row over a fresh scratch dir;
+ * 2. ARM the seam crash after `9 + offset` total writes; drive
  *    `provision` — the fault fires mid-atomic-write at that boundary
  *    (the `.tmp` file is left behind, the target keeps the old bytes);
  * 3. assert the durable state the crash leaves (per-store row counts from
@@ -14,7 +14,7 @@
  * 4. PROCESS RESTART: drop the whole realm (all in-memory state lost) and
  *    reopen a BRAND-NEW seam + TeamDomain + fresh deterministic fake adapter
  *    + coordinator over the SAME scratch dir;
- * 5. `recover` must roll forward with exactly `8 - offset` seam writes to
+ * 5. `recover` must roll forward with exactly `9 - offset` seam writes to
  *    EXACTLY ONE committed MemberInstance (0 orphans, 1 fact, COMMITTED row);
  * 6. a second `recover` is a 0-write no-op with the same ledger sequence.
  *
@@ -247,7 +247,8 @@ for (const id of ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'] a
     const rows = expectedRows(spec.offset)
 
     // -- the fresh realm: exactly the eight schema_meta stamp writes
-    expect(d.base).toBe(STAMP_WRITE_COUNT)
+    // plus the one seeded team_sessions row (G8-S1)
+    expect(d.base).toBe(STAMP_WRITE_COUNT + 1)
 
     if (spec.crashes) {
       // -- the drive stopped at the armed boundary, classified as SEAM_FAILURE
@@ -285,7 +286,7 @@ for (const id of ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'] a
     } else {
       // -- the no-crash boundaries: the drive committed end-to-end
       expect(d.runOk).toBe(true)
-      expect(d.crashWrites).toBe(8)
+      expect(d.crashWrites).toBe(9)
       expect(d.tmpFiles.length).toBe(0)
       expect(d.preStage).toBe(spec.expectedPostCrashStage)
       expect(d.preStage).toBe(pre.stage)
@@ -332,14 +333,14 @@ for (const id of ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'] a
   })
 }
 
-it('seam-write arithmetic: offset + recoveryWrites === 8 for every crashing boundary; the no-crash boundaries write all 8', () => {
+it('seam-write arithmetic: offset + recoveryWrites === 9 for every crashing boundary; the no-crash boundaries write all 9', () => {
   for (const d of boundaryData) {
     if (d.spec.crashes) {
-      expect(d.spec.offset + d.spec.expectedRecoveryWrites).toBe(8)
-      expect(d.crashWrites + d.recoveryWrites).toBe(8)
+      expect(d.spec.offset + d.spec.expectedRecoveryWrites).toBe(9)
+      expect(d.crashWrites + d.recoveryWrites).toBe(9)
     } else {
-      expect(d.spec.offset).toBe(8)
-      expect(d.crashWrites).toBe(8)
+      expect(d.spec.offset).toBe(9)
+      expect(d.crashWrites).toBe(9)
       expect(d.recoveryWrites).toBe(0)
     }
   }
@@ -352,8 +353,8 @@ it('every crash boundary left the crashed table file VALID (the target kept the 
     // new document, the target kept the previous one)
     const rows = expectedRows(d.spec.offset)
     expect(d.preRows).toEqual(rows)
-    // and the operation row, when present before W8, is still PREPARED
-    if (d.spec.offset >= 1 && d.spec.offset < 8) {
+    // and the operation row, when present before W9, is still PREPARED
+    if (d.spec.offset >= 1 && d.spec.offset < 9) {
       expect(d.preOpPhase).toBe('PREPARED')
     }
   }

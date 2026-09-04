@@ -53,7 +53,6 @@ import type {
   HumanOverrideRecord,
   PolicyEntry,
   PolicyStateCellView,
-  PolicyStateView,
 } from './types.js'
 import { PolicyResolutionError } from './errors.js'
 
@@ -94,7 +93,7 @@ export function validatePolicyInput(input: EffectivePolicyInput): ValidatedPolic
       'must be a non-empty id-like string (no whitespace/control characters)',
     )
   }
-  const stateCells = parseStateCellMap(state.cells, 'policyState.cells')
+  const _stateCells = parseStateCellMap(state.cells, 'policyState.cells')
 
   parsePolicyMap(input.blueprint.values, 'blueprint.values')
   const blueprintEnvelope = parsePolicyMap(input.blueprint.autonomyEnvelope, 'blueprint.autonomyEnvelope')
@@ -140,6 +139,7 @@ function malformed(field: string, problem: string): PolicyResolutionError {
 }
 
 function hasForbiddenIdChars(value: string): boolean {
+  // eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in policy ids
   return /\s/.test(value) || /[\u0000-\u001f\u007f]/.test(value)
 }
 

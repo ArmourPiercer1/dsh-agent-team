@@ -75,6 +75,27 @@ export const MUTATION_ERROR_CODES = {
   IMMUTABLE_CREATION_FIELD: 'IMMUTABLE_CREATION_FIELD',
   /** The addressed MemberInstance has no registered creation fields. */
   UNKNOWN_INSTANCE: 'UNKNOWN_INSTANCE',
+  /**
+   * P8-S4B: the (kind, recordId, scope, rootSessionId, instanceId) identity
+   * already exists in the durable overrides store — the same slot record
+   * cannot be re-admitted under the same recordId (a new mutation issues a
+   * NEW recordId at the next generation; v1 keeps one durable record per
+   * slot identity).
+   */
+  OVERRIDE_IDENTITY_CONFLICT: 'OVERRIDE_IDENTITY_CONFLICT',
+  /**
+   * P8-S4B: optimistic generation conflict — the caller expected a
+   * different current winner generation than the durable store holds.
+   */
+  OVERRIDE_GENERATION_CONFLICT: 'OVERRIDE_GENERATION_CONFLICT',
+  /**
+   * P8-S4B: the mutation authority cannot produce the requested record —
+   * the (authority kind, record kind, scope, origin, target instance)
+   * combination is not authorized (a member cannot issue team scope or
+   * overlay another instance; an agent authority cannot issue a human
+   * override; the operator channel issues human overrides only).
+   */
+  UNAUTHORIZED_MUTATION: 'UNAUTHORIZED_MUTATION',
 } as const
 
 /** One of the closed mutation error codes. */
@@ -90,6 +111,9 @@ export const MUTATION_ERROR_CODE_VALUES: readonly string[] = [
   MUTATION_ERROR_CODES.UNAUTHORIZED_TRANSITION,
   MUTATION_ERROR_CODES.IMMUTABLE_CREATION_FIELD,
   MUTATION_ERROR_CODES.UNKNOWN_INSTANCE,
+  MUTATION_ERROR_CODES.OVERRIDE_IDENTITY_CONFLICT,
+  MUTATION_ERROR_CODES.OVERRIDE_GENERATION_CONFLICT,
+  MUTATION_ERROR_CODES.UNAUTHORIZED_MUTATION,
 ]
 
 /**
@@ -108,7 +132,9 @@ export class MutationError extends Error {
    * external hard allow-list), `hardReason` (`hardDeny` |
    * `outsideHardAllowList` | `capabilityMissing`), `instanceId` (the
    * unknown instance), `field` + `state` (the creation-field rule
-   * violated), `actor` (the unauthorized transition source).
+   * violated), `actor` (the unauthorized transition source), `recordId`
+   * (the conflicting / admitted override identity), `expectedGeneration` /
+   * `actualGeneration` (the optimistic generation mismatch).
    */
   readonly details?: Record<string, unknown>
 

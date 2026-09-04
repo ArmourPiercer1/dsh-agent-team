@@ -43,7 +43,6 @@ import type { P7T4World } from './p7t4-helpers.js'
 const ROOT = String(P7T4_FIXTURE.rootSessionId)
 const ORDINARY_PARENT = String(P7T4_FIXTURE.ordinaryParentSessionId)
 const CHILD = String(P7T4_FIXTURE.forkChildSessionId)
-const MEMBER_CHILD = String(P7T4_FIXTURE.memberChildSessionId)
 const INSTANCE_ID = String(P7T4_FIXTURE.instanceId)
 
 async function runReconcile(

@@ -20,9 +20,15 @@
  *
  * Step 2 — caller (identity + role from the TeamDomain):
  * - `human` callers: role `human` (the team owner; never stale);
- * - the LeaderInstance caller: the leader member record must exist
- *   (CALLER_NOT_FOUND) and be live (CALLER_ROLE_STALE when DISPOSED or
- *   ARCHIVED — a stale caller cannot act);
+ * - the LeaderInstance caller (P8-S2, Architecture §9.2, invariants
+ *   14/15): resolves from the durable Root/Team identity — the root must
+ *   carry the TeamSession record AND the team-root binding (both
+ *   CALLER_NOT_FOUND otherwise; the branch is self-contained because the
+ *   control plane calls `resolveCaller` without step 1). The leader row
+ *   is read best-effort for the envelope's templateId lookup: its
+ *   absence is NOT a caller defect, and the row's lifecycle NEVER governs
+ *   the Leader — the Leader's liveness follows the Root Session (it
+ *   cannot be independently archived or disposed, invariant 15);
  * - other instance callers: the member record must exist (CALLER_NOT_FOUND)
  *   and be live (CALLER_ROLE_STALE when DISPOSED or ARCHIVED).
  *
@@ -231,12 +237,42 @@ export function resolveCaller(
   }
   const root = parseRootSessionId(rootSessionId)
   const instanceId = parseInstanceId(caller.instanceId)
+
+  // The Leader caller resolves from the durable Root/Team identity (P8-S2,
+  // Architecture §9.2, invariants 14/15): NOT from a member row. The row
+  // is read best-effort for the envelope's templateId lookup; its absence
+  // is not a caller defect, and its lifecycle never governs the Leader —
+  // the Leader's liveness follows the Root Session (it cannot be
+  // independently archived or disposed, invariant 15).
+  if (instanceId === LEADER_INSTANCE_ID) {
+    const teamSession = repositories.teamSessions.get(root)
+    if (teamSession === undefined) {
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.CALLER_NOT_FOUND,
+        `TeamRuntime: no TeamSession record for root session '${root}' — the LeaderInstance caller is unknown (it resolves from the Root Session, §9.2)`,
+        { rootSessionId: root, instanceId },
+      )
+    }
+    const binding = repositories.sessionBindings.get(root)
+    if (binding === undefined || binding.kind !== 'team-root') {
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.CALLER_NOT_FOUND,
+        `TeamRuntime: root session '${root}' has no team-root binding — the LeaderInstance caller is unknown (it resolves from the Root Session, §9.2)`,
+        { rootSessionId: root, instanceId },
+      )
+    }
+    const leaderRow = repositories.memberInstances.get(root, instanceId)
+    if (leaderRow === undefined) {
+      return { role: 'leader' }
+    }
+    return { role: 'leader', callerMember: leaderRow }
+  }
+
   const callerMember = repositories.memberInstances.get(root, instanceId)
   if (callerMember === undefined) {
-    const isLeaderCaller = instanceId === LEADER_INSTANCE_ID
     throw new TeamRuntimeError(
       TEAM_RUNTIME_ERROR_CODES.CALLER_NOT_FOUND,
-      `TeamRuntime: no member instance '${instanceId}' in team '${root}' — the caller is unknown${isLeaderCaller ? ' (the LeaderInstance record is missing)' : ''}`,
+      `TeamRuntime: no member instance '${instanceId}' in team '${root}' — the caller is unknown`,
       { rootSessionId: root, instanceId },
     )
   }
@@ -247,8 +283,7 @@ export function resolveCaller(
       { rootSessionId: root, instanceId, lifecycle: callerMember.lifecycle },
     )
   }
-  const role: CallerRole = instanceId === LEADER_INSTANCE_ID ? 'leader' : 'member'
-  return { role, callerMember }
+  return { role: 'member', callerMember }
 }
 
 /**

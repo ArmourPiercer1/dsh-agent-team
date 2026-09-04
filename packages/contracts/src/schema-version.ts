@@ -29,8 +29,26 @@ export const TEAM_CONTRACT_SCHEMA_VERSION = 1 as const
 /** Type of the v1 schema version field: exactly `1`. */
 export type TeamContractSchemaVersion = typeof TEAM_CONTRACT_SCHEMA_VERSION
 
-/** All schema versions this build reads and writes. Frozen: `[1]`. */
-export const SUPPORTED_SCHEMA_VERSIONS: readonly number[] = [1]
+/**
+ * The schema version stamp of the LeaderInstance record (v2, P8-S2;
+ * Architecture §9.2). The v2 row is the same identity core with
+ * `childSessionId` and `lifecycle` ABSENT (the LeaderInstance is the
+ * Root Agent + Root Session: no child Session, no ordinary member
+ * lifecycle — invariants 14/15). Added by an explicit contract change
+ * (see CHANGELOG.md); v1 records are untouched and stay readable.
+ */
+export const LEADER_INSTANCE_RECORD_SCHEMA_VERSION = 2 as const
+
+/** Type of the v2 (LeaderInstance record) schema version field: exactly `2`. */
+export type LeaderInstanceRecordSchemaVersion = typeof LEADER_INSTANCE_RECORD_SCHEMA_VERSION
+
+/**
+ * All schema versions this build reads and writes: `[1]` (every v1
+ * record) + `[2]` (the LeaderInstance record added by P8-S2). The v1 set
+ * itself is frozen: this constant only ever GROWS through an explicit
+ * contract change, it never rewrites v1 semantics.
+ */
+export const SUPPORTED_SCHEMA_VERSIONS: readonly number[] = [1, 2]
 
 /**
  * Is `value` a supported schema version (a positive integer in the supported set)?

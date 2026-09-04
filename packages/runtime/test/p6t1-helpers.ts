@@ -459,7 +459,7 @@ export async function restartP6T1World(world: P6T1World): Promise<P6T1World> {
   const domain = await openTeamDomain(seam)
   const blueprint = world.blueprint
   const catalog = world.catalog
-  const repositories = domain.repositories
+  const _repositories = domain.repositories
   const seedWriteCount = seam.writeCount
   const surface = new FakeAgentSetupSurface()
   const durability = new FakeSessionDurability()

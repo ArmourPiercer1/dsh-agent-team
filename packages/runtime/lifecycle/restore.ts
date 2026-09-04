@@ -72,6 +72,7 @@ export async function restoreMember(
     member.lifecycle,
     LIFECYCLE_OPERATIONS.RESTORE,
     restored.lifecycle,
+    member.activityVersion,
     LIFECYCLE_STEP_NAMES.COMMIT_RESTORE,
   )
 

@@ -1,0 +1,239 @@
+﻿packages/client/src/model/team-dock-model.ts(10,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/model/team-dock-model.ts(86,51): error TS7006: Parameter 'task' implicitly has an 'any' type.
+packages/client/src/model/team-feed-model.ts(31,48): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/model/team-feed-model.ts(129,27): error TS7006: Parameter 'approval' implicitly has an 'any' type.
+packages/client/src/model/team-feed-model.ts(129,37): error TS7006: Parameter 'order' implicitly has an 'any' type.
+packages/client/src/model/team-members-model.ts(17,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/model/team-timeline-model.ts(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/model/team-timeline-model.ts(98,24): error TS7006: Parameter 'delegation' implicitly has an 'any' type.
+packages/client/src/model/team-timeline-model.ts(98,36): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/client/src/state/team-projection-store.ts(61,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '../../../remote/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client/src/state/team-projection-store.ts'
+    Imported via '../../../remote/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client/src/transport/team-remote-client.ts'
+    Imported via '../../remote/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client/test/team-projection-store.test.ts'
+    Imported via '../../remote/src/index.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client/test/team-remote-client.test.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/client/src/transport/team-remote-client.ts(166,51): error TS2345: Argument of type '{ blueprintId: string; blueprintRevision?: number; environmentFacts: readonly RemoteSafeRecord[]; }' is not assignable to parameter of type 'RemoteSafeRecord'.
+  Property 'environmentFacts' is incompatible with index signature.
+    Type 'readonly RemoteSafeRecord[]' is not assignable to type 'RemoteSafeJsonValue'.
+      The type 'readonly RemoteSafeRecord[]' is 'readonly' and cannot be assigned to the mutable type 'RemoteSafeJsonValue[]'.
+packages/client/src/transport/team-remote-client.ts(175,51): error TS2345: Argument of type '{ teamSessionId: string; capability: RemoteCapability; value: RemotePolicyEntry; actor: RemoteMutationActor; scope?: RemoteMutationScope; targetInstanceId?: string; }' is not assignable to parameter of type 'RemoteSafeRecord'.
+  Property 'value' is incompatible with index signature.
+    Type 'RemotePolicyEntry' is not assignable to type 'RemoteSafeJsonValue'.
+      Type '{ readonly kind: "allow"; readonly items: readonly string[]; }' is not assignable to type 'RemoteSafeJsonValue'.
+        Type '{ readonly kind: "allow"; readonly items: readonly string[]; }' is not assignable to type '{ readonly [key: string]: RemoteSafeJsonValue; }'.
+          Property 'items' is incompatible with index signature.
+            Type 'readonly string[]' is not assignable to type 'RemoteSafeJsonValue'.
+              The type 'readonly string[]' is 'readonly' and cannot be assigned to the mutable type 'RemoteSafeJsonValue[]'.
+packages/client/src/transport/team-remote-client.ts(178,57): error TS2345: Argument of type '{ teamSessionId: string; target: RemotePolicyStateViewValue; actor: RemoteMutationActor; }' is not assignable to parameter of type 'RemoteSafeRecord'.
+  Property 'target' is incompatible with index signature.
+    Type 'RemotePolicyStateViewValue' is not assignable to type 'RemoteSafeJsonValue'.
+      Type 'RemotePolicyStateViewValue' is not assignable to type '{ readonly [key: string]: RemoteSafeJsonValue; }'.
+        Index signature for type 'string' is missing in type 'RemotePolicyStateViewValue'.
+packages/client/src/transport/team-remote-client.ts(212,23): error TS2352: Conversion of type 'TeamRpcFailure' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'TeamRpcFailure'.
+packages/client/src/ui/TeamDock.tsx(18,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamDock.tsx(19,33): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamFeed.tsx(30,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamFeed.tsx(123,18): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly allow_once: "view.events.decision.allow_once"; readonly deny: "view.events.decision.deny"; readonly escalate_to_user: "view.events.decision.escalate_to_user"; readonly approve_plan: "view.events.decision.approve_plan"; readonly request_revision: "view.events.decision.request_revision"; }'.
+packages/client/src/ui/TeamMembers.tsx(17,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamTasks.tsx(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamTasks.tsx(38,39): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+packages/client/src/ui/TeamTasks.tsx(56,36): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/client/src/ui/TeamTasks.tsx(71,26): error TS7006: Parameter 'task' implicitly has an 'any' type.
+packages/client/src/ui/TeamTasks.tsx(79,78): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly pending: "view.task.pending"; readonly in_progress: "view.task.in_progress"; readonly completed: "view.task.completed"; readonly blocked: "view.task.blocked"; }'.
+packages/client/src/ui/TeamTimeline.tsx(16,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamView.tsx(17,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamView.tsx(18,33): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/src/ui/TeamView.tsx(77,43): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/client/test/team-dock-model.client.spec.ts(9,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-dock.client.spec.tsx(11,54): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-feed-model.client.spec.ts(15,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-feed.client.spec.tsx(18,74): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-members-model.client.spec.ts(9,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-members.client.spec.tsx(13,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-tasks.client.spec.tsx(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-timeline-model.client.spec.ts(9,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-timeline.client.spec.tsx(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-timeline.client.spec.tsx(145,48): error TS7006: Parameter 'delegation' implicitly has an 'any' type.
+packages/client/test/team-view.client.spec.tsx(14,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/client/test/team-view.client.spec.tsx(15,33): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+packages/remote/src/contracts/remote-safe.ts(22,37): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/errors.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/remote-safe.ts'
+    Imported via './contracts/errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/ids.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/version.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/request.ts'
+    Imported via './errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/params.ts'
+    Imported via '../contracts/errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/team.ts'
+    Imported via '../contracts/errors.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(36,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/remote-safe.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/errors.ts'
+    Imported via './contracts/remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/request.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/response.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/params.ts'
+    Imported via './remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/types.ts'
+    Imported via '../contracts/remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/ports.ts'
+    Imported via '../contracts/remote-safe.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/team.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(65,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/ids.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/ids.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './ids.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/params.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(73,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/version.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/request.ts'
+    Imported via './version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/response.ts'
+    Imported via '../contracts/version.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(87,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/catalog.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/catalog.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/catalog.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via '../contracts/catalog.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(97,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/request.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/request.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/request.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via '../contracts/request.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(107,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/response.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/response.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/response.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via '../contracts/response.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+    Imported via '../contracts/response.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/types.ts'
+    Imported via '../contracts/response.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/pull.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(170,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/params.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/ports.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/catalog.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/intent.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/team.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/member.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/override.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/policy-state.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/compatibility.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/handoff.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/legacy.ts'
+    Imported via '../contracts/params.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(212,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/contracts/types.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './contracts/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './contracts/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via '../contracts/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/team.ts'
+    Imported via '../contracts/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/types.ts'
+    Imported via '../contracts/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/pull.ts'
+    Imported via '../contracts/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/ledger-page.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(262,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/ports.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/catalog.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/intent.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/team.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/member.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/override.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/policy-state.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/compatibility.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/handoff.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/legacy.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+    Imported via './ports.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/register.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(266,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/catalog.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/catalog.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './catalog.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(270,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/intent.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/intent.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './intent.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(274,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/team.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/team.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './handlers/team.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './team.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(282,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/member.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/member.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './handlers/member.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './member.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(290,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/override.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/override.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './override.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(294,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/policy-state.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/policy-state.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './policy-state.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(298,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/compatibility.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/compatibility.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './compatibility.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(302,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/handoff.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/handoff.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './handoff.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(306,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/legacy.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/legacy.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './legacy.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(310,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/dispatch.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/dispatch.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './handlers/dispatch.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './dispatch.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/register.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(319,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/handlers/register.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './handlers/register.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './handlers/register.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(341,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/reconnect.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(347,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/generation.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './push/generation.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './generation.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/pull.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(354,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/pull.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/index.ts(359,8): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/ledger-page.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './push/ledger-page.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './push/ledger-page.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"
+packages/remote/src/push/reconnect.ts(29,56): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/types.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/reconnect.ts'
+    Imported via './types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/generation.ts'
+    Imported via './types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/pull.ts'
+    Imported via './types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/push/ledger-page.ts'
+    Imported via './push/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+    Imported via './push/types.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/src/index.ts'
+  File is ECMAScript module because 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/remote/package.json' has field "type" with value "module"

@@ -25,7 +25,6 @@ import {
   parseBlueprint,
   toBlueprintSnapshotRef,
 } from '../../domain/blueprint/src/index.js'
-import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import {
   CRLF_BOM_SOURCE,
   FULL_BLUEPRINT_SOURCE,

@@ -62,6 +62,7 @@ import type {
   AdmissionClosePort,
   DescendantDrainPort,
   DescendantDrainReport,
+  LifecycleEvidencePort,
   LifecyclePorts,
   LifecycleService,
   LifecycleTarget,
@@ -368,6 +369,7 @@ export interface P7T3CommitCall {
   readonly seq: number
   readonly rootSessionId: string
   readonly instanceId: string
+  readonly expectedActivityVersion: number
   readonly from: string
   readonly operation: string
   readonly to: string
@@ -376,13 +378,16 @@ export interface P7T3CommitCall {
 /**
  * The test binding of the P6-T2 {@link LifecycleCommitPort}: the durable
  * lifecycle commit over the REAL P4 repositories — the established P6-T2
- * pattern (tombstone `delete` + re-`put` of the transitioned record: the
- * `member_instances` store is append-only per record, P4).
+ * pattern. Since P8-S3 (R4/CR-10) the commit is the repository's CAS
+ * `commitTransition` (atomic read-modify-write with the expected
+ * activityVersion + from-state check), not the P8-S2-era
+ * delete+put tombstone pattern that lost to concurrent writers.
  *
  * Fail-closed like the real binding: it reads the record FRESH, verifies
  * `current.lifecycle === args.from` (a drift is a hard fault), and only
- * then writes the transitioned record (`activityVersion + 1`, the
- * domain D3 rule). Call recording + per-call fault injection (the
+ * then commits the transitioned record (the repository CAS enforces
+ * `expectedActivityVersion` and bumps `activityVersion + 1`, the domain
+ * D3 rule). Call recording + per-call fault injection (the
  * crash-window arm).
  */
 export class P7T3CommitFake implements LifecycleCommitPort {
@@ -410,6 +415,7 @@ export class P7T3CommitFake implements LifecycleCommitPort {
   async commitTransition(args: {
     readonly rootSessionId: string
     readonly instanceId: string
+    readonly expectedActivityVersion: number
     readonly from: MemberLifecycleState
     readonly operation: string
     readonly to: MemberLifecycleState
@@ -419,6 +425,7 @@ export class P7T3CommitFake implements LifecycleCommitPort {
       seq,
       rootSessionId: args.rootSessionId,
       instanceId: args.instanceId,
+      expectedActivityVersion: args.expectedActivityVersion,
       from: args.from,
       operation: args.operation,
       to: args.to,
@@ -444,18 +451,13 @@ export class P7T3CommitFake implements LifecycleCommitPort {
         `p7t3 commit fake: lifecycle drift: expected from '${args.from}', found '${current.lifecycle}'`,
       )
     }
-    await repo.delete(args.rootSessionId, args.instanceId)
-    await repo.put({
-      rootSessionId: current.rootSessionId,
-      instanceId: current.instanceId,
-      templateId: current.templateId,
-      label: current.label,
-      ...(current.groupId !== undefined ? { groupId: current.groupId } : {}),
-      childSessionId: current.childSessionId,
-      ...(current.workspace !== undefined ? { workspace: current.workspace } : {}),
-      lifecycle: args.to,
-      createdAt: current.createdAt,
-      activityVersion: current.activityVersion + 1,
+    await repo.commitTransition({
+      rootSessionId: args.rootSessionId,
+      instanceId: args.instanceId,
+      expectedActivityVersion: args.expectedActivityVersion,
+      from: args.from,
+      operation: args.operation,
+      to: args.to,
     })
   }
 }
@@ -480,6 +482,8 @@ export interface P7T3WorldOptions {
   readonly seedMembers?: readonly P7T3SeedMember[]
   /** The drain report of the descendant seam (default: quiescent, 0). */
   readonly drainReport?: DescendantDrainReport
+  /** The optional durable evidence port (carried across restarts). */
+  readonly evidence?: LifecycleEvidencePort
 }
 
 /** One durable TeamDomain world + the mock-first live ports. */
@@ -533,6 +537,7 @@ function finishWorld(
     readonly targets: Record<string, LifecycleTarget>
     readonly childSessions: Record<string, string>
   },
+  evidence?: LifecycleEvidencePort,
 ): P7T3World {
   const admission = new P7T3AdmissionFake(clock)
   const activity = new P7T3ActivityFake(clock)
@@ -540,7 +545,10 @@ function finishWorld(
   const residency = new P7T3ResidencyFake(clock)
   const commit = new P7T3CommitFake(clock, domain)
   if (drainReport !== undefined) descendants.report = drainReport
-  const ports: LifecyclePorts = { teamDomain: domain, commit, admission, activity, descendants, residency }
+  const ports: LifecyclePorts =
+    evidence === undefined
+      ? { teamDomain: domain, commit, admission, activity, descendants, residency }
+      : { teamDomain: domain, commit, admission, activity, descendants, residency, evidence }
   const service = createLifecycleService(ports)
   const targets: Record<string, LifecycleTarget> = carry ? { ...carry.targets } : {}
   const childSessions: Record<string, string> = carry ? { ...carry.childSessions } : {}
@@ -588,7 +596,7 @@ export async function createLifecycleWorld(
   const dir = scratchDir(basename)
   const seam = new FileStorageSeam(dir)
   const domain = await createTeamDomain(seam)
-  const world = finishWorld(dir, seam, domain, new P7T3Clock(), options.drainReport)
+  const world = finishWorld(dir, seam, domain, new P7T3Clock(), options.drainReport, undefined, options.evidence)
   await seedRows(world, options)
   return world
 }
@@ -608,7 +616,7 @@ export async function restartLifecycleWorld(world: P7T3World): Promise<P7T3World
   return finishWorld(world.scratchDir, seam, domain, world.clock, undefined, {
     targets: world.targets,
     childSessions: world.childSessions,
-  })
+  }, world.ports.evidence)
 }
 
 /**

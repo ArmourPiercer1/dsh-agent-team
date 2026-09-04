@@ -30,9 +30,11 @@
  *    durable") — `ports.sessionDurability.ensureDurable(childSessionId)`
  *    is awaited BEFORE the first durable write. UNCONDITIONAL: the
  *    convergent-replay and idempotent-re-run paths call it too (the real
- *    upstream `ensureMaterialized` is a no-op there — the artifact is
- *    already durable or the resumed session's load already marked it
- *    materialized). Fail-closed: a rejection propagates with ZERO durable
+ *    upstream seam — `sessions.flush(liveSession)`, rc.1's replacement for
+ *    `sessionPersistence.ensureMaterialized` — is a no-op there: the
+ *    artifact is already durable or the resumed session's load already
+ *    marked it materialized). Fail-closed: a rejection propagates with
+ *    ZERO durable
  *    writes performed (nothing has been put yet). After it resolves the
  *    child artifact is durable on disk (header-only when the session has
  *    no events yet), so a later crash inside the write window below
@@ -177,7 +179,8 @@ export async function createFreshMember(
   // Step 3 — the child-Session durability barrier (DevPlan §18.5 "Session
   // durable") — awaited UNCONDITIONALLY, before the first durable write
   // below, on every path (fresh write, convergent replay, idempotent
-  // re-run; the real upstream `ensureMaterialized` is a no-op when the
+  // re-run; the real upstream seam — `sessions.flush(liveSession)`,
+   // rc.1's replacement for `ensureMaterialized` — is a no-op when the
   // artifact is already durable or the resumed session's load already
   // marked it materialized). Fail-closed: a rejection propagates with
   // ZERO durable writes performed (nothing has been put yet), so a later

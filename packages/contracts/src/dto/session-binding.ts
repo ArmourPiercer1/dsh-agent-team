@@ -22,7 +22,7 @@
  * @module @dsh-agent-team/contracts/dto/session-binding
  */
 
-import { TEAM_CONTRACT_SCHEMA_VERSION, assertSchemaVersion } from '../schema-version.js'
+import { assertSchemaVersion } from '../schema-version.js'
 import type { TeamContractSchemaVersion } from '../schema-version.js'
 import {
   parseChildSessionId,

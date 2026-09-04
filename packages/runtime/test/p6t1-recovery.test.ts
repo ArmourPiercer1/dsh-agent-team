@@ -64,7 +64,11 @@ async function runActivate(
 }
 
 // ---------------------------------------------------------------------------
-// R1 — crash at the CHILD_SESSION_CREATED marker (write #2 after seed)
+// R1 — crash at the CHILD_SESSION_CREATED marker (write #4 after seed;
+// P8-S4A: the single compatibility authority's inline re-probe writes the
+// compatibility row + the team-session generation stamp BEFORE the first
+// activation write, so every crash arm below shifts +2 to keep the SAME
+// logical crash point — the probe writes are deterministic and idempotent)
 // ---------------------------------------------------------------------------
 let r1: {
   readonly crashName: string | undefined
@@ -87,7 +91,9 @@ let r1: {
   const world = await createP6T1World('p6t1x-r1')
   try {
     const request = makeRequest({ requestToken: 'tok-p6t1-r1' })
-    world.seam.armCrashAfterWrites(world.seedWriteCount + 1)
+    // +3 (was +1 pre-P8-S4A): crash on the child-marker write, unchanged
+    // logical point after the probe's 2 compatibility writes.
+    world.seam.armCrashAfterWrites(world.seedWriteCount + 3)
     const crashed = await runActivate(world, request)
     const opRow = world.domain.repositories.operations.get(identity.operationId)
     const crashSnapshot = {
@@ -136,7 +142,10 @@ describe('P6-T1 R1: crash at the child-session durable marker — recovery roll-
     expect(r1.childRecordedAtCrash).toBe(undefined)
     expect(r1.membersAtCrash).toBe(0)
     expect(r1.oldFactoryCalls).toBe(1)
-    expect(r1.preCrashWrites).toBe(1)
+    // P8-S4A: 3 writes precede the crash point now (compatibility row +
+    // generation stamp + the PREPARED row); the crash point itself is
+    // unchanged (the child-marker write).
+    expect(r1.preCrashWrites).toBe(3)
   })
 
   it('recovery re-drives to COMMITTED: the fresh factory is called once and returns the SAME child', () => {
@@ -154,21 +163,23 @@ describe('P6-T1 R1: crash at the child-session durable marker — recovery roll-
     expect(r1.recoveredPhase).toBe(OPERATION_PHASES.COMMITTED)
   })
 
-  it('recovery performs exactly the remaining durable writes (child marker, member, binding, 3 ledger, commit) and ONE ledger fact', () => {
+  it('recovery performs exactly the remaining durable writes (child marker, member, binding, 3 ledger, G8-S1 stamp, commit) and ONE ledger fact', () => {
     const tables = r1.recoveryTables.filter((t) => t !== 'ledger')
     expect(tables).toEqual([
       'operations',
       'member_instances',
       'session_bindings',
+      'team_sessions',
       'operations',
     ])
     expect(r1.recoveryLedgerEntries).toBe(1)
-    expect(r1.recoveryTotalWrites).toBe(7)
+    expect(r1.recoveryTotalWrites).toBe(8)
   })
 })
 
 // ---------------------------------------------------------------------------
-// R2 — crash after the child id is recorded (write #3 throws)
+// R2 — crash after the child id is recorded (write #5 throws; +2 shift:
+// the P8-S4A compatibility probe writes precede every activation write)
 // ---------------------------------------------------------------------------
 let r2: {
   readonly crashName: string | undefined
@@ -186,7 +197,8 @@ let r2: {
   const world = await createP6T1World('p6t1x-r2')
   try {
     const request = makeRequest({ requestToken: 'tok-p6t1-r2' })
-    world.seam.armCrashAfterWrites(world.seedWriteCount + 2)
+    // +4 (was +2 pre-P8-S4A): same logical point (member-record write).
+    world.seam.armCrashAfterWrites(world.seedWriteCount + 4)
     const crashed = await runActivate(world, request)
     const opRow = world.domain.repositories.operations.get(identity.operationId)
     const crashSnapshot = {
@@ -238,7 +250,8 @@ describe('P6-T1 R2: crash after the child id is recorded — recovery never re-r
 })
 
 // ---------------------------------------------------------------------------
-// R3 — crash after the member record (write #4 throws)
+// R3 — crash after the member record (write #6 throws; +2 shift: the
+// P8-S4A compatibility probe writes precede every activation write)
 // ---------------------------------------------------------------------------
 let r3: {
   readonly crashName: string | undefined
@@ -254,7 +267,8 @@ let r3: {
   const world = await createP6T1World('p6t1x-r3')
   try {
     const request = makeRequest({ requestToken: 'tok-p6t1-r3' })
-    world.seam.armCrashAfterWrites(world.seedWriteCount + 3)
+    // +5 (was +3 pre-P8-S4A): same logical point (session-binding write).
+    world.seam.armCrashAfterWrites(world.seedWriteCount + 5)
     const crashed = await runActivate(world, request)
     const membersAtCrash = world.domain.repositories.memberInstances.list(ROOT).length
     const restarted = await restartP6T1World(world)
@@ -294,7 +308,9 @@ describe('P6-T1 R3: crash after the member record — recovery completes', () =>
 })
 
 // ---------------------------------------------------------------------------
-// R4 — crash inside the terminal drive (write #5 throws, before any ledger write)
+// R4 — crash inside the terminal drive (write #7 throws, before any ledger
+// write; +2 shift: the P8-S4A compatibility probe writes precede every
+// activation write)
 // ---------------------------------------------------------------------------
 let r4: {
   readonly crashName: string | undefined
@@ -311,7 +327,8 @@ let r4: {
   const world = await createP6T1World('p6t1x-r4')
   try {
     const request = makeRequest({ requestToken: 'tok-p6t1-r4' })
-    world.seam.armCrashAfterWrites(world.seedWriteCount + 4)
+    // +6 (was +4 pre-P8-S4A): same logical point (the generation-stamp write).
+    world.seam.armCrashAfterWrites(world.seedWriteCount + 6)
     const crashed = await runActivate(world, request)
     const writesAtCrash = world.writesSinceSeed()
     const ledgerEntriesAtCrash = writesAtCrash.filter(
@@ -349,12 +366,12 @@ describe('P6-T1 R4: crash inside the terminal drive — the ledger fact lands ex
     expect(r4.ledgerEntriesAtCrash).toBe(0)
   })
 
-  it('recovery drives the terminal without any factory call (the commit drive: 3 ledger + 1 commit)', () => {
+  it('recovery drives the terminal without any factory call (the commit drive: 3 ledger + G8-S1 stamp + 1 commit)', () => {
     expect(r4.newFactoryCalls).toBe(0)
     expect(r4.recoverError).toBe(undefined)
     expect(r4.recovered?.kind).toBe('activated')
     expect(r4.recoveredPhase).toBe(OPERATION_PHASES.COMMITTED)
-    expect(r4.recoveryTotalWrites).toBe(4)
+    expect(r4.recoveryTotalWrites).toBe(5)
   })
 })
 

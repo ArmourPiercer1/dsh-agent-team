@@ -66,7 +66,7 @@ function byteAt(bytes: Uint8Array, index: number): number {
 function utf8Bytes(input: string): Uint8Array {
   const out: number[] = []
   for (const ch of input) {
-    let code = ch.codePointAt(0) ?? 0
+    const code = ch.codePointAt(0) ?? 0
     if (code < 0x80) {
       out.push(code)
     } else if (code < 0x800) {

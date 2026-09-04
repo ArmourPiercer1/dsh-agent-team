@@ -1,0 +1,42 @@
+# P9 Baseline Validation — task/P9-ui-legacy-reuse
+
+- Date: 2026-09-03 ~08:32 (+08:00)
+- Worktree: `D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\P9`
+- Branch: `task/P9-ui-legacy-reuse`
+- HEAD: `b2b7bb6` (final tip of `int/T12-production-closure`)
+- Toolchain: node v24.20.0, pnpm 11.7.0, typescript 6.0.3 (workspace devDep)
+
+## 1. pnpm install --ignore-scripts
+
+- Command: `pnpm install --ignore-scripts` (worktree root)
+- Result: **PASS** — 150 packages resolved, 0 downloads (shared store), lockfile up to date,
+  supply-chain policy check passed (175 entries), 29 s.
+- Full log: `p9-install.log` (same dir).
+
+## 2. Full test suite
+
+- Command: `node scripts/run-tests.mjs` (no package arg = all 9 packages)
+- Result: **PASS — 2170 passed, 0 failed, 2170 total, 12440 ms** (matches sanctioned expectation 2170/2170)
+- Per-file detail: `p9-full-suite.log` (same dir; every file `PASS ...`)
+- p6t1-parallel flake (known ~1/3 baseline): did NOT occur in this run.
+
+## 3. tsc 8-set typecheck
+
+- Command per package: `node node_modules/typescript/bin/tsc -p packages/<pkg>/tsconfig.json`
+  (typecheck config; NOT the build config)
+- Packages (legacy has no tsconfig, per brief): client, contracts, domain, remote, runtime, storage, testkit, tools
+- Result: **8/8 exit 0** (see `p9-tsc8.log`)
+
+## 4. Pre-existing P10-class issues (do NOT block, do NOT silently fix)
+
+| Issue | Check | Result |
+| --- | --- | --- |
+| tools build TS6059 | `tsc -p packages/tools/tsconfig.build.json --noEmit` | **Reproduced, pre-existing**: `packages/contracts/src/dto/blueprint-snapshot.ts(29,38): error TS6059: File .../contracts/src/legacy-vocabulary.ts is not under 'rootDir' .../tools/src` (rootDir violation via `../legacy-vocabulary.js` imports from contracts DTO files). exit 2. Not touched. |
+| composition-smoke stale P1-T4 path | not re-run here | Known stale path; corrected-path diag at `dev/agent-workflow/evidence/T12/t12-13-smoke-diag.mjs`. Not a P9 gate. |
+| p6t1-parallel flake ~1/3 | full-suite run above | Not triggered in this run. |
+
+## 5. Deviation from expected baseline
+
+**NONE.** Suite 2170/2170, typecheck 8/8 clean, install clean, worktree clean
+(`git status --porcelain` shows only the new untracked `dev/agent-workflow/evidence/P9/`
+evidence dir owned by this task).

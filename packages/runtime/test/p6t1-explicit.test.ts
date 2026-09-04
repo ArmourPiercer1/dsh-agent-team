@@ -136,17 +136,25 @@ describe('P6-T1 S1: leader-explicit happy path (full admission/provisioning orde
     expect(result.member.lifecycle).toBe('CREATED')
   })
 
-  it('persists the durable write sequence: operations → operations → member → binding → (ledger) → operations', () => {
+  it('persists the durable write sequence: compatibility → team_sessions (probe) → operations → operations → member → binding → (ledger) → team_sessions → operations', () => {
+    // P8-S4A: step 6 now consults the SINGLE compatibility authority, whose
+    // first-ever evaluation re-probes inline (DevPlan §20.1 trigger 5) — the
+    // probe's compatibility row + generation-stamp writes precede the first
+    // activation write. The activation sequence after the probe is unchanged.
     const tables = s1.tables.filter((t) => t !== 'ledger')
     expect(tables).toEqual([
+      'compatibility',
+      'team_sessions',
       'operations',
       'operations',
       'member_instances',
       'session_bindings',
+      'team_sessions',
       'operations',
     ])
-    // The ledger writes (counter + the committed fact) sit strictly between
-    // the binding write and the terminal operations write.
+    // The ledger writes (counter + the committed fact) and the G8-S1
+    // generation-stamp write sit strictly between the binding write and the
+    // terminal operations write.
     const bindingIdx = s1.tables.lastIndexOf('session_bindings')
     const lastOpsIdx = s1.tables.lastIndexOf('operations')
     const ledgerIdxs = s1.tables
@@ -161,11 +169,18 @@ describe('P6-T1 S1: leader-explicit happy path (full admission/provisioning orde
     expect(s1.ledgerEntryKeys.length).toBe(1)
   })
 
-  it('writes NOTHING to team_sessions / overrides / compatibility (the admission order)', () => {
+  it('writes the probe stamp + the G8-S1 stamp to team_sessions and exactly ONE compatibility row (P8-S4A)', () => {
+    // P8-S4A: the single compatibility authority's first-ever evaluation
+    // re-probes inline (DevPlan §20.1 trigger 5), so the happy path now
+    // writes the probe's compatibility row + generation stamp BEFORE the
+    // activation order, then the G8-S1 stamp. Two team_sessions stamp
+    // writes + exactly one compatibility write; still NOTHING to overrides.
+    const stampWrites = s1.tables.filter((t) => t === 'team_sessions')
+    expect(stampWrites.length).toBe(2)
+    const compatWrites = s1.tables.filter((t) => t === 'compatibility')
+    expect(compatWrites.length).toBe(1)
     for (const t of s1.tables) {
-      expect(t === 'team_sessions').toBe(false)
       expect(t === 'overrides').toBe(false)
-      expect(t === 'compatibility').toBe(false)
     }
   })
 
@@ -480,7 +495,11 @@ const s5: {
     const before = warningWorld.seam.writeCount
     const warning = await runActivate(warningWorld, makeRequest({ requestToken: 'tok-p6t1-s5g' }))
     s5.compatibilityWarning = warning.error
-    expect(warningWorld.seam.writeCount - before).toBe(0)
+    // P8-S4A: the single compatibility authority re-probes inline on the
+    // first-ever evaluation (DevPlan §20.1 trigger 5) — the probe's
+    // compatibility row + generation stamp are written before the BLOCKED
+    // verdict is surfaced (was 0 under the read-only preflight).
+    expect(warningWorld.seam.writeCount - before).toBe(2)
   } finally {
     await destroyP6T1World(warningWorld)
   }
@@ -624,16 +643,23 @@ describe('P6-T1 S5: the negative matrix (every reject carries ZERO durable write
   it('step 4: a non-leader caller on a leader source is CALLER_AUTHORITY_DENIED', () => {
     assertActivationCode(s5.callerAuthorityDenied, ACTIVATION_ERROR_CODES.CALLER_AUTHORITY_DENIED)
   })
-  it('step 6: an unavailable REQUIRED capability is COMPATIBILITY_BLOCKED_FATAL (zero writes)', () => {
+  it('step 6: an unavailable REQUIRED capability is COMPATIBILITY_BLOCKED_FATAL (probe writes only)', () => {
+    // P8-S4A: the single compatibility authority re-probes inline on the
+    // first-ever evaluation (DevPlan §20.1 trigger 5) — the probe's
+    // compatibility row + generation stamp are written before the BLOCKED
+    // verdict is surfaced (was 0 under the read-only preflight).
     assertActivationCode(s5.compatibilityFatal, ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL)
-    expect(s5.writesCompat).toBe(0)
+    expect(s5.writesCompat).toBe(2)
   })
   it('step 6: an unavailable OPTIONAL capability without an ack is COMPATIBILITY_BLOCKED_WARNING', () => {
     assertActivationCode(s5.compatibilityWarning, ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_WARNING)
   })
-  it('step 7: the team instance quota is QUOTA_TEAM_MAX_INSTANCES (zero writes)', () => {
+  it('step 7: the team instance quota is QUOTA_TEAM_MAX_INSTANCES (probe writes only)', () => {
+    // P8-S4A: step 6 (the single compatibility authority) runs before step 7
+    // and re-probes inline on the first-ever evaluation — the 2 probe writes
+    // land before the quota rejection (was 0 under the read-only preflight).
     assertActivationCode(s5.quotaTeamMaxInstances, ACTIVATION_ERROR_CODES.QUOTA_TEAM_MAX_INSTANCES)
-    expect(s5.writesQuotaTeam).toBe(0)
+    expect(s5.writesQuotaTeam).toBe(2)
   })
   it('step 7: the team concurrent quota is QUOTA_TEAM_MAX_CONCURRENT', () => {
     assertActivationCode(s5.quotaTeamMaxConcurrent, ACTIVATION_ERROR_CODES.QUOTA_TEAM_MAX_CONCURRENT)
@@ -641,11 +667,15 @@ describe('P6-T1 S5: the negative matrix (every reject carries ZERO durable write
   it('step 7: the per-template quota is QUOTA_MEMBER_MAX_INSTANCES', () => {
     assertActivationCode(s5.quotaMemberMaxInstances, ACTIVATION_ERROR_CODES.QUOTA_MEMBER_MAX_INSTANCES)
   })
-  it('step 10: structurally invalid label / workspace / groupId fields fail closed (zero writes)', () => {
+  it('step 10: structurally invalid label / workspace / groupId fields fail closed (probe writes only)', () => {
+    // P8-S4A: the FIRST of the three attempts triggers the inline re-probe
+    // (DevPlan §20.1 trigger 5) — 2 probe writes before the field rejection;
+    // the second/third attempts find the fresh durable state and add none
+    // (was 0 under the read-only preflight).
     assertActivationCode(s5.invalidLabel, ACTIVATION_ERROR_CODES.INVALID_LABEL_FIELD)
     assertActivationCode(s5.invalidWorkspace, ACTIVATION_ERROR_CODES.INVALID_WORKSPACE_FIELD)
     assertActivationCode(s5.invalidGroupId, ACTIVATION_ERROR_CODES.INVALID_GROUP_ID_FIELD)
-    expect(s5.writesFields).toBe(0)
+    expect(s5.writesFields).toBe(2)
   })
   it('step 0: the closed grammar rejects every malformed shape (zero writes)', () => {
     assertActivationCode(s5.malformedMissingTemplate, ACTIVATION_ERROR_CODES.REQUEST_MALFORMED)

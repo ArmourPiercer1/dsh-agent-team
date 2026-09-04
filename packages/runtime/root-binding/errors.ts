@@ -22,6 +22,12 @@
  *   existing TeamSession record with a different immutable identity
  *   (blueprint, invariant 10) or a different generation (the fresh
  *   create is a generation-1 path). No effect.
+ * - `ROOT_BINDING_LEADER_MINT_FAILED` — the durable LeaderInstance mint
+ *   (P8-S2, Architecture §9.2 / invariants 14/15) cannot run: the
+ *   blueprint catalog is absent (the mint is never defaulted) or the
+ *   bound blueprint cannot be resolved / its content hash mismatches.
+ *   The TeamSession record + binding committed before it stand
+ *   (crash-safe ordering; a re-run completes the mint).
  *
  * Durable-write failures (the seam/repositories rejecting a put) are NOT
  * wrapped: the repository/seam error is the source of truth and carries
@@ -39,6 +45,16 @@ export const ROOT_BINDING_ERROR_CODES = {
   ROOT_BINDING_SESSION_KIND_CONFLICT: 'ROOT_BINDING_SESSION_KIND_CONFLICT',
   /** Durable TeamDomain state contradicts the fresh-create request. */
   ROOT_BINDING_TEAM_SESSION_CONFLICT: 'ROOT_BINDING_TEAM_SESSION_CONFLICT',
+  /**
+   * The fresh-root LeaderInstance mint (P8-S2) cannot run: the blueprint
+   * catalog is absent (`details.cause = 'catalog-absent'`) or the bound
+   * blueprint is unusable (`details.cause` = the activation code
+   * `BLUEPRINT_UNRESOLVED` / `BLUEPRINT_HASH_MISMATCH`). The mint is
+   * NEVER defaulted. Thrown AFTER the TeamSession record + binding
+   * commits (crash-safe ordering: a re-run re-resolves and completes the
+   * mint).
+   */
+  ROOT_BINDING_LEADER_MINT_FAILED: 'ROOT_BINDING_LEADER_MINT_FAILED',
 } as const
 
 /** One closed root-binding error code. */

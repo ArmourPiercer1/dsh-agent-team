@@ -1,10 +1,26 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
+    "rootDir": "../..",
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "action-router",
+    "activation",
+    "activity",
+    "admission",
+    "agent-setup",
+    "compatibility",
+    "control",
+    "fork-reconciliation",
+    "handoff",
+    "lifecycle",
+    "member-residency",
+    "messaging",
+    "mutation",
+    "projection",
+    "root-binding",
+    "policy-adapter.ts"
   ]
 }

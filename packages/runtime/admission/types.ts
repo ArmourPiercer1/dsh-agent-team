@@ -137,6 +137,17 @@ export type RuntimeActionEffect =
       readonly lifecycleCommitted: boolean
       /** The durable fact sequence of the admission (always written). */
       readonly sequence: number
+      /** P8-S3 work chain: true when this token was already durably
+       *  admitted AND durably settled by an earlier attempt — the call is a
+       *  replay (zero writes, zero delivery; the at-least-once delivery
+       *  contract's visible/deduped resolution, closure plan §CR2). */
+      readonly replayed?: boolean
+      /** P8-S3 work chain: true when the work unit reached the durable
+       *  SETTLED state during this execution (or the replayed attempt). */
+      readonly settled?: boolean
+      /** P8-S3 work chain: the durable fact sequence of the settlement
+       *  (`member-lifecycle-changed` with `to: 'SETTLED'`). */
+      readonly settledSequence?: number
     }
   /** A lifecycle operation was durably applied (archive/restore/dispose;
    *  the transition was committed through the injected lifecycle commit
@@ -164,6 +175,12 @@ export type RuntimeActionEffect =
       /** The provider's work-gate admission code (pass-through: creation is
        *  committed regardless — the code reports the P5-T1 gate state). */
       readonly admissionCode?: string
+      /** P8-S3 work chain: the durable fact sequence of the work admission
+       *  on the newly activated instance (present when the work chain ran). */
+      readonly workSequence?: number
+      /** P8-S3 work chain: true when the work unit reached the durable
+       *  SETTLED state during this execution. */
+      readonly workSettled?: boolean
     }
   /** The per-capability effective policy view (inspect-config). */
   | { readonly kind: 'config-inspected'; readonly effective: Record<string, PolicyEntry> }
@@ -228,14 +245,86 @@ export interface LifecycleCommitPort {
   /**
    * Durably commit one FSM-validated lifecycle transition of an existing
    * member record.
+   *
+   * The commit is a compare-and-swap in the durable layer (R4/CR-10):
+   * `args.expectedActivityVersion` is the row version the caller read
+   * fresh; a concurrent writer that moved the row first makes the commit
+   * fail (RECORD_DUPLICATE cas-mismatch) instead of silently overwriting.
+   *
    * @param args - the exact transition, read fresh under the router lock.
    */
   commitTransition(args: {
     readonly rootSessionId: string
     readonly instanceId: string
+    readonly expectedActivityVersion: number
     readonly from: MemberLifecycleState
     readonly operation: LifecycleOperation
     readonly to: MemberLifecycleState
+  }): Promise<void>
+}
+
+/**
+ * The production work-delivery seam (P8-S3 R1/R6). The ONLY path that
+ * submits the model-visible prompt/attached-context of an admitted work
+ * request to the member's child session and observes the turn's completion.
+ *
+ * Absent in the P6-T2 default wiring (admission evidence only); the
+ * production harness row installs it so delegate/follow-up actually reach
+ * the child Agent. A delivery failure MUST throw: the work chain then
+ * settles fail-closed (R6) — never a fake RUNNING success.
+ */
+export interface WorkDeliveryPort {
+  /**
+   * Deliver one admitted work request's prompt/context to the member's
+   * child session and await the turn's completion.
+   * @param args - the delivery target and the request's model-visible
+   *   content (requestToken doubles as the visible correlation for the
+   *   at-least-once delivery contract's dedup).
+   * @throws on any delivery/observation failure (fail-closed settlement).
+   */
+  deliver(args: {
+    readonly rootSessionId: string
+    readonly instanceId: string
+    readonly childSessionId: string
+    readonly requestToken: string
+    readonly prompt: string
+    readonly attachedContext?: string
+  }): Promise<void>
+}
+
+/**
+ * The in-facade activity-interval writer (P8-S3). Opens/closes the
+ * activity interval of one admitted work unit by committing the guarded
+ * interval fact directly — WITHOUT the report-progress facade (whose
+ * performAction stage would re-enter the router's non-reentrant team lock
+ * and deadlock) and WITHOUT a second lock map (the caller already holds
+ * the router's team lock).
+ */
+export interface WorkActivityPort {
+  /**
+   * Open the work unit's activity interval (guarded commit only:
+   * sequence head+1 claim, interval state guards, ledger fact).
+   * @throws ACTIVITY_* domain errors (e.g. ACTIVITY_INTERVAL_ALREADY_OPEN).
+   */
+  openInterval(args: {
+    readonly rootSessionId: string
+    readonly instanceId: string
+    readonly subject: string
+    readonly requestToken: string
+    readonly correlation: string
+    readonly note?: string
+  }): Promise<void>
+  /**
+   * Close the work unit's activity interval (guarded commit only).
+   * @throws ACTIVITY_* domain errors (e.g. ACTIVITY_INTERVAL_NOT_OPEN).
+   */
+  closeInterval(args: {
+    readonly rootSessionId: string
+    readonly instanceId: string
+    readonly subject: string
+    readonly requestToken: string
+    readonly correlation: string
+    readonly closeNote?: string
   }): Promise<void>
 }
 
@@ -265,6 +354,27 @@ export interface TeamRuntimeOptions {
    *  closed (LIFECYCLE_COMMIT_UNAVAILABLE) and work admission commits
    *  evidence only (`lifecycleCommitted: false`). */
   readonly lifecycleCommit?: LifecycleCommitPort
+  /** The P7-T3 lifecycle step ports (P8-S3 R7/CR-9). When installed,
+   *  router lifecycle actions (archive/restore/dispose) run the P7-T3
+   *  step ordering — close admission → interrupt → quiesce/drain FIRST →
+   *  release residency → commit — through these real ports under the
+   *  router's own team lock. Absent in the P6-T2 default wiring: the
+   *  router falls back to the direct CAS commit (previous behavior). */
+  readonly lifecyclePorts?: import('../lifecycle/types.js').LifecyclePorts
+  /** The production work-delivery seam (P8-S3 R1). Absent in the P6-T2
+   *  default wiring: work admission commits evidence only. */
+  readonly workDelivery?: WorkDeliveryPort
+  /** The in-facade activity-interval writer (P8-S3). Absent in the P6-T2
+   *  default wiring: no work-unit activity interval is opened/closed. */
+  readonly workActivity?: WorkActivityPort
+  /** The P8-S5B shared team operation chain (the single CR-8 coordinator
+   *  map). When installed, this runtime's per-team effect lock IS that
+   *  shared chain: every durable effect — and, for NEW WORK admissions,
+   *  the compatibility gate together with the effect in ONE acquisition
+   *  (R5) — serializes with the other team-mutating operations the
+   *  production root wires through the same map. Absent in the P6-T2
+   *  default wiring: the runtime owns a private map (previous behavior). */
+  readonly teamLocks?: Map<string, Promise<unknown>>
 }
 
 /**

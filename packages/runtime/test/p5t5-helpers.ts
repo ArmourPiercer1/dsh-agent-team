@@ -35,6 +35,10 @@ import {
 } from '../../contracts/src/index.js'
 import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
 import type { TeamDomain } from '../../storage/repositories/index.js'
+import {
+  createBlueprintCatalog,
+} from '../../domain/blueprint/src/index.js'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
 import { createTeamDomainReadHandle } from '../agent-setup/binder/index.js'
 import type { TeamDomainReadHandle } from '../agent-setup/binder/index.js'
@@ -64,9 +68,41 @@ export const P5T5_FIXTURE = {
   createdAt: '2026-08-30T06:00:00Z',
 }
 
+/**
+ * The P5-T5 fixture blueprint. P8-S2: a literal (not a parsed source)
+ * whose `contentHash` is the fixture's frozen ref value — the world
+ * ports resolve the bound snapshot against this catalog for the
+ * fresh-root LeaderInstance mint (Architecture §9.2 / invariant 14),
+ * and the hash equality against `P5T5_FIXTURE.blueprint` holds by
+ * construction. Test-world arrangement, not a production claim.
+ */
+export const P5T5_BLUEPRINT: TeamBlueprint = {
+  schemaVersion: 1,
+  blueprintId: parseBlueprintId('P5T5-BP'),
+  revision: parseBlueprintRevision('1'),
+  contentHash: parseBlueprintContentHash('sha256-11111111111111111111111111111111'),
+  leader: {
+    templateId: parseTemplateId('leader'),
+    persona: 'You lead the P5T5 team.',
+  },
+  members: [
+    {
+      templateId: parseTemplateId('p5t5worker'),
+      persona: 'You do the P5T5 work.',
+    },
+  ],
+  requirements: [],
+  memberEnvelopes: [],
+  policyStates: [],
+  metadata: {},
+}
+
+/** A REAL blueprint catalog holding the fixture blueprint. */
+export const P5T5_BLUEPRINT_CATALOG = createBlueprintCatalog([P5T5_BLUEPRINT])
+
 /** One recorded durable write call of the world's recording proxy. */
 export interface P5T5WriteCall {
-  readonly method: 'putTeamSession' | 'putSessionBinding'
+  readonly method: 'putTeamSession' | 'putSessionBinding' | 'putMemberInstance'
 }
 
 /** One durable TeamDomain world wired for the root binding. */
@@ -169,10 +205,20 @@ function finishWorld(
       writeCalls.push({ method: 'putSessionBinding' })
       return baseWritePort.putSessionBinding(binding)
     },
+    putMemberInstance(input) {
+      writeCalls.push({ method: 'putMemberInstance' })
+      return baseWritePort.putMemberInstance(input)
+    },
   }
   const surface = new FakeAgentSetupSurface()
   const now = makeNow()
-  const ports: RootBindingPorts = { teamDomain: readHandle, writes, surface, now }
+  const ports: RootBindingPorts = {
+    teamDomain: readHandle,
+    writes,
+    surface,
+    now,
+    blueprintCatalog: P5T5_BLUEPRINT_CATALOG,
+  }
   return { scratchDir, seam, domain, readHandle, writes, writeCalls, surface, now, ports }
 }
 

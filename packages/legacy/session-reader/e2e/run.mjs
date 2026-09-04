@@ -2,7 +2,7 @@
  * run.mjs — the P7-T7 real-instance E2E driver (SEC8).
  *
  * Boots a REAL DSH web instance from the pristine test-use tree
- * (`references/deepseek-harness-test-use`, pin cd5ef814) with a fresh
+ * (`references/deepseek-harness-test-use`, pin 76fda72979) with a fresh
  * workspace-internal DSH_HOME, mounts the single harness row
  * (`p7t7-legacy-session-reader`) through the public cordis.patch.yml
  * profile seam, and drives the three reader scenarios end to end:
@@ -56,7 +56,7 @@ import { captureGitState } from '../../../../tests/characterization/lib/tree-cle
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
-const CLIENT_COMMIT_HASH = 'cd5ef814'
+const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 

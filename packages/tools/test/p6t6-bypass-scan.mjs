@@ -110,7 +110,7 @@ const QUOTED_EVENT_PATTERNS = LEGACY_TEAM_EVENT_STRINGS.map(
 )
 const PAYLOAD_SYMBOL_PATTERNS = LEGACY_PAYLOAD_SYMBOLS.map(boundedIdentifier)
 const SESSION_EVENT_MAP_PATTERN = boundedIdentifier(SESSION_EVENT_MAP_IDENTIFIER)
-const SESSION_TYPES_SPECIFIER_PATTERN = /(["'\`])@deepseek-ai\/dsh-session\/types\1/g
+const SESSION_TYPES_SPECIFIER_PATTERN = /(["'`])@deepseek-ai\/dsh-session\/types\1/g
 
 /**
  * Every static import/export-from specifier with the index of its

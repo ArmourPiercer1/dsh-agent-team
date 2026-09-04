@@ -69,7 +69,6 @@ import {
   createOperationJournal,
   type OperationJournal,
   type OperationRequest,
-  type OperationResult,
 } from '../operations/index.js'
 import { SessionBindingService } from '../bindings/index.js'
 import type { TeamDomain } from '../repositories/index.js'
@@ -234,12 +233,7 @@ export interface CreateProvisioningCoordinatorOptions {
  * @param options - the domain, the team root, the adapter, and an optional journal.
  */
 export function createProvisioningCoordinator(options: CreateProvisioningCoordinatorOptions): ProvisioningCoordinator {
-  let root: string
-  try {
-    root = String(parseRootSessionId(options.rootSessionId))
-  } catch (error) {
-    throw error
-  }
+  const root = String(parseRootSessionId(options.rootSessionId))
   const domain = options.domain
   const repositories = domain.repositories
   const journal = options.journal ?? createOperationJournal(domain, root)

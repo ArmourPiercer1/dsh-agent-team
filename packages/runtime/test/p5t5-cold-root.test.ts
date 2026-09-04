@@ -188,8 +188,9 @@ describe('P5-T5 S2: same-realm residency loss (cold re-restore on the standing r
       AGENT_SETUP_EVENT_NAMES.scopeRestored,
       AGENT_SETUP_EVENT_NAMES.admissionDecided,
     ])
-    // The fresh bind wrote 2 rows; the cold re-run adds zero.
-    expect(s2.writeCalls).toBe(2)
+    // The fresh bind wrote 3 rows (record, binding, P8-S2 leader mint);
+    // the cold re-run adds zero. (P8-S2 defect-encoding update: 2 → 3.)
+    expect(s2.writeCalls).toBe(3)
   })
 })
 
@@ -345,7 +346,8 @@ describe('P5-T5 S2 fail-closed (cont. 2)', () => {
       { name: AGENT_SETUP_EVENT_NAMES.admissionDecided },
     ])
     // The durable state stands; the cold attempt wrote nothing.
-    expect(s7.writeCalls).toBe(2)
+    // (P8-S2 defect-encoding update: 2 → 3, the fresh phase mints the leader.)
+    expect(s7.writeCalls).toBe(3)
     expect(s7.repoTeamSessionGeneration).toBe(1)
     expect(s7.repoBindingKind).toBe('team-root')
   })

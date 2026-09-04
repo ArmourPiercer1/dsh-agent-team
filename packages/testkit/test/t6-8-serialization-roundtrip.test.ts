@@ -42,7 +42,6 @@ import {
 import type {
   BlueprintSnapshotRef,
   MemberIdentity,
-  RootSessionId,
   SessionBindingDto,
 } from '../../contracts/src/index.js'
 import { parseBlueprint, toBlueprintSnapshotRef } from '../../domain/blueprint/src/index.js'

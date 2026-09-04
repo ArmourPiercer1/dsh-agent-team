@@ -713,7 +713,6 @@ export function effectivePolicyValues(policy: EffectivePolicy): Record<string, P
  * @returns the in-bounds mutation operations (deterministic order).
  */
 export function computeOverlayBounds(blueprint: TeamBlueprint, templateId: string): readonly string[] {
-  const teamAllow = new Set(blueprint.teamEnvelope?.allow ?? [])
   const memberEntry = blueprint.memberEnvelopes.find((entry) => entry.templateId === templateId)
   const templateAllow = new Set(memberEntry?.envelope.allow ?? [])
   const teamDeny = new Set(blueprint.teamEnvelope?.deny ?? [])

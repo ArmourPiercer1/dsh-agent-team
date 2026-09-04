@@ -1,0 +1,75 @@
+/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the
+   wrapping Tooltip (delay 500ms, the native New Session row pattern). */
+.rail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.rail:hover {
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.rail:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+/* Wide (expanded) entry: icon + text label row — the expanded button carries
+   its own label, so the tooltip is disabled in this state. */
+.wide {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xs-13);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wide:hover {
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.wide:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+/* The expanded-state text label (rail state renders icon-only). */
+.label {
+  white-space: nowrap;
+}
+
+/* The creation overlay: the sidebar column clips overflow, so the Team-owned
+   panel mounts as a fixed full-viewport backdrop with a centered dialog
+   (the same reason the ui-cordis footer panel is position: fixed). */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--dsw-alias-bg-mask-1);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}

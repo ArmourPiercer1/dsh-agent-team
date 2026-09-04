@@ -42,6 +42,21 @@ export { classifyDrift } from './drift.js'
 export { createCompatibilityProber } from './probe.js'
 export type { CompatibilityProberDeps } from './probe.js'
 export {
+  createCompatibilityAuthority,
+  REPROBE_REASONS,
+} from './authority.js'
+export type {
+  BlockingRequirementSummary,
+  CompatibilityAdmissionDecision,
+  CompatibilityAdmit,
+  CompatibilityAuthority,
+  CompatibilityAuthorityAdmitOptions,
+  CompatibilityAuthorityOptions,
+  CompatibilityBlock,
+  CompatibilityReprobe,
+  ReprobeReason,
+} from './authority.js'
+export {
   DRIFT_KINDS,
   PROBE_TRIGGERS,
   PROBE_TRIGGER_VALUES,

@@ -110,13 +110,12 @@ function mcpConfig(mcpPort, serverName) {
  *
  * @param {object} deps
  * @param {object} deps.agents - the DSH agents service.
- * @param {object} deps.agentPresets - the DSH agentPresets service.
  * @param {object} deps.systemPrompt - the DSH systemPrompt service.
  * @param {string} deps.presetId - the team persona preset id.
  * @param {string} deps.stamp - a run-unique stamp for the probe session id.
  * @returns {Promise<{presetId: string, personaKind: 'absent'|'standard'|'complete', probeSections: string[], probePersonaText: string|null, probeSessionId: string}>}
  */
-export async function resolvePersonaSubstrate({ agents, agentPresets, systemPrompt, presetId, stamp }) {
+export async function resolvePersonaSubstrate({ agents, systemPrompt, presetId, stamp }) {
   const probeSessionId = `p5t5-substrate-probe-${stamp}`
   const handle = await agents.create({
     sessionId: SessionId(probeSessionId),
@@ -210,7 +209,7 @@ export async function buildRealSlots({ agents, agentPresets, systemPrompt, direc
   }
 
   const personaSlot = createPersonaOverlaySlot({
-    presetSeam: { getSubstrate: (rootSessionId) => substrate },
+    presetSeam: { getSubstrate: () => substrate },
     personaSource,
     promptSurface,
     // evaluateCompatibility intentionally absent: the REAL P3-T5 pure engine

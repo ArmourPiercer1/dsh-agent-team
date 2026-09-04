@@ -38,15 +38,34 @@ import {
   isBareSpecifier,
 } from '../domain/src/index.js'
 
+/**
+ * Minimal ambient shape for the runner probe in the marker test below:
+ * this package has no @types/node. Vitest's workers set VITEST_WORKER_ID;
+ * the plain-node runner (scripts/run-tests.mjs) does not.
+ */
+declare const process: { env?: Record<string, string | undefined> }
+
 /** Rewrite a TS-style `.js` specifier to the literal `.ts` source file. */
 function toTsSpecifier(spec: string): string {
   return spec.endsWith('.js') ? `${spec.slice(0, -3)}.ts` : spec
 }
 
+/**
+ * Anchor the rewritten specifier at THIS test file's URL: the specifiers are
+ * relative to the test file, and a bare dynamic import is resolved against
+ * the module host's base (Vite clamps `..` sequences that escape the package
+ * root, corrupting `../../contracts/src/index.ts` into
+ * `/contracts/src/index.ts`); a file-URL anchor is identical under the
+ * plain-node runner.
+ */
+function toTsUrl(spec: string): string {
+  return new URL(toTsSpecifier(spec), import.meta.url).href
+}
+
 /** Live-import every direct bundle dependency (marker-checked in tests). */
 const liveModules = new Map<string, Record<string, unknown>>()
 for (const entry of T6_BUNDLE_DIRECT_IMPORTS) {
-  const mod = (await import(toTsSpecifier(entry.specifier))) as unknown as Record<string, unknown>
+  const mod = (await import(toTsUrl(entry.specifier))) as unknown as Record<string, unknown>
   liveModules.set(entry.specifier, mod)
 }
 
@@ -88,12 +107,19 @@ describe('P3-T6 G3-1: domain has no live Agent dependency', () => {
 
   it('every direct bundle dependency resolves at runtime and exposes its marker export', () => {
     expect(liveModules.size).toBe(9)
+    // Node's native ESM seals module namespace objects after linking, so
+    // non-extensibility holds on the plain-node runner. vite-node (the
+    // vitest surface) wraps loaded modules in an extensible proxy, so the
+    // extensibility check is runner-conditional; the marker check below
+    // holds on both surfaces and carries the liveness guarantee there.
+    const plainNode =
+      typeof process !== 'undefined' && process.env?.VITEST_WORKER_ID === undefined
     for (const entry of T6_BUNDLE_DIRECT_IMPORTS) {
       const mod = liveModules.get(entry.specifier)
       expect(mod !== undefined).toBe(true)
-      // ESM namespace objects are non-extensible (exports cannot be added or
-      // removed after linking) — the live dependency list is real.
-      expect(Object.isExtensible(mod)).toBe(false)
+      if (plainNode) {
+        expect(Object.isExtensible(mod)).toBe(false)
+      }
       expect(mod?.[entry.marker] !== undefined).toBe(true)
     }
   })

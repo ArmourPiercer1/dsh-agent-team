@@ -243,17 +243,6 @@ export function createOperationJournal(
     if (effective !== expected) throw staleGeneration(operationId, expected, found)
   }
 
-  function verifyFactScope(operationId: string): void {
-    const fact = findFact(operationId)
-    if (fact !== undefined && !isOurFact(operationId, String(fact.rootSessionId))) {
-      throw factTeamConflict(
-        operationId,
-        `operation '${operationId}' was already committed under a different team`,
-        String(fact.rootSessionId),
-      )
-    }
-  }
-
   // ------------------------------------------------------------- transitions
 
   /**

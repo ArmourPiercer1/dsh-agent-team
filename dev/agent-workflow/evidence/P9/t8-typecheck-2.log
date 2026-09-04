@@ -1,0 +1,3 @@
+tsc -p packages/testkit/tsconfig.json --noEmit (testkit face: the p4t6 pin bump 590 -> 596)
+
+EXIT=0 (no error output)

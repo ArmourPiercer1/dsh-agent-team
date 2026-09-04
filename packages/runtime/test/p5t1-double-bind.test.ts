@@ -25,7 +25,6 @@ import {
   OVERLAY_SLOT_ORDER,
   TEAM_AGENT_BINDER_ERROR_CODES,
   TeamAgentBinder,
-  TeamAgentBinderError,
   isTeamAgentBinderError,
 } from '../agent-setup/binder/index.js'
 import {

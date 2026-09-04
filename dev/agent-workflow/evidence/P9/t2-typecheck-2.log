@@ -1,0 +1,37 @@
+﻿.worktrees/P9/packages/client/src/model/team-dock-model.ts(10,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/model/team-dock-model.ts(86,51): error TS7006: Parameter 'task' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/model/team-feed-model.ts(31,48): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/model/team-feed-model.ts(129,27): error TS7006: Parameter 'approval' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/model/team-feed-model.ts(129,37): error TS7006: Parameter 'order' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/model/team-members-model.ts(17,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/model/team-timeline-model.ts(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/model/team-timeline-model.ts(98,24): error TS7006: Parameter 'delegation' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/model/team-timeline-model.ts(98,36): error TS7006: Parameter 'index' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/ui/TeamDock.tsx(18,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamDock.tsx(19,33): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamFeed.tsx(30,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamFeed.tsx(123,18): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly allow_once: "view.events.decision.allow_once"; readonly deny: "view.events.decision.deny"; readonly escalate_to_user: "view.events.decision.escalate_to_user"; readonly approve_plan: "view.events.decision.approve_plan"; readonly request_revision: "view.events.decision.request_revision"; }'.
+.worktrees/P9/packages/client/src/ui/TeamMembers.tsx(17,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamTasks.tsx(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamTasks.tsx(38,39): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+.worktrees/P9/packages/client/src/ui/TeamTasks.tsx(56,36): error TS7006: Parameter 'row' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/ui/TeamTasks.tsx(71,26): error TS7006: Parameter 'task' implicitly has an 'any' type.
+.worktrees/P9/packages/client/src/ui/TeamTasks.tsx(79,78): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly pending: "view.task.pending"; readonly in_progress: "view.task.in_progress"; readonly completed: "view.task.completed"; readonly blocked: "view.task.blocked"; }'.
+.worktrees/P9/packages/client/src/ui/TeamTimeline.tsx(16,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamView.tsx(17,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamView.tsx(18,33): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/src/ui/TeamView.tsx(77,43): error TS7006: Parameter 'member' implicitly has an 'any' type.
+.worktrees/P9/packages/client/test/team-dock-model.client.spec.ts(9,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-dock.client.spec.tsx(11,54): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-feed-model.client.spec.ts(15,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-feed.client.spec.tsx(18,74): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-members-model.client.spec.ts(9,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-members.client.spec.tsx(13,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-tasks.client.spec.tsx(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-timeline-model.client.spec.ts(9,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-timeline.client.spec.tsx(12,31): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-timeline.client.spec.tsx(145,48): error TS7006: Parameter 'delegation' implicitly has an 'any' type.
+.worktrees/P9/packages/client/test/team-view.client.spec.tsx(14,8): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-view.client.spec.tsx(15,33): error TS2307: Cannot find module '@deepseek-ai/dsh-client-runtime/client' or its corresponding type declarations.
+.worktrees/P9/packages/client/test/team-view.client.spec.tsx(83,3): error TS2322: Type '{ sessionId: SessionId; useSession: SessionSnapshotSelector; useProjection: () => undefined; useInput: () => never; inputActions: InputActions; useSessions: () => never; ... 8 more ...; completeViewRequest: () => void; }' is not assignable to type 'TeamViewProps'.
+  Type '{ sessionId: SessionId; useSession: SessionSnapshotSelector; useProjection: () => undefined; useInput: () => never; inputActions: InputActions; useSessions: () => never; ... 8 more ...; completeViewRequest: () => void; }' is missing the following properties from type 'SessionStandardProps': useConversation, useChat

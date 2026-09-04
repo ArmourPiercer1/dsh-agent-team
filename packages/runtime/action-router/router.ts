@@ -54,7 +54,7 @@ import type {
   TeamRuntimeActionRequest,
   TeamRuntimeOptions,
 } from '../admission/index.js'
-import { executeEffect } from './effects.js'
+import { executeEffect, executeEffectLocked, withTeamLock } from './effects.js'
 import type { EffectContext } from './effects.js'
 
 /**
@@ -63,11 +63,16 @@ import type { EffectContext } from './effects.js'
  * @param options - the TeamDomain (durable authority), the P6-T1
  *   ActivationProvider (the sole creation path), the blueprint catalog, the
  *   environment/external policy fact ports, and the deterministic clock.
- * @returns the facade (the per-team effect lock map is owned by the
- *   returned closure — one map per runtime instance).
+ * @returns the facade (the per-team effect lock map is the installed
+ *   shared coordinator chain when `options.teamLocks` is given, otherwise
+ *   owned by the returned closure — one map per runtime instance).
  */
 export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
-  const teamLocks = new Map<string, Promise<unknown>>()
+  // P8-S5B (CR-8): the per-team chain is the SHARED coordinator map when
+  // the production root installs one (team-mutating operations across the
+  // router / activity / lifecycle modules serialize on ONE chain per
+  // team); otherwise a private map (the P6-T2 default, unchanged).
+  const teamLocks = options.teamLocks ?? new Map<string, Promise<unknown>>()
   const repositories = options.teamDomain.repositories
 
   async function performAction(request: TeamRuntimeActionRequest): Promise<TeamRuntimeActionOutcome> {
@@ -88,14 +93,15 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
     const envelope = callerEnvelope(blueprint, caller, overrides)
     enforceEnvelope(spec, envelope)
 
-    // Step 5 — compatibility gate for NEW WORK admissions only.
-    if (isNewWorkAdmission(spec)) {
-      const environmentFacts = await options.environmentFacts()
-      enforceCompatibilityGate(repositories, blueprint, rootSessionId, environmentFacts)
-    }
-
-    // Step 6/7 — the effect phase (quota inside the provider for creation;
-    // durable writes under the per-team lock).
+    // Step 5/6/7 — the effect phase. For NEW WORK admissions the
+    // compatibility gate and the effect run in ONE team-chain acquisition
+    // (P8-S5B, CR-8/R5): the gate may re-probe inline (a durable
+    // compatibility write), so a racing new-work admission for the same
+    // team cannot interleave its own re-probe into this consultation's
+    // read→probe→re-read window. Non-new-work actions keep the documented
+    // order: steps 1–4 outside the lock, the effect alone inside it.
+    // (Quota inside the provider for creation; durable writes under the
+    // per-team lock.)
     const ctx: EffectContext = {
       repositories,
       activationProvider: options.activationProvider,
@@ -107,9 +113,24 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
       caller,
       blueprint,
       lifecycleCommit: options.lifecycleCommit,
+      workDelivery: options.workDelivery,
+      workActivity: options.workActivity,
+      lifecyclePorts: options.lifecyclePorts,
       ...(resolved.target !== undefined ? { target: resolved.target } : {}),
     }
-    const effect = await executeEffect(teamLocks, ctx)
+    const effect = isNewWorkAdmission(spec)
+      ? await withTeamLock(teamLocks, rootSessionId, async () => {
+          const environmentFacts = await options.environmentFacts()
+          await enforceCompatibilityGate(
+            repositories,
+            blueprint,
+            rootSessionId,
+            environmentFacts,
+            options.now,
+          )
+          return executeEffectLocked(ctx)
+        })
+      : await executeEffect(teamLocks, ctx)
 
     return {
       status: 'executed',

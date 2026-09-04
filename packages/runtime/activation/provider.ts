@@ -75,6 +75,7 @@ import {
   createTeamDomainReadHandle,
 } from '../agent-setup/binder/index.js'
 import type { TeamAgentBindResult } from '../agent-setup/binder/index.js'
+import { createCompatibilityAuthority } from '../compatibility/index.js'
 import { createActivationChildAdapter } from './adapter.js'
 import {
   allocateCheckedInstanceId,
@@ -83,7 +84,6 @@ import {
   checkQuota,
   computeOverlayBounds,
   countTeamQuota,
-  evaluateActivationCompatibility,
   resolveActivationPolicy,
   resolveBoundBlueprint,
   resolveCreationFields,
@@ -557,7 +557,6 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
     }
 
     // steps 3-5 (+ delegation target resolution): the create address
-    const createTemplateAddress = requestedTemplateAddress(request)
     let createTemplateId: string
     if (request.source === ACTIVATION_SOURCES.LEADER_DELEGATE) {
       const delegation = request.delegation as { explicitInstanceId?: unknown; templateId?: unknown }
@@ -618,13 +617,67 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
       // the full provisioning order below.
     }
 
-    // step 6: compatibility (the new-work admission gate, invariant 50)
-    const environmentFacts = await ports.environmentFacts()
-    const compatibility = evaluateActivationCompatibility(
+    // step 6: compatibility (the new-work admission gate, invariant 50).
+    // P8-S4A: the SINGLE compatibility authority — the exact chain (fresh
+    // facts -> fingerprint -> freshness -> durable state -> ACK validity ->
+    // exactly ONE result). A missing/stale durable generation is re-probed
+    // INLINE (DevPlan §20.1 trigger 5), which is what makes step 6 async.
+    // `request.acknowledgements` travel as transient admission input for
+    // THIS attempt only (never persisted; durable acks are written by the
+    // authority's `acknowledge`).
+    const authority = createCompatibilityAuthority({
+      repositories,
+      rootSessionId,
       blueprint,
-      environmentFacts,
-      request.acknowledgements,
-    )
+      environmentFacts: ports.environmentFacts,
+      ...(ports.now !== undefined ? { now: ports.now } : {}),
+    })
+    const admission = await authority.admit({
+      ...(request.acknowledgements !== undefined
+        ? { acknowledgements: request.acknowledgements }
+        : {}),
+    })
+    if (admission.decision === 'reprobe') {
+      // fail-closed: the chain itself failed (invariant 50). A
+      // facts-unavailable fault re-throws the ORIGINAL error unwrapped (the
+      // legacy step-6 fault contract: a broken facts port is a runtime
+      // fault, not a compatibility verdict).
+      if (
+        admission.reprobeReason === 'facts-unavailable' &&
+        admission.cause !== undefined
+      ) {
+        throw admission.cause
+      }
+      throw new ActivationError(
+        ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL,
+        `activation: compatibility could not be established (${admission.reprobeReason}) — admission fails closed (invariant 50)`,
+        {
+          rootSessionId,
+          source: 'compatibility-authority',
+          reason: admission.reprobeReason,
+        },
+      )
+    }
+    if (admission.decision === 'block') {
+      throw new ActivationError(
+        admission.status === 'BLOCKED_FATAL'
+          ? ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_FATAL
+          : ACTIVATION_ERROR_CODES.COMPATIBILITY_BLOCKED_WARNING,
+        `activation: compatibility is ${admission.status} — admission is blocked (invariant 50)`,
+        {
+          rootSessionId,
+          fingerprint: admission.fingerprint,
+          generation: admission.generation,
+          reprobed: admission.reprobed,
+          requirements: admission.blockingRequirements.map((requirement) => ({
+            requirementId: requirement.requirementId,
+            outcome: requirement.outcome,
+            reasonCode: requirement.reasonCode,
+          })),
+        },
+      )
+    }
+    const compatibilityStatus: CompatibilityStatus = admission.status
 
     // steps 7-15 under the team lock (all durable writes for this team are
     // serialized; the views below are fresh under the lock).
@@ -702,7 +755,7 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
         false,
         fields.contextPolicy,
         fields.workspace,
-        compatibility.status,
+        compatibilityStatus,
         policy.policyStateId,
         committed.ledgerSequence,
       )

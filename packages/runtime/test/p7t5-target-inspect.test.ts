@@ -29,7 +29,12 @@ import {
   HandoffError,
 } from '../handoff/index.js'
 import type { SourceHistoryQuery } from '../handoff/index.js'
-import { P7T5_FIXTURE, assertHandoffCode, createP7T5World } from './p7t5-helpers.js'
+import {
+  P7T5_FIXTURE,
+  assertHandoffCode,
+  createP7T5World,
+  expectedContextToken,
+} from './p7t5-helpers.js'
 
 /** True when `value` (or anything nested in it) is a function — the
  *  structural "no read grant" probe. */
@@ -149,7 +154,7 @@ describe('p7t5 target-inspect', () => {
     if (s1 === undefined) throw new Error('S1 did not run')
     assertHandoffCode(s1.historyReadError, HANDOFF_ERROR_CODES.SOURCE_HISTORY_ACCESS_DENIED)
     expect(s1.deniedDetails).toEqual({
-      contextToken: 'handoff-ctx-tok-p7t5-tp',
+      contextToken: expectedContextToken(P7T5_FIXTURE.sourceSessionId, 'tok-p7t5-tp'),
       mode: 'history-read',
     })
   })

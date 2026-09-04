@@ -16,18 +16,30 @@
  *   user-visible lifecycle).
  * - **groupId is opaque grouping metadata with no state/permission/
  *   lifecycle/activation semantics** (invariant 20, §12); optional.
- * - **LeaderInstance** is recorded through the same unified model with the
- *   reserved instance id `inst-leader` and no childSessionId (§9.2); the
- *   leader's row is owned by the runtime that knows it, and this DTO shape
- *   is the member shape (the leader's absence of a child session is
- *   enforced by the producer, not by the record shape).
+ * - **LeaderInstance** (Architecture §9.1/§9.2, invariants 13/14/15): the
+ *   Leader is the Root Agent + the Root Session itself. It has NO durable
+ *   child Session and NO ordinary member lifecycle, and it cannot be
+ *   independently archived or disposed. The v2 record shape (P8-S2,
+ *   `LEADER_INSTANCE_RECORD_SCHEMA_VERSION = 2`) encodes that in the
+ *   record: `childSessionId` and `lifecycle` are ABSENT keys (rejected on
+ *   presence, never defaulted) and `instanceId` must be the reserved
+ *   `inst-leader` id. Every v1 record — including legacy harness-style
+ *   leader rows that carry both fields — stays parseable (the freeze
+ *   rule adds a version, it never rewrites v1).
  *
  * Pure module: no I/O, no live Agent, no runtime environment assumptions.
  * @module @dsh-agent-team/contracts/dto/member-instance-record
  */
 
-import { TEAM_CONTRACT_SCHEMA_VERSION, assertSchemaVersion } from '../schema-version.js'
-import type { TeamContractSchemaVersion } from '../schema-version.js'
+import {
+  LEADER_INSTANCE_RECORD_SCHEMA_VERSION,
+  TEAM_CONTRACT_SCHEMA_VERSION,
+  assertSchemaVersion,
+} from '../schema-version.js'
+import type {
+  LeaderInstanceRecordSchemaVersion,
+  TeamContractSchemaVersion,
+} from '../schema-version.js'
 import { parseRootSessionId } from '../ids/session-id.js'
 import type { RootSessionId } from '../ids/session-id.js'
 import { parseChildSessionId } from '../ids/session-id.js'
@@ -36,7 +48,7 @@ import { parseInstanceId } from '../ids/instance-id.js'
 import type { InstanceId } from '../ids/instance-id.js'
 import { parseTemplateId } from '../ids/template-id.js'
 import type { TemplateId } from '../ids/template-id.js'
-import { createMemberIdentity } from '../identity.js'
+import { createMemberIdentity, LEADER_INSTANCE_ID } from '../identity.js'
 import type { MemberIdentity } from '../identity.js'
 import {
   GROUP_ID_MAX_LENGTH,
@@ -102,6 +114,40 @@ export const MEMBER_INSTANCE_RECORD_FIELDS: readonly string[] = [
 ]
 
 /**
+ * The exact frozen fields of a LeaderInstanceRecordDto (v2): the v1 field
+ * set minus `childSessionId` and `lifecycle` (Architecture §9.2 — the
+ * Leader is the Root Session; those keys are absent, never optional).
+ */
+export const LEADER_INSTANCE_RECORD_FIELDS: readonly string[] = [
+  'schemaVersion',
+  'rootSessionId',
+  'instanceId',
+  'templateId',
+  'label',
+  'groupId',
+  'workspace',
+  'createdAt',
+  'activityVersion',
+]
+
+/**
+ * The exact accepted fields of a LeaderInstanceRecordInput (the v2
+ * creation input; no schemaVersion — stamped by the factory). Any other
+ * key on the input (schemaVersion / childSessionId / lifecycle) is a
+ * half-hack and fails closed.
+ */
+export const LEADER_INSTANCE_RECORD_INPUT_FIELDS: readonly string[] = [
+  'rootSessionId',
+  'instanceId',
+  'templateId',
+  'label',
+  'groupId',
+  'workspace',
+  'createdAt',
+  'activityVersion',
+]
+
+/**
  * The TeamDomain record of one MemberInstance (v1 identity core of
  * Architecture §14.3 B).
  */
@@ -157,6 +203,60 @@ export interface MemberInstanceRecordInput {
   activityVersion: number
 }
 
+/**
+ * The TeamDomain record of the LeaderInstance (v2; Architecture
+ * §9.1/§9.2, invariants 14/15). Same identity core as the member record
+ * with `childSessionId` and `lifecycle` ABSENT: the Leader is the Root
+ * Agent + the Root Session itself — it binds no child Session and has no
+ * ordinary member lifecycle. The absence is enforced by the record shape
+ * (validation rejects the presence of those keys; the producer is
+ * additionally fail-closed, it never defaults them).
+ */
+export interface LeaderInstanceRecordDto {
+  /** Schema version stamp; v2 leader records carry `2`. */
+  readonly schemaVersion: LeaderInstanceRecordSchemaVersion
+  /** The TeamSession (root session id) the leader belongs to. */
+  readonly rootSessionId: RootSessionId
+  /** Always the reserved leader instance id `inst-leader` (invariant 13). */
+  readonly instanceId: InstanceId
+  /** Static identity of the LeaderTemplate that produced this instance (NOT a runtime identity, invariant 19). */
+  readonly templateId: TemplateId
+  /** Human-facing label (NOT a runtime identity, invariant 19). */
+  readonly label: string
+  /** Opaque grouping metadata; no state/permission/lifecycle semantics (invariant 20). */
+  readonly groupId?: string
+  /** Effective workspace (optional; absent means inherited, §21.2). */
+  readonly workspace?: string
+  /** Creation timestamp, ISO-8601. */
+  readonly createdAt: string
+  /** Activity/record version counter (starts at 1, monotonically increases). */
+  readonly activityVersion: number
+}
+
+/**
+ * Producer input for {@link createLeaderInstanceRecord}: all identity
+ * fields, no schemaVersion (stamped to 2 by the factory), and NO
+ * childSessionId/lifecycle (they do not exist for the Leader, §9.2).
+ */
+export interface LeaderInstanceRecordInput {
+  /** The TeamSession (root session id) the leader belongs to. */
+  rootSessionId: RootSessionId
+  /** The reserved leader instance id. */
+  instanceId: InstanceId
+  /** The static LeaderTemplate identity. */
+  templateId: TemplateId
+  /** Human-facing label. */
+  label: string
+  /** Opaque grouping metadata (optional). */
+  groupId?: string
+  /** Effective workspace (optional). */
+  workspace?: string
+  /** Creation timestamp, ISO-8601. */
+  createdAt: string
+  /** Activity version; must be >= 1. */
+  activityVersion: number
+}
+
 function validateMemberInstanceRecord(record: RemoteSafeRecord): MemberInstanceRecordDto {
   assertNoLegacyFields(record, 'MemberInstanceRecord')
   assertNoUnknownFields(record, MEMBER_INSTANCE_RECORD_FIELDS, 'MemberInstanceRecord')
@@ -200,8 +300,72 @@ function validateMemberInstanceRecord(record: RemoteSafeRecord): MemberInstanceR
   return deepFreeze({ ...base, ...group, ...workspace })
 }
 
+function validateLeaderInstanceRecord(record: RemoteSafeRecord): LeaderInstanceRecordDto {
+  // The v2 forbidden keys are checked BEFORE the unknown-field gate so
+  // the rejection carries the specific §9.2 reason (mirroring the frozen
+  // P8-T1 projection rule LEADER_INSTANCE_MUST_NOT_CARRY_CHILD_SESSION).
+  if (record['childSessionId'] !== undefined) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      'the LeaderInstance record must not carry a childSessionId (Architecture §9.2: the Leader is the Root Session itself)',
+      { field: 'childSessionId', reason: 'LEADER_INSTANCE_MUST_NOT_CARRY_CHILD_SESSION' },
+    )
+  }
+  if (record['lifecycle'] !== undefined) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      'the LeaderInstance record must not carry a member lifecycle (Architecture §9.2 / invariant 15: the Leader has no ordinary member lifecycle)',
+      { field: 'lifecycle', reason: 'LEADER_INSTANCE_MUST_NOT_CARRY_LIFECYCLE' },
+    )
+  }
+  assertNoLegacyFields(record, 'LeaderInstanceRecord')
+  assertNoUnknownFields(record, LEADER_INSTANCE_RECORD_FIELDS, 'LeaderInstanceRecord')
+  for (const field of LEADER_INSTANCE_RECORD_FIELDS) {
+    if (field !== 'groupId' && field !== 'workspace') {
+      assertFieldPresent(record, field, 'LeaderInstanceRecord')
+    }
+  }
+  assertSchemaVersion(record['schemaVersion'], LEADER_INSTANCE_RECORD_SCHEMA_VERSION)
+  const instanceId = parseInstanceId(record['instanceId'])
+  if (instanceId !== LEADER_INSTANCE_ID) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `a schemaVersion-2 member record is the LeaderInstance record and must carry the reserved leader id (got ${String(instanceId)})`,
+      { field: 'instanceId' },
+    )
+  }
+  const base = {
+    schemaVersion: record['schemaVersion'] as LeaderInstanceRecordSchemaVersion,
+    rootSessionId: parseRootSessionId(record['rootSessionId']),
+    instanceId,
+    templateId: parseTemplateId(record['templateId']),
+    label: parseLabelLikeField(record['label'], 'label', LABEL_MAX_LENGTH),
+    createdAt: parseIso8601TimestampField(record['createdAt']),
+    activityVersion: assertPositiveInteger(record['activityVersion'], 'activityVersion'),
+  }
+  const group =
+    record['groupId'] === undefined
+      ? {}
+      : { groupId: parseLabelLikeField(record['groupId'], 'groupId', GROUP_ID_MAX_LENGTH) }
+  const workspace =
+    record['workspace'] === undefined
+      ? {}
+      : { workspace: parseWorkspaceField(record['workspace'], 'workspace') }
+  return deepFreeze({ ...base, ...group, ...workspace })
+}
+
 /**
  * Parse and validate a MemberInstanceRecordDto from an untrusted value.
+ *
+ * The v2 branch (P8-S2): a row stamped `schemaVersion: 2` is the
+ * LeaderInstance record and is validated as a {@link LeaderInstanceRecordDto}.
+ * Documented type lie at the return type: the v1 `MemberInstanceRecordDto`
+ * stays the declared parse contract because the unowned storage repository
+ * and domain consumers assign the result to that type; a v2 row is a
+ * `LeaderInstanceRecordDto` whose identity core (`rootSessionId`,
+ * `instanceId`) is shared, and whose absent `childSessionId`/`lifecycle`
+ * keys stay absent at runtime (no value is ever defaulted).
+ *
  * @param value - the unknown input (e.g. a decoded TeamDomain row).
  * @returns the frozen record.
  * @throws `MALFORMED_DTO`, `SCHEMA_VERSION_MISMATCH`,
@@ -210,28 +374,114 @@ function validateMemberInstanceRecord(record: RemoteSafeRecord): MemberInstanceR
  *   `INVALID_TEMPLATE_ID`, or `INVALID_CHILD_SESSION_ID`.
  */
 export function parseMemberInstanceRecord(value: unknown): MemberInstanceRecordDto {
-  return validateMemberInstanceRecord(assertPlainRecord(value, 'MemberInstanceRecord'))
+  const record = assertPlainRecord(value, 'MemberInstanceRecord')
+  // Version routing: a numeric (or numeric-string) stamp of 2 targets the
+  // v2 leader validator, so a corrupt stamp such as the string '2' surfaces
+  // as SCHEMA_VERSION_UNSUPPORTED from the v2 validator — exactly the way a
+  // string-form '1' stamp does on the v1 path. Every other value (1, 3,
+  // anything else) takes the v1 path, whose expected version is 1.
+  const stamp = record['schemaVersion']
+  const targetsV2 =
+    (typeof stamp === 'number' || typeof stamp === 'string') &&
+    Number(stamp) === LEADER_INSTANCE_RECORD_SCHEMA_VERSION
+  if (targetsV2) {
+    // Documented type lie (see the function JSDoc): the v2 row is a
+    // LeaderInstanceRecordDto; the declared v1 return keeps the unowned
+    // storage/domain assignment surface compiling.
+    return validateLeaderInstanceRecord(record) as unknown as MemberInstanceRecordDto
+  }
+  return validateMemberInstanceRecord(record)
 }
 
 /**
- * Build a fresh MemberInstanceRecordDto (creation path).
- * @param input - the identity fields; ids must already be branded.
- * @returns the frozen record with `schemaVersion` stamped to the v1 version.
+ * Shape guard for the union factory input (C2): the honest leader input
+ * is the one that (a) carries the reserved leader id and (b) carries NEITHER
+ * `childSessionId` NOR `lifecycle` as own defined values. A half-hack
+ * (the leader id with exactly one of the two fields, as in the legacy
+ * harness seeding pattern) fails this guard and falls to the v1 path,
+ * where the missing/extra field is rejected fail-closed — the factory
+ * never defaults a value.
  */
-export function createMemberInstanceRecord(input: MemberInstanceRecordInput): MemberInstanceRecordDto {
+function isLeaderInstanceRecordInput(
+  input: MemberInstanceRecordInput | LeaderInstanceRecordInput,
+): input is LeaderInstanceRecordInput {
+  const candidate = input as unknown as Record<string, unknown>
+  return (
+    candidate['instanceId'] === LEADER_INSTANCE_ID &&
+    candidate['childSessionId'] === undefined &&
+    candidate['lifecycle'] === undefined
+  )
+}
+
+/**
+ * Build a fresh LeaderInstanceRecordDto (creation path, v2).
+ * @param input - the identity fields; ids must already be branded. The
+ *   input must carry exactly the v2 identity fields — any
+ *   schemaVersion/childSessionId/lifecycle key fails closed.
+ * @returns the frozen record with `schemaVersion` stamped to `2`.
+ */
+export function createLeaderInstanceRecord(input: LeaderInstanceRecordInput): LeaderInstanceRecordDto {
+  assertNoUnknownFields(
+    input as unknown as RemoteSafeRecord,
+    LEADER_INSTANCE_RECORD_INPUT_FIELDS,
+    'LeaderInstanceRecordInput',
+  )
   const record: RemoteSafeRecord = {
-    schemaVersion: TEAM_CONTRACT_SCHEMA_VERSION,
+    schemaVersion: LEADER_INSTANCE_RECORD_SCHEMA_VERSION,
     rootSessionId: input.rootSessionId,
     instanceId: input.instanceId,
     templateId: input.templateId,
     label: input.label,
-    childSessionId: input.childSessionId,
-    lifecycle: input.lifecycle,
     createdAt: input.createdAt,
     activityVersion: input.activityVersion,
   }
   if (input.groupId !== undefined) record['groupId'] = input.groupId
   if (input.workspace !== undefined) record['workspace'] = input.workspace
+  return validateLeaderInstanceRecord(record)
+}
+
+/**
+ * Build a fresh MemberInstanceRecordDto (creation path).
+ *
+ * C2 (P8-S2): the input is the union of the v1 member input and the v2
+ * leader input. The shape branch mints the honest v2 leader record when
+ * the input is structurally the leader input (see
+ * {@link isLeaderInstanceRecordInput}); every other input takes the v1
+ * path byte-identical to the frozen v1 factory.
+ *
+ * Documented type lie at the return type: a v2 mint is a
+ * `LeaderInstanceRecordDto`; the v1 `MemberInstanceRecordDto` stays the
+ * declared return contract because the unowned storage repository and
+ * domain consumers assign the result to that type (the shared identity
+ * core makes those assignments safe; the absent v2 keys stay absent).
+ *
+ * @param input - the identity fields; ids must already be branded.
+ * @returns the frozen record (`schemaVersion` stamped `1` for members,
+ *   `2` for the leader shape).
+ */
+export function createMemberInstanceRecord(
+  input: MemberInstanceRecordInput | LeaderInstanceRecordInput,
+): MemberInstanceRecordDto {
+  if (isLeaderInstanceRecordInput(input)) {
+    // Documented type lie (see the function JSDoc): the honest v2 mint is
+    // a LeaderInstanceRecordDto; the declared v1 return keeps the unowned
+    // storage/domain assignment surface compiling.
+    return createLeaderInstanceRecord(input) as unknown as MemberInstanceRecordDto
+  }
+  const memberInput = input as MemberInstanceRecordInput
+  const record: RemoteSafeRecord = {
+    schemaVersion: TEAM_CONTRACT_SCHEMA_VERSION,
+    rootSessionId: memberInput.rootSessionId,
+    instanceId: memberInput.instanceId,
+    templateId: memberInput.templateId,
+    label: memberInput.label,
+    childSessionId: memberInput.childSessionId,
+    lifecycle: memberInput.lifecycle,
+    createdAt: memberInput.createdAt,
+    activityVersion: memberInput.activityVersion,
+  }
+  if (memberInput.groupId !== undefined) record['groupId'] = memberInput.groupId
+  if (memberInput.workspace !== undefined) record['workspace'] = memberInput.workspace
   return validateMemberInstanceRecord(record)
 }
 

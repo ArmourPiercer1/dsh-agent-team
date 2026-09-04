@@ -37,6 +37,7 @@ export type {
   HandoffFailure,
   HandoffOperationRef,
   HandoffOperationState,
+  HandoffOperationView,
   HandoffPorts,
   HandoffProvenance,
   HandoffSourceSurfacePort,

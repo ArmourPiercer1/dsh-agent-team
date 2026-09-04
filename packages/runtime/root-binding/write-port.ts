@@ -10,7 +10,8 @@
  *
  * Invariant 41 (TeamDomain is the sole durable control-plane authority):
  * every durable write of the root binding flows through exactly these
- * two repository methods; the read side flows through
+ * three repository methods (the P8-S2 LeaderInstance mint uses
+ * `memberInstances.put`); the read side flows through
  * `createTeamDomainReadHandle` (P5-T1). Nothing else in the module
  * touches the durable layer.
  *
@@ -18,7 +19,15 @@
  */
 
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js'
-import type { SessionBindingDto, TeamSessionRecordDto, TeamSessionRecordInput } from '../../contracts/src/index.js'
+import type {
+  LeaderInstanceRecordDto,
+  LeaderInstanceRecordInput,
+  MemberInstanceRecordDto,
+  MemberInstanceRecordInput,
+  SessionBindingDto,
+  TeamSessionRecordDto,
+  TeamSessionRecordInput,
+} from '../../contracts/src/index.js'
 import type { TeamDomainWritePort } from './types.js'
 
 /**
@@ -37,6 +46,16 @@ export function createTeamDomainWritePort(
     },
     putSessionBinding(binding: SessionBindingDto): Promise<SessionBindingDto> {
       return repositories.sessionBindings.put(binding)
+    },
+    putMemberInstance(
+      input: MemberInstanceRecordInput | LeaderInstanceRecordInput,
+    ): Promise<MemberInstanceRecordDto | LeaderInstanceRecordDto> {
+      // Documented cast: the contracts factory (`createMemberInstanceRecord`)
+      // branches on the input shape and mints EITHER the v1 member record
+      // OR the honest v2 leader record — the repository stores exactly the
+      // produced record. The repository's declared v1 input/return types
+      // are the documented contracts type-lie for v2 rows.
+      return repositories.memberInstances.put(input as MemberInstanceRecordInput)
     },
   }
 }

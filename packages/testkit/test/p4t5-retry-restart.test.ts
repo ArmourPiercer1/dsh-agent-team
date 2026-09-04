@@ -10,14 +10,16 @@
  *   consumed by a RESTARTED realm (brand-new seam + stack over the same
  *   durable files): the read-back is 0 writes and `recover` is a 0-write
  *   no-op with the same ledger sequence;
- * - **pristine-domain restart**: a realm dropped right after the eight
- *   schema_meta stamp writes restarts to stage `NONE` with the typed
- *   `member-not-provisioned` diagnostic (no orphan, nothing durable yet)
- *   and a `recover` commits it with exactly 8 seam writes;
+ * - **pristine-domain restart**: a realm dropped right after the schema
+ *   stamping (eight stamps + the seeded team_sessions row) restarts to
+ *   stage `NONE` with the typed `member-not-provisioned` diagnostic (no
+ *   orphan, no provisioning state durable yet) and a `recover` commits it
+ *   with exactly 9 seam writes;
  * - **second member after restart**: a second instance (inst-beta) commits
- *   INDEPENDENTLY in the restarted realm (its own 8 seam writes, its own
- *   ledger sequence 2, its own deterministic child), and both members
- *   survive a second restart.
+ *   INDEPENDENTLY in the restarted realm (its own 8 seam writes — the
+ *   ledger counter is already bootstrapped — its own ledger sequence 2,
+ *   its own deterministic child), and both members survive a second
+ *   restart.
  *
  * Top-level-await pattern; every scratch dir is destroyed in `finally` on
  * both success and failure; the `it` bodies are synchronous.
@@ -128,7 +130,7 @@ async function runDoubleRetry(scratchBase: string, offset: number): Promise<Retr
 }
 
 const b2 = await runDoubleRetry('p4t5r-b2', 1)
-const b9 = await runDoubleRetry('p4t5r-b9', 7)
+const b9 = await runDoubleRetry('p4t5r-b9', 8)
 
 // ------------------------------------------------- committed-world restart
 
@@ -331,13 +333,13 @@ try {
 
 // ------------------------------------------------------------------- tests
 
-it('double retry at B2 (crash after op prepare): recover#1 writes the 7 remaining seam writes, recover#2 is a 0-write no-op, same ledger sequence', () => {
+it('double retry at B2 (crash after op prepare): recover#1 writes the 8 remaining seam writes, recover#2 is a 0-write no-op, same ledger sequence', () => {
   expect(b2.runOk).toBe(false)
   expect(b2.runErrorCode).toBe('SEAM_FAILURE')
   expect(b2.runErrorProblem).toBe('unclassified-seam-error')
   expect(b2.crashWrites).toBe(1)
   expect(b2.recover1Ok).toBe(true)
-  expect(b2.recover1Writes).toBe(7)
+  expect(b2.recover1Writes).toBe(8)
   expect(b2.recover1Committed).toBe(true)
   expect(b2.recover1Stage).toBe(PROVISIONING_STAGES.INSTANCE_COMMITTED)
   expect(b2.recover1Child).toBe(CHILD)
@@ -347,9 +349,9 @@ it('double retry at B2 (crash after op prepare): recover#1 writes the 7 remainin
   expect(b2.recover2Sequence).toBe(1)
 })
 
-it('double retry at B9 (crash before the COMMITTED row, fact already durable): recover#1 writes exactly 1 seam write, recover#2 is a 0-write no-op, same ledger sequence', () => {
+it('double retry at B9 (crash before the COMMITTED row, fact + stamp already durable): recover#1 writes exactly 1 seam write, recover#2 is a 0-write no-op, same ledger sequence', () => {
   expect(b9.runOk).toBe(false)
-  expect(b9.crashWrites).toBe(7)
+  expect(b9.crashWrites).toBe(8)
   expect(b9.recover1Ok).toBe(true)
   expect(b9.recover1Writes).toBe(1)
   expect(b9.recover1Committed).toBe(true)
@@ -392,9 +394,9 @@ it('committed-world restart: recover is a 0-write no-op with the SAME ledger seq
   expect(committed?.recoverEffectsSkipped).toBe(0)
 })
 
-it('pristine-domain restart: process death before ANY provisioning write leaves a stamped-but-empty domain that restarts to NONE + member-not-provisioned (no orphan, nothing durable)', () => {
+it('pristine-domain restart: process death before ANY provisioning write leaves a stamped domain (the seeded team row is the only durable row) that restarts to NONE + member-not-provisioned (no orphan, no provisioning state)', () => {
   expect(pristine).not.toBe(undefined)
-  expect(pristineBase).toBe(STAMP_WRITE_COUNT) // createFileRealm stamped exactly the eight stores
+  expect(pristineBase).toBe(STAMP_WRITE_COUNT + 1) // createFileRealm stamped the eight stores plus the seeded team_sessions row (G8-S1)
   expect(pristine?.openOk).toBe(true)
   expect(pristine?.base).toBe(0) // the restarted seam counts no writes (fresh stack)
   expect(pristine?.stage).toBe(PROVISIONING_STAGES.NONE)
@@ -405,22 +407,22 @@ it('pristine-domain restart: process death before ANY provisioning write leaves 
   expect(pristine?.opPresent).toBe(false)
 })
 
-it('pristine-domain restart: recover commits the member with exactly 8 seam writes, then a 0-write no-op', () => {
+it('pristine-domain restart: recover commits the member with exactly 9 seam writes, then a 0-write no-op', () => {
   expect(pristine?.recoverOk).toBe(true)
-  expect(pristine?.recoverWrites).toBe(8)
+  expect(pristine?.recoverWrites).toBe(9)
   expect(pristine?.recoverCommitted).toBe(true)
   expect(pristine?.recoverSequence).toBe(1)
   expect(pristine?.noOpWrites).toBe(0)
   expect(pristine?.postMemberCount).toBe(1) // the recovered commit is the ONLY durable member
 })
 
-it('second member commits INDEPENDENTLY after a restart: inst-beta drives its own 7 seam writes (the ledger counter is already bootstrapped) to ledger sequence 2 with its own deterministic child', () => {
+it('second member commits INDEPENDENTLY after a restart: inst-beta drives its own 8 seam writes (the ledger counter is already bootstrapped) to ledger sequence 2 with its own deterministic child', () => {
   expect(second).not.toBe(undefined)
   expect(second?.alphaCommitted).toBe(true)
   expect(second?.alphaSequence).toBe(1)
   expect(second?.restartOpenOk).toBe(true)
   expect(second?.betaRunOk).toBe(true)
-  expect(second?.betaWrites).toBe(7)
+  expect(second?.betaWrites).toBe(8)
   expect(second?.betaCommitted).toBe(true)
   expect(second?.betaSequence).toBe(2)
   expect(second?.betaChild).toBe(BETA_CHILD)

@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noCheck": true,
+    "rootDir": "../..",
+    "outDir": "../runtime/dist"
+  },
+  "include": ["session-reader"]
+}

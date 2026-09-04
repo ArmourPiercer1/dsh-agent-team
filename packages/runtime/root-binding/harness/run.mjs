@@ -40,6 +40,7 @@
 import {
   existsSync,
   mkdirSync,
+  readFileSync,
   readdirSync,
   rmSync,
   appendFileSync,
@@ -65,7 +66,7 @@ import { closeMiniServer, startMiniMcpServer } from './mini-mcp.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
-const CLIENT_COMMIT_HASH = 'cd5ef814'
+const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 

@@ -28,9 +28,9 @@ import type { TeamRuntimeActionRequest } from '../admission/index.js'
 import {
   destroyP6T1World,
 } from './p6t1-helpers.js'
-import type { P6T1World } from './p6t1-helpers.js'
 import {
   P6T2_SEEDS,
+  createFakeLifecycleCommitPort,
   createP6T2Runtime,
   createP6T2World,
   expectRejection,
@@ -87,6 +87,10 @@ let a1: {
   readonly staleCallerArchived: A1Case
   readonly missingTargetField: A1Case
   readonly unknownAction: A1Case
+  /** R3: the same valid target WITHOUT a commit port fails closed (no
+   *  partial durable success), zero writes. */
+  readonly positiveNoPort: A1Case
+  /** The same valid target WITH a commit port executes fully. */
   readonly positive: A1Positive
 }
 {
@@ -211,10 +215,30 @@ let a1: {
     )
 
     const beforePositive = world.seam.writeCount
-    const positiveOutcome = await runtime.performAction(
+    // R3 (P8-S3): new-work admission on a non-RUNNING target REQUIRES the
+    // durable CREATED/SETTLED->RUNNING commit; without a port the action
+    // fails closed with LIFECYCLE_COMMIT_UNAVAILABLE. P8-S4A: the gate's
+    // inline re-probe (first-ever evaluation in this world, DevPlan §20.1
+    // trigger 5) writes the compatibility row + generation stamp BEFORE the
+    // effect-phase commit rejection (was zero writes under the read-only
+    // preflight). (no partial durable success — the P8-S2 defect encoding).
+    const positiveNoPort = await run(
       makeActionRequest({
         targetInstanceId: scoutId,
         requestToken: 'tok-p6t2-a12',
+      }),
+      TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_COMMIT_UNAVAILABLE,
+    )
+
+    // The original positive control's intent — a valid instanceId target
+    // resolves and executes — now with the required commit port installed.
+    const portedRuntime = createP6T2Runtime(world, {
+      lifecycleCommit: createFakeLifecycleCommitPort(world),
+    })
+    const positiveOutcome = await portedRuntime.performAction(
+      makeActionRequest({
+        targetInstanceId: scoutId,
+        requestToken: 'tok-p6t2-a13',
       }),
     )
     const effect = positiveOutcome.effect
@@ -229,7 +253,7 @@ let a1: {
         : {}),
       newWrites: world.seam.writeCount - beforePositive,
     }
-    a1 = { ...a1Base, orphanBinding, positive }
+    a1 = { ...a1Base, orphanBinding, positiveNoPort, positive }
   } finally {
     await destroyP6T1World(world)
   }
@@ -312,11 +336,19 @@ describe('P6-T2 A1: instanceId-first addressing — resolution rejections are pu
     expect(a1.unknownAction.newWrites).toBe(0)
   })
 
-  it('the positive control: a valid instanceId target executes (SETTLED work admission without a commit port)', () => {
+  it('the positive control without a commit port: SETTLED work admission fails closed (R3: no partial durable success), probe writes only', () => {
+    // P8-S4A: the 2 writes are the compatibility authority's inline
+    // re-probe (compatibility row + generation stamp) — the admission
+    // itself remains fail-closed with NO work/lifecycle writes.
+    expect(a1.positiveNoPort.code).toBe(TEAM_RUNTIME_ERROR_CODES.LIFECYCLE_COMMIT_UNAVAILABLE)
+    expect(a1.positiveNoPort.newWrites).toBe(2)
+  })
+
+  it('the positive control with a commit port: a valid instanceId target executes (SETTLED work admission commits the RUNNING transition)', () => {
     expect(a1.positive.effectKind).toBe('work-admitted')
     expect(a1.positive.targetInstanceId).toBe(P6T2_SEEDS.scout.instanceId)
     expect(a1.positive.fromLifecycle).toBe('SETTLED')
-    expect(a1.positive.lifecycleCommitted).toBe(false)
+    expect(a1.positive.lifecycleCommitted).toBe(true)
     expect(a1.positive.newWrites).toBeGreaterThan(0)
   })
 })

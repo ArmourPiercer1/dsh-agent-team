@@ -124,6 +124,7 @@ export async function archiveMember(
       member.lifecycle,
       LIFECYCLE_OPERATIONS.SETTLE,
       plan.settled.lifecycle,
+      member.activityVersion,
       LIFECYCLE_STEP_NAMES.COMMIT_SETTLE,
     )
     steps.push(LIFECYCLE_STEP_NAMES.COMMIT_SETTLE)
@@ -136,6 +137,7 @@ export async function archiveMember(
     base.lifecycle,
     LIFECYCLE_OPERATIONS.ARCHIVE,
     archived.lifecycle,
+    base.activityVersion,
     LIFECYCLE_STEP_NAMES.COMMIT_ARCHIVE,
   )
   steps.push(LIFECYCLE_STEP_NAMES.COMMIT_ARCHIVE)

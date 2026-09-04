@@ -1,0 +1,14 @@
+tsc gates (P9-T10, final tree, typescript 6.0.3)
+
+1) tsc -p packages/client/tsconfig.json  (noEmit full: src + test, incl. .client.spec.* and .test.ts)
+   exit=0  output=SILENT
+
+2) tsc -p packages/testkit/tsconfig.json
+   exit=0  output=SILENT
+
+3) tsc -p packages/client/tsconfig.build.json  (EMIT gate)
+   exit=0  emittedFiles=356  output=SILENT
+   packages/client/dist removed after emit: True
+
+All three gates: SILENT/exit-0. The build gate EMITS (356 files) and the
+emitted dist is removed so the commit tree stays artifact-free.

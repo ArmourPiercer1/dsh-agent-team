@@ -1,0 +1,6 @@
+﻿packages/runtime/test/p8s5a-host-loadability.test.ts(33,3): error TS2322: Type 'Record<string, any> | null' is not assignable to type 'Record<string, any>'.
+  Type 'null' is not assignable to type 'Record<string, any>'.
+packages/runtime/test/p8s5a-production-assembly.test.ts(542,20): error TS2540: Cannot assign to 'ctx' because it is a read-only property.
+packages/runtime/test/runtime.test.ts(5,15): error TS2305: Module '"../src/plugin/host.js"' has no exported member 'TeamPluginHostContext'.
+packages/runtime/test/runtime.test.ts(26,12): error TS7006: Parameter 'event' implicitly has an 'any' type.
+packages/runtime/test/runtime.test.ts(30,16): error TS7006: Parameter 'disposer' implicitly has an 'any' type.

@@ -46,12 +46,16 @@ export const PACKAGE_ID = 'contracts'
 // --- schema version -------------------------------------------------------
 export {
   TEAM_CONTRACT_SCHEMA_VERSION,
+  LEADER_INSTANCE_RECORD_SCHEMA_VERSION,
   SUPPORTED_SCHEMA_VERSIONS,
   isSupportedSchemaVersion,
   assertSupportedSchemaVersion,
   assertSchemaVersion,
 } from './schema-version.js'
-export type { TeamContractSchemaVersion } from './schema-version.js'
+export type {
+  TeamContractSchemaVersion,
+  LeaderInstanceRecordSchemaVersion,
+} from './schema-version.js'
 
 // --- errors ----------------------------------------------------------------
 export {
@@ -149,8 +153,11 @@ export {
   MEMBER_LIFECYCLE_STATE_VALUES,
   isMemberLifecycleState,
   MEMBER_INSTANCE_RECORD_FIELDS,
+  LEADER_INSTANCE_RECORD_FIELDS,
+  LEADER_INSTANCE_RECORD_INPUT_FIELDS,
   parseMemberInstanceRecord,
   createMemberInstanceRecord,
+  createLeaderInstanceRecord,
   memberIdentityOf,
   serializeMemberInstanceRecord,
   deserializeMemberInstanceRecord,
@@ -158,6 +165,8 @@ export {
 export type {
   MemberInstanceRecordDto,
   MemberInstanceRecordInput,
+  LeaderInstanceRecordDto,
+  LeaderInstanceRecordInput,
   MemberLifecycleState,
 } from './dto/member-instance-record.js'
 
@@ -199,3 +208,161 @@ export {
   assertInstanceIdUniqueWithinTeam,
   assertChildSessionBindingUnique,
 } from './uniqueness.js'
+
+// --- projection contract (P8-T1 v1 + S7-R2 additive v2; own schema-version track) ------
+export {
+  PROJECTION_SCHEMA_VERSION,
+  PROJECTION_SCHEMA_VERSION_V2,
+  SUPPORTED_PROJECTION_SCHEMA_VERSIONS,
+  isSupportedProjectionSchemaVersion,
+  assertProjectionSchemaVersion,
+} from './projection/schema.js'
+export type { ProjectionSchemaVersion, ProjectionSchemaVersionV2 } from './projection/schema.js'
+
+export {
+  ADMISSION_STATES,
+  ADMISSION_STATE_VALUES,
+  isAdmissionState,
+  RESIDENCY_STATES,
+  RESIDENCY_STATE_VALUES,
+  isResidencyState,
+  TEMPLATE_KINDS,
+  TEMPLATE_KIND_VALUES,
+  isTemplateKind,
+  CONTEXT_POLICIES,
+  CONTEXT_POLICY_VALUES,
+  isContextPolicy,
+  PROGRESS_VALUES,
+  isProgressValue,
+  LEDGER_CATEGORIES,
+  LEDGER_CATEGORY_VALUES,
+  isLedgerCategory,
+} from './projection/states.js'
+export type {
+  AdmissionState,
+  ResidencyState,
+  TemplateKind,
+  ContextPolicy,
+  ProgressValue,
+  LedgerCategory,
+} from './projection/states.js'
+
+export {
+  EFFECTIVE_CONFIG_VALUE_MAX_LENGTH,
+  EFFECTIVE_CONFIG_SOURCES,
+  EFFECTIVE_CONFIG_SOURCE_VALUES,
+  isEffectiveConfigSource,
+  EFFECTIVE_CONFIG_STATES,
+  EFFECTIVE_CONFIG_STATE_VALUES,
+  isEffectiveConfigState,
+  EFFECTIVE_CONFIG_ENTRY_FIELDS,
+  parseEffectiveConfigEntry,
+  EFFECTIVE_CONFIG_FIELDS,
+  parseEffectiveConfigDto,
+  EFFECTIVE_CONFIG_ENTRY_FIELDS_V2,
+  EFFECTIVE_CONFIG_DENIED_BY_MAX_LENGTH,
+} from './projection/effective-config.js'
+export type {
+  EffectiveConfigSource,
+  EffectiveConfigState,
+  EffectiveConfigEntry,
+  EffectiveConfigDto,
+  EffectiveConfigEntryV2,
+  EffectiveConfigDtoV2,
+} from './projection/effective-config.js'
+
+export {
+  COMPATIBILITY_FINGERPRINT_MAX_LENGTH,
+  COMPATIBILITY_SUMMARY_FIELDS,
+  parseCompatibilitySummary,
+} from './projection/compatibility.js'
+export type { CompatibilitySummaryDto } from './projection/compatibility.js'
+
+export {
+  ACTIVITY_CORRELATION_MAX_LENGTH,
+  ACTIVITY_TEXT_MAX_LENGTH,
+  ACTIVITY_SUMMARY_MAX_LENGTH,
+  ACTIVITY_INTERVAL_FIELDS,
+  parseActivityInterval,
+  MEMBER_ACTIVITY_SUMMARY_FIELDS,
+  parseMemberActivitySummary,
+  MEMBER_LIVE_ACTIVITY_FIELDS,
+  parseMemberLiveActivity,
+} from './projection/activity.js'
+export type {
+  ActivityIntervalSummary,
+  MemberActivitySummaryDto,
+  MemberLiveActivityDto,
+} from './projection/activity.js'
+
+export {
+  TEMPLATE_DESCRIPTION_MAX_LENGTH,
+  TEMPLATE_PROJECTION_FIELDS,
+  parseTemplateProjection,
+  createTemplateProjection,
+} from './projection/template.js'
+export type { TemplateProjectionDto, TemplateProjectionInput } from './projection/template.js'
+
+export {
+  TEAM_ROOT_PROJECTION_FIELDS,
+  parseTeamRootProjection,
+  createTeamRootProjection,
+} from './projection/root.js'
+export type { TeamRootProjectionDto, TeamRootProjectionInput } from './projection/root.js'
+
+export {
+  MEMBER_PROJECTION_FIELDS,
+  MEMBER_PROJECTION_FIELDS_V2,
+  parseMemberProjection,
+  createMemberProjection,
+} from './projection/member.js'
+export type { MemberProjectionDto, MemberProjectionInput } from './projection/member.js'
+
+export {
+  MODEL_STATE_FIELDS,
+  MODEL_STATE_OPTIONAL_FIELDS,
+  MODEL_STATE_ENTRY_FIELDS,
+  MODEL_STATE_ENTRY_OPTIONAL_FIELDS,
+  MODEL_STATE_PROVENANCE_FIELDS,
+  MODEL_STATE_VALUE_MAX_LENGTH,
+  MODEL_STATE_DENIED_BY_MAX_LENGTH,
+  MODEL_STATE_EXPLANATION_MAX_LENGTH,
+  MODEL_STATE_LAYER_VALUES,
+  MODEL_STATE_ORIGIN_VALUES,
+  MODEL_STATE_AVAILABILITY_VALUES,
+  parseModelStateEntry,
+  parseModelStateProvenance,
+  parseMemberModelState,
+} from './projection/model-state.js'
+export type {
+  ModelStateEntryDto,
+  ModelStateProvenanceDto,
+  MemberModelStateDto,
+  ModelStateAvailability,
+} from './projection/model-state.js'
+
+export {
+  DISPOSED_MEMBER_HISTORY_FIELDS,
+  DISPOSED_MEMBER_HISTORY_OPTIONAL_FIELDS,
+  parseDisposedMemberHistory,
+  createDisposedMemberHistory,
+} from './projection/disposed-history.js'
+export type { DisposedMemberHistoryDto, DisposedMemberHistoryInput } from './projection/disposed-history.js'
+
+export {
+  LEDGER_SUMMARY_FIELDS,
+  parseLedgerSummary,
+  createLedgerSummary,
+} from './projection/ledger.js'
+export type { LedgerSummaryDto, LedgerCategoryCounts, LedgerSummaryInput } from './projection/ledger.js'
+
+export {
+  TEAM_PROJECTION_FIELDS,
+  TEAM_PROJECTION_FIELDS_V2,
+  parseTeamProjection,
+  createTeamProjection,
+  serializeTeamProjection,
+  deserializeTeamProjection,
+  isStaleTeamProjection,
+} from './projection/projection.js'
+export type { TeamProjectionDto, TeamProjectionInput } from './projection/projection.js'
