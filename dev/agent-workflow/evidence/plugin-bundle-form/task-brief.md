@@ -190,8 +190,10 @@ bundle 形式的 client 行 registry key = **根包名 `dsh-agent-team`**（bare
 （`dsh-agent-team` + `@dsh-agent-team/client`）：每个世界恰好认领一个、
 factory 每页面执行一次，另一个注册惰性休眠。单文件双世界兼容，无运行时
 探测。副作用：client-bundle.js 基线 SHA 更新（旧 2097CE5E… →
-4A4F36CF…，845581 → 845693 B）；byte-identity 判据不变（安装面 vs 任务树
-构建，两侧同重建）。
+6A8395EF…，845581 → 845690 B）；byte-identity 判据不变（安装面 vs 任务树
+构建，两侧同重建）。builder 增发射后 parse-only 语法闸（`new Function`
+构造，失败即 die）——第三世界的 mega-combo 全量语法破坏（见下）证明
+单文件 facade 的语法正确性是 46 个插件注册的共同前置条件，闸不可省。
 
 ### D5 — 测试世界（核心证据，真实 CLI reconcile 路径）
 
@@ -270,6 +272,19 @@ boot 迭代暴露三处 kit 假设 + 一处产品缺口（产品缺口 = D8）�
    / 401 / dump 行 + 归属 / serve combo 含 bundle 字节 / catalog.list
    my-team-bp-1 / 4 件 byte-identical = D5-READY）—— host 面与 D8 无关，
    第三世界重验为同一 install 面的完整垂直闭环。
+
+**第三跑记录（世界 2026-09-04T20-29-38，装 f270c68 = D8 初版）**：setup
+全断言 PASS；boot 全 gate 绿（D5-READY，含新 SHA 4A4F36CF… byte-identical）；
+gentry G0 再次失败，但错误形态改变：mega-combo 整体 `SyntaxError:
+Unexpected token '}'`（node --check 定位 = 我们 bundle 的 factory 尾部）
+→ 全部 46 插件注册连锁失败（首个 entry typert-registry 即报
+`loaded without registering`）。根因 = D8 改造残留：head 由
+`load({` + `factory: (require) => {`（两开）改为单开 `var … = (require) => {`，
+尾部却多留一行旧结构的 `\t}` 闭合 → 全文件 brace 失衡 -1（string-aware
+扫描器 scan-braces.mjs 对照第二世界旧 bundle final=0 / 新 final=-1 确诊）。
+修复 = 删尾部残留行 + builder 增 parse-only 语法闸（见 D8）→ 五闸重绿 →
+Commit F → 第四世界全量重跑（本条目的最终证据以第四世界为准；
+二、三世界保留为失败留痕）。
 
 ### D6 — 五闸与红线（继承 R125 判据）
 

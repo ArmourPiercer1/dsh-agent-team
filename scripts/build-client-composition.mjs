@@ -539,13 +539,20 @@ if (PROBE) {
   parts.push(`\t\treturn __facade;`)
 }
 parts.push(`\t\treturn module.exports;`)
-parts.push(`\t}`)
 parts.push(`};`)
 parts.push(`window.__ModuleLoader__.load({ id: ${JSON.stringify(ROOT_PLUGIN_ID)}, factory: __dshFactory });`)
 parts.push(`window.__ModuleLoader__.load({ id: ${JSON.stringify(PLUGIN_ID)}, factory: __dshFactory });`)
 parts.push('')
 
 const bundleText = parts.join('\n')
+// Parse-only syntax gate: the facade must be a well-formed script (it runs
+// inside the host's client bundle mega-combo, where one malformed file breaks
+// every plugin's registration — D5 world-3 finding).
+try {
+  new Function(bundleText)
+} catch (e) {
+  die(`emitted client-bundle.js fails syntax check: ${e.message}`)
+}
 mkdirSync(OUT, { recursive: true })
 writeFileSync(join(OUT, 'client-bundle.js'), bundleText)
 
