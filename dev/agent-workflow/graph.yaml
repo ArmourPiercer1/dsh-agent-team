@@ -1,7 +1,7 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
-current_phase: P9-PROTO
-integration_branch: int/P8-S-backend-closure
-integration_sha: 959e36358ee7244ff8c7e1e0b8396e70dfef4562
+current_phase: P9_MASTER_CLOSURE
+integration_branch: int/P9-master-product-closure
+integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
 p8s_base_sha: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
 p8s_int_tip: 7d07330cca7bb3df416e3a82359d4307d9ab4a64
 contracts:
@@ -194,3 +194,21 @@ upstream_rc1_compat:
   docs: "TEST_METHODS.md baseline updated (pin 76fda72979, rc.1 label, recorded-change line); SESSION_ROUTER_LOG R122"
   live: "world #2 instance kept running (home references/.dsh-test-s8-2026-09-04T12-26-59, instance pid 59496, boot job pwsh-21); teardown: job_kill pwsh-21 or node s8-boot.mjs stop"
   known_issues: "upstream-resolver.mjs path math wrong since alpha (redirect never fired any era; resolution always plain node_modules walks) — documented, unfixed (out of scope)"
+
+p9_master_closure:
+  state: GATE_PASS_PENDING_FF
+  date: "2026-09-05"
+  user_goal: "merge P9 task branch into master + fresh-machine install & real production use + one-shot push authorization (consumed at R126)"
+  branch: int/P9-master-product-closure
+  worktree: .worktrees/P9-MC
+  merge: "232316d (parents 2c1c200 master R124 + bd38827 task/upstream-rc1-compat tip; merge-base 959e3635; zero product-path diff vs bd38827 at merge)"
+  int_commits: "8cf9fcb (install-chain productization: 2 build scripts + INSTALL.md + root wiring) / 071080d (packages/runtime row deps: 5x @deepseek-ai/*@0.1.2-rc.1 + zod 4.4.3, registry) / 2359d31 (docs + evidence archive {P9,T12,upstream-rc1-compat} token-redacted) / ad0a869 (packages/client build deps registry-pinned: 6x dsh-client-*/0.1.2-rc.1 + cordis 4.0.2) / 39fe1df (fresh-clone sim evidence + doc alignment) / d23c606 (INSTALL.md template frontmatter delimiters + template audit)"
+  product_surface: "exactly 7 files vs bd38827: scripts/build-client-composition.mjs, scripts/place-dist-glue.mjs, package.json, packages/runtime/package.json, packages/client/package.json, eslint.config.mjs, pnpm-lock.yaml"
+  gate: "4 full blind rounds x 3 independent reviewers (rounds at 8cf9fcb / 2359d31 / 39fe1df / d23c606; 12 verdicts archived reviewer-1..12): r1 R1 通过 + R2/R3 补充内容; r2 4/5 通过 + 6 补充内容 (client link: devDeps = fresh-clone breakage); r3 7 通过 + 8 投机通过 (p6t1 flake bounded) + 9 补充内容 (template frontmatter); r4 10/11/12 通过 => GATE PASS @ d23c606 (3/3 final round)"
+  supplements: "substantive 2/3 (071080d runtime deps, ad0a869 client deps); doc-only not counted (2359d31 INSTALL fixes, 39fe1df docs, d23c606 template)"
+  five_gates_final: "install EXIT 0 (registry-only, 463 pkgs) / typecheck+build 9/9 / test root 2395 + per-pkg 2630 (2395+235 client-UI identity) / lint 0 / smoke non-browser S8-READY (multiple independent re-runs, combo sha byte-identical to R122 world) + browser gentry failures [] (R125 world)"
+  fresh_machine: "fresh-clone sim (git archive ad0a869/d23c606 -> no-.git tree): install 0 external junctions, hermetic resolution 13-15/15 INSIDE, tsc 9/9, 4 install-surface artifacts byte-identical to R122 verified world (2097CE5E/D385C065/B4509233/D50D3B3F); real fresh-world boot S8-READY + gentry G0-G4 (failures none)"
+  red_lines: "CORE PATCH BUDGET=0 held (references/ diff empty; no patch rewrites; frozen fork branch+tag @ a3ab319927 unmoved, worktree clean; test-use byte-clean @ 76fda72979); zero force-push (all refs fast-forward/new); :3080 & D:/deepseek-harness untouched; 3180-family ports only, all released"
+  known_nonblocking: "p6t1-parallel concurrent-load flake (isolated 9/9 protocol, r122d precedent; recommend load-reduction hardening); client UI suite (235) depends on local references/deepseek-harness-test-use tree (root canonical suite does not; install chain excludes per-pkg test step); s8-boot-r125.mjs test-kit depends on .worktrees/RC1 mock lib (test harness, not product)"
+  evidence: "dev/agent-workflow/evidence/P9-master-closure/ (12 verdicts, gate logs re-captured, merge-audit/byte-compare/gate-summary, fresh-clone-sim-r125/, r125-template-audit.*, r125-resolve-audit.*, s8-boot/gentry captures, browser/) + archived evidence/{P9,T12,upstream-rc1-compat}/ (redacted)"
+  next: "R125(5) bookkeeping (log + this block + verdicts) -> git merge --ff-only into master (2c1c200 -> d23c606) -> R126 (push master + int branch, user-authorized; docs/STATUS.md + README sync) -> teardown reviewer worktrees; P10/G8-S decisions still pending user (docs/STATUS.md section 4)"
