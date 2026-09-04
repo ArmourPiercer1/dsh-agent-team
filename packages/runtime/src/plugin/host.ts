@@ -16,12 +16,15 @@
  *     their bare `@deepseek-ai/*` imports resolve through the checkout's
  *     apps/cli workspace links; see ./upstream-resolver.mjs);
  *   - declares `inject` for the hard host services (`agents`,
- *     `storageDomain`, `sessionPersistence`) so the Loader defers this
+ *     `storageDomain`, `sessions`) so the Loader defers this
  *     row's apply until the host provides them (the pre-S5A harness row
  *     injected the same set minus `sessionPersistence`, which it resolved
- *     lazily); the entry still passes a lazy accessor for
- *     `sessionPersistence` to the glue so a pre-settle call fails with a
- *     stable code instead of a TypeError;
+ *     lazily; R122 swapped the materialization seam — rc.1 removed
+ *     `sessionPersistence.ensureMaterialized`, and the stock `sessions`
+ *     service's `flush(session)` is the upstream ACP's own replacement,
+ *     present in both eras); the entry still passes a lazy accessor under
+ *     the frozen glue's `sessionPersistence` deps key so a pre-settle call
+ *     fails with a stable code instead of a TypeError;
  *   - validates the row `config` LOUDLY (a composition mistake rejects the
  *     bootstrap — the driver sees the setup-failure evidence, never a
  *     half world);
@@ -323,13 +326,15 @@ export const name = 'dsh-agent-team'
  * The hard host service dependencies (Cordis inject protocol): the Loader
  * keeps this row INACTIVE until all three exist and applies it once they
  * do (the pre-S5A harness row injected the same set minus
- * `sessionPersistence`, which it resolved lazily — its provider row is
- * independent of this one, so waiting can only ever delay, never deadlock,
- * the bootstrap). The entry still passes a LAZY accessor for
- * `sessionPersistence` to the glue so any call that races the provider row
- * fails with a stable code instead of a TypeError.
+ * `sessionPersistence`, which it resolved lazily — R122 swapped that seam:
+ * rc.1 removed `sessionPersistence.ensureMaterialized`, and the stock
+ * `sessions` service's `flush(session)` is the upstream ACP's own
+ * replacement, present in both eras, so waiting on it can only ever delay,
+ * never deadlock, the bootstrap). The entry still passes a LAZY accessor
+ * under the frozen glue's `sessionPersistence` deps key so any call that
+ * races the provider fails with a stable code instead of a TypeError.
  */
-export const inject = ['agents', 'storageDomain', 'sessionPersistence']
+export const inject = ['agents', 'storageDomain', 'sessions']
 
 /**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
@@ -344,22 +349,27 @@ export const inject = ['agents', 'storageDomain', 'sessionPersistence']
  *   {@link validateTeamPluginConfig}).
  */
 export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promise<void> {
-  // The lazy sessionPersistence accessor: resolved per call so the first
-  // materialization — long after the stock host is fully up — observes a
-  // settled service, not a concurrent profile load.
+  // The lazy materialization accessor (served to the frozen glue under its
+  // `sessionPersistence` deps key as `ensureMaterialized`): resolved per
+  // call so the first materialization — long after the stock host is fully
+  // up — observes a settled service, not a concurrent profile load. R122:
+  // rc.1 removed `sessionPersistence.ensureMaterialized`; the stock
+  // `sessions` service's `flush(session)` is the upstream ACP's own
+  // replacement (the attached log writer's flush materializes an empty
+  // session durably) and is present in both the alpha.1 and rc.1 hosts.
   const sessionPersistence = {
     ensureMaterialized(session: unknown): Promise<unknown> {
-      const svc = ctx.get('sessionPersistence') as
-        | { ensureMaterialized?: (session: unknown) => Promise<unknown> }
+      const svc = ctx.get('sessions') as
+        | { flush?: (session: unknown) => Promise<unknown> }
         | null
         | undefined
-      if (svc === undefined || svc === null || typeof svc.ensureMaterialized !== 'function') {
+      if (svc === undefined || svc === null || typeof svc.flush !== 'function') {
         throw new TeamPluginError(
           TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
-          'the "sessionPersistence" public service is absent (or lacks ensureMaterialized) — it is resolved lazily per call and must be up before agent materialization runs',
+          'the "sessions" public service is absent (or lacks flush) — it is resolved lazily per call and must be up before agent materialization runs',
         )
       }
-      return svc.ensureMaterialized(session)
+      return svc.flush(session)
     },
   }
 

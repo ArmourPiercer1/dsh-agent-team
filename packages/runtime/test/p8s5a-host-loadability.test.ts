@@ -37,8 +37,10 @@ describe('P8-S5A T2 entry loadability (source entry)', () => {
     expect(typeof host.apply).toBe('function')
     expect(typeof host.validateTeamPluginConfig).toBe('function')
     // The hard-service inject set (the Loader keeps the row inactive until
-    // all three exist — the pre-S5A harness row plus sessionPersistence).
-    expect(host.inject).toEqual(['agents', 'storageDomain', 'sessionPersistence'])
+    // all three exist — the pre-S5A harness row; R122 swapped the
+    // materialization seam to the stock `sessions` service, rc.1 having
+    // removed sessionPersistence.ensureMaterialized).
+    expect(host.inject).toEqual(['agents', 'storageDomain', 'sessions'])
   })
 
   it('the entry module is a live ESM namespace with a stable identity', () => {

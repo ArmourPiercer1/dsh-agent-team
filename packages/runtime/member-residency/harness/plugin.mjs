@@ -731,27 +731,28 @@ function makePorts(ctx, opts = {}) {
 
 /**
  * The REAL SessionDurabilityPort: the upstream public
- * `sessionPersistence.ensureMaterialized(liveSession)` seam (the same
- * call the ACP row makes at session creation — it flushes the session's
- * pending write-behind batches and materializes the header-only artifact
- * for an empty session). Fail-closed: a missing service or a missing
- * live child agent throws before any durable TeamDomain write.
+ * `sessions.flush(liveSession)` seam (the same call the ACP row makes at
+ * session creation — the attached log writer's flush materializes the
+ * header-only artifact for an empty session; R122: rc.1 removed
+ * `sessionPersistence.ensureMaterialized` in favor of it). Fail-closed:
+ * a missing service or a missing live child agent throws before any
+ * durable TeamDomain write.
  * @param {object} ctx
  * @returns {object} a SessionDurabilityPort implementation.
  */
 function makeSessionDurability(ctx) {
   return {
     async ensureDurable(childSessionId) {
-      const persistence = ctx.get('sessionPersistence')
-      if (persistence === undefined) {
-        throw new Error('p5t6: sessionPersistence service missing — the durability barrier seam is unavailable')
+      const sessions = ctx.get('sessions')
+      if (sessions === undefined) {
+        throw new Error('p5t6: sessions service missing — the durability barrier seam is unavailable')
       }
       const svc = resolveServices(ctx)
       const agent = svc.agents.get(SessionId(childSessionId))
       if (agent === undefined) {
         throw new Error(`p5t6: child session '${childSessionId}' has no live agent handle — the barrier cannot materialize it`)
       }
-      await persistence.ensureMaterialized(agent.session)
+      await sessions.flush(agent.session)
     },
   }
 }

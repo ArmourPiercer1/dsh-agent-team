@@ -49,12 +49,14 @@ describe('dsh-agent-team host plugin (P8-S5A production entry)', () => {
   it('has the public Cordis composition plugin shape', () => {
     // Plugin.Object contract: a stable display name plus a callable apply,
     // and the inject declaration that parks the row until all three host
-    // services (agents, storageDomain, sessionPersistence) exist.
+    // services (agents, storageDomain, sessions) exist (R122: rc.1 removed
+    // sessionPersistence.ensureMaterialized; the materialization seam is the
+    // stock sessions service's flush, present in both eras).
     expect(typeof hostPlugin.name).toBe('string')
     expect(hostPlugin.name).toBe('dsh-agent-team')
     expect(typeof hostPlugin.apply).toBe('function')
     expect(Array.isArray(hostPlugin.inject)).toBe(true)
-    expect(hostPlugin.inject).toEqual(['agents', 'storageDomain', 'sessionPersistence'])
+    expect(hostPlugin.inject).toEqual(['agents', 'storageDomain', 'sessions'])
   })
 
   it('never rejects apply: the facade is provided synchronously and the bootstrap failure rejects ready', () => {

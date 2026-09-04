@@ -190,11 +190,12 @@ export interface ResidencyPort {
  *   MemberInstance put).
  *
  * The real public seam is the upstream
- * `sessionPersistence.ensureMaterialized(liveSession)` service method (the
- * same call the upstream ACP row makes at session creation): it flushes the
- * session's pending write-behind batches and materializes a header-only
- * artifact when none exists. The module never reaches that service itself
- * (ruling R28 mock-first): the harness binds the live session handle here.
+ * `sessions.flush(liveSession)` service method (the same call the upstream
+ * ACP row makes at session creation; rc.1's replacement for the alpha.1
+ * `sessionPersistence.ensureMaterialized`): the attached log writer's
+ * flush materializes a header-only artifact when none exists. The module
+ * never reaches that service itself (ruling R28 mock-first): the harness
+ * binds the live session handle here.
  */
 export interface SessionDurabilityPort {
   /**
