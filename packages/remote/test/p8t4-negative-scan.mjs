@@ -44,7 +44,7 @@
  * @module remote/test/p8t4-negative-scan
  */
 import { readFileSync } from 'node:fs'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   LEGACY_TEAM_EVENT_STRINGS,

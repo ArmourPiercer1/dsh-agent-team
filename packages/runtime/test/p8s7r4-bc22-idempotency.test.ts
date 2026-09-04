@@ -213,11 +213,6 @@ describe('p8s7r4 W5 (BC-22) — the handoff.create idempotency per (sourceSessio
   })
 })
 
-/** Fail the whole file on a flow-critical invariant. */
-function check(condition: boolean, label: string): void {
-  if (!condition) throw new Error(`S4 scenario guard: ${label}`)
-}
-
 /**
  * Assert one recorded creation intent: the stable intentToken and the
  * with-handoff provenance (sourceSessionId + contextToken + capturedAt).

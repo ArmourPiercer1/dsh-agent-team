@@ -136,7 +136,6 @@ const bAfterNonStateCount = repoB.ledger.entryCount()
 const bFact1 = ledgerEntryRecord(1, ROOT, { operationId: 'op-g8s1b1' })
 const bPut1 = await capture(() => repoB.ledger.put(bFact1))
 const bStamp1 = generationOf(worldB)
-const bCount1 = repoB.ledger.entryCount()
 
 // Identical bytes re-put: the silent no-op must NOT advance again.
 const bPut1Again = await capture(() => repoB.ledger.put(bFact1))

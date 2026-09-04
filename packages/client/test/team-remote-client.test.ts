@@ -18,7 +18,6 @@ import { describe, expect, it } from 'vitest'
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_RPC_CHANNEL,
-  PushTransportLossError,
   buildRemoteError,
   buildRemoteSuccess,
   type RemoteMemberSendParams,

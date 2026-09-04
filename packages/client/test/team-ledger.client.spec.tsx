@@ -30,7 +30,7 @@
  * (UI §27.4), the safe generic row for unknown fact types (no throw),
  * the retry button, and the loading state.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import type { RenderResult } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
@@ -396,7 +396,8 @@ describe('TeamLedger', () => {
     fireEvent.change(select, { target: { value: 'mate' } })
     expect(rowButtons(view).map(row => row.getAttribute('data-ledger-fact'))).toEqual(['team-message-delivered'])
     fireEvent.change(select, { target: { value: 'tpl-lead' } })
-    expect(rowButtons(view).map(row => row.getAttribute('data-ledger-actor'))).toEqual(['Lead'])
+    // The actor label sits in the row's inner span (not on the row button).
+    expect(rowButtons(view).map(row => row.querySelector('[data-ledger-actor]')?.textContent)).toEqual(['Lead'])
   })
 
   it('renders the decision reason in the state badge', () => {

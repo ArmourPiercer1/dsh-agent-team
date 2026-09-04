@@ -114,7 +114,7 @@ const a1: Awaited<ReturnType<typeof admitGovernanceOverride>> = await admitGover
 
 // A fresh store for the cumulative sequence (the live driver's sequence).
 const store = new MemoryStore()
-const c1 = await admitGovernanceOverride(
+await admitGovernanceOverride(
   { authority: { kind: 'leader' }, rootSessionId: ROOT, recordId: 'p8s4b-ovr-model', scope: 'team', cells: modelAllow, now: NOW },
   store,
 )

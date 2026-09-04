@@ -52,7 +52,6 @@ import type { SlotCore, SlotMap } from '@deepseek-ai/dsh-client-ui-slots'
 import type { TeamSessionId } from '../../../contracts/src/index.js'
 import type { RemoteResponse } from '../../../remote/src/index.js'
 import { projectionFromWire } from '../model/projection-adapter.js'
-import type { TeamPresetRow } from '../model/team-intent-model.js'
 import { createTeamLedgerStore } from '../state/team-ledger-store.js'
 import type {
   TeamLedgerState,

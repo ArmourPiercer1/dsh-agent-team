@@ -49,7 +49,6 @@ import {
 } from '../dto/common.js'
 import { teamContractError } from '../errors.js'
 import { deepFreeze } from '../remote-safe.js'
-import type { RemoteSafeRecord } from '../remote-safe.js'
 import {
   EFFECTIVE_CONFIG_SOURCE_VALUES,
   EFFECTIVE_CONFIG_STATE_VALUES,
@@ -199,22 +198,6 @@ export interface MemberModelStateDto {
 }
 
 // --- parsing ---------------------------------------------------------------------------
-
-function parseBoundedString(
-  record: RemoteSafeRecord,
-  field: string,
-  maxLength: number,
-): string {
-  const raw = record[field]
-  if (typeof raw !== 'string' || raw.length === 0 || raw.length > maxLength) {
-    throw teamContractError(
-      'MALFORMED_DTO',
-      `${field} must be a non-empty string of at most ${maxLength} characters, got ${JSON.stringify(raw)}`,
-      { field },
-    )
-  }
-  return raw
-}
 
 /**
  * Parse one model state entry (closed field set; the optional provenance

@@ -131,6 +131,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The C2 row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -167,18 +168,23 @@ function rowConfig(): Record<string, any> {
 // --- the test Cordis context + the entry loader --------------------------------------
 
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -200,9 +206,12 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -219,6 +228,7 @@ function defined<T>(value: T, label: string): asserts value is NonNullable<T> {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -275,6 +285,7 @@ const c2world = await (async () => {
   }
 })()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 const c2p = c2world.projection as Record<string, any>
 
 it('C2.1a the production projection is the frozen whole TeamProjectionDto (closed top-level fields)', () => {
@@ -289,6 +300,7 @@ it('C2.1a the production projection is the frozen whole TeamProjectionDto (close
   // which advances the row generation once past the seeded value, so the
   // honest assertion is verbatim equality with the durable row (not a
   // hardcoded 1).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const durableRow = c2world.repos.teamSessions.get(ROOT_SID) as Record<string, any>
   check(durableRow !== undefined, 'durable team row missing')
   expect(c2p.generation).toBeGreaterThan(0)
@@ -299,6 +311,7 @@ it('C2.1a the production projection is the frozen whole TeamProjectionDto (close
 })
 
 it('C2.1b the identity core + the bound snapshot ref are verbatim durable facts', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const bp = c2p.blueprint as Record<string, any>
   check(typeof bp.contentHash === 'string' && bp.contentHash.length > 0, 'contentHash empty')
   expect(keysOf(bp).length).toBe(3) // blueprintId, revision, contentHash
@@ -306,12 +319,14 @@ it('C2.1b the identity core + the bound snapshot ref are verbatim durable facts'
   expect(bp.revision).toBe('1')
   // createdAt is a ROOT fact (TEAM_ROOT_PROJECTION_FIELDS), not a
   // top-level DTO field (the closed top-level set is checked in C2.1a).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const rootFactsB = c2p.root as Record<string, any>
   expect(typeof rootFactsB.createdAt).toBe('string')
   check(!Number.isNaN(Date.parse(rootFactsB.createdAt)), 'createdAt is not ISO-8601')
 })
 
 it('C2.1c the root facts carry the §20.2 semantics (default policy state, zero budget)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const rootFacts = c2p.root as Record<string, any>
   within(rootFacts, TEAM_ROOT_PROJECTION_FIELDS, 'root')
   expect(rootFacts.teamSessionId).toBe(ROOT_SID)
@@ -327,6 +342,7 @@ it('C2.1c the root facts carry the §20.2 semantics (default policy state, zero 
 it('C2.1d the three template rows carry kind / display name / context policy', () => {
   check(Array.isArray(c2p.templates), 'templates is not an array')
   expect(c2p.templates.length).toBe(3)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const [leader, worker, scout] = c2p.templates as Array<Record<string, any>>
   defined(leader, 'leader template missing')
   defined(worker, 'worker template missing')
@@ -348,8 +364,10 @@ it('C2.1e the three member rows carry invariant 14 + inherited workspace + cold 
   check(Array.isArray(c2p.members), 'members is not an array')
   expect(c2p.members.length).toBe(3)
   const byId = new Map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     (c2p.members as Array<Record<string, any>>).map((row) => [row.instanceId, row]),
   )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   for (const row of c2p.members as Array<Record<string, any>>) {
     // Premise update (S7-R2 R2-3): the production projection is v2-stamped
     // and every member row carries the additive DURATIONAL-optional
@@ -385,6 +403,7 @@ it('C2.1e the three member rows carry invariant 14 + inherited workspace + cold 
 })
 
 it('C2.1f the ledger summary is zeroed with the eight explicit category keys', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const ledger = c2p.ledger as Record<string, any>
   within(ledger, LEDGER_SUMMARY_FIELDS, 'ledger')
   expect(ledger.latestSequence).toBe(0)
@@ -413,6 +432,7 @@ interface LiveFlag {
   isResuming?: (sessionId: string) => boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function makeOverlay(live: LiveFlag): ReadonlyMap<string, Record<string, any>> {
   const port = createLiveResidencyOverlay({
     repositories: c2world.repos,
@@ -420,6 +440,7 @@ function makeOverlay(live: LiveFlag): ReadonlyMap<string, Record<string, any>> {
     rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return port.snapshot() as ReadonlyMap<string, Record<string, any>>
 }
 
@@ -453,7 +474,7 @@ const c2overlay = await (async () => {
   }
   const realRows = c2world.repos.memberInstances.list(ROOT_SID)
   const fakeRepos = {
-    memberInstances: { list: (root: string) => [...realRows, disposedRow, v2Row] },
+    memberInstances: { list: () => [...realRows, disposedRow, v2Row] },
     // P9-S8 F1-lite: the overlay iterates every root the host durably owns;
     // this unit's world is single-root (the bound ROOT_SID), so no extras.
     teamSessions: { list: () => [] },
@@ -467,6 +488,7 @@ const c2overlay = await (async () => {
     rootSessionId: ROOT_SID,
     now: () => FIXED_NOW,
   })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return { leaderLive, workerLive, extra: port.snapshot() as ReadonlyMap<string, Record<string, any>> }
 })()
 
@@ -508,7 +530,9 @@ const c2port = await (async () => {
   const accessedDomainProps: string[] = []
   const accessedRepos: string[] = []
   const methodCalls: string[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   function record(repo: string, name: string, fn: (...a: any[]) => unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
     return (...a: any[]) => {
       methodCalls.push(`${repo}.${name}`)
       return fn(...a)
@@ -530,8 +554,10 @@ const c2port = await (async () => {
       },
     },
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       get(target: Record<string, any>, prop: string | symbol) {
         if (typeof prop === 'string') accessedRepos.push(prop)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
         return (target as Record<string | symbol, any>)[prop]
       },
     },
@@ -539,8 +565,10 @@ const c2port = await (async () => {
   const fakeDomain = new Proxy(
     { name: realDomain.name, repositories: fakeRepos },
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       get(target: Record<string, any>, prop: string | symbol) {
         if (typeof prop === 'string') accessedDomainProps.push(prop)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
         return (target as Record<string | symbol, any>)[prop]
       },
     },
@@ -583,6 +611,7 @@ it('C2.3b the adapter touches ONLY the four durable repositories of the domain',
 it('C2.3c the bounded read succeeds and reproduces the durable source facts', () => {
   expect(c2port.source.teamSessionId).toBe(ROOT_SID)
   expect(c2port.source.generation).toBe(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     (c2world.repos.teamSessions.get(ROOT_SID) as Record<string, any>).generation,
   )
   expect(c2port.source.members.length).toBe(3)

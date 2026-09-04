@@ -161,6 +161,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The C3 row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -197,17 +198,22 @@ function rowConfig(): Record<string, any> {
 // --- the test Cordis context + the entry loader --------------------------------------
 
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -229,9 +235,12 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -246,6 +255,7 @@ function defined<T>(value: T, label: string): asserts value is NonNullable<T> {
   if (value === null || value === undefined) throw new Error(`C3 scenario guard: ${label}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -256,8 +266,10 @@ async function applyWorld(world: TestWorld, config: Record<string, any>) {
 }
 
 /** The frozen RemoteResponse code (null when the call succeeded). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function codeOf(response: Record<string, any>): string | null {
   if (response.ok === false) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     return String((response.error as Record<string, any>).code)
   }
   return null
@@ -276,12 +288,14 @@ const c3 = await (async () => {
     // production dispatcher on the frozen channel.
     const registration = root.seams.remoteHandlerRegistration.current()
     let capturedChannel: string | null = null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     let capturedDispatcher: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null = null
     let handleDisposes = 0
     const registrationResult = registration({
       rpc: {
         handle: (channel: string, dispatcher: unknown) => {
           capturedChannel = channel
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
           capturedDispatcher = dispatcher as (endpoint: string, payload: unknown) => Promise<Record<string, any>>
           return () => {
             handleDisposes += 1
@@ -291,10 +305,12 @@ const c3 = await (async () => {
     })
     check(capturedDispatcher !== null, 'registration never registered a dispatcher')
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     async function call(endpoint: string, params: Record<string, any>): Promise<Record<string, any>> {
       const dispatcher = capturedDispatcher
       if (dispatcher === null) throw new Error('C3 scenario guard: dispatcher missing')
       const response = await dispatcher(endpoint, { version: 1, params })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       return response as Record<string, any>
     }
 
@@ -467,6 +483,7 @@ const c3 = await (async () => {
     const boundLedgerPage = await call('team.getLedgerPage', { teamSessionId: ROOT_SID })
 
     // The durable override record written by C3.9.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const durableOverrides = root.domain.repositories.overrides.list(ROOT_SID) as Array<Record<string, any>>
 
     // The disposer (idempotent per the frozen register semantics).
@@ -555,6 +572,7 @@ it('C3.8 a foreign TeamSession is rejected with the foreign-team code (never a p
 
 it('C3.9 the valid human actor completes as the host-known operator (durable record written)', () => {
   expect(c3.validOverride.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = c3.validOverride.value.data as Record<string, any>
   expect(data.recordId).toBe('ovr-model-team-g0')
   expect(data.kind).toBe('human-override')
@@ -583,6 +601,7 @@ it('C3.10 the valid human caller passes the boundary (no principal / foreign cod
 
 it('C3.11 team.create for a NEW root succeeds (fresh bind; the host owns the new team)', () => {
   expect(c3.ownedTeamCreate.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = c3.ownedTeamCreate.value.data as Record<string, any>
   expect(data.path).toBe('fresh-root')
 })
@@ -603,6 +622,7 @@ it('C3.14 the owned root\'s own human identity passes the boundary', () => {
 
 it('C3.15 team.create against the now-owned root takes the cold path', () => {
   expect(c3.ownedTeamRecreate.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = c3.ownedTeamRecreate.value.data as Record<string, any>
   expect(data.path).toBe('cold-root')
 })
@@ -619,24 +639,30 @@ it('C3.17 a foreign root is still rejected by the admission team-scoped check (f
 
 it('C3.18 the owned root\'s ledger page carries exactly the OWNED root\'s fact (F1-lite v3)', () => {
   expect(c3.ownedLedgerPage.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = c3.ownedLedgerPage.value.data as Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const entries = data.entries as Array<Record<string, any>>
   check(entries.length === 1, 'the owned root\'s page carries exactly the seeded owned-root fact')
   const entry = entries[0]
   defined(entry, 'the owned root\'s page entry is missing')
   expect(entry.rootSessionId).toBe(NEW_ROOT)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect((entry.payload as Record<string, any>).origin).toBe('owned-root-seed')
   expect(data.total).toBe(1)
 })
 
 it('C3.19 the bound root\'s ledger page stays the bound root\'s own fact (F1-lite v3)', () => {
   expect(c3.boundLedgerPage.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = c3.boundLedgerPage.value.data as Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const entries = data.entries as Array<Record<string, any>>
   check(entries.length === 1, 'the bound root\'s page carries exactly the seeded bound-root fact')
   const entry = entries[0]
   defined(entry, 'the bound root\'s page entry is missing')
   expect(entry.rootSessionId).toBe(ROOT_SID)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect((entry.payload as Record<string, any>).origin).toBe('bound-root-seed')
   expect(data.total).toBe(1)
 })

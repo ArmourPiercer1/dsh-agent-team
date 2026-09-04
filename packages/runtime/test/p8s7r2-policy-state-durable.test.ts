@@ -172,18 +172,23 @@ function rowConfig(bootPhase: 'create' | 'resume') {
 
 /** The production facade `teamRoot` as provided by the entry. */
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -205,10 +210,13 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
 /** Resolve the production entry (statically imported from TS source). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -220,6 +228,7 @@ function check(condition: boolean, label: string): void {
 }
 
 /** Apply the production entry over one world (p8s5a pattern). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -233,12 +242,16 @@ async function applyWorld(world: TestWorld, config: Record<string, any>) {
  * Capture the remote dispatcher the registration installs (the p8s6 fake
  * connection pattern) and return the endpoint caller.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function attachRemoteCaller(root: Record<string, any>): (
   endpoint: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   params: Record<string, any>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 ) => Promise<Record<string, any>> {
   const registration = root.seams.remoteHandlerRegistration.current()
   check(registration !== null, 'the remote handler registration seam is empty')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   let captured: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null =
     null
   registration({
@@ -247,12 +260,14 @@ function attachRemoteCaller(root: Record<string, any>): (
         captured = dispatcher as (
           endpoint: string,
           payload: unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
         ) => Promise<Record<string, any>>
         return () => {}
       },
     },
   })
   const dispatcher = captured as
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     | ((endpoint: string, payload: unknown) => Promise<Record<string, any>>)
     | null
   if (dispatcher === null) {
@@ -276,10 +291,12 @@ function captureCode(fn: () => unknown): string | null {
 }
 
 /** Read one remote response's error code (null when ok). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteCode(response: Record<string, any>): string | null {
   if (response.ok === false) {
     const error = response['error']
     return error !== null && typeof error === 'object'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       ? String((error as Record<string, any>)['code'])
       : 'malformed-error'
   }
@@ -287,11 +304,14 @@ function remoteCode(response: Record<string, any>): string | null {
 }
 
 /** Read one remote response's `value.data` record. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteData(response: Record<string, any>): Record<string, any> {
   const value = response['value']
   if (value === null || typeof value !== 'object') throw new Error('R2-1: no value in response')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = (value as Record<string, any>)['data']
   if (data === null || typeof data !== 'object') throw new Error('R2-1: no data in value')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return data as Record<string, any>
 }
 
@@ -300,10 +320,12 @@ function remoteData(response: Record<string, any>): Record<string, any> {
  * PolicyStateView under `data.state` (s6-remote, the BQ-10 surface):
  * `{ state: { stateId, availableTransitions } }`.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteState(response: Record<string, any>): Record<string, any> {
   const data = remoteData(response)
   const state = data['state']
   if (state === null || typeof state !== 'object') throw new Error('R2-1: no state in data')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return state as Record<string, any>
 }
 
@@ -405,6 +427,7 @@ const r21: R21State = await (async (): Promise<R21State> => {
   const callB = attachRemoteCaller(resumeRoot)
 
   // C1 store-direct check: the reopened storage ledger carries the fact row.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const entries = resumeRoot.domain.repositories.ledger.list() as Array<Record<string, any>>
   const factRows = entries.filter(
     (entry) =>
@@ -415,7 +438,9 @@ const r21: R21State = await (async (): Promise<R21State> => {
   if (factRow === undefined) {
     throw new Error('the reopened store never received the transition fact')
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const payload = factRow['payload'] as Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const factState = payload['state'] as Record<string, any>
 
   const projFresh = resumeRoot.projection.project(parseRootSessionId(ROOT_SID))
@@ -467,6 +492,7 @@ const r21: R21State = await (async (): Promise<R21State> => {
         : false,
     transitionEntryId: String(transition.entryId),
     transitionOrigin: String(transition.origin),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     transitionStateId: String((transition.state as Record<string, any>)['stateId']),
     transitionRequestedAtStep: Number(transition.requestedAtStep),
     transitionEffectiveFromStep: Number(transition.effectiveFromStep),

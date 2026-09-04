@@ -34,7 +34,7 @@ import {
   MEMBER_LIFECYCLE_STATES,
   TEAM_CONTRACT_SCHEMA_VERSION,
 } from '../../contracts/src/index.js'
-import type { MemberInstanceRecordDto, MemberLifecycleState } from '../../contracts/src/index.js'
+import type { MemberLifecycleState } from '../../contracts/src/index.js'
 import {
   LIFECYCLE_DOMAIN_ERROR_CODES,
   LIFECYCLE_OPERATIONS,

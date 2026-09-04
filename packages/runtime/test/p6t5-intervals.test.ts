@@ -106,15 +106,15 @@ let suite: P6T5Suite
     )
     // MUST-TEST: multiple simultaneous running intervals (same subject,
     // different correlations)
-    const open1 = await ledger.openInterval(
+    await ledger.openInterval(
       p6t5Open({ subject: 'build', sequence: 2, correlation: 'corr-1', note: 'phase one', requestToken: 'tok-p6t5-int-o1' }),
     )
-    const open2 = await ledger.openInterval(
+    await ledger.openInterval(
       p6t5Open({ subject: 'build', sequence: 3, correlation: 'corr-2', requestToken: 'tok-p6t5-int-o2' }),
     )
 
     // a different SUBJECT with the same correlation string coexists too
-    const openDeploy = await ledger.openInterval(
+    await ledger.openInterval(
       p6t5Open({ subject: 'deploy', sequence: 1, correlation: 'corr-1', requestToken: 'tok-p6t5-int-dep1' }),
     )
 
@@ -179,7 +179,7 @@ let suite: P6T5Suite
     }
 
     // re-open the same correlation after its close (a new work unit)
-    const reopen = await ledger.openInterval(
+    await ledger.openInterval(
       p6t5Open({ subject: 'build', sequence: 5, correlation: 'corr-1', note: 'phase two', requestToken: 'tok-p6t5-int-o4' }),
     )
     // close both remaining open intervals (independently)

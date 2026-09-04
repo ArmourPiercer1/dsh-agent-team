@@ -131,6 +131,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The C4 row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -167,17 +168,22 @@ function rowConfig(): Record<string, any> {
 // --- the test Cordis context + the entry loader --------------------------------------
 
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -199,9 +205,12 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -216,6 +225,7 @@ function defined<T>(value: T, label: string): asserts value is NonNullable<T> {
   if (value === null || value === undefined) throw new Error(`C4 scenario guard: ${label}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -225,8 +235,10 @@ async function applyWorld(world: TestWorld, config: Record<string, any>) {
   return { host, teamRoot, root }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function codeOf(response: Record<string, any>): string | null {
   if (response.ok === false) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     return String((response.error as Record<string, any>).code)
   }
   return null
@@ -254,10 +266,12 @@ const c4 = await (async () => {
     const repos = root.domain.repositories
 
     const registration = root.seams.remoteHandlerRegistration.current()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     let capturedDispatcher: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null = null
     const registrationResult = registration({
       rpc: {
         handle: (_channel: string, dispatcher: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
           capturedDispatcher = dispatcher as (endpoint: string, payload: unknown) => Promise<Record<string, any>>
           return () => {}
         },
@@ -265,10 +279,12 @@ const c4 = await (async () => {
     })
     check(capturedDispatcher !== null, 'registration never registered a dispatcher')
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     async function call(endpoint: string, params: Record<string, any>): Promise<Record<string, any>> {
       const dispatcher = capturedDispatcher
       if (dispatcher === null) throw new Error('C4 scenario guard: dispatcher missing')
       const response = await dispatcher(endpoint, { version: 1, params })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       return response as Record<string, any>
     }
 
@@ -310,6 +326,7 @@ const c4 = await (async () => {
     // the synchronous admission above returned before it landed. Settle
     // the microtask chain, then count the durable truth this lane owns.
     await settleScheduledWrites()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const policyFactRows = (repos.ledger.list() as Array<Record<string, any>>).filter(
       (entry) => entry.factType === 'policy-state-transitioned',
     )
@@ -360,10 +377,12 @@ const c4 = await (async () => {
       policyFactCount: policyFactRows.length,
       policyFactStateId:
         firstPolicyFact !== undefined
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
           ? String(((firstPolicyFact['payload'] as Record<string, any>)['state'] as Record<string, any>)['stateId'])
           : '<missing>',
       policyFactEntryId:
         firstPolicyFact !== undefined
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
           ? String((firstPolicyFact['payload'] as Record<string, any>)['entryId'])
           : '<missing>',
       policyFactSettledLedger,
@@ -374,6 +393,7 @@ const c4 = await (async () => {
       malformedFollowup,
       afterFollowupMembers,
       afterFollowupLedger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       durableOverride: (repos.overrides.list(ROOT_SID) as Array<Record<string, any>>).find(
         (record) => record.recordId === 'ovr-model-team-g0',
       ),
@@ -387,6 +407,7 @@ const c4 = await (async () => {
 
 it('C4.1 override.set completes through the authority and writes only its owning store', () => {
   expect(c4.overrideSet.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = c4.overrideSet.value.data as Record<string, any>
   expect(data.recordId).toBe('ovr-model-team-g0')
   expect(data.kind).toBe('human-override')
@@ -403,6 +424,7 @@ it('C4.1 override.set completes through the authority and writes only its owning
 
 it('C4.2 override.get round-trips the durable slot winner (no local recompute)', () => {
   expect(c4.overrideGet.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = (c4.overrideGet.value.data as Record<string, any>).override as Record<string, any>
   expect(data.recordId).toBe('ovr-model-team-g0')
   expect(data.kind).toBe('human-override')
@@ -412,9 +434,11 @@ it('C4.2 override.get round-trips the durable slot winner (no local recompute)',
 
 it('C4.3 policyState.set switches through the mutation service and policyState.get reflects it', () => {
   expect(c4.policyBefore.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect((c4.policyBefore.value.data as Record<string, any>).state.stateId).toBe('default')
 
   expect(c4.policySet.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = (c4.policySet.value.data as Record<string, any>).transition as Record<string, any>
   expect(typeof data.entryId).toBe('string')
   check(data.entryId.length > 0, 'entryId is empty')
@@ -426,6 +450,7 @@ it('C4.3 policyState.set switches through the mutation service and policyState.g
   // The far-future-step read reports the switched state (the documented
   // live-store read; the client must read back the state it set).
   expect(c4.policyAfter.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect((c4.policyAfter.value.data as Record<string, any>).state.stateId).toBe('restricted')
 
   // R2-1 (replaces the S6 premise "the durable TeamLedger is STILL
@@ -442,6 +467,7 @@ it('C4.3 policyState.set switches through the mutation service and policyState.g
   expect(c4.policyFactCount).toBe(1)
   expect(c4.policyFactStateId).toBe('restricted')
   expect(c4.policyFactEntryId).toBe(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     String((c4.policySet.value.data as Record<string, any>).transition.entryId),
   )
   expect(c4.policyFactSettledLedger).toBe(1)

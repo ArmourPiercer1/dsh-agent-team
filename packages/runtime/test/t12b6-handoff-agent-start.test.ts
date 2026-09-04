@@ -132,6 +132,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The row config base (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(overrides: Record<string, any>): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -157,11 +158,13 @@ function rowConfig(overrides: Record<string, any>): Record<string, any> {
 
 interface TestWorld {
   ctx: TeamPluginHostContext
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -182,10 +185,13 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>): Promise<Record<string, any>> {
   await hostEntry.apply(world.ctx, config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const teamRoot: Record<string, any> = world.provided.teamRoot
   if (teamRoot === undefined) throw new Error('T12B6 guard: apply resolved but never provided teamRoot')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const root: Record<string, any> = await teamRoot.ready
   return root
 }
@@ -206,6 +212,7 @@ const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 function makeSessionQueryFake(source: string) {
   const fake = {
     readSurfaceCount: 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     readSurface: async (id: string): Promise<Record<string, any>> => {
       fake.readSurfaceCount += 1
       if (id !== source) throw new Error(`readSurface called with '${id}' (expected '${source}')`)
@@ -228,6 +235,7 @@ function makeSessionQueryFake(source: string) {
         ],
       }
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     readTitleSnapshots: async (ids: readonly string[]): Promise<Record<string, any>[]> => {
       return ids.map((sid) => ({
         status: 'fulfilled',
@@ -239,12 +247,14 @@ function makeSessionQueryFake(source: string) {
 }
 
 /** The stub glue's recorded state snapshot (the `__t1` diagnostics). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function glueSnapshot(glue: Record<string, any>): Record<string, any> {
   const state = glue.__t1
   return {
     bootCount: state.bootCount,
     rootAgentStarts: [...state.rootAgentStarts],
     rootContextDeliveryAttempts: state.rootContextDeliveryAttempts,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
     rootContextDeliveries: state.rootContextDeliveries.map((d: any) => ({ ...d })),
     rootContextLogSize: state.rootContextLog.size,
     rootContextLogKeys: [...state.rootContextLog.keys()],
@@ -268,6 +278,7 @@ const root1 = await applyWorld(world1, rowConfig({}))
 const repos1 = root1.domain.repositories
 check(root1.live.__t1 !== undefined, 'W1: the stub glue diagnostics are missing')
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let h1: Record<string, any>
 try {
   h1 = await root1.handoff.startTeamFromHere({
@@ -313,6 +324,7 @@ const target2 = expectedTargetRoot(expectedIntentToken(SRC, TOKEN2))
 // Inject ONE delivery failure: the first delivery attempt throws (the
 // bind + the agent start have already succeeded at that point).
 root2.live.__t1.failNextDeliveries = 1
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let h2a: Record<string, any>
 try {
   h2a = await root2.handoff.startTeamFromHere({
@@ -332,6 +344,7 @@ const teamCount2 = repos2.teamSessions.list().length
 const glue2 = glueSnapshot(root2.live)
 
 // The re-invocation (the same stable operation identity).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let h2b: Record<string, any>
 try {
   h2b = await root2.handoff.startTeamFromHere({
@@ -360,6 +373,7 @@ const repos3 = root3.domain.repositories
 delete root3.live.createRootAgent
 delete root3.live.deliverRootContext
 const target3 = expectedTargetRoot(expectedIntentToken(SRC3, TOKEN3))
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let h3: Record<string, any>
 try {
   h3 = await root3.handoff.startTeamFromHere({

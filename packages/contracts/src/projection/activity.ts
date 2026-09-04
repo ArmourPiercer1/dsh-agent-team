@@ -157,7 +157,7 @@ export function parseMemberActivitySummary(value: unknown): MemberActivitySummar
     record['lastProgressAt'] === undefined
       ? {}
       : { lastProgressAt: parseIso8601TimestampField(record['lastProgressAt']) }
-  let openIntervals: { openIntervals: readonly ActivityIntervalSummary[] } | {} = {}
+  let openIntervals: { openIntervals: readonly ActivityIntervalSummary[] } | object = {}
   if (record['openIntervals'] !== undefined) {
     if (!Array.isArray(record['openIntervals'])) {
       throw teamContractError(

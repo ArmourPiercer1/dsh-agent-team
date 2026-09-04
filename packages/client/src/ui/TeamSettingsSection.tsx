@@ -11,7 +11,6 @@
  * plan calls this section "optional minimal").
  */
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import type { TeamKey } from './locales.js'
 import styles from './TeamSettingsSection.module.css'
 
 /** The settings-section props: the runtime share (owner `close`) + the locale seat. */

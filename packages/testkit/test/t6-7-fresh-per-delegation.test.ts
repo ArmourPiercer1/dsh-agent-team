@@ -23,7 +23,6 @@ import {
   createMemberInstanceRecord,
   parseChildSessionId,
   parseInstanceId,
-  parseTemplateId,
 } from '../../contracts/src/index.js'
 import type {
   InstanceId,
@@ -40,7 +39,6 @@ import {
   resolveDelegationTarget,
   transitionInstance,
 } from '../../domain/member/src/index.js'
-import type { DelegationTarget } from '../../domain/member/src/index.js'
 import {
   LIFECYCLE_OPERATIONS,
   applyLifecycleOperation,

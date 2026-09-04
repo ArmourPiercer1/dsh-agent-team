@@ -99,6 +99,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The row config base (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(overrides: Record<string, any>): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -124,11 +125,13 @@ function rowConfig(overrides: Record<string, any>): Record<string, any> {
 
 interface TestWorld {
   ctx: TeamPluginHostContext
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -149,10 +152,13 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>): Promise<Record<string, any>> {
   await hostEntry.apply(world.ctx, config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const teamRoot: Record<string, any> = world.provided.teamRoot
   if (teamRoot === undefined) throw new Error('T12B1 guard: apply resolved but never provided teamRoot')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const root: Record<string, any> = await teamRoot.ready
   return root
 }
@@ -179,6 +185,7 @@ const seam1 = new FileStorageSeam(scratchDir('t12b1-real-create'))
 const world1 = makeWorld(seam1)
 const root1 = await applyWorld(world1, rowConfig({}))
 /** The stub glue's recorded state (`root.live` IS the glue bundle). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
 const glueState1: any = (root1 as any).live?.__t1
 
 const repos1 = root1.domain.repositories
@@ -194,6 +201,13 @@ check(binding1 !== undefined, 'W1: the real create durably committed the team-ro
 const seam2 = new FileStorageSeam(scratchDir('t12b1-fixture-flag'))
 const root2 = await applyWorld(makeWorld(seam2), rowConfig({ fixtureWorld: true }))
 const repos2 = root2.domain.repositories
+// Captured before the module-level teardown below (dual-surface: the
+// plain-node shim runs `it` bodies eagerly at collection — before the
+// teardown — while real vitest runs them after module evaluation, i.e.
+// after the close; a live repo read inside the body would hit the
+// closed domain on the vitest surface). Same pattern as the W1 captures.
+const frozenSession2 = repos2.teamSessions.get(ROOT_SID)
+const frozenLeader2 = repos2.memberInstances.get(ROOT_SID, LEADER_INSTANCE_ID)
 
 // --- W3: the legacy-compatibility trigger (non-empty seedMembers, no flag) ------
 
@@ -209,6 +223,10 @@ const root3 = await applyWorld(
   }),
 )
 const repos3 = root3.domain.repositories
+// (dual-surface capture: see the W2 note above)
+const seededSession3 = repos3.teamSessions.get(ROOT_SID)
+const seedWorker3 = repos3.memberInstances.get(ROOT_SID, SEED_WORKER_ID)
+const seedLeader3 = repos3.memberInstances.get(ROOT_SID, LEADER_INSTANCE_ID)
 
 // --- W4: a second create over the same medium fails closed ----------------------
 // W4a: the real create over a fresh medium. The SECOND create attempt over
@@ -230,6 +248,7 @@ let secondCreateError = ''
   // contract). Awaiting it here is what handles that rejection.
   const world4 = makeWorld(seam4)
   await hostEntry.apply(world4.ctx, rowConfig({}))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   const teamRoot4: any = world4.provided.teamRoot
   try {
     await teamRoot4.ready
@@ -280,29 +299,24 @@ describe('T12-B1: the real production create (no seedBootWorld)', () => {
   })
 
   it('W2: the explicit fixture mode keeps the frozen seed world (unchanged contract)', () => {
-    const seeded = repos2.teamSessions.get(ROOT_SID)
-    expect(seeded).not.toBe(undefined)
+    expect(frozenSession2).not.toBe(undefined)
     // The frozen seed fingerprint: the epoch-0 stamp ...
-    expect(seeded.createdAt).toBe(EPOCH_0)
+    expect(frozenSession2.createdAt).toBe(EPOCH_0)
     // ... and the P6-era leader row (child session IS the root session,
     // lifecycle RUNNING) — NOT the honest-v2 bindFresh mint.
-    const leader = repos2.memberInstances.get(ROOT_SID, LEADER_INSTANCE_ID)
-    expect(leader).not.toBe(undefined)
-    expect(leader.childSessionId).toBe(ROOT_SID)
-    expect(leader.lifecycle).toBe('RUNNING')
+    expect(frozenLeader2).not.toBe(undefined)
+    expect(frozenLeader2.childSessionId).toBe(ROOT_SID)
+    expect(frozenLeader2.lifecycle).toBe('RUNNING')
   })
 
   it('W3: a non-empty seedMembers keeps the legacy seeded world (harness compatibility)', () => {
-    const seeded = repos3.teamSessions.get(ROOT_SID)
-    expect(seeded.createdAt).toBe(EPOCH_0)
-    const seed = repos3.memberInstances.get(ROOT_SID, SEED_WORKER_ID)
-    expect(seed).not.toBe(undefined)
-    expect(seed.templateId).toBe('worker')
-    expect(seed.childSessionId).toBe(SEED_WORKER_CHILD)
-    expect(seed.lifecycle).toBe('RUNNING')
+    expect(seededSession3.createdAt).toBe(EPOCH_0)
+    expect(seedWorker3).not.toBe(undefined)
+    expect(seedWorker3.templateId).toBe('worker')
+    expect(seedWorker3.childSessionId).toBe(SEED_WORKER_CHILD)
+    expect(seedWorker3.lifecycle).toBe('RUNNING')
     // The leader is the seeded P6 shape (the seed world's own row).
-    const leader = repos3.memberInstances.get(ROOT_SID, LEADER_INSTANCE_ID)
-    expect(leader.childSessionId).toBe(ROOT_SID)
+    expect(seedLeader3.childSessionId).toBe(ROOT_SID)
   })
 
   it('W4: a second create over the same medium fails closed (no silent duplicate)', () => {

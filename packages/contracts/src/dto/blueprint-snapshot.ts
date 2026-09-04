@@ -30,7 +30,6 @@ import { assertNoLegacyFields } from '../legacy-vocabulary.js'
 import { assertNoUnknownFields, assertPlainRecord } from './common.js'
 import { teamContractError } from '../errors.js'
 import { deepFreeze } from '../remote-safe.js'
-import type { RemoteSafeRecord } from '../remote-safe.js'
 
 /** The exact frozen fields of a blueprint snapshot ref. */
 export const BLUEPRINT_SNAPSHOT_FIELDS: readonly string[] = [

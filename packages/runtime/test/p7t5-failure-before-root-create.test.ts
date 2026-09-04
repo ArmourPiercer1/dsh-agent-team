@@ -47,7 +47,6 @@ import type {
 import {
   DEFAULT_CLOCK,
   FakeSourceSurface,
-  FakeSummarizer,
   FakeTeamCreation,
   P7T5_FIXTURE,
   assertHandoffCode,
@@ -206,7 +205,7 @@ let s3: {
     sourceSessionId: P7T5_FIXTURE.sourceSessionId,
     requestToken: 'tok-p7t5-cancel',
   }
-  const state = await world.service.startTeamFromHere({ ...ref })
+  await world.service.startTeamFromHere({ ...ref })
   const canceled = await world.service.resolveHandoffDecision(ref, HANDOFF_DECISION_OPTIONS.CANCEL)
   let secondDecisionError: unknown
   try {

@@ -118,6 +118,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(rootSessionId: string): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -149,11 +150,13 @@ function rowConfig(rootSessionId: string): Record<string, any> {
 
 interface TestWorld {
   ctx: TeamPluginHostContext
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -175,10 +178,13 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>): Promise<Record<string, any>> {
   await hostEntry.apply(world.ctx, config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const teamRoot: Record<string, any> = world.provided.teamRoot
   if (teamRoot === undefined) throw new Error('T2 scenario guard: apply resolved but never provided teamRoot')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const root: Record<string, any> = await teamRoot.ready
   return root
 }
@@ -192,10 +198,14 @@ function check(condition: boolean, label: string): void {
  * Capture the remote dispatcher the registration installs (the P8-S7-R2
  * fake-connection pattern) and return the endpoint caller.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function attachRemoteCaller(root: Record<string, any>): (
   endpoint: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   params: Record<string, any>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 ) => Promise<Record<string, any>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   let captured: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null = null
   const registration = root.seams.remoteHandlerRegistration.current()
   check(registration !== null, 'the remote handler registration seam is empty')
@@ -205,12 +215,14 @@ function attachRemoteCaller(root: Record<string, any>): (
         captured = dispatcher as (
           endpoint: string,
           payload: unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
         ) => Promise<Record<string, any>>
         return () => {}
       },
     },
   })
   const dispatcher = captured as
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     | ((endpoint: string, payload: unknown) => Promise<Record<string, any>>)
     | null
   if (dispatcher === null) throw new Error('the registration never installed a dispatcher')
@@ -218,10 +230,12 @@ function attachRemoteCaller(root: Record<string, any>): (
 }
 
 /** Read one remote response's error code (null when ok). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteCode(response: Record<string, any>): string | null {
   if (response.ok === false) {
     const error = response['error']
     return error !== null && typeof error === 'object'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       ? String((error as Record<string, any>)['code'])
       : 'malformed-error'
   }
@@ -229,15 +243,18 @@ function remoteCode(response: Record<string, any>): string | null {
 }
 
 /** Read one remote response's data payload (the `{ok, value: {data}}` envelope). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteData(response: Record<string, any>): Record<string, any> {
   const value = response['value']
   if (value === null || typeof value !== 'object') {
     throw new Error('T2 scenario guard: the remote response carries no value envelope')
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = (value as Record<string, any>)['data']
   if (data === null || typeof data !== 'object') {
     throw new Error('T2 scenario guard: the remote response carries no data payload')
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return data as Record<string, any>
 }
 
@@ -253,6 +270,7 @@ function makeSessionQueryFake() {
   const fake = {
     readSurfaceCount: 0,
     readTitleCount: 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     readSurface: async (id: string): Promise<Record<string, any>> => {
       fake.readSurfaceCount += 1
       if (id !== SRC_SID) throw new Error(`readSurface called with '${id}'`)
@@ -275,6 +293,7 @@ function makeSessionQueryFake() {
         ],
       }
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     readTitleSnapshots: async (ids: readonly string[]): Promise<Record<string, any>[]> => {
       fake.readTitleCount += 1
       return ids.map((sid) => ({
@@ -296,6 +315,7 @@ worldA.provided.sessionQuery = queryA
 const rootA = await applyWorld(worldA, rowConfig(ROOT_SID))
 
 // Scenario 1: the handoff completes through the production port.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let s1State: Record<string, any> = {}
 try {
   s1State = await rootA.handoff.startTeamFromHere({
@@ -347,17 +367,22 @@ const s6Second = await callerA('handoff.create', {
 })
 const s6FirstData =
   typeof s6First.value === 'object' && s6First.value !== null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     ? (s6First.value as Record<string, any>)['data']
     : null
 const s6FirstState =
   s6FirstData !== null && typeof s6FirstData === 'object'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     ? (s6FirstData as Record<string, any>)['state']
     : null
 const s6Minted =
   s6FirstState !== null &&
   typeof s6FirstState === 'object' &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   typeof (s6FirstState as Record<string, any>).team === 'object' &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   (s6FirstState as Record<string, any>).team !== null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     ? String((s6FirstState as Record<string, any>).team.rootSessionId)
     : ''
 const s6RecordCount = s6Minted === '' ? -1 : rootA.domain.repositories.teamSessions.get(s6Minted) === undefined ? 0 : 1

@@ -140,6 +140,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(rootSessionId: string): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -171,11 +172,13 @@ function rowConfig(rootSessionId: string): Record<string, any> {
 
 interface TestWorld {
   ctx: TeamPluginHostContext
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -197,10 +200,13 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>): Promise<Record<string, any>> {
   await hostEntry.apply(world.ctx, config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const teamRoot: Record<string, any> = world.provided.teamRoot
   if (teamRoot === undefined) throw new Error('W3 scenario guard: apply resolved but never provided teamRoot')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const root: Record<string, any> = await teamRoot.ready
   return root
 }
@@ -309,6 +315,7 @@ const workerMembersBefore = repos.memberInstances.list(ROOT_SID).length
 
 // --- drive the read surface over every state (SYNC — pure read) ----------------
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 const describeState = (parentSessionId: string, childSessionId: string): Record<string, any> =>
   root.fork.describe({ parentSessionId, childSessionId })
 

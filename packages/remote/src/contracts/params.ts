@@ -149,7 +149,7 @@ export type RemoteLosslessRecord = RemoteSafeRecord
 // ---------------------------------------------------------------------------
 
 /** `catalog.list` — no fields. */
-export interface RemoteCatalogListParams {}
+export type RemoteCatalogListParams = object
 
 /** `catalog.get`. */
 export interface RemoteCatalogGetParams {

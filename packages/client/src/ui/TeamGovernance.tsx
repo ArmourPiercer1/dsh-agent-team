@@ -185,6 +185,7 @@ export function TeamGovernance({
   const [policyReading, setPolicyReading] = useState(false)
   const [policyCells, setPolicyCells] = useState<Readonly<Record<string, PolicyCellDraft>>>(EMPTY_POLICY_CELLS)
   const [overrideReads, setOverrideReads] = useState<Readonly<Record<string, OverrideReadState>>>({})
+  const [overrideReading, setOverrideReading] = useState<Readonly<Record<string, boolean>>>({})
   const [overrideDrafts, setOverrideDrafts] = useState<Readonly<Record<string, OverrideDraft>>>({})
 
   /**
@@ -297,11 +298,16 @@ export function TeamGovernance({
       })
   }
 
-  /** `override.get` for one member/capability (the current override layer). */
+  /**
+   * `override.get` for one member/capability (the current override layer).
+   * No transient "reading" note: the read element renders only at
+   * settlement (the compat-read precedent), so the note can never read as
+   * a failure for an in-flight read.
+   */
   const runOverrideRead = (instanceId: string, capability: RemoteCapability): void => {
     const key = `${instanceId}:${capability}`
-    if (overrideReads[key] !== undefined) return
-    setOverrideReads(prev => ({ ...prev, [key]: { ok: false, message: t('governance.override.reading') } }))
+    if (overrideReads[key] !== undefined || overrideReading[key] !== undefined) return
+    setOverrideReading(prev => ({ ...prev, [key]: true }))
     void governance.overrideGet(overrideGetParams(teamSessionId, capability, 'instance', instanceId))
       .then(response => {
         if (!response.ok) {
@@ -316,6 +322,13 @@ export function TeamGovernance({
       })
       .catch(error => {
         setOverrideReads(prev => ({ ...prev, [key]: { ok: false, message: throwableMessage(error) } }))
+      })
+      .finally(() => {
+        setOverrideReading(prev => {
+          const next = { ...prev }
+          delete next[key]
+          return next
+        })
       })
   }
 
@@ -692,7 +705,7 @@ export function TeamGovernance({
                     <option value="allow">{t('governance.policy.entry.allow')}</option>
                     <option value="deny">{t('governance.policy.entry.deny')}</option>
                   </select>
-                  {draft?.kind === 'allow' && (
+                  {(draft?.kind ?? 'allow') === 'allow' && (
                     <input
                       className={styles.input}
                       type="text"
@@ -717,7 +730,7 @@ export function TeamGovernance({
                     type="button"
                     className={styles.primary}
                     data-governance-override-set
-                    disabled={setPendingMark || (draft?.kind === 'allow' && parseItemsField(draft?.items ?? '').length === 0)}
+                    disabled={setPendingMark || ((draft?.kind ?? 'allow') === 'allow' && parseItemsField(draft?.items ?? '').length === 0)}
                     onClick={() => runOverrideSet(member, member.instanceId)}
                   >
                     {setPendingMark ? t('governance.pending') : t('governance.override.set')}

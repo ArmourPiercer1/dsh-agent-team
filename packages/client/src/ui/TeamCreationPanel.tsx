@@ -247,7 +247,18 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   useEffect(() => {
     const face = handoffFace
     const source = handoffSource
-    if (face === undefined || source === undefined || !handoffEnabled) return
+    if (face === undefined || source === undefined) return
+    if (!handoffEnabled) {
+      // Unchecking CANCELS the one-shot read (UI §32.3): the summary and
+      // preview state clear so a stale read can never ride along on a later
+      // no-handoff create; re-checking re-runs the read (the effect
+      // re-fires and the `live` guard above drops any in-flight response).
+      setHandoffPreparing(false)
+      setHandoffSummary(null)
+      setHandoffPreviewOpen(false)
+      setHandoffPrepareError(null)
+      return
+    }
     let live = true
     setHandoffPreparing(true)
     setHandoffPrepareError(null)
@@ -311,7 +322,6 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
     return () => { live = false }
     // The injected face is built once per mount (T9 wiring); the load is
     // deliberately mount-scoped.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // The preset rows (mount once): after they land, preselect the §7.2
@@ -331,7 +341,6 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
       if (live) setPresetsReady(true)
     })
     return () => { live = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // The live probe (UI §7.3: free preset switching re-runs compatibility):
@@ -368,7 +377,6 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
       setChecking(false)
       setCompat({ ok: false, message: throwableMessage(error) })
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.blueprintId, draft.revision, draft.presetId, presets])
 
   // The selected blueprint's detail (the §6 display block under the
@@ -389,7 +397,6 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
       if (detailSeq.current !== seq) return
       setDetail(undefined)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.blueprintId, draft.revision])
 
   // A blueprint / revision change starts a NEW creation attempt: the
@@ -398,7 +405,6 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   useEffect(() => {
     setCreatedRootId(null)
     setCreateError(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.blueprintId, draft.revision])
 
   const rows: readonly IntentBlueprintRow[] = catalog !== undefined && catalog.ok ? catalog.rows : []
@@ -611,7 +617,9 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
           className={styles.select}
           data-intent-blueprint
           value={draft.blueprintId ?? ''}
-          disabled={catalog === undefined}
+          // A FAILED catalog load disables the picker too (loud, never
+          // silent: the surface is inert and the verbatim note states why).
+          disabled={catalog === undefined || !catalog.ok}
           onChange={event => setBlueprint(event.target.value)}
         >
           {catalog === undefined && <option value="">{t('intent.blueprint.loading')}</option>}

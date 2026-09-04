@@ -37,7 +37,6 @@ import {
   destroyWorld,
   restartForkWorld,
   seedMemberChild,
-  seedOrdinaryBinding,
   seedRootBindingOnly,
   seedChildTeamSession,
   seedTeamRoot,

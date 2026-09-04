@@ -41,7 +41,6 @@ import { TeamLedger } from './TeamLedger.js'
 import {
   TeamCreationPanel,
   type TeamCreationHandoffFace,
-  type TeamCreationHandoffSource,
 } from './TeamCreationPanel.js'
 import { TeamGovernance, type TeamGovernanceFace } from './TeamGovernance.js'
 import {
@@ -271,7 +270,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                 workspaces={workspaceOptions}
                 handoffSource={{
                   sourceSessionId: sessionId,
-                  sourceWorkspaceId: workspaceViews.find(
+                  sourceWorkspaceId: workspaceViews?.find(
                     item => item.sessionIds.includes(sessionId),
                   )?.workspaceId ?? null,
                 }}

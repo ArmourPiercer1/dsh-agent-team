@@ -43,7 +43,6 @@ import {
 } from '../src/index.js'
 import type { TeamToolsResult } from '../src/index.js'
 import {
-  createFakeSessionInput,
   createP6T6World,
   execFor,
   runTool,

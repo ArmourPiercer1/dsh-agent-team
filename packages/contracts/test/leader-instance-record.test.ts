@@ -190,7 +190,7 @@ describe('P8-S2 contracts: the LeaderInstance record (schema v2)', () => {
   })
 
   it('S9: a schemaVersion-2 row missing a required field or carrying an unknown field is rejected', () => {
-    const { label, ...withoutLabel } = v2LeaderRow
+    const { label: _label, ...withoutLabel } = v2LeaderRow
     expectCode(() => parseMemberInstanceRecord(withoutLabel), 'MALFORMED_DTO')
     expectCode(
       () => parseMemberInstanceRecord({ ...v2LeaderRow, extra: 'unknown' }),

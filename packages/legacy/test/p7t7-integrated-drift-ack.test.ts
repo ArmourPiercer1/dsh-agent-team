@@ -64,19 +64,6 @@ function makeLegacyHome() {
 // S1 — criterion 1: warning/fatal admission semantics
 // ---------------------------------------------------------------------------
 
-interface S1 {
-  readonly fpWarning: string
-  readonly blockedWarningStatus: string | undefined
-  readonly recordAfterAckStatus: string | undefined
-  readonly ackEnvFingerprint: string | undefined
-  readonly admitted: boolean
-  readonly admittedStatus: string | undefined
-  readonly fpFatal: string
-  readonly blockedFatalStatus: string | undefined
-  readonly viewIdentical: boolean
-  readonly homeIdentical: boolean
-  readonly portReadsOnly: boolean
-}
 const s1 = await (async () => {
   const home = makeLegacyHome()
   const handle = await createP7T1World('p7t7-ack-s1')
@@ -136,16 +123,6 @@ const s1 = await (async () => {
 // S2 — criterion 2: ack fingerprint invalidation (drift => STALE)
 // ---------------------------------------------------------------------------
 
-interface S2 {
-  readonly fpBeforeDrift: string
-  readonly admittedUnderAck: boolean
-  readonly fpAfterDrift: string
-  readonly fingerprintsDiffer: boolean
-  readonly blockedAgainStatus: string | undefined
-  readonly viewIdentical: boolean
-  readonly homeIdentical: boolean
-  readonly portReadsOnly: boolean
-}
 const s2 = await (async () => {
   const home = makeLegacyHome()
   const handle = await createP7T1World('p7t7-ack-s2')

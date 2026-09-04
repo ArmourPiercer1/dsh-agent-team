@@ -39,7 +39,7 @@ import {
   transitionMemberLifecycle,
 } from '../../domain/lifecycle/src/index.js'
 import type { LifecycleOperation } from '../../domain/lifecycle/src/index.js'
-import { T6_ROOT_SESSION_ID, T6_CREATED_AT, t6InstanceIdAt, t6ChildSessionIdAt } from '../domain/src/index.js'
+import { T6_ROOT_SESSION_ID, T6_CREATED_AT, t6InstanceIdAt } from '../domain/src/index.js'
 import { expectCode, expectNoThrow, isDeepFrozen, mulberry32 } from './t6-helpers.js'
 
 const STATES = Object.values(MEMBER_LIFECYCLE_STATES) as MemberLifecycleState[]

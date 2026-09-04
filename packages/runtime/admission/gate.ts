@@ -58,7 +58,6 @@ import type { TeamDomainRepositories } from '../../storage/repositories/index.js
 import {
   ACTIVATION_ERROR_CODES,
   ActivationError,
-  isActivationError,
 } from '../activation/index.js'
 import { createCompatibilityAuthority } from '../compatibility/index.js'
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js'

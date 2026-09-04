@@ -21,8 +21,6 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@dsh-agent-team/contracts": "workspace:*",
-    "@dsh-agent-team/remote": "workspace:*",
     "@deepseek-ai/cordis": "link:../../../../references/deepseek-harness-test-use/vendor/cordis",
     "@deepseek-ai/dsh-client-locale": "link:../../../../references/deepseek-harness-test-use/packages/client/locale",
     "@deepseek-ai/dsh-client-store": "link:../../../../references/deepseek-harness-test-use/packages/client/store",
@@ -30,10 +28,13 @@
     "@deepseek-ai/dsh-client-ui-conversation": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-conversation",
     "@deepseek-ai/dsh-client-ui-primitives": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-primitives",
     "@deepseek-ai/dsh-client-ui-slots": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-slots",
+    "@dsh-agent-team/contracts": "workspace:*",
+    "@dsh-agent-team/remote": "workspace:*",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
+    "jsdom": "^30.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   }

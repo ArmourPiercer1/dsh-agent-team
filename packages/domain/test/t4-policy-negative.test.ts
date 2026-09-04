@@ -734,7 +734,6 @@ describe('P3-T4 negative: deterministic seeded fuzz (mulberry32)', () => {
 
         if (cell.effective.kind === 'allow') {
           expect(cell.effective.items.length).toBeGreaterThan(0)
-          const allowedSet = new Set(cell.effective.items)
           if (hardEntry !== undefined && hardEntry.kind === 'allow') {
             const hardSet = new Set(hardEntry.items)
             for (const item of cell.effective.items) {

@@ -46,7 +46,6 @@ import type {
   ChildSessionId,
   InstanceId,
   RootSessionId,
-  SessionBindingDto,
   SessionBindingOrdinary,
   SessionBindingTeamMember,
   SessionBindingTeamRoot,

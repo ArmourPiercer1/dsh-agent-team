@@ -125,7 +125,10 @@ describe('deriveTeamMembers', () => {
         fromHistory: false,
       }],
     })
-    expect(model.groups.map(group => group.templateId)).toEqual([`tpl-${A}`])
+    // UI §16.1/§17.1 (P9 bug #5): the template rows are CONSTANT — a
+    // zero-instance member template keeps its fixed row (the §17 "+"
+    // first-instance entry must exist before any instance does).
+    expect(model.groups.map(group => group.templateId)).toEqual([`tpl-${A}`, `tpl-${B}`])
   })
 
   it('keeps a created leader instance out of the running tally', () => {
@@ -148,7 +151,8 @@ describe('deriveTeamMembers', () => {
       instances: [],
     })
     expect(model.leader.name).toBeUndefined()
-    expect(model.groups.map(group => group.templateId)).toEqual([`tpl-${A}`])
+    // UI §16.1/§17.1 (P9 bug #5): both member templates keep their rows.
+    expect(model.groups.map(group => group.templateId)).toEqual([`tpl-${A}`, `tpl-${B}`])
   })
 
   it('tallies the container row per running instance, including a multi-instance member', () => {
@@ -261,7 +265,9 @@ describe('deriveTeamMembers', () => {
     expect(model.leader.instances.map(instanceRow => instanceRow.key)).toEqual([
       'lead:leader-s:0', 'lead2:leader-s2:1',
     ])
-    expect(model.groups).toEqual([])
+    // UI §16.1/§17.1 (P9 bug #5): no member instances → the two member
+    // templates keep their zero-instance fixed rows.
+    expect(model.groups.map(group => group.templateId)).toEqual([`tpl-${A}`, `tpl-${B}`])
   })
 
   it('synthesizes an empty leader group for a snapshot with no member instances at all', () => {
@@ -272,7 +278,10 @@ describe('deriveTeamMembers', () => {
       activeCount: 0,
       instances: [],
     })
-    expect(model.groups).toEqual([])
+    // UI §16.1/§17.1 (P9 bug #5): every declared member template carries a
+    // fixed zero-instance row (empty, teammate role).
+    expect(model.groups.map(group => group.templateId)).toEqual([`tpl-${A}`, `tpl-${B}`])
+    expect(model.groups.every(group => group.activeCount === 0 && group.instances.length === 0)).toBe(true)
   })
 
   it('keeps the groups in members order with a mid-list leader-kind instance', () => {

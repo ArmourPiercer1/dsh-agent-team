@@ -47,10 +47,7 @@
  * @module @dsh-agent-team/runtime/root-binding/fresh-root
  */
 
-import {
-  TeamAgentBinder,
-  defaultAdmissionGuard,
-} from '../agent-setup/binder/index.js'
+import { TeamAgentBinder } from '../agent-setup/binder/index.js'
 import {
   LEADER_INSTANCE_ID,
 } from '../../contracts/src/index.js'

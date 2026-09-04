@@ -304,8 +304,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (the zero-instance template-rows regression spec; zero denylist
     // vocabulary — the scan over it passes) without recording the
     // increment; this commit records the missed pin.
-    expect(scanResult.filesScanned).toBe(601)
-    expect(scanResult.files.length).toBe(601)
+    // P9-S8 bug #9 regression-test pin (+1): the bug #9 fix commit
+    // (47b41df) added packages/runtime/test/p7t3-lifecycle-fact.test.ts
+    // (the lifecycle-evidence-port regression spec; zero denylist
+    // vocabulary — the scan over it passes) after the pin was last
+    // recorded; this commit records the increment.
+    expect(scanResult.filesScanned).toBe(602)
+    expect(scanResult.files.length).toBe(602)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

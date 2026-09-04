@@ -134,6 +134,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The C6 row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -170,17 +171,22 @@ function rowConfig(): Record<string, any> {
 // --- the test Cordis context + the entry loader --------------------------------------
 
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -202,9 +208,12 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -214,6 +223,7 @@ function check(condition: boolean, label: string): void {
   if (!condition) throw new Error(`C6 scenario guard: ${label}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -224,6 +234,7 @@ async function applyWorld(world: TestWorld, config: Record<string, any>) {
 }
 
 /** One durable fact at the next allocated sequence (the real vocabulary). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function seedFact(repos: Record<string, any>, index: number): Promise<number> {
   const sequence = await repos.ledger.allocateSequence()
   await repos.ledger.put({
@@ -263,11 +274,13 @@ const c6 = await (async () => {
     const completion = root.seams.remoteQueryCommandCompletion.current()
     check(typeof completion === 'function', 'the completion seam is not installed')
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     async function callPage(params: Record<string, any>): Promise<Record<string, any>> {
       const response = await completion({
         method: 'team.getLedgerPage',
         request: { version: 1, params },
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       return response as Record<string, any>
     }
 
@@ -385,17 +398,23 @@ const c6 = await (async () => {
   }
 })()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function valueOf(response: Record<string, any>): Record<string, any> {
   check(response.ok === true, `expected a success response, got ${JSON.stringify(response)}`)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return response.value as Record<string, any>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function pageOf(response: Record<string, any>): Record<string, any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return (valueOf(response).data as Record<string, any>)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function codeOf(response: Record<string, any>): string | null {
   if (response.ok === false) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     return String((response.error as Record<string, any>).code)
   }
   return null
@@ -407,6 +426,7 @@ it('C6.1 the empty baseline page carries total 0 and a read provenance (null gen
   expect(page.entries).toEqual([])
   expect(page.nextAfterSequence).toBe(null)
   expect(page.total).toBe(0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provenance = (c6.baseline.value as Record<string, any>).provenance as Record<string, any>
   expect(provenance.origin).toBe('team-remote')
   expect(provenance.method).toBe('team.getLedgerPage')
@@ -419,6 +439,7 @@ it('C6.1 the empty baseline page carries total 0 and a read provenance (null gen
 it('C6.2 the stable cursor chain: (0,3)→1..3, (3,3)→4..6, (6,3)→[7] terminal, total 7', () => {
   expect(c6.firstSequences).toEqual([1, 2, 3, 4, 5, 6, 7])
   const p1 = pageOf(c6.page1)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(p1.entries.map((e: Record<string, any>) => e.sequence)).toEqual([1, 2, 3])
   expect(p1.nextAfterSequence).toBe(3)
   expect(p1.total).toBe(7)
@@ -426,10 +447,12 @@ it('C6.2 the stable cursor chain: (0,3)→1..3, (3,3)→4..6, (6,3)→[7] termin
   expect(p1.entries[0].payload).toEqual({ n: 1 })
   expect(p1.entries[0].operationId).toBe(null)
   const p2 = pageOf(c6.page2)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(p2.entries.map((e: Record<string, any>) => e.sequence)).toEqual([4, 5, 6])
   expect(p2.nextAfterSequence).toBe(6)
   expect(p2.total).toBe(7)
   const p3 = pageOf(c6.page3)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(p3.entries.map((e: Record<string, any>) => e.sequence)).toEqual([7])
   expect(p3.nextAfterSequence).toBe(null)
   expect(p3.total).toBe(7)
@@ -437,6 +460,7 @@ it('C6.2 the stable cursor chain: (0,3)→1..3, (3,3)→4..6, (6,3)→[7] termin
 
 it('C6.3 the stable re-read at anchor 0 serves the SAME window (fresh session, not invalidated)', () => {
   const reread = pageOf(c6.reread)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(reread.entries.map((e: Record<string, any>) => e.sequence)).toEqual([1, 2, 3])
   expect(reread.nextAfterSequence).toBe(3)
   expect(reread.total).toBe(7)
@@ -444,6 +468,7 @@ it('C6.3 the stable re-read at anchor 0 serves the SAME window (fresh session, n
 
 it('C6.4 load earlier: anchor 1 (never requested before) serves 2..4', () => {
   const earlier = pageOf(c6.earlier)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(earlier.entries.map((e: Record<string, any>) => e.sequence)).toEqual([2, 3, 4])
   expect(earlier.nextAfterSequence).toBe(4)
   expect(earlier.total).toBe(7)
@@ -452,10 +477,12 @@ it('C6.4 load earlier: anchor 1 (never requested before) serves 2..4', () => {
 it('C6.5 growth-safe: (0,3) keeps the window 1..3 under growth; the continuation reaches the new terminal', () => {
   expect(c6.growthSequences).toEqual([8, 9])
   const afterGrowth = pageOf(c6.afterGrowth)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(afterGrowth.entries.map((e: Record<string, any>) => e.sequence)).toEqual([1, 2, 3])
   expect(afterGrowth.nextAfterSequence).toBe(3)
   expect(afterGrowth.total).toBe(9)
   const continuation = pageOf(c6.continuation)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   expect(continuation.entries.map((e: Record<string, any>) => e.sequence)).toEqual([4, 5, 6, 7, 8, 9])
   expect(continuation.nextAfterSequence).toBe(null)
   expect(continuation.total).toBe(9)
@@ -464,6 +491,7 @@ it('C6.5 growth-safe: (0,3) keeps the window 1..3 under growth; the continuation
 it('C6.6 a foreign teamSessionId is rejected BEFORE any ledger read', () => {
   expect(c6.foreign.ok).toBe(false)
   expect(codeOf(c6.foreign)).toBe('TEAM_REMOTE_FOREIGN_TEAM')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const details = (c6.foreign.error as Record<string, any>).details as Record<string, any>
   expect(details.reason).toBe('foreign-team')
 })

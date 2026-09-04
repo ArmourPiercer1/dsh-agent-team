@@ -33,7 +33,6 @@ import {
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   type RemoteCatalogGetParams,
-  type RemoteCatalogListParams,
   type RemoteCompatibilityAckParams,
   type RemoteCompatibilityGetParams,
   type RemoteCompatibilityReprobeParams,

@@ -23,13 +23,13 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
-  RemoteCompatibilityAckParams, RemoteCompatibilityGetParams, RemoteCompatibilityReprobeParams,
+  RemoteCompatibilityGetParams, RemoteCompatibilityReprobeParams,
   RemoteOverrideGetParams, RemoteOverrideResetParams, RemoteOverrideSetParams,
   RemotePolicyStateGetParams, RemotePolicyStateSetParams, RemoteResponse, RemoteSafeJsonValue,
 } from '../../remote/src/index.js'
 import type { EffectiveConfigDto } from '../../contracts/src/index.js'
 import type {
-  TeamUiDisplayStatus, TeamUiLedgerModel, TeamUiMemberInstance, TeamUiSnapshot,
+  TeamUiDisplayStatus, TeamUiMemberInstance, TeamUiSnapshot,
 } from '../src/model/team-ui-snapshot.js'
 import { TeamGovernance, type TeamGovernanceFace } from '../src/ui/TeamGovernance.js'
 import { en, zh } from '../src/ui/locales.js'
@@ -91,19 +91,6 @@ function snapshot(
     disposedHistory: [],
     ...overrides,
   } as unknown as TeamUiSnapshot
-}
-
-function ledger(overrides: Partial<TeamUiLedgerModel> = {}): TeamUiLedgerModel {
-  return {
-    completeness: 'partial',
-    entries: [],
-    controls: [],
-    messages: [],
-    intervals: [],
-    progress: [],
-    pendingControlByInstance: {},
-    ...overrides,
-  } as unknown as TeamUiLedgerModel
 }
 
 /**
@@ -381,7 +368,10 @@ describe('TeamGovernance', () => {
         stateId: 'open',
         cells: {
           model: { locked: false, value: { kind: 'allow', items: ['deepseek-v4'] } },
-          tools: { locked: true, value: null },
+          // The frozen wire encodes "no value" as the ABSENT `value` key
+          // (`RemotePolicyStateCellValue.value?: RemotePolicyEntry` — never
+          // null); `value: null` is malformed and the parser rejects it.
+          tools: { locked: true },
         },
       }, 'policyState.get'))),
     })
@@ -410,7 +400,7 @@ describe('TeamGovernance', () => {
         stateId: 'open',
         cells: {
           model: { locked: false, value: { kind: 'allow', items: ['deepseek-v4'] } },
-          tools: { locked: false, value: null },
+          tools: { locked: false },
         },
       }, 'policyState.get'))),
     })
@@ -463,7 +453,7 @@ describe('TeamGovernance', () => {
     const face = makeFace({
       policyStateGet: vi.fn(() => Promise.resolve(okResponse({
         stateId: 'open',
-        cells: { model: { locked: false, value: null } },
+        cells: { model: { locked: false } },
       }, 'policyState.get'))),
     })
     const view = render(<TeamGovernance {...makeProps(defaultTeam(), face)} />)
@@ -486,7 +476,7 @@ describe('TeamGovernance', () => {
     const face = makeFace({
       policyStateGet: vi.fn(() => Promise.resolve(okResponse({
         stateId: 'open',
-        cells: { tools: { locked: false, value: null } },
+        cells: { tools: { locked: false } },
       }, 'policyState.get'))),
       policyStateSet: vi.fn(() => Promise.resolve(
         errorResponse('POLICY_INVALID', 'unknown capability', 'policyState.set', 'governance-1'),

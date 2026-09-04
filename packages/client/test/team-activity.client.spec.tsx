@@ -17,7 +17,7 @@
  *  - English pairing → kept.
  */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type { TeamUiCurrentWorkRow } from '../src/model/team-ui-snapshot.js'
 import { TeamActivity } from '../src/ui/TeamActivity.js'

@@ -90,7 +90,6 @@
 import { LEADER_INSTANCE_ID, parseInstanceId } from '../../contracts/src/index.js'
 import type { RemoteSafeRecord } from '../../contracts/src/index.js'
 import { WORK_ACCEPTING_STATES } from '../../domain/member/src/index.js'
-import type { TeamDomain } from '../../storage/repositories/index.js'
 import type { LedgerEntry } from '../../storage/schema/index.js'
 import { withTeamLock } from '../action-router/index.js'
 import {

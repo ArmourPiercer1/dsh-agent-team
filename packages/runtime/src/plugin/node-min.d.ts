@@ -21,7 +21,7 @@ declare module 'module' {
   export function register(specifier: string | URL, parentURL?: string | URL): void
 }
 
-declare var URL: {
+declare const URL: {
   new (input: string, base?: string | URL): URL
   createURL(input: string, base?: string | URL): URL
 }

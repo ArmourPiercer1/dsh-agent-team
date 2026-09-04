@@ -121,6 +121,7 @@ const SEED_WORKER = {
 }
 
 /** The row config base (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(overrides: Record<string, any>): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -146,11 +147,13 @@ function rowConfig(overrides: Record<string, any>): Record<string, any> {
 
 interface TestWorld {
   ctx: TeamPluginHostContext
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -171,17 +174,22 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>): Promise<Record<string, any>> {
   await hostEntry.apply(world.ctx, config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const teamRoot: Record<string, any> = world.provided.teamRoot
   if (teamRoot === undefined) throw new Error('T12B2 guard: apply resolved but never provided teamRoot')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const root: Record<string, any> = await teamRoot.ready
   return root
 }
 
 /** Apply the entry and AWAIT THE BOOTSTRAP REJECTION (negative worlds). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorldFailing(world: TestWorld, config: Record<string, any>): Promise<{ code: string | null; message: string }> {
   await hostEntry.apply(world.ctx, config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const teamRoot: Record<string, any> = world.provided.teamRoot
   if (teamRoot === undefined) throw new Error('T12B2 guard: apply resolved but never provided teamRoot')
   try {
@@ -218,13 +226,19 @@ for (const n of ['t12b2-cycle', 't12b2-child', 't12b2-no-domain', 't12b2-foreign
 // the generation stamp is unchanged).
 
 interface CycleState {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   team1: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   binding1: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   members1: any[]
   teamCount1: number
   bootCount1: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   team2: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   binding2: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   members2: any[]
   teamCount2: number
   bootCount2: number
@@ -241,6 +255,7 @@ const cycle: CycleState = await (async (): Promise<CycleState> => {
   check(team1 !== undefined, 'W1: the real create committed the TeamSession record')
   check(binding1 !== undefined, 'W1: the real create committed the team-root binding')
   check(members1.length === 1, 'W1: the real create minted exactly the Leader')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   const bootCount1 = (root1.live as any).__t1.bootCount
   await root1.close()
 
@@ -252,6 +267,7 @@ const cycle: CycleState = await (async (): Promise<CycleState> => {
   const members2 = repos2.memberInstances.list(ROOT_SID)
   const teamCount2 = repos2.teamSessions.list().length
   check(team2 !== undefined, 'W2: the resume loaded the existing TeamSession record')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   const bootCount2 = (root2.live as any).__t1.bootCount
   try {
     return {
@@ -270,11 +286,15 @@ const cycle: CycleState = await (async (): Promise<CycleState> => {
 // member child present.
 
 interface ChildState {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   leader1: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   worker1: any
   memberCount1: number
   teamGen1: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   leader2: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   worker2: any
   memberCount2: number
   teamGen2: number

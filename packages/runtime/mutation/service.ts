@@ -814,6 +814,7 @@ function normalizeStateView(raw: unknown, field: string): PolicyStateView {
     typeof stateId !== 'string' ||
     stateId.length === 0 ||
     /\s/.test(stateId) ||
+    // eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in state ids
     /[\u0000-\u001f\u007f]/.test(stateId)
   ) {
     throw new MutationError(

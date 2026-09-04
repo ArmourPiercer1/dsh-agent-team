@@ -121,6 +121,7 @@ function rowDot(row: TeamLedgerEventRow): StateDotState {
         case 'in-progress': return 'ongoing'
         case undefined: return 'ongoing'
       }
+      // falls through
     default:
       return 'ongoing'
   }

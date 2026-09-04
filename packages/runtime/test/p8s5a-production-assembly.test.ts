@@ -191,18 +191,23 @@ function rowConfig(bootPhase: 'create' | 'resume') {
 
 /** The production facade `teamRoot` as provided by the entry. */
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -224,14 +229,17 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
 /**
  * Resolve the production entry (statically imported from TS source — see
  * the file header for the source-level scope). Memoized for shape parity
  * with the pre-S5A-URL dynamic-import form.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -267,6 +275,7 @@ function readTeamPluginCode(fn: () => unknown): string | null {
 }
 
 /** Apply the entry and await its bootstrap (`ready`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -340,6 +349,7 @@ const t11 = await (async (): Promise<T11State> => {
   try {
     const rootRecord = root.domain.repositories.teamSessions.get(parseRootSessionId(ROOT_SID))
     const members = root.domain.repositories.memberInstances.list(parseRootSessionId(ROOT_SID))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
     const worker = members.find((m: any) => String(m.instanceId) === SEED_WORKER_ID)
     // Boot is memoized (a second call is a no-op, no second glue boot).
     await root.boot()
@@ -383,6 +393,7 @@ const t11 = await (async (): Promise<T11State> => {
       projectionPresent: root.projection !== null && root.projection !== undefined,
       projectType: typeof root.projection.project,
       liveIsStub: teamRoot.live === root.live,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
       bootCount: (root.live as any).__t1.bootCount,
       toolsCount: root.tools.tools.length,
       rootRecordPresent: rootRecord !== undefined,
@@ -394,6 +405,7 @@ const t11 = await (async (): Promise<T11State> => {
       workerLifecycle: worker === undefined ? '<missing>' : String(worker.lifecycle),
       workerActivityVersion: worker === undefined ? -1 : worker.activityVersion,
       workerChildSessionId: worker === undefined ? '<missing>' : String(worker.childSessionId),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
       bootCountAfterSecondBoot: (root.live as any).__t1.bootCount,
     }
   } finally {
@@ -601,6 +613,7 @@ const t14 = await (async (): Promise<T14State> => {
       // so the root's member list is leader + fresh member (2 rows).
       freshMemberCount: freshMembers.length,
       freshWorkerRowPresent: freshMembers.some(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
         (m: any) => String(m.label) === 't1-fresh-member',
       ),
       coldRootPresent: coldRoot !== null && coldRoot !== undefined,
@@ -637,6 +650,7 @@ const t15 = await (async (): Promise<T15State> => {
     return {
       // The stub glue's __t1 counters are per createAgentBindings()
       // instance: the resume world's own counter sees exactly its own boot.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
       bootCount: (root.live as any).__t1.bootCount,
       memberCount: members.length,
       rootRecordPresent: rootRecord !== undefined,
@@ -684,6 +698,7 @@ const t16 = await (async (): Promise<T16State> => {
 
     // A missing hard service (agents) rejects the bootstrap with the stable
     // code (the facade is provided too — apply never rejects):
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const noAgents: Record<string, any> = {
       sessionPersistence: { ensure: async () => {} },
       teamStorageSeam: seam,
@@ -756,6 +771,7 @@ const t17 = await (async (): Promise<T17State> => {
   }
   // The glue close was invoked (idempotent double-close is safe).
   await root.close()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
   const closeCount = (root.live as any).__t1.closeCount
   destroyDir(dir)
   return { effectCount, disposeThrew, closeCount }

@@ -61,7 +61,7 @@ import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
 import type { RemoteLedgerEntryValue } from '../../remote/src/index.js'
 import type { TeamProjectionDto } from '../../contracts/src/index.js'
 import type {
-  RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue, RemoteTeamCreateParams,
+  RemoteCatalogGetParams, RemoteResponse, RemoteSafeJsonValue,
 } from '../../remote/src/index.js'
 import type { TeamPresetRow } from '../src/model/team-intent-model.js'
 import { TeamView, type TeamViewCreationFace, type TeamViewProps } from '../src/ui/TeamView.js'

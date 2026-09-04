@@ -36,7 +36,6 @@ import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import {
   REMOTE_CONTRACT_VERSION,
   buildRemoteSuccess,
-  type RemoteResponse,
 } from '../../remote/src/index.js'
 import {
   apply,

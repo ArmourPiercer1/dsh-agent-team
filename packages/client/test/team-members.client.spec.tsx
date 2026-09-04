@@ -166,7 +166,11 @@ describe('TeamMembers', () => {
     ])
     const { container } = render(<TeamMembers {...makeProps(team, ledger(), LEADER, openSession)} />)
     expect(leaderRow(container).textContent).toBe('领导者 · 0 活跃')
-    expect(screen.getByText('尚无实例')).toBeTruthy()
+    // UI §16.1/§17.1 (P9 bug #5): the other zero-instance template groups
+    // render their own no-instances note — scope the assertion to the
+    // synthesized leader group.
+    const leaderGroup = leaderRow(container).closest('[data-member-group]')
+    expect(leaderGroup?.querySelector('[data-member-no-instances]')?.textContent).toBe('尚无实例')
     fireEvent.click(leaderRow(container))
     expect(openSession).toHaveBeenCalledWith(LEADER)
   })

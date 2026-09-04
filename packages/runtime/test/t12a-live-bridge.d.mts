@@ -176,7 +176,7 @@ export interface LiveWorld {
   readonly config: Record<string, unknown>
   /** The real glue bundle (structurally the TeamAgentBindings surface). */
   readonly binding: object & {
-    readonly childSessionIdFor(rootSessionId: string, instanceId: string): string
+    childSessionIdFor(rootSessionId: string, instanceId: string): string
     readonly childFactory: {
       createChildSession(request: {
         rootSessionId?: string
@@ -186,8 +186,8 @@ export interface LiveWorld {
         workspace?: string
       }): Promise<{ childSessionId: string }>
     }
-    readonly drainDescendants(childSessionId: string): Promise<{ drained: number; quiescent: boolean }>
-    readonly resolveConsumptionViews(sessionId: string): {
+    drainDescendants(childSessionId: string): Promise<{ drained: number; quiescent: boolean }>
+    resolveConsumptionViews(sessionId: string): {
       readonly instanceId: string
       readonly modelView: { readonly selection: { readonly provider: string; readonly model: string } | undefined; readonly [k: string]: unknown }
       readonly mcpView: { readonly allowed: boolean; readonly [k: string]: unknown } | null
@@ -199,9 +199,9 @@ export interface LiveWorld {
       restoreScopedPersona(sessionId: string): void
     }
     /** The B6 handoff port: start (or re-attach) the team root's REAL DSH Agent (T12-GLUE). */
-    readonly createRootAgent(rootSessionId: string): Promise<void>
+    createRootAgent(rootSessionId: string): Promise<void>
     /** The B6 handoff port: deliver the frozen context as a REAL model-visible input turn (T12-GLUE). */
-    readonly deliverRootContext(input: {
+    deliverRootContext(input: {
       readonly rootSessionId: string
       readonly contextToken: string
       readonly text: string

@@ -40,7 +40,7 @@ const journal = world.journal
 const ledger = world.repositories.ledger
 const root = P4_FIXTURE.rootSessionId
 
-const r1 = await journal.execute(provisionRequest())
+await journal.execute(provisionRequest())
 const factRow1Before = seam.rawRows(TEAM_DOMAIN_NAME, 'ledger').get('1')
 const afterCommit1 = seam.writeCount
 

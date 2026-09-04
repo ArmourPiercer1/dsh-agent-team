@@ -139,7 +139,7 @@ describe('adaptTeamProjection — §7.2 display mapping', () => {
       ['ARCHIVED', 'archived'],
       ['DISPOSED', 'disposed'],
     ]
-    const members = cases.map(([lifecycle, display], index) =>
+    const members = cases.map(([lifecycle, _display], index) =>
       wireMember({
         instanceId: `i${index}`,
         label: `label-${lifecycle}`,

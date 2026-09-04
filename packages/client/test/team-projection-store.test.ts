@@ -386,7 +386,7 @@ const staleLossReportScenario = await (async () => {
   const order: Array<Promise<RemoteResponse>> = [gateA, gateB]
   const store = createTeamProjectionStore({
     scheduler: makeManualScheduler(),
-    getProjection: (id) => {
+    getProjection: (_id) => {
       const gate = order.shift()
       if (gate === undefined) {
         return Promise.reject(new PushTransportLossError('gate exhausted'))

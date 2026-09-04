@@ -23,7 +23,6 @@
 
 import type { Brand } from './brand.js'
 import { assertIsString, assertStringRules } from './common.js'
-import { teamContractError } from '../errors.js'
 
 /** Maximum structural length of any DSH session id in vNext contracts. */
 export const SESSION_ID_MAX_LENGTH = 255

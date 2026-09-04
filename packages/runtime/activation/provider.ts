@@ -557,7 +557,6 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
     }
 
     // steps 3-5 (+ delegation target resolution): the create address
-    const createTemplateAddress = requestedTemplateAddress(request)
     let createTemplateId: string
     if (request.source === ACTIVATION_SOURCES.LEADER_DELEGATE) {
       const delegation = request.delegation as { explicitInstanceId?: unknown; templateId?: unknown }
@@ -638,7 +637,6 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
         ? { acknowledgements: request.acknowledgements }
         : {}),
     })
-    let compatibilityStatus: CompatibilityStatus
     if (admission.decision === 'reprobe') {
       // fail-closed: the chain itself failed (invariant 50). A
       // facts-unavailable fault re-throws the ORIGINAL error unwrapped (the
@@ -679,7 +677,7 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
         },
       )
     }
-    compatibilityStatus = admission.status
+    const compatibilityStatus: CompatibilityStatus = admission.status
 
     // steps 7-15 under the team lock (all durable writes for this team are
     // serialized; the views below are fresh under the lock).

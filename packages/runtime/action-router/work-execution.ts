@@ -323,7 +323,7 @@ export async function executeWorkChain(deps: WorkChainDeps): Promise<WorkChainRe
 
   // --- admission (full mode only: resume reuses the durable admission) ----
   let lifecycleCommitted = false
-  let fromLifecycle = fresh.lifecycle
+  const fromLifecycle = fresh.lifecycle
   let sequence: number
   if (mode === 'full') {
     if (fresh.lifecycle !== 'RUNNING') {
@@ -525,7 +525,7 @@ export async function settleAdmittedWork(
   deps: WorkChainDeps,
   options: { readonly failClosed?: boolean; readonly failure?: unknown } = {},
 ): Promise<SettleOutcome> {
-  const { repositories, rootSessionId, instanceId, requestToken } = deps
+  const { repositories, rootSessionId, instanceId } = deps
   const fresh = repositories.memberInstances.get(rootSessionId, instanceId)
   if (fresh === undefined) {
     throw new TeamRuntimeError(

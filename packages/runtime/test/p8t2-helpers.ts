@@ -45,7 +45,6 @@ import type {
   LedgerCategoryCounts,
   MemberActivitySummaryDto,
   MemberLiveActivityDto,
-  SessionId,
   TemplateId,
   TeamSessionId,
 } from '../../contracts/src/index.js'

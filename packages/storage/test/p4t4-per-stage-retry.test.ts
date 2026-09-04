@@ -80,7 +80,7 @@ const retry = await createP4t4World()
 const retryReq = provisionRequest()
 const r0 = retry.seam.writeCount
 const s1 = await retry.coordinator.allocate(retryReq)
-const s1b = await retry.coordinator.allocate(retryReq)
+await retry.coordinator.allocate(retryReq)
 const wAlloc = retry.seam.writeCount - r0
 const r1 = retry.seam.writeCount
 const s2 = await retry.coordinator.createChildSession(retryReq)

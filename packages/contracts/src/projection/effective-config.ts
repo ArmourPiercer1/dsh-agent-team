@@ -38,7 +38,6 @@ import {
 import { hasControlChars } from '../ids/common.js'
 import { teamContractError } from '../errors.js'
 import { deepFreeze } from '../remote-safe.js'
-import type { RemoteSafeRecord } from '../remote-safe.js'
 
 /** Max length of an opaque effective-config value (display string). */
 export const EFFECTIVE_CONFIG_VALUE_MAX_LENGTH = 512

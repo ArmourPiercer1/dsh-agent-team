@@ -36,8 +36,6 @@
  * @module @dsh-agent-team/domain/policy/errors
  */
 
-import type { CapabilityName } from './types.js'
-
 /** The CLOSED set of policy resolver domain error codes. */
 export const POLICY_ERROR_CODES = {
   /**

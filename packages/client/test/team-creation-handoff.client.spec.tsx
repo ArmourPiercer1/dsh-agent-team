@@ -352,10 +352,18 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
       expect(view.container.querySelector('[data-intent-handoff-ready]')).toBeTruthy()
     })
     expect(face.prepare).toHaveBeenCalledTimes(1)
-    fireEvent.change(handoffCheckbox(view.container), { target: { checked: false } })
+    // Click, not change: React maps a checkbox's onChange to the CLICK
+    // event only (react-dom ChangeEventPlugin `shouldUseClickEvent`) — a
+    // dispatched `change` never reaches the handler, so a
+    // `fireEvent.change` here can never uncheck a controlled checkbox.
+    // (Latent spec bug: this suite never ran green before the S9 client
+    // vitest infra overhaul.)
+    fireEvent.click(handoffCheckbox(view.container))
     expect(view.container.querySelector('[data-intent-handoff-ready]')).toBeNull()
     expect(face.prepare).toHaveBeenCalledTimes(1)
-    fireEvent.change(handoffCheckbox(view.container), { target: { checked: true } })
+    // Re-check via click as well (jsdom activation flips the DOM checked,
+    // React's click path sees the value change and re-fires the read).
+    fireEvent.click(handoffCheckbox(view.container))
     await vi.waitFor(() => {
       expect(face.prepare).toHaveBeenCalledTimes(2)
     })
@@ -507,9 +515,15 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     expect(face.create).toHaveBeenCalledTimes(1)
     expect(face.createRootSession).toHaveBeenCalledTimes(1)
     expect(face.createRootSession).toHaveBeenCalledWith({ workspaceId: 'wsp-1' })
-    expect(face.teamCreate).toHaveBeenCalledTimes(1)
-    await act(async () => {})
-    expect(openSession).toHaveBeenCalledTimes(1)
+    // The standard sequence settles across awaits (native root →
+    // team.create → open the root); flush the microtask chain before
+    // asserting its later legs.
+    await vi.waitFor(() => {
+      expect(face.teamCreate).toHaveBeenCalledTimes(1)
+    })
+    await vi.waitFor(() => {
+      expect(openSession).toHaveBeenCalledTimes(1)
+    })
     expect(openSession).toHaveBeenCalledWith('root-1')
     // The decision is client-local state: the checkbox is now unchecked.
     expect(handoffCheckbox(view.container).checked).toBe(false)
@@ -540,9 +554,14 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     fireEvent.click(createButton(view.container))
     expect(face.create).toHaveBeenCalledTimes(1)
     expect(face.createRootSession).toHaveBeenCalledTimes(1)
-    expect(face.teamCreate).toHaveBeenCalledTimes(1)
-    await act(async () => {})
-    expect(openSession).toHaveBeenCalledTimes(1)
+    // The later create settles across awaits (root → team.create → open);
+    // flush the microtask chain before asserting its later legs.
+    await vi.waitFor(() => {
+      expect(face.teamCreate).toHaveBeenCalledTimes(1)
+    })
+    await vi.waitFor(() => {
+      expect(openSession).toHaveBeenCalledTimes(1)
+    })
     expect(openSession).toHaveBeenCalledWith('root-1')
   })
 

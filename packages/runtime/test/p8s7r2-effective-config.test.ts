@@ -230,18 +230,23 @@ function rowConfigFor(
 
 /** The production facade `teamRoot` as provided by the entry. */
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -263,10 +268,13 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
 /** Resolve the production entry (statically imported from TS source). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -278,6 +286,7 @@ function check(condition: boolean, label: string): asserts condition {
 }
 
 /** Apply the production entry over one world (the p8s5a pattern). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>): Promise<Record<string, any>> {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -290,10 +299,14 @@ async function applyWorld(world: TestWorld, config: Record<string, any>): Promis
  * Capture the remote dispatcher the registration installs (the p8s6 fake
  * connection pattern) and return the endpoint caller.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function attachRemoteCaller(root: Record<string, any>): (
   endpoint: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   params: Record<string, any>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 ) => Promise<Record<string, any>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   let captured: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null = null
   const registration = root.seams.remoteHandlerRegistration.current()
   check(registration !== null, 'the remote handler registration seam is empty')
@@ -303,12 +316,14 @@ function attachRemoteCaller(root: Record<string, any>): (
         captured = dispatcher as (
           endpoint: string,
           payload: unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
         ) => Promise<Record<string, any>>
         return () => {}
       },
     },
   })
   const dispatcher = captured as
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     | ((endpoint: string, payload: unknown) => Promise<Record<string, any>>)
     | null
   if (dispatcher === null) {
@@ -318,10 +333,12 @@ function attachRemoteCaller(root: Record<string, any>): (
 }
 
 /** Read one remote response's error code (null when ok). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteCode(response: Record<string, any>): string | null {
   if (response.ok === false) {
     const error = response['error']
     return error !== null && typeof error === 'object'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       ? String((error as Record<string, any>)['code'])
       : 'malformed-error'
   }
@@ -329,23 +346,30 @@ function remoteCode(response: Record<string, any>): string | null {
 }
 
 /** Read one remote response's `value.data` record. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function remoteData(response: Record<string, any>): Record<string, any> {
   const value = response['value']
   if (value === null || typeof value !== 'object') throw new Error('R2-2: no value in response')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = (value as Record<string, any>)['data']
   if (data === null || typeof data !== 'object') throw new Error('R2-2: no data in value')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return data as Record<string, any>
 }
 
 /** The one projected member's v2 effective-config DTO (throws when absent). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function ecOf(projection: Record<string, any>, instanceId: string): Record<string, any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const members = projection['members'] as Array<Record<string, any>>
   const member = members.find((item) => item['instanceId'] === instanceId)
   if (member === undefined) throw new Error(`R2-2: no projected member ${instanceId}`)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return member['effectiveConfig'] as Record<string, any>
 }
 
 /** Close one world root (the R2-1 flush boundary); capture any throw. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function closeWorld(root: Record<string, any>): Promise<string | null> {
   try {
     await root.close()
@@ -363,13 +387,16 @@ interface R22State {
   // World A — the baseline
   aSchemaVersion: number
   aMemberCount: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   aWorkerEc: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   aFixtureEc: Record<string, any>
   // World B — governance deny overlay, the locked state, the human override
   bAdmitRecordId: string
   bAdmitKind: string
   bAdmitOrigin: string
   bAdmitGeneration: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   bEc1: Record<string, any>
   bSetCode: string | null
   bSetEntryId: string
@@ -381,29 +408,38 @@ interface R22State {
   bGetToolsLocked: boolean
   bGetToolsHasValueKey: boolean
   bProjPolicyState2: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   bEc2: Record<string, any>
   bOverrideCode: string | null
   bOverrideRecordId: string
   bOverrideKind: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   bEc3: Record<string, any>
   // World C — the external hard deny
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   cEc0: Record<string, any>
   cSetCode: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   cEc1: Record<string, any>
   cPermissionsKeys: string[]
   // World D — the capability-missing lane
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   dEc0: Record<string, any>
   dSetCode: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   dEc1: Record<string, any>
   dPermissionsKeys: string[]
   // World E — the hard-allow intersection
   eSetCode: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   eEc1: Record<string, any>
   ePermissionsKeys: string[]
   // Direct resolver — the two production-unreachable derivations
   x16aThrew: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   x16aEc: Record<string, any> | null
   x16bThrew: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   x16bEc: Record<string, any> | null
   // Reversibility
   closeThrewA: string | null
@@ -484,11 +520,15 @@ const r22: R22State = await (async (): Promise<R22State> => {
   })
   if (bSet.ok !== true) throw new Error(`R2-2 world B: policyState.set failed (${remoteCode(bSet)})`)
   const bSetData = remoteData(bSet)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const bTransition = bSetData['transition'] as Record<string, any>
   const bGet = await callB('policyState.get', { teamSessionId: ROOT_B })
   const bGetData = remoteData(bGet)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const bGetState = bGetData['state'] as Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const bGetCells = bGetState['cells'] as Record<string, any> | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const bGetToolsCell = bGetCells !== undefined ? (bGetCells['tools'] as Record<string, any> | undefined) : undefined
   const projB2 = rootB.projection.project(parseRootSessionId(ROOT_B))
   const bEc2 = ecOf(projB2, WORKER_B)
@@ -640,6 +680,7 @@ const r22: R22State = await (async (): Promise<R22State> => {
     },
   ]
   let x16aThrew: string | null = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   let x16aEc: Record<string, any> | null = null
   try {
     x16aEc = createEffectiveConfigView({
@@ -653,6 +694,7 @@ const r22: R22State = await (async (): Promise<R22State> => {
       records: recordsX,
       overrides: overrides16a,
       policyReader: policyReaderX,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     }) as unknown as Record<string, any>
   } catch (err) {
     x16aThrew = String(err)
@@ -670,6 +712,7 @@ const r22: R22State = await (async (): Promise<R22State> => {
     },
   ]
   let x16bThrew: string | null = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   let x16bEc: Record<string, any> | null = null
   try {
     x16bEc = createEffectiveConfigView({
@@ -683,6 +726,7 @@ const r22: R22State = await (async (): Promise<R22State> => {
       records: recordsX,
       overrides: [],
       policyReader: policyReaderX,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     }) as unknown as Record<string, any>
   } catch (err) {
     x16bThrew = String(err)
@@ -709,6 +753,7 @@ const r22: R22State = await (async (): Promise<R22State> => {
     bGetStateId: String(bGetState['stateId']),
     bGetToolsLocked: bGetToolsCell !== undefined && bGetToolsCell['locked'] === true,
     bGetToolsHasValueKey: bGetToolsCell !== undefined && 'value' in bGetToolsCell,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     bProjPolicyState2: String((projB2['root'] as Record<string, any>)['policyState']),
     bEc2,
     bOverrideCode: remoteCode(bOverride),

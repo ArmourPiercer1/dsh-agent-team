@@ -39,7 +39,7 @@
  * back into the router).
  */
 
-import { LEADER_INSTANCE_ID, parseInstanceId } from '../../contracts/src/index.js'
+import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js'
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import { CAPABILITY_NAME_VALUES } from '../../domain/policy/src/index.js'

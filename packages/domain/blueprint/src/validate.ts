@@ -39,7 +39,6 @@
  */
 
 import {
-  assertNoLegacyFields,
   assertRemoteSafeJsonValue,
   deepFreeze,
   LEGACY_FORBIDDEN_FIELDS,
@@ -93,7 +92,6 @@ import {
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
 import { deriveContentHash } from './hash.js'
 import type {
-  BlueprintMetadata,
   BlueprintTemplate,
   CapabilityPolicy,
   CapabilityRequirement,
@@ -107,6 +105,7 @@ import type {
 } from './types.js'
 
 /** Control characters forbidden in any string field (mirrors contracts). */
+// eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in blueprint strings
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/
 
 // ---------------------------------------------------------------------------

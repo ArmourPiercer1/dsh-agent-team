@@ -28,7 +28,6 @@ import type { TeamRuntimeActionRequest } from '../admission/index.js'
 import {
   destroyP6T1World,
 } from './p6t1-helpers.js'
-import type { P6T1World } from './p6t1-helpers.js'
 import {
   P6T2_SEEDS,
   createFakeLifecycleCommitPort,

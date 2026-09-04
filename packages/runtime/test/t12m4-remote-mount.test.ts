@@ -158,12 +158,15 @@ function rowConfig() {
 
 interface World {
   ctx: TeamPluginHostContext
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 /** One plain-object Cordis context (get / provide / effect). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function makeWorld(extra: Record<string, any>): World {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -187,6 +190,7 @@ type DshShapeHandler = (
   endpoint: string,
   payload: unknown,
   signal?: unknown,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 ) => Promise<Record<string, any>>
 
 /**
@@ -215,6 +219,7 @@ function makeConnectionSink() {
       }
     },
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const connection: Record<string, any> = { rpc }
   return { connection, captured, state }
 }

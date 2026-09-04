@@ -34,16 +34,13 @@ import type { ActivationResult, MemberActivationRequest } from '../activation/in
 import { parseChildSessionId, parseInstanceId, parseTemplateId } from '../../contracts/src/index.js'
 import {
   P6T1_FIXTURE,
-  LEADER_INSTANCE_ID,
   assertActivationCode,
   createP6T1World,
   destroyP6T1World,
   makeDelegateRequest,
-  makeRequest,
 } from './p6t1-helpers.js'
 import type { P6T1World } from './p6t1-helpers.js'
 
-const ROOT = String(P6T1_FIXTURE.rootSessionId)
 const SEED_WORKER = 'inst-p6t1seed0301'
 const SEED_WORKER_CHILD = 'session-child-p6t1-deleg2'
 

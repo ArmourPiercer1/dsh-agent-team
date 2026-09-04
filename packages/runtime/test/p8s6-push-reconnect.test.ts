@@ -119,6 +119,7 @@ const BLUEPRINT_SOURCE = [
 ].join('\n')
 
 /** The C5 row config (the entry's ONLY input channel). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function rowConfig(): Record<string, any> {
   return {
     bootPhase: 'create',
@@ -155,17 +156,22 @@ function rowConfig(): Record<string, any> {
 // --- the test Cordis context + the entry loader --------------------------------------
 
 interface TeamRootFacade {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly ready: Promise<Record<string, any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   [key: string]: any
 }
 
 interface TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   ctx: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   readonly provided: Record<string, any>
   readonly effectDisposers: Array<() => void>
 }
 
 function makeWorld(seam: FileStorageSeam): TestWorld {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
@@ -187,9 +193,12 @@ function makeWorld(seam: FileStorageSeam): TestWorld {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 let hostModulePromise: Promise<Record<string, any>> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function loadHost(): Promise<Record<string, any>> {
   if (hostModulePromise === null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     hostModulePromise = Promise.resolve(hostEntry as unknown as Record<string, any>)
   }
   return hostModulePromise
@@ -199,6 +208,7 @@ function check(condition: boolean, label: string): void {
   if (!condition) throw new Error(`C5 scenario guard: ${label}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 async function applyWorld(world: TestWorld, config: Record<string, any>) {
   const host = await loadHost()
   await host.apply(world.ctx, config)
@@ -218,10 +228,12 @@ const c5 = await (async () => {
     const { root } = await applyWorld(world, rowConfig())
 
     const registration = root.seams.remoteHandlerRegistration.current()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     let capturedDispatcher: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null = null
     const registrationResult = registration({
       rpc: {
         handle: (_channel: string, dispatcher: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
           capturedDispatcher = dispatcher as (endpoint: string, payload: unknown) => Promise<Record<string, any>>
           return () => {}
         },
@@ -229,10 +241,12 @@ const c5 = await (async () => {
     })
     check(capturedDispatcher !== null, 'registration never registered a dispatcher')
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     async function call(endpoint: string, params: Record<string, any>): Promise<Record<string, any>> {
       const dispatcher = capturedDispatcher
       if (dispatcher === null) throw new Error('C5 scenario guard: dispatcher missing')
       const response = await dispatcher(endpoint, { version: 1, params })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
       return response as Record<string, any>
     }
 
@@ -240,8 +254,10 @@ const c5 = await (async () => {
 
     const compatBefore = await call('compatibility.get', { teamSessionId: ROOT_SID })
     const first = await call('team.getProjection', { teamSessionId: ROOT_SID })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const firstProjection = (first.value.data as Record<string, any>).projection as Record<string, any>
     const gen1 = Number(firstProjection.generation)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const prov1 = first.value.provenance as Record<string, any>
 
     // --- C5.2 one reprobe advances the generation by exactly one --------------------
@@ -251,6 +267,7 @@ const c5 = await (async () => {
       trigger: 'NEW_ACTIVATION',
     })
     const second = await call('team.getProjection', { teamSessionId: ROOT_SID })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const secondProjection = (second.value.data as Record<string, any>).projection as Record<string, any>
     const gen2 = Number(secondProjection.generation)
     const compatAfter = await call('compatibility.get', { teamSessionId: ROOT_SID })
@@ -258,10 +275,12 @@ const c5 = await (async () => {
     // --- C5.4 the reconnect pull (the authoritative projection) ---------------------
 
     const reconnectPull = await call('team.getProjection', { teamSessionId: ROOT_SID })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     const reconnectProjection = (reconnectPull.value.data as Record<string, any>).projection as Record<string, any>
     // The durable authority (the SAME projection service the root exposes).
     const durableNow = root.projection.project(
       ROOT_SID as never,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     ) as Record<string, any>
 
     registrationResult.dispose()
@@ -302,6 +321,7 @@ it('C5.1 the first frame carries the generation in value AND provenance (>= 1)',
   // first-ever evaluation), so the durable state exists BEFORE any reprobe;
   // the verdict carries the frozen closed shape.
   expect(c5.compatBefore.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const verdict = (c5.compatBefore.value.data as Record<string, any>).verdict as Record<string, any>
   expect(typeof verdict.status).toBe('string')
   expect(verdict.counts.fatal).toBe(0)
@@ -310,6 +330,7 @@ it('C5.1 the first frame carries the generation in value AND provenance (>= 1)',
 
 it('C5.2 one reprobe advances the generation by exactly one and the state now exists', () => {
   expect(c5.reprobe.ok).toBe(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const data = (c5.reprobe.value.data as Record<string, any>).probe as Record<string, any>
   expect(data.trigger).toBe('NEW_ACTIVATION')
   expect(data.fatal).toBe(0)

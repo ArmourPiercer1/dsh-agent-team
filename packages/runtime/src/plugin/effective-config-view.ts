@@ -479,7 +479,7 @@ function permissionsLaneOf(
       !denied && prov.pendingNextBoundary.length > 0 && prov.source.recordId !== null
 
     for (const item of expectedItems) {
-      let value: string | null = item
+      const value: string | null = item
       let source: EffectiveConfigSource
       let state: EffectiveConfigState
       const extra: {

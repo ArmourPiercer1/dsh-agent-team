@@ -308,11 +308,14 @@ const noDisposedProjectionV1: TeamProjectionDto = projectTeam(
 )
 
 /** The v2 record as the wire would carry it (canonical JSON -> plain record). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 const v2Record: Record<string, any> = JSON.parse(
   serializeTeamProjection(disposedProjection),
 )
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function v2With(mutate: (record: Record<string, any>) => void): Record<string, any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   const record = JSON.parse(JSON.stringify(v2Record)) as Record<string, any>
   mutate(record)
   return record
@@ -343,6 +346,7 @@ function expectMalformedWithReason(fn: () => unknown, reason: string): void {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
 function bundleOf(instanceId: string): Record<string, any> {
   const bundle = disposedProjection.disposedHistory
   if (bundle === undefined) {
@@ -352,6 +356,7 @@ function bundleOf(instanceId: string): Record<string, any> {
   if (found === undefined) {
     throw new Error(`no bundle for member '${instanceId}'`)
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   return found as unknown as Record<string, any>
 }
 
@@ -441,6 +446,7 @@ describe('p8s7r2 disposed history wire rules (R2-6)', () => {
   it('C6.5 v1 rejects the key; the v2 bundle round-trips through the wire', () => {
     const v1Record = JSON.parse(
       serializeTeamProjection(noDisposedProjectionV1),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
     ) as Record<string, any>
     v1Record['disposedHistory'] = []
     let captured: unknown
@@ -497,6 +503,7 @@ describe('p8s7r2 disposed history cross-field invariants (R2-6)', () => {
   it('C6.6 incomplete DISPOSED coverage is rejected', () => {
     const record = v2With((base) => {
       base['disposedHistory'] = base['disposedHistory'].filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
         (entry: Record<string, any>) => entry.instanceId === DH1_ID,
       )
     })

@@ -90,7 +90,7 @@ const s1Query: SessionQueryPort = {
   readTitleSnapshots: async (ids: readonly string[]) => {
     s1.readTitleCount += 1
     return ids.map(
-      (sid) =>
+      () =>
         ({ status: 'fulfilled', value: { title: { title: 'Froze title' } } }) as HandoffTitleObservationResultView,
     )
   },
