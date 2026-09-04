@@ -7,7 +7,7 @@
  * package's executed tests can load the mount WITHOUT value-importing a
  * `.tsx` module (the plain-node runner executes only `.test.ts` files and
  * resolves no `.tsx`/`.css` — see test/client-plugin-mount.test.ts). The
- * three `.tsx` components are referenced here TYPE-ONLY (erased at runtime —
+ * four `.tsx` components are referenced here TYPE-ONLY (erased at runtime —
  * the executed module graph stays `.tsx`-free) and enter the runtime graph
  * exclusively through `plugin/client.ts` (the thin glue).
  *
@@ -18,7 +18,11 @@
  *   - `settings.section`        -> the minimal Team settings/help page
  *     (id `team`, order 50; the SlotMap entry is mirrored below from the
  *     ui-settings shell contract — that package is not linked into this
- *     package).
+ *     package);
+ *   - `sidebar.footer.action`   -> the global New Team entry (id `team-new`,
+ *     order 10; the always-discoverable, session-independent creation entry
+ *     — frozen UI design §3.1 MUST / the R118 gap; the SlotMap entry is
+ *     mirrored below from the ui-sidebar shell contract).
  * Explicit non-registrations: NO `conversation.chat.node` team marker and
  * NO synthetic trajectory — a native Chat/Trajectory/fork stays exactly
  * what native DSH renders; the Team surfaces are slot entries only.
@@ -65,6 +69,7 @@ import { createTeamRemoteClient } from '../transport/team-remote-client.js'
 import type { TeamRemoteClient } from '../transport/team-remote-client.js'
 import type { TeamRpcCarrier } from '../transport/host-seams.js'
 import { en, zh, type TeamKey } from '../ui/locales.js'
+import type { NewTeamEntry, NewTeamEntryInjected } from '../ui/NewTeamEntry.js'
 import type { TeamDock, TeamDockInjected } from '../ui/TeamDock.js'
 import type { TeamCreationHandoffFace } from '../ui/TeamCreationPanel.js'
 import type { TeamGovernanceFace } from '../ui/TeamGovernance.js'
@@ -80,7 +85,12 @@ import type { TeamView, TeamViewCreationFace, TeamViewInjected } from '../ui/Tea
  * `{ kind: 'list'; scope: 'root'; owner: SettingsSectionOwnerProps }`,
  * where `SettingsSectionOwnerProps` (L123-126) is exactly the owner's
  * `close`; that package is not linked into this one, so the mirror is
- * local).
+ * local). The `sidebar.footer.action` entry (mirrored from the ui-sidebar
+ * shell contract — upstream
+ * `packages/client/ui-sidebar/src/client/contract/slots.ts` L46:
+ * `{ kind: 'list'; scope: 'root'; owner: SidebarFooterActionOwnerProps }`,
+ * where `SidebarFooterActionOwnerProps` (L83-86) is exactly `{ wide }`;
+ * that package is not linked into this one either).
  */
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -90,6 +100,8 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
     /** One settings page per list entry (see the module-level note above). */
     'settings.section': { kind: 'list'; scope: 'root'; owner: TeamSettingsSectionOwner }
+    /** The sidebar-foot action list (see the module-level note above). */
+    'sidebar.footer.action': { kind: 'list'; scope: 'root'; owner: TeamNewTeamEntryOwner }
   }
 }
 
@@ -109,6 +121,16 @@ export type TeamPluginEffect = (() => void) | Iterable<() => void>
 export interface TeamSettingsSectionOwner {
   /** Close the settings panel (the shell owns the open state). */
   close: () => void
+}
+
+/**
+ * The owner share of the sidebar footer action list (mirrored from the
+ * ui-sidebar shell contract `SidebarFooterActionOwnerProps` — the shell
+ * owns the rail/wide state and passes it to every foot entry).
+ */
+export interface TeamNewTeamEntryOwner {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
 }
 
 /** The plugin row config (D-T9-1; the S8 composition row supplies the value). */
@@ -248,7 +270,7 @@ export interface TeamPluginClientContext {
 }
 
 /**
- * The three registered components (TYPE-ONLY at the core — D-T9-13: the
+ * The four registered components (TYPE-ONLY at the core — D-T9-13: the
  * concrete `.tsx` components enter the runtime graph exclusively through
  * the glue's `apply` wrapper). The real component types keep the register
  * call sites checked against the slot's full `ComposedProps` at compile
@@ -262,6 +284,8 @@ export interface TeamMountComponents {
   readonly dock: typeof TeamDock
   /** The minimal Team settings/help page (the `settings.section` entry). */
   readonly settings: typeof TeamSettingsSection
+  /** The global New Team entry (the `sidebar.footer.action` entry). */
+  readonly newTeamEntry: typeof NewTeamEntry
 }
 
 /**
@@ -566,7 +590,7 @@ export function applyTeamMount(
     openTeamTab,
   })
 
-  // (19) The three slot registrations (inline option literals: the slot
+  // (19) The four slot registrations (inline option literals: the slot
   // key is inferred from `name` per call; the legacy orders/labels are
   // preserved verbatim).
   ctx.slots.inject('settings.section', () =>
@@ -604,6 +628,32 @@ export function applyTeamMount(
         inject: (): TeamDockInjected => dockInject(),
       },
       components.dock,
+    ),
+  )
+  // (19.1) The global New Team entry (frozen UI design §3.1 MUST / the R118
+  // gap): the session-independent creation entry fixed at the sidebar foot.
+  // Root scope -> the inject factory receives no session argument; the face
+  // is the S5-A creation face plus the public session switch (no handoff
+  // face or source — the overlay panel is the T7 surface only).
+  ctx.slots.inject('sidebar.footer.action', () =>
+    ctx.slots.register(
+      {
+        name: 'sidebar.footer.action',
+        id: 'team-new',
+        order: 10,
+        locale: NS,
+        label: () => t('entry.label'),
+        inject: (): NewTeamEntryInjected => ({
+          listCatalog: creation.listCatalog,
+          getCatalog: creation.getCatalog,
+          probeCompatibility: creation.probeCompatibility,
+          teamCreate: creation.teamCreate,
+          createRootSession: creation.createRootSession,
+          listAgentPresets: creation.listAgentPresets,
+          openSession,
+        }),
+      },
+      components.newTeamEntry,
     ),
   )
 }

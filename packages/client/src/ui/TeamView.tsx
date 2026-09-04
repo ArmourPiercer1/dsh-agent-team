@@ -134,6 +134,23 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   const [intentDraft, setIntentDraft] = useState<TeamIntentDraft>(emptyTeamIntentDraft)
   const workspaceViews = useWorkspaces(s => s.items)
   const workspaceOptions = useMemo(() => teamWorkspaceOptions(workspaceViews), [workspaceViews])
+  // R119 trial fix: the creation panel's handoff-prepare effect keys off the
+  // `handoffSource` prop identity. An inline object literal here re-fired
+  // `handoff.prepare` on EVERY TeamView re-render — including every
+  // initial-work keystroke (draft update -> re-render) — clearing and
+  // re-fetching the one-shot summary, which is what the trial surfaced as
+  // the creation panel flickering/jumping while typing (plus a prepare-RPC
+  // per keystroke). The memo keeps the identity stable across re-renders;
+  // it still changes on the real inputs (session switch / workspace feed).
+  const handoffSource = useMemo(
+    () => ({
+      sourceSessionId: sessionId,
+      sourceWorkspaceId: workspaceViews?.find(
+        item => item.sessionIds.includes(sessionId),
+      )?.workspaceId ?? null,
+    }),
+    [sessionId, workspaceViews],
+  )
   const resolution = useProjectionMirror(
     mirror => resolveTeamProjection(mirror, sessionId),
     sameTeamProjectionResolution,
@@ -268,12 +285,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                 listAgentPresets={creation.listAgentPresets}
                 openSession={openSession}
                 workspaces={workspaceOptions}
-                handoffSource={{
-                  sourceSessionId: sessionId,
-                  sourceWorkspaceId: workspaceViews?.find(
-                    item => item.sessionIds.includes(sessionId),
-                  )?.workspaceId ?? null,
-                }}
+                handoffSource={handoffSource}
                 handoffFace={handoff}
                 draft={intentDraft}
                 onDraftChange={setIntentDraft}

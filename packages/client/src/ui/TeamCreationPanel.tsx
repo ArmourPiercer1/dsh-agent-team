@@ -627,6 +627,17 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
           {catalog !== undefined && catalog.ok && catalog.rows.length === 0 && (
             <option value="">{t('intent.blueprint.empty')}</option>
           )}
+          {/* Trial finding (R119): with a non-empty catalog and no explicit
+              pick, the controlled value '' matches NO option, so the browser
+              silently displays the first row as if selected — the user then
+              sees "s8v-bp-1 (rev 1)" while draft.blueprintId is still null
+              (probe never runs, create gate permanently closed, compat block
+              empty). The explicit placeholder owns the empty value so the
+              unselected state is loud, never silent (§38); it is disabled so
+              it cannot be re-picked once a row is selected. */}
+          {catalog !== undefined && catalog.ok && rows.length > 0 && draft.blueprintId === null && (
+            <option value="" disabled>{t('intent.blueprint.placeholder')}</option>
+          )}
           {rows.map(row => {
             const rowDetail = catalogDetails[row.blueprintId]
             return (

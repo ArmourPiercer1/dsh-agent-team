@@ -207,6 +207,7 @@ export type TeamKey =
   | 'legacy.summary'
   | 'legacy.counts'
   | 'legacy.inspectError'
+  | 'entry.label'
 
 /** Simplified Chinese UI strings for every {@link TeamKey}. */
 export const zh: Record<TeamKey, string> = {
@@ -415,6 +416,7 @@ export const zh: Record<TeamKey, string> = {
   'legacy.summary': '已解码的旧版团队摘要（只读）',
   'legacy.counts': '{roster} 名花名册成员 · {sessions} 个扫描会话',
   'legacy.inspectError': '旧版团队检查失败：{message}',
+  'entry.label': '新建团队',
 }
 
 /** English UI strings for every {@link TeamKey}. */
@@ -624,4 +626,5 @@ export const en: Record<TeamKey, string> = {
   'legacy.summary': 'Decoded legacy team summary (read-only)',
   'legacy.counts': '{roster} roster members · {sessions} scanned sessions',
   'legacy.inspectError': 'Legacy inspection failed: {message}',
+  'entry.label': 'New Team',
 }

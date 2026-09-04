@@ -550,4 +550,40 @@ describe('TeamCreationPanel', () => {
     expect(view.container.querySelector<HTMLTextAreaElement>('[data-intent-initial-work]')?.value)
       .toBe('check in with the team')
   })
+
+  it('R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path)', async () => {
+    const face = makeFace()
+    const view = render(<PanelHarness face={face} />)
+    await vi.waitFor(() => {
+      expect(blueprintSelect(view.container).disabled).toBe(false)
+    })
+    // The controlled value '' is OWNED by the explicit placeholder (R119):
+    // the browser can no longer silently display the first row as if it
+    // were selected while draft.blueprintId is still null.
+    const select = blueprintSelect(view.container)
+    expect(select.value).toBe('')
+    const options = [...select.querySelectorAll('option')]
+    const placeholder = options.find(option => option.value === '')
+    expect(placeholder).not.toBeNull()
+    expect(placeholder!.textContent).toBe('选择蓝图…')
+    expect(placeholder!.disabled).toBe(true)
+    // The unselected state is loud on every channel: the compat block
+    // declares `none`, the probe never ran, and the create gate stays
+    // closed (no silent half-ready surface).
+    expect(view.container.querySelector('[data-intent-compatibility]')?.getAttribute('data-intent-status'))
+      .toBe('none')
+    expect(face.probeCompatibility).toHaveBeenCalledTimes(0)
+    expect(createButton(view.container).disabled).toBe(true)
+    // …and an explicit pick flips the surface to the live probe path
+    // (probe fires, verdict OPEN, gate opens).
+    await act(async () => {
+      fireEvent.change(select, { target: { value: BP } })
+    })
+    await vi.waitFor(() => {
+      expect(createButton(view.container).disabled).toBe(false)
+    })
+    expect(view.container.querySelector('[data-intent-compatibility]')?.getAttribute('data-intent-status'))
+      .toBe('OPEN')
+    expect(face.probeCompatibility).toHaveBeenCalledTimes(1)
+  })
 })

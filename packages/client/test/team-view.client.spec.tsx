@@ -460,4 +460,40 @@ describe('TeamView', () => {
     expect(view.container.querySelector('[data-team-view]')).toBeTruthy()
     expect(ensureProjection).toHaveBeenCalledTimes(1)
   })
+
+  it('R119: the handoffSource identity is stable across panel re-renders — initial-work keystrokes never re-fire the one-shot handoff.prepare (the trial flicker/jump)', async () => {
+    const prepare = vi.fn(() => Promise.resolve(okResponse(
+      { sourceSessionId: OUTSIDER, summary: { title: 't', bullets: ['b'] } },
+      'handoff.prepare',
+    )))
+    const create = vi.fn(() => Promise.resolve(okResponse(
+      { state: { kind: 'completed', replayed: false, teamSessionId: 'root' } },
+      'handoff.create',
+    )))
+    const view = render(
+      <TeamView {...{ ...viewProps({}, OUTSIDER), creation: makeCreationFace(), handoff: { prepare, create } }} />,
+    )
+    const start = view.container.querySelector<HTMLButtonElement>('[data-intent-start-here]')
+    if (start === null) throw new Error('the Start Team from Here entry did not render')
+    fireEvent.click(start)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    // The one-shot summary preview fired exactly once on open (§32.3)…
+    await vi.waitFor(() => {
+      expect(prepare).toHaveBeenCalledTimes(1)
+    })
+    // …and its identity survives every draft update: each initial-work
+    // keystroke re-renders TeamView (draft update -> re-render). Pre-fix,
+    // the inline handoffSource object literal changed identity on every
+    // render, so the panel's prepare effect re-fired — clearing and
+    // re-fetching the one-shot summary on every keystroke (the flicker/
+    // jump the trial surfaced, plus a prepare-RPC per keystroke).
+    const initialWork = view.container.querySelector<HTMLTextAreaElement>('[data-intent-initial-work]')
+    if (initialWork === null) throw new Error('the initial-work input did not render')
+    fireEvent.change(initialWork, { target: { value: 'a' } })
+    fireEvent.change(initialWork, { target: { value: 'ab' } })
+    expect(prepare).toHaveBeenCalledTimes(1)
+    expect(initialWork.value).toBe('ab')
+  })
 })

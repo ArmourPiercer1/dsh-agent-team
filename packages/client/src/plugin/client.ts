@@ -22,7 +22,10 @@
  *   - `conversation.view`       -> the TeamView "团队" tab (id `team`, order 20);
  *   - `conversation.input.dock` -> the TeamDock (id `team`, order 15);
  *   - `settings.section`        -> the minimal Team settings/help page
- *     (id `team`, order 50).
+ *     (id `team`, order 50);
+ *   - `sidebar.footer.action`   -> the global New Team entry (id `team-new`,
+ *     order 10; the session-independent creation entry — R118 / frozen UI
+ *     design §3.1 MUST).
  * Explicit non-registrations (P9-S6): NO `conversation.chat.node` team
  * marker and NO synthetic trajectory — a native Chat/Trajectory/fork stays
  * exactly what native DSH renders. New Team enters through the actual
@@ -43,6 +46,7 @@
  * `scripts/composition-smoke.mjs` (built output).
  * @module @dsh-agent-team/client/plugin/client
  */
+import { NewTeamEntry } from '../ui/NewTeamEntry.js'
 import { TeamDock } from '../ui/TeamDock.js'
 import { TeamSettingsSection } from '../ui/TeamSettingsSection.js'
 import { TeamView } from '../ui/TeamView.js'
@@ -57,7 +61,7 @@ export type { Config, TeamPluginClientContext } from './team-mount-core.js'
 
 /**
  * Plugin entrypoint (the P9-S6 unique client mount): registers the team
- * locale dictionaries and the three slot entries on the public seams,
+ * locale dictionaries and the four slot entries on the public seams,
  * wires the per-team projection/ledger stores to the frozen Remote
  * channel, and returns nothing — every side effect is fiber-tracked and
  * removed on stop/update.
@@ -72,6 +76,7 @@ export function apply(ctx: TeamPluginClientContext, config?: Config): void {
       view: TeamView,
       dock: TeamDock,
       settings: TeamSettingsSection,
+      newTeamEntry: NewTeamEntry,
     },
   })
 }

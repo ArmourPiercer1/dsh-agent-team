@@ -10,9 +10,9 @@
  * level (top-level await) and the `it` blocks assert on the captured data.
  * The executed graph stays `.tsx`-free: this file imports the core module
  * only (never `src/plugin/client.js`, whose value imports resolve the
- * three `.tsx` components the plain-node runner cannot load).
+ * four `.tsx` components the plain-node runner cannot load).
  *
- * Covered: the three slot registrations (specs, orders, labels, component
+ * Covered: the four slot registrations (specs, orders, labels, component
  * identity), the locale dictionary effect, the fiber effects, the view /
  * dock inject faces (hooks sources, the S5-A/B/C/D faces, the dshHome-bound
  * legacyInspect), the single-flight cold read (D-T9-5) with the frozen
@@ -47,6 +47,7 @@ import {
 } from '../src/plugin/team-mount-core.js'
 import type { TeamRpcCarrier } from '../src/transport/host-seams.js'
 import { en, zh } from '../src/ui/locales.js'
+import type { NewTeamEntryProps } from '../src/ui/NewTeamEntry.js'
 import type { TeamDockInjected, TeamDockProps } from '../src/ui/TeamDock.js'
 import type { TeamSettingsSectionProps } from '../src/ui/TeamSettingsSection.js'
 import type { TeamViewInjected, TeamViewProps } from '../src/ui/TeamView.js'
@@ -319,6 +320,9 @@ function makeMount(
     settings: (_props: TeamSettingsSectionProps) => {
       throw new Error('mount test: component must not render')
     },
+    newTeamEntry: (_props: NewTeamEntryProps) => {
+      throw new Error('mount test: component must not render')
+    },
   }
 
   const disposeAll = (): void => {
@@ -440,6 +444,9 @@ const aScenario = await (async () => {
   const dockReg = a.registers.find(
     (r) => (r.options as { name?: unknown }).name === 'conversation.input.dock',
   )
+  const newTeamReg = a.registers.find(
+    (r) => (r.options as { name?: unknown }).name === 'sidebar.footer.action',
+  )
 
   return {
     fixture: a,
@@ -454,6 +461,8 @@ const aScenario = await (async () => {
     viewComponent: viewReg?.component,
     dockOptions: dockReg?.options,
     dockComponent: dockReg?.component,
+    newTeamOptions: newTeamReg?.options,
+    newTeamComponent: newTeamReg?.component,
     components: a.components,
     viewFace,
     dockFace,
@@ -548,11 +557,12 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(aScenario.localeReg).toEqual({ ns: 'team', dicts: { zh, en } })
   })
 
-  it('injects exactly the three expected slot keys, in order', () => {
+  it('injects exactly the four expected slot keys, in order', () => {
     expect(aScenario.injectKeys).toEqual([
       'settings.section',
       'conversation.view',
       'conversation.input.dock',
+      'sidebar.footer.action',
     ])
   })
 
@@ -604,6 +614,32 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(typeof o.inject).toBe('function')
     expect('label' in o).toBe(false)
     expect(aScenario.dockComponent).toBe(aScenario.components.dock)
+  })
+
+  it('registers the sidebar.footer.action entry (id team-new, order 10, entry label + inject — R118)', () => {
+    const options = aScenario.newTeamOptions
+    expect(options !== undefined).toBe(true)
+    const o = options as Record<string, unknown>
+    expect(o.name).toBe('sidebar.footer.action')
+    expect(o.id).toBe('team-new')
+    expect(o.order).toBe(10)
+    expect(o.locale).toBe('team')
+    expect(typeof o.label).toBe('function')
+    expect((o.label as () => string)()).toBe('team:entry.label')
+    expect(typeof o.inject).toBe('function')
+    expect(aScenario.newTeamComponent).toBe(aScenario.components.newTeamEntry)
+    // The injected face: the S5-A creation face members plus the public
+    // session switch. NO handoff face — the overlay is the T7 surface
+    // (frozen UI design §3.1: the global entry is session-independent).
+    const inject = (o.inject as () => Record<string, unknown>)()
+    expect(typeof inject.listCatalog).toBe('function')
+    expect(typeof inject.getCatalog).toBe('function')
+    expect(typeof inject.probeCompatibility).toBe('function')
+    expect(typeof inject.teamCreate).toBe('function')
+    expect(typeof inject.createRootSession).toBe('function')
+    expect(typeof inject.listAgentPresets).toBe('function')
+    expect(typeof inject.openSession).toBe('function')
+    expect('handoff' in inject).toBe(false)
   })
 
   it('the view inject face carries the full P9-S6 face set (legacyInspect bound)', () => {
@@ -737,6 +773,7 @@ describe('P9-T9 (P9-S6) client mount — dshHome variants (scenario D)', () => {
       'settings.section',
       'conversation.view',
       'conversation.input.dock',
+      'sidebar.footer.action',
     ])
     expect(dScenario.d1EffectsCount).toBe(3)
   })
