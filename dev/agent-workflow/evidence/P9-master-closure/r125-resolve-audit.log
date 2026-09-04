@@ -1,0 +1,15 @@
+﻿IMPORT-OK agent-bindings.mjs (top-level exports: 1)
+INSIDE  [agent-bindings.mjs]  @deepseek-ai/dsh-agent  ->  node_modules\.pnpm\@deepseek-ai+dsh-agent@0.1._22a8cd042247b495b38acb640664e5b6\node_modules\@deepseek-ai\dsh-agent\lib\index.js
+INSIDE  [agent-bindings.mjs]  @deepseek-ai/dsh-llm  ->  node_modules\.pnpm\@deepseek-ai+dsh-llm@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2\node_modules\@deepseek-ai\dsh-llm\lib\index.js
+INSIDE  [agent-bindings.mjs]  @deepseek-ai/dsh-mcp-client  ->  node_modules\.pnpm\@deepseek-ai+dsh-mcp-client_69ead0b2892bfd58c08f0037043f6a92\node_modules\@deepseek-ai\dsh-mcp-client\lib\index.js
+INSIDE  [agent-bindings.mjs]  @deepseek-ai/dsh-session  ->  node_modules\.pnpm\@deepseek-ai+dsh-session@0._ee5063a80d448ae764858c08e7528ed1\node_modules\@deepseek-ai\dsh-session\lib\index.js
+INSIDE  [agent-bindings.mjs]  @deepseek-ai/dsh-storage-domain  ->  node_modules\.pnpm\@deepseek-ai+dsh-storage-do_9f44d404e0b20c2f6e8599234336f27b\node_modules\@deepseek-ai\dsh-storage-domain\lib\index.js
+INSIDE  [agent-bindings.mjs]  zod  ->  node_modules\.pnpm\zod@4.4.3\node_modules\zod\index.cjs
+IMPORT-OK seam.mjs (top-level exports: 1)
+INSIDE  [seam.mjs]  @deepseek-ai/dsh-agent  ->  node_modules\.pnpm\@deepseek-ai+dsh-agent@0.1._22a8cd042247b495b38acb640664e5b6\node_modules\@deepseek-ai\dsh-agent\lib\index.js
+INSIDE  [seam.mjs]  @deepseek-ai/dsh-llm  ->  node_modules\.pnpm\@deepseek-ai+dsh-llm@0.1.2-rc.1_@deepseek-ai+cordis@4.0.2\node_modules\@deepseek-ai\dsh-llm\lib\index.js
+INSIDE  [seam.mjs]  @deepseek-ai/dsh-mcp-client  ->  node_modules\.pnpm\@deepseek-ai+dsh-mcp-client_69ead0b2892bfd58c08f0037043f6a92\node_modules\@deepseek-ai\dsh-mcp-client\lib\index.js
+INSIDE  [seam.mjs]  @deepseek-ai/dsh-session  ->  node_modules\.pnpm\@deepseek-ai+dsh-session@0._ee5063a80d448ae764858c08e7528ed1\node_modules\@deepseek-ai\dsh-session\lib\index.js
+INSIDE  [seam.mjs]  @deepseek-ai/dsh-storage-domain  ->  node_modules\.pnpm\@deepseek-ai+dsh-storage-do_9f44d404e0b20c2f6e8599234336f27b\node_modules\@deepseek-ai\dsh-storage-domain\lib\index.js
+INSIDE  [seam.mjs]  zod  ->  node_modules\.pnpm\zod@4.4.3\node_modules\zod\index.cjs
+AUDIT-PASS: all 12 resolutions inside the tree; both modules import clean (hermetic)

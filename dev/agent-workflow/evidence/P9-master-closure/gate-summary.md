@@ -1,6 +1,7 @@
-# R125 Gate 总结 — int/P9-master-product-closure @ 8cf9fcb（.worktrees/P9-MC，全新 tree 复跑）
+# R125 Gate 总结 — int/P9-master-product-closure（原跑 @ 8cf9fcb；证据重捕复跑 @ 071080d；2026-09-05 再验证 @ ad0a869）（.worktrees/P9-MC，全新 tree 复跑）
 
 日期：2026-09-04。tree = master(2c1c200) + task/upstream-rc1-compat(bd38827) 合并(232316d) + R125(1/2)(8cf9fcb)。
+复跑史：2026-09-04 于 071080d 重捕 install/build/lint 日志（证据完整性补全，gate-*.log 为 @071080d 产物）；2026-09-05 于 ad0a869（R125(3) client devDep 修复后）以 Node v24.20.0 再验证：install EXIT 0 / 逐包 tsc 9/9 / 根配置 vitest 219 files 2395/2395 / client 逐包 33 files 480/480 / eslint EXIT 0 / composition 4 产物 byte-identical（2097CE5E/D385C065/B4509233/D50D3B3F）/ fresh-clone 模拟全断言 PASS（fresh-clone-sim-r125/sim-ad0a869.log）。
 环境：Node v26.0.0 / pnpm 11.7.0 / 暖 store `D:/.pnpm-store` / workspace-write 沙箱（vitest 需 vite child-spawn → 本会话一次性 full-access 授权；其余门全部在默认沙箱内直跑 node 二进制）。
 方法论：逐包独立、无 `pnpm -r`（R122 同法）；`pnpm install --ignore-scripts` + 逐包 `node node_modules/typescript/bin/tsc -p …`（R122 同法，沙箱 pnpm lifecycle spawn EPERM 绕行）。
 

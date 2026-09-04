@@ -26,7 +26,7 @@ upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Ar
 | `docs/contracts/` | contracts v1 冻结确认记录（P3-T6） |
 | `docs/migration/` | legacy 行为清单、reuse map |
 | `dev/agent-workflow/` | 编排状态 `graph.yaml`、只追加日志 `SESSION_ROUTER_LOG.md`、证据 `evidence/<task>/` |
-| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；HEAD 锁 `a3ab319927...`，tag `legacy-agent-team-pre-vnext`；禁止任何 vNext 开发） |
+| `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；冻结点 = 分支 `feat/team-vnext-integration-20260829` tip 与 tag `legacy-agent-team-pre-vnext`，均锁 `a3ab319927...`（2026-09-05 复核未移动）；工作树 checkout HEAD 现于 `cd5ef814...`（upstream 0.1.2-alpha.1 基线，2026-09-04 基线对比用检出，状态 clean）；禁止任何 vNext 开发） |
 | `references/deepseek-harness-test-use/` | 测试专用 DSH 源码（pristine upstream 角色；唯一允许的运行时源码；基线 0.1.2-rc.1 @ `76fda72979`（2026-09-04 in-place 升级，R122 留痕）；见 TEST_METHODS.md） |
 | `.worktrees/` | 任务 worktree（gitignored；一个任务一个） |
 | 根 `packages/` | vNext 9-package 结构（contracts/domain/storage/runtime/tools/remote/client/legacy/testkit，TaskDoc §11 冻结；P0 骨架 → P1–P9 完整实现，P9 GO 2026-09-04）；**禁止**复制 legacy `packages/team` 源码进来 |
