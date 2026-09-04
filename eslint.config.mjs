@@ -14,6 +14,7 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      '**/composition-shim/**',
       '**/node_modules/**',
       '.worktrees/**',
       'references/**',
