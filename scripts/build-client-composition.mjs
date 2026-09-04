@@ -63,6 +63,15 @@ const OUT = resolve(outDir)
 const PROBE = process.argv.slice(2).includes('--probe')
 
 const PLUGIN_ID = '@dsh-agent-team/client'
+// plugin-bundle-form: the git-install bundle form names its client row by the
+// ROOT package (`dsh-agent-team` — nearestPackage walk from the row's module
+// lands on the root manifest), while the manual shim form names it by the
+// shim package. The emitted facade therefore registers the SAME lazy factory
+// under both ids; each world claims exactly one, and the unclaimed
+// registration stays inert (the client module system materializes factories
+// on first import and never errors on unclaimed ids — verified against
+// packages/client/modules/src/client/system.ts in the test-use host).
+const ROOT_PLUGIN_ID = 'dsh-agent-team'
 const EXTERNALS = new Set([
   'react',
   'react/jsx-runtime',
@@ -440,9 +449,7 @@ const cssTable = {}
 for (const [key, v] of cssFiles) cssTable[key] = { classes: v.classes, text: v.text }
 
 const parts = []
-parts.push(`window.__ModuleLoader__.load({`)
-parts.push(`\tid: ${JSON.stringify(PLUGIN_ID)},`)
-parts.push(`\tfactory: (require) => {`)
+parts.push(`var __dshFactory = (require) => {`)
 parts.push(`\t\tvar module = { exports: {} };`)
 parts.push(`\t\tvar exports = module.exports;`)
 parts.push(`\t\tObject.defineProperty(exports, Symbol.toStringTag, { value: "Module" });`)
@@ -533,7 +540,9 @@ if (PROBE) {
 }
 parts.push(`\t\treturn module.exports;`)
 parts.push(`\t}`)
-parts.push(`});`)
+parts.push(`};`)
+parts.push(`window.__ModuleLoader__.load({ id: ${JSON.stringify(ROOT_PLUGIN_ID)}, factory: __dshFactory });`)
+parts.push(`window.__ModuleLoader__.load({ id: ${JSON.stringify(PLUGIN_ID)}, factory: __dshFactory });`)
 parts.push('')
 
 const bundleText = parts.join('\n')

@@ -170,6 +170,29 @@ prepare 嵌套 install 物化）解析 `@deepseek-ai/*` 是版本正确路径；
   - `pbf-resolver-fallback-probe.mjs`（裸目录运行）：S2 无依赖作用域 → checkout
     回落成功（修复前必失败）。
 
+### D8 — client bundle 双 id 注册（执行期决策，D5 第二世界暴露）
+
+bundle 形式的 client 行 registry key = **根包名 `dsh-agent-team`**（bare 行
+`dsh-agent-team` → `locatePkgJson`/`nearestPackage` 上行走 → 根 manifest
+声明该 name），而手动 shim 形式（§3）的 key = shim 包名
+`@dsh-agent-team/client` —— 同一物理 client-bundle.js 在两个世界需要不同
+注册 id。宿主 client 模块系统（test-use
+`packages/client/modules/src/client/system.ts`，源码核验）语义：
+
+- `__ModuleLoader__.load({id, factory})` = **惰性注册**（factory 在首次
+  import 时 materialize，注册时不执行）；
+- 未被任何 graph row 认领的 id **不报错**（`register` 只查重复，不查
+  「无 row 认领」）；
+- 同 id 二次注册才 throw（`duplicate factory registration`）。
+
+→ composition facade（`scripts/build-client-composition.mjs`）发射
+`var __dshFactory = …` 后对**同一 factory 引用**注册两次
+（`dsh-agent-team` + `@dsh-agent-team/client`）：每个世界恰好认领一个、
+factory 每页面执行一次，另一个注册惰性休眠。单文件双世界兼容，无运行时
+探测。副作用：client-bundle.js 基线 SHA 更新（旧 2097CE5E… →
+4A4F36CF…，845581 → 845693 B）；byte-identity 判据不变（安装面 vs 任务树
+构建，两侧同重建）。
+
 ### D5 — 测试世界（核心证据，真实 CLI reconcile 路径）
 
 全新 DSH_HOME = `references/.dsh-test-pbf-<stamp>`（工作区内；端口 3180 族，
@@ -219,6 +242,34 @@ allowBuilds → 重跑 exit 0 ≈3.25 min，含 git fetch + 嵌套 install + 9 �
 composition）；boot preflight **失败** = 安装面缺 `packages/tools`（files 裁剪，
 见 D3）→ 暴露同闭包缺口 `upstream-resolver.mjs` → 产品修复（files +1 行）+
 五闸重跑 + 新世界全量重跑（本条目的证据以新世界为准；旧世界保留为失败留痕）。
+
+**第二跑记录（世界 2026-09-04T20-07-22，装 610f572）**：setup 全断言 PASS；
+boot 迭代暴露三处 kit 假设 + 一处产品缺口（产品缺口 = D8）：
+
+1. **picker pin dialect（kit）**：user 层对已存在的 `directory-picker`
+   （dsh-web-app bundle 层 auto 选择行）必须用**裸行**覆盖
+   （`- id: …, disabled: true` = 整行替换；`- insert:` 同 id =
+   `duplicate loader entry id` 硬失败）——上游自身 fixture
+   `apps/web/tests/pin-browse-picker.overlay.yml` 的 "disable+insert pair"
+   为准（S8 kit 的 indent-0 发射即裸行，派生时被误正规化为 insert）。
+2. **dump-config 行形态（kit）**：行 `name` **按写入保留**（package
+   specifier 行保持 specifier、file 行保持 file URL，不做 resolved 归一）；
+   bundle 层 section 以 bundle 名 keyed（`# == dsh-agent-team`）——
+   gate 改为 specifier 断言 + 「产品行位于 bundle section 而非 user
+   section」的归属断言。
+3. **team_domain 重入（世界卫生）**：bootPhase=create 对已创建 domain
+   fail-loud（`use openTeamDomain`）—— 同一世界二次 boot 前须清
+   `storages/`+`sessions/`（kit 无自动清；首跑留痕世界不回收）。
+4. **client 注册 key（产品 → D8）**：gentry G0 壳渲染失败，浏览器 console
+   = `bundle … loaded without registering "dsh-agent-team" via
+   __ModuleLoader__.load`（+ 级联 `duplicate factory registration`）；
+   根因 = client-bundle 自注册 shim key ≠ bundle 世界 registry key
+   → D8 双 id 注册 → 五闸重绿 → Commit E → 第三世界全量重跑。
+
+   boot 侧 gate 集在第二世界**已全绿**（row ready rootSessionId=team-root
+   / 401 / dump 行 + 归属 / serve combo 含 bundle 字节 / catalog.list
+   my-team-bp-1 / 4 件 byte-identical = D5-READY）—— host 面与 D8 无关，
+   第三世界重验为同一 install 面的完整垂直闭环。
 
 ### D6 — 五闸与红线（继承 R125 判据）
 
