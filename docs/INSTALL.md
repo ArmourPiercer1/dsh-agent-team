@@ -238,6 +238,7 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
 | `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（快速安装） | pnpm 11 拒绝执行未白名单的 git 依赖 `prepare`：把 pnpm 打印的**完整 `name@spec#commit` 键**（照抄、非裸包名）写入 profile `pnpm-workspace.yaml` 的 `allowBuilds:`，重跑 `add`（§2） |
 | `declares no dsh.bundle` 警告 / 无 Team UI | 装入的 commit 是 bundle-form 之前的旧版（root 无 `dsh.bundle` 声明）：`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#<新commit>` 重装，或改 §3 手动路径 |
 | 快速安装 host 行加载失败（无 file:// 路径） | `prepare` 链未走完 → dist 缺失（boot fail-loud）：在依赖目录 `<profile>/node_modules/dsh-agent-team` 手工补跑 `pnpm install --ignore-scripts && pnpm build && pnpm build:composition` 后重启；@deepseek-ai/\* 解析错 = 嵌套安装闭包不全（registry 可达性 / lockfile） |
+| 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 装入的 commit 处于 bundle-form 初期 `files` 安装面不全的窗口（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被遗漏）：用新 commit 重装；临时处置 = 从源码树把 `packages/runtime/src/plugin/upstream-resolver.mjs` 拷入依赖目录同相对路径后重启 |
 | seam 推导失败（`no default seam module was found`） | 安装目录结构残缺（入口推导的两个布局候选都不存在）：重装，或改 §3 手动形态写显式 `seamUrl` |
 | host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection` / `mcpServer` 三字段之一（必填、fail-closed，见 §3 模板） |
 | host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install` |

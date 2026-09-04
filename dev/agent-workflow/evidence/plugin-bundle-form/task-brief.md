@@ -89,7 +89,8 @@ gentry G0–G4 全绿）。
     "./package.json": "./package.json"
   },
   "files": ["cordis.patch.yml", "packages/client/composition-shim",
-            "packages/runtime/dist", "packages/runtime/root-binding"],
+            "packages/runtime/dist", "packages/runtime/root-binding",
+            "packages/runtime/src/plugin/upstream-resolver.mjs"],
   "scripts": { "prepare": "pnpm install --ignore-scripts && pnpm build && pnpm build:composition", ... }
 }
 ```
@@ -98,7 +99,15 @@ gentry G0–G4 全绿）。
 - `./host` → dist host.js：host 行（subpath）落点；
 - `./client` → client-bundle.js：client 面 `clientExportOf` 直读；
 - `./package.json`：`locatePkgJson` 无 Node internals 回退路径需要（`resolve(name/package.json)`）；
-- `files`：git 依赖不裁剪（全 checkout），npm publish 场景的发布面文档化。
+- `files`：**git 依赖安装面 = `files` 字段（D5 实证修正）** —— pnpm 对 git 依赖
+  同样按 `files` 裁剪物化（非全 checkout；D5 首次 boot preflight 实证：
+  `packages/tools` 不在 `files` 中 → 安装面缺失）。boot 链闭包审计（host.js
+  dist 闭包 ⊂ `packages/runtime/dist` 镜像 + 安装 node_modules；glue 的
+  `@deepseek-ai/*` + 相对导入同闭包；seam.mjs 仅 `dsh-storage-domain`+`zod`）
+  后唯一缺口 = `upstream-resolver.mjs`（host.js 的 resolve 钩子，tsc 不拷贝
+  .mjs、src 布局也不在 dist 镜像内 → 候选 1/2 均指向
+  `<install>/packages/runtime/src/plugin/upstream-resolver.mjs` 同一文件）
+  → 显式列入 `files`。
 
 ### D4 — host.ts glueUrl/seamUrl 推导（唯一产品代码改动）
 
@@ -164,27 +173,52 @@ prepare 嵌套 install 物化）解析 `@deepseek-ai/*` 是版本正确路径；
 ### D5 — 测试世界（核心证据，真实 CLI reconcile 路径）
 
 全新 DSH_HOME = `references/.dsh-test-pbf-<stamp>`（工作区内；端口 3180 族，
-:3180 若被用户实例占用则 3181 并登记 evidence）：
+:3180 若被用户实例占用则 3181 并登记 evidence）。套件（本 evidence 目录，
+自 R125 审计过的 s8-boot/s8-gentry 派生，替换项逐一列在各文件头）：
 
-1. 本地 bare 仓 `references/.dsh-test-pbf-<stamp>/repo.git`（自任务树 `git clone --bare`，
-   含 task 分支）—— 等价 github: spec 的 git 依赖路径（prepare 被拦语义相同）。
+- `d5-setup.mjs` — bare 仓 + 真实 CLI `plugin add` 双跑 + 断言（步骤 1–2 + 安装面）；
+- `d5-boot.mjs` — 实例 boot + S8-READY 等价 gate 集（步骤 3 + 4 产物 byte-identity），
+  READY 后常驻（background job 生命周期，`stop` 子命令收口）；
+- `d5-gentry.mjs` — 浏览器 G0–G4（步骤 4）。
+
+1. 本地 bare 仓 `references/.dsh-test-pbf-<stamp>/repo.git`（自主仓 `git clone --bare`，
+   含 task 分支 @ 任务 tip）—— 等价 github: spec 的 git 依赖路径
+   （prepare 被拦语义相同；spec = `git+file:///<drive>:/…/repo.git#<branch>`，
+   **三斜杠**，probe4 实证两斜杠被 pnpm 改写坏）。
 2. test-use 构建产物 CLI：`node apps/cli/lib/bin.js plugin --profile web add
    "git+file:///...repo.git#<branch>"`（DSH_HOME=新世界）：
    - **首跑（blocked）**：pnpm 拦 prepare（告警 + 实打 key）→ CLI exit 与提示捕获留证；
-   - 按 pnpm 实打 key 写入 profile `pnpm-workspace.yaml` allowBuilds → **重跑 add**；
+     实证：宿主 CLI 自身打印的 allowBuilds 指引（"add the exact key pnpm printed
+     above under allowBuilds … then re-run"）与 INSTALL.md §2 逐字一致；
+   - 按 pnpm 实打 key（完整 `name@spec#commit`）写入 profile `pnpm-workspace.yaml`
+     allowBuilds → **重跑 add**；
    - 断言：profile package.json `dependencies.dsh-agent-team` 存在；
-     `dsh.profile.bundles` 自动含 `dsh-agent-team`（reconcile 产物，非手写）；
-     包目录内 dist + composition-shim 已生成（prepare 真跑）。
-3. boot：`node apps/cli/lib/bin.js web --port <3180族> --no-open`：
+     `dsh.profile.bundles` 自动含 `dsh-agent-team`（reconcile 产物，非手写；
+     实测 = `["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]`）；
+     用户层 patch 无产品行；包目录内 dist + composition-shim 已生成（prepare 真跑）。
+3. boot（DshInstance，RC1 characterization lib；user 层 patch = 仅测试装置行：
+   p6t6 观测 health 门指向**任务树** tools harness（git 依赖安装面不含
+   packages/tools —— D3 files 裁剪发现；其 @deepseek-ai/* 从任务树 node_modules
+   解析 = R122/125 已验证的双实例世界）+ headless 目录选择器 pin；
+   **产品行全部来自 bundle 层**（安装面根 cordis.patch.yml））：
    - 启动行 / 401 门 / token 门（R125 判据）；
-   - `--dump-config`：dsh-agent-team host 行 + client 行在 composed 树（bundle 层来源）；
-   - row health（boot/ready/rootSessionId）+ catalog.list ok（blueprint = 包内默认
+   - `--dump-config`：dsh-agent-team host 行 + client 行在 composed 树（bundle 层来源，
+     解析为安装面绝对 file URL）；
+   - row health（p6t6 /__p6t6/health ready）+ catalog.list ok（blueprint = 包内默认
      my-team-bp-1，证 layer doc 生效）；
-   - serve combo 含 client bundle（client 行经根 dsh.client 面被发现）。
-4. 浏览器 gentry G0–G4（R118/R119/R121 回归同判据）：Team tab / 建队 / 对话。
-5. 4 件安装面产物 byte-identical（2097CE5E…/D385C065…/B4509233…/D50D3B3F… 前缀，
-   对任务树构建 vs 安装面副本）。
-6. 停实例、端口释放核验、test-use byte-clean 复核。
+   - serve：client 行 module registry key = **根包名 `dsh-agent-team`**（bare 行 →
+     nearestPackage 上行走 → 根 manifest 声明该 name；非 R122 shim 世界的
+     `@dsh-agent-team/client`）→ `/plugins/dsh-agent-team/client.js`，
+     服务字节 = 安装面 client-bundle.js；
+   - 4 件安装面产物 byte-identical（安装面 vs 任务树构建）。
+4. 浏览器 gentry G0–G4（R118/R119/R121 回归同判据；blueprint = my-team-bp-1）。
+5. 停实例、端口释放核验、test-use byte-clean 复核。
+
+**首跑记录（世界 2026-09-04T19-58-01）**：setup 全断言 PASS（硬失败捕获 →
+allowBuilds → 重跑 exit 0 ≈3.25 min，含 git fetch + 嵌套 install + 9 包 tsc +
+composition）；boot preflight **失败** = 安装面缺 `packages/tools`（files 裁剪，
+见 D3）→ 暴露同闭包缺口 `upstream-resolver.mjs` → 产品修复（files +1 行）+
+五闸重跑 + 新世界全量重跑（本条目的证据以新世界为准；旧世界保留为失败留痕）。
 
 ### D6 — 五闸与红线（继承 R125 判据）
 
@@ -209,7 +243,8 @@ prepare 嵌套 install 物化）解析 `@deepseek-ai/*` 是版本正确路径；
 
 ## 3. 非目标
 
-- 不发布 npm 包（github:/git 路径即支持面；`files` 字段仅为发布面文档化）。
+- 不发布 npm 包（github:/git 路径即支持面；`files` 字段同时是 git 依赖安装面
+  —— D5 实证，见 D3）。
 - 不改宿主（CORE PATCH BUDGET=0）。
 - 不处理 pnpm 11 对用户 profile lockfile 的重写怪象（宿主侧行为，与本任务无关；
   放行 prepare 后的安装路径由 D5 实证）。

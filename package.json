@@ -26,7 +26,8 @@
     "cordis.patch.yml",
     "packages/client/composition-shim",
     "packages/runtime/dist",
-    "packages/runtime/root-binding"
+    "packages/runtime/root-binding",
+    "packages/runtime/src/plugin/upstream-resolver.mjs"
   ],
   "scripts": {
     "build": "pnpm -r run build",
