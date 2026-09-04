@@ -1,0 +1,5 @@
+﻿s8-bundle: 84 modules, 10 css files
+s8-bundle: entry=plugin/client.js
+s8-bundle: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+s8-bundle: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\shim\client-bundle.js (830737 B)
+s8-bundle: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\shim\package.json

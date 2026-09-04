@@ -1,0 +1,713 @@
+[
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/?token=<REDACTED>",
+    "status": 303,
+    "t": 1788455157908,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/",
+    "status": 200,
+    "t": 1788455157910,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=28e1db08b1d0",
+    "status": 200,
+    "t": 1788455157920,
+    "kind": "plugins"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-BNsW4eBh.css",
+    "status": 200,
+    "t": 1788455157920,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-CsBy6quH.css",
+    "status": 200,
+    "t": 1788455157921,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-D-eoFxDP.js",
+    "status": 200,
+    "t": 1788455157929,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-CCJJTK99.js",
+    "status": 200,
+    "t": 1788455157936,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,",
+    "status": 200,
+    "t": 1788455158052,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": null,
+    "t": 1788455158176,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"201a8e7a-691a-47d2-a715-7f5dbd9a8844\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}",
+    "rpcId": "201a8e7a-691a-47d2-a715-7f5dbd9a8844",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": null,
+    "t": 1788455158176,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"e64b2dc2-ac16-43a8-8b2c-5afa5d004e42\",\"method\":\"dynamicCordisRunner/syncInspectManifest\",\"payload\":{\"args\":{\"providers\":[{\"id\":\"Service\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"methods\":[{\"name\":\"listService\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"service\":{\"type\":\"string\",\"description\":\"Exact Service key. Omit it for the compact Service and method-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Service directory, or one exact Service contract with only its referenced type declarations.\"}}]},{\"id\":\"Event\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"methods\":[{\"name\":\"listEvents\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"event\":{\"type\":\"string\",\"description\":\"Exact Event name. Omit it for the compact Event and listener-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Event directory, or one exact Event contract with only its referenced type declarations.\"}}]},{\"id\":\"Builtin\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"methods\":[{\"name\":\"listBuiltins\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"JSON data owned by this inspect provider.\"}}]},{\"id\":\"Slots\",\"description\":\"Progressive live Slot inspection: compact purpose/topology trees plus one exact Slot contract.\",\"methods\":[{\"name\":\"listSubTree\",\"description\":\"Return compact live Slot trees for navigation. With root, also return t",
+    "rpcId": "e64b2dc2-ac16-43a8-8b2c-5afa5d004e42",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": null,
+    "t": 1788455158176,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"228243ae-0871-456b-ad56-638ffd4be3be\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}",
+    "rpcId": "228243ae-0871-456b-ad56-638ffd4be3be",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": null,
+    "t": 1788455158176,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"3acec243-8676-4a25-9840-8e83e20307bb\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}",
+    "rpcId": "3acec243-8676-4a25-9840-8e83e20307bb",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": null,
+    "t": 1788455158176,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"97eddbbd-2774-46bd-b822-3b1d3020e413\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}",
+    "rpcId": "97eddbbd-2774-46bd-b822-3b1d3020e413",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": null,
+    "t": 1788455158210,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"61585732-0833-4d02-9abb-fa93981505a3\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}",
+    "rpcId": "61585732-0833-4d02-9abb-fa93981505a3",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/events",
+    "status": 200,
+    "t": 1788455158216,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": null,
+    "t": 1788455158220,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"77dfa431-b951-4f06-b077-65df19027635\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}",
+    "rpcId": "77dfa431-b951-4f06-b077-65df19027635",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788455158178,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"201a8e7a-691a-47d2-a715-7f5dbd9a8844\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"apiKey\":327,\"apiKeyEnv\":330,\"baseURL\":331,\"mod",
+    "rpcId": "82124efd-37ba-4a67-8e63-808e44df2160",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"82124efd-37ba-4a67-8e63-808e44df2160\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788455158215,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"e64b2dc2-ac16-43a8-8b2c-5afa5d004e42\",\"result\":{\"ok\":true,\"value\":null}}",
+    "rpcId": "f8f6cc08-fab1-490a-a419-c64b06ca1a51",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"f8f6cc08-fab1-490a-a419-c64b06ca1a51\",\"method\":\"dynamicCordisRunner/syncInspectManifest\",\"payload\":{\"args\":{\"providers\":[{\"id\":\"Service\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"methods\":[{\"name\":\"listService\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"service\":{\"type\":\"string\",\"description\":\"Exact Service key. Omit it for the compact Service and method-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Service directory, or one exact Service contract with only its referenced type declarations.\"}}]},{\"id\":\"Event\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"methods\":[{\"name\":\"listEvents\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"event\":{\"type\":\"string\",\"description\":\"Exact Event name. Omit it for the compact Event and listener-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Event directory, or one exact Event contract with only its referenced type declarations.\"}}]},{\"id\":\"Builtin\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"methods\":[{\"name\":\"listBuiltins\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"JSON data owned by this inspect provider.\"}}]},{\"id\":\"Slots\",\"description\":\"Progressive live Slot inspection: compact purpose/topology trees plus one exact Slot contract.\",\"methods\":[{\"name\":\"listSubTree\",\"description\":\"Return compact live Slot trees for navigation. With root, also return t"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788455158215,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"228243ae-0871-456b-ad56-638ffd4be3be\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "2032ca06-b3a1-4c4f-ae93-664c3a323334",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"2032ca06-b3a1-4c4f-ae93-664c3a323334\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\",\"AMAZON_BEDROCK_API_KEY\",\"ANT_LING_API_KEY\",\"ANTHROPIC_API_KEY\",\"AZURE_OPENAI_RESPONSES_API_KEY\",\"BASETEN_API_KEY\",\"CEREBRAS_API_KEY\",\"CLOUDFLARE_AI_GATEWAY_API_KEY\",\"CLOUDFLARE_WORKERS_AI_API_KEY\",\"FIREWORKS_API_KEY\",\"GITHUB_COPILOT_API_KEY\",\"GOOGLE_API_KEY\",\"GOOGLE_VERTEX_API_KEY\",\"GROQ_API_KEY\",\"HUGGINGFACE_API_KEY\",\"KIMI_CODING_API_KEY\",\"MINIMAX_API_KEY\",\"MINIMAX_CN_API_KEY\",\"MISTRAL_API_KEY\",\"MOONSHOTAI_API_KEY\",\"MOONSHOTAI_CN_API_KEY\",\"NVIDIA_API_KEY\",\"OPENAI_API_KEY\",\"OPENAI_CODEX_API_KEY\",\"OPENCODE_API_KEY\",\"OPENCODE_GO_API_KEY\",\"OPENROUTER_API_KEY\",\"QWEN_TOKEN_PLAN_API_KEY\",\"QWEN_TOKEN_PLAN_CN_API_KEY\",\"QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY\",\"TOGETHER_API_KEY\",\"VERCEL_AI_GATEWAY_API_KEY\",\"XAI_API_KEY\",\"XIAOMI_API_KEY\",\"XIAOMI_TOKEN_PLAN_AMS_API_KEY\",\"XIAOMI_TOKEN_PLAN_CN_API_KEY\",\"XIAOMI_TOKEN_PLAN_SGP_API_KEY\",\"ZAI_API_KEY\",\"ZAI_CODING_CN_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788455158215,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"3acec243-8676-4a25-9840-8e83e20307bb\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "ce5f2f05-bdfa-47b8-b8ac-b30979906566",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ce5f2f05-bdfa-47b8-b8ac-b30979906566\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788455158215,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"97eddbbd-2774-46bd-b822-3b1d3020e413\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}",
+    "rpcId": "c9059df7-bf0b-46a3-a1b8-3e68c32c1db1",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c9059df7-bf0b-46a3-a1b8-3e68c32c1db1\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": null,
+    "t": 1788455158226,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"0570367e-4bfe-497c-a965-8c14f39a2365\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}",
+    "rpcId": "0570367e-4bfe-497c-a965-8c14f39a2365",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/list",
+    "status": null,
+    "t": 1788455158226,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"71044bbd-c374-4535-acdc-23c6ab69d3c9\",\"method\":\"session/list\",\"payload\":{\"args\":{\"_request\":{}}}}",
+    "rpcId": "71044bbd-c374-4535-acdc-23c6ab69d3c9",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788455158228,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"77dfa431-b951-4f06-b077-65df19027635\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "40734fd0-08f3-449b-bc64-a0022c317648",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"40734fd0-08f3-449b-bc64-a0022c317648\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788455158228,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ce5f2f05-bdfa-47b8-b8ac-b30979906566\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "b8ef0f74-b527-4fdb-84f5-0028b66647da",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"b8ef0f74-b527-4fdb-84f5-0028b66647da\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788455158232,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c9059df7-bf0b-46a3-a1b8-3e68c32c1db1\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}",
+    "rpcId": "27b70c55-cd4f-48e0-bde3-8def38c1c06f",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"27b70c55-cd4f-48e0-bde3-8def38c1c06f\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788455158236,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"82124efd-37ba-4a67-8e63-808e44df2160\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"apiKey\":327,\"apiKeyEnv\":330,\"baseURL\":331,\"mod",
+    "rpcId": "92e072c1-262b-459d-a257-d62e46a6dea9",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"92e072c1-262b-459d-a257-d62e46a6dea9\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788455158238,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"f8f6cc08-fab1-490a-a419-c64b06ca1a51\",\"result\":{\"ok\":true,\"value\":null}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/list",
+    "status": 200,
+    "t": 1788455158243,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"71044bbd-c374-4535-acdc-23c6ab69d3c9\",\"result\":{\"ok\":true,\"value\":{\"items\":[{\"sessionId\":\"s8v-root\",\"updatedAt\":1788455018682,\"running\":false,\"blank\":true,\"cwd\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"projections\":{\"asOfSeq\":2,\"values\":{\"sessionStats\":{\"turns\":0,\"steps\":0,\"llmMs\":0,\"toolMs\":0,\"ttftMs\":0,\"ttftSteps\":0,\"decodeMs\":0,\"decodeTokens\":0},\"title\":null,\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":0,\"outputTokens\":0,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{},\"contextBreakdown\":{\"systemTokens\":0,\"toolsTokens\":0,\"messageTokens\":0},\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"agentPreset\":null,\"permissions\":{\"options\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"currentValue\":\"workspace-write\"},\"modelSelection\":{\"lastUsed\":null,\"next\":null},\"sessionListMetadata\":{\"blank\":true,\"lastPromptAt\":null},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}}]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788455158249,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"40734fd0-08f3-449b-bc64-a0022c317648\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "ee3a5f7e-8517-48e1-8e7e-1f23f1411de1",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ee3a5f7e-8517-48e1-8e7e-1f23f1411de1\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788455158263,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"61585732-0833-4d02-9abb-fa93981505a3\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788455158270,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"0570367e-4bfe-497c-a965-8c14f39a2365\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}",
+    "rpcId": "30c8c4d9-13d0-4452-a43c-e011e33ed5ac",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"30c8c4d9-13d0-4452-a43c-e011e33ed5ac\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/mutate",
+    "status": null,
+    "t": 1788455160817,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ed4e9ded-b9f3-4f78-9810-1bc1b2298889\",\"method\":\"settings/mutate\",\"payload\":{\"args\":{\"ns\":\"ui-onboarding\",\"ops\":[{\"op\":\"set\",\"path\":[\"welcomeNoticeVersion\"],\"value\":\"2026-08-13.1\"}],\"expectedRevision\":0}}}",
+    "rpcId": "ed4e9ded-b9f3-4f78-9810-1bc1b2298889",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listProviders",
+    "status": null,
+    "t": 1788455160835,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"b71af582-1fa7-4271-b5e5-2ca4c54b4470\",\"method\":\"llm/listProviders\",\"payload\":{\"args\":{}}}",
+    "rpcId": "b71af582-1fa7-4271-b5e5-2ca4c54b4470",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listConfigurableProviders",
+    "status": null,
+    "t": 1788455160835,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d53853d8-2239-4c1b-a9e9-673726c693c6\",\"method\":\"llm/listConfigurableProviders\",\"payload\":{\"args\":{}}}",
+    "rpcId": "d53853d8-2239-4c1b-a9e9-673726c693c6",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/mutate",
+    "status": 200,
+    "t": 1788455160833,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ed4e9ded-b9f3-4f78-9810-1bc1b2298889\",\"result\":{\"ok\":true,\"value\":{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788455160836,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"27b70c55-cd4f-48e0-bde3-8def38c1c06f\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": null,
+    "t": 1788455160839,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"7d479bd3-100c-472e-9a0b-149bf0dbbaff\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}",
+    "rpcId": "7d479bd3-100c-472e-9a0b-149bf0dbbaff",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788455160838,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"92e072c1-262b-459d-a257-d62e46a6dea9\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"o"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listProviders",
+    "status": 200,
+    "t": 1788455160838,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"b71af582-1fa7-4271-b5e5-2ca4c54b4470\",\"result\":{\"ok\":true,\"value\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\"}]}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listConfigurableProviders",
+    "status": 200,
+    "t": 1788455160838,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d53853d8-2239-4c1b-a9e9-673726c693c6\",\"result\":{\"ok\":true,\"value\":[{\"provider\":\"deepseek-official\",\"displayName\":\"DeepSeek\",\"settingsNs\":\"llm-deepseek\",\"settingsPath\":[]},{\"provider\":\"amazon-bedrock\",\"displayName\":\"amazon-bedrock\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"amazon-bedrock\"],\"declared\":false},{\"provider\":\"ant-ling\",\"displayName\":\"ant-ling\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"ant-ling\"],\"declared\":false},{\"provider\":\"anthropic\",\"displayName\":\"anthropic\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"anthropic\"],\"declared\":false},{\"provider\":\"azure-openai-responses\",\"displayName\":\"azure-openai-responses\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"azure-openai-responses\"],\"declared\":false},{\"provider\":\"baseten\",\"displayName\":\"baseten\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"baseten\"],\"declared\":false},{\"provider\":\"cerebras\",\"displayName\":\"cerebras\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cerebras\"],\"declared\":false},{\"provider\":\"cloudflare-ai-gateway\",\"displayName\":\"cloudflare-ai-gateway\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cloudflare-ai-gateway\"],\"declared\":false},{\"provider\":\"cloudflare-workers-ai\",\"displayName\":\"cloudflare-workers-ai\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cloudflare-workers-ai\"],\"declared\":false},{\"provider\":\"deepseek\",\"displayName\":\"deepseek\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"deepseek\"],\"declared\":false},{\"provider\":\"fireworks\",\"displayName\":\"fireworks\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"fireworks\"],\"declared\":false},{\"provider\":\"github-copilot\",\"displayName\":\"github-copilot\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"github-copilot\"],\"declared\":false},{\"provider\":\"google\",\"displayName\":\"google\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"google\"],\"declared\":false},{\"provider\":\"google-vertex\",\"displayName\":\"google-vertex\",\"settingsNs"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788455160841,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"7d479bd3-100c-472e-9a0b-149bf0dbbaff\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"o"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788455160843,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ee3a5f7e-8517-48e1-8e7e-1f23f1411de1\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788455160845,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"2032ca06-b3a1-4c4f-ae93-664c3a323334\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false},\"AMAZON_BEDROCK_API_KEY\":{\"configured\":false,\"writable\":true},\"ANT_LING_API_KEY\":{\"configured\":false,\"writable\":true},\"ANTHROPIC_API_KEY\":{\"configured\":false,\"writable\":true},\"AZURE_OPENAI_RESPONSES_API_KEY\":{\"configured\":false,\"writable\":true},\"BASETEN_API_KEY\":{\"configured\":false,\"writable\":true},\"CEREBRAS_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_AI_GATEWAY_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_WORKERS_AI_API_KEY\":{\"configured\":false,\"writable\":true},\"FIREWORKS_API_KEY\":{\"configured\":false,\"writable\":true},\"GITHUB_COPILOT_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_VERTEX_API_KEY\":{\"configured\":false,\"writable\":true},\"GROQ_API_KEY\":{\"configured\":false,\"writable\":true},\"HUGGINGFACE_API_KEY\":{\"configured\":false,\"writable\":true},\"KIMI_CODING_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"MISTRAL_API_KEY\":{\"configured\":false,\"writable\":true},\"MOONSHOTAI_API_KEY\":{\"configured\":false,\"writable\":true},\"MOONSHOTAI_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"NVIDIA_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENAI_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENAI_CODEX_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENCODE_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENCODE_GO_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENROUTER_API_KEY\":{\"configured\":false,\"writable\":true},\"QWEN_TOKEN_PLAN_API_KEY\":{\"configured\":false,\"writable\":true},\"QWEN_TOKEN_PLAN_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY\":{\"configured\":false,\"writable\":true},\"TOGETHER_API_KEY\":{\"configured\":false,\"writable\":true},\"VERCEL_AI_GATEWAY_API_KEY\":{\"configured\":"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": null,
+    "t": 1788455162381,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"02cff636-819a-4f64-85f1-dcabdc883543\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{}}}",
+    "rpcId": "02cff636-819a-4f64-85f1-dcabdc883543",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788455162393,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"02cff636-819a-4f64-85f1-dcabdc883543\",\"result\":{\"ok\":true,\"value\":{\"path\":\"C:\\\\Users\\\\user\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"C:\\\\\",\"path\":\"C:\\\\\",\"hidden\":false},{\"name\":\"Users\",\"path\":\"C:\\\\Users\",\"hidden\":false},{\"name\":\"user\",\"path\":\"C:\\\\Users\\\\user\",\"hidden\":false}],\"entries\":[{\"name\":\".anaconda_backup\",\"path\":\"C:\\\\Users\\\\user\\\\.anaconda_backup\",\"hidden\":true},{\"name\":\".aws\",\"path\":\"C:\\\\Users\\\\user\\\\.aws\",\"hidden\":true},{\"name\":\".azure\",\"path\":\"C:\\\\Users\\\\user\\\\.azure\",\"hidden\":true},{\"name\":\".cache\",\"path\":\"C:\\\\Users\\\\user\\\\.cache\",\"hidden\":true},{\"name\":\".cagent\",\"path\":\"C:\\\\Users\\\\user\\\\.cagent\",\"hidden\":true},{\"name\":\".cc-switch\",\"path\":\"C:\\\\Users\\\\user\\\\.cc-switch\",\"hidden\":true},{\"name\":\".claude\",\"path\":\"C:\\\\Users\\\\user\\\\.claude\",\"hidden\":true},{\"name\":\".cline\",\"path\":\"C:\\\\Users\\\\user\\\\.cline\",\"hidden\":true},{\"name\":\".cloakbrowser\",\"path\":\"C:\\\\Users\\\\user\\\\.cloakbrowser\",\"hidden\":true},{\"name\":\".codex\",\"path\":\"C:\\\\Users\\\\user\\\\.codex\",\"hidden\":true},{\"name\":\".conda\",\"path\":\"C:\\\\Users\\\\user\\\\.conda\",\"hidden\":true},{\"name\":\".config\",\"path\":\"C:\\\\Users\\\\user\\\\.config\",\"hidden\":true},{\"name\":\".context7\",\"path\":\"C:\\\\Users\\\\user\\\\.context7\",\"hidden\":true},{\"name\":\".copilot\",\"path\":\"C:\\\\Users\\\\user\\\\.copilot\",\"hidden\":true},{\"name\":\".crossnote\",\"path\":\"C:\\\\Users\\\\user\\\\.crossnote\",\"hidden\":true},{\"name\":\".docker\",\"path\":\"C:\\\\Users\\\\user\\\\.docker\",\"hidden\":true},{\"name\":\".dsh\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh\",\"hidden\":true},{\"name\":\".dsh-dev\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh-dev\",\"hidden\":true},{\"name\":\".dsh-dev-backup\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh-dev-backup\",\"hidden\":true},{\"name\":\".dsh-team-test\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh-team-test\",\"hidden\":true},{\"name\":\".gemini\",\"path\":\"C:\\\\Users\\\\user\\\\.gemini\",\"hidden\":true},{\"name\":\".imagej\",\"path\":\"C:\\\\Users\\\\user\\\\.imagej\",\"hidden\":true},{\"name\":\".ipython\",\"path\":\"C:\\\\Users\\\\user\\\\.ipython\",\"hidden\":true},{\"name\":\".local\",\"path\":\"C:\\\\Users\\\\user\\\\.local\",\"hidden\":true},{\"name\":",
+    "rpcId": "2efc71a0-3f7a-4795-bb8b-6429041451a7",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"2efc71a0-3f7a-4795-bb8b-6429041451a7\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": null,
+    "t": 1788455164178,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"20703238-38f0-4167-8bc3-70056ed2f401\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\"}}}",
+    "rpcId": "20703238-38f0-4167-8bc3-70056ed2f401",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788455164176,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"2efc71a0-3f7a-4795-bb8b-6429041451a7\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false},{\"name\":\".dsh-test-s8-2026-09-03T17-03-32\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\",\"hidden\":false}],\"entries\":[{\"name\":\"profiles\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\profiles\",\"hidden\":false},{\"name\":\"s8-client-row\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\s8-client-row\",\"hidden\":false},{\"name\":\"sessions\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\sessions\",\"hidden\":false},{\"name\":\"storages\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\storages\",\"hidden\":false},{\"name\":\"workspace-s8v\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\",\"hidden\":false}],\"truncated\":false}}}",
+    "rpcId": "fd644979-344c-4c19-91b3-1555919bdc5e",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"fd644979-344c-4c19-91b3-1555919bdc5e\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788455164181,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"20703238-38f0-4167-8bc3-70056ed2f401\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false}],\"entries\":[{\"name\":\".dsh-test\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test\",\"hidden\":true},{\"name\":\".dsh-test-downstream\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-downstream\",\"hidden\":true},{\"name\":\".dsh-test-g2r1\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g2r1\",\"hidden\":true},{\"name\":\".dsh-test-g2r2\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g2r2\",\"hidden\":true},{\"name\":\".dsh-test-g2r3\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g2r3\",\"hidden\":true},{\"name\":\".dsh-test-g8-r2\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r2\",\"hidden\":true},{\"name\":\".dsh-test-g8-r3\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r3\",\"hidden\":true},{\"name\":\".dsh-test-g8-r4\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r4\",\"hidden\":true},{\"name\":\".dsh-test-g8-r5\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r5\",\"hidden\":true},{\"name\":\".dsh-test-g8-r6\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r6\",\"hidden\":true},{\"name\":\".dsh-test-int-fixcheck\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-int-fixcheck\",\"hidden\":true},{\"name\":\".dsh-test-p2t1\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\referenc",
+    "rpcId": "3fd9c2e7-b832-4f98-adf6-0750b81c8c10",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"3fd9c2e7-b832-4f98-adf6-0750b81c8c10\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788455164241,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"3fd9c2e7-b832-4f98-adf6-0750b81c8c10\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false},{\"name\":\".dsh-test-s8-2026-09-03T17-03-32\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\",\"hidden\":false},{\"name\":\"workspace-s8v\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\",\"hidden\":false}],\"entries\":[],\"truncated\":false}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788455164243,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"fd644979-344c-4c19-91b3-1555919bdc5e\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false},{\"name\":\".dsh-test-s8-2026-09-03T17-03-32\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\",\"hidden\":false}],\"entries\":[{\"name\":\"profiles\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\profiles\",\"hidden\":false},{\"name\":\"s8-client-row\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\s8-client-row\",\"hidden\":false},{\"name\":\"sessions\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\sessions\",\"hidden\":false},{\"name\":\"storages\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\storages\",\"hidden\":false},{\"name\":\"workspace-s8v\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\",\"hidden\":false}],\"truncated\":false}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/workspace/create",
+    "status": null,
+    "t": 1788455166766,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d8578221-0317-4aea-ab46-31a6a65b5dda\",\"method\":\"workspace/create\",\"payload\":{\"args\":{\"request\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\"}}}}",
+    "rpcId": "d8578221-0317-4aea-ab46-31a6a65b5dda",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/create",
+    "status": null,
+    "t": 1788455166923,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"163797f0-a48c-4151-be7a-a676d996f2db\",\"method\":\"session/create\",\"payload\":{\"args\":{\"request\":{\"workspaceId\":\"3afc0542-e9eb-4e5f-9b0d-b52156010fdb\"}}}}",
+    "rpcId": "163797f0-a48c-4151-be7a-a676d996f2db",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/workspace/create",
+    "status": 200,
+    "t": 1788455166920,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d8578221-0317-4aea-ab46-31a6a65b5dda\",\"result\":{\"ok\":true,\"value\":{\"workspace\":{\"workspaceId\":\"3afc0542-e9eb-4e5f-9b0d-b52156010fdb\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T17-03-32\\\\workspace-s8v\",\"title\":\"workspace-s8v\",\"sessionIds\":[],\"createdAt\":\"2026-09-03T17:06:06.768Z\",\"updatedAt\":\"2026-09-03T17:06:06.768Z\"},\"created\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": null,
+    "t": 1788455167299,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"cb733ba9-3cd8-4ace-8e68-9d9106bd6205\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}",
+    "rpcId": "cb733ba9-3cd8-4ace-8e68-9d9106bd6205",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": null,
+    "t": 1788455167300,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"7b1f2e9c-9da0-4ff1-bfdd-a351af47bc64\",\"method\":\"commands/list\",\"payload\":{\"args\":{\"agentId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}",
+    "rpcId": "7b1f2e9c-9da0-4ff1-bfdd-a351af47bc64",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": null,
+    "t": 1788455167301,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d588ac8c-0ecd-4903-8e02-73f7a3527a3b\",\"method\":\"skills/list\",\"payload\":{\"args\":{\"request\":{\"sessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}}",
+    "rpcId": "d588ac8c-0ecd-4903-8e02-73f7a3527a3b",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": null,
+    "t": 1788455167301,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"23313ba9-ceef-474f-8334-435ca40c15bb\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}",
+    "rpcId": "23313ba9-ceef-474f-8334-435ca40c15bb",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/create",
+    "status": 200,
+    "t": 1788455167277,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"163797f0-a48c-4151-be7a-a676d996f2db\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\",\"agentPreset\":\"standard\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788455167303,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"cb733ba9-3cd8-4ace-8e68-9d9106bd6205\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "a8e7b82a-f2c9-4fbb-a37e-e0515f27a3e3",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"a8e7b82a-f2c9-4fbb-a37e-e0515f27a3e3\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788455167305,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"b8ef0f74-b527-4fdb-84f5-0028b66647da\",\"result\":{\"ok\":true,\"value\":[]}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788455167306,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"7b1f2e9c-9da0-4ff1-bfdd-a351af47bc64\",\"result\":{\"ok\":true,\"value\":[{\"name\":\"compact\",\"description\":\"Compact older conversation history\"},{\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"name\":\"feedback\",\"description\":\"record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"name\":\"goal\",\"description\":\"set or view the goal for a long-running task\",\"input\":{\"hint\":\"[<objective>|clear|edit <objective>|pause|resume]\",\"images\":true}},{\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}},{\"name\":\"plan\",\"description\":\"Enter or leave plan mode\",\"input\":{\"hint\":\"[off|message]\",\"images\":true}}]}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788455167307,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d588ac8c-0ecd-4903-8e02-73f7a3527a3b\",\"result\":{\"ok\":true,\"value\":{\"skills\":[]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788455167307,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"23313ba9-ceef-474f-8334-435ca40c15bb\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-7488fc3c-3f1e-4f37-be22-ee322b6a90df' which this host does not own (bound root 's8v-root')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-7488fc3c-3f1e-4f37-be22-ee322b6a90df' which this host does not own (bound root 's8v-root')\"}}}}}",
+    "rpcId": "5010529e-61f2-4c58-97bc-8dcecda00712",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"5010529e-61f2-4c58-97bc-8dcecda00712\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788455169847,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"a8e7b82a-f2c9-4fbb-a37e-e0515f27a3e3\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/prompt",
+    "status": null,
+    "t": 1788455173011,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"3b2e5157-3079-48d3-b3e2-c7c864851ab5\",\"method\":\"session/prompt\",\"payload\":{\"args\":{\"request\":{\"requestId\":\"d372bea5-811b-4f7b-8254-4af562386a14\",\"sessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\",\"mode\":\"queue\",\"content\":[{\"type\":\"text\",\"text\":\"S8 vertical session\"}],\"clientTimeZone\":\"Asia/Shanghai\"}}}}",
+    "rpcId": "3b2e5157-3079-48d3-b3e2-c7c864851ab5",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788455173012,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"30c8c4d9-13d0-4452-a43c-e011e33ed5ac\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}",
+    "rpcId": "f68e8e73-59a5-4c1c-88ce-d4a1c9337845",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"f68e8e73-59a5-4c1c-88ce-d4a1c9337845\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/prompt",
+    "status": 200,
+    "t": 1788455173034,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"3b2e5157-3079-48d3-b3e2-c7c864851ab5\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788455173062,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"5010529e-61f2-4c58-97bc-8dcecda00712\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-7488fc3c-3f1e-4f37-be22-ee322b6a90df' which this host does not own (bound root 's8v-root')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-7488fc3c-3f1e-4f37-be22-ee322b6a90df' which this host does not own (bound root 's8v-root')\"}}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": null,
+    "t": 1788455174690,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"00959676-7699-418c-9ad4-f2d294883b29\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}",
+    "rpcId": "00959676-7699-418c-9ad4-f2d294883b29",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": null,
+    "t": 1788455174690,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"8ccdaa7c-387a-41b1-a92e-173143e8e9a1\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\"params\":{}}}",
+    "rpcId": "8ccdaa7c-387a-41b1-a92e-173143e8e9a1",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": null,
+    "t": 1788455174696,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ac6d92be-a889-4985-affa-de4c105aecda\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}",
+    "rpcId": "ac6d92be-a889-4985-affa-de4c105aecda",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": null,
+    "t": 1788455174698,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"dbd4b89b-fc03-43f9-81c8-f7217d2608e8\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}",
+    "rpcId": "dbd4b89b-fc03-43f9-81c8-f7217d2608e8",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788455174696,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"00959676-7699-418c-9ad4-f2d294883b29\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T17:06:06.936Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "rpcId": "1a9facf5-f6ad-43ff-a0c8-b02004e25b64",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"1a9facf5-f6ad-43ff-a0c8-b02004e25b64\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": 200,
+    "t": 1788455174697,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"8ccdaa7c-387a-41b1-a92e-173143e8e9a1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"s8v-bp-1\",\"revisions\":[1]}]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788455174700,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ac6d92be-a889-4985-affa-de4c105aecda\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T17:06:06.936Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788455174700,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"f68e8e73-59a5-4c1c-88ce-d4a1c9337845\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": 200,
+    "t": 1788455174701,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"dbd4b89b-fc03-43f9-81c8-f7217d2608e8\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprint\":{\"schemaVersion\":1,\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\",\"leader\":{\"templateId\":\"leader\",\"persona\":\"S8 leader persona: you lead the s8v browser-vertical team.\"},\"members\":[{\"templateId\":\"worker\",\"persona\":\"S8 worker persona: you are the deterministic s8v worker.\",\"displayName\":\"S8 Worker A\"}],\"requirements\":[{\"domain\":\"persona\",\"name\":\"standard\",\"optional\":false}],\"policyStates\":[{\"id\":\"default\",\"fields\":[],\"description\":\"The s8v default state.\"}],\"quotas\":{\"team\":{\"maxInstances\":12,\"maxConcurrent\":12},\"members\":{\"maxInstances\":4,\"maxConcurrent\":4}}}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.get\",\"endpoint\":\"catalog.get\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788455174702,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"1a9facf5-f6ad-43ff-a0c8-b02004e25b64\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T17:06:06.936Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-7488fc3c-3f1e-4f37-be22-ee322b6a90df\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  }
+]

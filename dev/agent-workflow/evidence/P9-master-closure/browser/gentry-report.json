@@ -1,0 +1,163 @@
+{
+  "at": "2026-09-04T17:18:58.403Z",
+  "origin": "http://127.0.0.1:3180",
+  "failures": [],
+  "results": {
+    "g1": {
+      "bpValue": "",
+      "bpOptions": [
+        {
+          "value": "",
+          "text": "选择蓝图…",
+          "disabled": true
+        },
+        {
+          "value": "s8v-bp-1",
+          "text": "s8v-bp-1 (rev 1)",
+          "disabled": false
+        }
+      ],
+      "createEnabled": false
+    },
+    "g3": {
+      "createBefore": 0,
+      "createAfter": 1,
+      "createOk": true,
+      "overlayClosed": true,
+      "rootSessionId": "session-ea2ca293-f3f2-4962-aa2b-35e2cc70b10a",
+      "wsPrefill": "e8899ba6-cc42-4748-8204-626bcefb30cc",
+      "wsBefore": {
+        "found": true,
+        "n": 1,
+        "texts": [
+          "新会话"
+        ],
+        "selectedIn": 1
+      },
+      "tabAbsentAtBoundary": true,
+      "teamTabVisible": true
+    },
+    "g4": {
+      "prepareN1": 1,
+      "prepareN2": 1,
+      "summaryText1": "S8-M4 ok (deepseek-v4-flash).",
+      "summaryText2": "S8-M4 ok (deepseek-v4-flash).",
+      "stillReady": true,
+      "midPreparing": 0
+    }
+  },
+  "rpcs": [
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"5348f3e8-2530-4cc4-8292-fe5ef32793f2\",\"method\":\"team.getProjection\",\"payload\":{\"versio"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"1106bee4-dfea-422b-895d-d9143597daf3\",\"method\":\"team.getProjection\",\"payload\":{\"versio"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"29e9756a-4ab1-4ec4-bcd0-b3d75655c16f\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\""
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"66714a82-e5c7-478e-b748-0f1130d896e3\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"p"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"ee911470-395b-46e4-a7ee-45d23ccc483e\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\""
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"4912bd1f-bc40-49d0-a0fe-ba0abea600bd\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"p"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"4ca4ee3e-6fc6-47b8-95b6-7ab4ec7af97b\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\""
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"5b11f842-7f91-44a9-b2b7-77ab1ecdf678\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"p"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"817bb2f1-190d-41e1-b434-18b5716505c3\",\"method\":\"intent.probe\",\"payload\":{\"version\":1,\""
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+      "status": 200,
+      "method": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"242f1e60-bc4b-4d1c-bb2a-a875a4235830\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"p"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.create",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"dc4f412c-21ef-4c7a-9a19-0644c2c9b686\",\"method\":\"team.create\",\"payload\":{\"version\":1,\"p"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.create",
+      "status": 200,
+      "method": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"d936b680-b487-4334-b9a7-5812f1ef710f\",\"method\":\"team.getLedgerPage\",\"payload\":{\"versio"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"27f2e8c9-d618-4b63-8a67-891527c7fc27\",\"method\":\"team.getProjection\",\"payload\":{\"versio"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "method": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"67f859a6-b768-473f-af5b-48a4bee51fb9\",\"method\":\"team.getProjection\",\"payload\":{\"versio"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "method": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": null,
+      "method": "{\"type\":\"client-request\",\"rpcId\":\"2389fa7f-452a-4d68-b324-fa9e85e906f4\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": 200,
+      "method": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+      "status": 200,
+      "method": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": 200,
+      "method": null
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

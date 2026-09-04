@@ -1,0 +1,21 @@
+{
+  "name": "@dsh-agent-team/client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "S8 composition shim: dsh.client manifest + ./client export for the P9 client bundle (product package.json untouched per D-T9-11/T10 pin).",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client-bundle.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web"
+    }
+  },
+  "files": [
+    "client-bundle.js",
+    "index.js"
+  ]
+}

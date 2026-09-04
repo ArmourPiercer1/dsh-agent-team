@@ -1,0 +1,782 @@
+[2026-09-02T18:23:35.189Z] T12 vertical runner start; nonce=mtkfcums5d034e; phases=build,fresh1,fresh2,restart1,handoff
+[2026-09-02T18:23:35.190Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T18:23:35.190Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T18:23:35.190Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T18:23:35.190Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T18:23:35.202Z] :3080 pre: 200
+[2026-09-02T18:23:35.339Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T18:23:35.341Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T18:23:35.342Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T18:23:35.348Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T18:23:35.359Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T18:23:35.360Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T18:23:35.361Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T18:23:35.362Z] == T12-V build dist 2026-09-02T18:23:35.361Z ==
+[2026-09-02T18:23:35.724Z] == legacy exit 0 ==
+[2026-09-02T18:23:37.464Z] == runtime exit 0 ==
+[2026-09-02T18:23:37.466Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T18:23:38.711Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T18:23:38.711Z] build: production dist built + import-probed OK
+[2026-09-02T18:23:38.713Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T18:23:40.512Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T18:23:40.553Z] A1: profile created via throwaway boot
+[2026-09-02T18:23:40.554Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T18:23:40.555Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T18:23:42.375Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T18:23:43.571Z] A1: row ready — toolCount=10
+[2026-09-02T18:23:43.571Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T18:23:43.825Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T18:23:43.827Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkfcums5d034e"
+[2026-09-02T18:23:44.657Z] V1: pass=true
+[2026-09-02T18:31:45.393Z] V2 (world A part): pass=false
+[2026-09-02T18:39:46.164Z] mock: mock: 3 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:46.178Z] mock: mock: 4 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:46.511Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T18:39:46.629Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:46.854Z] V3: pass=false
+[2026-09-02T18:39:47.284Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:47.719Z] V4: pass=true
+[2026-09-02T18:54:51.709Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkfcums5d034e"
+[2026-09-02T18:54:52.100Z] LIFECYCLE: pass=false
+[2026-09-02T18:54:52.109Z] V5: pass=true
+[2026-09-02T18:54:52.146Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T18:54:52.147Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T18:54:54.478Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T18:54:54.519Z] B1: profile created via throwaway boot
+[2026-09-02T18:54:54.520Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T18:54:54.521Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T18:54:56.331Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T18:54:57.528Z] B1: row ready — toolCount=10
+[2026-09-02T18:55:07.567Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkfcums5d034e phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T19:10:08.842Z] V2: pass=false
+[2026-09-02T19:10:08.848Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+[2026-09-02T19:10:08.850Z] A2: profile already initialized
+[2026-09-02T19:10:08.852Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T19:10:08.853Z] A2: directive written (boot=2 phase=resume)
+[2026-09-02T19:10:11.725Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-02T19:10:11.864Z] RESTART: pass=false
+[2026-09-02T19:10:11.865Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:10:13.695Z] throwaway boot OK: http://127.0.0.1:3184/?token=<REDACTED>
+[2026-09-02T19:10:13.736Z] C1: profile created via throwaway boot
+[2026-09-02T19:10:13.739Z] C1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\profiles\web\cordis.patch.yml
+[2026-09-02T19:10:13.740Z] C1: directive written (boot=4 phase=create)
+[2026-09-02T19:10:15.587Z] C1: booted at http://127.0.0.1:3184; auth cookie exchanged
+[2026-09-02T19:10:16.814Z] C1: row ready — toolCount=10
+[2026-09-02T19:10:26.840Z] C1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-c1-root-mtkfcums5d034e phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T19:10:27.236Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:27.240Z] mock: mock: 10 text reply (32 chars): "T12V_HANDBACK_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:28.375Z] mock: mock: 11 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:28.376Z] mock: mock: 12 text reply (32 chars): "T12V_HANDBACK_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:28.701Z] mock: mock: 13 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:28.701Z] mock: mock: 14 text reply (32 chars): "T12V_HANDBACK_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:29.963Z] mock: mock: 15 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:29.967Z] mock: mock: 16 text reply (32 chars): "T12V_HANDBACK_ACK_mtkfcums5d034e"
+[2026-09-02T19:10:30.056Z] HANDOFF: pass=true
+[2026-09-02T19:10:30.090Z] C1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T19:10:30.127Z] B1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T19:10:30.268Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T19:10:30.269Z] :3080 post: 200
+[2026-09-02T19:10:30.272Z] mock capture dumped: 16 requests -> t12v-mock-capture.json
+[2026-09-02T19:10:30.273Z] mini MCP server closed
+[2026-09-02T19:10:30.274Z] mock model endpoint closed
+[2026-09-02T19:10:30.275Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T19:10:30.275Z] T12 vertical runner done
+[2026-09-02T19:20:10.083Z] T12 vertical runner start; nonce=mtkhdm5e63ea67; phases=smoke
+[2026-09-02T19:20:10.084Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T19:20:10.084Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T19:20:10.084Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T19:20:10.084Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T19:20:10.094Z] :3080 pre: 200
+[2026-09-02T19:20:10.233Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T19:20:10.236Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T19:20:10.236Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T19:20:10.246Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T19:20:10.246Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T19:20:10.257Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T19:20:10.258Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T19:20:10.259Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T19:20:10.260Z] == T12-V build dist 2026-09-02T19:20:10.260Z ==
+[2026-09-02T19:20:10.604Z] == legacy exit 0 ==
+[2026-09-02T19:20:12.181Z] == runtime exit 0 ==
+[2026-09-02T19:20:12.183Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T19:20:13.060Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T19:20:13.061Z] smoke: production dist built + glue placed + import-probed OK
+[2026-09-02T19:20:13.061Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:20:14.874Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T19:20:14.916Z] SMOKE: profile created via throwaway boot
+[2026-09-02T19:20:14.917Z] SMOKE: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T19:20:14.917Z] SMOKE: directive written (boot=1 phase=create)
+[2026-09-02T19:20:16.738Z] SMOKE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T19:20:17.959Z] SMOKE: row ready — toolCount=10
+[2026-09-02T19:20:17.975Z] smoke: state boot=1 phase=create root=session-t12v-a-root-mtkhdm5e63ea67 team=[object Object] members=["inst-leader"]
+[2026-09-02T19:20:17.979Z] smoke: root session header cwd=C:/agent-team/work/t12v/a id=session-t12v-a-root-mtkhdm5e63ea67 file=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\sessions\--C-agent-team-work-t12v-a--\session-t12v-a-root-mtkhdm5e63ea67\session.jsonl.zstd
+[2026-09-02T19:20:17.994Z] smoke: session/prompt status=200 body={"type":"server-response","rpcId":"t12v-d62031f6f2ea","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-02T19:20:18.298Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhdm5e63ea67"
+[2026-09-02T19:20:18.299Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkhdm5e63ea67"
+[2026-09-02T19:20:19.052Z] smoke: root turn settled (ack in durable root log)
+[2026-09-02T19:20:19.053Z] smoke: mock saw models=["t12v-model-a"] requests=2
+[2026-09-02T19:20:19.099Z] SMOKE: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T19:20:19.164Z] smoke: HOME_A reset to empty for the real fresh #1 run
+[2026-09-02T19:20:19.319Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T19:20:19.319Z] :3080 post: 200
+[2026-09-02T19:20:19.319Z] mock capture dumped: 2 requests -> t12v-mock-capture.json
+[2026-09-02T19:20:19.320Z] mini MCP server closed
+[2026-09-02T19:20:19.321Z] mock model endpoint closed
+[2026-09-02T19:20:19.322Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T19:20:19.323Z] T12 vertical runner done
+[2026-09-02T19:20:43.053Z] T12 vertical runner start; nonce=mtkhebl94d4768; phases=build,fresh1,fresh2,restart1,handoff
+[2026-09-02T19:20:43.054Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T19:20:43.054Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T19:20:43.054Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T19:20:43.054Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T19:20:43.065Z] :3080 pre: 200
+[2026-09-02T19:20:43.202Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T19:20:43.205Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T19:20:43.205Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T19:20:43.215Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T19:20:43.216Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T19:20:43.227Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T19:20:43.227Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T19:20:43.228Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T19:20:43.229Z] == T12-V build dist 2026-09-02T19:20:43.228Z ==
+[2026-09-02T19:20:43.559Z] == legacy exit 0 ==
+[2026-09-02T19:20:45.118Z] == runtime exit 0 ==
+[2026-09-02T19:20:45.119Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T19:20:46.145Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T19:20:46.145Z] build: production dist built + import-probed OK
+[2026-09-02T19:20:46.146Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:20:47.950Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T19:20:47.991Z] A1: profile created via throwaway boot
+[2026-09-02T19:20:47.992Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T19:20:47.992Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T19:20:49.829Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T19:20:51.063Z] A1: row ready — toolCount=10
+[2026-09-02T19:20:51.065Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T19:20:51.315Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T19:20:51.317Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkhebl94d4768"
+[2026-09-02T19:20:52.139Z] V1: pass=true
+[2026-09-02T19:28:53.769Z] V2 (world A part): pass=false
+[2026-09-02T19:36:55.189Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:55.195Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:55.474Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T19:36:55.598Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:55.812Z] V3: pass=false
+[2026-09-02T19:36:56.222Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:56.665Z] V4: pass=true
+[2026-09-02T19:52:01.283Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkhebl94d4768"
+[2026-09-02T19:52:01.609Z] LIFECYCLE: pass=false
+[2026-09-02T19:52:01.639Z] V5: pass=true
+[2026-09-02T19:52:01.674Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T19:52:01.675Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:52:03.471Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T19:52:03.512Z] B1: profile created via throwaway boot
+[2026-09-02T19:52:03.513Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T19:52:03.513Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T19:52:05.340Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T19:52:06.540Z] B1: row ready — toolCount=10
+[2026-09-02T19:52:16.607Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkhebl94d4768 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T20:07:18.212Z] V2: pass=false
+[2026-09-02T20:07:18.219Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+[2026-09-02T20:07:18.221Z] A2: profile already initialized
+[2026-09-02T20:07:18.222Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T20:07:18.222Z] A2: directive written (boot=2 phase=resume)
+[2026-09-02T20:07:20.078Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-02T20:07:21.873Z] RESTART: pass=false
+[2026-09-02T20:07:21.878Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:07:23.436Z] throwaway boot OK: http://127.0.0.1:3184/?token=<REDACTED>
+[2026-09-02T20:07:23.480Z] C1: profile created via throwaway boot
+[2026-09-02T20:07:23.481Z] C1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\profiles\web\cordis.patch.yml
+[2026-09-02T20:07:23.481Z] C1: directive written (boot=4 phase=create)
+[2026-09-02T20:07:25.318Z] C1: booted at http://127.0.0.1:3184; auth cookie exchanged
+[2026-09-02T20:07:26.490Z] C1: row ready — toolCount=10
+[2026-09-02T20:07:36.544Z] C1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-c1-root-mtkhebl94d4768 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T20:07:36.809Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:36.810Z] mock: mock: 10 text reply (32 chars): "T12V_HANDBACK_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:38.025Z] mock: mock: 11 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:38.026Z] mock: mock: 12 text reply (32 chars): "T12V_HANDBACK_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:38.335Z] mock: mock: 13 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:38.336Z] mock: mock: 14 text reply (32 chars): "T12V_HANDBACK_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:39.666Z] mock: mock: 15 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:39.667Z] mock: mock: 16 text reply (32 chars): "T12V_HANDBACK_ACK_mtkhebl94d4768"
+[2026-09-02T20:07:39.772Z] HANDOFF: pass=true
+[2026-09-02T20:07:39.807Z] C1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T20:07:39.840Z] B1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T20:07:39.970Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:07:39.970Z] :3080 post: 200
+[2026-09-02T20:07:39.971Z] mock capture dumped: 16 requests -> t12v-mock-capture.json
+[2026-09-02T20:07:39.972Z] mini MCP server closed
+[2026-09-02T20:07:39.973Z] mock model endpoint closed
+[2026-09-02T20:07:39.975Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T20:07:39.975Z] T12 vertical runner done
+[2026-09-02T20:12:54.618Z] T12 vertical runner start; nonce=mtkj9fx6d5500a; phases=smoke
+[2026-09-02T20:12:54.619Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T20:12:54.619Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T20:12:54.620Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T20:12:54.620Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T20:12:54.631Z] :3080 pre: 200
+[2026-09-02T20:12:54.766Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:12:54.768Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T20:12:54.769Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T20:12:54.779Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T20:12:54.779Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T20:12:54.791Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T20:12:54.791Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T20:12:54.792Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T20:12:54.793Z] == T12-V build dist 2026-09-02T20:12:54.793Z ==
+[2026-09-02T20:12:55.135Z] == legacy exit 0 ==
+[2026-09-02T20:12:56.699Z] == runtime exit 0 ==
+[2026-09-02T20:12:56.701Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T20:12:56.702Z] FATAL: TypeError: file.endsWith is not a function
+    at buildProductionRuntime (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/tools/harness/t12-vertical.mjs:432:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runSmoke (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/tools/harness/t12-vertical.mjs:1409:3)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/tools/harness/t12-vertical.mjs:1287:7)
+[2026-09-02T20:12:56.842Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:12:56.842Z] :3080 post: 200
+[2026-09-02T20:12:56.843Z] mock capture dumped: 0 requests -> t12v-mock-capture.json
+[2026-09-02T20:12:56.843Z] mini MCP server closed
+[2026-09-02T20:12:56.844Z] mock model endpoint closed
+[2026-09-02T20:12:56.845Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T20:12:56.845Z] T12 vertical runner done
+[2026-09-02T20:15:27.750Z] T12 vertical runner start; nonce=mtkjcq2t8d04b7; phases=smoke
+[2026-09-02T20:15:27.751Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T20:15:27.751Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T20:15:27.751Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T20:15:27.751Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T20:15:27.762Z] :3080 pre: 200
+[2026-09-02T20:15:27.898Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:15:27.900Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T20:15:27.901Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T20:15:27.911Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T20:15:27.912Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T20:15:27.923Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T20:15:27.923Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T20:15:27.924Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T20:15:27.925Z] == T12-V build dist 2026-09-02T20:15:27.925Z ==
+[2026-09-02T20:15:28.273Z] == legacy exit 0 ==
+[2026-09-02T20:15:29.846Z] == runtime exit 0 ==
+[2026-09-02T20:15:29.848Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T20:15:29.983Z] == dist mirror -> source .js copy: 254 files (untracked build output, overwritten in place) ==
+[2026-09-02T20:15:30.774Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T20:15:30.774Z] smoke: production dist built + glue placed + import-probed OK
+[2026-09-02T20:15:30.774Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:15:33.347Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T20:15:33.387Z] SMOKE: profile created via throwaway boot
+[2026-09-02T20:15:33.389Z] SMOKE: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T20:15:33.390Z] SMOKE: directive written (boot=1 phase=create)
+[2026-09-02T20:15:35.217Z] SMOKE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T20:15:36.428Z] SMOKE: row ready — toolCount=10
+[2026-09-02T20:15:36.450Z] smoke: state boot=1 phase=create root=session-t12v-a-root-mtkjcq2t8d04b7 team=[object Object] members=["inst-leader"]
+[2026-09-02T20:15:36.456Z] smoke: root session header cwd=C:/agent-team/work/t12v/a id=session-t12v-a-root-mtkjcq2t8d04b7 file=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\sessions\--C-agent-team-work-t12v-a--\session-t12v-a-root-mtkjcq2t8d04b7\session.jsonl.zstd
+[2026-09-02T20:15:36.489Z] smoke: session/prompt status=200 body={"type":"server-response","rpcId":"t12v-477dac296c07","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-02T20:15:36.697Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjcq2t8d04b7"
+[2026-09-02T20:15:36.698Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkjcq2t8d04b7"
+[2026-09-02T20:15:37.517Z] smoke: root turn settled (ack in durable root log)
+[2026-09-02T20:15:37.519Z] smoke: mock saw models=["t12v-model-a"] requests=2
+[2026-09-02T20:15:37.565Z] SMOKE: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T20:15:37.600Z] smoke: HOME_A reset to empty for the real fresh #1 run
+[2026-09-02T20:15:37.799Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:15:37.799Z] :3080 post: 200
+[2026-09-02T20:15:37.800Z] mock capture dumped: 2 requests -> t12v-mock-capture.json
+[2026-09-02T20:15:37.801Z] mini MCP server closed
+[2026-09-02T20:15:37.801Z] mock model endpoint closed
+[2026-09-02T20:15:37.802Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T20:15:37.803Z] T12 vertical runner done
+[2026-09-02T20:16:16.424Z] T12 vertical runner start; nonce=mtkjdrmw6cee19; phases=build,fresh1,fresh2,restart1,handoff
+[2026-09-02T20:16:16.425Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T20:16:16.425Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T20:16:16.425Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T20:16:16.426Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T20:16:16.436Z] :3080 pre: 200
+[2026-09-02T20:16:16.562Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:16:16.564Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T20:16:16.564Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T20:16:16.575Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T20:16:16.576Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T20:16:16.586Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T20:16:16.587Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T20:16:16.588Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T20:16:16.588Z] == T12-V build dist 2026-09-02T20:16:16.588Z ==
+[2026-09-02T20:16:16.927Z] == legacy exit 0 ==
+[2026-09-02T20:16:18.506Z] == runtime exit 0 ==
+[2026-09-02T20:16:18.507Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T20:16:18.764Z] == dist mirror -> source .js copy: 254 files (untracked build output, overwritten in place) ==
+[2026-09-02T20:16:19.486Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T20:16:19.487Z] build: production dist built + import-probed OK
+[2026-09-02T20:16:19.488Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:16:21.265Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T20:16:21.311Z] A1: profile created via throwaway boot
+[2026-09-02T20:16:21.318Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T20:16:21.319Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T20:16:23.149Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T20:16:24.411Z] A1: row ready — toolCount=10
+[2026-09-02T20:16:24.412Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T20:16:24.678Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:16:24.680Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:16:25.520Z] V1: pass=true
+[2026-09-02T20:24:27.226Z] V2 (world A part): pass=false
+[2026-09-02T20:32:28.548Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:28.550Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:28.832Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T20:32:28.974Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:29.168Z] V3: pass=false
+[2026-09-02T20:32:29.501Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:30.105Z] V4: pass=true
+[2026-09-02T20:47:34.040Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:47:34.351Z] LIFECYCLE: pass=false
+[2026-09-02T20:47:34.373Z] V5: pass=true
+[2026-09-02T20:47:34.412Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T20:47:34.418Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:47:35.988Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T20:47:36.029Z] B1: profile created via throwaway boot
+[2026-09-02T20:47:36.030Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T20:47:36.030Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T20:47:37.866Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T20:47:39.091Z] B1: row ready — toolCount=10
+[2026-09-02T20:47:49.167Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkjdrmw6cee19 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T21:02:50.848Z] V2: pass=false
+[2026-09-02T21:02:50.863Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+[2026-09-02T21:02:50.865Z] A2: profile already initialized
+[2026-09-02T21:02:50.866Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T21:02:50.866Z] A2: directive written (boot=2 phase=resume)
+[2026-09-02T21:02:52.687Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-02T21:02:52.855Z] RESTART: pass=false
+[2026-09-02T21:02:52.856Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T21:02:54.432Z] throwaway boot OK: http://127.0.0.1:3184/?token=<REDACTED>
+[2026-09-02T21:02:54.474Z] C1: profile created via throwaway boot
+[2026-09-02T21:02:54.475Z] C1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\profiles\web\cordis.patch.yml
+[2026-09-02T21:02:54.475Z] C1: directive written (boot=4 phase=create)
+[2026-09-02T21:02:56.300Z] C1: booted at http://127.0.0.1:3184; auth cookie exchanged
+[2026-09-02T21:02:57.448Z] C1: row ready — toolCount=10
+[2026-09-02T21:03:07.528Z] C1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-c1-root-mtkjdrmw6cee19 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T21:03:07.830Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:07.831Z] mock: mock: 10 text reply (32 chars): "T12V_HANDBACK_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:09.055Z] mock: mock: 11 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:09.056Z] mock: mock: 12 text reply (32 chars): "T12V_HANDBACK_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:09.417Z] mock: mock: 13 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:09.418Z] mock: mock: 14 text reply (32 chars): "T12V_HANDBACK_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:10.696Z] mock: mock: 15 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:10.699Z] mock: mock: 16 text reply (32 chars): "T12V_HANDBACK_ACK_mtkjdrmw6cee19"
+[2026-09-02T21:03:10.784Z] HANDOFF: pass=true
+[2026-09-02T21:03:10.821Z] C1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T21:03:10.855Z] B1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T21:03:10.998Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T21:03:10.998Z] :3080 post: 200
+[2026-09-02T21:03:10.999Z] mock capture dumped: 16 requests -> t12v-mock-capture.json
+[2026-09-02T21:03:11.000Z] mini MCP server closed
+[2026-09-02T21:03:11.001Z] mock model endpoint closed
+[2026-09-02T21:03:11.003Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T21:03:11.003Z] T12 vertical runner done
+[2026-09-02T21:24:26.569Z] T12 vertical runner start; nonce=mtkltfm07fb4c6; phases=build,fresh1,fresh2,restart1,handoff
+[2026-09-02T21:24:26.570Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T21:24:26.570Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T21:24:26.570Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T21:24:26.570Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T21:24:26.581Z] :3080 pre: 200
+[2026-09-02T21:24:26.739Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T21:24:26.741Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T21:24:26.742Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T21:24:26.753Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T21:24:26.753Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T21:24:26.764Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T21:24:26.765Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T21:24:26.766Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T21:24:26.766Z] == T12-V build dist 2026-09-02T21:24:26.766Z ==
+[2026-09-02T21:24:27.201Z] == legacy exit 0 ==
+[2026-09-02T21:24:28.797Z] == runtime exit 0 ==
+[2026-09-02T21:24:28.799Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T21:24:30.108Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T21:24:30.108Z] build: production dist built + import-probed OK
+[2026-09-02T21:24:30.110Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T21:24:33.751Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T21:24:34.016Z] A1: profile created via throwaway boot
+[2026-09-02T21:24:34.017Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T21:24:34.019Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T21:24:35.854Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T21:24:37.016Z] A1: row ready — toolCount=10
+[2026-09-02T21:24:37.018Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T21:24:37.280Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:24:37.282Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:24:38.128Z] V1: pass=true
+[2026-09-02T21:32:39.654Z] V2 (world A part): pass=false
+[2026-09-02T21:40:40.890Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:40.891Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:41.169Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T21:40:41.274Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:41.471Z] V3: pass=false
+[2026-09-02T21:40:42.061Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:42.449Z] V4: pass=true
+[2026-09-02T21:55:46.325Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:55:46.680Z] LIFECYCLE: pass=false
+[2026-09-02T21:55:46.696Z] V5: pass=true
+[2026-09-02T21:55:46.732Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T21:55:46.732Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T21:55:48.552Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T21:55:48.599Z] B1: profile created via throwaway boot
+[2026-09-02T21:55:48.605Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T21:55:48.606Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T21:55:50.417Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T21:55:51.634Z] B1: row ready — toolCount=10
+[2026-09-02T21:56:02.144Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkltfm07fb4c6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T22:11:03.585Z] V2: pass=false
+[2026-09-02T22:11:03.594Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+[2026-09-02T22:11:03.595Z] A2: profile already initialized
+[2026-09-02T22:11:03.596Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T22:11:03.597Z] A2: directive written (boot=2 phase=resume)
+[2026-09-02T22:11:05.666Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-02T22:11:05.858Z] RESTART: pass=false
+[2026-09-02T22:11:05.859Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T22:11:07.681Z] throwaway boot OK: http://127.0.0.1:3184/?token=<REDACTED>
+[2026-09-02T22:11:07.722Z] C1: profile created via throwaway boot
+[2026-09-02T22:11:07.723Z] C1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\profiles\web\cordis.patch.yml
+[2026-09-02T22:11:07.724Z] C1: directive written (boot=4 phase=create)
+[2026-09-02T22:11:09.532Z] C1: booted at http://127.0.0.1:3184; auth cookie exchanged
+[2026-09-02T22:11:10.729Z] C1: row ready — toolCount=10
+[2026-09-02T22:11:20.788Z] C1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-c1-root-mtkltfm07fb4c6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T22:11:21.058Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:21.059Z] mock: mock: 10 text reply (32 chars): "T12V_HANDBACK_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:22.342Z] mock: mock: 11 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:22.343Z] mock: mock: 12 text reply (32 chars): "T12V_HANDBACK_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:22.780Z] mock: mock: 13 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:22.780Z] mock: mock: 14 text reply (32 chars): "T12V_HANDBACK_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:24.033Z] mock: mock: 15 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:24.036Z] mock: mock: 16 text reply (32 chars): "T12V_HANDBACK_ACK_mtkltfm07fb4c6"
+[2026-09-02T22:11:24.105Z] HANDOFF: pass=true
+[2026-09-02T22:11:24.139Z] C1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T22:11:24.175Z] B1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T22:11:24.297Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T22:11:24.297Z] :3080 post: 200
+[2026-09-02T22:11:24.298Z] mock capture dumped: 16 requests -> t12v-mock-capture.json
+[2026-09-02T22:11:24.299Z] mini MCP server closed
+[2026-09-02T22:11:24.299Z] mock model endpoint closed
+[2026-09-02T22:11:24.301Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T22:11:24.301Z] T12 vertical runner done
+[2026-09-02T22:34:09.476Z] T12 vertical runner start; nonce=mtkob35v2077d6; phases=build,fresh1,fresh2,restart1,handoff
+[2026-09-02T22:34:09.476Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T22:34:09.477Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T22:34:09.477Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T22:34:09.477Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T22:34:09.487Z] :3080 pre: 200
+[2026-09-02T22:34:09.613Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T22:34:09.616Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T22:34:09.616Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T22:34:09.627Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T22:34:09.627Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T22:34:09.638Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T22:34:09.638Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T22:34:09.640Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T22:34:09.640Z] == T12-V build dist 2026-09-02T22:34:09.640Z ==
+[2026-09-02T22:34:09.990Z] == legacy exit 0 ==
+[2026-09-02T22:34:11.575Z] == runtime exit 0 ==
+[2026-09-02T22:34:11.577Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T22:34:12.372Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T22:34:12.373Z] build: production dist built + import-probed OK
+[2026-09-02T22:34:12.374Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T22:34:15.752Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T22:34:15.793Z] A1: profile created via throwaway boot
+[2026-09-02T22:34:15.794Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T22:34:15.795Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T22:34:17.629Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T22:34:18.828Z] A1: row ready — toolCount=10
+[2026-09-02T22:34:18.829Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T22:34:19.127Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T22:34:19.128Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkob35v2077d6"
+[2026-09-02T22:34:19.931Z] V1: pass=true
+[2026-09-02T22:42:21.591Z] V2 (world A part): pass=false
+[2026-09-02T22:50:22.778Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:22.780Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:23.119Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T22:50:23.243Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:23.452Z] V3: pass=false
+[2026-09-02T22:50:24.054Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:24.540Z] V4: pass=true
+[2026-09-02T23:05:28.503Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkob35v2077d6"
+[2026-09-02T23:05:28.862Z] LIFECYCLE: pass=false
+[2026-09-02T23:05:28.878Z] V5: pass=true
+[2026-09-02T23:05:28.913Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T23:05:28.914Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:05:30.493Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T23:05:30.534Z] B1: profile created via throwaway boot
+[2026-09-02T23:05:30.535Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T23:05:30.535Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T23:05:32.328Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T23:05:33.576Z] B1: row ready — toolCount=10
+[2026-09-02T23:05:43.630Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkob35v2077d6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'allowed')"}
+[2026-09-02T23:19:05.442Z] mock: mock: 9 GET / -> 405
+[2026-09-02T23:20:45.092Z] V2: pass=false
+[2026-09-02T23:20:45.098Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+[2026-09-02T23:20:45.099Z] A2: profile already initialized
+[2026-09-02T23:20:45.100Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T23:20:45.102Z] A2: directive written (boot=2 phase=resume)
+[2026-09-02T23:20:47.178Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-02T23:20:47.308Z] A2: row ready — toolCount=10
+[2026-09-02T23:20:47.463Z] mock: mock: 10 tool-call reply: subagent
+[2026-09-02T23:20:47.589Z] mock: mock: 11 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T23:20:48.198Z] mock: mock: 12 text reply (31 chars): "T12V_RESTART_ACK_mtkob35v2077d6"
+[2026-09-02T23:20:48.815Z] A2: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T23:20:48.815Z] RESTART: pass=false
+[2026-09-02T23:20:48.816Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:20:50.372Z] throwaway boot OK: http://127.0.0.1:3184/?token=<REDACTED>
+[2026-09-02T23:20:50.412Z] C1: profile created via throwaway boot
+[2026-09-02T23:20:50.413Z] C1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\profiles\web\cordis.patch.yml
+[2026-09-02T23:20:50.413Z] C1: directive written (boot=4 phase=create)
+[2026-09-02T23:20:52.228Z] C1: booted at http://127.0.0.1:3184; auth cookie exchanged
+[2026-09-02T23:20:53.462Z] C1: row ready — toolCount=10
+[2026-09-02T23:21:03.502Z] C1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-c1-root-mtkob35v2077d6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'allowed')"}
+[2026-09-02T23:21:03.739Z] mock: mock: 13 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:03.740Z] mock: mock: 14 text reply (32 chars): "T12V_HANDBACK_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:05.099Z] mock: mock: 15 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:05.100Z] mock: mock: 16 text reply (32 chars): "T12V_HANDBACK_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:05.478Z] mock: mock: 17 text reply (32 chars): "T12V_HANDBACK_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:05.479Z] mock: mock: 18 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:06.672Z] mock: mock: 19 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:06.674Z] mock: mock: 20 text reply (32 chars): "T12V_HANDBACK_ACK_mtkob35v2077d6"
+[2026-09-02T23:21:06.751Z] HANDOFF: pass=true
+[2026-09-02T23:21:06.786Z] C1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T23:21:06.825Z] B1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T23:21:06.837Z] calibration: [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) -> PASS :: system texts=["You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location"]
+[2026-09-02T23:21:06.837Z] calibration: [A] effective model = row static selection (deepseek-official/t12v-model-a) -> PASS :: model=t12v-model-a seq=3
+[2026-09-02T23:21:06.837Z] calibration: V2: pass=false after calibration
+[2026-09-02T23:21:06.837Z] calibration: child session log records the mcp tool attempt at the consumption boundary -> PASS :: log contains attempted tool name mcp__t12vmini__ping: true
+[2026-09-02T23:21:06.838Z] calibration: the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id) -> PASS :: attempted=true denialRelayed=true reply={"kind":"tool-call","toolCalls":[{"id":"call_t12v_mtkob35v2077d6","name":"mcp__t12vmini__ping","arguments":{"msg":"t12v"}}]}
+[2026-09-02T23:21:06.838Z] calibration: model request tool schema omits the mcp tool (denied at the model-consumption boundary) -> PASS :: tools=["team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_send_message"]
+[2026-09-02T23:21:06.838Z] calibration: V3: pass=false after calibration
+[2026-09-02T23:21:06.838Z] calibration: [B] effective model = t12v-model-b (row static selection, mcpServer:null variant) -> FAIL :: no model-b mock request carrying the CHILD_FIRST marker reached the endpoint within the run (latched turn never settled)
+[2026-09-02T23:21:06.838Z] calibration: V2: pass=false after calibration
+[2026-09-02T23:21:06.980Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T23:21:06.981Z] :3080 post: 200
+[2026-09-02T23:21:06.984Z] mock capture dumped: 20 requests -> t12v-mock-capture.json
+[2026-09-02T23:21:06.985Z] mini MCP server closed
+[2026-09-02T23:21:06.986Z] mock model endpoint closed
+[2026-09-02T23:21:06.988Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T23:21:06.988Z] T12 vertical runner done
+[2026-09-02T23:23:27.814Z] T12 vertical runner start; nonce=mtkq2htxfd7514; phases=build,fresh1,fresh2,restart1,handoff
+[2026-09-02T23:23:27.815Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-02T23:23:27.815Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-02T23:23:27.815Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-02T23:23:27.815Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-02T23:23:27.825Z] :3080 pre: 200
+[2026-09-02T23:23:27.951Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T23:23:27.954Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-02T23:23:27.954Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-02T23:23:27.964Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-02T23:23:27.965Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-02T23:23:27.977Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-02T23:23:27.977Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-02T23:23:27.978Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-02T23:23:27.979Z] == T12-V build dist 2026-09-02T23:23:27.978Z ==
+[2026-09-02T23:23:28.318Z] == legacy exit 0 ==
+[2026-09-02T23:23:29.904Z] == runtime exit 0 ==
+[2026-09-02T23:23:29.906Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T23:23:30.742Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T23:23:30.742Z] build: production dist built + import-probed OK
+[2026-09-02T23:23:30.743Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:23:32.537Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T23:23:32.578Z] A1: profile created via throwaway boot
+[2026-09-02T23:23:32.579Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T23:23:32.579Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T23:23:34.415Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T23:23:35.660Z] A1: row ready — toolCount=10
+[2026-09-02T23:23:35.661Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T23:23:35.932Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-02T23:23:35.933Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkq2htxfd7514"
+[2026-09-02T23:23:36.759Z] V1: pass=true
+[2026-09-02T23:31:38.418Z] V2 (world A part): pass=false
+[2026-09-02T23:39:39.519Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:39.520Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:39.986Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T23:39:40.085Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:40.279Z] V3: pass=false
+[2026-09-02T23:39:40.634Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:41.031Z] V4: pass=true
+[2026-09-02T23:54:45.087Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkq2htxfd7514"
+[2026-09-02T23:54:45.445Z] LIFECYCLE: pass=false
+[2026-09-02T23:54:45.463Z] V5: pass=true
+[2026-09-02T23:54:45.500Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T23:54:45.501Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:54:47.304Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T23:54:47.343Z] B1: profile created via throwaway boot
+[2026-09-02T23:54:47.344Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T23:54:47.345Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T23:54:50.483Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T23:54:54.003Z] B1: row ready — toolCount=10
+[2026-09-03T00:09:55.221Z] V2: pass=false
+[2026-09-03T00:09:55.229Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+[2026-09-03T00:09:55.232Z] A2: profile already initialized
+[2026-09-03T00:09:55.236Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T00:09:55.238Z] A2: directive written (boot=2 phase=resume)
+[2026-09-03T00:09:57.092Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-03T00:09:57.243Z] A2: row ready — toolCount=10
+[2026-09-03T00:09:57.379Z] mock: mock: 9 tool-call reply: subagent
+[2026-09-03T00:09:57.524Z] mock: mock: 10 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-03T00:09:58.128Z] mock: mock: 11 text reply (31 chars): "T12V_RESTART_ACK_mtkq2htxfd7514"
+[2026-09-03T00:09:58.606Z] A2: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T00:09:58.606Z] RESTART: pass=false
+[2026-09-03T00:09:58.607Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T00:10:00.177Z] throwaway boot OK: http://127.0.0.1:3184/?token=<REDACTED>
+[2026-09-03T00:10:00.218Z] C1: profile created via throwaway boot
+[2026-09-03T00:10:00.218Z] C1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\profiles\web\cordis.patch.yml
+[2026-09-03T00:10:00.219Z] C1: directive written (boot=4 phase=create)
+[2026-09-03T00:10:02.010Z] C1: booted at http://127.0.0.1:3184; auth cookie exchanged
+[2026-09-03T00:10:03.207Z] C1: row ready — toolCount=10
+[2026-09-03T00:10:03.459Z] mock: mock: 12 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:03.463Z] mock: mock: 13 text reply (32 chars): "T12V_HANDBACK_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:04.705Z] mock: mock: 14 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:04.706Z] mock: mock: 15 text reply (32 chars): "T12V_HANDBACK_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:05.005Z] mock: mock: 16 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:05.006Z] mock: mock: 17 text reply (32 chars): "T12V_HANDBACK_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:06.260Z] mock: mock: 18 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:06.262Z] mock: mock: 19 text reply (32 chars): "T12V_HANDBACK_ACK_mtkq2htxfd7514"
+[2026-09-03T00:10:06.360Z] HANDOFF: pass=true
+[2026-09-03T00:10:06.406Z] C1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T00:10:06.440Z] B1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T00:10:06.443Z] calibration: [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) -> PASS :: system texts=["You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location"]
+[2026-09-03T00:10:06.443Z] calibration: [A] effective model = row static selection (deepseek-official/t12v-model-a) -> PASS :: model=t12v-model-a seq=3
+[2026-09-03T00:10:06.443Z] calibration: V2: pass=false after calibration
+[2026-09-03T00:10:06.443Z] calibration: child session log records the mcp tool attempt at the consumption boundary -> PASS :: log contains attempted tool name mcp__t12vmini__ping: true
+[2026-09-03T00:10:06.443Z] calibration: the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id) -> PASS :: attempted=true denialRelayed=true reply={"kind":"tool-call","toolCalls":[{"id":"call_t12v_mtkq2htxfd7514","name":"mcp__t12vmini__ping","arguments":{"msg":"t12v"}}]}
+[2026-09-03T00:10:06.443Z] calibration: model request tool schema omits the mcp tool (denied at the model-consumption boundary) -> PASS :: tools=["team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_send_message"]
+[2026-09-03T00:10:06.443Z] calibration: V3: pass=false after calibration
+[2026-09-03T00:10:06.444Z] calibration: [B] effective model = t12v-model-b (row static selection, mcpServer:null variant) -> FAIL :: no model-b mock request carrying the CHILD_FIRST marker reached the endpoint within the run (latched turn never settled)
+[2026-09-03T00:10:06.444Z] calibration: V2: pass=false after calibration
+[2026-09-03T00:10:06.576Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T00:10:06.577Z] :3080 post: 200
+[2026-09-03T00:10:06.579Z] mock capture dumped: 19 requests -> t12v-mock-capture.json
+[2026-09-03T00:10:06.581Z] mini MCP server closed
+[2026-09-03T00:10:06.582Z] mock model endpoint closed
+[2026-09-03T00:10:06.584Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-03T00:10:06.584Z] T12 vertical runner done
+[2026-09-03T00:25:32.431Z] T12 vertical runner start; nonce=mtksabrjddb95b; phases=build,fresh1,restart1
+[2026-09-03T00:25:32.432Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-03T00:25:32.432Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-03T00:25:32.432Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-03T00:25:32.433Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-03T00:25:32.443Z] :3080 pre: 200
+[2026-09-03T00:25:32.562Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T00:25:32.564Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-03T00:25:32.564Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-03T00:25:32.575Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-03T00:25:32.575Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-03T00:25:32.587Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-03T00:25:32.587Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-03T00:25:32.588Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-03T00:25:32.589Z] == T12-V build dist 2026-09-03T00:25:32.589Z ==
+[2026-09-03T00:25:32.920Z] == legacy exit 0 ==
+[2026-09-03T00:25:34.479Z] == runtime exit 0 ==
+[2026-09-03T00:25:34.480Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-03T00:25:35.561Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-03T00:25:35.561Z] build: production dist built + import-probed OK
+[2026-09-03T00:25:35.562Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T00:25:38.627Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-03T00:25:38.667Z] A1: profile created via throwaway boot
+[2026-09-03T00:25:38.668Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T00:25:38.669Z] A1: directive written (boot=1 phase=create)
+[2026-09-03T00:25:40.495Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-03T00:25:41.689Z] A1: row ready — toolCount=10
+[2026-09-03T00:25:41.690Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-03T00:25:41.948Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtksabrjddb95b"
+[2026-09-03T00:25:41.950Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtksabrjddb95b"
+[2026-09-03T00:25:42.756Z] V1: pass=true
+[2026-09-03T00:33:43.649Z] V2 (world A part): pass=false
+[2026-09-03T00:41:44.284Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:44.285Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:44.539Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-03T00:41:44.662Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:44.833Z] V3: pass=false
+[2026-09-03T00:41:45.271Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:45.658Z] V4: pass=true
+[2026-09-03T00:56:49.796Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtksabrjddb95b"
+[2026-09-03T00:56:50.144Z] LIFECYCLE: pass=false
+[2026-09-03T00:56:50.152Z] V5: pass=true
+[2026-09-03T00:56:50.188Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T00:56:50.189Z] A2: profile already initialized
+[2026-09-03T00:56:50.190Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T00:56:50.190Z] A2: directive written (boot=2 phase=resume)
+[2026-09-03T00:56:52.298Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-03T00:56:52.837Z] A2: row ready — toolCount=10
+[2026-09-03T00:56:53.394Z] mock: mock: 9 tool-call reply: subagent
+[2026-09-03T00:56:53.862Z] mock: mock: 10 text reply (31 chars): "T12V_DEFAULT_ACK_mtksabrjddb95b"
+[2026-09-03T00:56:55.672Z] mock: mock: 11 text reply (31 chars): "T12V_RESTART_ACK_mtksabrjddb95b"
+[2026-09-03T00:56:56.187Z] A2: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T00:56:56.188Z] RESTART: pass=true
+[2026-09-03T00:56:56.190Z] calibration: [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) -> PASS :: system texts=["You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location"]
+[2026-09-03T00:56:56.190Z] calibration: [A] effective model = row static selection (deepseek-official/t12v-model-a) -> PASS :: model=t12v-model-a seq=3
+[2026-09-03T00:56:56.190Z] calibration: V2: pass=false after calibration
+[2026-09-03T00:56:56.191Z] calibration: child session log records the mcp tool attempt at the consumption boundary -> PASS :: log contains attempted tool name mcp__t12vmini__ping: true
+[2026-09-03T00:56:56.191Z] calibration: the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id) -> PASS :: attempted=true denialRelayed=true reply={"kind":"tool-call","toolCalls":[{"id":"call_t12v_mtksabrjddb95b","name":"mcp__t12vmini__ping","arguments":{"msg":"t12v"}}]}
+[2026-09-03T00:56:56.191Z] calibration: model request tool schema omits the mcp tool (denied at the model-consumption boundary) -> PASS :: tools=["team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_send_message"]
+[2026-09-03T00:56:56.191Z] calibration: V3: pass=false after calibration
+[2026-09-03T00:56:56.315Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T00:56:56.315Z] :3080 post: 200
+[2026-09-03T00:56:56.318Z] mock capture dumped: 11 requests -> t12v-mock-capture.json
+[2026-09-03T00:56:56.319Z] mini MCP server closed
+[2026-09-03T00:56:56.319Z] mock model endpoint closed
+[2026-09-03T00:56:56.321Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-03T00:56:56.321Z] T12 vertical runner done
+[2026-09-03T00:58:06.666Z] T12 vertical runner start; nonce=mtktg7nu58c6d0; phases=build,fresh1,restart1
+[2026-09-03T00:58:06.667Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-03T00:58:06.667Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-03T00:58:06.667Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-03T00:58:06.668Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-03T00:58:06.679Z] :3080 pre: 200
+[2026-09-03T00:58:06.807Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T00:58:06.809Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-03T00:58:06.810Z] fresh homes A/B/C asserted (non-empty would fail CLOSED)
+[2026-09-03T00:58:06.821Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-03T00:58:06.822Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-03T00:58:06.833Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-03T00:58:06.833Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-03T00:58:06.834Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-03T00:58:06.835Z] == T12-V build dist 2026-09-03T00:58:06.835Z ==
+[2026-09-03T00:58:07.168Z] == legacy exit 0 ==
+[2026-09-03T00:58:08.746Z] == runtime exit 0 ==
+[2026-09-03T00:58:08.748Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-03T00:58:09.492Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-03T00:58:09.493Z] build: production dist built + import-probed OK
+[2026-09-03T00:58:09.494Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T00:58:12.300Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-03T00:58:12.342Z] A1: profile created via throwaway boot
+[2026-09-03T00:58:12.343Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T00:58:12.343Z] A1: directive written (boot=1 phase=create)
+[2026-09-03T00:58:14.166Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-03T00:58:15.319Z] A1: row ready — toolCount=10
+[2026-09-03T00:58:15.320Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-03T00:58:15.548Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:15.549Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:16.397Z] V1: pass=true
+[2026-09-03T00:58:17.101Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:17.104Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:17.301Z] V2 (world A part): pass=true
+[2026-09-03T00:58:19.239Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-03T00:58:19.552Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:20.411Z] V3: pass=true
+[2026-09-03T00:58:21.348Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:22.295Z] V4: pass=true
+[2026-09-03T00:58:22.788Z] mock: mock: 8 tool-call reply: subagent
+[2026-09-03T00:58:23.417Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtktg7nu58c6d0"
+[2026-09-03T01:13:27.962Z] mock: mock: 10 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtktg7nu58c6d0"
+[2026-09-03T01:13:28.289Z] LIFECYCLE: pass=false
+[2026-09-03T01:13:28.329Z] V5: pass=true
+[2026-09-03T01:13:28.365Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T01:13:28.366Z] A2: profile already initialized
+[2026-09-03T01:13:28.368Z] A2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T01:13:28.369Z] A2: directive written (boot=2 phase=resume)
+[2026-09-03T01:13:30.435Z] A2: booted at http://127.0.0.1:3182; auth cookie exchanged
+[2026-09-03T01:13:30.585Z] A2: row ready — toolCount=10
+[2026-09-03T01:13:31.011Z] mock: mock: 11 text reply (31 chars): "T12V_RESTART_ACK_mtktg7nu58c6d0"
+[2026-09-03T01:13:31.456Z] A2: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T01:13:31.457Z] RESTART: pass=true
+[2026-09-03T01:13:31.460Z] calibration: [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) -> PASS :: system texts=["You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location"]
+[2026-09-03T01:13:31.461Z] calibration: [A] effective model = row static selection (deepseek-official/t12v-model-a) -> PASS :: model=t12v-model-a seq=3
+[2026-09-03T01:13:31.461Z] calibration: V2: pass=true after calibration
+[2026-09-03T01:13:31.461Z] calibration: child session log records the mcp tool attempt at the consumption boundary -> PASS :: log contains attempted tool name mcp__t12vmini__ping: true
+[2026-09-03T01:13:31.462Z] calibration: the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id) -> PASS :: attempted=true denialRelayed=true reply={"kind":"tool-call","toolCalls":[{"id":"call_t12v_mtktg7nu58c6d0","name":"mcp__t12vmini__ping","arguments":{"msg":"t12v"}}]}
+[2026-09-03T01:13:31.462Z] calibration: model request tool schema omits the mcp tool (denied at the model-consumption boundary) -> PASS :: tools=["team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_send_message"]
+[2026-09-03T01:13:31.462Z] calibration: V3: pass=true after calibration
+[2026-09-03T01:13:31.586Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T01:13:31.587Z] :3080 post: 200
+[2026-09-03T01:13:31.589Z] mock capture dumped: 11 requests -> t12v-mock-capture.json
+[2026-09-03T01:13:31.590Z] mini MCP server closed
+[2026-09-03T01:13:31.591Z] mock model endpoint closed
+[2026-09-03T01:13:31.592Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-03T01:13:31.592Z] T12 vertical runner done

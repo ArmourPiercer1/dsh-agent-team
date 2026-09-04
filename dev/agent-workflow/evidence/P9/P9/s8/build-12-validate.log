@@ -1,0 +1,5 @@
+﻿ok: handoff id=@dsh-agent-team/client
+ok: factory returned module with keys [inject, name, apply]
+ok: frozen plugin contract (name/inject/apply)
+ok: apply() drive — effects=3 (0 errors), registrations=[settings.section, conversation.view, conversation.input.dock], coldRead=/team-remote/team.getProjection, presetListCalls=0
+s8-validate: PASS

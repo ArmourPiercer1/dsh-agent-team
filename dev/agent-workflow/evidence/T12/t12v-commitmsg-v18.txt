@@ -1,0 +1,22 @@
+T12-V18: resume-loop guard in the parent final directive's literal form
+
+Per the parent final directive (T12-V6 in parent numbering), bring the
+T12-B2 resume fix in agent-bindings.mjs (T12-V10 structural guard +
+T12-V17 leader skip) to the literal form requested for the decisive
+evidence:
+
+  if (String(member.instanceId) === LEADER_INSTANCE_ID) continue
+  if (member.childSessionId === undefined || member.childSessionId === null) continue
+
+both placed before any stringification of the child id, mirroring the
+create-path leader exclusion (L864-866): the production create path mints
+the v2 leader row with NO childSessionId key because the leader IS the
+root session (resumed above), and String(undefined) produced
+SessionId("undefined"), which killed every resume boot (T12 vertical runs
+#6-#10, 5 consecutive).
+
+The T12-V10 typeof/empty structural guard is retained immediately below as
+a second line of defense against empty-string or non-string values.
+Behavior is unchanged from T12-V17 (RESTART 9/9 verified in runs
+#11-#14); this commit is conformance of the fix to the directed literal
+form for the final evidence, not a functional change.

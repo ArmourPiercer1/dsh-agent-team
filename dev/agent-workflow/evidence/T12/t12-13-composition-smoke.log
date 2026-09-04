@@ -1,0 +1,17 @@
+﻿FAIL host plugin (packages/runtime): Cannot find module 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-int\packages\runtime\dist\plugin\host.js' imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-int\scripts\composition-smoke.mjs
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply is callable and side-effect-free
+FAIL composition-smoke
+node : file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/scripts/composition-smoke.mjs:106
+At line:1 char:129
++ ... coding]::new($false); node scripts/composition-smoke.mjs 2>&1 | Out-F ...
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (file:///D:/Agen...n-smoke.mjs:106:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/scripts/composition-smoke.mjs:106:9
+
+Node.js v24.20.0

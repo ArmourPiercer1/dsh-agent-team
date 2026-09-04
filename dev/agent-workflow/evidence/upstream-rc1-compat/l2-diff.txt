@@ -1,0 +1,118 @@
+﻿commit c6bae9c8cee6b12bedfc34c71fabf9f0a73e7872
+Author: ArmourPiercer <1804757967@qq.com>
+Date:   Fri Sep 4 19:49:18 2026 +0800
+
+    R122 compat(rc1): point harness build-pin at dsh 0.1.2-rc.1 (cd5ef814 -> 76fda72979)
+    
+    The alpha.1 -> rc.1 upstream upgrade leaves the harness build-chain
+    client-commit metadata pin stale. Update the five CLIENT_COMMIT_HASH
+    constants (tools/harness/run.mjs, tools/harness/t12-vertical.mjs,
+    runtime/member-residency/harness/run.mjs,
+    runtime/root-binding/harness/run.mjs, legacy/session-reader/e2e/run.mjs)
+    plus the two procedural references (legacy e2e header comment,
+    root-binding harness README) from cd5ef814 to 76fda72979, the commit the
+    test-use tree is built at.
+    
+    Build-metadata only: DSH_CLIENT_COMMIT_HASH stamps the web bundle commit
+    record (repositoryCommitHash validates and truncates it to 7 chars). It
+    is not an API seam and is not exercised by the five gates (only by the
+    PENDING-LIVE boot chain).
+    
+    No API-seam adaptation was required: every client-plane and host-plane
+    seam this repo consumes is unchanged under rc.1 (compat matrix:
+    dev/agent-workflow/evidence/upstream-rc1-compat/compat-matrix.md in the
+    main tree). R118/R119-1/R119-2/R121 behavior is preserved with zero
+    semantic change.
+    
+    Five gates green on task/upstream-rc1-compat against rc.1: typecheck
+    8/8, vitest 8/8 (contracts 150, domain 312, storage 269, testkit 124,
+    tools 35, remote 92, client 480, runtime 1070 = 2532), build 9/9, lint
+    clean; smoke PENDING-LIVE (3180 vertical).
+
+diff --git a/packages/legacy/session-reader/e2e/run.mjs b/packages/legacy/session-reader/e2e/run.mjs
+index 47750d9..fa11e88 100644
+--- a/packages/legacy/session-reader/e2e/run.mjs
++++ b/packages/legacy/session-reader/e2e/run.mjs
+@@ -2,7 +2,7 @@
+  * run.mjs — the P7-T7 real-instance E2E driver (SEC8).
+  *
+  * Boots a REAL DSH web instance from the pristine test-use tree
+- * (`references/deepseek-harness-test-use`, pin cd5ef814) with a fresh
++ * (`references/deepseek-harness-test-use`, pin 76fda72979) with a fresh
+  * workspace-internal DSH_HOME, mounts the single harness row
+  * (`p7t7-legacy-session-reader`) through the public cordis.patch.yml
+  * profile seam, and drives the three reader scenarios end to end:
+@@ -56,7 +56,7 @@ import { captureGitState } from '../../../../tests/characterization/lib/tree-cle
+ 
+ const HERE = dirname(fileURLToPath(import.meta.url))
+ const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
+-const CLIENT_COMMIT_HASH = 'cd5ef814'
++const CLIENT_COMMIT_HASH = '76fda72979'
+ const STABLE_URL = 'http://127.0.0.1:3080/'
+ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
+ 
+diff --git a/packages/runtime/member-residency/harness/run.mjs b/packages/runtime/member-residency/harness/run.mjs
+index da7e352..f344a0e 100644
+--- a/packages/runtime/member-residency/harness/run.mjs
++++ b/packages/runtime/member-residency/harness/run.mjs
+@@ -91,7 +91,7 @@ import { closeMiniServer, startMiniMcpServer } from '../../root-binding/harness/
+ const HERE = dirname(fileURLToPath(import.meta.url))
+ const T5_HARNESS = join(HERE, '..', '..', 'root-binding', 'harness')
+ const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
+-const CLIENT_COMMIT_HASH = 'cd5ef814'
++const CLIENT_COMMIT_HASH = '76fda72979'
+ const STABLE_URL = 'http://127.0.0.1:3080/'
+ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
+ 
+diff --git a/packages/runtime/root-binding/harness/README.md b/packages/runtime/root-binding/harness/README.md
+index c5cc525..991e580 100644
+--- a/packages/runtime/root-binding/harness/README.md
++++ b/packages/runtime/root-binding/harness/README.md
+@@ -58,7 +58,7 @@ node packages/runtime/root-binding/harness/run.mjs \
+ 
+ Build chain (only when a farm package's `lib/` is missing, e.g. a pristine
+ test-use checkout): `pnpm install --ignore-scripts` then
+-`node scripts/build.ts` with `DSH_CLIENT_COMMIT_HASH=cd5ef814`,
++`node scripts/build.ts` with `DSH_CLIENT_COMMIT_HASH=76fda72979`,
+ `ESBUILD_WORKER_THREADS=1`, inside the test-use tree. Artifacts are
+ gitignored; the pristine check re-verifies afterwards. The `build:web` step
+ (vite → esbuild service spawn) is **not buildable in-sandbox** (piped-stdio
+diff --git a/packages/runtime/root-binding/harness/run.mjs b/packages/runtime/root-binding/harness/run.mjs
+index 5afb4e3..ae25742 100644
+--- a/packages/runtime/root-binding/harness/run.mjs
++++ b/packages/runtime/root-binding/harness/run.mjs
+@@ -66,7 +66,7 @@ import { closeMiniServer, startMiniMcpServer } from './mini-mcp.mjs'
+ 
+ const HERE = dirname(fileURLToPath(import.meta.url))
+ const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
+-const CLIENT_COMMIT_HASH = 'cd5ef814'
++const CLIENT_COMMIT_HASH = '76fda72979'
+ const STABLE_URL = 'http://127.0.0.1:3080/'
+ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
+ 
+diff --git a/packages/tools/harness/run.mjs b/packages/tools/harness/run.mjs
+index fb5c061..016b8b7 100644
+--- a/packages/tools/harness/run.mjs
++++ b/packages/tools/harness/run.mjs
+@@ -114,7 +114,7 @@ import { closeMiniServer, startMiniMcpServer } from '../../runtime/root-binding/
+ 
+ const HERE = dirname(fileURLToPath(import.meta.url))
+ const WORKTREE_ROOT = resolve(HERE, '..', '..', '..')
+-const CLIENT_COMMIT_HASH = 'cd5ef814'
++const CLIENT_COMMIT_HASH = '76fda72979'
+ const STABLE_URL = 'http://127.0.0.1:3080/'
+ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
+ 
+diff --git a/packages/tools/harness/t12-vertical.mjs b/packages/tools/harness/t12-vertical.mjs
+index 87f07bf..8bb9f2f 100644
+--- a/packages/tools/harness/t12-vertical.mjs
++++ b/packages/tools/harness/t12-vertical.mjs
+@@ -155,7 +155,7 @@ const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+ const EVIDENCE_DIR = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'T12')
+ const INSTANCES_DIR = join(EVIDENCE_DIR, 'instances')
+ 
+-const CLIENT_COMMIT_HASH = 'cd5ef814'
++const CLIENT_COMMIT_HASH = '76fda72979'
+ const STABLE_URL = 'http://127.0.0.1:3080/'
+ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
+ 

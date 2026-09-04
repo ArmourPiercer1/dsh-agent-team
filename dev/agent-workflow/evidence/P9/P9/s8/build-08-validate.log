@@ -1,0 +1,7 @@
+﻿node : s8-validate: FAIL — facade evaluation threw: Unexpected token 'export'
+At line:1 char:438
++ ... TEXITCODE"; node "$s8\s8-validate.mjs" 'D:\AgentDev\dsh-plugins\dsh-a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (s8-validate: FA... token 'export':String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

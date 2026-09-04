@@ -1,0 +1,131 @@
+{
+  "version": 4,
+  "record": {
+    "identity": {
+      "createdAt": 1788391415008,
+      "cwd": "C:/agent-team/work/t12v/a"
+    },
+    "rows": {
+      "sessionStats": {
+        "ver": 1,
+        "seq": 23,
+        "val": {
+          "turns": 1,
+          "steps": 1,
+          "llmMs": 152,
+          "toolMs": 0,
+          "ttftMs": 150,
+          "ttftSteps": 1,
+          "decodeMs": 2,
+          "decodeTokens": 31,
+          "lastTurn": 1,
+          "openStep": null,
+          "pendingCalls": {}
+        }
+      },
+      "title": {
+        "ver": 1,
+        "seq": 23,
+        "val": "T12V_ROOT_FIRST_ACK_mtkq2htxfd7514"
+      },
+      "goal": {
+        "ver": 4,
+        "seq": 23,
+        "val": null
+      },
+      "tokenUsage": {
+        "ver": 2,
+        "seq": 23,
+        "val": {
+          "totals": {
+            "uncachedInputTokens": 573,
+            "outputTokens": 31,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "last": {
+            "turn": 1,
+            "step": 1,
+            "buckets": {
+              "uncachedInputTokens": 573,
+              "outputTokens": 31,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0
+            }
+          }
+        }
+      },
+      "contextPressure": {
+        "ver": 4,
+        "seq": 23,
+        "val": {
+          "surfaceTokens": 158,
+          "contextWindow": 1000000,
+          "pressureTokens": 573,
+          "sampledSurfaceTokens": 142
+        }
+      },
+      "contextBreakdown": {
+        "ver": 2,
+        "seq": 23,
+        "val": {
+          "systemTokens": 451,
+          "toolsTokens": 2799,
+          "messageTokens": 158
+        }
+      },
+      "subagentTiming": {
+        "ver": 2,
+        "seq": 23,
+        "val": {
+          "descriptorSeen": false,
+          "settledMs": 0
+        }
+      },
+      "subagent": {
+        "ver": 2,
+        "seq": 23,
+        "val": {}
+      },
+      "agentPreset": {
+        "ver": 1,
+        "seq": 23,
+        "val": null
+      },
+      "permissions": {
+        "ver": 1,
+        "seq": 23,
+        "val": {
+          "preset": "workspace-write",
+          "sandbox": "workspace-write",
+          "approval": "ask"
+        }
+      },
+      "modelSelection": {
+        "ver": 2,
+        "seq": 23,
+        "val": {
+          "lastUsed": {
+            "provider": "deepseek-official",
+            "model": "t12v-model-a",
+            "reasoningEffort": "high"
+          },
+          "pending": null
+        }
+      },
+      "sessionListMetadata": {
+        "ver": 1,
+        "seq": 23,
+        "val": {
+          "blank": false,
+          "lastPromptAt": 1788391415787
+        }
+      },
+      "imageLimits": {
+        "ver": 1,
+        "seq": 23,
+        "val": null
+      }
+    }
+  }
+}

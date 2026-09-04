@@ -1,0 +1,48 @@
+[2026-09-03T01:52:12.482Z] T12 vertical runner start; nonce=mtkvds5d91659e; phases=build,stateprobe
+[2026-09-03T01:52:12.483Z] worktree=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V
+[2026-09-03T01:52:12.483Z] repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-03T01:52:12.483Z] hostTree=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-03T01:52:12.483Z] evidenceDir=D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12
+[2026-09-03T01:52:12.494Z] :3080 pre: 200
+[2026-09-03T01:52:12.620Z] test-use pre: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T01:52:12.622Z] ports free: {"mock":3496,"mini":3492,"a1":3181,"a2":3182,"b":3183,"c":3184}
+[2026-09-03T01:52:12.623Z] world A home NOT asserted fresh (no requested phase boots there)
+[2026-09-03T01:52:12.623Z] world B home NOT asserted fresh (no requested phase boots there)
+[2026-09-03T01:52:12.623Z] world C home NOT asserted fresh (no requested phase boots there)
+[2026-09-03T01:52:12.623Z] fresh homes asserted: 0/3 (non-empty would fail CLOSED where asserted)
+[2026-09-03T01:52:12.633Z] runtime node_modules links verified (packages/runtime/node_modules)
+[2026-09-03T01:52:12.633Z] packages node_modules links verified (packages/node_modules, 7 links)
+[2026-09-03T01:52:12.645Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-03T01:52:12.645Z] mock DeepSeek endpoint up at 127.0.0.1:3496; DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to instance launches
+[2026-09-03T01:52:12.646Z] mini MCP server up on 127.0.0.1:3492
+[2026-09-03T01:52:12.647Z] == T12-V build dist 2026-09-03T01:52:12.647Z ==
+[2026-09-03T01:52:13.012Z] == legacy exit 0 ==
+[2026-09-03T01:52:14.612Z] == runtime exit 0 ==
+[2026-09-03T01:52:14.614Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-03T01:52:15.556Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-03T01:52:15.556Z] build: production dist built + import-probed OK
+[2026-09-03T01:52:15.558Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T01:52:17.385Z] throwaway boot OK: http://127.0.0.1:3185/?token=<REDACTED>
+[2026-09-03T01:52:17.426Z] SPROBE-B: profile created via throwaway boot
+[2026-09-03T01:52:17.427Z] SPROBE-B: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-probe-b\profiles\web\cordis.patch.yml
+[2026-09-03T01:52:17.430Z] SPROBE-B: directive written (boot=1 phase=create)
+[2026-09-03T01:52:19.247Z] SPROBE-B: booted at http://127.0.0.1:3185; auth cookie exchanged
+[2026-09-03T01:52:20.412Z] SPROBE-B: row ready — toolCount=10
+[2026-09-03T01:52:20.430Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T01:52:24.815Z] throwaway boot OK: http://127.0.0.1:3186/?token=<REDACTED>
+[2026-09-03T01:52:24.858Z] SPROBE-A: profile created via throwaway boot
+[2026-09-03T01:52:24.860Z] SPROBE-A: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-probe-a\profiles\web\cordis.patch.yml
+[2026-09-03T01:52:24.860Z] SPROBE-A: directive written (boot=1 phase=create)
+[2026-09-03T01:52:26.652Z] SPROBE-A: booted at http://127.0.0.1:3186; auth cookie exchanged
+[2026-09-03T01:52:27.831Z] SPROBE-A: row ready — toolCount=10
+[2026-09-03T01:52:27.882Z] SPROBE-B: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T01:52:27.928Z] SPROBE-A: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-03T01:52:28.101Z] stateprobe: probe instances stopped; throwaway probe homes reset to empty
+[2026-09-03T01:52:28.102Z] stateprobe: pass=true (8/8 ok)
+[2026-09-03T01:52:28.260Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-03T01:52:28.261Z] :3080 post: 200
+[2026-09-03T01:52:28.261Z] mock capture dumped: 0 requests -> t12v-mock-capture.json
+[2026-09-03T01:52:28.262Z] mini MCP server closed
+[2026-09-03T01:52:28.262Z] mock model endpoint closed
+[2026-09-03T01:52:28.263Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-03T01:52:28.263Z] T12 vertical runner done

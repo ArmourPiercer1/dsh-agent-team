@@ -1,0 +1,33 @@
+# DRAFT t12: block for graph.yaml — APPEND at EOF after verdict; re-verify graph.yaml + SESSION_ROUTER_LOG.md mtimes immediately before writing (P9P session is actively committing; master was at b27ff8a as of 22:48).
+# Do NOT touch p9_prototype: or current_phase (owned by P9P session).
+t12:
+  plan: docs/plans/active/DSH_Agent_Team_vNext_T12_Production_Vertical_Closure_Plan_V2_OLD_DSH_PINNED.md
+  clock:
+    T0: 2026-09-02T20:20:00+08:00 (approx; user launch of T12 execution)
+    integration_done: 2026-09-02T22:27:08+08:00
+    vertical_dispatch: 2026-09-02T22:30:00+08:00
+    verdict: TBD
+  base: 7d07330cca7bb3df416e3a82359d4307d9ab4a64 (int/P8-S-backend-closure)
+  old_dsh_pin: cd5ef8148158c3a752a658978873241fdf8e2bbc (0.1.2-alpha.1, references/deepseek-harness-test-use, pristine verified pre/post)
+  integration:
+    branch: int/T12-production-closure
+    tip: 62c7c81 (17 commits: lane picks A7+B4+C3 + integrator 867a4d1 subagents wiring + fa8705d pin 558 + 62c7c81 types.ts repair)
+    quick_acceptance: "tsc runtime/remote exit 0; runtime+remote 1179/1179; testkit 124/124 (pin 558 = 543+15 union A9+B3+C3)"
+  defects: "B1-B6, M1-M4, H1, H4 ALL FIXED (df51c42/a1696c3+71d56cb/c10cf35/649abbb/3143e30/083aba7/06717ac/ef331e7/3044107+867a4d1/41f412a/618ff0a/0612882); H2->P10 debt, H3 accepted"
+  vertical:
+    worktree: .worktrees/T12-V (task/T12-vertical-slice, from 62c7c81)
+    builder: subagent 2bb3e9b1 (single writer)
+    new_defect_fixed: "yaml dep declared in packages/runtime/package.json (latent since P8-S5A rootDir ../.. layout; fresh installs lack stale runtime/node_modules/yaml; machine-proven; T12-V commit)"
+    slices: [V1, V2, V3, V4, V5, HANDOFF, LIFECYCLE, RESTART]
+    results: TBD (summary.json per slice {criterion,pass,durationMs,assertions,evidence})
+  section13:
+    full_tests: "2170/2170 PASS @62c7c81 (t12-13-full-tests.log)"
+    tsc_typecheck_8: "8/8 exit 0 (t12-13-tsc-typecheck.log)"
+    tsc_build_8: "7/8; tools TS6059 PROVEN PRE-EXISTING at base (probe worktree @7d07330 identical; import since P6-T6 293db58; packages/tools byte-identical base->tip)"
+    composition_smoke: "FAIL stale P1-T4 path (script 932edb1 vs layout 4ea9396 P8-S5A; both byte-identical base->tip); corrected-path diag pending final tip (t12-13-smoke-diag.mjs)"
+    zero_core: "C1-C4 prescan 0 true host-tree escapes (564 own-workspace cross-imports + 1 fixture-string artifact; t12-13-zerocore-prescan.json); C5 git bracket after vertical boots"
+    boot_probe: "PASS 5.6s marker @3186 fresh home, clean kill, port freed (t12-13-boot-probe.log); :3080 baseline 200"
+  preexisting_issues_for_P9: [tools-build TS6059 (tools.ts:76 contracts-src import), composition-smoke stale path, yaml dep (fixed in T12-V, cherry-picked)]
+  followup: "P9 UI plan (docs/plans/active/DSH_Agent_Team_vNext_P9_UI_T12_T24_Legacy_Reuse_Implementation_Test_Plan.md) starts immediately on GO without approval (user-confirmed 2026-09-02); legacy baseline @506191b tree a45fd29 verified present in frozen references/deepseek-harness"
+  verdict: TBD (GO/REFACTOR/STOP-CANDIDATE) — see dev/agent-workflow/evidence/T12/T12-decision.md
+  push: none (no authorization)

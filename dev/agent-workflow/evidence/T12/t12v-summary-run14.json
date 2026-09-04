@@ -1,0 +1,1011 @@
+{
+  "task": "T12 production vertical closure — vertical E2E",
+  "generatedAt": "2026-09-03T01:13:31.591Z",
+  "nonce": "mtktg7nu58c6d0",
+  "modelPath": {
+    "used": "mock-env",
+    "note": "DEEPSEEK_BASE_URL=http://127.0.0.1:3496 + DEEPSEEK_API_KEY=t12v-mock-key exported to every instance launch; the real dsh-llm deepseek-official adapter resolves the launch environment, so every model call ran through the mock SSE endpoint. The qiyuan-self/qwen3.8-27b fallback was NOT used.",
+    "baseUrl": "http://127.0.0.1:3496",
+    "fallbackUsed": false
+  },
+  "ports": {
+    "mock": 3496,
+    "mini": 3492,
+    "a1": 3181,
+    "a2": 3182,
+    "b": 3183,
+    "c": 3184
+  },
+  "homes": {
+    "a": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a",
+    "b": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-b",
+    "c": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-c"
+  },
+  "scenarios": {
+    "V1": {
+      "criterion": "V1 fresh Root: minimal legal Team create via production row create path; durable TeamSession; fresh RootBinding; valid Leader identity; REAL Root Agent under DSH_HOME with cwd == W_root (session meta, not projection); zero synthetic members",
+      "pass": true,
+      "durationMs": 1077,
+      "assertions": [
+        {
+          "name": "state.boot === 1 (create boot)",
+          "ok": true,
+          "detail": "boot=1"
+        },
+        {
+          "name": "state.phase === \"create\"",
+          "ok": true,
+          "detail": "phase=create"
+        },
+        {
+          "name": "state.rootSessionId === ROOT_A",
+          "ok": true,
+          "detail": "rootSessionId=session-t12v-a-root-mtktg7nu58c6d0"
+        },
+        {
+          "name": "TeamSession durable (row keyed by ROOT_A; invariant 9: teamSessionId === rootSessionId)",
+          "ok": true,
+          "detail": "teamSession={\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"blueprintId\":\"t12v-bp-a\",\"revision\":\"1\",\"contentHash\":\"sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d\",\"defaultWorkspace\":\"C:/agent-team/work/t12v/a\",\"createdAt\":\"2026-09-03T00:58:14.433Z\",\"generation\":2} param=session-t12v-a-root-mtktg7nu58c6d0"
+        },
+        {
+          "name": "members contain EXACTLY the leader (no synthetic worker/scout rows; seedMembers stayed [])",
+          "ok": true,
+          "detail": "members=[\"inst-leader\"]"
+        },
+        {
+          "name": "root session log materialized under DSH_HOME (real Root Agent)",
+          "ok": true,
+          "detail": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a\\sessions\\--C-agent-team-work-t12v-a--\\session-t12v-a-root-mtktg7nu58c6d0\\session.jsonl.zstd"
+        },
+        {
+          "name": "root session header cwd == W_root (session meta at agents.create boundary, not projection)",
+          "ok": true,
+          "detail": "header.cwd=C:/agent-team/work/t12v/a expected=C:/agent-team/work/t12v/a"
+        },
+        {
+          "name": "session/prompt accepted (browser-facing chat path)",
+          "ok": true,
+          "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"t12v-92979613a514\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+        },
+        {
+          "name": "root agent turn settled against the mock (real dsh-llm adapter + agent loop + session log)",
+          "ok": true,
+          "detail": "ack found in durable root log"
+        },
+        {
+          "name": "model call reached the mock endpoint with the row static model (mock-env path)",
+          "ok": true,
+          "detail": "model=t12v-model-a"
+        },
+        {
+          "name": "leader identity valid: leader persona installed and visible in the REAL prompt assembly",
+          "ok": true,
+          "detail": "system texts=[\"You are an AI agent powered by DeepSeek Harness.\\n\\nThe DeepSeek Harness implementation checkout is at D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\deepseek-\"]"
+        }
+      ],
+      "evidence": {
+        "stateRoot": {
+          "boot": 1,
+          "phase": "create",
+          "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "teamSession": {
+            "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "blueprintId": "t12v-bp-a",
+            "revision": "1",
+            "contentHash": "sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d",
+            "defaultWorkspace": "C:/agent-team/work/t12v/a",
+            "createdAt": "2026-09-03T00:58:14.433Z",
+            "generation": 2
+          },
+          "members": [
+            {
+              "instanceId": "inst-leader",
+              "childSessionId": "undefined"
+            }
+          ]
+        },
+        "rootSessionFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a\\sessions\\--C-agent-team-work-t12v-a--\\session-t12v-a-root-mtktg7nu58c6d0\\session.jsonl.zstd",
+        "rootSessionHeader": {
+          "type": "session",
+          "version": 0,
+          "id": "session-t12v-a-root-mtktg7nu58c6d0",
+          "createdAt": 1788397094631,
+          "cwd": "C:/agent-team/work/t12v/a",
+          "delegationDepth": 0
+        },
+        "firstTurnLatencyMs": {
+          "admittedAtMs": 1788397095343,
+          "firstTurnStartMs": 1788397095339,
+          "latencyMs": -4
+        },
+        "rootModelRequest": {
+          "seq": 1,
+          "model": "t12v-model-a",
+          "endpoint": "http://127.0.0.1:3496"
+        },
+        "rootSystemMessages": [
+          "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3181. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the she"
+        ]
+      },
+      "notes": []
+    },
+    "V2": {
+      "criterion": "V2 real Member (world A part recorded; world B mcpServer:null variant pending fresh #2)",
+      "pass": true,
+      "durationMs": 903,
+      "assertions": [
+        {
+          "name": "[A] team_create_member executed (shipped tool via the production executeTool seam)",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1esq73x1qs9x\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\",\"operationId\":\"op-0ytyxj50p7aiq01w3g2fn1hp\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},\"re"
+        },
+        {
+          "name": "[A] effect carries instanceId + childSessionId (discovered, not hardcoded)",
+          "ok": true,
+          "detail": "effect={\"kind\":\"member-activated\",\"instanceId\":\"inst-1esq73x1qs9x\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\",\"operationId\":\"op-0ytyxj50p7aiq01w3g2fn1hp\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"}"
+        },
+        {
+          "name": "[A] child session log materialized under DSH_HOME (real DSH child Session)",
+          "ok": true,
+          "detail": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a\\sessions\\--C-agent-team-work-t12v-child-a--\\session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\\session.jsonl.zstd"
+        },
+        {
+          "name": "[A] child session header cwd == W_child",
+          "ok": true,
+          "detail": "header.cwd=C:/agent-team/work/t12v/child-a expected=C:/agent-team/work/t12v/child-a"
+        },
+        {
+          "name": "[A] member.send delivered (coordinator outcome targets worker A)",
+          "ok": true,
+          "detail": "{\"status\":\"delivered\",\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"action\":\"send-message\",\"callerRole\":\"human\",\"recipientInstanceId\":\"inst-1esq73x1qs9x\",\"deliveryMode\":\"direct\",\"deliveredToInstanceId\":\"inst-1esq73x1qs9x\",\"deliveredToSessionId\":\"session-team-child-5f4cde354e9a1ffa59e4c89c2af"
+        },
+        {
+          "name": "[A] child turn settled against the mock",
+          "ok": true,
+          "detail": "ack found in durable child log"
+        },
+        {
+          "name": "[A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request)",
+          "ok": true,
+          "detail": "system texts=[\"You are an AI agent powered by DeepSeek Harness.\\n\\nThe DeepSeek Harness implementation checkout is at D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\deepseek-harness-test-use\\\\. The checkout location\"]"
+        },
+        {
+          "name": "[A] effective model = row static selection (deepseek-official/t12v-model-a)",
+          "ok": true,
+          "detail": "model=t12v-model-a seq=3"
+        }
+      ],
+      "evidence": {
+        "worldA": {
+          "createResult": {
+            "status": "executed",
+            "action": "create-member",
+            "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "callerRole": "leader",
+            "effect": {
+              "kind": "member-activated",
+              "instanceId": "inst-1esq73x1qs9x",
+              "templateId": "worker",
+              "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+              "operationId": "op-0ytyxj50p7aiq01w3g2fn1hp",
+              "replayed": false,
+              "ledgerSequence": 1,
+              "admissionCode": "ADMISSION_OPEN"
+            },
+            "requestToken": "t12v-v2-create-mtktg7nu58c6d0"
+          },
+          "workerA": {
+            "instanceId": "inst-1esq73x1qs9x",
+            "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0"
+          },
+          "childSessionFile": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a\\sessions\\--C-agent-team-work-t12v-child-a--\\session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\\session.jsonl.zstd",
+          "childSessionHeader": {
+            "type": "session",
+            "version": 0,
+            "id": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+            "createdAt": 1788397096458,
+            "cwd": "C:/agent-team/work/t12v/child-a",
+            "delegationDepth": 0
+          },
+          "sendResult": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-1esq73x1qs9x",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-1esq73x1qs9x",
+              "deliveredToSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+              "factSequence": 2,
+              "deliveredSequence": 3,
+              "requestToken": "t12v-v2-send-mtktg7nu58c6d0"
+            }
+          },
+          "firstTurnLatencyMs": {
+            "admittedAtMs": 1788397096862,
+            "firstTurnStartMs": 1788397096971,
+            "latencyMs": 109
+          },
+          "childModelRequest": {
+            "seq": 3,
+            "model": "t12v-model-a",
+            "systemMessages": [
+              "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3181. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the she"
+            ],
+            "tools": [
+              "team_create_member",
+              "team_delegate",
+              "team_follow_up",
+              "team_inspect_config",
+              "team_list_members",
+              "team_list_templates",
+              "team_report_progress",
+              "team_request_control",
+              "team_resolve_control",
+              "team_send_message"
+            ]
+          }
+        }
+      }
+    },
+    "V3": {
+      "criterion": "V3 real policy: external hard DENY of mcp + member override ALLOW mcp => mcp remains denied at the ACTUAL consumption boundary (model tool schema omits the mcp tool; the agent loop fails the call; no mcp mount established) — not just the projection",
+      "pass": true,
+      "durationMs": 3109,
+      "assertions": [
+        {
+          "name": "member override ALLOW mcp[t12vmini] admitted (durable override record returned)",
+          "ok": true,
+          "detail": "{\"recordId\":\"ovr-mcp-inst-1esq73x1qs9x-g0\",\"kind\":\"human-override\",\"scope\":\"instance\",\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"values\":{\"mcp\":{\"kind\":\"allow\",\"items\":[\"t12vmini\"]}},\"generation\":1,\"updatedAt\":\"2026-09-03T00:58:17.319Z\",\"instanceId\":\"inst-1esq73x1qs9x\"}"
+        },
+        {
+          "name": "turn settled after the mcp tool call was handled by the real agent loop",
+          "ok": true,
+          "detail": "settled"
+        },
+        {
+          "name": "no mcp mount established: effective mcp cell mounted===false despite the override (external hard deny held)",
+          "ok": true,
+          "detail": "diag={\"mounted\":false,\"serverName\":\"t12vmini\",\"allowed\":false,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"ovr-mcp-inst-1esq73x1qs9x-g0\"},\"unavailable\":false,\"deniedBy\":{\"by\":\"external\",\"reason\":\"externalHardDeny\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team humanOverride(origin=human, ovr-mcp-inst-1esq73x1qs9x-g0) allow[t12vmini]; external exists=yes, hard=deny,"
+        },
+        {
+          "name": "child session log records the mcp tool attempt at the consumption boundary",
+          "ok": true,
+          "detail": "log contains attempted tool name mcp__t12vmini__ping: true"
+        },
+        {
+          "name": "the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id)",
+          "ok": true,
+          "detail": "attempted=true denialRelayed=true reply={\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call_t12v_mtktg7nu58c6d0\",\"name\":\"mcp__t12vmini__ping\",\"arguments\":{\"msg\":\"t12v\"}}]}"
+        },
+        {
+          "name": "model request tool schema omits the mcp tool (denied at the model-consumption boundary)",
+          "ok": true,
+          "detail": "tools=[\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+        }
+      ],
+      "evidence": {
+        "overrideSet": {
+          "recordId": "ovr-mcp-inst-1esq73x1qs9x-g0",
+          "kind": "human-override",
+          "scope": "instance",
+          "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "values": {
+            "mcp": {
+              "kind": "allow",
+              "items": [
+                "t12vmini"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-03T00:58:17.319Z",
+          "instanceId": "inst-1esq73x1qs9x"
+        },
+        "denyTurnStartMs": 1788397096971,
+        "denyTurnLatencyMs": -3433,
+        "mcpDiag": {
+          "mounted": false,
+          "serverName": "t12vmini",
+          "allowed": false,
+          "source": {
+            "layer": "humanOverride",
+            "origin": "human",
+            "recordId": "ovr-mcp-inst-1esq73x1qs9x-g0"
+          },
+          "unavailable": false,
+          "deniedBy": {
+            "by": "external",
+            "reason": "externalHardDeny"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "mcp: effective deny; team humanOverride(origin=human, ovr-mcp-inst-1esq73x1qs9x-g0) allow[t12vmini]; external exists=yes, hard=deny, removed=[t12vmini]"
+        },
+        "mcpTurnTools": [
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_send_message"
+        ]
+      },
+      "notes": []
+    },
+    "V4": {
+      "criterion": "V4 delegate real work: the exact task text T12_VERTICAL_TASK_<nonce> reaches the real child session log; the real turn against the mock completes; durable truth settles",
+      "pass": true,
+      "durationMs": 1883,
+      "assertions": [
+        {
+          "name": "team_delegate executed (work admitted)",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1esq73x1qs9x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":6,\"replayed\":false,\"settled\":true,\"settledSequence\":9},\"requestToken\":\"t12v-v4-delegate-mtktg7nu58c6d0\"}"
+        },
+        {
+          "name": "effect carries a real instanceId",
+          "ok": true,
+          "detail": "effect={\"kind\":\"work-admitted\",\"instanceId\":\"inst-1esq73x1qs9x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":6,\"replayed\":false,\"settled\":true,\"settledSequence\":9}"
+        },
+        {
+          "name": "childSessionId resolved for the delegated instance (live state discovery)",
+          "ok": true,
+          "detail": "resolved=session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0"
+        },
+        {
+          "name": "exact task text reached the REAL child session log",
+          "ok": true,
+          "detail": "exact task present in durable child log"
+        },
+        {
+          "name": "real turn against the mock completed and settled",
+          "ok": true,
+          "detail": "ack settled in durable child log"
+        },
+        {
+          "name": "model request carried the exact task text",
+          "ok": true,
+          "detail": "found=true"
+        }
+      ],
+      "evidence": {
+        "delegateResult": {
+          "status": "executed",
+          "action": "delegate",
+          "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "callerRole": "leader",
+          "effect": {
+            "kind": "work-admitted",
+            "instanceId": "inst-1esq73x1qs9x",
+            "fromLifecycle": "CREATED",
+            "lifecycleCommitted": true,
+            "sequence": 6,
+            "replayed": false,
+            "settled": true,
+            "settledSequence": 9
+          },
+          "requestToken": "t12v-v4-delegate-mtktg7nu58c6d0"
+        },
+        "v4ChildResolution": {
+          "stateStatus": 200,
+          "memberRow": {
+            "instanceId": "inst-1esq73x1qs9x",
+            "templateId": "worker",
+            "label": "v2-worker",
+            "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+            "lifecycle": "SETTLED",
+            "activityVersion": 3
+          }
+        },
+        "firstTurnLatencyMs": {
+          "admittedAtMs": 1788397102286,
+          "firstTurnStartMs": 1788397096971,
+          "latencyMs": -5315
+        },
+        "v4ModelRequest": {
+          "seq": 7,
+          "model": "t12v-model-a"
+        },
+        "workerV4": {
+          "instanceId": "inst-1esq73x1qs9x",
+          "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0"
+        }
+      },
+      "notes": []
+    },
+    "V5": {
+      "criterion": "V5 Projection/Remote: TeamProjection read through the BROWSER-FACING public Remote mounted endpoint (/team-remote) — the test side NEVER uses TeamDomain direct reads as an assertion source",
+      "pass": true,
+      "durationMs": 39,
+      "assertions": [
+        {
+          "name": "team.getProjection answered through the public Remote (HTTP 200 + ok result)",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "projection teamSessionId matches the durable TeamSession",
+          "ok": true,
+          "detail": "projection=session-t12v-a-root-mtktg7nu58c6d0 expected=session-t12v-a-root-mtktg7nu58c6d0"
+        },
+        {
+          "name": "projection carries the production schemaVersion 2 (P8-S contract freeze: production projection service stamps schemaVersion: 2)",
+          "ok": true,
+          "detail": "schemaVersion=2"
+        },
+        {
+          "name": "projection top-level field set matches the frozen v1 contract (superset for v2)",
+          "ok": true,
+          "detail": "keys=[\"schemaVersion\",\"teamSessionId\",\"blueprint\",\"generation\",\"generatedAt\",\"root\",\"templates\",\"members\",\"ledger\"]"
+        },
+        {
+          "name": "projection members include the real leader + every discovered worker instance (childSessionIds stable)",
+          "ok": true,
+          "detail": "members=[{\"instanceId\":\"inst-1esq73x1qs9x\",\"lifecycle\":\"SETTLED\"},{\"instanceId\":\"inst-leader\",\"lifecycle\":\"RUNNING\"}] expected=[\"inst-1esq73x1qs9x\"]"
+        },
+        {
+          "name": "projection ledger non-empty (durable event truth projected)",
+          "ok": true,
+          "detail": "ledger={\"latestSequence\":15,\"totalEntries\":15,\"byCategory\":{\"team\":2,\"member\":1,\"lifecycle\":2,\"message\":6,\"control\":0,\"policy\":0,\"compatibility\":0,\"progress\":4},\"pendingControlCount\":0} totalEntries=15"
+        }
+      ],
+      "evidence": {
+        "projectionKeys": [
+          "projection"
+        ],
+        "projection": {
+          "schemaVersion": 2,
+          "teamSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "blueprint": {
+            "blueprintId": "t12v-bp-a",
+            "revision": "1",
+            "contentHash": "sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d"
+          },
+          "generation": 17,
+          "generatedAt": "2026-09-03T01:13:28.323Z",
+          "root": {
+            "teamSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "createdAt": "2026-09-03T00:58:14.433Z",
+            "policyState": "default",
+            "admission": "OPEN",
+            "compatibility": {
+              "status": "OPEN",
+              "probeGeneration": 1,
+              "requirementFingerprint": "none",
+              "environmentFingerprint": "fp-v1:97fc230e9949b8d8",
+              "warningCount": 0,
+              "fatalCount": 0,
+              "acknowledgedWarningCount": 0,
+              "lastProbedAt": "2026-09-03T00:58:14.568Z"
+            },
+            "creationBudgetConsumed": 0,
+            "defaultWorkspace": "C:/agent-team/work/t12v/a"
+          },
+          "templates": [
+            {
+              "kind": "leader",
+              "templateId": "leader",
+              "displayName": "leader",
+              "contextPolicy": "persistent"
+            },
+            {
+              "kind": "member",
+              "templateId": "worker",
+              "displayName": "T12V Worker A",
+              "contextPolicy": "persistent",
+              "instanceQuota": 4
+            }
+          ],
+          "members": [
+            {
+              "instanceId": "inst-1esq73x1qs9x",
+              "templateId": "worker",
+              "label": "v2-worker",
+              "workspace": "C:/agent-team/work/t12v/child-a",
+              "createdAt": "2026-09-03T00:58:16.590Z",
+              "lifecycle": "SETTLED",
+              "contextPolicy": "persistent",
+              "effectiveConfig": {
+                "model": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "workspace": {
+                  "value": "C:/agent-team/work/t12v/child-a",
+                  "source": "instance-creation",
+                  "state": "locked",
+                  "locked": true
+                },
+                "permissions": {},
+                "autonomy": {
+                  "value": "mcp: allow t12vmini",
+                  "source": "explicit-human-override",
+                  "state": "pending-next-boundary"
+                }
+              },
+              "liveActivity": {
+                "residency": "resident",
+                "lastActivityAt": "2026-09-03T01:13:28.323Z"
+              },
+              "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+              "modelState": {
+                "current": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "provenance": {
+                  "layer": "unspecified",
+                  "origin": "static",
+                  "recordId": null,
+                  "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                },
+                "availability": "available"
+              }
+            },
+            {
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "workspace": "C:/agent-team/work/t12v/a",
+              "createdAt": "2026-09-03T00:58:14.518Z",
+              "lifecycle": "RUNNING",
+              "contextPolicy": "persistent",
+              "effectiveConfig": {
+                "model": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "workspace": {
+                  "value": "C:/agent-team/work/t12v/a",
+                  "source": "blueprint",
+                  "state": "locked",
+                  "locked": true
+                },
+                "permissions": {},
+                "autonomy": {
+                  "value": null,
+                  "source": "autonomy-overlay",
+                  "state": "inherited"
+                }
+              },
+              "liveActivity": {
+                "residency": "resident",
+                "lastActivityAt": "2026-09-03T01:13:28.323Z"
+              },
+              "modelState": {
+                "current": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "provenance": {
+                  "layer": "unspecified",
+                  "origin": "static",
+                  "recordId": null,
+                  "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                },
+                "availability": "available"
+              }
+            }
+          ],
+          "ledger": {
+            "latestSequence": 15,
+            "totalEntries": 15,
+            "byCategory": {
+              "team": 2,
+              "member": 1,
+              "lifecycle": 2,
+              "message": 6,
+              "control": 0,
+              "policy": 0,
+              "compatibility": 0,
+              "progress": 4
+            },
+            "pendingControlCount": 0
+          }
+        }
+      },
+      "notes": []
+    },
+    "LIFECYCLE": {
+      "criterion": "LIFECYCLE plan §11.2: real archive of a member with a live background descendant (truly recursive drain, honest numeric drained count), restore, real follow-up turn; NO fake quiescent=true (the quiescence gate rejects non-true drains with LIFECYCLE_NOT_QUIESCENT)",
+      "pass": false,
+      "durationMs": 905994,
+      "assertions": [
+        {
+          "name": "a real descendant session was created under the member child session (real subagent lifecycle)",
+          "ok": false,
+          "detail": "<not found within 900s>"
+        },
+        {
+          "name": "descendant session header marks origin=subagent with parentSession == member child (durable session meta)",
+          "ok": false,
+          "detail": "origin=undefined (parentSession match was the discovery criterion)"
+        },
+        {
+          "name": "descendant turn settled against the mock (real subagent agent loop + session log)",
+          "ok": false,
+          "detail": "<desc ack not in descendant log within 900s>"
+        },
+        {
+          "name": "member.archive executed (quiescence gate passed — a failed drain would have rejected it)",
+          "ok": true,
+          "detail": "{\"member\":{\"schemaVersion\":1,\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"instanceId\":\"inst-1esq73x1qs9x\",\"templateId\":\"worker\",\"label\":\"v2-worker\",\"childSessionId\":\"session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\",\"lifecycle\":\"ARCHIVED\",\"createdAt\":\"2026-09-03T00:58:16.590Z\",\"activityVersion\":4,\"workspace\":\"C:/agent-team/work/t12v/child-a\"},\"steps\":[\"close-admission\",\"interrupt\",\"drain-descendants\",\"wait-quiescence\",\"release-residency\",\"commit-archive\"],\"settledCommitted\":false,\"dr"
+        },
+        {
+          "name": "archive reports an HONEST numeric drained count >= 1 (the live descendant was drained)",
+          "ok": false,
+          "detail": "drained=0 (a non-numeric drain fails the quiescence gate, so this number is genuine)"
+        },
+        {
+          "name": "residency dropped on archive",
+          "ok": true,
+          "detail": "residencyDropped=true"
+        },
+        {
+          "name": "member.restore executed",
+          "ok": true,
+          "detail": "{\"member\":{\"schemaVersion\":1,\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"instanceId\":\"inst-1esq73x1qs9x\",\"templateId\":\"worker\",\"label\":\"v2-worker\",\"childSessionId\":\"session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\",\"lifecycle\":\"SETTLED\",\"createdAt\":\"2026-09-03T00:58:16.590Z\",\"activityVersion\":5,\"workspace\":\"C:/agent-team/work/t12v/child-a\"},\"steps\":[\"commit-restore\"]}"
+        },
+        {
+          "name": "member.followup admitted after restore (work admitted)",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"callerRole\":\"human\",\"targetInstanceId\":\"inst-1esq73x1qs9x\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1esq73x1qs9x\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":12,\"replayed\":fa"
+        },
+        {
+          "name": "real follow-up turn settled on the restored member",
+          "ok": true,
+          "detail": "settled"
+        }
+      ],
+      "evidence": {
+        "descendantSession": null,
+        "archiveResult": {
+          "member": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "instanceId": "inst-1esq73x1qs9x",
+            "templateId": "worker",
+            "label": "v2-worker",
+            "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+            "lifecycle": "ARCHIVED",
+            "createdAt": "2026-09-03T00:58:16.590Z",
+            "activityVersion": 4,
+            "workspace": "C:/agent-team/work/t12v/child-a"
+          },
+          "steps": [
+            "close-admission",
+            "interrupt",
+            "drain-descendants",
+            "wait-quiescence",
+            "release-residency",
+            "commit-archive"
+          ],
+          "settledCommitted": false,
+          "drained": 0,
+          "residencyDropped": true
+        },
+        "restoreResult": {
+          "member": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "instanceId": "inst-1esq73x1qs9x",
+            "templateId": "worker",
+            "label": "v2-worker",
+            "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+            "lifecycle": "SETTLED",
+            "createdAt": "2026-09-03T00:58:16.590Z",
+            "activityVersion": 5,
+            "workspace": "C:/agent-team/work/t12v/child-a"
+          },
+          "steps": [
+            "commit-restore"
+          ]
+        },
+        "followupOutcome": {
+          "status": "executed",
+          "action": "follow-up",
+          "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "callerRole": "human",
+          "targetInstanceId": "inst-1esq73x1qs9x",
+          "effect": {
+            "kind": "work-admitted",
+            "instanceId": "inst-1esq73x1qs9x",
+            "fromLifecycle": "SETTLED",
+            "lifecycleCommitted": true,
+            "sequence": 12,
+            "replayed": false,
+            "settled": true,
+            "settledSequence": 15
+          },
+          "requestToken": "t12v-lc-followup-mtktg7nu58c6d0"
+        },
+        "followupTurnStartMs": 1788397102595,
+        "followupLatencyMs": -905688
+      },
+      "notes": []
+    },
+    "RESTART": {
+      "criterion": "RESTART plan §12 (resume part; identity part recorded in an earlier phase run)",
+      "pass": true,
+      "durationMs": 3091,
+      "assertions": [
+        {
+          "name": "resume boot: same Team root (rootSessionId unchanged)",
+          "ok": true,
+          "detail": "root=session-t12v-a-root-mtktg7nu58c6d0"
+        },
+        {
+          "name": "resume boot: same durable TeamSession id",
+          "ok": true,
+          "detail": "teamSession=session-t12v-a-root-mtktg7nu58c6d0 expected=session-t12v-a-root-mtktg7nu58c6d0"
+        },
+        {
+          "name": "resume boot: SAME MemberInstance re-opened (instanceId + childSessionId stable across restart)",
+          "ok": true,
+          "detail": "[{\"instanceId\":\"inst-1esq73x1qs9x\",\"childSessionId\":\"session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0\",\"lifecycle\":\"SETTLED\"},{\"instanceId\":\"inst-leader\",\"childSessionId\":\"undefined\",\"lifecycle\":\"undefined\"}]"
+        },
+        {
+          "name": "resume boot: NO duplicate members (each instanceId exactly once)",
+          "ok": true,
+          "detail": "members=[\"inst-1esq73x1qs9x\",\"inst-leader\"]"
+        },
+        {
+          "name": "resume boot: no duplicate root session materialization (exactly one root session log)",
+          "ok": true,
+          "detail": "files=1"
+        },
+        {
+          "name": "resume boot: no duplicate child session materialization for the worker",
+          "ok": true,
+          "detail": "files=1"
+        },
+        {
+          "name": "projection resumes after restart (same TeamSession, members intact)",
+          "ok": true,
+          "detail": "teamSession=session-t12v-a-root-mtktg7nu58c6d0 members=[\"inst-1esq73x1qs9x\",\"inst-leader\"]"
+        },
+        {
+          "name": "real follow-up turn admitted after restart",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-t12v-a-root-mtktg7nu58c6d0\",\"callerRole\":\"human\",\"targetInstanceId\":\"inst-1esq73x1qs9x\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1esq73x1qs9x\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":16,\"replayed\":fa"
+        },
+        {
+          "name": "restart follow-up turn settled against the mock (durable child log)",
+          "ok": true,
+          "detail": "settled"
+        }
+      ],
+      "evidence": {
+        "resume": {
+          "boot": 2,
+          "phase": "resume",
+          "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "teamSession": {
+            "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "blueprintId": "t12v-bp-a",
+            "revision": "1",
+            "contentHash": "sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d",
+            "defaultWorkspace": "C:/agent-team/work/t12v/a",
+            "createdAt": "2026-09-03T00:58:14.433Z",
+            "generation": 17
+          },
+          "members": [
+            {
+              "instanceId": "inst-1esq73x1qs9x",
+              "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+              "lifecycle": "SETTLED"
+            },
+            {
+              "instanceId": "inst-leader",
+              "childSessionId": "undefined",
+              "lifecycle": "undefined"
+            }
+          ]
+        },
+        "resumeProjection": {
+          "schemaVersion": 2,
+          "teamSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "blueprint": {
+            "blueprintId": "t12v-bp-a",
+            "revision": "1",
+            "contentHash": "sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d"
+          },
+          "generation": 17,
+          "generatedAt": "2026-09-03T01:13:30.623Z",
+          "root": {
+            "teamSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+            "createdAt": "2026-09-03T00:58:14.433Z",
+            "policyState": "default",
+            "admission": "OPEN",
+            "compatibility": {
+              "status": "OPEN",
+              "probeGeneration": 1,
+              "requirementFingerprint": "none",
+              "environmentFingerprint": "fp-v1:97fc230e9949b8d8",
+              "warningCount": 0,
+              "fatalCount": 0,
+              "acknowledgedWarningCount": 0,
+              "lastProbedAt": "2026-09-03T00:58:14.568Z"
+            },
+            "creationBudgetConsumed": 0,
+            "defaultWorkspace": "C:/agent-team/work/t12v/a"
+          },
+          "templates": [
+            {
+              "kind": "leader",
+              "templateId": "leader",
+              "displayName": "leader",
+              "contextPolicy": "persistent"
+            },
+            {
+              "kind": "member",
+              "templateId": "worker",
+              "displayName": "T12V Worker A",
+              "contextPolicy": "persistent",
+              "instanceQuota": 4
+            }
+          ],
+          "members": [
+            {
+              "instanceId": "inst-1esq73x1qs9x",
+              "templateId": "worker",
+              "label": "v2-worker",
+              "workspace": "C:/agent-team/work/t12v/child-a",
+              "createdAt": "2026-09-03T00:58:16.590Z",
+              "lifecycle": "SETTLED",
+              "contextPolicy": "persistent",
+              "effectiveConfig": {
+                "model": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "workspace": {
+                  "value": "C:/agent-team/work/t12v/child-a",
+                  "source": "instance-creation",
+                  "state": "locked",
+                  "locked": true
+                },
+                "permissions": {},
+                "autonomy": {
+                  "value": "mcp: allow t12vmini",
+                  "source": "explicit-human-override",
+                  "state": "pending-next-boundary"
+                }
+              },
+              "liveActivity": {
+                "residency": "resident",
+                "lastActivityAt": "2026-09-03T01:13:30.623Z"
+              },
+              "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0",
+              "modelState": {
+                "current": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "provenance": {
+                  "layer": "unspecified",
+                  "origin": "static",
+                  "recordId": null,
+                  "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                },
+                "availability": "available"
+              }
+            },
+            {
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "workspace": "C:/agent-team/work/t12v/a",
+              "createdAt": "2026-09-03T00:58:14.518Z",
+              "lifecycle": "RUNNING",
+              "contextPolicy": "persistent",
+              "effectiveConfig": {
+                "model": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "workspace": {
+                  "value": "C:/agent-team/work/t12v/a",
+                  "source": "blueprint",
+                  "state": "locked",
+                  "locked": true
+                },
+                "permissions": {},
+                "autonomy": {
+                  "value": null,
+                  "source": "autonomy-overlay",
+                  "state": "inherited"
+                }
+              },
+              "liveActivity": {
+                "residency": "resident",
+                "lastActivityAt": "2026-09-03T01:13:30.623Z"
+              },
+              "modelState": {
+                "current": {
+                  "value": "deepseek-official/t12v-model-a",
+                  "source": "capability",
+                  "state": "inherited"
+                },
+                "provenance": {
+                  "layer": "unspecified",
+                  "origin": "static",
+                  "recordId": null,
+                  "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                },
+                "availability": "available"
+              }
+            }
+          ],
+          "ledger": {
+            "latestSequence": 15,
+            "totalEntries": 15,
+            "byCategory": {
+              "team": 2,
+              "member": 1,
+              "lifecycle": 2,
+              "message": 6,
+              "control": 0,
+              "policy": 0,
+              "compatibility": 0,
+              "progress": 4
+            },
+            "pendingControlCount": 0
+          }
+        },
+        "restartFollowup": {
+          "status": "executed",
+          "action": "follow-up",
+          "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+          "callerRole": "human",
+          "targetInstanceId": "inst-1esq73x1qs9x",
+          "effect": {
+            "kind": "work-admitted",
+            "instanceId": "inst-1esq73x1qs9x",
+            "fromLifecycle": "SETTLED",
+            "lifecycleCommitted": true,
+            "sequence": 16,
+            "replayed": false,
+            "settled": true,
+            "settledSequence": 19
+          },
+          "requestToken": "t12v-restart-followup-mtktg7nu58c6d0"
+        }
+      },
+      "notes": [
+        "identity part (fresh #1/#2 no-collision invariants) was not recorded in this process; resume-part assertions only"
+      ]
+    }
+  },
+  "phaseFailures": [],
+  "testUsePristine": {
+    "pre": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "statusEmpty": true,
+      "diffEmpty": true
+    },
+    "post": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "statusEmpty": true,
+      "diffEmpty": true
+    },
+    "pristine": true
+  },
+  "port3080": {
+    "pre": 200,
+    "post": 200
+  },
+  "exitCode": 0
+}

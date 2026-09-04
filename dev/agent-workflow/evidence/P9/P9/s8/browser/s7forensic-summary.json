@@ -1,0 +1,69 @@
+{
+  "snapshots": [
+    {
+      "tag": "01-root-before-nav",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    },
+    {
+      "tag": "02-child-before-archive",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    },
+    {
+      "tag": "03-t0.5s",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    },
+    {
+      "tag": "04-t2s",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    },
+    {
+      "tag": "05-t5s",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    },
+    {
+      "tag": "06-t10s",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    },
+    {
+      "tag": "07-t20s",
+      "sectionCount": 1,
+      "groups": 2,
+      "rowStatuses": [
+        "running",
+        "settled"
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

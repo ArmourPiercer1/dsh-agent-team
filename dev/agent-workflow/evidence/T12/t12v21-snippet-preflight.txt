@@ -1,0 +1,20 @@
+  // Fresh homes (fail closed on non-empty) — asserted only for the homes the
+  // requested phases actually boot on. stateprobe (T12-V21) boots on its own
+  // throwaway probe homes and must stay runnable after the final run left the
+  // run homes populated; the per-boot fail-closed inside bootWorld remains
+  // unconditional for every boot.
+  const freshHomeNeeds = [
+    [HOME_A, 'world A', ['smoke', 'fresh1', 'restart1']],
+    [HOME_B, 'world B', ['fresh2', 'handoff']],
+    [HOME_C, 'world C', ['handoff']],
+  ]
+  let freshHomeAsserted = 0
+  for (const [home, homeLabel, phases] of freshHomeNeeds) {
+    if (phases.some((p) => hasPhase(p))) {
+      assertFreshHome(home, homeLabel)
+      freshHomeAsserted += 1
+    } else {
+      log(`${homeLabel} home NOT asserted fresh (no requested phase boots there)`)
+    }
+  }
+  log(`fresh homes asserted: ${freshHomeAsserted}/3 (non-empty would fail CLOSED where asserted)`)

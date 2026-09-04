@@ -1,0 +1,2 @@
+SEAM LOAD FAILED (delay=0ms): Cannot find package '@deepseek-ai/dsh-storage-domain' imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\root-binding\harness\seam.mjs
+SEAM LOAD FAILED (delay=2000ms): Cannot find package '@deepseek-ai/dsh-storage-domain' imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\root-binding\harness\seam.mjs

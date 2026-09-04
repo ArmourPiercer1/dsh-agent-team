@@ -1,0 +1,66 @@
+== T12 phase fresh2 2026-09-02T18:54:52.146Z ==
+[2026-09-02T18:54:52.147Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T18:54:54.478Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T18:54:54.519Z] B1: profile created via throwaway boot
+[2026-09-02T18:54:54.520Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T18:54:54.521Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T18:54:56.331Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T18:54:57.528Z] B1: row ready — toolCount=10
+[2026-09-02T18:55:07.567Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkfcums5d034e phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T19:10:08.842Z] V2: pass=false
+[2026-09-02T19:10:08.848Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+== T12 phase fresh2 2026-09-02T19:52:01.675Z ==
+[2026-09-02T19:52:01.675Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:52:03.471Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T19:52:03.512Z] B1: profile created via throwaway boot
+[2026-09-02T19:52:03.513Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T19:52:03.513Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T19:52:05.340Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T19:52:06.540Z] B1: row ready — toolCount=10
+[2026-09-02T19:52:16.607Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkhebl94d4768 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T20:07:18.212Z] V2: pass=false
+[2026-09-02T20:07:18.219Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+== T12 phase fresh2 2026-09-02T20:47:34.414Z ==
+[2026-09-02T20:47:34.418Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:47:35.988Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T20:47:36.029Z] B1: profile created via throwaway boot
+[2026-09-02T20:47:36.030Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T20:47:36.030Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T20:47:37.866Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T20:47:39.091Z] B1: row ready — toolCount=10
+[2026-09-02T20:47:49.167Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkjdrmw6cee19 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T21:02:50.848Z] V2: pass=false
+[2026-09-02T21:02:50.863Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+== T12 phase fresh2 2026-09-02T21:55:46.732Z ==
+[2026-09-02T21:55:46.732Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T21:55:48.552Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T21:55:48.599Z] B1: profile created via throwaway boot
+[2026-09-02T21:55:48.605Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T21:55:48.606Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T21:55:50.417Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T21:55:51.634Z] B1: row ready — toolCount=10
+[2026-09-02T21:56:02.144Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkltfm07fb4c6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+[2026-09-02T22:11:03.585Z] V2: pass=false
+[2026-09-02T22:11:03.594Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+== T12 phase fresh2 2026-09-02T23:05:28.914Z ==
+[2026-09-02T23:05:28.914Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:05:30.493Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T23:05:30.534Z] B1: profile created via throwaway boot
+[2026-09-02T23:05:30.535Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T23:05:30.535Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T23:05:32.328Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T23:05:33.576Z] B1: row ready — toolCount=10
+[2026-09-02T23:05:43.630Z] B1: state route not well-formed — recorded as evidence, continuing via invariant 9: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkob35v2077d6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'allowed')"}
+[2026-09-02T23:19:05.442Z] mock: mock: 9 GET / -> 405
+[2026-09-02T23:20:45.092Z] V2: pass=false
+[2026-09-02T23:20:45.098Z] fresh #2 done; world B instance left alive for the handoff second-source leg
+== T12 phase fresh2 2026-09-02T23:54:45.501Z ==
+[2026-09-02T23:54:45.501Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:54:47.304Z] throwaway boot OK: http://127.0.0.1:3183/?token=<REDACTED>
+[2026-09-02T23:54:47.343Z] B1: profile created via throwaway boot
+[2026-09-02T23:54:47.344Z] B1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\profiles\web\cordis.patch.yml
+[2026-09-02T23:54:47.345Z] B1: directive written (boot=3 phase=create)
+[2026-09-02T23:54:50.483Z] B1: booted at http://127.0.0.1:3183; auth cookie exchanged
+[2026-09-02T23:54:54.003Z] B1: row ready — toolCount=10
+[2026-09-03T00:09:55.221Z] V2: pass=false
+[2026-09-03T00:09:55.229Z] fresh #2 done; world B instance left alive for the handoff second-source leg

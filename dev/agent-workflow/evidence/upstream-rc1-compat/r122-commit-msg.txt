@@ -1,0 +1,23 @@
+R122 compat(rc1): migrate the materialization seam to sessions.flush
+
+rc.1 removed sessionPersistence.ensureMaterialized (the service face moved
+id-based to handle-based); the live boot (attempt 5) hit the stable
+TEAM_PLUGIN_SERVICE_MISSING at the frozen glue's call site. Upstream's own
+replacement (rc.1 ACP, packages/acp/acp/src/index.ts L228-229): the stock
+sessions service's flush(session) - "the attached log writer's flush
+materializes an empty session durably" - present in both eras.
+
+- host.ts: lazy facade resolves ctx.get('sessions') per call and delegates
+  to svc.flush(session) (same stable error code, message updated); inject
+  swaps sessionPersistence -> sessions (dependency-declaration accuracy);
+  the frozen glue's deps key 'sessionPersistence' and its
+  ensureMaterialized method name are preserved (glue untouched).
+- member-residency harness: real SessionDurabilityPort on the same seam.
+- fresh-member.ts / types.ts: seam-name doc updates.
+- 2 test pins (p8s5a-host-loadability, runtime.test.ts) follow the new
+  inject list.
+
+Gates: runtime typecheck EXIT=0, build EXIT=0, vitest 1070/1070
+(runtime-vitest-r122b.log; post-doc-fix 1068/1070 with only the known
+p6t1-parallel load-flake, isolated re-run 9/9 per r122d log), root lint
+EXIT=0. L2 GO: l2-review-r122-seam.md. CORE PATCH BUDGET = 0 held.

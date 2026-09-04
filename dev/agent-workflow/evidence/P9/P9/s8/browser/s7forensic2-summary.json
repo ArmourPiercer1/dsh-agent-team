@@ -1,0 +1,121 @@
+{
+  "snapshots": [
+    {
+      "tag": "01-root-baseline",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "02-root-after-work",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "03-t0.5s",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "04-t2s",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "05-t5s",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "06-t10s",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "07-t20s",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": null
+        }
+      ]
+    },
+    {
+      "tag": "08-child-after-archive",
+      "section": 1,
+      "rows": [
+        {
+          "status": "running",
+          "current": null
+        },
+        {
+          "status": "settled",
+          "current": "true"
+        }
+      ]
+    }
+  ],
+  "errNotes": [
+    "命令失败：LIFECYCLE_LIVE_EFFECT_FAILED lifecycle live effect failed at step 'drain-descendants': agent-bindings: recursive drain unavailable for 'session-team-child-980970e7d6888a26d098ad876df90fab': no live agent (quiescence cannot be established) (code: recursive-drain-unavailable)"
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -1,0 +1,115 @@
+{
+  "version": 4,
+  "record": {
+    "identity": {
+      "createdAt": 1788393294083,
+      "cwd": "C:/agent-team/work/t12v/child-b"
+    },
+    "rows": {
+      "sessionStats": {
+        "ver": 1,
+        "seq": 2,
+        "val": {
+          "turns": 0,
+          "steps": 0,
+          "llmMs": 0,
+          "toolMs": 0,
+          "ttftMs": 0,
+          "ttftSteps": 0,
+          "decodeMs": 0,
+          "decodeTokens": 0,
+          "lastTurn": null,
+          "openStep": null,
+          "pendingCalls": {}
+        }
+      },
+      "title": {
+        "ver": 1,
+        "seq": 2,
+        "val": null
+      },
+      "goal": {
+        "ver": 4,
+        "seq": 2,
+        "val": null
+      },
+      "tokenUsage": {
+        "ver": 2,
+        "seq": 2,
+        "val": {
+          "totals": {
+            "uncachedInputTokens": 0,
+            "outputTokens": 0,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "last": null
+        }
+      },
+      "contextPressure": {
+        "ver": 4,
+        "seq": 2,
+        "val": {
+          "surfaceTokens": 0
+        }
+      },
+      "contextBreakdown": {
+        "ver": 2,
+        "seq": 2,
+        "val": {
+          "systemTokens": 0,
+          "toolsTokens": 0,
+          "messageTokens": 0
+        }
+      },
+      "subagentTiming": {
+        "ver": 2,
+        "seq": 2,
+        "val": {
+          "descriptorSeen": false,
+          "settledMs": 0
+        }
+      },
+      "subagent": {
+        "ver": 2,
+        "seq": 2,
+        "val": {}
+      },
+      "agentPreset": {
+        "ver": 1,
+        "seq": 2,
+        "val": null
+      },
+      "permissions": {
+        "ver": 1,
+        "seq": 2,
+        "val": {
+          "preset": "workspace-write",
+          "sandbox": "workspace-write",
+          "approval": "ask"
+        }
+      },
+      "modelSelection": {
+        "ver": 2,
+        "seq": 2,
+        "val": {
+          "lastUsed": null,
+          "pending": null
+        }
+      },
+      "sessionListMetadata": {
+        "ver": 1,
+        "seq": 2,
+        "val": {
+          "blank": true,
+          "lastPromptAt": null
+        }
+      },
+      "imageLimits": {
+        "ver": 1,
+        "seq": 2,
+        "val": null
+      }
+    }
+  }
+}

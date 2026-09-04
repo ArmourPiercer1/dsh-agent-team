@@ -1,0 +1,37 @@
+{
+  "unit": {
+    "name": "team_domain",
+    "version": 1
+  },
+  "global": null,
+  "tables": {
+    "schema_meta": {
+      "schema_meta": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:01.800Z\",\"store\":\"schema_meta\",\"version\":1}",
+      "team_sessions": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:01.889Z\",\"store\":\"team_sessions\",\"version\":1}",
+      "member_instances": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:01.937Z\",\"store\":\"member_instances\",\"version\":1}",
+      "session_bindings": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:01.993Z\",\"store\":\"session_bindings\",\"version\":1}",
+      "overrides": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:02.033Z\",\"store\":\"overrides\",\"version\":1}",
+      "compatibility": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:02.060Z\",\"store\":\"compatibility\",\"version\":1}",
+      "operations": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:02.104Z\",\"store\":\"operations\",\"version\":1}",
+      "ledger": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-03T00:10:02.161Z\",\"store\":\"ledger\",\"version\":1}"
+    },
+    "team_sessions": {
+      "session-t12v-c1-root-mtkq2htxfd7514": "{\"blueprint\":{\"blueprintId\":\"t12v-bp-c\",\"contentHash\":\"sha256:f335acacd735e243f646ba951e49b260d8636f59ae3250533043dd48ff7e1e4f\",\"revision\":\"1\"},\"createdAt\":\"2026-09-03T00:10:02.320Z\",\"defaultWorkspace\":\"C:/agent-team/work/t12v/c\",\"generation\":2,\"rootSessionId\":\"session-t12v-c1-root-mtkq2htxfd7514\",\"schemaVersion\":1}",
+      "session-handoff-fe0ec810a155faa2201f4030c478d651e1998f30": "{\"blueprint\":{\"blueprintId\":\"t12v-bp-c\",\"contentHash\":\"sha256:f335acacd735e243f646ba951e49b260d8636f59ae3250533043dd48ff7e1e4f\",\"revision\":\"1\"},\"createdAt\":\"2026-09-03T00:10:04.302Z\",\"generation\":1,\"handoffSourceSessionId\":\"session-t12v-c1-root-mtkq2htxfd7514\",\"rootSessionId\":\"session-handoff-fe0ec810a155faa2201f4030c478d651e1998f30\",\"schemaVersion\":1}"
+    },
+    "member_instances": {
+      "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-t12v-c1-root-mtkq2htxfd7514\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-09-03T00:10:02.384Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-t12v-c1-root-mtkq2htxfd7514\",\"schemaVersion\":2,\"templateId\":\"leader\"}",
+      "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-handoff-fe0ec810a155faa2201f4030c478d651e1998f30\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-09-03T00:10:04.403Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-handoff-fe0ec810a155faa2201f4030c478d651e1998f30\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+    },
+    "session_bindings": {
+      "session-t12v-c1-root-mtkq2htxfd7514": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"session-t12v-c1-root-mtkq2htxfd7514\"}",
+      "session-handoff-fe0ec810a155faa2201f4030c478d651e1998f30": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"session-handoff-fe0ec810a155faa2201f4030c478d651e1998f30\"}"
+    },
+    "overrides": {},
+    "compatibility": {
+      "session-t12v-c1-root-mtkq2htxfd7514": "{\"acknowledgements\":[],\"computedAt\":\"2026-09-03T00:10:02.415Z\",\"fingerprint\":\"fp-v1:97fc230e9949b8d8\",\"generation\":1,\"outcomes\":{\"counts\":{\"fatal\":0,\"pass\":2,\"staleAcknowledgement\":0,\"unackedWarning\":0,\"warning\":0},\"requirements\":[{\"acknowledgement\":null,\"complete\":false,\"detail\":\"all 1 required subject(s) available\",\"mismatchFingerprint\":null,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"requirementId\":\"req-tool-web\",\"type\":\"tool\",\"unavailableSubjects\":[]},{\"acknowledgement\":null,\"complete\":true,\"detail\":\"all 1 required subject(s) available\",\"mismatchFingerprint\":null,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"requirementId\":\"req-skill-base\",\"type\":\"skill\",\"unavailableSubjects\":[]}]},\"rootSessionId\":\"session-t12v-c1-root-mtkq2htxfd7514\",\"schemaVersion\":1,\"status\":\"OPEN\"}"
+    },
+    "operations": {},
+    "ledger": {}
+  }
+}

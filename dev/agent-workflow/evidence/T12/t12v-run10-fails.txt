@@ -1,0 +1,34 @@
+nonce=mtkltfm07fb4c6 generatedAt=2026-09-02T22:11:24.300Z exitCode=0
+modelPath={"used":"mock-env","note":"DEEPSEEK_BASE_URL=http://127.0.0.1:3496 + DEEPSEEK_API_KEY=t12v-mock-key exported to every instance launch; the real dsh-llm deepseek-official adapter resolves the launch environment, so every model call ran through the mock SSE endpoint. The qiyuan-self/qwen3.8-27b fallback was NOT used.","baseUrl":"http://127.0.0.1:3496","fallbackUsed":false} pristine=[object Object] port3080={"pre":200,"post":200} phaseFailures=[]
+[V1] pass=true dur=1107ms a=11/11
+[V2] pass=false dur=1382966ms a=8/14
+  FAIL: [A] child turn settled against the mock :: <ack not in child log within 480s>
+  FAIL: [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) :: system texts=[]
+  FAIL: [A] effective model = row static selection (deepseek-official/t12v-model-a) :: model=undefined
+  FAIL: [B] state route well-formed for the mcpServer:null row (shipped-code expectation — KNOWN DEFECT: plugin.mjs L433 dereferences config.mcpServer.name) :: state route failed: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkltfm07fb4c6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'name')"}
+  FAIL: [B] child turn settled against the mock (no crash from mcpServer:null) :: <ack missing after 900s>
+  FAIL: [B] effective model = t12v-model-b (row static selection, mcpServer:null variant) :: found=false
+[V3] pass=false dur=481816ms a=2/5
+  FAIL: turn settled after the mcp tool call was handled by the real agent loop :: <denied-ack not in child log within 480s>
+  FAIL: child session log records the mcp tool attempt at the consumption boundary :: log contains attempted tool name mcp__t12vmini__ping: false
+  FAIL: model request tool schema omits the mcp tool (denied at the model-consumption boundary) :: tools=[]
+[V4] pass=true dur=977ms a=6/6
+[V5] pass=true dur=15ms a=6/6
+[HANDOFF] pass=true dur=13374ms a=17/17
+[LIFECYCLE] pass=false dur=904230ms a=5/9
+  FAIL: a real descendant session was created under the member child session (real subagent lifecycle) :: <not found within 900s>
+  FAIL: descendant session header marks origin=subagent with parentSession == member child (durable session meta) :: origin=undefined (parentSession match was the discovery criterion)
+  FAIL: descendant turn settled against the mock (real subagent agent loop + session log) :: <desc ack not in descendant log within 900s>
+  FAIL: archive reports an HONEST numeric drained count >= 1 (the live descendant was drained) :: drained=0 (a non-numeric drain fails the quiescence gate, so this number is genuine)
+[RESTART] pass=false dur=2271ms a=8/16
+  FAIL: precondition reachability: SAME member instanceId under a DIFFERENT root (plan §12 literal) — UNREACHABLE by construction :: identity.ts canonicalMemberSpecString L289-298: specString = [rootSessionId, templateId, label, groupId ?? "", workspace ?? ""].join("\u0000"); instanceId = "inst-" + token(specString, 12). rootSessionId is part of the spec, so the same instanceId under a different root cannot be produced through shipped template creation; no explicit-instanceId parameter exists on team_create_member or remote member.create. Plan-vs-code divergence flagged for main-agent adjudication; all observable no-collision invariants verified above.
+  FAIL: resume boot: A2 instance booted (phase=resume, same root) :: boot failed: A2: row setup failed — setupError: session "undefined" not found; log tail:
+dsh web: http://127.0.0.1:3182/?token=<REDACTED>
+
+  FAIL: resume boot: same durable TeamSession id on resume :: not evaluated — A2 resume boot failed
+  FAIL: resume boot: SAME MemberInstance re-opened (instanceId + childSessionId stable across restart) :: not evaluated — A2 resume boot failed
+  FAIL: resume boot: NO duplicate members (each instanceId exactly once) :: not evaluated — A2 resume boot failed
+  FAIL: projection resumes after restart (same TeamSession, members intact) :: not evaluated — A2 resume boot failed
+  FAIL: real follow-up turn admitted after restart :: not evaluated — A2 resume boot failed
+  FAIL: restart follow-up turn settled against the mock (durable child log) :: not evaluated — A2 resume boot failed
+TOTAL scenarios pass=4/8 assertions 63/84

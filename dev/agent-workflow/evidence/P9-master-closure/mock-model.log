@@ -1,0 +1,9 @@
+[2026-09-04T17:16:53.721Z] mock: listening on 127.0.0.1:3493
+[2026-09-04T17:18:42.608Z] mock: req 1 model="deepseek-v4-flash"
+[2026-09-04T17:18:42.609Z] mock: 1 text reply (29 chars): "S8-M1 ok (deepseek-v4-flash)."
+[2026-09-04T17:18:42.610Z] mock: req 2 model="deepseek-v4-flash"
+[2026-09-04T17:18:42.610Z] mock: 2 text reply (29 chars): "S8-M2 ok (deepseek-v4-flash)."
+[2026-09-04T17:18:51.918Z] mock: req 3 model="deepseek-v4-flash"
+[2026-09-04T17:18:51.919Z] mock: 3 text reply (29 chars): "S8-M3 ok (deepseek-v4-flash)."
+[2026-09-04T17:18:51.919Z] mock: req 4 model="deepseek-v4-flash"
+[2026-09-04T17:18:51.920Z] mock: 4 text reply (29 chars): "S8-M4 ok (deepseek-v4-flash)."

@@ -1,0 +1,41 @@
+{
+  "stamp": "2026-09-04T17-16-50",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-s8-2026-09-04T17-16-50",
+  "workspaceDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-s8-2026-09-04T17-16-50\\workspace-s8v",
+  "port": 3180,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3180",
+  "token": "<REDACTED>",
+  "cookie": "dsh-auth-<REDACTED>=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MCIsImlzc3VlZEF0IjoxNzg4NTQyMjE1NTU2LCJleHBpcmVzQXQiOjE3OTExMzQyMTU1NTZ9.Q9M-1irCb2efcMcU4lFY59D9sEebS86XB5TgR9Z9jzU",
+  "instancePid": 58420,
+  "bootJobPid": 30308,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P9-MC\\dev\\agent-workflow\\evidence\\P9-master-closure\\instances\\instance-port3180.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\P9-MC\\dev\\agent-workflow\\evidence\\P9-master-closure\\dump-config-s8.txt",
+  "shim": {
+    "dir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-s8-2026-09-04T17-16-50\\s8-client-row",
+    "bundleSha256": "2097ce5e570b187f4f163dd09c8fbee9bf2e04298120b7ea221229423cb86997",
+    "bytes": 845581
+  },
+  "wtLinks": {
+    "created": [],
+    "preexisting": []
+  },
+  "rows": {
+    "dsh-agent-team": true,
+    "dsh-agent-team-client": true,
+    "p6t6-team-tools": true
+  },
+  "serveCheck": {
+    "mode": "combo",
+    "url": "/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-client-connection/client.js,@deepseek-ai/dsh-api-remotes/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai/dsh-client-ui-theme/client.js,@deepseek-ai/dsh-client-locale/client.js,@deepseek-ai/dsh-client-ui-layout/client.js,@deepseek-ai/dsh-client-ui-renderer/client.js,@deepseek-ai/dsh-client-ui-session/client.js,@deepseek-ai/dsh-client-ui-sidebar/client.js,@deepseek-ai/dsh-client-ui-settings/client.js,@deepseek-ai/dsh-client-ui-settings-general/client.js,@deepseek-ai/dsh-client-ui-settings-models/client.js,@deepseek-ai/dsh-client-ui-settings-plugin-inventory/client.js,@deepseek-ai/dsh-client-ui-conversation/client.js,@deepseek-ai/dsh-client-ui-approval/client.js,@deepseek-ai/dsh-client-ui-chat/client.js,@deepseek-ai/dsh-client-ui-brand-official/client.js,@deepseek-ai/dsh-client-ui-attachment/client.js,@deepseek-ai/dsh-client-ui-tool/client.js,@deepseek-ai/dsh-client-ui-cordis/client.js,@deepseek-ai/dsh-client-ui-workflow-run/client.js,@deepseek-ai/dsh-client-ui-deliverables/client.js,@deepseek-ai/dsh-client-ui-workspace/client.js,@deepseek-ai/dsh-client-ui-input-trigger/client.js,@deepseek-ai/dsh-client-ui-commands/client.js,@deepseek-ai/dsh-client-ui-skill/client.js,@deepseek-ai/dsh-client-ui-subagent/client.js,@deepseek-ai/dsh-client-ui-reference/client.js,@deepseek-ai/dsh-client-ui-jobs/client.js,@deepseek-ai/dsh-client-ui-goal/client.js,@deepseek-ai/dsh-client-ui-message-feedback/client.js,@deepseek-ai/dsh-client-ui-model-selection/client.js,@deepseek-ai/dsh-client-ui-permission-presets/client.js,@deepseek-ai/dsh-client-ui-agent-preset/client.js,@deepseek-ai/dsh-client-ui-settings-plugins/client.js,@deepseek-ai/dsh-client-ui-plan/client.js,@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@dsh-agent-team/client/client.js,@deepseek-ai/dsh-client-ui-directory-picker-browse/client.js&rev=f24ed07ecf8a",
+    "status": 200,
+    "contentType": "text/javascript; charset=utf-8",
+    "bytes": 4627226,
+    "sha256": "a1db11fea2e92dbe7c05fa01126eef4944acff8a93b5fa4430e7efcfd0c885f6",
+    "sha256MatchesShim": false,
+    "bundleBytesContained": true,
+    "unauthenticatedStatus": 200
+  },
+  "startedAt": "2026-09-04T17:16:56.788Z",
+  "stoppedAt": "2026-09-04T17:19:57.188Z"
+}

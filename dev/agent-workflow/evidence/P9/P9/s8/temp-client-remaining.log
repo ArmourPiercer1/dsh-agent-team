@@ -1,0 +1,829 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client
+
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 4ms
+ ✓ test/team-intent-model.test.ts (17 tests) 7ms
+ ❯ test/team-members-model.client.spec.ts (10 tests | 4 failed) 13ms
+     × builds the leading leader row from the leader-kind instance and keeps it out of the groups 7ms
+     ✓ keeps a created leader instance out of the running tally 1ms
+     × synthesizes the leading row from the team session when the instances carry no leader kind 1ms
+     ✓ tallies the container row per running instance, including a multi-instance member 0ms
+     ✓ keeps a created instance in its group (the unbound vocabulary is abolished) 0ms
+     ✓ leaves the pending badge unknown under a partial ledger and zero when none are pending 0ms
+     ✓ passes the instance fields through untouched (lifecycle, status, action, pending count, child session) 0ms
+     × folds a second leader-kind instance into the leading group (multi-instance interface) 1ms
+     × synthesizes an empty leader group for a snapshot with no member instances at all 1ms
+     ✓ keeps the groups in members order with a mid-list leader-kind instance 0ms
+ ✓ test/team-handoff.test.ts (23 tests) 6ms
+ ✓ test/team-ledger-model.client.spec.ts (20 tests) 10ms
+ ✓ test/team-member-commands.test.ts (11 tests) 7ms
+ ✓ test/team-members-model.test.ts (5 tests) 6ms
+ ✓ test/projection-adapter.test.ts (16 tests) 4ms
+ ✓ test/ledger-adapter.test.ts (23 tests) 7ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 10ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 8ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 7ms
+ ✓ test/team-legacy.test.ts (12 tests) 8ms
+ ✓ test/team-remote-client.test.ts (11 tests) 4ms
+ ✓ test/team-ledger-store.test.ts (13 tests) 5ms
+ ✓ test/team-projection-store.test.ts (14 tests) 4ms
+ ✓ test/team-command-flow.test.ts (6 tests) 3ms
+ ✓ test/client-plugin-mount.test.ts (25 tests) 5ms
+ ✓ test/client.test.ts (2 tests) 2ms
+ ✓ test/team-remote-categories.test.ts (5 tests) 4ms
+ ✓ test/team-governance.test.ts (43 tests) 9ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 72ms
+ ❯ test/team-members.client.spec.tsx (12 tests | 1 failed) 131ms
+     ✓ renders one group per member with the container row label, leader first 30ms
+     ✓ switches back to the team session when the leading row is clicked (D10) 11ms
+     × keeps the leading row when the instances lack a leader-kind row (roster-absent fallback) 17ms
+     ✓ shows the five-state instance labels and the state dots 14ms
+     ✓ lists a created instance as a real row in its group (the unbound vocabulary is abolished) 8ms
+     ✓ shows the current action and falls back to the action placeholder 6ms
+     ✓ badges the waiting instances with the pending control-request count, completeness-aware (plan §7.3) 14ms
+     ✓ switches to the instance session on click, per instance for a multi-instance member (D9) 7ms
+     ✓ highlights the current session's group and instance rows only (D7) 9ms
+     ✓ keeps the non-leader container rows non-interactive 2ms
+     ✓ renders a session-less instance row as a disabled, inert row 3ms
+     ✓ renders the English dictionary pairing (with the synthesized leader note) 8ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 164ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 233ms
+ ✓ test/team-view.client.spec.tsx (12 tests) 223ms
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 272ms
+ ❯ test/team-members-actions.client.spec.tsx (16 tests | 3 failed) 580ms
+     ✓ stays display-only without the command face (no cluster, no "+" entry) 31ms
+     ✓ exposes the §40 CREATED cluster: send work / follow-up / archive / dispose 7ms
+     ✓ exposes the §40 RUNNING cluster: the send action reads as a message 10ms
+     ✓ exposes the §40 SETTLED cluster with the Resume… follow-up label 3ms
+     ✓ exposes the §40 ARCHIVED cluster: restore + dispose only 3ms
+     ✓ renders NO action cluster for DISPOSED rows and keeps the leader lane display-only 3ms
+     ✓ send-work settles through member.followup: frozen params, pending badge, projection pull, no local patch (G5) 88ms
+     ✓ the message dialog submits member.send with the subject present only when given 83ms
+     × a typed failure renders the verbatim note with the token echo and pulls no projection (G5) 62ms
+     × a transport loss (the only rejection kind) records the transport-loss note 74ms
+     ✓ archive confirms (with the RUNNING drain warning); cancel issues nothing 63ms
+     ✓ restore is a direct click — no confirmation dialog (§23.4) 63ms
+     ✓ dispose confirms with the §23.5 copy (never a delete framing) 4ms
+     ✓ the group "+" opens the §17 create dialog (template row, fresh notice, hidden workspace field without a feed) 6ms
+     ✓ the create dialog submits member.create with the template delegation and the trimmed payload 69ms
+     × a create failure notes on the template key and re-enables the "+" entry 10ms
+ ❯ test/team-ledger.client.spec.tsx (19 tests | 1 failed) 1005ms
+     ✓ renders the row families with the frozen category markers 44ms
+     ✓ shows the waiting badge (amber dot) on an unpaired control request 8ms
+     ✓ renders the three frozen decision labels plus the raw-value fallback 9ms
+     ✓ carries the full detail in the title affordance 6ms
+     ✓ caps the window at 200 rows and offers load earlier 204ms
+     ✓ deepens the window on load-earlier clicks (local axis only)  392ms
+     ✓ shows the partial-ledger remainder note and hides it once complete 41ms
+     ✓ shows the loud RPC error note and retries through the injected callback 3ms
+     ✓ shows the closed transport-loss reason from a page reject 2ms
+     ✓ resets the window and the filters on a NEW team only 258ms
+     ✓ renders the empty and the loading states 2ms
+     ✓ switches sessions on row click (D9) and stays inert without a resolved session 7ms
+     ✓ renders an unknown fact type as the safe generic row without throwing 4ms
+     ✓ filters by the client-local category select 3ms
+     × filters by instance id and by template id through the instance select 10ms
+     ✓ renders the decision reason in the state badge 3ms
+     ✓ renders the progress label on progress rows 3ms
+     ✓ keeps the en dictionary pairing for the section chrome 5ms
+     ✓ shows the section empty state from the en dictionary 1ms
+ ❯ test/team-creation-panel.client.spec.tsx (14 tests | 1 failed) 1027ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 88ms
+     × shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 64ms
+     ✓ selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 122ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 61ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 65ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 68ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 55ms
+     ✓ switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 124ms
+     ✓ create happy path: native root → frozen team.create → open the Root (UI §4.3 order) 65ms
+     ✓ a typed team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 67ms
+     ✓ a native root failure surfaces the local native-error marker without a retry (no root was retained) 122ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 4ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 57ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, no native root, draft intact) 63ms
+ ❯ test/team-creation-handoff.client.spec.tsx (15 tests | 3 failed) 1345ms
+     ✓ renders the handoff block only when both the face and the source are present, enabled by default (UI §32.2) 35ms
+     ✓ prefills the default workspace from the source session workspace when the feed carries it (UI §32.2) 7ms
+     ✓ does not prefill when the feed lacks the workspace or the draft already picked one (UI §32.2) 11ms
+     ✓ enabling the handoff runs the one-shot prepare read and shows the summary preview (UI §32.3) 71ms
+     × unchecking cancels the pending preview and re-checking re-runs the one-shot read (UI §32.3) 74ms
+     ✓ a prepare typed failure renders verbatim and NEVER blocks the create (UI §32.3/§32.4) 59ms
+     ✓ the handoff create runs the frozen face with a fresh token and NO native root (G5: no optimistic patch, no cold root) 65ms
+     ✓ a completed-without-handoff state opens the Root as well (invariant 9: same id) 124ms
+     ✓ an awaiting-decision state renders the full triad (host options absent) and Retry re-invokes with a FRESH token (plan §10.5) 130ms
+     ✓ an awaiting-decision state narrowed by the host renders only the host options 121ms
+     × Continue without handoff is the client-local explicit decision: the standard create path, no handoff re-drive (UI §32.4) 129ms
+     × Cancel discards the attempt client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5) 126ms
+     ✓ a creation-failed state renders RETRY only and the Retry re-invokes with the SAME token (plan §10.5) 124ms
+     ✓ a typed handoff.create response failure (ok:false, no stored state) renders the full triad with a fresh-token Retry 134ms
+     ✓ a handoff.create transport loss (the only rejection kind) records the local native-error marker, no optimistic state 134ms
+ ❯ test/team-governance.client.spec.tsx (24 tests | 9 failed) 4576ms
+     ✓ renders the Projection-driven compatibility badge (the §10.2 four admission states) 39ms
+     ✓ renders an unknown future compatibility status verbatim (loud, never silent) 3ms
+     ✓ renders the aggregate counts and generation from the Projection 3ms
+     ✓ keeps the ack control disabled with the explicit wire-gap reason (UI §38) 15ms
+     ✓ a compat review is a read: it never pulls the projection 17ms
+     ✓ renders a compat review typed failure verbatim as a local note (no projection pull) 62ms
+     ✓ renders the compat review fresh-read detail on success (labeled, not authority) 64ms
+     ✓ the human Recheck re-probes with the closed CAPABILITY_GENERATION_CHANGE trigger and pulls once on success 67ms
+     ✓ a Recheck typed failure renders verbatim (code + message + token echo) and never pulls 60ms
+     ✓ a Recheck transport loss (the only rejection kind) records the local transport-loss note 62ms
+     × a policy review loads the cell view (a read: no projection pull) 1039ms
+     × a policy commit sends a PARTIAL cell map on the projection state id (never invented) and pulls once 1024ms
+     × keeps the policy commit inert (no command, no preview) when the only draft is an allow with no items 1016ms
+     × a policy commit typed failure renders verbatim and never pulls 1014ms
+     × an override set targets the member instance (scope instance) and pulls once on success 3ms
+     × keeps the override set inert until an allow cell has items (no empty allow commit) 3ms
+     ✓ an override reset targets the member instance (scope instance) and pulls once on success 57ms
+     × an override set typed failure renders verbatim and never pulls 3ms
+     × an override show is a read (no projection pull) and renders the recorded override verbatim 11ms
+     × an override show renders the no-override note when the record is null (a read) 4ms
+     ✓ renders the effective-config lanes (model/workspace/permissions-sorted/autonomy) with the §18.3 state words 2ms
+     ✓ renders the §19 hard-policy display for a denied lane (never pretend an override wins) 3ms
+     ✓ shows the effective-config empty note when no member carries a config DTO 2ms
+     ✓ pairs the zh and en dictionaries for the governance surface 3ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a7553ec1c\bin\p
+npm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-handoff.client.spec.tsx > TeamCreationPanel (handoff, S5-D) > unchecking cancels the pend
+ing preview and re-checking re-runs the one-shot read (UI §32.3)
+AssertionError: expected <div …(2)>…(2)</div> to be null
+
+- Expected:
+null
+
++ Received:
+<div
+  class="_handoffReady_12fa3c"
+  data-intent-handoff-ready="true"
+>
+  <span
+    data-intent-handoff-ready-label="true"
+  >
+    Summary ready
+  </span>
+  <button
+    class="_secondary_12fa3c"
+    data-intent-handoff-preview="true"
+    type="button"
+  >
+    Preview
+  </button>
+</div>
+
+ ❯ test/team-creation-handoff.client.spec.tsx:356:73
+    354|     expect(face.prepare).toHaveBeenCalledTimes(1)
+    355|     fireEvent.change(handoffCheckbox(view.container), { target: { chec…
+    356|     expect(view.container.querySelector('[data-intent-handoff-ready]')…
+       |                                                                         ^
+    357|     expect(face.prepare).toHaveBeenCalledTimes(1)
+    358|     fireEvent.change(handoffCheckbox(view.container), { target: { chec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯
+
+ FAIL  test/team-creation-handoff.client.spec.tsx > TeamCreationPanel (handoff, S5-D) > Continue without handoff is
+ the client-local explicit decision: the standard create path, no handoff re-drive (UI §32.4)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-creation-handoff.client.spec.tsx:510:29
+    508|     expect(face.createRootSession).toHaveBeenCalledTimes(1)
+    509|     expect(face.createRootSession).toHaveBeenCalledWith({ workspaceId:…
+    510|     expect(face.teamCreate).toHaveBeenCalledTimes(1)
+       |                             ^
+    511|     await act(async () => {})
+    512|     expect(openSession).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯
+
+ FAIL  test/team-creation-handoff.client.spec.tsx > TeamCreationPanel (handoff, S5-D) > Cancel discards the attempt
+ client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-creation-handoff.client.spec.tsx:543:29
+    541|     expect(face.create).toHaveBeenCalledTimes(1)
+    542|     expect(face.createRootSession).toHaveBeenCalledTimes(1)
+    543|     expect(face.teamCreate).toHaveBeenCalledTimes(1)
+       |                             ^
+    544|     await act(async () => {})
+    545|     expect(openSession).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > shows the verbatim catalog failure note and k
+eeps the picker disabled (loud, never silent)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/team-creation-panel.client.spec.tsx:256:54
+    254|     expect(view.container.querySelector('[data-intent-catalog-error]')…
+    255|       .toBe('蓝图目录加载失败：CATALOG_UNAVAILABLE: catalog store down')
+    256|     expect(blueprintSelect(view.container).disabled).toBe(true)
+       |                                                      ^
+    257|   })
+    258|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > a policy review loads the cell view (a read: no proj
+ection pull)
+AssertionError: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ test/team-governance.client.spec.tsx:378:78
+    376|     fireEvent.click(button(view.container, '[data-governance-policy-re…
+    377|     await vi.waitFor(() => {
+    378|       expect(view.container.querySelector('[data-governance-policy-cel…
+       |                                                                              ^
+    379|     })
+    380|     expect(face.policyStateGet).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > a policy commit sends a PARTIAL cell map on the proj
+ection state id (never invented) and pulls once
+AssertionError: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ test/team-governance.client.spec.tsx:407:78
+    405|     fireEvent.click(button(view.container, '[data-governance-policy-re…
+    406|     await vi.waitFor(() => {
+    407|       expect(view.container.querySelector('[data-governance-policy-cel…
+       |                                                                              ^
+    408|     })
+    409|     // Edit ONLY the `tools` cell: allow with two items. `model` is le…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > keeps the policy commit inert (no command, no previe
+w) when the only draft is an allow with no items
+AssertionError: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ test/team-governance.client.spec.tsx:459:78
+    457|     fireEvent.click(button(view.container, '[data-governance-policy-re…
+    458|     await vi.waitFor(() => {
+    459|       expect(view.container.querySelector('[data-governance-policy-cel…
+       |                                                                              ^
+    460|     })
+    461|     // Select allow but leave the items empty → the allow cell commits…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > a policy commit typed failure renders verbatim and n
+ever pulls
+AssertionError: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ test/team-governance.client.spec.tsx:485:78
+    483|     fireEvent.click(button(view.container, '[data-governance-policy-re…
+    484|     await vi.waitFor(() => {
+    485|       expect(view.container.querySelector('[data-governance-policy-cel…
+       |                                                                              ^
+    486|     })
+    487|     const toolsKind = view.container.querySelector<HTMLSelectElement>(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override set targets the member instance (scope i
+nstance) and pulls once on success
+Error: the override items input did not render
+ ❯ test/team-governance.client.spec.tsx:506:31
+    504|     // The default draft is capability=model, kind=allow, items=''.
+    505|     const items = memberBlock.querySelector<HTMLInputElement>('[data-g…
+    506|     if (items === null) throw new Error('the override items input did …
+       |                               ^
+    507|     fireEvent.change(items, { target: { value: 'deepseek-v4' } })
+    508|     const set = memberBlock.querySelector<HTMLButtonElement>('[data-go…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > keeps the override set inert until an allow cell has
+ items (no empty allow commit)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/team-governance.client.spec.tsx:533:26
+    531|     const set = memberBlock.querySelector<HTMLButtonElement>('[data-go…
+    532|     if (set === null) throw new Error('the override set button did not…
+    533|     expect(set.disabled).toBe(true)
+       |                          ^
+    534|   })
+    535|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override set typed failure renders verbatim and n
+ever pulls
+Error: the override items input did not render
+ ❯ test/team-governance.client.spec.tsx:568:31
+    566|     if (memberBlock === null) throw new Error('the member block did no…
+    567|     const items = memberBlock.querySelector<HTMLInputElement>('[data-g…
+    568|     if (items === null) throw new Error('the override items input did …
+       |                               ^
+    569|     fireEvent.change(items, { target: { value: 'deepseek-v4' } })
+    570|     const set = memberBlock.querySelector<HTMLButtonElement>('[data-go…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override show is a read (no projection pull) and 
+renders the recorded override verbatim
+AssertionError: expected 'Error: Reading override…' to be 'allow [deepseek-v4]' // Object.is equality
+
+Expected: "allow [deepseek-v4]"
+Received: "Error: Reading override…"
+
+ ❯ test/team-governance.client.spec.tsx:604:8
+    602|     })
+    603|     expect(memberBlock.querySelector('[data-governance-override-read]'…
+    604|       .toBe('allow [deepseek-v4]')
+       |        ^
+    605|     expect(face.pullProjection).not.toHaveBeenCalled()
+    606|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/22]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override show renders the no-override note when t
+he record is null (a read)
+AssertionError: expected 'Error: Reading override…' to be 'No explicit human override' // Object.is equality
+
+Expected: "No explicit human override"
+Received: "Error: Reading override…"
+
+ ❯ test/team-governance.client.spec.tsx:622:8
+    620|     })
+    621|     expect(memberBlock.querySelector('[data-governance-override-read]'…
+    622|       .toBe('No explicit human override')
+       |        ^
+    623|     expect(face.pullProjection).not.toHaveBeenCalled()
+    624|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/22]⎯
+
+ FAIL  test/team-ledger.client.spec.tsx > TeamLedger > filters by instance id and by template id through the instan
+ce select
+AssertionError: expected [ null ] to deeply equal [ 'Lead' ]
+
+- Expected
++ Received
+
+  [
+-   "Lead",
++   null,
+  ]
+
+ ❯ test/team-ledger.client.spec.tsx:399:80
+    397|     expect(rowButtons(view).map(row => row.getAttribute('data-ledger-f…
+    398|     fireEvent.change(select, { target: { value: 'tpl-lead' } })
+    399|     expect(rowButtons(view).map(row => row.getAttribute('data-ledger-a…
+       |                                                                                ^
+    400|   })
+    401|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯
+
+ FAIL  test/team-members-actions.client.spec.tsx > TeamMembers S5-B command flows > a typed failure renders the ver
+batim note with the token echo and pulls no projection (G5)
+AssertionError: expected '命令失败：ADMISSION_REJECTED prompt too lo…' to be '命令失败：ADMISSION_REJECTED: prompt too l…' //
+ Object.is equality
+
+Expected: "命令失败：ADMISSION_REJECTED: prompt too long [ui-1]"
+Received: "命令失败：ADMISSION_REJECTED prompt too long [ui-1]"
+
+ ❯ test/team-members-actions.client.spec.tsx:390:8
+    388|     })
+    389|     expect(view.container.querySelector('[data-member-command-error]')…
+    390|       .toBe('命令失败：ADMISSION_REJECTED: prompt too long [ui-1]')
+       |        ^
+    391|     expect(face.pullProjection).not.toHaveBeenCalled()
+    392|     // The pending mark is cleared: the cluster is re-enabled.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/22]⎯
+
+ FAIL  test/team-members-actions.client.spec.tsx > TeamMembers S5-B command flows > a transport loss (the only reje
+ction kind) records the transport-loss note
+AssertionError: expected '命令失败：transport-loss channel lost [ui-…' to be '命令失败：transport-loss: channel lost [ui…' //
+ Object.is equality
+
+Expected: "命令失败：transport-loss: channel lost [ui-1]"
+Received: "命令失败：transport-loss channel lost [ui-1]"
+
+ ❯ test/team-members-actions.client.spec.tsx:420:8
+    418|     })
+    419|     expect(view.container.querySelector('[data-member-command-error]')…
+    420|       .toBe('命令失败：transport-loss: channel lost [ui-1]')
+       |        ^
+    421|     expect(face.pullProjection).not.toHaveBeenCalled()
+    422|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/22]⎯
+
+ FAIL  test/team-members-actions.client.spec.tsx > TeamMembers S5-B command flows > a create failure notes on the t
+emplate key and re-enables the "+" entry
+AssertionError: expected '命令失败：ADMISSION_REJECTED label already…' to be '命令失败：ADMISSION_REJECTED: label alread…' //
+ Object.is equality
+
+Expected: "命令失败：ADMISSION_REJECTED: label already in use [ui-1]"
+Received: "命令失败：ADMISSION_REJECTED label already in use [ui-1]"
+
+ ❯ test/team-members-actions.client.spec.tsx:576:8
+    574|     })
+    575|     expect(view.container.querySelector('[data-member-create-error]')?…
+    576|       .toBe('命令失败：ADMISSION_REJECTED: label already in use [ui-1]')
+       |        ^
+    577|     expect(createEntry(view.container).disabled).toBe(false)
+    578|     expect(face.pullProjection).not.toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/22]⎯
+
+ FAIL  test/team-members-model.client.spec.ts > deriveTeamMembers > builds the leading leader row from the leader-k
+ind instance and keeps it out of the groups
+AssertionError: expected [ 'tpl-a', 'tpl-b' ] to deeply equal [ 'tpl-a' ]
+
+- Expected
++ Received
+
+  [
+    "tpl-a",
++   "tpl-b",
+  ]
+
+ ❯ test/team-members-model.client.spec.ts:128:57
+    126|       }],
+    127|     })
+    128|     expect(model.groups.map(group => group.templateId)).toEqual([`tpl-…
+       |                                                         ^
+    129|   })
+    130|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/22]⎯
+
+ FAIL  test/team-members-model.client.spec.ts > deriveTeamMembers > synthesizes the leading row from the team sessi
+on when the instances carry no leader kind
+AssertionError: expected [ 'tpl-a', 'tpl-b' ] to deeply equal [ 'tpl-a' ]
+
+- Expected
++ Received
+
+  [
+    "tpl-a",
++   "tpl-b",
+  ]
+
+ ❯ test/team-members-model.client.spec.ts:151:57
+    149|     })
+    150|     expect(model.leader.name).toBeUndefined()
+    151|     expect(model.groups.map(group => group.templateId)).toEqual([`tpl-…
+       |                                                         ^
+    152|   })
+    153|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/22]⎯
+
+ FAIL  test/team-members-model.client.spec.ts > deriveTeamMembers > folds a second leader-kind instance into the le
+ading group (multi-instance interface)
+AssertionError: expected [ { templateId: 'tpl-a', …(4) }, …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "activeCount": 0,
++     "instances": [],
++     "name": "a",
++     "role": "teammate",
++     "templateId": "tpl-a",
++   },
++   {
++     "activeCount": 0,
++     "instances": [],
++     "name": "b",
++     "role": "teammate",
++     "templateId": "tpl-b",
++   },
++ ]
+
+ ❯ test/team-members-model.client.spec.ts:264:26
+    262|       'lead:leader-s:0', 'lead2:leader-s2:1',
+    263|     ])
+    264|     expect(model.groups).toEqual([])
+       |                          ^
+    265|   })
+    266|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/22]⎯
+
+ FAIL  test/team-members-model.client.spec.ts > deriveTeamMembers > synthesizes an empty leader group for a snapsho
+t with no member instances at all
+AssertionError: expected [ { templateId: 'tpl-a', …(4) }, …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "activeCount": 0,
++     "instances": [],
++     "name": "a",
++     "role": "teammate",
++     "templateId": "tpl-a",
++   },
++   {
++     "activeCount": 0,
++     "instances": [],
++     "name": "b",
++     "role": "teammate",
++     "templateId": "tpl-b",
++   },
++ ]
+
+ ❯ test/team-members-model.client.spec.ts:275:26
+    273|       instances: [],
+    274|     })
+    275|     expect(model.groups).toEqual([])
+       |                          ^
+    276|   })
+    277|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/22]⎯
+
+ FAIL  test/team-members.client.spec.tsx > TeamMembers > keeps the leading row when the instances lack a leader-kin
+d row (roster-absent fallback)
+TestingLibraryElementError: Found multiple elements with the text: 尚无实例
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"_noInstances_04dc54"[39m
+  [33mdata-member-no-instances[39m=[32m"true"[39m
+[36m>[39m
+  [0m尚无实例[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"_noInstances_04dc54"[39m
+  [33mdata-member-no-instances[39m=[32m"true"[39m
+[36m>[39m
+  [0m尚无实例[0m
+[36m</span>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `fi
+ndAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_root_04dc54"[39m
+      [33mdata-team-members[39m=[32m"true"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"_group_04dc54"[39m
+        [33mdata-current[39m=[32m"true"[39m
+        [33mdata-member-group[39m=[32m"true"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"_groupRow_04dc54"[39m
+          [33mdata-leader[39m=[32m"true"[39m
+          [33mdata-member-group-row[39m=[32m"true"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_groupName_04dc54"[39m
+            [33mdata-member-group-name[39m=[32m"true"[39m
+          [36m>[39m
+            [0m领导者 · 0 活跃[0m
+          [36m</span>[39m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_instances_04dc54"[39m
+          [33mdata-member-instances[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_noInstances_04dc54"[39m
+            [33mdata-member-no-instances[39m=[32m"true"[39m
+          [36m>[39m
+            [0m尚无实例[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"_group_04dc54"[39m
+        [33mdata-member-group[39m=[32m"true"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_groupRow_04dc54"[39m
+          [33mdata-member-group-row[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_groupName_04dc54"[39m
+            [33mdata-member-group-name[39m=[32m"true"[39m
+          [36m>[39m
+            [0mAlpha · 1 活跃[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_instances_04dc54"[39m
+          [33mdata-member-instances[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"_instanceRow_04dc54"[39m
+            [33mdata-member-instance[39m=[32m"true"[39m
+            [33mdata-status[39m=[32m"running"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"_instanceNav_04dc54"[39m
+              [33mdata-member-instance-nav[39m=[32m"true"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"_dotSlot_04dc54"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"_matrix_8929d3"[39m
+                  [33mdata-state[39m=[32m"ongoing"[39m
+                  [33mheight[39m=[32m"10"[39m
+                  [33mshape-rendering[39m=[32m"crispEdges"[39m
+                  [33mviewBox[39m=[32m"0 0 10 10"[39m
+                  [33mwidth[39m=[32m"10"[39m
+                [36m>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -1000ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"0"[39m
+                    [33my[39m=[32m"0"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -875ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"4"[39m
+                    [33my[39m=[32m"0"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -750ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"8"[39m
+                    [33my[39m=[32m"0"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -625ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"8"[39m
+                    [33my[39m=[32m"4"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -500ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"8"[39m
+                    [33my[39m=[32m"8"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -375ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"4"[39m
+                    [33my[39m=[32m"8"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -250ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"0"[39m
+                    [33my[39m=[32m"8"[39m
+                  [36m/>[39m
+                  [36m<rect[39m
+                    [33mclass[39m=[32m"_cell_8929d3"[39m
+                    [33mheight[39m=[32m"2"[39m
+                    [33mstyle[39m=[32m"animation-delay: -125ms;"[39m
+                    [33mwidth[39m=[32m"2"[39m
+                    [33mx[39m=[32m"0"[39m
+                    [33my[39m=[32m"4"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_instanceStatus_04dc54"[39m
+                [33mdata-member-status-text[39m=[32m"true"[39m
+              [36m>[39m
+                [0m运行中[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_instanceAction_04dc54"[39m
+                [33mdata-member-action[39m=[32m"true"[39m
+              [36m>[39m
+                [0m暂无动作[0m
+              [36m</span>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"_group_04dc54"[39m
+        [33mdata-member-group[39m=[32m"true"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_groupRow_04dc54"[39m
+          [33mdata-member-group-row[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_groupName_04dc54"[39m
+            [33mdata-member-group-name[39m=[32m"true"[39m
+          [36m>[39m
+            [0mBeta · 0 活跃[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_instances_04dc54"[39m
+          [33mdata-member-instances[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_noInstances_04dc54"[39m
+            [33mdata-member-no-instances[39m=[32m"true"[39m
+          [36m>[39m
+            [0m尚无实例[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+
+ Test Files  7 failed | 25 passed (32)
+      Tests  22 failed | 449 passed (471)
+   Start at  14:18:20
+   Duration  7.76s (transform 10.64s, setup 0ms, import 23.81s, tests 9.76s, environment 9.65s)
+
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/di
+st/config.js:37:19
+ ❯ getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/quer
+y-helpers.js:20:35
+ ❯ getMultipleElementsFoundError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library
+/dom/dist/query-helpers.js:23:10
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:55:
+13
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:
+19
+ ❯ test/team-members.client.spec.tsx:169:19
+    167|     const { container } = render(<TeamMembers {...makeProps(team, ledg…
+    168|     expect(leaderRow(container).textContent).toBe('领导者 · 0 活跃')
+    169|     expect(screen.getByText('尚无实例')).toBeTruthy()
+       |                   ^
+    170|     fireEvent.click(leaderRow(container))
+    171|     expect(openSession).toHaveBeenCalledWith(LEADER)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+

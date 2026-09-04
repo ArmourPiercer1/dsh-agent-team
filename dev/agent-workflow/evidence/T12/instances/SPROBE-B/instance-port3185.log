@@ -1,0 +1,10 @@
+dsh web: http://127.0.0.1:3185/?token=<REDACTED>
+[t12v-wl] 2026-09-03T01:52:19.872Z boot:enter sid=session-t12v-sprobe-b-mtkvds5d91659e phase=create
+[t12v-wl] 2026-09-03T01:52:19.873Z setup:enter sid=session-t12v-sprobe-b-mtkvds5d91659e bind=fresh-root
+[t12v-wl] 2026-09-03T01:52:19.874Z setup:consumption-resolved sid=session-t12v-sprobe-b-mtkvds5d91659e ms=1 model=deepseek-official/t12v-model-b mcp=none
+[t12v-wl] 2026-09-03T01:52:19.874Z setup:model-selection-installed sid=session-t12v-sprobe-b-mtkvds5d91659e ms=1
+[t12v-wl] 2026-09-03T01:52:19.875Z setup:tools-registered sid=session-t12v-sprobe-b-mtkvds5d91659e ms=2 tools=10
+[t12v-wl] 2026-09-03T01:52:19.877Z setup:persona-installed sid=session-t12v-sprobe-b-mtkvds5d91659e ms=4
+[t12v-wl] 2026-09-03T01:52:19.877Z setup:exit sid=session-t12v-sprobe-b-mtkvds5d91659e ms=4
+[t12v-wl] 2026-09-03T01:52:19.883Z boot:root-ready sid=session-t12v-sprobe-b-mtkvds5d91659e phase=create ms=11
+[t12v-wl] 2026-09-03T01:52:19.967Z boot:exit sid=session-t12v-sprobe-b-mtkvds5d91659e phase=create ms=95

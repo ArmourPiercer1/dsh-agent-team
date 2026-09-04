@@ -1,0 +1,78 @@
+== T12 phase smoke 2026-09-02T19:20:10.259Z ==
+[2026-09-02T19:20:10.260Z] == T12-V build dist 2026-09-02T19:20:10.260Z ==
+[2026-09-02T19:20:10.604Z] == legacy exit 0 ==
+[2026-09-02T19:20:12.181Z] == runtime exit 0 ==
+[2026-09-02T19:20:12.183Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T19:20:13.060Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T19:20:13.061Z] smoke: production dist built + glue placed + import-probed OK
+[2026-09-02T19:20:13.061Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:20:14.874Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T19:20:14.916Z] SMOKE: profile created via throwaway boot
+[2026-09-02T19:20:14.917Z] SMOKE: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T19:20:14.917Z] SMOKE: directive written (boot=1 phase=create)
+[2026-09-02T19:20:16.738Z] SMOKE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T19:20:17.959Z] SMOKE: row ready — toolCount=10
+[2026-09-02T19:20:17.975Z] smoke: state boot=1 phase=create root=session-t12v-a-root-mtkhdm5e63ea67 team=[object Object] members=["inst-leader"]
+[2026-09-02T19:20:17.979Z] smoke: root session header cwd=C:/agent-team/work/t12v/a id=session-t12v-a-root-mtkhdm5e63ea67 file=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\sessions\--C-agent-team-work-t12v-a--\session-t12v-a-root-mtkhdm5e63ea67\session.jsonl.zstd
+[2026-09-02T19:20:17.994Z] smoke: session/prompt status=200 body={"type":"server-response","rpcId":"t12v-d62031f6f2ea","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-02T19:20:18.298Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhdm5e63ea67"
+[2026-09-02T19:20:18.299Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkhdm5e63ea67"
+[2026-09-02T19:20:19.052Z] smoke: root turn settled (ack in durable root log)
+[2026-09-02T19:20:19.053Z] smoke: mock saw models=["t12v-model-a"] requests=2
+[2026-09-02T19:20:19.099Z] SMOKE: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T19:20:19.164Z] smoke: HOME_A reset to empty for the real fresh #1 run
+[2026-09-02T19:20:19.319Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T19:20:19.319Z] :3080 post: 200
+[2026-09-02T19:20:19.319Z] mock capture dumped: 2 requests -> t12v-mock-capture.json
+[2026-09-02T19:20:19.320Z] mini MCP server closed
+[2026-09-02T19:20:19.321Z] mock model endpoint closed
+[2026-09-02T19:20:19.322Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T19:20:19.323Z] T12 vertical runner done
+== T12 phase smoke 2026-09-02T20:12:54.793Z ==
+[2026-09-02T20:12:54.793Z] == T12-V build dist 2026-09-02T20:12:54.793Z ==
+[2026-09-02T20:12:55.135Z] == legacy exit 0 ==
+[2026-09-02T20:12:56.699Z] == runtime exit 0 ==
+[2026-09-02T20:12:56.701Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T20:12:56.702Z] FATAL: TypeError: file.endsWith is not a function
+    at buildProductionRuntime (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/tools/harness/t12-vertical.mjs:432:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runSmoke (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/tools/harness/t12-vertical.mjs:1409:3)
+    at async main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/tools/harness/t12-vertical.mjs:1287:7)
+[2026-09-02T20:12:56.842Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:12:56.842Z] :3080 post: 200
+[2026-09-02T20:12:56.843Z] mock capture dumped: 0 requests -> t12v-mock-capture.json
+[2026-09-02T20:12:56.843Z] mini MCP server closed
+[2026-09-02T20:12:56.844Z] mock model endpoint closed
+[2026-09-02T20:12:56.845Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T20:12:56.845Z] T12 vertical runner done
+== T12 phase smoke 2026-09-02T20:15:27.924Z ==
+[2026-09-02T20:15:27.925Z] == T12-V build dist 2026-09-02T20:15:27.925Z ==
+[2026-09-02T20:15:28.273Z] == legacy exit 0 ==
+[2026-09-02T20:15:29.846Z] == runtime exit 0 ==
+[2026-09-02T20:15:29.848Z] == glue placed: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\dist\packages\runtime\src\plugin\live\agent-bindings.mjs (byte-identical copy of the source .mjs) ==
+[2026-09-02T20:15:29.983Z] == dist mirror -> source .js copy: 254 files (untracked build output, overwritten in place) ==
+[2026-09-02T20:15:30.774Z] == import probe exit 0: LOADED name=dsh-agent-team ==
+[2026-09-02T20:15:30.774Z] smoke: production dist built + glue placed + import-probed OK
+[2026-09-02T20:15:30.774Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:15:33.347Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T20:15:33.387Z] SMOKE: profile created via throwaway boot
+[2026-09-02T20:15:33.389Z] SMOKE: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T20:15:33.390Z] SMOKE: directive written (boot=1 phase=create)
+[2026-09-02T20:15:35.217Z] SMOKE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T20:15:36.428Z] SMOKE: row ready — toolCount=10
+[2026-09-02T20:15:36.450Z] smoke: state boot=1 phase=create root=session-t12v-a-root-mtkjcq2t8d04b7 team=[object Object] members=["inst-leader"]
+[2026-09-02T20:15:36.456Z] smoke: root session header cwd=C:/agent-team/work/t12v/a id=session-t12v-a-root-mtkjcq2t8d04b7 file=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\sessions\--C-agent-team-work-t12v-a--\session-t12v-a-root-mtkjcq2t8d04b7\session.jsonl.zstd
+[2026-09-02T20:15:36.489Z] smoke: session/prompt status=200 body={"type":"server-response","rpcId":"t12v-477dac296c07","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-02T20:15:36.697Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjcq2t8d04b7"
+[2026-09-02T20:15:36.698Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkjcq2t8d04b7"
+[2026-09-02T20:15:37.517Z] smoke: root turn settled (ack in durable root log)
+[2026-09-02T20:15:37.519Z] smoke: mock saw models=["t12v-model-a"] requests=2
+[2026-09-02T20:15:37.565Z] SMOKE: stopped (portFree=true, {"killed":true,"portFree":true})
+[2026-09-02T20:15:37.600Z] smoke: HOME_A reset to empty for the real fresh #1 run
+[2026-09-02T20:15:37.799Z] test-use post: head=cd5ef8148158c3a752a658978873241fdf8e2bbc statusEmpty=true diffEmpty=true
+[2026-09-02T20:15:37.799Z] :3080 post: 200
+[2026-09-02T20:15:37.800Z] mock capture dumped: 2 requests -> t12v-mock-capture.json
+[2026-09-02T20:15:37.801Z] mini MCP server closed
+[2026-09-02T20:15:37.801Z] mock model endpoint closed
+[2026-09-02T20:15:37.802Z] summary written: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\T12\summary.json
+[2026-09-02T20:15:37.803Z] T12 vertical runner done

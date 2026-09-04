@@ -1,0 +1,70 @@
+﻿nonce=mtktg7nu58c6d0 phases=
+
+=== V1 :: V1 fresh Root: minimal legal Team create via production row create path; durable TeamSession; fresh RootBinding; valid Leader identity; REAL Root Agent under DSH_HOME with cwd == W_root (session meta, not projection); zero synthetic members :: pass=true 11/11 :: 1077 ms
+  [OK ] state.boot === 1 (create boot)
+  [OK ] state.phase === "create"
+  [OK ] state.rootSessionId === ROOT_A
+  [OK ] TeamSession durable (row keyed by ROOT_A; invariant 9: teamSessionId === rootSessionId)
+  [OK ] members contain EXACTLY the leader (no synthetic worker/scout rows; seedMembers stayed [])
+  [OK ] root session log materialized under DSH_HOME (real Root Agent)
+  [OK ] root session header cwd == W_root (session meta at agents.create boundary, not projection)
+  [OK ] session/prompt accepted (browser-facing chat path)
+  [OK ] root agent turn settled against the mock (real dsh-llm adapter + agent loop + session log)
+  [OK ] model call reached the mock endpoint with the row static model (mock-env path)
+  [OK ] leader identity valid: leader persona installed and visible in the REAL prompt assembly
+
+=== V2 :: V2 real Member (world A part recorded; world B mcpServer:null variant pending fresh #2) :: pass=true 8/8 :: 903 ms
+  [OK ] [A] team_create_member executed (shipped tool via the production executeTool seam)
+  [OK ] [A] effect carries instanceId + childSessionId (discovered, not hardcoded)
+  [OK ] [A] child session log materialized under DSH_HOME (real DSH child Session)
+  [OK ] [A] child session header cwd == W_child
+  [OK ] [A] member.send delivered (coordinator outcome targets worker A)
+  [OK ] [A] child turn settled against the mock
+  [OK ] [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-capture
+  [OK ] [A] effective model = row static selection (deepseek-official/t12v-model-a)
+
+=== V3 :: V3 real policy: external hard DENY of mcp + member override ALLOW mcp => mcp remains denied at the ACTUAL consumption boundary (model tool schema omits the mcp tool; the agent loop fails the call; no mcp mount established) — not just the projection :: pass=true 6/6 :: 3109 ms
+  [OK ] member override ALLOW mcp[t12vmini] admitted (durable override record returned)
+  [OK ] turn settled after the mcp tool call was handled by the real agent loop
+  [OK ] no mcp mount established: effective mcp cell mounted===false despite the override (external hard
+  [OK ] child session log records the mcp tool attempt at the consumption boundary
+  [OK ] the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for tha
+  [OK ] model request tool schema omits the mcp tool (denied at the model-consumption boundary)
+
+=== V4 :: V4 delegate real work: the exact task text T12_VERTICAL_TASK_<nonce> reaches the real child session log; the real turn against the mock completes; durable truth settles :: pass=true 6/6 :: 1883 ms
+  [OK ] team_delegate executed (work admitted)
+  [OK ] effect carries a real instanceId
+  [OK ] childSessionId resolved for the delegated instance (live state discovery)
+  [OK ] exact task text reached the REAL child session log
+  [OK ] real turn against the mock completed and settled
+  [OK ] model request carried the exact task text
+
+=== V5 :: V5 Projection/Remote: TeamProjection read through the BROWSER-FACING public Remote mounted endpoint (/team-remote) — the test side NEVER uses TeamDomain direct reads as an assertion source :: pass=true 6/6 :: 39 ms
+  [OK ] team.getProjection answered through the public Remote (HTTP 200 + ok result)
+  [OK ] projection teamSessionId matches the durable TeamSession
+  [OK ] projection carries the production schemaVersion 2 (P8-S contract freeze: production projection s
+  [OK ] projection top-level field set matches the frozen v1 contract (superset for v2)
+  [OK ] projection members include the real leader + every discovered worker instance (childSessionIds s
+  [OK ] projection ledger non-empty (durable event truth projected)
+
+=== LIFECYCLE :: LIFECYCLE plan §11.2: real archive of a member with a live background descendant (truly recursive drain, honest numeric drained count), restore, real follow-up turn; NO fake quiescent=true (the quiescence gate rejects non-true drains with LIFECYCLE_NOT_QUIESCENT) :: pass=false 5/9 :: 905994 ms
+  [FAIL] a real descendant session was created under the member child session (real subagent lifecycle)
+  [FAIL] descendant session header marks origin=subagent with parentSession == member child (durable sess
+  [FAIL] descendant turn settled against the mock (real subagent agent loop + session log)
+  [OK ] member.archive executed (quiescence gate passed — a failed drain would have rejected it)
+  [FAIL] archive reports an HONEST numeric drained count >= 1 (the live descendant was drained)
+  [OK ] residency dropped on archive
+  [OK ] member.restore executed
+  [OK ] member.followup admitted after restore (work admitted)
+  [OK ] real follow-up turn settled on the restored member
+
+=== RESTART :: RESTART plan §12 (resume part; identity part recorded in an earlier phase run) :: pass=true 9/9 :: 3091 ms
+  [OK ] resume boot: same Team root (rootSessionId unchanged)
+  [OK ] resume boot: same durable TeamSession id
+  [OK ] resume boot: SAME MemberInstance re-opened (instanceId + childSessionId stable across restart)
+  [OK ] resume boot: NO duplicate members (each instanceId exactly once)
+  [OK ] resume boot: no duplicate root session materialization (exactly one root session log)
+  [OK ] resume boot: no duplicate child session materialization for the worker
+  [OK ] projection resumes after restart (same TeamSession, members intact)
+  [OK ] real follow-up turn admitted after restart
+  [OK ] restart follow-up turn settled against the mock (durable child log)

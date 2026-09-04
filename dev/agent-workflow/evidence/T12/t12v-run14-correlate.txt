@@ -1,0 +1,268 @@
+﻿glue lines: A1=77 A2=26
+
+session logs under home-a: 2
+
+== t12v-a-root-mtktg7nu58c6d0 (25 records) ==
+   session {"type":"session","version":0,"id":"session-t12v-a-root-mtktg7nu58c6d0","createdAt":1788397094631,"cwd":"C:/agent-team/work/t12v/a","delegat
+  2026-09-03T00:58:14.640Z permission/preset {"type":"permission/preset","seq":0,"time":1788397094640,"data":{"preset":"workspace-write"}}
+  2026-09-03T00:58:14.641Z sandbox/mode {"type":"sandbox/mode","seq":1,"time":1788397094641,"data":{"mode":"workspace-write"}}
+  2026-09-03T00:58:14.641Z approval/policy {"type":"approval/policy","seq":2,"time":1788397094641,"data":{"policy":"ask"}}
+  2026-09-03T00:58:15.338Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":3,"time":1788397095338,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","te
+  2026-09-03T00:58:15.339Z turn/start {"type":"turn/start","seq":4,"time":1788397095339,"data":{"turn":1}}
+  2026-09-03T00:58:15.339Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":5,"time":1788397095339,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T00:58:15.417Z step/start {"type":"step/start","seq":6,"time":1788397095417,"data":{"turn":1,"step":1}}
+  2026-09-03T00:58:15.417Z user/message {"type":"user/message","seq":7,"time":1788397095417,"data":{"content":[{"type":"text","text":"T12V_ROOT_FIRST_mtktg7nu58c6d0"}],"source":{"k
+  2026-09-03T00:58:15.418Z user/message {"type":"user/message","seq":8,"time":1788397095418,"data":{"content":[{"type":"text","text":"Current runtime context. This snapshot superse
+  2026-09-03T00:58:15.419Z session/title {"type":"session/title","seq":9,"time":1788397095419,"data":{"title":"T12V_ROOT_FIRST_mtktg7nu58c6d0","messageSeqs":[7],"source":{"kind":"fa
+  2026-09-03T00:58:15.421Z request/header {"type":"request/header","seq":10,"time":1788397095421,"data":{"header":{"config":{"provider":"deepseek-official","model":"t12v-model-a","ma
+  2026-09-03T00:58:15.422Z request/context {"type":"request/context","seq":11,"time":1788397095422,"data":{"provider":"deepseek-official","model":"t12v-model-a","contextWindow":100000
+  2026-09-03T00:58:15.424Z session/title-llm-request {"type":"session/title-llm-request","seq":12,"time":1788397095424,"data":{"titleProvider":"session-title-first-prompt-llm","messageSeqs":[7]
+  2026-09-03T00:58:15.551Z assistant/chunk {"type":"assistant/chunk","seq":13,"time":1788397095551,"data":{"turn":1,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"text"
+  2026-09-03T00:58:15.551Z assistant/chunk {"type":"assistant/chunk","seq":14,"time":1788397095551,"data":{"turn":1,"step":1,"chunk":{"type":"text-delta","index":0,"text":"T12V_DEFAUL
+  2026-09-03T00:58:15.552Z assistant/chunk {"type":"assistant/chunk","seq":15,"time":1788397095552,"data":{"turn":1,"step":1,"chunk":{"type":"text-delta","index":0,"text":"_mtktg7nu58
+  2026-09-03T00:58:15.552Z assistant/chunk {"type":"assistant/chunk","seq":16,"time":1788397095552,"data":{"turn":1,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"tex
+  2026-09-03T00:58:15.552Z assistant/chunk {"type":"assistant/chunk","seq":17,"time":1788397095552,"data":{"turn":1,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":573,"output
+  2026-09-03T00:58:15.552Z assistant/chunk {"type":"assistant/chunk","seq":18,"time":1788397095552,"data":{"turn":1,"step":1,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T00:58:15.554Z assistant/message {"type":"assistant/message","seq":19,"time":1788397095554,"data":{"turn":1,"step":1,"message":{"role":"assistant","content":[{"type":"text",
+  2026-09-03T00:58:15.554Z step/end {"type":"step/end","seq":20,"time":1788397095554,"data":{"turn":1,"step":1}}
+  2026-09-03T00:58:15.554Z turn/end {"type":"turn/end","seq":21,"time":1788397095554,"data":{"turn":1,"reason":{"kind":"completed"}}}
+  2026-09-03T00:58:15.556Z session/title {"type":"session/title","seq":22,"time":1788397095556,"data":{"title":"T12V_ROOT_FIRST_ACK_mtktg7nu58c6d0","messageSeqs":[7],"source":{"kind
+  2026-09-03T01:13:30.199Z session/end-seed {"type":"session/end-seed","seq":23,"time":1788398010199,"data":{}}
+
+== team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 (118 records) ==
+   session {"type":"session","version":0,"id":"session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0","createdAt":1788397096458,"cwd":"C:/agent-team/work
+  2026-09-03T00:58:16.460Z permission/preset {"type":"permission/preset","seq":0,"time":1788397096460,"data":{"preset":"workspace-write"}}
+  2026-09-03T00:58:16.460Z sandbox/mode {"type":"sandbox/mode","seq":1,"time":1788397096460,"data":{"mode":"workspace-write"}}
+  2026-09-03T00:58:16.460Z approval/policy {"type":"approval/policy","seq":2,"time":1788397096460,"data":{"policy":"ask"}}
+  2026-09-03T00:58:16.969Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":3,"time":1788397096969,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","te
+  2026-09-03T00:58:16.971Z turn/start {"type":"turn/start","seq":4,"time":1788397096971,"data":{"turn":1}}
+  2026-09-03T00:58:16.971Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":5,"time":1788397096971,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T00:58:17.027Z step/start {"type":"step/start","seq":6,"time":1788397097027,"data":{"turn":1,"step":1}}
+  2026-09-03T00:58:17.028Z user/message {"type":"user/message","seq":7,"time":1788397097028,"data":{"content":[{"type":"text","text":"[team-relay] from=human:session-t12v-a-root-mt
+  2026-09-03T00:58:17.029Z user/message {"type":"user/message","seq":8,"time":1788397097029,"data":{"content":[{"type":"text","text":"Current runtime context. This snapshot superse
+  2026-09-03T00:58:17.030Z session/title {"type":"session/title","seq":9,"time":1788397097030,"data":{"title":"[team-relay] from=human:session-t12v-a-r","messageSeqs":[7],"source":{
+  2026-09-03T00:58:17.031Z request/header {"type":"request/header","seq":10,"time":1788397097031,"data":{"header":{"config":{"provider":"deepseek-official","model":"t12v-model-a","ma
+  2026-09-03T00:58:17.031Z request/context {"type":"request/context","seq":11,"time":1788397097031,"data":{"provider":"deepseek-official","model":"t12v-model-a","contextWindow":100000
+  2026-09-03T00:58:17.032Z session/title-llm-request {"type":"session/title-llm-request","seq":12,"time":1788397097032,"data":{"titleProvider":"session-title-first-prompt-llm","messageSeqs":[7]
+  2026-09-03T00:58:17.101Z assistant/chunk {"type":"assistant/chunk","seq":13,"time":1788397097101,"data":{"turn":1,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"text"
+  2026-09-03T00:58:17.102Z assistant/chunk {"type":"assistant/chunk","seq":14,"time":1788397097102,"data":{"turn":1,"step":1,"chunk":{"type":"text-delta","index":0,"text":"T12V_DEFAUL
+  2026-09-03T00:58:17.102Z assistant/chunk {"type":"assistant/chunk","seq":15,"time":1788397097102,"data":{"turn":1,"step":1,"chunk":{"type":"text-delta","index":0,"text":"_mtktg7nu58
+  2026-09-03T00:58:17.102Z assistant/chunk {"type":"assistant/chunk","seq":16,"time":1788397097102,"data":{"turn":1,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"tex
+  2026-09-03T00:58:17.102Z assistant/chunk {"type":"assistant/chunk","seq":17,"time":1788397097102,"data":{"turn":1,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":600,"output
+  2026-09-03T00:58:17.102Z assistant/chunk {"type":"assistant/chunk","seq":18,"time":1788397097102,"data":{"turn":1,"step":1,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T00:58:17.102Z assistant/message {"type":"assistant/message","seq":19,"time":1788397097102,"data":{"turn":1,"step":1,"message":{"role":"assistant","content":[{"type":"text",
+  2026-09-03T00:58:17.102Z step/end {"type":"step/end","seq":20,"time":1788397097102,"data":{"turn":1,"step":1}}
+  2026-09-03T00:58:17.103Z turn/end {"type":"turn/end","seq":21,"time":1788397097103,"data":{"turn":1,"reason":{"kind":"completed"}}}
+  2026-09-03T00:58:17.106Z session/title {"type":"session/title","seq":22,"time":1788397097106,"data":{"title":"T12V_CHILD_FIRST_ACK_mtktg7nu58c6d0","messageSeqs":[7],"source":{"kin
+  2026-09-03T00:58:18.941Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":23,"time":1788397098941,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","t
+  2026-09-03T00:58:18.941Z turn/start {"type":"turn/start","seq":24,"time":1788397098941,"data":{"turn":2}}
+  2026-09-03T00:58:18.941Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":25,"time":1788397098941,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T00:58:19.125Z step/start {"type":"step/start","seq":26,"time":1788397099125,"data":{"turn":2,"step":1}}
+  2026-09-03T00:58:19.125Z user/message {"type":"user/message","seq":27,"time":1788397099125,"data":{"content":[{"type":"text","text":"[team-relay] from=human:session-t12v-a-root-m
+  2026-09-03T00:58:19.240Z assistant/chunk {"type":"assistant/chunk","seq":28,"time":1788397099240,"data":{"turn":2,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"tool-
+  2026-09-03T00:58:19.240Z assistant/chunk {"type":"assistant/chunk","seq":29,"time":1788397099240,"data":{"turn":2,"step":1,"chunk":{"type":"tool-call-delta","index":0,"id":"call_t12
+  2026-09-03T00:58:19.240Z assistant/chunk {"type":"assistant/chunk","seq":30,"time":1788397099240,"data":{"turn":2,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"too
+  2026-09-03T00:58:19.240Z assistant/chunk {"type":"assistant/chunk","seq":31,"time":1788397099240,"data":{"turn":2,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":640,"output
+  2026-09-03T00:58:19.241Z assistant/chunk {"type":"assistant/chunk","seq":32,"time":1788397099241,"data":{"turn":2,"step":1,"chunk":{"type":"finish","reason":{"kind":"tool-calls"}}}}
+  2026-09-03T00:58:19.241Z assistant/message {"type":"assistant/message","seq":33,"time":1788397099241,"data":{"turn":2,"step":1,"message":{"role":"assistant","content":[{"type":"tool-c
+  2026-09-03T00:58:19.241Z tool/call {"type":"tool/call","seq":34,"time":1788397099241,"data":{"turn":2,"step":1,"callId":"call_t12v_mtktg7nu58c6d0","name":"mcp__t12vmini__ping"
+  2026-09-03T00:58:19.352Z tool/result {"type":"tool/result","seq":35,"time":1788397099352,"data":{"turn":2,"step":1,"message":{"source":{"kind":"tool","callId":"call_t12v_mtktg7n
+  2026-09-03T00:58:19.352Z step/end {"type":"step/end","seq":36,"time":1788397099352,"data":{"turn":2,"step":1}}
+  2026-09-03T00:58:19.451Z step/start {"type":"step/start","seq":37,"time":1788397099451,"data":{"turn":2,"step":2}}
+  2026-09-03T00:58:19.552Z assistant/chunk {"type":"assistant/chunk","seq":38,"time":1788397099552,"data":{"turn":2,"step":2,"chunk":{"type":"block-start","index":0,"blockType":"text"
+  2026-09-03T00:58:19.552Z assistant/chunk {"type":"assistant/chunk","seq":39,"time":1788397099552,"data":{"turn":2,"step":2,"chunk":{"type":"text-delta","index":0,"text":"T12V_MCP_DE
+  2026-09-03T00:58:19.552Z assistant/chunk {"type":"assistant/chunk","seq":40,"time":1788397099552,"data":{"turn":2,"step":2,"chunk":{"type":"text-delta","index":0,"text":"CK_mtktg7nu
+  2026-09-03T00:58:19.552Z assistant/chunk {"type":"assistant/chunk","seq":41,"time":1788397099552,"data":{"turn":2,"step":2,"chunk":{"type":"block-end","index":0,"block":{"type":"tex
+  2026-09-03T00:58:19.552Z assistant/chunk {"type":"assistant/chunk","seq":42,"time":1788397099552,"data":{"turn":2,"step":2,"chunk":{"type":"usage","usage":{"inputTokens":652,"output
+  2026-09-03T00:58:19.552Z assistant/chunk {"type":"assistant/chunk","seq":43,"time":1788397099552,"data":{"turn":2,"step":2,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T00:58:19.553Z assistant/message {"type":"assistant/message","seq":44,"time":1788397099553,"data":{"turn":2,"step":2,"message":{"role":"assistant","content":[{"type":"text",
+  2026-09-03T00:58:19.553Z step/end {"type":"step/end","seq":45,"time":1788397099553,"data":{"turn":2,"step":2}}
+  2026-09-03T00:58:19.553Z turn/end {"type":"turn/end","seq":46,"time":1788397099553,"data":{"turn":2,"reason":{"kind":"completed"}}}
+  2026-09-03T00:58:21.104Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":47,"time":1788397101104,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","t
+  2026-09-03T00:58:21.104Z turn/start {"type":"turn/start","seq":48,"time":1788397101104,"data":{"turn":3}}
+  2026-09-03T00:58:21.104Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":49,"time":1788397101104,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T00:58:21.218Z step/start {"type":"step/start","seq":50,"time":1788397101218,"data":{"turn":3,"step":1}}
+  2026-09-03T00:58:21.218Z user/message {"type":"user/message","seq":51,"time":1788397101218,"data":{"content":[{"type":"text","text":"[team-work requestToken=t12v-v4-delegate-mtkt
+  2026-09-03T00:58:21.348Z assistant/chunk {"type":"assistant/chunk","seq":52,"time":1788397101348,"data":{"turn":3,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"text"
+  2026-09-03T00:58:21.349Z assistant/chunk {"type":"assistant/chunk","seq":53,"time":1788397101349,"data":{"turn":3,"step":1,"chunk":{"type":"text-delta","index":0,"text":"T12V_TASK_A
+  2026-09-03T00:58:21.349Z assistant/chunk {"type":"assistant/chunk","seq":54,"time":1788397101349,"data":{"turn":3,"step":1,"chunk":{"type":"text-delta","index":0,"text":"mtktg7nu58c
+  2026-09-03T00:58:21.349Z assistant/chunk {"type":"assistant/chunk","seq":55,"time":1788397101349,"data":{"turn":3,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"tex
+  2026-09-03T00:58:21.349Z assistant/chunk {"type":"assistant/chunk","seq":56,"time":1788397101349,"data":{"turn":3,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":684,"output
+  2026-09-03T00:58:21.349Z assistant/chunk {"type":"assistant/chunk","seq":57,"time":1788397101349,"data":{"turn":3,"step":1,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T00:58:21.349Z assistant/message {"type":"assistant/message","seq":58,"time":1788397101349,"data":{"turn":3,"step":1,"message":{"role":"assistant","content":[{"type":"text",
+  2026-09-03T00:58:21.349Z step/end {"type":"step/end","seq":59,"time":1788397101349,"data":{"turn":3,"step":1}}
+  2026-09-03T00:58:21.350Z turn/end {"type":"turn/end","seq":60,"time":1788397101350,"data":{"turn":3,"reason":{"kind":"completed"}}}
+  2026-09-03T00:58:22.595Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":61,"time":1788397102595,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","t
+  2026-09-03T00:58:22.595Z turn/start {"type":"turn/start","seq":62,"time":1788397102595,"data":{"turn":4}}
+  2026-09-03T00:58:22.595Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":63,"time":1788397102595,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T00:58:22.683Z step/start {"type":"step/start","seq":64,"time":1788397102683,"data":{"turn":4,"step":1}}
+  2026-09-03T00:58:22.683Z user/message {"type":"user/message","seq":65,"time":1788397102683,"data":{"content":[{"type":"text","text":"[team-relay] from=human:session-t12v-a-root-m
+  2026-09-03T00:58:22.789Z assistant/chunk {"type":"assistant/chunk","seq":66,"time":1788397102789,"data":{"turn":4,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"tool-
+   tool-call-chunks {"type":"tool-call-chunks","seq0":67,"time0":1788397102789,"data":{"turn":4,"step":1,"index":0,"dt":[0,0],"id":"call_sub_mtktg7nu58c6d0","na
+  2026-09-03T00:58:22.789Z assistant/chunk {"type":"assistant/chunk","seq":70,"time":1788397102789,"data":{"turn":4,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"too
+  2026-09-03T00:58:22.789Z assistant/chunk {"type":"assistant/chunk","seq":71,"time":1788397102789,"data":{"turn":4,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":723,"output
+  2026-09-03T00:58:22.789Z assistant/chunk {"type":"assistant/chunk","seq":72,"time":1788397102789,"data":{"turn":4,"step":1,"chunk":{"type":"finish","reason":{"kind":"tool-calls"}}}}
+  2026-09-03T00:58:22.789Z assistant/message {"type":"assistant/message","seq":73,"time":1788397102789,"data":{"turn":4,"step":1,"message":{"role":"assistant","content":[{"type":"tool-c
+  2026-09-03T00:58:22.790Z tool/call {"type":"tool/call","seq":74,"time":1788397102790,"data":{"turn":4,"step":1,"callId":"call_sub_mtktg7nu58c6d0","name":"subagent","arguments"
+  2026-09-03T00:58:23.155Z tool/result {"type":"tool/result","seq":75,"time":1788397103155,"data":{"turn":4,"step":1,"message":{"source":{"kind":"tool","callId":"call_sub_mtktg7nu
+  2026-09-03T00:58:23.156Z step/end {"type":"step/end","seq":76,"time":1788397103156,"data":{"turn":4,"step":1}}
+  2026-09-03T00:58:23.283Z step/start {"type":"step/start","seq":77,"time":1788397103283,"data":{"turn":4,"step":2}}
+  2026-09-03T00:58:23.419Z assistant/chunk {"type":"assistant/chunk","seq":78,"time":1788397103419,"data":{"turn":4,"step":2,"chunk":{"type":"block-start","index":0,"blockType":"text"
+  2026-09-03T00:58:23.419Z assistant/chunk {"type":"assistant/chunk","seq":79,"time":1788397103419,"data":{"turn":4,"step":2,"chunk":{"type":"text-delta","index":0,"text":"T12V_DEFAUL
+  2026-09-03T00:58:23.420Z assistant/chunk {"type":"assistant/chunk","seq":80,"time":1788397103420,"data":{"turn":4,"step":2,"chunk":{"type":"text-delta","index":0,"text":"_mtktg7nu58
+  2026-09-03T00:58:23.420Z assistant/chunk {"type":"assistant/chunk","seq":81,"time":1788397103420,"data":{"turn":4,"step":2,"chunk":{"type":"block-end","index":0,"block":{"type":"tex
+  2026-09-03T00:58:23.420Z assistant/chunk {"type":"assistant/chunk","seq":82,"time":1788397103420,"data":{"turn":4,"step":2,"chunk":{"type":"usage","usage":{"inputTokens":732,"output
+  2026-09-03T00:58:23.420Z assistant/chunk {"type":"assistant/chunk","seq":83,"time":1788397103420,"data":{"turn":4,"step":2,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T00:58:23.420Z assistant/message {"type":"assistant/message","seq":84,"time":1788397103420,"data":{"turn":4,"step":2,"message":{"role":"assistant","content":[{"type":"text",
+  2026-09-03T00:58:23.421Z step/end {"type":"step/end","seq":85,"time":1788397103421,"data":{"turn":4,"step":2}}
+  2026-09-03T00:58:23.421Z turn/end {"type":"turn/end","seq":86,"time":1788397103421,"data":{"turn":4,"reason":{"kind":"completed"}}}
+  2026-09-03T01:13:27.808Z session/end-seed {"type":"session/end-seed","seq":87,"time":1788398007808,"data":{}}
+  2026-09-03T01:13:27.814Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":88,"time":1788398007814,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","t
+  2026-09-03T01:13:27.814Z turn/start {"type":"turn/start","seq":89,"time":1788398007814,"data":{"turn":5}}
+  2026-09-03T01:13:27.814Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":90,"time":1788398007814,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T01:13:27.878Z step/start {"type":"step/start","seq":91,"time":1788398007878,"data":{"turn":5,"step":1}}
+  2026-09-03T01:13:27.878Z user/message {"type":"user/message","seq":92,"time":1788398007878,"data":{"content":[{"type":"text","text":"[team-work requestToken=t12v-lc-followup-mtkt
+  2026-09-03T01:13:27.880Z request/header {"type":"request/header","seq":93,"time":1788398007880,"data":{"header":{"config":{"provider":"deepseek-official","model":"t12v-model-a","ma
+  2026-09-03T01:13:27.962Z assistant/chunk {"type":"assistant/chunk","seq":94,"time":1788398007962,"data":{"turn":5,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"text"
+  2026-09-03T01:13:27.962Z assistant/chunk {"type":"assistant/chunk","seq":95,"time":1788398007962,"data":{"turn":5,"step":1,"chunk":{"type":"text-delta","index":0,"text":"T12V_FOLLOW
+  2026-09-03T01:13:27.962Z assistant/chunk {"type":"assistant/chunk","seq":96,"time":1788398007962,"data":{"turn":5,"step":1,"chunk":{"type":"text-delta","index":0,"text":"K_mtktg7nu5
+  2026-09-03T01:13:27.962Z assistant/chunk {"type":"assistant/chunk","seq":97,"time":1788398007962,"data":{"turn":5,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"tex
+  2026-09-03T01:13:27.963Z assistant/chunk {"type":"assistant/chunk","seq":98,"time":1788398007963,"data":{"turn":5,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":762,"output
+  2026-09-03T01:13:27.963Z assistant/chunk {"type":"assistant/chunk","seq":99,"time":1788398007963,"data":{"turn":5,"step":1,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T01:13:27.963Z assistant/message {"type":"assistant/message","seq":100,"time":1788398007963,"data":{"turn":5,"step":1,"message":{"role":"assistant","content":[{"type":"text"
+  2026-09-03T01:13:27.963Z step/end {"type":"step/end","seq":101,"time":1788398007963,"data":{"turn":5,"step":1}}
+  2026-09-03T01:13:27.963Z turn/end {"type":"turn/end","seq":102,"time":1788398007963,"data":{"turn":5,"reason":{"kind":"completed"}}}
+  2026-09-03T01:13:30.214Z session/end-seed {"type":"session/end-seed","seq":103,"time":1788398010214,"data":{}}
+  2026-09-03T01:13:30.894Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":104,"time":1788398010894,"data":{"target":"next-turn","start":0,"inserted":[{"content":[{"type":"text","
+  2026-09-03T01:13:30.895Z turn/start {"type":"turn/start","seq":105,"time":1788398010895,"data":{"turn":6}}
+  2026-09-03T01:13:30.895Z agent/inbox/spliced {"type":"agent/inbox/spliced","seq":106,"time":1788398010895,"data":{"target":"next-turn","start":0,"removedCount":1,"inserted":[]}}
+  2026-09-03T01:13:30.936Z step/start {"type":"step/start","seq":107,"time":1788398010936,"data":{"turn":6,"step":1}}
+  2026-09-03T01:13:30.937Z user/message {"type":"user/message","seq":108,"time":1788398010937,"data":{"content":[{"type":"text","text":"[team-work requestToken=t12v-restart-followu
+  2026-09-03T01:13:30.939Z request/header {"type":"request/header","seq":109,"time":1788398010939,"data":{"header":{"config":{"provider":"deepseek-official","model":"t12v-model-a","m
+  2026-09-03T01:13:31.015Z assistant/chunk {"type":"assistant/chunk","seq":110,"time":1788398011015,"data":{"turn":6,"step":1,"chunk":{"type":"block-start","index":0,"blockType":"text
+  2026-09-03T01:13:31.016Z assistant/chunk {"type":"assistant/chunk","seq":111,"time":1788398011016,"data":{"turn":6,"step":1,"chunk":{"type":"text-delta","index":0,"text":"T12V_RESTA
+  2026-09-03T01:13:31.016Z assistant/chunk {"type":"assistant/chunk","seq":112,"time":1788398011016,"data":{"turn":6,"step":1,"chunk":{"type":"text-delta","index":0,"text":"_mtktg7nu5
+  2026-09-03T01:13:31.016Z assistant/chunk {"type":"assistant/chunk","seq":113,"time":1788398011016,"data":{"turn":6,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"te
+  2026-09-03T01:13:31.016Z assistant/chunk {"type":"assistant/chunk","seq":114,"time":1788398011016,"data":{"turn":6,"step":1,"chunk":{"type":"usage","usage":{"inputTokens":795,"outpu
+  2026-09-03T01:13:31.016Z assistant/chunk {"type":"assistant/chunk","seq":115,"time":1788398011016,"data":{"turn":6,"step":1,"chunk":{"type":"finish","reason":{"kind":"stop"}}}}
+  2026-09-03T01:13:31.018Z assistant/message {"type":"assistant/message","seq":116,"time":1788398011018,"data":{"turn":6,"step":1,"message":{"role":"assistant","content":[{"type":"text"
+  2026-09-03T01:13:31.018Z step/end {"type":"step/end","seq":117,"time":1788398011018,"data":{"turn":6,"step":1}}
+  2026-09-03T01:13:31.018Z turn/end {"type":"turn/end","seq":118,"time":1788398011018,"data":{"turn":6,"reason":{"kind":"completed"}}}
+
+mock capture: 11 requests
+  req1 2026-09-03T00:58:15.547Z model=t12v-model-a tools=10 "T12V_ROOT_FIRST_mtktg7nu58c6d0"
+  req2 2026-09-03T00:58:15.549Z model=t12v-model-a tools=0 "Generate the session title from this JSON array of human messages:\n[
+  req3 2026-09-03T00:58:17.101Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req4 2026-09-03T00:58:17.104Z model=t12v-model-a tools=0 "Generate the session title from this JSON array of human messages:\n[
+  req5 2026-09-03T00:58:19.239Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req6 2026-09-03T00:58:19.551Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req7 2026-09-03T00:58:21.347Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req8 2026-09-03T00:58:22.788Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req9 2026-09-03T00:58:23.416Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req10 2026-09-03T01:13:27.961Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+  req11 2026-09-03T01:13:31.011Z model=t12v-model-a tools=10 "[team-relay] from=human:session-t12v-a-root-mtktg7nu58c6d0 to=inst-1e
+
+== glue timeline (A1 + A2, child & root lines) ==
+2026-09-03T00:58:14.630Z [A1] boot:enter session-t12v-a-root-mtktg7nu58c6d0 phase=create  <<<<< GAP 1788397095s
+2026-09-03T00:58:14.633Z [A1] setup:enter session-t12v-a-root-mtktg7nu58c6d0 bind=fresh-root
+2026-09-03T00:58:14.635Z [A1] setup:consumption-resolved session-t12v-a-root-mtktg7nu58c6d0 ms=2 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:14.635Z [A1] setup:model-selection-installed session-t12v-a-root-mtktg7nu58c6d0 ms=2
+2026-09-03T00:58:14.637Z [A1] setup:tools-registered session-t12v-a-root-mtktg7nu58c6d0 ms=4 tools=10
+2026-09-03T00:58:14.639Z [A1] setup:persona-installed session-t12v-a-root-mtktg7nu58c6d0 ms=6
+2026-09-03T00:58:14.639Z [A1] setup:exit session-t12v-a-root-mtktg7nu58c6d0 ms=6
+2026-09-03T00:58:14.644Z [A1] boot:root-ready session-t12v-a-root-mtktg7nu58c6d0 phase=create ms=14
+2026-09-03T00:58:14.795Z [A1] boot:exit session-t12v-a-root-mtktg7nu58c6d0 phase=create ms=165
+2026-09-03T00:58:16.408Z [A1] tool:enter session-t12v-a-root-mtktg7nu58c6d0 name=team_create_member
+2026-09-03T00:58:16.408Z [A1] boundary:enter session-t12v-a-root-mtktg7nu58c6d0 
+2026-09-03T00:58:16.408Z [A1] boundary:consumption-resolved session-t12v-a-root-mtktg7nu58c6d0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:16.408Z [A1] mcp:enter inst-leader allowed=false hasFiber=false
+2026-09-03T00:58:16.408Z [A1] boundary:exit session-t12v-a-root-mtktg7nu58c6d0 ms=0
+2026-09-03T00:58:16.458Z [A1] child:create:create-start session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 instance=inst-1esq73x1qs9x template=worker
+2026-09-03T00:58:16.458Z [A1] setup:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 bind=fresh-member
+2026-09-03T00:58:16.459Z [A1] setup:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:16.459Z [A1] setup:model-selection-installed session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:16.459Z [A1] setup:tools-registered session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 tools=10
+2026-09-03T00:58:16.459Z [A1] setup:persona-installed session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:16.459Z [A1] setup:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:16.462Z [A1] child:create:create-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=4 instance=inst-1esq73x1qs9x
+2026-09-03T00:58:16.852Z [A1] tool:exit session-t12v-a-root-mtktg7nu58c6d0 name=team_create_member ms=444
+2026-09-03T00:58:16.967Z [A1] followup:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:16.967Z [A1] boundary:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:16.968Z [A1] boundary:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:16.968Z [A1] mcp:enter inst-1esq73x1qs9x allowed=false hasFiber=false
+2026-09-03T00:58:16.968Z [A1] boundary:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:16.968Z [A1] followup:boundary-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:16.972Z [A1] followup:followup-submitted session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=5
+2026-09-03T00:58:17.103Z [A1] followup:whenIdle-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=136
+2026-09-03T00:58:18.940Z [A1] followup:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:18.940Z [A1] boundary:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:18.940Z [A1] boundary:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:18.940Z [A1] mcp:enter inst-1esq73x1qs9x allowed=false hasFiber=false
+2026-09-03T00:58:18.940Z [A1] boundary:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T00:58:18.940Z [A1] followup:boundary-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T00:58:18.941Z [A1] followup:followup-submitted session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:19.553Z [A1] followup:whenIdle-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=613
+2026-09-03T00:58:20.412Z [A1] tool:enter session-t12v-a-root-mtktg7nu58c6d0 name=team_delegate
+2026-09-03T00:58:20.412Z [A1] boundary:enter session-t12v-a-root-mtktg7nu58c6d0 
+2026-09-03T00:58:20.412Z [A1] boundary:consumption-resolved session-t12v-a-root-mtktg7nu58c6d0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:20.412Z [A1] mcp:enter inst-leader allowed=false hasFiber=false
+2026-09-03T00:58:20.412Z [A1] boundary:exit session-t12v-a-root-mtktg7nu58c6d0 ms=0
+2026-09-03T00:58:21.103Z [A1] deliver:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 token=t12v-v4-delegate-mtktg7nu58c6d0
+2026-09-03T00:58:21.103Z [A1] boundary:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:21.103Z [A1] boundary:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:21.103Z [A1] mcp:enter inst-1esq73x1qs9x allowed=false hasFiber=false
+2026-09-03T00:58:21.103Z [A1] boundary:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T00:58:21.103Z [A1] deliver:boundary-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T00:58:21.105Z [A1] deliver:followup-submitted session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=2
+2026-09-03T00:58:21.350Z [A1] deliver:whenIdle-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=247
+2026-09-03T00:58:22.284Z [A1] tool:exit session-t12v-a-root-mtktg7nu58c6d0 name=team_delegate ms=1872
+2026-09-03T00:58:22.595Z [A1] followup:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:22.595Z [A1] boundary:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T00:58:22.595Z [A1] boundary:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T00:58:22.595Z [A1] mcp:enter inst-1esq73x1qs9x allowed=false hasFiber=false
+2026-09-03T00:58:22.595Z [A1] boundary:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T00:58:22.595Z [A1] followup:boundary-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T00:58:22.596Z [A1] followup:followup-submitted session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T00:58:23.422Z [A1] followup:whenIdle-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=827
+2026-09-03T01:13:27.803Z [A1] deliver:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 token=t12v-lc-followup-mtktg7nu58c6d0  <<<<< GAP 904s
+2026-09-03T01:13:27.803Z [A1] ensure:resume-start session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T01:13:27.810Z [A1] setup:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 bind=cold-member
+2026-09-03T01:13:27.810Z [A1] setup:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T01:13:27.810Z [A1] setup:model-selection-installed session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T01:13:27.811Z [A1] setup:tools-registered session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 tools=10
+2026-09-03T01:13:27.811Z [A1] setup:persona-installed session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:27.811Z [A1] setup:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:27.814Z [A1] ensure:resume-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T01:13:27.814Z [A1] boundary:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T01:13:27.814Z [A1] boundary:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T01:13:27.814Z [A1] mcp:enter inst-1esq73x1qs9x allowed=false hasFiber=false
+2026-09-03T01:13:27.814Z [A1] boundary:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=0
+2026-09-03T01:13:27.814Z [A1] deliver:boundary-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=11
+2026-09-03T01:13:27.815Z [A1] deliver:followup-submitted session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=12
+2026-09-03T01:13:27.964Z [A1] deliver:whenIdle-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=161
+2026-09-03T01:13:30.160Z [A2] boot:enter session-t12v-a-root-mtktg7nu58c6d0 phase=resume
+2026-09-03T01:13:30.203Z [A2] setup:enter session-t12v-a-root-mtktg7nu58c6d0 bind=cold-root
+2026-09-03T01:13:30.204Z [A2] setup:consumption-resolved session-t12v-a-root-mtktg7nu58c6d0 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T01:13:30.204Z [A2] setup:model-selection-installed session-t12v-a-root-mtktg7nu58c6d0 ms=1
+2026-09-03T01:13:30.205Z [A2] setup:tools-registered session-t12v-a-root-mtktg7nu58c6d0 ms=2 tools=10
+2026-09-03T01:13:30.207Z [A2] setup:persona-installed session-t12v-a-root-mtktg7nu58c6d0 ms=4
+2026-09-03T01:13:30.207Z [A2] setup:exit session-t12v-a-root-mtktg7nu58c6d0 ms=4
+2026-09-03T01:13:30.210Z [A2] boot:root-ready session-t12v-a-root-mtktg7nu58c6d0 phase=resume ms=50
+2026-09-03T01:13:30.211Z [A2] boot:member-resume-start session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 member=inst-1esq73x1qs9x
+2026-09-03T01:13:30.215Z [A2] setup:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 bind=cold-member
+2026-09-03T01:13:30.216Z [A2] setup:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T01:13:30.216Z [A2] setup:model-selection-installed session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:30.216Z [A2] setup:tools-registered session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 tools=10
+2026-09-03T01:13:30.216Z [A2] setup:persona-installed session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:30.216Z [A2] setup:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:30.218Z [A2] boot:member-resume-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 member=inst-1esq73x1qs9x ms=58
+2026-09-03T01:13:30.305Z [A2] boot:member-materialized session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 member=inst-1esq73x1qs9x ms=145
+2026-09-03T01:13:30.305Z [A2] boot:exit session-t12v-a-root-mtktg7nu58c6d0 phase=resume ms=145
+2026-09-03T01:13:30.893Z [A2] deliver:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 token=t12v-restart-followup-mtktg7nu58c6d0
+2026-09-03T01:13:30.893Z [A2] boundary:enter session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 
+2026-09-03T01:13:30.894Z [A2] boundary:consumption-resolved session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+2026-09-03T01:13:30.894Z [A2] mcp:enter inst-1esq73x1qs9x allowed=false hasFiber=false
+2026-09-03T01:13:30.894Z [A2] boundary:exit session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:30.894Z [A2] deliver:boundary-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=1
+2026-09-03T01:13:30.897Z [A2] deliver:followup-submitted session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=4
+2026-09-03T01:13:31.019Z [A2] deliver:whenIdle-done session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0 ms=126

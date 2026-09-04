@@ -1,0 +1,44 @@
+{
+  "task": "T12 production vertical closure — vertical E2E",
+  "generatedAt": "2026-09-03T01:52:28.262Z",
+  "nonce": "mtkvds5d91659e",
+  "modelPath": {
+    "used": "mock-env",
+    "note": "DEEPSEEK_BASE_URL=http://127.0.0.1:3496 + DEEPSEEK_API_KEY=t12v-mock-key exported to every instance launch; the real dsh-llm deepseek-official adapter resolves the launch environment, so every model call ran through the mock SSE endpoint. The qiyuan-self/qwen3.8-27b fallback was NOT used.",
+    "baseUrl": "http://127.0.0.1:3496",
+    "fallbackUsed": false
+  },
+  "ports": {
+    "mock": 3496,
+    "mini": 3492,
+    "a1": 3181,
+    "a2": 3182,
+    "b": 3183,
+    "c": 3184
+  },
+  "homes": {
+    "a": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a",
+    "b": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-b",
+    "c": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-c"
+  },
+  "scenarios": {},
+  "phaseFailures": [],
+  "testUsePristine": {
+    "pre": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "statusEmpty": true,
+      "diffEmpty": true
+    },
+    "post": {
+      "head": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+      "statusEmpty": true,
+      "diffEmpty": true
+    },
+    "pristine": true
+  },
+  "port3080": {
+    "pre": 200,
+    "post": 200
+  },
+  "exitCode": 0
+}

@@ -1,0 +1,10 @@
+rootSessionFile EXISTS: size=5658 mtime=2026-09-02T22:11:05.493Z
+home-A session dirs: <ROOT>
+patch rows: rootSessionIds=["session-t12v-a-root-mtkltfm07fb4c6"] phases=[] boot=[]
+rootSessionIdMatchesPersistedRoot=false
+undefinedRootPresent=false
+phaseFailures=[]
+exitCode=0 nonce=mtkltfm07fb4c6
+port3080={"pre":200,"post":200} pristine=true
+scenarios pass=4/8 :: V1=T V2=F V3=F V4=T V5=T HANDOFF=T LIFECYCLE=F RESTART=F
+FINAL: patch rootSessionId='session-t12v-a-root-mtkltfm07fb4c6' expected='session-t12v-a-root-mtkltfm07fb4c6' match=True

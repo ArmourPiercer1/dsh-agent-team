@@ -1,0 +1,1333 @@
+[
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/?token=<REDACTED>",
+    "status": 303,
+    "t": 1788467318729,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/",
+    "status": 200,
+    "t": 1788467318731,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=28e1db08b1d0",
+    "status": 200,
+    "t": 1788467318740,
+    "kind": "plugins"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-BNsW4eBh.css",
+    "status": 200,
+    "t": 1788467318741,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-CsBy6quH.css",
+    "status": 200,
+    "t": 1788467318742,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-D-eoFxDP.js",
+    "status": 200,
+    "t": 1788467318750,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-CCJJTK99.js",
+    "status": 200,
+    "t": 1788467318756,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,",
+    "status": 200,
+    "t": 1788467318873,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": null,
+    "t": 1788467319006,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"f212a77c-41dd-499d-8dd7-02ec5b772e26\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}",
+    "rpcId": "f212a77c-41dd-499d-8dd7-02ec5b772e26",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": null,
+    "t": 1788467319006,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"44e8ae1b-178e-44ca-87fd-383f73e9fef2\",\"method\":\"dynamicCordisRunner/syncInspectManifest\",\"payload\":{\"args\":{\"providers\":[{\"id\":\"Service\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"methods\":[{\"name\":\"listService\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"service\":{\"type\":\"string\",\"description\":\"Exact Service key. Omit it for the compact Service and method-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Service directory, or one exact Service contract with only its referenced type declarations.\"}}]},{\"id\":\"Event\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"methods\":[{\"name\":\"listEvents\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"event\":{\"type\":\"string\",\"description\":\"Exact Event name. Omit it for the compact Event and listener-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Event directory, or one exact Event contract with only its referenced type declarations.\"}}]},{\"id\":\"Builtin\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"methods\":[{\"name\":\"listBuiltins\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"JSON data owned by this inspect provider.\"}}]},{\"id\":\"Slots\",\"description\":\"Progressive live Slot inspection: compact purpose/topology trees plus one exact Slot contract.\",\"methods\":[{\"name\":\"listSubTree\",\"description\":\"Return compact live Slot trees for navigation. With root, also return t",
+    "rpcId": "44e8ae1b-178e-44ca-87fd-383f73e9fef2",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": null,
+    "t": 1788467319006,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"be85aa39-8232-4f0a-8376-7be776c18309\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}",
+    "rpcId": "be85aa39-8232-4f0a-8376-7be776c18309",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": null,
+    "t": 1788467319006,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"68aa5f5d-93f8-4abc-989b-98c34fb0d37e\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}",
+    "rpcId": "68aa5f5d-93f8-4abc-989b-98c34fb0d37e",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": null,
+    "t": 1788467319006,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"596ddd37-aa71-4e2d-95fa-78fe7c45766d\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}",
+    "rpcId": "596ddd37-aa71-4e2d-95fa-78fe7c45766d",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": null,
+    "t": 1788467319039,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"34d7dcf3-a970-4146-862c-d95c1644bce7\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}",
+    "rpcId": "34d7dcf3-a970-4146-862c-d95c1644bce7",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/events",
+    "status": 200,
+    "t": 1788467319044,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": null,
+    "t": 1788467319049,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"26abe48d-5893-4a94-bcc8-68abaabb5212\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}",
+    "rpcId": "26abe48d-5893-4a94-bcc8-68abaabb5212",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788467319008,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"f212a77c-41dd-499d-8dd7-02ec5b772e26\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"apiKey\":327,\"apiKeyEnv\":330,\"baseURL\":331,\"mod",
+    "rpcId": "3f2aa9ba-af9e-49b1-aeab-90b2fd4d86e0",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"3f2aa9ba-af9e-49b1-aeab-90b2fd4d86e0\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788467319042,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"44e8ae1b-178e-44ca-87fd-383f73e9fef2\",\"result\":{\"ok\":true,\"value\":null}}",
+    "rpcId": "9a91ca87-9b6e-4b92-af15-f28a5ece9385",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"9a91ca87-9b6e-4b92-af15-f28a5ece9385\",\"method\":\"dynamicCordisRunner/syncInspectManifest\",\"payload\":{\"args\":{\"providers\":[{\"id\":\"Service\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"methods\":[{\"name\":\"listService\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"service\":{\"type\":\"string\",\"description\":\"Exact Service key. Omit it for the compact Service and method-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Service directory, or one exact Service contract with only its referenced type declarations.\"}}]},{\"id\":\"Event\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"methods\":[{\"name\":\"listEvents\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"event\":{\"type\":\"string\",\"description\":\"Exact Event name. Omit it for the compact Event and listener-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Event directory, or one exact Event contract with only its referenced type declarations.\"}}]},{\"id\":\"Builtin\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"methods\":[{\"name\":\"listBuiltins\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"JSON data owned by this inspect provider.\"}}]},{\"id\":\"Slots\",\"description\":\"Progressive live Slot inspection: compact purpose/topology trees plus one exact Slot contract.\",\"methods\":[{\"name\":\"listSubTree\",\"description\":\"Return compact live Slot trees for navigation. With root, also return t"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467319042,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"be85aa39-8232-4f0a-8376-7be776c18309\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "6c890816-2765-4f1e-ad13-556269db26eb",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"6c890816-2765-4f1e-ad13-556269db26eb\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\",\"AMAZON_BEDROCK_API_KEY\",\"ANT_LING_API_KEY\",\"ANTHROPIC_API_KEY\",\"AZURE_OPENAI_RESPONSES_API_KEY\",\"BASETEN_API_KEY\",\"CEREBRAS_API_KEY\",\"CLOUDFLARE_AI_GATEWAY_API_KEY\",\"CLOUDFLARE_WORKERS_AI_API_KEY\",\"FIREWORKS_API_KEY\",\"GITHUB_COPILOT_API_KEY\",\"GOOGLE_API_KEY\",\"GOOGLE_VERTEX_API_KEY\",\"GROQ_API_KEY\",\"HUGGINGFACE_API_KEY\",\"KIMI_CODING_API_KEY\",\"MINIMAX_API_KEY\",\"MINIMAX_CN_API_KEY\",\"MISTRAL_API_KEY\",\"MOONSHOTAI_API_KEY\",\"MOONSHOTAI_CN_API_KEY\",\"NVIDIA_API_KEY\",\"OPENAI_API_KEY\",\"OPENAI_CODEX_API_KEY\",\"OPENCODE_API_KEY\",\"OPENCODE_GO_API_KEY\",\"OPENROUTER_API_KEY\",\"QWEN_TOKEN_PLAN_API_KEY\",\"QWEN_TOKEN_PLAN_CN_API_KEY\",\"QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY\",\"TOGETHER_API_KEY\",\"VERCEL_AI_GATEWAY_API_KEY\",\"XAI_API_KEY\",\"XIAOMI_API_KEY\",\"XIAOMI_TOKEN_PLAN_AMS_API_KEY\",\"XIAOMI_TOKEN_PLAN_CN_API_KEY\",\"XIAOMI_TOKEN_PLAN_SGP_API_KEY\",\"ZAI_API_KEY\",\"ZAI_CODING_CN_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467319042,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"68aa5f5d-93f8-4abc-989b-98c34fb0d37e\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "0bdddd3a-b246-4b0c-bc58-440843fd657b",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"0bdddd3a-b246-4b0c-bc58-440843fd657b\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788467319042,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"596ddd37-aa71-4e2d-95fa-78fe7c45766d\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}",
+    "rpcId": "326edd92-cab6-4374-ab37-f820eca21d8f",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"326edd92-cab6-4374-ab37-f820eca21d8f\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": null,
+    "t": 1788467319053,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"bac43f3b-5adc-4bc5-88d1-1b2f1a624348\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}",
+    "rpcId": "bac43f3b-5adc-4bc5-88d1-1b2f1a624348",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/list",
+    "status": null,
+    "t": 1788467319053,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"fbb49fd2-d263-4b25-b11f-73dc583c4460\",\"method\":\"session/list\",\"payload\":{\"args\":{\"_request\":{}}}}",
+    "rpcId": "fbb49fd2-d263-4b25-b11f-73dc583c4460",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467319055,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"26abe48d-5893-4a94-bcc8-68abaabb5212\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "064571fa-c05c-43fb-8424-1f05979e8af7",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"064571fa-c05c-43fb-8424-1f05979e8af7\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467319057,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"0bdddd3a-b246-4b0c-bc58-440843fd657b\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "47f05481-d0ec-4553-80b7-ab018499c058",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"47f05481-d0ec-4553-80b7-ab018499c058\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788467319063,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"326edd92-cab6-4374-ab37-f820eca21d8f\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}",
+    "rpcId": "0efa326b-0c30-4247-9341-efcb989bfe24",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"0efa326b-0c30-4247-9341-efcb989bfe24\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788467319063,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"3f2aa9ba-af9e-49b1-aeab-90b2fd4d86e0\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"apiKey\":327,\"apiKeyEnv\":330,\"baseURL\":331,\"mod",
+    "rpcId": "35a10d40-e79b-478e-8876-394f261dcfdd",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"35a10d40-e79b-478e-8876-394f261dcfdd\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788467319070,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"9a91ca87-9b6e-4b92-af15-f28a5ece9385\",\"result\":{\"ok\":true,\"value\":null}}",
+    "rpcId": "44b5f2b8-b5e4-4922-a0a2-a655b43f88ae",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"44b5f2b8-b5e4-4922-a0a2-a655b43f88ae\",\"method\":\"dynamicCordisRunner/syncInspectManifest\",\"payload\":{\"args\":{\"providers\":[{\"id\":\"Service\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"methods\":[{\"name\":\"listService\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"service\":{\"type\":\"string\",\"description\":\"Exact Service key. Omit it for the compact Service and method-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Service directory, or one exact Service contract with only its referenced type declarations.\"}}]},{\"id\":\"Event\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"methods\":[{\"name\":\"listEvents\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"event\":{\"type\":\"string\",\"description\":\"Exact Event name. Omit it for the compact Event and listener-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Event directory, or one exact Event contract with only its referenced type declarations.\"}}]},{\"id\":\"Builtin\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"methods\":[{\"name\":\"listBuiltins\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"JSON data owned by this inspect provider.\"}}]},{\"id\":\"Slots\",\"description\":\"Progressive live Slot inspection: compact purpose/topology trees plus one exact Slot contract.\",\"methods\":[{\"name\":\"listSubTree\",\"description\":\"Return compact live Slot trees for navigation. With root, also return t"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467319073,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"064571fa-c05c-43fb-8424-1f05979e8af7\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "715f5531-ad3c-4c42-a2f3-9c6d1d3b072f",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"715f5531-ad3c-4c42-a2f3-9c6d1d3b072f\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/list",
+    "status": 200,
+    "t": 1788467319075,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"fbb49fd2-d263-4b25-b11f-73dc583c4460\",\"result\":{\"ok\":true,\"value\":{\"items\":[{\"sessionId\":\"s8v-root\",\"updatedAt\":1788467136214,\"running\":false,\"blank\":true,\"cwd\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"projections\":{\"asOfSeq\":2,\"values\":{\"sessionStats\":{\"turns\":0,\"steps\":0,\"llmMs\":0,\"toolMs\":0,\"ttftMs\":0,\"ttftSteps\":0,\"decodeMs\":0,\"decodeTokens\":0},\"title\":null,\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":0,\"outputTokens\":0,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{},\"contextBreakdown\":{\"systemTokens\":0,\"toolsTokens\":0,\"messageTokens\":0},\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"agentPreset\":null,\"permissions\":{\"options\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"currentValue\":\"workspace-write\"},\"modelSelection\":{\"lastUsed\":null,\"next\":null},\"sessionListMetadata\":{\"blank\":true,\"lastPromptAt\":null},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]}}}}]}}}",
+    "rpcId": "b20add1c-27b9-480a-b650-6813bb699169",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"b20add1c-27b9-480a-b650-6813bb699169\",\"method\":\"session/list\",\"payload\":{\"args\":{\"_request\":{}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788467319098,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"34d7dcf3-a970-4146-862c-d95c1644bce7\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}",
+    "rpcId": "15787262-a482-4a1d-bb65-8b8c9e72411f",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"15787262-a482-4a1d-bb65-8b8c9e72411f\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788467319099,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"bac43f3b-5adc-4bc5-88d1-1b2f1a624348\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}",
+    "rpcId": "de347ac9-abe5-49de-ae1b-f61b27a53c80",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"de347ac9-abe5-49de-ae1b-f61b27a53c80\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/mutate",
+    "status": null,
+    "t": 1788467321683,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"681e804a-9b00-45c8-b39e-7231852e1a8a\",\"method\":\"settings/mutate\",\"payload\":{\"args\":{\"ns\":\"ui-onboarding\",\"ops\":[{\"op\":\"set\",\"path\":[\"welcomeNoticeVersion\"],\"value\":\"2026-08-13.1\"}],\"expectedRevision\":0}}}",
+    "rpcId": "681e804a-9b00-45c8-b39e-7231852e1a8a",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listProviders",
+    "status": null,
+    "t": 1788467321700,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c6f61f63-eaf9-4bd7-8ef1-5b0394d8df6c\",\"method\":\"llm/listProviders\",\"payload\":{\"args\":{}}}",
+    "rpcId": "c6f61f63-eaf9-4bd7-8ef1-5b0394d8df6c",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listConfigurableProviders",
+    "status": null,
+    "t": 1788467321700,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"a5612c16-a304-434c-a8e8-ab3a61dcd886\",\"method\":\"llm/listConfigurableProviders\",\"payload\":{\"args\":{}}}",
+    "rpcId": "a5612c16-a304-434c-a8e8-ab3a61dcd886",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/mutate",
+    "status": 200,
+    "t": 1788467321697,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"681e804a-9b00-45c8-b39e-7231852e1a8a\",\"result\":{\"ok\":true,\"value\":{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788467321701,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"0efa326b-0c30-4247-9341-efcb989bfe24\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}",
+    "rpcId": "d9a14a1c-d4f7-4f53-82ac-b9ee55ff13ee",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d9a14a1c-d4f7-4f53-82ac-b9ee55ff13ee\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": null,
+    "t": 1788467321706,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ddffcba5-8baa-450c-a4fb-fd8bce2f91b7\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}",
+    "rpcId": "ddffcba5-8baa-450c-a4fb-fd8bce2f91b7",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788467321704,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"35a10d40-e79b-478e-8876-394f261dcfdd\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"o"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listProviders",
+    "status": 200,
+    "t": 1788467321704,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c6f61f63-eaf9-4bd7-8ef1-5b0394d8df6c\",\"result\":{\"ok\":true,\"value\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\"}]}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listConfigurableProviders",
+    "status": 200,
+    "t": 1788467321704,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"a5612c16-a304-434c-a8e8-ab3a61dcd886\",\"result\":{\"ok\":true,\"value\":[{\"provider\":\"deepseek-official\",\"displayName\":\"DeepSeek\",\"settingsNs\":\"llm-deepseek\",\"settingsPath\":[]},{\"provider\":\"amazon-bedrock\",\"displayName\":\"amazon-bedrock\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"amazon-bedrock\"],\"declared\":false},{\"provider\":\"ant-ling\",\"displayName\":\"ant-ling\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"ant-ling\"],\"declared\":false},{\"provider\":\"anthropic\",\"displayName\":\"anthropic\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"anthropic\"],\"declared\":false},{\"provider\":\"azure-openai-responses\",\"displayName\":\"azure-openai-responses\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"azure-openai-responses\"],\"declared\":false},{\"provider\":\"baseten\",\"displayName\":\"baseten\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"baseten\"],\"declared\":false},{\"provider\":\"cerebras\",\"displayName\":\"cerebras\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cerebras\"],\"declared\":false},{\"provider\":\"cloudflare-ai-gateway\",\"displayName\":\"cloudflare-ai-gateway\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cloudflare-ai-gateway\"],\"declared\":false},{\"provider\":\"cloudflare-workers-ai\",\"displayName\":\"cloudflare-workers-ai\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"cloudflare-workers-ai\"],\"declared\":false},{\"provider\":\"deepseek\",\"displayName\":\"deepseek\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"deepseek\"],\"declared\":false},{\"provider\":\"fireworks\",\"displayName\":\"fireworks\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"fireworks\"],\"declared\":false},{\"provider\":\"github-copilot\",\"displayName\":\"github-copilot\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"github-copilot\"],\"declared\":false},{\"provider\":\"google\",\"displayName\":\"google\",\"settingsNs\":\"llm-pi-ai\",\"settingsPath\":[\"providers\",\"google\"],\"declared\":false},{\"provider\":\"google-vertex\",\"displayName\":\"google-vertex\",\"settingsNs"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788467321709,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ddffcba5-8baa-450c-a4fb-fd8bce2f91b7\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"o",
+    "rpcId": "0078416d-c569-4883-b610-704d42920c7b",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"0078416d-c569-4883-b610-704d42920c7b\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467321712,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"715f5531-ad3c-4c42-a2f3-9c6d1d3b072f\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "a518d75d-3ede-487b-a92f-f8673f1644b2",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"a518d75d-3ede-487b-a92f-f8673f1644b2\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467321715,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"6c890816-2765-4f1e-ad13-556269db26eb\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false},\"AMAZON_BEDROCK_API_KEY\":{\"configured\":false,\"writable\":true},\"ANT_LING_API_KEY\":{\"configured\":false,\"writable\":true},\"ANTHROPIC_API_KEY\":{\"configured\":false,\"writable\":true},\"AZURE_OPENAI_RESPONSES_API_KEY\":{\"configured\":false,\"writable\":true},\"BASETEN_API_KEY\":{\"configured\":false,\"writable\":true},\"CEREBRAS_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_AI_GATEWAY_API_KEY\":{\"configured\":false,\"writable\":true},\"CLOUDFLARE_WORKERS_AI_API_KEY\":{\"configured\":false,\"writable\":true},\"FIREWORKS_API_KEY\":{\"configured\":false,\"writable\":true},\"GITHUB_COPILOT_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_API_KEY\":{\"configured\":false,\"writable\":true},\"GOOGLE_VERTEX_API_KEY\":{\"configured\":false,\"writable\":true},\"GROQ_API_KEY\":{\"configured\":false,\"writable\":true},\"HUGGINGFACE_API_KEY\":{\"configured\":false,\"writable\":true},\"KIMI_CODING_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_API_KEY\":{\"configured\":false,\"writable\":true},\"MINIMAX_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"MISTRAL_API_KEY\":{\"configured\":false,\"writable\":true},\"MOONSHOTAI_API_KEY\":{\"configured\":false,\"writable\":true},\"MOONSHOTAI_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"NVIDIA_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENAI_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENAI_CODEX_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENCODE_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENCODE_GO_API_KEY\":{\"configured\":false,\"writable\":true},\"OPENROUTER_API_KEY\":{\"configured\":false,\"writable\":true},\"QWEN_TOKEN_PLAN_API_KEY\":{\"configured\":false,\"writable\":true},\"QWEN_TOKEN_PLAN_CN_API_KEY\":{\"configured\":false,\"writable\":true},\"QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY\":{\"configured\":false,\"writable\":true},\"TOGETHER_API_KEY\":{\"configured\":false,\"writable\":true},\"VERCEL_AI_GATEWAY_API_KEY\":{\"configured\":",
+    "rpcId": "70a50248-b4c3-48e8-8601-e089211b854c",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"70a50248-b4c3-48e8-8601-e089211b854c\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": null,
+    "t": 1788467323231,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c809802c-0b2d-41c0-baaf-85a1fbede90d\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{}}}",
+    "rpcId": "c809802c-0b2d-41c0-baaf-85a1fbede90d",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788467323240,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c809802c-0b2d-41c0-baaf-85a1fbede90d\",\"result\":{\"ok\":true,\"value\":{\"path\":\"C:\\\\Users\\\\user\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"C:\\\\\",\"path\":\"C:\\\\\",\"hidden\":false},{\"name\":\"Users\",\"path\":\"C:\\\\Users\",\"hidden\":false},{\"name\":\"user\",\"path\":\"C:\\\\Users\\\\user\",\"hidden\":false}],\"entries\":[{\"name\":\".anaconda_backup\",\"path\":\"C:\\\\Users\\\\user\\\\.anaconda_backup\",\"hidden\":true},{\"name\":\".aws\",\"path\":\"C:\\\\Users\\\\user\\\\.aws\",\"hidden\":true},{\"name\":\".azure\",\"path\":\"C:\\\\Users\\\\user\\\\.azure\",\"hidden\":true},{\"name\":\".cache\",\"path\":\"C:\\\\Users\\\\user\\\\.cache\",\"hidden\":true},{\"name\":\".cagent\",\"path\":\"C:\\\\Users\\\\user\\\\.cagent\",\"hidden\":true},{\"name\":\".cc-switch\",\"path\":\"C:\\\\Users\\\\user\\\\.cc-switch\",\"hidden\":true},{\"name\":\".claude\",\"path\":\"C:\\\\Users\\\\user\\\\.claude\",\"hidden\":true},{\"name\":\".cline\",\"path\":\"C:\\\\Users\\\\user\\\\.cline\",\"hidden\":true},{\"name\":\".cloakbrowser\",\"path\":\"C:\\\\Users\\\\user\\\\.cloakbrowser\",\"hidden\":true},{\"name\":\".codex\",\"path\":\"C:\\\\Users\\\\user\\\\.codex\",\"hidden\":true},{\"name\":\".conda\",\"path\":\"C:\\\\Users\\\\user\\\\.conda\",\"hidden\":true},{\"name\":\".config\",\"path\":\"C:\\\\Users\\\\user\\\\.config\",\"hidden\":true},{\"name\":\".context7\",\"path\":\"C:\\\\Users\\\\user\\\\.context7\",\"hidden\":true},{\"name\":\".copilot\",\"path\":\"C:\\\\Users\\\\user\\\\.copilot\",\"hidden\":true},{\"name\":\".crossnote\",\"path\":\"C:\\\\Users\\\\user\\\\.crossnote\",\"hidden\":true},{\"name\":\".docker\",\"path\":\"C:\\\\Users\\\\user\\\\.docker\",\"hidden\":true},{\"name\":\".dsh\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh\",\"hidden\":true},{\"name\":\".dsh-dev\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh-dev\",\"hidden\":true},{\"name\":\".dsh-dev-backup\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh-dev-backup\",\"hidden\":true},{\"name\":\".dsh-team-test\",\"path\":\"C:\\\\Users\\\\user\\\\.dsh-team-test\",\"hidden\":true},{\"name\":\".gemini\",\"path\":\"C:\\\\Users\\\\user\\\\.gemini\",\"hidden\":true},{\"name\":\".imagej\",\"path\":\"C:\\\\Users\\\\user\\\\.imagej\",\"hidden\":true},{\"name\":\".ipython\",\"path\":\"C:\\\\Users\\\\user\\\\.ipython\",\"hidden\":true},{\"name\":\".local\",\"path\":\"C:\\\\Users\\\\user\\\\.local\",\"hidden\":true},{\"name\":",
+    "rpcId": "2767bdc0-9eeb-4706-adf6-9249262e37d7",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"2767bdc0-9eeb-4706-adf6-9249262e37d7\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": null,
+    "t": 1788467325034,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"216a6e08-bbad-490a-8509-179351a63f9c\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\"}}}",
+    "rpcId": "216a6e08-bbad-490a-8509-179351a63f9c",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788467325032,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"2767bdc0-9eeb-4706-adf6-9249262e37d7\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false},{\"name\":\".dsh-test-s8-2026-09-03T20-25-30\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\",\"hidden\":false}],\"entries\":[{\"name\":\"profiles\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\profiles\",\"hidden\":false},{\"name\":\"s8-client-row\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\s8-client-row\",\"hidden\":false},{\"name\":\"sessions\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\sessions\",\"hidden\":false},{\"name\":\"storages\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\storages\",\"hidden\":false},{\"name\":\"workspace-s8v\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\",\"hidden\":false}],\"truncated\":false}}}",
+    "rpcId": "dd2d47c6-fc9c-457d-950c-bf81579c0a26",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"dd2d47c6-fc9c-457d-950c-bf81579c0a26\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788467325041,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"216a6e08-bbad-490a-8509-179351a63f9c\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false}],\"entries\":[{\"name\":\".dsh-test\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test\",\"hidden\":true},{\"name\":\".dsh-test-downstream\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-downstream\",\"hidden\":true},{\"name\":\".dsh-test-g2r1\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g2r1\",\"hidden\":true},{\"name\":\".dsh-test-g2r2\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g2r2\",\"hidden\":true},{\"name\":\".dsh-test-g2r3\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g2r3\",\"hidden\":true},{\"name\":\".dsh-test-g8-r2\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r2\",\"hidden\":true},{\"name\":\".dsh-test-g8-r3\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r3\",\"hidden\":true},{\"name\":\".dsh-test-g8-r4\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r4\",\"hidden\":true},{\"name\":\".dsh-test-g8-r5\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r5\",\"hidden\":true},{\"name\":\".dsh-test-g8-r6\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-g8-r6\",\"hidden\":true},{\"name\":\".dsh-test-int-fixcheck\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-int-fixcheck\",\"hidden\":true},{\"name\":\".dsh-test-p2t1\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\referenc",
+    "rpcId": "d176010c-4ca1-43a0-83fe-32adb35951dd",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d176010c-4ca1-43a0-83fe-32adb35951dd\",\"method\":\"directoryPicker/list\",\"payload\":{\"args\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788467325096,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d176010c-4ca1-43a0-83fe-32adb35951dd\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false},{\"name\":\".dsh-test-s8-2026-09-03T20-25-30\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\",\"hidden\":false},{\"name\":\"workspace-s8v\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\",\"hidden\":false}],\"entries\":[],\"truncated\":false}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788467325097,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"dd2d47c6-fc9c-457d-950c-bf81579c0a26\",\"result\":{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\",\"home\":\"C:\\\\Users\\\\user\",\"crumbs\":[{\"name\":\"D:\\\\\",\"path\":\"D:\\\\\",\"hidden\":false},{\"name\":\"AgentDev\",\"path\":\"D:\\\\AgentDev\",\"hidden\":false},{\"name\":\"dsh-plugins\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\",\"hidden\":false},{\"name\":\"dsh-agent-team\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"hidden\":false},{\"name\":\"references\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\",\"hidden\":false},{\"name\":\".dsh-test-s8-2026-09-03T20-25-30\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\",\"hidden\":false}],\"entries\":[{\"name\":\"profiles\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\profiles\",\"hidden\":false},{\"name\":\"s8-client-row\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\s8-client-row\",\"hidden\":false},{\"name\":\"sessions\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\sessions\",\"hidden\":false},{\"name\":\"storages\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\storages\",\"hidden\":false},{\"name\":\"workspace-s8v\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\",\"hidden\":false}],\"truncated\":false}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/workspace/create",
+    "status": null,
+    "t": 1788467327616,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"8207e72a-e9d8-41d9-a30b-f2f70569f076\",\"method\":\"workspace/create\",\"payload\":{\"args\":{\"request\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\"}}}}",
+    "rpcId": "8207e72a-e9d8-41d9-a30b-f2f70569f076",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/create",
+    "status": null,
+    "t": 1788467327823,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"bb81ea46-79bd-47b2-8227-83df1ec8c877\",\"method\":\"session/create\",\"payload\":{\"args\":{\"request\":{\"workspaceId\":\"ca2731d8-3591-4050-9941-2da3a5ab1226\"}}}}",
+    "rpcId": "bb81ea46-79bd-47b2-8227-83df1ec8c877",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/workspace/create",
+    "status": 200,
+    "t": 1788467327818,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"8207e72a-e9d8-41d9-a30b-f2f70569f076\",\"result\":{\"ok\":true,\"value\":{\"workspace\":{\"workspaceId\":\"ca2731d8-3591-4050-9941-2da3a5ab1226\",\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-s8-2026-09-03T20-25-30\\\\workspace-s8v\",\"title\":\"workspace-s8v\",\"sessionIds\":[],\"createdAt\":\"2026-09-03T20:28:47.616Z\",\"updatedAt\":\"2026-09-03T20:28:47.616Z\"},\"created\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": null,
+    "t": 1788467328167,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"2688a3d1-d6e0-4ce3-b712-2825dcda4e6e\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}",
+    "rpcId": "2688a3d1-d6e0-4ce3-b712-2825dcda4e6e",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": null,
+    "t": 1788467328168,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"59467bee-8197-443e-ad10-ab94bee662b0\",\"method\":\"commands/list\",\"payload\":{\"args\":{\"agentId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}",
+    "rpcId": "59467bee-8197-443e-ad10-ab94bee662b0",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": null,
+    "t": 1788467328168,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"1eee3d98-d09b-40b3-b016-b68b4ecedbb6\",\"method\":\"skills/list\",\"payload\":{\"args\":{\"request\":{\"sessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}}",
+    "rpcId": "1eee3d98-d09b-40b3-b016-b68b4ecedbb6",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": null,
+    "t": 1788467328168,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"f0a76e86-8542-427d-942a-805596c3565e\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}",
+    "rpcId": "f0a76e86-8542-427d-942a-805596c3565e",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/create",
+    "status": 200,
+    "t": 1788467328144,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"bb81ea46-79bd-47b2-8227-83df1ec8c877\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\",\"agentPreset\":\"standard\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467328172,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"47f05481-d0ec-4553-80b7-ab018499c058\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "ed79ead0-e3af-434a-afb0-a563c7b1acda",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ed79ead0-e3af-434a-afb0-a563c7b1acda\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788467328172,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"59467bee-8197-443e-ad10-ab94bee662b0\",\"result\":{\"ok\":true,\"value\":[{\"name\":\"compact\",\"description\":\"Compact older conversation history\"},{\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"name\":\"feedback\",\"description\":\"record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"name\":\"goal\",\"description\":\"set or view the goal for a long-running task\",\"input\":{\"hint\":\"[<objective>|clear|edit <objective>|pause|resume]\",\"images\":true}},{\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}},{\"name\":\"plan\",\"description\":\"Enter or leave plan mode\",\"input\":{\"hint\":\"[off|message]\",\"images\":true}}]}}",
+    "rpcId": "935ce2f8-dd9a-4286-931a-edebc1cc90bd",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"935ce2f8-dd9a-4286-931a-edebc1cc90bd\",\"method\":\"commands/list\",\"payload\":{\"args\":{\"agentId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788467328173,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"1eee3d98-d09b-40b3-b016-b68b4ecedbb6\",\"result\":{\"ok\":true,\"value\":{\"skills\":[]}}}",
+    "rpcId": "678aa1ba-80bb-4903-818b-be4741c7174d",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"678aa1ba-80bb-4903-818b-be4741c7174d\",\"method\":\"skills/list\",\"payload\":{\"args\":{\"request\":{\"sessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467328173,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"f0a76e86-8542-427d-942a-805596c3565e\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-bb35a93d-6a9f-431e-b1e5-4ff905f39451' which this host does not own (bound root 's8v-root')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-bb35a93d-6a9f-431e-b1e5-4ff905f39451' which this host does not own (bound root 's8v-root')\"}}}}}",
+    "rpcId": "d2396c29-e215-4d8a-b707-6d35a019ad33",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d2396c29-e215-4d8a-b707-6d35a019ad33\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467328175,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"2688a3d1-d6e0-4ce3-b712-2825dcda4e6e\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "ed60e865-af65-4566-b697-d340bc521eb0",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ed60e865-af65-4566-b697-d340bc521eb0\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467333527,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ed60e865-af65-4566-b697-d340bc521eb0\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "afa7df62-fc4c-40fe-acc1-03a911641ab5",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"afa7df62-fc4c-40fe-acc1-03a911641ab5\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/prompt",
+    "status": null,
+    "t": 1788467336657,
+    "kind": "api",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"d922c6f5-c08a-4334-9571-bda2c5d5dee1\",\"method\":\"session/prompt\",\"payload\":{\"args\":{\"request\":{\"requestId\":\"17cd0a3d-f6e4-4ffa-917f-13261d4e3f75\",\"sessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\",\"mode\":\"queue\",\"content\":[{\"type\":\"text\",\"text\":\"S8 vertical session\"}],\"clientTimeZone\":\"Asia/Shanghai\"}}}}",
+    "rpcId": "d922c6f5-c08a-4334-9571-bda2c5d5dee1",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/prompt",
+    "status": 200,
+    "t": 1788467336679,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d922c6f5-c08a-4334-9571-bda2c5d5dee1\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788467336680,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"de347ac9-abe5-49de-ae1b-f61b27a53c80\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}",
+    "rpcId": "e6a8aa45-2d16-45f2-8fee-e186f76272e9",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"e6a8aa45-2d16-45f2-8fee-e186f76272e9\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467340694,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d2396c29-e215-4d8a-b707-6d35a019ad33\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-bb35a93d-6a9f-431e-b1e5-4ff905f39451' which this host does not own (bound root 's8v-root')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-bb35a93d-6a9f-431e-b1e5-4ff905f39451' which this host does not own (bound root 's8v-root')\"}}}}}",
+    "rpcId": "64cdadb3-86d8-4361-89a8-1951bc8f9851",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"64cdadb3-86d8-4361-89a8-1951bc8f9851\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": null,
+    "t": 1788467341520,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ca7ed238-203a-499a-a756-931fd605ef95\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}",
+    "rpcId": "ca7ed238-203a-499a-a756-931fd605ef95",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": null,
+    "t": 1788467341520,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"f926b8af-1502-4997-bd72-b4a7434c4990\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\"params\":{}}}",
+    "rpcId": "f926b8af-1502-4997-bd72-b4a7434c4990",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": null,
+    "t": 1788467341528,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"707a6d82-c3d5-4529-8457-aae7d109ecd1\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}",
+    "rpcId": "707a6d82-c3d5-4529-8457-aae7d109ecd1",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": null,
+    "t": 1788467341529,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"86af502c-e0d6-463f-b20f-18e5375f4771\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}",
+    "rpcId": "86af502c-e0d6-463f-b20f-18e5375f4771",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788467341528,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ca7ed238-203a-499a-a756-931fd605ef95\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T20:28:47.837Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": 200,
+    "t": 1788467341529,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"f926b8af-1502-4997-bd72-b4a7434c4990\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"s8v-bp-1\",\"revisions\":[1]}]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788467341532,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"707a6d82-c3d5-4529-8457-aae7d109ecd1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T20:28:47.837Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "rpcId": "282fc40e-24f7-4879-8bb2-73b11bf2d787",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"282fc40e-24f7-4879-8bb2-73b11bf2d787\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": 200,
+    "t": 1788467341533,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"86af502c-e0d6-463f-b20f-18e5375f4771\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprint\":{\"schemaVersion\":1,\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\",\"leader\":{\"templateId\":\"leader\",\"persona\":\"S8 leader persona: you lead the s8v browser-vertical team.\"},\"members\":[{\"templateId\":\"worker\",\"persona\":\"S8 worker persona: you are the deterministic s8v worker.\",\"displayName\":\"S8 Worker A\"}],\"requirements\":[{\"domain\":\"persona\",\"name\":\"standard\",\"optional\":false}],\"policyStates\":[{\"id\":\"default\",\"fields\":[],\"description\":\"The s8v default state.\"}],\"quotas\":{\"team\":{\"maxInstances\":12,\"maxConcurrent\":12},\"members\":{\"maxInstances\":4,\"maxConcurrent\":4}}}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.get\",\"endpoint\":\"catalog.get\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "rpcId": "a47d950b-edd8-42cf-a892-f45140d50ced",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"a47d950b-edd8-42cf-a892-f45140d50ced\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788467341533,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"e6a8aa45-2d16-45f2-8fee-e186f76272e9\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}",
+    "rpcId": "82cba352-1de7-44cf-9104-6dcd15fe9fdf",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"82cba352-1de7-44cf-9104-6dcd15fe9fdf\",\"method\":\"agentPresets/list\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788467341535,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"282fc40e-24f7-4879-8bb2-73b11bf2d787\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T20:28:47.837Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "rpcId": "c2bf0a85-4cb4-4718-a692-4b55470b3f5d",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c2bf0a85-4cb4-4718-a692-4b55470b3f5d\",\"method\":\"handoff.prepare\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+    "status": null,
+    "t": 1788467349619,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"f390c00c-0704-4331-983e-59e97f07aa43\",\"method\":\"intent.probe\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1,\"environmentFacts\":[{\"domain\":\"persona\",\"subject\":\"standard\",\"available\":true,\"generation\":0}]}}}",
+    "rpcId": "f390c00c-0704-4331-983e-59e97f07aa43",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+    "status": 200,
+    "t": 1788467349621,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c2bf0a85-4cb4-4718-a692-4b55470b3f5d\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"summary\":{\"title\":\"S8-M2 ok (deepseek-v4-flash).\",\"bullets\":[\"Captured 4 message(s) — 3 user, 1 assistant — at 2026-09-03T20:28:47.837Z through log seq 23.\",\"First request: \\\"S8 vertical session\\\"\",\"Last response: \\\"S8-M1 ok (deepseek-v4-flash).\\\"\"]},\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"handoff.prepare\",\"endpoint\":\"handoff.prepare\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+    "status": 200,
+    "t": 1788467349623,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"f390c00c-0704-4331-983e-59e97f07aa43\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"compatibility\":{\"schemaVersion\":1,\"environmentFingerprint\":\"fp-v1:73e6deee0dc5dc58\",\"status\":\"OPEN\",\"requirements\":[{\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"complete\":true,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"detail\":\"all 1 required subject(s) available\",\"unavailableSubjects\":[],\"mismatchFingerprint\":null,\"acknowledgement\":null}],\"counts\":{\"pass\":1,\"warning\":0,\"fatal\":0,\"unackedWarning\":0,\"staleAcknowledgement\":0},\"unappliedAcknowledgements\":[]}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"intent.probe\",\"endpoint\":\"intent.probe\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": 200,
+    "t": 1788467349624,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"a47d950b-edd8-42cf-a892-f45140d50ced\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprint\":{\"schemaVersion\":1,\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\",\"leader\":{\"templateId\":\"leader\",\"persona\":\"S8 leader persona: you lead the s8v browser-vertical team.\"},\"members\":[{\"templateId\":\"worker\",\"persona\":\"S8 worker persona: you are the deterministic s8v worker.\",\"displayName\":\"S8 Worker A\"}],\"requirements\":[{\"domain\":\"persona\",\"name\":\"standard\",\"optional\":false}],\"policyStates\":[{\"id\":\"default\",\"fields\":[],\"description\":\"The s8v default state.\"}],\"quotas\":{\"team\":{\"maxInstances\":12,\"maxConcurrent\":12},\"members\":{\"maxInstances\":4,\"maxConcurrent\":4}}}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.get\",\"endpoint\":\"catalog.get\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.create",
+    "status": null,
+    "t": 1788467349870,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"02173f75-d569-4ba8-be62-b08980fd21a3\",\"method\":\"handoff.create\",\"payload\":{\"version\":1,\"params\":{\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\",\"requestToken\":\"handoff-create-1\"}}}",
+    "rpcId": "02173f75-d569-4ba8-be62-b08980fd21a3",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/handoff.create",
+    "status": 200,
+    "t": 1788467353142,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"02173f75-d569-4ba8-be62-b08980fd21a3\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"state\":{\"kind\":\"completed\",\"replayed\":false,\"context\":{\"contextToken\":\"handoff-ctx-41a1282a8bd85b445fd076b4406fd2948a7d8978\",\"sourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\",\"capturedAt\":\"2026-09-03T20:29:09.871Z\",\"surface\":{\"createdAt\":\"2026-09-03T20:28:47.837Z\",\"messages\":[{\"role\":\"user\",\"text\":\"S8 vertical session\"},{\"role\":\"user\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\r\\n\\r\\n本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。\\r\\n\\r\\n## 会话开始必读（提示词注入要求）\\r\\n\\r\\n在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：\\r\\n\\r\\n1. `docs/ROUTER_RULES.md` — 无人值守执行协议：Phase DAG（P0→G0→…→P10→G10→RELEASE）、每任务 ≤3 次执行、Gate 三独立 reviewer 规则与四种裁决、blocker 类型与固定格式、git 纪律（1 task=1 branch=1 worktree=1 writer、cherry-pick -x 到 int 分支、Gate 过后才进 master）。\\r\\n2. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `references/deepseek-harness-test-use`（pristine upstream），DSH_HOME = `references/.dsh-test`（**必须工作区内**，workspace-write 沙箱约束），port = `3180`；构建/启动绕行链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 与 `D:\\\\deepseek-harness\\\\` 部署）。\\r\\n\\r\\n读取之后才可执行任务；不得以\\\"上下文已熟悉\\\"为由跳过，不得违反其中禁止项。\\r\\n\\r\\n## 文档权威序\\r\\n\\r\\nupstream 公开契约 → `docs/plans/active/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、唯一权威）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。\\r\\n\\r\\n## 目录约定\\r\\n\\r\\n| 路径 | 性质 |\\r\\n| --- | --- |\\r\\n| `docs"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467353155,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"afa7df62-fc4c-40fe-acc1-03a911641ab5\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "86104907-f670-4960-baf2-9b6efa881033",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"86104907-f670-4960-baf2-9b6efa881033\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467353155,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ed79ead0-e3af-434a-afb0-a563c7b1acda\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "223ea09e-84b1-4a5c-93ba-03d73e1909e2",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"223ea09e-84b1-4a5c-93ba-03d73e1909e2\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788467353156,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"935ce2f8-dd9a-4286-931a-edebc1cc90bd\",\"result\":{\"ok\":true,\"value\":[{\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"name\":\"feedback\",\"description\":\"record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}}]}}",
+    "rpcId": "fb5666a1-3d1c-4e74-8872-69136caf4839",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"fb5666a1-3d1c-4e74-8872-69136caf4839\",\"method\":\"commands/list\",\"payload\":{\"args\":{\"agentId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788467353156,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"678aa1ba-80bb-4903-818b-be4741c7174d\",\"result\":{\"ok\":true,\"value\":{\"skills\":[]}}}",
+    "rpcId": "62d60cd0-f412-48e1-b51b-961496408a10",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"62d60cd0-f412-48e1-b51b-961496408a10\",\"method\":\"skills/list\",\"payload\":{\"args\":{\"request\":{\"sessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\"}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": null,
+    "t": 1788467353191,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"86557e13-d8a0-4f77-9e12-1234ccf93a69\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"afterSequence\":0,\"limit\":50}}}",
+    "rpcId": "86557e13-d8a0-4f77-9e12-1234ccf93a69",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467353186,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"64cdadb3-86d8-4361-89a8-1951bc8f9851\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":1,\"generatedAt\":\"2026-09-03T20:29:13.153Z\",\"root\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"createdAt\":\"2026-09-03T20:29:09.871Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"none\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"handoffSourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-03T20:29:12.762Z\",\"lifecycle\":\"RUNNING\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"blueprint\",\"state\":\"locked\",\"locked\":true},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"resident\",\"lastActivityAt\":\"2026-09-03T20:29:13.153Z\"},\"modelState\":{\"current\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capabil",
+    "rpcId": "c99c7fe3-d5b8-4eee-b559-a79df5b6801f",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c99c7fe3-d5b8-4eee-b559-a79df5b6801f\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788467353194,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"86557e13-d8a0-4f77-9e12-1234ccf93a69\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[],\"nextAfterSequence\":null,\"total\":0},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.getLedgerPage\",\"endpoint\":\"team.getLedgerPage\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "rpcId": "b6228895-65c5-47b5-b2f9-60eec56a37e7",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"b6228895-65c5-47b5-b2f9-60eec56a37e7\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"afterSequence\":0,\"limit\":50}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.create",
+    "status": null,
+    "t": 1788467362098,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"e45a7bc2-a82c-4a83-9faa-cc54b0a725dd\",\"method\":\"member.create\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"caller\":{\"kind\":\"human\",\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"},\"requestToken\":\"ui-1\",\"delegationTemplateId\":\"worker\",\"payload\":{\"label\":\"s8v-worker-1\"}}}}",
+    "rpcId": "e45a7bc2-a82c-4a83-9faa-cc54b0a725dd",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.create",
+    "status": 200,
+    "t": 1788467362988,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"e45a7bc2-a82c-4a83-9faa-cc54b0a725dd\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"outcome\":{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"callerRole\":\"human\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"operationId\":\"op-1dswsm011coto50l1h0qa08g\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"ui-1\"}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"member.create\",\"endpoint\":\"member.create\",\"contractVersion\":1,\"requestToken\":\"ui-1\",\"projectionGeneration\":null,\"effectSequence\":1}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467362993,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c99c7fe3-d5b8-4eee-b559-a79df5b6801f\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":3,\"generatedAt\":\"2026-09-03T20:29:22.991Z\",\"root\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"createdAt\":\"2026-09-03T20:29:09.871Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-v1:496d1037b98199e1\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0,\"lastProbedAt\":\"2026-09-03T20:29:22.098Z\"},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"handoffSourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"lifecycle\":\"CREATED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"instance-creation\",\"state\":\"inherited\"},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"resident\",\"lastActivityAt\":\"2026-09-03T20:29:22.991Z\"},\"childSessi",
+    "rpcId": "ec825c04-a49e-4917-9944-781ed1a8f667",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ec825c04-a49e-4917-9944-781ed1a8f667\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788467362994,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"b6228895-65c5-47b5-b2f9-60eec56a37e7\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-1v2oe131tvfh\",\"label\":\"s8v-worker-1\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"operationId\":\"op-1dswsm011coto50l1h0qa08g\",\"createdAt\":\"2026-09-03T20:29:22.863Z\"}],\"nextAfterSequence\":null,\"total\":1},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.getLedgerPage\",\"endpoint\":\"team.getLedgerPage\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "rpcId": "017a70d9-4aa5-4fde-82e3-44838a030e4b",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"017a70d9-4aa5-4fde-82e3-44838a030e4b\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"afterSequence\":0,\"limit\":50}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.followup",
+    "status": null,
+    "t": 1788467364214,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c943a09a-681d-4d97-9238-2f45f33be5b5\",\"method\":\"member.followup\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"caller\":{\"kind\":\"human\",\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"},\"targetInstanceId\":\"inst-1v2oe131tvfh\",\"requestToken\":\"ui-2\",\"payload\":{\"prompt\":\"S8-VERTICAL-WORK-1\"}}}}",
+    "rpcId": "c943a09a-681d-4d97-9238-2f45f33be5b5",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.followup",
+    "status": 200,
+    "t": 1788467365322,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c943a09a-681d-4d97-9238-2f45f33be5b5\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"outcome\":{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"callerRole\":\"human\",\"targetInstanceId\":\"inst-1v2oe131tvfh\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1v2oe131tvfh\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":2,\"replayed\":false,\"settled\":true,\"settledSequence\":5},\"requestToken\":\"ui-2\"}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"member.followup\",\"endpoint\":\"member.followup\",\"contractVersion\":1,\"requestToken\":\"ui-2\",\"projectionGeneration\":null,\"effectSequence\":2}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467365327,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ec825c04-a49e-4917-9944-781ed1a8f667\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":7,\"generatedAt\":\"2026-09-03T20:29:25.324Z\",\"root\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"createdAt\":\"2026-09-03T20:29:09.871Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-v1:496d1037b98199e1\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0,\"lastProbedAt\":\"2026-09-03T20:29:22.098Z\"},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"handoffSourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"lifecycle\":\"SETTLED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"instance-creation\",\"state\":\"locked\",\"locked\":true},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"resident\",\"lastActivityAt\":\"2026-09-03T20:29:25.324Z\"},",
+    "rpcId": "19524850-3ed7-453d-8559-f73d43ade751",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"19524850-3ed7-453d-8559-f73d43ade751\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788467365330,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"017a70d9-4aa5-4fde-82e3-44838a030e4b\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-1v2oe131tvfh\",\"label\":\"s8v-worker-1\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"operationId\":\"op-1dswsm011coto50l1h0qa08g\",\"createdAt\":\"2026-09-03T20:29:22.863Z\"},{\"schemaVersion\":1,\"sequence\":2,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"team-work-admitted\",\"payload\":{\"action\":\"follow-up\",\"at\":\"2026-09-03T20:29:24.260Z\",\"caller\":{\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"kind\":\"human\"},\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"S8-VERTICAL-WORK-1\",\"requestToken\":\"ui-2\",\"targetInstanceId\":\"inst-1v2oe131tvfh\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.297Z\"},{\"schemaVersion\":1,\"sequence\":3,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-opened\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"note\":\"work-unit full (token ui-2)\",\"op\":\"interval-open\",\"progress\":\"in-progress\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":1,\"subject\":\"work-unit\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.393Z\"},{\"schemaVersion\":1,\"sequence\":4,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-closed\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":2,\"subject\":\"work-unit\"},\"operat",
+    "rpcId": "ceb3af8b-0387-40a8-a165-f4c43343f403",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"ceb3af8b-0387-40a8-a165-f4c43343f403\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"afterSequence\":0,\"limit\":50}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467366388,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"86104907-f670-4960-baf2-9b6efa881033\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "8446a664-1407-4046-af71-e930b85362a3",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"8446a664-1407-4046-af71-e930b85362a3\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467366389,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"223ea09e-84b1-4a5c-93ba-03d73e1909e2\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "c0a1814b-96ba-490d-ae1b-675f5f7b1e97",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c0a1814b-96ba-490d-ae1b-675f5f7b1e97\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788467366389,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"fb5666a1-3d1c-4e74-8872-69136caf4839\",\"result\":{\"ok\":true,\"value\":[{\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"name\":\"feedback\",\"description\":\"record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}}]}}",
+    "rpcId": "943d1355-0c84-4a37-bd6e-5618f4917108",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"943d1355-0c84-4a37-bd6e-5618f4917108\",\"method\":\"commands/list\",\"payload\":{\"args\":{\"agentId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788467366389,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"62d60cd0-f412-48e1-b51b-961496408a10\",\"result\":{\"ok\":true,\"value\":{\"skills\":[]}}}",
+    "rpcId": "4ba46b9d-5acf-45dc-b19d-80c9f5d0329e",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"4ba46b9d-5acf-45dc-b19d-80c9f5d0329e\",\"method\":\"skills/list\",\"payload\":{\"args\":{\"request\":{\"sessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467370084,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"8446a664-1407-4046-af71-e930b85362a3\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "df05c163-bac1-43de-9e0e-1dd5a4bb73d5",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"df05c163-bac1-43de-9e0e-1dd5a4bb73d5\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.archive",
+    "status": null,
+    "t": 1788467375513,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"5ce20622-9bd1-41a4-9d5b-3f48e2cc5944\",\"method\":\"member.archive\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"instanceId\":\"inst-1v2oe131tvfh\"}}}",
+    "rpcId": "5ce20622-9bd1-41a4-9d5b-3f48e2cc5944",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.archive",
+    "status": 200,
+    "t": 1788467375698,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"5ce20622-9bd1-41a4-9d5b-3f48e2cc5944\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"member\":{\"schemaVersion\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"lifecycle\":\"ARCHIVED\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"activityVersion\":4,\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"steps\":[\"close-admission\",\"interrupt\",\"drain-descendants\",\"wait-quiescence\",\"release-residency\",\"commit-archive\"],\"settledCommitted\":false,\"drained\":0,\"residencyDropped\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"member.archive\",\"endpoint\":\"member.archive\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467375701,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"19524850-3ed7-453d-8559-f73d43ade751\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":8,\"generatedAt\":\"2026-09-03T20:29:35.700Z\",\"root\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"createdAt\":\"2026-09-03T20:29:09.871Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-v1:496d1037b98199e1\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0,\"lastProbedAt\":\"2026-09-03T20:29:22.098Z\"},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"handoffSourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"lifecycle\":\"ARCHIVED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"instance-creation\",\"state\":\"locked\",\"locked\":true},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"cold\"},\"childSessionId\":\"session-team-child-3c7c23ad00",
+    "rpcId": "baad2ab4-3c01-4786-952f-e396a6042c87",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"baad2ab4-3c01-4786-952f-e396a6042c87\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788467375703,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"ceb3af8b-0387-40a8-a165-f4c43343f403\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-1v2oe131tvfh\",\"label\":\"s8v-worker-1\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"operationId\":\"op-1dswsm011coto50l1h0qa08g\",\"createdAt\":\"2026-09-03T20:29:22.863Z\"},{\"schemaVersion\":1,\"sequence\":2,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"team-work-admitted\",\"payload\":{\"action\":\"follow-up\",\"at\":\"2026-09-03T20:29:24.260Z\",\"caller\":{\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"kind\":\"human\"},\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"S8-VERTICAL-WORK-1\",\"requestToken\":\"ui-2\",\"targetInstanceId\":\"inst-1v2oe131tvfh\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.297Z\"},{\"schemaVersion\":1,\"sequence\":3,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-opened\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"note\":\"work-unit full (token ui-2)\",\"op\":\"interval-open\",\"progress\":\"in-progress\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":1,\"subject\":\"work-unit\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.393Z\"},{\"schemaVersion\":1,\"sequence\":4,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-closed\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":2,\"subject\":\"work-unit\"},\"operat",
+    "rpcId": "516dcd3a-3af7-436d-a8bb-bc0ad8111603",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"516dcd3a-3af7-436d-a8bb-bc0ad8111603\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"afterSequence\":0,\"limit\":50}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.restore",
+    "status": null,
+    "t": 1788467376598,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"fb52b1c5-f3a2-420a-8385-aeb65b80208b\",\"method\":\"member.restore\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"instanceId\":\"inst-1v2oe131tvfh\"}}}",
+    "rpcId": "fb52b1c5-f3a2-420a-8385-aeb65b80208b",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.restore",
+    "status": 200,
+    "t": 1788467376966,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"fb52b1c5-f3a2-420a-8385-aeb65b80208b\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"member\":{\"schemaVersion\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"lifecycle\":\"SETTLED\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"activityVersion\":5,\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"steps\":[\"commit-restore\"]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"member.restore\",\"endpoint\":\"member.restore\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467376969,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"baad2ab4-3c01-4786-952f-e396a6042c87\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":9,\"generatedAt\":\"2026-09-03T20:29:36.968Z\",\"root\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"createdAt\":\"2026-09-03T20:29:09.871Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-v1:496d1037b98199e1\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0,\"lastProbedAt\":\"2026-09-03T20:29:22.098Z\"},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"handoffSourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"lifecycle\":\"SETTLED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"instance-creation\",\"state\":\"locked\",\"locked\":true},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"cold\"},\"childSessionId\":\"session-team-child-3c7c23ad003",
+    "rpcId": "8f4efa2a-f3b6-4959-bd0d-ed5272843e0e",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"8f4efa2a-f3b6-4959-bd0d-ed5272843e0e\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788467376972,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"516dcd3a-3af7-436d-a8bb-bc0ad8111603\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-1v2oe131tvfh\",\"label\":\"s8v-worker-1\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"operationId\":\"op-1dswsm011coto50l1h0qa08g\",\"createdAt\":\"2026-09-03T20:29:22.863Z\"},{\"schemaVersion\":1,\"sequence\":2,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"team-work-admitted\",\"payload\":{\"action\":\"follow-up\",\"at\":\"2026-09-03T20:29:24.260Z\",\"caller\":{\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"kind\":\"human\"},\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"S8-VERTICAL-WORK-1\",\"requestToken\":\"ui-2\",\"targetInstanceId\":\"inst-1v2oe131tvfh\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.297Z\"},{\"schemaVersion\":1,\"sequence\":3,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-opened\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"note\":\"work-unit full (token ui-2)\",\"op\":\"interval-open\",\"progress\":\"in-progress\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":1,\"subject\":\"work-unit\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.393Z\"},{\"schemaVersion\":1,\"sequence\":4,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-closed\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":2,\"subject\":\"work-unit\"},\"operat",
+    "rpcId": "6cb15f99-18da-4354-9e2e-54032ce286d8",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"6cb15f99-18da-4354-9e2e-54032ce286d8\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"afterSequence\":0,\"limit\":50}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467377693,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"df05c163-bac1-43de-9e0e-1dd5a4bb73d5\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}",
+    "rpcId": "78ae6faa-df1b-4fed-83fc-935700a5db4b",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"78ae6faa-df1b-4fed-83fc-935700a5db4b\",\"method\":\"subagents/list\",\"payload\":{\"args\":{\"parentSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"}}}"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/",
+    "status": 200,
+    "t": 1788467382244,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,",
+    "status": 200,
+    "t": 1788467382248,
+    "kind": "plugins"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=28e1db08b1d0",
+    "status": 200,
+    "t": 1788467382248,
+    "kind": "plugins"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-BNsW4eBh.css",
+    "status": 200,
+    "t": 1788467382249,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-CsBy6quH.css",
+    "status": 200,
+    "t": 1788467382251,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-D-eoFxDP.js",
+    "status": 200,
+    "t": 1788467382256,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-CCJJTK99.js",
+    "status": 200,
+    "t": 1788467382262,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/events",
+    "status": 200,
+    "t": 1788467382543,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788467382532,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"0078416d-c569-4883-b610-704d42920c7b\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"o",
+    "rpcId": "489902a1-4142-4cdc-9fc3-5e8756a994b6",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"489902a1-4142-4cdc-9fc3-5e8756a994b6\",\"method\":\"settings/describe\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788467382542,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"44b5f2b8-b5e4-4922-a0a2-a655b43f88ae\",\"result\":{\"ok\":true,\"value\":null}}",
+    "rpcId": "74460b71-71c0-41d1-8cba-bb78e4f72019",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"74460b71-71c0-41d1-8cba-bb78e4f72019\",\"method\":\"dynamicCordisRunner/syncInspectManifest\",\"payload\":{\"args\":{\"providers\":[{\"id\":\"Service\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"methods\":[{\"name\":\"listService\",\"description\":\"Progressive Client Service discovery: compact capability/signature directory, then one exact coding contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"service\":{\"type\":\"string\",\"description\":\"Exact Service key. Omit it for the compact Service and method-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Service directory, or one exact Service contract with only its referenced type declarations.\"}}]},{\"id\":\"Event\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"methods\":[{\"name\":\"listEvents\",\"description\":\"Progressive Client Event discovery: compact listener directory, then one exact event contract.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"event\":{\"type\":\"string\",\"description\":\"Exact Event name. Omit it for the compact Event and listener-signature directory.\"}},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"Compact Event directory, or one exact Event contract with only its referenced type declarations.\"}}]},{\"id\":\"Builtin\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"methods\":[{\"name\":\"listBuiltins\",\"description\":\"Plain-JavaScript symbols available to a dynamic Client half.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},\"outputSchema\":{\"description\":\"JSON data owned by this inspect provider.\"}}]},{\"id\":\"Slots\",\"description\":\"Progressive live Slot inspection: compact purpose/topology trees plus one exact Slot contract.\",\"methods\":[{\"name\":\"listSubTree\",\"description\":\"Return compact live Slot trees for navigation. With root, also return t"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467382542,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"70a50248-b4c3-48e8-8601-e089211b854c\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467382542,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c0a1814b-96ba-490d-ae1b-675f5f7b1e97\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "6635ae5b-254d-48a3-a062-1f711882b976",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"6635ae5b-254d-48a3-a062-1f711882b976\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788467382542,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"d9a14a1c-d4f7-4f53-82ac-b9ee55ff13ee\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}",
+    "rpcId": "49063d1b-5a38-45eb-8332-d200f986a07c",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"49063d1b-5a38-45eb-8332-d200f986a07c\",\"method\":\"session/modelCatalog\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467382556,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"a518d75d-3ede-487b-a92f-f8673f1644b2\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}",
+    "rpcId": "574f3721-0ba9-4405-a601-a6e9dfa72f14",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"574f3721-0ba9-4405-a601-a6e9dfa72f14\",\"method\":\"credentials/describe\",\"payload\":{\"args\":{\"refs\":[\"DEEPSEEK_API_KEY\"]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467382561,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"6635ae5b-254d-48a3-a062-1f711882b976\",\"result\":{\"ok\":true,\"value\":[]}}",
+    "rpcId": "3f05b27d-7208-409c-8d46-4421984d2730",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"3f05b27d-7208-409c-8d46-4421984d2730\",\"method\":\"dynamicCordisRunner/inventory\",\"payload\":{\"args\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788467382562,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"49063d1b-5a38-45eb-8332-d200f986a07c\",\"result\":{\"ok\":true,\"value\":{\"default\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"routableProviders\":[\"deepseek-official\"],\"groups\":[{\"id\":\"deepseek-official\",\"name\":\"DeepSeek\",\"models\":[{\"id\":\"deepseek-v4-flash\",\"name\":\"DeepSeek-V4-Flash\",\"description\":\"Fast, efficient, and economical; suited to focused, routine, or parallel tasks.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-pro\",\"name\":\"DeepSeek-V4-Pro\",\"description\":\"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}},{\"id\":\"deepseek-v4-flash-vision-exp\",\"name\":\"DeepSeek-V4-Flash-Vision-Exp\",\"reasoning\":{\"efforts\":[{\"id\":\"off\",\"name\":\"Off\",\"description\":\"Use for simple tasks that do not need reasoning.\"},{\"id\":\"low\",\"name\":\"Low\",\"description\":\"Prefer for routine or latency-sensitive tasks.\"},{\"id\":\"high\",\"name\":\"High\",\"description\":\"The default balance for most tasks.\"},{\"id\":\"max\",\"name\":\"Max\",\"description\":\"Reserve for the hardest quality-first tasks.\"}],\"defaultEffort\":\"high\"}}]}],\"failures\":[]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788467382564,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"489902a1-4142-4cdc-9fc3-5e8756a994b6\",\"result\":{\"ok\":true,\"value\":{\"writable\":true,\"hasDocument\":true,\"namespaces\":[{\"ns\":\"agent-default-model\",\"schema\":{\"uid\":52,\"refs\":{\"48\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"50\":{\"type\":\"string\",\"meta\":{\"required\":true}},\"51\":{\"type\":\"string\",\"meta\":{}},\"52\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":48,\"model\":50,\"reasoningEffort\":51}}}},\"value\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"base\":{\"provider\":\"deepseek-official\",\"model\":\"deepseek-v4-flash\"},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"subagent-model-selection\",\"schema\":{\"uid\":188,\"refs\":{\"179\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"182\":{\"type\":\"string\",\"meta\":{\"min\":1,\"required\":true}},\"183\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"provider\":179,\"model\":182}},\"185\":{\"type\":\"boolean\",\"meta\":{\"default\":false}},\"187\":{\"type\":\"array\",\"meta\":{\"default\":[]},\"inner\":183},\"188\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"enabled\":185,\"allowedModels\":187}}}},\"value\":{\"enabled\":false,\"allowedModels\":[]},\"base\":{\"enabled\":false,\"allowedModels\":[]},\"applies\":\"live\",\"secrets\":[],\"revision\":0},{\"ns\":\"ui-onboarding\",\"schema\":{\"uid\":255,\"refs\":{\"254\":{\"type\":\"string\",\"meta\":{}},\"255\":{\"type\":\"object\",\"meta\":{\"default\":{}},\"dict\":{\"welcomeNoticeVersion\":254}}}},\"value\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"user\":{\"welcomeNoticeVersion\":\"2026-08-13.1\"},\"applies\":\"live\",\"secrets\":[],\"revision\":1},{\"ns\":\"web-search-deepseek\",\"schema\":{\"uid\":344,\"refs\":{\"327\":{\"type\":\"string\",\"meta\":{\"role\":\"secret\"}},\"330\":{\"type\":\"string\",\"meta\":{\"role\":\"credential-ref\",\"default\":\"DEEPSEEK_API_KEY\"}},\"331\":{\"type\":\"string\",\"meta\":{}},\"333\":{\"type\":\"string\",\"meta\":{\"default\":\"deepseek-v4-flash\"}},\"335\":{\"type\":\"string\",\"meta\":{\"default\":\"2023-06-01\"}},\"339\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":4096}},\"343\":{\"type\":\"number\",\"meta\":{\"step\":1,\"min\":1,\"default\":5}},\"344\":{\"type\":\"o"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788467382566,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"82cba352-1de7-44cf-9104-6dcd15fe9fdf\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788467382571,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"74460b71-71c0-41d1-8cba-bb78e4f72019\",\"result\":{\"ok\":true,\"value\":null}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788467382572,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"574f3721-0ba9-4405-a601-a6e9dfa72f14\",\"result\":{\"ok\":true,\"value\":{\"DEEPSEEK_API_KEY\":{\"configured\":true,\"source\":\"env\",\"writable\":false}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788467382574,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"15787262-a482-4a1d-bb65-8b8c9e72411f\",\"result\":{\"ok\":true,\"value\":{\"presets\":[{\"id\":\"standard\",\"trust\":\"system\",\"isDefault\":true,\"name\":\"标准模式\",\"description\":\"功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流。\"},{\"id\":\"ptc\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"PTC 模式\",\"description\":\"具备标准模式的全部能力，并通过 PTC 模式 SDK 呈现工具，让模型用一个 TypeScript 程序组合多步操作。\"},{\"id\":\"minimal\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"极简模式\",\"description\":\"仅提供持久 bash 与 str_replace_editor 的双工具编码 Agent。\"},{\"id\":\"cordis\",\"trust\":\"system\",\"isDefault\":false,\"name\":\"创造模式\",\"description\":\"用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。\"}],\"authorable\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/list",
+    "status": 200,
+    "t": 1788467382577,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"b20add1c-27b9-480a-b650-6813bb699169\",\"result\":{\"ok\":true,\"value\":{\"items\":[{\"sessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"updatedAt\":1788467364817,\"running\":false,\"blank\":false,\"cwd\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"projections\":{\"asOfSeq\":22,\"values\":{\"sessionStats\":{\"turns\":1,\"steps\":1,\"llmMs\":95,\"toolMs\":0,\"ttftMs\":94,\"ttftSteps\":1,\"decodeMs\":1,\"decodeTokens\":21},\"title\":\"S8-M5 ok (s8v-model).\",\"goal\":null,\"tokenUsage\":{\"uncachedInputTokens\":589,\"outputTokens\":21,\"cacheReadTokens\":0,\"cacheWriteTokens\":0},\"contextPressure\":{\"pressureTokens\":589,\"projectedTokens\":603,\"contextWindow\":1000000},\"contextBreakdown\":{\"systemTokens\":448,\"toolsTokens\":2799,\"messageTokens\":175},\"subagentTiming\":{\"settledMs\":0},\"subagent\":null,\"agentPreset\":null,\"permissions\":{\"options\":[{\"value\":\"read-only\",\"name\":\"read-only\"},{\"value\":\"workspace-write\",\"name\":\"workspace-write\"},{\"value\":\"danger-full-access\",\"name\":\"danger-full-access\"}],\"currentValue\":\"workspace-write\"},\"modelSelection\":{\"lastUsed\":{\"provider\":\"deepseek-official\",\"model\":\"s8v-model\",\"reasoningEffort\":\"high\"},\"next\":{\"provider\":\"deepseek-official\",\"model\":\"s8v-model\",\"reasoningEffort\":\"high\"}},\"sessionListMetadata\":{\"blank\":false,\"lastPromptAt\":1788467364817},\"imageLimits\":{\"maxImageBytes\":20971520,\"maxImagesPerMessage\":20,\"maxMessageImageBytes\":209715200,\"maxImagePixels\":64000000,\"maxImageDimension\":8192,\"mediaTypes\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/gif\"]},\"todos\":null,\"plan\":{\"active\":false,\"pending\":false}}}},{\"sessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"updatedAt\":1788467353018,\"running\":false,\"blank\":false,\"cwd\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"projections\":{\"asOfSeq\":20,\"values\":{\"sessionStats\":{\"turns\":1,\"steps\":1,\"llmMs\":63,\"toolMs\":0,\"ttftMs\":62,\"ttftSteps\":1,\"decodeMs\":1,\"decodeTokens\":21},\"title\""
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788467382578,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"78ae6faa-df1b-4fed-83fc-935700a5db4b\",\"result\":{\"ok\":true,\"value\":{\"entries\":[],\"parentAvailable\":true}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788467382592,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"3f05b27d-7208-409c-8d46-4421984d2730\",\"result\":{\"ok\":true,\"value\":[]}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788467382600,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"943d1355-0c84-4a37-bd6e-5618f4917108\",\"result\":{\"ok\":true,\"value\":[{\"name\":\"export\",\"description\":\"Download this Session log as a ZIP archive\"},{\"name\":\"feedback\",\"description\":\"record feedback about this session\",\"input\":{\"hint\":\"<text>\"}},{\"name\":\"permission\",\"description\":\"Switch the permission preset (sandbox mode + approval policy)\",\"input\":{\"hint\":\"<preset>\"}}]}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788467382601,
+    "kind": "api",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"4ba46b9d-5acf-45dc-b19d-80c9f5d0329e\",\"result\":{\"ok\":true,\"value\":{\"skills\":[]}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788467382601,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"8f4efa2a-f3b6-4959-bd0d-ed5272843e0e\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":9,\"generatedAt\":\"2026-09-03T20:29:42.591Z\",\"root\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"createdAt\":\"2026-09-03T20:29:09.871Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-v1:496d1037b98199e1\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0,\"lastProbedAt\":\"2026-09-03T20:29:22.098Z\"},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"handoffSourceSessionId\":\"session-bb35a93d-6a9f-431e-b1e5-4ff905f39451\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-1v2oe131tvfh\",\"templateId\":\"worker\",\"label\":\"s8v-worker-1\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-03T20:29:22.577Z\",\"lifecycle\":\"SETTLED\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"instance-creation\",\"state\":\"locked\",\"locked\":true},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"cold\"},\"childSessionId\":\"session-team-child-3c7c23ad003"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788467382615,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"6cb15f99-18da-4354-9e2e-54032ce286d8\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[{\"schemaVersion\":1,\"sequence\":1,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"provision-member-instance\",\"payload\":{\"instanceId\":\"inst-1v2oe131tvfh\",\"label\":\"s8v-worker-1\",\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"operationId\":\"op-1dswsm011coto50l1h0qa08g\",\"createdAt\":\"2026-09-03T20:29:22.863Z\"},{\"schemaVersion\":1,\"sequence\":2,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"team-work-admitted\",\"payload\":{\"action\":\"follow-up\",\"at\":\"2026-09-03T20:29:24.260Z\",\"caller\":{\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"kind\":\"human\"},\"childSessionId\":\"session-team-child-3c7c23ad003b9d2b46c733d09328eb65\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"S8-VERTICAL-WORK-1\",\"requestToken\":\"ui-2\",\"targetInstanceId\":\"inst-1v2oe131tvfh\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.297Z\"},{\"schemaVersion\":1,\"sequence\":3,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-opened\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"note\":\"work-unit full (token ui-2)\",\"op\":\"interval-open\",\"progress\":\"in-progress\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":1,\"subject\":\"work-unit\"},\"operationId\":null,\"createdAt\":\"2026-09-03T20:29:24.393Z\"},{\"schemaVersion\":1,\"sequence\":4,\"rootSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"factType\":\"activity-interval-closed\",\"payload\":{\"correlation\":\"ui-2\",\"instanceId\":\"inst-1v2oe131tvfh\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"ui-2\",\"sequence\":2,\"subject\":\"work-unit\"},\"operat"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.send",
+    "status": null,
+    "t": 1788467388299,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"246aaeb9-337a-4f56-8eb1-33a7031ce158\",\"method\":\"member.send\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\",\"caller\":{\"kind\":\"human\",\"humanId\":\"session-handoff-ceb3e3b17dd696bf615637624d67a407ad922678\"},\"recipientInstanceId\":\"inst-1v2oe131tvfh\",\"body\":\"SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+    "rpcId": "246aaeb9-337a-4f56-8eb1-33a7031ce158",
+    "note": "request-only (response pending/failed)"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.send",
+    "status": 200,
+    "t": 1788467388309,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"246aaeb9-337a-4f56-8eb1-33a7031ce158\",\"result\":{\"ok\":false,\"error\":{\"code\":\"malformed-params\",\"message\":\"body must be a non-empty string of at most 200000 characters\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contractVersion\":1,\"requestToken\":null,\"field\":\"body\",\"reason\":\"invalid-value\"}}}}",
+    "rpcId": "s8v-ft-1788467388398",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"s8v-ft-1788467388398\",\"method\":\"member.send\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"s8v-root\",\"caller\":{\"kind\":\"human\",\"humanId\":\"s8v-root\"},\"recipientInstanceId\":\"inst-s8vnonexistent1\",\"body\":\"S8 typed-failure probe (expect INSTANCE_NOT_FOUND)\",\"requestToken\":\"s8v-ft-1788467388398\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/member.send",
+    "status": 200,
+    "t": 1788467388400,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"s8v-ft-1788467388398\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"TeamRuntime: no member instance 'inst-s8vnonexistent1' in team 's8v-root'\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contractVersion\":1,\"requestToken\":\"s8v-ft-1788467388398\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"TeamRuntime: no member instance 'inst-s8vnonexistent1' in team 's8v-root'\",\"details\":{\"rootSessionId\":\"s8v-root\",\"instanceId\":\"inst-s8vnonexistent1\"}}}}}}"
+  }
+]

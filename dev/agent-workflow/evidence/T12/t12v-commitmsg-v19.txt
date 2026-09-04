@@ -1,0 +1,15 @@
+T12-V19: V3 denied-ack budget 480 s -> 600 s (parent final directive)
+
+Parent final directive (T12-V7 in parent numbering): the pre-T12-V16
+denied-ack misses were SYSTEMATIC, not flaky — three consecutive runs,
+denied-ack 1.1 / 1.3 / 1.5 s past the 480 s deadline (window converged at
+~481-482 s). A 600 s budget with margin is the honest fix.
+
+Applied at exactly one site (V3 USE_MCP denied-ack wait, t12-vertical.mjs
+~L1651) plus its timeout message and the budget-history comment. Every
+other budget unchanged per directive: V1 rootAck 480 s, V2-A childAck
+480 s, V4 task text/ack 480 s, RESTART ack 480 s, handoff B2/C 480 s,
+LIFECYCLE discovery 900 s.
+
+Post-T12-V16 (delivery at admission) the denied-ack has landed in
+~0.3-1 s (runs #14/#15), so the raised bound now carries wide margin.

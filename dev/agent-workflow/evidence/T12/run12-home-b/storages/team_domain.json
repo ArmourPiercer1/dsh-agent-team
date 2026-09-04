@@ -1,0 +1,45 @@
+{
+  "unit": {
+    "name": "team_domain",
+    "version": 1
+  },
+  "global": null,
+  "tables": {
+    "schema_meta": {
+      "schema_meta": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:49.131Z\",\"store\":\"schema_meta\",\"version\":1}",
+      "team_sessions": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:50.503Z\",\"store\":\"team_sessions\",\"version\":1}",
+      "member_instances": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:51.017Z\",\"store\":\"member_instances\",\"version\":1}",
+      "session_bindings": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:51.202Z\",\"store\":\"session_bindings\",\"version\":1}",
+      "overrides": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:51.271Z\",\"store\":\"overrides\",\"version\":1}",
+      "compatibility": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:51.385Z\",\"store\":\"compatibility\",\"version\":1}",
+      "operations": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:51.508Z\",\"store\":\"operations\",\"version\":1}",
+      "ledger": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-02T23:54:51.615Z\",\"store\":\"ledger\",\"version\":1}"
+    },
+    "team_sessions": {
+      "session-t12v-b-root-mtkq2htxfd7514": "{\"blueprint\":{\"blueprintId\":\"t12v-bp-b\",\"contentHash\":\"sha256:7442fa415f0862a8045f21a23cd22dba63de66b77f6b7e3cd0aa9c7c9a97057f\",\"revision\":\"1\"},\"createdAt\":\"2026-09-02T23:54:51.942Z\",\"defaultWorkspace\":\"C:/agent-team/work/t12v/b\",\"generation\":4,\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":1}",
+      "session-handoff-837f7849f9ec0aa7f368f4ecf2206cb02add278e": "{\"blueprint\":{\"blueprintId\":\"t12v-bp-b\",\"contentHash\":\"sha256:7442fa415f0862a8045f21a23cd22dba63de66b77f6b7e3cd0aa9c7c9a97057f\",\"revision\":\"1\"},\"createdAt\":\"2026-09-03T00:10:05.862Z\",\"generation\":1,\"handoffSourceSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"rootSessionId\":\"session-handoff-837f7849f9ec0aa7f368f4ecf2206cb02add278e\",\"schemaVersion\":1}"
+    },
+    "member_instances": {
+      "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-09-02T23:54:52.762Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":2,\"templateId\":\"leader\"}",
+      "{\"instanceId\":\"inst-15o7yx217mbp\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\"}": "{\"activityVersion\":1,\"childSessionId\":\"session-team-child-036a0f8503087b14f1a0bf2b69a9d4fc\",\"createdAt\":\"2026-09-02T23:54:54.249Z\",\"instanceId\":\"inst-15o7yx217mbp\",\"label\":\"v2-worker\",\"lifecycle\":\"CREATED\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":1,\"templateId\":\"worker\",\"workspace\":\"C:/agent-team/work/t12v/child-b\"}",
+      "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-handoff-837f7849f9ec0aa7f368f4ecf2206cb02add278e\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-09-03T00:10:05.965Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-handoff-837f7849f9ec0aa7f368f4ecf2206cb02add278e\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+    },
+    "session_bindings": {
+      "session-t12v-b-root-mtkq2htxfd7514": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"session-t12v-b-root-mtkq2htxfd7514\"}",
+      "session-team-child-036a0f8503087b14f1a0bf2b69a9d4fc": "{\"instanceId\":\"inst-15o7yx217mbp\",\"kind\":\"team-member\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":1,\"sessionId\":\"session-team-child-036a0f8503087b14f1a0bf2b69a9d4fc\"}",
+      "session-handoff-837f7849f9ec0aa7f368f4ecf2206cb02add278e": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"session-handoff-837f7849f9ec0aa7f368f4ecf2206cb02add278e\"}"
+    },
+    "overrides": {},
+    "compatibility": {
+      "session-t12v-b-root-mtkq2htxfd7514": "{\"acknowledgements\":[],\"computedAt\":\"2026-09-02T23:54:52.885Z\",\"fingerprint\":\"fp-v1:97fc230e9949b8d8\",\"generation\":1,\"outcomes\":{\"counts\":{\"fatal\":0,\"pass\":2,\"staleAcknowledgement\":0,\"unackedWarning\":0,\"warning\":0},\"requirements\":[{\"acknowledgement\":null,\"complete\":false,\"detail\":\"all 1 required subject(s) available\",\"mismatchFingerprint\":null,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"requirementId\":\"req-tool-web\",\"type\":\"tool\",\"unavailableSubjects\":[]},{\"acknowledgement\":null,\"complete\":true,\"detail\":\"all 1 required subject(s) available\",\"mismatchFingerprint\":null,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"requirementId\":\"req-skill-base\",\"type\":\"skill\",\"unavailableSubjects\":[]}]},\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":1,\"status\":\"OPEN\"}"
+    },
+    "operations": {
+      "op-0mst13d0mzypkw07793nn1ob": "{\"childSessionId\":\"session-team-child-036a0f8503087b14f1a0bf2b69a9d4fc\",\"generation\":3,\"idempotencyKey\":\"provision:session-t12v-b-root-mtkq2htxfd7514:inst-15o7yx217mbp:t12v-v2b-create-mtkq2htxfd7514\",\"intent\":{\"payload\":{\"instanceId\":\"inst-15o7yx217mbp\",\"label\":\"v2-worker\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"templateId\":\"worker\",\"workspace\":\"C:/agent-team/work/t12v/child-b\"},\"type\":\"provision-member-instance\"},\"operationId\":\"op-0mst13d0mzypkw07793nn1ob\",\"phase\":\"COMMITTED\",\"schemaVersion\":1,\"updatedAt\":\"2026-09-02T23:54:54.462Z\"}"
+    },
+    "ledger": {
+      "1": "{\"createdAt\":\"2026-09-02T23:54:54.396Z\",\"factType\":\"provision-member-instance\",\"operationId\":\"op-0mst13d0mzypkw07793nn1ob\",\"payload\":{\"instanceId\":\"inst-15o7yx217mbp\",\"label\":\"v2-worker\",\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"templateId\":\"worker\",\"workspace\":\"C:/agent-team/work/t12v/child-b\"},\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":1,\"sequence\":1}",
+      "2": "{\"createdAt\":\"2026-09-02T23:54:54.535Z\",\"factType\":\"team-coordination-recorded\",\"payload\":{\"action\":\"send-message\",\"at\":\"2026-09-02T23:54:54.506Z\",\"body\":\"T12V_CHILD_FIRST_mtkq2htxfd7514\",\"caller\":{\"humanId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"kind\":\"human\"},\"recipientInstanceId\":\"inst-15o7yx217mbp\",\"requestToken\":\"t12v-v2b-send-mtkq2htxfd7514\",\"targetInstanceId\":\"inst-15o7yx217mbp\"},\"rootSessionId\":\"session-t12v-b-root-mtkq2htxfd7514\",\"schemaVersion\":1,\"sequence\":2}",
+      "__ledger_sequence_counter": "{\"kind\":\"ledger-sequence-counter\",\"schemaVersion\":1,\"value\":2}"
+    }
+  }
+}

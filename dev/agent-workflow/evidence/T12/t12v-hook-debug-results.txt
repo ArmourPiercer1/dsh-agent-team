@@ -1,0 +1,10 @@
+argv1=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\apps\cli\lib\bin.js
+cwd=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+hook registered + 1500ms; importing seam
+[hook] resolve @deepseek-ai specifier: @deepseek-ai/dsh-storage-domain parent=file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-V/packages/runtime/root-binding/harness/seam.mjs
+[hook] discoverCheckout: argv1=undefined cwd=D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[hook] candidate D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\references\deepseek-harness-test-use -> D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\references\deepseek-harness-test-use\apps\cli\node_modules\@deepseek-ai exists=false
+[hook] no checkout found -> passthrough (will likely fail)
+[hook] candidate D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\references\deepseek-harness-test-use -> D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\references\deepseek-harness-test-use\apps\cli\node_modules\@deepseek-ai exists=false
+[hook] discovered checkout=null
+SEAM LOAD FAILED: Cannot find package '@deepseek-ai/dsh-storage-domain' imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-V\packages\runtime\root-binding\harness\seam.mjs

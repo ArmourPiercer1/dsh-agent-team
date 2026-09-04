@@ -1,0 +1,93 @@
+index.js :: L19 :: export const PACKAGE_ID = 'client';
+model/ledger-adapter.js :: L243 :: export function adaptTeamLedger(entries, complete) {
+model/ledger-adapter.js :: L338 :: export function adaptTeamUi(projection, perspective, entries, complete) {
+model/ledger-adapter.js :: L363 :: export function ledgerModelFromStoreState(state) {
+model/projection-adapter.js :: L54 :: export function projectionFromWire(value) {
+model/projection-adapter.js :: L166 :: export function adaptTeamProjection(projection, perspective) {
+model/team-dock-model.js :: L10 :: export function deriveTeamDockCounts(snapshot) {
+model/team-dock-model.js :: L27 :: export function deriveTeamDockContent(snapshot) {
+model/team-governance.js :: L47 :: export const GOVERNANCE_REPROBE_TRIGGERS = REMOTE_PROBE_TRIGGER_VALUES;
+model/team-governance.js :: L49 :: export function isReprobeTrigger(value) {
+model/team-governance.js :: L60 :: export const HUMAN_RECHECK_TRIGGER = 'CAPABILITY_GENERATION_CHANGE';
+model/team-governance.js :: L62 :: export const COMPATIBILITY_BADGE_MARKS = {
+model/team-governance.js :: L76 :: export function compatibilityBadge(status) {
+model/team-governance.js :: L131 :: export function parseCompatibilityStateValue(value) {
+model/team-governance.js :: L146 :: export function parseCompatibilityVerdictValue(value) {
+model/team-governance.js :: L168 :: export function overrideGetParams(teamSessionId, capability, scope, targetInstanceId) {
+model/team-governance.js :: L182 :: export function overrideSetParams(teamSessionId, capability, value, scope, targetInstanceId) {
+model/team-governance.js :: L195 :: export function overrideResetParams(teamSessionId, capability, scope, targetInstanceId) {
+model/team-governance.js :: L207 :: export function policyStateGetParams(teamSessionId) {
+model/team-governance.js :: L215 :: export function policyStateSetParams(teamSessionId, stateId, cells) {
+model/team-governance.js :: L225 :: export function compatibilityGetParams(teamSessionId) {
+model/team-governance.js :: L235 :: export function compatibilityAckParams(teamSessionId, requirementId, acknowledgedBy, note) {
+model/team-governance.js :: L248 :: export function compatibilityReprobeParams(teamSessionId, trigger) {
+model/team-governance.js :: L255 :: export function parseOverrideValue(value) {
+model/team-governance.js :: L269 :: export function parsePolicyStateValue(value) {
+model/team-governance.js :: L322 :: export function policyStateLabel(stateId) {
+model/team-governance.js :: L327 :: export const EFFECTIVE_CONFIG_STATE_WORDS = {
+model/team-governance.js :: L356 :: export function effectiveConfigLanes(dto) {
+model/team-governance.js :: L375 :: export function hardPolicyDisplay(row) {
+model/team-handoff.js :: L40 :: export const HANDOFF_DECISION_OPTIONS = [
+model/team-handoff.js :: L46 :: export function isHandoffDecisionOption(value) {
+model/team-handoff.js :: L58 :: export function parseHandoffPrepareValue(value) {
+model/team-handoff.js :: L116 :: export function parseHandoffCreateState(value) {
+model/team-handoff.js :: L169 :: export function handoffDecisionActions(state) {
+model/team-handoff.js :: L180 :: export function handoffRetryPlan(state, sourceSessionId, currentToken, nextToken) {
+model/team-intent-model.js :: L49 :: export function parseCatalogList(data) {
+model/team-intent-model.js :: L87 :: export function parseBlueprintDetail(data) {
+model/team-intent-model.js :: L119 :: export function parseCompatibilityResult(data) {
+model/team-intent-model.js :: L176 :: export function intentCreateGate(compat, checking, acknowledged, initialWork) {
+model/team-intent-model.js :: L201 :: export function isPersonaPresetFatal(compat) {
+model/team-intent-model.js :: L216 :: export function selectDefaultPresetId(presets) {
+model/team-intent-model.js :: L224 :: export const emptyTeamIntentDraft = {
+model/team-intent-model.js :: L239 :: export function intentEnvironmentFacts(draft, presets) {
+model/team-intent-model.js :: L254 :: export function teamWorkspaceOptions(views) {
+model/team-ledger-model.js :: L2 :: export const TEAM_LEDGER_INITIAL_LIMIT = 200;
+model/team-ledger-model.js :: L4 :: export const TEAM_LEDGER_STEP = 200;
+model/team-ledger-model.js :: L200 :: export function deriveTeamLedgerSection(input) {
+model/team-legacy.js :: L52 :: export function parseLegacyInspection(value) {
+model/team-legacy.js :: L112 :: export function legacyZeroStateKind(inspection) {
+model/team-member-commands.js :: L37 :: export function memberActionsForLifecycle(lifecycle) {
+model/team-member-commands.js :: L46 :: export function memberActionLabel(kind, lifecycle) {
+model/team-member-commands.js :: L66 :: export function humanCaller(teamSessionId) {
+model/team-member-commands.js :: L76 :: export function buildMemberCreateParams(input) {
+model/team-member-commands.js :: L96 :: export function buildMemberFollowupParams(input) {
+model/team-member-commands.js :: L111 :: export function buildMemberSendParams(input) {
+model/team-member-commands.js :: L136 :: export function buildMemberLifecycleParams(teamSessionId, instanceId) {
+model/team-member-commands.js :: L147 :: export function parseMemberCommandOutcome(response) {
+model/team-member-commands.js :: L165 :: export function createRequestTokenGenerator(prefix) {
+model/team-members-model.js :: L44 :: export function deriveTeamMembers(snapshot, ledger) {
+model/team-timeline-model.js :: L2 :: export const TEAM_LANE_COLOR_SLOTS = 8;
+model/team-timeline-model.js :: L14 :: export function deriveTeamTimeline(snapshot, ledger, now) {
+model/team-timeline-model.js :: L99 :: export function teamTimelineTicks(start, end, target = 6) {
+model/team-timeline-model.js :: L124 :: export function formatTeamClock(timestamp) {
+model/team-timeline-model.js :: L135 :: export function formatTeamDuration(milliseconds) {
+model/team-ui-snapshot.js :: L29 :: export {};
+plugin/client.js :: L50 :: export { inject, name } from './team-mount-core.js';
+plugin/client.js :: L61 :: export function apply(ctx, config) {
+plugin/team-mount-core.js :: L57 :: export const inject = ['slots', 'locale', 'sessions', 'connection', 'remote'];
+plugin/team-mount-core.js :: L59 :: export const name = 'dsh-agent-team-client';
+plugin/team-mount-core.js :: L67 :: export function applyTeamMount(ctx, opts) {
+state/team-ledger-store.js :: L63 :: export function createTeamLedgerStore(options) {
+state/team-projection-store.js :: L50 :: export const DEFAULT_TEAM_PROJECTION_BACKOFF = {
+state/team-projection-store.js :: L60 :: export function createTeamProjectionStore(options) {
+state/team-session-resolution.js :: L47 :: export function resolveTeamProjection(mirror, sessionId) {
+state/team-session-resolution.js :: L87 :: export function sameTeamProjectionResolution(a, b) {
+transport/host-seams.js :: L39 :: export {};
+transport/team-remote-client.js :: L37 :: export function createTeamRemoteClient(carrier) {
+ui/locales.js :: L3 :: export const zh = {
+ui/locales.js :: L211 :: export const en = {
+ui/TeamActivity.js :: L32 :: export function TeamActivity({ activity, t }) {
+ui/TeamCreationPanel.js :: L67 :: export function TeamCreationPanel(props) {
+ui/TeamDock.js :: L78 :: export function TeamDockPanel({ snapshot, openTeamTab, t }) {
+ui/TeamDock.js :: L108 :: export function TeamDock({ sessionId, useProjectionMirror, ensureProjection, openTeamTab, t, }) {
+ui/TeamGovernance.js :: L60 :: export function TeamGovernance({ snapshot, governance, t, }) {
+ui/TeamLedger.js :: L146 :: export function TeamLedger(props) {
+ui/TeamMemberDialogs.js :: L27 :: export function TeamCreateMemberDialog({ template, workspaces, onSubmit, onCancel, t, }) {
+ui/TeamMemberDialogs.js :: L55 :: export function TeamMemberPromptDialog({ title, placeholder, submitLabel, cancelLabel, onSubmit, onCancel, t, 
+ui/TeamMemberDialogs.js :: L66 :: export function TeamMemberMessageDialog({ title, onSubmit, onCancel, t, }) {
+ui/TeamMemberDialogs.js :: L82 :: export function TeamConfirmDialog({ title, body, warning, confirmLabel, cancelLabel, onConfirm, onCancel, }) {
+ui/TeamMembers.js :: L129 :: export function TeamMembers({ snapshot, ledger, currentSessionId, onSelectSession, memberCommands, workspaces,
+ui/TeamSettingsSection.js :: L8 :: export function TeamSettingsSection({ t }) {
+ui/TeamTimeline.js :: L44 :: export function TeamTimeline({ snapshot, ledger, currentInstanceId, onSelectSession, t, }) {
+ui/TeamView.js :: L42 :: export function TeamView(props) {

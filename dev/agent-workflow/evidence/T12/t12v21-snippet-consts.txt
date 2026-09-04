@@ -1,0 +1,6 @@
+const HOME_PROBE_A = join(REPO_ROOT, 'references', '.dsh-test-t12-probe-a')
+const HOME_PROBE_B = join(REPO_ROOT, 'references', '.dsh-test-t12-probe-b')
+const PORT_PROBE_A = 3186
+const PORT_PROBE_B = 3185
+const ROOT_PROBE_A = `session-t12v-sprobe-a-${NONCE}`
+const ROOT_PROBE_B = `session-t12v-sprobe-b-${NONCE}`

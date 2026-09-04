@@ -1,0 +1,17 @@
+﻿T12 section 13b: tsc build 8-set at 2026-09-03T08:17:09
+client : exit 0
+contracts : exit 0
+domain : exit 0
+remote : exit 0
+runtime : exit 0
+storage : exit 0
+testkit : exit 0
+tools : exit 2
+packages/contracts/src/dto/blueprint-snapshot.ts(29,38): error TS6059: File 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/packages/contracts/src/legacy-vocabulary.ts' is not under 'rootDir' 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/packages/tools/src'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/packages/contracts/src/dto/blueprint-snapshot.ts'
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/packages/contracts/src/dto/team-session-record.ts'
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/packages/contracts/src/dto/member-instance-record.ts'
+    Imported via '../legacy-vocabulary.js' from file 'D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/T12-int/packages/contracts/src/dto/session-binding.ts'
+DONE fail=1
+

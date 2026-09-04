@@ -1,0 +1,38 @@
+﻿[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-07-s6-work-sent.png
+[s8-browser] work dispatched from root; worker status=已结算; ledger rows 1 -> 5
+[s8-browser] assert OK: ledger grew after create+work (durable facts)
+[s8-browser] assert OK: followup (work) action present on the worker row (root perspective)
+[s8-browser] dom dump → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-06-s5-member-created.html (375779 chars)
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-06-s5-member-created.png
+[s8-browser] assert OK: created member identity rendered (label s8v-worker-1 in governance card)
+[s8-browser] assert OK: member row visible (instance row in the worker group from refreshed Projection)
+[s8-browser] assert OK: member create dialog open (template/label fields)
+[s8-browser] assert OK: §17 "+" entry (创建成员实例) on the zero-instance template row
+[s8-browser] assert OK: worker template row present (尚无实例 expansion)
+[s8-browser] dom dump → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-05-s4-team-created.html (370435 chars)
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-05-s4-team-created.png
+[s8-browser] assert OK: team projection mounted (members section)
+[s8-browser] Team tab activated in the new root session
+[s8-browser] assert OK: native root session opened (handoff-ctx in sidebar)
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-04-s3-blueprint-ready.png
+[s8-browser] assert OK: compatibility ready (✓ 就绪)
+[s8-browser] blueprint options: ["s8v-bp-1 (rev 1)"]
+[s8-browser] dom dump → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-03-s2-new-team.html (364425 chars)
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-03-s2-new-team.png
+[s8-browser] assert OK: blueprint field 团队蓝图
+[s8-browser] assert OK: New Team panel: 新建团队
+[s8-browser] assert OK: New Team entry visible (从此处开始团队)
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-02-s1-ordinary.png
+[s8-browser] assert OK: default view is native (team zero state not shown until tab active)
+[s8-browser] assert OK: conversation view mounted: 团队 tab present
+[s8-browser] session created via first message; 团队 tab now visible
+[s8-browser] 团队 tab not visible — sending an initial message to create the session
+[s8-browser] session opened via 新会话; 团队 tab visible=false
+[s8-browser] workspace adopted: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-s8-2026-09-03T20-25-30\workspace-s8v
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-01-workspace-created.png
+[s8-browser] first-run notice dismissed (继续)
+[s8-browser] shell inventory (14 interactive elements)
+[s8-browser] dom dump → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-01-shell.html (359039 chars)
+[s8-browser] screenshot → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\P9\s8\browser\vertical-01-shell.png
+[s8-browser] initial response: 200 → http://127.0.0.1:3180/
+[s8-browser] open http://127.0.0.1:3180 (launch-token param set)

@@ -1,0 +1,10 @@
+p9:
+  plan: docs/plans/active/DSH_Agent_Team_vNext_P9_UI_T12_T24_Legacy_Reuse_Implementation_Test_Plan.md
+  entry: "started 2026-09-03 on T12 VERDICT=GO (user pre-authorized 2026-09-02, no approval); entry gate P9-plan §1 satisfied"
+  baseline: "b2b7bb6 (final tip int/T12-production-closure; strict descendant of plan pin 7d07330); worktree .worktrees/P9, branch task/P9-ui-legacy-reuse, single writer = builder subagent f88081d8"
+  legacy_baseline: "references/deepseek-harness @ 506191ba893ac55980dd09680c438710ab24095b, packages/client/ui-team (47 files; blob manifest + hash-verified verbatim snapshot under evidence/P9; F-1: start-brief hash was a 38-char typo, pinned by full SHA)"
+  baseline_validation: "PASS (P9-T0 d99b884): pnpm install --ignore-scripts + full suite 2170/2170 + tsc 8-set typecheck/build 8/8, deviations none (evidence/P9/p9-baseline-validation.log); pre-existing tools TS6059 + composition-smoke stale path reproduced — per goal directive to be FIXED EARLY in P9 (vNext-side, zero core; amendment dispatched to builder)"
+  s1_inventory: "reuse-audit.md: 33 non-test source files (8 DIRECT COPY / 6 MECHANICAL ADAPT / 7 ADAPT / 12 DROP; REIMPLEMENT has no legacy counterparts — new vNext modules only, R9-3 budget) + 14 tests (2 DROP / 6 MECHANICAL ADAPT / 6 ADAPT, plan §S7 exact labels); frozen DROP list recorded (mirror / Team SessionEvent vocabulary / synthetic Chat markers / DOM tablist hack / ensureTeam=refresh)"
+  blockers: none (P9 pre-implementation report 2026-09-03)
+  main_agent_audit: "P9-T0 d99b884 audited 2026-09-03: all 54 files under dev/agent-workflow/evidence/P9 (no legacy source in root packages/ — red-line compliant); worktree clean"
+  next: "S0 host-seam map (8 seams, SAME/RENAMED/ABSENT) -> S1 copy-only import + TSX/browser build plumbing (gate P9-G1) -> S2 thin data layer (TeamRemoteClient / TeamProjectionStore / TeamLedgerStore / TeamUiSnapshot)"

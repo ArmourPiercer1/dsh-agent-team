@@ -1,0 +1,12 @@
+PER-PKG TSC BUILD GATE - int/P9-master-product-closure @ 071080d - 2026-09-05 00:54:42
+runner: node node_modules/typescript/bin/tsc -p packages/<p>/tsconfig.build.json (per-package, R122 methodology)
+contracts  tsc EXIT=0
+domain     tsc EXIT=0
+storage    tsc EXIT=0
+runtime    tsc EXIT=0
+tools      tsc EXIT=0
+remote     tsc EXIT=0
+client     tsc EXIT=0
+legacy     tsc EXIT=0
+testkit    tsc EXIT=0
+BUILD-ALL-FAIL=0

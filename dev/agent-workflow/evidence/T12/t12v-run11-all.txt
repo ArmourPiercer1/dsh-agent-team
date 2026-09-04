@@ -1,0 +1,95 @@
+nonce=mtkob35v2077d6 generatedAt=2026-09-02T23:21:06.987Z exitCode=0
+modelPath={"used":"mock-env","note":"DEEPSEEK_BASE_URL=http://127.0.0.1:3496 + DEEPSEEK_API_KEY=t12v-mock-key exported to every instance launch; the real dsh-llm deepseek-official adapter resolves the launch environment, so every model call ran through the mock SSE endpoint. The qiyuan-self/qwen3.8-27b fallback was NOT used.","baseUrl":"http://127.0.0.1:3496","fallbackUsed":false} pristine=[object Object] port3080={"pre":200,"post":200} phaseFailures=[]
+[V1] pass=true dur=1102ms a=11/11
+  PASS: state.boot === 1 (create boot) :: boot=1
+  PASS: state.phase === "create" :: phase=create
+  PASS: state.rootSessionId === ROOT_A :: rootSessionId=session-t12v-a-root-mtkob35v2077d6
+  PASS: TeamSession durable (row keyed by ROOT_A; invariant 9: teamSessionId === rootSessionId) :: teamSession={"rootSessionId":"session-t12v-a-root-mtkob35v2077d6","blueprintId":"t12v-bp-a","revision":"1","contentHash":"sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d","defaultWorkspace":"C:/agent-team/work/t12v/a","createdAt":"2026-09-02T22:34:18.221Z","generation":2} param=session-t12v-a-root-mtkob35v2077d6
+  PASS: members contain EXACTLY the leader (no synthetic worker/scout rows; seedMembers stayed []) :: members=["inst-leader"]
+  PASS: root session log materialized under DSH_HOME (real Root Agent) :: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\sessions\--C-agent-team-work-t12v-a--\session-t12v-a-root-mtkob35v2077d6\session.jsonl.zstd
+  PASS: root session header cwd == W_root (session meta at agents.create boundary, not projection) :: header.cwd=C:/agent-team/work/t12v/a expected=C:/agent-team/work/t12v/a
+  PASS: session/prompt accepted (browser-facing chat path) :: status=200 body={"type":"server-response","rpcId":"t12v-da92c9f8fcae","result":{"ok":true,"value":{"accepted":true}}}
+  PASS: root agent turn settled against the mock (real dsh-llm adapter + agent loop + session log) :: ack found in durable root log
+  PASS: model call reached the mock endpoint with the row static model (mock-env path) :: model=t12v-model-a
+  PASS: leader identity valid: leader persona installed and visible in the REAL prompt assembly :: system texts=["You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-"]
+[V2] pass=false dur=1383119ms a=10/14
+  PASS: [A] team_create_member executed (shipped tool via the production executeTool seam) :: {"status":"executed","action":"create-member","rootSessionId":"session-t12v-a-root-mtkob35v2077d6","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-00767g51ws75","templateId":"worker","childSessionId":"session-team-child-9c3ef563ea45991225bcd05a3315df04","operationId":"op-195gp6k0zeqaxp0kswix20gm","replayed":false,"ledgerSequence":1,"admissionCode":"ADMISSION_OPEN"},"re
+  PASS: [A] effect carries instanceId + childSessionId (discovered, not hardcoded) :: effect={"kind":"member-activated","instanceId":"inst-00767g51ws75","templateId":"worker","childSessionId":"session-team-child-9c3ef563ea45991225bcd05a3315df04","operationId":"op-195gp6k0zeqaxp0kswix20gm","replayed":false,"ledgerSequence":1,"admissionCode":"ADMISSION_OPEN"}
+  PASS: [A] child session log materialized under DSH_HOME (real DSH child Session) :: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\sessions\--C-agent-team-work-t12v-child-a--\session-team-child-9c3ef563ea45991225bcd05a3315df04\session.jsonl.zstd
+  PASS: [A] child session header cwd == W_child :: header.cwd=C:/agent-team/work/t12v/child-a expected=C:/agent-team/work/t12v/child-a
+  PASS: [A] member.send delivered (admission executed) :: {"status":"executed","action":"send-message","rootSessionId":"session-t12v-a-root-mtkob35v2077d6","callerRole":"human","targetInstanceId":"inst-00767g51ws75","effect":{"kind":"fact-recorded","factType":"team-coordination-recorded","sequence":2},"requestToken":"t12v-v2-send-mtkob35v2077d6"}
+  FAIL: [A] child turn settled against the mock :: <ack not in child log within 480s>
+  PASS: [B] world B booted with mcpServer:null (instance up, row mounted, health ok — bootWorld gate) :: url=http://127.0.0.1:3183/?token=<REDACTED> port=3183
+  FAIL: [B] state route well-formed for the mcpServer:null row (harness-row null guard, T12-V11) :: state route failed: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkob35v2077d6 phase=create); last: status=500 body={"error":"Cannot read properties of null (reading 'allowed')"}
+  PASS: [B] team_create_member executed under mcpServer:null :: {"status":"executed","action":"create-member","rootSessionId":"session-t12v-b-root-mtkob35v2077d6","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0s25yl40w74j","templateId":"worker","childSessionId":"session-team-child-b85e3eb443d531cedbacdcd4e4a9336f","operationId":"op
+  FAIL: [B] child turn settled against the mock (no crash from mcpServer:null) :: <ack missing after 900s>
+  PASS: [B] child session header cwd == W_child (world B) :: cwd=C:/agent-team/work/t12v/child-b
+  PASS: [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) :: system texts=["You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location"]
+  PASS: [A] effective model = row static selection (deepseek-official/t12v-model-a) :: model=t12v-model-a seq=3
+  FAIL: [B] effective model = t12v-model-b (row static selection, mcpServer:null variant) :: no model-b mock request carrying the CHILD_FIRST marker reached the endpoint within the run (latched turn never settled)
+[V3] pass=false dur=481859ms a=5/6
+  PASS: member override ALLOW mcp[t12vmini] admitted (durable override record returned) :: {"recordId":"ovr-mcp-inst-00767g51ws75-g0","kind":"human-override","scope":"instance","rootSessionId":"session-t12v-a-root-mtkob35v2077d6","values":{"mcp":{"kind":"allow","items":["t12vmini"]}},"generation":1,"updatedAt":"2026-09-02T22:42:21.602Z","instanceId":"inst-00767g51ws75"}
+  FAIL: turn settled after the mcp tool call was handled by the real agent loop :: <denied-ack not in child log within 480s>
+  PASS: no mcp mount established: effective mcp cell mounted===false despite the override (external hard deny held) :: diag={"mounted":false,"serverName":"t12vmini","allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-00767g51ws75-g0"},"unavailable":false,"deniedBy":{"by":"external","reason":"externalHardDeny"},"pendingNextBoundary":[],"explanation":"mcp: effective deny; team humanOverride(origin=human, ovr-mcp-inst-00767g51ws75-g0) allow[t12vmini]; external exists=yes, hard=deny,
+  PASS: child session log records the mcp tool attempt at the consumption boundary :: log contains attempted tool name mcp__t12vmini__ping: true
+  PASS: the model ATTEMPTED the mcp tool and the real agent loop relayed the denial (tool result for that call id) :: attempted=true denialRelayed=true reply={"kind":"tool-call","toolCalls":[{"id":"call_t12v_mtkob35v2077d6","name":"mcp__t12vmini__ping","arguments":{"msg":"t12v"}}]}
+  PASS: model request tool schema omits the mcp tool (denied at the model-consumption boundary) :: tools=["team_create_member","team_delegate","team_follow_up","team_inspect_config","team_list_members","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_send_message"]
+[V4] pass=true dur=1088ms a=6/6
+  PASS: team_delegate executed (work admitted) :: {"status":"executed","action":"delegate","rootSessionId":"session-t12v-a-root-mtkob35v2077d6","callerRole":"leader","effect":{"kind":"work-admitted","instanceId":"inst-00767g51ws75","fromLifecycle":"CREATED","lifecycleCommitted":true,"sequence":6,"replayed":false,"settled":true,"settledSequence":9},"requestToken":"t12v-v4-delegate-mtkob35v2077d6"}
+  PASS: effect carries a real instanceId :: effect={"kind":"work-admitted","instanceId":"inst-00767g51ws75","fromLifecycle":"CREATED","lifecycleCommitted":true,"sequence":6,"replayed":false,"settled":true,"settledSequence":9}
+  PASS: childSessionId resolved for the delegated instance (live state discovery) :: resolved=session-team-child-9c3ef563ea45991225bcd05a3315df04
+  PASS: exact task text reached the REAL child session log :: exact task present in durable child log
+  PASS: real turn against the mock completed and settled :: ack settled in durable child log
+  PASS: model request carried the exact task text :: found=true
+[V5] pass=true dur=14ms a=6/6
+  PASS: team.getProjection answered through the public Remote (HTTP 200 + ok result) :: status=200
+  PASS: projection teamSessionId matches the durable TeamSession :: projection=session-t12v-a-root-mtkob35v2077d6 expected=session-t12v-a-root-mtkob35v2077d6
+  PASS: projection carries the production schemaVersion 2 (P8-S contract freeze: production projection service stamps schemaVersion: 2) :: schemaVersion=2
+  PASS: projection top-level field set matches the frozen v1 contract (superset for v2) :: keys=["schemaVersion","teamSessionId","blueprint","generation","generatedAt","root","templates","members","ledger"]
+  PASS: projection members include the real leader + every discovered worker instance (childSessionIds stable) :: members=[{"instanceId":"inst-00767g51ws75","lifecycle":"SETTLED"},{"instanceId":"inst-leader","lifecycle":"RUNNING"}] expected=["inst-00767g51ws75"]
+  PASS: projection ledger non-empty (durable event truth projected) :: ledger={"latestSequence":14,"totalEntries":14,"byCategory":{"team":2,"member":1,"lifecycle":2,"message":5,"control":0,"policy":0,"compatibility":0,"progress":4},"pendingControlCount":0} totalEntries=14
+[HANDOFF] pass=true dur=13289ms a=17/17
+  PASS: context C delivered to source team C1 root (session/prompt accepted) :: {"type":"server-response","rpcId":"t12v-306beb689e45","result":{"ok":true,"value":{"accepted":true}}}
+  PASS: source C1 turn settled with C in the durable log :: settled
+  PASS: handoff.prepare returned a deterministic source summary for C1 (title + non-empty bullets) :: summary={"title":"T12V_HANDBACK_ACK_mtkob35v2077d6","bullets":["Captured 3 message(s) — 2 user, 1 assistant — at 2026-09-02T23:20:53.019Z through log seq 22.","First request: \"T12V_HANDBACK_CTX_mtkob35v2077d6\"","Last response: \"T12V_DEFAULT_ACK_mtkob35v2077d6\""]}
+  PASS: handoff.create completed for (C1, X) :: state={"kind":"completed","replayed":false,"context":{"contextToken":"handoff-ctx-474fd708e27f44a0825d6a7324dd271c54c753ba","sourceSessionId":"session-t12v-c1-root-mtkob35v2077d6","capturedAt":"2026-09-02T23:21:04.580Z","surface":{"createdAt":"2026-09-02T23:20:53.019Z","messages":[{"role":"user","text":"T
+  PASS: target B1 identity distinct from source C1 (minted handoff root) :: B1=session-handoff-6721566d2478f114c481c532c06f0e4f27eeaf36
+  PASS: invariant 9: B1 teamSessionId === B1 rootSessionId :: team=session-handoff-6721566d2478f114c481c532c06f0e4f27eeaf36 root=session-handoff-6721566d2478f114c481c532c06f0e4f27eeaf36
+  PASS: target B1 real Root Agent exists (durable root session log materialized under home C) :: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-c\sessions\--C-agent-team-work-t12v-c--\session-handoff-6721566d2478f114c481c532c06f0e4f27eeaf36\session.jsonl.zstd
+  PASS: context C reached the REAL target Agent B1 (durable root session log) :: C present in B1 durable log
+  PASS: B1 durable log carries the handoff provenance (sourceSessionId === C1 in the delivered context) :: provenance sourceSessionId containment
+  PASS: context C delivered to the DIFFERENT source team (world B root) :: {"type":"server-response","rpcId":"t12v-ec5ffb410db4","result":{"ok":true,"value":{"accepted":true}}}
+  PASS: second source turn settled with C in the durable log :: settled
+  PASS: handoff.prepare returned a source summary for the second source team :: summary={"title":"T12V_HANDBACK_ACK_mtkob35v2077d6","bullets":["Captured 3 message(s) — 2 user, 1 assistant — at 2026-09-02T23:05:33.022Z through log seq 22.","First request: \"T12V_HANDBACK_CTX_mtkob35v2077d6\"","Last response: \"T12V_DEFAULT_ACK_mtkob35v2077d6\""]}
+  PASS: handoff.create completed for (world B root, SAME X) :: state={"kind":"completed","replayed":false,"context":{"contextToken":"handoff-ctx-f6d7c3b6bdaa40de120993d2d9798fd1d8e75ba4","sourceSessionId":"session-t12v-b-root-mtkob35v2077d6","capturedAt":"2026-09-02T23:21:06.292Z","surface":{"createdAt":"2026-09-02T23:05:33.022Z","messages":[{"role":"user","text":"T1
+  PASS: B5 composite: SAME requestToken X from a DIFFERENT source team => DIFFERENT target identity :: B1=session-handoff-6721566d2478f114c481c532c06f0e4f27eeaf36 B2=session-handoff-81dd79b858e98e4f6e234d4c057c21fa5fde76be X=t12v-handoff-X-mtkob35v2077d6
+  PASS: target B2 real Root Agent exists (durable root session log materialized under home B) :: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-b\sessions\--C-agent-team-work-t12v-b--\session-handoff-81dd79b858e98e4f6e234d4c057c21fa5fde76be\session.jsonl.zstd
+  PASS: context C reached the REAL target Agent B2 (durable root session log) :: C present in B2 durable log
+  PASS: B2 durable log carries the handoff provenance (sourceSessionId === world B root in the delivered context) :: provenance sourceSessionId containment
+[LIFECYCLE] pass=false dur=904322ms a=5/9
+  FAIL: a real descendant session was created under the member child session (real subagent lifecycle) :: <not found within 900s>
+  FAIL: descendant session header marks origin=subagent with parentSession == member child (durable session meta) :: origin=undefined (parentSession match was the discovery criterion)
+  FAIL: descendant turn settled against the mock (real subagent agent loop + session log) :: <desc ack not in descendant log within 900s>
+  PASS: member.archive executed (quiescence gate passed — a failed drain would have rejected it) :: {"member":{"schemaVersion":1,"rootSessionId":"session-t12v-a-root-mtkob35v2077d6","instanceId":"inst-00767g51ws75","templateId":"worker","label":"v2-worker","childSessionId":"session-team-child-9c3ef563ea45991225bcd05a3315df04","lifecycle":"ARCHIVED","createdAt":"2026-09-02T22:34:20.153Z","activityVersion":4,"workspace":"C:/agent-team/work/t12v/child-a"},"steps":["close-admission","interrupt","drain-descendants","wait-quiescence","release-residency","commit-archive"],"settledCommitted":false,"dr
+  FAIL: archive reports an HONEST numeric drained count >= 1 (the live descendant was drained) :: drained=0 (a non-numeric drain fails the quiescence gate, so this number is genuine)
+  PASS: residency dropped on archive :: residencyDropped=true
+  PASS: member.restore executed :: {"member":{"schemaVersion":1,"rootSessionId":"session-t12v-a-root-mtkob35v2077d6","instanceId":"inst-00767g51ws75","templateId":"worker","label":"v2-worker","childSessionId":"session-team-child-9c3ef563ea45991225bcd05a3315df04","lifecycle":"SETTLED","createdAt":"2026-09-02T22:34:20.153Z","activityVersion":5,"workspace":"C:/agent-team/work/t12v/child-a"},"steps":["commit-restore"]}
+  PASS: member.followup admitted after restore (work admitted) :: {"status":"executed","action":"follow-up","rootSessionId":"session-t12v-a-root-mtkob35v2077d6","callerRole":"human","targetInstanceId":"inst-00767g51ws75","effect":{"kind":"work-admitted","instanceId":"inst-00767g51ws75","fromLifecycle":"SETTLED","lifecycleCommitted":true,"sequence":11,"replayed":fa
+  PASS: real follow-up turn settled on the restored member :: settled
+[RESTART] pass=false dur=3722ms a=14/15
+  PASS: fresh #1 worker is a REAL child session (durable log under home A) :: session-team-child-9c3ef563ea45991225bcd05a3315df04
+  PASS: fresh #2 worker is a REAL child session (durable log under home B) :: session-team-child-b85e3eb443d531cedbacdcd4e4a9336f
+  PASS: distinct member instanceIds across the two roots (no instance collision) :: A=inst-00767g51ws75 B=inst-0s25yl40w74j
+  PASS: distinct child SessionIds across the two roots (no child SessionId collision) :: A=session-team-child-9c3ef563ea45991225bcd05a3315df04 B=session-team-child-b85e3eb443d531cedbacdcd4e4a9336f
+  PASS: each child Session materialized exactly once under its home (no duplicate Agent bindings) :: A files=1 B files=1
+  FAIL: precondition reachability: SAME member instanceId under a DIFFERENT root (plan §12 literal) — UNREACHABLE by construction :: identity.ts canonicalMemberSpecString L289-298: specString = [rootSessionId, templateId, label, groupId ?? "", workspace ?? ""].join("\u0000"); instanceId = "inst-" + token(specString, 12). rootSessionId is part of the spec, so the same instanceId under a different root cannot be produced through shipped template creation; no explicit-instanceId parameter exists on team_create_member or remote member.create. Plan-vs-code divergence flagged for main-agent adjudication; all observable no-collision invariants verified above.
+  PASS: resume boot: same Team root (rootSessionId unchanged) :: root=session-t12v-a-root-mtkob35v2077d6
+  PASS: resume boot: same durable TeamSession id :: teamSession=session-t12v-a-root-mtkob35v2077d6 expected=session-t12v-a-root-mtkob35v2077d6
+  PASS: resume boot: SAME MemberInstance re-opened (instanceId + childSessionId stable across restart) :: [{"instanceId":"inst-00767g51ws75","childSessionId":"session-team-child-9c3ef563ea45991225bcd05a3315df04","lifecycle":"SETTLED"},{"instanceId":"inst-leader","childSessionId":"undefined","lifecycle":"undefined"}]
+  PASS: resume boot: NO duplicate members (each instanceId exactly once) :: members=["inst-00767g51ws75","inst-leader"]
+  PASS: resume boot: no duplicate root session materialization (exactly one root session log) :: files=1
+  PASS: resume boot: no duplicate child session materialization for the worker :: files=1
+  PASS: projection resumes after restart (same TeamSession, members intact) :: teamSession=session-t12v-a-root-mtkob35v2077d6 members=["inst-00767g51ws75","inst-leader"]
+  PASS: real follow-up turn admitted after restart :: {"status":"executed","action":"follow-up","rootSessionId":"session-t12v-a-root-mtkob35v2077d6","callerRole":"human","targetInstanceId":"inst-00767g51ws75","effect":{"kind":"work-admitted","instanceId":"inst-00767g51ws75","fromLifecycle":"SETTLED","lifecycleCommitted":true,"sequence":16,"replayed":fa
+  PASS: restart follow-up turn settled against the mock (durable child log) :: settled
+TOTAL scenarios pass=4/8 assertions 74/84

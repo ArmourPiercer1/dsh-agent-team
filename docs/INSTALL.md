@@ -19,8 +19,10 @@
 git clone <repo-url> dsh-agent-team
 cd dsh-agent-team
 git checkout master
-pnpm install
-pnpm build              # 9 个包 tsc → packages/*/dist
+pnpm install              # row-owned 运行时依赖已声明（packages/runtime：5 × @deepseek-ai/*@0.1.2-rc.1
+                          # + zod 4.4.3，均已在 npm registry 发布、access:public）——新机器由 pnpm
+                          # 直接安装，无需手工 link / junction（R125(1b)）
+pnpm build              # 9 个包 tsc → packages/*/dist（legacy 包输出到 packages/runtime/dist，见 §2 产物表注）
 pnpm build:composition  # ① 放置 runtime glue ② 生成 packages/client/composition-shim/
 ```
 
@@ -96,6 +98,11 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
               maxConcurrent: 4
           metadata: {}
         seedMembers: []
+        # 以下三字段必填：host 配置校验 fail-closed，缺失任一 → TEAM_PLUGIN_CONFIG_INVALID
+        # （字段集与 R122 验证行逐字对齐，R125 gate reviewer-3 B1）
+        generation: 1
+        deniedSelection: null
+        mcpServer: null
         staticModel:
           provider: <your-provider>
           model: <your-model>
@@ -109,7 +116,7 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
         glueUrl: "file:///<REPO>/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
         seamUrl: "file:///<REPO>/packages/runtime/root-binding/harness/seam.mjs"
     - id: "dsh-agent-team-client"
-      name: "file:///<REPO>/packages/client/composition-shim/index.js"
+      name: "../../team-client-row/index.js"
 ```
 
 - `<REPO>` = 目标机器 clone 目录的绝对路径；file:// URL 一律**正斜杠**
@@ -119,11 +126,13 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
   persona 对齐（示例：`persona/standard`）。
 - `rootSessionId` 每个世界唯一；复用既有世界时按现状调整。
 - `defaultWorkspace`（可选）：Root 默认 workspace 目录。
-- client 行若 file:// 形式不被目标 DSH 版本接受，退回验证过的相对路径形态：把
-  `packages/client/composition-shim/` 复制进 `DSH_HOME` 内（如 `DSH_HOME/team-client-row/`），
-  行写 `name: "../../team-client-row/index.js"`（R122 验证世界即此形态）。
-- 热加载（可选）：profile `package.json` 的 `dsh.profile` 加 `"patchReload": "live"`，
-  否则改完 `cordis.patch.yml` 重启 `dsh web` 进程。
+- **client 行（推荐 = R122 已 live 验证的相对形态）**：把 `packages/client/composition-shim/`
+  复制进 `DSH_HOME` 内（如 `DSH_HOME/team-client-row/`），行写
+  `name: "../../team-client-row/index.js"`（R122 验证世界即此形态）。`file:///<REPO>/…/index.js`
+  形态未 live 验证，仅当确认目标 DSH 版本接受 file:// 行时使用。
+- 热加载（可选）：profile `package.json` 的 `dsh.profile` 加 `"patchReload": "live"`；
+  rc.1 自带 web profile 已默认 `patchReload: live`（此时改完 `cordis.patch.yml` 自动热加载，
+  无需再显式声明），否则改完 `cordis.patch.yml` 需重启 `dsh web` 进程。
 
 ## 4. 真实模型
 
@@ -149,7 +158,8 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
 
 | 症状 | 处置 |
 | --- | --- |
-| host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突 |
+| host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection` / `mcpServer` 三字段之一（必填、fail-closed，见 §3 模板） |
+| host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install` |
 | client 行加载失败 | `pnpm build:composition` 是否已跑（`composition-shim/` 存在）；改试 §3 的相对路径形态 |
 | 页面 404 | 目标 DSH 缺 web shell 产物（源码安装 DSH 需在该机 `pnpm build:web` 一次；发布版 DSH 不应出现） |
 | 成员轮次不动 | 模型凭据/`staticModel` 配置（§4）；查看 DSH host 日志 |

@@ -1,0 +1,11 @@
+﻿=== T12 section 13b re-validation at tip explanation omitted) instead of 500. The modelView block above keeps its single views guard because a legal row always carries a model (host.ts row validation); only mcp is optional. Parent-authorized harness-row bug fix (mcpServer:null variant must not crash the state route; vertical-e2e brief). Verification run #12 (post-commit). started 2026-09-03T08:16:49 ===
+--- [1/4] full run-tests.mjs
+full-tests exit=1 in 00:00:12.8790866s tail: PASS packages\tools\test\p6t6-guard.test.ts (9 tests) | PASS packages\tools\test\tools.test.ts (2 tests) |  | run-tests (plain-node vitest-equivalent): 2169 passed, 1 failed, 2170 total, 12756 ms
+--- [2/4] tsc typecheck 8-set
+typecheck fail=0
+--- [3/4] tsc build 8-set
+build fail=1 (pre-existing tools TS6059 expected)
+--- [4/4] composition-smoke official + corrected-path diag
+official composition-smoke exit=1 (pre-existing stale-path fail expected)
+corrected-path smoke-diag exit=0 (PASS expected now that yaml dep is in the tip)
+=== section 13b done 2026-09-03T08:17:15 ===

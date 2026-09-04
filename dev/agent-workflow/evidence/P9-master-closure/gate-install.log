@@ -1,0 +1,6 @@
+INSTALL GATE - int/P9-master-product-closure @ 071080d (post R125(1b) deps) - 2026-09-05 00:54:42
+runner: pnpm install --ignore-scripts --no-frozen-lockfile (CI=true)
+Scope: all 10 workspace projects
+Already up to date
+Done in 154ms using pnpm v11.7.0
+INSTALL-EXIT=0

@@ -1,0 +1,97 @@
+﻿native/landlock-run/packages/linux-arm64 | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+native/landlock-run/packages/linux-x64   | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["linux"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+Scope: all 268 workspace projects
+[WARN] There are cyclic workspace dependencies: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\client\locale, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\test-support\client-runtime, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\client\ui-chat, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\client\ui-layout, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\client\ui-theme; D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\client\ui-conversation, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\client\ui-workspace; D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\e2b\e2b, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\e2b\fs-e2b; D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\sandbox\sandbox-local, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\sandbox\sandbox-windows-acl; D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\subagent\subagent-spawn-in-process, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\subagent\tool-subagent; D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\vendor\cordis, D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\vendor\include
+✓ Lockfile passes supply-chain policies (verified 2h ago)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1065
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 1065, reused 1060, downloaded 0, added 0
+Progress: resolved 1065, reused 1060, downloaded 0, added 1
+Progress: resolved 1065, reused 1060, downloaded 0, added 2
+Progress: resolved 1065, reused 1060, downloaded 0, added 112
+Progress: resolved 1065, reused 1060, downloaded 0, added 177
+Progress: resolved 1065, reused 1060, downloaded 0, added 178
+Progress: resolved 1065, reused 1060, downloaded 0, added 314
+Progress: resolved 1065, reused 1060, downloaded 0, added 315
+Progress: resolved 1065, reused 1060, downloaded 0, added 413
+Progress: resolved 1065, reused 1060, downloaded 0, added 414
+Progress: resolved 1065, reused 1060, downloaded 0, added 483
+Progress: resolved 1065, reused 1060, downloaded 0, added 503
+Progress: resolved 1065, reused 1060, downloaded 0, added 505
+Progress: resolved 1065, reused 1060, downloaded 0, added 549
+Progress: resolved 1065, reused 1060, downloaded 0, added 550
+Progress: resolved 1065, reused 1060, downloaded 0, added 620
+Progress: resolved 1065, reused 1060, downloaded 0, added 621
+Progress: resolved 1065, reused 1060, downloaded 0, added 667
+Progress: resolved 1065, reused 1060, downloaded 0, added 697
+Progress: resolved 1065, reused 1060, downloaded 0, added 698
+Progress: resolved 1065, reused 1060, downloaded 0, added 704
+Progress: resolved 1065, reused 1060, downloaded 0, added 705
+Progress: resolved 1065, reused 1060, downloaded 0, added 750
+Progress: resolved 1065, reused 1060, downloaded 0, added 780
+Progress: resolved 1065, reused 1060, downloaded 0, added 781
+Progress: resolved 1065, reused 1060, downloaded 0, added 786
+Progress: resolved 1065, reused 1060, downloaded 0, added 787
+Progress: resolved 1065, reused 1060, downloaded 0, added 826
+Progress: resolved 1065, reused 1060, downloaded 0, added 862
+Progress: resolved 1065, reused 1060, downloaded 0, added 863
+Progress: resolved 1065, reused 1060, downloaded 0, added 930
+Progress: resolved 1065, reused 1060, downloaded 0, added 931
+Progress: resolved 1065, reused 1060, downloaded 0, added 955
+Progress: resolved 1065, reused 1060, downloaded 0, added 956
+Progress: resolved 1065, reused 1060, downloaded 0, added 957
+Progress: resolved 1065, reused 1060, downloaded 0, added 978
+Progress: resolved 1065, reused 1060, downloaded 0, added 979
+Progress: resolved 1065, reused 1060, downloaded 0, added 1063
+Progress: resolved 1065, reused 1060, downloaded 0, added 1064
+Progress: resolved 1065, reused 1060, downloaded 0, added 1065, done
+[WARN] Failed to create bin at D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\sdk\client\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\apps\cli\lib\bin.js.EXE'
+[WARN] Failed to create bin at D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\python\sdk-runtime\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\apps\cli\lib\bin.js.EXE'
+
+devDependencies:
++ @deepseek-ai/dsh-tool-session-query 0.1.2-rc.1 <- packages\session-query\tool-session-query
++ @deepseek-ai/dsh-web-fetch-http 0.1.2-rc.1 <- packages\web\web-fetch-http
++ @stylistic/eslint-plugin 5.10.0
++ @testing-library/dom 10.4.1
++ @testing-library/react 16.3.2
++ @types/js-yaml 4.0.9
++ @types/jsdom 28.0.3
++ @types/mdast 4.0.4
++ @types/node 22.20.0
++ @types/spdx-expression-parse 4.0.0
++ @vitest/coverage-v8 4.1.8
++ @yao-pkg/pkg 6.21.0
++ @yarnpkg/cli-dist 4.17.1
++ eslint-plugin-sonarjs 4.1.0
++ execa 10.0.0
++ fast-check 4.8.0
++ istanbul-lib-report 3.0.1
++ js-yaml 4.2.0
++ jscpd 5.0.12
++ jsdom 29.1.1
++ lefthook 2.1.9
++ lightningcss 1.32.0
++ mdast-util-from-markdown 2.0.3
++ mdast-util-gfm 3.1.0
++ mermaid 11.16.0
++ micromark-extension-gfm 3.0.0
++ oxlint 1.76.0
++ oxlint-tsgolint 7.0.2001
++ publint 0.3.21
++ smol-toml 1.7.1
++ spdx-expression-parse 5.0.0
++ tsdown 0.22.2
++ tsx 4.22.4
++ typescript 6.0.3
++ vite-tsconfig-paths 6.1.1
++ vitest 4.1.8
+
+packages/subprocess/subprocess-local postinstall$ node scripts/ensure-spawn-helper.mjs
+packages/subprocess/subprocess-local postinstall: Done
+. postinstall$ node scripts/install-lefthook.mjs
+. postinstall: Done
+[WARN] Failed to create bin at D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\sdk\client\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\packages\sdk\client\node_modules\@deepseek-ai\dsh\lib\bin.js.EXE'
+[WARN] Failed to create bin at D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\python\sdk-runtime\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\TU-CLEAN-PROBE\python\sdk-runtime\node_modules\@deepseek-ai\dsh\lib\bin.js.EXE'
+Done in 1m 56.9s using pnpm v11.7.0

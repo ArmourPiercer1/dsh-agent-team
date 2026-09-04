@@ -1,0 +1,27 @@
+P9-S8: client: fixed template rows for zero-instance member templates (bug #5, UI §16.1)
+
+S8 vertical S5 forensics (attempt-23, run23): the members section rendered
+only the leader group for a fresh handoff team; no 创建成员实例 button
+existed anywhere in the DOM. The instance-only fold in
+deriveTeamMembers (team-members-model) emits a group only when the first
+instance of a template lands, so a zero-instance template row — and with it
+the §17 "+" first-instance entry — never rendered. The honest
+first-instance path (UI §17.3: explicit create vs delegate-and-create) was
+unreachable from the UI on a fresh roster.
+
+UI doc §16.1 fixed hierarchy is explicit ("Reviewer [+] / No instances":
+every template row is constant and carries the create "+"); §16.2 requires
+the create "+" on the template row. The renderer already renders the
+"尚无实例" expansion (data-member-no-instances) and the create dialog binds
+the template — only the model dropped the rows. The deferred jsdom spec
+(team-members.client.spec.tsx "roster-absent fallback") already encodes the
+intended 尚无实例 behavior; the model now matches it.
+
+Fix: after the instance fold, backfill a fixed group row for every
+non-leader template without one (instances: [], activeCount: 0, name =
+template display name), appended in projection `templates` order.
+
+Gates: tsc face (client) rc=0; run-tests client 243/243 (incl. 5 new
+pure-model tests: zero-instance fixed row, fold+backfill ordering, no
+duplicate, leader-template skip, leader-only roster); tsc build (client
+dist) rc=0.

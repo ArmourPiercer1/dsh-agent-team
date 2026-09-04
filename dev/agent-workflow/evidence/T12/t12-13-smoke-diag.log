@@ -1,0 +1,3 @@
+﻿FAIL host plugin (packages/runtime) @ actual post-P8-S5A path: cannot import: Cannot find package 'yaml' imported from D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\T12-int\packages\runtime\dist\packages\domain\blueprint\src\parse.js
+PASS client plugin (packages/client) @ actual path: name="dsh-agent-team-client", apply callable, side-effect-free
+DIAG FAIL

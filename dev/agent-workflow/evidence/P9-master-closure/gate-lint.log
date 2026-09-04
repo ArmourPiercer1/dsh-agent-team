@@ -1,0 +1,4 @@
+ROOT LINT GATE - int/P9-master-product-closure @ 071080d - 2026-09-05 00:55:23
+runner: node node_modules/eslint/bin/eslint.js .
+eslint output: (empty = 0 errors, 0 warnings)
+LINT-EXIT=0

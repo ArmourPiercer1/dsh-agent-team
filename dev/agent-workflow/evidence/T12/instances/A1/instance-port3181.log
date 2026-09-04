@@ -1,0 +1,78 @@
+dsh web: http://127.0.0.1:3181/?token=<REDACTED>
+[t12v-wl] 2026-09-03T01:31:15.581Z boot:enter sid=session-t12v-a-root-mtkumols991e58 phase=create
+[t12v-wl] 2026-09-03T01:31:15.583Z setup:enter sid=session-t12v-a-root-mtkumols991e58 bind=fresh-root
+[t12v-wl] 2026-09-03T01:31:15.584Z setup:consumption-resolved sid=session-t12v-a-root-mtkumols991e58 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:15.584Z setup:model-selection-installed sid=session-t12v-a-root-mtkumols991e58 ms=1
+[t12v-wl] 2026-09-03T01:31:15.585Z setup:tools-registered sid=session-t12v-a-root-mtkumols991e58 ms=2 tools=10
+[t12v-wl] 2026-09-03T01:31:15.587Z setup:persona-installed sid=session-t12v-a-root-mtkumols991e58 ms=4
+[t12v-wl] 2026-09-03T01:31:15.587Z setup:exit sid=session-t12v-a-root-mtkumols991e58 ms=4
+[t12v-wl] 2026-09-03T01:31:15.593Z boot:root-ready sid=session-t12v-a-root-mtkumols991e58 phase=create ms=12
+[t12v-wl] 2026-09-03T01:31:15.724Z boot:exit sid=session-t12v-a-root-mtkumols991e58 phase=create ms=143
+[t12v-wl] 2026-09-03T01:31:17.226Z tool:enter sid=session-t12v-a-root-mtkumols991e58 name=team_create_member
+[t12v-wl] 2026-09-03T01:31:17.226Z boundary:enter sid=session-t12v-a-root-mtkumols991e58
+[t12v-wl] 2026-09-03T01:31:17.226Z boundary:consumption-resolved sid=session-t12v-a-root-mtkumols991e58 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:17.227Z mcp:enter sid=inst-leader allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:31:17.227Z boundary:exit sid=session-t12v-a-root-mtkumols991e58 ms=1
+[t12v-wl] 2026-09-03T01:31:17.266Z child:create:create-start sid=session-team-child-7052c693304423b8d90e33dd3a830757 instance=inst-0dsioqp1gvac template=worker
+[t12v-wl] 2026-09-03T01:31:17.267Z setup:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757 bind=fresh-member
+[t12v-wl] 2026-09-03T01:31:17.267Z setup:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:17.268Z setup:model-selection-installed sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:31:17.269Z setup:tools-registered sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=2 tools=10
+[t12v-wl] 2026-09-03T01:31:17.270Z setup:persona-installed sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=3
+[t12v-wl] 2026-09-03T01:31:17.270Z setup:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=3
+[t12v-wl] 2026-09-03T01:31:17.271Z child:create:create-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=5 instance=inst-0dsioqp1gvac
+[t12v-wl] 2026-09-03T01:31:17.683Z tool:exit sid=session-t12v-a-root-mtkumols991e58 name=team_create_member ms=457
+[t12v-wl] 2026-09-03T01:31:17.826Z followup:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:17.826Z boundary:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:17.826Z boundary:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:17.826Z mcp:enter sid=inst-0dsioqp1gvac allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:31:17.826Z boundary:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0
+[t12v-wl] 2026-09-03T01:31:17.826Z followup:boundary-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0
+[t12v-wl] 2026-09-03T01:31:17.827Z followup:followup-submitted sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:31:18.003Z followup:whenIdle-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=177
+[t12v-wl] 2026-09-03T01:31:18.403Z followup:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:18.404Z boundary:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:18.404Z boundary:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:18.404Z mcp:enter sid=inst-0dsioqp1gvac allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:31:18.404Z boundary:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0
+[t12v-wl] 2026-09-03T01:31:18.404Z followup:boundary-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:31:18.406Z followup:followup-submitted sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=3
+[t12v-wl] 2026-09-03T01:31:18.707Z followup:whenIdle-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=304
+[t12v-wl] 2026-09-03T01:31:18.923Z tool:enter sid=session-t12v-a-root-mtkumols991e58 name=team_delegate
+[t12v-wl] 2026-09-03T01:31:18.923Z boundary:enter sid=session-t12v-a-root-mtkumols991e58
+[t12v-wl] 2026-09-03T01:31:18.924Z boundary:consumption-resolved sid=session-t12v-a-root-mtkumols991e58 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:18.924Z mcp:enter sid=inst-leader allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:31:18.924Z boundary:exit sid=session-t12v-a-root-mtkumols991e58 ms=1
+[t12v-wl] 2026-09-03T01:31:19.214Z deliver:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757 token=t12v-v4-delegate-mtkumols991e58
+[t12v-wl] 2026-09-03T01:31:19.214Z boundary:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:19.215Z boundary:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:19.215Z mcp:enter sid=inst-0dsioqp1gvac allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:31:19.215Z boundary:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:31:19.215Z deliver:boundary-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:31:19.216Z deliver:followup-submitted sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=2
+[t12v-wl] 2026-09-03T01:31:19.312Z deliver:whenIdle-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=98
+[t12v-wl] 2026-09-03T01:31:19.693Z tool:exit sid=session-t12v-a-root-mtkumols991e58 name=team_delegate ms=770
+[t12v-wl] 2026-09-03T01:31:20.081Z followup:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:20.081Z boundary:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:31:20.081Z boundary:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:31:20.081Z mcp:enter sid=inst-0dsioqp1gvac allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:31:20.081Z boundary:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0
+[t12v-wl] 2026-09-03T01:31:20.081Z followup:boundary-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0
+[t12v-wl] 2026-09-03T01:31:20.082Z followup:followup-submitted sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:31:20.329Z followup:whenIdle-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=248
+[t12v-wl] 2026-09-03T01:46:23.952Z deliver:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757 token=t12v-lc-followup-mtkumols991e58
+[t12v-wl] 2026-09-03T01:46:23.953Z ensure:resume-start sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:46:23.963Z setup:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757 bind=cold-member
+[t12v-wl] 2026-09-03T01:46:23.964Z setup:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:46:23.964Z setup:model-selection-installed sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:46:23.964Z setup:tools-registered sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1 tools=10
+[t12v-wl] 2026-09-03T01:46:23.964Z setup:persona-installed sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=1
+[t12v-wl] 2026-09-03T01:46:23.965Z setup:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=2
+[t12v-wl] 2026-09-03T01:46:23.967Z ensure:resume-done sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:46:23.967Z boundary:enter sid=session-team-child-7052c693304423b8d90e33dd3a830757
+[t12v-wl] 2026-09-03T01:46:23.967Z boundary:consumption-resolved sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0 model=deepseek-official/t12v-model-a mcp=denied
+[t12v-wl] 2026-09-03T01:46:23.967Z mcp:enter sid=inst-0dsioqp1gvac allowed=false hasFiber=false
+[t12v-wl] 2026-09-03T01:46:23.967Z boundary:exit sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=0
+[t12v-wl] 2026-09-03T01:46:23.967Z deliver:boundary-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=15
+[t12v-wl] 2026-09-03T01:46:23.968Z deliver:followup-submitted sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=16
+[t12v-wl] 2026-09-03T01:46:24.133Z deliver:whenIdle-done sid=session-team-child-7052c693304423b8d90e33dd3a830757 ms=181

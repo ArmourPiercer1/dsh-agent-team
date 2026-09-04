@@ -1,0 +1,513 @@
+[
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/?token=<REDACTED>",
+    "status": 303,
+    "t": 1788509381072,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/",
+    "status": 200,
+    "t": 1788509381075,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=28e1db08b1d0",
+    "status": 200,
+    "t": 1788509381085,
+    "kind": "plugins"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-BNsW4eBh.css",
+    "status": 200,
+    "t": 1788509381086,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-CsBy6quH.css",
+    "status": 200,
+    "t": 1788509381086,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-D-eoFxDP.js",
+    "status": 200,
+    "t": 1788509381096,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-CCJJTK99.js",
+    "status": 200,
+    "t": 1788509381101,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,",
+    "status": 200,
+    "t": 1788509381215,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788509381344,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788509381375,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788509381375,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788509381375,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788509381375,
+    "kind": "api"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/events",
+    "status": 200,
+    "t": 1788509381379,
+    "kind": "plugins"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788509381387,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788509381389,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788509381391,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788509381394,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/syncInspectManifest",
+    "status": 200,
+    "t": 1788509381398,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/list",
+    "status": 200,
+    "t": 1788509381402,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788509381403,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788509381412,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788509381422,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/mutate",
+    "status": 200,
+    "t": 1788509384022,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/modelCatalog",
+    "status": 200,
+    "t": 1788509384031,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788509384031,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listProviders",
+    "status": 200,
+    "t": 1788509384032,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/llm/listConfigurableProviders",
+    "status": 200,
+    "t": 1788509384032,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/settings/describe",
+    "status": 200,
+    "t": 1788509384036,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788509384043,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/credentials/describe",
+    "status": 200,
+    "t": 1788509384043,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788509385556,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788509387335,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788509387341,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788509387384,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/directoryPicker/list",
+    "status": 200,
+    "t": 1788509387387,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/workspace/create",
+    "status": 200,
+    "t": 1788509390004,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/create",
+    "status": 200,
+    "t": 1788509390271,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": null,
+    "t": 1788509390299,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"61e44388-6436-4a0e-9df2-910576d2de39\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-a5555c2f-ebee-46bf-bbcf-efdd157c2076\"}}}",
+    "note": "request-only"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788509390300,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788509390301,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788509390301,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788509390301,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788509390301,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"61e44388-6436-4a0e-9df2-910576d2de39\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-a5555c2f-ebee-46bf-bbcf-efdd157c2076' which this host does not own (bound root 's8v-root')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-a5555c2f-ebee-46bf-bbcf-efdd157c2076' which this host does not own (bound root 's8v-root')\"}}}}}",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"091e4751-9245-40eb-9b06-20e2b7a907b9\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": null,
+    "t": 1788509393036,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"c8ce2cb9-2b53-4d6b-8b99-ff623f21a12c\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\"params\":{}}}",
+    "note": "request-only"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788509393045,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": null,
+    "t": 1788509393046,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"00faaa3e-9d1c-4219-8a33-c4e581e4fcfa\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}",
+    "note": "request-only"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": 200,
+    "t": 1788509393045,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"c8ce2cb9-2b53-4d6b-8b99-ff623f21a12c\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"s8v-bp-1\",\"revisions\":[1]}]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"5d31cf20-1f49-4058-9ba4-5023dfd1c867\",\"method\":\"catalog.list\",\"payload\":{\"version\":1,\"params\":{}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": 200,
+    "t": 1788509393048,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"00faaa3e-9d1c-4219-8a33-c4e581e4fcfa\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprint\":{\"schemaVersion\":1,\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\",\"leader\":{\"templateId\":\"leader\",\"persona\":\"S8 leader persona: you lead the s8v browser-vertical team.\"},\"members\":[{\"templateId\":\"worker\",\"persona\":\"S8 worker persona: you are the deterministic s8v worker.\",\"displayName\":\"S8 Worker A\"}],\"requirements\":[{\"domain\":\"persona\",\"name\":\"standard\",\"optional\":false}],\"policyStates\":[{\"id\":\"default\",\"fields\":[],\"description\":\"The s8v default state.\"}],\"quotas\":{\"team\":{\"maxInstances\":12,\"maxConcurrent\":12},\"members\":{\"maxInstances\":4,\"maxConcurrent\":4}}}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.get\",\"endpoint\":\"catalog.get\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"74203ea8-03e0-4d43-992b-31fb306ad0fc\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+    "status": 200,
+    "t": 1788509395759,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"5d31cf20-1f49-4058-9ba4-5023dfd1c867\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"s8v-bp-1\",\"revisions\":[1]}]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788509395763,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": 200,
+    "t": 1788509395762,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"74203ea8-03e0-4d43-992b-31fb306ad0fc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprint\":{\"schemaVersion\":1,\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\",\"leader\":{\"templateId\":\"leader\",\"persona\":\"S8 leader persona: you lead the s8v browser-vertical team.\"},\"members\":[{\"templateId\":\"worker\",\"persona\":\"S8 worker persona: you are the deterministic s8v worker.\",\"displayName\":\"S8 Worker A\"}],\"requirements\":[{\"domain\":\"persona\",\"name\":\"standard\",\"optional\":false}],\"policyStates\":[{\"id\":\"default\",\"fields\":[],\"description\":\"The s8v default state.\"}],\"quotas\":{\"team\":{\"maxInstances\":12,\"maxConcurrent\":12},\"members\":{\"maxInstances\":4,\"maxConcurrent\":4}}}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.get\",\"endpoint\":\"catalog.get\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"bf074c9a-a0d9-4143-8628-c6f372ad7fe1\",\"method\":\"catalog.get\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+    "status": null,
+    "t": 1788509397271,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"48ab0cf2-707e-4f27-838a-69cfa9698cf1\",\"method\":\"intent.probe\",\"payload\":{\"version\":1,\"params\":{\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1,\"environmentFacts\":[{\"domain\":\"persona\",\"subject\":\"standard\",\"available\":true,\"generation\":0}]}}}",
+    "note": "request-only"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+    "status": 200,
+    "t": 1788509397276,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"48ab0cf2-707e-4f27-838a-69cfa9698cf1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"compatibility\":{\"schemaVersion\":1,\"environmentFingerprint\":\"fp-v1:73e6deee0dc5dc58\",\"status\":\"OPEN\",\"requirements\":[{\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"complete\":true,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"detail\":\"all 1 required subject(s) available\",\"unavailableSubjects\":[],\"mismatchFingerprint\":null,\"acknowledgement\":null}],\"counts\":{\"pass\":1,\"warning\":0,\"fatal\":0,\"unackedWarning\":0,\"staleAcknowledgement\":0},\"unappliedAcknowledgements\":[]}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"intent.probe\",\"endpoint\":\"intent.probe\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+    "status": 200,
+    "t": 1788509397276,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"bf074c9a-a0d9-4143-8628-c6f372ad7fe1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprint\":{\"schemaVersion\":1,\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\",\"leader\":{\"templateId\":\"leader\",\"persona\":\"S8 leader persona: you lead the s8v browser-vertical team.\"},\"members\":[{\"templateId\":\"worker\",\"persona\":\"S8 worker persona: you are the deterministic s8v worker.\",\"displayName\":\"S8 Worker A\"}],\"requirements\":[{\"domain\":\"persona\",\"name\":\"standard\",\"optional\":false}],\"policyStates\":[{\"id\":\"default\",\"fields\":[],\"description\":\"The s8v default state.\"}],\"quotas\":{\"team\":{\"maxInstances\":12,\"maxConcurrent\":12},\"members\":{\"maxInstances\":4,\"maxConcurrent\":4}}}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.get\",\"endpoint\":\"catalog.get\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/session/create",
+    "status": 200,
+    "t": 1788509397406,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.create",
+    "status": null,
+    "t": 1788509397407,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"1c99327b-17bd-4d42-b12a-b9795338d99d\",\"method\":\"team.create\",\"payload\":{\"version\":1,\"params\":{\"rootSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"blueprintId\":\"s8v-bp-1\",\"blueprintRevision\":1}}}",
+    "note": "request-only"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.create",
+    "status": 200,
+    "t": 1788509397526,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"1c99327b-17bd-4d42-b12a-b9795338d99d\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"createdAt\":\"2026-09-04T08:09:57.408Z\",\"generation\":1,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-09-04T08:09:57.481Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"rootSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"persona\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"model\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"capability\"},{\"name\":\"agent-setup/admission-decided\",\"detail\":\"ADMISSION_OPEN\"}]}},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788509397548,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/dynamicCordisRunner/inventory",
+    "status": 200,
+    "t": 1788509397549,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/commands/list",
+    "status": 200,
+    "t": 1788509397549,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": null,
+    "t": 1788509397560,
+    "kind": "team-remote",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"b47a07cd-5be5-4fe2-b67d-2faf5fce721c\",\"method\":\"team.getLedgerPage\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"afterSequence\":0,\"limit\":50}}}",
+    "note": "request-only"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788509397558,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"091e4751-9245-40eb-9b06-20e2b7a907b9\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHash\":\"sha256:f325f53ee3b62672ce74b6a9a981536e015cdd6b48851bc3e8cd9253ff23a303\"},\"generation\":1,\"generatedAt\":\"2026-09-04T08:09:57.554Z\",\"root\":{\"teamSessionId\":\"session-80f630e0-2d41-4b23-a384-3523aa9791ca\",\"createdAt\":\"2026-09-04T08:09:57.408Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"none\",\"warningCount\":0,\"fatalCount\":0,\"acknowledgedWarningCount\":0},\"creationBudgetConsumed\":0,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\"},\"templates\":[{\"kind\":\"leader\",\"templateId\":\"leader\",\"displayName\":\"leader\",\"contextPolicy\":\"persistent\"},{\"kind\":\"member\",\"templateId\":\"worker\",\"displayName\":\"S8 Worker A\",\"contextPolicy\":\"persistent\",\"instanceQuota\":4}],\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"createdAt\":\"2026-09-04T08:09:57.481Z\",\"lifecycle\":\"RUNNING\",\"contextPolicy\":\"persistent\",\"effectiveConfig\":{\"model\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"workspace\":{\"value\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\P9\\\\s8\\\\workspace\",\"source\":\"blueprint\",\"state\":\"locked\",\"locked\":true},\"permissions\":{},\"autonomy\":{\"value\":null,\"source\":\"autonomy-overlay\",\"state\":\"inherited\"}},\"liveActivity\":{\"residency\":\"cold\"},\"modelState\":{\"current\":{\"value\":\"deepseek-official/s8v-model\",\"source\":\"capability\",\"state\":\"inherited\"},\"provenance\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null,\"explanation\":\"model: effective deny; team none(",
+    "requestBody": "{\"type\":\"client-request\",\"rpcId\":\"a7f8c782-0176-49c5-8e20-c645f6b56b28\",\"method\":\"team.getProjection\",\"payload\":{\"version\":1,\"params\":{\"teamSessionId\":\"session-a5555c2f-ebee-46bf-bbcf-efdd157c2076\"}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+    "status": 200,
+    "t": 1788509397562,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"b47a07cd-5be5-4fe2-b67d-2faf5fce721c\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"entries\":[],\"nextAfterSequence\":null,\"total\":0},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"team.getLedgerPage\",\"endpoint\":\"team.getLedgerPage\",\"contractVersion\":1,\"requestToken\":null,\"projectionGeneration\":null,\"effectSequence\":null}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788509397569,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/skills/list",
+    "status": 200,
+    "t": 1788509397584,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/subagents/list",
+    "status": 200,
+    "t": 1788509430246,
+    "kind": "api"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+    "status": 200,
+    "t": 1788509430246,
+    "kind": "team-remote",
+    "responseBody": "{\"type\":\"server-response\",\"rpcId\":\"a7f8c782-0176-49c5-8e20-c645f6b56b28\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-a5555c2f-ebee-46bf-bbcf-efdd157c2076' which this host does not own (bound root 's8v-root')\",\"details\":{\"method\":\"team.getProjection\",\"endpoint\":\"team.getProjection\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'team.getProjection' addresses TeamSession 'session-a5555c2f-ebee-46bf-bbcf-efdd157c2076' which this host does not own (bound root 's8v-root')\"}}}}}"
+  },
+  {
+    "method": "POST",
+    "url": "http://127.0.0.1:3180/api/agentPresets/list",
+    "status": 200,
+    "t": 1788509430251,
+    "kind": "api"
+  }
+]

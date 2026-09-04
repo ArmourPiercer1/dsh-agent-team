@@ -1,0 +1,67 @@
+{
+  "nonce": "mtkob35v2077d6",
+  "a1": {
+    "rootSessionId": "session-t12v-a-root-mtkob35v2077d6",
+    "teamSessionId": "session-t12v-a-root-mtkob35v2077d6",
+    "workerA": {
+      "instanceId": "inst-00767g51ws75",
+      "childSessionId": "session-team-child-9c3ef563ea45991225bcd05a3315df04"
+    },
+    "workerV4": {
+      "instanceId": "inst-00767g51ws75",
+      "childSessionId": "session-team-child-9c3ef563ea45991225bcd05a3315df04"
+    }
+  },
+  "restartIdentity": {
+    "criterion": "RESTART plan §12: fresh #1/#2 under different RootSessionIds — observable no-collision invariants + honest precondition reachability verdict; then restart/resume (same Team root / MemberInstance / child Session, no duplicates, projection resumes)",
+    "assertions": [
+      {
+        "name": "fresh #1 worker is a REAL child session (durable log under home A)",
+        "ok": true,
+        "detail": "session-team-child-9c3ef563ea45991225bcd05a3315df04"
+      },
+      {
+        "name": "fresh #2 worker is a REAL child session (durable log under home B)",
+        "ok": true,
+        "detail": "session-team-child-b85e3eb443d531cedbacdcd4e4a9336f"
+      },
+      {
+        "name": "distinct member instanceIds across the two roots (no instance collision)",
+        "ok": true,
+        "detail": "A=inst-00767g51ws75 B=inst-0s25yl40w74j"
+      },
+      {
+        "name": "distinct child SessionIds across the two roots (no child SessionId collision)",
+        "ok": true,
+        "detail": "A=session-team-child-9c3ef563ea45991225bcd05a3315df04 B=session-team-child-b85e3eb443d531cedbacdcd4e4a9336f"
+      },
+      {
+        "name": "each child Session materialized exactly once under its home (no duplicate Agent bindings)",
+        "ok": true,
+        "detail": "A files=1 B files=1"
+      },
+      {
+        "name": "precondition reachability: SAME member instanceId under a DIFFERENT root (plan §12 literal) — UNREACHABLE by construction",
+        "ok": false,
+        "detail": "identity.ts canonicalMemberSpecString L289-298: specString = [rootSessionId, templateId, label, groupId ?? \"\", workspace ?? \"\"].join(\"\\u0000\"); instanceId = \"inst-\" + token(specString, 12). rootSessionId is part of the spec, so the same instanceId under a different root cannot be produced through shipped template creation; no explicit-instanceId parameter exists on team_create_member or remote member.create. Plan-vs-code divergence flagged for main-agent adjudication; all observable no-collision invariants verified above."
+      }
+    ],
+    "evidence": {
+      "fresh1": {
+        "root": "session-t12v-a-root-mtkob35v2077d6",
+        "worker": {
+          "instanceId": "inst-00767g51ws75",
+          "childSessionId": "session-team-child-9c3ef563ea45991225bcd05a3315df04"
+        }
+      },
+      "fresh2": {
+        "root": "session-t12v-b-root-mtkob35v2077d6",
+        "worker": {
+          "instanceId": "inst-0s25yl40w74j",
+          "childSessionId": "session-team-child-b85e3eb443d531cedbacdcd4e4a9336f"
+        }
+      }
+    },
+    "notes": []
+  }
+}

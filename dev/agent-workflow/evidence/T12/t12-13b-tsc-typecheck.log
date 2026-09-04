@@ -1,0 +1,11 @@
+﻿T12 section 13b: tsc typecheck 8-set at 2026-09-03T08:17:02
+client : exit 0
+contracts : exit 0
+domain : exit 0
+remote : exit 0
+runtime : exit 0
+storage : exit 0
+testkit : exit 0
+tools : exit 0
+DONE fail=0
+

@@ -1,0 +1,8 @@
+
+## R93 — **P9 UI 阶段启动：基线 + S1 清点完成（主 Agent 审计 + builder f88081d8）**（2026-09-03）
+
+- **触发**：T12 `VERDICT=GO`（R92）+ 用户指令（2026-09-02 预授权，无需再批准）⇒ P9 计划（`docs/plans/active/DSH_Agent_Team_vNext_P9_UI_T12_T24_Legacy_Reuse_Implementation_Test_Plan.md`）依 entry gate §1 立即启动。工作树 `.worktrees/P9` @ `b2b7bb6`（T12 final tip，计划 pin 7d07330 的严格后代），分支 `task/P9-ui-legacy-reuse`，单写者 = builder 子代理 f88081d8。
+- **基线验证（PASS）**：`pnpm install --ignore-scripts` + full suite **2170/2170** + tsc 8-set（typecheck+build）8/8，零偏差（evidence/P9/p9-baseline-validation.log）。既有 tools TS6059 + composition-smoke stale path 复现并记录；按目标指令于 P9 **早期修复**（vNext 侧、零 core；修订指令已下达 builder）。
+- **S1 清点（P9-T0 `d99b884`；54 文件全在 evidence/P9 下，主 Agent 审计通过：无 legacy 源码进入根 packages/，红线合规）**：legacy 基线 = `references/deepseek-harness` @ `506191ba89`（packages/client/ui-team，47 文件，blob manifest + hash-verified 快照 47/47，reference 仓库 byte-clean）。33 个非测试源文件：8 DIRECT COPY / 6 MECHANICAL ADAPT / 7 ADAPT / 12 DROP（REIMPLEMENT 无 legacy 对应物，全部为 vNext 新模块，R9-3 预算内）；14 个测试：2 DROP / 6 MA / 6 ADAPT（计划 §S7 精确标签）。冻结 DROP 清单（mirror / Team SessionEvent 词汇 / synthetic Chat marker / DOM tablist hack / ensureTeam=refresh）已入 reuse-audit.md，后续阶段不得复活。
+- **findings（主 Agent 接受）**：F-1 start-brief 的 tree hash 为 38 字符笔误（已按全 SHA 重新 pin，无歧义）；F-2 冻结 checkout tip `a3ab319927` 与 506191b 在 ui-team 内有 34 文件差异（清点严格读 506191b blobs，不读 working tree）；F-3 计划 §4 为五级（含 ADAPT），计划标签优先于 brief 的 "4-class" 表述。
+- **后续**：S0 host seam map（8 seams，SAME/RENAMED/ABSENT 裁决）→ S1 copy-only import + TSX/browser build 管路（gate P9-G1）→ S2 thin data layer（TeamRemoteClient / TeamProjectionStore / TeamLedgerStore / TeamUiSnapshot）。builder 在 gate 之间自主推进、每个 G + blocker 报告；主 Agent 负责独立审计 + bookkeeping + 任何 int 分支 cherry-pick。

@@ -1,0 +1,16 @@
+{
+  "nonce": "mtkumols991e58",
+  "a1": {
+    "rootSessionId": "session-t12v-a-root-mtkumols991e58",
+    "teamSessionId": "session-t12v-a-root-mtkumols991e58",
+    "workerA": {
+      "instanceId": "inst-0dsioqp1gvac",
+      "childSessionId": "session-team-child-7052c693304423b8d90e33dd3a830757"
+    },
+    "workerV4": {
+      "instanceId": "inst-0dsioqp1gvac",
+      "childSessionId": "session-team-child-7052c693304423b8d90e33dd3a830757"
+    }
+  },
+  "restartIdentity": null
+}

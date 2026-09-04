@@ -1,0 +1,18 @@
+﻿PASS packages\testkit\test\p4t5-corrupt-version.test.ts (10 tests)
+PASS packages\testkit\test\p4t5-crash-matrix.test.ts (13 tests)
+PASS packages\testkit\test\p4t5-retry-restart.test.ts (10 tests)
+PASS packages\testkit\test\p4t6-session-event-scan.test.ts (10 tests)
+PASS packages\testkit\test\t6-1-no-agent-dependency.test.ts (6 tests)
+PASS packages\testkit\test\t6-10-composition-pipeline.test.ts (5 tests)
+PASS packages\testkit\test\t6-2-template-n-instances.test.ts (8 tests)
+PASS packages\testkit\test\t6-3-lifecycle-matrix.test.ts (8 tests)
+PASS packages\testkit\test\t6-4-policy-precedence.test.ts (11 tests)
+PASS packages\testkit\test\t6-5-compat-complete-true.test.ts (6 tests)
+PASS packages\testkit\test\t6-6-snapshot-immutability.test.ts (8 tests)
+PASS packages\testkit\test\t6-7-fresh-per-delegation.test.ts (6 tests)
+PASS packages\testkit\test\t6-8-serialization-roundtrip.test.ts (9 tests)
+PASS packages\testkit\test\t6-9-negative-matrix.test.ts (12 tests)
+PASS packages\testkit\test\testkit.test.ts (2 tests)
+
+run-tests (plain-node vitest-equivalent): 124 passed, 0 failed, 124 total, 1205 ms
+RESULT: PASS run-tests (0 failures)

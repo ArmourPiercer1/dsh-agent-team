@@ -1,0 +1,18 @@
+T12-V22: stateprobe — assert serverName on the real governance mcp cell path
+
+The first run16b probe (nonce mtkvb8scf3505a) showed the system behaving
+exactly as the T12-V14 closure requires — SPROBE-B (mcp-less world-B variant)
+returned HTTP 200 with governance.sessions.<root>.mcp = {mounted:false,
+serverName:null} and SPROBE-A (mcp-configured world-A style) with
+serverName:"t12vmini" + full mcp view fields — but two of the eight
+assertions read body.serverName (top level), a path that does not exist:
+the state route exposes the mcp cell per session under
+governance.sessions.<rootSessionId>.mcp. That was an assertion-path bug in
+the probe, not a system finding.
+
+T12-V22 corrects the two assertions to read the governance mcp cell and
+adds mounted===false to the mcp-less check (the full T12-V14 shape). No
+other behavior change; the recorded request/response evidence from the
+first attempt (t12v-stateprobe-run16b-mtkvb8scf3505a.json) is retained as-is
+and already demonstrates the closure. The corrected probe re-runs on the
+same throwaway homes/ports (3185/3186); run homes untouched.

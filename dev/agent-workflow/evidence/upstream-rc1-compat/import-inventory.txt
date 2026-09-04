@@ -1,0 +1,130 @@
+﻿client\src\plugin\team-mount-core.ts:49: import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+client\src\plugin\team-mount-core.ts:50: import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+client\src\plugin\team-mount-core.ts:51: import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
+client\src\plugin\team-mount-core.ts:55: import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+client\src\plugin\team-mount-core.ts:56: import type { SlotCore, SlotMap } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\plugin\team-mount-core.ts:96: declare module '@deepseek-ai/dsh-client-ui-slots' {
+client\src\transport\host-seams.ts:6: * RPC contracts served by `@deepseek-ai/dsh-client-connection`
+client\src\ui\NewTeamEntry.tsx:24: import { IconUserOutline16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+client\src\ui\NewTeamEntry.tsx:25: import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\NewTeamEntry.tsx:30: import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+client\src\ui\TeamActivity.tsx:14: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamActivity.tsx:15: import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
+client\src\ui\TeamCreationPanel.tsx:32: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamDock.tsx:19: import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+client\src\ui\TeamDock.tsx:20: import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamDock.tsx:23: import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+client\src\ui\TeamDock.tsx:32: } from '@deepseek-ai/dsh-client-ui-primitives'
+client\src\ui\TeamGovernance.tsx:34: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamLedger.tsx:29: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamLedger.tsx:30: import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
+client\src\ui\TeamMemberDialogs.tsx:17: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamMembers.tsx:36: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamMembers.tsx:37: import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
+client\src\ui\TeamSettingsSection.tsx:13: import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamTimeline.tsx:14: import { Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+client\src\ui\TeamTimeline.tsx:15: import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamView.tsx:15: import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+client\src\ui\TeamView.tsx:18: import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+client\src\ui\TeamView.tsx:19: import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
+client\test\client-bundle.client.spec.ts:100: const RUNTIME_TOKEN = ['@deepseek-ai/dsh-client-', 'runtime'].join('')
+client\test\new-team-entry.client.spec.tsx:18: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-activity.client.spec.tsx:21: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-creation-handoff.client.spec.tsx:41: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-creation-panel.client.spec.tsx:29: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-dock.client.spec.tsx:13: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-governance.client.spec.tsx:24: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-ledger.client.spec.tsx:36: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-legacy.client.spec.tsx:45: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-members-actions.client.spec.tsx:18: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-members.client.spec.tsx:22: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-plugin.client.spec.tsx:35: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-timeline.client.spec.tsx:13: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\test\team-view.client.spec.tsx:58: import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+client\package.json:24: "@deepseek-ai/cordis": "link:../../../../references/deepseek-harness-test-use/vendor/cordis",
+client\package.json:25: "@deepseek-ai/dsh-client-locale": "link:../../../../references/deepseek-harness-test-use/packages/client/locale",
+client\package.json:26: "@deepseek-ai/dsh-client-store": "link:../../../../references/deepseek-harness-test-use/packages/client/store",
+client\package.json:27: "@deepseek-ai/dsh-client-test-runtime": "link:../../../../references/deepseek-harness-test-use/packages/test-support/client-runtime",
+client\package.json:28: "@deepseek-ai/dsh-client-ui-conversation": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-conversation",
+client\package.json:29: "@deepseek-ai/dsh-client-ui-primitives": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-primitives",
+client\package.json:30: "@deepseek-ai/dsh-client-ui-slots": "link:../../../../references/deepseek-harness-test-use/packages/client/ui-slots",
+legacy\session-reader\e2e\run.mjs:361: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+legacy\session-reader\e2e\run.mjs:362: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+legacy\session-reader\e2e\run.mjs:363: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+legacy\session-reader\e2e\run.mjs:364: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+legacy\session-reader\e2e\run.mjs:365: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+legacy\session-reader\e2e\run.mjs:366: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+runtime\member-residency\harness\plugin.mjs:110: *     — @deepseek-ai/dsh-agent (public agent lifecycle)
+runtime\member-residency\harness\plugin.mjs:112: *     — @deepseek-ai/dsh-subagent (public continuable-subagent surface;
+runtime\member-residency\harness\plugin.mjs:115: *     — @deepseek-ai/dsh-agent-presets (public preset seam)
+runtime\member-residency\harness\plugin.mjs:117: *     — @deepseek-ai/dsh-system-prompt (public prompt assembly boundary)
+runtime\member-residency\harness\plugin.mjs:119: *     — @deepseek-ai/dsh-scope (public scope key)
+runtime\member-residency\harness\plugin.mjs:121: *     — @deepseek-ai/dsh-agent (public agent-scoped model selection)
+runtime\member-residency\harness\plugin.mjs:123: *     — @deepseek-ai/dsh-session-projections (public projection read;
+runtime\member-residency\harness\plugin.mjs:128: *     — @deepseek-ai/dsh-mcp-client (public MCP fiber seam)
+runtime\member-residency\harness\plugin.mjs:132: *     — @deepseek-ai/dsh-session (public session surfaces)
+runtime\member-residency\harness\plugin.mjs:134: *     — @deepseek-ai/dsh-webserver (public host route seam)
+runtime\member-residency\harness\plugin.mjs:136: *     — @deepseek-ai/dsh-storage-domain (public durable domain seam;
+runtime\member-residency\harness\plugin.mjs:148: import { SessionId } from '@deepseek-ai/dsh-session'
+runtime\member-residency\harness\plugin.mjs:149: import { scopeOf } from '@deepseek-ai/dsh-scope'
+runtime\member-residency\harness\plugin.mjs:150: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+runtime\member-residency\harness\plugin.mjs:151: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+runtime\member-residency\harness\run.mjs:293: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+runtime\member-residency\harness\run.mjs:294: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+runtime\member-residency\harness\run.mjs:295: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+runtime\member-residency\harness\run.mjs:296: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+runtime\member-residency\harness\run.mjs:297: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+runtime\member-residency\harness\run.mjs:298: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+runtime\member-residency\harness\run.mjs:379: "  name: '@deepseek-ai/dsh-persona'",
+runtime\member-residency\harness\slots-t6.mjs:45: import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+runtime\member-residency\harness\slots-t6.mjs:46: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+runtime\member-residency\harness\slots-t6.mjs:47: import { SessionId } from '@deepseek-ai/dsh-session'
+runtime\member-residency\harness\slots-t6.mjs:48: import { scopeOf } from '@deepseek-ai/dsh-scope'
+runtime\member-residency\harness\slots-t6.mjs:49: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+runtime\root-binding\harness\mini-mcp.mjs:7: * `@deepseek-ai/dsh-mcp-client` startup handshake and one tool round-trip.
+runtime\root-binding\harness\plugin.mjs:60: *     — @deepseek-ai/dsh-agent (public agent lifecycle)
+runtime\root-binding\harness\plugin.mjs:62: *     — @deepseek-ai/dsh-agent-presets (public preset seam)
+runtime\root-binding\harness\plugin.mjs:64: *     — @deepseek-ai/dsh-system-prompt (public prompt assembly boundary)
+runtime\root-binding\harness\plugin.mjs:66: *     — @deepseek-ai/dsh-scope (public scope key)
+runtime\root-binding\harness\plugin.mjs:68: *     — @deepseek-ai/dsh-agent (public agent-scoped model selection)
+runtime\root-binding\harness\plugin.mjs:70: *     — @deepseek-ai/dsh-session-projections (public projection read;
+runtime\root-binding\harness\plugin.mjs:75: *     — @deepseek-ai/dsh-mcp-client (public MCP fiber seam)
+runtime\root-binding\harness\plugin.mjs:79: *     — @deepseek-ai/dsh-session (public session surfaces)
+runtime\root-binding\harness\plugin.mjs:81: *     — @deepseek-ai/dsh-webserver (public host route seam)
+runtime\root-binding\harness\plugin.mjs:83: *     — @deepseek-ai/dsh-storage-domain (public durable KV domain form;
+runtime\root-binding\harness\plugin.mjs:92: import { SessionId } from '@deepseek-ai/dsh-session'
+runtime\root-binding\harness\plugin.mjs:93: import { scopeOf } from '@deepseek-ai/dsh-scope'
+runtime\root-binding\harness\plugin.mjs:94: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+runtime\root-binding\harness\plugin.mjs:95: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+runtime\root-binding\harness\run.mjs:223: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+runtime\root-binding\harness\run.mjs:224: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+runtime\root-binding\harness\run.mjs:225: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+runtime\root-binding\harness\run.mjs:226: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+runtime\root-binding\harness\run.mjs:227: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+runtime\root-binding\harness\run.mjs:228: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+runtime\root-binding\harness\run.mjs:300: "  name: '@deepseek-ai/dsh-persona'",
+runtime\root-binding\harness\seam.mjs:29: * `@deepseek-ai/dsh-storage-domain` and `zod` resolve through the harness's
+runtime\root-binding\harness\seam.mjs:33: import { defineDomain, domainTable } from '@deepseek-ai/dsh-storage-domain'
+runtime\root-binding\harness\slots.mjs:39: import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+runtime\root-binding\harness\slots.mjs:40: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+runtime\root-binding\harness\slots.mjs:41: import { SessionId } from '@deepseek-ai/dsh-session'
+runtime\root-binding\harness\slots.mjs:42: import { scopeOf } from '@deepseek-ai/dsh-scope'
+runtime\root-binding\harness\slots.mjs:43: import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+runtime\src\plugin\live\agent-bindings.mjs:138: import { SessionId } from '@deepseek-ai/dsh-session'
+runtime\src\plugin\live\agent-bindings.mjs:139: import { installModelSelection } from '@deepseek-ai/dsh-agent'
+runtime\src\plugin\live\agent-bindings.mjs:140: import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
+runtime\src\plugin\live\agent-bindings.mjs:141: import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+testkit\fault-injection\session-event-scan.mjs:29: *    `'@deepseek-ai/dsh-session/types'` in the SAME file — the legacy
+testkit\fault-injection\session-event-scan.mjs:31: *    @deepseek-ai/dsh-session/types. Exactly ONE file-level hit, at the
+testkit\fault-injection\session-event-scan.mjs:99: export const SESSION_TYPES_SPECIFIER = '@deepseek-ai/dsh-session/types'
+testkit\test\p4t6-session-event-scan.test.ts:5: * declaration-merging pattern on `@deepseek-ai/dsh-session/types`) is
+testkit\test\p4t6-session-event-scan.test.ts:379: "declare module '@deepseek-ai/dsh-session/types' {",
+tools\harness\run.mjs:773: { name: '@deepseek-ai/dsh-agent', dir: join(HOST_TREE, 'packages', 'core', 'agent') },
+tools\harness\run.mjs:774: { name: '@deepseek-ai/dsh-session', dir: join(HOST_TREE, 'packages', 'core', 'session') },
+tools\harness\run.mjs:775: { name: '@deepseek-ai/dsh-scope', dir: join(HOST_TREE, 'packages', 'core', 'scope') },
+tools\harness\run.mjs:776: { name: '@deepseek-ai/dsh-system-prompt', dir: join(HOST_TREE, 'packages', 'core', 'system-prompt') },
+tools\harness\run.mjs:777: { name: '@deepseek-ai/dsh-mcp-client', dir: join(HOST_TREE, 'packages', 'mcp', 'mcp-client') },
+tools\harness\run.mjs:778: { name: '@deepseek-ai/dsh-storage-domain', dir: join(HOST_TREE, 'packages', 'storage', 'storage-domain') },
+tools\harness\run.mjs:779: { name: '@deepseek-ai/dsh-llm', dir: join(HOST_TREE, 'packages', 'llm', 'llm') },
+tools\test\p6t6-bypass-scan.mjs:87: export const SESSION_TYPES_SPECIFIER = '@deepseek-ai/dsh-session/types'
+tools\test\p6t6-bypass-scan.test.ts:109: "const g = '@deepseek-ai/dsh-session/other'",

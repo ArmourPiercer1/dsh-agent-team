@@ -1,0 +1,62 @@
+# R125 gentry stdout capture (s8-gentry-r125.mjs, fresh-machine mode, closure tree 071080d)
+# 2026-09-05, job pwsh-13 (elevated run per R113 precedent; first attempt spawn EPERM = TEST_METHODS §5 documented sandbox boundary)
+[s8-gentry] open http://127.0.0.1:3180
+[s8-gentry] initial response: 200 → http://127.0.0.1:3180/
+[s8-gentry] screenshot → browser/gentry-01-shell.png
+[s8-gentry] first-run notice dismissed (继续)
+[s8-gentry] screenshot → browser/gentry-01-workspace-created.png
+[s8-gentry] workspace adopted: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-s8-2026-09-04T17-16-50\workspace-s8v
+[s8-gentry] PASS — R118 global entry visible in sidebar footer (before any session) ({"tried":["aria-label 新建团队","aria-label New Team","text 新建团队 (button)","text New Team (button)"],"hit":"aria-label 新建团队"})
+[s8-gentry] screenshot → browser/gentry-02-entry-visible.png
+[s8-gentry] PASS — overlay: TeamCreationPanel mounted after entry click
+[s8-gentry] PASS — R118 overlay has NO handoff block (no source session) ({"handoffBlocks":0})
+[s8-gentry] PASS — R119-1 blueprint select present in overlay
+[s8-gentry] PASS — R119-1 unselected state is LOUD: select.value === "" ({"bpValue":"","options":[{"value":"","text":"选择蓝图…","disabled":true},{"value":"s8v-bp-1","text":"s8v-bp-1 (rev 1)","disabled":false}]})
+[s8-gentry] PASS — R119-1 disabled placeholder option rendered (选择蓝图…/Select a blueprint…) ({"placeholder":{"value":"","text":"选择蓝图…","disabled":true}})
+[s8-gentry] PASS — create button disabled while unselected
+[s8-gentry] PASS — catalog.list observed on the wire ({"n":1})
+[s8-gentry] screenshot → browser/gentry-03-overlay-unselected.png
+[s8-gentry] dom dump → browser/gentry-03-overlay-unselected.html (379239 chars)
+[s8-gentry] PASS — cancel closes the overlay ({"stillVisible":false})
+[s8-gentry] screenshot → browser/gentry-04-overlay-cancelled.png
+[s8-gentry] PASS — reopened overlay has a FRESH draft (value "") ({"bpValue2":""})
+[s8-gentry] PASS — R121 fresh draft workspace prefilled (non-empty) ({"wsPrefill":"e8899ba6-cc42-4748-8204-626bcefb30cc"})
+[s8-gentry] blueprint options: ["选择蓝图…","s8v-bp-1 (rev 1)"]
+[s8-gentry] PASS — s8v-bp-1 option available ({"opts":["选择蓝图…","s8v-bp-1 (rev 1)"]})
+[s8-gentry] blueprint picked explicitly (s8v-bp-1)
+[s8-gentry] PASS — compatibility settles at ✓ 就绪 (probe OPEN)
+[s8-gentry] PASS — create button ENABLED after probe OPEN
+[s8-gentry] PASS — intent.probe observed on the wire ({"n":1})
+[s8-gentry] screenshot → browser/gentry-05-ready-to-create.png
+[s8-gentry] create clicked; waiting for team.create + overlay close
+[s8-gentry] PASS — team.create observed on the wire ({"before":0,"after":1})
+[s8-gentry] PASS — team.create response ok ({"status":200,"body":"{\"type\":\"server-response\",\"rpcId\":\"dc4f412c-21ef-4c7a-9a19-0644c2c9b686\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-ea2ca293-f3f2-4962-aa2b-35e2cc70b10a\",\"blueprint\":{\"blueprintId\":\"s8v-bp-1\",\"revision\":\"1\",\"contentHa"})
+[s8-gentry] PASS — overlay closed after successful create ({"overlayClosed":true})
+[s8-gentry] PASS — rootSessionId recoverable from team.create request ({"rootSessionId":"session-ea2ca293-f3f2-4962-aa2b-35e2cc70b10a"})
+[s8-gentry] PASS — §4.3 boundary: no 团队 tab before the first Root turn (message-gated tab row)
+[s8-gentry] first message sent to the created Root (§4.3: the team starts here)
+[s8-gentry] PASS — 团队 tab appears after the first Root message ({"teamTabVisible":true})
+[s8-gentry] PASS — created team is bound in the Root (team view rendered, zero state gone) ({"zeroStateG3":false})
+[s8-gentry] PASS — team.getProjection observed for the created Root session ({"n":1,"rootSessionId":"session-ea2ca293-f3f2-4962-aa2b-35e2cc70b10a"})
+[s8-gentry] PASS — R121 created Root row appears in the adopted workspace sidebar (selected, after first message) ({"before":{"found":true,"n":1,"texts":["新会话"],"selectedIn":1},"after":{"found":true,"n":1,"texts":["S8-M2 ok (deepseek-v4-flash).刚刚"],"selectedIn":1}})
+[s8-gentry] screenshot → browser/gentry-05-team-created.png
+[s8-gentry] dom dump → browser/gentry-05-team-created.html (381434 chars)
+[s8-gentry] second session opened (新建会话/新会话)
+[s8-gentry] second session empty (§4.3 no turn yet) — sending first message to unlock the tab row
+[s8-gentry] PASS — second session shows the 团队 tab (after first message, §4.3)
+[s8-gentry] PASS — zero state 从此处开始团队 present
+[s8-gentry] PASS — R118 overlay shape on session path: handoff block PRESENT ({"handoffBlocks":1})
+[s8-gentry] PASS — R119-1 session path: loud unselected state ({"bpValue3":"","options":[{"value":"","text":"选择蓝图…","disabled":true},{"value":"s8v-bp-1","text":"s8v-bp-1 (rev 1)","disabled":false}]})
+[s8-gentry] PASS — R119-1 session path: disabled placeholder option ({"options":[{"value":"","text":"选择蓝图…","disabled":true},{"value":"s8v-bp-1","text":"s8v-bp-1 (rev 1)","disabled":false}]})
+[s8-gentry] screenshot → browser/gentry-06-session-panel-unselected.png
+[s8-gentry] PASS — first handoff.prepare settled (summary ready)
+[s8-gentry] PASS — handoff.prepare called exactly once before typing ({"prepareN1":1})
+[s8-gentry] PASS — initial-work textarea present
+[s8-gentry] PASS — R119-2 prepare NOT re-fired by keystrokes (still exactly once) ({"before":1,"after":1})
+[s8-gentry] PASS — R119-2 summary text stable across typing ({"summaryText1":"S8-M4 ok (deepseek-v4-flash).","summaryText2":"S8-M4 ok (deepseek-v4-flash)."})
+[s8-gentry] PASS — R119-2 handoff block stays ready (no flicker back to preparing) ({"stillReady":true,"midPreparing":0})
+[s8-gentry] screenshot → browser/gentry-06-no-flicker-after-typing.png
+[s8-gentry] dom dump → browser/gentry-06-no-flicker-after-typing.html (377846 chars)
+[s8-gentry] report → browser/gentry-report.json
+[s8-gentry] team-remote RPCs: 22; failures: none
+[s8-gentry] GENTRY COMPLETE — all checks passed

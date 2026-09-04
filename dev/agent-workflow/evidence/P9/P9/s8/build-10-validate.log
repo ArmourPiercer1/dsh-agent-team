@@ -1,0 +1,12 @@
+﻿ok: handoff id=@dsh-agent-team/client
+ok: factory returned module with keys [inject, name, apply]
+ok: frozen plugin contract (name/inject/apply)
+node : s8-validate: FAIL — missing slot registration conversation.view (got [{"name":"settings.section","id":"team"
+,"order":50,"locale":"team"},{"name":"conversation.view","id":"team","order":20,"locale":"team"},{"name":"conversat
+ion.input.dock","id":"team","order":15,"locale":"team"}])
+At line:1 char:244
++ ... nce\P9\s8'; node "$s8\s8-validate.mjs" 'D:\AgentDev\dsh-plugins\dsh-a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (s8-validate: FA...cale":"team"}]):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

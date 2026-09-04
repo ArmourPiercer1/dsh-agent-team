@@ -1,0 +1,263 @@
+{
+  "nonce": "mtkvds5d91659e",
+  "phase": "stateprobe",
+  "scenario": {
+    "criterion": "STATEPROBE targeted state-route verification (mcp-less world-B variant + mcp-configured world-A style; vertical defect #7 closure, run16b)",
+    "pass": true,
+    "durationMs": 12546,
+    "assertions": [
+      {
+        "name": "SPROBE-B: state route responds 200 (no 500) — mcp-less world-B variant (mcpServer: null)",
+        "ok": true,
+        "detail": "status=200"
+      },
+      {
+        "name": "SPROBE-B: TEAM row state well-formed (rootSessionId/phase/teamSession)",
+        "ok": true,
+        "detail": "root=session-t12v-sprobe-b-mtkvds5d91659e phase=create teamSession={\"rootSessionId\":\"session-t12v-sprobe-b-mtkvds5d91659e\",\"blueprintId\":\"t12v-bp-b\",\"revision\":\"1\",\"contentHash\":\"sha256:7442fa415f0862a8045f21a23cd22dba63de66b77f6b7e3cd0aa9c7c9a97057f\",\"defaultWorkspa"
+      },
+      {
+        "name": "SPROBE-B: row health ok=true with the frozen tool count (10)",
+        "ok": true,
+        "detail": "health={\"status\":200,\"body\":{\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"session-t12v-sprobe-b-mtkvds5d91659e\",\"liveSessions\":[\"session-t12v-sprobe-b-mtkvds5d91659e\"],\"toolCount\":10}}"
+      },
+      {
+        "name": "SPROBE-B: mcp-less variant reports serverName: null in the governance mcp cell (T12-V14 — no 500, mcp view fields omitted)",
+        "ok": true,
+        "detail": "mcp cell={\"mounted\":false,\"serverName\":null}"
+      },
+      {
+        "name": "SPROBE-A: state route responds 200 (no 500) — mcp-configured world-A style",
+        "ok": true,
+        "detail": "status=200"
+      },
+      {
+        "name": "SPROBE-A: TEAM row state well-formed (rootSessionId/phase/teamSession)",
+        "ok": true,
+        "detail": "root=session-t12v-sprobe-a-mtkvds5d91659e phase=create teamSession={\"rootSessionId\":\"session-t12v-sprobe-a-mtkvds5d91659e\",\"blueprintId\":\"t12v-bp-a\",\"revision\":\"1\",\"contentHash\":\"sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d\",\"defaultWorkspa"
+      },
+      {
+        "name": "SPROBE-A: row health ok=true with the frozen tool count (10)",
+        "ok": true,
+        "detail": "health={\"status\":200,\"body\":{\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"session-t12v-sprobe-a-mtkvds5d91659e\",\"liveSessions\":[\"session-t12v-sprobe-a-mtkvds5d91659e\"],\"toolCount\":10}}"
+      },
+      {
+        "name": "SPROBE-A: mcp-configured variant reports a real serverName in the governance mcp cell",
+        "ok": true,
+        "detail": "mcp cell={\"mounted\":false,\"serverName\":\"t12vmini\",\"allowed\":false,\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=deny\"}"
+      }
+    ],
+    "evidence": {
+      "SPROBE-B": {
+        "kind": "mcp-less world-B variant (mcpServer: null)",
+        "port": 3185,
+        "request": {
+          "method": "GET",
+          "url": "http://127.0.0.1:3185/__p6t6/state"
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "boot": 1,
+            "phase": "create",
+            "rootSessionId": "session-t12v-sprobe-b-mtkvds5d91659e",
+            "teamSession": {
+              "rootSessionId": "session-t12v-sprobe-b-mtkvds5d91659e",
+              "blueprintId": "t12v-bp-b",
+              "revision": "1",
+              "contentHash": "sha256:7442fa415f0862a8045f21a23cd22dba63de66b77f6b7e3cd0aa9c7c9a97057f",
+              "defaultWorkspace": "C:/agent-team/work/t12v/b",
+              "createdAt": "2026-09-03T01:52:19.700Z",
+              "generation": 2
+            },
+            "members": [
+              {
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "childSessionId": "undefined",
+                "lifecycle": "undefined",
+                "activityVersion": 1
+              }
+            ],
+            "control": {
+              "requests": [],
+              "decisions": [],
+              "consumptions": []
+            },
+            "activity": [],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "governance": {
+              "overrides": [],
+              "sessions": {
+                "session-t12v-sprobe-b-mtkvds5d91659e": {
+                  "instanceId": "inst-leader",
+                  "model": {
+                    "current": {
+                      "provider": "deepseek-official",
+                      "model": "t12v-model-b"
+                    },
+                    "selection": {
+                      "provider": "deepseek-official",
+                      "model": "t12v-model-b"
+                    },
+                    "source": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null
+                    },
+                    "suppressed": [],
+                    "unavailable": false,
+                    "deniedBy": {
+                      "by": "team",
+                      "reason": "unspecifiedFailClosed"
+                    },
+                    "pendingNextBoundary": [],
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "mcp": {
+                    "mounted": false,
+                    "serverName": null
+                  }
+                }
+              }
+            },
+            "observations": []
+          }
+        },
+        "rowHealth": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "boot": 1,
+            "ready": true,
+            "rootSessionId": "session-t12v-sprobe-b-mtkvds5d91659e",
+            "liveSessions": [
+              "session-t12v-sprobe-b-mtkvds5d91659e"
+            ],
+            "toolCount": 10
+          }
+        },
+        "rowMounted": {
+          "dsh-agent-team": true,
+          "p6t6-team-tools": true
+        }
+      },
+      "SPROBE-A": {
+        "kind": "mcp-configured world-A style",
+        "port": 3186,
+        "request": {
+          "method": "GET",
+          "url": "http://127.0.0.1:3186/__p6t6/state"
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "boot": 1,
+            "phase": "create",
+            "rootSessionId": "session-t12v-sprobe-a-mtkvds5d91659e",
+            "teamSession": {
+              "rootSessionId": "session-t12v-sprobe-a-mtkvds5d91659e",
+              "blueprintId": "t12v-bp-a",
+              "revision": "1",
+              "contentHash": "sha256:0df40ff5c8374f86a61e88efb02837483e9caa1e9de0ffa0bfc8e6227983c66d",
+              "defaultWorkspace": "C:/agent-team/work/t12v/a",
+              "createdAt": "2026-09-03T01:52:27.059Z",
+              "generation": 2
+            },
+            "members": [
+              {
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "childSessionId": "undefined",
+                "lifecycle": "undefined",
+                "activityVersion": 1
+              }
+            ],
+            "control": {
+              "requests": [],
+              "decisions": [],
+              "consumptions": []
+            },
+            "activity": [],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "governance": {
+              "overrides": [],
+              "sessions": {
+                "session-t12v-sprobe-a-mtkvds5d91659e": {
+                  "instanceId": "inst-leader",
+                  "model": {
+                    "current": {
+                      "provider": "deepseek-official",
+                      "model": "t12v-model-a"
+                    },
+                    "selection": {
+                      "provider": "deepseek-official",
+                      "model": "t12v-model-a"
+                    },
+                    "source": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null
+                    },
+                    "suppressed": [],
+                    "unavailable": false,
+                    "deniedBy": {
+                      "by": "team",
+                      "reason": "unspecifiedFailClosed"
+                    },
+                    "pendingNextBoundary": [],
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "mcp": {
+                    "mounted": false,
+                    "serverName": "t12vmini",
+                    "allowed": false,
+                    "source": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null
+                    },
+                    "unavailable": false,
+                    "deniedBy": {
+                      "by": "team",
+                      "reason": "unspecifiedFailClosed"
+                    },
+                    "pendingNextBoundary": [],
+                    "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=deny"
+                  }
+                }
+              }
+            },
+            "observations": []
+          }
+        },
+        "rowHealth": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "boot": 1,
+            "ready": true,
+            "rootSessionId": "session-t12v-sprobe-a-mtkvds5d91659e",
+            "liveSessions": [
+              "session-t12v-sprobe-a-mtkvds5d91659e"
+            ],
+            "toolCount": 10
+          }
+        },
+        "rowMounted": {
+          "dsh-agent-team": true,
+          "p6t6-team-tools": true
+        }
+      }
+    },
+    "notes": []
+  }
+}

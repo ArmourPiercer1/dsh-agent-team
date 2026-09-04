@@ -1,0 +1,37 @@
+t12:
+  plan: docs/plans/active/DSH_Agent_Team_vNext_T12_Production_Vertical_Closure_Plan_V2_OLD_DSH_PINNED.md
+  clock:
+    T0: 2026-09-02T20:20:00+08:00
+    integration_done: 2026-09-02T22:27:08+08:00
+    vertical_done: 2026-09-03T08:10:06+08:00
+    verdict: 2026-09-03T08:35:00+08:00
+  base: 7d07330cca7bb3df416e9d4307d9ab4a64
+  old_dsh_pin: cd5ef8148158c3a752a658978873241fdf8e2bbc
+  integration:
+    branch: int/T12-production-closure
+    tip: 62c7c81
+    commits: 17
+    quick_acceptance: "tsc runtime/remote exit 0; runtime+remote 1179/1179; testkit 124/124 (pin 558 = 543+15)"
+  defects: "B1-B6, M1-M4, H1, H4 ALL FIXED (12/12); H2->P10 debt, H3 accepted; vertical-phase fixes (all parent-authorized vNext, zero core): resume leader-row guard T12-V10 952b003 (verified RESTART 14/15 x2) + p6t6 state-route double null-deref guards T12-V11 65e1982 (L433) + T12-V14 9ef78ca (L441) + yaml dep T12-V1 cc545d3; 360s-window = 性能 leftover + P10 core-instrumentation item"
+  vertical:
+    worktree: .worktrees/T12-V (task/T12-vertical-slice, from 62c7c81)
+    builder: subagent 2bb3e9b1
+    final_run: "run #12 (nonce mtkq2htxfd7514, 07:23:27-08:10:06 local, 75/84; matrix stable across runs #10/#11/#12)"
+    results: "V1 11/11; V2 11/14; V3 5/6; V4 6/6; V5 6/6 (strict schemaVersion===2); HANDOFF 17/17; LIFECYCLE 5/9; RESTART 14/15 x2 consecutive. 9 fails explained: 8 = 360s-window latch latency (性能, allowed leftover; root agent never affected in 10+ runs) + 1 = plan §12 literal unreachable by construction (identity.ts L289-298 root-scoped spec) — documented plan-vs-code divergence, honest fail retained, flagged to frozen-doc owners"
+    cherry_picks: "13 T12-V commits cherry-pick -x -> int tip f1e7f32; + pin fix b2b7bb6 = FINAL TIP"
+    evidence: "dev/agent-workflow/evidence/T12/ (t12v-summary-run10/11/12.json, t12v-run11-* main-agent snapshots, t12v-run.log, monitoring docs, t12v-finding-360s-first-turn.md, t12v-seam-rootcause.md, T12-decision.md final)"
+  section13b_final_tip:
+    final_sha: b2b7bb6
+    pin_fix: "p4t6 pin 558->560 (b2b7bb6): +2 = T12-V harness sources (t12-vertical.mjs + mock-deepseek.mjs), both zero denylist vocabulary; sanctioned test-maintenance per fa8705d precedent"
+    full_tests: "2170/2170 PASS (t12-13b-full-tests-postpin.log; pre-pin run was 2169/2170 = the pin itself)"
+    tsc_typecheck_8: "8/8 exit 0 (t12-13b-tsc-typecheck.log)"
+    tsc_build_8: "7/8 exit 0; tools TS6059 pre-existing (t12-13b-tsc-build.log)"
+    composition_smoke: "official script pre-existing stale-path FAIL + corrected-path diag PASS (t12-13b-composition-smoke.log, t12-13b-smoke-diag.log)"
+    zero_core: "host-only verify-zero-core PASS exit 0, 0 findings (C1-C3 + C5, all four brackets empty, host head cd5ef814 status/diff empty pre+post; t12-13-zerocore-final-host.json) + full 9-plugin C4 scan: 733 private-relative-escape, ALL to sibling vNext packages in worktree, 0 host-tree entries (t12-13-zerocore-final-pluginscan.json)"
+  preexisting_issues_for_P9:
+    - "tools-build TS6059 (tools.ts:76 contracts-src import)"
+    - "composition-smoke stale P1-T4 path (script 932edb1 vs P8-S5A layout 4ea9396)"
+    - "tsc build emits inline .js/.d.ts/.map under packages/{contracts,domain,runtime,storage}/src (644 artifacts observed) — clean before re-scan; p4t6 counts .d.ts mirrors"
+  followup: "P9 UI plan (docs/plans/active/DSH_Agent_Team_vNext_P9_UI_T12_T24_Legacy_Reuse_Implementation_Test_Plan.md) STARTS on GO without approval (user-confirmed 2026-09-02); baseline = T12 final tip b2b7bb6"
+  verdict: "GO — 16/16 §15.1 conditions; adjudication: RESTART §12 literal = documented plan-vs-code divergence (honest fail retained); 性能 family = allowed leftover + P10. Full record: dev/agent-workflow/evidence/T12/T12-decision.md"
+  push: none (no authorization)

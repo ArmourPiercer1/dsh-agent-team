@@ -1,0 +1,13 @@
+PER-PKG VITEST GATE - int/P9-master-product-closure @ 071080d (post R125(1b) deps; single pass, no flake) - runner: node node_modules/vitest/vitest.mjs run (per-package cwd = R122 methodology; legacy via root config filter packages/legacy; it has no local vitest config) - 2026-09-05 00:54:42
+contracts  Test Files  13 passed (13) | Tests  150 passed (150)
+domain     Test Files  17 passed (17) | Tests  312 passed (312)
+storage    Test Files  21 passed (21) | Tests  269 passed (269)
+runtime    Test Files  116 passed (116) | Tests  1070 passed (1070)
+tools      Test Files  4 passed (4) | Tests  35 passed (35)
+remote     Test Files  9 passed (9) | Tests  92 passed (92)
+client     Test Files  33 passed (33) | Tests  480 passed (480)
+testkit    Test Files  15 passed (15) | Tests  124 passed (124)
+legacy     Test Files  7 passed (7) | Tests  98 passed (98)
+
+TOTAL (9 packages, per-package sum) = 2630 tests
+cross-check: root-config run (gate-test.log, packages/*/test/**/*.test.ts, node env) = 219 files / 2395 tests all green; delta vs per-package sum = client .client.spec.ts(x) UI suite (included only by packages/client/vitest.config.ts)

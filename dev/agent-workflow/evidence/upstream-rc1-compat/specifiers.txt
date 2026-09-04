@@ -1,0 +1,31 @@
+﻿client\src\plugin\team-mount-core.ts :: @deepseek-ai/dsh-client-locale/client | @deepseek-ai/dsh-client-store | @deepseek-ai/dsh-client-ui-conversation/client | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\NewTeamEntry.tsx :: @deepseek-ai/dsh-client-ui-conversation/client | @deepseek-ai/dsh-client-ui-primitives | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamActivity.tsx :: @deepseek-ai/dsh-client-ui-primitives | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamCreationPanel.tsx :: @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamDock.tsx :: @deepseek-ai/dsh-client-store | @deepseek-ai/dsh-client-ui-conversation/client | @deepseek-ai/dsh-client-ui-primitives | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamGovernance.tsx :: @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamLedger.tsx :: @deepseek-ai/dsh-client-ui-primitives | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamMemberDialogs.tsx :: @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamMembers.tsx :: @deepseek-ai/dsh-client-ui-primitives | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamSettingsSection.tsx :: @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamTimeline.tsx :: @deepseek-ai/dsh-client-ui-primitives | @deepseek-ai/dsh-client-ui-slots
+client\src\ui\TeamView.tsx :: @deepseek-ai/dsh-client-store | @deepseek-ai/dsh-client-ui-conversation/client | @deepseek-ai/dsh-client-ui-slots
+client\test\new-team-entry.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-activity.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-creation-handoff.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-creation-panel.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-dock.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-governance.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-ledger.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-legacy.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-members-actions.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-members.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-plugin.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-timeline.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+client\test\team-view.client.spec.tsx :: @deepseek-ai/dsh-client-test-runtime
+runtime\member-residency\harness\plugin.mjs :: @deepseek-ai/dsh-agent | @deepseek-ai/dsh-scope | @deepseek-ai/dsh-session | @deepseek-ai/dsh-system-prompt
+runtime\member-residency\harness\slots-t6.mjs :: @deepseek-ai/dsh-agent | @deepseek-ai/dsh-mcp-client | @deepseek-ai/dsh-scope | @deepseek-ai/dsh-session | @deepseek-ai/dsh-system-prompt
+runtime\root-binding\harness\plugin.mjs :: @deepseek-ai/dsh-agent | @deepseek-ai/dsh-scope | @deepseek-ai/dsh-session | @deepseek-ai/dsh-system-prompt
+runtime\root-binding\harness\seam.mjs :: @deepseek-ai/dsh-storage-domain
+runtime\root-binding\harness\slots.mjs :: @deepseek-ai/dsh-agent | @deepseek-ai/dsh-mcp-client | @deepseek-ai/dsh-scope | @deepseek-ai/dsh-session | @deepseek-ai/dsh-system-prompt
+runtime\src\plugin\live\agent-bindings.mjs :: @deepseek-ai/dsh-agent | @deepseek-ai/dsh-llm | @deepseek-ai/dsh-mcp-client | @deepseek-ai/dsh-session

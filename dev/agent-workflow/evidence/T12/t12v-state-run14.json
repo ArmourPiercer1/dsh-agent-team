@@ -1,0 +1,16 @@
+{
+  "nonce": "mtktg7nu58c6d0",
+  "a1": {
+    "rootSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+    "teamSessionId": "session-t12v-a-root-mtktg7nu58c6d0",
+    "workerA": {
+      "instanceId": "inst-1esq73x1qs9x",
+      "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0"
+    },
+    "workerV4": {
+      "instanceId": "inst-1esq73x1qs9x",
+      "childSessionId": "session-team-child-5f4cde354e9a1ffa59e4c89c2af83cf0"
+    }
+  },
+  "restartIdentity": null
+}

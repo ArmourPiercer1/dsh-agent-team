@@ -1,0 +1,16 @@
+{
+  "nonce": "mtksabrjddb95b",
+  "a1": {
+    "rootSessionId": "session-t12v-a-root-mtksabrjddb95b",
+    "teamSessionId": "session-t12v-a-root-mtksabrjddb95b",
+    "workerA": {
+      "instanceId": "inst-13lhsq51g9a6",
+      "childSessionId": "session-team-child-b6ecd8c9622bf65f725959231c681346"
+    },
+    "workerV4": {
+      "instanceId": "inst-13lhsq51g9a6",
+      "childSessionId": "session-team-child-b6ecd8c9622bf65f725959231c681346"
+    }
+  },
+  "restartIdentity": null
+}

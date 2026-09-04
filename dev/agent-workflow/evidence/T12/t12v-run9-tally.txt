@@ -1,0 +1,36 @@
+﻿== V1 pass=true dur=1106ms checks=11/11 :: V1 fresh Root: minimal legal Team create via production row create path; durable TeamSession; fresh RootBinding; valid Leader identity; REAL Root Agent under DSH_HOME with cwd == W_root (session meta, not projection); zero synthetic members
+   evidence: rootSessionFile="D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-t12-a\\sessions\\--C-agent-team-work-t12v-a--\\session-t12v-a-root-mtkjdrmw6cee19\\session.jsonl.zstd"
+== V2 pass=false dur=1383385ms checks=8/14 :: V2 real Member: real DSH child Session (cwd == W_child, persona visible in real prompt assembly, effective model); the mcpServer:null config variant (world B) does not crash
+   [FAIL] [A] child turn settled against the mock :: <ack not in child log within 480s>
+   [FAIL] [A] persona installed and visible in the REAL prompt assembly (system prompt in the mock-captured request) :: system texts=[]
+   [FAIL] [A] effective model = row static selection (deepseek-official/t12v-model-a) :: model=undefined
+   [FAIL] [B] state route well-formed for the mcpServer:null row (shipped-code expectation — KNOWN DEFECT: plugin.mjs L433 dereferences config.mcpServer.name) :: state route failed: row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkjdrmw6cee19 phase=create); last: status=500 body={"error":"Cannot read properties of null (r
+   [FAIL] [B] child turn settled against the mock (no crash from mcpServer:null) :: <ack missing after 900s>
+   [FAIL] [B] effective model = t12v-model-b (row static selection, mcpServer:null variant) :: found=false
+== V3 pass=false dur=481941ms checks=2/5 :: V3 real policy: external hard DENY of mcp + member override ALLOW mcp => mcp remains denied at the ACTUAL consumption boundary (model tool schema omits the mcp tool; the agent loop fails the call; no mcp mount established) — not just the projection
+   [FAIL] turn settled after the mcp tool call was handled by the real agent loop :: <denied-ack not in child log within 480s>
+   [FAIL] child session log records the mcp tool attempt at the consumption boundary :: log contains attempted tool name mcp__t12vmini__ping: false
+   [FAIL] model request tool schema omits the mcp tool (denied at the model-consumption boundary) :: tools=[]
+== V4 pass=true dur=937ms checks=6/6 :: V4 delegate real work: the exact task text T12_VERTICAL_TASK_<nonce> reaches the real child session log; the real turn against the mock completes; durable truth settles
+== V5 pass=true dur=22ms checks=6/6 :: V5 Projection/Remote: TeamProjection read through the BROWSER-FACING public Remote mounted endpoint (/team-remote) — the test side NEVER uses TeamDomain direct reads as an assertion source
+== HANDOFF pass=true dur=13335ms checks=17/17 :: HANDOFF plan §11.1: source team (world C row, root C1) + requestToken X + context C => target team B1 (distinct minted identity, real target Root Agent, C reaches it); then a DIFFERENT source team (world B row, root B) + the SAME requestToken X => a DIFFERENT target identity B2 (the B5 composite)
+   evidence: prepare1CarriesC=true prepare2CarriesC=true
+== LIFECYCLE pass=false dur=904246ms checks=5/9 :: LIFECYCLE plan §11.2: real archive of a member with a live background descendant (truly recursive drain, honest numeric drained count), restore, real follow-up turn; NO fake quiescent=true (the quiescence gate rejects non-true drains with LIFECYCLE_NOT_QUIESCENT)
+   [FAIL] a real descendant session was created under the member child session (real subagent lifecycle) :: <not found within 900s>
+   [FAIL] descendant session header marks origin=subagent with parentSession == member child (durable session meta) :: origin=undefined (parentSession match was the discovery criterion)
+   [FAIL] descendant turn settled against the mock (real subagent agent loop + session log) :: <desc ack not in descendant log within 900s>
+   [FAIL] archive reports an HONEST numeric drained count >= 1 (the live descendant was drained) :: drained=0 (a non-numeric drain fails the quiescence gate, so this number is genuine)
+   evidence: followupTurnStartMs=1788381149419 followupLatencyMs=-904921
+== RESTART pass=false dur=2005ms checks=8/16 :: RESTART plan §12: fresh #1/#2 under different RootSessionIds — observable no-collision invariants + honest precondition reachability verdict; then restart/resume (same Team root / MemberInstance / child Session, no duplicates, projection resumes)
+   [FAIL] precondition reachability: SAME member instanceId under a DIFFERENT root (plan §12 literal) — UNREACHABLE by construction :: identity.ts canonicalMemberSpecString L289-298: specString = [rootSessionId, templateId, label, groupId ?? "", workspace ?? ""].join("\u0000"); instanceId = "inst-" + token(specString, 12). rootSessio
+   [FAIL] resume boot: A2 instance booted (phase=resume, same root) :: boot failed: A2: row setup failed — setupError: session "undefined" not found; log tail:
+dsh web: http://127.0.0.1:3182/?token=<REDACTED>
+
+   [FAIL] resume boot: same durable TeamSession id on resume :: not evaluated — A2 resume boot failed
+   [FAIL] resume boot: SAME MemberInstance re-opened (instanceId + childSessionId stable across restart) :: not evaluated — A2 resume boot failed
+   [FAIL] resume boot: NO duplicate members (each instanceId exactly once) :: not evaluated — A2 resume boot failed
+   [FAIL] projection resumes after restart (same TeamSession, members intact) :: not evaluated — A2 resume boot failed
+   [FAIL] real follow-up turn admitted after restart :: not evaluated — A2 resume boot failed
+   [FAIL] restart follow-up turn settled against the mock (durable child log) :: not evaluated — A2 resume boot failed
+   evidence: resumeBootFailure="A2: row setup failed — setupError: session \"undefined\" not found; log tail:\ndsh web: http://127.0.0.1:3182/?token=<REDACTED>\n"
+modelPath: {"used":"mock-env","note":"DEEPSEEK_BASE_URL=http://127.0.0.1:3496 + DEEPSEEK_API_KEY=t12v-mock-key exported to every instance launch; the real dsh-llm deepseek-official adapter resolves the launch environment, so every model call ran through the mock SSE endpoint. The qiyuan-self/qwen3.8-27b fallback was NOT used.","baseUrl":"http://127.0.0.1:3496","fallbackUsed":false}

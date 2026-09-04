@@ -1,0 +1,21 @@
+T12-V20: align runner RESTART failure-path wording with the accepted classification
+
+The parent overruled the older "shipped BUG #1" classification of the
+resume-loop crash: the resume re-bind branch in agent-bindings.mjs is
+T12-added glue (T12-B2 family), not upstream DSH code; CORE PATCH BUDGET = 0
+constrains references/deepseek-harness-test-use only. Two dormant
+failure-path strings in the runner still carried the old framing and would
+have recorded it into the definitive run's evidence if the resume boot ever
+regressed:
+
+- L2089 root-cause check label: "the shipped resume loop stringifies to
+  undefined" -> "the pre-fix T12 resume loop (T12-B2 family) stringified to
+  undefined; the T12-V18 guard skips such rows".
+- L2098 failure note: "failed inside the shipped glue ... plan section 12
+  restart is not satisfiable by the shipped code" -> T12-B2 framing: a
+  leader or keyless row escaped the T12-V18 guard (leader skip +
+  null/undefined childSessionId guard mirroring the create-branch exclusion
+  L864-866) — guard regression, durable evidence recorded.
+
+String-only change on the failure paths; the success path and every check
+assertion are untouched. No functional change; no core edits.

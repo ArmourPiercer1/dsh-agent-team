@@ -1,0 +1,33 @@
+﻿V3 pass=false durationMs=481941
+ev.overrideSet = {"recordId":"ovr-mcp-inst-1rg2jzp0c8xx-g0","kind":"human-override","scope":"instance","rootSessionId":"session-t12v-a-root-mtkjdrmw6cee19","values":{"mcp":{"kind":"allow","items":["t12vmini"]}},"generation":1,"updatedAt":"2026-09-02T20:24:27.239Z","instanceId":"inst-1rg2jzp0c8xx"}
+ev.denyTurnStartMs = null
+ev.denyTurnLatencyMs = null
+ev.mcpTurnTools = []
+ev.mcpDiag = {"mounted":false,"serverName":"t12vmini","allowed":false,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-inst-1rg2jzp0c8xx-g0"},"unavailable":false,"deniedBy":{"by":"external","reason":"externalHardDeny"},"pendingNextBoundary":[],"explanation":"mcp: effective deny; team humanO
+== V2 pass=false durationMs=1383385 checks=8/14
+ev.worldA = {"createResult":{"status":"executed","action":"create-member","rootSessionId":"session-t12v-a-root-mtkjdrmw6cee19","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1rg2jzp0c8xx","templateId":"
+ev.worldB = {"state":{"probeFailed":true,"error":"row state not well-formed within 10000ms (expected rootSessionId=session-t12v-b-root-mtkjdrmw6cee19 phase=create); last: status=500 body={\"error\":\"Cannot read properties of null (
+== LIFECYCLE pass=false durationMs=904246 checks=5/9
+ev.descendantSession = null
+ev.archiveResult = {"member":{"schemaVersion":1,"rootSessionId":"session-t12v-a-root-mtkjdrmw6cee19","instanceId":"inst-1rg2jzp0c8xx","templateId":"worker","label":"v2-worker","childSessionId":"session-team-child-6340dddb0dfea0ca4384b14a4f
+ev.restoreResult = {"member":{"schemaVersion":1,"rootSessionId":"session-t12v-a-root-mtkjdrmw6cee19","instanceId":"inst-1rg2jzp0c8xx","templateId":"worker","label":"v2-worker","childSessionId":"session-team-child-6340dddb0dfea0ca4384b14a4f
+ev.followupOutcome = {"status":"executed","action":"follow-up","rootSessionId":"session-t12v-a-root-mtkjdrmw6cee19","callerRole":"human","targetInstanceId":"inst-1rg2jzp0c8xx","effect":{"kind":"work-admitted","instanceId":"inst-1rg2jzp0c8xx"
+ev.followupTurnStartMs = 1788381149419
+ev.followupLatencyMs = -904921
+== RESTART pass=false durationMs=2005 checks=8/16
+ev.fresh1 = {"root":"session-t12v-a-root-mtkjdrmw6cee19","worker":{"instanceId":"inst-1rg2jzp0c8xx","childSessionId":"session-team-child-6340dddb0dfea0ca4384b14a4f480099"}}
+ev.fresh2 = {"root":"session-t12v-b-root-mtkjdrmw6cee19","worker":{"instanceId":"inst-09u1zsw1t4vl","childSessionId":"session-team-child-e155a9b821b1bba4c850bbb1761ba675"}}
+ev.resumeBootFailure = "A2: row setup failed — setupError: session \"undefined\" not found; log tail:\ndsh web: http://127.0.0.1:3182/?token=<REDACTED>\n"
+ev.durableLeaderRow = {"activityVersion":1,"createdAt":"2026-09-02T20:16:23.628Z","instanceId":"inst-leader","label":"leader","rootSessionId":"session-t12v-a-root-mtkjdrmw6cee19","schemaVersion":2,"templateId":"leader"}
+== HANDOFF pass=true durationMs=13335 checks=17/17
+ev.stateProbeC = {"probeFailed":true,"error":"row state not well-formed within 10000ms (expected rootSessionId=session-t12v-c1-root-mtkjdrmw6cee19 phase=create); last: status=500 body={\"error\":\"Cannot read properties of null (reading 
+ev.sourceC1FirstTurnLatencyMs = {"admittedAtMs":1788382987541,"firstTurnStartMs":1788382987536,"latencyMs":-5}
+ev.prepare1 = {"summary":{"title":"T12V_HANDBACK_ACK_mtkjdrmw6cee19","bullets":["Captured 3 message(s) — 2 user, 1 assistant — at 2026-09-02T21:02:56.989Z through log seq 22.","First request: \"T12V_HANDBACK_CTX_mtkjdrmw6cee19\"","Las
+ev.prepare1CarriesC = true
+ev.create1 = {"state":{"kind":"completed","replayed":false,"context":{"contextToken":"handoff-ctx-69f2449a922acd2ab7024400b22f1051bbf92877","sourceSessionId":"session-t12v-c1-root-mtkjdrmw6cee19","capturedAt":"2026-09-02T21:03:08.594
+ev.targetB1FirstTurnLatencyMs = {"admittedAtMs":1788382988573,"firstTurnStartMs":1788382988856,"latencyMs":283}
+ev.sourceBFirstTurnLatencyMs = {"admittedAtMs":1788382989150,"firstTurnStartMs":1788382989146,"latencyMs":-4}
+ev.prepare2 = {"summary":{"title":"T12V_HANDBACK_ACK_mtkjdrmw6cee19","bullets":["Captured 3 message(s) — 2 user, 1 assistant — at 2026-09-02T20:47:38.544Z through log seq 22.","First request: \"T12V_HANDBACK_CTX_mtkjdrmw6cee19\"","Las
+ev.prepare2CarriesC = true
+ev.create2 = {"state":{"kind":"completed","replayed":false,"context":{"contextToken":"handoff-ctx-8c9245e6073214c687950a01a8875c64c4deca77","sourceSessionId":"session-t12v-b-root-mtkjdrmw6cee19","capturedAt":"2026-09-02T21:03:10.226Z
+ev.targetB2FirstTurnLatencyMs = {"admittedAtMs":1788382990211,"firstTurnStartMs":1788382990481,"latencyMs":270}

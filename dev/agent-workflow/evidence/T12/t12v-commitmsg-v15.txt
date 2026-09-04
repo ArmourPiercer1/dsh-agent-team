@@ -1,0 +1,23 @@
+T12-V15: add window-latch instrumentation to the row glue (run #7 postmortem item 3)
+
+Log-only, marker `t12v-wl`, ISO timestamps around every row-owned subsystem
+on the child-first-turn path so the durable session-log silence window can
+be correlated against what the row (not core) was doing on that timescale:
+
+- agentSetup: enter / consumption-resolved / model-selection-installed /
+  tools-registered / persona-installed / mcp-mount-start+done / exit
+- reconcileMcp: enter / await-fiber-start+done (mini-MCP bring-up) / unmount
+- prepareAgentForRequest: enter / consumption-resolved / exit
+- ensureLiveAgent: resume-start / resume-done
+- childFactory.createChildSession: resume-start+done / create-start+done
+- boot(): enter / root-ready / member-resume-start+done /
+  member-materialized / exit (covers the A2 restart1 rebind path)
+- sessionInput.submitAttributedInput + workDelivery.deliver +
+  deliverRootContext: enter / boundary-done / followup-submitted /
+  whenIdle-done (the quiescence wait is the latch point)
+- executeTool: enter / exit / exit-error (runner-visible boundary)
+
+Zero behavior change: log lines + two identical-expression local aliases
+(childSid/sid in the two delivery ports). Removable as a single chunk.
+The build phase copies the glue byte-identically into dist, so the next
+run picks this up with no further build change.

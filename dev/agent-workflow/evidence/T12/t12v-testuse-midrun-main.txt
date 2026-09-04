@@ -1,0 +1,4 @@
+﻿== test-use snapshot (main-agent, mid-run) 2026-09-02 23:31:07
+HEAD: cd5ef8148158c3a752a658978873241fdf8e2bbc
+status-porcelain-lines: 0
+diff-stat: []

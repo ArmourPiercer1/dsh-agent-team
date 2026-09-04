@@ -1,0 +1,242 @@
+== T12 phase fresh1 2026-09-02T18:23:38.711Z ==
+[2026-09-02T18:23:38.713Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T18:23:40.512Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T18:23:40.553Z] A1: profile created via throwaway boot
+[2026-09-02T18:23:40.554Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T18:23:40.555Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T18:23:42.375Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T18:23:43.571Z] A1: row ready — toolCount=10
+[2026-09-02T18:23:43.571Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T18:23:43.825Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T18:23:43.827Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkfcums5d034e"
+[2026-09-02T18:23:44.657Z] V1: pass=true
+[2026-09-02T18:31:45.393Z] V2 (world A part): pass=false
+[2026-09-02T18:39:46.164Z] mock: mock: 3 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:46.178Z] mock: mock: 4 text reply (31 chars): "T12V_DEFAULT_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:46.511Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T18:39:46.629Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:46.854Z] V3: pass=false
+[2026-09-02T18:39:47.284Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkfcums5d034e"
+[2026-09-02T18:39:47.719Z] V4: pass=true
+[2026-09-02T18:54:51.709Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkfcums5d034e"
+[2026-09-02T18:54:52.100Z] LIFECYCLE: pass=false
+[2026-09-02T18:54:52.109Z] V5: pass=true
+[2026-09-02T18:54:52.146Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-02T19:20:46.145Z ==
+[2026-09-02T19:20:46.146Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T19:20:47.950Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T19:20:47.991Z] A1: profile created via throwaway boot
+[2026-09-02T19:20:47.992Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T19:20:47.992Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T19:20:49.829Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T19:20:51.063Z] A1: row ready — toolCount=10
+[2026-09-02T19:20:51.065Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T19:20:51.315Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T19:20:51.317Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkhebl94d4768"
+[2026-09-02T19:20:52.139Z] V1: pass=true
+[2026-09-02T19:28:53.769Z] V2 (world A part): pass=false
+[2026-09-02T19:36:55.189Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:55.195Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:55.474Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T19:36:55.598Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:55.812Z] V3: pass=false
+[2026-09-02T19:36:56.222Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkhebl94d4768"
+[2026-09-02T19:36:56.665Z] V4: pass=true
+[2026-09-02T19:52:01.283Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkhebl94d4768"
+[2026-09-02T19:52:01.609Z] LIFECYCLE: pass=false
+[2026-09-02T19:52:01.639Z] V5: pass=true
+[2026-09-02T19:52:01.674Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-02T20:16:19.487Z ==
+[2026-09-02T20:16:19.488Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T20:16:21.265Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T20:16:21.311Z] A1: profile created via throwaway boot
+[2026-09-02T20:16:21.318Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T20:16:21.319Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T20:16:23.149Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T20:16:24.411Z] A1: row ready — toolCount=10
+[2026-09-02T20:16:24.412Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T20:16:24.678Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:16:24.680Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:16:25.520Z] V1: pass=true
+[2026-09-02T20:24:27.226Z] V2 (world A part): pass=false
+[2026-09-02T20:32:28.548Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:28.550Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:28.832Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T20:32:28.974Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:29.168Z] V3: pass=false
+[2026-09-02T20:32:29.501Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:32:30.105Z] V4: pass=true
+[2026-09-02T20:47:34.040Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkjdrmw6cee19"
+[2026-09-02T20:47:34.351Z] LIFECYCLE: pass=false
+[2026-09-02T20:47:34.373Z] V5: pass=true
+[2026-09-02T20:47:34.412Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-02T21:24:30.108Z ==
+[2026-09-02T21:24:30.110Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T21:24:33.751Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T21:24:34.016Z] A1: profile created via throwaway boot
+[2026-09-02T21:24:34.017Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T21:24:34.019Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T21:24:35.854Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T21:24:37.016Z] A1: row ready — toolCount=10
+[2026-09-02T21:24:37.018Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T21:24:37.280Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:24:37.282Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:24:38.128Z] V1: pass=true
+[2026-09-02T21:32:39.654Z] V2 (world A part): pass=false
+[2026-09-02T21:40:40.890Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:40.891Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:41.169Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T21:40:41.274Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:41.471Z] V3: pass=false
+[2026-09-02T21:40:42.061Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:40:42.449Z] V4: pass=true
+[2026-09-02T21:55:46.325Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkltfm07fb4c6"
+[2026-09-02T21:55:46.680Z] LIFECYCLE: pass=false
+[2026-09-02T21:55:46.696Z] V5: pass=true
+[2026-09-02T21:55:46.732Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-02T22:34:12.373Z ==
+[2026-09-02T22:34:12.374Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T22:34:15.752Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T22:34:15.793Z] A1: profile created via throwaway boot
+[2026-09-02T22:34:15.794Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T22:34:15.795Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T22:34:17.629Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T22:34:18.828Z] A1: row ready — toolCount=10
+[2026-09-02T22:34:18.829Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T22:34:19.127Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T22:34:19.128Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkob35v2077d6"
+[2026-09-02T22:34:19.931Z] V1: pass=true
+[2026-09-02T22:42:21.591Z] V2 (world A part): pass=false
+[2026-09-02T22:50:22.778Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:22.780Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:23.119Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T22:50:23.243Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:23.452Z] V3: pass=false
+[2026-09-02T22:50:24.054Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkob35v2077d6"
+[2026-09-02T22:50:24.540Z] V4: pass=true
+[2026-09-02T23:05:28.503Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkob35v2077d6"
+[2026-09-02T23:05:28.862Z] LIFECYCLE: pass=false
+[2026-09-02T23:05:28.878Z] V5: pass=true
+[2026-09-02T23:05:28.913Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-02T23:23:30.742Z ==
+[2026-09-02T23:23:30.743Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-02T23:23:32.537Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-02T23:23:32.578Z] A1: profile created via throwaway boot
+[2026-09-02T23:23:32.579Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-02T23:23:32.579Z] A1: directive written (boot=1 phase=create)
+[2026-09-02T23:23:34.415Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-02T23:23:35.660Z] A1: row ready — toolCount=10
+[2026-09-02T23:23:35.661Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-02T23:23:35.932Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-02T23:23:35.933Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkq2htxfd7514"
+[2026-09-02T23:23:36.759Z] V1: pass=true
+[2026-09-02T23:31:38.418Z] V2 (world A part): pass=false
+[2026-09-02T23:39:39.519Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:39.520Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:39.986Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-02T23:39:40.085Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:40.279Z] V3: pass=false
+[2026-09-02T23:39:40.634Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkq2htxfd7514"
+[2026-09-02T23:39:41.031Z] V4: pass=true
+[2026-09-02T23:54:45.087Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkq2htxfd7514"
+[2026-09-02T23:54:45.445Z] LIFECYCLE: pass=false
+[2026-09-02T23:54:45.463Z] V5: pass=true
+[2026-09-02T23:54:45.500Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-03T00:25:35.561Z ==
+[2026-09-03T00:25:35.562Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T00:25:38.627Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-03T00:25:38.667Z] A1: profile created via throwaway boot
+[2026-09-03T00:25:38.668Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T00:25:38.669Z] A1: directive written (boot=1 phase=create)
+[2026-09-03T00:25:40.495Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-03T00:25:41.689Z] A1: row ready — toolCount=10
+[2026-09-03T00:25:41.690Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-03T00:25:41.948Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtksabrjddb95b"
+[2026-09-03T00:25:41.950Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtksabrjddb95b"
+[2026-09-03T00:25:42.756Z] V1: pass=true
+[2026-09-03T00:33:43.649Z] V2 (world A part): pass=false
+[2026-09-03T00:41:44.284Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:44.285Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:44.539Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-03T00:41:44.662Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:44.833Z] V3: pass=false
+[2026-09-03T00:41:45.271Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtksabrjddb95b"
+[2026-09-03T00:41:45.658Z] V4: pass=true
+[2026-09-03T00:56:49.796Z] mock: mock: 8 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtksabrjddb95b"
+[2026-09-03T00:56:50.144Z] LIFECYCLE: pass=false
+[2026-09-03T00:56:50.152Z] V5: pass=true
+[2026-09-03T00:56:50.188Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-03T00:58:09.493Z ==
+[2026-09-03T00:58:09.494Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T00:58:12.300Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-03T00:58:12.342Z] A1: profile created via throwaway boot
+[2026-09-03T00:58:12.343Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T00:58:12.343Z] A1: directive written (boot=1 phase=create)
+[2026-09-03T00:58:14.166Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-03T00:58:15.319Z] A1: row ready — toolCount=10
+[2026-09-03T00:58:15.320Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-03T00:58:15.548Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:15.549Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:16.397Z] V1: pass=true
+[2026-09-03T00:58:17.101Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:17.104Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:17.301Z] V2 (world A part): pass=true
+[2026-09-03T00:58:19.239Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-03T00:58:19.552Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:20.411Z] V3: pass=true
+[2026-09-03T00:58:21.348Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtktg7nu58c6d0"
+[2026-09-03T00:58:22.295Z] V4: pass=true
+[2026-09-03T00:58:22.788Z] mock: mock: 8 tool-call reply: subagent
+[2026-09-03T00:58:23.417Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtktg7nu58c6d0"
+[2026-09-03T01:13:27.962Z] mock: mock: 10 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtktg7nu58c6d0"
+[2026-09-03T01:13:28.289Z] LIFECYCLE: pass=false
+[2026-09-03T01:13:28.329Z] V5: pass=true
+[2026-09-03T01:13:28.365Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})
+== T12 phase fresh1 2026-09-03T01:21:47.160Z ==
+[2026-09-03T01:21:47.161Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T01:21:50.552Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-03T01:21:50.597Z] A1: profile created via throwaway boot
+[2026-09-03T01:21:50.601Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T01:21:50.602Z] A1: directive written (boot=1 phase=create)
+[2026-09-03T01:21:52.426Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-03T01:21:53.650Z] A1: row ready — toolCount=10
+[2026-09-03T01:21:53.651Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-03T01:21:54.018Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkualfl56fb26"
+[2026-09-03T01:21:54.021Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkualfl56fb26"
+[2026-09-03T01:21:54.764Z] V1: pass=true
+[2026-09-03T01:21:55.752Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkualfl56fb26"
+[2026-09-03T01:21:55.755Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkualfl56fb26"
+[2026-09-03T01:21:55.975Z] V2 (world A part): pass=true
+[2026-09-03T01:21:56.324Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-03T01:21:56.449Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkualfl56fb26"
+[2026-09-03T01:21:57.129Z] V3: pass=true
+[2026-09-03T01:21:57.588Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkualfl56fb26"
+[2026-09-03T01:21:58.125Z] V4: pass=true
+[2026-09-03T01:21:58.401Z] mock: mock: 8 tool-call reply: subagent
+[2026-09-03T01:21:58.554Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtkualfl56fb26"
+== T12 phase fresh1 2026-09-03T01:31:11.370Z ==
+[2026-09-03T01:31:11.371Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-03T01:31:13.187Z] throwaway boot OK: http://127.0.0.1:3181/?token=<REDACTED>
+[2026-09-03T01:31:13.227Z] A1: profile created via throwaway boot
+[2026-09-03T01:31:13.228Z] A1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-t12-a\profiles\web\cordis.patch.yml
+[2026-09-03T01:31:13.229Z] A1: directive written (boot=1 phase=create)
+[2026-09-03T01:31:15.010Z] A1: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-03T01:31:16.164Z] A1: row ready — toolCount=10
+[2026-09-03T01:31:16.165Z] A1: rowMounted={"dsh-agent-team":true,"p6t6-team-tools":true}
+[2026-09-03T01:31:16.393Z] mock: mock: 1 text reply (31 chars): "T12V_DEFAULT_ACK_mtkumols991e58"
+[2026-09-03T01:31:16.395Z] mock: mock: 2 text reply (34 chars): "T12V_ROOT_FIRST_ACK_mtkumols991e58"
+[2026-09-03T01:31:17.213Z] V1: pass=true
+[2026-09-03T01:31:17.998Z] mock: mock: 3 text reply (31 chars): "T12V_DEFAULT_ACK_mtkumols991e58"
+[2026-09-03T01:31:17.999Z] mock: mock: 4 text reply (35 chars): "T12V_CHILD_FIRST_ACK_mtkumols991e58"
+[2026-09-03T01:31:18.198Z] V2 (world A part): pass=true
+[2026-09-03T01:31:18.597Z] mock: mock: 5 tool-call reply: mcp__t12vmini__ping
+[2026-09-03T01:31:18.705Z] mock: mock: 6 text reply (34 chars): "T12V_MCP_DENIED_ACK_mtkumols991e58"
+[2026-09-03T01:31:18.909Z] V3: pass=true
+[2026-09-03T01:31:19.309Z] mock: mock: 7 text reply (28 chars): "T12V_TASK_ACK_mtkumols991e58"
+[2026-09-03T01:31:19.711Z] V4: pass=true
+[2026-09-03T01:31:20.183Z] mock: mock: 8 tool-call reply: subagent
+[2026-09-03T01:31:20.325Z] mock: mock: 9 text reply (31 chars): "T12V_DEFAULT_ACK_mtkumols991e58"
+[2026-09-03T01:46:24.128Z] mock: mock: 10 text reply (32 chars): "T12V_FOLLOWUP_ACK_mtkumols991e58"
+[2026-09-03T01:46:24.518Z] LIFECYCLE: pass=false
+[2026-09-03T01:46:24.551Z] V5: pass=true
+[2026-09-03T01:46:24.589Z] A1: stopped (portFree=true, {"killed":true,"portFree":true})

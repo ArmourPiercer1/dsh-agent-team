@@ -1,0 +1,9 @@
+﻿{
+  "tool": "verify-zero-core",
+  "host": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+  "plugins": [],
+  "hostPackages": 272,
+  "findings": [],
+  "infoCount": 2,
+  "pass": true
+}

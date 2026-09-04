@@ -1,0 +1,41 @@
+T12-V21: runner — add targeted `stateprobe` phase + make fresh-home preflight phase-conditional
+
+Parent directive (msg 3): defect #7 (nullable-MCP state route, second site —
+views.mcpView.allowed, fixed in runner plugin glue by T12-V14) needs TARGETED
+closure evidence on its own: boot a fresh world-B variant (mcpServer: null,
+fresh home, own port) + probe its state route, expect well-formed (serverName:
+null, no 500) AND TEAM row state well-formed (rootSessionId/phase); also probe
+a normal mcp-configured world (world A style) still well-formed. Record
+request/response. Run homes must stay populated (final run), so the probe
+cannot boot on home A/B/C.
+
+Changes (runner t12-vertical.mjs only; no core, no plugin.mjs, no run.mjs):
+
+1. New phase `stateprobe` (dispatched after handoff; reachable via
+   --phases build,stateprobe):
+   - SPROBE-B: world-B variant, mcpServer: null, throwaway home
+     references/.dsh-test-t12-probe-b, dedicated port 3185.
+   - SPROBE-A: world-A style, mini-MCP at 3492, throwaway home
+     references/.dsh-test-t12-probe-a, dedicated port 3186.
+   - Per world: raw GET /__p6t6/state request + full response recorded as
+     evidence (status + body + row health + rowMounted), checks:
+       * state route responds 200 (no 500)
+       * TEAM row state well-formed (rootSessionId/phase/teamSession)
+       * row health ok=true with frozen tool count 10
+       * SPROBE-B: serverName === null (T12-V14 shape — no 500, mcp view
+         fields omitted); SPROBE-A: real string serverName
+   - finally-block: stop both probe instances; reset both probe homes to
+     empty (throwaway by design — never the run homes).
+   - Evidence: <EVIDENCE_DIR>/t12v-stateprobe-run16b-<nonce>.json.
+
+2. Fresh-home preflight (L1277-1281) becomes phase-conditional: home A is
+   asserted fresh only if smoke|fresh1|restart1 is requested, home B only if
+   fresh2|handoff, home C only if handoff. Required because the final run
+   MUST leave homes populated, and standalone `--phases build,stateprobe`
+   must still work afterwards. The per-boot fail-closed inside bootWorld
+   (L1056 area) remains UNCONDITIONAL for every boot — no integrity loss:
+   any requested phase that boots on a home still fails closed on a
+   non-empty one.
+
+No behavior change to any existing phase; no budget changes; no core edits;
+run.mjs byte-identical invariant untouched.

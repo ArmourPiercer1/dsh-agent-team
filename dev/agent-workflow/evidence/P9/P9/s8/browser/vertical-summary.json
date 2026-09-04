@@ -1,0 +1,240 @@
+{
+  "mode": "vertical",
+  "finishedAt": "2026-09-03T20:29:48.433Z",
+  "teamRemoteCalls": [
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": null,
+      "rpcId": "f0a76e86-8542-427d-942a-805596c3565e"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "d2396c29-e215-4d8a-b707-6d35a019ad33"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "64cdadb3-86d8-4361-89a8-1951bc8f9851"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": null,
+      "rpcId": "ca7ed238-203a-499a-a756-931fd605ef95"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+      "status": null,
+      "rpcId": "f926b8af-1502-4997-bd72-b4a7434c4990"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": null,
+      "rpcId": "707a6d82-c3d5-4529-8457-aae7d109ecd1"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": null,
+      "rpcId": "86af502c-e0d6-463f-b20f-18e5375f4771"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.list",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": 200,
+      "rpcId": "282fc40e-24f7-4879-8bb2-73b11bf2d787"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": 200,
+      "rpcId": "a47d950b-edd8-42cf-a892-f45140d50ced"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": 200,
+      "rpcId": "c2bf0a85-4cb4-4718-a692-4b55470b3f5d"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+      "status": null,
+      "rpcId": "f390c00c-0704-4331-983e-59e97f07aa43"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.prepare",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/intent.probe",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/catalog.get",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.create",
+      "status": null,
+      "rpcId": "02173f75-d569-4ba8-be62-b08980fd21a3"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/handoff.create",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": null,
+      "rpcId": "86557e13-d8a0-4f77-9e12-1234ccf93a69"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "c99c7fe3-d5b8-4eee-b559-a79df5b6801f"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "rpcId": "b6228895-65c5-47b5-b2f9-60eec56a37e7"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.create",
+      "status": null,
+      "rpcId": "e45a7bc2-a82c-4a83-9faa-cc54b0a725dd"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.create",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "ec825c04-a49e-4917-9944-781ed1a8f667"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "rpcId": "017a70d9-4aa5-4fde-82e3-44838a030e4b"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.followup",
+      "status": null,
+      "rpcId": "c943a09a-681d-4d97-9238-2f45f33be5b5"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.followup",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "19524850-3ed7-453d-8559-f73d43ade751"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "rpcId": "ceb3af8b-0387-40a8-a165-f4c43343f403"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.archive",
+      "status": null,
+      "rpcId": "5ce20622-9bd1-41a4-9d5b-3f48e2cc5944"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.archive",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "baad2ab4-3c01-4786-952f-e396a6042c87"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "rpcId": "516dcd3a-3af7-436d-a8bb-bc0ad8111603"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.restore",
+      "status": null,
+      "rpcId": "fb52b1c5-f3a2-420a-8385-aeb65b80208b"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.restore",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": "8f4efa2a-f3b6-4959-bd0d-ed5272843e0e"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "rpcId": "6cb15f99-18da-4354-9e2e-54032ce286d8"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getProjection",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/team.getLedgerPage",
+      "status": 200,
+      "rpcId": null
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.send",
+      "status": null,
+      "rpcId": "246aaeb9-337a-4f56-8eb1-33a7031ce158"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.send",
+      "status": 200,
+      "rpcId": "s8v-ft-1788467388398"
+    },
+    {
+      "url": "http://127.0.0.1:3180/team-remote/member.send",
+      "status": 200,
+      "rpcId": null
+    }
+  ],
+  "consoleErrorCount": 0,
+  "pageErrorCount": 0,
+  "failProbe": {
+    "uiTypedError": {
+      "note": "命令失败：malformed-params body must be a non-empty string of at most 200000 characters",
+      "rowsBefore": 2,
+      "rowsAfter": 2,
+      "statusesBefore": [
+        "running",
+        "settled"
+      ],
+      "statusesAfter": [
+        "running",
+        "settled"
+      ],
+      "pendingBadges": 0
+    },
+    "absentTarget": {
+      "teamSessionId": "s8v-root",
+      "status": 200,
+      "code": "TEAM_RUNTIME_INSTANCE_NOT_FOUND",
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"s8v-ft-1788467388398\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"TeamRuntime: no member instance 'inst-s8vnonexistent1' in team 's8v-root'\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contractVersion\":1,\"requestToken\":\"s8v-ft-1788467388398\",\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_RUNTIME_INSTANCE_NOT_FOUND\",\"message\":\"TeamRuntime: no member instance 'inst-s8vnonexistent1' in team 's8v-root'\",\"details\":{\"rootSessionId\":\"s8v-root\",\"instanceId\":\"inst-s8vnonexistent1\"}}}}}}"
+    }
+  }
+}

@@ -1,0 +1,163 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/P9/packages/client
+
+ ✓ test/team-members-model.client.spec.ts (10 tests) 5ms
+ ✓ test/team-ledger-model.client.spec.ts (20 tests) 7ms
+ ✓ test/team-legacy.test.ts (12 tests) 9ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 6ms
+ ✓ test/team-intent-model.test.ts (17 tests) 7ms
+ ✓ test/team-members-model.test.ts (5 tests) 5ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 3ms
+ ✓ test/team-member-commands.test.ts (11 tests) 4ms
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 4ms
+ ✓ test/projection-adapter.test.ts (16 tests) 5ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 6ms
+ ✓ test/ledger-adapter.test.ts (23 tests) 7ms
+ ✓ test/team-handoff.test.ts (23 tests) 6ms
+ ✓ test/team-ledger-store.test.ts (13 tests) 7ms
+ ✓ test/team-command-flow.test.ts (6 tests) 5ms
+ ✓ test/team-projection-store.test.ts (14 tests) 8ms
+ ✓ test/team-remote-client.test.ts (11 tests) 7ms
+ ✓ test/client-plugin-mount.test.ts (25 tests) 6ms
+ ✓ test/client.test.ts (2 tests) 2ms
+ ✓ test/team-remote-categories.test.ts (5 tests) 3ms
+ ✓ test/team-governance.test.ts (43 tests) 11ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 64ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 111ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 155ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 229ms
+ ✓ test/team-view.client.spec.tsx (12 tests) 238ms
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 296ms
+ ✓ test/team-members-actions.client.spec.tsx (16 tests) 572ms
+ ✓ test/team-ledger.client.spec.tsx (19 tests) 944ms
+     ✓ deepens the window on load-earlier clicks (local axis only)  381ms
+ ❯ test/team-creation-panel.client.spec.tsx (14 tests | 1 failed) 1028ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 91ms
+     × shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 65ms
+     ✓ selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 123ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 62ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 67ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 61ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 58ms
+     ✓ switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 124ms
+     ✓ create happy path: native root → frozen team.create → open the Root (UI §4.3 order) 66ms
+     ✓ a typed team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 63ms
+     ✓ a native root failure surfaces the local native-error marker without a retry (no root was retained) 121ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 3ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 59ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, no native root, draft intact) 65ms
+ ✓ test/team-governance.client.spec.tsx (24 tests) 1096ms
+ ❯ test/team-creation-handoff.client.spec.tsx (15 tests | 3 failed) 1322ms
+     ✓ renders the handoff block only when both the face and the source are present, enabled by default (UI §32.2) 33ms
+     ✓ prefills the default workspace from the source session workspace when the feed carries it (UI §32.2) 8ms
+     ✓ does not prefill when the feed lacks the workspace or the draft already picked one (UI §32.2) 12ms
+     ✓ enabling the handoff runs the one-shot prepare read and shows the summary preview (UI §32.3) 79ms
+     × unchecking cancels the pending preview and re-checking re-runs the one-shot read (UI §32.3) 69ms
+     ✓ a prepare typed failure renders verbatim and NEVER blocks the create (UI §32.3/§32.4) 61ms
+     ✓ the handoff create runs the frozen face with a fresh token and NO native root (G5: no optimistic patch, no cold root) 66ms
+     ✓ a completed-without-handoff state opens the Root as well (invariant 9: same id) 120ms
+     ✓ an awaiting-decision state renders the full triad (host options absent) and Retry re-invokes with a FRESH token (plan §10.5) 127ms
+     ✓ an awaiting-decision state narrowed by the host renders only the host options 122ms
+     × Continue without handoff is the client-local explicit decision: the standard create path, no handoff re-drive (UI §32.4) 127ms
+     × Cancel discards the attempt client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5) 126ms
+     ✓ a creation-failed state renders RETRY only and the Retry re-invokes with the SAME token (plan §10.5) 125ms
+     ✓ a typed handoff.create response failure (ok:false, no stored state) renders the full triad with a fresh-token Retry 127ms
+     ✓ a handoff.create transport loss (the only rejection kind) records the local native-error marker, no optimistic state 119ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a7553ec1c\bin\p
+npm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-handoff.client.spec.tsx > TeamCreationPanel (handoff, S5-D) > unchecking cancels the pend
+ing preview and re-checking re-runs the one-shot read (UI §32.3)
+AssertionError: expected <div …(2)>…(2)</div> to be null
+
+- Expected:
+null
+
++ Received:
+<div
+  class="_handoffReady_12fa3c"
+  data-intent-handoff-ready="true"
+>
+  <span
+    data-intent-handoff-ready-label="true"
+  >
+    Summary ready
+  </span>
+  <button
+    class="_secondary_12fa3c"
+    data-intent-handoff-preview="true"
+    type="button"
+  >
+    Preview
+  </button>
+</div>
+
+ ❯ test/team-creation-handoff.client.spec.tsx:356:73
+    354|     expect(face.prepare).toHaveBeenCalledTimes(1)
+    355|     fireEvent.change(handoffCheckbox(view.container), { target: { chec…
+    356|     expect(view.container.querySelector('[data-intent-handoff-ready]')…
+       |                                                                         ^
+    357|     expect(face.prepare).toHaveBeenCalledTimes(1)
+    358|     fireEvent.change(handoffCheckbox(view.container), { target: { chec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/team-creation-handoff.client.spec.tsx > TeamCreationPanel (handoff, S5-D) > Continue without handoff is
+ the client-local explicit decision: the standard create path, no handoff re-drive (UI §32.4)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-creation-handoff.client.spec.tsx:510:29
+    508|     expect(face.createRootSession).toHaveBeenCalledTimes(1)
+    509|     expect(face.createRootSession).toHaveBeenCalledWith({ workspaceId:…
+    510|     expect(face.teamCreate).toHaveBeenCalledTimes(1)
+       |                             ^
+    511|     await act(async () => {})
+    512|     expect(openSession).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/team-creation-handoff.client.spec.tsx > TeamCreationPanel (handoff, S5-D) > Cancel discards the attempt
+ client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-creation-handoff.client.spec.tsx:543:29
+    541|     expect(face.create).toHaveBeenCalledTimes(1)
+    542|     expect(face.createRootSession).toHaveBeenCalledTimes(1)
+    543|     expect(face.teamCreate).toHaveBeenCalledTimes(1)
+       |                             ^
+    544|     await act(async () => {})
+    545|     expect(openSession).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > shows the verbatim catalog failure note and k
+eeps the picker disabled (loud, never silent)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/team-creation-panel.client.spec.tsx:256:54
+    254|     expect(view.container.querySelector('[data-intent-catalog-error]')…
+    255|       .toBe('蓝图目录加载失败：CATALOG_UNAVAILABLE: catalog store down')
+    256|     expect(blueprintSelect(view.container).disabled).toBe(true)
+       |                                                      ^
+    257|   })
+    258|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 30 passed (32)
+      Tests  4 failed | 467 passed (471)
+   Start at  14:27:25
+   Duration  4.42s (transform 11.47s, setup 0ms, import 25.09s, tests 6.18s, environment 9.50s)
+

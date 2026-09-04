@@ -1,0 +1,4 @@
+{
+  "error": "session \"undefined\" not found",
+  "stack": "SessionPersistenceNotFoundError: session \"undefined\" not found\n    at PersistenceCoordinator.prepareCore (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/session/session-persistence/lib/index.js:1118:32)"
+}
