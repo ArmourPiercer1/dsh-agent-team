@@ -214,7 +214,9 @@ function makeMount(
     },
   }
 
-  // The public sessions seam double (Seam 3, RENAMED open/create).
+  // The public sessions seam double (Seam 3, RENAMED open/create; the `list`
+  // read face is the R121 prefill source — no current session in the
+  // fixture, so `currentSessionId()` answers null).
   const opened: string[] = []
   const created: Array<{ workspaceId?: string } | null> = []
   let rootCounter = 0
@@ -225,6 +227,10 @@ function makeMount(
     },
     open: (sessionId: string): void => {
       opened.push(sessionId)
+    },
+    list: {
+      getSnapshot: () => ({ current: undefined }),
+      subscribe: () => () => {},
     },
   }
 
@@ -639,6 +645,10 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(typeof inject.createRootSession).toBe('function')
     expect(typeof inject.listAgentPresets).toBe('function')
     expect(typeof inject.openSession).toBe('function')
+    expect(typeof inject.currentSessionId).toBe('function')
+    // R121: the prefill read face answers the Seam 3 current selection
+    // (null in the fixture — no session is selected).
+    expect((inject.currentSessionId as () => string | null)()).toBeNull()
     expect('handoff' in inject).toBe(false)
   })
 

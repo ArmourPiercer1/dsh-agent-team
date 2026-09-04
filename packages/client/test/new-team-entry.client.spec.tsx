@@ -9,7 +9,9 @@
  * (§3.1), the panel is the T7 surface (no handoff block: no handoff face
  * or source is wired), the fresh empty draft per open, and close timings
  * (cancel button, backdrop click; a successful create closes the overlay
- * BEFORE the native session switch, then navigates to the new root).
+ * BEFORE the native session switch, then navigates to the new root). R121:
+ * the fresh draft is prefilled with the workspace containing the current
+ * session (no current session -> the Default workspace is preserved).
  */
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -69,6 +71,7 @@ interface EntryFace {
   createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   openSession: (sessionId: string) => void
+  currentSessionId: () => string | null
 }
 
 function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
@@ -82,17 +85,45 @@ function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
       { id: 'team', name: 'Team', isDefault: false },
     ] satisfies readonly TeamPresetRow[])),
     openSession: vi.fn(),
+    currentSessionId: () => null,
     ...overrides,
   }
 }
 
-/** The stub props (the owner `wide` flag + the injected face + the locale seat). */
-function entryProps(wide: boolean, face: EntryFace): NewTeamEntryProps {
+/** One raw workspace feed row (the upstream `WorkspaceView` leaf fields). */
+interface WorkspaceItem {
+  readonly workspaceId: string
+  readonly sessionIds: readonly string[]
+  readonly path: string
+  readonly title: string
+  readonly createdAt: string
+  readonly updatedAt: string
+}
+
+/** A `useWorkspaces` stub answering the component's `s => s.items` selector. */
+function workspacesHook(items: readonly WorkspaceItem[]): NewTeamEntryProps['useWorkspaces'] {
+  const state = { items }
+  return ((selector: (s: typeof state) => unknown) =>
+    selector(state)) as NewTeamEntryProps['useWorkspaces']
+}
+
+/**
+ * The stub props (the owner `wide` flag + the injected face + the locale
+ * seat). Empty workspace feed by default (the pre-R121 stub behavior: the
+ * panel's workspace select stays unrendered).
+ */
+function entryProps(
+  wide: boolean,
+  face: EntryFace,
+  workspaceItems: readonly WorkspaceItem[] = [],
+): NewTeamEntryProps {
   return {
     wide,
     useSessions: () => { throw new Error('unused') },
     useSessionPendingInteraction: (() => undefined) as NewTeamEntryProps['useSessionPendingInteraction'],
-    useWorkspaces: (() => undefined) as NewTeamEntryProps['useWorkspaces'],
+    useWorkspaces: workspaceItems.length > 0
+      ? workspacesHook(workspaceItems)
+      : (() => undefined) as NewTeamEntryProps['useWorkspaces'],
     listCatalog: face.listCatalog,
     getCatalog: face.getCatalog,
     probeCompatibility: face.probeCompatibility,
@@ -100,6 +131,7 @@ function entryProps(wide: boolean, face: EntryFace): NewTeamEntryProps {
     createRootSession: face.createRootSession,
     listAgentPresets: face.listAgentPresets,
     openSession: face.openSession,
+    currentSessionId: face.currentSessionId,
     t: makeTranslate(zh),
   }
 }
@@ -119,6 +151,12 @@ function blueprintSelect(container: HTMLElement): HTMLSelectElement {
 function createButton(container: HTMLElement): HTMLButtonElement {
   const el = container.querySelector<HTMLButtonElement>('[data-intent-create]')
   if (el === null) throw new Error('the create button did not render')
+  return el
+}
+
+function workspaceSelect(container: HTMLElement): HTMLSelectElement {
+  const el = container.querySelector<HTMLSelectElement>('[data-intent-workspace]')
+  if (el === null) throw new Error('the workspace select did not render')
   return el
 }
 
@@ -220,5 +258,50 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     expect(face.teamCreate).toHaveBeenCalledTimes(1)
     expect(face.openSession).toHaveBeenCalledWith('root-1')
     expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
+  })
+
+  it('prefills the fresh draft with the current session\'s workspace (R121: no Default-workspace orphaning)', async () => {
+    const face = makeFace({ currentSessionId: () => 'sess-1' })
+    const view = render(
+      <NewTeamEntry
+        {...entryProps(true, face, [
+          { workspaceId: 'ws-1', sessionIds: ['sess-1'], path: 'C:/ws1', title: 'Ws One', createdAt: 'x', updatedAt: 'y' },
+        ])}
+      />,
+    )
+    fireEvent.click(entryButton(view.container))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    // The fresh draft is prefilled: the workspace containing the current
+    // session owns the select value (the user can still change it in the
+    // panel, or clear it back to Default).
+    expect(workspaceSelect(view.container).value).toBe('ws-1')
+    // The create gate is unchanged: an explicit blueprint pick is still
+    // required (the placeholder owns the empty value).
+    await vi.waitFor(() => {
+      expect(blueprintSelect(view.container).disabled).toBe(false)
+    })
+    expect(blueprintSelect(view.container).value).toBe('')
+    expect(createButton(view.container).disabled).toBe(true)
+  })
+
+  it('keeps the Default workspace (empty select value) when no session is selected (R121 no-prefill)', async () => {
+    const face = makeFace() // currentSessionId: () => null (the face default)
+    const view = render(
+      <NewTeamEntry
+        {...entryProps(true, face, [
+          { workspaceId: 'ws-1', sessionIds: ['sess-1'], path: 'C:/ws1', title: 'Ws One', createdAt: 'x', updatedAt: 'y' },
+        ])}
+      />,
+    )
+    fireEvent.click(entryButton(view.container))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    // No current selection -> the workspaceId stays null (UI §8: the
+    // Default workspace semantics are preserved).
+    expect(workspaceSelect(view.container).value).toBe('')
+    expect(createButton(view.container).disabled).toBe(true)
   })
 })

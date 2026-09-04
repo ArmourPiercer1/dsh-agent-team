@@ -112,7 +112,8 @@ function makeFixture(): Fixture {
     },
   }
 
-  // The public sessions seam double (Seam 3, open/create).
+  // The public sessions seam double (Seam 3, open/create; the `list` read
+  // face is the R121 prefill source — no current session in the fixture).
   const sessions = {
     create: async (o?: { readonly workspaceId?: string }): Promise<string> => {
       void o
@@ -120,6 +121,10 @@ function makeFixture(): Fixture {
     },
     open: (sessionId: string): void => {
       void sessionId
+    },
+    list: {
+      getSnapshot: () => ({ current: undefined }),
+      subscribe: () => () => {},
     },
   }
 

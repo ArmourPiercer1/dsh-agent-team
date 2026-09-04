@@ -47,6 +47,7 @@
  * TS only. @module @dsh-agent-team/client/plugin/team-mount-core
  */
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
 import type { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: the conversation.view / conversation.input.dock slot
 // declarations (declared by ui-conversation's session body) must be in the
@@ -167,8 +168,25 @@ export interface TeamConnection {
   readonly generation: TeamConnectionGeneration
 }
 
-/** The public sessions seam face (Seam 3, RENAMED `open`/`create`). */
+/**
+ * The session-list snapshot (the Seam 3 read face, narrowed to the current
+ * selection).
+ */
+export interface TeamSessionListSnapshot {
+  /** The currently selected session id; absent when no session is selected. */
+  readonly current: string | undefined
+}
+
+/**
+ * The public sessions seam face (Seam 3, RENAMED `open`/`create`, plus the
+ * `list` read face the global New Team entry prefills from — R121).
+ */
 export interface TeamSessions {
+  /**
+   * The session-list snapshot (the Seam 3 read face, narrowed to the current
+   * selection).
+   */
+  readonly list: ObservableSnapshot<TeamSessionListSnapshot>
   /**
    * Create one native root session.
    * @param opts - optional workspace binding.
@@ -634,7 +652,9 @@ export function applyTeamMount(
   // gap): the session-independent creation entry fixed at the sidebar foot.
   // Root scope -> the inject factory receives no session argument; the face
   // is the S5-A creation face plus the public session switch (no handoff
-  // face or source — the overlay panel is the T7 surface only).
+  // face or source — the overlay panel is the T7 surface only). R121: the
+  // face also carries the Seam 3 `list` current-selection read, which the
+  // entry uses to prefill the fresh draft's workspace.
   ctx.slots.inject('sidebar.footer.action', () =>
     ctx.slots.register(
       {
@@ -651,6 +671,7 @@ export function applyTeamMount(
           createRootSession: creation.createRootSession,
           listAgentPresets: creation.listAgentPresets,
           openSession,
+          currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
         }),
       },
       components.newTeamEntry,

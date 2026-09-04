@@ -45,7 +45,8 @@ import styles from './NewTeamEntry.module.css'
 /**
  * The injected face of the global New Team entry: the S5-A creation face
  * members (the frozen Remote wrappers verbatim) plus the native session
- * switch — the same seams the TeamView zero-state panel consumes.
+ * switch — the same seams the TeamView zero-state panel consumes — and the
+ * current-selection read the R121 draft prefill consumes.
  */
 export interface NewTeamEntryInjected {
   /** `catalog.list` (raw RemoteResponse). */
@@ -62,6 +63,8 @@ export interface NewTeamEntryInjected {
   readonly openSession: (sessionId: string) => void
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
+  /** The currently selected native session id (the Seam 3 list read face; null = none). */
+  readonly currentSessionId: () => string | null
 }
 
 /** Full entry props: owner share (`wide`), injected face, and locale seat. */
@@ -83,7 +86,7 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const {
     wide,
     listCatalog, getCatalog, probeCompatibility, teamCreate,
-    createRootSession, listAgentPresets, openSession,
+    createRootSession, listAgentPresets, openSession, currentSessionId,
     useWorkspaces, t,
   } = props
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -96,7 +99,18 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const openOverlay = (): void => {
     // §3.1: opening the overlay creates NO session — it only mounts the
     // Team-owned panel on a fresh draft.
-    setDraft(emptyTeamIntentDraft)
+    // R121 (live-trial finding): an unselected workspace means "Default
+    // workspace" (UI §8) — the native create would land the Root in the
+    // shell's default (process-cwd) workspace, orphaning the created team
+    // from the user's workspace sidebar/mirror. Prefill the draft from the
+    // current selection (the §32.2 prefill pattern, session-independent):
+    // the workspace containing the current session. The user can still
+    // change it in the panel (or clear it back to Default).
+    const sid = currentSessionId()
+    const workspaceId = sid === null
+      ? null
+      : workspaceViews.find(w => w.sessionIds.some(id => id === sid))?.workspaceId ?? null
+    setDraft({ ...emptyTeamIntentDraft, workspaceId })
     setOverlayOpen(true)
   }
   const closeOverlay = (): void => {
