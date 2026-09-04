@@ -195,6 +195,29 @@ factory 每页面执行一次，另一个注册惰性休眠。单文件双世界
 构造，失败即 die）——第三世界的 mega-combo 全量语法破坏（见下）证明
 单文件 facade 的语法正确性是 46 个插件注册的共同前置条件，闸不可省。
 
+### D9 — defaultWorkspace 推导（执行期决策，D5 第四世界 gentry G3 暴露）
+
+bundle 行机器无关（禁绝对路径）→ 无 `defaultWorkspace`；但 projection
+fold（`packages/runtime/projection/fold.ts` `resolveEffectiveWorkspace`：
+member.workspace ?? team defaultWorkspace ?? **fail-closed ProjectionError**）
+要求每个 team 行可解析 effective workspace，glue 的
+`effectiveRootWorkspace` 亦以同一 config 值为最后 fallback → 无该值的世界
+里**任何 team（boot + 创建）都不可投影**：`team.getProjection` →
+service-level ProjectionError → remote 层 invariant 5 吞栈 →
+`internal-error/untyped-error` → client mirror 落零态（G3 判据
+`data-intent-start-here` 不消失）。S8/manual 世界从未暴露：kit 的 user
+行恒带 `defaultWorkspace: <EV workspace>`（s8-boot-r125.mjs L216）。
+root.ts L1129-1132 的 P9-S8 注释正是该失败签名的在案记录。
+
+修法（host 入口推导，D4 同模式）：`host.ts` bootstrap 在
+`validateTeamPluginConfig` 后套纯函数 `withDefaultWorkspace(config,
+launchCwd)` —— 显式 config 恒优先（S8/manual 零变化），缺省 →
+**`process.cwd()`**（操作者启动 `dsh web` 的目录：机器无关、语义
+正确、glue agent cwd 与 fold 读同一值 → 两表面一致）。node-min.d.ts
+ambient shim +`process.cwd`；2 例新单测（显式优先 / 缺省推导 + 不 mutate
+入参）。cordis.patch.yml 头注释同步修正（原 "domain defaults the
+workspace" 措辞失准）。
+
 ### D5 — 测试世界（核心证据，真实 CLI reconcile 路径）
 
 全新 DSH_HOME = `references/.dsh-test-pbf-<stamp>`（工作区内；端口 3180 族，
@@ -283,8 +306,20 @@ Unexpected token '}'`（node --check 定位 = 我们 bundle 的 factory 尾部�
 尾部却多留一行旧结构的 `\t}` 闭合 → 全文件 brace 失衡 -1（string-aware
 扫描器 scan-braces.mjs 对照第二世界旧 bundle final=0 / 新 final=-1 确诊）。
 修复 = 删尾部残留行 + builder 增 parse-only 语法闸（见 D8）→ 五闸重绿 →
-Commit F → 第四世界全量重跑（本条目的最终证据以第四世界为准；
-二、三世界保留为失败留痕）。
+Commit F → 第四世界全量重跑（二、三世界保留为失败留痕）。
+
+**第四跑记录（世界 2026-09-04T20-49-41，装 98cce06 = D8 修复版）**：setup
+全断言 PASS；boot 全 gate 绿（D5-READY，client-bundle 6A8395EF…
+byte-identical）；**gentry G0 首次通过**（壳渲染成功 —— 双注册在 bundle
+世界实证：46 插件全部注册，overlay/blueprint/probe/team.create/§4.3
+tab 门控/handoff 无 flicker 等 30+ 项 PASS）；G3 失败 = 创建 team 后
+Root 团队视图零态不消失。活体直查 `team.getProjection`（cookie + 创建
+rootSessionId）= `ok:false internal-error/untyped-error`（host 侧按
+invariant 5 吞栈，instance 日志零输出）→ 根因链 = fold 的
+`resolveEffectiveWorkspace` fail-closed + bundle 行无 `defaultWorkspace`
++ S8 kit 行恒有该值（从未暴露）→ D9 host 入口 `process.cwd()` 推导 →
+Commit G → 第五世界全量重跑（本条目的最终证据以第五世界为准；
+二、三、四世界保留为失败留痕）。
 
 ### D6 — 五闸与红线（继承 R125 判据）
 

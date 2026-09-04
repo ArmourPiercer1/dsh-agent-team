@@ -202,7 +202,12 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
   修改蓝图字段时勿删这两行（R125 round-3 reviewer-9 实测：缺定界符的模板首次
   `team.create` 必失败）。
 - `rootSessionId` 每个世界唯一；复用既有世界时按现状调整。
-- `defaultWorkspace`（可选）：Root 默认 workspace 目录。
+- `defaultWorkspace`（可选）：Root 默认 workspace 目录。**缺省时 host 入口
+  默认取 `dsh web` 的启动目录（`process.cwd()`）**：projection fold 要求
+  每个 team 行有可解析的 effective workspace（否则团队视图 fail-closed
+  零态、`team.getProjection` 报 internal-error），而 git-install 的 bundle
+  行机器无关、不能携带绝对路径（plugin-bundle-form D9）；需要固定到特定
+  目录时在 user 层行显式给出。
 - **client 行（推荐 = R122 已 live 验证的相对形态）**：把 `packages/client/composition-shim/`
   复制进 `DSH_HOME` 内（如 `DSH_HOME/team-client-row/`），行写
   `name: "../../team-client-row/index.js"`（R122 验证世界即此形态）。`file:///<REPO>/…/index.js`

@@ -298,6 +298,26 @@ export function defaultGlueUrl(hostModuleUrl: string): string {
 }
 
 /**
+ * The row config with the default-workspace derivation applied
+ * (plugin-bundle-form D9): an explicit `config.defaultWorkspace` always
+ * wins; when absent the team rows inherit the directory the operator
+ * launched the host from. The machine-agnostic bundle row (root
+ * `cordis.patch.yml`) can carry no absolute path, but the projection fold
+ * REQUIRES a resolvable effective workspace on every team row (member row
+ * workspace ?? team default ?? fail-closed ProjectionError — a created
+ * team without one is unprojectable end-to-end), and the glue's own
+ * `effectiveRootWorkspace` falls back to the same config value — so the
+ * entry supplies the launch directory and both surfaces agree.
+ * @param config - the validated row config.
+ * @param launchCwd - the host process's working directory.
+ * @returns the config with `defaultWorkspace` guaranteed present.
+ */
+export function withDefaultWorkspace(config: TeamPluginConfig, launchCwd: string): TeamPluginConfig {
+  if (config.defaultWorkspace !== undefined) return config
+  return { ...config, defaultWorkspace: launchCwd }
+}
+
+/**
  * The default storage-seam URL candidates, per module layout (the dist
  * entry sits five directory levels below the runtime package root —
  * `dist/packages/runtime/src/plugin` — the source entry two — the same
@@ -446,7 +466,9 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   async function bootstrap(): Promise<TeamProductionRoot> {
     // A broken row must not arm the upstream resolution hook: validate the
     // row config first, then register the resolver exactly once per process.
-    const rowConfig = validateTeamPluginConfig(config)
+    const validatedConfig = validateTeamPluginConfig(config)
+    // D9: the launch-directory default workspace (explicit config wins).
+    const rowConfig = withDefaultWorkspace(validatedConfig, process.cwd())
     registerUpstreamResolverOnce()
 
     const agents = ctx.get('agents')

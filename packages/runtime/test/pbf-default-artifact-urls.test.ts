@@ -101,4 +101,22 @@ describe('plugin-bundle-form: location-derived artifact URLs', () => {
     expect(validated.glueUrl).toBe('file:///x/y.mjs')
     expect(validated.seamUrl).toBe('file:///x/z.mjs')
   })
+
+  it('withDefaultWorkspace keeps an explicit defaultWorkspace (S8/manual rows unchanged)', () => {
+    const validated = host.validateTeamPluginConfig({
+      ...minimalConfig(),
+      defaultWorkspace: '/explicit/pinned',
+    })
+    const effective = host.withDefaultWorkspace(validated, '/launch/cwd')
+    expect(effective.defaultWorkspace).toBe('/explicit/pinned')
+  })
+
+  it('withDefaultWorkspace derives the launch directory when absent (bundle row, D9)', () => {
+    const validated = host.validateTeamPluginConfig(minimalConfig())
+    expect(validated.defaultWorkspace).toBeUndefined()
+    const effective = host.withDefaultWorkspace(validated, '/launch/cwd')
+    expect(effective.defaultWorkspace).toBe('/launch/cwd')
+    // the validated config itself is not mutated (the derivation copies)
+    expect(validated.defaultWorkspace).toBeUndefined()
+  })
 })

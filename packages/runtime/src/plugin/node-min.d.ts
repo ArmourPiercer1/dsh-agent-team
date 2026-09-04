@@ -48,6 +48,15 @@ declare const URL: {
   createURL(input: string, base?: string | URL): URL
 }
 
+declare const process: {
+  /**
+   * The current working directory of the host process. Node builtin
+   * `process.cwd` (host.ts defaults the team workspace to the launch
+   * directory when the row config carries none — plugin-bundle-form D9).
+   */
+  cwd(): string
+}
+
 declare interface URL {
   /** The serialized URL (the only member host.ts consumes). */
   readonly href: string

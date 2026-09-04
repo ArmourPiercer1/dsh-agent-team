@@ -10,8 +10,11 @@
 # The row config intentionally carries NO glueUrl/seamUrl/defaultWorkspace:
 # the host entry derives the glue and seam module URLs from its own module
 # location (see packages/runtime/src/plugin/host.ts — defaultGlueUrl /
-# defaultSeamUrlCandidates, fail-closed when unresolvable) and the domain
-# defaults the workspace when none is configured.
+# defaultSeamUrlCandidates, fail-closed when unresolvable) and, when the
+# row carries no defaultWorkspace, defaults the team workspace to the
+# directory the operator launched the host from (withDefaultWorkspace —
+# the projection fold requires a resolvable effective workspace on every
+# team row; the glue's agent-cwd fallback reads the same config value).
 #
 # Override semantics (last-write-wins, WHOLE config replaced): the profile's
 # own `cordis.patch.yml` is applied AFTER this bundle layer; a row with the
