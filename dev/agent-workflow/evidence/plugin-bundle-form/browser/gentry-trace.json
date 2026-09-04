@@ -1,7 +1,7 @@
 [
   {
     "method": "GET",
-    "url": "http://127.0.0.1:3180/?token=VNGCkP0ps0O4InrSf8v8uQemSs_eUu1f4pSAD8psPYc",
+    "url": "http://127.0.0.1:3180/?token=***REDACTED***",
     "status": 303,
     "t": 1788554586919,
     "kind": "other"
