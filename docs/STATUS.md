@@ -1,17 +1,18 @@
 # STATUS — Team vNext 当前状态总览
 
 > **性质**：living 快照文档，**不是权威源**。权威 = `dev/agent-workflow/graph.yaml`（编排状态唯一来源）+
-> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R122）。
+> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R124）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-04（R122 之后，本会话核实）。
+> **最近更新**：2026-09-04（R124 推送之后，本会话核实）。
 
 ## 1. 一句话现状
 
 后端（P0–P8-S）生产闭合完成，T12 生产垂直收束 **GO**（re-stamped @ `c455c43`），P9 UI（legacy
 复用）**P9_VERDICT = GO**（S9 @ `0738b45` + post-GO 试用缺陷批次 P9-F1/F2 收口），测试基线已随
-上游 in-place 升级适配至 **0.1.2-rc.1 @ `76fda72979`**（R122，五闸全绿）。当前**无在途开发任务**；
-下一步 = P10 加固 + 各项推送等待用户授权。
+上游 in-place 升级适配至 **0.1.2-rc.1 @ `76fda72979`**（R122，五闸全绿）。推送已按用户一次性授权
+**执行完毕（R124，2026-09-04）**：master + 5 个 int/task 分支已上 origin（ls-remote 复核一致）。
+当前**无在途开发任务**；下一步 = P10 加固 + P9 分支入 master 流程等待用户指示。
 
 ## 2. 阶段总账
 
@@ -32,15 +33,16 @@
 | 测试 DSH 源码（pristine） | `references/deepseek-harness-test-use` @ **0.1.2-rc.1 / `76fda72979`**（TEST_METHODS.md §1；工作树 byte-clean 义务不变） |
 | 稳定实例红线 | `D:\deepseek-harness\` + :3080 严禁触碰（本会话仅只读探测：当前 :3080 无监听，未做任何操作） |
 | 测试端口 | 3180 族（3180–3186 / 3492–3500）；本会话核 **3180 无监听** — R122 world #2 实例（pid 59496，job `pwsh-21`）已随其会话结束，home 可整体清理 |
-| master | `c5ef6e6`（R122 bookkeeping）；**领先 origin 10，未 push — 待用户授权** |
-| 未推送分支 | `task/P9-ui-legacy-reuse`（tip `dc056d5`）/ `task/upstream-rc1-compat`（`c6bae9c`+`bd38827`）/ `task/T12-vertical-slice`（runner-only V15/V20–V22，`3e7da91`，不入 int 裁决在案）/ P9-PROTO 线（`2a23f52`，local-only，R-PROTO-13 裁决） |
+| master | `a733e9f`（R123 文档对齐）已推送 origin（R124，2026-09-04）；R124 bookkeeping 提交本地**领先 origin 1**，由下一次用户授权推送携带 |
+| 已推送分支（R124，2026-09-04，全部 fast-forward/新建、零 force-push，ls-remote 复核一致） | `int/T12-production-closure`（`c455c43`）/ `int/P8-remote-projection`（`3fa4c1f`）/ `task/P9-ui-legacy-reuse`（`dc056d5`，含 P9-F1/F2）/ `task/upstream-rc1-compat`（`bd38827`，含 `c6bae9c`）/ `task/T12-vertical-slice`（`3e7da91`，runner-only V15/V20–V22） |
+| 仍留本地分支（裁决/惯例） | `task/P9-proto-real-backend`（`2a23f52`）+ `task/P9-proto-ui`（`0f001f5`）— R-PROTO-13「local-only 不 push」；`task/T12-lane-{a,b,c}`（`314ef42`/`c4806b8`/`eb7f891`，已 cherry-pick 入 int 线）；已 cherry-pick 的 task/P0–P8 系列 |
 | P9 五闸（`0738b45` 树） | test 150/312/269/124/35/92/1070/471 · typecheck 9/9 · build 9/9 · lint 0 errors · smoke 2/2（R117）；RC1 树 vitest 2532 复跑（R122） |
 | p4t6 扫描锁 pin | 601（P9 线终值，bug #7 修复 `3839476` 后；rc.1 适配未新增可扫文件） |
 | 冻结 legacy 参考 | `references/deepseek-harness` @ `a3ab319927`（tag `legacy-agent-team-pre-vnext`，只读）未动 |
 
 ## 4. 待办 / 等待用户（按优先级）
 
-1. **推送授权**（红线：无显式授权不 push）：master（领先 10）+ §3 所列 task 分支；gated 历史禁 force-push。
+1. ~~**推送授权**~~ — **已完成（R124，2026-09-04）**：用户一次性授权已消耗；master + 5 refs 推送并 ls-remote 验证（见 §3 与日志 R124）；**后续任何推送仍需新的显式授权**（红线不变），gated 历史禁 force-push。
 2. **P9 task 分支入 master**：cherry-pick -x → int 分支 → Gate → master → push（主 Agent 于 Gate 过后执行；现按会话政策**暂停待用户指示**）。
 3. **P10 加固**（P9 计划 L1789）：F-9 untracked-burst emitter 定位 + post-test-gate porcelain 检查；F-7 两个 excluded browser-surface specs；carry-over 清单 = UI_BACKEND_GAP（client node entry `packages/client/dist/plugin/client.js:50` 读 `ctx.slots` 未声明 inject，非规范路径）/ p6t1-parallel flake 类（~1/3）/ testkit `.tmp-fault` scratch 竞态（destroyDir Windows 重试）/ tsc build 内联发射卫生 / 360 s 窗口核心埋点（T12 记录，T12-V16 已修产品面，埋点留 P10）。
 4. **G8-S / P8-S8 裁决**：原 P8-S 线的 S8（生产 E2E + race/crash/security 矩阵）与 G8-S gate 在 T12 GO 之后是否仍为必要条件，待用户裁决（T12 已实质覆盖生产垂直闭合；graph `blocked: [G8-S]` 保留）。

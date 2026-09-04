@@ -62,7 +62,12 @@ gitignored) — this section is a pointer summary, not the authority:
   green.
 - Test baseline: upstream 0.1.2-rc.1 @ `76fda72979` (in-place update 2026-09-04;
   in-repo compat adaptation only, CORE PATCH BUDGET = 0 held — R122, five gates green).
-- Next: P10 hardening; push awaiting explicit user authorization (no push without it).
+- Push: origin updated 2026-09-04 (R124, user-authorized) — master @ `a733e9f`,
+  `int/T12-production-closure` @ `c455c43`, `int/P8-remote-projection` @ `3fa4c1f`,
+  `task/P9-ui-legacy-reuse` @ `dc056d5`, `task/upstream-rc1-compat` @ `bd38827`,
+  `task/T12-vertical-slice` @ `3e7da91` (all fast-forward/new; verified via ls-remote).
+- Next: P10 hardening; P9 branch → master flow awaiting user direction (no further
+  push without explicit authorization).
 - Details, pending items and evidence pointers: **`docs/STATUS.md`**.
 
 ## Commands

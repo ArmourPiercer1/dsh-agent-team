@@ -1667,3 +1667,21 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **未动（红线/纪律）**：graph.yaml（编排状态归主 Agent 轮次 bookkeeping，current_phase 等不动）；日志既有条目（append-only）；docs/plans 全部文件（冻结/用户产物）；任何代码/测试/配置；:3080 与 `D:\deepseek-harness\`（零触碰）；无 push。
 - **bookkeeping**：本条随文档提交落 master（本地，不 push）。
 - **下一步建议（待用户裁决，详见 docs/STATUS.md §4）**：推送授权（master + task 分支）/ P9 分支入 master 流程 / P10 加固启动 / G8-S 与 P8-S8 在 T12 GO 后的必要性裁决 / untracked 证据归档路径决策 + 3180 旧 home 清理。
+
+## R124 — 推送执行（用户显式一次性授权，红线例外「用户明确许可的一次性推送除外」）（2026-09-04，本会话）
+
+- **授权依据**：用户直接指令「请你帮我执行推送」。一次性授权，**由本轮消耗**；此后无新的显式授权不再 push（红线保持）。
+- **推送前核验（ls-remote）**：origin 仅 `master @ 8000ede` + `int/P8-S-backend-closure @ 7d07330`；本地 master 领先 origin 11（R84–R123）。
+- **祖先核验**：`959e363`（int/P7 线）已含于 master，无需推送；`3fa4c1f`（int/P8-remote-projection）不在 master，需新建远端分支。
+- **推送内容（6 refs，全部 fast-forward 或新建，零 force-push，gated 历史未动）**：
+  1. `master`：`8000ede` → `a733e9f`（11 提交，R84–R123，含 R122 rc.1 适配 + R123 文档对齐）；
+  2. `int/T12-production-closure` = `c455c43`（新建）；
+  3. `int/P8-remote-projection` = `3fa4c1f`（新建）；
+  4. `task/P9-ui-legacy-reuse` = `dc056d5`（新建，含 P9-F1 `d199d4d6` + P9-F2 `dc056d5`）；
+  5. `task/upstream-rc1-compat` = `bd38827`（新建，含 `c6bae9c`）；
+  6. `task/T12-vertical-slice` = `3e7da91`（新建，runner-only V15/V20–V22）。
+- **未推送分支（按裁决/惯例）**：`task/P9-proto-real-backend`（`2a23f52`）+ `task/P9-proto-ui`（`0f001f5`）— R-PROTO-13「local-only 不 push」；`task/T12-lane-{a,b,c}`（`314ef42`/`c4806b8`/`eb7f891`）与已 cherry-pick 的 task/P0–P8 系列分支 — 已并入 int 线，按惯例留本地。
+- **推送后核验（ls-remote）**：6 个远端 ref 与本地 tip 逐一完全一致；`int/P8-S-backend-closure @ 7d07330` 未变。
+- **pwsh 留痕**：`git push` 的 stderr 进度输出触发 PowerShell NativeCommandError（表面 exit 1）— pwsh stderr 流怪癖，非推送失败；实际状态以输出 ref 列表 + ls-remote 复核为准（两者一致）。
+- **bookkeeping**：本条 + `docs/STATUS.md`（§1/§3/§4 推送状态同步）+ `README.md`（Status 节 push 行）随本地 master 提交落盘（R124）；**master 现领先 origin 1，由下一次用户授权推送携带**（无新授权不 push）。
+- **未动（红线/纪律）**：graph.yaml；`dev/agent-workflow/evidence/{P9,T12,upstream-rc1-compat}/`（untracked，归档路径待用户裁决，本轮不代为提交）；`D:\deepseek-harness\` / :3080；3180 族端口（核验无监听，未启动/停止任何实例）。
