@@ -1735,3 +1735,32 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **执行计数**：1/3（本轮全部 D5 工作仍在执行 1 内）。红线全程未破（CORE PATCH BUDGET=0；references/ 只读；3180 族端口全部释放；用户构建零触碰）。
 - **下一步**：Commit D（D5 kit + 证据 + bookkeeping）→ int 分支 `cherry-pick -x`（`2f3f61b..head` = A/C/E/F/G/D 六提交）→ Gate：3 个全新盲审 reviewer（仅 gate 定义 + 冻结文档引用 + commit 范围 + 独立验证要求；任何补充 → 全量盲审重跑；实质补充 ≤3）→ 通过后向用户请示一次性 push 授权。
 
+## R128 — plugin-bundle-form：Commit D/S + int 分支（cherry-pick -x）+ Gate Round 1 启动（2026-09-05，本会话）
+
+- **接续说明**：R127 末尾「下一步」计划的 Commit D → int → Gate 因会话压缩未落日志条目；按只追加纪律于本条补齐 R128（内容以提交史与 gate 实际分派为准）。
+- **Commit D `2693805`**（task 分支，05:22）：D5 收束 + bookkeeping —— d5-setup/boot/gentry/probe kits、per-world assertions/boot logs/dump-config/index/serve-check/catalog/byte-identity/state、browser/ gentry 捕获 + 报告、task-brief D8/D9 + 五世界运行记录、graph.yaml `plugin_bundle_form` 块 + 本日志 R127 子条目。
+- **Commit S `0a50242`**（task 分支，05:24）：证据卫生 —— 按 R125 先例对 D5 证据归档 token 脱敏（boot logs / state jsons / instance log / gentry trace 的进程 token + auth cookie → `***REDACTED***`；world 目录保留原件）；`redact-tokens.mjs` + 零残留验证。
+- **int 分支**：`int/plugin-bundle-form` @ `a7bee2e` —— `cherry-pick -x` `2f3f61b..0a50242` 共 7 提交（A `c9413c4` / C `610f572` / E `f270c68` / F `98cce06` / G `5c4f903` / D `2693805` / S `0a50242` → int sha `b3a7813`/`89fccd7`/`61b3b8b`/`5a2355e`/`f0e941b`/`3d49c96`/`a7bee2e`）；int tree == task tree（空 diff）；diff 零 `references/`；零 force。
+- **Gate Round 1 启动（3 个全新盲审 reviewer，qwen3.8-27b）**：审查范围冻结 `2f3f61b..a7bee2e`（7 commits）；brief 仅含 gate 定义 + 冻结文档引用（ROUTER_RULES / TEST_METHODS / AGENTS / 冻结四文档）+ commit 范围 + 复现方式 +「独立验证」；零前轮内容。分派：R1 = 产品 + 五闸 + 安装面消费者实验（agent `351a102a-ef44-464b-98eb-bbb681904517`）；R2 = host 契约链（六项声明对照 pristine host 源码逐行核验，agent `f101165b-f8d4-404c-905d-addf97e2e060`）；R3 = D5 垂直证据（内部一致性 + 充分性，agent `c3d08bb8-8408-4bb5-921d-c040980e1b1e`）。
+- **环境陷阱（briefing 之过，留痕）**：R1 brief 指定仓库外 worktree `D:\AgentDev\dsh-plugins\review-gate1` → 7× t12a suite-load 失败（`t12a-live-bridge.mjs` L42-48 假设 worktree 位于 `<repo>/.worktrees/` 下；base 同位置同败 = 预存非本 diff）；R1 自行改仓内布局 `.worktrees/gate1-inner` 复跑（2404/2404）后拆除。
+- **红线**：refs task `0a50242` / int `a7bee2e` / master `2f3f61b`（=origin）未动；3180 族 FREE；test-use pristine @`76fda72979`；`D:\deepseek-harness\` / :3080 零接触。
+
+## R129 — plugin-bundle-form：GATE ROUND 1 结果（3/3 PASS → GATE PASS）+ bookkeeping（2026-09-05，本会话）
+
+- **Gate Round 1 三盲审裁决**（范围 `2f3f61b..a7bee2e`，7 commits，qwen3.8-27b；存档 `evidence/plugin-bundle-form/gate/round-1-reviewer-{1,2,3}.md`）：
+  - **R1 产品+五闸：通过 (PASS)**。五闸独立复现全绿（install 0 / tsc 9/9 / build 9/9 + 5 件 D5 产物 SHA 逐一独立复现 / lint 0 / test 2404 仓内布局，算术闭合 2353 基线 + 9 pbf + 42 t12a）；自建 git-dep 消费者端到端复现（首 add → 精确 `[ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED]` + allowBuilds key 与 INSTALL.md §2 逐字节一致；二 add exit 0；安装面 = `files` 白名单、无嵌套 node_modules；store 构建 host.js/client-bundle.js SHA 与 D5 world-5 一致 = 跨环境确定性）；机制闭环 = host `healProfilesModuleFallback` 的 `profiles/node_modules` junction 镜像（上游既有机制，非本任务新增；`yaml` + glue 4 项 import 全部由宿主覆盖）；红线全净（零 `references/` diff、7 提交线性带 cherry-pick 标记、token 全脱敏）。
+  - **R2 host 契约链：通过 (PASS)**。六项声明全部成立，逐行对照 pristine host 源码 @`76fda72979`（reconcile 自动入 bundles / loadProfile 层序与整行替换 / 客户端裸名行 + `nearestPackage` 上溯 + `clientExportOf` / loader 双注册安全 + `stripClientSuffix` / D9 默认工作区链 + `process.cwd()` 合理性〔全 host 生产路径无 chdir〕/ files boot 闭包完整性）；零 material findings；全程只读、零实例、3180 未触碰。
+  - **R3 D5 垂直证据：投机通过 (SPECULATIVE PASS)**（= PASS 票：未验证项均为档案簿记非核心；SHA 链五世界闭合、最终世界全绿且数字跨文件互检一致）。
+- **分派：3/3 PASS → GATE PASS**。投机通过按裁决语义计通过票（未验证 remainder = stale 证据归属 + 2 处叙述性失败签名 + 1 行 teardown，均于本条闭环或入风险台账，不构成核心未验证）。
+- **R3 findings 处理（本提交闭环）**：
+  1. stale W3 捕获被当最终证据提交 → `git mv` 为 `browser/gentry-console-failworld3.json` / `browser/gentry-trace-failworld3.json`（内部 epoch 20:43:06 < 世界 4 创建 20:49:41；套件仅在 `die()` 写此二文件；最终世界绿色证据 = `gentry-report.json` `failures: none`）+ task-brief D5 节补一行归属注。档案簿记，零产品改动。
+  2. W2/W4 失败签名叙述性（原始捕获被同文件覆盖丢失）→ 风险台账（world 目录在盘可再验证；不强制活体重放）。
+  3. 最终世界 teardown 未归档 → `gate/teardown-verify-post-gate.txt` 独立 post-gate 捕获（05:38:50：3180/3181/3182/3493 全 FREE；test-use HEAD `76fda72979` + porcelain 空；无游离 node 进程）。
+- **R1 findings 处理**：test 闸首跑 8 文件失败定性 = 环境性（R1 仓库外 worktree × t12a 放置假设；预存、非本 diff）+ p6t1 已知 flake（在案）；R1 仓内布局复跑 2404/2404 + **主 Agent 独立复核**（PBF 任务 worktree 重跑同 8 文件 = 51/51 全绿，`gate/r1-failures-rerun-pbf.txt`）—— 非实质性，不消耗补充名额。**future-gate 规则：reviewer worktree 必须置于 `<repo>/.worktrees/` 下**（t12a-live-bridge 位置约束；建议补入 TEST_METHODS.md —— 该文档用户裁决可改，主 Agent 不擅自编辑，仅记录 + 向用户提议）。
+- **R1 非实质观察记录**：4.1 `upstream-resolver.mjs` 头注释过述 fallback（git 安装世界无嵌套 node_modules；行为正确、注释不精确）→ 风险台账 + 后续 minor 任务（**本提交不改已审查产品文件**，审查范围冻结）；4.4 brief 文件清单 2 文件不在 diff（无缺件）；4.5 4 字符 cookie 前缀在 R125 先例内；4.6 allowBuilds 一次性步骤 = pnpm ≥10 宿主策略、DoD §0 范围内（INSTALL.md §2 + 宿主 CLI 同文指引）。
+- **R2 非实质观察记录**：brief 路径更正（profile 加载器实际 `packages/boot/app-boot/src/profile.ts`，非 `apps/web/app-boot/…`）；shim 世界 import 机制闭环（工厂回退分支 + prefetch 屏障确定性，正面补充证据，随归档留存）；`process.cwd()` 服务化启动边界（已文档化 + 显式覆盖 + 单测 → 风险台账）；allowBuilds key commit 特定（运维注记，INSTALL.md §2 已载）；serve-check `sha256MatchesInstall:false` 属预期（判据 = `bundleBytesContained:true`）；world-1 预检失败 = kit 自身假设（非产品声明）；D8 第二注册各世界惰性（与叙述精确一致）。
+- **红线复核（gate 期终值）**：refs task `0a50242` / int `a7bee2e` / master `2f3f61b`（=origin，均未动）；3180 族 FREE（05:38:50 独立核验）；test-use pristine @`76fda72979`（porcelain 空）；`D:\deepseek-harness\` / :3080 零接触；`D:\AgentDev\deepseek-harness`（用户构建）只读；零 force-push；CORE PATCH BUDGET=0（references/deepseek-harness* 零写入）。
+- **执行计数**：1/3（gate 通过，零执行重跑）；**substantive 补充**：0（≤2 限额未消耗）。
+- **bookkeeping 文件清单（本提交）**：本条 R128+R129 日志 + `graph.yaml`（gate_round1 块 + state）+ `docs/STATUS.md`（§1/§2/§3/§4 + 头）+ `gate/round-1-reviewer-{1,2,3}.md` + `gate/teardown-verify-post-gate.txt` + `gate/r1-failures-rerun-pbf.txt` + task-brief 归属注 + 2 个 `git mv` 重命名。
+- **下一步**：`cherry-pick -x` 本提交 → int → 主仓 master `merge --ff-only int/plugin-bundle-form`（本地合流）→ 向用户申请一次性 push 授权（master + int/plugin-bundle-form）→ push + ls-remote 核验 → 任务关闭（R130）。
+

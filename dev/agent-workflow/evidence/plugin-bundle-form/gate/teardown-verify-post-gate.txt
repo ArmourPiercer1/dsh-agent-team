@@ -1,0 +1,15 @@
+﻿post-gate independent teardown verification — plugin-bundle-form (R3 finding 3)
+captured: 2026-09-05 05:38:50 +08:00
+
+=== 1. 3180-family ports (must be free) ===
+port 3180 : FREE
+port 3181 : FREE
+port 3182 : FREE
+port 3493 : FREE
+
+=== 2. test-use pristine check (references/deepseek-harness-test-use) ===
+HEAD: 76fda729799fe9b3848dbe2c211d4b231032b81e
+git status --porcelain : EMPTY (clean)
+
+=== 3. no stray dsh/web processes on test ports ===
+none

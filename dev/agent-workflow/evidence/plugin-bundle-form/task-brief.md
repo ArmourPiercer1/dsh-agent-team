@@ -334,6 +334,13 @@ D5 判定：**git-install bundle 形态端到端可用**（用户原始报告的
 「add 后无 Team UI」路径 = 本垂直）。teardown：stop + 3180/3493 释放
 核验 + test-use byte-clean 复核（clean @76fda72979）。
 
+> **证据文件归属注（Gate round-1 R3 发现，R129 重命名定归属）**：
+> `browser/gentry-console-failworld3.json` / `browser/gentry-trace-failworld3.json`
+> （原 `gentry-console.json` / `gentry-trace.json`）为**第三世界（20-29-38）失败运行**
+> 的捕获（内部 epoch 20:43:06 < 第四世界创建 20:49:41；内容 = mega-combo SyntaxError）——
+> 套件仅在 `die()` 时写这两个文件，最终全绿运行（21-11-16）不产生它们；此处重命名以消
+> 除档案表面矛盾。最终世界绿色证据 = `browser/gentry-report.json`（`failures: none`）。
+
 ### D6 — 五闸与红线（继承 R125 判据）
 
 - 任务树五闸：install EXIT 0（registry-only）/ typecheck+build 9/9 /
