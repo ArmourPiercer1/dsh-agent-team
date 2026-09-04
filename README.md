@@ -51,8 +51,15 @@ gitignored) — this section is a pointer summary, not the authority:
   **Restore = ARCHIVED → SETTLED** — it restores durable availability only: it does not
   resume the Agent, start a turn, or call a model. New work re-enters RUNNING.
 
-## Status (2026-09-04)
+## Status (2026-09-05)
 
+- **Product is now on `master`**: `int/P9-master-product-closure` fast-forwarded into
+  master (R125, 2026-09-05) — the full vNext product (P0–P9 + T12 vertical +
+  upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)
+  landed on master. Before this merge, master carried the docs/evidence lineage
+  while the product lived on the int/task branches; the gate for the closure
+  passed **3/3 (final blind round, 4 rounds × 3 independent reviewers, 12 verdicts
+  archived)** @ `d23c606`; master @ `4233816` includes the bookkeeping commit.
 - Backend (P0–P8-S): complete — production composition, operation fencing,
   projection/remote principal closure; G8 round-2 3/3 通过; T12 Production Vertical
   Closure **VERDICT = GO** (re-stamped @ `c455c43`).
@@ -60,13 +67,18 @@ gitignored) — this section is a pointer summary, not the authority:
   `0738b45`; DoD 15/15; reuse audit 47/47 confirmed). Post-GO trial defects closed in
   P9-F1 (`d199d4d6`) + P9-F2 (`dc056d5`); production-host browser vertical S1–S9 all
   green.
+- Fresh-machine installability (verified in the R125 gate): clone → `pnpm install`
+  → `pnpm build` → `pnpm build:composition` → mount per **`docs/INSTALL.md`** →
+  `dsh web`. Proven end-to-end on clean-clone-equivalent trees (registry-only
+  dependencies, 0 external junctions, byte-identical install surface) and on a fresh
+  production-world boot (S8-READY + full browser vertical, zero failures).
 - Test baseline: upstream 0.1.2-rc.1 @ `76fda72979` (in-place update 2026-09-04;
   in-repo compat adaptation only, CORE PATCH BUDGET = 0 held — R122, five gates green).
-- Push: origin updated 2026-09-04 (R124, user-authorized) — master @ `a733e9f`,
-  `int/T12-production-closure` @ `c455c43`, `int/P8-remote-projection` @ `3fa4c1f`,
-  `task/P9-ui-legacy-reuse` @ `dc056d5`, `task/upstream-rc1-compat` @ `bd38827`,
-  `task/T12-vertical-slice` @ `3e7da91` (all fast-forward/new; verified via ls-remote).
-- Next: P10 hardening; P9 branch → master flow awaiting user direction (no further
+- Push: origin updated 2026-09-05 (R126, user-authorized) — **master @ `4233816`**
+  (full product + closure) and `int/P9-master-product-closure` @ `4233816`
+  (fast-forward/new, zero force-push, verified via ls-remote); the R124 refs
+  (master @ `a733e9f` lineage + 5 task/int branches) unchanged.
+- Next: P10 hardening + G8-S/P8-S8 ruling awaiting user direction (no further
   push without explicit authorization).
 - Details, pending items and evidence pointers: **`docs/STATUS.md`**.
 
