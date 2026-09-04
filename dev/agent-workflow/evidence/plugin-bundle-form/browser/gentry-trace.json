@@ -1,0 +1,58 @@
+[
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/?token=VNGCkP0ps0O4InrSf8v8uQemSs_eUu1f4pSAD8psPYc",
+    "status": 303,
+    "t": 1788554586919,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/",
+    "status": 200,
+    "t": 1788554586922,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=28e1db08b1d0",
+    "status": 200,
+    "t": 1788554586928,
+    "kind": "plugins"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-BNsW4eBh.css",
+    "status": 200,
+    "t": 1788554586930,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-b24khbeK.css",
+    "status": 200,
+    "t": 1788554586932,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/index-Df-65__b.js",
+    "status": 200,
+    "t": 1788554586939,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/assets/vendor-CCJJTK99.js",
+    "status": 200,
+    "t": 1788554586944,
+    "kind": "other"
+  },
+  {
+    "method": "GET",
+    "url": "http://127.0.0.1:3180/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,",
+    "status": 200,
+    "t": 1788554587060,
+    "kind": "plugins"
+  }
+]

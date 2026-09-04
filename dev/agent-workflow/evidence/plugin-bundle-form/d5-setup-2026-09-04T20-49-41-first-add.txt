@@ -1,0 +1,10 @@
+[ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED] Failed to prepare git-hosted package fetched from "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-49-41/repo.git": The git-hosted package "dsh-agent-team@0.0.0" needs to execute build scripts but is not in the "allowBuilds" allowlist.
+
+This error happened while installing a direct dependency of D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-49-41\profiles\web
+
+Add the package to "allowBuilds" in your project's pnpm-workspace.yaml to allow it to run scripts. For example:
+allowBuilds:
+  dsh-agent-team@git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-49-41/repo.git#98cce06ec372bd88fbcd7717ed6e41c3545575db: true
+dsh: initialized profile web at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-49-41\profiles\web
+dsh: pnpm failed in profile directory D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-49-41\profiles\web
+dsh: git-hosted plugins build on install via their prepare script, which pnpm blocks until allowed — add the exact key pnpm printed above under allowBuilds in D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-49-41\profiles\web\pnpm-workspace.yaml, then re-run

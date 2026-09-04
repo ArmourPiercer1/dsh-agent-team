@@ -318,8 +318,21 @@ rootSessionId）= `ok:false internal-error/untyped-error`（host 侧按
 invariant 5 吞栈，instance 日志零输出）→ 根因链 = fold 的
 `resolveEffectiveWorkspace` fail-closed + bundle 行无 `defaultWorkspace`
 + S8 kit 行恒有该值（从未暴露）→ D9 host 入口 `process.cwd()` 推导 →
-Commit G → 第五世界全量重跑（本条目的最终证据以第五世界为准；
-二、三、四世界保留为失败留痕）。
+Commit G → 第五世界全量重跑（二、三、四世界保留为失败留痕）。
+
+**第五跑记录（世界 2026-09-04T21-11-16，装 5c4f903 = D9 版）—— D5 最终
+证据，全绿**：setup 全断言 PASS（install 2:27 min）；boot 全 gate 绿
+（D5-READY；4 件 byte-identical：client-bundle 6a8395ef / shim index
+d385c065 / shim pkg b4509233 / glue d50d3b3f；dump 三行 + bundle-section
+归属；serve combo 含 bundle 字节；catalog.list 载 my-team-bp-1；row ready
+rootSessionId=team-root；401）；**gentry G0–G4 全部 PASS（22 项 team-remote
+RPC，failures: none，GENTRY COMPLETE）**：壳渲染（双注册 bundle 世界
+实证）→ overlay/blueprint 显式未选态/probe ✓就绪 → team.create 200 →
+§4.3 tab 门控 → **G3 零态消失（D9 验证：zeroStateG3=false）** → R121
+sidebar 行 → 第二会话 handoff 块/prepare 恰一次/无 flicker。
+D5 判定：**git-install bundle 形态端到端可用**（用户原始报告的
+「add 后无 Team UI」路径 = 本垂直）。teardown：stop + 3180/3493 释放
+核验 + test-use byte-clean 复核（clean @76fda72979）。
 
 ### D6 — 五闸与红线（继承 R125 判据）
 

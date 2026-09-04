@@ -1,0 +1,93 @@
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install$ pnpm install
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Scope: all 10 workspace projects
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: ✓ Lockfile passes supply-chain policies (verified 2h ago)
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Lockfile is up to date, resolution step is skipped
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 1, reused 0, downloaded 0, added 0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Packages: +463
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 462, downloaded 0, added 0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 1
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 37
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 38
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 88
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 89
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 106
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 107
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 156
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 157
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 179
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 180
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 205
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 206
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 250
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 251
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 276
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 277
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 305
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 306
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 320
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 351
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 372
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 373
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 382
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 383
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 385
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 386
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Progress: resolved 463, reused 463, downloaded 0, added 463, done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: devDependencies:
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: + @eslint/js 9.39.5
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: + eslint 9.39.5
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: + globals 16.5.0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: + typescript 6.0.3
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: + typescript-eslint 8.68.0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: + vitest 4.1.11
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare$ pnpm install --ignore-scripts && pnpm build && pnpm build:composition
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: Scope: all 10 workspace projects
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: ✓ Lockfile passes supply-chain policies (verified 2h ago)
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: Lockfile is up to date, resolution step is skipped
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: Already up to date
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: Done in 974ms using pnpm v11.7.0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: $ pnpm -r run build
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: Scope: 9 of 10 workspace projects
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/contracts build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/remote build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/legacy build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/domain build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/domain build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/runtime build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/legacy build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/storage build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/storage build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/testkit build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/contracts build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/tools build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/remote build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/testkit build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/tools build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/runtime build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/client build$ tsc -p tsconfig.build.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: packages/client build: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: $ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: place-dist-glue: done (1 placement(s))
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: build-client-composition: 85 modules, 11 css files
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: build-client-composition: entry=plugin/client.js
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: build-client-composition: wrote D:\.pnpm-store\v11\tmp\_tmp_55796_c5b5c2396b1de1f6214e02c56403bba4\packages\client\composition-shim\client-bundle.js (845581 B)
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: build-client-composition: wrote D:\.pnpm-store\v11\tmp\_tmp_55796_c5b5c2396b1de1f6214e02c56403bba4\packages\client\composition-shim\index.js (node half)
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: build-client-composition: wrote D:\.pnpm-store\v11\tmp\_tmp_55796_c5b5c2396b1de1f6214e02c56403bba4\packages\client\composition-shim\package.json
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: . prepare: Done
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Done in 1m 43s using pnpm v11.7.0
+...5796_c5b5c2396b1de1f6214e02c56403bba4 pnpm-install: Done
+Progress: resolved 0, reused 0, downloaded 1, added 0
+Progress: resolved 1, reused 0, downloaded 1, added 0
+
+dependencies:
++ dsh-agent-team git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T19-58-01/repo.git#task/plugin-bundle-form
+
+Packages: +1
++
+Progress: resolved 1, reused 0, downloaded 1, added 1
+Progress: resolved 1, reused 0, downloaded 1, added 1, done
+Done in 3m 14.9s using pnpm v11.7.0

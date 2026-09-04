@@ -1,0 +1,28 @@
+[2026-09-04T20:29:38.466Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-29-38
+[2026-09-04T20:29:38.468Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/plugin-bundle-form) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-29-38\repo.git
+[2026-09-04T20:29:48.714Z] bare repo cloned
+[2026-09-04T20:29:48.715Z] SPEC = git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-29-38/repo.git#task/plugin-bundle-form
+[2026-09-04T20:29:48.715Z] first add (expect [ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED] hard fail) …
+[2026-09-04T20:30:14.222Z] first add exit=1
+[2026-09-04T20:30:14.222Z] first add blocked with ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED (expected) — evidence saved
+[2026-09-04T20:30:14.223Z] allowBuilds key (exact, as printed): dsh-agent-team@git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-29-38/repo.git#f270c68071914683c1f0b950bf8ae206a32aa166
+[2026-09-04T20:30:14.225Z] profile pnpm-workspace.yaml present=true (61 B)
+[2026-09-04T20:30:14.227Z] allowBuilds written: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T20-29-38\profiles\web\pnpm-workspace.yaml
+[2026-09-04T20:30:14.227Z] re-running add (allowBuilds in place) …
+[2026-09-04T20:32:53.750Z] second add exit=0
+[2026-09-04T20:32:53.750Z] second add OK
+[2026-09-04T20:32:53.753Z] PASS profile dependencies carry dsh-agent-team @ the exact spec — git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-29-38/repo.git#task/plugin-bundle-form
+[2026-09-04T20:32:53.753Z] PASS dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (CLI reconcile product) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-04T20:32:53.753Z] PASS profile cordis.patch.yml carries NO dsh-agent-team row (the bundle layer alone supplies it) — user patch absent or clean
+[2026-09-04T20:32:53.754Z] PASS installed package dir exists (the git checkout)
+[2026-09-04T20:32:53.754Z] PASS prepare-built artifact present: host.js (dist entry)
+[2026-09-04T20:32:53.756Z] PASS prepare-built artifact present: agent-bindings.mjs (dist glue mirror)
+[2026-09-04T20:32:53.757Z] PASS prepare-built artifact present: seam.mjs (root-binding)
+[2026-09-04T20:32:53.758Z] PASS prepare-built artifact present: client-bundle.js (composition shim)
+[2026-09-04T20:32:53.760Z] PASS prepare-built artifact present: shim index.js
+[2026-09-04T20:32:53.761Z] PASS prepare-built artifact present: shim package.json
+[2026-09-04T20:32:53.761Z] PASS prepare-built artifact present: root package.json (dsh.bundle declared)
+[2026-09-04T20:32:53.762Z] PASS installed root manifest declares dsh.bundle.patch
+[2026-09-04T20:32:53.762Z] PASS installed root manifest declares dsh.client web
+[2026-09-04T20:32:53.763Z] assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\PBF\dev\agent-workflow\evidence\plugin-bundle-form\d5-assertions-2026-09-04T20-29-38.json
+[2026-09-04T20:32:53.763Z] D5-SETUP-OK

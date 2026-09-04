@@ -1,0 +1,96 @@
+{
+  "profile dependencies carry dsh-agent-team @ the exact spec": {
+    "ok": true,
+    "detail": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-29-38/repo.git#task/plugin-bundle-form"
+  },
+  "dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (CLI reconcile product)": {
+    "ok": true,
+    "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+  },
+  "profile cordis.patch.yml carries NO dsh-agent-team row (the bundle layer alone supplies it)": {
+    "ok": true,
+    "detail": "user patch absent or clean"
+  },
+  "installed package dir exists (the git checkout)": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: host.js (dist entry)": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: agent-bindings.mjs (dist glue mirror)": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: seam.mjs (root-binding)": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: client-bundle.js (composition shim)": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: shim index.js": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: shim package.json": {
+    "ok": true,
+    "detail": null
+  },
+  "prepare-built artifact present: root package.json (dsh.bundle declared)": {
+    "ok": true,
+    "detail": null
+  },
+  "installed root manifest declares dsh.bundle.patch": {
+    "ok": true,
+    "detail": null
+  },
+  "installed root manifest declares dsh.client web": {
+    "ok": true,
+    "detail": null
+  },
+  "allowBuildsKey": "dsh-agent-team@git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-29-38/repo.git#f270c68071914683c1f0b950bf8ae206a32aa166",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-29-38/repo.git#task/plugin-bundle-form",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team",
+  "artifacts": {
+    "host.js (dist entry)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\dist\\packages\\runtime\\src\\plugin\\host.js",
+      "bytes": 28677,
+      "sha256": "523aca67103c7895f273f392bae5bcfbf2f95dda38f769e1241f9bb093557ba2"
+    },
+    "agent-bindings.mjs (dist glue mirror)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\dist\\packages\\runtime\\src\\plugin\\live\\agent-bindings.mjs",
+      "bytes": 71965,
+      "sha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b"
+    },
+    "seam.mjs (root-binding)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\seam.mjs",
+      "bytes": 3330,
+      "sha256": "a51e26ad02ec5eeb02d9852e0b09a75ff493e5836dbafd98f27e62e7f82dedc5"
+    },
+    "client-bundle.js (composition shim)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\client\\composition-shim\\client-bundle.js",
+      "bytes": 845693,
+      "sha256": "4a4f36cf9db95d4bb9deadf857b2a20218f5609796dd8074ed0f55728444bffc"
+    },
+    "shim index.js": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\client\\composition-shim\\index.js",
+      "bytes": 328,
+      "sha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273"
+    },
+    "shim package.json": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\client\\composition-shim\\package.json",
+      "bytes": 497,
+      "sha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a"
+    },
+    "root package.json (dsh.bundle declared)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-29-38\\profiles\\web\\node_modules\\dsh-agent-team\\package.json",
+      "bytes": 1607,
+      "sha256": "3f39d55879bd08c97cacfa65f4970b6f564a16190c959d547fc0a766561df8cf"
+    }
+  },
+  "secondAddExit": 0
+}

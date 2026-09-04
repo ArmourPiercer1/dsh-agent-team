@@ -1,0 +1,4 @@
+[2026-09-04T20:02:45.009Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T19-58-01
+[2026-09-04T20:02:45.010Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T19-58-01\profiles\web\node_modules\dsh-agent-team
+[2026-09-04T20:02:45.010Z] setup assertions: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\PBF\dev\agent-workflow\evidence\plugin-bundle-form\d5-assertions-2026-09-04T19-58-01.json (allowBuilds key=dsh-agent-team@git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T19-58-01/repo.git#c9413c4eaaa73d3adbb20a67b22fd23f08353d62)
+[2026-09-04T20:02:45.010Z] FAIL — missing install artifact p6t6 harness (tools): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pbf-2026-09-04T19-58-01\profiles\web\node_modules\dsh-agent-team\packages\tools\harness\plugin.mjs

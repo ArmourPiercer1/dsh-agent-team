@@ -1,0 +1,12 @@
+{
+  "consoleEvents": [
+    {
+      "type": "error",
+      "text": "Error: failed to import loader entry b66d9065 (@deepseek-ai/dsh-typert-registry): client-modules: bundle /plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-client-connection/client.js,@deepseek-ai/dsh-api-remotes/client.js,@deepseek-ai/dsh-cordis-client-r"
+    }
+  ],
+  "pageErrors": [
+    "SyntaxError: Unexpected token '}'",
+    "SyntaxError: Unexpected token '}'"
+  ]
+}

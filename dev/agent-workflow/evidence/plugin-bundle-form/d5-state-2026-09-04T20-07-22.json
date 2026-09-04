@@ -1,0 +1,97 @@
+{
+  "stamp": "2026-09-04T20-07-22",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22",
+  "workspaceDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\workspace-d5",
+  "port": 3180,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3180",
+  "token": "ylCkyT7Z28QQAbnyLGPbV5UirFjs0Xyzd9ICoZz0840",
+  "cookie": "dsh-auth-t1vK1KKWKrI7Bl290d49Ueb7GDBoHGt2VNu3alfmdbk=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MCIsImlzc3VlZEF0IjoxNzg4NTUyODM2ODA1LCJleHBpcmVzQXQiOjE3OTExNDQ4MzY4MDV9.pJPpQytEg-tveI0pJnMAGVpp6uMpuF0rkc-XBHPw8NY",
+  "instancePid": 67096,
+  "bootJobPid": 21268,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\PBF\\dev\\agent-workflow\\evidence\\plugin-bundle-form\\instances\\instance-port3180.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\PBF\\dev\\agent-workflow\\evidence\\plugin-bundle-form\\dump-config-d5-2026-09-04T20-07-22.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-07-22/repo.git#task/plugin-bundle-form",
+  "allowBuildsKey": "dsh-agent-team@git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-07-22/repo.git#610f5726dc98fb92310f6afe816298a0cca4048e",
+  "installShas": {
+    "host.js (dist entry)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\dist\\packages\\runtime\\src\\plugin\\host.js",
+      "bytes": 28677,
+      "sha256": "523aca67103c7895f273f392bae5bcfbf2f95dda38f769e1241f9bb093557ba2"
+    },
+    "agent-bindings.mjs (dist glue mirror)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\dist\\packages\\runtime\\src\\plugin\\live\\agent-bindings.mjs",
+      "bytes": 71965,
+      "sha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b"
+    },
+    "seam.mjs (root-binding)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\root-binding\\harness\\seam.mjs",
+      "bytes": 3330,
+      "sha256": "a51e26ad02ec5eeb02d9852e0b09a75ff493e5836dbafd98f27e62e7f82dedc5"
+    },
+    "client-bundle.js (composition shim)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\client\\composition-shim\\client-bundle.js",
+      "bytes": 845581,
+      "sha256": "2097ce5e570b187f4f163dd09c8fbee9bf2e04298120b7ea221229423cb86997"
+    },
+    "shim index.js": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\client\\composition-shim\\index.js",
+      "bytes": 328,
+      "sha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273"
+    },
+    "shim package.json": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\client\\composition-shim\\package.json",
+      "bytes": 497,
+      "sha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a"
+    },
+    "root package.json (dsh.bundle declared)": {
+      "path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pbf-2026-09-04T20-07-22\\profiles\\web\\node_modules\\dsh-agent-team\\package.json",
+      "bytes": 1607,
+      "sha256": "3f39d55879bd08c97cacfa65f4970b6f564a16190c959d547fc0a766561df8cf"
+    }
+  },
+  "byteIdentity": [
+    {
+      "label": "client-bundle.js",
+      "installSha256": "2097ce5e570b187f4f163dd09c8fbee9bf2e04298120b7ea221229423cb86997",
+      "treeSha256": "2097ce5e570b187f4f163dd09c8fbee9bf2e04298120b7ea221229423cb86997",
+      "identical": true
+    },
+    {
+      "label": "shim index.js",
+      "installSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "treeSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "identical": true
+    },
+    {
+      "label": "shim package.json",
+      "installSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "treeSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "identical": true
+    },
+    {
+      "label": "dist glue agent-bindings.mjs",
+      "installSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+      "treeSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+      "identical": true
+    }
+  ],
+  "rows": {
+    "dsh-agent-team (bundle host row, specifier as written)": true,
+    "dsh-agent-team-client (bundle client row, specifier as written)": true,
+    "p6t6-team-tools (harness row, file URL)": true
+  },
+  "serveCheck": {
+    "mode": "combo",
+    "url": "/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-client-connection/client.js,@deepseek-ai/dsh-api-remotes/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai/dsh-client-ui-theme/client.js,@deepseek-ai/dsh-client-locale/client.js,@deepseek-ai/dsh-client-ui-layout/client.js,@deepseek-ai/dsh-client-ui-renderer/client.js,@deepseek-ai/dsh-client-ui-session/client.js,@deepseek-ai/dsh-client-ui-sidebar/client.js,@deepseek-ai/dsh-client-ui-settings/client.js,@deepseek-ai/dsh-client-ui-settings-general/client.js,@deepseek-ai/dsh-client-ui-settings-models/client.js,@deepseek-ai/dsh-client-ui-settings-plugin-inventory/client.js,@deepseek-ai/dsh-client-ui-conversation/client.js,@deepseek-ai/dsh-client-ui-approval/client.js,@deepseek-ai/dsh-client-ui-chat/client.js,@deepseek-ai/dsh-client-ui-brand-official/client.js,@deepseek-ai/dsh-client-ui-attachment/client.js,@deepseek-ai/dsh-client-ui-tool/client.js,@deepseek-ai/dsh-client-ui-cordis/client.js,@deepseek-ai/dsh-client-ui-workflow-run/client.js,@deepseek-ai/dsh-client-ui-deliverables/client.js,@deepseek-ai/dsh-client-ui-workspace/client.js,@deepseek-ai/dsh-client-ui-input-trigger/client.js,@deepseek-ai/dsh-client-ui-commands/client.js,@deepseek-ai/dsh-client-ui-skill/client.js,@deepseek-ai/dsh-client-ui-subagent/client.js,@deepseek-ai/dsh-client-ui-reference/client.js,@deepseek-ai/dsh-client-ui-jobs/client.js,@deepseek-ai/dsh-client-ui-goal/client.js,@deepseek-ai/dsh-client-ui-message-feedback/client.js,@deepseek-ai/dsh-client-ui-model-selection/client.js,@deepseek-ai/dsh-client-ui-permission-presets/client.js,@deepseek-ai/dsh-client-ui-agent-preset/client.js,@deepseek-ai/dsh-client-ui-settings-plugins/client.js,@deepseek-ai/dsh-client-ui-plan/client.js,@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,dsh-agent-team/client.js,@deepseek-ai/dsh-client-ui-directory-picker-browse/client.js&rev=bf93250387bd",
+    "status": 200,
+    "contentType": "text/javascript; charset=utf-8",
+    "bytes": 4627218,
+    "sha256": "690e0f987399e1d72c2f4f40616044c95cd8f1bb45f177eb8f1275f1b6ab6822",
+    "sha256MatchesInstall": false,
+    "bundleBytesContained": true,
+    "unauthenticatedStatus": 200
+  },
+  "startedAt": "2026-09-04T20:13:59.157Z"
+}

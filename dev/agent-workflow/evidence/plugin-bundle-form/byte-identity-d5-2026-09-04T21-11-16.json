@@ -1,0 +1,26 @@
+[
+  {
+    "label": "client-bundle.js",
+    "installSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+    "treeSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+    "identical": true
+  },
+  {
+    "label": "shim index.js",
+    "installSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+    "treeSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+    "identical": true
+  },
+  {
+    "label": "shim package.json",
+    "installSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+    "treeSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+    "identical": true
+  },
+  {
+    "label": "dist glue agent-bindings.mjs",
+    "installSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+    "treeSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+    "identical": true
+  }
+]

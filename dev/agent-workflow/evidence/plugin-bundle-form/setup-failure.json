@@ -1,0 +1,4 @@
+{
+  "error": "team_domain already exists (schema_meta holds 8 stamp row(s)); use openTeamDomain",
+  "stack": "TeamDomainError: team_domain already exists (schema_meta holds 8 stamp row(s)); use openTeamDomain\n    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-07-22/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/schema/errors.js:84:12)\n    at createTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-07-22/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/team-domain.js:120:19)\n    at async bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pbf-2026-09-04T20-07-22/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:362:15)"
+}

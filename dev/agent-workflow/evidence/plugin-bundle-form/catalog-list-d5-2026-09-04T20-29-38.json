@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "d5-1a06e1ff5b1980d7",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "blueprints": [
+            {
+              "blueprintId": "my-team-bp-1",
+              "revisions": [
+                1
+              ]
+            }
+          ]
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "catalog.list",
+          "endpoint": "catalog.list",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}
