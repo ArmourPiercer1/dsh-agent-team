@@ -65,6 +65,7 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
         bootPhase: "create"
         rootSessionId: "team-root"
         blueprintSource: |
+          ---
           schemaVersion: 1
           blueprintId: my-team-bp-1
           revision: "1"
@@ -97,6 +98,7 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
               maxInstances: 4
               maxConcurrent: 4
           metadata: {}
+          ---
         seedMembers: []
         # 以下三字段必填：host 配置校验 fail-closed，缺失任一 → TEAM_PLUGIN_CONFIG_INVALID
         # （字段集与 R122 验证行逐字对齐，R125 gate reviewer-3 B1）
@@ -121,9 +123,14 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
 
 - `<REPO>` = 目标机器 clone 目录的绝对路径；file:// URL 一律**正斜杠**
   （Windows 例：`file:///D:/code/dsh-agent-team/...`）。
-- `blueprintSource` 为内联 YAML 字符串：leader/members 的 `templateId`、`persona` 按团队
+- `blueprintSource` 为内联 YAML 字符串（YAML literal block `|`）：leader/members 的 `templateId`、`persona` 按团队
   设计填写；`requirements` 引用的 persona 必须与 `environmentFacts` 中 available 的
-  persona 对齐（示例：`persona/standard`）。
+  persona 对齐（示例：`persona/standard`）。**块内必须保留首、末两行 `---` frontmatter
+  定界符**（模板已含）：host 侧 `parseBlueprint`/`splitFrontmatter`（packages/domain）
+  fail-closed —— 首行非 `---` → `MALFORMED_DTO`（`frontmatter-missing`）；缺闭合 `---` →
+  `frontmatter-unclosed`；闭合行后有任何非空内容 → `markdown-body-not-allowed`。
+  修改蓝图字段时勿删这两行（R125 round-3 reviewer-9 实测：缺定界符的模板首次
+  `team.create` 必失败）。
 - `rootSessionId` 每个世界唯一；复用既有世界时按现状调整。
 - `defaultWorkspace`（可选）：Root 默认 workspace 目录。
 - **client 行（推荐 = R122 已 live 验证的相对形态）**：把 `packages/client/composition-shim/`

@@ -1,0 +1,7 @@
+﻿extracted blueprintSource: 725 chars, 34 lines
+first line: "---"
+last non-empty line: "---"
+POSITIVE PASS: parseBlueprint accepted the template block
+  blueprintId=my-team-bp-1 revision=1 leader.templateId=leader members=1 contentHash=sha256:a43746295d4df4499...
+NEGATIVE CONTROL PASS: delimiter-stripped block -> MALFORMED_DTO reason=frontmatter-missing (expected MALFORMED_DTO frontmatter-missing)
+TEMPLATE-AUDIT PASS (positive + negative control)
