@@ -58,7 +58,7 @@ node packages/runtime/root-binding/harness/run.mjs \
 
 Build chain (only when a farm package's `lib/` is missing, e.g. a pristine
 test-use checkout): `pnpm install --ignore-scripts` then
-`node scripts/build.ts` with `DSH_CLIENT_COMMIT_HASH=cd5ef814`,
+`node scripts/build.ts` with `DSH_CLIENT_COMMIT_HASH=76fda72979`,
 `ESBUILD_WORKER_THREADS=1`, inside the test-use tree. Artifacts are
 gitignored; the pristine check re-verifies afterwards. The `build:web` step
 (vite → esbuild service spawn) is **not buildable in-sandbox** (piped-stdio

@@ -155,7 +155,7 @@ const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
 const EVIDENCE_DIR = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'T12')
 const INSTANCES_DIR = join(EVIDENCE_DIR, 'instances')
 
-const CLIENT_COMMIT_HASH = 'cd5ef814'
+const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
