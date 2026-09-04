@@ -1,5 +1,5 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
-current_phase: "P9_MASTER_CLOSURE_DONE (2026-09-05; awaiting user: P10 hardening / G8-S ruling — docs/STATUS.md §4)"
+current_phase: "PLUGIN_BUNDLE_FORM (2026-09-05; task/plugin-bundle-form ACTIVE — `dsh plugin add github:` 直接可用，R127 kickoff @master 2f3f61b；仍待用户: P10 hardening / G8-S ruling — docs/STATUS.md §4)"
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
 p8s_base_sha: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
@@ -212,3 +212,17 @@ p9_master_closure:
   known_nonblocking: "p6t1-parallel concurrent-load flake (isolated 9/9 protocol, r122d precedent; recommend load-reduction hardening); client UI suite (235) depends on local references/deepseek-harness-test-use tree (root canonical suite does not; install chain excludes per-pkg test step); s8-boot-r125.mjs test-kit depends on .worktrees/RC1 mock lib (test harness, not product)"
   evidence: "dev/agent-workflow/evidence/P9-master-closure/ (12 verdicts, gate logs re-captured, merge-audit/byte-compare/gate-summary, fresh-clone-sim-r125/, r125-template-audit.*, r125-resolve-audit.*, s8-boot/gentry captures, browser/) + archived evidence/{P9,T12,upstream-rc1-compat}/ (redacted)"
   next: "CLOSED (R126): R125(5) bookkeeping landed on int; ff into master 2c1c200 -> 4233816; R126 pushed master + int/P9-master-product-closure to origin (user-authorized, ls-remote verified); reviewer worktrees + P9-MC removed; untracked evidence originals moved to D:/AgentDev/dsh-plugins/evidence-originals-backup-20260905 (reversible). Remaining for user: P10 hardening + G8-S/P8-S8 ruling (docs/STATUS.md section 4). No further push without new explicit authorization."
+
+plugin_bundle_form:
+  state: "ACTIVE (R127 kickoff 2026-09-05, execution 1/3 not started)"
+  date: "2026-09-05"
+  user_goal: "user fresh-machine report: `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` on DSH 0.1.3-alpha.1 (user build D:/AgentDev/deepseek-harness) -> host warning 'declares no dsh.bundle' -> no Team UI; user ruling: make `dsh plugin add github:` work directly, full gate"
+  branch: task/plugin-bundle-form
+  worktree: .worktrees/PBF
+  base: "master 2f3f61b (post-R126)"
+  design: "root package.json: dsh.bundle.patch + dsh.client{platform:web} + exports (. -> shim inert node half / ./host -> dist host.js / ./client -> client-bundle.js / ./package.json) + prepare 'pnpm install && pnpm build && pnpm build:composition' + files; tracked root cordis.patch.yml (machine-agnostic: bare name 'dsh-agent-team' client row + subpath 'dsh-agent-team/host' host row, config w/o glueUrl/seamUrl/absolute paths, default blueprint my-team-bp-1 + staticModel deepseek-official/deepseek-v4-flash); host.ts: glueUrl/seamUrl become optional with import.meta.url-relative derivation (glue single candidate ./live/agent-bindings.mjs; seam 2-layout candidates; explicit config wins; fail-closed); INSTALL.md quick-install section (pnpm allowBuilds flow)"
+  key_contract_facts: "plugin.ts identical between test-use 0.1.2-rc.1 and user 0.1.3-alpha.1 (byte-identical); test-use built lib dispatches `plugin` (plugin-WDISvmGc.js); client row must be bare package name (exactPackageSpecifier), nearestPackage walks up from resolved module to manifest declaring the name (shim name differs -> root wins), clientExportOf reads exports[\"./client\"]"
+  gates: "five gates on task tree (R125 criteria) + fresh-profile-world vertical (real CLI reconcile: git+file:// local bare repo spec, blocked prepare -> pnpm allowBuilds key -> re-add -> bundles auto; boot S8-READY equivalent; gentry G0-G4) + 4 install-surface artifacts byte-identical"
+  red_lines: "CORE PATCH BUDGET=0; test-use pristine @76fda72979; D:/deepseek-harness + :3080 zero-touch; D:/AgentDev/deepseek-harness (user build) read-only; 3180-family ports"
+  evidence: "dev/agent-workflow/evidence/plugin-bundle-form/ (task-brief.md + to follow)"
+  push: "NO push without new explicit user authorization (R124 precedent; R126 one-shot consumed)"

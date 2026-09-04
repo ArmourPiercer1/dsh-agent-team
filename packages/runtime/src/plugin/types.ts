@@ -184,15 +184,20 @@ export interface TeamPluginConfig {
   /**
    * The file URL of the live-agent glue module (`agent-bindings.mjs`, plain
    * JavaScript — tsc does not emit .mjs; the built production entry loads
-   * it by URL, keeping the dist tree pure TypeScript output).
+   * it by URL, keeping the dist tree pure TypeScript output). Optional:
+   * when absent, the entry derives the URL from its OWN module location
+   * (`defaultGlueUrl` — the co-located dist mirror emitted by
+   * place-dist-glue.mjs, or the source original under the unit-test
+   * layout). An explicit value always wins.
    */
-  readonly glueUrl: string
+  readonly glueUrl?: string
   /**
    * The file URL of the REAL storage-domain seam module (`seam.mjs` over
-   * the DSH public `storageDomain` service). REQUIRED when the
-   * `storageDomain` service is present (host mode); ignored when the
-   * `teamStorageSeam` service is provided directly (test mode, the seam
-   * object itself).
+   * the DSH public `storageDomain` service). Required in host mode when the
+   * `teamStorageSeam` service is NOT provided directly (test mode, the seam
+   * object itself) — unless derivable: when absent, the entry derives it
+   * per module layout (`defaultSeamUrlCandidates`, first existing wins,
+   * fail-closed). An explicit value always wins.
    */
   readonly seamUrl?: string
   /**

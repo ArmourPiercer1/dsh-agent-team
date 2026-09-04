@@ -8,9 +8,30 @@
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
   },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "exports": {
+    ".": "./packages/client/composition-shim/index.js",
+    "./host": "./packages/runtime/dist/packages/runtime/src/plugin/host.js",
+    "./client": "./packages/client/composition-shim/client-bundle.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "packages/client/composition-shim",
+    "packages/runtime/dist",
+    "packages/runtime/root-binding"
+  ],
   "scripts": {
     "build": "pnpm -r run build",
     "build:composition": "node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim",
+    "prepare": "pnpm install --ignore-scripts && pnpm build && pnpm build:composition",
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
     "test": "vitest run",

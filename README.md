@@ -72,6 +72,12 @@ gitignored) — this section is a pointer summary, not the authority:
   `dsh web`. Proven end-to-end on clean-clone-equivalent trees (registry-only
   dependencies, 0 external junctions, byte-identical install surface) and on a fresh
   production-world boot (S8-READY + full browser vertical, zero failures).
+  Since plugin-bundle-form, the root manifest declares `dsh.bundle` + `dsh.client`
+  (machine-agnostic bundle layer, no file:// rows):
+  `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
+  installs and registers in ONE command (one-time pnpm `allowBuilds` whitelist for
+  the git dependency's `prepare` — `docs/INSTALL.md` §2); clone + mount remains the
+  offline / manual path (§3).
 - Test baseline: upstream 0.1.2-rc.1 @ `76fda72979` (in-place update 2026-09-04;
   in-repo compat adaptation only, CORE PATCH BUDGET = 0 held — R122, five gates green).
 - Push: origin updated 2026-09-05 (R126, user-authorized) — **master @ `4233816`**

@@ -1,0 +1,79 @@
+# dsh-agent-team — the shipped bundle layer (manifest `dsh.bundle.patch`).
+#
+# Machine-agnostic by contract: every row references THIS PACKAGE by name —
+# the host row via the `./host` subpath export (the built dist host entry),
+# the client row via the bare package name (the client module system reads
+# the root `dsh.client` manifest and serves the `./client` export). No file
+# URLs, no machine paths, no repo-relative locations: the same layer doc
+# installs on any machine.
+#
+# The row config intentionally carries NO glueUrl/seamUrl/defaultWorkspace:
+# the host entry derives the glue and seam module URLs from its own module
+# location (see packages/runtime/src/plugin/host.ts — defaultGlueUrl /
+# defaultSeamUrlCandidates, fail-closed when unresolvable) and the domain
+# defaults the workspace when none is configured.
+#
+# Override semantics (last-write-wins, WHOLE config replaced): the profile's
+# own `cordis.patch.yml` is applied AFTER this bundle layer; a row with the
+# same `id` and a `config` replaces this layer's config entirely — use that
+# to point `staticModel` at your provider/model, to customize the
+# `blueprintSource` team design, or to set `defaultWorkspace`. Omitting a
+# field in the override row drops it (no field-level merge).
+
+- insert:
+    - id: "dsh-agent-team"
+      name: "dsh-agent-team/host"
+      config:
+        bootPhase: "create"
+        rootSessionId: "team-root"
+        blueprintSource: |
+          ---
+          schemaVersion: 1
+          blueprintId: my-team-bp-1
+          revision: "1"
+          leader:
+            templateId: leader
+            persona: "You lead this team."
+          members:
+            - templateId: worker
+              displayName: "Worker A"
+              persona: "You are a worker on this team."
+          requirements:
+            - domain: persona
+              name: standard
+          teamEnvelope:
+            allow: [assign-task, create-member, send-message, report-progress, archive-member, restore-member]
+            deny: [delete-team]
+          memberEnvelopes:
+            - templateId: worker
+              envelope:
+                allow: [send-message, report-progress]
+                deny: []
+          policyStates:
+            - id: default
+              description: "Default state."
+          quotas:
+            team:
+              maxInstances: 12
+              maxConcurrent: 12
+            members:
+              maxInstances: 4
+              maxConcurrent: 4
+          metadata: {}
+          ---
+        seedMembers: []
+        generation: 1
+        deniedSelection: null
+        mcpServer: null
+        staticModel:
+          provider: deepseek-official
+          model: deepseek-v4-flash
+        environmentFacts:
+          - { domain: "tool", subject: "web", available: true, generation: 1 }
+          - { domain: "skill", subject: "base", available: true, generation: 1 }
+          - { domain: "persona", subject: "standard", available: true, generation: 1 }
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+    - id: "dsh-agent-team-client"
+      name: "dsh-agent-team"

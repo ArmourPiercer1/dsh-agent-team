@@ -32,12 +32,14 @@
  *     (row-owned `config.glueUrl`; the legacy entry is compiled separately
  *     into the runtime dist mirror — see ./legacy-surface.js) and
  *     constructs the production root (./root.js) around the opened
- *     TeamDomain; the two `import.meta.url`-derived URLs (the upstream
- *     resolver hook and the frozen legacy entry) use a production-first
- *     layout-agnostic candidate search, so the SAME module also runs from
- *     TS source under the unit-test runner (fresh checkout, no dist) —
- *     the production world always hits the first (dist) candidate, which
- *     resolves to exactly the files the pre-candidate code computed;
+ *     TeamDomain; the `import.meta.url`-derived URLs (the upstream
+ *     resolver hook, the frozen legacy entry, and — when the row config
+ *     carries no glueUrl/seamUrl — the location-derived glue/seam
+ *     defaults) use a production-first layout-agnostic candidate search,
+ *     so the SAME module also runs from TS source under the unit-test
+ *     runner (fresh checkout, no dist) — the production world always hits
+ *     the first (dist) candidate, which resolves to exactly the files the
+ *     pre-candidate code computed;
  *   - provides `teamRoot` SYNCHRONOUSLY (before the first await) and arms
  *     one effect. A rejected apply fiber is absorbed into the Cordis
  *     logger — invisible to the harness — so EVERY setup failure (config,
@@ -47,7 +49,9 @@
  *     are closed (close() is idempotent).
  * @module @dsh-agent-team/runtime/plugin/host
  */
+import { existsSync } from 'fs'
 import { register } from 'module'
+import { fileURLToPath } from 'url'
 
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
 import type {
@@ -270,9 +274,63 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   ) {
     fail('externalPolicyFacts must be { hard, capabilityExists } maps')
   }
-  if (typeof c.glueUrl !== 'string' || c.glueUrl.length === 0) fail('glueUrl must be a non-empty file URL string')
+  if (
+    c.glueUrl !== undefined &&
+    (typeof c.glueUrl !== 'string' || c.glueUrl.length === 0)
+  ) {
+    fail('glueUrl must be a non-empty file URL string when present')
+  }
   if (c.seamUrl !== undefined && typeof c.seamUrl !== 'string') fail('seamUrl must be a file URL string when present')
   return c as unknown as TeamPluginConfig
+}
+
+/**
+ * The default live-agent glue URL, derived from this host entry's own
+ * module location: the dist layout carries the byte-copied mirror
+ * (place-dist-glue.mjs) next to the emitted host.js, and the source layout
+ * carries the original .mjs next to host.ts — one relative specifier, both
+ * layouts. An explicit `config.glueUrl` always wins.
+ * @param hostModuleUrl - this entry's `import.meta.url`.
+ * @returns the derived glue file URL.
+ */
+export function defaultGlueUrl(hostModuleUrl: string): string {
+  return new URL('./live/agent-bindings.mjs', hostModuleUrl).href
+}
+
+/**
+ * The default storage-seam URL candidates, per module layout (the dist
+ * entry sits five directory levels below the runtime package root —
+ * `dist/packages/runtime/src/plugin` — the source entry two — the same
+ * layout-agnostic candidate pattern as `loadLegacyInspect`). An explicit
+ * `config.seamUrl` always wins.
+ * @param hostModuleUrl - this entry's `import.meta.url`.
+ * @returns the candidate file URLs, dist layout first.
+ */
+export function defaultSeamUrlCandidates(hostModuleUrl: string): readonly string[] {
+  return [
+    new URL('../../../../../root-binding/harness/seam.mjs', hostModuleUrl).href,
+    new URL('../../root-binding/harness/seam.mjs', hostModuleUrl).href,
+  ]
+}
+
+/**
+ * Pick the effective default seam URL: the first candidate that exists on
+ * disk, or a fail-closed error naming every tried path (a missing
+ * co-located seam is a build/install failure, not a fallback case).
+ * @param hostModuleUrl - this entry's `import.meta.url`.
+ * @returns the file URL of the first existing candidate.
+ * @throws {TeamPluginError} TEAM_PLUGIN_GLUE_UNAVAILABLE when no candidate exists.
+ */
+function resolveDefaultSeamUrl(hostModuleUrl: string): string {
+  const candidates = defaultSeamUrlCandidates(hostModuleUrl)
+  const found = candidates.find((candidate) => existsSync(fileURLToPath(candidate)))
+  if (found === undefined) {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
+      `no "teamStorageSeam" service is provided and no default seam module was found (tried: ${candidates.join(' | ')})`,
+    )
+  }
+  return found
 }
 
 /**
@@ -400,17 +458,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     }
 
   // --- the storage seam: injected service, or the real seam over the --------
-  // --- DSH public storageDomain (the row-owned seamUrl module) --------------
+  // --- DSH public storageDomain (the row-owned seamUrl module, or its -------
+  // --- location-derived default) ---------------------------------------------
   let seam: StorageDomainSeam | undefined = ctx.get('teamStorageSeam') as
     | StorageDomainSeam
     | undefined
   if (seam === undefined || seam === null) {
-    if (typeof rowConfig.seamUrl !== 'string' || rowConfig.seamUrl.length === 0) {
-      throw new TeamPluginError(
-        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
-        'no "teamStorageSeam" service is provided and the row config carries no seamUrl',
-      )
-    }
+    // Explicit config wins; otherwise the default seam module is derived
+    // from this entry's own location (fail-closed when unresolvable).
+    const seamUrl = rowConfig.seamUrl ?? resolveDefaultSeamUrl(import.meta.url)
     const storageDomain = ctx.get('storageDomain')
     if (storageDomain === undefined || storageDomain === null) {
       throw new TeamPluginError(
@@ -418,7 +474,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
         'the "storageDomain" public service is absent (required to build the seam from seamUrl)',
       )
     }
-    const seamModule = (await import(rowConfig.seamUrl)) as {
+    const seamModule = (await import(seamUrl)) as {
       createRealStorageDomainSeam?: (storageDomain: unknown) => StorageDomainSeam
     }
     if (typeof seamModule.createRealStorageDomainSeam !== 'function') {
@@ -448,15 +504,17 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     },
   }
 
-  // --- the live-agent glue (plain JS, row-owned URL; construction is -------
-  // --- side-effect free — every boot effect runs inside live.boot()) -------
+  // --- the live-agent glue (plain JS, row-owned URL or the location-derived -
+  // --- default; construction is side-effect free — every boot effect runs ---
+  // --- inside live.boot()) ---------------------------------------------------
+  const glueUrl = rowConfig.glueUrl ?? defaultGlueUrl(import.meta.url)
   let glue: GlueModule
   try {
-    glue = (await import(rowConfig.glueUrl)) as GlueModule
+    glue = (await import(glueUrl)) as GlueModule
   } catch (error) {
     throw new TeamPluginError(
       TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
-      `the glue module (${rowConfig.glueUrl}) could not be loaded: ${String(error)}`,
+      `the glue module (${glueUrl}) could not be loaded: ${String(error)}`,
     )
   }
   if (typeof glue.createAgentBindings !== 'function') {

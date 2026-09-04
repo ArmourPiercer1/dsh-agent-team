@@ -309,8 +309,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (the lifecycle-evidence-port regression spec; zero denylist
     // vocabulary — the scan over it passes) after the pin was last
     // recorded; this commit records the increment.
-    expect(scanResult.filesScanned).toBe(602)
-    expect(scanResult.files.length).toBe(602)
+    // plugin-bundle-form derivation-test pin (+1): the task/
+    // plugin-bundle-form commit adds
+    // packages/runtime/test/pbf-default-artifact-urls.test.ts (the
+    // location-derived glue/seam default + validator-shape spec for the
+    // machine-agnostic git-install surface; zero denylist vocabulary —
+    // the scan over it passes). The sibling changes (host.ts, types.ts,
+    // node-min.d.ts) are in-place edits (no count change); the root
+    // package.json and cordis.patch.yml are outside the scanner's
+    // packages/** + .ts/.mts/.mjs scope.
+    expect(scanResult.filesScanned).toBe(603)
+    expect(scanResult.files.length).toBe(603)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
