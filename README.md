@@ -31,8 +31,8 @@ must not be created without a separate architecture decision.
 
 ## vNext object model (summary)
 
-Details live in `docs/plans/active` (Detailed Architecture, §4–§14) — this section is
-a pointer summary, not the authority:
+Details live in the frozen Detailed Architecture doc (`docs/plans/paused/`, local,
+gitignored) — this section is a pointer summary, not the authority:
 
 - A **TeamBlueprint** must contain **exactly one complete LeaderTemplate** (plus member
   templates / policy / quota definitions); a blueprint that only defines teammates is
@@ -51,6 +51,20 @@ a pointer summary, not the authority:
   **Restore = ARCHIVED → SETTLED** — it restores durable availability only: it does not
   resume the Agent, start a turn, or call a model. New work re-enters RUNNING.
 
+## Status (2026-09-04)
+
+- Backend (P0–P8-S): complete — production composition, operation fencing,
+  projection/remote principal closure; G8 round-2 3/3 通过; T12 Production Vertical
+  Closure **VERDICT = GO** (re-stamped @ `c455c43`).
+- P9 UI (legacy reuse): **P9_VERDICT = GO** (S9 independent review, audited tip
+  `0738b45`; DoD 15/15; reuse audit 47/47 confirmed). Post-GO trial defects closed in
+  P9-F1 (`d199d4d6`) + P9-F2 (`dc056d5`); production-host browser vertical S1–S9 all
+  green.
+- Test baseline: upstream 0.1.2-rc.1 @ `76fda72979` (in-place update 2026-09-04;
+  in-repo compat adaptation only, CORE PATCH BUDGET = 0 held — R122, five gates green).
+- Next: P10 hardening; push awaiting explicit user authorization (no push without it).
+- Details, pending items and evidence pointers: **`docs/STATUS.md`**.
+
 ## Commands
 
 | Command | Effect |
@@ -60,7 +74,8 @@ a pointer summary, not the authority:
 | `pnpm typecheck` | Type-check every package (no emit). |
 | `pnpm lint` | ESLint (flat config, minimal rule set) over the workspace. |
 | `pnpm test` | Run all package unit tests (Vitest, workspace aggregation). |
-| `pnpm smoke:composition` | Verify the built empty plugin entries satisfy the public Cordis plugin shape (plain node, no harness). |
+| `pnpm test:node` | Plain-node test runner (`scripts/run-tests.mjs`) — the sanctioned in-sandbox chain (no child-process spawns). |
+| `pnpm smoke:composition` | Verify the built plugin entries against the public Cordis plugin shape (production-dist degenerate-ctx contract pin; plain node, no harness). |
 
 Toolchain: Node `^22.19.0 || >=24.0.0`, pnpm `11.7.0` (aligned with the DSH host
 toolchain). The test runner is Vitest 4 pinned to the rolldown-based **vite 8**
@@ -68,21 +83,31 @@ line via `overrides.vite` in `pnpm-workspace.yaml` — its config loading and TS
 transforms run in-process (no child-process spawns), which keeps the test
 pipeline deterministic across restricted and normal environments.
 
-## Empty plugin (skeleton)
+## Plugin entries (production form)
 
 - Host half: `packages/runtime/src/plugin/host.ts` (built → `packages/runtime/dist/plugin/host.js`)
+  — the production root binding (P8-S5 A01–A34 topology, P8-S6 completion): provides
+  `teamRoot`, registers the `/team-remote` handler set (frozen Remote v1 catalog,
+  facade-only command routing), the projection live overlay and server-side principal
+  derivation (claims never trusted), and the Team operation fencing (P8-S5B shared
+  per-team coordinator).
 - Client half: `packages/client/src/plugin/client.ts` (built → `packages/client/dist/plugin/client.js`)
+  — the Team UI (P9, legacy reuse): registers `conversation.view` (Team tab),
+  `conversation.input.dock`, `settings.section`, and the global New Team entry at
+  `sidebar.footer.action`.
 
-Both are fresh plain modules following the public Cordis composition plugin shape —
-a stable named `name` export plus a side-effect-free `apply(ctx, config?)` entrypoint —
-and bind no services, tools, timers, or listeners yet. They are verified by
-`scripts/composition-smoke.mjs` (fixture basis for the P1-T5 zero-core check) and by
-the package unit tests.
+Both are plain modules following the public Cordis composition plugin shape — a stable
+named `name` export plus a side-effect-free `apply(ctx, config?)` entrypoint. They are
+verified by `scripts/composition-smoke.mjs` (production-dist degenerate-ctx contract
+pin; fixture basis for the P1-T5 zero-core check), the package unit tests, and the S8
+production-host vertical (real browser, port 3180).
 
 ## Provenance & discipline
 
 - Provenance evidence (file/commit manifests, mixed-hunk report):
   `dev/agent-workflow/evidence/provenance/`.
 - Legacy is reference-only: `docs/migration/` (reuse map, behavior inventory).
-- Task graph, gates, and the package-boundary rule: Task Decomposition §11 in the
-  `docs/plans/active` plan set (local, gitignored).
+- Task graph, gates, and the package-boundary rule: Task Decomposition §11 in the frozen
+  plan set (`docs/plans/paused/`, local, gitignored).
+- Current status, pending items and evidence pointers: **`docs/STATUS.md`** (snapshot;
+  authority = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`).

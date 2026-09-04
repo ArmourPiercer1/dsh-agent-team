@@ -8,10 +8,12 @@
 > 它只规定四件事：**谁执行、允许尝试几次、门禁如何验收、状态如何流转**。
 > 它不修改上游文档对语义、兼容性、UI、开发顺序的任何要求：
 >
-> 1. `docs/plans/active/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md`（Architecture Frozen）
-> 2. `docs/plans/active/DSH_Agent_Team_vNext_Detailed_UI_Design_20260829.md`（UI Frozen）
-> 3. `docs/plans/active/DSH_Agent_Team_vNext_Detailed_Development_Plan_20260829.md`（权威迁移计划）
-> 4. `docs/plans/active/DSH_Agent_Team_vNext_Task_Decomposition_and_Review_Method_20260829.md`（执行编排：任务卡、状态机、审查方法）
+> 1. `docs/plans/paused/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md`（Architecture Frozen）
+> 2. `docs/plans/paused/DSH_Agent_Team_vNext_Detailed_UI_Design_20260829.md`（UI Frozen）
+> 3. `docs/plans/paused/DSH_Agent_Team_vNext_Detailed_Development_Plan_20260829.md`（权威迁移计划）
+> 4. `docs/plans/paused/DSH_Agent_Team_vNext_Task_Decomposition_and_Review_Method_20260829.md`（执行编排：任务卡、状态机、审查方法）
+>
+> **路径留痕（2026-09-04，R123 文档对齐）**：四份冻结文档于 2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`；此处路径引用随之修正，语义、冻结地位与冲突裁决顺序均不变。
 >
 > **冲突裁决顺序**：upstream public contract → Architecture 文档 → UI 文档 → 开发计划 → 任务分包文档 → legacy code（证据与参考，不是需求来源）→ 实现便利。
 > 本文档与上游文档冲突时，**上游文档优先**，冲突必须记入执行日志（§7）并报告用户。

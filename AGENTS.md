@@ -13,20 +13,23 @@
 
 ## 文档权威序
 
-upstream 公开契约 → `docs/plans/active/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、唯一权威）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
+upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划（T12 Production Vertical Closure（已关闭，VERDICT GO @ c455c43）/ P9 UI Legacy-Reuse 实施计划（当前阶段，P9_VERDICT GO @ 0738b45，2026-09-04）；local、gitignored）→ `docs/ROUTER_RULES.md`（执行协议）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
 
 ## 目录约定
 
 | 路径 | 性质 |
 | --- | --- |
-| `docs/plans/active/` | 冻结计划文档（禁改） |
+| `docs/plans/active/` | 当期执行计划（local、gitignored；T12 = 已关闭，P9 UI = 当前阶段；用户/主 Agent 产物，禁 worker 改动） |
+| `docs/plans/paused/` | 20260829 冻结四份 + G8 审计报告 + P8-S 收束计划（local、gitignored；只读冻结基线，四份冻结文档仍为语义唯一权威） |
 | `docs/ROUTER_RULES.md` / `docs/TEST_METHODS.md` | 执行协议 / 测试约束（用户裁决可改，改动需记录） |
+| `docs/STATUS.md` | 当前状态总览（living 快照，非权威源；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`） |
+| `docs/contracts/` | contracts v1 冻结确认记录（P3-T6） |
 | `docs/migration/` | legacy 行为清单、reuse map |
 | `dev/agent-workflow/` | 编排状态 `graph.yaml`、只追加日志 `SESSION_ROUTER_LOG.md`、证据 `evidence/<task>/` |
 | `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；HEAD 锁 `a3ab319927...`，tag `legacy-agent-team-pre-vnext`；禁止任何 vNext 开发） |
-| `references/deepseek-harness-test-use/` | 测试专用 DSH 源码（pristine upstream 角色；唯一允许的运行时源码；见 TEST_METHODS.md） |
+| `references/deepseek-harness-test-use/` | 测试专用 DSH 源码（pristine upstream 角色；唯一允许的运行时源码；基线 0.1.2-rc.1 @ `76fda72979`（2026-09-04 in-place 升级，R122 留痕）；见 TEST_METHODS.md） |
 | `.worktrees/` | 任务 worktree（gitignored；一个任务一个） |
-| 根 `packages/` | vNext 9-package 骨架（contracts/domain/storage/runtime/tools/remote/client/legacy/testkit，TaskDoc §11 冻结）；**禁止**复制 legacy `packages/team` 源码进来 |
+| 根 `packages/` | vNext 9-package 结构（contracts/domain/storage/runtime/tools/remote/client/legacy/testkit，TaskDoc §11 冻结；P0 骨架 → P1–P9 完整实现，P9 GO 2026-09-04）；**禁止**复制 legacy `packages/team` 源码进来 |
 
 ## 红线（全局禁止 block）
 
@@ -40,3 +43,4 @@ upstream 公开契约 → `docs/plans/active/` 四份 20260829 冻结文档（Ar
 
 - 编排状态唯一来源：`dev/agent-workflow/graph.yaml`（不依赖会话记忆）；执行日志只追加：`dev/agent-workflow/SESSION_ROUTER_LOG.md`。
 - 会话恢复后：先读 graph.yaml 定位 current_phase 与 ready 任务，再读 SESSION_ROUTER_LOG.md 末尾若干条目，然后继续；不要重建已完成的工作。
+- 文档系统（`AGENTS.md` / `README.md` / `docs/STATUS.md` / `docs/ROUTER_RULES.md` / `docs/TEST_METHODS.md`）是快照而非权威：与 graph.yaml + 日志最新条目冲突时，以 graph.yaml + 日志为准，并在当轮修正文档（R123 文档对齐先例）。

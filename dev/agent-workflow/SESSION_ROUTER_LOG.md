@@ -1648,3 +1648,22 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **范围裁决（已告知用户）**：用户所称"其他插件"不在本工作区（仅 dsh-agent-team + dsh-cost-panel），如需要另行开任务。
 - **已知（未修，out-of-scope，记录在案）**：`upstream-resolver.mjs` 的 `candidateFromArgv`/`candidatesFromResolverFile` 路径计算自始有误（dirname×3 应为 ×4、resolver file 基址错）→ 重定向在任何时代从未触发，解析历来依赖 node_modules walk + 安装态；rc.1 适配不依赖它（boot kit 的 junction-farm reconciliation 承接其作用）。
 - **收尾**：TEST_METHODS.md 基线更新已应用（pin `76fda72979` + rc.1 标签 + 留痕变更行）；graph.yaml 增 `upstream_rc1_compat:` 节。task 分支 `task/upstream-rc1-compat`（`c6bae9c` + `bd38827`）**未 push**（push 待用户授权）。world #2 实例保留运行（home …12-26-59、instance pid 59496、boot job `pwsh-21`）；拆线 = `job_kill pwsh-21` 或 `node s8-boot.mjs stop`（home 整体可删）；inert 旧 home（…12-02-10、…12-04-55 及更早 P9 home）可删。
+
+## R123 — 文档系统对齐更新（用户指令「读取工作区、了解最新进展、更新文档系统」；纯文档性补充，ROUTER_RULES §4 不计次）（2026-09-04，本会话）
+
+- **路由说明**：本任务 = 用户直接指令的文档维护（非无人值守开发任务），不触发 ROUTER_RULES §1.4 启动核验门；本会话模型路由 = 运行时声明 `qwen3.8-27b`。
+- **读取序（遵 AGENTS.md 必读 + 状态恢复纪律）**：ROUTER_RULES + TEST_METHODS → graph.yaml 全量（196 行）→ SESSION_ROUTER_LOG 全量（R1–R122，1650 行）→ docs 树 / README / locks.yaml / .gitignore / git status / branch 状态 / 端口实测。
+- **进展定位（disk truth）**：最新轮次 = **R122**（upstream 0.1.2-rc.1 兼容适配 DONE：五闸全绿 + 3180 全新世界 boot S8-READY / gentry `failures: []` / 干净世界冒烟 OK）；P9 = **P9_VERDICT GO**（S9 @ `0738b45`，DoD 15/15）+ post-GO 试用批次 **P9-F1**（`d199d4d6`：R118 全局入口 + R119×2）+ **P9-F2**（`dc056d5`：R121 孤儿 workspace）收口；T12 = **GO RE-STAMPED @ `c455c43`**；master `c5ef6e6` 领先 origin 10（未 push）；未推送分支 = task/P9-ui-legacy-reuse（dc056d5）/ task/upstream-rc1-compat（c6bae9c+bd38827）/ T12-V runner-only / P9-PROTO 线（local-only）。本会话只读实测：:3180 与 :3080 **均无监听**（R122 world #2 实例已随其会话结束；未做任何启动/停止/操作）。
+- **发现的文档滞后（2026-09-02 文档迁移 + 阶段收口后的脱节点，全部纯文档面）**：
+  1. 四份 20260829 冻结文档已移入 `docs/plans/paused/`，但 AGENTS.md 权威序/目录约定、README 指针、ROUTER_RULES 文首引用仍写 `docs/plans/active/`；
+  2. README「Empty plugin (skeleton)」节仍描述 P1 时代空插件（"bind no services, tools, timers, or listeners yet"），与 P8-S5/S6 生产根 + P9 客户端 UI 现状不符；
+  3. 无集中状态文档：最新进展（T12 GO / P9 GO / P9-F1/F2 / rc.1 适配 / 待办）只散落于 graph.yaml 与日志，README/AGENTS.md 无指针；
+  4. `dev/agent-workflow/evidence/{P9,T12,upstream-rc1-compat}/` 在 master 工作树 **untracked**（未随 `c5ef6e6` 归档；git log 核验 master 侧无这些路径的提交）— 仅留痕待办，**本条不代为提交**（归属 P9 分支合流流程，避免双轨；见 docs/STATUS.md §4.5）。
+- **更新内容（全部纯文档，零代码/零测试/零配置/零 graph.yaml 变更）**：
+  1. `AGENTS.md`：文档权威序（四份冻结文档 → `docs/plans/paused/` + 增 `docs/plans/active/` 当期计划位次：T12 关闭 / P9 当前 GO）；目录约定表（active/paused/STATUS/contracts 四行 + test-use 基线 0.1.2-rc.1 行 + packages 骨架→完整实现行）；状态与恢复增「文档 = 快照，冲突以 graph+日志为准并当轮修正」纪律行；
+  2. `README.md`：object-model 指针改 `docs/plans/paused/`；「Empty plugin (skeleton)」→「Plugin entries (production form)」（host = P8-S5 A01–A34 生产根 + S6 四缝 + S5B fencing；client = P9 UI 4 槽位注册含 sidebar.footer.action）；Commands 增 `pnpm test:node`；Provenance 指针改 paused/ + 增 STATUS 指针；新增「## Status (2026-09-04)」节；
+  3. `docs/ROUTER_RULES.md`：文首 4 条冻结文档路径 `active/` → `paused/` + 路径留痕注（语义/冻结地位/裁决顺序不变）；
+  4. 新建 `docs/STATUS.md`（状态总览：§1 一句话现状 / §2 阶段总账 7 行 / §3 当前基线 / §4 待办等待用户 5 项 / §5 文档地图 / §6 红线速查；声明 living 快照非权威）。
+- **未动（红线/纪律）**：graph.yaml（编排状态归主 Agent 轮次 bookkeeping，current_phase 等不动）；日志既有条目（append-only）；docs/plans 全部文件（冻结/用户产物）；任何代码/测试/配置；:3080 与 `D:\deepseek-harness\`（零触碰）；无 push。
+- **bookkeeping**：本条随文档提交落 master（本地，不 push）。
+- **下一步建议（待用户裁决，详见 docs/STATUS.md §4）**：推送授权（master + task 分支）/ P9 分支入 master 流程 / P10 加固启动 / G8-S 与 P8-S8 在 T12 GO 后的必要性裁决 / untracked 证据归档路径决策 + 3180 旧 home 清理。
