@@ -195,6 +195,14 @@ export interface TeamSessions {
   create(opts?: { readonly workspaceId?: string }): Promise<string>
   /** Open (switch to) the named session. */
   open(sessionId: string): void
+  /**
+   * Re-pull the host-authoritative session list (the public `ISessions
+   * .refresh`). The creation path needs it: a host-created root session
+   * may not be in the client list store when the `team.create` /
+   * `handoff.create` response lands (the list increment rides the stream
+   * and may lag the RPC).
+   */
+  refresh(): Promise<void>
 }
 
 /** One runtime AgentPreset row (Seam 6, SAME). */
@@ -483,6 +491,23 @@ export function applyTeamMount(
     ctx.sessions.open(sessionId)
   }
 
+  // (9.1) The creation-path session open (D-3): the host mints the root
+  // session during `team.create` / `handoff.create`, and its list
+  // increment may land AFTER the RPC response — a bare `open` of an
+  // unknown id throws. Try the plain open; on failure re-pull the
+  // host-authoritative list once, then retry. A failure that survives the
+  // retry rethrows (the panel's typed error lane keeps it loud).
+  const openCreatedSession = (sessionId: string): Promise<void> => {
+    try {
+      ctx.sessions.open(sessionId)
+      return Promise.resolve()
+    } catch {
+      return ctx.sessions.refresh().then(() => {
+        ctx.sessions.open(sessionId)
+      })
+    }
+  }
+
   // (10) D-T9-4 degraded no-op: Seam 4 (cross-entry view activation) is
   // ABSENT in the served web app, and the seam map forbids private store
   // reach, DOM hacks (the legacy tab click), or a new framework extension.
@@ -502,7 +527,7 @@ export function applyTeamMount(
     getCatalog: (params) => teamRemote.catalogGet(params),
     probeCompatibility: (params) => teamRemote.intentProbe(params),
     teamCreate: (params) => teamRemote.teamCreate(params),
-    createRootSession: (opts) => ctx.sessions.create(opts),
+    openCreatedSession,
     listAgentPresets: async () => {
       // The frozen public seam answers the RemoteResult envelope (the roster
       // rides in `value` — the gateway facade never unwraps), so unwrap
@@ -651,10 +676,10 @@ export function applyTeamMount(
   // (19.1) The global New Team entry (frozen UI design §3.1 MUST / the R118
   // gap): the session-independent creation entry fixed at the sidebar foot.
   // Root scope -> the inject factory receives no session argument; the face
-  // is the S5-A creation face plus the public session switch (no handoff
-  // face or source — the overlay panel is the T7 surface only). R121: the
-  // face also carries the Seam 3 `list` current-selection read, which the
-  // entry uses to prefill the fresh draft's workspace.
+  // is the S5-A creation face plus the robust creation-path session open
+  // (D-3 — no handoff face or source: the overlay panel is the T7 surface
+  // only). R121: the face also carries the Seam 3 `list` current-selection
+  // read, which the entry uses to prefill the fresh draft's workspace.
   ctx.slots.inject('sidebar.footer.action', () =>
     ctx.slots.register(
       {
@@ -668,9 +693,8 @@ export function applyTeamMount(
           getCatalog: creation.getCatalog,
           probeCompatibility: creation.probeCompatibility,
           teamCreate: creation.teamCreate,
-          createRootSession: creation.createRootSession,
+          openCreatedSession: creation.openCreatedSession,
           listAgentPresets: creation.listAgentPresets,
-          openSession,
           currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
         }),
       },

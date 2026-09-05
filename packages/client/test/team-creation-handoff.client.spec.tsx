@@ -13,7 +13,7 @@
  * authority patch (the panel renders the stored state / typed error
  * verbatim), the typed Remote result preserved, and the projection pull
  * happens exactly once on success — cold-pulled by the NEW session's
- * TeamView mount effect after `openSession(rootSessionId)`; on failure
+ * TeamView mount effect after `openCreatedSession(rootSessionId)`; on failure
  * no session switch happens, so the pull count is zero (the panel face
  * carries no pullProjection seam by design, the same as T7 `team.create`).
  *
@@ -183,7 +183,6 @@ interface PanelFace {
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
   teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
-  createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   prepare: (params: RemoteHandoffPrepareParams) => Promise<RemoteResponse>
   create: (params: RemoteHandoffCreateParams) => Promise<RemoteResponse>
@@ -195,7 +194,6 @@ function makeFace(overrides: Partial<PanelFace> = {}): PanelFace {
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
     teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create'))),
-    createRootSession: vi.fn(() => Promise.resolve('root-1')),
     listAgentPresets: vi.fn(() => Promise.resolve(PRESETS)),
     prepare: vi.fn(() => Promise.resolve(okResponse(PREPARE_DATA, 'handoff.prepare'))),
     create: vi.fn(() => Promise.resolve(okResponse(COMPLETED_DATA, 'handoff.create'))),
@@ -210,7 +208,7 @@ function makeFace(overrides: Partial<PanelFace> = {}): PanelFace {
  */
 function PanelHarness(props: {
   readonly face: PanelFace
-  readonly openSession?: ((sessionId: string) => void) | undefined
+  readonly openCreatedSession?: ((sessionId: string) => Promise<void>) | undefined
   readonly workspaces?: readonly TeamWorkspaceOption[]
   readonly initialDraft?: TeamIntentDraft
   readonly handoffSource?: TeamCreationHandoffSource
@@ -228,9 +226,8 @@ function PanelHarness(props: {
       getCatalog={props.face.getCatalog}
       probeCompatibility={props.face.probeCompatibility}
       teamCreate={props.face.teamCreate}
-      createRootSession={props.face.createRootSession}
       listAgentPresets={props.face.listAgentPresets}
-      openSession={props.openSession ?? (() => undefined)}
+      openCreatedSession={props.openCreatedSession ?? (async () => undefined)}
       workspaces={props.workspaces ?? []}
       handoffSource={props.handoffSource}
       handoffFace={props.handoffFace}
@@ -394,9 +391,9 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
   it('the handoff create runs the frozen face with a fresh token and NO native root (G5: no optimistic patch, no cold root)', async () => {
     const created = deferred<RemoteResponse>()
     const face = makeFace({ create: vi.fn(() => created.promise) })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
-      <PanelHarness face={face} openSession={openSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
     )
     await waitForGate(view)
     fireEvent.click(createButton(view.container))
@@ -405,32 +402,33 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
       sourceSessionId: SOURCE_SESSION,
       requestToken: 'handoff-create-1',
     } satisfies RemoteHandoffCreateParams)
-    expect(face.createRootSession).not.toHaveBeenCalled()
+    // NO standard path on this flow: no team.create, no creation-path open
+    // before the host's handoff.create settles.
     expect(face.teamCreate).not.toHaveBeenCalled()
-    expect(openSession).not.toHaveBeenCalled()
+    expect(openCreatedSession).not.toHaveBeenCalled()
     // Busy: the create button disables mid-flight.
     expect(createButton(view.container).disabled).toBe(true)
     created.resolve(okResponse(COMPLETED_DATA, 'handoff.create'))
     await act(async () => {})
     expect(createButton(view.container).disabled).toBe(false)
-    expect(openSession).toHaveBeenCalledTimes(1)
-    expect(openSession).toHaveBeenCalledWith('root-team-1')
+    expect(openCreatedSession).toHaveBeenCalledTimes(1)
+    expect(openCreatedSession).toHaveBeenCalledWith('root-team-1')
   })
 
   it('a completed-without-handoff state opens the Root as well (invariant 9: same id)', async () => {
     const face = makeFace({
       create: vi.fn(() => Promise.resolve(okResponse(COMPLETED_WITHOUT_DATA, 'handoff.create'))),
     })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
-      <PanelHarness face={face} openSession={openSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
     )
     await waitForGate(view)
     fireEvent.click(createButton(view.container))
     await vi.waitFor(() => {
-      expect(openSession).toHaveBeenCalledTimes(1)
+      expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })
-    expect(openSession).toHaveBeenCalledWith('root-team-2')
+    expect(openCreatedSession).toHaveBeenCalledWith('root-team-2')
   })
 
   it('an awaiting-decision state renders the full triad (host options absent) and Retry re-invokes with a FRESH token (plan §10.5)', async () => {
@@ -443,9 +441,9 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
         return second.promise
       }),
     })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
-      <PanelHarness face={face} openSession={openSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
     )
     await waitForGate(view)
     fireEvent.click(createButton(view.container))
@@ -469,9 +467,9 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     } satisfies RemoteHandoffCreateParams)
     second.resolve(okResponse({ state: { kind: 'canceled', replayed: true } }, 'handoff.create'))
     await act(async () => {})
-    // The terminal canceled state: no triad, no openSession.
+    // The terminal canceled state: no triad, no creation-path open.
     expect(view.container.querySelector('[data-intent-handoff-failed]')).toBeNull()
-    expect(openSession).not.toHaveBeenCalled()
+    expect(openCreatedSession).not.toHaveBeenCalled()
   })
 
   it('an awaiting-decision state narrowed by the host renders only the host options', async () => {
@@ -492,14 +490,19 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
   })
 
   it('Continue without handoff is the client-local explicit decision: the standard create path, no handoff re-drive (UI §32.4)', async () => {
+    const teamCreateMock = vi.fn(
+      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create')),
+    )
     const face = makeFace({
       create: vi.fn(() => Promise.resolve(okResponse(AWAITING_DATA, 'handoff.create'))),
+      teamCreate: teamCreateMock,
     })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
       <PanelHarness
         face={face}
-        openSession={openSession}
+        openCreatedSession={openCreatedSession}
         workspaces={WORKSPACE}
         handoffSource={SOURCE}
         handoffFace={face}
@@ -513,29 +516,36 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     })
     fireEvent.click(view.container.querySelector('[data-intent-handoff-continue]')!)
     expect(face.create).toHaveBeenCalledTimes(1)
-    expect(face.createRootSession).toHaveBeenCalledTimes(1)
-    expect(face.createRootSession).toHaveBeenCalledWith({ workspaceId: 'wsp-1' })
-    // The standard sequence settles across awaits (native root →
-    // team.create → open the root); flush the microtask chain before
-    // asserting its later legs.
+    // D-3: the standard path mints the root id client-side (the `session-`
+    // shape — no native pre-create); the host creates the session under it.
+    // The standard sequence settles across awaits (mint → team.create →
+    // open the root); flush the microtask chain before asserting its later
+    // legs.
     await vi.waitFor(() => {
       expect(face.teamCreate).toHaveBeenCalledTimes(1)
     })
+    const mintedId = teamCreateMock.mock.calls[0]![0]!.rootSessionId
+    expect(mintedId.startsWith('session-')).toBe(true)
     await vi.waitFor(() => {
-      expect(openSession).toHaveBeenCalledTimes(1)
+      expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })
-    expect(openSession).toHaveBeenCalledWith('root-1')
+    expect(openCreatedSession).toHaveBeenCalledWith(mintedId)
     // The decision is client-local state: the checkbox is now unchecked.
     expect(handoffCheckbox(view.container).checked).toBe(false)
   })
 
   it('Cancel discards the attempt client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5)', async () => {
+    const teamCreateMock = vi.fn(
+      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create')),
+    )
     const face = makeFace({
       create: vi.fn(() => Promise.resolve(okResponse(AWAITING_DATA, 'handoff.create'))),
+      teamCreate: teamCreateMock,
     })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
-      <PanelHarness face={face} openSession={openSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
     )
     await waitForGate(view)
     fireEvent.click(createButton(view.container))
@@ -545,24 +555,24 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     fireEvent.click(view.container.querySelector('[data-intent-handoff-cancel]')!)
     // Client-local: no remote call of any kind.
     expect(face.create).toHaveBeenCalledTimes(1)
-    expect(face.createRootSession).not.toHaveBeenCalled()
     expect(face.teamCreate).not.toHaveBeenCalled()
-    expect(openSession).not.toHaveBeenCalled()
+    expect(openCreatedSession).not.toHaveBeenCalled()
     expect(view.container.querySelector('[data-intent-handoff-canceled]')?.textContent).toBe('Handoff canceled')
     expect(view.container.querySelector('[data-intent-handoff-failed]')).toBeNull()
     // Terminal: a later create click must not silently re-open the handoff.
     fireEvent.click(createButton(view.container))
     expect(face.create).toHaveBeenCalledTimes(1)
-    expect(face.createRootSession).toHaveBeenCalledTimes(1)
-    // The later create settles across awaits (root → team.create → open);
-    // flush the microtask chain before asserting its later legs.
+    // The later create settles across awaits (minted root → team.create
+    // → open); flush the microtask chain before asserting its later legs.
     await vi.waitFor(() => {
       expect(face.teamCreate).toHaveBeenCalledTimes(1)
     })
+    const mintedId = teamCreateMock.mock.calls[0]![0]!.rootSessionId
+    expect(mintedId.startsWith('session-')).toBe(true)
     await vi.waitFor(() => {
-      expect(openSession).toHaveBeenCalledTimes(1)
+      expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })
-    expect(openSession).toHaveBeenCalledWith('root-1')
+    expect(openCreatedSession).toHaveBeenCalledWith(mintedId)
   })
 
   it('a creation-failed state renders RETRY only and the Retry re-invokes with the SAME token (plan §10.5)', async () => {
@@ -600,9 +610,9 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
         errorResponse('HANDOFF_CREATE_REJECTED', 'source session archived', 'handoff.create'),
       )),
     })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
-      <PanelHarness face={face} openSession={openSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
     )
     await waitForGate(view)
     fireEvent.click(createButton(view.container))
@@ -617,7 +627,7 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     expect(view.container.querySelector('[data-intent-handoff-retry]')).toBeTruthy()
     expect(view.container.querySelector('[data-intent-handoff-continue]')).toBeTruthy()
     expect(view.container.querySelector('[data-intent-handoff-cancel]')).toBeTruthy()
-    expect(openSession).not.toHaveBeenCalled()
+    expect(openCreatedSession).not.toHaveBeenCalled()
     // No operation exists under the used token → the retry mints a fresh one.
     fireEvent.click(view.container.querySelector('[data-intent-handoff-retry]')!)
     expect(face.create).toHaveBeenCalledTimes(2)
@@ -629,9 +639,9 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
 
   it('a handoff.create transport loss (the only rejection kind) records the local native-error marker, no optimistic state', async () => {
     const face = makeFace({ create: vi.fn(() => Promise.reject(new Error('channel lost'))) })
-    const openSession = vi.fn()
+    const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
-      <PanelHarness face={face} openSession={openSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} handoffSource={SOURCE} handoffFace={face} initialDraft={BP_DRAFT} />,
     )
     await waitForGate(view)
     fireEvent.click(createButton(view.container))
@@ -643,6 +653,6 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     expect(failed.dataset.intentHandoffFailedCode).toBe('native-error')
     expect(failed.textContent).toContain('Context handoff failed: native-error: channel lost')
     expect(view.container.querySelector('[data-intent-handoff-retry]')).toBeTruthy()
-    expect(openSession).not.toHaveBeenCalled()
+    expect(openCreatedSession).not.toHaveBeenCalled()
   })
 })

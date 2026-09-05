@@ -110,7 +110,7 @@ function makeCreationFace(): TeamViewCreationFace {
       okResponse({ compatibility: { status: 'OPEN', requirements: [] } }, 'intent.probe'),
     )),
     teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'root' }, 'team.create'))),
-    createRootSession: vi.fn(() => Promise.resolve('root')),
+    openCreatedSession: vi.fn(async () => undefined),
     listAgentPresets: vi.fn(() => Promise.resolve([
       { id: 'team', name: 'Team', isDefault: false },
     ] satisfies readonly TeamPresetRow[])),

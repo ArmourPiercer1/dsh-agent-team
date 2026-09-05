@@ -64,8 +64,14 @@ export interface TeamViewCreationFace {
   readonly probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
   /** `team.create` (binds the TeamSession on the named root). */
   readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
-  /** Native root-session creation (the public `ISessions.create`). */
-  readonly createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
+  /**
+   * The creation-path session open (D-3): opens the host-created root
+   * session, re-pulling the host list once when the stream increment
+   * lags the RPC (a bare `open` of an unknown id throws). Rejects when
+   * the session is unknown even after the re-pull (the panel's typed
+   * error lane).
+   */
+  readonly openCreatedSession: (sessionId: string) => Promise<void>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
 }
@@ -281,9 +287,8 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                 getCatalog={creation.getCatalog}
                 probeCompatibility={creation.probeCompatibility}
                 teamCreate={creation.teamCreate}
-                createRootSession={creation.createRootSession}
+                openCreatedSession={creation.openCreatedSession}
                 listAgentPresets={creation.listAgentPresets}
-                openSession={openSession}
                 workspaces={workspaceOptions}
                 handoffSource={handoffSource}
                 handoffFace={handoff}

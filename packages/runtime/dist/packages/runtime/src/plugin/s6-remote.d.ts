@@ -78,6 +78,13 @@ export declare const S6_REMOTE_ERROR_CODES: {
     readonly OVERRIDE_TARGET_REQUIRED: "TEAM_REMOTE_OVERRIDE_TARGET_REQUIRED";
     /** A31 — team.create names a blueprint snapshot the bound TeamSession does not carry. */
     readonly TEAM_CREATE_BLUEPRINT_MISMATCH: "TEAM_REMOTE_TEAM_CREATE_BLUEPRINT_MISMATCH";
+    /** D-3 — team.create: the live glue exposes no root-agent start port (a
+     *  created team must own a live leader; failing closed). */
+    readonly TEAM_CREATE_ROOT_START_UNAVAILABLE: "TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE";
+    /** D-3 — team.create: starting the root (leader) agent of the created or
+     *  retained root failed (the durable bind is preserved; the retry
+     *  re-drives the start on the cold path). */
+    readonly TEAM_CREATE_ROOT_START_FAILED: "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
 /**
@@ -308,6 +315,18 @@ export interface S6RemoteOptions {
      * run — the T12 window latch of runs #5-#13).
      */
     readonly messaging: MessagingCoordinator;
+    /**
+     * D-3 — the root (leader) agent start surface behind `team.create`:
+     * starts (create-or-ensure, idempotent per rootSessionId) the real DSH
+     * Agent for the created or retained root through the SAME glue port the
+     * with-context handoff uses (`createRootAgent`). A fresh root has no
+     * session artifact yet, so the port takes the `agents.create` path (the
+     * validated handoff shape: the host owns the session — NO native root).
+     * Absent (test worlds without a live glue): `team.create` fails closed
+     * with a typed error — a created team must own a live leader, and a
+     * remote that cannot start one must not pretend otherwise.
+     */
+    readonly startRootAgent?: (rootSessionId: string) => Promise<void>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
 }
