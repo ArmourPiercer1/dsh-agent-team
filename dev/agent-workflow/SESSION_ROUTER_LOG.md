@@ -1889,3 +1889,14 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **执行计数**：1/3；substantive 补充 **0/2**（gate 修复 = 机械 + 零行为变更，按 G8 先例不耗 substantive 补充，留痕）。
 - **红线自检（本条）**：无推送、无 force-push；`:3080` + `D:\deepseek-harness\` 零触碰；test-use pristine @ `76fda72979`；`D:\AgentDev\deepseek-harness` 只读；`C:\Users\user\.dsh-dev` 只读；3180 族端口 round 1 teardown 后全空（3181/3182/3183 复核 000）后供 round 2 复用；CORE PATCH BUDGET=0。
 
+## R137 — remote-mount-race：用户授权一次性推送（master + int）+ Gate round 2 并行继续（2026-09-05，本会话）
+
+- **用户裁决（原话）**：「请你先执行推送，在审查的同时我进行实机测试」—— 用户一次性授权推送（红线例外「禁止 push（用户明确许可的一次性推送除外）」生效）；**执行顺序 = 先推送、审查并行**（相对标准序列「GATE PASS → master → push」的有意识偏差，用户权限，留痕；round-2 目标树 = 推送内容树，仅 -x provenance 行差异）。
+- **推送范围**：origin `master` + 新建 `int/remote-mount-race`（R124/R126/R130/R134 先例：int 收口时创建并随推；本地 master 携带未推的 R134 收口簿记，随本次推送，R124 先例）。
+- **集成（dry-run 预验证后执行，树等同）**：`int/remote-mount-race` @ base `5adc8b9` + `cherry-pick -x` 5 提交（task `677b029`/`74030a3`/`ab4b904`/`f32d775`/`12fa910` → int `0de3e8d`/`31064aa`/`351758f`/`9f7fbbe`/`e25ceeb`）零冲突；`git diff --stat` task-tip vs int-tip = 空（tree-identical）；`merge --ff-only` 本地 master `5adc8b9 → e25ceeb`。
+- **推送结果**：origin master `05721fd → e25ceeb`（fast-forward，6 提交 = R134 簿记 + remote-mount-race 5 提交）；`int/remote-mount-race` 新建 @ `e25ceeb`；ls-remote 双 ref 核验；零 force-push。
+- **推送内容（面向用户）**：新安装面 = 405 修复（create-or-open boot phase + remoteMountWaitMs 有界等待 + 挂载结果可观测 + scoped .gitattributes eol=lf）。**用户实机测试指引**：原机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`（更新到新 master）→ 重启 `dsh web` → Team UI / 新建团队 → 预期 405 消失、catalog.list 200 + 蓝图列表。**原机已盖章的 `team_domain.json` 无需删除**（修复的 adopt 路径接管，盖章/身份不重铸；若用户此前已按 stopgap 删除，fresh 初始化路径同样覆盖）。
+- **Gate round 2 状态（并行）**：RMR-REV4/5/6 @ `f32d775` 进行中。**若 round 2 出现 gate-deciding 发现**：task 分支修复 + 再推送需新的一次性授权（或用户届时裁决）；若 3/3 通过 → 任务 CLOSED（R138 簿记 + teardown）。
+- **执行计数**：任务仍 1/3（推送不耗执行计数）；substantive 补充 0/2。
+- **红线自检（本条）**：本次推送 = 唯一「禁止 push」例外（用户一次性授权，范围 = master + int/remote-mount-race 双 ref，不含其他 ref）；零 force-push（两 ref 均 fast-forward / 新建）；`:3080` + `D:\deepseek-harness\` 零触碰；test-use pristine @ `76fda72979`；`C:\Users\user\.dsh-dev` 只读；3180 族端口 3181/3182/3183 = round-2 reviewer 使用中，teardown 释放；CORE PATCH BUDGET=0。
+

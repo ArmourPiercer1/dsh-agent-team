@@ -1,10 +1,10 @@
 # STATUS — Team vNext 当前状态总览
 
 > **性质**：living 快照文档，**不是权威源**。权威 = `dev/agent-workflow/graph.yaml`（编排状态唯一来源）+
-> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R136）。
+> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R137）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-05（R136：Gate round 1 三盲审 **3× 不通过**（唯一门挡点 = `677b029` 新增 8 个 lint 错误；R135 记录的 `lint 0` 为错误 cwd 假绿，已留痕更正；功能核心 3/3 全证）→ 修复 `ab4b904`（lint let→const + scoped `.gitattributes` eol=lf）+ 卫生 `f32d775` → **Gate round 2 三盲审进行中**（RMR-REV4/5/6 @ `f32d775`））。
+> **最近更新**：2026-09-05（R137：用户一次性授权推送执行 —— 修复链 cherry-pick -x 至 `int/remote-mount-race` + ff 进本地 master → origin **master `05721fd → e25ceeb`** + int 分支新建（ls-remote 核验、零 force-push）；用户裁决**先推送、审查并行**；Gate round 2 三盲审 RMR-REV4/5/6 并行进行中）。
 
 ## 1. 一句话现状
 
@@ -27,11 +27,13 @@ cwd 假绿——该 gate leg 在 main-repo 树运行，已更正留痕）；功�
 5×const + 1 disable；artifact 行尾卫生：scoped `.gitattributes` eol=lf——提交的 blob 本就是 LF，
 reviewer 的 508 状态 = autocrlf smudge 歧义，已永久消除）+ 卫生 `f32d775`（移除误扫的 .tmp-fault
 scratch + gitignore）。修复后五门全绿（lint 0 已 worktree 根验证；REV2 独立复验 lint exit 0）。
-**Gate round 2 三盲审进行中**（RMR-REV4/5/6 @ `f32d775`，独立端口 3181/3182/3183 + 各自 fresh 世界 +
-首启/重启双垂直）。待：3/3 通过 → cherry-pick -x → int → master → **一次性授权推送**（待用户）。
-**用户侧即时 stopgap（交接更正）**：「重启大概率恢复」为错误（domain 持久化后重启必再抛）；
-有效 stopgap = 备份并删除**空** `C:\Users\user\.dsh-dev\storages\team_domain.json`（8 数据表全空，无数据丢失）
-或等待修复推送；安装本身无需重跑 add。
+**已推送 origin（R137，用户一次性授权，先推送+审查并行）**：cherry-pick -x 至 `int/remote-mount-race`
+（零冲突、树与 task tip 等同）→ ff 本地 master → origin **master `05721fd → e25ceeb`** + int 分支新建。
+**Gate round 2 三盲审并行进行中**（RMR-REV4/5/6 @ `f32d775`，目标树 = 推送内容树）。
+**用户实机测试指引**：原机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
+（更新到新 master）→ 重启 `dsh web` → Team UI / 新建团队 → 预期 405 消失、catalog.list 200 + 蓝图列表；
+**已盖章的 `team_domain.json` 无需删除**（修复的 adopt 路径接管，盖章/身份不重铸；若已按旧 stopgap 删除
+亦无碍，fresh 初始化路径覆盖）。若 round 2 出现 gate-deciding 发现：修复 + 再推送需新的一次性授权。
 
 **前序收口（plugin-prebuilt-artifacts，R131–R134，2026-09-05，已推送 origin @ `05721fd`）**：
 plugin-bundle-form 推送 origin 后，用户新机（DSH 0.1.3-alpha.1 user build，pnpm v11.7.0）首跑
@@ -76,7 +78,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 
 | 阶段 | 状态 | 关键证据 / 指针 |
 | --- | --- | --- |
-| remote-mount-race（R135–，2026-09-05，**进行中**） | 用户新机「新建团队 405」修复：task 提交 `677b029` + 修复 `ab4b904` + 卫生 `f32d775`；**Gate round 1 三盲审 3× 不通过**（唯一门挡点 = 8 个新增 lint 错误，R135 `lint 0` = 错误 cwd 假绿已更正；功能核心 3/3 全证）→ 修复落地 → **round 2 三盲审进行中**（RMR-REV4/5/6 @ `f32d775`） | `evidence/remote-mount-race/`（root-cause-confirmation / repro-notes / after+fresh boot+probe / gate-summary / gate/reviewer-{1,2,3}/ 裁决+原始输出+垂直探针）；`graph.yaml` REMOTE-MOUNT-RACE + G-RMR-REVIEW 块 |
+| remote-mount-race（R135–，2026-09-05，**已推送 origin，round 2 并行**） | 用户新机「新建团队 405」修复：task 提交 `677b029` + 修复 `ab4b904` + 卫生 `f32d775`；Gate round 1 三盲审 3× 不通过（唯一门挡点 = 8 个新增 lint 错误，R135 `lint 0` = 错误 cwd 假绿已更正；功能核心 3/3 全证）→ 修复落地 → **R137 用户一次性授权推送**（master `05721fd → e25ceeb` + `int/remote-mount-race` 新建，先推送+审查并行裁决）→ **round 2 三盲审并行进行中**（RMR-REV4/5/6 @ `f32d775`） | `evidence/remote-mount-race/`（root-cause-confirmation / repro-notes / after+fresh boot+probe / gate-summary / gate/reviewer-{1,2,3}/ 裁决+原始输出+垂直探针）；`graph.yaml` REMOTE-MOUNT-RACE + G-RMR-REVIEW 块 |
 | P0–P8（G0–G7） | 全部 Gate PASS（3/3）；master 历史已推送至 push #7 | `graph.yaml` tasks 区；`dev/agent-workflow/evidence/<task>/` |
 | P8-S backend closure | S0–S7 DONE（S7-FREEZE：`backend-contract-freeze.md` = P9 唯一 backend contract reference）；S8 / G8-S 未派发（**PAUSED**，用户指令 R83；T12 GO 后是否仍必要待用户裁决，见 §4） | `evidence/P8-S/`（S1A/B/C 审计、confirmed-repair-list、backend-contract-freeze.md） |
 | G8-REVIEW | round-1 2/3（1 补充内容）→ G8-S1 实质性补充（1/3）→ round-2 **3/3 通过**（@ `3fa4c1f`） | `evidence/G8-REVIEW/reviewer-{4,5,6}/` |
@@ -105,7 +107,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 
 ## 4. 待办 / 等待用户（按优先级）
 
-1. **remote-mount-race 收口（进行中）**：等 Gate round 2 三盲审 3/3（RMR-REV4/5/6 @ `f32d775`）→ cherry-pick -x → int/remote-mount-race → 本地 master → **请求用户一次性推送授权**（master + int 分支，R124/R126/R130/R134 先例）；**用户侧**：按 §1 修正版 stopgap 处置（备份删除空 `team_domain.json` 或等修复推送后重装）。
+1. **remote-mount-race 收口（已推送 origin @ `e25ceeb`，R137）**：等 Gate round 2 三盲审 3/3（RMR-REV4/5/6 @ `f32d775`）→ R138 收口簿记 + teardown（reviewer worktrees/端口/世界按裁决处置）；若 gate-deciding 发现 → 修复 + **新的**一次性授权再推；**用户侧**：按 §1 实机测试指引验证（原机重跑 add → 重启 → 405 消失）。
 2. ~~**推送授权**~~ — **四轮均已完成**：R124（2026-09-04，master + 5 refs）、R126（2026-09-05，master `2f3f61b` + `int/P9-master-product-closure`）、R130（2026-09-05，master `e832d73` + `int/plugin-bundle-form` 新建）、R134（2026-09-05，master `05721fd` + `int/plugin-prebuilt-artifacts` 新建），各按用户一次性授权执行并 ls-remote 验证；**后续任何推送仍需新的显式授权**（红线不变），gated 历史禁 force-push。本地 master 领先 origin 1 提交（R134 收口簿记），随下次授权推送携带（R124 先例）。**待用户验证**：新机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`（预期首跑成功、零 allowBuilds、Team UI 可用）。
 3. ~~**P9 task 分支入 master**~~ — **已完成（R125 Gate PASS + R126，2026-09-05）**：`int/P9-master-product-closure` @ `d23c606`（gate）/ `4233816`（bookkeeping）ff 进 master 并推送；安装链产品化 + fresh-machine 验证随线入库（`docs/INSTALL.md`）。
 4. **P10 加固**（P9 计划 L1789）：F-9 untracked-burst emitter 定位 + post-test-gate porcelain 检查；F-7 两个 excluded browser-surface specs；carry-over 清单 = UI_BACKEND_GAP（client node entry `packages/client/dist/plugin/client.js:50` 读 `ctx.slots` 未声明 inject，非规范路径）/ p6t1-parallel flake 类（~1/3，R125 轮 3/4 两位 reviewer 独立复现-隔离确认，建议降载加固）/ testkit `.tmp-fault` scratch 竞态（destroyDir Windows 重试）/ tsc build 内联发射卫生 / 360 s 窗口核心埋点（T12 记录，T12-V16 已修产品面，埋点留 P10）。
