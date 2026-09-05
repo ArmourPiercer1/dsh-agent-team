@@ -1,5 +1,5 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
-current_phase: "PLUGIN_BUNDLE_FORM (2026-09-05; task/plugin-bundle-form ACTIVE — `dsh plugin add github:` 直接可用，R127 kickoff @master 2f3f61b；仍待用户: P10 hardening / G8-S ruling — docs/STATUS.md §4)"
+current_phase: "PLUGIN_PREBUILT_ARTIFACTS (2026-09-05; task/plugin-prebuilt-artifacts ACTIVE — 首跑 `dsh plugin add github:` 零 allowBuilds，R131 kickoff @master f11382e；plugin-bundle-form CLOSED R130 @ e832d73 pushed；仍待用户: P10 hardening / G8-S ruling / TEST_METHODS 补注裁决 — docs/STATUS.md §4)"
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
 p8s_base_sha: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
@@ -229,3 +229,15 @@ plugin_bundle_form:
   red_lines: "CORE PATCH BUDGET=0; test-use pristine @76fda72979; D:/deepseek-harness + :3080 zero-touch; D:/AgentDev/deepseek-harness (user build) read-only; 3180-family ports"
   evidence: "dev/agent-workflow/evidence/plugin-bundle-form/ (task-brief.md incl. D1-D9 + five world run records; d5-setup/boot/gentry/probe kits; per-world assertions/boot logs/dump-config/index/serve-check/catalog/byte-identity/state; browser/ gentry captures + reports; scan-braces + probe-projection + read-projection-trace diagnostics)"
   push: "NO push without new explicit user authorization (R124 precedent; R126 one-shot consumed)"
+
+plugin_prebuilt_artifacts:
+  state: "KICKED OFF (R131, 2026-09-05, execution 0/3, supplements 0/2): goal = 首跑 `dsh plugin add github:` 直接成功、零 allowBuilds（用户裁决 2026-09-05）; design: D1 预构建产物入库 (runtime/dist + composition-shim un-ignored, files 白名单不变) / D2 根 prepare 移除 (零生命周期脚本 = 结构保证) + setup 脚本 / D3 scripts/check-artifacts-committed.mjs 产物新鲜度闸 (A tracked 未产出 / B 未提交 / C 漂移, 接入 build:composition) / D4 INSTALL.md §2 单命令 + §6 旧 commit 注记 + §3 setup + README / D5 全新世界零 allowBuilds 首跑 add (fail-loud kit) + 零脚本结构断言 + byte-identical 新基线 + boot+gentry / D6 五闸+红线"
+  date: "2026-09-05"
+  user_goal: "plugin-bundle-form 推送后用户新机（DSH 0.1.3-alpha.1 user build, pnpm v11.7.0）首跑 add 命中 ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED（文档化一次性步骤）; 用户裁决: 直接把编译产物推 GitHub 以彻底消除 allowBuilds 步骤"
+  branch: task/plugin-prebuilt-artifacts
+  worktree: .worktrees/PBA
+  base: "master f11382e (R130 bookkeeping; 1 ahead of origin e832d73 — R130 随本任务最终推送携带, R124 先例)"
+  mechanism: "pnpm >=10 git 依赖策略只拦声明了构建脚本的包（错误前提 'needs to execute build scripts'）; 安装面不依赖 prepare 嵌套 node_modules（files 裁剪 + healProfilesModuleFallback 镜像 + registry 依赖普通安装）; 构建确定性 = R1 独立 SHA 复现 + D5 五世界 byte-identical"
+  evidence: "dev/agent-workflow/evidence/plugin-prebuilt-artifacts/ (task-brief.md D1-D6; kits + world runs 随执行落盘)"
+  red_lines: "CORE PATCH BUDGET=0; test-use pristine @76fda72979; D:/deepseek-harness + :3080 zero-touch; D:/AgentDev/deepseek-harness (user build) read-only; 3180-family ports; zero force-push; 推送需一次性授权"
+  push: "NO push without new explicit user authorization (R124/R126/R130 precedent)"

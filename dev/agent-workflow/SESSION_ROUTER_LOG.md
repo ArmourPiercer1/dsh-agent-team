@@ -1776,3 +1776,19 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **未动**：冻结四文档、docs/plans 全部、P10/G8-S 决策（仍待用户）；TEST_METHODS.md 未改（用户裁决可改 —— R129 已记录 reviewer-worktree 放置约束并提议补注，待用户裁决）；`task/P9-proto-*`（R-PROTO-13 local-only）未动。
 - **领先状态**：本条 R130 簿记提交落本地 master（origin 领先 1），按 R124 先例由下一次用户授权推送携带；无新推送授权，后续推送需显式再授权。
 
+## R131 — plugin-prebuilt-artifacts：立项（2026-09-05，本会话）
+
+- **路由说明**：用户直接指令发起的新任务（plugin-bundle-form 推送后，用户新机首跑 add 命中文档化的 allowBuilds 一次性步骤）；本会话模型路由 = `qwen3.8-27b`（qiyuan-self/qwen3.8-27b，含后续全部审查）。
+- **用户报告（2026-09-05）**：`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`（DSH 0.1.3-alpha.1 user build @ `D:\AgentDev\deepseek-harness`，pnpm v11.7.0）→ github: codeload tarball 拉取成功 → `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（`dsh-agent-team@0.0.0` needs to execute build scripts，未入 allowBuilds；宿主 CLI 已打印 exact key 与指引）。= `INSTALL.md §2` 文档化流程 + D5 世界 1 + gate R1 消费者实验的同一签名。用户裁决：「直接将编译产物一并推送到 github 可以避免这个 allowBuilds 引起问题。请你解决。」
+- **附带闭环**：用户真实 `github:` 运行补上 R3 风险台账项 (a)（github: fetch 路径此前仅本地 `git+file://` 替身覆盖；两条路径 pnpm 脚本策略语义一致，签名相同）。
+- **方案（task-brief D1–D6，`evidence/plugin-prebuilt-artifacts/task-brief.md`）**：
+  - **D1 产物入库**：gitignore 否定规则解除 `packages/runtime/dist/` + `packages/client/composition-shim/` 忽略并提交预构建产物（≈4.4MB / ~1017 文件 + 0.8MB / ~5 文件）；`files` 白名单不变；
+  - **D2 移除 prepare**：删根 `prepare`（唯一生命周期脚本 ⇒ 根包零生命周期脚本 = 结构性保证 pnpm ≥10 git 依赖策略无从拦截——其错误前提即「needs to execute build scripts」）；保留 build/build:composition；+ `setup`（dev 便利）；
+  - **D3 产物新鲜度闸**：`scripts/check-artifacts-committed.mjs`（A tracked 未产出 / B 产出未提交 / C 内容漂移，相对 git index 三方核对）接入 `build:composition` 末尾 + 独立 `check:artifacts`；
+  - **D4 文档**：INSTALL.md §2 单命令零 allowBuilds（旧 commit ≤ `e832d73` 的 key 移 §6 故障排查）+ §3 setup 说明 + README 同步 + 产物同 commit 纪律注；
+  - **D5 全新世界实证**：profile 零 allowBuilds 条目（启动前结构断言）+ **首次 add 直接 exit 0**（套件 fail-loud，不自动补 key）+ 已安装包零生命周期脚本结构断言 + 4 产物 byte-identical（新基线）+ boot S8-READY 等价 + gentry G0–G4；
+  - **D6 五闸 + 红线**：install / typecheck / test / lint / smoke + 红线不变。
+- **机制依据**：最终安装面不依赖 prepare 的嵌套 node_modules（pnpm 按 files 裁剪；R1 §7；运行时 import 由宿主 `healProfilesModuleFallback` 镜像解析；声明的 registry 依赖由 pnpm 作普通依赖安装，不受 git 脚本策略约束）；构建确定性 = R1 独立 SHA 复现 + D5 五世界 byte-identical。
+- **分支/worktree**：`task/plugin-prebuilt-artifacts` @ `f11382e`（本地 master，领先 origin `e832d73` 1 提交 = R130 簿记，随本任务最终推送携带）+ `.worktrees/PBA`；执行 0/3、substantive 补充 0/2。
+- **红线**：CORE PATCH BUDGET=0；test-use pristine @ `76fda72979`；`D:\deepseek-harness\` + :3080 零触碰；`D:\AgentDev\deepseek-harness`（用户构建）只读；3180 族端口全释放；零 force-push；推送需一次性授权。
+
