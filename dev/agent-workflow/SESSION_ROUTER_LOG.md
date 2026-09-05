@@ -1837,3 +1837,16 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **红线自检**：refs origin master `e832d73` 未动；`:3080` + `D:\deepseek-harness\` 零触碰（只读探测）；test-use pristine @ `76fda72979` porcelain 空；3180 族（3180–3186/3493）teardown 后全空；零 force-push；本条无推送。
 - **执行计数**：1/3；substantive 补充 0/2。下一步 = 用户一次性推送授权（master = 本地 R130 `f11382e` + PBA 全链；`int/plugin-prebuilt-artifacts` 新建）→ push → ls-remote 核验 → 收口。
 
+## R134 — plugin-prebuilt-artifacts：一次性推送执行 + 任务收口（CLOSED）（2026-09-05，本会话）
+
+- **用户一次性推送授权**（ask_user_question「授权推送」，单轮单授权，R124/R126/R130 先例）：
+  - `master`：`e832d73` → `05721fd`（fast-forward，5 提交 = R130 簿记 `f11382e` + PBA 全链 `5a05ca3` kickoff / `bc3fa05` 产品 / `1a5afc6` D5 簿记 / `05721fd` R133 gate 簿记；1072 文件 / +99,613 −45 相对 origin 旧 tip）；
+  - `int/plugin-prebuilt-artifacts`：新建 @ `05721fd`；
+  - 零 force-push；ls-remote 复核两 ref 均 = `05721fd3cf49bb8c0b83512abfae9001fea710eb`（本地 master == origin master、本地 int == origin int）。
+- **面向用户结果**：origin master 新安装面 = **零生命周期脚本** → `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` 首跑即成功、无需任何 allowBuilds 白名单条目（profile 中若有旧 allowBuilds key 亦为 inert——包不再声明构建脚本，pnpm git 依赖策略无从触发）。用户新机重跑 `add` 幂等（R131 记录其 profile 残留于 `C:\Users\user\.dsh-dev\profiles\web`），预期首跑直接成功 + Team UI 可用。
+- **证据保全**：reviewer worktree 拆除前，三盲审各自新世界运行（`03-49-48` / `03-50-29` / `03-42-20`）的紧凑证据（pba-assertions / pba-setup log + first-add / pba-boot log / pba-state / byte-identity / serve-check，各 7–8 件，含 REV1 误选世界 boot 日志）拷入 `evidence/plugin-prebuilt-artifacts/gate/reviewer-{1,2,3}/` 随本 commit 入库（裁决 md 已含完整复现日志，此为原始数据佐证）。
+- **清理**：worktree 注册 PBA / PBA-INT / PBA-REV{1,2,3}（+ PBF 残留）移除，残留物理目录（node_modules 等）删除；REV3 scratch 目录 `PBA-REV3-GENTRY` 删除；reviewer 三世界（gitignored 运行时状态）移除——其裁决 + 紧凑证据已归档，运行时无需留盘；R132 世界 `.dsh-test-pba-2026-09-05T03-28-20` 保留在盘为证据（committed 证据引用其世界）。
+- **红线终验（推送后、清理后）**：本地 master == origin master == 本地 int == origin int = `05721fd`；test-use pristine @ `76fda72979` porcelain 0；`:3080` 监听状态未变（只读探测，稳定实例零操作）；`D:\deepseek-harness\` mtime `2026-09-05 00:37:34` 未变；3180 族（3180–3186/3493）全空；零 force-push 全程；CORE PATCH BUDGET=0（`references/deepseek-harness*` 零写入）。
+- **任务收口**：plugin-prebuilt-artifacts **CLOSED**（执行 1/3、substantive 补充 0/2、Gate round 1 三盲审 3/3 通过、GATE PASS、推送并 ls-remote 核验）。
+- **留待用户**：新机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` 验证首跑成功 + Team UI（预期零 allowBuilds、零重试）；P10 加固 / G8-S 裁决 / TEST_METHODS 补注裁决持续待指示（STATUS.md §4）。
+

@@ -1,0 +1,172 @@
+{
+  "profile pnpm-workspace.yaml carries NO allowBuilds entry (the point of the task)": {
+    "ok": true,
+    "detail": "yaml present=true (61 B)"
+  },
+  "installed package dir exists (the git checkout)": {
+    "ok": true,
+    "detail": null
+  },
+  "installed root manifest declares ZERO lifecycle scripts (pnpm has nothing to block)": {
+    "ok": true,
+    "detail": "scripts keys: [\"build\",\"build:composition\",\"setup\",\"check:artifacts\",\"typecheck\",\"lint\",\"test\",\"test:node\",\"smoke:composition\"]"
+  },
+  "profile dependencies carry dsh-agent-team @ the exact spec": {
+    "ok": true,
+    "detail": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-49-48/repo.git#task/plugin-prebuilt-artifacts"
+  },
+  "dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (CLI reconcile product)": {
+    "ok": true,
+    "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+  },
+  "profile cordis.patch.yml carries NO dsh-agent-team row (the bundle layer alone supplies it)": {
+    "ok": true,
+    "detail": "user patch absent or clean"
+  },
+  "committed artifact present: host.js (dist entry)": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: host.js (dist entry)": {
+    "ok": true,
+    "detail": "installed=a00020335461… baseline=a00020335461… (30479 B raw / 29801 B LF)"
+  },
+  "committed artifact present: agent-bindings.mjs (dist glue mirror)": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: agent-bindings.mjs (dist glue mirror)": {
+    "ok": true,
+    "detail": "installed=beaf868327cc… baseline=beaf868327cc… (71965 B raw / 70136 B LF)"
+  },
+  "committed artifact present: seam.mjs (root-binding)": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: seam.mjs (root-binding)": {
+    "ok": true,
+    "detail": "installed=e0349eb82d79… baseline=e0349eb82d79… (3330 B raw / 3250 B LF)"
+  },
+  "committed artifact present: upstream-resolver.mjs": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: upstream-resolver.mjs": {
+    "ok": true,
+    "detail": "installed=c3a54491d8b5… baseline=c3a54491d8b5… (7154 B raw / 6983 B LF)"
+  },
+  "committed artifact present: cordis.patch.yml (bundle layer)": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: cordis.patch.yml (bundle layer)": {
+    "ok": true,
+    "detail": "installed=2bbcd403a0fe… baseline=2bbcd403a0fe… (3438 B raw / 3346 B LF)"
+  },
+  "committed artifact present: client-bundle.js (composition shim)": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: client-bundle.js (composition shim)": {
+    "ok": true,
+    "detail": "installed=6a8395ef7679… baseline=6a8395ef7679… (859918 B raw / 841826 B LF)"
+  },
+  "committed artifact present: shim index.js": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: shim index.js": {
+    "ok": true,
+    "detail": "installed=d385c065bbfa… baseline=d385c065bbfa… (337 B raw / 328 B LF)"
+  },
+  "committed artifact present: shim package.json": {
+    "ok": true,
+    "detail": null
+  },
+  "content-identical (LF-normalized) to task tree baseline: shim package.json": {
+    "ok": true,
+    "detail": "installed=b4509233321f… baseline=b4509233321f… (518 B raw / 497 B LF)"
+  },
+  "installed root manifest declares dsh.bundle.patch": {
+    "ok": true,
+    "detail": null
+  },
+  "installed root manifest declares dsh.client web": {
+    "ok": true,
+    "detail": null
+  },
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-49-48/repo.git#task/plugin-prebuilt-artifacts",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pba-2026-09-05T03-49-48",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pba-2026-09-05T03-49-48\\profiles\\web\\node_modules\\dsh-agent-team",
+  "taskTree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\PBA-REV1",
+  "pnpmVersion": "11.7.0",
+  "firstAddExit": 0,
+  "allowBuildsInProfileYaml": false,
+  "lifecycleScriptsDeclared": [],
+  "artifacts": {
+    "host.js (dist entry)": {
+      "installedSha256": "f6c4a8af1000e28752f3374bc9300a5e6441aa98164f7036c615427866ae36cb",
+      "baselineSha256": "a00020335461f229046a1fc0d949f2d7a878188dbf5cb139fa7cbcdc5c7cc8de",
+      "installedNormalizedSha256": "a00020335461f229046a1fc0d949f2d7a878188dbf5cb139fa7cbcdc5c7cc8de",
+      "baselineNormalizedSha256": "a00020335461f229046a1fc0d949f2d7a878188dbf5cb139fa7cbcdc5c7cc8de",
+      "bytes": 30479,
+      "normalizedBytes": 29801
+    },
+    "agent-bindings.mjs (dist glue mirror)": {
+      "installedSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+      "baselineSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+      "installedNormalizedSha256": "beaf868327cc28a06ebb3cb44e96a1588a4362cb89c9bb64c2ea0981306c8819",
+      "baselineNormalizedSha256": "beaf868327cc28a06ebb3cb44e96a1588a4362cb89c9bb64c2ea0981306c8819",
+      "bytes": 71965,
+      "normalizedBytes": 70136
+    },
+    "seam.mjs (root-binding)": {
+      "installedSha256": "a51e26ad02ec5eeb02d9852e0b09a75ff493e5836dbafd98f27e62e7f82dedc5",
+      "baselineSha256": "a51e26ad02ec5eeb02d9852e0b09a75ff493e5836dbafd98f27e62e7f82dedc5",
+      "installedNormalizedSha256": "e0349eb82d79bebd0256f27f84fa6e3b166ee9a0d7b6902b9c26e36020df93d1",
+      "baselineNormalizedSha256": "e0349eb82d79bebd0256f27f84fa6e3b166ee9a0d7b6902b9c26e36020df93d1",
+      "bytes": 3330,
+      "normalizedBytes": 3250
+    },
+    "upstream-resolver.mjs": {
+      "installedSha256": "70a0f615a00728c010b4d79cf8c4d85410f141126a1d53f108d63a826b3a477f",
+      "baselineSha256": "70a0f615a00728c010b4d79cf8c4d85410f141126a1d53f108d63a826b3a477f",
+      "installedNormalizedSha256": "c3a54491d8b5e64808fa2aabcfc9ec5bb40004cfdf39ac4ee4c5e888f6fa5d84",
+      "baselineNormalizedSha256": "c3a54491d8b5e64808fa2aabcfc9ec5bb40004cfdf39ac4ee4c5e888f6fa5d84",
+      "bytes": 7154,
+      "normalizedBytes": 6983
+    },
+    "cordis.patch.yml (bundle layer)": {
+      "installedSha256": "fb18fbd6d61750f866c4e87e8d664e4012f1a400d1d6656d6d0c061105c884ba",
+      "baselineSha256": "fb18fbd6d61750f866c4e87e8d664e4012f1a400d1d6656d6d0c061105c884ba",
+      "installedNormalizedSha256": "2bbcd403a0fe64cfa45ff12a651224321e238e3b5ffd3d1fc4f4a02e2b5e38df",
+      "baselineNormalizedSha256": "2bbcd403a0fe64cfa45ff12a651224321e238e3b5ffd3d1fc4f4a02e2b5e38df",
+      "bytes": 3438,
+      "normalizedBytes": 3346
+    },
+    "client-bundle.js (composition shim)": {
+      "installedSha256": "34d450c6794b39d916da37bf412f646b20d19e47047841d479eadc5e5cedcbc5",
+      "baselineSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "installedNormalizedSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "baselineNormalizedSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "bytes": 859918,
+      "normalizedBytes": 841826
+    },
+    "shim index.js": {
+      "installedSha256": "6d054f5d9f4290aa5f53c5d2262550c6e9c9b8a5cdb8bc026a44d233e76d4af3",
+      "baselineSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "installedNormalizedSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "baselineNormalizedSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "bytes": 337,
+      "normalizedBytes": 328
+    },
+    "shim package.json": {
+      "installedSha256": "23836de76d71cad6d4c8278d2c1b9bfc4bd2bd66de580d44275bdde8c9dcb19d",
+      "baselineSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "installedNormalizedSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "baselineNormalizedSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "bytes": 518,
+      "normalizedBytes": 497
+    }
+  }
+}

@@ -1,0 +1,3 @@
+[2026-09-05T03:51:41.878Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-50-29
+[2026-09-05T03:51:41.879Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-50-29\profiles\web\node_modules\dsh-agent-team
+[2026-09-05T03:51:41.880Z] FAIL — no pba-assertions file for this world (D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-50-29) — run pba-setup.mjs first

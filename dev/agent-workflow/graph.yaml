@@ -1,5 +1,5 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
-current_phase: "PLUGIN_PREBUILT_ARTIFACTS (2026-09-05; task/plugin-prebuilt-artifacts ACTIVE — 首跑 `dsh plugin add github:` 零 allowBuilds；Gate round 1 GATE PASS (R133, 3/3 盲审通过, 零补充) — 本地合流完成, 待用户一次性推送授权；仍待用户: P10 hardening / G8-S ruling / TEST_METHODS 补注裁决 — docs/STATUS.md §4)"
+current_phase: "PLUGIN_PREBUILT_ARTIFACTS CLOSED (2026-09-05, R131–R134; 首跑 `dsh plugin add github:` 零 allowBuilds 达成并推送 origin @ 05721fd — GATE PASS round 1 3/3 盲审通过零补充, 执行 1/3; 待用户: 新机重跑 add 验证 + P10 hardening / G8-S ruling / TEST_METHODS 补注裁决 — docs/STATUS.md §4)"
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
 p8s_base_sha: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
@@ -231,7 +231,7 @@ plugin_bundle_form:
   push: "NO push without new explicit user authorization (R124 precedent; R126 one-shot consumed)"
 
 plugin_prebuilt_artifacts:
-  state: "GATE PASS — 本地合流完成, 待用户一次性推送授权 (R133, 2026-09-05, execution 1/3, supplements 0/2): D1–D4 产品提交 d61ef25 (1020 预构建产物入库 + prepare 移除 + 新鲜度闸 + 文档); 五闸全绿 (test = p6t1 隔离 9/9 协议, 219 其余文件 ×2 全绿); D5 全新世界 .dsh-test-pba-2026-09-05T03-28-20 核心 DoD 达成 = 首次 add 直接 exit 0 零 allowBuilds + 零生命周期脚本结构断言 + 8 产物 LF 归一化内容等同基线 + boot S8-READY 等价全绿 + gentry G0–G4 全过 (22 RPC failures none) + teardown 干净; Gate round 1 三盲审 3/3 通过 (零补充) → task 簿记 cherry-pick -x 至 int → 本地 master merge --ff-only; 下一步 = 用户一次性推送授权 (master 携 R130 f11382e + PBA 全链; int/plugin-prebuilt-artifacts 新建)"
+  state: "CLOSED — 已推送 origin (R134, 2026-09-05, execution 1/3, supplements 0/2): D1–D4 产品提交 d61ef25 (1020 预构建产物入库 + prepare 移除 + 新鲜度闸 + 文档); 五闸全绿 (test = p6t1 隔离 9/9 协议, 219 其余文件 ×2 全绿); D5 全新世界 .dsh-test-pba-2026-09-05T03-28-20 核心 DoD 达成 = 首次 add 直接 exit 0 零 allowBuilds + 零生命周期脚本结构断言 + 8 产物 LF 归一化内容等同基线 + boot S8-READY 等价全绿 + gentry G0–G4 全过 (22 RPC failures none) + teardown 干净; Gate round 1 三盲审 3/3 通过 (零补充) → task 簿记 cherry-pick -x 至 int → 本地 master merge --ff-only → 用户一次性授权推送 (master e832d73→05721fd ff; int/plugin-prebuilt-artifacts 新建 @05721fd; ls-remote 核验一致; 零 force-push); worktree/世界清理完成, 证据保全; 待用户新机重跑 add 验证"
   date: "2026-09-05"
   user_goal: "plugin-bundle-form 推送后用户新机（DSH 0.1.3-alpha.1 user build, pnpm v11.7.0）首跑 add 命中 ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED（文档化一次性步骤）; 用户裁决: 直接把编译产物推 GitHub 以彻底消除 allowBuilds 步骤"
   branch: task/plugin-prebuilt-artifacts
