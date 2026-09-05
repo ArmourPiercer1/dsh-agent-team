@@ -4,7 +4,7 @@
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R139）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-05（R139：用户实机测试轮 2 —— 405 消失 + 团队 UI 完整渲染 + **D-1 自愈实机确认**（未动 `team_domain.json`）；新报告 **D-2「leader 看不到团队工具」= 误报**（会话日志决定性证据：用户对话发生在 `D:\test` 的**普通 web 会话**，其 `request/header` = 恰好 24 个 DSH 标准工具、零 `team_*`；真 Leader `team-root` 零回合从未被问）→ 生产接线代码路径核验正确 + **真实缺口 = 注册循环零测试覆盖** → **D-2 测试补盲** `858bc79`（`t12a-team-tools-registration` 3 测试：真实 glue + 真实十工具栈，create/resume/close 三阶段；零 src 变更）+ 自测五门全绿（2454/2458）→ **已推送 origin**（master `b4e8d4f → 9029c9a` + int `d8a1ca9 → e6f591e`，常设授权「自测完毕直接推送」）→ 待用户复测（**问对会话**：团队 tab → Leader 行「回到 leader」打开 `team-root`）→ 绿后三盲审（reviewer-7/8/9）找潜在问题）。
+> **最近更新**：2026-09-05（R140：用户实机测试轮 3 —— 新报告 **D-3「新建团队进入的不是 leader 会话、无 `team_*` 工具、侧栏无新行」**。三重证据根因：`team_domain.json` 四行分析（boot 行 `team-root` gen2+compat + 面板行 gen1 无 compat）+ 解码会话日志（**面板创建的根会话 `agentPreset: "standard"`**——TeamSession 绑定到了客户端原生预创建的 standard 会话，leader agent 从未创建；keep-createRootSession 变体 = agent-registry 碰撞死路）+ 部署配置核验正确。修复 `7e0c7d3`（29 文件 +806/−302，dsh-agent-team only）：客户端铸造根 id（无预创建）+ host `team.create` fail-closed 预检 + bind 后 `startRootAgent`（新类型化错误码 `TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE`/`_FAILED` 双清单直通）+ 客户端稳健打开 `openCreatedSession`（refresh 一次重试）+ 工作区选择器信息展示化。自测五门全绿（2459/2463，4 = 基线不变；bundle 849094 B 确定性）→ **已推送 origin**（master `48b5d7f → 5b0e59d` + int `e6f591e → 84212a2`，常设授权「自测完毕直接推送」）→ 待用户复测（**新建团队 → 预期直接进入 leader 会话 + `team_*` 工具**）→ 绿后三盲审（reviewer-7/8/9，含 D-3 创建路径面）找潜在问题）。
 
 ## 1. 一句话现状
 
@@ -66,6 +66,44 @@ int `d8a1ca9 → e6f591e`（零 force-push，ls-remote 核验）。
 Leader 行（「回到 leader」）打开它**，在那里提问（如「你能看到哪些 `team_` 前缀的工具?」）——预期列出
 10 个 `team_*` 工具。**不要在普通聊天会话里问**（普通会话没有团队工具是设计使然，不是 bug）。
 
+**D-3 测试轮 3：「新建团队进入的不是 leader 会话」根因定位 + 修复 + 推送（R140，常设授权「自测完毕直接推送」）**：
+用户报告「leader会话似乎不能正常进入：`新建团队-选择蓝图-创建团队` 后进入的会话**就是**leader会话的预期未达成
+（它也无法看到 `team_*` 工具）+ 左侧栏没有出现额外的会话 + 团队 tab 点「成员组-Leader 行」页面没有任何变更」。
+**诊断（三重证据）= 标准创建路径的结构性缺陷**：① `team_domain.json` 四行（boot 行 `team-root` gen2+compat +
+面板行 `session-0bf2409a`/`a1386a51`/`65b9b471` gen1 无 compat）；② 解码会话日志：面板创建的根会话
+（a1386a51 @20:04:42、65b9b471 @20:05:00 用户重试，cwd `D:\test`）**`agentPreset: "standard"`**——TeamSession
+绑定成功，但根会话里跑的是 standard agent（零 `team_*` 工具）；65b9b471 有完整对话回合 = 用户实际"进入"的新建
+团队会话；`team-root`（真 leader）零回合从未被问；③ 部署 `cordis.patch.yml` 接线正确（create-or-open +
+`rootSessionId: team-root` + 无 defaultWorkspace → 团队 workspace 默认 = 启动目录）。**根因 = 标准创建路径把
+TeamSession 绑定到客户端原生预创建的 standard-preset 会话**（`createRootSession` → `team.create` → `openSession`），
+leader agent（十 `team_*` 工具 + leader persona/model）从未在该根创建；keep-createRootSession 变体 = 设计死路
+（DSH host `session.create` 执行 `agents.ensureSession`——创建解析时活 standard agent 已注册，后置 glue
+`agent.start` 同 id 命中 agent-registry 碰撞边界）。侧栏无新行 = 创建根 cwd 为 host 默认 workspace + DSH 侧栏
+workspace 过滤（core 行为，budget 0）；Leader 行无变更 = D10 设计（当前会话即根时 no-op）+ boot 行与面板根行
+并存的复合观感。证据 `evidence/remote-mount-race/d3-decoded/`（解码日志 ×3 + d3-notes.md）。
+**D-3 修复 `7e0c7d3`**（29 文件 +806/−302，**dsh-agent-team only，零 upstream**）：① 客户端铸造根 id
+（`mintRootSessionId()` = `session-<uuid>`，**无原生预创建**），host 在 `team.create` 期间于该 id 下创建会话；
+② s6-remote `teamCreate.create` 顶部 **fail-closed 预检** `requireStartRootAgentPort()`（缺 glue 端口 →
+`TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE`，**任何持久化效应之前**，无残团）+ bind 后
+`startRootAgent`（拒绝 → `TEAM_CREATE_ROOT_START_FAILED`，持久 bind 保留、冷路径重试重驱；两码同步
+`S6_REMOTE_ERROR_CODES` + `REMOTE_BACKING_ERROR_CODES` 双清单类型化直通）；root.ts 接线 `live.createRootAgent`
+（与 with-context handoff 同一 glue 端口，create-or-ensure）；③ 客户端稳健打开 `openCreatedSession`
+（open → unknown 时 `refresh()` 一次 + 重试 → 失败抛回面板类型化错误道）+ `TeamSessions.refresh()` face；
+面板失败保留铸造 id 供重试（rootKept 文案 zh/en），overlay 仅在打开成功后关闭；④ 工作区选择器降级为
+**信息展示**（frozen `team.create` 参数无 workspace 字段，`assertNoUnknownFields` 守护）。
+测试：p8s7r1 D3a-D3d（fresh/cold/fail-closed/rejecting 四场景）+ client-plugin-mount D-3 lag/failing-open +
+panel/entry/handoff spec 迁移铸造 id 序列。自测五门全绿（typecheck 9/9 + build 9/9 + lint 0 + **2459/2463**
+（4 = 基线 shim 缺口不变；+5 新测试全绿）+ smoke 0 + client bundle 确定性 2×SHA256 同 **849094 B** + p4t6 607
+不变）。**已推送 origin**：master `48b5d7f → 5b0e59d` + int `e6f591e → 84212a2`（cherry-pick -x 零冲突，
+零 force-push，ls-remote 核验）。
+
+**用户实机复测指引（D-3 更正版）**：原机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
+（更新到新 master `5b0e59d`）→ 重启 `dsh web` → **新建团队 → 选择蓝图 → 创建并发送**：预期进入的会话**就是
+leader 会话**（`team_*` 工具可用、首轮即 leader 应答）。注意：新建团队的根会话落在**启动目录（host 默认
+workspace）**，侧栏若停在其他 workspace 过滤态可能不显示该行；boot 行 `team-root`（host anchor）仍在团队 tab
+的 Leader 行。建议（用户裁量）：重置被污染的 DSH_HOME（删除 `C:\Users\user\.dsh-dev\profiles\web\data\dsh-agent-team\`
+下旧 domain + 会话数据）获得干净首启面；不删亦可（adopt 路径接管，旧面板 standard 根行留在 domain 里）。
+
 **前序收口（plugin-prebuilt-artifacts，R131–R134，2026-09-05，已推送 origin @ `05721fd`）**：
 plugin-bundle-form 推送 origin 后，用户新机（DSH 0.1.3-alpha.1 user build，pnpm v11.7.0）首跑
 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` 命中文档化的
@@ -109,7 +147,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 
 | 阶段 | 状态 | 关键证据 / 指针 |
 | --- | --- | --- |
-| remote-mount-race（R135–，2026-09-05，**D-1+D-2 已推送，待实机复测 + 绿后审查**） | 用户新机「新建团队 405」修复：task `677b029` + 修复 `ab4b904` + 卫生 `f32d775` → R137 推送（master `05721fd→e25ceeb`）→ 实机暴露 **D-1 stamped-no-identity**（REV3 台账预测态；R137 指引有误已更正）→ D-1 自愈修复 `88c80df`（create-or-open 三分支 + S4/S5/S6 + 用户状态回放垂直 200）→ **R138 再推送**（master `18fe8a2→16aa84a`(+R138) + int `e25ceeb→d8a1ca9`）；round 2 用户手动停止（部分证据归档）→ 实机轮 2：**D-1 实机确认**（405 消失 + UI 完整）+ **D-2 误报定位**（用户问的是普通会话；会话日志 request/header = 24 标准工具零 team_*；真 Leader team-root 零回合）+ **注册边界测试补盲 `858bc79`**（t12a-team-tools-registration 3 测试，零 src）→ **R139 再推送**（master `b4e8d4f→9029c9a` + int `d8a1ca9→e6f591e`）→ **绿后三盲审 reviewer-7/8/9**（含 D-2 工具注册面） | `evidence/remote-mount-race/`（root-cause-confirmation / repro-notes / after+fresh boot+probe / gate-summary / gate/reviewer-{1,2,3}/ 裁决 + reviewer-{5,6}/ 中断轮部分证据）；`graph.yaml` REMOTE-MOUNT-RACE + G-RMR-REVIEW 块 |
+| remote-mount-race（R135–，2026-09-05，**D-1+D-2+D-3 已推送，待实机复测 + 绿后审查**） | 用户新机「新建团队 405」修复：task `677b029` + 修复 `ab4b904` + 卫生 `f32d775` → R137 推送（master `05721fd→e25ceeb`）→ 实机暴露 **D-1 stamped-no-identity**（REV3 台账预测态；R137 指引有误已更正）→ D-1 自愈修复 `88c80df`（create-or-open 三分支 + S4/S5/S6 + 用户状态回放垂直 200）→ **R138 再推送**（master `18fe8a2→16aa84a`(+R138) + int `e25ceeb→d8a1ca9`）；round 2 用户手动停止（部分证据归档）→ 实机轮 2：**D-1 实机确认**（405 消失 + UI 完整）+ **D-2 误报定位**（用户问的是普通会话；会话日志 request/header = 24 标准工具零 team_*；真 Leader team-root 零回合）+ **注册边界测试补盲 `858bc79`**（t12a-team-tools-registration 3 测试，零 src）→ **R139 再推送**（master `b4e8d4f→9029c9a` + int `d8a1ca9→e6f591e`）→ 实机轮 3：**D-3 定位**（新建团队进入的是 standard 会话而非 leader：面板根 agentPreset "standard" + team_domain 四行 + 部署配置核验；leader agent 从未在面板根创建；keep-createRootSession = agent-registry 碰撞死路）+ **D-3 修复 `7e0c7d3`**（客户端铸造根 id + host fail-closed 预检 + bind 后 startRootAgent + 稳健打开 + 选择器信息展示化，29 文件 +806/−302）→ **R140 再推送**（master `48b5d7f→5b0e59d` + int `e6f591e→84212a2`）→ **绿后三盲审 reviewer-7/8/9**（含 D-2 工具注册面 + D-3 创建路径面） | `evidence/remote-mount-race/`（root-cause-confirmation / repro-notes / after+fresh boot+probe / gate-summary / gate/reviewer-{1,2,3}/ 裁决 + reviewer-{5,6}/ 中断轮部分证据 + **d3-decoded/**（解码日志 ×3 + d3-notes.md））；`graph.yaml` REMOTE-MOUNT-RACE + G-RMR-REVIEW 块 |
 | P0–P8（G0–G7） | 全部 Gate PASS（3/3）；master 历史已推送至 push #7 | `graph.yaml` tasks 区；`dev/agent-workflow/evidence/<task>/` |
 | P8-S backend closure | S0–S7 DONE（S7-FREEZE：`backend-contract-freeze.md` = P9 唯一 backend contract reference）；S8 / G8-S 未派发（**PAUSED**，用户指令 R83；T12 GO 后是否仍必要待用户裁决，见 §4） | `evidence/P8-S/`（S1A/B/C 审计、confirmed-repair-list、backend-contract-freeze.md） |
 | G8-REVIEW | round-1 2/3（1 补充内容）→ G8-S1 实质性补充（1/3）→ round-2 **3/3 通过**（@ `3fa4c1f`） | `evidence/G8-REVIEW/reviewer-{4,5,6}/` |
@@ -138,7 +176,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 
 ## 4. 待办 / 等待用户（按优先级）
 
-1. **remote-mount-race 收口（D-1+D-2 已推送 origin @ `9029c9a`/`e6f591e`，R139）**：**用户侧** = 按 §1 复测指引验证（**问对会话**：团队 tab → Leader 行「回到 leader」打开 `team-root` 会话提问，预期 10 个 `team_*` 工具；普通聊天会话本就不带团队工具）；**绿后** = 派发 3 全新盲审 reviewer-7/8/9（目标 `9029c9a`/`e6f591e`，定位找潜在问题，含 D-1 三分支解析专项 + D-2 工具注册面 + legacy 工具名词汇残留观察项）→ PASS 3/3 → CLOSED 收口簿记 + teardown（reviewer worktrees/端口/世界）；若审查出 gate-deciding 发现 → 修复 + 新的推送授权。
+1. **remote-mount-race 收口（D-1+D-2+D-3 已推送 origin @ `5b0e59d`/`84212a2`，R140）**：**用户侧** = 按 §1 D-3 更正版复测指引验证（**新建团队 → 选择蓝图 → 创建并发送**：预期直接进入 leader 会话 + `team_*` 工具 + 首轮 leader 应答；新建根会话落启动目录 = host 默认 workspace，侧栏过滤态可能不显示该行；建议用户裁量重置被污染的 DSH_HOME）；**绿后** = 派发 3 全新盲审 reviewer-7/8/9（目标 `5b0e59d`/`84212a2`，定位找潜在问题，含 D-1 三分支解析专项 + D-2 工具注册面 + **D-3 创建路径面**（fail-closed 预检边界 / startRootAgent 失败持久化语义 / 客户端铸造 id 序列 / refresh 重试语义 / 类型化错误双清单直通）+ legacy 工具名词汇残留观察项）→ PASS 3/3 → CLOSED 收口簿记 + teardown（reviewer worktrees/端口/世界 + RMR-INT worktree）；若审查出 gate-deciding 发现 → 修复 + 新的推送授权。
 2. ~~**推送授权**~~ — **四轮均已完成**：R124（2026-09-04，master + 5 refs）、R126（2026-09-05，master `2f3f61b` + `int/P9-master-product-closure`）、R130（2026-09-05，master `e832d73` + `int/plugin-bundle-form` 新建）、R134（2026-09-05，master `05721fd` + `int/plugin-prebuilt-artifacts` 新建），各按用户一次性授权执行并 ls-remote 验证；**后续任何推送仍需新的显式授权**（红线不变），gated 历史禁 force-push。本地 master 领先 origin 1 提交（R134 收口簿记），随下次授权推送携带（R124 先例）。**待用户验证**：新机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`（预期首跑成功、零 allowBuilds、Team UI 可用）。
 3. ~~**P9 task 分支入 master**~~ — **已完成（R125 Gate PASS + R126，2026-09-05）**：`int/P9-master-product-closure` @ `d23c606`（gate）/ `4233816`（bookkeeping）ff 进 master 并推送；安装链产品化 + fresh-machine 验证随线入库（`docs/INSTALL.md`）。
 4. **P10 加固**（P9 计划 L1789）：F-9 untracked-burst emitter 定位 + post-test-gate porcelain 检查；F-7 两个 excluded browser-surface specs；carry-over 清单 = UI_BACKEND_GAP（client node entry `packages/client/dist/plugin/client.js:50` 读 `ctx.slots` 未声明 inject，非规范路径）/ p6t1-parallel flake 类（~1/3，R125 轮 3/4 两位 reviewer 独立复现-隔离确认，建议降载加固）/ testkit `.tmp-fault` scratch 竞态（destroyDir Windows 重试）/ tsc build 内联发射卫生 / 360 s 窗口核心埋点（T12 记录，T12-V16 已修产品面，埋点留 P10）。

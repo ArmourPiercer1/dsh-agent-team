@@ -1,0 +1,5 @@
+{"type":"session","version":0,"id":"team-root","createdAt":1788608347687,"cwd":"D:\\AgentDev\\deepseek-harness","delegationDepth":0}
+{"type":"permission/preset","seq":0,"time":1788608347694,"data":{"preset":"workspace-write"}}
+{"type":"sandbox/mode","seq":1,"time":1788608347695,"data":{"mode":"workspace-write"}}
+{"type":"approval/policy","seq":2,"time":1788608347695,"data":{"policy":"ask"}}
+{"type":"session/end-seed","seq":3,"time":1788609863842,"data":{}}
