@@ -266,7 +266,7 @@ function handoffContextText(context) {
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery, workspaceAttach } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1345,6 +1345,7 @@ export function createTeamProductionRoot(params) {
         handoff,
         handoffRead,
         legacy,
+        workspaceAttach,
         projection,
         seams,
         live,

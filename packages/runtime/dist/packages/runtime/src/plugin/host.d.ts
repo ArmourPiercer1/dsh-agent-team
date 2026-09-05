@@ -67,15 +67,21 @@ export declare function defaultSeamUrlCandidates(hostModuleUrl: string): readonl
 export declare const name = "dsh-agent-team";
 /**
  * The hard host service dependencies (Cordis inject protocol): the Loader
- * keeps this row INACTIVE until all three exist and applies it once they
+ * keeps this row INACTIVE until all four exist and applies it once they
  * do (the pre-S5A harness row injected the same set minus
  * `sessionPersistence`, which it resolved lazily — R122 swapped that seam:
  * rc.1 removed `sessionPersistence.ensureMaterialized`, and the stock
  * `sessions` service's `flush(session)` is the upstream ACP's own
  * replacement, present in both eras, so waiting on it can only ever delay,
- * never deadlock, the bootstrap). The entry still passes a LAZY accessor
- * under the frozen glue's `sessionPersistence` deps key so any call that
- * races the provider fails with a stable code instead of a TypeError.
+ * never deadlock, the bootstrap). M2 (plan §15.5): `workspaceRegistry`
+ * joins the set as a HARD dependency — the web profile's workspace row
+ * provides it, and a composition without that row parks this row forever
+ * (the team surface is absent, never half-wired); the entry re-checks the
+ * service in code (fail-closed, before any durable effect) so a
+ * malformed provider can never reach the closure. The entry still passes
+ * a LAZY accessor under the frozen glue's `sessionPersistence` deps key
+ * so any call that races the provider fails with a stable code instead of
+ * a TypeError.
  */
 export declare const inject: string[];
 /**

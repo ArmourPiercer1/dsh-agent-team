@@ -247,6 +247,9 @@ function makeWorld(seam: FileStorageSeamType): TestWorld {
   const provided: Record<string, any> = {
     agents: { create: async () => {}, resume: async () => {} },
     sessionPersistence: { ensure: async () => {} },
+    // M2 (plan §15.5): the hard-injected workspace service (stub — this
+    // world does not exercise the attach port).
+    workspaceRegistry: { list: () => [], resolveByPath: async () => undefined },
     teamStorageSeam: seam,
   }
   const effectDisposers: Array<() => void> = []

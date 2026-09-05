@@ -62,6 +62,22 @@ export const TEAM_PLUGIN_ERROR_CODES = {
      * durable mutation, so nothing is reported as created.
      */
     TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE: 'TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE',
+    /**
+     * M2 — the requested workspace path resolved to no registered
+     * workspace: the directory does not resolve, or it exists but no
+     * workspace owns it (and an id named at attach time is no longer
+     * registered). Fail-closed: the v2 create never degrades to creating
+     * a workspace for an unknown path (that is the workspace-management
+     * surface, not the team).
+     */
+    TEAM_PLUGIN_WORKSPACE_NOT_FOUND: 'TEAM_PLUGIN_WORKSPACE_NOT_FOUND',
+    /**
+     * M2 — attaching an already-materialized session to a resolved
+     * workspace rejected (the upstream attach validation failed: cwd
+     * mismatch, unknown session, missing or invalid header cwd, or a
+     * storage fault on the registry write chain).
+     */
+    TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED: 'TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED',
 };
 /** The plugin-level error carrier (stable `code` + message + detail). */
 export class TeamPluginError extends Error {

@@ -16,7 +16,9 @@
  *     their bare `@deepseek-ai/*` imports resolve through the checkout's
  *     apps/cli workspace links; see ./upstream-resolver.mjs);
  *   - declares `inject` for the hard host services (`agents`,
- *     `storageDomain`, `sessions`) so the Loader defers this
+ *     `storageDomain`, `sessions`, and — M2, plan §15.5 —
+ *     `workspaceRegistry`, the public workspace service the web profile
+ *     provides through its workspace row) so the Loader defers this
  *     row's apply until the host provides them (the pre-S5A harness row
  *     injected the same set minus `sessionPersistence`, which it resolved
  *     lazily; R122 swapped the materialization seam — rc.1 removed
@@ -79,6 +81,10 @@ import type {
   TeamPluginSeedMember,
   TeamProductionRoot,
 } from './types.js'
+import {
+  assertWorkspaceRegistryLike,
+  createWorkspaceAttach,
+} from './workspace-attach.js'
 import type { TeamToolSet } from '../../../tools/src/index.js'
 
 /**
@@ -439,17 +445,23 @@ export const name = 'dsh-agent-team'
 
 /**
  * The hard host service dependencies (Cordis inject protocol): the Loader
- * keeps this row INACTIVE until all three exist and applies it once they
+ * keeps this row INACTIVE until all four exist and applies it once they
  * do (the pre-S5A harness row injected the same set minus
  * `sessionPersistence`, which it resolved lazily — R122 swapped that seam:
  * rc.1 removed `sessionPersistence.ensureMaterialized`, and the stock
  * `sessions` service's `flush(session)` is the upstream ACP's own
  * replacement, present in both eras, so waiting on it can only ever delay,
- * never deadlock, the bootstrap). The entry still passes a LAZY accessor
- * under the frozen glue's `sessionPersistence` deps key so any call that
- * races the provider fails with a stable code instead of a TypeError.
+ * never deadlock, the bootstrap). M2 (plan §15.5): `workspaceRegistry`
+ * joins the set as a HARD dependency — the web profile's workspace row
+ * provides it, and a composition without that row parks this row forever
+ * (the team surface is absent, never half-wired); the entry re-checks the
+ * service in code (fail-closed, before any durable effect) so a
+ * malformed provider can never reach the closure. The entry still passes
+ * a LAZY accessor under the frozen glue's `sessionPersistence` deps key
+ * so any call that races the provider fails with a stable code instead of
+ * a TypeError.
  */
-export const inject = ['agents', 'storageDomain', 'sessions']
+export const inject = ['agents', 'storageDomain', 'sessions', 'workspaceRegistry']
 
 /**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
@@ -671,6 +683,20 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       )
     }
 
+    // M2 (plan §15.5): the hard-injected public workspace service. The
+    // hard `inject` declaration parks the row in a real composition until
+    // the web profile's workspace row provides it; the code-level check
+    // fails closed with the stable code for every non-Loader world (unit
+    // test worlds, overlays) and for a MALFORMED provider — before any
+    // durable effect (the domain has not been opened yet). The closure is
+    // the narrow WorkspaceAttachPort the production root exposes (S6 v2
+    // create: resolve the registered workspace by path; attach the
+    // materialized root session — attach idempotency is delegated to the
+    // upstream Workspace.attachSession contract, never re-implemented).
+    const workspaceAttach = createWorkspaceAttach(
+      assertWorkspaceRegistryLike(ctx.get('workspaceRegistry')),
+    )
+
   // --- the storage seam: injected service, or the real seam over the --------
   // --- DSH public storageDomain (the row-owned seamUrl module, or its -------
   // --- location-derived default) ---------------------------------------------
@@ -828,6 +854,9 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // at handoff use time (absent in this host entry → the handoff source
     // surface fails closed exactly as the S5A boot world does).
     getSessionQuery: () => ctx.get('sessionQuery'),
+    // M2 (plan §15.5): the narrow workspace attach closure over the
+    // hard-injected public workspaceRegistry (see the check above).
+    workspaceAttach,
   })
   root = builtRoot
   await builtRoot.boot()

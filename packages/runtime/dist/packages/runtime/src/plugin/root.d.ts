@@ -84,7 +84,7 @@ import type { TeamToolSet } from '../../../tools/src/index.js';
 import type { TeamDomain } from '../../../storage/repositories/index.js';
 import type { StorageDomainSeam } from '../../../storage/schema/index.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
-import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from './types.js';
+import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot, WorkspaceAttachPort } from './types.js';
 /** BQ-18 (W3): the read-only fork reconciliation state query input. */
 export interface ForkDescribeInput {
     readonly parentSessionId: string;
@@ -190,6 +190,17 @@ export interface TeamProductionRootParams {
      * every test world without the service keep the old behavior).
      */
     readonly getSessionQuery?: () => unknown;
+    /**
+     * M2 (plan §15.5) — the narrow workspace attach port: the host entry's
+     * closure over the hard-injected public `workspaceRegistry` service
+     * (resolve a registered workspace by path; attach the materialized
+     * root session). OPTIONAL at the factory level: a root assembled
+     * directly (factory worlds, no host entry) carries none, and the S6 v2
+     * create path that consumes it fails closed on its absence. The host
+     * entry ALWAYS passes one (its bootstrap fails closed when the
+     * service is absent or malformed).
+     */
+    readonly workspaceAttach?: WorkspaceAttachPort;
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).

@@ -254,6 +254,7 @@ import type {
   TeamAgentBindings,
   TeamPluginConfig,
   TeamProductionRoot,
+  WorkspaceAttachPort,
 } from './types.js'
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from './types.js'
 
@@ -528,6 +529,17 @@ export interface TeamProductionRootParams {
    * every test world without the service keep the old behavior).
    */
   readonly getSessionQuery?: () => unknown
+  /**
+   * M2 (plan §15.5) — the narrow workspace attach port: the host entry's
+   * closure over the hard-injected public `workspaceRegistry` service
+   * (resolve a registered workspace by path; attach the materialized
+   * root session). OPTIONAL at the factory level: a root assembled
+   * directly (factory worlds, no host entry) carries none, and the S6 v2
+   * create path that consumes it fails closed on its absence. The host
+   * entry ALWAYS passes one (its bootstrap fails closed when the
+   * service is absent or malformed).
+   */
+  readonly workspaceAttach?: WorkspaceAttachPort
 }
 
 /**
@@ -542,7 +554,7 @@ export interface TeamProductionRootParams {
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params: TeamProductionRootParams): TeamProductionRoot {
-  const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery } = params
+  const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery, workspaceAttach } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
 
@@ -1744,6 +1756,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     handoff,
     handoffRead,
     legacy,
+    workspaceAttach,
     projection,
     seams,
     live,

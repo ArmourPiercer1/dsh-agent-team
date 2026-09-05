@@ -237,6 +237,22 @@ export declare const TEAM_PLUGIN_ERROR_CODES: {
      * durable mutation, so nothing is reported as created.
      */
     readonly TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE: "TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE";
+    /**
+     * M2 — the requested workspace path resolved to no registered
+     * workspace: the directory does not resolve, or it exists but no
+     * workspace owns it (and an id named at attach time is no longer
+     * registered). Fail-closed: the v2 create never degrades to creating
+     * a workspace for an unknown path (that is the workspace-management
+     * surface, not the team).
+     */
+    readonly TEAM_PLUGIN_WORKSPACE_NOT_FOUND: "TEAM_PLUGIN_WORKSPACE_NOT_FOUND";
+    /**
+     * M2 — attaching an already-materialized session to a resolved
+     * workspace rejected (the upstream attach validation failed: cwd
+     * mismatch, unknown session, missing or invalid header cwd, or a
+     * storage fault on the registry write chain).
+     */
+    readonly TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED: "TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED";
 };
 export type TeamPluginErrorCode = (typeof TEAM_PLUGIN_ERROR_CODES)[keyof typeof TEAM_PLUGIN_ERROR_CODES];
 /** The plugin-level error carrier (stable `code` + message + detail). */
@@ -247,6 +263,86 @@ export declare class TeamPluginError extends Error {
 }
 /** True when `value` is a {@link TeamPluginError} carrier. */
 export declare function isTeamPluginError(value: unknown): value is TeamPluginError;
+/**
+ * The narrow structural projection of the upstream public `Workspace`
+ * entity the team consumes (CORE PATCH BUDGET = 0: the team repo never
+ * imports the upstream workspace package — the web profile's workspace
+ * row provides the `workspaceRegistry` service, and this projection keeps
+ * the TS side closed).
+ */
+export interface WorkspaceLike {
+    /** The stable workspace record id (a generated uuid, never the path). */
+    readonly id: string;
+    /** The canonical directory path (the registry's `fs.realpath` form). */
+    readonly path: string;
+    /**
+     * Prepend a session to this workspace's account. Upstream contract: an
+     * already-accounted id resolves WITHOUT writing (idempotent); a new id
+     * must be materialized (its stored header cwd resolves to an existing
+     * directory equal to `path`), or the attach rejects.
+     */
+    attachSession(sessionId: string): Promise<void>;
+}
+/**
+ * The narrow structural projection of the upstream public
+ * `workspaceRegistry` service the team consumes: path resolution plus the
+ * synchronous registry-order listing (the id→entity lookup the attach
+ * seam owns — the projection deliberately exposes no other surface).
+ */
+export interface WorkspaceRegistryLike {
+    /** The registered workspaces in durable registry order. */
+    list(): readonly WorkspaceLike[];
+    /**
+     * Resolve a registered workspace by directory path (any spelling).
+     * Upstream contract: `undefined` for an existing directory no
+     * workspace owns; rejects when the path does not resolve.
+     */
+    resolveByPath(path: string): Promise<WorkspaceLike | undefined>;
+}
+/** The resolution of one directory path to a registered workspace. */
+export interface WorkspacePathResolution {
+    /** The workspace's stable record id. */
+    readonly workspaceId: string;
+    /** The workspace's CANONICAL directory path (verbatim from the registry). */
+    readonly path: string;
+}
+/**
+ * M2 — the narrow INTERNAL workspace attach port: the closure the host
+ * entry builds over the public `workspaceRegistry` service and passes to
+ * the production root (plan §M2 items 2/4/6). Other modules never see
+ * the upstream registry — they resolve a registered workspace by path
+ * and attach an already-materialized session, and nothing else.
+ *
+ * The v2 create sequence consumes this (plan §15.6): create →
+ * materialize the root session → `attachSession`. Attach idempotency is
+ * delegated to the upstream `Workspace.attachSession` contract (an
+ * already-accounted id resolves without writing) — the port never caches
+ * or dedupes itself.
+ */
+export interface WorkspaceAttachPort {
+    /**
+     * Resolve a registered workspace by directory path (any spelling) and
+     * return its canonical path.
+     * @param path - The directory to resolve, in any spelling.
+     * @returns the resolution (workspace id + canonical path).
+     * @throws {TeamPluginError} TEAM_PLUGIN_WORKSPACE_NOT_FOUND when the
+     *   path does not resolve (missing directory) or no workspace is
+     *   registered for it.
+     */
+    resolvePath(path: string): Promise<WorkspacePathResolution>;
+    /**
+     * Attach an ALREADY MATERIALIZED session to the registered workspace
+     * (the attach is what makes the session belong to the workspace — it
+     * runs only after the session's materialization, never instead of it).
+     * @param workspaceId - The workspace id from one {@link resolvePath}.
+     * @param sessionId - The materialized session to account.
+     * @throws {TeamPluginError} TEAM_PLUGIN_WORKSPACE_NOT_FOUND when no
+     *   workspace with that id is registered (deleted between resolve and
+     *   attach); TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED when the upstream
+     *   attach rejects (cwd mismatch, unknown session, storage fault).
+     */
+    attachSession(workspaceId: string, sessionId: string): Promise<void>;
+}
 /**
  * One named, typed, fail-closed, install-once S6 installation seam.
  *
@@ -402,6 +498,14 @@ export interface TeamProductionRoot {
     readonly legacy: {
         readonly inspect: (port: LegacyHomePort, request: unknown) => LegacyTeamInspection;
     };
+    /**
+     * M2 — the narrow workspace attach port (the host entry's closure over
+     * the hard-injected public `workspaceRegistry` service; plan §15.5).
+     * Present in every host-entry world (the entry fails closed at
+     * bootstrap when the service is absent or malformed); absent when the
+     * root is assembled directly without the host entry (factory worlds).
+     */
+    readonly workspaceAttach?: WorkspaceAttachPort;
     /** A30 — the projection service (durable source + the S6 live-residency
      *  overlay seam as the overlay port: fail-closed until S6 installs). */
     readonly projection: ProjectionService;
