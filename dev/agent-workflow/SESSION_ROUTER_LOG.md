@@ -1764,3 +1764,15 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **bookkeeping 文件清单（本提交）**：本条 R128+R129 日志 + `graph.yaml`（gate_round1 块 + state）+ `docs/STATUS.md`（§1/§2/§3/§4 + 头）+ `gate/round-1-reviewer-{1,2,3}.md` + `gate/teardown-verify-post-gate.txt` + `gate/r1-failures-rerun-pbf.txt` + task-brief 归属注 + 2 个 `git mv` 重命名。
 - **下一步**：`cherry-pick -x` 本提交 → int → 主仓 master `merge --ff-only int/plugin-bundle-form`（本地合流）→ 向用户申请一次性 push 授权（master + int/plugin-bundle-form）→ push + ls-remote 核验 → 任务关闭（R130）。
 
+## R130 — plugin-bundle-form：推送执行（用户一次性授权）+ 任务关闭（2026-09-05，本会话）
+
+- **路由说明**：Gate 通过后收尾动作（本地合流 + 推送 + 文档同步 + 任务关闭），非新开发任务，不触发 ROUTER_RULES §1.4 启动核验闸；本会话模型路由 = `qwen3.8-27b`。
+- **① 本地合流（授权前完成）**：R128+R129 簿记提交 `c20b8c5`（task）→ `cherry-pick -x` → int `e832d73`（int tree == task tree，空 diff）→ 主仓 `git merge --ff-only int/plugin-bundle-form`：master `2f3f61b` → `e832d73`（fast-forward，零 merge commit；106 文件 / +14550 −83 = 完整 git-install bundle 形态产品 + D5 五世界垂直证据 + gate round 1 三裁决归档）。
+- **② 推送（一次性授权消耗，ask_user_question 2026-09-05 用户批准「授权推送」）**：`git push origin master int/plugin-bundle-form` —— origin master `2f3f61b` → `e832d73`（fast-forward），`int/plugin-bundle-form` 新建 @ `e832d73`；**零 force-push**；**ls-remote 推送后核：两 ref 与本地 tip 完全一致**（均 `e832d732413f17fe98009323308e29c7b65f4eb0`）。
+- **③ 文档同步**：`docs/STATUS.md`（§1 一句话现状 = 已推送 + 任务关闭 / §3 master 行 + 已推送分支行 / §4 待办 1 关闭）随本条落盘。
+- **任务关闭（plugin-bundle-form）**：目标达成 —— `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` 直接可用（根 `dsh.bundle.patch` 声明 + 机器无关 `cordis.patch.yml` + 位置推导 glue/seam + D8 双 id 注册 + D9 defaultWorkspace 推导 + prepare 构建链 + 根级运行时依赖）；D5 第五世界（21-11-16 @ `5c4f903`）真实 CLI reconcile 端到端全绿（用户原始报告的失败路径闭环）；Gate round 1 三独立盲审 3/3 PASS（R1 通过 / R2 通过 / R3 投机通过）；执行 1/3、substantive 补充 0/2。证据 = `evidence/plugin-bundle-form/`（task-brief D1–D9、五世界记录、d5 kits、`gate/` 三裁决 + teardown 核验 + 主 Agent 独立 rerun 核验）。
+- **红线自检**：两推送 ref 均 fast-forward/新建（gated 历史未 force）；`:3080` 与 `D:\deepseek-harness\` 零触碰；本条未启动/停止任何实例，3180 族保持全释放（gate 期终值见 R129）。
+- **风险台账（关闭时留档）**：① p6t1-parallel 并发负载 flake（在案，隔离 9/9 协议；R1/R125 多 reviewer 独立确认）；② t12a-live-bridge 位置依赖（预存非本任务；future-gate 规则已定：reviewer worktree 须置于 `<repo>/.worktrees/` 下）；③ `upstream-resolver.mjs` 头注释过述 git 安装 fallback（行为正确、注释不精确 → 后续 minor 任务）；④ `process.cwd()` 服务化启动边界（已文档化 + 显式覆盖 + 单测）；⑤ allowBuilds key commit 特定（pnpm ≥10 宿主策略，运维注记，INSTALL.md §2 已载）；⑥ W2/W4 失败签名叙述性（world 目录在盘可再验证）。
+- **未动**：冻结四文档、docs/plans 全部、P10/G8-S 决策（仍待用户）；TEST_METHODS.md 未改（用户裁决可改 —— R129 已记录 reviewer-worktree 放置约束并提议补注，待用户裁决）；`task/P9-proto-*`（R-PROTO-13 local-only）未动。
+- **领先状态**：本条 R130 簿记提交落本地 master（origin 领先 1），按 R124 先例由下一次用户授权推送携带；无新推送授权，后续推送需显式再授权。
+
