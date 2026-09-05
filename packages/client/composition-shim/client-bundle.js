@@ -2167,7 +2167,8 @@ var __dshFactory = (require) => {
 			 * vocabulary. PROVENANCE (the client may not import the host package —
 			 * `packages/runtime` is host-side authority):
 			 * `packages/runtime/src/plugin/projection-source.ts` `FACT_TYPE_CATEGORY`
-			 * (the 12-fact vNext vocabulary; the host fails closed
+			 * (the 13-fact vNext vocabulary — 12 + the TCM-M3 `team-root-work-delivered`
+			 * terminal record; the host fails closed
 			 * `LEDGER_CATEGORY_UNKNOWN` on any unmapped fact type, so an unknown
 			 * `category` here can only ever be display-side, never authority-side).
 			 * A row whose fact type is absent from this map carries NO `category`
@@ -2175,6 +2176,11 @@ var __dshFactory = (require) => {
 			 */
 			const FACT_TYPE_CATEGORY = {
 			    'team-work-admitted': 'team',
+			    // TCM-M3: the creation-time Root initial work's terminal success record
+			    // (the host's one new fact type; the `targetKind: 'root'` payload
+			    // discriminator distinguishes the Root entries) → the existing `team`
+			    // category (no new category — plan §15.7).
+			    'team-root-work-delivered': 'team',
 			    'provision-member-instance': 'member',
 			    'member-lifecycle-changed': 'lifecycle',
 			    'team-message-delivered': 'message',

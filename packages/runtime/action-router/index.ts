@@ -28,3 +28,22 @@ export {
   WORK_ACTIVITY_SUBJECT,
 } from './work-execution.js'
 export type { WorkChainDeps, WorkChainResult, WorkUnitFacts, SettleOutcome } from './work-execution.js'
+export {
+  createAdmitRootInitialWork,
+  computeRootWorkPayloadFingerprint,
+  executeRootInitialWorkLocked,
+  scanRootInitialWorkFacts,
+  FACT_ROOT_WORK_DELIVERED,
+  FACT_WORK_ADMITTED as FACT_ROOT_WORK_ADMITTED,
+  ROOT_TARGET_KIND,
+} from './root-initial-work.js'
+export type {
+  AdmitRootInitialWork,
+  RootInitialWorkArgs,
+  RootInitialWorkClosureInput,
+  RootInitialWorkDeps,
+  RootInitialWorkResult,
+  RootInitialWorkScan,
+  RootWorkDeliveryPort,
+  RootWorkFactRef,
+} from './root-initial-work.js'

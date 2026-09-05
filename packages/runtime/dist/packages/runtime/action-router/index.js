@@ -20,4 +20,5 @@
 export { createTeamRuntime } from './router.js';
 export { executeEffect, withTeamLock, commitDurableFact } from './effects.js';
 export { executeWorkChain, scanWorkUnitFacts, settleAdmittedWork, WORK_ACTIVITY_SUBJECT, } from './work-execution.js';
+export { createAdmitRootInitialWork, computeRootWorkPayloadFingerprint, executeRootInitialWorkLocked, scanRootInitialWorkFacts, FACT_ROOT_WORK_DELIVERED, FACT_WORK_ADMITTED as FACT_ROOT_WORK_ADMITTED, ROOT_TARGET_KIND, } from './root-initial-work.js';
 //# sourceMappingURL=index.js.map

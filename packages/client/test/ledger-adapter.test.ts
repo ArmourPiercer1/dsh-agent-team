@@ -121,6 +121,25 @@ describe('adaptTeamLedger — entry rows', () => {
     expect(must(model.entries[1], 'entry 1').category).toBe('policy')
   })
 
+  it('TCM-M3: the Root initial work pair maps to the existing `team` category (no new category)', () => {
+    const model = adaptTeamLedger(
+      [
+        entry(1, 'team-work-admitted', { targetKind: 'root', requestToken: 'tok-tcm-m3' }),
+        entry(2, 'team-root-work-delivered', {
+          targetKind: 'root',
+          requestToken: 'tok-tcm-m3',
+          workOutcome: 'delivered',
+        }),
+      ],
+      true,
+    )
+    expect(model.entries.length).toBe(2)
+    expect(must(model.entries[0], 'entry 0').category).toBe('team')
+    const terminal = must(model.entries[1], 'entry 1')
+    expect(terminal.factType).toBe('team-root-work-delivered')
+    expect(terminal.category).toBe('team')
+  })
+
   it('an unknown fact type omits the category (never guessed)', () => {
     const model = adaptTeamLedger([entry(1, 'mystery-fact', {})], true)
     const row = must(model.entries[0], 'entry 0')

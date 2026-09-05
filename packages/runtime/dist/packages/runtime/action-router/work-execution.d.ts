@@ -32,6 +32,12 @@
  *   `settleAdmittedWork`);
  * - NEITHER exists -> the FULL chain.
  *
+ * TCM-M3 boundary: facts carrying `targetKind: 'root'` (the creation-time
+ * Root initial work — the Root strategy's durable side, see
+ * `root-initial-work.ts`) are SKIPPED by this scan: a member chain never
+ * resumes or settles a Root initial-work unit, even when a member request
+ * collides with its requestToken (the token-collision guard).
+ *
  * The TeamLedger itself is exactly-once per logical work unit: the replay
  * branch writes nothing, and the resume branch writes at most the missing
  * settlement fact (crash-window repair) plus the interval rows it still

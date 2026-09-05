@@ -95,6 +95,15 @@
  *                                  same path the delegate work uses;
  *                                  at-least-once — NO dedupe here, B6
  *                                  dedupes by contextToken durably)
+ *   deliverRootWork({rootSessionId, requestToken, prompt, attachedContext?})
+ *                                 (TCM-M3: one creation-time Root initial
+ *                                  work as a REAL model-visible input turn
+ *                                  — the token-leading `[team-root-work
+ *                                  requestToken=<token>]` prefix carries
+ *                                  the model-visible dedupe identity;
+ *                                  at-least-once — NO dedupe here, the
+ *                                  Root initial-work strategy's durable
+ *                                  side owns replay/retry)
  *   interrupt(target)            (agent.cancel({kind:'user'}))
  *   drainDescendants(childSessionId) -> {drained, quiescent}
  *                                 (T12-M3: the REAL recursive drain — whenIdle
@@ -1066,15 +1075,46 @@ export function createAgentBindings(deps) {
   }
 
   /**
+   * The shared REAL Agent input path for one team root (TCM-M3: extracted
+   * privately out of deliverRootContext — zero behavior change): the text
+   * goes in as a REAL model-visible input turn on the same path the
+   * delegate work uses: the request-boundary reconciliation under the
+   * root's own team truth, createUserMessage + agent.followup,
+   * observe-to-idle (a rejection PROPAGATES — the caller owns the
+   * at-least-once/dedup contract), then the public persistence seam
+   * materializes the durable log so the delivered turn is on disk before
+   * the caller settles.
+   * @param {{rootSessionId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverRootInput(input) {
+    const sid = String(input?.rootSessionId ?? '')
+    const text = String(input?.text ?? '')
+    if (sid === '') {
+      throw new Error('agent-bindings: deliverRootInput requires a non-empty rootSessionId')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverRootInput requires a non-empty text')
+    }
+    const handle = await ensureLiveAgent(sid)
+    // The target root IS the team root of its own team — the boundary
+    // reconciliation resolves under that root's durable truth.
+    await prepareAgentForRequest(sid, sid)
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'user' },
+    })
+    handle.agent.followup(message)
+    await handle.agent.whenIdle()
+    await sessionPersistence.ensureMaterialized(handle.agent.session)
+  }
+
+  /**
    * Deliver the frozen handoff context into the target Root Agent (the B6
    * at-least-once seam): `text` — token-leading, so the target side dedupes
-   * on the contextToken — goes in as a REAL model-visible input turn on the
-   * same path the delegate work uses: the request-boundary reconciliation
-   * under the root's own team truth, createUserMessage + agent.followup,
-   * observe-to-idle (a rejection PROPAGATES — B6 maps it to creation-failed
-   * and retries), then the public persistence seam materializes the durable
-   * log so the delivered turn is on disk before the primitive settles. NO
-   * dedupe here: at-least-once is B6's durable contract.
+   * on the contextToken — goes in as a REAL model-visible input turn on
+   * the same path the delegate work uses (the shared deliverRootInput).
+   * NO dedupe here: at-least-once is B6's durable contract.
    * @param {{rootSessionId: string, contextToken: string, text: string}} input
    * @returns {Promise<void>}
    */
@@ -1091,17 +1131,45 @@ export function createAgentBindings(deps) {
     if (text === '') {
       throw new Error('agent-bindings: deliverRootContext requires a non-empty text (the token-leading frozen context)')
     }
-    const handle = await ensureLiveAgent(sid)
-    // The target root IS the team root of its own team — the boundary
-    // reconciliation resolves under that root's durable truth.
-    await prepareAgentForRequest(sid, sid)
-    const message = createUserMessage({
-      content: [{ type: 'text', text }],
-      source: { kind: 'user' },
+    await deliverRootInput({ rootSessionId: sid, text })
+  }
+
+  /**
+   * TCM-M3 — deliver ONE creation-time Root initial work into the Root
+   * Agent (the thin adapter over the shared deliverRootInput): the
+   * model-visible text is token-leading — `[team-root-work
+   * requestToken=<token>]` — so the model can dedupe the at-least-once
+   * redelivery, followed by the exact prompt and (when present and
+   * non-empty) the same `[attached-context]` block the member work
+   * delivery uses. NO dedupe here: the Root initial-work strategy's
+   * durable side (the `team-work-admitted` / `team-root-work-delivered`
+   * facts) owns replay/retry — the glue only submits and propagates
+   * rejections (the strategy maps the rejection to WORK_DELIVERY_FAILED
+   * and keeps the durable admission for the same-token retry).
+   * @param {{rootSessionId: string, requestToken: string, prompt: string, attachedContext?: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverRootWork(input) {
+    const sid = String(input?.rootSessionId ?? '')
+    const token = String(input?.requestToken ?? '')
+    const prompt = String(input?.prompt ?? '')
+    if (sid === '') {
+      throw new Error('agent-bindings: deliverRootWork requires a non-empty rootSessionId')
+    }
+    if (token === '') {
+      throw new Error('agent-bindings: deliverRootWork requires a non-empty requestToken')
+    }
+    if (prompt === '') {
+      throw new Error('agent-bindings: deliverRootWork requires a non-empty prompt')
+    }
+    const attachedContext = input?.attachedContext !== undefined ? String(input.attachedContext) : undefined
+    const body = attachedContext !== undefined && attachedContext.length > 0
+      ? `${prompt}\n\n[attached-context]\n${attachedContext}`
+      : prompt
+    await deliverRootInput({
+      rootSessionId: sid,
+      text: `[team-root-work requestToken=${token}] ${body}`,
     })
-    handle.agent.followup(message)
-    await handle.agent.whenIdle()
-    await sessionPersistence.ensureMaterialized(handle.agent.session)
   }
 
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
@@ -1417,5 +1485,9 @@ export function createAgentBindings(deps) {
     // with TEAM_HANDOFF_TEAM_CREATION_UNAVAILABLE before any durable effect)
     createRootAgent,
     deliverRootContext,
+    // additive (TCM-M3): the creation-time Root initial work delivery
+    // (the Root initial-work strategy's live adapter; the durable
+    // replay/retry side is the strategy's own — the glue only submits)
+    deliverRootWork,
   }
 }

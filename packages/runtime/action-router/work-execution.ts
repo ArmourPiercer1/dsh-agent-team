@@ -32,6 +32,12 @@
  *   `settleAdmittedWork`);
  * - NEITHER exists -> the FULL chain.
  *
+ * TCM-M3 boundary: facts carrying `targetKind: 'root'` (the creation-time
+ * Root initial work — the Root strategy's durable side, see
+ * `root-initial-work.ts`) are SKIPPED by this scan: a member chain never
+ * resumes or settles a Root initial-work unit, even when a member request
+ * collides with its requestToken (the token-collision guard).
+ *
  * The TeamLedger itself is exactly-once per logical work unit: the replay
  * branch writes nothing, and the resume branch writes at most the missing
  * settlement fact (crash-window repair) plus the interval rows it still
@@ -162,6 +168,14 @@ export function scanWorkUnitFacts(
   let settled: WorkUnitFacts['settled']
   for (const entry of repositories.ledger.list()) {
     if (entry.rootSessionId !== rootSessionId) continue
+    // TCM-M3: the creation-time Root initial work facts (the Root
+    // strategy's durable side — the `team-work-admitted` facts carrying
+    // `targetKind: 'root'` plus the terminal `team-root-work-delivered`
+    // facts) are NOT member work units: the Root scanner
+    // (`root-initial-work.ts`) owns them. Skipping the discriminator here
+    // keeps a same-token Root fact from being resumed (or settled) by a
+    // member chain — the token-collision guard.
+    if (entry.payload['targetKind'] === 'root') continue
     if (entry.payload['requestToken'] !== requestToken) continue
     if (entry.factType === FACT_WORK_ADMITTED) {
       if (admitted === undefined || entry.sequence < admitted.sequence) {

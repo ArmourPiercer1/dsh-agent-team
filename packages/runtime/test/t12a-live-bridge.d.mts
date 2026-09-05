@@ -208,6 +208,13 @@ export interface LiveWorld {
       readonly contextToken: string
       readonly text: string
     }): Promise<void>
+    /** TCM-M3: the creation-time Root initial work port — one token-leading REAL model-visible input turn (the shared `deliverRootInput` path; the durable replay/retry side is the Root initial-work strategy's). */
+    deliverRootWork(input: {
+      readonly rootSessionId: string
+      readonly requestToken: string
+      readonly prompt: string
+      readonly attachedContext?: string
+    }): Promise<void>
     boot(): Promise<void>
     close(): Promise<void>
     [k: string]: unknown

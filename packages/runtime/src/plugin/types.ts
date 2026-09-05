@@ -728,6 +728,26 @@ export interface TeamAgentBindings {
     readonly contextToken: string
     readonly text: string
   }) => Promise<void>
+  /**
+   * TCM-M3 — accept ONE creation-time Root initial work into the Root
+   * Agent through the REAL Agent input seam (the same private input path
+   * as `deliverRootContext`): the model-visible text is token-leading —
+   * `[team-root-work requestToken=<token>]` — so the model can dedupe the
+   * at-least-once redelivery, followed by the exact prompt and (when
+   * present and non-empty) the `[attached-context]` block. AT-LEAST-ONCE:
+   * replay/retry is owned by the Root initial-work strategy's durable
+   * side (the `team-work-admitted` / `team-root-work-delivered` facts);
+   * the glue submits and propagates rejections only (a rejection maps to
+   * WORK_DELIVERY_FAILED with the durable admission retained). OPTIONAL —
+   * same contract as `createRootAgent` / `deliverRootContext`: a glue
+   * without this port fails closed on the Root initial work path.
+   */
+  readonly deliverRootWork?: (input: {
+    readonly rootSessionId: string
+    readonly requestToken: string
+    readonly prompt: string
+    readonly attachedContext?: string
+  }) => Promise<void>
   /** The P8-S4B request boundary (re-apply the durable truth). */
   readonly prepareAgentForRequest: (sessionId: string) => Promise<void>
   /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */

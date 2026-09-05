@@ -138,6 +138,12 @@ export type TeamDomainReadPortErrorCode =
 // are module-private — so the closed table is declared here once):
 //
 //   'team-work-admitted'            action-router (work-execution / effects) → team
+//   'team-root-work-delivered'      action-router (root-initial-work — the
+//                                   TCM-M3 creation-time Root initial work's
+//                                   terminal success record; the payload's
+//                                   `targetKind: 'root'` distinguishes the
+//                                   Root entries, and no member addressing
+//                                   key is carried)                        → team
 //   'provision-member-instance'     storage/operations journal (the ONLY
 //                                   production operation intent;
 //                                   storage/provisioning coordinator)        → member
@@ -159,6 +165,7 @@ export type TeamDomainReadPortErrorCode =
 // LEDGER_CATEGORY_UNKNOWN.
 
 const FACT_TEAM_WORK_ADMITTED = 'team-work-admitted'
+const FACT_TEAM_ROOT_WORK_DELIVERED = 'team-root-work-delivered'
 const FACT_PROVISION_MEMBER_INSTANCE = 'provision-member-instance'
 const FACT_MEMBER_LIFECYCLE_CHANGED = 'member-lifecycle-changed'
 const FACT_TEAM_MESSAGE_DELIVERED = 'team-message-delivered'
@@ -174,6 +181,7 @@ const FACT_POLICY_STATE_TRANSITIONED = 'policy-state-transitioned'
 /** The closed fact-type → frozen-category map (see the vocabulary above). */
 const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new Map([
   [FACT_TEAM_WORK_ADMITTED, 'team'],
+  [FACT_TEAM_ROOT_WORK_DELIVERED, 'team'],
   [FACT_PROVISION_MEMBER_INSTANCE, 'member'],
   [FACT_MEMBER_LIFECYCLE_CHANGED, 'lifecycle'],
   [FACT_TEAM_MESSAGE_DELIVERED, 'message'],

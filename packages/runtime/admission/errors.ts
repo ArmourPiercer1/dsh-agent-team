@@ -32,7 +32,13 @@
  * - delegation/lifecycle/policy: DELEGATION_TARGET_UNRESOLVED,
  *   LIFECYCLE_TRANSITION_REJECTED, LIFECYCLE_COMMIT_UNAVAILABLE,
  *   POLICY_RESOLUTION_FAILED;
- * - durable commit: DURABLE_WRITE_FAILED.
+ * - durable commit: DURABLE_WRITE_FAILED;
+ * - delivery: WORK_DELIVERY_FAILED (the P8-S3 work chain; TCM-M3 reuses
+ *   it for the Root initial work's delivery fault — the durable
+ *   admission stays, no terminal fact is written, same-token retry
+ *   recovers from the admission fact);
+ * - root initial work (TCM-M3, plan §15.6): ROOT_WORK_PAYLOAD_MISMATCH,
+ *   INITIAL_WORK_ALREADY_ADMITTED (both resolution-phase: zero writes).
  */
 
 /** The closed TeamRuntime error codes. */
@@ -145,6 +151,26 @@ export const TEAM_RUNTIME_ERROR_CODES = {
    * RUNNING -> CREATED edge. `details.cause` carries the delivery fault.
    */
   WORK_DELIVERY_FAILED: 'TEAM_RUNTIME_WORK_DELIVERY_FAILED',
+  /**
+   * TCM-M3 — the creation-time Root initial work was requested with a
+   * requestToken that is already committed (a `team-work-admitted`
+   * Root fact and/or a terminal `team-root-work-delivered` fact) with a
+   * DIFFERENT payload fingerprint: the same token must mean the same
+   * work (plan §15.6 "same token + different payload → typed mismatch").
+   * Resolution-phase rejection: ZERO durable writes. `details` carries
+   * the stored and the requested fingerprints.
+   */
+  ROOT_WORK_PAYLOAD_MISMATCH: 'TEAM_RUNTIME_ROOT_WORK_PAYLOAD_MISMATCH',
+  /**
+   * TCM-M3 — the team already carries a creation-time Root initial work
+   * under a DIFFERENT requestToken (an admitted or durably delivered
+   * `targetKind: 'root'` fact exists): at most one initial-work slot per
+   * creation (plan §15.6 "another token's terminal initial work exists →
+   * typed INITIAL_WORK_ALREADY_ADMITTED"; the slot is occupied by an
+   * admitted non-terminal fact as well). Resolution-phase rejection:
+   * ZERO durable writes. `details` carries the occupying token.
+   */
+  INITIAL_WORK_ALREADY_ADMITTED: 'TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED',
 } as const
 
 /** One of the closed TeamRuntime error codes. */
