@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+content-type: application/json
+Vary: Accept-Encoding
+Date: Sat, 05 Sep 2026 10:42:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"type":"server-response","rpcId":"rev2-1","result":{"ok":true,"value":{"data":{"blueprints":[{"blueprintId":"my-team-bp-1","revisions":[1]}]},"provenance":{"origin":"team-remote","method":"catalog.list","endpoint":"catalog.list","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}}
+

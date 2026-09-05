@@ -1,0 +1,15 @@
+﻿
+D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\RMR-REV3\packages\runtime\src\plugin\host.ts
+  593:9  error  'pollTimer' is never reassigned. Use 'const' instead      prefer-const
+  594:9  error  'deadlineTimer' is never reassigned. Use 'const' instead  prefer-const
+
+D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\RMR-REV3\packages\runtime\test\rmr-create-or-open-boot.test.ts
+  165:26  error  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  220:1   error  'team1' is never reassigned. Use 'const' instead       prefer-const
+  221:1   error  'binding1' is never reassigned. Use 'const' instead    prefer-const
+  222:1   error  'members1' is never reassigned. Use 'const' instead    prefer-const
+  227:1   error  'createdAt1' is never reassigned. Use 'const' instead  prefer-const
+  233:1   error  'team2' is never reassigned. Use 'const' instead       prefer-const
+
+✖ 8 problems (8 errors, 0 warnings)
+

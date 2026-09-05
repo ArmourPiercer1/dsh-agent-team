@@ -162,6 +162,7 @@ async function applyWorld(world: TestWorld, config: Record<string, any>): Promis
 /** Apply the entry and AWAIT THE BOOTSTRAP REJECTION (the S3 negative). */
 async function applyWorldFailing(
   world: TestWorld,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
   config: Record<string, any>,
 ): Promise<{ code: string | null; message: string }> {
   await hostEntry.apply(world.ctx, config)
@@ -199,16 +200,7 @@ destroyDir(scratchDir('rmrcoo-boot'))
 // create-or-over the SAME medium (adopts + loads) -> close -> strict
 // create over the SAME medium (must fail closed).
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
-let team1: any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
-let binding1: any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
-let members1: any[]
-let createdAt1: string
 let teamCount1 = 0
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped test payload / hidden internal state
-let team2: any
 let teamCount2 = 0
 let strictFail: { code: string | null; message: string } = { code: null, message: '' }
 
@@ -217,20 +209,20 @@ const seam = new FileStorageSeam(scratchDir('rmrcoo-boot'))
 // S1 — fresh medium: the create-or-open world boots.
 const root1 = await applyWorld(makeWorld(seam), rowConfig({}))
 const repos1 = root1.domain.repositories
-team1 = repos1.teamSessions.get(ROOT_SID)
-binding1 = repos1.sessionBindings.get(ROOT_SID)
-members1 = repos1.memberInstances.list(ROOT_SID)
+const team1 = repos1.teamSessions.get(ROOT_SID)
+const binding1 = repos1.sessionBindings.get(ROOT_SID)
+const members1 = repos1.memberInstances.list(ROOT_SID)
 teamCount1 = repos1.teamSessions.list().length
 check(team1 !== undefined, 'S1: the create-or-open create committed the TeamSession record')
 check(binding1 !== undefined, 'S1: the create-or-open create committed the team-root binding')
 check(members1.length === 1, 'S1: the create-or-open create minted exactly the Leader')
-createdAt1 = team1.createdAt
+const createdAt1 = team1.createdAt
 await root1.close()
 
 // S2 — the RESTART: the same medium, a fresh row instance, create-or-open.
 const root2 = await applyWorld(makeWorld(seam), rowConfig({}))
 const repos2 = root2.domain.repositories
-team2 = repos2.teamSessions.get(ROOT_SID)
+const team2 = repos2.teamSessions.get(ROOT_SID)
 teamCount2 = repos2.teamSessions.list().length
 check(team2 !== undefined, 'S2: the create-or-open adopt loaded the TeamSession record')
 await root2.close()

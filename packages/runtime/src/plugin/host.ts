@@ -590,19 +590,23 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   function armRemoteMountWatcher(root: TeamProductionRoot, waitMs: number): void {
     const startedAt = Date.now()
     let settled = false
-    let pollTimer: ReturnType<typeof setInterval> | undefined
-    let deadlineTimer: ReturnType<typeof setTimeout> | undefined
+    // Const holder: the timers are created AFTER `settle` is defined
+    // (closure order) but each is written exactly once.
+    const timers: {
+      poll?: ReturnType<typeof setInterval>
+      deadline?: ReturnType<typeof setTimeout>
+    } = {}
 
     const settle = (outcome: RemoteMountState): void => {
       if (settled) return
       settled = true
-      if (pollTimer !== undefined) clearInterval(pollTimer)
-      if (deadlineTimer !== undefined) clearTimeout(deadlineTimer)
+      if (timers.poll !== undefined) clearInterval(timers.poll)
+      if (timers.deadline !== undefined) clearTimeout(timers.deadline)
       remoteMountState = outcome
       logRemoteMountOutcome(outcome, Date.now() - startedAt)
     }
 
-    pollTimer = setInterval(() => {
+    timers.poll = setInterval(() => {
       if (settled) return
       const candidate = ctx.get('connection') as ConnectionLike | null | undefined
       if (candidate === undefined || candidate === null) return
@@ -623,7 +627,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       settle(mountRemoteNow(root, candidate, true))
     }, REMOTE_MOUNT_POLL_MS)
 
-    deadlineTimer = setTimeout(() => {
+    timers.deadline = setTimeout(() => {
       settle({
         state: 'skipped',
         reason: `the "connection" public service was absent at the mount step and did not appear within ${waitMs}ms (headless host, or the web connection service was not provided in time)`,
@@ -633,13 +637,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // Never keep the process alive on the watch timers (unit-test worlds
     // and short-lived hosts exit cleanly; the production host lives on
     // its own server handles).
-    ;(pollTimer as unknown as { unref?: () => void }).unref?.()
-    ;(deadlineTimer as unknown as { unref?: () => void }).unref?.()
+    ;(timers.poll as unknown as { unref?: () => void }).unref?.()
+    ;(timers.deadline as unknown as { unref?: () => void }).unref?.()
 
     ctx.effect(
       () => () => {
-        if (pollTimer !== undefined) clearInterval(pollTimer)
-        if (deadlineTimer !== undefined) clearTimeout(deadlineTimer)
+        if (timers.poll !== undefined) clearInterval(timers.poll)
+        if (timers.deadline !== undefined) clearTimeout(timers.deadline)
         if (!settled) {
           settle({
             state: 'skipped',

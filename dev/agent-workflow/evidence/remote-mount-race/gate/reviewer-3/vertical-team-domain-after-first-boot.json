@@ -1,0 +1,34 @@
+{
+  "unit": {
+    "name": "team_domain",
+    "version": 1
+  },
+  "global": null,
+  "tables": {
+    "schema_meta": {
+      "schema_meta": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.259Z\",\"store\":\"schema_meta\",\"version\":1}",
+      "team_sessions": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.360Z\",\"store\":\"team_sessions\",\"version\":1}",
+      "member_instances": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.475Z\",\"store\":\"member_instances\",\"version\":1}",
+      "session_bindings": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.536Z\",\"store\":\"session_bindings\",\"version\":1}",
+      "overrides": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.580Z\",\"store\":\"overrides\",\"version\":1}",
+      "compatibility": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.616Z\",\"store\":\"compatibility\",\"version\":1}",
+      "operations": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.648Z\",\"store\":\"operations\",\"version\":1}",
+      "ledger": "{\"schemaVersion\":1,\"stampedAt\":\"2026-09-05T10:34:50.693Z\",\"store\":\"ledger\",\"version\":1}"
+    },
+    "team_sessions": {
+      "team-root": "{\"blueprint\":{\"blueprintId\":\"my-team-bp-1\",\"contentHash\":\"sha256:a43746295d4df4499b978fd1f8c1704c624363ff3f196c7425425237680c3a0a\",\"revision\":\"1\"},\"createdAt\":\"2026-09-05T10:34:50.941Z\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"generation\":2,\"rootSessionId\":\"team-root\",\"schemaVersion\":1}"
+    },
+    "member_instances": {
+      "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"team-root\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-09-05T10:34:51.023Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"team-root\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+    },
+    "session_bindings": {
+      "team-root": "{\"kind\":\"team-root\",\"schemaVersion\":1,\"sessionId\":\"team-root\"}"
+    },
+    "overrides": {},
+    "compatibility": {
+      "team-root": "{\"acknowledgements\":[],\"computedAt\":\"2026-09-05T10:34:51.071Z\",\"fingerprint\":\"fp-v1:496d1037b98199e1\",\"generation\":1,\"outcomes\":{\"counts\":{\"fatal\":0,\"pass\":1,\"staleAcknowledgement\":0,\"unackedWarning\":0,\"warning\":0},\"requirements\":[{\"acknowledgement\":null,\"complete\":true,\"detail\":\"all 1 required subject(s) available\",\"mismatchFingerprint\":null,\"outcome\":\"PASS\",\"reasonCode\":\"SATISFIED\",\"requirementId\":\"req-persona-standard\",\"type\":\"persona\",\"unavailableSubjects\":[]}]},\"rootSessionId\":\"team-root\",\"schemaVersion\":1,\"status\":\"OPEN\"}"
+    },
+    "operations": {},
+    "ledger": {}
+  }
+}

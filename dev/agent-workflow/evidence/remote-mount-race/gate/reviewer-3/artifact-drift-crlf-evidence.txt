@@ -1,0 +1,6 @@
+﻿core.autocrlf = true (global, C:/Program Files/Git/etc/gitconfig)
+committed blob packages/runtime/dist/.../host.js:            CR bytes = 772   (CRLF)
+fresh build (tsc)  packages/runtime/dist/.../host.js:        CR bytes = 0     (LF)
+committed blob packages/client/composition-shim/client-bundle.js: CR bytes = 14228 (CRLF)
+fresh build        packages/client/composition-shim/client-bundle.js: CR bytes = 0 (LF)
+git diff --ignore-cr-at-eol (dist + composition-shim) = EMPTY (content identical modulo CR)

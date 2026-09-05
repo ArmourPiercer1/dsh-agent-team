@@ -449,20 +449,21 @@ export async function apply(ctx, config) {
     function armRemoteMountWatcher(root, waitMs) {
         const startedAt = Date.now();
         let settled = false;
-        let pollTimer;
-        let deadlineTimer;
+        // Const holder: the timers are created AFTER `settle` is defined
+        // (closure order) but each is written exactly once.
+        const timers = {};
         const settle = (outcome) => {
             if (settled)
                 return;
             settled = true;
-            if (pollTimer !== undefined)
-                clearInterval(pollTimer);
-            if (deadlineTimer !== undefined)
-                clearTimeout(deadlineTimer);
+            if (timers.poll !== undefined)
+                clearInterval(timers.poll);
+            if (timers.deadline !== undefined)
+                clearTimeout(timers.deadline);
             remoteMountState = outcome;
             logRemoteMountOutcome(outcome, Date.now() - startedAt);
         };
-        pollTimer = setInterval(() => {
+        timers.poll = setInterval(() => {
             if (settled)
                 return;
             const candidate = ctx.get('connection');
@@ -482,19 +483,19 @@ export async function apply(ctx, config) {
             // logged `failed` — recorded, not thrown: the bootstrap has settled).
             settle(mountRemoteNow(root, candidate, true));
         }, REMOTE_MOUNT_POLL_MS);
-        deadlineTimer = setTimeout(() => {
+        timers.deadline = setTimeout(() => {
             settle({
                 state: 'skipped',
                 reason: `the "connection" public service was absent at the mount step and did not appear within ${waitMs}ms (headless host, or the web connection service was not provided in time)`,
             });
         }, waitMs);
-        pollTimer.unref?.();
-        deadlineTimer.unref?.();
+        timers.poll.unref?.();
+        timers.deadline.unref?.();
         ctx.effect(() => () => {
-            if (pollTimer !== undefined)
-                clearInterval(pollTimer);
-            if (deadlineTimer !== undefined)
-                clearTimeout(deadlineTimer);
+            if (timers.poll !== undefined)
+                clearInterval(timers.poll);
+            if (timers.deadline !== undefined)
+                clearTimeout(timers.deadline);
             if (!settled) {
                 settle({
                     state: 'skipped',

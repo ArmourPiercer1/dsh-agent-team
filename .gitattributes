@@ -1,0 +1,7 @@
+# Build-artifact trees (PBA install surface + this task's rebuilt dist):
+# canonical LF in the index AND the working tree. Fresh deterministic builds
+# emit LF; pinning eol=lf keeps the artifact-freshness comparison
+# (check-artifacts-committed.mjs raw-status criterion) empty on every
+# platform, including core.autocrlf=true machines (G-RMR round-1 F-2).
+packages/runtime/dist/** text eol=lf
+packages/client/composition-shim/** text eol=lf
