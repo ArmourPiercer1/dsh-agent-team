@@ -1,0 +1,17 @@
+[2026-09-05T03:26:09.607Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-26-09
+[2026-09-05T03:26:09.643Z] task tree under test (byte-identity baseline): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\PBA @ d61ef25
+[2026-09-05T03:26:09.643Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/plugin-prebuilt-artifacts) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-26-09\repo.git
+[2026-09-05T03:26:10.149Z] bare repo cloned
+[2026-09-05T03:26:10.149Z] SPEC = git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-26-09/repo.git#task/plugin-prebuilt-artifacts
+[2026-09-05T03:26:10.150Z] first add (expect SUCCESS with zero allowBuilds — the PBA core criterion) …
+[2026-09-05T03:26:28.691Z] first add exit=0
+[2026-09-05T03:26:28.691Z] first add SUCCEEDED directly — zero allowBuilds, zero retries (PBA core criterion met)
+[2026-09-05T03:26:28.691Z] PASS profile pnpm-workspace.yaml carries NO allowBuilds entry (the point of the task) — yaml present=true (61 B)
+[2026-09-05T03:26:28.692Z] PASS installed package dir exists (the git checkout)
+[2026-09-05T03:26:28.692Z] PASS installed root manifest declares ZERO lifecycle scripts (pnpm has nothing to block) — scripts keys: ["build","build:composition","setup","check:artifacts","typecheck","lint","test","test:node","smoke:composition"]
+[2026-09-05T03:26:28.696Z] PASS profile dependencies carry dsh-agent-team @ the exact spec — git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-26-09/repo.git#task/plugin-prebuilt-artifacts
+[2026-09-05T03:26:28.696Z] PASS dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (CLI reconcile product) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-05T03:26:28.696Z] PASS profile cordis.patch.yml carries NO dsh-agent-team row (the bundle layer alone supplies it) — user patch absent or clean
+[2026-09-05T03:26:28.696Z] PASS committed artifact present: host.js (dist entry)
+[2026-09-05T03:26:28.697Z] FAIL byte-identical to task tree baseline: host.js (dist entry) — installed=f6c4a8af1000… baseline=a00020335461… (30479 B)
+[2026-09-05T03:26:28.697Z] FAIL — assertion failed: byte-identical to task tree baseline: host.js (dist entry)

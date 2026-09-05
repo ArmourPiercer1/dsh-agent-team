@@ -1,0 +1,34 @@
+[2026-09-05T03:28:20.383Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-28-20
+[2026-09-05T03:28:20.433Z] task tree under test (byte-identity baseline): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\PBA @ d61ef25
+[2026-09-05T03:28:20.433Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/plugin-prebuilt-artifacts) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-28-20\repo.git
+[2026-09-05T03:28:20.910Z] bare repo cloned
+[2026-09-05T03:28:20.911Z] SPEC = git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-28-20/repo.git#task/plugin-prebuilt-artifacts
+[2026-09-05T03:28:20.911Z] first add (expect SUCCESS with zero allowBuilds — the PBA core criterion) …
+[2026-09-05T03:28:42.933Z] first add exit=0
+[2026-09-05T03:28:42.933Z] first add SUCCEEDED directly — zero allowBuilds, zero retries (PBA core criterion met)
+[2026-09-05T03:28:42.933Z] PASS profile pnpm-workspace.yaml carries NO allowBuilds entry (the point of the task) — yaml present=true (61 B)
+[2026-09-05T03:28:42.933Z] PASS installed package dir exists (the git checkout)
+[2026-09-05T03:28:42.934Z] PASS installed root manifest declares ZERO lifecycle scripts (pnpm has nothing to block) — scripts keys: ["build","build:composition","setup","check:artifacts","typecheck","lint","test","test:node","smoke:composition"]
+[2026-09-05T03:28:42.939Z] PASS profile dependencies carry dsh-agent-team @ the exact spec — git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-28-20/repo.git#task/plugin-prebuilt-artifacts
+[2026-09-05T03:28:42.939Z] PASS dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (CLI reconcile product) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-05T03:28:42.940Z] PASS profile cordis.patch.yml carries NO dsh-agent-team row (the bundle layer alone supplies it) — user patch absent or clean
+[2026-09-05T03:28:42.940Z] PASS committed artifact present: host.js (dist entry)
+[2026-09-05T03:28:42.941Z] PASS content-identical (LF-normalized) to task tree baseline: host.js (dist entry) — installed=a00020335461… baseline=a00020335461… (30479 B raw / 29801 B LF)
+[2026-09-05T03:28:42.941Z] PASS committed artifact present: agent-bindings.mjs (dist glue mirror)
+[2026-09-05T03:28:42.942Z] PASS content-identical (LF-normalized) to task tree baseline: agent-bindings.mjs (dist glue mirror) — installed=beaf868327cc… baseline=beaf868327cc… (71965 B raw / 70136 B LF)
+[2026-09-05T03:28:42.943Z] PASS committed artifact present: seam.mjs (root-binding)
+[2026-09-05T03:28:42.943Z] PASS content-identical (LF-normalized) to task tree baseline: seam.mjs (root-binding) — installed=e0349eb82d79… baseline=e0349eb82d79… (3330 B raw / 3250 B LF)
+[2026-09-05T03:28:42.943Z] PASS committed artifact present: upstream-resolver.mjs
+[2026-09-05T03:28:42.944Z] PASS content-identical (LF-normalized) to task tree baseline: upstream-resolver.mjs — installed=c3a54491d8b5… baseline=c3a54491d8b5… (7154 B raw / 6983 B LF)
+[2026-09-05T03:28:42.944Z] PASS committed artifact present: cordis.patch.yml (bundle layer)
+[2026-09-05T03:28:42.944Z] PASS content-identical (LF-normalized) to task tree baseline: cordis.patch.yml (bundle layer) — installed=2bbcd403a0fe… baseline=2bbcd403a0fe… (3438 B raw / 3346 B LF)
+[2026-09-05T03:28:42.945Z] PASS committed artifact present: client-bundle.js (composition shim)
+[2026-09-05T03:28:42.953Z] PASS content-identical (LF-normalized) to task tree baseline: client-bundle.js (composition shim) — installed=6a8395ef7679… baseline=6a8395ef7679… (859918 B raw / 841826 B LF)
+[2026-09-05T03:28:42.954Z] PASS committed artifact present: shim index.js
+[2026-09-05T03:28:42.954Z] PASS content-identical (LF-normalized) to task tree baseline: shim index.js — installed=d385c065bbfa… baseline=d385c065bbfa… (337 B raw / 328 B LF)
+[2026-09-05T03:28:42.954Z] PASS committed artifact present: shim package.json
+[2026-09-05T03:28:42.955Z] PASS content-identical (LF-normalized) to task tree baseline: shim package.json — installed=b4509233321f… baseline=b4509233321f… (518 B raw / 497 B LF)
+[2026-09-05T03:28:42.955Z] PASS installed root manifest declares dsh.bundle.patch
+[2026-09-05T03:28:42.955Z] PASS installed root manifest declares dsh.client web
+[2026-09-05T03:28:43.353Z] assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\PBA\dev\agent-workflow\evidence\plugin-prebuilt-artifacts\pba-assertions-2026-09-05T03-28-20.json
+[2026-09-05T03:28:43.354Z] PBA-SETUP-OK

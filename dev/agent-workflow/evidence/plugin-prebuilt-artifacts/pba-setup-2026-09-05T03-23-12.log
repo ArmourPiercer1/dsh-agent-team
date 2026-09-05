@@ -1,0 +1,16 @@
+[2026-09-05T03:23:12.980Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-23-12
+[2026-09-05T03:23:13.018Z] task tree under test (byte-identity baseline): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\PBA\dev @ d61ef25
+[2026-09-05T03:23:13.019Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/plugin-prebuilt-artifacts) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-23-12\repo.git
+[2026-09-05T03:23:17.802Z] bare repo cloned
+[2026-09-05T03:23:17.802Z] SPEC = git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-23-12/repo.git#task/plugin-prebuilt-artifacts
+[2026-09-05T03:23:17.804Z] first add (expect SUCCESS with zero allowBuilds — the PBA core criterion) …
+[2026-09-05T03:23:41.826Z] first add exit=0
+[2026-09-05T03:23:41.826Z] first add SUCCEEDED directly — zero allowBuilds, zero retries (PBA core criterion met)
+[2026-09-05T03:23:41.826Z] PASS profile pnpm-workspace.yaml carries NO allowBuilds entry (the point of the task) — yaml present=true (61 B)
+[2026-09-05T03:23:41.827Z] PASS installed package dir exists (the git checkout)
+[2026-09-05T03:23:41.827Z] PASS installed root manifest declares ZERO lifecycle scripts (pnpm has nothing to block) — scripts keys: ["build","build:composition","setup","check:artifacts","typecheck","lint","test","test:node","smoke:composition"]
+[2026-09-05T03:23:41.830Z] PASS profile dependencies carry dsh-agent-team @ the exact spec — git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-23-12/repo.git#task/plugin-prebuilt-artifacts
+[2026-09-05T03:23:41.830Z] PASS dsh.profile.bundles AUTO-contains the dsh-agent-team bundle (CLI reconcile product) — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-05T03:23:41.830Z] PASS profile cordis.patch.yml carries NO dsh-agent-team row (the bundle layer alone supplies it) — user patch absent or clean
+[2026-09-05T03:23:41.831Z] FAIL committed artifact present: host.js (dist entry)
+[2026-09-05T03:23:41.831Z] FAIL — assertion failed: committed artifact present: host.js (dist entry)

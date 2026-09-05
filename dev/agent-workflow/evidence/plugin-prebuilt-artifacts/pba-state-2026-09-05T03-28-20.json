@@ -1,0 +1,130 @@
+{
+  "stamp": "2026-09-05T03-28-20",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pba-2026-09-05T03-28-20",
+  "workspaceDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pba-2026-09-05T03-28-20\\workspace-d5",
+  "port": 3180,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3180",
+  "token": "aMH7i-QhJR9eJyd3pgBL7_ssvmOGA5ojXs1hHeOBGCI",
+  "cookie": "dsh-auth-t1vK1KKWKrI7Bl290d49Ueb7GDBoHGt2VNu3alfmdbk=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MCIsImlzc3VlZEF0IjoxNzg4NTc4OTUxMTk4LCJleHBpcmVzQXQiOjE3OTExNzA5NTExOTh9.m6FFgvyXWGrlHHLuQVuFfpusHrB-AGZy-oUjD5qYQE0",
+  "instancePid": 96436,
+  "bootJobPid": 39372,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\PBA\\dev\\agent-workflow\\evidence\\plugin-prebuilt-artifacts\\instances\\instance-port3180.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\PBA\\dev\\agent-workflow\\evidence\\plugin-prebuilt-artifacts\\dump-config-pba-2026-09-05T03-28-20.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-pba-2026-09-05T03-28-20\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-28-20/repo.git#task/plugin-prebuilt-artifacts",
+  "installShas": {
+    "host.js (dist entry)": {
+      "installedSha256": "f6c4a8af1000e28752f3374bc9300a5e6441aa98164f7036c615427866ae36cb",
+      "baselineSha256": "a00020335461f229046a1fc0d949f2d7a878188dbf5cb139fa7cbcdc5c7cc8de",
+      "installedNormalizedSha256": "a00020335461f229046a1fc0d949f2d7a878188dbf5cb139fa7cbcdc5c7cc8de",
+      "baselineNormalizedSha256": "a00020335461f229046a1fc0d949f2d7a878188dbf5cb139fa7cbcdc5c7cc8de",
+      "bytes": 30479,
+      "normalizedBytes": 29801
+    },
+    "agent-bindings.mjs (dist glue mirror)": {
+      "installedSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+      "baselineSha256": "d50d3b3fbe371078b31208dc1e87f2da1d5de309d243e99e6ae9bb452b40225b",
+      "installedNormalizedSha256": "beaf868327cc28a06ebb3cb44e96a1588a4362cb89c9bb64c2ea0981306c8819",
+      "baselineNormalizedSha256": "beaf868327cc28a06ebb3cb44e96a1588a4362cb89c9bb64c2ea0981306c8819",
+      "bytes": 71965,
+      "normalizedBytes": 70136
+    },
+    "seam.mjs (root-binding)": {
+      "installedSha256": "a51e26ad02ec5eeb02d9852e0b09a75ff493e5836dbafd98f27e62e7f82dedc5",
+      "baselineSha256": "a51e26ad02ec5eeb02d9852e0b09a75ff493e5836dbafd98f27e62e7f82dedc5",
+      "installedNormalizedSha256": "e0349eb82d79bebd0256f27f84fa6e3b166ee9a0d7b6902b9c26e36020df93d1",
+      "baselineNormalizedSha256": "e0349eb82d79bebd0256f27f84fa6e3b166ee9a0d7b6902b9c26e36020df93d1",
+      "bytes": 3330,
+      "normalizedBytes": 3250
+    },
+    "upstream-resolver.mjs": {
+      "installedSha256": "70a0f615a00728c010b4d79cf8c4d85410f141126a1d53f108d63a826b3a477f",
+      "baselineSha256": "70a0f615a00728c010b4d79cf8c4d85410f141126a1d53f108d63a826b3a477f",
+      "installedNormalizedSha256": "c3a54491d8b5e64808fa2aabcfc9ec5bb40004cfdf39ac4ee4c5e888f6fa5d84",
+      "baselineNormalizedSha256": "c3a54491d8b5e64808fa2aabcfc9ec5bb40004cfdf39ac4ee4c5e888f6fa5d84",
+      "bytes": 7154,
+      "normalizedBytes": 6983
+    },
+    "cordis.patch.yml (bundle layer)": {
+      "installedSha256": "fb18fbd6d61750f866c4e87e8d664e4012f1a400d1d6656d6d0c061105c884ba",
+      "baselineSha256": "fb18fbd6d61750f866c4e87e8d664e4012f1a400d1d6656d6d0c061105c884ba",
+      "installedNormalizedSha256": "2bbcd403a0fe64cfa45ff12a651224321e238e3b5ffd3d1fc4f4a02e2b5e38df",
+      "baselineNormalizedSha256": "2bbcd403a0fe64cfa45ff12a651224321e238e3b5ffd3d1fc4f4a02e2b5e38df",
+      "bytes": 3438,
+      "normalizedBytes": 3346
+    },
+    "client-bundle.js (composition shim)": {
+      "installedSha256": "34d450c6794b39d916da37bf412f646b20d19e47047841d479eadc5e5cedcbc5",
+      "baselineSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "installedNormalizedSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "baselineNormalizedSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "bytes": 859918,
+      "normalizedBytes": 841826
+    },
+    "shim index.js": {
+      "installedSha256": "6d054f5d9f4290aa5f53c5d2262550c6e9c9b8a5cdb8bc026a44d233e76d4af3",
+      "baselineSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "installedNormalizedSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "baselineNormalizedSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "bytes": 337,
+      "normalizedBytes": 328
+    },
+    "shim package.json": {
+      "installedSha256": "23836de76d71cad6d4c8278d2c1b9bfc4bd2bd66de580d44275bdde8c9dcb19d",
+      "baselineSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "installedNormalizedSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "baselineNormalizedSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "bytes": 518,
+      "normalizedBytes": 497
+    }
+  },
+  "byteIdentity": [
+    {
+      "label": "client-bundle.js",
+      "installSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "treeSha256": "6a8395ef76793ba150fda5e10571f1e303da11ef4ca403f16ef4c389c6e603c0",
+      "identical": true,
+      "normalized": "LF"
+    },
+    {
+      "label": "shim index.js",
+      "installSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "treeSha256": "d385c065bbfaa8a2abe3a98fe67fbc763a959a1ffb5db05e9e177337ce3d2273",
+      "identical": true,
+      "normalized": "LF"
+    },
+    {
+      "label": "shim package.json",
+      "installSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "treeSha256": "b4509233321f8d293be0a1c6679f3aa3400b7c94b3425d13a6e2cb71846ffa6a",
+      "identical": true,
+      "normalized": "LF"
+    },
+    {
+      "label": "dist glue agent-bindings.mjs",
+      "installSha256": "beaf868327cc28a06ebb3cb44e96a1588a4362cb89c9bb64c2ea0981306c8819",
+      "treeSha256": "beaf868327cc28a06ebb3cb44e96a1588a4362cb89c9bb64c2ea0981306c8819",
+      "identical": true,
+      "normalized": "LF"
+    }
+  ],
+  "rows": {
+    "dsh-agent-team (bundle host row, specifier as written)": true,
+    "dsh-agent-team-client (bundle client row, specifier as written)": true,
+    "p6t6-team-tools (harness row, file URL)": true
+  },
+  "serveCheck": {
+    "mode": "combo",
+    "url": "/plugins/??@deepseek-ai/dsh-typert-registry/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-api-session-controller/client.js,@deepseek-ai/dsh-api-workspace-controller/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-client-connection/client.js,@deepseek-ai/dsh-api-remotes/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai/dsh-client-ui-theme/client.js,@deepseek-ai/dsh-client-locale/client.js,@deepseek-ai/dsh-client-ui-layout/client.js,@deepseek-ai/dsh-client-ui-renderer/client.js,@deepseek-ai/dsh-client-ui-session/client.js,@deepseek-ai/dsh-client-ui-sidebar/client.js,@deepseek-ai/dsh-client-ui-settings/client.js,@deepseek-ai/dsh-client-ui-settings-general/client.js,@deepseek-ai/dsh-client-ui-settings-models/client.js,@deepseek-ai/dsh-client-ui-settings-plugin-inventory/client.js,@deepseek-ai/dsh-client-ui-conversation/client.js,@deepseek-ai/dsh-client-ui-approval/client.js,@deepseek-ai/dsh-client-ui-chat/client.js,@deepseek-ai/dsh-client-ui-brand-official/client.js,@deepseek-ai/dsh-client-ui-attachment/client.js,@deepseek-ai/dsh-client-ui-tool/client.js,@deepseek-ai/dsh-client-ui-cordis/client.js,@deepseek-ai/dsh-client-ui-workflow-run/client.js,@deepseek-ai/dsh-client-ui-deliverables/client.js,@deepseek-ai/dsh-client-ui-workspace/client.js,@deepseek-ai/dsh-client-ui-input-trigger/client.js,@deepseek-ai/dsh-client-ui-commands/client.js,@deepseek-ai/dsh-client-ui-skill/client.js,@deepseek-ai/dsh-client-ui-subagent/client.js,@deepseek-ai/dsh-client-ui-reference/client.js,@deepseek-ai/dsh-client-ui-jobs/client.js,@deepseek-ai/dsh-client-ui-goal/client.js,@deepseek-ai/dsh-client-ui-message-feedback/client.js,@deepseek-ai/dsh-client-ui-model-selection/client.js,@deepseek-ai/dsh-client-ui-permission-presets/client.js,@deepseek-ai/dsh-client-ui-agent-preset/client.js,@deepseek-ai/dsh-client-ui-settings-plugins/client.js,@deepseek-ai/dsh-client-ui-plan/client.js,@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,dsh-agent-team/client.js,@deepseek-ai/dsh-client-ui-directory-picker-browse/client.js&rev=2d32052164d7",
+    "status": 200,
+    "contentType": "text/javascript; charset=utf-8",
+    "bytes": 4641555,
+    "sha256": "34d0dbea0db13ecccab578d206b8e40a23213e6e400b4f9d837c5a765db9c0eb",
+    "sha256MatchesInstall": false,
+    "bundleBytesContained": true,
+    "unauthenticatedStatus": 200
+  },
+  "startedAt": "2026-09-05T03:29:12.438Z",
+  "stoppedAt": "2026-09-05T03:31:56.568Z"
+}

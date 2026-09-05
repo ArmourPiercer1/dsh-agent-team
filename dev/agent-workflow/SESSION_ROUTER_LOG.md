@@ -1792,3 +1792,25 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **分支/worktree**：`task/plugin-prebuilt-artifacts` @ `f11382e`（本地 master，领先 origin `e832d73` 1 提交 = R130 簿记，随本任务最终推送携带）+ `.worktrees/PBA`；执行 0/3、substantive 补充 0/2。
 - **红线**：CORE PATCH BUDGET=0；test-use pristine @ `76fda72979`；`D:\deepseek-harness\` + :3080 零触碰；`D:\AgentDev\deepseek-harness`（用户构建）只读；3180 族端口全释放；零 force-push；推送需一次性授权。
 
+## R132 — plugin-prebuilt-artifacts：执行 1/3 —— D1–D4 实现 + 五闸 + D5 全新世界实证（2026-09-05，本会话）
+
+- **产品提交 B `d61ef25`**（1025 文件，+81263/−38）：
+  - **D1**：`.gitignore` 否定规则（`!packages/runtime/dist/` + `!packages/client/composition-shim/`）解除两条忽略并提交预构建安装面 —— runtime/dist 1017 文件 ≈4.4MB + composition-shim 3 文件 ≈0.8MB（共 1020 件）；`files` 白名单不变，其余 dist/ 保持忽略；
+  - **D2**：根 `prepare` 删除（唯一生命周期脚本 ⇒ 安装面零生命周期脚本）；+ `setup`（fresh-clone 便利 = build + build:composition）+ `check:artifacts`；
+  - **D3**：`scripts/check-artifacts-committed.mjs`（A tracked 未产出 / B 产出未提交 / C 内容漂移，相对 git index 三方核对；漂移判定经 `git hash-object --stdin-paths` clean-filter 感知——core.autocrlf=true 下工作树 CRLF / index LF，进程内哈希会误报）接入 `build:composition` 末尾；正例 OK 1020 / 篡改→C exit1 / 删除→A exit1 / 恢复→OK 全验证；
+  - **D4**：INSTALL.md §2「为什么不需要 allowBuilds」+ §3 setup/产物提交纪律 + §6 两行旧 commit（≤ `e832d73`）注记 + README blurb/commands 表同步。
+- **五闸（D6）**：install exit0 / typecheck exit0（9 包）/ build + build:composition exit0（**含新鲜度闸对已提交 index 通过**）/ lint exit0 / smoke exit0；test = 2404 总数，除已知 p6t1-parallel 负载 flake 外全绿（219 其余文件全绿 ×2 轮），**p6t1 隔离 9/9 全绿**（在案协议，R125/P9 先例；flake 与全负载相关：full-suite 两轮分别 2/5 失败，隔离恒绿）。
+- **D5 全新世界实证（核心 DoD，世界 `.dsh-test-pba-2026-09-05T03-28-20`，保留在盘）**：
+  - 环境：test-use BUILT CLI（@ `76fda72979`）+ 本地 bare 仓库（主仓 clone，branch `task/plugin-prebuilt-artifacts`）+ `git+file://` spec（github: 的本地等价物，pnpm git 依赖脚本策略语义一致；用户真实 github: 运行已补 R3 风险 (a) 签名）；pnpm v11.7.0；
+  - **首次 add 直接 exit 0**（23.5s，零 allowBuilds 条目、零重试——套件 fail-loud，任何失败即中止，无 PBF kit 的 key 自动补写路径）；
+  - 结构断言全 PASS：profile pnpm-workspace.yaml **无 allowBuilds**（61 B）；已安装根包 **零生命周期脚本**（scripts 键仅 build/build:composition/setup/check:artifacts/typecheck/lint/test/test:node/smoke:composition）；profile 依赖 = 精确 spec；`dsh.profile.bundles` 自动含 dsh-agent-team（CLI reconcile 产物）；profile cordis.patch.yml 无 dsh-agent-team 行（bundle 层独供）；`dsh.bundle.patch` + `dsh.client web` 声明在位；
+  - **8 安装面产物内容等同基线**（host.js / agent-bindings.mjs 镜像 / seam.mjs / upstream-resolver.mjs / cordis.patch.yml / client-bundle.js / shim index.js / shim package.json）：已安装 LF 归一化 SHA = 任务树基线 SHA（新 PBA 基线，PBF 4 件子集 + 4 件新增，强度高于 PBF）；
+  - **boot S8-READY 等价全绿**（:3180，instance pid 96436）：boot line / auth 401 / health `{"ok":true,"ready":true,"rootSessionId":"team-root","toolCount":10}` / dump 行（bundle host + client 行 + harness 行）/ combo serve 200（4641555 B，bundleBytesContained）/ catalog.list 携 shipped 蓝图 my-team-bp-1 / 4 产物 LF 归一化 byte-identical；
+  - **浏览器 gentry G0–G4 全过**（22 次 team-remote RPC，failures: none；截图 + DOM dump + report 落 `browser/`）；
+  - teardown：stop 后 3180/3493 释放，3180 族终验全空；test-use pristine @ `76fda72979` porcelain 空。
+- **新发现（CRLF smudge，环境性非漂移）**：消费端 git clone 检出按系统级 autocrlf 默认把 blob LF smudge 为 CRLF（安装侧 host.js 30479 B/569 CR vs 提交侧 29910 B/0 CR）；归一化后 SHA 与提交 blob 完全一致（= `git ls-files` 基线）。JS/文本产物 CRLF 对 Node 运行时中性。套件 byte-identity 闸统一改为 **LF 归一化比较**（git clean 语义，环境无关）并在证据 JSON 双记 raw/normalized SHA；task-brief 记录该判据变更。
+- **套件修复留痕（kit 自身 bug，非产品）**：pba-setup.mjs 两处 `spawnSync(...).trim()` 缺 `.stdout` + 一处 PATHEXT 不解析（pnpm → shell:true 容错）；TASK_TREE 定位由「3 层 dirname」改向上探测（worktree 根须同时含 packages/runtime/dist + dev/agent-workflow）；pba-boot.mjs gate6 同步 LF 归一化。前两次世界运行因 kit bug 中止（世界目录已清理；首跑 console 留 Temp 备查）。
+- **证据**：`evidence/plugin-prebuilt-artifacts/`（pba-setup.mjs / pba-boot.mjs / pba-gentry.mjs / pba-assertions-2026-09-05T03-28-20.json / pba-setup-*.log + first-add.txt / pba-boot-*.log / pba-state-*.json / dump-config-*.txt / byte-identity-*.json / browser/gentry-*.{png,html} + gentry-report.json）。
+- **红线自检**：本条无推送、无 force-push；`:3080` 与 `D:\deepseek-harness\` 零触碰；test-use pristine 终验通过；世界运行后 3180 族全释放；CORE PATCH BUDGET=0（`references/deepseek-harness*` 零写入）。
+- **执行计数**：1/3；substantive 补充 0/2。下一步 = int 分支 + cherry-pick -x + Gate round 1（三盲审，worktree 置 `<repo>/.worktrees/` 下）。
+

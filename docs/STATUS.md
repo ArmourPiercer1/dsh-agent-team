@@ -4,11 +4,24 @@
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R126）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-05（R127–R130：plugin-bundle-form 立项 → D5 垂直全绿 → Gate round 1 3/3 PASS → 推送执行、任务关闭）。
+> **最近更新**：2026-09-05（R131–R132：plugin-prebuilt-artifacts 立项 + 执行 1/3 —— D1–D4 产品提交 + 五闸全绿 + D5 全新世界零 allowBuilds 首跑实证全绿，待 Gate round 1）。
 
 ## 1. 一句话现状
 
-**plugin-bundle-form 已收口：Gate Round 1 3/3 PASS → GATE PASS → 推送 origin（R129/R130，2026-09-05）**：
+**plugin-prebuilt-artifacts（PBA）进行中 —— 执行 1/3 全绿，待 Gate round 1（2026-09-05，R131–R132）**：
+plugin-bundle-form 推送 origin 后，用户新机（DSH 0.1.3-alpha.1 user build，pnpm v11.7.0）首跑
+`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` 命中文档化的
+`ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（prepare 一次性 allowBuilds 步骤）。用户裁决：
+**直接把编译产物一并推 GitHub 以彻底消除该步骤**。实现（task 提交 `d61ef25`，1020 预构建产物入库
++ 根 `prepare` 移除 ⇒ 安装面零生命周期脚本 + 产物新鲜度三方闸 `check-artifacts-committed.mjs`
+接入 build:composition + INSTALL/README 同步）；**五闸全绿**（install/typecheck 9 包/
+build+composition 含新鲜度闸/test 2404（p6t1 负载 flake 隔离 9/9，219 其余文件 ×2 全绿）/lint/smoke）；
+**D5 全新世界（`.dsh-test-pba-2026-09-05T03-28-20`）核心 DoD 达成**：首次 add **直接 exit 0**
+（零 allowBuilds、零重试、fail-loud kit）+ 已安装根包零生命周期脚本结构断言 + 8 件安装面产物
+LF 归一化内容等同基线 + boot S8-READY 等价全闸 + 浏览器 gentry G0–G4 全过（22 RPC failures none）
++ teardown 干净。**待 Gate round 1 三盲审 → 本地合流 → 一次性推送授权**。
+
+**前序收口（plugin-bundle-form，R127–R130，2026-09-05）**：
 用户新机报告「`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team` 后无 Team UI」
 经裁决立项走完整 gate。根 package.json 增加 `dsh.bundle.patch` 声明 + 机器无关包内
 `cordis.patch.yml`（glueUrl/seamUrl 从 host entry 自身位置推导、显式优先）+ exports 子路径 +
@@ -42,6 +55,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 | 上游 rc.1 兼容（R122，2026-09-04） | **DONE**：五闸全绿（typecheck 8/8、vitest 2532、build 9/9、lint 0、smoke = 3180 vertical）+ 3180 全新世界 boot S8-READY / gentry `failures: []` / 干净世界冒烟 OK；唯一语义缝 `sessionPersistence.ensureMaterialized` → `sessions.flush`（上游 rc.1 自有替换，**非** CORE_SEAM_BLOCKER，在库适配 `bd38827`） | `evidence/upstream-rc1-compat/`（compat-matrix、L2 裁决、闸日志）；`TEST_METHODS.md` 基线行 |
 | P9 master product closure（R125，2026-09-05） | **GATE PASS @ `d23c606`**（四轮 × 3 独立盲审，12 份裁决；最终轮 3/3 通过；substantive 补充 2/3）→ ff 进 master（`2c1c200` → `4233816`）+ 推送 origin（R126）。产品面相对 `bd38827` 恰 7 文件（安装链 2 脚本 + runtime/client package.json + lockfile + eslint + 根 package.json）；**fresh-machine 安装链验证**：干净 clone 等价树（registry-only、0 外部 junction、4 件安装面产物与 R122 世界 byte-identical）+ 全新世界 boot S8-READY + 浏览器 vertical 零失败；五闸终态 install 0 / tsc 9/9 / test 2395+2630（恒等式）/ lint 0 / smoke S8-READY | `evidence/P9-master-closure/`（12 裁决、gate 日志复捕、merge-audit/byte-compare/gate-summary、fresh-clone-sim-r125/、r125-template-audit.*）；`docs/INSTALL.md`；`graph.yaml` p9_master_closure 块 |
 | plugin-bundle-form（R127–R130，2026-09-05，**已关闭**） | **GATE PASS（round 1 3/3：R1 通过 / R2 通过 / R3 投机通过；substantive 补充 0/2、执行 1/3）→ 已推送 origin（R130）**：`dsh plugin add github:` 直接可用 —— 根 `dsh.bundle.patch` + 机器无关 `cordis.patch.yml`（glue/seam 位置推导）+ exports + prepare 构建链 + 根级运行时依赖；**D5 五全新 DSH_HOME 世界走真实 CLI reconcile 垂直**，最终世界（21-11-16 @ `5c4f903`）setup + boot D5-READY + 浏览器 gentry G0–G4 全绿（failures none，G3 零态消失 = D9 实证）+ 4 件安装面产物 byte-identical；五闸终态 install 0 / tsc 9/9 / test 2404 / lint 0 / smoke。int `e832d73`（R128/R129 簿记后 = task `c20b8c5` 树等价）ff 进 master（`2f3f61b` → `e832d73`）+ `int/plugin-bundle-form` 新建，均推 origin | `evidence/plugin-bundle-form/`（task-brief D1–D9 + 五世界运行记录 + d5-setup/boot/gentry kits + `gate/round-1-reviewer-{1,2,3}.md` + teardown/rerun 核验）；`graph.yaml` plugin_bundle_form 块；`docs/INSTALL.md` §2 快速安装 |
+| plugin-prebuilt-artifacts（R131–R132，2026-09-05，**进行中：执行 1/3 全绿，待 Gate**） | 目标 = 首跑 `dsh plugin add github:` 零 allowBuilds（用户新机报告 prepare 拦截 + 用户裁决）。task 提交 `d61ef25`：1020 预构建产物入库（runtime/dist 1017 件 + composition-shim 3 件；gitignore 否定规则，`files` 白名单不变）+ 根 `prepare` 删除（**安装面零生命周期脚本 = 结构性无拦截**）+ `setup`/`check:artifacts` + 新鲜度三方闸（A 未产出/B 未提交/C 漂移，clean-filter 感知）+ 文档同步。**五闸全绿**（test = p6t1 隔离 9/9 协议）。**D5 全新世界核心 DoD**：首次 add 直接 exit 0（零 allowBuilds、fail-loud）+ 零脚本结构断言 + 8 产物 LF 归一化内容等同基线（CRLF smudge 为环境性非漂移，判据改归一化比较并留痕）+ boot S8-READY 等价 + gentry G0–G4 全过。待三盲审 | `evidence/plugin-prebuilt-artifacts/`（task-brief D1–D6 + D5 执行记录 + pba-setup/boot/gentry kits + pba-assertions/state/byte-identity JSON + browser/ 证据；世界 `.dsh-test-pba-2026-09-05T03-28-20` 保留在盘）；`graph.yaml` plugin_prebuilt_artifacts 块 |
 
 ## 3. 当前基线（disk truth，2026-09-04 本会话核实）
 

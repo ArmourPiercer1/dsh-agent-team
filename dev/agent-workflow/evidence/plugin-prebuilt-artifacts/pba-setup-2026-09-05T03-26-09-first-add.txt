@@ -1,0 +1,12 @@
+Progress: resolved 0, reused 0, downloaded 1, added 0
+Progress: resolved 1, reused 0, downloaded 1, added 0
+
+dependencies:
++ dsh-agent-team git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-pba-2026-09-05T03-26-09/repo.git#task/plugin-prebuilt-artifacts
+
+Packages: +1
++
+Progress: resolved 1, reused 0, downloaded 1, added 1
+Progress: resolved 1, reused 0, downloaded 1, added 1, done
+Done in 18s using pnpm v11.7.0
+dsh: initialized profile web at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-pba-2026-09-05T03-26-09\profiles\web

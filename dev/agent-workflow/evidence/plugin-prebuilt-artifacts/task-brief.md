@@ -106,3 +106,39 @@ user build @ `D:\AgentDev\deepseek-harness`，pnpm v11.7.0）运行
 执行 ≤3；substantive 补充 ≤2（用户裁决，严于 ROUTER_RULES ≤3）；int → 3 新鲜盲审 → master；
 **reviewer worktree 必须置于 `<repo>/.worktrees/` 下**（R129 future-gate 规则）；
 模型路由 = qiyuan-self/qwen3.8-27b（含全部审查）。
+
+## D5 执行记录（R132，2026-09-05，世界 `.dsh-test-pba-2026-09-05T03-28-20`，保留在盘）
+
+- **环境**：test-use BUILT CLI（@ `76fda72979`）；本地 bare repo = 主仓 `git clone --bare`（携
+  `task/plugin-prebuilt-artifacts` @ `d61ef25`）；spec =
+  `git+file:///…/repo.git#task/plugin-prebuilt-artifacts`（github: 本地等价物）；pnpm v11.7.0。
+- **核心判据达成**：首次 `dsh plugin --profile web add <spec>` **直接 exit 0**（23.5s），
+  零 allowBuilds、零重试（套件 fail-loud 设计：任何失败即 die，无 key 自动补写路径）。
+- **结构断言（全 PASS）**：profile pnpm-workspace.yaml 无 allowBuilds（61 B）；已安装根包零
+  生命周期脚本（scripts 键 = build/build:composition/setup/check:artifacts/typecheck/lint/test/
+  test:node/smoke:composition）；profile 依赖 = 精确 spec；`dsh.profile.bundles` 自动含
+  dsh-agent-team；profile cordis.patch.yml 无 dsh-agent-team 行；`dsh.bundle.patch` +
+  `dsh.client {platform: web}` 声明在位。
+- **产物内容等同基线（判据变更留痕）**：8 件（host.js / dist glue agent-bindings.mjs /
+  seam.mjs / upstream-resolver.mjs / cordis.patch.yml / client-bundle.js / shim index.js /
+  shim package.json）已安装 vs 任务树基线 = **LF 归一化 SHA 全等**。原始 byte 不等的原因是
+  **消费端 git 检出 CRLF smudge**（系统级 autocrlf 默认：host.js 安装侧 30479 B/569 CR vs
+  提交侧 29910 B/0 CR）——环境性、非内容漂移；JS/文本对 Node 运行时中性。证据 JSON 双记
+  raw + normalized SHA（`pba-assertions-2026-09-05T03-28-20.json`）。PBA 基线 SHA（LF）：
+  host.js `a00020335461…` / agent-bindings.mjs `beaf868327cc…` / seam.mjs `e0349eb82d79…` /
+  upstream-resolver.mjs `c3a54491d8b5…` / cordis.patch.yml `2bbcd403a0fe…` /
+  client-bundle.js `6a8395ef7679…`（841826 B LF）/ shim index.js `d385c065bbfa…` /
+  shim package.json `b4509233321f…`。
+- **boot S8-READY 等价（全绿，:3180，pid 96436）**：boot line / 401 未认证闸 /
+  health `ok,ready,rootSessionId=team-root,toolCount=10` / dump-config 三行在位（bundle
+  host + bundle client + harness）/ combo serve 200（4641555 B，bundleBytesContained=true）/
+  catalog.list 携 shipped 蓝图 my-team-bp-1 / 4 产物 LF 归一化 byte-identical
+  （`byte-identity-pba-2026-09-05T03-28-20.json`）。
+- **gentry G0–G4（全过）**：22 次 team-remote RPC、failures: none；证据 =
+  `browser/gentry-01…06*.png` + DOM dump + `gentry-report.json`。
+- **teardown**：stop 后 3180/3493 释放；3180 族终验全空；test-use pristine @ `76fda72979`
+  porcelain 空。
+- **kit 修复留痕（kit 自身 bug，非产品缺陷；前两次世界运行因此中止、世界目录已清理）**：
+  pba-setup.mjs ① `spawnSync().trim()` 缺 `.stdout` ×2；② `spawnSync('pnpm')` Windows 不解析
+  PATHEXT（pnpm.cmd）→ shell:true 容错；③ TASK_TREE「3 层 dirname」定位错误 → 向上探测
+  （须同时含 `packages/runtime/dist` + `dev/agent-workflow`）。pba-boot.mjs gate6 同步 LF 归一化。
