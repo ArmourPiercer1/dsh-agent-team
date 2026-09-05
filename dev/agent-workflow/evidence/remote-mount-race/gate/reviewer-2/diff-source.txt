@@ -1,0 +1,811 @@
+diff --git a/cordis.patch.yml b/cordis.patch.yml
+index a52177a..930d7e1 100644
+--- a/cordis.patch.yml
++++ b/cordis.patch.yml
+@@ -22,12 +22,24 @@
+ # to point `staticModel` at your provider/model, to customize the
+ # `blueprintSource` team design, or to set `defaultWorkspace`. Omitting a
+ # field in the override row drops it (no field-level merge).
++#
++# Boot phase (remote-mount-race fix, root cause B): the shipped row boots
++# with `bootPhase: "create-or-open"` — ADOPT an already-stamped `team_domain`,
++# or initialize a fresh medium on the first-ever boot (a restart can never
++# break a production host). This is a DISTINCT phase, deliberately not
++# `resume`: plan §7-B2 makes `resume` strict load-only (a resume never
++# creates — T12-B2 W4), and `create` stays the strict fresh-world entry the
++# harness/boot worlds use. The pre-fix default `"create"` threw
++# TEAM_DOMAIN_EXISTS on every returning home and the row bootstrap
++# SWALLOWED that rejection (zero terminal signal: the /team-remote routes
++# never registered and the team UI failed with the frontend static
++# handler's HTTP 405).
+ 
+ - insert:
+     - id: "dsh-agent-team"
+       name: "dsh-agent-team/host"
+       config:
+-        bootPhase: "create"
++        bootPhase: "create-or-open"
+         rootSessionId: "team-root"
+         blueprintSource: |
+           ---
+diff --git a/packages/runtime/src/plugin/host.ts b/packages/runtime/src/plugin/host.ts
+index 457c081..840b895 100644
+--- a/packages/runtime/src/plugin/host.ts
++++ b/packages/runtime/src/plugin/host.ts
+@@ -41,11 +41,11 @@
+  *     the first (dist) candidate, which resolves to exactly the files the
+  *     pre-candidate code computed;
+  *   - provides `teamRoot` SYNCHRONOUSLY (before the first await) and arms
+- *     one effect. A rejected apply fiber is absorbed into the Cordis
+- *     logger — invisible to the harness — so EVERY setup failure (config,
++ *     one effect (the row-stop cleanup backstop) plus the remote-mount watcher when the mount waits for the connection service; a rejected apply fiber is absorbed into the Cordis
++ *     logger, invisible to the harness, so EVERY setup failure (config,
+  *     services, modules, domain, boot) rejects the facade's `ready`
+  *     instead: the observability row awaits `ready` and maps the rejection
+- *     to the setup-failure evidence. On row stop the live bundle + domain
++ *     to the setup-failure evidence, and the entry ALSO surfaces the rejection on the console — a swallowed bootstrap must never present as a silent half-world. On row stop the live bundle + domain
+  *     are closed (close() is idempotent).
+  * @module @dsh-agent-team/runtime/plugin/host
+  */
+@@ -61,6 +61,7 @@ import type {
+ import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js'
+ import { resolveDurableModelSelection } from '../../agent-setup/model/index.js'
+ import {
++  createOrOpenTeamDomainDetailed,
+   createTeamDomain,
+   openTeamDomain,
+ } from '../../../storage/repositories/index.js'
+@@ -87,8 +88,9 @@ import type { TeamToolSet } from '../../../tools/src/index.js'
+  *
+  * Exported under the stable name the P1-T4 baseline test pins; only the
+  * member surface evolved (the production entry provides `teamRoot`
+- * synchronously, arms exactly one effect, and reports a missing row
+- * config through the facade's `ready` rejection).
++ * synchronously, arms the row-stop backstop effect plus the remote-mount
++ * watcher when the mount waits for the connection service, and reports a
++ * missing row config through the facade's `ready` rejection).
+  */
+ export interface TeamPluginHostContext {
+   get(name: string): unknown
+@@ -132,17 +134,44 @@ interface GlueModule {
+ }
+ 
+ /**
+- * T12-M4 — the Remote mount outcome recorded on the facade. The state is
+- * authoritative once the facade's `ready` promise settles: `mounted` when
+- * the production wiring owns the `/team-remote` channel on the public
+- * connection seam, `skipped` when the headless host provides no
+- * `connection` service (the remote surface stays unmounted without
+- * failing the boot). `undefined` means the bootstrap never reached the
+- * mount step (an earlier failure).
++ * T12-M4 — the Remote mount outcome recorded on the facade.
++ *
++ * `mounted` when the production wiring owns the `/team-remote` channel on
++ * the public connection seam — immediately at the mount step, or LATE
++ * when the `connection` service appears inside the bounded wait window.
++ * `pending` between the mount step and a terminal decision: the service
++ * was absent at the mount step and the row waits up to `remoteMountWaitMs`
++ * (the web profile's client-connection row provides the service on an
++ * independent fiber — a slow boot can lose the one-shot read; the pre-fix
++ * entry decided once and silently skipped forever: the user-world 405).
++ * `skipped` when the wait window expires (headless host, or the web
++ * connection service never appeared) — the remote surface stays unmounted
++ * WITHOUT failing the boot. `failed` when the service appears MALFORMED,
++ * or the late registration throws, inside the window. Every terminal
++ * outcome is ALSO logged to the console (the observable channel the
++ * Cordis logger is not). `undefined` means the bootstrap never reached
++ * the mount step (an earlier failure).
+  */
+ type RemoteMountState =
+   | { readonly state: 'mounted'; readonly channel: string }
++  | { readonly state: 'pending' }
+   | { readonly state: 'skipped'; readonly reason: string }
++  | { readonly state: 'failed'; readonly reason: string }
++
++/**
++ * Remote-mount-race fix (root cause A): the production default for
++ * `remoteMountWaitMs` — the bounded window the entry waits for the web
++ * profile's `connection` service to appear after the mount step before
++ * explicitly skipping the remote mount. The window covers the measured
++ * slow-boot delta (the service appeared ~0.6–0.7 s after the row's apply
++ * in the user-world boot) with wide margin. A headless host pays the
++ * window once per boot — the cost of a TERMINAL, LOGGED decision instead
++ * of a permanent silent skip.
++ */
++const DEFAULT_REMOTE_MOUNT_WAIT_MS = 30_000
++
++/** The connection-poll interval inside the bounded wait window. */
++const REMOTE_MOUNT_POLL_MS = 100
+ 
+ /**
+  * Register the upstream resolution hook exactly once per process (a second
+@@ -220,7 +249,7 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
+   }
+   const c = raw as (Partial<TeamPluginConfig> & Record<string, unknown>) | null
+   if (c === null || typeof c !== 'object' || Array.isArray(c)) fail('must be a plain object')
+-  if (c.bootPhase !== 'create' && c.bootPhase !== 'resume') fail('bootPhase must be "create" or "resume"')
++  if (c.bootPhase !== 'create' && c.bootPhase !== 'resume' && c.bootPhase !== 'create-or-open') fail('bootPhase must be "create", "resume" or "create-or-open"')
+   if (typeof c.rootSessionId !== 'string' || c.rootSessionId.length === 0) fail('rootSessionId must be a non-empty string')
+   if (typeof c.blueprintSource !== 'string' || c.blueprintSource.length === 0) fail('blueprintSource must be a non-empty string')
+   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
+@@ -281,6 +310,14 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
+     fail('glueUrl must be a non-empty file URL string when present')
+   }
+   if (c.seamUrl !== undefined && typeof c.seamUrl !== 'string') fail('seamUrl must be a file URL string when present')
++  if (
++    c.remoteMountWaitMs !== undefined &&
++    (typeof c.remoteMountWaitMs !== 'number' ||
++      !Number.isInteger(c.remoteMountWaitMs) ||
++      c.remoteMountWaitMs < 0)
++  ) {
++    fail('remoteMountWaitMs must be a non-negative integer (milliseconds) when present')
++  }
+   return c as unknown as TeamPluginConfig
+ }
+ 
+@@ -463,6 +500,157 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+   let remoteRegistration: RemoteRegistration | undefined
+   let remoteMountState: RemoteMountState | undefined
+ 
++  /**
++   * Remote-mount-race observability (root cause C): every TERMINAL remote
++   * mount outcome is logged to the host process's stderr. The Cordis
++   * logger absorbs the row's apply fiber (the harness never sees a mount
++   * outcome), and no production consumer reads the facade's `remote`
++   * state — an outcome that is only recorded is invisible to the operator
++   * (the user-world 405 was diagnosed from the ABSENCE of evidence).
++   * `pending` is not terminal and is never logged on entry.
++   */
++  function logRemoteMountOutcome(state: RemoteMountState, waitedMs: number): void {
++    switch (state.state) {
++      case 'mounted':
++        console.error(
++          waitedMs > 0
++            ? `[dsh-agent-team] remote mount: MOUNTED channel=${state.channel} (late, after ${waitedMs}ms — the connection service appeared after the mount step)`
++            : `[dsh-agent-team] remote mount: MOUNTED channel=${state.channel}`,
++        )
++        break
++      case 'skipped':
++        console.error(`[dsh-agent-team] remote mount: SKIPPED — ${state.reason}`)
++        break
++      case 'failed':
++        console.error(`[dsh-agent-team] remote mount: FAILED — ${state.reason}`)
++        break
++      case 'pending':
++        break
++    }
++  }
++
++  /**
++   * Mount the remote surface NOW: register the Remote contract v1
++   * dispatcher onto the EXACT connection service object (identity — the
++   * same assertion the T12-M4 test makes) and record `mounted`. At the
++   * mount step (allowFailure=false) a registration failure (the channel
++   * is already owned) REJECTS the bootstrap — fail closed; inside the
++   * wait window (allowFailure=true) it records a `failed` outcome — the
++   * bootstrap has already settled, so the late failure is recorded and
++   * logged, never thrown.
++   * @param root - the built production root (owns the registration seam).
++   * @param connection - the EXACT service object the seam registers onto.
++   * @param allowFailure - record registration failures instead of throwing.
++   * @returns the terminal outcome state recorded on the facade.
++   */
++  function mountRemoteNow(
++    root: TeamProductionRoot,
++    connection: ConnectionLike,
++    allowFailure: boolean,
++  ): RemoteMountState {
++    // The production root installs the registration seam during its
++    // construction (A31); current() throws the seam's stable
++    // not-installed code if that ever regresses (propagated as-is).
++    const registerRemote = root.seams.remoteHandlerRegistration.current()
++    let registration: RemoteRegistration
++    try {
++      registration = registerRemote(connection)
++    } catch (error) {
++      const message = error instanceof Error ? error.message : String(error)
++      const detail = `the remote handler registration onto channel ${REMOTE_RPC_CHANNEL} failed (one owner per channel): ${message}`
++      if (!allowFailure) {
++        throw new TeamPluginError(
++          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SEAM_ALREADY_INSTALLED,
++          detail,
++        )
++      }
++      const failed: RemoteMountState = { state: 'failed', reason: detail }
++      remoteMountState = failed
++      return failed
++    }
++    remoteRegistration = registration
++    const mounted: RemoteMountState = { state: 'mounted', channel: registration.channel }
++    remoteMountState = mounted
++    return mounted
++  }
++
++  /**
++   * The bounded wait for the connection service (remote-mount-race fix,
++   * root cause A). Armed only when the service is ABSENT at the mount
++   * step and `remoteMountWaitMs > 0` (0 = the legacy immediate decision,
++   * no wait). Polls every REMOTE_MOUNT_POLL_MS: the service APPEARING
++   * mounts late through the same registration path; a MALFORMED late
++   * appearance records a logged `failed`; the window EXPIRING records a
++   * logged terminal `skipped`. The watch runs as a second row effect:
++   * row stop clears the timers and settles a terminal `skipped` if the
++   * row stops while still pending (no dangling `pending` on the facade).
++   * The registration's disposal stays with the row-stop backstop (single
++   * disposer; `RemoteRegistration.dispose` is idempotent).
++   */
++  function armRemoteMountWatcher(root: TeamProductionRoot, waitMs: number): void {
++    const startedAt = Date.now()
++    let settled = false
++    let pollTimer: ReturnType<typeof setInterval> | undefined
++    let deadlineTimer: ReturnType<typeof setTimeout> | undefined
++
++    const settle = (outcome: RemoteMountState): void => {
++      if (settled) return
++      settled = true
++      if (pollTimer !== undefined) clearInterval(pollTimer)
++      if (deadlineTimer !== undefined) clearTimeout(deadlineTimer)
++      remoteMountState = outcome
++      logRemoteMountOutcome(outcome, Date.now() - startedAt)
++    }
++
++    pollTimer = setInterval(() => {
++      if (settled) return
++      const candidate = ctx.get('connection') as ConnectionLike | null | undefined
++      if (candidate === undefined || candidate === null) return
++      if (
++        typeof candidate !== 'object' ||
++        typeof candidate.rpc !== 'object' ||
++        candidate.rpc === null ||
++        typeof candidate.rpc.handle !== 'function'
++      ) {
++        settle({
++          state: 'failed',
++          reason: 'the "connection" public service appeared malformed: expected connection.rpc.handle to be a function',
++        })
++        return
++      }
++      // A late appearance mounts late (a registration failure records a
++      // logged `failed` — recorded, not thrown: the bootstrap has settled).
++      settle(mountRemoteNow(root, candidate, true))
++    }, REMOTE_MOUNT_POLL_MS)
++
++    deadlineTimer = setTimeout(() => {
++      settle({
++        state: 'skipped',
++        reason: `the "connection" public service was absent at the mount step and did not appear within ${waitMs}ms (headless host, or the web connection service was not provided in time)`,
++      })
++    }, waitMs)
++
++    // Never keep the process alive on the watch timers (unit-test worlds
++    // and short-lived hosts exit cleanly; the production host lives on
++    // its own server handles).
++    ;(pollTimer as unknown as { unref?: () => void }).unref?.()
++    ;(deadlineTimer as unknown as { unref?: () => void }).unref?.()
++
++    ctx.effect(
++      () => () => {
++        if (pollTimer !== undefined) clearInterval(pollTimer)
++        if (deadlineTimer !== undefined) clearTimeout(deadlineTimer)
++        if (!settled) {
++          settle({
++            state: 'skipped',
++            reason: 'the row stopped before the "connection" public service appeared',
++          })
++        }
++      },
++      'dsh-agent-team remote mount watcher',
++    )
++  }
++
+   async function bootstrap(): Promise<TeamProductionRoot> {
+     // A broken row must not arm the upstream resolution hook: validate the
+     // row config first, then register the resolver exactly once per process.
+@@ -509,10 +697,42 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+   }
+ 
+   // --- the durable authority (A02): create stamps, open reopens ------------
+-  const domain: TeamDomain =
+-    rowConfig.bootPhase === 'create'
+-      ? await createTeamDomain(seam)
+-      : await openTeamDomain(seam)
++  // `create` = the STRICT fresh-world entry (harness/boot-world semantics:
++  // an already-stamped domain is a loud TEAM_DOMAIN_EXISTS failure — a
++  // boot world must never silently adopt a pre-existing domain). `resume`
++  // = the STRICT load-only entry (openTeamDomain: plan §7-B2 — a resume
++  // loads the existing Team identity, it never mints one; a fresh medium
++  // is a loud SCHEMA_STAMP_MISSING failure). `create-or-open` = the
++  // RESTART-SAFE production entry (remote-mount-race fix, root cause B):
++  // adopt a stamped domain, or initialize a fresh medium with the full
++  // eight-store stamp; a partial create is diagnosed exactly as
++  // openTeamDomain diagnoses it (never papered over). The pre-fix choices
++  // covered neither production case: the bundle shipped `create`, whose
++  // TEAM_DOMAIN_EXISTS on every returning home was swallowed by the
++  // bootstrap (zero terminal signal: the user-world 405), and pre-fix
++  // `resume` broke first-ever boots (SCHEMA_STAMP_MISSING on a fresh
++  // medium) — hence the new phase for the bundle row.
++  // The row-level `create-or-open` is RESOLVED here, after the domain
++  // decision, to the exact two-value phase the durable world carries: a
++  // fresh medium was just created → the root MINTS the Team identity
++  // (`create`); a stamped medium was adopted → the root LOADS it
++  // (`resume`). The root and the live glue keep their strict two-value
++  // contract unchanged.
++  let domain: TeamDomain
++  let resolvedPhase: 'create' | 'resume'
++  if (rowConfig.bootPhase === 'create') {
++    domain = await createTeamDomain(seam)
++    resolvedPhase = 'create'
++  } else if (rowConfig.bootPhase === 'resume') {
++    domain = await openTeamDomain(seam)
++    resolvedPhase = 'resume'
++  } else {
++    const outcome = await createOrOpenTeamDomainDetailed(seam)
++    domain = outcome.domain
++    resolvedPhase = outcome.created ? 'create' : 'resume'
++  }
++  const resolvedRowConfig: TeamPluginConfig =
++    resolvedPhase === rowConfig.bootPhase ? rowConfig : { ...rowConfig, bootPhase: resolvedPhase }
+   openDomain = domain
+ 
+   // The glue reads the durable consumption resolvers off the domain
+@@ -550,7 +770,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+     agents,
+     sessionPersistence,
+     domain: domainFacade,
+-    config: rowConfig,
++    config: resolvedRowConfig,
+     teamToolsRef,
+     now: () => new Date().toISOString(),
+     subagents: ctx.get('subagents'),
+@@ -573,7 +793,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+ 
+   // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
+   const builtRoot: TeamProductionRoot = createTeamProductionRoot({
+-    config: rowConfig,
++    config: resolvedRowConfig,
+     domain: domainFacade,
+     storageSeam: seam,
+     live,
+@@ -591,16 +811,27 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+   // --- T12-M4: the production Remote mount (the Remote contract v1
+   // dispatcher onto the public connection seam, plan §20) --------------
+   //
+-  // The web profile always provides the 'connection' public service, so
++  // The web profile provides the 'connection' public service (the client-connection row of the web-app bundle, on an independent fiber with no dependency edge to this row), so
+   // the mount is the production default there. A headless host provides
+   // no such service: the remote surface stays UNMOUNTED and the boot
+   // keeps succeeding (the durable domain and the agent tools work
+-  // without a remote surface) — the outcome is recorded on the facade,
++  // without a remote surface — the outcome is recorded on the facade AND logged to the console, never silent,
+   // never a boot throw. A PRESENT-but-malformed service is a boot
+   // failure (fail closed: a broken web profile must not silently lose
+   // the remote surface), as is a channel-conflict rejection (one owner
+   // per channel).
+   //
++  // Remote-mount-race fix (root cause A): the service can legitimately be
++  // ABSENT at the mount step on a slow boot (its provider row is still
++  // starting up). The pre-fix entry read `ctx.get('connection')` exactly
++  // once and decided forever — a lost race meant a permanent SILENT skip
++  // (the user-world 405: POST /team-remote/* hit the frontend static
++  // fallback, no route, nothing logged). Now: absent at the mount step
++  // means `pending` plus a bounded wait (`remoteMountWaitMs`, production
++  // default 30000; 0 = the legacy immediate decision) — the service
++  // APPEARING mounts late, the window EXPIRING skips with a logged
++  // reason, a malformed late appearance records a logged `failed`.
++  //
+   // No adapter: the dispatcher answers with the frozen RemoteResponse
+   // envelope — {ok:true, value:{data, provenance}} or {ok:false,
+   // error:{code, message, details}} with `details` ALWAYS a present
+@@ -612,9 +843,16 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+     | null
+     | undefined
+   if (connection === undefined || connection === null) {
+-    remoteMountState = {
+-      state: 'skipped',
+-      reason: 'the "connection" public service is absent (headless host)',
++    const waitMs = rowConfig.remoteMountWaitMs ?? DEFAULT_REMOTE_MOUNT_WAIT_MS
++    if (waitMs === 0) {
++      remoteMountState = {
++        state: 'skipped',
++        reason: 'the "connection" public service is absent (headless host)',
++      }
++      logRemoteMountOutcome(remoteMountState, 0)
++    } else {
++      remoteMountState = { state: 'pending' }
++      armRemoteMountWatcher(builtRoot, waitMs)
+     }
+   } else if (
+     typeof connection !== 'object' ||
+@@ -627,30 +865,24 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
+       'the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service',
+     )
+   } else {
+-    // The production root installs the registration seam during its
+-    // construction (A31); current() throws the seam's stable
+-    // not-installed code if that ever regresses (propagated as-is).
+-    const registerRemote = builtRoot.seams.remoteHandlerRegistration.current()
+-    let registration: RemoteRegistration
+-    try {
+-      registration = registerRemote(connection)
+-    } catch (error) {
+-      const message = error instanceof Error ? error.message : String(error)
+-      throw new TeamPluginError(
+-        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SEAM_ALREADY_INSTALLED,
+-        `the remote handler registration onto channel ${REMOTE_RPC_CHANNEL} failed (one owner per channel): ${message}`,
+-      )
+-    }
+-    remoteRegistration = registration
+-    remoteMountState = { state: 'mounted', channel: registration.channel }
++    logRemoteMountOutcome(mountRemoteNow(builtRoot, connection, false), 0)
+   }
+   return builtRoot
+   }
+ 
+   const ready: Promise<TeamProductionRoot> = bootstrap()
+   // Mark the rejection handled even when no consumer attaches (the
+-  // observability row awaits `ready` through its own handler).
+-  void ready.catch(() => undefined)
++  // observability row awaits `ready` through its own handler). The
++  // rejection is ALSO surfaced on the console (remote-mount-race fix,
++  // root causes B/C): the pre-fix bootstrap swallowed every failure with
++  // zero terminal signal — the row looked mounted, the /team-remote
++  // channel was never registered, and the operator saw only the frontend
++  // static handler's 405. A swallowed bootstrap must never present as a
++  // silent half-world.
++  void ready.catch((error: unknown) => {
++    const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
++    console.error(`[dsh-agent-team] bootstrap FAILED: ${message}`)
++  })
+ 
+   function requireRoot(): TeamProductionRoot {
+     if (root === undefined) {
+diff --git a/packages/runtime/src/plugin/node-min.d.ts b/packages/runtime/src/plugin/node-min.d.ts
+index e71184d..c3dd76c 100644
+--- a/packages/runtime/src/plugin/node-min.d.ts
++++ b/packages/runtime/src/plugin/node-min.d.ts
+@@ -57,6 +57,40 @@ declare const process: {
+   cwd(): string
+ }
+ 
++declare const console: {
++  /**
++   * Write a line to the host process's stderr. Node builtin
++   * `console.error` (host.ts surfaces every TERMINAL remote-mount
++   * outcome and the bootstrap rejection — the observable channel the
++   * Cordis logger is not; remote-mount-race fix, root cause C).
++   * @param message - the message to write.
++   * @param more - additional arguments (stringified by Node).
++   */
++  error(message: unknown, ...more: unknown[]): void
++}
++
++/** A Node timer handle (setInterval/setTimeout return one). */
++interface NodeMinTimer {
++  /**
++   * Unref the timer: never keeps the event loop alive (host.ts unrefs
++   * the remote-mount watch timers so unit-test worlds and short-lived
++   * hosts exit cleanly; the production host lives on its server handles).
++   */
++  unref(): NodeMinTimer
++}
++
++/** Node builtin `setInterval` (host.ts: the remote-mount connection poll). */
++declare function setInterval(callback: () => void, delay: number): NodeMinTimer
++
++/** Node builtin `clearInterval` (host.ts: watcher cleanup on settle/row stop). */
++declare function clearInterval(handle: NodeMinTimer): void
++
++/** Node builtin `setTimeout` (host.ts: the remote-mount wait deadline). */
++declare function setTimeout(callback: () => void, delay: number): NodeMinTimer
++
++/** Node builtin `clearTimeout` (host.ts: watcher cleanup on settle/row stop). */
++declare function clearTimeout(handle: NodeMinTimer): void
++
+ declare interface URL {
+   /** The serialized URL (the only member host.ts consumes). */
+   readonly href: string
+diff --git a/packages/runtime/src/plugin/types.ts b/packages/runtime/src/plugin/types.ts
+index 94ae32e..7f69b63 100644
+--- a/packages/runtime/src/plugin/types.ts
++++ b/packages/runtime/src/plugin/types.ts
+@@ -150,8 +150,15 @@ export interface TeamPluginCapabilityFacetSources {
+  * static model, expose test observability" and nothing else).
+  */
+ export interface TeamPluginConfig {
+-  /** The boot phase: `create` seeds the durable world; `resume` reopens it. */
+-  readonly bootPhase: 'create' | 'resume'
++  /**
++   * The boot phase: `create` seeds the durable world (strict: an already
++   * stamped domain is a loud failure — harness/boot-world semantics);
++   * `resume` reopens an existing stamped world (strict load-only: a resume
++   * never creates — plan §7-B2, T12-B2 W4); `create-or-open` adopts a
++   * stamped domain or initializes a fresh one (the production bundle's
++   * restart-safe phase — remote-mount-race fix, root cause B).
++   */
++  readonly bootPhase: 'create' | 'resume' | 'create-or-open'
+   /** The root DSH session id of the Team (invariant 9). */
+   readonly rootSessionId: string
+   /** The Team Blueprint source (the YAML document, parsed by the domain). */
+@@ -212,6 +219,18 @@ export interface TeamPluginConfig {
+     readonly presetId: string
+     readonly personaKind: 'absent' | 'standard' | 'complete'
+   }
++  /**
++   * Remote-mount-race fix (root cause A): the maximum time (milliseconds)
++   * the production entry waits for the `connection` public service to
++   * appear after the mount step before it explicitly SKIPs the remote
++   * mount (the service is provided by the web profile's client-connection
++   * row on an independent fiber — a startup race can make the one-shot
++   * read at the mount step see nothing on a slow boot). `0` selects the
++   * pre-fix IMMEDIATE decision (absent at the mount step → skip at once,
++   * no wait) for test worlds that want the legacy observable semantics.
++   * Absent = the production default (30000). Non-negative integer.
++   */
++  readonly remoteMountWaitMs?: number
+   /**
+    * T12-B1 — explicit TEST FIXTURE mode (plan §7-B1 "test fixture mode"):
+    * when `true`, the `create` boot phase seeds the frozen deterministic
+diff --git a/packages/storage/repositories/team-domain.ts b/packages/storage/repositories/team-domain.ts
+index 5676b72..0311db8 100644
+--- a/packages/storage/repositories/team-domain.ts
++++ b/packages/storage/repositories/team-domain.ts
+@@ -4,10 +4,18 @@
+  *
+  * `createTeamDomain` opens the domain through the seam and stamps all
+  * eight stores (eight single-write durable writes; a crash between stamps
+- * leaves a partial domain that `openTeamDomain` diagnoses precisely).
++ * leaves a partial domain that `openTeamDomain` diagnoses precisely). It
++ * is the STRICT fresh-world entry: an already-stamped domain is a
++ * `TEAM_DOMAIN_EXISTS` failure (the harness/test-world boot semantics — a
++ * boot world must never silently adopt a pre-existing domain).
+  * `openTeamDomain` re-opens an existing domain and verifies the layered
+  * version policy before handing out repositories (L1 seam version at open,
+  * L2 per-store stamps here, L3 record `schemaVersion` at every read).
++ * `createOrOpenTeamDomain` is the RESTART-SAFE production entry (the
++ * shipped bundle row's `bootPhase: "create-or-open"`): adopt an existing stamped
++ * domain, or initialize a fresh medium with the full eight-store stamp
++ * when `schema_meta` is empty; a PARTIAL create is diagnosed exactly as
++ * `openTeamDomain` diagnoses it (never papered over).
+  *
+  * Failure paths release the handle: every error raised after `open`
+  * closes the handle before re-throwing, so the domain name is freed and a
+@@ -218,3 +226,92 @@ export async function openTeamDomain(seam: StorageDomainSeam): Promise<TeamDomai
+     throw error
+   }
+ }
++
++/**
++ * Create-or-open (ADOPT OR INITIALIZE) the `team_domain` — the
++ * restart-safe production entry point (remote-mount-race fix, root cause
++ * B): the shipped bundle row boots with `bootPhase: "create-or-open"`, and a
++ * production host must be bootable from BOTH a fresh medium (first ever
++ * boot: `schema_meta` empty → initialize with the full eight-store stamp,
++ * exactly what `createTeamDomain` writes) and a returning home (a prior
++ * boot stamped the domain → adopt it, exactly what `openTeamDomain`
++ * verifies). The pre-fix bundle shipped `bootPhase: "create"`, whose
++ * `TEAM_DOMAIN_EXISTS` throw on every returning home was swallowed by the
++ * row bootstrap (zero terminal signal — the user-world 405).
++ *
++ * Adopt-or-initialize is "complete or diagnose", never "repair": a
++ * PARTIAL create (a crash between the eight stamp writes) fails with the
++ * same precise `SCHEMA_STAMP_MISSING` diagnosis `openTeamDomain` gives
++ * (the exact first missing store in canonical order).
++ *
++ * @param seam - the storage seam (injected; an in-memory fake in tests,
++ *   the public StorageDomain binding in production).
++ * @returns the open TeamDomain (freshly stamped or adopted).
++ * @throws `SCHEMA_STAMP_MISSING` for a partial existing domain,
++ *   `SCHEMA_VERSION_MISMATCH` / `SCHEMA_STAMP_MISMATCH` for unsupported
++ *   versions, `SEAM_FAILURE` for seam-level failures, `RECORD_INVALID`
++ *   for a stamp write failure.
++ */
++export interface CreateOrOpenTeamDomainOutcome {
++  /** The open TeamDomain (freshly stamped or adopted). */
++  readonly domain: TeamDomain
++  /**
++   * `true` when the medium was FRESH (`schema_meta` empty) and this call
++   * INITIALIZED it; `false` when an already-stamped domain was adopted.
++   * The production host resolves the row-level `create-or-open` boot
++   * phase with this flag (fresh medium → the root mints the Team
++   * identity, adopted medium → the root loads it).
++   */
++  readonly created: boolean
++}
++
++export async function createOrOpenTeamDomainDetailed(seam: StorageDomainSeam): Promise<CreateOrOpenTeamDomainOutcome> {
++  if (!isStorageDomainSeam(seam)) {
++    throw teamDomainError(
++      'SEAM_FAILURE',
++      'createOrOpenTeamDomain requires a StorageDomainSeam',
++      { problem: 'not-a-seam' },
++    )
++  }
++  const handle = await openHandle(seam)
++  try {
++    const schemaMeta = new SchemaMetaRepository(handle)
++    if (schemaMeta.size === 0) {
++      // Fresh medium (first ever boot): initialize — the same eight
++      // sequential single-write durable stamps as createTeamDomain.
++      for (const store of TEAM_DOMAIN_STORES) {
++        await schemaMeta.stampStore(store, new Date().toISOString())
++      }
++      return { domain: buildDomain(handle), created: true }
++    }
++    // Existing stamped domain (returning home): adopt — the exact L2
++    // verification of openTeamDomain (all eight stamps present at a
++    // supported version, in canonical store order).
++    const stamps = schemaMeta.listStamps()
++    for (const store of TEAM_DOMAIN_STORES) {
++      const stamp = stamps.get(store)
++      if (stamp === undefined) {
++        throw teamDomainError(
++          'SCHEMA_STAMP_MISSING',
++          `schema_meta stamp for store '${store}' is missing (partial create or corruption)`,
++          { store, expected: TEAM_DOMAIN_SCHEMA_VERSION, found: null },
++        )
++      }
++      assertSupportedTeamDomainSchemaVersion(stamp.version, store)
++    }
++    return { domain: buildDomain(handle), created: false }
++  } catch (error) {
++    await closeHandleSafe(handle)
++    throw error
++  }
++}
++
++/**
++ * Create-or-open without the outcome — the convenience surface for
++ * callers that only need the open domain (the unit-test entry; the
++ * production host uses the detailed variant to resolve the boot phase
++ * from the medium's actual state).
++ */
++export async function createOrOpenTeamDomain(seam: StorageDomainSeam): Promise<TeamDomain> {
++  return (await createOrOpenTeamDomainDetailed(seam)).domain
++}
+diff --git a/packages/storage/test/rmr-create-or-open.test.ts b/packages/storage/test/rmr-create-or-open.test.ts
+new file mode 100644
+index 0000000..5fee534
+--- /dev/null
++++ b/packages/storage/test/rmr-create-or-open.test.ts
+@@ -0,0 +1,141 @@
++/**
++ * rmr-create-or-open — `createOrOpenTeamDomain` (remote-mount-race fix,
++ * root cause B): the restart-safe production entry.
++ *
++ * The shipped bundle row boots with `bootPhase: "create-or-open"`, and the pre-fix
++ * production default (`bootPhase: "create"`) threw TEAM_DOMAIN_EXISTS on
++ * every returning home — the rejection was swallowed by the row bootstrap
++ * (zero terminal signal: the /team-remote routes never registered and the
++ * team UI failed with the frontend static handler's HTTP 405). The
++ * create-or-open entry must:
++ *
++ *   1. FRESH   — a never-stamped medium is initialized with the full
++ *                eight-store stamp, so FIRST-EVER production boots work
++ *                under `resume` (pre-fix `resume` called openTeamDomain,
++ *                which throws SCHEMA_STAMP_MISSING on a fresh medium —
++ *                first-ever boots would have broken);
++ *   2. ADOPT   — an existing stamped domain is adopted WITHOUT re-stamping
++ *                (stampedAt values preserved — adopt, never touch), so
++ *                RETURNING production hosts work under `resume`;
++ *   3. PARTIAL — a crash between the eight stamp writes leaves a partial
++ *                domain diagnosed EXACTLY as openTeamDomain diagnoses it
++ *                (SCHEMA_STAMP_MISSING, the exact first missing store in
++ *                canonical order) — adopt-or-initialize never papers over
++ *                a partial create;
++ *   4. L1      — a version-mismatched persisted domain fails at the seam
++ *                open (SCHEMA_VERSION_MISMATCH) before any
++ *                adopt/initialize decision;
++ *   5. SEAM    — a non-seam argument fails with SEAM_FAILURE
++ *                (not-a-seam), exactly as createTeamDomain does.
++ *
++ * Conventions mirror p4-01 (module-top-level captures — the sync shim
++ * forbids async `it` bodies).
++ */
++
++import { describe, expect, it } from 'vitest'
++
++import { TEAM_DOMAIN_NAME } from '../schema/index.js'
++import {
++  createOrOpenTeamDomain,
++  createTeamDomain,
++  openTeamDomain,
++} from '../repositories/index.js'
++import {
++  InMemoryStorageSeam,
++  P4_STORES,
++  asTeamDomainError,
++  capture,
++  detail,
++} from './p4-helpers.js'
++
++// --- scenario 1: FRESH medium → initialize (the first-ever boot) -----------
++const seamFresh = new InMemoryStorageSeam()
++const freshDomain = await createOrOpenTeamDomain(seamFresh)
++const freshStamps = freshDomain.repositories.schemaMeta.listStamps()
++await freshDomain.close()
++// the strict open entry agrees the medium is now a complete domain
++const freshReopen = await capture(() => openTeamDomain(seamFresh))
++
++// --- scenario 2: ADOPT (returning home; stamp values must survive) ---------
++const seamAdopt = new InMemoryStorageSeam()
++const created = await createTeamDomain(seamAdopt)
++const originalStamps = new Map(created.repositories.schemaMeta.listStamps())
++await created.close()
++const adopted = await createOrOpenTeamDomain(seamAdopt)
++const adoptedStamps = new Map(adopted.repositories.schemaMeta.listStamps())
++await adopted.close()
++
++// --- scenario 3: PARTIAL create → the exact diagnosis (never repaired) -----
++const seamPartial = new InMemoryStorageSeam()
++seamPartial.setCrashAfterWrites(5) // stamps 1–5 durable, the 6th write crashes
++const partialCreate = await capture(() => createOrOpenTeamDomain(seamPartial))
++seamPartial.clearCrash()
++const partialAdopt = await capture(() => createOrOpenTeamDomain(seamPartial))
++const partialStrictOpen = await capture(() => openTeamDomain(seamPartial))
++
++// --- scenario 4: L1 version mismatch ----------------------------------------
++const seamL1 = new InMemoryStorageSeam()
++seamL1.seedDomainVersion(TEAM_DOMAIN_NAME, 2, [...P4_STORES])
++const l1Adopt = await capture(() => createOrOpenTeamDomain(seamL1))
++
++// --- scenario 5: non-seam argument -------------------------------------------
++const notASeam = await capture(() => createOrOpenTeamDomain({} as never))
++
++describe('rmr createOrOpenTeamDomain (adopt-or-initialize, root cause B)', () => {
++  it('initializes a fresh medium with the full eight-store stamp (first-ever boot)', () => {
++    expect(freshDomain.name).toBe(TEAM_DOMAIN_NAME)
++    expect(freshStamps.size).toBe(8)
++    for (const store of P4_STORES) {
++      expect(freshStamps.get(store) !== undefined).toBe(true)
++    }
++    // the strict open entry agrees the medium is now a complete domain
++    // (the create-equivalent, not a half-world)
++    expect(freshReopen.ok).toBe(true)
++    if (freshReopen.ok && freshReopen.value !== undefined) {
++      expect(freshReopen.value.repositories.schemaMeta.listStamps().size).toBe(8)
++    }
++  })
++
++  it('adopts an existing stamped domain WITHOUT re-stamping (returning home)', () => {
++    expect(adopted.name).toBe(TEAM_DOMAIN_NAME)
++    expect(adoptedStamps.size).toBe(8)
++    // adopt, never touch: every stampedAt value survived byte-for-byte
++    for (const [store, stamp] of originalStamps) {
++      const adoptedStamp = adoptedStamps.get(store)
++      expect(adoptedStamp !== undefined).toBe(true)
++      if (adoptedStamp !== undefined) {
++        expect(adoptedStamp.stampedAt).toBe(stamp.stampedAt)
++        expect(adoptedStamp.version).toBe(stamp.version)
++        expect(adoptedStamp.store).toBe(stamp.store)
++      }
++    }
++  })
++
++  it('diagnoses a partial create EXACTLY as the strict open entry (no repair)', () => {
++    expect(partialCreate.ok).toBe(false)
++    expect(partialAdopt.ok).toBe(false)
++    const partialAdoptError = asTeamDomainError(partialAdopt.error)
++    expect(partialAdoptError.code).toBe('SCHEMA_STAMP_MISSING')
++    // the exact first missing store in canonical order (6th of 8)
++    expect(detail(partialAdoptError, 'store')).toBe(P4_STORES[5])
++    expect(detail(partialAdoptError, 'found')).toBe(null)
++    // the strict open entry gives the identical diagnosis
++    expect(partialStrictOpen.ok).toBe(false)
++    const strictOpenError = asTeamDomainError(partialStrictOpen.error)
++    expect(strictOpenError.code).toBe('SCHEMA_STAMP_MISSING')
++    expect(detail(strictOpenError, 'store')).toBe(detail(partialAdoptError, 'store'))
++  })
++
++  it('fails a version-mismatched persisted domain at the seam open (L1)', () => {
++    expect(l1Adopt.ok).toBe(false)
++    const l1Error = asTeamDomainError(l1Adopt.error)
++    expect(l1Error.code).toBe('SCHEMA_VERSION_MISMATCH')
++  })
++
++  it('rejects a non-seam argument with SEAM_FAILURE (not-a-seam)', () => {
++    expect(notASeam.ok).toBe(false)
++    const seamError = asTeamDomainError(notASeam.error)
++    expect(seamError.code).toBe('SEAM_FAILURE')
++    expect(detail(seamError, 'problem')).toBe('not-a-seam')
++  })
++})
