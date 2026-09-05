@@ -1,0 +1,8 @@
+﻿dsh web: http://127.0.0.1:3183/?token=c0wR1YQ0hvqKfCzU2cn13DX5y9Sq0Prd33DHHtJI6RE
+node : [dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+所在位置 行:1 字符: 418
++ ... E = $world; node 'D:\AgentDev\deepseek-harness\apps\cli\lib\bin.js' w ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([dsh-agent-team...el=/team-remote:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

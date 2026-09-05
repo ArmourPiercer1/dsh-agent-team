@@ -1,0 +1,13 @@
+﻿BUILD [contracts] exit=0 441ms out=
+BUILD [domain] exit=0 168ms out=
+BUILD [storage] exit=0 177ms out=
+BUILD [remote] exit=0 420ms out=
+BUILD [tools] exit=0 1241ms out=
+BUILD [client] exit=2 1384ms out=packages/client/src/ui/NewTeamEntry.tsx(112,29): error TS7006: Parameter 'w' implicitly has an 'any' type.
+packages/client/src/ui/NewTeamEntry.tsx(112,52): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/client/src/ui/TeamDock.tsx(231,3): error TS2339: Property 'sessionId' does not exist on type 'InputZone & SessionStandardProps & GlobalStandardProps & Omit<TeamDockInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+packages/client/src/ui/TeamView.tsx(125,5): error TS2339: Property 'sessionId' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+packages/client/src/ui/TeamView.tsx(149,9): error TS7006: Parameter 'item' implicitly has an 'any' type.
+BUILD [legacy] exit=0 350ms out=
+BUILD [testkit] exit=0 172ms out=
+BUILD [runtime] exit=0 1599ms out=

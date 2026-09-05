@@ -1,0 +1,13 @@
+=== GATE 5: composition smoke ===
+ts: 2026-09-05T19:11:38
+composition-smoke exit=0
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/RMR-REV6/packages/runtime/dist/packages/runtime/src/plugin/host.js:142:15)
+    at validateTeamPluginConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/RMR-REV6/packages/runtime/dist/packages/runtime/src/plugin/host.js:146:9)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/RMR-REV6/packages/runtime/dist/packages/runtime/src/plugin/host.js:510:33)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/RMR-REV6/packages/runtime/dist/packages/runtime/src/plugin/host.js:695:19)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/RMR-REV6/scripts/composition-smoke.mjs:132:26
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS composition-smoke
+done: 2026-09-05T19:11:40

@@ -1,0 +1,33 @@
+﻿{
+    "_round":  "after-restart",
+    "_extractedAt":  "2026-09-05T19:15:08.8433214+08:00",
+    "file_size":  2714,
+    "file_mtime":  "2026-09-05T19:12:17.6745817+08:00",
+    "stampedAt":  {
+                      "schema_meta":  "2026-09-05T11:12:16.764Z",
+                      "compatibility":  "2026-09-05T11:12:17.138Z",
+                      "member_instances":  "2026-09-05T11:12:16.945Z",
+                      "operations":  "2026-09-05T11:12:17.174Z",
+                      "ledger":  "2026-09-05T11:12:17.220Z",
+                      "overrides":  "2026-09-05T11:12:17.084Z",
+                      "team_sessions":  "2026-09-05T11:12:16.842Z",
+                      "session_bindings":  "2026-09-05T11:12:17.036Z"
+                  },
+    "team_sessions":  {
+                          "team-root":  {
+                                            "blueprint":  {
+                                                              "blueprintId":  "my-team-bp-1",
+                                                              "contentHash":  "sha256:a43746295d4df4499b978fd1f8c1704c624363ff3f196c7425425237680c3a0a",
+                                                              "revision":  "1"
+                                                          },
+                                            "createdAt":  "2026-09-05T11:12:17.473Z",
+                                            "defaultWorkspace":  "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                                            "generation":  2,
+                                            "rootSessionId":  "team-root",
+                                            "schemaVersion":  1
+                                        }
+                      },
+    "session_bindings_keys":  [
+                                  "team-root"
+                              ]
+}

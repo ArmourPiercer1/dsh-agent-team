@@ -1,0 +1,16 @@
+=== GATE 1: typecheck (tsc -p packages/<pkg>/tsconfig.json, direct; ts 6.0.3) ===
+ts: 2026-09-05T19:03:00
+[contracts] exit=0
+[domain] exit=0
+[storage] exit=0
+[remote] exit=0
+[tools] exit=0
+[client] exit=0
+[legacy] exit=1
+error TS5058: The specified path does not exist: 'packages\legacy\tsconfig.json'.
+[testkit] exit=0
+[runtime] exit=0
+8/9 passed; failed: legacy
+end: 2026-09-05T19:03:18
+[legacy tsconfig.build.json] exit=0
+legacy done: 2026-09-05T19:03:34
