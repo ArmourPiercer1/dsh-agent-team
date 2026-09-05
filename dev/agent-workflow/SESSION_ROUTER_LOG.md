@@ -1814,3 +1814,26 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **红线自检**：本条无推送、无 force-push；`:3080` 与 `D:\deepseek-harness\` 零触碰；test-use pristine 终验通过；世界运行后 3180 族全释放；CORE PATCH BUDGET=0（`references/deepseek-harness*` 零写入）。
 - **执行计数**：1/3；substantive 补充 0/2。下一步 = int 分支 + cherry-pick -x + Gate round 1（三盲审，worktree 置 `<repo>/.worktrees/` 下）。
 
+## R133 — plugin-prebuilt-artifacts：Gate round 1 裁决 + GATE PASS 本地合流（2026-09-05，本会话）
+
+- **Gate round 1（三独立盲审，qwen3.8-27b）**：范围 `f11382e..1a5afc6`（int/plugin-prebuilt-artifacts，3 commits；1067 文件 +90574/−41）；reviewer worktrees = `.worktrees/PBA-REV{1,2,3}`（detached @ `1a5afc6`，R129 future-gate 规则）；brief = 仅 DoD + 复现（零流程文档、零前轮知识），归档 `evidence/plugin-prebuilt-artifacts/gate/round-1-brief.md`。
+- **裁决（3/3 通过，零补充、零投机通过、零不通过）**：
+  - **reviewer 1**（subagent `6cd69006`）：**通过** —— 五闸复现（test 轮 p6t1 全套 1 失败 [套件级 teardown 竞态 ENOTEMPTY] → 隔离重跑 9/9 绿，在案协议）+ 可选 step-7 全新世界全绿（首次 add 直接 exit 0 零 allowBuilds；PBA-READY；gentry G0–G4；22 RPC 0 failures；teardown 端口全空）；产物核验三独立方法（git hash-object 0/1020 失配 / 全树 diff 空 / raw 字节抽样）+ **闸负测 8 场景**（T0 基线 / T1 删→A / T2 加→B / T3 漂移→C / T4 tsbuildinfo 排除→OK / T5 仅 CRLF→OK 无误报 / T6 CRLF+漂移→C 无旁路 / T7 恢复）；manifest files/exports/dsh/deps 未动、`.gitignore` 恰两条否定、文档无残留旧指令（grep 验证）；task tip `006fdf2` 与 int `1a5afc6` 树恒等（空 diff）再证。
+  - **reviewer 2**（subagent `9e6ac7b9`）：**通过** —— 五闸全绿（其运行 p6t1 全套内 9/9 绿，2404/2404，flake 未触发）+ 可选全新世界全绿（首次 add 直接 exit 0；profile yaml 目视无 allowBuilds；零生命周期脚本）；**1020/1020 已提交 blob 二进制级比较**（1019/1020 raw 逐字节一致；唯一 raw 差异 = glue 文件 agent-bindings.mjs 的 CRLF-smudged 拷贝，LF 归一 0/1020）；全部 blob 纯 LF + mode 100644；产品面检查（package.json 仅 scripts 块变更、files/exports/dsh 未动、gitignore 恰两条否定、文档无残留）全成立。
+  - **reviewer 3**（subagent `1e2be500`）：**通过** —— 四项 DoD 复现（p6t1 flake 协议：全套 3 失败 → 隔离 9/9 绿）+ 可选 step-7 全新世界全绿（首次 add 18s exit 0；**8/8 LF 归一 SHA 与原运行已提交证据 JSON 8/8 一致**）；独立产物核验（构建后 `git diff --quiet HEAD` = 0，1020/1020）；`.gitignore` 语义 `git check-ignore -v` 验证（`*.tsbuildinfo` 文件级规则在否定 dist 目录下仍压制；仓库无 tsconfig 用 incremental/composite → dist 内不可能产生 .tsbuildinfo）。
+- **GATE 裁决：GATE PASS**。substantive 补充 0/2（未动）；执行计数 1/3（gate 裁决不计执行）。
+- **非阻塞发现存档（风险台账增补，本任务不修复，留后续 minor 任务）**：
+  1. 新鲜度闸锚定 git **index** 而非 HEAD —— 绕过路径：stage 产物后只提交源码 → 后续闸过而 HEAD 携陈旧产物（R1/R3 独立提出；R3 建议加 index==HEAD 断言，deferred）；
+  2. 无 pre-commit hook / 无 CI job 跑 `check:artifacts`（执行面 = 开发机构建时；与 DoD-3 措辞一致；R2 提出，deferred）；
+  3. tsc 已删源码过期输出通过 A/C（头注 L30–34 接受缺口；三位 reviewer 均确认定性正确）；
+  4. PBA kit 固定名证据文件（`instances/*.log` + `browser/gentry-*` + `gentry-report.json`）在已提交其内容的 worktree 重跑时被覆盖 —— 三位 reviewer 均实际遇到并各自 `git restore` 恢复（最终各 worktree git diff 空）；建议 stamp 后缀文件名（kit 维护，deferred）；
+  5. 511 ` M` EOL 记账外观（status=M 而 git diff 空）：三位 reviewer 独立字节级确认为 autocrlf EOL 记账 vs tsc 同内容 LF 重写，非漂移；建议 gate 头或 INSTALL.md 一行注记（deferred）；
+  6. kit 证据 JSON `normalizedBytes` 为字符数非字节数（normalizedSha256 正确，断言健全；R1）；
+  7. kit 并发竞态（boot/gentry 默认选择 = 最新 world/state；并发多 reviewer 实际碰撞一次，PBA_HOME/PBA_STAMP 固定解决；建议 env-pin 成 gate 运行文档化默认；R1）；
+  8. 文档外观：INSTALL.md:89「两步」vs L76 三步措辞不一致（R2）；README ~L81 `§2)` 前多余前导空格（R1）。
+- **reviewer 偏离留痕（均合规，无跟踪文件残留）**：三位均运行完整可选 step 7（新世界 3 个：`03-49-48` / `03-50-29` / `03-42-20`，gitignored 留盘为证据）；覆盖的固定名证据文件均各自恢复；R1 首次误选兄弟世界 + 输端口竞态，pin 后解决，不影响结果；REV1 初版 `git archive|tar` 比较法在 Windows 不可靠（bsdtar CRLF smudge）弃用，改 git 原生 + raw 字节抽查。
+- **字节级定论（主 Agent 独立核验）**：reviewer worktree 构建后 511 ` M` 文件 = 恰全部已提交产物；`git diff` 0 行；host.js disk == index blob == HEAD blob（29910 B 全 LF，git-SHA1 `c01bc260…`）；REV1/REV3 两次独立构建产生相同 511 伪像 = 构建确定性再证。
+- **合流**：裁决归档 `gate/round-1-reviewer-{1,2,3}.md`（+ brief）；本条簿记 commit 落 task 分支 → `cherry-pick -x` 至 int/plugin-prebuilt-artifacts → 本地 master `merge --ff-only`（master 自 `f11382e` 前进；origin 仍 `e832d73`）。
+- **红线自检**：refs origin master `e832d73` 未动；`:3080` + `D:\deepseek-harness\` 零触碰（只读探测）；test-use pristine @ `76fda72979` porcelain 空；3180 族（3180–3186/3493）teardown 后全空；零 force-push；本条无推送。
+- **执行计数**：1/3；substantive 补充 0/2。下一步 = 用户一次性推送授权（master = 本地 R130 `f11382e` + PBA 全链；`int/plugin-prebuilt-artifacts` 新建）→ push → ls-remote 核验 → 收口。
+
