@@ -1870,3 +1870,22 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **红线自检（本条）**：无推送、无 force-push；`:3080` + `D:\deepseek-harness\` 零触碰；`references/deepseek-harness-test-use` pristine @ `76fda72979` 未动；`D:\AgentDev\deepseek-harness` 只读（运行其 CLI 为既定许可）；`C:\Users\user\.dsh-dev` 只读（仅 scratch 副本）；3180 族 teardown 后全空；CORE PATCH BUDGET=0。
 - **执行计数**：1/3；substantive 补充 0/2。五门验证 + D5 等价垂直 + scratch 世界 405→200 before/after 已全部完成（R136 记录）。
 
+## R136 — remote-mount-race：Gate round 1 裁决（3× 不通过）+ 修复 + round 2 派发（2026-09-05，本会话）
+
+- **模型路由核验（ROUTER_RULES §1）**：三盲审均 `qiyuan-self/qwen3.8-27b`（与任务同会话模型，无路由变更）。
+- **Gate round 1 结果（RMR-REV1/2/3 @ `677b029`，独立 worktree + 端口 3181/3182/3183 + 各自 fresh 世界）**：**3× 不通过**，裁决归档 `evidence/remote-mount-race/gate/reviewer-{1,2,3}/verdict.md`（+ 原始 gate 输出 + 垂直探针原文）。
+  - **唯一门挡点（F-1，3/3 独立复现）**：`eslint .`（eslint 9.39.5 / typescript-eslint 8.68.0，仓库 flat config）exit 1、8 错误，全在 diff 新增/修改文件：`host.ts:593/594` prefer-const（pollTimer/deadlineTimer）+ `rmr-create-or-open-boot.test.ts:165` no-explicit-any 缺 disable（applyWorldFailing 参数）+ `:220/221/222/227/233` prefer-const ×5。base `5adc8b9` 同工具链 clean（REV1/REV2 独立验证）。
+  - **R135 gate-record defect（重要更正）**：R135 记录的 "LINT exit 0" 为 **FALSE GREEN** —— 该 gate leg 在 **main-repo cwd** 下运行（main-repo 树在 base 干净、不含本任务新文件），worktree 树从未真正 lint 过。已按 ROUTER_RULES 记为 gate-record defect 并在此更正；修复后全仓 lint 从 **worktree 根**验证（scoped + 全仓均 exit 0）。
+  - **F-2（artifact 新鲜度 raw-status 非空，3/3 记录；2/3 判非阻断）**：reviewer fresh build 后 `git status` 对 `packages/runtime/dist` + `packages/client/composition-shim` 报 ~508 modified，`git diff --ignore-cr-at-eol` = 空。**本会话根因定位（更正 reviewer 的 blob-CRLF 假设）**：HEAD 中 artifact blob **本就是 LF**（`git show HEAD:packages/runtime/dist/.../host.js` / `client-bundle.js` / `packages/contracts` index.js 均 0 CR）；508 条 = `core.autocrlf=true` 的 **smudge（检出 CRLF 在盘）vs fresh build LF** 的 raw-status 歧义，非 blob 漂移。**永久修复** = scoped `.gitattributes`（`packages/runtime/dist/**` + `packages/client/composition-shim/**` → `text eol=lf`），任何平台/autocrlf 设置下检出与构建均为 LF，raw-status 比较不再歧义。
+  - **功能核心 3/3 独立全证**（裁决一致）：双根因机制独立复推（含上游 frontend-static L124-131 的 405≡路由从未注册 证明 + webserver 重复前缀 throw）；修复切线完整（create-or-open 行级解析 + 有界等待 + 终端可观测）；五门独立重跑（typecheck 9/9 或 8/8+legacy build / build 9/9 / tests 2448/2452（4 = 基线同证 shim 缺口）/ smoke 0 / lint = F-1 唯一红项）；垂直双 200（fresh 首启 + 重启 adopt，身份/盖章不重铸，`my-team-bp-1` 在案）；红线 clean（零 push/commit/force-push，:3080 与 D:\deepseek-harness 零触碰，3180 族仅各自端口且 teardown 000）。
+  - **reviewer 观察项（采纳记录，非阻断）**：REV3 风险台账独立确认 stamped-no-identity home（用户诊断 home 现状）修复后 fail-closed **响亮**（`TEAM_PLUGIN_RESUME_STATE_MISSING`，console 留痕）——与已交付用户的修正版 stopgap（备份删除空 `team_domain.json`）一致；REV1/REV2 确认 30s 默认等待窗口 = 文档化的 headless 权衡。
+- **修复（`ab4b904`，零行为变更）**：
+  1. F-1 lint：`host.ts` timers `let` → **const holder object**（首试直接 `let`→`const` 被 TS1155 拒 —— 两定时器在 `settle` 闭包定义**之后**赋值，`const` 必须声明处初始化；holder 模式 = 每个定时器仍恰好写一次、闭包时序不变、零 eslint-disable）；test 5 个模块级绑定（team1/binding1/members1/createdAt1/team2）移至赋值点 const（推断类型，无显式 any）+ applyWorldFailing 参数补 no-explicit-any disable（与同文件兄弟一致）。
+  2. F-2 卫生：`.gitattributes`（scoped eol=lf，含决策注释）。
+  3. 附：reviewer-1/3 裁决与原始证据（27 文件）随本 commit 归档。
+- **修复后五门（spawn-restricted 等价链，全部 worktree 根正确 cwd）**：runtime typecheck exit 0 + build 9/9 + composition（client-bundle 845690 B 字节同）+ **lint exit 0（scoped + 全仓）** + test:node **2448/2452 稳定 ×2**（首跑 2446/2452 = 2 个 transient flakes，全套重跑绿，p6t1 类隔离协议先例）+ smoke exit 0 + artifact raw-status = 仅 3 个 host dist 文件（F-1 真实内容变更，已入库）。
+- **卫生（`f32d775`）**：`ab4b904` 的 `git add -A` 误扫 9 个 `packages/testkit/test/.tmp-fault/rmrcoo-boot/*` 运行时 scratch（修复后套件重跑再生成；REV2 裁决标记）→ 出树 + 出盘（测试 pre-clean destroyDir 已覆盖陈旧防护）+ 目录入 `.gitignore`（防扫类复发；AGENTS.md 文档变更纪律留痕）+ 归档 reviewer-2 verdict（其完成于 ab4b904 之后）。
+- **round 2 派发（协议：失败轮后全新一轮全新盲审，G8 先例）**：3 全新盲审 **RMR-REV4/5/6 @ `f32d775`**（工作树 `.worktrees/RMR-REV4/5/6` detached，ports 3181/3182/3183，各自 fresh DSH_HOME `references/.dsh-test-rmr-rev4/5/6-*`）—— 同一全套 gate + 首启/重启双垂直 200 + 红线自检 + 独立根因复推 + **验证 F-1/F-2 修复在 round-2 目标上成立**。PASS iff 3/3 ∈ {通过, 投机通过}。
+- **执行计数**：1/3；substantive 补充 **0/2**（gate 修复 = 机械 + 零行为变更，按 G8 先例不耗 substantive 补充，留痕）。
+- **红线自检（本条）**：无推送、无 force-push；`:3080` + `D:\deepseek-harness\` 零触碰；test-use pristine @ `76fda72979`；`D:\AgentDev\deepseek-harness` 只读；`C:\Users\user\.dsh-dev` 只读；3180 族端口 round 1 teardown 后全空（3181/3182/3183 复核 000）后供 round 2 复用；CORE PATCH BUDGET=0。
+
