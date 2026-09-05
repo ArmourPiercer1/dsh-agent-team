@@ -65,6 +65,8 @@ export interface AgentCtxDouble {
   readonly listeners: AgentListenerEntry[]
   /** Every agentCtx.plugin() fiber recorded (the mini-MCP mount point). */
   readonly plugins: unknown[]
+  /** Every live tools.register(def) recorded, in order (disposers remove). */
+  readonly registeredTools: unknown[]
   on(event: string, listener: AgentListenerEntry['listener']): () => void
   plugin(pluginSpec: unknown, options?: unknown): unknown
   readonly tools: {
