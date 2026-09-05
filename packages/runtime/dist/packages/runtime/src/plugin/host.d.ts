@@ -6,8 +6,9 @@ import type { TeamPluginConfig } from './types.js';
  *
  * Exported under the stable name the P1-T4 baseline test pins; only the
  * member surface evolved (the production entry provides `teamRoot`
- * synchronously, arms exactly one effect, and reports a missing row
- * config through the facade's `ready` rejection).
+ * synchronously, arms the row-stop backstop effect plus the remote-mount
+ * watcher when the mount waits for the connection service, and reports a
+ * missing row config through the facade's `ready` rejection).
  */
 export interface TeamPluginHostContext {
     get(name: string): unknown;

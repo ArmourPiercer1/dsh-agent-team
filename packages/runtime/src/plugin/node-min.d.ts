@@ -57,6 +57,40 @@ declare const process: {
   cwd(): string
 }
 
+declare const console: {
+  /**
+   * Write a line to the host process's stderr. Node builtin
+   * `console.error` (host.ts surfaces every TERMINAL remote-mount
+   * outcome and the bootstrap rejection — the observable channel the
+   * Cordis logger is not; remote-mount-race fix, root cause C).
+   * @param message - the message to write.
+   * @param more - additional arguments (stringified by Node).
+   */
+  error(message: unknown, ...more: unknown[]): void
+}
+
+/** A Node timer handle (setInterval/setTimeout return one). */
+interface NodeMinTimer {
+  /**
+   * Unref the timer: never keeps the event loop alive (host.ts unrefs
+   * the remote-mount watch timers so unit-test worlds and short-lived
+   * hosts exit cleanly; the production host lives on its server handles).
+   */
+  unref(): NodeMinTimer
+}
+
+/** Node builtin `setInterval` (host.ts: the remote-mount connection poll). */
+declare function setInterval(callback: () => void, delay: number): NodeMinTimer
+
+/** Node builtin `clearInterval` (host.ts: watcher cleanup on settle/row stop). */
+declare function clearInterval(handle: NodeMinTimer): void
+
+/** Node builtin `setTimeout` (host.ts: the remote-mount wait deadline). */
+declare function setTimeout(callback: () => void, delay: number): NodeMinTimer
+
+/** Node builtin `clearTimeout` (host.ts: watcher cleanup on settle/row stop). */
+declare function clearTimeout(handle: NodeMinTimer): void
+
 declare interface URL {
   /** The serialized URL (the only member host.ts consumes). */
   readonly href: string

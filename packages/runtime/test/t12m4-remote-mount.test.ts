@@ -151,6 +151,13 @@ function rowConfig() {
     ],
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
     glueUrl: stubGlueUrl(),
+    // RMR (remote-mount-race fix): pin the LEGACY immediate mount decision
+    // (absent at the mount step → skip at once, no bounded wait) so this
+    // suite's headless scenario keeps its pre-race-fix observable
+    // semantics; the bounded wait window itself (pending → late mount /
+    // expiry skip / late malformed) is covered by
+    // rmr-remote-mount-race.test.ts.
+    remoteMountWaitMs: 0,
   }
 }
 

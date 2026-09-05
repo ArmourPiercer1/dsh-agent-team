@@ -1,0 +1,18 @@
+# Wire probe — fresh world, first-ever boot
+
+Request:
+  POST http://127.0.0.1:3180/team-remote/catalog.list
+  body: {"type":"client-request","rpcId":"rmr-fresh-1","method":"catalog.list","payload":{"version":1,"params":{}}}
+
+Response (verbatim):
+HTTP/1.1 200 OK
+content-type: application/json
+Vary: Accept-Encoding
+Date: Sat, 05 Sep 2026 10:19:54 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"type":"server-response","rpcId":"rmr-fresh-1","result":{"ok":true,"value":{"data":{"blueprints":[{"blueprintId":"my-team-bp-1","revisions":[1]}]},"provenance":{"origin":"team-remote","method":"catalog.list","endpoint":"catalog.list","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}}
+
+The shipped bundle blueprint `my-team-bp-1` is served on the FIRST-EVER boot — the fresh-medium path of the `create-or-open` phase works end to end.

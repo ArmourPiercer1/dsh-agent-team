@@ -4,10 +4,18 @@
  *
  * `createTeamDomain` opens the domain through the seam and stamps all
  * eight stores (eight single-write durable writes; a crash between stamps
- * leaves a partial domain that `openTeamDomain` diagnoses precisely).
+ * leaves a partial domain that `openTeamDomain` diagnoses precisely). It
+ * is the STRICT fresh-world entry: an already-stamped domain is a
+ * `TEAM_DOMAIN_EXISTS` failure (the harness/test-world boot semantics — a
+ * boot world must never silently adopt a pre-existing domain).
  * `openTeamDomain` re-opens an existing domain and verifies the layered
  * version policy before handing out repositories (L1 seam version at open,
  * L2 per-store stamps here, L3 record `schemaVersion` at every read).
+ * `createOrOpenTeamDomain` is the RESTART-SAFE production entry (the
+ * shipped bundle row's `bootPhase: "create-or-open"`): adopt an existing stamped
+ * domain, or initialize a fresh medium with the full eight-store stamp
+ * when `schema_meta` is empty; a PARTIAL create is diagnosed exactly as
+ * `openTeamDomain` diagnoses it (never papered over).
  *
  * Failure paths release the handle: every error raised after `open`
  * closes the handle before re-throwing, so the domain name is freed and a
@@ -86,4 +94,49 @@ export declare function createTeamDomain(seam: StorageDomainSeam): Promise<TeamD
  *   `SEAM_FAILURE` for other seam failures.
  */
 export declare function openTeamDomain(seam: StorageDomainSeam): Promise<TeamDomain>;
+/**
+ * Create-or-open (ADOPT OR INITIALIZE) the `team_domain` — the
+ * restart-safe production entry point (remote-mount-race fix, root cause
+ * B): the shipped bundle row boots with `bootPhase: "create-or-open"`, and a
+ * production host must be bootable from BOTH a fresh medium (first ever
+ * boot: `schema_meta` empty → initialize with the full eight-store stamp,
+ * exactly what `createTeamDomain` writes) and a returning home (a prior
+ * boot stamped the domain → adopt it, exactly what `openTeamDomain`
+ * verifies). The pre-fix bundle shipped `bootPhase: "create"`, whose
+ * `TEAM_DOMAIN_EXISTS` throw on every returning home was swallowed by the
+ * row bootstrap (zero terminal signal — the user-world 405).
+ *
+ * Adopt-or-initialize is "complete or diagnose", never "repair": a
+ * PARTIAL create (a crash between the eight stamp writes) fails with the
+ * same precise `SCHEMA_STAMP_MISSING` diagnosis `openTeamDomain` gives
+ * (the exact first missing store in canonical order).
+ *
+ * @param seam - the storage seam (injected; an in-memory fake in tests,
+ *   the public StorageDomain binding in production).
+ * @returns the open TeamDomain (freshly stamped or adopted).
+ * @throws `SCHEMA_STAMP_MISSING` for a partial existing domain,
+ *   `SCHEMA_VERSION_MISMATCH` / `SCHEMA_STAMP_MISMATCH` for unsupported
+ *   versions, `SEAM_FAILURE` for seam-level failures, `RECORD_INVALID`
+ *   for a stamp write failure.
+ */
+export interface CreateOrOpenTeamDomainOutcome {
+    /** The open TeamDomain (freshly stamped or adopted). */
+    readonly domain: TeamDomain;
+    /**
+     * `true` when the medium was FRESH (`schema_meta` empty) and this call
+     * INITIALIZED it; `false` when an already-stamped domain was adopted.
+     * The production host resolves the row-level `create-or-open` boot
+     * phase with this flag (fresh medium → the root mints the Team
+     * identity, adopted medium → the root loads it).
+     */
+    readonly created: boolean;
+}
+export declare function createOrOpenTeamDomainDetailed(seam: StorageDomainSeam): Promise<CreateOrOpenTeamDomainOutcome>;
+/**
+ * Create-or-open without the outcome — the convenience surface for
+ * callers that only need the open domain (the unit-test entry; the
+ * production host uses the detailed variant to resolve the boot phase
+ * from the medium's actual state).
+ */
+export declare function createOrOpenTeamDomain(seam: StorageDomainSeam): Promise<TeamDomain>;
 //# sourceMappingURL=team-domain.d.ts.map

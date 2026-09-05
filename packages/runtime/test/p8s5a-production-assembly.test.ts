@@ -160,6 +160,12 @@ function rowConfig(bootPhase: 'create' | 'resume') {
     rootSessionId: ROOT_SID,
     blueprintSource: BLUEPRINT_SOURCE,
     generation: 1,
+    // The p8s5a worlds pin the pre-fix IMMEDIATE mount decision (0 ms):
+    // T1.7 asserts the single row-effect (the boot backstop) — with the
+    // default 30 s late-mount window a headless world would arm a second
+    // (watcher) effect. The late-mount window itself is covered by
+    // rmr-remote-mount-race.test.ts.
+    remoteMountWaitMs: 0,
     defaultWorkspace: 'C:/agent-team/work/p8s5a',
     seedMembers: [
       {

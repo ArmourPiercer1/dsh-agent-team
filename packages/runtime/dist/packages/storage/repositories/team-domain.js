@@ -4,10 +4,18 @@
  *
  * `createTeamDomain` opens the domain through the seam and stamps all
  * eight stores (eight single-write durable writes; a crash between stamps
- * leaves a partial domain that `openTeamDomain` diagnoses precisely).
+ * leaves a partial domain that `openTeamDomain` diagnoses precisely). It
+ * is the STRICT fresh-world entry: an already-stamped domain is a
+ * `TEAM_DOMAIN_EXISTS` failure (the harness/test-world boot semantics — a
+ * boot world must never silently adopt a pre-existing domain).
  * `openTeamDomain` re-opens an existing domain and verifies the layered
  * version policy before handing out repositories (L1 seam version at open,
  * L2 per-store stamps here, L3 record `schemaVersion` at every read).
+ * `createOrOpenTeamDomain` is the RESTART-SAFE production entry (the
+ * shipped bundle row's `bootPhase: "create-or-open"`): adopt an existing stamped
+ * domain, or initialize a fresh medium with the full eight-store stamp
+ * when `schema_meta` is empty; a PARTIAL create is diagnosed exactly as
+ * `openTeamDomain` diagnoses it (never papered over).
  *
  * Failure paths release the handle: every error raised after `open`
  * closes the handle before re-throwing, so the domain name is freed and a
@@ -162,5 +170,47 @@ export async function openTeamDomain(seam) {
         await closeHandleSafe(handle);
         throw error;
     }
+}
+export async function createOrOpenTeamDomainDetailed(seam) {
+    if (!isStorageDomainSeam(seam)) {
+        throw teamDomainError('SEAM_FAILURE', 'createOrOpenTeamDomain requires a StorageDomainSeam', { problem: 'not-a-seam' });
+    }
+    const handle = await openHandle(seam);
+    try {
+        const schemaMeta = new SchemaMetaRepository(handle);
+        if (schemaMeta.size === 0) {
+            // Fresh medium (first ever boot): initialize — the same eight
+            // sequential single-write durable stamps as createTeamDomain.
+            for (const store of TEAM_DOMAIN_STORES) {
+                await schemaMeta.stampStore(store, new Date().toISOString());
+            }
+            return { domain: buildDomain(handle), created: true };
+        }
+        // Existing stamped domain (returning home): adopt — the exact L2
+        // verification of openTeamDomain (all eight stamps present at a
+        // supported version, in canonical store order).
+        const stamps = schemaMeta.listStamps();
+        for (const store of TEAM_DOMAIN_STORES) {
+            const stamp = stamps.get(store);
+            if (stamp === undefined) {
+                throw teamDomainError('SCHEMA_STAMP_MISSING', `schema_meta stamp for store '${store}' is missing (partial create or corruption)`, { store, expected: TEAM_DOMAIN_SCHEMA_VERSION, found: null });
+            }
+            assertSupportedTeamDomainSchemaVersion(stamp.version, store);
+        }
+        return { domain: buildDomain(handle), created: false };
+    }
+    catch (error) {
+        await closeHandleSafe(handle);
+        throw error;
+    }
+}
+/**
+ * Create-or-open without the outcome — the convenience surface for
+ * callers that only need the open domain (the unit-test entry; the
+ * production host uses the detailed variant to resolve the boot phase
+ * from the medium's actual state).
+ */
+export async function createOrOpenTeamDomain(seam) {
+    return (await createOrOpenTeamDomainDetailed(seam)).domain;
 }
 //# sourceMappingURL=team-domain.js.map

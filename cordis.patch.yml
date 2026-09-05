@@ -22,12 +22,24 @@
 # to point `staticModel` at your provider/model, to customize the
 # `blueprintSource` team design, or to set `defaultWorkspace`. Omitting a
 # field in the override row drops it (no field-level merge).
+#
+# Boot phase (remote-mount-race fix, root cause B): the shipped row boots
+# with `bootPhase: "create-or-open"` — ADOPT an already-stamped `team_domain`,
+# or initialize a fresh medium on the first-ever boot (a restart can never
+# break a production host). This is a DISTINCT phase, deliberately not
+# `resume`: plan §7-B2 makes `resume` strict load-only (a resume never
+# creates — T12-B2 W4), and `create` stays the strict fresh-world entry the
+# harness/boot worlds use. The pre-fix default `"create"` threw
+# TEAM_DOMAIN_EXISTS on every returning home and the row bootstrap
+# SWALLOWED that rejection (zero terminal signal: the /team-remote routes
+# never registered and the team UI failed with the frontend static
+# handler's HTTP 405).
 
 - insert:
     - id: "dsh-agent-team"
       name: "dsh-agent-team/host"
       config:
-        bootPhase: "create"
+        bootPhase: "create-or-open"
         rootSessionId: "team-root"
         blueprintSource: |
           ---

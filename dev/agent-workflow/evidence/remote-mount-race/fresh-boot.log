@@ -1,0 +1,16 @@
+# FRESH-world boot — first-ever boot (no team_domain on the medium)
+
+World: `references/.dsh-test-rmr-fresh-20260905-181607` (new DSH_HOME: settings.yaml + the web profile (cordis files, no DSH-side node_modules — the boot healer materializes them) + the FIXED plugin install only; NO sessions/, NO storages/, no credentials)
+Install: identical fixed task build (host.js 40973 B, bundle `create-or-open`).
+
+Command:
+  $env:DSH_HOME='<fresh world>'; node D:\AgentDev\deepseek-harness\apps\cli\lib\bin.js web --port 3180 --no-open
+
+Terminal (verbatim):
+  dsh web: http://127.0.0.1:3180/?token=cF7EMIa8b0X3TWQ4uFoub-Bn3AF8qqaSY60wEDTdG18
+  [dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+Observations:
+  - NO `bootstrap FAILED` line: the FRESH medium was INITIALIZED by create-or-open (the full eight-store stamp) and the root's `create` branch minted the Team identity (the resolution: fresh → create).
+  - AFTER the boot, `storages/team_domain.json` exists with `unit {"name":"team_domain","version":1}` and ALL EIGHT stores present: schema_meta, team_sessions, member_instances, session_bindings, overrides, compatibility, operations, ledger.
+  - A restart of this same medium now takes the adopt path (the scratch-world AFTER boot is exactly that acceptance, live-proven).

@@ -41,11 +41,11 @@
  *     the first (dist) candidate, which resolves to exactly the files the
  *     pre-candidate code computed;
  *   - provides `teamRoot` SYNCHRONOUSLY (before the first await) and arms
- *     one effect. A rejected apply fiber is absorbed into the Cordis
- *     logger — invisible to the harness — so EVERY setup failure (config,
+ *     one effect (the row-stop cleanup backstop) plus the remote-mount watcher when the mount waits for the connection service; a rejected apply fiber is absorbed into the Cordis
+ *     logger, invisible to the harness, so EVERY setup failure (config,
  *     services, modules, domain, boot) rejects the facade's `ready`
  *     instead: the observability row awaits `ready` and maps the rejection
- *     to the setup-failure evidence. On row stop the live bundle + domain
+ *     to the setup-failure evidence, and the entry ALSO surfaces the rejection on the console — a swallowed bootstrap must never present as a silent half-world. On row stop the live bundle + domain
  *     are closed (close() is idempotent).
  * @module @dsh-agent-team/runtime/plugin/host
  */
@@ -55,9 +55,22 @@ import { fileURLToPath } from 'url';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js';
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js';
-import { createTeamDomain, openTeamDomain, } from '../../../storage/repositories/index.js';
+import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } from '../../../storage/repositories/index.js';
 import { createTeamProductionRoot } from './root.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError, } from './types.js';
+/**
+ * Remote-mount-race fix (root cause A): the production default for
+ * `remoteMountWaitMs` — the bounded window the entry waits for the web
+ * profile's `connection` service to appear after the mount step before
+ * explicitly skipping the remote mount. The window covers the measured
+ * slow-boot delta (the service appeared ~0.6–0.7 s after the row's apply
+ * in the user-world boot) with wide margin. A headless host pays the
+ * window once per boot — the cost of a TERMINAL, LOGGED decision instead
+ * of a permanent silent skip.
+ */
+const DEFAULT_REMOTE_MOUNT_WAIT_MS = 30_000;
+/** The connection-poll interval inside the bounded wait window. */
+const REMOTE_MOUNT_POLL_MS = 100;
 /**
  * Register the upstream resolution hook exactly once per process (a second
  * `module.register` would stack a duplicate hook in the resolution chain).
@@ -131,8 +144,8 @@ export function validateTeamPluginConfig(raw) {
     const c = raw;
     if (c === null || typeof c !== 'object' || Array.isArray(c))
         fail('must be a plain object');
-    if (c.bootPhase !== 'create' && c.bootPhase !== 'resume')
-        fail('bootPhase must be "create" or "resume"');
+    if (c.bootPhase !== 'create' && c.bootPhase !== 'resume' && c.bootPhase !== 'create-or-open')
+        fail('bootPhase must be "create", "resume" or "create-or-open"');
     if (typeof c.rootSessionId !== 'string' || c.rootSessionId.length === 0)
         fail('rootSessionId must be a non-empty string');
     if (typeof c.blueprintSource !== 'string' || c.blueprintSource.length === 0)
@@ -188,6 +201,12 @@ export function validateTeamPluginConfig(raw) {
     }
     if (c.seamUrl !== undefined && typeof c.seamUrl !== 'string')
         fail('seamUrl must be a file URL string when present');
+    if (c.remoteMountWaitMs !== undefined &&
+        (typeof c.remoteMountWaitMs !== 'number' ||
+            !Number.isInteger(c.remoteMountWaitMs) ||
+            c.remoteMountWaitMs < 0)) {
+        fail('remoteMountWaitMs must be a non-negative integer (milliseconds) when present');
+    }
     return c;
 }
 /**
@@ -350,6 +369,140 @@ export async function apply(ctx, config) {
     // backstop below).
     let remoteRegistration;
     let remoteMountState;
+    /**
+     * Remote-mount-race observability (root cause C): every TERMINAL remote
+     * mount outcome is logged to the host process's stderr. The Cordis
+     * logger absorbs the row's apply fiber (the harness never sees a mount
+     * outcome), and no production consumer reads the facade's `remote`
+     * state — an outcome that is only recorded is invisible to the operator
+     * (the user-world 405 was diagnosed from the ABSENCE of evidence).
+     * `pending` is not terminal and is never logged on entry.
+     */
+    function logRemoteMountOutcome(state, waitedMs) {
+        switch (state.state) {
+            case 'mounted':
+                console.error(waitedMs > 0
+                    ? `[dsh-agent-team] remote mount: MOUNTED channel=${state.channel} (late, after ${waitedMs}ms — the connection service appeared after the mount step)`
+                    : `[dsh-agent-team] remote mount: MOUNTED channel=${state.channel}`);
+                break;
+            case 'skipped':
+                console.error(`[dsh-agent-team] remote mount: SKIPPED — ${state.reason}`);
+                break;
+            case 'failed':
+                console.error(`[dsh-agent-team] remote mount: FAILED — ${state.reason}`);
+                break;
+            case 'pending':
+                break;
+        }
+    }
+    /**
+     * Mount the remote surface NOW: register the Remote contract v1
+     * dispatcher onto the EXACT connection service object (identity — the
+     * same assertion the T12-M4 test makes) and record `mounted`. At the
+     * mount step (allowFailure=false) a registration failure (the channel
+     * is already owned) REJECTS the bootstrap — fail closed; inside the
+     * wait window (allowFailure=true) it records a `failed` outcome — the
+     * bootstrap has already settled, so the late failure is recorded and
+     * logged, never thrown.
+     * @param root - the built production root (owns the registration seam).
+     * @param connection - the EXACT service object the seam registers onto.
+     * @param allowFailure - record registration failures instead of throwing.
+     * @returns the terminal outcome state recorded on the facade.
+     */
+    function mountRemoteNow(root, connection, allowFailure) {
+        // The production root installs the registration seam during its
+        // construction (A31); current() throws the seam's stable
+        // not-installed code if that ever regresses (propagated as-is).
+        const registerRemote = root.seams.remoteHandlerRegistration.current();
+        let registration;
+        try {
+            registration = registerRemote(connection);
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            const detail = `the remote handler registration onto channel ${REMOTE_RPC_CHANNEL} failed (one owner per channel): ${message}`;
+            if (!allowFailure) {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SEAM_ALREADY_INSTALLED, detail);
+            }
+            const failed = { state: 'failed', reason: detail };
+            remoteMountState = failed;
+            return failed;
+        }
+        remoteRegistration = registration;
+        const mounted = { state: 'mounted', channel: registration.channel };
+        remoteMountState = mounted;
+        return mounted;
+    }
+    /**
+     * The bounded wait for the connection service (remote-mount-race fix,
+     * root cause A). Armed only when the service is ABSENT at the mount
+     * step and `remoteMountWaitMs > 0` (0 = the legacy immediate decision,
+     * no wait). Polls every REMOTE_MOUNT_POLL_MS: the service APPEARING
+     * mounts late through the same registration path; a MALFORMED late
+     * appearance records a logged `failed`; the window EXPIRING records a
+     * logged terminal `skipped`. The watch runs as a second row effect:
+     * row stop clears the timers and settles a terminal `skipped` if the
+     * row stops while still pending (no dangling `pending` on the facade).
+     * The registration's disposal stays with the row-stop backstop (single
+     * disposer; `RemoteRegistration.dispose` is idempotent).
+     */
+    function armRemoteMountWatcher(root, waitMs) {
+        const startedAt = Date.now();
+        let settled = false;
+        let pollTimer;
+        let deadlineTimer;
+        const settle = (outcome) => {
+            if (settled)
+                return;
+            settled = true;
+            if (pollTimer !== undefined)
+                clearInterval(pollTimer);
+            if (deadlineTimer !== undefined)
+                clearTimeout(deadlineTimer);
+            remoteMountState = outcome;
+            logRemoteMountOutcome(outcome, Date.now() - startedAt);
+        };
+        pollTimer = setInterval(() => {
+            if (settled)
+                return;
+            const candidate = ctx.get('connection');
+            if (candidate === undefined || candidate === null)
+                return;
+            if (typeof candidate !== 'object' ||
+                typeof candidate.rpc !== 'object' ||
+                candidate.rpc === null ||
+                typeof candidate.rpc.handle !== 'function') {
+                settle({
+                    state: 'failed',
+                    reason: 'the "connection" public service appeared malformed: expected connection.rpc.handle to be a function',
+                });
+                return;
+            }
+            // A late appearance mounts late (a registration failure records a
+            // logged `failed` — recorded, not thrown: the bootstrap has settled).
+            settle(mountRemoteNow(root, candidate, true));
+        }, REMOTE_MOUNT_POLL_MS);
+        deadlineTimer = setTimeout(() => {
+            settle({
+                state: 'skipped',
+                reason: `the "connection" public service was absent at the mount step and did not appear within ${waitMs}ms (headless host, or the web connection service was not provided in time)`,
+            });
+        }, waitMs);
+        pollTimer.unref?.();
+        deadlineTimer.unref?.();
+        ctx.effect(() => () => {
+            if (pollTimer !== undefined)
+                clearInterval(pollTimer);
+            if (deadlineTimer !== undefined)
+                clearTimeout(deadlineTimer);
+            if (!settled) {
+                settle({
+                    state: 'skipped',
+                    reason: 'the row stopped before the "connection" public service appeared',
+                });
+            }
+        }, 'dsh-agent-team remote mount watcher');
+    }
     async function bootstrap() {
         // A broken row must not arm the upstream resolution hook: validate the
         // row config first, then register the resolver exactly once per process.
@@ -380,9 +533,43 @@ export async function apply(ctx, config) {
             seam = seamModule.createRealStorageDomainSeam(storageDomain);
         }
         // --- the durable authority (A02): create stamps, open reopens ------------
-        const domain = rowConfig.bootPhase === 'create'
-            ? await createTeamDomain(seam)
-            : await openTeamDomain(seam);
+        // `create` = the STRICT fresh-world entry (harness/boot-world semantics:
+        // an already-stamped domain is a loud TEAM_DOMAIN_EXISTS failure — a
+        // boot world must never silently adopt a pre-existing domain). `resume`
+        // = the STRICT load-only entry (openTeamDomain: plan §7-B2 — a resume
+        // loads the existing Team identity, it never mints one; a fresh medium
+        // is a loud SCHEMA_STAMP_MISSING failure). `create-or-open` = the
+        // RESTART-SAFE production entry (remote-mount-race fix, root cause B):
+        // adopt a stamped domain, or initialize a fresh medium with the full
+        // eight-store stamp; a partial create is diagnosed exactly as
+        // openTeamDomain diagnoses it (never papered over). The pre-fix choices
+        // covered neither production case: the bundle shipped `create`, whose
+        // TEAM_DOMAIN_EXISTS on every returning home was swallowed by the
+        // bootstrap (zero terminal signal: the user-world 405), and pre-fix
+        // `resume` broke first-ever boots (SCHEMA_STAMP_MISSING on a fresh
+        // medium) — hence the new phase for the bundle row.
+        // The row-level `create-or-open` is RESOLVED here, after the domain
+        // decision, to the exact two-value phase the durable world carries: a
+        // fresh medium was just created → the root MINTS the Team identity
+        // (`create`); a stamped medium was adopted → the root LOADS it
+        // (`resume`). The root and the live glue keep their strict two-value
+        // contract unchanged.
+        let domain;
+        let resolvedPhase;
+        if (rowConfig.bootPhase === 'create') {
+            domain = await createTeamDomain(seam);
+            resolvedPhase = 'create';
+        }
+        else if (rowConfig.bootPhase === 'resume') {
+            domain = await openTeamDomain(seam);
+            resolvedPhase = 'resume';
+        }
+        else {
+            const outcome = await createOrOpenTeamDomainDetailed(seam);
+            domain = outcome.domain;
+            resolvedPhase = outcome.created ? 'create' : 'resume';
+        }
+        const resolvedRowConfig = resolvedPhase === rowConfig.bootPhase ? rowConfig : { ...rowConfig, bootPhase: resolvedPhase };
         openDomain = domain;
         // The glue reads the durable consumption resolvers off the domain
         // (attached here — the production root's mutation node exposes the same
@@ -413,7 +600,7 @@ export async function apply(ctx, config) {
             agents,
             sessionPersistence,
             domain: domainFacade,
-            config: rowConfig,
+            config: resolvedRowConfig,
             teamToolsRef,
             now: () => new Date().toISOString(),
             subagents: ctx.get('subagents'),
@@ -434,7 +621,7 @@ export async function apply(ctx, config) {
         const legacyInspect = await loadLegacyInspect();
         // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
         const builtRoot = createTeamProductionRoot({
-            config: rowConfig,
+            config: resolvedRowConfig,
             domain: domainFacade,
             storageSeam: seam,
             live,
@@ -451,15 +638,26 @@ export async function apply(ctx, config) {
         // --- T12-M4: the production Remote mount (the Remote contract v1
         // dispatcher onto the public connection seam, plan §20) --------------
         //
-        // The web profile always provides the 'connection' public service, so
+        // The web profile provides the 'connection' public service (the client-connection row of the web-app bundle, on an independent fiber with no dependency edge to this row), so
         // the mount is the production default there. A headless host provides
         // no such service: the remote surface stays UNMOUNTED and the boot
         // keeps succeeding (the durable domain and the agent tools work
-        // without a remote surface) — the outcome is recorded on the facade,
+        // without a remote surface — the outcome is recorded on the facade AND logged to the console, never silent,
         // never a boot throw. A PRESENT-but-malformed service is a boot
         // failure (fail closed: a broken web profile must not silently lose
         // the remote surface), as is a channel-conflict rejection (one owner
         // per channel).
+        //
+        // Remote-mount-race fix (root cause A): the service can legitimately be
+        // ABSENT at the mount step on a slow boot (its provider row is still
+        // starting up). The pre-fix entry read `ctx.get('connection')` exactly
+        // once and decided forever — a lost race meant a permanent SILENT skip
+        // (the user-world 405: POST /team-remote/* hit the frontend static
+        // fallback, no route, nothing logged). Now: absent at the mount step
+        // means `pending` plus a bounded wait (`remoteMountWaitMs`, production
+        // default 30000; 0 = the legacy immediate decision) — the service
+        // APPEARING mounts late, the window EXPIRING skips with a logged
+        // reason, a malformed late appearance records a logged `failed`.
         //
         // No adapter: the dispatcher answers with the frozen RemoteResponse
         // envelope — {ok:true, value:{data, provenance}} or {ok:false,
@@ -469,10 +667,18 @@ export async function apply(ctx, config) {
         // dispatcher (RemoteResponse ⊂ ConnectionRpcResult<unknown>).
         const connection = ctx.get('connection');
         if (connection === undefined || connection === null) {
-            remoteMountState = {
-                state: 'skipped',
-                reason: 'the "connection" public service is absent (headless host)',
-            };
+            const waitMs = rowConfig.remoteMountWaitMs ?? DEFAULT_REMOTE_MOUNT_WAIT_MS;
+            if (waitMs === 0) {
+                remoteMountState = {
+                    state: 'skipped',
+                    reason: 'the "connection" public service is absent (headless host)',
+                };
+                logRemoteMountOutcome(remoteMountState, 0);
+            }
+            else {
+                remoteMountState = { state: 'pending' };
+                armRemoteMountWatcher(builtRoot, waitMs);
+            }
         }
         else if (typeof connection !== 'object' ||
             typeof connection.rpc !== 'object' ||
@@ -481,27 +687,23 @@ export async function apply(ctx, config) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service');
         }
         else {
-            // The production root installs the registration seam during its
-            // construction (A31); current() throws the seam's stable
-            // not-installed code if that ever regresses (propagated as-is).
-            const registerRemote = builtRoot.seams.remoteHandlerRegistration.current();
-            let registration;
-            try {
-                registration = registerRemote(connection);
-            }
-            catch (error) {
-                const message = error instanceof Error ? error.message : String(error);
-                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SEAM_ALREADY_INSTALLED, `the remote handler registration onto channel ${REMOTE_RPC_CHANNEL} failed (one owner per channel): ${message}`);
-            }
-            remoteRegistration = registration;
-            remoteMountState = { state: 'mounted', channel: registration.channel };
+            logRemoteMountOutcome(mountRemoteNow(builtRoot, connection, false), 0);
         }
         return builtRoot;
     }
     const ready = bootstrap();
     // Mark the rejection handled even when no consumer attaches (the
-    // observability row awaits `ready` through its own handler).
-    void ready.catch(() => undefined);
+    // observability row awaits `ready` through its own handler). The
+    // rejection is ALSO surfaced on the console (remote-mount-race fix,
+    // root causes B/C): the pre-fix bootstrap swallowed every failure with
+    // zero terminal signal — the row looked mounted, the /team-remote
+    // channel was never registered, and the operator saw only the frontend
+    // static handler's 405. A swallowed bootstrap must never present as a
+    // silent half-world.
+    void ready.catch((error) => {
+        const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
+        console.error(`[dsh-agent-team] bootstrap FAILED: ${message}`);
+    });
     function requireRoot() {
         if (root === undefined) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_NOT_READY, 'teamRoot was read before the bootstrap settled (await `ready` first)');

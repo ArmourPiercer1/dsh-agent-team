@@ -1,0 +1,21 @@
+# Wire probe — the USER'S exact failing request, AFTER the fix
+#
+# Request (identical to the pre-fix probe; probe-body.json):
+#   POST http://127.0.0.1:3180/team-remote/catalog.list
+#   Content-Type: application/json
+#   Cookie: dsh-auth-<launch token session>
+#   body: {"type":"client-request","rpcId":"rmr-after-1","method":"catalog.list","payload":{"version":1,"params":{}}}
+#
+# PRE-FIX (Boot B-1, pre-fix build): HTTP 405 (the /team-remote prefix was never
+# registered — the bootstrap rejected and was swallowed).
+#
+# POST-FIX (this boot, fixed build, same stamped medium):
+HTTP/1.1 200 OK
+content-type: application/json
+Vary: Accept-Encoding
+Date: Sat, 05 Sep 2026 10:15:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"type":"server-response","rpcId":"rmr-after-1","result":{"ok":true,"value":{"data":{"blueprints":[{"blueprintId":"my-team-bp-1","revisions":[1]}]},"provenance":{"origin":"team-remote","method":"catalog.list","endpoint":"catalog.list","contractVersion":1,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}}

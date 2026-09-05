@@ -150,8 +150,15 @@ export interface TeamPluginCapabilityFacetSources {
  * static model, expose test observability" and nothing else).
  */
 export interface TeamPluginConfig {
-  /** The boot phase: `create` seeds the durable world; `resume` reopens it. */
-  readonly bootPhase: 'create' | 'resume'
+  /**
+   * The boot phase: `create` seeds the durable world (strict: an already
+   * stamped domain is a loud failure — harness/boot-world semantics);
+   * `resume` reopens an existing stamped world (strict load-only: a resume
+   * never creates — plan §7-B2, T12-B2 W4); `create-or-open` adopts a
+   * stamped domain or initializes a fresh one (the production bundle's
+   * restart-safe phase — remote-mount-race fix, root cause B).
+   */
+  readonly bootPhase: 'create' | 'resume' | 'create-or-open'
   /** The root DSH session id of the Team (invariant 9). */
   readonly rootSessionId: string
   /** The Team Blueprint source (the YAML document, parsed by the domain). */
@@ -212,6 +219,18 @@ export interface TeamPluginConfig {
     readonly presetId: string
     readonly personaKind: 'absent' | 'standard' | 'complete'
   }
+  /**
+   * Remote-mount-race fix (root cause A): the maximum time (milliseconds)
+   * the production entry waits for the `connection` public service to
+   * appear after the mount step before it explicitly SKIPs the remote
+   * mount (the service is provided by the web profile's client-connection
+   * row on an independent fiber — a startup race can make the one-shot
+   * read at the mount step see nothing on a slow boot). `0` selects the
+   * pre-fix IMMEDIATE decision (absent at the mount step → skip at once,
+   * no wait) for test worlds that want the legacy observable semantics.
+   * Absent = the production default (30000). Non-negative integer.
+   */
+  readonly remoteMountWaitMs?: number
   /**
    * T12-B1 — explicit TEST FIXTURE mode (plan §7-B1 "test fixture mode"):
    * when `true`, the `create` boot phase seeds the frozen deterministic

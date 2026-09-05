@@ -1,0 +1,19 @@
+# AFTER boot — scratch user world (returning home, stamped domain) on the fixed build
+
+World: `references/.dsh-diag-405-2026-09-05T16-35-38` (the user-world copy)
+Install: fixed task build copied over `profiles/web/node_modules/dsh-agent-team`
+  - host.js = 40973 B (product build, `createOrOpenTeamDomainDetailed` resolution present, ZERO instrumentation — the Boot B-2 `[team-diag]` hooks are gone)
+  - bundle cordis.patch.yml = `bootPhase: "create-or-open"`
+  - client-bundle.js = 845690 B (byte-identical to the committed baseline — zero client changes)
+Precondition: `storages/team_domain.json` STAMPED (8 store stamps, 2026-09-05T09:37:48Z, all data tables empty) = the user's "returning home" state.
+
+Command:
+  $env:DSH_HOME='<scratch world>'; node D:\AgentDev\deepseek-harness\apps\cli\lib\bin.js web --port 3180 --no-open
+
+Terminal (verbatim):
+  dsh web: http://127.0.0.1:3180/?token=LDIqC60E55Ur07gBmffrOsV1bUYtq2sD2h18E7y1P_8
+  [dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+Observations:
+  - NO `bootstrap FAILED` line: the stamped domain was ADOPTED (create-or-open resolution → the root's `resume` branch loaded the durable Team identity; the pre-fix bundle threw TEAM_DOMAIN_EXISTS here and the bootstrap swallowed it — the Boot B-1 405).
+  - The terminal remote-mount outcome is now LOUD (root cause C fix): `MOUNTED` (no late note — the connection service was present at the mount step on this boot; the bounded-wait path is covered by the race regression test and the Boot B-2 diagnosis).
