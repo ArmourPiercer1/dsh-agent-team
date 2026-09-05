@@ -271,6 +271,13 @@ export const REMOTE_BACKING_ERROR_CODES = [
   'TEAM_CREATE_ROOT_WORK_UNAVAILABLE',
   'TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH',
   'TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED',
+  // s6-remote — TCM vNext §15.6/G1: the M3 Root initial-work strategy's
+  // closed runtime codes that the S6 ports pass through UNMAPPED (the
+  // plan §15.8 scanner raises them directly on the team category).
+  'TEAM_RUNTIME_REQUEST_MALFORMED',
+  'TEAM_RUNTIME_COMPATIBILITY_BLOCKED',
+  'TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED',
+  'TEAM_RUNTIME_DURABLE_WRITE_FAILED',
 ] as const
 
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

@@ -170,7 +170,11 @@ import type {
 import { createActivationProvider } from '../../activation/index.js'
 import { ACTION_NAMES, enforceCompatibilityGate } from '../../admission/index.js'
 import type { LifecycleCommitPort } from '../../admission/index.js'
-import { commitDurableFact, createTeamRuntime } from '../../action-router/index.js'
+import {
+  commitDurableFact,
+  createAdmitRootInitialWork,
+  createTeamRuntime,
+} from '../../action-router/index.js'
 import { createTeamOperationCoordinator } from '../../coordination/index.js'
 import { createLifecycleService } from '../../lifecycle/index.js'
 import type { LifecyclePorts } from '../../lifecycle/index.js'
@@ -771,6 +775,42 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // invariant 26). The provider's private map remains for direct-
   // construction test worlds (e.g. the frozen p6t1 parallel suite).
   const coordination = createTeamOperationCoordinator()
+
+  // --- TCM vNext §15.8 (G1) — the Root initial-work closure ----------------------------------
+  // The ONE Root initial-work authority for this production root: the plan
+  // §15.8 closure — `withTeamLock` on the root's SHARED coordination
+  // chains (the same chain the router mediates; no second lock), then the
+  // existing single compatibility gate INSIDE the lock, then the two-fact
+  // scanner + the live Root input seam. Both Root initial-work paths run
+  // through it: the v1 `team.create`'s `initialWork` (TCM vNext §15.4:
+  // the v1 create's initial work re-routes through the SAME strategy —
+  // never the generic Member follow-up) and the v2-only
+  // `team.admitInitialWork` command (§15.6). Absent when the live glue
+  // carries no `deliverRootWork` port (factory worlds without the input
+  // seam): the remote surfaces then fail both paths closed with the
+  // typed TEAM_CREATE_ROOT_WORK_UNAVAILABLE.
+  const glueDeliverRootWork = live.deliverRootWork
+  const rootWorkDelivery =
+    glueDeliverRootWork === undefined
+      ? undefined
+      : {
+          deliverRootWork: (input: {
+            readonly rootSessionId: string
+            readonly requestToken: string
+            readonly prompt: string
+            readonly attachedContext?: string
+          }): Promise<void> => glueDeliverRootWork(input),
+        }
+  const admitRootInitialWork =
+    rootWorkDelivery === undefined
+      ? undefined
+      : createAdmitRootInitialWork({
+          teamLocks: coordination.chains,
+          repositories: repos,
+          environmentFacts,
+          now,
+          deliverRootWork: rootWorkDelivery,
+        })
 
   // --- A20 + A21 the lifecycle service + commit port ---------------------------------------
   const lifecycleCommit: LifecycleCommitPort = {
@@ -1499,6 +1539,21 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // root is created by the host, NO native root). Absent (a glue-less
     // world) → team.create fails closed with a typed error.
     startRootAgent: live.createRootAgent,
+    // TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
+    // entry's closure over the hard-injected public workspaceRegistry):
+    // the v2 team.create resolves the requested workspace through it
+    // before any durable effect and attaches the materialized root
+    // session after the bind + start (plan §2.2 order). Absent (a
+    // world without the host entry) → a v2 create carrying `workspace`
+    // fails closed with the typed TEAM_CREATE_WORKSPACE_NOT_FOUND.
+    ...(workspaceAttach !== undefined ? { workspaceAttach } : {}),
+    // TCM vNext §15.8 (G1) — the Root initial-work closure (shared
+    // coordination chains + the single compatibility gate + the two-fact
+    // scanner): the ONE authority both Root initial-work paths call (the
+    // v1 create's initialWork + the v2 team.admitInitialWork). Absent
+    // (a glue without the deliverRootWork port) → both paths fail closed
+    // with the typed TEAM_CREATE_ROOT_WORK_UNAVAILABLE.
+    ...(admitRootInitialWork !== undefined ? { admitRootInitialWork } : {}),
     now,
   })
   seams.remoteQueryCommandCompletion.install(remoteSurfaces.completion)

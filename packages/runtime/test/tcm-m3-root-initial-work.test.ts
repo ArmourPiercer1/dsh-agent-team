@@ -346,7 +346,6 @@ let honest: HonestCase
     })
 
     const writesBeforeMismatch = ledgerCount(world)
-    const deliveriesBeforeMismatch = delivery.calls.length
     let mismatchCode = '(none)'
     try {
       await admit({

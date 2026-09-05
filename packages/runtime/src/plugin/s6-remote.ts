@@ -73,7 +73,9 @@ import type {
   RemoteOverrideSetParams,
   RemotePolicyStateGetParams,
   RemotePolicyStateSetParams,
+  RemoteTeamAdmitInitialWorkParams,
   RemoteTeamCreateParams,
+  RemoteTeamCreateParamsV2,
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
 } from '../../../remote/src/contracts/params.js'
@@ -92,7 +94,10 @@ import {
   type RemoteLedgerEntryValue,
   type RemoteLedgerPageValue,
 } from '../../../remote/src/contracts/types.js'
-import { REMOTE_CONTRACT_VERSION } from '../../../remote/src/contracts/version.js'
+import {
+  REMOTE_CONTRACT_VERSION,
+  REMOTE_CONTRACT_VERSION_V2,
+} from '../../../remote/src/contracts/version.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
@@ -109,6 +114,7 @@ import type {
   RemoteHandlerRegistration,
   RemoteQueryCommandCompletion,
   ServerPrincipalDerivation,
+  WorkspaceAttachPort,
 } from './types.js'
 import {
   S6_PRINCIPAL_ERROR_CODES,
@@ -124,7 +130,16 @@ import type {
   TeamRuntimeActionOutcome,
   TeamRuntimeActionRequest,
 } from '../../admission/index.js'
-import { validateActionRequest } from '../../admission/index.js'
+import {
+  resolveCaller,
+  TEAM_RUNTIME_ERROR_CODES,
+  TeamRuntimeError,
+} from '../../admission/index.js'
+import type {
+  AdmitRootInitialWork,
+  RootInitialWorkArgs,
+  RootInitialWorkResult,
+} from '../../action-router/index.js'
 import type { InstanceId, TeamSessionId } from '../../../contracts/src/index.js'
 import { canonicalJsonStringify } from '../../../contracts/src/index.js'
 import type { LifecycleService } from '../../lifecycle/index.js'
@@ -198,6 +213,34 @@ export const S6_REMOTE_ERROR_CODES = {
    *  retained root failed (the durable bind is preserved; the retry
    *  re-drives the start on the cold path). */
   TEAM_CREATE_ROOT_START_FAILED: 'TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED',
+  /** TCM vNext §15.5 — v2 team.create: no registered workspace for the
+   *  requested path (typed at the workspace port BEFORE any durable
+   *  effect; the upstream reason rides in the message). The closed wire
+   *  code the M1 backing vocabulary established for this condition. */
+  TEAM_CREATE_WORKSPACE_NOT_FOUND: 'TEAM_CREATE_WORKSPACE_NOT_FOUND',
+  /** TCM vNext §15.6 — v2 team.create cold retry: the durable
+   *  `defaultWorkspace` differs from the requested canonical workspace
+   *  path (zero writes). */
+  TEAM_CREATE_WORKSPACE_MISMATCH: 'TEAM_CREATE_WORKSPACE_MISMATCH',
+  /** TCM vNext §15.6 — v2 team.create: the public `Workspace.attachSession`
+   *  rejected AFTER the durable bind (the bind is preserved — the typed
+   *  retryable failure; the retry re-drives the attach, idempotent
+   *  upstream). */
+  TEAM_CREATE_WORKSPACE_ATTACH_FAILED: 'TEAM_CREATE_WORKSPACE_ATTACH_FAILED',
+  /** TCM vNext §15.8 — the Root initial-work paths (the v1 create's
+   *  `initialWork` + the v2 `team.admitInitialWork`): the production root
+   *  exposes no Root initial-work authority (glue without the
+   *  `deliverRootWork` port) — fail-closed BEFORE any durable effect. */
+  TEAM_CREATE_ROOT_WORK_UNAVAILABLE: 'TEAM_CREATE_ROOT_WORK_UNAVAILABLE',
+  /** TCM vNext §15.6 — the Root initial work: same token, different
+   *  canonical payload (the strategy's typed ROOT_WORK_PAYLOAD_MISMATCH,
+   *  zero writes; mapped onto the M1 closed wire vocabulary). */
+  TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH: 'TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH',
+  /** TCM vNext §15.6 — the Root initial work: a delivery fault (the
+   *  durable admission is retained, no terminal fact; the same-token
+   *  retry recovers. The strategy's WORK_DELIVERY_FAILED mapped onto the
+   *  M1 closed wire vocabulary). */
+  TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED: 'TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED',
 } as const
 
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES]
@@ -267,14 +310,19 @@ export interface S6RemoteIntentPort {
     environmentFacts: readonly RemoteSafeRecord[],
   ): Promise<RemoteSafeRecord>
 }
-/** Port 3/12 — TeamSession creation via the root binding (`team.create`). */
+/** Port 3/12 — TeamSession creation via the root binding (`team.create` v1). */
 export interface S6RemoteTeamCreatePort {
   /**
    * Bind a fresh root or rehydrate a cold root for the requested
    * blueprint. `initialWork` (BC-03 / R1-A) is optional: when present it
-   * is admitted through the existing work-admission path (the facade's
-   * `follow-up` action on the leader instance) as part of the creation;
-   * absent, the behavior is unchanged.
+   * is admitted as part of the creation through the SAME Root-specific
+   * initial-work authority the v2 `team.admitInitialWork` command uses
+   * (TCM vNext §15.4/G1: the plan §15.8 closure over the shared
+   * coordination chains + the single compatibility gate — NEVER the
+   * generic Member `follow-up` on `inst-leader`, which needs a durable
+   * Leader member record + `childSessionId` + the lifecycle settlement
+   * the honest Leader v2 must not carry). Absent, the behavior is
+   * unchanged.
    * @returns the value object
    *   `{ path: 'fresh-root' | 'cold-root', durable: <state> | null,
    *   bind: <bind result> }` (lossless JSON).
@@ -284,6 +332,71 @@ export interface S6RemoteTeamCreatePort {
     blueprintId: string,
     blueprintRevision?: number,
     initialWork?: RemoteSafeRecord,
+  ): Promise<RemoteSafeRecord>
+}
+/** TCM vNext §15.6 — the v2 workspace-aware `team.create` port (the
+ *  production async mirror of the frozen `RemoteTeamCreateV2Port`).
+ *  CREATE-ONLY: it never carries initial work (that travels the v2-only
+ *  `team.admitInitialWork` command, {@link S6RemoteTeamAdmitInitialWorkPort},
+ *  after the root is open). Typed failures raised here (the closed
+ *  `TEAM_CREATE_WORKSPACE_*` codes) pass through the dispatcher unchanged
+ *  (the closed backing vocabulary, invariant 4b). */
+export interface S6RemoteTeamCreateV2Port {
+  /**
+   * Bind a fresh root (or rehydrate a cold root) for the requested
+   * blueprint. When `workspace` is present it is resolved through the
+   * host workspace registry BEFORE any durable effect (the canonical
+   * path is the registry's, verbatim), bound as the TeamSession's
+   * `defaultWorkspace`, and the materialized root session is attached to
+   * the workspace through the public `Workspace.attachSession` AFTER the
+   * bind + the Root agent start (plan §2.2 creation order). When absent,
+   * the host default workspace carries (unchanged pre-v2 behavior) and no
+   * attach runs.
+   * @param rootSessionId - the validated root session id.
+   * @param blueprintId - the validated blueprint id.
+   * @param blueprintRevision - the requested revision, or `undefined`
+   *   for the latest.
+   * @param workspace - the selected workspace path (the client's
+   *   `TeamWorkspaceOption.path`), or `undefined` for the host default.
+   * @returns the same value object as v1:
+   *   `{ path: 'fresh-root' | 'cold-root', durable: <state> | null,
+   *   bind: <bind result> }` (lossless JSON).
+   */
+  create(
+    rootSessionId: string,
+    blueprintId: string,
+    blueprintRevision: number | undefined,
+    workspace: string | undefined,
+  ): Promise<RemoteSafeRecord>
+}
+/** TCM vNext §15.6 — the v2-only `team.admitInitialWork` port (the
+ *  production async mirror of the frozen
+ *  `RemoteTeamAdmitInitialWorkPort`): the creation-time initial work
+ *  command. It calls the SAME Root-specific authority the v1 create's
+ *  `initialWork` uses (the plan §15.8 closure — never the generic Member
+ *  follow-up). Idempotent per `(rootSessionId, requestToken)`: a replayed
+ *  terminal success redelivers nothing; the same token with a different
+ *  canonical payload is a typed mismatch; the team's one initial-work
+ *  slot occupied by another token is a typed rejection. Typed failures
+ *  raised here (the closed `TEAM_CREATE_ROOT_WORK_*` codes + the
+ *  strategy's already-closed runtime codes) pass through the dispatcher
+ *  unchanged (invariant 4b). */
+export interface S6RemoteTeamAdmitInitialWorkPort {
+  /**
+   * Admit (or replay-reject) the creation-time initial work for one root.
+   * @param rootSessionId - the validated root session id.
+   * @param requestToken - the caller-stable opaque work token
+   *   (idempotency identity).
+   * @param prompt - the initial work prompt (free-form, 1..200000).
+   * @param attachedContext - optional attached context text
+   *   (free-form, 1..200000); the host folds it into the delivered work.
+   * @returns the admission outcome (lossless JSON).
+   */
+  admit(
+    rootSessionId: string,
+    requestToken: string,
+    prompt: string,
+    attachedContext: string | undefined,
   ): Promise<RemoteSafeRecord>
 }
 /** Port 4/12 — the whole-projection observation (`team.getProjection`). */
@@ -340,11 +453,16 @@ export interface S6RemoteLegacyPort {
   inspect(dshHome: string, workspaceCwd?: string, projectDir?: string): Promise<RemoteSafeRecord>
 }
 
-/** The thirteen production ports (the frozen twelve + the T12-V16 messaging coordinator port). */
+/** The fifteen production ports (the frozen twelve + the T12-V16 messaging
+ *  coordinator port + the two TCM vNext §15.6 team-create v2 ports). */
 export interface S6RemotePorts {
   readonly catalog: S6RemoteCatalogPort
   readonly intent: S6RemoteIntentPort
   readonly teamCreate: S6RemoteTeamCreatePort
+  /** TCM vNext §15.6 (G1) — the v2 workspace-aware `team.create` port. */
+  readonly teamCreateV2: S6RemoteTeamCreateV2Port
+  /** TCM vNext §15.6 (G1) — the v2-only `team.admitInitialWork` port. */
+  readonly teamAdmitInitialWork: S6RemoteTeamAdmitInitialWorkPort
   readonly projection: S6RemoteProjectionPort
   readonly ledger: S6RemoteLedgerPort
   readonly admission: S6RemoteAdmissionPort
@@ -398,6 +516,31 @@ export interface S6RemoteOptions {
    * team carries no default workspace.
    */
   readonly defaultWorkspace?: string
+  /**
+   * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
+   * entry's closure over the hard-injected public `workspaceRegistry`
+   * service). A v2 `team.create` carrying `workspace` resolves it through
+   * this port BEFORE any durable effect and attaches the materialized
+   * root session to it AFTER the bind + the Root agent start (plan §2.2).
+   * Absent (factory worlds without the host entry): a v2 create carrying
+   * `workspace` fails closed with the typed TEAM_CREATE_WORKSPACE_NOT_FOUND
+   * (the path cannot be resolved without the registry).
+   */
+  readonly workspaceAttach?: WorkspaceAttachPort
+  /**
+   * TCM vNext §15.8 (M3) — the Root initial-work closure:
+   * `withTeamLock` (the root's shared coordination chains) →
+   * `enforceCompatibilityGate` (the existing single compatibility
+   * authority, INSIDE the lock) → `executeRootInitialWorkLocked` (the
+   * two-fact scanner + strategy). The ONE authority both Root initial-work
+   * paths call: the v1 `team.create`'s `initialWork` and the v2
+   * `team.admitInitialWork` command (plan §15.4 — the v1 create's initial
+   * work re-routes through the same strategy; never the generic Member
+   * follow-up). Absent (a live glue without the `deliverRootWork` port):
+   * both paths fail closed with the typed TEAM_CREATE_ROOT_WORK_UNAVAILABLE
+   * before any durable effect.
+   */
+  readonly admitRootInitialWork?: AdmitRootInitialWork
   /** The open TeamDomain repositories (the durable rows). */
   readonly repositories: TeamDomainRepositories
   /** The host blueprint catalog (the single bound blueprint). */
@@ -832,6 +975,199 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     }
   }
 
+  // --- TCM vNext §15 (G1) — the Root initial-work authority + the workspace port ---
+
+  /**
+   * TCM vNext §15.8 — the fail-closed preflight of BOTH Root initial-work
+   * paths (the v1 create's `initialWork` + the v2 `team.admitInitialWork`):
+   * the production root must expose the Root initial-work closure (the
+   * plan §15.8 closure — shared coordination chains + the single
+   * compatibility gate + the two-fact scanner). Runs BEFORE any durable
+   * effect (a failed preflight leaves no partial team).
+   */
+  function requireAdmitRootInitialWorkPort(): AdmitRootInitialWork {
+    const admit = options.admitRootInitialWork
+    if (admit === undefined) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_ROOT_WORK_UNAVAILABLE,
+        'the production root exposes no Root initial-work authority (the live glue does not provide the deliverRootWork port) — the creation-time initial work is fail-closed before any durable effect',
+        { reason: 'root-work-unavailable' },
+      )
+    }
+    return admit
+  }
+
+  /**
+   * TCM vNext §15.6 — map the Root initial-work strategy's closed runtime
+   * codes onto the wire vocabulary the M1 closed backing set established
+   * for the TCM team-create v2 surface. The dispatcher passes a typed
+   * code through ONLY when its string `code` is a member of the closed
+   * backing set (invariant 4b) — anything else degrades to
+   * `internal-error`. The strategy's OTHER codes (REQUEST_MALFORMED /
+   * COMPATIBILITY_BLOCKED / INITIAL_WORK_ALREADY_ADMITTED /
+   * DURABLE_WRITE_FAILED) are already members of the closed set and pass
+   * through unchanged.
+   */
+  function mapRootWorkError(error: unknown): never {
+    if (error instanceof TeamRuntimeError) {
+      switch (error.code) {
+        case TEAM_RUNTIME_ERROR_CODES.ROOT_WORK_PAYLOAD_MISMATCH:
+          throw new TeamPluginError(
+            S6_REMOTE_ERROR_CODES.TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH,
+            error.message,
+            error.details !== undefined ? { ...error.details } : undefined,
+          )
+        case TEAM_RUNTIME_ERROR_CODES.WORK_DELIVERY_FAILED:
+          throw new TeamPluginError(
+            S6_REMOTE_ERROR_CODES.TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED,
+            error.message,
+            error.details !== undefined ? { ...error.details } : undefined,
+          )
+        default:
+          throw error
+      }
+    }
+    throw error
+  }
+
+  /**
+   * TCM vNext §15.8 (G1) — the ONE call site of the Root initial-work
+   * authority (both the v1 create's `initialWork` and the v2
+   * `team.admitInitialWork` route here): the preflight + the closure call
+   * + the closed wire-code mapping (plan §15.4: the v1 single-call
+   * initialWork re-routes through the SAME strategy; never the generic
+   * Member follow-up on `inst-leader`).
+   */
+  async function admitRootWorkMapped(args: RootInitialWorkArgs): Promise<RootInitialWorkResult> {
+    const admit = requireAdmitRootInitialWorkPort()
+    try {
+      return await admit(args)
+    } catch (error) {
+      mapRootWorkError(error)
+    }
+  }
+
+  /**
+   * TCM vNext §15.4 — the v1 `initialWork` record is a free-form lossless
+   * client payload; the Root strategy consumes its `prompt` (a non-empty
+   * string — the frozen v1 behavior: a missing/blank prompt rejects with
+   * the existing TEAM_RUNTIME_REQUEST_MALFORMED pass-through, BEFORE any
+   * durable effect) and its optional `attachedContext` (a non-empty
+   * string; any other shape is treated as ABSENT — the record's
+   * free-form fields are not part of the plan §15.7 durable
+   * representation).
+   */
+  function rootWorkFromInitialWork(initialWork: RemoteSafeRecord): {
+    readonly prompt: string
+    readonly attachedContext?: string
+  } {
+    const prompt = initialWork['prompt']
+    if (typeof prompt !== 'string' || prompt.length === 0) {
+      throw new TeamPluginError(
+        TEAM_RUNTIME_ERROR_CODES.REQUEST_MALFORMED,
+        'the initialWork record carries no non-empty string prompt (the creation-time initial work is prompt-bearing content)',
+        { reason: 'initial-work-malformed' },
+      )
+    }
+    const attachedContext = initialWork['attachedContext']
+    return {
+      prompt,
+      ...(typeof attachedContext === 'string' && attachedContext.length > 0
+        ? { attachedContext }
+        : {}),
+    }
+  }
+
+  /**
+   * TCM vNext §15.5 — resolve the v2 `workspace` request path through the
+   * narrow workspace attach port (the host's closure over the public
+   * workspace registry). EVERY resolution failure is the typed
+   * TEAM_CREATE_WORKSPACE_NOT_FOUND (the upstream reason is preserved in
+   * the message) — a missing path, an existing unowned directory, and a
+   * world without the port all resolve to the same closed code. Runs
+   * BEFORE any durable effect (plan §2.2: typed rejection before bind).
+   */
+  async function resolveRequestedWorkspace(
+    workspace: string,
+  ): Promise<{ readonly workspaceId: string; readonly canonicalPath: string }> {
+    const port = options.workspaceAttach
+    if (port === undefined) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_WORKSPACE_NOT_FOUND,
+        `no workspace is registered for path "${workspace}" (this production root carries no workspace attach port — the path cannot be resolved)`,
+        { reason: 'workspace-attach-port-unavailable' },
+      )
+    }
+    try {
+      const resolution = await port.resolvePath(workspace)
+      return { workspaceId: resolution.workspaceId, canonicalPath: resolution.path }
+    } catch (error) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_WORKSPACE_NOT_FOUND,
+        error instanceof Error ? error.message : String(error),
+        { reason: 'workspace-not-found' },
+      )
+    }
+  }
+
+  /**
+   * TCM vNext §15.5 — the public `Workspace.attachSession` drive (AFTER
+   * the durable bind + the Root agent start — the plan §2.2 creation
+   * order). EVERY upstream attach rejection is the typed
+   * TEAM_CREATE_WORKSPACE_ATTACH_FAILED (the durable bind stays durable:
+   * the typed retryable failure — the retry re-drives the attach, which
+   * is idempotent upstream).
+   */
+  async function attachWorkspaceSession(workspaceId: string, rootSessionId: string): Promise<void> {
+    const port = options.workspaceAttach
+    if (port === undefined) {
+      // Unreachable (resolveRequestedWorkspace gates it) — fail closed anyway.
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_WORKSPACE_ATTACH_FAILED,
+        'the production root carries no workspace attach port — the attach cannot run',
+        { reason: 'workspace-attach-port-unavailable' },
+      )
+    }
+    try {
+      await port.attachSession(workspaceId, rootSessionId)
+    } catch (error) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_WORKSPACE_ATTACH_FAILED,
+        error instanceof Error ? error.message : String(error),
+        { reason: 'workspace-attach-failed' },
+      )
+    }
+  }
+
+  /**
+   * TCM vNext §15.8 (G1) — the gate blueprint of the TARGET team (the v2
+   * `team.admitInitialWork` is team-scoped: the created team already
+   * exists): the durable TeamSession's bound snapshot ref resolved
+   * through the catalog. A content hash the catalog cannot reproduce is
+   * the existing typed blueprint mismatch (fail-closed before the gate).
+   */
+  function resolveTargetBlueprint(rootSessionId: string): TeamBlueprint {
+    const row = repositories.teamSessions.get(rootSessionId)
+    if (row === undefined) {
+      // Unreachable behind assertBoundRoot — fail closed anyway.
+      throw new TeamPluginError(
+        TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND,
+        `no durable TeamSession for root "${rootSessionId}" — team.admitInitialWork addresses an existing team`,
+        { reason: 'team-session-not-found' },
+      )
+    }
+    const snapshot = row.blueprint
+    const resolved = resolveBlueprint(String(snapshot.blueprintId), Number(snapshot.revision))
+    if (String(resolved.contentHash) !== String(snapshot.contentHash)) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_BLUEPRINT_MISMATCH,
+        `the durable TeamSession of root "${rootSessionId}" carries blueprint '${String(snapshot.blueprintId)}' (revision '${String(snapshot.revision)}') with a content hash the catalog cannot reproduce`,
+        { reason: 'blueprint-hash-mismatch' },
+      )
+    }
+    return resolved
+  }
+
   return {
     // --- 1/12 catalog: host catalog discovery (read-only) ---------------------------
     catalog: {
@@ -874,7 +1210,7 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       },
     },
 
-    // --- 3/12 teamCreate: the root binding (fresh or cold) ---------------------------
+    // --- 3/12 teamCreate: the root binding (fresh or cold), v1 -----------------------
     teamCreate: {
       async create(
         requestedRootSessionId: string,
@@ -900,38 +1236,51 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // partial team; the handoff preflight discipline).
         requireStartRootAgentPort()
         const resolved = resolveBlueprint(blueprintId, blueprintRevision)
-        // BC-03 / R1-A: optional initial work admitted through the EXISTING
-        // work-admission path (facade follow-up on the leader instance).
-        // Pure step 0 BEFORE any durable bind (malformed work fails without
-        // partial creation); the full chain AFTER the bind, under facade
-        // authority (gates + work-chain token replay/resume included).
-        let initialWorkRequest: TeamRuntimeActionRequest | undefined
-        if (initialWork !== undefined) {
-          // P9-S8 — the initial work targets the REQUESTED root (the team
-          // being created), not the bound root: the leader instance id is
-          // the fixed leader identity (per-team rows, one id), so only the
-          // root scoping follows the request.
-          initialWorkRequest = {
-            rootSessionId: requestedRootSessionId,
-            action: 'follow-up',
-            caller: await options.principal({
-              method: 'team.create',
-              request: {
-                version: REMOTE_CONTRACT_VERSION,
-                params: {
-                  rootSessionId: requestedRootSessionId,
-                  blueprintId,
-                  ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
-                  initialWork,
-                },
-              },
-            }),
-            targetInstanceId: leaderInstanceId,
-            requestToken: initialWorkRequestToken(initialWork),
-            payload: { ...initialWork },
-          }
-          validateActionRequest(initialWorkRequest)
-        }
+        // TCM vNext §15.4 (G1): the creation-time initial work is admitted
+        // through the SAME Root-specific authority the v2
+        // `team.admitInitialWork` command uses (the plan §15.8 closure —
+        // the shared coordination chains + the single compatibility gate +
+        // the two-fact scanner). It NEVER runs the generic Member
+        // `follow-up` on `inst-leader` (that chain needs a durable Leader
+        // member record + a childSessionId + the member-lifecycle-changed
+        // settlement the honest Leader v2 must not carry — the original
+        // TEAM_RUNTIME_WORK_STATE_REJECTED symptom). The v1 wire contract
+        // is preserved: the same closed fields, the same reply shape, the
+        // same timing (admitted before the RPC returns), and the frozen
+        // malformed-prompt behavior (REQUEST_MALFORMED, before any durable
+        // effect).
+        const initialWorkTarget =
+          initialWork !== undefined
+            ? {
+                work: rootWorkFromInitialWork(initialWork),
+                caller: resolveCaller(
+                  repositories,
+                  requestedRootSessionId,
+                  await options.principal({
+                    method: 'team.create',
+                    request: {
+                      version: REMOTE_CONTRACT_VERSION,
+                      params: {
+                        rootSessionId: requestedRootSessionId,
+                        blueprintId,
+                        ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
+                        initialWork,
+                      },
+                    },
+                  }),
+                ),
+                // BC-03 / R1-A — the stable logical-operation token of one
+                // creation-time work admission: the content hash of the
+                // initial work's canonical JSON. A retried create carrying
+                // the SAME initial work is a replay/resume (zero duplicate
+                // admission facts), a different payload is a distinct
+                // logical operation.
+                requestToken: initialWorkRequestToken(initialWork),
+              }
+            : undefined
+        // A create carrying initialWork needs the Root work authority too
+        // (BEFORE any durable effect — the C1e no-partial-creation rule).
+        if (initialWorkTarget !== undefined) requireAdmitRootInitialWorkPort()
         // P9-S8 — the durable-row check addresses the REQUESTED root (a
         // NEW root has no row → the fresh path; an already-owned root →
         // the cold path with the snapshot match above).
@@ -978,14 +1327,181 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // failure is typed, the team row stays durable, and the retry
         // (cold path) re-drives the start.
         await startRootAgent(requestedRootSessionId)
-        if (initialWorkRequest !== undefined) {
-          await options.runtime.performAction(initialWorkRequest)
+        // TCM vNext §15.4 (G1) — AFTER the bind + the start, the Root
+        // initial work runs the plan §15.8 closure (lock → gate →
+        // two-fact scanner → the live Root input seam); the gate's
+        // blueprint input is the create's resolved snapshot (the cold
+        // path verified it against the durable row above).
+        if (initialWorkTarget !== undefined) {
+          await admitRootWorkMapped({
+            rootSessionId: requestedRootSessionId,
+            caller: initialWorkTarget.caller,
+            requestToken: initialWorkTarget.requestToken,
+            prompt: initialWorkTarget.work.prompt,
+            ...(initialWorkTarget.work.attachedContext !== undefined
+              ? { attachedContext: initialWorkTarget.work.attachedContext }
+              : {}),
+            blueprint: resolved,
+          })
         }
         return {
           path: result.path,
           durable: result.durable ?? null,
           bind: result.bind as unknown as RemoteSafeRecord,
         } as unknown as RemoteSafeRecord
+      },
+    },
+
+    // --- TCM vNext §15.6 (G1): the v2 workspace-aware team.create ---------------------
+    teamCreateV2: {
+      async create(
+        requestedRootSessionId: string,
+        blueprintId: string,
+        blueprintRevision: number | undefined,
+        workspace: string | undefined,
+      ): Promise<RemoteSafeRecord> {
+        // Same creation semantics as the v1 port (P9-S8 creation method,
+        // no bound-root guard; CR-4 preserved) — CREATE-ONLY: the v2
+        // closed field set carries NO initialWork (the creation-time
+        // initial work travels the v2-only `team.admitInitialWork` after
+        // the root is open).
+        // D-3 — the fail-closed preflight (BEFORE any durable effect).
+        requireStartRootAgentPort()
+        const resolved = resolveBlueprint(blueprintId, blueprintRevision)
+        // TCM vNext §2.2 (G1) — the requested workspace is resolved
+        // through the host workspace registry BEFORE any durable effect;
+        // the canonical path is the registry's, VERBATIM (the seam never
+        // re-normalizes). Unknown path / unowned directory / absent port
+        // → the typed TEAM_CREATE_WORKSPACE_NOT_FOUND (no partial team).
+        const requestedWorkspace =
+          workspace !== undefined ? await resolveRequestedWorkspace(workspace) : undefined
+        // P9-S8 — the durable-row check addresses the REQUESTED root (a
+        // NEW root has no row → the fresh path; an already-owned root →
+        // the cold path with the snapshot match below).
+        const durableRow = repositories.teamSessions.get(requestedRootSessionId)
+        let result: RootBindingResult
+        if (durableRow !== undefined) {
+          // The cold path: the durable row's bound snapshot is the truth;
+          // a request naming a different snapshot is a foreign intent.
+          if (
+            durableRow.blueprint.blueprintId !== resolved.blueprintId ||
+            (blueprintRevision !== undefined &&
+              Number(durableRow.blueprint.revision) !== blueprintRevision)
+          ) {
+            throw new TeamPluginError(
+              S6_REMOTE_ERROR_CODES.TEAM_CREATE_BLUEPRINT_MISMATCH,
+              `team.create names blueprint '${resolved.blueprintId}' (revision ${String(blueprintRevision ?? 'latest')}) but the bound TeamSession carries '${durableRow.blueprint.blueprintId}' (revision '${durableRow.blueprint.revision}')`,
+              { reason: 'blueprint-mismatch' },
+            )
+          }
+          // TCM vNext §2.2 (G1) — a cold retry asserting a workspace
+          // different from the durable defaultWorkspace is a typed
+          // mismatch (zero writes). An omitted workspace asserts nothing
+          // (the durable workspace stands; the host-default semantics).
+          if (
+            requestedWorkspace !== undefined &&
+            String(durableRow.defaultWorkspace) !== requestedWorkspace.canonicalPath
+          ) {
+            throw new TeamPluginError(
+              S6_REMOTE_ERROR_CODES.TEAM_CREATE_WORKSPACE_MISMATCH,
+              `team.create asserts workspace '${requestedWorkspace.canonicalPath}' but the bound TeamSession carries defaultWorkspace '${String(durableRow.defaultWorkspace)}'`,
+              { reason: 'workspace-mismatch' },
+            )
+          }
+          result = await options.rootBinding.rehydrateCold({ rootSessionId: requestedRootSessionId as TeamSessionId })
+        } else {
+          result = await options.rootBinding.bindFresh({
+            rootSessionId: requestedRootSessionId as TeamSessionId,
+            blueprint: {
+              blueprintId: resolved.blueprintId,
+              revision: resolved.revision,
+              contentHash: resolved.contentHash,
+            },
+            // TCM vNext §2.2 (G1) — the selected workspace is bound as
+            // the TeamSession's defaultWorkspace; when the request omits
+            // it, the host default workspace carries (unchanged pre-v2
+            // behavior — an unregistered host default is NOT created into
+            // a workspace by this fix).
+            ...(requestedWorkspace !== undefined
+              ? { defaultWorkspace: requestedWorkspace.canonicalPath }
+              : options.defaultWorkspace !== undefined
+                ? { defaultWorkspace: options.defaultWorkspace }
+                : {}),
+          })
+        }
+        // D-3 — the created/retained root must own a LIVE leader agent:
+        // start it (create-or-ensure) BEFORE the workspace attach (the
+        // plan §2.2 order: bind → start/materialize → attach). The
+        // durable bind already landed: a start failure is typed, the team
+        // row stays durable, and the retry (cold path) re-drives the
+        // start + the attach.
+        await startRootAgent(requestedRootSessionId)
+        // TCM vNext §2.2 (G1) — the public Workspace.attachSession
+        // (idempotent upstream: the same-root/workspace retry re-drives
+        // without duplicating). A failure keeps the durable bind: the
+        // typed retryable TEAM_CREATE_WORKSPACE_ATTACH_FAILED.
+        if (requestedWorkspace !== undefined) {
+          await attachWorkspaceSession(requestedWorkspace.workspaceId, requestedRootSessionId)
+        }
+        return {
+          path: result.path,
+          durable: result.durable ?? null,
+          bind: result.bind as unknown as RemoteSafeRecord,
+        } as unknown as RemoteSafeRecord
+      },
+    },
+
+    // --- TCM vNext §15.6 (G1): the v2-only team.admitInitialWork ----------------------
+    teamAdmitInitialWork: {
+      async admit(
+        requestedRootSessionId: string,
+        requestToken: string,
+        prompt: string,
+        attachedContext: string | undefined,
+      ): Promise<RemoteSafeRecord> {
+        // TCM vNext §15.6 (G1) — team.admitInitialWork is TEAM-SCOPED
+        // (unlike the creation methods): the created team must exist and
+        // be owned — the bound-root guard, fail-closed.
+        const rootSessionId = assertBoundRoot('team.admitInitialWork', requestedRootSessionId)
+        // A32 — the caller claim is derivation input, never authority
+        // (the closed param schema already validated the fields).
+        const caller = resolveCaller(
+          repositories,
+          rootSessionId,
+          await options.principal({
+            method: 'team.admitInitialWork',
+            request: {
+              version: REMOTE_CONTRACT_VERSION_V2,
+              params: {
+                rootSessionId,
+                requestToken,
+                prompt,
+                ...(attachedContext !== undefined ? { attachedContext } : {}),
+              },
+            },
+          }),
+        )
+        // The gate's blueprint input: the TARGET team's durable bound
+        // snapshot (the team already exists — unlike the creation paths).
+        const blueprint = resolveTargetBlueprint(rootSessionId)
+        // TCM vNext §15.8 (G1) — the SAME Root-specific authority the v1
+        // create's initialWork uses: withTeamLock (the shared
+        // coordination.chains) → enforceCompatibilityGate (the existing
+        // single compatibility authority, INSIDE the lock) → the two-fact
+        // scanner + the live Root input seam. Never the generic Member
+        // follow-up (no Member lifecycle, no childSessionId, no new
+        // schema, no new ledger category).
+        const outcome = await admitRootWorkMapped({
+          rootSessionId,
+          caller,
+          requestToken,
+          prompt,
+          ...(attachedContext !== undefined ? { attachedContext } : {}),
+          blueprint,
+        })
+        // The outcome is a plain lossless-JSON record (all fields
+        // primitive; the dispatcher's invariant-6 check keeps it honest).
+        return outcome as unknown as RemoteSafeRecord
       },
     },
 
@@ -1446,9 +1962,24 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
       }) as S6CategoryHandler,
 
     [REMOTE_CATEGORIES.TEAM]:
-      ((method: string, params: RemoteMethodParams): Promise<RemoteHandlerOutcome> => {
+      ((method: string, params: RemoteMethodParams, envelope: RemoteRequest): Promise<RemoteHandlerOutcome> => {
         switch (method) {
           case 'team.create': {
+            // TCM vNext §15.3/§15.6 (G1) — the shared parser already
+            // validated the closed field set per version: v1 (the optional
+            // `initialWork`) vs v2 (the optional `workspace`, NO initial
+            // work). Route by the envelope version.
+            if (envelope.version === 2) {
+              const v2CreateParams = params as RemoteTeamCreateParamsV2
+              return ports
+                .teamCreateV2.create(
+                  v2CreateParams.rootSessionId,
+                  v2CreateParams.blueprintId,
+                  v2CreateParams.blueprintRevision,
+                  v2CreateParams.workspace,
+                )
+                .then((created) => ({ data: { path: created['path'], durable: created['durable'], bind: created['bind'] } }))
+            }
             const createParams = params as RemoteTeamCreateParams
             return ports
               .teamCreate.create(
@@ -1458,6 +1989,23 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
                 createParams.initialWork,
               )
               .then((created) => ({ data: { path: created['path'], durable: created['durable'], bind: created['bind'] } }))
+          }
+          case 'team.admitInitialWork': {
+            // TCM vNext §15.6 (G1) — the v2-only creation-time initial
+            // work command (team-scoped: the created team must exist and
+            // be owned). The port runs the SAME Root-specific authority
+            // the v1 create's initialWork uses; typed failures pass
+            // through the dispatcher unchanged (the closed backing
+            // vocabulary, invariant 4b).
+            const admitParams = params as RemoteTeamAdmitInitialWorkParams
+            return ports
+              .teamAdmitInitialWork.admit(
+                admitParams.rootSessionId,
+                admitParams.requestToken,
+                admitParams.prompt,
+                admitParams.attachedContext,
+              )
+              .then((result) => ({ data: result }))
           }
           case 'team.getProjection': {
             const projectionParams = params as RemoteTeamGetProjectionParams

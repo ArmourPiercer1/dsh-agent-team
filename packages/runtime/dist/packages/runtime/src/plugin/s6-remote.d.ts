@@ -42,10 +42,11 @@
 import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
-import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation } from './types.js';
+import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js';
 import type { ActionCaller, TeamRuntime, TeamRuntimeActionOutcome } from '../../admission/index.js';
+import type { AdmitRootInitialWork } from '../../action-router/index.js';
 import type { TeamSessionId } from '../../../contracts/src/index.js';
 import type { LifecycleService } from '../../lifecycle/index.js';
 import type { MessagingCoordinator, SendTeamMessageOutcome, SendTeamMessageRequest } from '../../messaging/index.js';
@@ -85,6 +86,34 @@ export declare const S6_REMOTE_ERROR_CODES: {
      *  retained root failed (the durable bind is preserved; the retry
      *  re-drives the start on the cold path). */
     readonly TEAM_CREATE_ROOT_START_FAILED: "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED";
+    /** TCM vNext §15.5 — v2 team.create: no registered workspace for the
+     *  requested path (typed at the workspace port BEFORE any durable
+     *  effect; the upstream reason rides in the message). The closed wire
+     *  code the M1 backing vocabulary established for this condition. */
+    readonly TEAM_CREATE_WORKSPACE_NOT_FOUND: "TEAM_CREATE_WORKSPACE_NOT_FOUND";
+    /** TCM vNext §15.6 — v2 team.create cold retry: the durable
+     *  `defaultWorkspace` differs from the requested canonical workspace
+     *  path (zero writes). */
+    readonly TEAM_CREATE_WORKSPACE_MISMATCH: "TEAM_CREATE_WORKSPACE_MISMATCH";
+    /** TCM vNext §15.6 — v2 team.create: the public `Workspace.attachSession`
+     *  rejected AFTER the durable bind (the bind is preserved — the typed
+     *  retryable failure; the retry re-drives the attach, idempotent
+     *  upstream). */
+    readonly TEAM_CREATE_WORKSPACE_ATTACH_FAILED: "TEAM_CREATE_WORKSPACE_ATTACH_FAILED";
+    /** TCM vNext §15.8 — the Root initial-work paths (the v1 create's
+     *  `initialWork` + the v2 `team.admitInitialWork`): the production root
+     *  exposes no Root initial-work authority (glue without the
+     *  `deliverRootWork` port) — fail-closed BEFORE any durable effect. */
+    readonly TEAM_CREATE_ROOT_WORK_UNAVAILABLE: "TEAM_CREATE_ROOT_WORK_UNAVAILABLE";
+    /** TCM vNext §15.6 — the Root initial work: same token, different
+     *  canonical payload (the strategy's typed ROOT_WORK_PAYLOAD_MISMATCH,
+     *  zero writes; mapped onto the M1 closed wire vocabulary). */
+    readonly TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH: "TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH";
+    /** TCM vNext §15.6 — the Root initial work: a delivery fault (the
+     *  durable admission is retained, no terminal fact; the same-token
+     *  retry recovers. The strategy's WORK_DELIVERY_FAILED mapped onto the
+     *  M1 closed wire vocabulary). */
+    readonly TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED: "TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
 /**
@@ -142,19 +171,79 @@ export interface S6RemoteCatalogPort {
 export interface S6RemoteIntentPort {
     probe(blueprintId: string, blueprintRevision: number | undefined, environmentFacts: readonly RemoteSafeRecord[]): Promise<RemoteSafeRecord>;
 }
-/** Port 3/12 — TeamSession creation via the root binding (`team.create`). */
+/** Port 3/12 — TeamSession creation via the root binding (`team.create` v1). */
 export interface S6RemoteTeamCreatePort {
     /**
      * Bind a fresh root or rehydrate a cold root for the requested
      * blueprint. `initialWork` (BC-03 / R1-A) is optional: when present it
-     * is admitted through the existing work-admission path (the facade's
-     * `follow-up` action on the leader instance) as part of the creation;
-     * absent, the behavior is unchanged.
+     * is admitted as part of the creation through the SAME Root-specific
+     * initial-work authority the v2 `team.admitInitialWork` command uses
+     * (TCM vNext §15.4/G1: the plan §15.8 closure over the shared
+     * coordination chains + the single compatibility gate — NEVER the
+     * generic Member `follow-up` on `inst-leader`, which needs a durable
+     * Leader member record + `childSessionId` + the lifecycle settlement
+     * the honest Leader v2 must not carry). Absent, the behavior is
+     * unchanged.
      * @returns the value object
      *   `{ path: 'fresh-root' | 'cold-root', durable: <state> | null,
      *   bind: <bind result> }` (lossless JSON).
      */
     create(rootSessionId: string, blueprintId: string, blueprintRevision?: number, initialWork?: RemoteSafeRecord): Promise<RemoteSafeRecord>;
+}
+/** TCM vNext §15.6 — the v2 workspace-aware `team.create` port (the
+ *  production async mirror of the frozen `RemoteTeamCreateV2Port`).
+ *  CREATE-ONLY: it never carries initial work (that travels the v2-only
+ *  `team.admitInitialWork` command, {@link S6RemoteTeamAdmitInitialWorkPort},
+ *  after the root is open). Typed failures raised here (the closed
+ *  `TEAM_CREATE_WORKSPACE_*` codes) pass through the dispatcher unchanged
+ *  (the closed backing vocabulary, invariant 4b). */
+export interface S6RemoteTeamCreateV2Port {
+    /**
+     * Bind a fresh root (or rehydrate a cold root) for the requested
+     * blueprint. When `workspace` is present it is resolved through the
+     * host workspace registry BEFORE any durable effect (the canonical
+     * path is the registry's, verbatim), bound as the TeamSession's
+     * `defaultWorkspace`, and the materialized root session is attached to
+     * the workspace through the public `Workspace.attachSession` AFTER the
+     * bind + the Root agent start (plan §2.2 creation order). When absent,
+     * the host default workspace carries (unchanged pre-v2 behavior) and no
+     * attach runs.
+     * @param rootSessionId - the validated root session id.
+     * @param blueprintId - the validated blueprint id.
+     * @param blueprintRevision - the requested revision, or `undefined`
+     *   for the latest.
+     * @param workspace - the selected workspace path (the client's
+     *   `TeamWorkspaceOption.path`), or `undefined` for the host default.
+     * @returns the same value object as v1:
+     *   `{ path: 'fresh-root' | 'cold-root', durable: <state> | null,
+     *   bind: <bind result> }` (lossless JSON).
+     */
+    create(rootSessionId: string, blueprintId: string, blueprintRevision: number | undefined, workspace: string | undefined): Promise<RemoteSafeRecord>;
+}
+/** TCM vNext §15.6 — the v2-only `team.admitInitialWork` port (the
+ *  production async mirror of the frozen
+ *  `RemoteTeamAdmitInitialWorkPort`): the creation-time initial work
+ *  command. It calls the SAME Root-specific authority the v1 create's
+ *  `initialWork` uses (the plan §15.8 closure — never the generic Member
+ *  follow-up). Idempotent per `(rootSessionId, requestToken)`: a replayed
+ *  terminal success redelivers nothing; the same token with a different
+ *  canonical payload is a typed mismatch; the team's one initial-work
+ *  slot occupied by another token is a typed rejection. Typed failures
+ *  raised here (the closed `TEAM_CREATE_ROOT_WORK_*` codes + the
+ *  strategy's already-closed runtime codes) pass through the dispatcher
+ *  unchanged (invariant 4b). */
+export interface S6RemoteTeamAdmitInitialWorkPort {
+    /**
+     * Admit (or replay-reject) the creation-time initial work for one root.
+     * @param rootSessionId - the validated root session id.
+     * @param requestToken - the caller-stable opaque work token
+     *   (idempotency identity).
+     * @param prompt - the initial work prompt (free-form, 1..200000).
+     * @param attachedContext - optional attached context text
+     *   (free-form, 1..200000); the host folds it into the delivered work.
+     * @returns the admission outcome (lossless JSON).
+     */
+    admit(rootSessionId: string, requestToken: string, prompt: string, attachedContext: string | undefined): Promise<RemoteSafeRecord>;
 }
 /** Port 4/12 — the whole-projection observation (`team.getProjection`). */
 export interface S6RemoteProjectionPort {
@@ -203,11 +292,16 @@ export interface S6RemoteHandoffPort {
 export interface S6RemoteLegacyPort {
     inspect(dshHome: string, workspaceCwd?: string, projectDir?: string): Promise<RemoteSafeRecord>;
 }
-/** The thirteen production ports (the frozen twelve + the T12-V16 messaging coordinator port). */
+/** The fifteen production ports (the frozen twelve + the T12-V16 messaging
+ *  coordinator port + the two TCM vNext §15.6 team-create v2 ports). */
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
     readonly teamCreate: S6RemoteTeamCreatePort;
+    /** TCM vNext §15.6 (G1) — the v2 workspace-aware `team.create` port. */
+    readonly teamCreateV2: S6RemoteTeamCreateV2Port;
+    /** TCM vNext §15.6 (G1) — the v2-only `team.admitInitialWork` port. */
+    readonly teamAdmitInitialWork: S6RemoteTeamAdmitInitialWorkPort;
     readonly projection: S6RemoteProjectionPort;
     readonly ledger: S6RemoteLedgerPort;
     readonly admission: S6RemoteAdmissionPort;
@@ -256,6 +350,31 @@ export interface S6RemoteOptions {
      * team carries no default workspace.
      */
     readonly defaultWorkspace?: string;
+    /**
+     * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
+     * entry's closure over the hard-injected public `workspaceRegistry`
+     * service). A v2 `team.create` carrying `workspace` resolves it through
+     * this port BEFORE any durable effect and attaches the materialized
+     * root session to it AFTER the bind + the Root agent start (plan §2.2).
+     * Absent (factory worlds without the host entry): a v2 create carrying
+     * `workspace` fails closed with the typed TEAM_CREATE_WORKSPACE_NOT_FOUND
+     * (the path cannot be resolved without the registry).
+     */
+    readonly workspaceAttach?: WorkspaceAttachPort;
+    /**
+     * TCM vNext §15.8 (M3) — the Root initial-work closure:
+     * `withTeamLock` (the root's shared coordination chains) →
+     * `enforceCompatibilityGate` (the existing single compatibility
+     * authority, INSIDE the lock) → `executeRootInitialWorkLocked` (the
+     * two-fact scanner + strategy). The ONE authority both Root initial-work
+     * paths call: the v1 `team.create`'s `initialWork` and the v2
+     * `team.admitInitialWork` command (plan §15.4 — the v1 create's initial
+     * work re-routes through the same strategy; never the generic Member
+     * follow-up). Absent (a live glue without the `deliverRootWork` port):
+     * both paths fail closed with the typed TEAM_CREATE_ROOT_WORK_UNAVAILABLE
+     * before any durable effect.
+     */
+    readonly admitRootInitialWork?: AdmitRootInitialWork;
     /** The open TeamDomain repositories (the durable rows). */
     readonly repositories: TeamDomainRepositories;
     /** The host blueprint catalog (the single bound blueprint). */
