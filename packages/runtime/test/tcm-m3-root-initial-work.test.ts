@@ -308,6 +308,14 @@ interface CollideCase {
   readonly workerLifecycle: string
 }
 
+/** CORRUPT: contradictory same-token admission/terminal fingerprints fail closed. */
+interface CorruptPairCase {
+  readonly requestACode: string
+  readonly requestBCode: string
+  readonly ledgerDelta: number
+  readonly deliveryCalls: number
+}
+
 // --- scenario: HONEST (fresh + replay + mismatch + slot, zero member footprint) --
 
 let honest: HonestCase
@@ -665,6 +673,57 @@ let collide: CollideCase
   }
 }
 
+// --- scenario: CORRUPT (same token, contradictory admission/terminal pair) ---------
+
+let corruptPair: CorruptPairCase
+
+{
+  const world = await createP6T2World('tcm-m3-corrupt-pair', ['leader'])
+  try {
+    const delivery = createFakeRootDelivery()
+    const token = 'tok-tcm-m3-corrupt-pair-1'
+    await commitDurableFact(world.domain.repositories, P6T2_ROOT, () => P6T2_NOW, 'team-work-admitted', {
+      targetKind: 'root',
+      rootSessionId: P6T2_ROOT,
+      requestToken: token,
+      payloadFingerprint: computeRootWorkPayloadFingerprint('payload A'),
+      prompt: 'payload A',
+      caller: { kind: 'instance', role: 'leader' },
+      at: P6T2_NOW,
+    })
+    await commitDurableFact(world.domain.repositories, P6T2_ROOT, () => P6T2_NOW, 'team-root-work-delivered', {
+      targetKind: 'root',
+      rootSessionId: P6T2_ROOT,
+      requestToken: token,
+      payloadFingerprint: computeRootWorkPayloadFingerprint('payload B'),
+      workOutcome: 'delivered',
+      at: P6T2_NOW,
+    })
+    const admit = createRootAdmit(world, delivery.port, new Map())
+    const before = ledgerCount(world)
+    let requestACode = '(none)'
+    let requestBCode = '(none)'
+    try {
+      await admit({ rootSessionId: P6T2_ROOT, caller: worldCaller(world), requestToken: token, prompt: 'payload A', blueprint: world.blueprint })
+    } catch (error) {
+      requestACode = expectCode(error, 'TEAM_RUNTIME_ROOT_WORK_PAYLOAD_MISMATCH').code
+    }
+    try {
+      await admit({ rootSessionId: P6T2_ROOT, caller: worldCaller(world), requestToken: token, prompt: 'payload B', blueprint: world.blueprint })
+    } catch (error) {
+      requestBCode = expectCode(error, 'TEAM_RUNTIME_ROOT_WORK_PAYLOAD_MISMATCH').code
+    }
+    corruptPair = {
+      requestACode,
+      requestBCode,
+      ledgerDelta: ledgerCount(world) - before,
+      deliveryCalls: delivery.calls.length,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
 // --- assertions -------------------------------------------------------------------
 
 describe('TCM-M3: the creation-time Root initial-work strategy (plan §15.7/§15.8)', () => {
@@ -752,6 +811,15 @@ describe('TCM-M3: the creation-time Root initial-work strategy (plan §15.7/§15
       expect(lock.terminalFacts).toBe(1)
       expect(lock.deliveryCalls).toBe(1)
       expect(lock.sameAdmittedSequence).toBe(true)
+    })
+  })
+
+  describe('corrupt durable pair fails closed', () => {
+    it('rejects requests matching either contradictory fingerprint with zero effects', () => {
+      expect(corruptPair.requestACode).toBe('TEAM_RUNTIME_ROOT_WORK_PAYLOAD_MISMATCH')
+      expect(corruptPair.requestBCode).toBe('TEAM_RUNTIME_ROOT_WORK_PAYLOAD_MISMATCH')
+      expect(corruptPair.ledgerDelta).toBe(0)
+      expect(corruptPair.deliveryCalls).toBe(0)
     })
   })
 

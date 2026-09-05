@@ -298,8 +298,17 @@ export async function executeRootInitialWorkLocked(deps) {
     //    delivery, zero writes. A different fingerprint is the typed
     //    mismatch (the same token must mean the same work).
     if (scan.terminal !== undefined) {
-        if (scan.terminal.payload['payloadFingerprint'] !== fingerprint) {
-            throw mismatchError(deps, scan.terminal.payload['payloadFingerprint'], fingerprint, scan.terminal.sequence);
+        const terminalFingerprint = scan.terminal.payload['payloadFingerprint'];
+        if (terminalFingerprint !== fingerprint) {
+            throw mismatchError(deps, terminalFingerprint, fingerprint, scan.terminal.sequence);
+        }
+        // A terminal success is only replayable when the durable admission (if
+        // present) names the same payload. Contradictory facts are ledger
+        // corruption, not a basis for choosing the terminal half and claiming
+        // success; fail closed for either possible request fingerprint.
+        if (scan.admitted !== undefined &&
+            scan.admitted.payload['payloadFingerprint'] !== fingerprint) {
+            throw mismatchError(deps, scan.admitted.payload['payloadFingerprint'], fingerprint, scan.admitted.sequence);
         }
         return {
             mode: 'replay',
