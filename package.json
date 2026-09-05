@@ -31,8 +31,9 @@
   ],
   "scripts": {
     "build": "pnpm -r run build",
-    "build:composition": "node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim",
-    "prepare": "pnpm install --ignore-scripts && pnpm build && pnpm build:composition",
+    "build:composition": "node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs",
+    "setup": "pnpm build && pnpm build:composition",
+    "check:artifacts": "node scripts/check-artifacts-committed.mjs",
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
     "test": "vitest run",

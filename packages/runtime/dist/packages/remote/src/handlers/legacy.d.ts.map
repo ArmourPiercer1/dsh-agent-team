@@ -1,0 +1,1 @@
+{"version":3,"file":"legacy.d.ts","sourceRoot":"","sources":["../../../../../../remote/src/handlers/legacy.ts"],"names":[],"mappings":"AAAA;;;;;;;;;GASG;AAEH,OAAO,KAAK,EAA6B,kBAAkB,EAAE,MAAM,wBAAwB,CAAA;AAC3F,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,YAAY,CAAA;AAElD,sDAAsD;AACtD,wBAAgB,yBAAyB,CAAC,IAAI,EAAE,gBAAgB,IACtD,QAAQ,MAAM,EAAE,QAAQ,kBAAkB;;;;EAenD"}

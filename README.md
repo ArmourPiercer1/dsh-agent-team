@@ -75,9 +75,11 @@ gitignored) — this section is a pointer summary, not the authority:
   Since plugin-bundle-form, the root manifest declares `dsh.bundle` + `dsh.client`
   (machine-agnostic bundle layer, no file:// rows):
   `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
-  installs and registers in ONE command (one-time pnpm `allowBuilds` whitelist for
-  the git dependency's `prepare` — `docs/INSTALL.md` §2); clone + mount remains the
-  offline / manual path (§3).
+  installs and registers in ONE command — **no `allowBuilds` whitelist needed**:
+  the install-surface build artifacts are committed prebuilt and the package
+  declares no lifecycle scripts (plugin-prebuilt-artifacts, R131; `docs/INSTALL.md`
+   §2). Commits ≤ `e832d73` still need the one-time `allowBuilds` key (INSTALL.md
+   §6 troubleshooting); clone + mount remains the offline / manual path (§3).
 - Test baseline: upstream 0.1.2-rc.1 @ `76fda72979` (in-place update 2026-09-04;
   in-repo compat adaptation only, CORE PATCH BUDGET = 0 held — R122, five gates green).
 - Push: origin updated 2026-09-05 (R126, user-authorized) — **master @ `4233816`**
@@ -94,6 +96,8 @@ gitignored) — this section is a pointer summary, not the authority:
 |---|---|
 | `pnpm install` | Install the workspace (public npm registry only). |
 | `pnpm build` | Build every package (`tsc` → `packages/*/dist`). |
+| `pnpm setup` | Fresh-clone build chain: every package (`tsc`) + glue placement + client composition + install-surface artifact freshness check. |
+| `pnpm check:artifacts` | Verify the committed install-surface artifacts match a fresh build (source changes affecting them must ship rebuilt artifacts in the same commit). |
 | `pnpm typecheck` | Type-check every package (no emit). |
 | `pnpm lint` | ESLint (flat config, minimal rule set) over the workspace. |
 | `pnpm test` | Run all package unit tests (Vitest, workspace aggregation). |

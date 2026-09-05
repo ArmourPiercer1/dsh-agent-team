@@ -1,0 +1,80 @@
+/**
+ * P7-T3 — the lifecycle runtime's closed error channel
+ * (TaskDoc §11.5 P7-T3 card; ruling R34 owned surface
+ * `packages/runtime/lifecycle/**`).
+ *
+ * Every rejection of the Archive / Restore / Dispose procedures is one of
+ * these seven codes. The codes are deliberately DISJOINT from the P5-T6
+ * member-residency codes and from the P3-T3 domain lifecycle codes:
+ *
+ * - a *domain* `LifecycleTransitionError` (the pure FSM rejection) is
+ *   mapped into `LIFECYCLE_ILLEGAL_STATE` here — the runtime never leaks
+ *   the domain error type to its callers;
+ * - a P5-T6 `MemberResidencyError` from the identity gate is mapped into
+ *   `LIFECYCLE_INVALID_INPUT` — the runtime's input contract is its own.
+ *
+ * No-effect guarantees (asserted by the tests): `LIFECYCLE_INVALID_INPUT`,
+ * `LIFECYCLE_LEADER_NOT_OPERABLE`, `LIFECYCLE_MEMBER_NOT_FOUND`,
+ * `LIFECYCLE_ILLEGAL_STATE` and `LIFECYCLE_NOT_QUIESCENT` are all thrown
+ * BEFORE any live effect and with ZERO durable writes;
+ * `LIFECYCLE_LIVE_EFFECT_FAILED` is thrown before the
+ * remaining live steps and the durable commit; `LIFECYCLE_DURABLE_STATE_
+ * FAILED` carries the durable phase (`read` | `write`) and, for a write,
+ * the failing commit step.
+ *
+ * Pure error vocabulary: no I/O, no live Agent.
+ * @module @dsh-agent-team/runtime/lifecycle/errors
+ */
+/** Closed set of lifecycle runtime error codes (P7-T3). */
+export declare const LIFECYCLE_RUNTIME_ERROR_CODES: {
+    /** The target identity failed the P5-T6 identity gate (fail-closed). No effect. */
+    readonly LIFECYCLE_INVALID_INPUT: "LIFECYCLE_INVALID_INPUT";
+    /** The addressed member has no durable record. No effect. */
+    readonly LIFECYCLE_MEMBER_NOT_FOUND: "LIFECYCLE_MEMBER_NOT_FOUND";
+    /**
+     * The addressed instance is the reserved LeaderInstance (P8-S2,
+     * Architecture §9.2, invariant 15): the Leader IS the Root Agent + the
+     * Root Session, so it cannot be independently archived, restored, or
+     * disposed. Thrown before the durable read; no effect. The rejection is
+     * shape-agnostic — a missing row and a legacy v1 hack row are rejected
+     * identically (never defaulted, never made operable).
+     */
+    readonly LIFECYCLE_LEADER_NOT_OPERABLE: "LIFECYCLE_LEADER_NOT_OPERABLE";
+    /** The durable lifecycle state forbids the operation (the §29 FSM; the domain error is mapped, never leaked). No effect. */
+    readonly LIFECYCLE_ILLEGAL_STATE: "LIFECYCLE_ILLEGAL_STATE";
+    /** The descendant drain reported residual activity (quiescence negative). Zero durable writes; the residency is NOT released (the §30.1 order is structural). */
+    readonly LIFECYCLE_NOT_QUIESCENT: "LIFECYCLE_NOT_QUIESCENT";
+    /** A live port (admission-close / interrupt / descendant-drain / residency-release) faulted mid-procedure. The later steps do not run; zero durable writes. */
+    readonly LIFECYCLE_LIVE_EFFECT_FAILED: "LIFECYCLE_LIVE_EFFECT_FAILED";
+    /** A durable TeamDomain read or write failed. `details.phase` is `'read'` or `'write'`; a write fault additionally carries `details.step` (the failing commit). */
+    readonly LIFECYCLE_DURABLE_STATE_FAILED: "LIFECYCLE_DURABLE_STATE_FAILED";
+};
+/** One closed lifecycle runtime error code. */
+export type LifecycleRuntimeErrorCode = (typeof LIFECYCLE_RUNTIME_ERROR_CODES)[keyof typeof LIFECYCLE_RUNTIME_ERROR_CODES];
+/** The flat value list (for the `isLifecycleRuntimeError` check). */
+export declare const LIFECYCLE_RUNTIME_ERROR_CODE_VALUES: readonly string[];
+/**
+ * The lifecycle runtime typed error. Carries a closed `code` and a
+ * lossless-JSON `details` record (no live references).
+ */
+export declare class LifecycleRuntimeError extends Error {
+    /** The closed error code (branch on this, never on the message). */
+    readonly code: LifecycleRuntimeErrorCode;
+    /** A lossless-JSON details record (no live references). */
+    readonly details: Record<string, unknown>;
+    /**
+     * @param code - the closed error code.
+     * @param message - the human-readable message.
+     * @param details - the lossless-JSON details (defaults to `{}`).
+     */
+    constructor(code: LifecycleRuntimeErrorCode, message: string, details?: Record<string, unknown>);
+}
+/** Type guard for {@link LifecycleRuntimeError}. */
+export declare function isLifecycleRuntimeError(value: unknown): value is LifecycleRuntimeError;
+/**
+ * Render an unknown thrown value into a stable message fragment.
+ * @param error - the unknown thrown value.
+ * @returns the `Error.message`, or a JSON rendering for non-Errors.
+ */
+export declare function errorMessage(error: unknown): string;
+//# sourceMappingURL=errors.d.ts.map

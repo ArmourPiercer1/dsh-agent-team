@@ -13,8 +13,8 @@
 | 模型 | 目标机器可用的真实 provider/model + DSH 凭据（真实功能测试必需；测试世界的假模型配置不可用于真测） |
 | 红线 | 安装只触 DSH_HOME profile 层（公开 seam）；**不改 DSH 源码**（CORE PATCH BUDGET = 0，零上游补丁） |
 
-两条安装路径：**§2 快速安装**（`dsh plugin add github:`，一条命令 + 一次性
-pnpm prepare 白名单；推荐）与 **§3 手动安装**（clone + 构建 + 手工挂载，
+两条安装路径：**§2 快速安装**（`dsh plugin add github:`，一条命令、**无需任何
+allowBuilds 白名单**；推荐）与 **§3 手动安装**（clone + 构建 + 手工挂载，
 离线 / 需逐字段掌控行内容时）。
 
 ## 2. 快速安装（`dsh plugin add`，推荐）
@@ -28,34 +28,17 @@ machine-agnostic：host 行 `name: "dsh-agent-team/host"` 子路径包、client 
 pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team
 ```
 
-### 首次运行：pnpm prepare 白名单（必须，一次性）
+### 为什么不需要 allowBuilds（本 commit 起）
 
-pnpm 11 对 git 依赖的生命周期脚本（`prepare`）默认**拒绝执行**：首次 `add`
-会**硬失败**（依赖完全未装入），并打印：
+安装面产物（`packages/runtime/dist/` + `packages/client/composition-shim/`）
+**以预构建形态提交在仓库内**，且根 `package.json` **不声明任何生命周期脚本**
+（旧 `prepare` 已于 plugin-prebuilt-artifacts / R131 移除）。pnpm 10+/11 对 git 依赖的
+构建脚本策略（`ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`，由 `allowBuilds` 放行）只拦
+**声明了构建脚本**的包——本包安装时无脚本可执行，因此**首次 `add` 直接成功**，
+profile `pnpm-workspace.yaml` 无需任何 `allowBuilds` 条目。
 
-```text
-[ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED] ... dsh-agent-team@<spec>#<commit> ...
-  allowBuilds:
-    <pnpm 打印的完整 name@spec#commit 键>: true
-```
-
-处置（键 = pnpm 打印的**完整 `name@spec#commit`**，不是裸包名；照抄打印行）：
-
-1. 打开 profile 的 `pnpm-workspace.yaml`（`DSH_HOME/profiles/web/pnpm-workspace.yaml`，
-   CLI 初始化 profile 时自动生成；不存在则新建空文件即可 —— profile 目录必须有
-   自己的 workspace 声明，否则 pnpm 会向上并入外层 workspace）；
-2. 在其中加入 `allowBuilds:`，把错误信息打印的键原样写入：
-
-   ```yaml
-   allowBuilds:
-     <错误信息中 allowBuilds: 下打印的那一整行键>: true
-   ```
-
-3. **重跑** `add` 命令：本次安装成功，`prepare` 链
-   （`pnpm install --ignore-scripts && pnpm build && pnpm build:composition`）
-   在依赖目录内自动完成：registry-pinned 运行时依赖（5 ×
-   `@deepseek-ai/*@0.1.2-rc.1` + zod 4.4.3，均 npm access:public）安装 →
-   9 包 tsc → glue 放置 + client composition 生成。
+> commit ≤ `e832d73`（预构建产物引入之前）仍走旧的 allowBuilds 一次性流程 ——
+> 处置见 §6 排障表第 1 行。
 
 安装成功后 CLI 的 reconcile 检测到 `dsh.bundle.patch` 声明，**自动**把
 `./cordis.patch.yml` 并入 profile 的 `dsh.profile.bundles`（无需手工编辑
@@ -74,7 +57,8 @@ bundle 行配置（last-write-wins，**不是字段级 merge**）——要覆盖
 ### 验证
 
 启动 `dsh web` 后按 §5 核验（boot 行 + 401 + 四个 UI 入口）。安装产物与
-§3 手动路径完全一致（同一 `prepare` 链；§5 的四个 client 产物 SHA 基线
+§3 手动路径完全一致（同一构建链的输出：仓库内提交的预构建产物 =
+`pnpm build && pnpm build:composition` 的产物；§5 的四个 client 产物 SHA 基线
 同样适用）。
 
 ## 3. 手动安装（clone + 构建 + 挂载，离线 / 后备路径）
@@ -89,8 +73,18 @@ pnpm install              # row-owned 运行时依赖已声明（packages/runtim
                           # + zod 4.4.3，均已在 npm registry 发布、access:public）——新机器由 pnpm
                           # 直接安装，无需手工 link / junction（R125(1b)）
 pnpm build              # 9 个包 tsc → packages/*/dist（legacy 包输出到 packages/runtime/dist，见 §2 产物表注）
-pnpm build:composition  # ① 放置 runtime glue ② 生成 packages/client/composition-shim/
+pnpm build:composition  # ① 放置 runtime glue ② 生成 packages/client/composition-shim/ ③ 安装面产物新鲜度闸
 ```
+
+等价写法：`pnpm install` 之后一条 `pnpm setup`（= `pnpm build && pnpm
+build:composition`）。
+
+> **产物提交纪律**：`build:composition` 第 ③ 步是安装面产物新鲜度闸
+> （`scripts/check-artifacts-committed.mjs`，亦即 `pnpm check:artifacts`）——
+> 提交的预构建产物（`packages/runtime/dist/` + `packages/client/composition-shim/`）
+> 必须与全新构建逐字节一致，否则构建失败。**任何影响安装面产物的源码变更，
+> 必须与重建后的产物同 commit 提交**（本仓 quick-install 直接安装提交产物、
+> 不在安装时构建，见 §2）。
 
 `build:composition` 两步（均为仓库内 canonical 脚本）：
 
@@ -104,7 +98,7 @@ pnpm build:composition  # ① 放置 runtime glue ② 生成 packages/client/com
    + CSS 源编译为单文件 client bundle（`window.__ModuleLoader__.load` wire 格式，
    identity class map + `<style>` 注入，基线 external 集合 fail-closed 校验），
    连同 `dsh.client` manifest 与惰性 Node 半输出到 `packages/client/composition-shim/`
-   （gitignored 构建产物）。与 R122 验证世界所用 S8 适配器**字节级同构**
+   （R131 起为**提交在仓库内的预构建产物**，安装时不再现场生成 —— 见 §2「为什么不需要 allowBuilds」）。与 R122 验证世界所用 S8 适配器**字节级同构**
    （SHA-256 一致，见 `dev/agent-workflow/evidence/P9-master-closure/`）。
 
 | 产物 | 路径 |
@@ -240,9 +234,9 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
 
 | 症状 | 处置 |
 | --- | --- |
-| `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（快速安装） | pnpm 11 拒绝执行未白名单的 git 依赖 `prepare`：把 pnpm 打印的**完整 `name@spec#commit` 键**（照抄、非裸包名）写入 profile `pnpm-workspace.yaml` 的 `allowBuilds:`，重跑 `add`（§2） |
+| `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（快速安装，**仅 commit ≤ `e832d73`**） | 旧安装面依赖 `prepare` 构建链，pnpm 11 拒绝执行未白名单的 git 依赖 `prepare`：把 pnpm 打印的**完整 `name@spec#commit` 键**（照抄、非裸包名）写入 profile `pnpm-workspace.yaml` 的 `allowBuilds:`，重跑 `add`。**本 commit 起的 master 安装面无任何构建脚本，此错误不可能发生**；若出现，说明安装的是旧 commit |
 | `declares no dsh.bundle` 警告 / 无 Team UI | 装入的 commit 是 bundle-form 之前的旧版（root 无 `dsh.bundle` 声明）：`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#<新commit>` 重装，或改 §3 手动路径 |
-| 快速安装 host 行加载失败（无 file:// 路径） | `prepare` 链未走完 → dist 缺失（boot fail-loud）：在依赖目录 `<profile>/node_modules/dsh-agent-team` 手工补跑 `pnpm install --ignore-scripts && pnpm build && pnpm build:composition` 后重启；@deepseek-ai/\* 解析错 = 嵌套安装闭包不全（registry 可达性 / lockfile） |
+| 快速安装 host 行加载失败（无 file:// 路径） | **仅旧 commit（≤ `e832d73`）**：`prepare` 链未走完 → dist 缺失（boot fail-loud）：在依赖目录 `<profile>/node_modules/dsh-agent-team` 手工补跑 `pnpm install --ignore-scripts && pnpm build && pnpm build:composition` 后重启；@deepseek-ai/\* 解析错 = 嵌套安装闭包不全（registry 可达性 / lockfile）。**master 安装面 dist 为提交产物，此症状不应出现**——安装目录残缺时直接重装 |
 | 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 装入的 commit 处于 bundle-form 初期 `files` 安装面不全的窗口（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被遗漏）：用新 commit 重装；临时处置 = 从源码树把 `packages/runtime/src/plugin/upstream-resolver.mjs` 拷入依赖目录同相对路径后重启 |
 | seam 推导失败（`no default seam module was found`） | 安装目录结构残缺（入口推导的两个布局候选都不存在）：重装，或改 §3 手动形态写显式 `seamUrl` |
 | host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection` / `mcpServer` 三字段之一（必填、fail-closed，见 §3 模板） |

@@ -1,0 +1,160 @@
+/**
+ * The Remote contract v1 response envelope + provenance.
+ *
+ * The dispatcher (see `handlers/dispatch.ts`) returns exactly one of:
+ *
+ * ```
+ * // success — every value carries provenance (G8):
+ * { "ok": true,
+ *   "value": { "data": <typed method value>,
+ *              "provenance": {
+ *                "origin": "team-remote",
+ *                "method": "<catalog method>",
+ *                "endpoint": "<seam endpoint>",
+ *                "contractVersion": 1,
+ *                "requestToken": "<echo>" | null,
+ *                "projectionGeneration": <number> | null,
+ *                "effectSequence": <number> | null
+ *              } } }
+ *
+ * // failure — typed code + message, never a raw exception:
+ * { "ok": false,
+ *   "error": { "code": "<closed code>",
+ *              "message": "<wire message>",
+ *              "details": { "method", "endpoint", "contractVersion",
+ *                           "requestToken", "field"? , "reason"?, "cause"? } } }
+ * ```
+ *
+ * Provenance semantics (design note §5):
+ * - `origin` — the fixed package origin marker (`team-remote`), so UI state
+ *   can attribute its source;
+ * - `method` / `endpoint` — the catalog method that served the request
+ *   (they are equal by construction);
+ * - `contractVersion` — the version that served the request;
+ * - `requestToken` — request echo for the token-carrying methods
+ *   (member.create/send/followup, handoff.create) — the client matches
+ *   async replies to its own logical operations (Architecture §18.2);
+ * - `projectionGeneration` — the whole-projection generation
+ *   (team.getProjection): the client detects stale responses by comparing
+ *   against its last accepted generation for the same team session
+ *   (the frozen `isStaleTeamProjection` discipline, P8-T1);
+ * - `effectSequence` — the durable effect sequence when the underlying
+ *   action has one (admission outcomes).
+ *
+ * Pure module: no I/O, no node: builtins, no runtime environment assumptions.
+ * @module @dsh-agent-team/remote/contracts/response
+ */
+import { REMOTE_CONTRACT_VERSION } from './version.js';
+import { type RemoteSafeJsonValue } from './remote-safe.js';
+/** The fixed origin marker of the Remote surface. */
+export declare const REMOTE_ORIGIN = "team-remote";
+/** The provenance block every successful remote value carries (G8). */
+export interface RemoteProvenance {
+    /** The fixed package origin marker. */
+    readonly origin: typeof REMOTE_ORIGIN;
+    /** The catalog method that served the request. */
+    readonly method: string;
+    /** The seam endpoint the request was routed to (== method). */
+    readonly endpoint: string;
+    /** The remote contract version that served the request. */
+    readonly contractVersion: number;
+    /** The request token echo (token-carrying methods) or `null`. */
+    readonly requestToken: string | null;
+    /** The whole-projection generation (team.getProjection) or `null`. */
+    readonly projectionGeneration: number | null;
+    /** The durable effect sequence of the underlying action, if any. */
+    readonly effectSequence: number | null;
+}
+/** The success result the seam wraps in its `server-response` envelope. */
+export interface RemoteSuccessResult {
+    readonly ok: true;
+    readonly value: {
+        /** The typed method value (lossless-JSON-checked). */
+        readonly data: RemoteSafeJsonValue;
+        /** The provenance block (G8 staleness/origin detection). */
+        readonly provenance: RemoteProvenance;
+    };
+}
+/** The `cause` sub-block of a pass-through domain error (D-3). */
+export interface RemoteErrorCause {
+    /** The source error's closed code (unchanged). */
+    readonly code: string;
+    /** The source error's message (unchanged). */
+    readonly message: string;
+    /** The source error's lossless-JSON-checked details, if any. */
+    readonly details?: RemoteSafeJsonValue;
+}
+/** The structured details block of every remote error result. */
+export interface RemoteErrorDetails {
+    /** The catalog method the request was routed to. */
+    readonly method: string;
+    /** The seam endpoint the request was routed to. */
+    readonly endpoint: string;
+    /** The remote contract version that handled the request. */
+    readonly contractVersion: number;
+    /** The request token echo (token-carrying methods) or `null`. */
+    readonly requestToken: string | null;
+    /** The offending param field (malformed-params / malformed-request). */
+    readonly field?: string;
+    /** A short machine-readable reason tag (e.g. `unknown-trigger`). */
+    readonly reason?: string;
+    /** The pass-through source-error identity (D-3), when the error came
+     *  from a backing service. */
+    readonly cause?: RemoteErrorCause;
+}
+/** The failure result the seam wraps in its `server-response` envelope. */
+export interface RemoteErrorResult {
+    readonly ok: false;
+    readonly error: {
+        /** The closed error code (boundary, mirrored P3, or pass-through). */
+        readonly code: string;
+        /** The human-readable wire message (no stack, no internals). */
+        readonly message: string;
+        /** The structured details (always present, always lossless JSON). */
+        readonly details: RemoteErrorDetails;
+    };
+}
+/** Any remote response the dispatcher can return. */
+export type RemoteResponse = RemoteSuccessResult | RemoteErrorResult;
+/**
+ * The provenance context the dispatcher assembles per request (method /
+ * endpoint / version / request echo + method-specific additions).
+ */
+export interface RemoteProvenanceContext {
+    readonly method: string;
+    readonly endpoint: string;
+    readonly contractVersion: number;
+    readonly requestToken: string | null;
+    /** Method-specific: the whole-projection generation (team.getProjection). */
+    readonly projectionGeneration?: number | null;
+    /** Method-specific: the durable effect sequence (admission outcomes). */
+    readonly effectSequence?: number | null;
+}
+/**
+ * Build a success result: lossless-JSON-checks `data` and attaches the
+ * provenance block.
+ * @param data - the typed method value (checked before the reply is built).
+ * @param ctx - the per-request provenance context.
+ * @throws {RemoteContractError} `internal-error` when `data` is not
+ *   lossless-JSON safe (a backing port returned an unsafe value).
+ */
+export declare function buildRemoteSuccess(data: unknown, ctx: RemoteProvenanceContext): RemoteSuccessResult;
+/**
+ * Build an error result: typed code + message + structured details (with
+ * the provenance fields folded into `details` so the client can attribute
+ * the failure).
+ * @param code - the closed error code.
+ * @param message - the wire message.
+ * @param ctx - the per-request provenance context.
+ * @param extra - optional extra detail fields (`field`, `reason`, `cause`,
+ *   and the source error's details, lossless-checked under `cause.details`).
+ */
+export declare function buildRemoteError(code: string, message: string, ctx: RemoteProvenanceContext, extra?: {
+    readonly field?: string;
+    readonly reason?: string;
+    readonly cause?: RemoteErrorCause;
+    readonly sourceDetails?: unknown;
+}): RemoteErrorResult;
+/** The contract version constant re-exported for response builders. */
+export { REMOTE_CONTRACT_VERSION as REMOTE_SERVED_VERSION };
+//# sourceMappingURL=response.d.ts.map
