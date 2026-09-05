@@ -160,7 +160,7 @@ var __dshFactory = (require) => {
 			 * @returns the trigger row (and the overlay while open).
 			 */
 			function NewTeamEntry(props) {
-			    const { wide, listCatalog, getCatalog, probeCompatibility, teamCreate, createRootSession, listAgentPresets, openSession, currentSessionId, useWorkspaces, t, } = props;
+			    const { wide, listCatalog, getCatalog, probeCompatibility, teamCreate, openCreatedSession, listAgentPresets, currentSessionId, useWorkspaces, t, } = props;
 			    const [overlayOpen, setOverlayOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority).
 			    // The overlay holds its own copy — a fresh empty draft on every open.
@@ -170,13 +170,14 @@ var __dshFactory = (require) => {
 			    const openOverlay = () => {
 			        // §3.1: opening the overlay creates NO session — it only mounts the
 			        // Team-owned panel on a fresh draft.
-			        // R121 (live-trial finding): an unselected workspace means "Default
-			        // workspace" (UI §8) — the native create would land the Root in the
-			        // shell's default (process-cwd) workspace, orphaning the created team
-			        // from the user's workspace sidebar/mirror. Prefill the draft from the
-			        // current selection (the §32.2 prefill pattern, session-independent):
-			        // the workspace containing the current session. The user can still
-			        // change it in the panel (or clear it back to Default).
+			        // R121 (live-trial finding): prefill the draft from the current
+			        // selection (the §32.2 prefill pattern, session-independent): the
+			        // workspace containing the current session. D-3 note: the created
+			        // Root session is created by the HOST during `team.create` and lands
+			        // in the host's default workspace (the frozen team.create params
+			        // carry no workspace field) — the selector is informational (frozen
+			        // UI surface), it no longer steers the root's location. The user can
+			        // still change it in the panel (or clear it back to Default).
 			        const sid = currentSessionId();
 			        const workspaceId = sid === null
 			            ? null
@@ -187,14 +188,15 @@ var __dshFactory = (require) => {
 			    const closeOverlay = () => {
 			        setOverlayOpen(false);
 			    };
-			    // The ONE close timing that must outlive the panel: a successful create
-			    // navigates to the freshly opened root, so the overlay closes BEFORE the
-			    // native session switch (the panel calls this after `team.create` ok).
-			    const openSessionAfterCreate = (sessionId) => {
+			    // The close timing (D-3): a successful create navigates to the freshly
+			    // opened root, so the overlay closes as SOON AS the creation-path open
+			    // succeeds (the panel awaits this after `team.create` ok). A failed open
+			    // rejects before the close — the overlay (and the panel's typed error
+			    // lane) stays visible; the root remains openable from the session list.
+			    const openSessionAfterCreate = (sessionId) => openCreatedSession(sessionId).then(() => {
 			        closeOverlay();
-			        openSession(sessionId);
-			    };
-			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreate: teamCreate, createRootSession: createRootSession, listAgentPresets: listAgentPresets, openSession: openSessionAfterCreate, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
+			    });
+			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreate: teamCreate, openCreatedSession: openSessionAfterCreate, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
 			}
 			Object.defineProperty(exports, "NewTeamEntry", { enumerable: true, get: () => NewTeamEntry });
 			//# sourceMappingURL=NewTeamEntry.js.map
@@ -511,7 +513,7 @@ var __dshFactory = (require) => {
 			                })
 			                : null;
 			        return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, children: t('view.zero') }), legacyNote !== null && (_jsx("p", { className: styles.legacyNote, "data-legacy-note": true, children: legacyNote })), creationOpen
-			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreate: creation.teamCreate, createRootSession: creation.createRootSession, listAgentPresets: creation.listAgentPresets, openSession: openSession, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
+			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreate: creation.teamCreate, openCreatedSession: creation.openCreatedSession, listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
 			                        : (_jsx("button", { type: "button", className: styles.zeroStart, "data-intent-start-here": true, onClick: () => setCreationOpen(true), children: t('intent.startHere') }))] }) }));
 			    }
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
@@ -750,6 +752,23 @@ var __dshFactory = (require) => {
 			    const openSession = (sessionId) => {
 			        ctx.sessions.open(sessionId);
 			    };
+			    // (9.1) The creation-path session open (D-3): the host mints the root
+			    // session during `team.create` / `handoff.create`, and its list
+			    // increment may land AFTER the RPC response — a bare `open` of an
+			    // unknown id throws. Try the plain open; on failure re-pull the
+			    // host-authoritative list once, then retry. A failure that survives the
+			    // retry rethrows (the panel's typed error lane keeps it loud).
+			    const openCreatedSession = (sessionId) => {
+			        try {
+			            ctx.sessions.open(sessionId);
+			            return Promise.resolve();
+			        }
+			        catch {
+			            return ctx.sessions.refresh().then(() => {
+			                ctx.sessions.open(sessionId);
+			            });
+			        }
+			    };
 			    // (10) D-T9-4 degraded no-op: Seam 4 (cross-entry view activation) is
 			    // ABSENT in the served web app, and the seam map forbids private store
 			    // reach, DOM hacks (the legacy tab click), or a new framework extension.
@@ -766,7 +785,7 @@ var __dshFactory = (require) => {
 			        getCatalog: (params) => teamRemote.catalogGet(params),
 			        probeCompatibility: (params) => teamRemote.intentProbe(params),
 			        teamCreate: (params) => teamRemote.teamCreate(params),
-			        createRootSession: (opts) => ctx.sessions.create(opts),
+			        openCreatedSession,
 			        listAgentPresets: async () => {
 			            // The frozen public seam answers the RemoteResult envelope (the roster
 			            // rides in `value` — the gateway facade never unwraps), so unwrap
@@ -891,10 +910,10 @@ var __dshFactory = (require) => {
 			    // (19.1) The global New Team entry (frozen UI design §3.1 MUST / the R118
 			    // gap): the session-independent creation entry fixed at the sidebar foot.
 			    // Root scope -> the inject factory receives no session argument; the face
-			    // is the S5-A creation face plus the public session switch (no handoff
-			    // face or source — the overlay panel is the T7 surface only). R121: the
-			    // face also carries the Seam 3 `list` current-selection read, which the
-			    // entry uses to prefill the fresh draft's workspace.
+			    // is the S5-A creation face plus the robust creation-path session open
+			    // (D-3 — no handoff face or source: the overlay panel is the T7 surface
+			    // only). R121: the face also carries the Seam 3 `list` current-selection
+			    // read, which the entry uses to prefill the fresh draft's workspace.
 			    ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
 			        name: 'sidebar.footer.action',
 			        id: 'team-new',
@@ -906,9 +925,8 @@ var __dshFactory = (require) => {
 			            getCatalog: creation.getCatalog,
 			            probeCompatibility: creation.probeCompatibility,
 			            teamCreate: creation.teamCreate,
-			            createRootSession: creation.createRootSession,
+			            openCreatedSession: creation.openCreatedSession,
 			            listAgentPresets: creation.listAgentPresets,
-			            openSession,
 			            currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
 			        }),
 			    }, components.newTeamEntry));
@@ -1186,32 +1204,49 @@ var __dshFactory = (require) => {
 			    return views.map(view => ({ id: view.workspaceId, title: view.title, path: view.path }));
 			}
 			Object.defineProperty(exports, "teamWorkspaceOptions", { enumerable: true, get: () => teamWorkspaceOptions });
+			/**
+			 * D-3 — mint the Root session id for the standard create flow. The id
+			 * shape mirrors the host's own session factory (`session-<uuid>` — the
+			 * frozen id parser accepts any non-empty, control-free string within the
+			 * length bound). The HOST creates the session under this id during
+			 * `team.create` (the leader agent owns it from birth — the glue
+			 * `createRootAgent` create-or-ensure); the client NEVER pre-creates a
+			 * native session: a natively created session carries the standard preset
+			 * agent, which the host cannot replace (the DSH agent registry collision
+			 * boundary) — the team would land on a paper root with no leader.
+			 * @returns a fresh root session id (the RETRY reuses the retained one).
+			 */
+			function mintRootSessionId() {
+			    return `session-${crypto.randomUUID()}`;
+			}
+			Object.defineProperty(exports, "mintRootSessionId", { enumerable: true, get: () => mintRootSessionId });
 			//# sourceMappingURL=team-intent-model.js.map
 			}, exports: {} };
 		__mods["ui/TeamCreationPanel.js"] = { done: false, fn: function (exports) {
 			const __imp0 = __extReq("react/jsx-runtime");
 			const _jsx = __imp0.jsx;
 			const _jsxs = __imp0.jsxs;
-			const __imp31 = __extReq("react");
-			const useEffect = __imp31.useEffect;
-			const useRef = __imp31.useRef;
-			const useState = __imp31.useState;
-			const __imp32 = __req("model/team-intent-model.js");
-			const intentCreateGate = __imp32.intentCreateGate;
-			const intentEnvironmentFacts = __imp32.intentEnvironmentFacts;
-			const isPersonaPresetFatal = __imp32.isPersonaPresetFatal;
-			const parseBlueprintDetail = __imp32.parseBlueprintDetail;
-			const parseCatalogList = __imp32.parseCatalogList;
-			const parseCompatibilityResult = __imp32.parseCompatibilityResult;
-			const selectDefaultPresetId = __imp32.selectDefaultPresetId;
-			const __imp33 = __req("model/team-member-commands.js");
-			const createRequestTokenGenerator = __imp33.createRequestTokenGenerator;
-			const __imp34 = __req("model/team-handoff.js");
-			const HANDOFF_DECISION_OPTIONS = __imp34.HANDOFF_DECISION_OPTIONS;
-			const handoffDecisionActions = __imp34.handoffDecisionActions;
-			const handoffRetryPlan = __imp34.handoffRetryPlan;
-			const parseHandoffCreateState = __imp34.parseHandoffCreateState;
-			const parseHandoffPrepareValue = __imp34.parseHandoffPrepareValue;
+			const __imp36 = __extReq("react");
+			const useEffect = __imp36.useEffect;
+			const useRef = __imp36.useRef;
+			const useState = __imp36.useState;
+			const __imp37 = __req("model/team-intent-model.js");
+			const intentCreateGate = __imp37.intentCreateGate;
+			const intentEnvironmentFacts = __imp37.intentEnvironmentFacts;
+			const isPersonaPresetFatal = __imp37.isPersonaPresetFatal;
+			const mintRootSessionId = __imp37.mintRootSessionId;
+			const parseBlueprintDetail = __imp37.parseBlueprintDetail;
+			const parseCatalogList = __imp37.parseCatalogList;
+			const parseCompatibilityResult = __imp37.parseCompatibilityResult;
+			const selectDefaultPresetId = __imp37.selectDefaultPresetId;
+			const __imp38 = __req("model/team-member-commands.js");
+			const createRequestTokenGenerator = __imp38.createRequestTokenGenerator;
+			const __imp39 = __req("model/team-handoff.js");
+			const HANDOFF_DECISION_OPTIONS = __imp39.HANDOFF_DECISION_OPTIONS;
+			const handoffDecisionActions = __imp39.handoffDecisionActions;
+			const handoffRetryPlan = __imp39.handoffRetryPlan;
+			const parseHandoffCreateState = __imp39.parseHandoffCreateState;
+			const parseHandoffPrepareValue = __imp39.parseHandoffPrepareValue;
 			const styles = __css("ui/TeamCreationPanel.module.css");
 			/**
 			 * P9-T7 (S5-A) — the New Team creation panel (UI doc §3–§9, plan P9-S5
@@ -1224,14 +1259,19 @@ var __dshFactory = (require) => {
 			 * default-checked) acknowledgement, FATAL ✕ with no Continue-anyway
 			 * (the §7.4 complete-persona preset conflict gets its dedicated copy).
 			 *
-			 * Create sequence (UI §4.3 canonical order, locked T7): CREATING → native
-			 * `createRootSession` (the Root DSH session, carrying the selected
-			 * workspace) → frozen `team.create` (binds the TeamSession, admits the
-			 * initial work through the real path) → `openSession(rootId)`. On a typed
-			 * `team.create` failure the panel stays mounted on CREATION_FAILED with
-			 * the typed error preserved verbatim (NO optimistic authority patch) and a
-			 * RETRY that re-runs `team.create` on the SAME retained root (cold-root
-			 * recovery); the real root is never pretended away.
+			 * Create sequence (UI §4.3 canonical order, locked T7; D-3 revision):
+			 * CREATING → mint the Root session id client-side (`session-<uuid>`,
+			 * {@link mintRootSessionId}) → frozen `team.create` (the host binds the
+			 * TeamSession AND starts the root leader agent — the session is created
+			 * by the host under the minted id, the validated handoff shape: NO native
+			 * pre-created session, which would carry the standard preset agent the
+			 * host cannot replace — and admits the initial work through the real
+			 * path) → `openCreatedSession(rootId)` (one host-list re-pull covers the
+			 * stream increment lagging the RPC). On a typed `team.create` failure the
+			 * panel stays mounted on CREATION_FAILED with the typed error preserved
+			 * verbatim (NO optimistic authority patch) and a RETRY that re-runs
+			 * `team.create` on the SAME retained root (cold-root recovery); the real
+			 * root is never pretended away.
 			 *
 			 * Authority discipline: the selected preset reaches the pre-creation
 			 * probe ONLY through the frozen `environmentFacts` channel (a persona
@@ -1274,7 +1314,7 @@ var __dshFactory = (require) => {
 			}
 			/** The New Team creation panel (UI §3–§9). */
 			function TeamCreationPanel(props) {
-			    const { listCatalog, getCatalog, probeCompatibility, teamCreate, createRootSession, openSession, listAgentPresets, workspaces, handoffSource, handoffFace, draft, onDraftChange, onCancel, t, } = props;
+			    const { listCatalog, getCatalog, probeCompatibility, teamCreate, openCreatedSession, listAgentPresets, workspaces, handoffSource, handoffFace, draft, onDraftChange, onCancel, t, } = props;
 			    // -- catalog + per-row details (the §6 picker display names) -------------
 			    const [catalog, setCatalog] = useState(undefined);
 			    const [catalogDetails, setCatalogDetails] = useState({});
@@ -1538,15 +1578,18 @@ var __dshFactory = (require) => {
 			            return;
 			        setCreating(true);
 			        setCreateError(null);
-			        const workspaceId = draft.workspaceId;
 			        void (async () => {
 			            try {
-			                // 1) the real Root DSH session (retained on every later failure).
+			                // 1) the minted Root session id (retained on every later
+			                // failure). D-3: the HOST creates the session under this id
+			                // during `team.create` (the leader agent owns it from birth);
+			                // a native pre-create is forbidden — the standard preset agent
+			                // of a natively created session can never be replaced (the DSH
+			                // agent registry collision boundary), and the team would land
+			                // on a paper root with no leader.
 			                let rootSessionId = createdRootId;
 			                if (rootSessionId === null) {
-			                    rootSessionId = workspaceId !== null
-			                        ? await createRootSession({ workspaceId })
-			                        : await createRootSession();
+			                    rootSessionId = mintRootSessionId();
 			                    setCreatedRootId(rootSessionId);
 			                }
 			                // 2) the frozen team.create on that root (cold path on retry).
@@ -1560,16 +1603,20 @@ var __dshFactory = (require) => {
 			                const response = await teamCreate(params);
 			                if (!response.ok) {
 			                    // CREATION_FAILED: the typed Remote result, verbatim (G5). The
-			                    // root is retained; RETRY re-runs team.create on the same root.
+			                    // root id is retained; RETRY re-runs team.create on the same
+			                    // root (the host re-drives the leader start on the cold path).
 			                    setCreateError({ code: response.error.code, message: response.error.message });
 			                    return;
 			                }
-			                // 3) Root + TeamSession exist → open the Root (UI §4.3 order).
-			                openSession(rootSessionId);
+			                // 3) Root + TeamSession exist (host-created) → open the Root
+			                // (UI §4.3 order; the one host-list re-pull covers the stream
+			                // increment lagging the RPC).
+			                await openCreatedSession(rootSessionId);
 			            }
 			            catch (error) {
-			                // Channel loss (the only Remote rejection kind) or a native
-			                // create failure: a local marker code, the message verbatim.
+			                // Channel loss (the only Remote rejection kind) or a failed
+			                // creation-path open: a local marker code, the message verbatim.
+			                // The minted root stays retained for RETRY either way.
 			                setCreateError({ code: 'native-error', message: throwableMessage(error) });
 			            }
 			            finally {
@@ -1582,8 +1629,9 @@ var __dshFactory = (require) => {
 			    // patch (the panel renders the stored state / typed error verbatim), the
 			    // typed Remote result preserved (G5(b)), the new team's projection
 			    // cold-pulled exactly once — by the NEW session's TeamView after
-			    // `openSession(rootSessionId)` (G5(c)) — and the rendered final state
-			    // comes from that Projection (G5(d)).
+			    // `openCreatedSession(rootSessionId)` (G5(c); D-3: the host-created
+			    // session, one host-list re-pull covers the stream lag) — and the
+			    // rendered final state comes from that Projection (G5(d)).
 			    /** The display failure: the typed response failure, else the stored
 			     * failing create state's code/message (verbatim, G5(b)). */
 			    const handoffFailure = handoffFailed !== null
@@ -1608,7 +1656,7 @@ var __dshFactory = (require) => {
 			        setHandoffRequestToken(token);
 			        void face
 			            .create({ sourceSessionId: source.sourceSessionId, requestToken: token })
-			            .then(response => {
+			            .then(async (response) => {
 			            if (!response.ok) {
 			                // Typed create failure (no stored state): the §32.4 triad with a
 			                // fresh-token retry (no operation exists under the used token).
@@ -1619,12 +1667,15 @@ var __dshFactory = (require) => {
 			            setHandoffCreateState(state);
 			            if (state.kind === 'completed' || state.kind === 'completed-without-handoff') {
 			                // Root + TeamSession exist (invariant 9: the same id) → open the
-			                // Root; the new session's TeamView cold-pulls the projection.
-			                openSession(state.rootSessionId);
+			                // Root (D-3: the host-created session, one host-list re-pull
+			                // covers the stream lag); the new session's TeamView
+			                // cold-pulls the projection.
+			                await openCreatedSession(state.rootSessionId);
 			            }
 			        })
 			            .catch(error => {
-			            // Channel loss (the only Remote rejection kind): a local marker.
+			            // Channel loss (the only Remote rejection kind) or a failed
+			            // creation-path open: a local marker.
 			            setHandoffFailed({ code: 'native-error', message: throwableMessage(error) });
 			        })
 			            .finally(() => {
@@ -1649,8 +1700,9 @@ var __dshFactory = (require) => {
 			    };
 			    const continueWithoutHandoff = () => {
 			        // Client-local EXPLICIT user decision (§32.4; plan §10.5: no backend
-			        // method): the standard non-handoff create sequence (native root +
-			        // `team.create`) — a new team WITHOUT handoff provenance.
+			        // method): the standard non-handoff create sequence (minted root id +
+			        // `team.create`, the host starts the leader — D-3) — a new team
+			        // WITHOUT handoff provenance.
 			        setHandoffFailed(null);
 			        setHandoffCreateState(null);
 			        setHandoffRequestToken(null);
@@ -4557,7 +4609,7 @@ var __dshFactory = (require) => {
 			    'intent.error': '创建失败：{message}',
 			    'intent.retry': '重试',
 			    'intent.cancel': '取消',
-			    'intent.rootKept': 'Root 会话已创建；团队创建失败，可重试（会话保留）。',
+			    'intent.rootKept': 'Root 会话 ID 已保留；团队创建失败，可重试（重试复用同一 ID）。',
 			    'intent.fatal.preset': '该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。',
 			    'member.action.sendWork': '发送任务…',
 			    'member.action.followup': '发送跟进',
@@ -4767,7 +4819,7 @@ var __dshFactory = (require) => {
 			    'intent.error': 'Creation failed: {message}',
 			    'intent.retry': 'Retry',
 			    'intent.cancel': 'Cancel',
-			    'intent.rootKept': 'The Root session was created; team creation failed — retry it (the session is kept).',
+			    'intent.rootKept': 'The Root session id is retained; team creation failed — retry it (the retry reuses the same id).',
 			    'intent.fatal.preset': "This runtime preset owns a complete system persona and cannot host this Team Blueprint's Leader/Member identity without changing DSH core semantics.",
 			    'member.action.sendWork': 'Send work…',
 			    'member.action.followup': 'Send follow-up',
@@ -8972,6 +9024,9 @@ var __dshFactory = (require) => {
 			    'TEAM_REMOTE_LEGACY_HOME_UNAVAILABLE',
 			    'TEAM_REMOTE_OVERRIDE_TARGET_REQUIRED',
 			    'TEAM_REMOTE_TEAM_CREATE_BLUEPRINT_MISMATCH',
+			    // s6-remote — S6_REMOTE_ERROR_CODES (D-3 root-agent start, team.create)
+			    'TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE',
+			    'TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

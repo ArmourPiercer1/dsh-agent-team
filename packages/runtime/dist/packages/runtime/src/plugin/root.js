@@ -1094,6 +1094,11 @@ export function createTeamProductionRoot(params) {
         // coordinator (facade admission + live delivery + confirmation),
         // closing the admission-only silence window pinned by run #13.
         messaging,
+        // D-3: the root (leader) agent start behind team.create — the SAME
+        // glue port the with-context handoff uses (create-or-ensure; a fresh
+        // root is created by the host, NO native root). Absent (a glue-less
+        // world) → team.create fails closed with a typed error.
+        startRootAgent: live.createRootAgent,
         now,
     });
     seams.remoteQueryCommandCompletion.install(remoteSurfaces.completion);

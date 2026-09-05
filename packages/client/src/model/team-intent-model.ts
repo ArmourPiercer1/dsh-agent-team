@@ -416,3 +416,19 @@ export function teamWorkspaceOptions(
   if (views === undefined) return []
   return views.map(view => ({ id: view.workspaceId, title: view.title, path: view.path }))
 }
+
+/**
+ * D-3 — mint the Root session id for the standard create flow. The id
+ * shape mirrors the host's own session factory (`session-<uuid>` — the
+ * frozen id parser accepts any non-empty, control-free string within the
+ * length bound). The HOST creates the session under this id during
+ * `team.create` (the leader agent owns it from birth — the glue
+ * `createRootAgent` create-or-ensure); the client NEVER pre-creates a
+ * native session: a natively created session carries the standard preset
+ * agent, which the host cannot replace (the DSH agent registry collision
+ * boundary) — the team would land on a paper root with no leader.
+ * @returns a fresh root session id (the RETRY reuses the retained one).
+ */
+export function mintRootSessionId(): string {
+  return `session-${crypto.randomUUID()}`
+}

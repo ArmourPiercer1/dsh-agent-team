@@ -191,6 +191,13 @@ export const S6_REMOTE_ERROR_CODES = {
   OVERRIDE_TARGET_REQUIRED: 'TEAM_REMOTE_OVERRIDE_TARGET_REQUIRED',
   /** A31 — team.create names a blueprint snapshot the bound TeamSession does not carry. */
   TEAM_CREATE_BLUEPRINT_MISMATCH: 'TEAM_REMOTE_TEAM_CREATE_BLUEPRINT_MISMATCH',
+  /** D-3 — team.create: the live glue exposes no root-agent start port (a
+   *  created team must own a live leader; failing closed). */
+  TEAM_CREATE_ROOT_START_UNAVAILABLE: 'TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE',
+  /** D-3 — team.create: starting the root (leader) agent of the created or
+   *  retained root failed (the durable bind is preserved; the retry
+   *  re-drives the start on the cold path). */
+  TEAM_CREATE_ROOT_START_FAILED: 'TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED',
 } as const
 
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES]
@@ -453,6 +460,18 @@ export interface S6RemoteOptions {
    * run — the T12 window latch of runs #5-#13).
    */
   readonly messaging: MessagingCoordinator
+  /**
+   * D-3 — the root (leader) agent start surface behind `team.create`:
+   * starts (create-or-ensure, idempotent per rootSessionId) the real DSH
+   * Agent for the created or retained root through the SAME glue port the
+   * with-context handoff uses (`createRootAgent`). A fresh root has no
+   * session artifact yet, so the port takes the `agents.create` path (the
+   * validated handoff shape: the host owns the session — NO native root).
+   * Absent (test worlds without a live glue): `team.create` fails closed
+   * with a typed error — a created team must own a live leader, and a
+   * remote that cannot start one must not pretend otherwise.
+   */
+  readonly startRootAgent?: (rootSessionId: string) => Promise<void>
   /** The deterministic clock (ISO-8601). */
   readonly now: () => string
 }
@@ -772,6 +791,47 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       .filter((entry) => entry.rootSessionId === addressedRoot) as unknown as readonly Record<string, unknown>[]
   }
 
+  /**
+   * D-3 — the fail-closed `team.create` preflight: the created or
+   * retained root must own a LIVE leader agent (the team tools, the
+   * leader persona, the leader model), started through the SAME glue
+   * port the with-context handoff uses (`createRootAgent`). Runs BEFORE
+   * any durable effect (the handoff preflight discipline: a failed
+   * preflight leaves no partial team).
+   */
+  function requireStartRootAgentPort(): (rootSessionId: string) => Promise<void> {
+    const port = options.startRootAgent
+    if (port === undefined) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_ROOT_START_UNAVAILABLE,
+        'team.create cannot start the root (leader) agent: the live glue does not provide the createRootAgent port; a created team must own a live leader — failing closed before any durable effect',
+        { reason: 'root-start-unavailable' },
+      )
+    }
+    return port
+  }
+
+  /**
+   * D-3 — the root (leader) agent start behind `team.create` (the
+   * create-or-ensure, idempotent per rootSessionId). A port rejection is
+   * typed: the durable bind already landed, the team row stays durable,
+   * and the retry (cold path) re-drives the start.
+   */
+  async function startRootAgent(rootSessionId: string): Promise<void> {
+    try {
+      await requireStartRootAgentPort()(rootSessionId)
+    } catch (error) {
+      if (error instanceof TeamPluginError) throw error
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_CREATE_ROOT_START_FAILED,
+        `team.create: starting the root (leader) agent for '${rootSessionId}' failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        { reason: 'root-start-failed' },
+      )
+    }
+  }
+
   return {
     // --- 1/12 catalog: host catalog discovery (read-only) ---------------------------
     catalog: {
@@ -833,6 +893,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // admission all host-validated) and grants NO authority over
         // existing teams — every other team-scoped method still asserts
         // ownership.
+        // D-3 — the fail-closed preflight: the created or retained root must
+        // own a LIVE leader agent (the team tools, the leader persona, the
+        // leader model) started through the glue's createRootAgent port.
+        // Absent port → typed UNAVAILABLE BEFORE any durable effect (no
+        // partial team; the handoff preflight discipline).
+        requireStartRootAgentPort()
         const resolved = resolveBlueprint(blueprintId, blueprintRevision)
         // BC-03 / R1-A: optional initial work admitted through the EXISTING
         // work-admission path (facade follow-up on the leader instance).
@@ -903,6 +969,15 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
               : {}),
           })
         }
+        // D-3 — the created/retained root must own a LIVE leader agent:
+        // start it (create-or-ensure) BEFORE any initial work delivery —
+        // the delivery admits work to the live leader, and a fresh root
+        // has no session artifact yet (the port takes the `agents.create`
+        // path, the validated handoff shape: the host owns the session,
+        // NO native root). The durable bind already landed: a start
+        // failure is typed, the team row stays durable, and the retry
+        // (cold path) re-drives the start.
+        await startRootAgent(requestedRootSessionId)
         if (initialWorkRequest !== undefined) {
           await options.runtime.performAction(initialWorkRequest)
         }

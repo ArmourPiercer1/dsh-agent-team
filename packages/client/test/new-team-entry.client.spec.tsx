@@ -9,9 +9,10 @@
  * (§3.1), the panel is the T7 surface (no handoff block: no handoff face
  * or source is wired), the fresh empty draft per open, and close timings
  * (cancel button, backdrop click; a successful create closes the overlay
- * BEFORE the native session switch, then navigates to the new root). R121:
- * the fresh draft is prefilled with the workspace containing the current
- * session (no current session -> the Default workspace is preserved).
+ * as soon as the creation-path open lands on the minted root — D-3).
+ * R121: the fresh draft is prefilled with the workspace containing the
+ * current session (no current session -> the Default workspace is
+ * preserved).
  */
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -68,9 +69,8 @@ interface EntryFace {
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
   teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
-  createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
+  openCreatedSession: (sessionId: string) => Promise<void>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
-  openSession: (sessionId: string) => void
   currentSessionId: () => string | null
 }
 
@@ -80,11 +80,10 @@ function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
     teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'ts-1' }, 'team.create'))),
-    createRootSession: vi.fn(() => Promise.resolve('root-1')),
+    openCreatedSession: vi.fn(() => Promise.resolve()),
     listAgentPresets: vi.fn(() => Promise.resolve([
       { id: 'team', name: 'Team', isDefault: false },
     ] satisfies readonly TeamPresetRow[])),
-    openSession: vi.fn(),
     currentSessionId: () => null,
     ...overrides,
   }
@@ -128,9 +127,8 @@ function entryProps(
     getCatalog: face.getCatalog,
     probeCompatibility: face.probeCompatibility,
     teamCreate: face.teamCreate,
-    createRootSession: face.createRootSession,
+    openCreatedSession: face.openCreatedSession,
     listAgentPresets: face.listAgentPresets,
-    openSession: face.openSession,
     currentSessionId: face.currentSessionId,
     t: makeTranslate(zh),
   }
@@ -190,9 +188,9 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     // The panel is the T7 surface: no handoff face/source is wired, so the
     // handoff block is absent entirely.
     expect(view.container.querySelector('[data-intent-handoff]')).toBeNull()
-    // §3.1: opening the overlay created NO session.
-    expect(face.createRootSession).toHaveBeenCalledTimes(0)
-    expect(face.openSession).toHaveBeenCalledTimes(0)
+    // §3.1: opening the overlay created NO session (and no creation-path
+    // open — the host mints the root only during team.create, D-3).
+    expect(face.openCreatedSession).toHaveBeenCalledTimes(0)
     // The catalog lands: the loud unselected placeholder owns the empty
     // value and the create gate stays closed (R119 regression surface).
     await vi.waitFor(() => {
@@ -232,8 +230,12 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
   })
 
-  it('a successful create closes the overlay BEFORE switching to the freshly opened root (UI §4.3 canonical order)', async () => {
-    const face = makeFace()
+  it('a successful create closes the overlay once the creation-path open lands on the minted root (UI §4.3 order; D-3)', async () => {
+    const teamCreateMock = vi.fn(
+      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ teamSessionId: 'ts-1' }, 'team.create')),
+    )
+    const face = makeFace({ teamCreate: teamCreateMock })
     const view = render(<NewTeamEntry {...entryProps(true, face)} />)
     fireEvent.click(entryButton(view.container))
     await vi.waitFor(() => {
@@ -249,14 +251,17 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     })
     fireEvent.click(createButton(view.container))
     await vi.waitFor(() => {
-      expect(face.openSession).toHaveBeenCalledTimes(1)
+      expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
     })
-    // The canonical order: native root first, then the frozen create, then
-    // the switch to the SAME root — and the overlay is already closed by
-    // the time the switch lands.
-    expect(face.createRootSession).toHaveBeenCalledTimes(1)
+    // The canonical order (D-3): the MINTED root id, then the frozen
+    // create on that id (the host mints the session + starts the leader),
+    // then the creation-path open of the SAME id — and the overlay closes
+    // as soon as that open resolves.
     expect(face.teamCreate).toHaveBeenCalledTimes(1)
-    expect(face.openSession).toHaveBeenCalledWith('root-1')
+    const createParams = teamCreateMock.mock.calls[0]![0]!
+    expect(typeof createParams.rootSessionId).toBe('string')
+    expect(createParams.rootSessionId.startsWith('session-')).toBe(true)
+    expect(face.openCreatedSession).toHaveBeenCalledWith(createParams.rootSessionId)
     expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
   })
 

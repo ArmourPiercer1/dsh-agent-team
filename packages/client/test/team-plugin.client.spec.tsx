@@ -112,8 +112,10 @@ function makeFixture(): Fixture {
     },
   }
 
-  // The public sessions seam double (Seam 3, open/create; the `list` read
-  // face is the R121 prefill source — no current session in the fixture).
+  // The public sessions seam double (Seam 3, open/create/refresh; the
+  // `list` read face is the R121 prefill source — no current session in
+  // the fixture). `refresh` is the D-3 creation-path re-pull (unused by
+  // this spec's flows, present for the face contract).
   const sessions = {
     create: async (o?: { readonly workspaceId?: string }): Promise<string> => {
       void o
@@ -122,6 +124,7 @@ function makeFixture(): Fixture {
     open: (sessionId: string): void => {
       void sessionId
     },
+    refresh: async (): Promise<void> => undefined,
     list: {
       getSnapshot: () => ({ current: undefined }),
       subscribe: () => () => {},

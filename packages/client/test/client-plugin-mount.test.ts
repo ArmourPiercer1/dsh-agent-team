@@ -150,6 +150,10 @@ interface MountFixture {
   readonly sessions: {
     readonly opened: string[]
     readonly created: Array<{ workspaceId?: string } | null>
+    /** Park a host-created session id for the next `refresh` (D-3 lag). */
+    readonly announceHostSession: (sessionId: string) => void
+    /** The `refresh` call count (the creation-path re-pull lane). */
+    readonly refreshCount: () => number
   }
 }
 
@@ -216,22 +220,40 @@ function makeMount(
 
   // The public sessions seam double (Seam 3, RENAMED open/create; the `list`
   // read face is the R121 prefill source — no current session in the
-  // fixture, so `currentSessionId()` answers null).
+  // fixture, so `currentSessionId()` answers null). D-3: `open` throws for
+  // an unknown id (the real `sessions.select` contract) — the host-created
+  // root may not be in the client list store when the RPC lands, so the
+  // double models the lag: `announceHostSession` parks an id that the next
+  // `refresh` lands in the known set.
   const opened: string[] = []
   const created: Array<{ workspaceId?: string } | null> = []
-  let rootCounter = 0
+  const knownSessions = new Set<string>(['m1'])
+  const pendingHostSessions: string[] = []
+  let refreshCount = 0
   const sessions = {
     create: async (o?: { readonly workspaceId?: string }): Promise<string> => {
       created.push(o ?? null)
-      return `root-${++rootCounter}`
+      const id = `root-${created.length + 1}`
+      knownSessions.add(id)
+      return id
     },
     open: (sessionId: string): void => {
+      if (!knownSessions.has(sessionId)) {
+        throw new Error(`sessions.select: unknown session ${sessionId}`)
+      }
       opened.push(sessionId)
+    },
+    refresh: async (): Promise<void> => {
+      refreshCount++
+      for (const id of pendingHostSessions.splice(0)) knownSessions.add(id)
     },
     list: {
       getSnapshot: () => ({ current: undefined }),
       subscribe: () => () => {},
     },
+  }
+  const announceHostSession = (sessionId: string): void => {
+    pendingHostSessions.push(sessionId)
   }
 
   // The public remote seam double (Seam 6, SAME). The upstream public
@@ -348,7 +370,7 @@ function makeMount(
     effects,
     disposeAll,
     generation: { set: generation.set },
-    sessions: { opened, created },
+    sessions: { opened, created, announceHostSession, refreshCount: () => refreshCount },
   }
 }
 
@@ -437,8 +459,28 @@ const aScenario = await (async () => {
   await viewFace.refreshTeamLedger()
   const ledgerLogAfterRefresh = a.log.filter((c) => c.endpoint === 'team.getLedgerPage').length
 
-  // The native seam members (the public sessions seam).
-  const rootId = await creation.createRootSession({ workspaceId: 'w1' })
+  // The native seam members (the public sessions seam) — D-3: the creation
+  // face no longer pre-creates natively (createRootSession is gone; the
+  // host mints the root during team.create). It carries the robust
+  // creation-path open: the host list lag is modeled by the double
+  // (open misses, ONE refresh lands the session, the retry open succeeds);
+  // a session the host never creates rejects verbatim after the re-pull;
+  // a known session opens without a re-pull.
+  a.sessions.announceHostSession('host-root-1')
+  let createdOpenOk = false
+  await creation.openCreatedSession('host-root-1').then(() => {
+    createdOpenOk = true
+  })
+  const refreshAfterLag = a.sessions.refreshCount()
+  const failingOpenMessage = await creation
+    .openCreatedSession('host-root-2')
+    .then(
+      () => 'RESOLVED (unexpected)',
+      (error: unknown) => (error instanceof Error ? error.message : String(error)),
+    )
+  const refreshAfterFail = a.sessions.refreshCount()
+  await creation.openCreatedSession('m1')
+  const refreshAfterKnown = a.sessions.refreshCount()
   viewFace.openSession('m1')
 
   const settingsReg = a.registers.find(
@@ -487,7 +529,11 @@ const aScenario = await (async () => {
     legacyCall: a.log.find((c) => c.endpoint === 'legacy.inspect'),
     presetsOut,
     ledgerLogAfterRefresh,
-    rootId,
+    createdOpenOk,
+    refreshAfterLag,
+    refreshAfterFail,
+    refreshAfterKnown,
+    failingOpenMessage,
     created: a.sessions.created,
     opened: a.sessions.opened,
   }
@@ -634,18 +680,20 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect((o.label as () => string)()).toBe('team:entry.label')
     expect(typeof o.inject).toBe('function')
     expect(aScenario.newTeamComponent).toBe(aScenario.components.newTeamEntry)
-    // The injected face: the S5-A creation face members plus the public
-    // session switch. NO handoff face — the overlay is the T7 surface
-    // (frozen UI design §3.1: the global entry is session-independent).
+    // The injected face: the S5-A creation face members plus the
+    // creation-path session open (D-3). NO handoff face — the overlay is
+    // the T7 surface (frozen UI design §3.1: the global entry is
+    // session-independent).
     const inject = (o.inject as () => Record<string, unknown>)()
     expect(typeof inject.listCatalog).toBe('function')
     expect(typeof inject.getCatalog).toBe('function')
     expect(typeof inject.probeCompatibility).toBe('function')
     expect(typeof inject.teamCreate).toBe('function')
-    expect(typeof inject.createRootSession).toBe('function')
+    expect(typeof inject.openCreatedSession).toBe('function')
     expect(typeof inject.listAgentPresets).toBe('function')
-    expect(typeof inject.openSession).toBe('function')
     expect(typeof inject.currentSessionId).toBe('function')
+    expect('openSession' in inject).toBe(false)
+    expect('createRootSession' in inject).toBe(false)
     // R121: the prefill read face answers the Seam 3 current selection
     // (null in the fixture — no session is selected).
     expect((inject.currentSessionId as () => string | null)()).toBeNull()
@@ -662,7 +710,7 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     const creation = face.creation
     if (creation === undefined) throw new Error('mount test: creation face missing')
     expect(typeof creation.listCatalog).toBe('function')
-    expect(typeof creation.createRootSession).toBe('function')
+    expect(typeof creation.openCreatedSession).toBe('function')
     expect(typeof creation.listAgentPresets).toBe('function')
     expect(typeof face.memberCommands).toBe('object')
     expect(typeof face.governance).toBe('object')
@@ -737,10 +785,24 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(aScenario.ledgerLogAfterRefresh).toBe(2)
   })
 
-  it('the native seam members create and open sessions through the sessions seam', () => {
-    expect(aScenario.rootId).toBe('root-1')
-    expect(aScenario.created).toEqual([{ workspaceId: 'w1' }])
-    expect(aScenario.opened).toEqual(['m1'])
+  it('the creation-path open re-pulls the host list once for a lagging host-created root (D-3)', () => {
+    expect(aScenario.createdOpenOk).toBe(true)
+    // Exactly ONE re-pull for the lagging root; a known session opens
+    // without one (the plain path is untouched).
+    expect(aScenario.refreshAfterLag).toBe(1)
+    expect(aScenario.refreshAfterKnown).toBe(aScenario.refreshAfterFail)
+    // The lag path: the retry open lands after the refresh; the plain D9
+    // open lane still works for a known session.
+    expect(aScenario.opened).toEqual(['host-root-1', 'm1', 'm1'])
+    // D-3: no native pre-creation anywhere in the mount (the host mints
+    // the root during team.create).
+    expect(aScenario.created).toEqual([])
+  })
+
+  it('a creation-path open that survives the re-pull rejects verbatim (D-3)', () => {
+    expect(aScenario.failingOpenMessage).toBe('sessions.select: unknown session host-root-2')
+    // The failed open still consumed exactly one re-pull attempt.
+    expect(aScenario.refreshAfterFail).toBe(aScenario.refreshAfterLag + 1)
   })
 })
 

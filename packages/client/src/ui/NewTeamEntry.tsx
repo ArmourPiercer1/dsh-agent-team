@@ -44,9 +44,10 @@ import styles from './NewTeamEntry.module.css'
 
 /**
  * The injected face of the global New Team entry: the S5-A creation face
- * members (the frozen Remote wrappers verbatim) plus the native session
- * switch — the same seams the TeamView zero-state panel consumes — and the
- * current-selection read the R121 draft prefill consumes.
+ * members (the frozen Remote wrappers verbatim) plus the creation-path
+ * session open (D-3 — the host-created root, with the one host-list
+ * re-pull) — the same seams the TeamView zero-state panel consumes — and
+ * the current-selection read the R121 draft prefill consumes.
  */
 export interface NewTeamEntryInjected {
   /** `catalog.list` (raw RemoteResponse). */
@@ -57,10 +58,12 @@ export interface NewTeamEntryInjected {
   readonly probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
   /** `team.create` (binds the TeamSession on the named root). */
   readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
-  /** Native root-session creation (the public `ISessions.create`). */
-  readonly createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
-  /** Native session switch (the public `ISessions.open`). */
-  readonly openSession: (sessionId: string) => void
+  /**
+   * The creation-path session open (D-3): opens the host-created root
+   * session, re-pulling the host list once when the stream increment
+   * lags the RPC. Rejects when the session is unknown after the re-pull.
+   */
+  readonly openCreatedSession: (sessionId: string) => Promise<void>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /** The currently selected native session id (the Seam 3 list read face; null = none). */
@@ -86,7 +89,7 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const {
     wide,
     listCatalog, getCatalog, probeCompatibility, teamCreate,
-    createRootSession, listAgentPresets, openSession, currentSessionId,
+    openCreatedSession, listAgentPresets, currentSessionId,
     useWorkspaces, t,
   } = props
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -99,13 +102,14 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const openOverlay = (): void => {
     // §3.1: opening the overlay creates NO session — it only mounts the
     // Team-owned panel on a fresh draft.
-    // R121 (live-trial finding): an unselected workspace means "Default
-    // workspace" (UI §8) — the native create would land the Root in the
-    // shell's default (process-cwd) workspace, orphaning the created team
-    // from the user's workspace sidebar/mirror. Prefill the draft from the
-    // current selection (the §32.2 prefill pattern, session-independent):
-    // the workspace containing the current session. The user can still
-    // change it in the panel (or clear it back to Default).
+    // R121 (live-trial finding): prefill the draft from the current
+    // selection (the §32.2 prefill pattern, session-independent): the
+    // workspace containing the current session. D-3 note: the created
+    // Root session is created by the HOST during `team.create` and lands
+    // in the host's default workspace (the frozen team.create params
+    // carry no workspace field) — the selector is informational (frozen
+    // UI surface), it no longer steers the root's location. The user can
+    // still change it in the panel (or clear it back to Default).
     const sid = currentSessionId()
     const workspaceId = sid === null
       ? null
@@ -116,13 +120,15 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const closeOverlay = (): void => {
     setOverlayOpen(false)
   }
-  // The ONE close timing that must outlive the panel: a successful create
-  // navigates to the freshly opened root, so the overlay closes BEFORE the
-  // native session switch (the panel calls this after `team.create` ok).
-  const openSessionAfterCreate = (sessionId: string): void => {
-    closeOverlay()
-    openSession(sessionId)
-  }
+  // The close timing (D-3): a successful create navigates to the freshly
+  // opened root, so the overlay closes as SOON AS the creation-path open
+  // succeeds (the panel awaits this after `team.create` ok). A failed open
+  // rejects before the close — the overlay (and the panel's typed error
+  // lane) stays visible; the root remains openable from the session list.
+  const openSessionAfterCreate = (sessionId: string): Promise<void> =>
+    openCreatedSession(sessionId).then(() => {
+      closeOverlay()
+    })
 
   return (
     <>
@@ -156,9 +162,8 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
               getCatalog={getCatalog}
               probeCompatibility={probeCompatibility}
               teamCreate={teamCreate}
-              createRootSession={createRootSession}
+              openCreatedSession={openSessionAfterCreate}
               listAgentPresets={listAgentPresets}
-              openSession={openSessionAfterCreate}
               workspaces={workspaces}
               draft={draft}
               onDraftChange={setDraft}

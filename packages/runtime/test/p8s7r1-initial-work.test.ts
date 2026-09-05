@@ -25,6 +25,15 @@
  *   existing `TEAM_RUNTIME_REQUEST_MALFORMED` pass-through (NO new error
  *   code), and NO partial creation: the TeamSession row is still absent,
  *   the leader row was never minted by the create, zero work facts.
+ * - D-3 the created/retained root must own a LIVE leader agent: every
+ *   `team.create` drives the glue's `createRootAgent` port (the same port
+ *   the with-context handoff uses) — D3a the FRESH create starts it
+ *   exactly once BEFORE the initial work lands; D3b the COLD retry
+ *   re-drives it (create-or-ensure per root id); D3c ABSENT port → typed
+ *   `TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE` fail-closed BEFORE
+ *   any durable effect (no partial team); D3d a REJECTING port → typed
+ *   `TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED`, the durable bind stays
+ *   durable, no initial work delivered (the retry re-drives the start).
  *
  * Method: top-level-await scenario capture over REAL TeamDomain worlds
  * (testkit FileStorageSeam, P6-T2 fixtures) with the P8-S3 production
@@ -111,7 +120,11 @@ function fenceRuntime(world: P6T1World): TeamRuntime {
   })
 }
 
-function buildOptions(world: P6T1World, runtime: TeamRuntime): S6RemoteOptions {
+function buildOptions(
+  world: P6T1World,
+  runtime: TeamRuntime,
+  startRootAgent?: (rootSessionId: string) => Promise<void>,
+): S6RemoteOptions {
   const rootBinding: S6RootBindingPort = {
     bindFresh: (input) => bindFreshTeamRoot(rootBindingPorts(world), input),
     rehydrateCold: (input) => rehydrateColdTeamRoot(rootBindingPorts(world), input),
@@ -140,6 +153,10 @@ function buildOptions(world: P6T1World, runtime: TeamRuntime): S6RemoteOptions {
     legacyInspect: unused as unknown as LegacyInspectFn,
     legacyHome: undefined,
     messaging: { sendTeamMessage: unused, recoverPendingDeliveries: unused },
+    // D-3 — the root (leader) agent start port: the production host wires
+    // the glue's createRootAgent here; this test records (or withholds, or
+    // fails) it per scenario.
+    ...(startRootAgent !== undefined ? { startRootAgent } : {}),
     principal: createServerPrincipalDerivation({
       rootSessionId: P6T2_ROOT,
       repositories: world.domain.repositories,
@@ -149,10 +166,13 @@ function buildOptions(world: P6T1World, runtime: TeamRuntime): S6RemoteOptions {
   }
 }
 
-function buildDispatcher(world: P6T1World): RemoteDispatcher {
+function buildDispatcher(
+  world: P6T1World,
+  startRootAgent?: (rootSessionId: string) => Promise<void>,
+): RemoteDispatcher {
   const runtime = fenceRuntime(world)
-  const ports = createS6RemotePorts(buildOptions(world, runtime))
-  return createS6RemoteDispatcher(ports, buildOptions(world, runtime).principal)
+  const ports = createS6RemotePorts(buildOptions(world, runtime, startRootAgent))
+  return createS6RemoteDispatcher(ports, buildOptions(world, runtime, startRootAgent).principal)
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +208,7 @@ interface CreateSnapshot {
   readonly error: {
     readonly code: string
     readonly causeCode: string | undefined
+    readonly message: string
   } | undefined
   readonly workFacts: number
   readonly factPrompt: string | undefined
@@ -227,6 +248,7 @@ async function runCreate(
     error: {
       code: error.code,
       causeCode: cause.cause === undefined ? undefined : String(cause.cause.code ?? ''),
+      message: error.message,
     },
     workFacts,
     factPrompt: firstFactPrompt(world, LEADER_ID),
@@ -238,8 +260,15 @@ async function runCreate(
 // Scenario capture (top-level await; the `it` bodies assert only)
 // ---------------------------------------------------------------------------
 
+// D-3 — every team.create drives the root (leader) agent start port, so
+// each world in this file routes a RECORDING port (the calls are asserted
+// in the D3 scenarios below).
 const worldCold = await createP6T2World('p8s7r1-cold', ['leader', 'worker'])
-const dispatcherCold = buildDispatcher(worldCold)
+const coldStarts: string[] = []
+const dispatcherCold = buildDispatcher(worldCold, (id) => {
+  coldStarts.push(id)
+  return Promise.resolve()
+})
 const snapAbsent = await runCreate(dispatcherCold, worldCold, undefined)
 const snapPresent = await runCreate(dispatcherCold, worldCold, WORK)
 const snapRetry = await runCreate(dispatcherCold, worldCold, WORK)
@@ -252,20 +281,61 @@ const worldFresh = await createP6T2World('p8s7r1-fresh', ['leader', 'worker'])
 // (ROOT_BINDING_TEAM_SESSION_CONFLICT), not a fresh-create input.
 const deletedFresh = await worldFresh.domain.repositories.teamSessions.delete(P6T2_ROOT)
 const deletedFreshBinding = await worldFresh.domain.repositories.sessionBindings.delete(P6T2_ROOT)
-const dispatcherFresh = buildDispatcher(worldFresh)
+const freshStarts: string[] = []
+const dispatcherFresh = buildDispatcher(worldFresh, (id) => {
+  freshStarts.push(id)
+  return Promise.resolve()
+})
 const snapFresh = await runCreate(dispatcherFresh, worldFresh, WORK)
 destroyP6T1World(worldFresh)
 
 const worldMalformed = await createP6T2World('p8s7r1-malformed', ['leader', 'worker'])
 const deletedMalformed = await worldMalformed.domain.repositories.teamSessions.delete(P6T2_ROOT)
 const deletedMalformedBinding = await worldMalformed.domain.repositories.sessionBindings.delete(P6T2_ROOT)
-const dispatcherMalformed = buildDispatcher(worldMalformed)
+const malformedStarts: string[] = []
+const dispatcherMalformed = buildDispatcher(worldMalformed, (id) => {
+  malformedStarts.push(id)
+  return Promise.resolve()
+})
 const snapMalformed = await runCreate(
   dispatcherMalformed,
   worldMalformed,
   { note: 'an initial work without the required prompt' },
 )
 destroyP6T1World(worldMalformed)
+
+// D-3 — the root (leader) agent start behind team.create, on genuinely
+// unbound (fresh) roots.
+const worldD3Fresh = await createP6T2World('p8s7r1-d3-fresh', ['leader', 'worker'])
+const deletedD3Fresh = await worldD3Fresh.domain.repositories.teamSessions.delete(P6T2_ROOT)
+const deletedD3FreshBinding = await worldD3Fresh.domain.repositories.sessionBindings.delete(P6T2_ROOT)
+const d3Starts: string[] = []
+const dispatcherD3Fresh = buildDispatcher(worldD3Fresh, (id) => {
+  d3Starts.push(id)
+  return Promise.resolve()
+})
+const snapD3Fresh = await runCreate(dispatcherD3Fresh, worldD3Fresh, WORK)
+destroyP6T1World(worldD3Fresh)
+
+// D3b — the glue WITHOUT the start port (no live glue): typed fail-closed
+// before any durable effect.
+const worldD3NoPort = await createP6T2World('p8s7r1-d3-nop', ['leader', 'worker'])
+const deletedD3NoPort = await worldD3NoPort.domain.repositories.teamSessions.delete(P6T2_ROOT)
+const deletedD3NoPortBinding = await worldD3NoPort.domain.repositories.sessionBindings.delete(P6T2_ROOT)
+const dispatcherD3NoPort = buildDispatcher(worldD3NoPort)
+const snapD3NoPort = await runCreate(dispatcherD3NoPort, worldD3NoPort, WORK)
+destroyP6T1World(worldD3NoPort)
+
+// D3c — a REJECTING start port: the durable bind stays durable, typed
+// failure, no initial-work delivery.
+const worldD3Fail = await createP6T2World('p8s7r1-d3-fail', ['leader', 'worker'])
+const deletedD3Fail = await worldD3Fail.domain.repositories.teamSessions.delete(P6T2_ROOT)
+const deletedD3FailBinding = await worldD3Fail.domain.repositories.sessionBindings.delete(P6T2_ROOT)
+const dispatcherD3Fail = buildDispatcher(worldD3Fail, () =>
+  Promise.reject(new Error('glue: leader start refused')),
+)
+const snapD3Fail = await runCreate(dispatcherD3Fail, worldD3Fail, WORK)
+destroyP6T1World(worldD3Fail)
 
 // ---------------------------------------------------------------------------
 // Assertions
@@ -324,5 +394,65 @@ describe('P8-S7R1 R1-A C1: team.create optional initialWork (runtime admission)'
     expect(snapMalformed.teamRowPresent).toBe(false)
     expect(snapMalformed.workFacts).toBe(0)
     expect(snapMalformed.factPrompt).toBe(undefined)
+    // the fail-closed start preflight passes (the port IS present) and the
+    // malformed work never reaches the durable bind — the start was never
+    // driven.
+    expect(malformedStarts).toEqual([])
+  })
+
+  // -------------------------------------------------------------------------
+  // D-3 — the created/retained root must own a LIVE leader agent:
+  // team.create drives the glue's createRootAgent port on BOTH paths.
+  // -------------------------------------------------------------------------
+
+  it('D3a: the FRESH create starts the root (leader) agent exactly once, BEFORE the initial work lands', () => {
+    expect(deletedD3Fresh).toBe(true)
+    expect(deletedD3FreshBinding).toBe(true)
+    expect(snapD3Fresh.ok).toBe(true)
+    expect(snapD3Fresh.path).toBe('fresh-root')
+    // exactly ONE start, on the requested root
+    expect(d3Starts).toEqual([P6T2_ROOT])
+    // the initial work landed only AFTER the start (the handler's order):
+    // the delivery admits work to the live leader
+    expect(snapD3Fresh.workFacts).toBe(1)
+    expect(snapD3Fresh.factPrompt).toBe(WORK['prompt'])
+    // the durable bind preceded the start (the row is present)
+    expect(snapD3Fresh.teamRowPresent).toBe(true)
+  })
+
+  it('D3b: the COLD retry of the same create re-drives the start (create-or-ensure per root id)', () => {
+    // the COLD world's three creates (C1a-C1c) each drove the start:
+    // exactly ONE per attempt, on the bound root — the retry path re-drives
+    // the create-or-ensure against the retained root.
+    expect(coldStarts).toEqual([P6T2_ROOT, P6T2_ROOT, P6T2_ROOT])
+  })
+
+  it('D3c: absent start port — typed fail-closed, NO partial creation (no durable bind, no work fact)', () => {
+    expect(deletedD3NoPort).toBe(true)
+    expect(deletedD3NoPortBinding).toBe(true)
+    expect(snapD3NoPort.ok).toBe(false)
+    expect(snapD3NoPort.error?.code).toBe('TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE')
+    expect(snapD3NoPort.error?.causeCode).toBe('TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE')
+    // the typed message names the missing port (shim: toBe on a predicate)
+    expect(snapD3NoPort.error?.message === undefined
+      || snapD3NoPort.error?.message.includes('createRootAgent port')).toBe(true)
+    // fail-closed BEFORE any durable effect (the handoff preflight discipline)
+    expect(snapD3NoPort.teamRowPresent).toBe(false)
+    expect(snapD3NoPort.workFacts).toBe(0)
+  })
+
+  it('D3d: a rejecting start port — typed, the durable bind stays durable, no initial work delivered', () => {
+    expect(deletedD3Fail).toBe(true)
+    expect(deletedD3FailBinding).toBe(true)
+    expect(snapD3Fail.ok).toBe(false)
+    expect(snapD3Fail.error?.code).toBe('TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED')
+    // the port rejection is surfaced verbatim in the typed message
+    // (shim: toBe on a predicate)
+    expect(snapD3Fail.error?.message === undefined
+      || snapD3Fail.error?.message.includes('glue: leader start refused')).toBe(true)
+    // the durable bind already landed: the team row stays durable and the
+    // retry (cold path) re-drives the start
+    expect(snapD3Fail.teamRowPresent).toBe(true)
+    expect(snapD3Fail.workFacts).toBe(0)
   })
 })

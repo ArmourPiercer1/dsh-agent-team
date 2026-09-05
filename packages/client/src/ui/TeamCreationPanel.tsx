@@ -9,14 +9,19 @@
  * default-checked) acknowledgement, FATAL ✕ with no Continue-anyway
  * (the §7.4 complete-persona preset conflict gets its dedicated copy).
  *
- * Create sequence (UI §4.3 canonical order, locked T7): CREATING → native
- * `createRootSession` (the Root DSH session, carrying the selected
- * workspace) → frozen `team.create` (binds the TeamSession, admits the
- * initial work through the real path) → `openSession(rootId)`. On a typed
- * `team.create` failure the panel stays mounted on CREATION_FAILED with
- * the typed error preserved verbatim (NO optimistic authority patch) and a
- * RETRY that re-runs `team.create` on the SAME retained root (cold-root
- * recovery); the real root is never pretended away.
+ * Create sequence (UI §4.3 canonical order, locked T7; D-3 revision):
+ * CREATING → mint the Root session id client-side (`session-<uuid>`,
+ * {@link mintRootSessionId}) → frozen `team.create` (the host binds the
+ * TeamSession AND starts the root leader agent — the session is created
+ * by the host under the minted id, the validated handoff shape: NO native
+ * pre-created session, which would carry the standard preset agent the
+ * host cannot replace — and admits the initial work through the real
+ * path) → `openCreatedSession(rootId)` (one host-list re-pull covers the
+ * stream increment lagging the RPC). On a typed `team.create` failure the
+ * panel stays mounted on CREATION_FAILED with the typed error preserved
+ * verbatim (NO optimistic authority patch) and a RETRY that re-runs
+ * `team.create` on the SAME retained root (cold-root recovery); the real
+ * root is never pretended away.
  *
  * Authority discipline: the selected preset reaches the pre-creation
  * probe ONLY through the frozen `environmentFacts` channel (a persona
@@ -53,6 +58,7 @@ import {
   intentCreateGate,
   intentEnvironmentFacts,
   isPersonaPresetFatal,
+  mintRootSessionId,
   parseBlueprintDetail,
   parseCatalogList,
   parseCompatibilityResult,
@@ -123,13 +129,13 @@ export interface TeamCreationPanelProps {
   /** `team.create` (binds the TeamSession on the named root). */
   readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
   /**
-   * Native root-session creation (the public `ISessions.create`; the
-   * selected workspace is carried, the preset is probe-side in T7 — the
-   * frozen create face has no preset channel).
+   * The creation-path session open (D-3): opens the host-created root
+   * session (the host mints it during `team.create` — the client only
+   * mints the id), re-pulling the host list once when the stream
+   * increment lags the RPC. Rejects when the session is unknown even
+   * after the re-pull (the error lane).
    */
-  readonly createRootSession: (opts?: { readonly workspaceId?: string }) => Promise<string>
-  /** Native session switch (the public `ISessions.open`). */
-  readonly openSession: (sessionId: string) => void
+  readonly openCreatedSession: (sessionId: string) => Promise<void>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /**
@@ -182,7 +188,7 @@ function panelCompatStatus(
 export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Element {
   const {
     listCatalog, getCatalog, probeCompatibility, teamCreate,
-    createRootSession, openSession, listAgentPresets, workspaces,
+    openCreatedSession, listAgentPresets, workspaces,
     handoffSource, handoffFace,
     draft, onDraftChange, onCancel, t,
   } = props
@@ -448,15 +454,18 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
     if (blueprintId === null) return
     setCreating(true)
     setCreateError(null)
-    const workspaceId = draft.workspaceId
     void (async () => {
       try {
-        // 1) the real Root DSH session (retained on every later failure).
+        // 1) the minted Root session id (retained on every later
+        // failure). D-3: the HOST creates the session under this id
+        // during `team.create` (the leader agent owns it from birth);
+        // a native pre-create is forbidden — the standard preset agent
+        // of a natively created session can never be replaced (the DSH
+        // agent registry collision boundary), and the team would land
+        // on a paper root with no leader.
         let rootSessionId = createdRootId
         if (rootSessionId === null) {
-          rootSessionId = workspaceId !== null
-            ? await createRootSession({ workspaceId })
-            : await createRootSession()
+          rootSessionId = mintRootSessionId()
           setCreatedRootId(rootSessionId)
         }
         // 2) the frozen team.create on that root (cold path on retry).
@@ -470,15 +479,19 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
         const response = await teamCreate(params)
         if (!response.ok) {
           // CREATION_FAILED: the typed Remote result, verbatim (G5). The
-          // root is retained; RETRY re-runs team.create on the same root.
+          // root id is retained; RETRY re-runs team.create on the same
+          // root (the host re-drives the leader start on the cold path).
           setCreateError({ code: response.error.code, message: response.error.message })
           return
         }
-        // 3) Root + TeamSession exist → open the Root (UI §4.3 order).
-        openSession(rootSessionId)
+        // 3) Root + TeamSession exist (host-created) → open the Root
+        // (UI §4.3 order; the one host-list re-pull covers the stream
+        // increment lagging the RPC).
+        await openCreatedSession(rootSessionId)
       } catch (error) {
-        // Channel loss (the only Remote rejection kind) or a native
-        // create failure: a local marker code, the message verbatim.
+        // Channel loss (the only Remote rejection kind) or a failed
+        // creation-path open: a local marker code, the message verbatim.
+        // The minted root stays retained for RETRY either way.
         setCreateError({ code: 'native-error', message: throwableMessage(error) })
       } finally {
         setCreating(false)
@@ -491,8 +504,9 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   // patch (the panel renders the stored state / typed error verbatim), the
   // typed Remote result preserved (G5(b)), the new team's projection
   // cold-pulled exactly once — by the NEW session's TeamView after
-  // `openSession(rootSessionId)` (G5(c)) — and the rendered final state
-  // comes from that Projection (G5(d)).
+  // `openCreatedSession(rootSessionId)` (G5(c); D-3: the host-created
+  // session, one host-list re-pull covers the stream lag) — and the
+  // rendered final state comes from that Projection (G5(d)).
 
   /** The display failure: the typed response failure, else the stored
    * failing create state's code/message (verbatim, G5(b)). */
@@ -521,7 +535,7 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
     setHandoffRequestToken(token)
     void face
       .create({ sourceSessionId: source.sourceSessionId, requestToken: token })
-      .then(response => {
+      .then(async (response) => {
         if (!response.ok) {
           // Typed create failure (no stored state): the §32.4 triad with a
           // fresh-token retry (no operation exists under the used token).
@@ -532,12 +546,15 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
         setHandoffCreateState(state)
         if (state.kind === 'completed' || state.kind === 'completed-without-handoff') {
           // Root + TeamSession exist (invariant 9: the same id) → open the
-          // Root; the new session's TeamView cold-pulls the projection.
-          openSession(state.rootSessionId)
+          // Root (D-3: the host-created session, one host-list re-pull
+          // covers the stream lag); the new session's TeamView
+          // cold-pulls the projection.
+          await openCreatedSession(state.rootSessionId)
         }
       })
       .catch(error => {
-        // Channel loss (the only Remote rejection kind): a local marker.
+        // Channel loss (the only Remote rejection kind) or a failed
+        // creation-path open: a local marker.
         setHandoffFailed({ code: 'native-error', message: throwableMessage(error) })
       })
       .finally(() => {
@@ -567,8 +584,9 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
 
   const continueWithoutHandoff = (): void => {
     // Client-local EXPLICIT user decision (§32.4; plan §10.5: no backend
-    // method): the standard non-handoff create sequence (native root +
-    // `team.create`) — a new team WITHOUT handoff provenance.
+    // method): the standard non-handoff create sequence (minted root id +
+    // `team.create`, the host starts the leader — D-3) — a new team
+    // WITHOUT handoff provenance.
     setHandoffFailed(null)
     setHandoffCreateState(null)
     setHandoffRequestToken(null)
