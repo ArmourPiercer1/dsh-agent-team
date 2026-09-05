@@ -19,9 +19,11 @@ import {
   intentCreateGate,
   intentEnvironmentFacts,
   isPersonaPresetFatal,
+  mintRootWorkRequestToken,
   parseBlueprintDetail,
   parseCatalogList,
   parseCompatibilityResult,
+  planTeamCreateAttempt,
   selectDefaultPresetId,
   teamWorkspaceOptions,
   type IntentCompatibility,
@@ -221,7 +223,7 @@ describe('selectDefaultPresetId', () => {
 })
 
 describe('emptyTeamIntentDraft', () => {
-  it('is the fully blank page-run draft (no preselects, no acknowledgement)', () => {
+  it('is the fully blank page-run draft (no preselects, no acknowledgement, no work token yet)', () => {
     expect(emptyTeamIntentDraft).toEqual({
       blueprintId: null,
       revision: null,
@@ -229,7 +231,86 @@ describe('emptyTeamIntentDraft', () => {
       workspaceId: null,
       initialWork: '',
       ack: false,
+      rootWorkRequestToken: null,
     })
+  })
+})
+
+describe('mintRootWorkRequestToken', () => {
+  it('mints a fresh opaque token per call (the `team-work-<uuid>` shape)', () => {
+    const a = mintRootWorkRequestToken()
+    const b = mintRootWorkRequestToken()
+    expect(a.startsWith('team-work-')).toBe(true)
+    expect(b.startsWith('team-work-')).toBe(true)
+    expect(a).not.toBe(b)
+  })
+})
+
+describe('planTeamCreateAttempt', () => {
+  const OPTIONS = [
+    { id: 'ws-1', title: 'Default', path: 'D:/work/default' },
+    { id: 'ws-2', title: 'Side', path: 'D:/work/side' },
+  ]
+
+  it('resolves the selected workspace to its OPTION PATH (never the id) and freezes the draft fields', () => {
+    const planned = planTeamCreateAttempt('bp-a', {
+      revision: 3,
+      workspaceId: 'ws-2',
+      initialWork: '  scout the harbor  ',
+      rootWorkRequestToken: 'team-work-fixed',
+    }, OPTIONS)
+    expect(planned).toEqual({
+      ok: true,
+      plan: {
+        blueprintId: 'bp-a',
+        blueprintRevision: 3,
+        workspacePath: 'D:/work/side',
+        prompt: 'scout the harbor',
+        requestToken: 'team-work-fixed',
+      },
+    })
+  })
+
+  it('selects the host default workspace (no path) and no initial work (empty prompt) when the draft is blank', () => {
+    const planned = planTeamCreateAttempt('bp-a', {
+      revision: null,
+      workspaceId: null,
+      initialWork: '   ',
+      rootWorkRequestToken: null,
+    }, OPTIONS)
+    expect(planned.ok).toBe(true)
+    if (!planned.ok) throw new Error('unreachable')
+    expect(planned.plan.workspacePath).toBe(undefined)
+    expect(planned.plan.blueprintRevision).toBe(undefined)
+    expect(planned.plan.prompt).toBe('')
+    // No token yet -> the plan mints one (the panel writes it back to the
+    // draft so the page run owns it).
+    expect(planned.plan.requestToken.startsWith('team-work-')).toBe(true)
+  })
+
+  it('refuses loudly (NO RPC) when the selected workspace id is no longer in the feed', () => {
+    const planned = planTeamCreateAttempt('bp-a', {
+      revision: null,
+      workspaceId: 'ws-ghost',
+      initialWork: '',
+      rootWorkRequestToken: null,
+    }, OPTIONS)
+    expect(planned).toEqual({ ok: false, reason: 'unknown-workspace', workspaceId: 'ws-ghost' })
+  })
+
+  it('keeps the draft-owned token stable across plans for the same draft (retry identity)', () => {
+    const draft = {
+      revision: null,
+      workspaceId: null,
+      initialWork: 'work',
+      rootWorkRequestToken: 'team-work-stable' as string | null,
+    }
+    const first = planTeamCreateAttempt('bp-a', draft, OPTIONS)
+    const second = planTeamCreateAttempt('bp-a', draft, OPTIONS)
+    expect(first.ok && second.ok).toBe(true)
+    if (!first.ok || !second.ok) throw new Error('unreachable')
+    expect(first.plan.requestToken).toBe('team-work-stable')
+    expect(second.plan.requestToken).toBe(first.plan.requestToken)
   })
 })
 

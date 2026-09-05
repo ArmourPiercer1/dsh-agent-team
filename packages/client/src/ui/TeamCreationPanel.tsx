@@ -9,19 +9,27 @@
  * default-checked) acknowledgement, FATAL ✕ with no Continue-anyway
  * (the §7.4 complete-persona preset conflict gets its dedicated copy).
  *
- * Create sequence (UI §4.3 canonical order, locked T7; D-3 revision):
- * CREATING → mint the Root session id client-side (`session-<uuid>`,
- * {@link mintRootSessionId}) → frozen `team.create` (the host binds the
- * TeamSession AND starts the root leader agent — the session is created
- * by the host under the minted id, the validated handoff shape: NO native
- * pre-created session, which would carry the standard preset agent the
- * host cannot replace — and admits the initial work through the real
- * path) → `openCreatedSession(rootId)` (one host-list re-pull covers the
- * stream increment lagging the RPC). On a typed `team.create` failure the
- * panel stays mounted on CREATION_FAILED with the typed error preserved
- * verbatim (NO optimistic authority patch) and a RETRY that re-runs
- * `team.create` on the SAME retained root (cold-root recovery); the real
- * root is never pretended away.
+ * Create sequence (UI §4.3 canonical order, locked T7; D-3 revision; TCM
+ * M4 two-stage v2, plan §15.6): CREATING → freeze the attempt snapshot
+ * ({@link planTeamCreateAttempt}: the minted Root session id
+ * `session-<uuid>`, {@link mintRootSessionId}; the selected workspace's
+ * OPTION PATH — never the id; the trimmed prompt; the draft-owned stable
+ * work token) → `team.create` v2 (workspace-aware, CREATE-ONLY: NO
+ * initialWork — the host binds the TeamSession to the resolved workspace,
+ * creates the session under the minted id, and starts the root leader
+ * agent: NO native pre-created session, which would carry the standard
+ * preset agent the host cannot replace) → `openCreatedSession(rootId)`
+ * (one host-list re-pull covers the stream increment lagging the RPC) →
+ * when the attempt carries initial work: `team.admitInitialWork` v2 (the
+ * deferred creation-time initial work through the Team
+ * compatibility/admission authority). On a typed failure at ANY stage the
+ * panel stays mounted on the retained lane with the typed error preserved
+ * verbatim (NO optimistic authority patch) and a RETRY: a stage
+ * create/open failure re-runs the flow from `team.create` v2 on the SAME
+ * retained root (cold-root recovery); a stage work failure re-sends ONLY
+ * the admit with the SAME stable token + prompt (the real Root stays
+ * open). The flow never calls a native `sessions.create` and never falls
+ * into an ordinary New Session.
  *
  * Authority discipline: the selected preset reaches the pre-creation
  * probe ONLY through the frozen `environmentFacts` channel (a persona
@@ -41,7 +49,8 @@ import type {
   RemoteHandoffPrepareParams,
   RemoteIntentProbeParams,
   RemoteResponse,
-  RemoteTeamCreateParams,
+  RemoteTeamAdmitInitialWorkParams,
+  RemoteTeamCreateParamsV2,
 } from '../../../remote/src/index.js'
 import type {
   IntentBlueprintDetail,
@@ -50,6 +59,7 @@ import type {
   IntentCompatibility,
   IntentCompatibilityStatus,
   IntentCreateLabel,
+  TeamCreateAttempt,
   TeamIntentDraft,
   TeamPresetRow,
   TeamWorkspaceOption,
@@ -62,8 +72,13 @@ import {
   parseBlueprintDetail,
   parseCatalogList,
   parseCompatibilityResult,
+  planTeamCreateAttempt,
   selectDefaultPresetId,
 } from '../model/team-intent-model.js'
+import {
+  runTeamCreateFlow,
+  type TeamCreateFlowStage,
+} from '../model/team-create-flow.js'
 import {
   createRequestTokenGenerator,
 } from '../model/team-member-commands.js'
@@ -97,6 +112,17 @@ export interface TeamCreateError {
 }
 
 /**
+ * The panel's create-error lane (TCM M4): the typed failure PLUS the flow
+ * stage it belongs to. `create` / `open` → the retained root (RETRY re-
+ * runs the flow from `team.create` v2 — cold-root recovery); `work` → the
+ * real Root is already open (RETRY re-sends ONLY the admit, same stable
+ * token + prompt — the at-most-one initial-work slot is per-root).
+ */
+export interface TeamCreateLaneError extends TeamCreateError {
+  readonly stage: TeamCreateFlowStage
+}
+
+/**
  * The handoff source (UI §32.2: the current Session A + its workspace).
  * Absent (with the face) → no handoff block; the panel is the T7 surface.
  */
@@ -126,16 +152,38 @@ export interface TeamCreationPanelProps {
   readonly getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   /** `intent.probe` (the pre-creation compatibility probe). */
   readonly probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  /** `team.create` (binds the TeamSession on the named root). */
-  readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  /**
+   * `team.create` (contract v2, TCM M4 / plan §15.6) — the workspace-
+   * aware CREATE-ONLY creation: binds the TeamSession to the resolved
+   * workspace, creates the host session under the named root, and starts
+   * the root leader agent. Stamps contract version 2 (the ONLY creation
+   * wrapper the new UI uses; every non-create wrapper stays v1, §15.3).
+   */
+  readonly teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  /**
+   * `team.admitInitialWork` (contract v2, v2-only method, TCM M4 / plan
+   * §15.6) — the deferred creation-time initial work, admitted through
+   * the Team compatibility/admission authority after the root is open.
+   */
+  readonly teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   /**
    * The creation-path session open (D-3): opens the host-created root
-   * session (the host mints it during `team.create` — the client only
+   * session (the host mints it during `team.create` v2 — the client only
    * mints the id), re-pulling the host list once when the stream
    * increment lags the RPC. Rejects when the session is unknown even
    * after the re-pull (the error lane).
    */
   readonly openCreatedSession: (sessionId: string) => Promise<void>
+  /**
+   * TCM M4 (plan §7 minimum UI constraint) — the terminal-success face:
+   * called exactly ONCE when the two-stage flow settles successfully
+   * (root created + open AND, when the attempt carried initial work, the
+   * deferred work admitted). The owning surface (the entry overlay / the
+   * zero-state panel) may then close; on ANY failure the face is NOT
+   * called and the panel keeps its error lane + retry mounted (the
+   * overlay stays on the opened Root — no new banner architecture).
+   */
+  readonly onCreated?: () => void
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /**
@@ -187,10 +235,10 @@ function panelCompatStatus(
 /** The New Team creation panel (UI §3–§9). */
 export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Element {
   const {
-    listCatalog, getCatalog, probeCompatibility, teamCreate,
+    listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2,
     openCreatedSession, listAgentPresets, workspaces,
     handoffSource, handoffFace,
-    draft, onDraftChange, onCancel, t,
+    draft, onDraftChange, onCancel, t, onCreated,
   } = props
 
   // -- catalog + per-row details (the §6 picker display names) -------------
@@ -203,10 +251,17 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   const [checking, setChecking] = useState(false)
   const [compat, setCompat] = useState<IntentCompatibility | undefined>(undefined)
   const [detail, setDetail] = useState<IntentBlueprintDetail | undefined>(undefined)
-  // -- create (CREATING / CREATION_FAILED on the retained root) -------------
+  // -- create (CREATING / the retained lane on the frozen attempt) ----------
   const [creating, setCreating] = useState(false)
-  const [createdRootId, setCreatedRootId] = useState<string | null>(null)
-  const [createError, setCreateError] = useState<TeamCreateError | null>(null)
+  /**
+   * TCM M4 — the frozen parameter snapshot of the current creation attempt
+   * (plan §7.7): null = no attempt yet; set on the first create click and
+   * retained on every later failure (the RETRY re-runs against it — a
+   * changed draft can never alter a started create's parameters).
+   */
+  const [attempt, setAttempt] = useState<TeamCreateAttempt | null>(null)
+  /** The typed failure lane (stage + code + message, verbatim, G5). */
+  const [createError, setCreateError] = useState<TeamCreateLaneError | null>(null)
   // -- handoff (P9-T8 S5-D, UI §32): inert when the face or the source is
   // absent; enabled by default (§32.2) when both are present. -------------
   const [handoffEnabled, setHandoffEnabled] = useState<boolean>(
@@ -406,10 +461,13 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   }, [draft.blueprintId, draft.revision])
 
   // A blueprint / revision change starts a NEW creation attempt: the
-  // retained root and its error belong to the previous attempt (the old
-  // bound root stays real and reachable; it is never pretended away).
+  // retained attempt snapshot and its error belong to the previous
+  // attempt (the old bound root stays real and reachable; it is never
+  // pretended away). NOTE: the workspace / initial-work selections are
+  // deliberately NOT part of the attempt identity — retry freezes the
+  // snapshotted workspace path and prompt (plan §7.7).
   useEffect(() => {
-    setCreatedRootId(null)
+    setAttempt(null)
     setCreateError(null)
   }, [draft.blueprintId, draft.revision])
 
@@ -450,53 +508,76 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   const runCreate = (retry: boolean): void => {
     if (creating) return
     if (!retry && !gate.enabled) return
-    const blueprintId = draft.blueprintId
-    if (blueprintId === null) return
+    // A stale lane (the blueprint change already reset the attempt):
+    // nothing to retry.
+    if (retry && attempt === null) return
+    // TCM M4 (plan §7.7): a previous stage-`work` failure resumes ONLY
+    // the admit stage — the real Root is already open, and the SAME
+    // stable token + prompt replay (the at-most-one initial-work slot is
+    // per-root; a fresh token would be a different work intent). Every
+    // other failure (and every fresh attempt) runs the full create →
+    // open → (work) sequence.
+    const resumeAt: 'work' | undefined =
+      createError !== null && createError.stage === 'work' ? 'work' : undefined
     setCreating(true)
     setCreateError(null)
     void (async () => {
-      try {
-        // 1) the minted Root session id (retained on every later
-        // failure). D-3: the HOST creates the session under this id
-        // during `team.create` (the leader agent owns it from birth);
-        // a native pre-create is forbidden — the standard preset agent
-        // of a natively created session can never be replaced (the DSH
-        // agent registry collision boundary), and the team would land
-        // on a paper root with no leader.
-        let rootSessionId = createdRootId
-        if (rootSessionId === null) {
-          rootSessionId = mintRootSessionId()
-          setCreatedRootId(rootSessionId)
-        }
-        // 2) the frozen team.create on that root (cold path on retry).
-        const initialWork = draft.initialWork.trim()
-        const params: RemoteTeamCreateParams = {
-          rootSessionId,
-          blueprintId,
-          ...(draft.revision !== null ? { blueprintRevision: draft.revision } : {}),
-          ...(initialWork !== '' ? { initialWork: { prompt: initialWork } } : {}),
-        }
-        const response = await teamCreate(params)
-        if (!response.ok) {
-          // CREATION_FAILED: the typed Remote result, verbatim (G5). The
-          // root id is retained; RETRY re-runs team.create on the same
-          // root (the host re-drives the leader start on the cold path).
-          setCreateError({ code: response.error.code, message: response.error.message })
+      let snap = attempt
+      if (snap === null) {
+        // 1) freeze the attempt snapshot from the CURRENT draft (plan
+        // §7.2): the minted Root session id (D-3 — the HOST creates the
+        // session under it during `team.create` v2; a native pre-create
+        // is forbidden: the standard preset agent of a natively created
+        // session can never be replaced), the selected workspace
+        // option's PATH (never the id), the trimmed prompt, and the
+        // draft-owned stable work token.
+        const blueprintId = draft.blueprintId
+        if (blueprintId === null) return
+        const planned = planTeamCreateAttempt(blueprintId, draft, workspaces)
+        if (!planned.ok) {
+          // Unknown selected workspace: NO RPC (a local typed failure,
+          // the id verbatim; the user re-picks and clicks Create again).
+          setCreateError({
+            code: 'WORKSPACE_UNRESOLVED',
+            message: planned.workspaceId,
+            stage: 'create',
+          })
           return
         }
-        // 3) Root + TeamSession exist (host-created) → open the Root
-        // (UI §4.3 order; the one host-list re-pull covers the stream
-        // increment lagging the RPC).
-        await openCreatedSession(rootSessionId)
-      } catch (error) {
-        // Channel loss (the only Remote rejection kind) or a failed
-        // creation-path open: a local marker code, the message verbatim.
-        // The minted root stays retained for RETRY either way.
-        setCreateError({ code: 'native-error', message: throwableMessage(error) })
-      } finally {
-        setCreating(false)
+        snap = { ...planned.plan, rootSessionId: mintRootSessionId() }
+        if (planned.plan.requestToken !== draft.rootWorkRequestToken) {
+          // The draft owned no token yet: hand the minted one back so
+          // the page-run draft owns it (UI §5.3: retained across panel
+          // close/reopen within the run).
+          onDraftChange({ ...draft, rootWorkRequestToken: planned.plan.requestToken })
+        }
+        setAttempt(snap)
       }
-    })()
+      // 2) the two-stage v2 flow (the pure orchestrator): `team.create`
+      // v2 (workspace-aware, CREATE-ONLY — NO initialWork) → open the
+      // real Root → (when work is pending) `team.admitInitialWork` v2.
+      // Typed failures preserved verbatim (G5); the ONLY rejection kind
+      // (channel loss / failed open) maps onto the local marker.
+      const outcome = await runTeamCreateFlow(
+        {
+          createV2: teamCreateV2,
+          openCreatedSession,
+          admitInitialWorkV2: teamAdmitInitialWorkV2,
+        },
+        snap,
+        resumeAt,
+      )
+      if (outcome.ok) {
+        // Terminal success: the owning surface may close (the entry
+        // overlay closes only AFTER the deferred initial work settles —
+        // plan §7 minimum UI constraint).
+        onCreated?.()
+      } else {
+        setCreateError({ code: outcome.code, message: outcome.message, stage: outcome.stage })
+      }
+    })().finally(() => {
+      setCreating(false)
+    })
   }
 
   // -- the handoff create flow (P9-T8 S5-D, Gate P9-G5) ---------------------
@@ -944,9 +1025,18 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
       </div>
 
       {createError !== null && (
-        <div className={styles.error} data-intent-error data-intent-create-error>
-          {t('intent.error', { message: `${createError.code}: ${createError.message}` })}
-          {createdRootId !== null && <p className={styles.rootKept}>{t('intent.rootKept')}</p>}
+        <div
+          className={styles.error}
+          data-intent-error
+          data-intent-create-error
+          data-intent-create-error-stage={createError.stage}
+        >
+          {createError.stage === 'work'
+            ? t('intent.workError', { message: `${createError.code}: ${createError.message}` })
+            : t('intent.error', { message: `${createError.code}: ${createError.message}` })}
+          {createError.stage === 'work'
+            ? <p className={styles.rootKept}>{t('intent.workKept')}</p>
+            : attempt !== null && <p className={styles.rootKept}>{t('intent.rootKept')}</p>}
         </div>
       )}
 
@@ -960,7 +1050,11 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
         >
           {creating ? t('intent.creating') : t(CREATE_LABEL_KEYS[gate.label])}
         </button>
-        {createError !== null && createdRootId !== null && (
+        {/* TCM M4 — the RETRY reuses the frozen attempt: stage create/open
+            re-runs from `team.create` v2 on the same retained root; stage
+            work re-sends ONLY the admit (same token + prompt, the real
+            Root stays open). */}
+        {createError !== null && attempt !== null && (
           <button
             type="button"
             className={styles.secondary}

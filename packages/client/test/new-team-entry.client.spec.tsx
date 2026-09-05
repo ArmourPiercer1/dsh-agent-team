@@ -8,17 +8,24 @@
  * both), the Team-owned creation overlay — opening it creates NO session
  * (§3.1), the panel is the T7 surface (no handoff block: no handoff face
  * or source is wired), the fresh empty draft per open, and close timings
- * (cancel button, backdrop click; a successful create closes the overlay
- * as soon as the creation-path open lands on the minted root — D-3).
+ * (cancel button, backdrop click; TCM M4 two-stage v2: a successful
+ * create-only closes the overlay as soon as the creation-path open lands
+ * on the minted root — D-3 — while a create WITH initial work keeps the
+ * overlay mounted on the opened Root until the DEFERRED admit settles,
+ * and a second-stage (admit) failure keeps the overlay on the opened Root
+ * with the work lane + a retry that re-sends ONLY the admit — never a New
+ * Session).
  * R121: the fresh draft is prefilled with the workspace containing the
  * current session (no current session -> the Default workspace is
  * preserved).
  */
 import { cleanup, fireEvent, render } from '@testing-library/react'
+import { act } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
-  RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue, RemoteTeamCreateParams,
+  RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue,
+  RemoteTeamAdmitInitialWorkParams, RemoteTeamCreateParamsV2,
 } from '../../remote/src/index.js'
 import type { TeamPresetRow } from '../src/model/team-intent-model.js'
 import { NewTeamEntry, type NewTeamEntryProps } from '../src/ui/NewTeamEntry.js'
@@ -63,12 +70,39 @@ function okResponse(data: unknown, method: string): RemoteResponse {
   }
 }
 
+/** One typed failure envelope (the closed code + wire message kept verbatim). */
+function errorResponse(code: string, message: string, method: string): RemoteResponse {
+  return {
+    ok: false,
+    error: {
+      code, message,
+      details: { method, endpoint: method, contractVersion: 1, requestToken: null },
+    },
+  }
+}
+
+/** A controllable promise (the deferred admit assertions). */
+function deferred<T>(): {
+  promise: Promise<T>
+  resolve: (value: T) => void
+  reject: (reason: unknown) => void
+} {
+  let resolve!: (value: T) => void
+  let reject!: (reason: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
 /** The creation face (every member a spy; the defaults are the happy path). */
 interface EntryFace {
   listCatalog: () => Promise<RemoteResponse>
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   openCreatedSession: (sessionId: string) => Promise<void>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   currentSessionId: () => string | null
@@ -79,7 +113,8 @@ function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
     listCatalog: vi.fn(() => Promise.resolve(okResponse(CATALOG_DATA, 'catalog.list'))),
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
-    teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'ts-1' }, 'team.create'))),
+    teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'ts-1', durable: true, bind: {} }, 'team.create'))),
+    teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     openCreatedSession: vi.fn(() => Promise.resolve()),
     listAgentPresets: vi.fn(() => Promise.resolve([
       { id: 'team', name: 'Team', isDefault: false },
@@ -126,7 +161,8 @@ function entryProps(
     listCatalog: face.listCatalog,
     getCatalog: face.getCatalog,
     probeCompatibility: face.probeCompatibility,
-    teamCreate: face.teamCreate,
+    teamCreateV2: face.teamCreateV2,
+    teamAdmitInitialWorkV2: face.teamAdmitInitialWorkV2,
     openCreatedSession: face.openCreatedSession,
     listAgentPresets: face.listAgentPresets,
     currentSessionId: face.currentSessionId,
@@ -230,12 +266,12 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
   })
 
-  it('a successful create closes the overlay once the creation-path open lands on the minted root (UI §4.3 order; D-3)', async () => {
-    const teamCreateMock = vi.fn(
-      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
-        Promise.resolve(okResponse({ teamSessionId: 'ts-1' }, 'team.create')),
+  it('a successful create-only (no initial work) closes the overlay once the creation-path open lands on the minted root (UI §4.3 order; TCM M4 two-stage v2)', async () => {
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ path: 'ts-1', durable: true, bind: {} }, 'team.create')),
     )
-    const face = makeFace({ teamCreate: teamCreateMock })
+    const face = makeFace({ teamCreateV2: teamCreateV2Mock })
     const view = render(<NewTeamEntry {...entryProps(true, face)} />)
     fireEvent.click(entryButton(view.container))
     await vi.waitFor(() => {
@@ -253,16 +289,117 @@ describe('NewTeamEntry (sidebar.footer.action)', () => {
     await vi.waitFor(() => {
       expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
     })
-    // The canonical order (D-3): the MINTED root id, then the frozen
-    // create on that id (the host mints the session + starts the leader),
-    // then the creation-path open of the SAME id — and the overlay closes
-    // as soon as that open resolves.
-    expect(face.teamCreate).toHaveBeenCalledTimes(1)
-    const createParams = teamCreateMock.mock.calls[0]![0]!
+    // The canonical order (TCM M4): the MINTED root id, then the v2 create
+    // on that id (the host mints the session + starts the leader), then
+    // the creation-path open of the SAME id — and the overlay closes as
+    // soon as that open resolves (no initial work: create + open only).
+    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    const createParams = teamCreateV2Mock.mock.calls[0]![0]!
     expect(typeof createParams.rootSessionId).toBe('string')
     expect(createParams.rootSessionId.startsWith('session-')).toBe(true)
+    expect('initialWork' in createParams).toBe(false)
     expect(face.openCreatedSession).toHaveBeenCalledWith(createParams.rootSessionId)
+    // No work was pending: the admit never ran.
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
     expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
+  })
+
+  it('a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)', async () => {
+    const admitted = deferred<RemoteResponse>()
+    const face = makeFace({
+      teamAdmitInitialWorkV2: vi.fn(
+        (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> => admitted.promise,
+      ),
+    })
+    const view = render(<NewTeamEntry {...entryProps(true, face)} />)
+    fireEvent.click(entryButton(view.container))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    await vi.waitFor(() => {
+      expect(blueprintSelect(view.container).disabled).toBe(false)
+    })
+    fireEvent.change(blueprintSelect(view.container), { target: { value: BP } })
+    fireEvent.change(
+      view.container.querySelector<HTMLTextAreaElement>('[data-intent-initial-work]')!,
+      { target: { value: 'deploy the harbor service' } },
+    )
+    await vi.waitFor(() => {
+      expect(createButton(view.container).disabled).toBe(false)
+    })
+    fireEvent.click(createButton(view.container))
+    // create → open already settled (the root is real and open)…
+    await vi.waitFor(() => {
+      expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
+    })
+    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    // …but the overlay stays MOUNTED on the opened Root while the deferred
+    // admit is still in flight (no close-on-open anymore).
+    expect(view.container.querySelector('[data-new-team-overlay]')).not.toBeNull()
+    await act(async () => {
+      admitted.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))
+    })
+    // Terminal success: the overlay closes.
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
+    })
+  })
+
+  it('a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)', async () => {
+    const admitted = deferred<RemoteResponse>()
+    let admitCalls = 0
+    const admitMock = vi.fn(
+      (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> => {
+        admitCalls += 1
+        return admitCalls === 1
+          ? Promise.resolve(errorResponse('TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED', 'the glue refused delivery', 'team.admitInitialWork'))
+          : admitted.promise
+      },
+    )
+    const face = makeFace({ teamAdmitInitialWorkV2: admitMock })
+    const view = render(<NewTeamEntry {...entryProps(true, face)} />)
+    fireEvent.click(entryButton(view.container))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-team-creation-panel]')).not.toBeNull()
+    })
+    await vi.waitFor(() => {
+      expect(blueprintSelect(view.container).disabled).toBe(false)
+    })
+    fireEvent.change(blueprintSelect(view.container), { target: { value: BP } })
+    fireEvent.change(
+      view.container.querySelector<HTMLTextAreaElement>('[data-intent-initial-work]')!,
+      { target: { value: 'deploy the harbor service' } },
+    )
+    await vi.waitFor(() => {
+      expect(createButton(view.container).disabled).toBe(false)
+    })
+    fireEvent.click(createButton(view.container))
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-intent-create-error]')).toBeTruthy()
+    })
+    // The work lane (the real Root is open — the stage is `work`)…
+    const lane = view.container.querySelector('[data-intent-create-error]')!
+    expect(lane.getAttribute('data-intent-create-error-stage')).toBe('work')
+    expect(lane.textContent).toContain('初始任务发送失败')
+    // …and the overlay stays MOUNTED on the opened Root (it does NOT close
+    // and does NOT fall into an ordinary New Session).
+    expect(view.container.querySelector('[data-new-team-overlay]')).not.toBeNull()
+    expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
+    // RETRY: ONLY the admit re-sends (same token + prompt; no re-create,
+    // no re-open).
+    fireEvent.click(view.container.querySelector('[data-intent-retry]')!)
+    await vi.waitFor(() => {
+      expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(2)
+    })
+    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    expect(face.openCreatedSession).toHaveBeenCalledTimes(1)
+    expect(admitMock.mock.calls[1]![0]).toEqual(admitMock.mock.calls[0]![0])
+    await act(async () => {
+      admitted.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))
+    })
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-new-team-overlay]')).toBeNull()
+    })
   })
 
   it('prefills the fresh draft with the current session\'s workspace (R121: no Default-workspace orphaning)', async () => {

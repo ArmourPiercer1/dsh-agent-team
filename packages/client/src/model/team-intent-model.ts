@@ -340,6 +340,21 @@ export interface TeamIntentDraft {
    * (`compatibility.ack`) applies post-creation.
    */
   readonly ack: boolean
+  /**
+   * The stable creation-time initial-work token OWNED BY THIS PAGE-RUN
+   * DRAFT (TCM M4, plan §7.1 / §15.6): the caller-stable `requestToken`
+   * identity of the v2-only `team.admitInitialWork` command, keyed by the
+   * host as `(rootSessionId, requestToken)`. `null` until the first
+   * creation attempt mints one ({@link mintRootWorkRequestToken}) and the
+   * panel writes it back here; afterwards it is stable for the whole page
+   * run (retained across retries — the at-most-one initial-work slot is
+   * per-root, so reusing it across a new attempt's new root is harmless).
+   * Deliberately NOT a durable create token (plan §15.5: `createRequestToken`
+   * is deleted from the shrunken protocol; the create's identity is the
+   * existing `rootSessionId` + durable blueprint snapshot + durable
+   * `defaultWorkspace`).
+   */
+  readonly rootWorkRequestToken: string | null
 }
 
 /** The blank draft (the panel's initial value). */
@@ -350,6 +365,7 @@ export const emptyTeamIntentDraft: TeamIntentDraft = {
   workspaceId: null,
   initialWork: '',
   ack: false,
+  rootWorkRequestToken: null,
 }
 
 /**
@@ -431,4 +447,96 @@ export function teamWorkspaceOptions(
  */
 export function mintRootSessionId(): string {
   return `session-${crypto.randomUUID()}`
+}
+
+/**
+ * TCM M4 (plan §15.6) — mint the stable creation-time initial-work token
+ * for one page-run draft (`team-work-<uuid>`). The host treats the token
+ * as an opaque echo idempotency marker keyed by `rootSessionId`; the
+ * client only guarantees stability within the draft's page run (the retry
+ * of a failed second stage replays the SAME token — never a fresh one,
+ * which the host would read as a different work intent).
+ * @returns a fresh opaque work token.
+ */
+export function mintRootWorkRequestToken(): string {
+  return `team-work-${crypto.randomUUID()}`
+}
+
+/**
+ * TCM M4 (plan §7) — the frozen parameter snapshot of ONE Team creation
+ * attempt. Built exactly once per attempt by
+ * {@link planTeamCreateAttempt} from the CURRENT draft; the two-stage v2
+ * flow (team-create-flow.ts) then runs entirely against this snapshot, so
+ * a changed draft can never alter a started create's parameters (plan
+ * §7.7: retry freezes root id, workspace, tokens and prompt fingerprint).
+ */
+export interface TeamCreateAttempt {
+  /** The minted Root session id (the host creates it during `team.create` v2). */
+  readonly rootSessionId: string
+  readonly blueprintId: string
+  readonly blueprintRevision: number | undefined
+  /**
+   * The selected workspace's PATH — the value the v2 `team.create` carries
+   * as `workspace` (the host resolves it through the public workspace
+   * registry, TCM M2). `undefined` = the host default workspace.
+   */
+  readonly workspacePath: string | undefined
+  /** The trimmed initial-work prompt; `''` = no creation-time initial work (create-only). */
+  readonly prompt: string
+  /** The stable work token (the draft-owned `rootWorkRequestToken`, minted when absent). */
+  readonly requestToken: string
+}
+
+/**
+ * The plan outcome: the frozen parameters (the panel adds the minted root
+ * id), or the typed pre-RPC refusal when the selected workspace id no
+ * longer exists in the native feed (plan §7 必须测试: an unknown selected
+ * workspace sends NO RPC).
+ */
+export type TeamCreateAttemptPlan =
+  | { readonly ok: true; readonly plan: Omit<TeamCreateAttempt, 'rootSessionId'> }
+  | { readonly ok: false; readonly reason: 'unknown-workspace'; readonly workspaceId: string }
+
+/**
+ * TCM M4 (plan §7.2) — build the attempt snapshot from the draft:
+ * the selected workspace resolves to its OPTION PATH (never the id — the
+ * v2 create's `workspace` field is the registry-resolved path), the
+ * prompt is trimmed (blank = create-only), and the stable work token is
+ * the draft's (minted when the draft has none yet — the panel writes the
+ * minted token back into the draft so the page run owns it).
+ * @param blueprintId - the selected blueprint (non-null: the panel gates
+ *   the click on the create gate first).
+ * @param draft - the current draft (only the four frozen-input fields are
+ *   read).
+ * @param workspaces - the native workspace feed options.
+ * @returns the frozen plan, or the typed unknown-workspace refusal.
+ */
+export function planTeamCreateAttempt(
+  blueprintId: string,
+  draft: Pick<TeamIntentDraft, 'revision' | 'workspaceId' | 'initialWork' | 'rootWorkRequestToken'>,
+  workspaces: readonly TeamWorkspaceOption[],
+): TeamCreateAttemptPlan {
+  let workspacePath: string | undefined
+  if (draft.workspaceId !== null) {
+    const option = workspaces.find(candidate => candidate.id === draft.workspaceId)
+    if (option === undefined) {
+      // The selected workspace left the native feed (a stale selection):
+      // refuse BEFORE any RPC (loud, never a silent default-workspace
+      // fallback — the user asked for a workspace the host cannot resolve
+      // from this client's feed).
+      return { ok: false, reason: 'unknown-workspace', workspaceId: draft.workspaceId }
+    }
+    workspacePath = option.path
+  }
+  const prompt = draft.initialWork.trim()
+  return {
+    ok: true,
+    plan: {
+      blueprintId,
+      blueprintRevision: draft.revision ?? undefined,
+      workspacePath,
+      prompt,
+      requestToken: draft.rootWorkRequestToken ?? mintRootWorkRequestToken(),
+    },
+  }
 }

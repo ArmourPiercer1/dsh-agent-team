@@ -32,7 +32,8 @@ import type {
   RemoteCatalogGetParams,
   RemoteIntentProbeParams,
   RemoteResponse,
-  RemoteTeamCreateParams,
+  RemoteTeamAdmitInitialWorkParams,
+  RemoteTeamCreateParamsV2,
 } from '../../../remote/src/index.js'
 import type { TeamPresetRow } from '../model/team-intent-model.js'
 import {
@@ -56,8 +57,18 @@ export interface NewTeamEntryInjected {
   readonly getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   /** `intent.probe` (the pre-creation compatibility probe). */
   readonly probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  /** `team.create` (binds the TeamSession on the named root). */
-  readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  /**
+   * `team.create` (contract v2, TCM M4 / plan §15.6) — the workspace-
+   * aware CREATE-ONLY creation (binds the TeamSession to the resolved
+   * workspace on the named root; stamps contract version 2).
+   */
+  readonly teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  /**
+   * `team.admitInitialWork` (contract v2, v2-only method, TCM M4 / plan
+   * §15.6) — the deferred creation-time initial work (stamps contract
+   * version 2).
+   */
+  readonly teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   /**
    * The creation-path session open (D-3): opens the host-created root
    * session, re-pulling the host list once when the stream increment
@@ -88,7 +99,7 @@ export type NewTeamEntryProps =
 export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const {
     wide,
-    listCatalog, getCatalog, probeCompatibility, teamCreate,
+    listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2,
     openCreatedSession, listAgentPresets, currentSessionId,
     useWorkspaces, t,
   } = props
@@ -104,12 +115,11 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
     // Team-owned panel on a fresh draft.
     // R121 (live-trial finding): prefill the draft from the current
     // selection (the §32.2 prefill pattern, session-independent): the
-    // workspace containing the current session. D-3 note: the created
-    // Root session is created by the HOST during `team.create` and lands
-    // in the host's default workspace (the frozen team.create params
-    // carry no workspace field) — the selector is informational (frozen
-    // UI surface), it no longer steers the root's location. The user can
-    // still change it in the panel (or clear it back to Default).
+    // workspace containing the current session. TCM M4 (plan §15.6): the
+    // selected workspace is REAL again — the v2 `team.create` binds the
+    // created TeamSession to the resolved workspace (the host resolves it
+    // through the public workspace registry, TCM M2); the user can still
+    // change the pick in the panel (or clear it back to Default).
     const sid = currentSessionId()
     const workspaceId = sid === null
       ? null
@@ -120,15 +130,14 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const closeOverlay = (): void => {
     setOverlayOpen(false)
   }
-  // The close timing (D-3): a successful create navigates to the freshly
-  // opened root, so the overlay closes as SOON AS the creation-path open
-  // succeeds (the panel awaits this after `team.create` ok). A failed open
-  // rejects before the close — the overlay (and the panel's typed error
-  // lane) stays visible; the root remains openable from the session list.
-  const openSessionAfterCreate = (sessionId: string): Promise<void> =>
-    openCreatedSession(sessionId).then(() => {
-      closeOverlay()
-    })
+  // The close timing (TCM M4, plan §7 minimum UI constraint): the overlay
+  // closes ONLY on the panel's terminal-success face (`onCreated`) — after
+  // the two-stage flow settles (root created + open AND, when initial work
+  // is pending, the deferred `team.admitInitialWork` v2 admitted it). A
+  // second-stage failure keeps the overlay MOUNTED on the opened real Root
+  // with the panel's typed error lane + the retryable token (no new banner
+  // architecture); a failed open likewise keeps the overlay visible; the
+  // root remains openable from the session list either way.
 
   return (
     <>
@@ -161,8 +170,10 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
               listCatalog={listCatalog}
               getCatalog={getCatalog}
               probeCompatibility={probeCompatibility}
-              teamCreate={teamCreate}
-              openCreatedSession={openSessionAfterCreate}
+              teamCreateV2={teamCreateV2}
+              teamAdmitInitialWorkV2={teamAdmitInitialWorkV2}
+              openCreatedSession={openCreatedSession}
+              onCreated={closeOverlay}
               listAgentPresets={listAgentPresets}
               workspaces={workspaces}
               draft={draft}

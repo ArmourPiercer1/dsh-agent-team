@@ -683,20 +683,26 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     // The injected face: the S5-A creation face members plus the
     // creation-path session open (D-3). NO handoff face — the overlay is
     // the T7 surface (frozen UI design §3.1: the global entry is
-    // session-independent).
+    // session-independent). TCM M4 (plan §15.3/§15.6): the creation
+    // members are the TWO v2 wrappers (contract version 2) — the
+    // workspace-aware CREATE-ONLY `team.create` and the v2-only
+    // `team.admitInitialWork`.
     const inject = (o.inject as () => Record<string, unknown>)()
     expect(typeof inject.listCatalog).toBe('function')
     expect(typeof inject.getCatalog).toBe('function')
     expect(typeof inject.probeCompatibility).toBe('function')
-    expect(typeof inject.teamCreate).toBe('function')
+    expect(typeof inject.teamCreateV2).toBe('function')
+    expect(typeof inject.teamAdmitInitialWorkV2).toBe('function')
+    expect('teamCreate' in inject).toBe(false)
     expect(typeof inject.openCreatedSession).toBe('function')
     expect(typeof inject.listAgentPresets).toBe('function')
     expect(typeof inject.currentSessionId).toBe('function')
     expect('openSession' in inject).toBe(false)
     expect('createRootSession' in inject).toBe(false)
     // R121: the prefill read face answers the Seam 3 current selection
-    // (null in the fixture — no session is selected).
-    expect((inject.currentSessionId as () => string | null)()).toBeNull()
+    // (null in the fixture — no session is selected). `toBe(null)` — the
+    // plain-node shim exposes no toBeNull matcher (Object.is semantics).
+    expect((inject.currentSessionId as () => string | null)()).toBe(null)
     expect('handoff' in inject).toBe(false)
   })
 

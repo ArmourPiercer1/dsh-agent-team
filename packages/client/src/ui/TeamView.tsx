@@ -21,7 +21,8 @@ import type {
   RemoteCatalogGetParams,
   RemoteIntentProbeParams,
   RemoteResponse,
-  RemoteTeamCreateParams,
+  RemoteTeamAdmitInitialWorkParams,
+  RemoteTeamCreateParamsV2,
 } from '../../../remote/src/index.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
 import {
@@ -62,8 +63,18 @@ export interface TeamViewCreationFace {
   readonly getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   /** `intent.probe` (the pre-creation compatibility probe). */
   readonly probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  /** `team.create` (binds the TeamSession on the named root). */
-  readonly teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  /**
+   * `team.create` (contract v2, TCM M4 / plan §15.6) — the workspace-
+   * aware CREATE-ONLY creation (stamps contract version 2; the only
+   * creation wrapper the new UI uses).
+   */
+  readonly teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  /**
+   * `team.admitInitialWork` (contract v2, v2-only method, TCM M4 / plan
+   * §15.6) — the deferred creation-time initial work (stamps contract
+   * version 2).
+   */
+  readonly teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   /**
    * The creation-path session open (D-3): opens the host-created root
    * session, re-pulling the host list once when the stream increment
@@ -286,8 +297,10 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                 listCatalog={creation.listCatalog}
                 getCatalog={creation.getCatalog}
                 probeCompatibility={creation.probeCompatibility}
-                teamCreate={creation.teamCreate}
+                teamCreateV2={creation.teamCreateV2}
+                teamAdmitInitialWorkV2={creation.teamAdmitInitialWorkV2}
                 openCreatedSession={creation.openCreatedSession}
+                onCreated={() => setCreationOpen(false)}
                 listAgentPresets={creation.listAgentPresets}
                 workspaces={workspaceOptions}
                 handoffSource={handoffSource}

@@ -526,7 +526,12 @@ export function applyTeamMount(
     listCatalog: () => teamRemote.catalogList(),
     getCatalog: (params) => teamRemote.catalogGet(params),
     probeCompatibility: (params) => teamRemote.intentProbe(params),
-    teamCreate: (params) => teamRemote.teamCreate(params),
+    // TCM M4 (plan §15.3/§15.6): the new creation flow uses ONLY the two
+    // v2 wrappers (contract version 2): the workspace-aware CREATE-ONLY
+    // `team.create` and the v2-only `team.admitInitialWork`. Every
+    // non-create wrapper on `teamRemote` stays on the frozen v1 default.
+    teamCreateV2: (params) => teamRemote.teamCreateV2(params),
+    teamAdmitInitialWorkV2: (params) => teamRemote.teamAdmitInitialWorkV2(params),
     openCreatedSession,
     listAgentPresets: async () => {
       // The frozen public seam answers the RemoteResult envelope (the roster
@@ -692,7 +697,8 @@ export function applyTeamMount(
           listCatalog: creation.listCatalog,
           getCatalog: creation.getCatalog,
           probeCompatibility: creation.probeCompatibility,
-          teamCreate: creation.teamCreate,
+          teamCreateV2: creation.teamCreateV2,
+          teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2,
           openCreatedSession: creation.openCreatedSession,
           listAgentPresets: creation.listAgentPresets,
           currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,

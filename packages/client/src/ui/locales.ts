@@ -98,6 +98,8 @@ export type TeamKey =
   | 'intent.retry'
   | 'intent.cancel'
   | 'intent.rootKept'
+  | 'intent.workError'
+  | 'intent.workKept'
   | 'intent.fatal.preset'
   | 'member.action.sendWork'
   | 'member.action.followup'
@@ -308,6 +310,8 @@ export const zh: Record<TeamKey, string> = {
   'intent.retry': '重试',
   'intent.cancel': '取消',
   'intent.rootKept': 'Root 会话 ID 已保留；团队创建失败，可重试（重试复用同一 ID）。',
+  'intent.workError': '初始任务发送失败：{message}',
+  'intent.workKept': '团队已创建且 Root 已打开；初始任务未投递，可重试（重试复用同一任务令牌，Root 保持打开）。',
   'intent.fatal.preset': '该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。',
   'member.action.sendWork': '发送任务…',
   'member.action.followup': '发送跟进',
@@ -518,6 +522,8 @@ export const en: Record<TeamKey, string> = {
   'intent.retry': 'Retry',
   'intent.cancel': 'Cancel',
   'intent.rootKept': 'The Root session id is retained; team creation failed — retry it (the retry reuses the same id).',
+  'intent.workError': 'Initial work failed: {message}',
+  'intent.workKept': 'The team is created and the Root is open; the initial work was not delivered — retry it (the retry reuses the same work token and the Root stays open).',
   'intent.fatal.preset': "This runtime preset owns a complete system persona and cannot host this Team Blueprint's Leader/Member identity without changing DSH core semantics.",
   'member.action.sendWork': 'Send work…',
   'member.action.followup': 'Send follow-up',

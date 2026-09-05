@@ -26,8 +26,10 @@
  *   re-invocation is a pure replay of the stored failure; no team exists
  *   under the old token, so no double-creation risk);
  * - CONTINUE-WITHOUT-HANDOFF is a client-local EXPLICIT user decision →
- *   the standard non-handoff create sequence (native root + `team.create`),
- *   a new team WITHOUT handoff provenance;
+ *   the standard non-handoff create sequence (minted root + the two-stage
+ *   v2 `team.create`/`team.admitInitialWork`, TCM M4 — create-only when
+ *   the draft carries no initial work), a new team WITHOUT handoff
+ *   provenance;
  * - CANCEL is client-local (NO remote call) and terminal within the panel
  *   run: every later create click runs the standard path (the checkbox is
  *   disabled after it, so a plain create click must not silently re-open
@@ -41,7 +43,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
   RemoteCatalogGetParams, RemoteHandoffCreateParams, RemoteHandoffPrepareParams,
-  RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue, RemoteTeamCreateParams,
+  RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue,
+  RemoteTeamAdmitInitialWorkParams, RemoteTeamCreateParamsV2,
 } from '../../remote/src/index.js'
 import type {
   TeamIntentDraft, TeamPresetRow, TeamWorkspaceOption,
@@ -182,7 +185,8 @@ interface PanelFace {
   listCatalog: () => Promise<RemoteResponse>
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   prepare: (params: RemoteHandoffPrepareParams) => Promise<RemoteResponse>
   create: (params: RemoteHandoffCreateParams) => Promise<RemoteResponse>
@@ -193,7 +197,8 @@ function makeFace(overrides: Partial<PanelFace> = {}): PanelFace {
     listCatalog: vi.fn(() => Promise.resolve(okResponse(CATALOG_DATA, 'catalog.list'))),
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
-    teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create'))),
+    teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create'))),
+    teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     listAgentPresets: vi.fn(() => Promise.resolve(PRESETS)),
     prepare: vi.fn(() => Promise.resolve(okResponse(PREPARE_DATA, 'handoff.prepare'))),
     create: vi.fn(() => Promise.resolve(okResponse(COMPLETED_DATA, 'handoff.create'))),
@@ -225,7 +230,8 @@ function PanelHarness(props: {
       listCatalog={props.face.listCatalog}
       getCatalog={props.face.getCatalog}
       probeCompatibility={props.face.probeCompatibility}
-      teamCreate={props.face.teamCreate}
+      teamCreateV2={props.face.teamCreateV2}
+      teamAdmitInitialWorkV2={props.face.teamAdmitInitialWorkV2}
       listAgentPresets={props.face.listAgentPresets}
       openCreatedSession={props.openCreatedSession ?? (async () => undefined)}
       workspaces={props.workspaces ?? []}
@@ -402,9 +408,10 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
       sourceSessionId: SOURCE_SESSION,
       requestToken: 'handoff-create-1',
     } satisfies RemoteHandoffCreateParams)
-    // NO standard path on this flow: no team.create, no creation-path open
-    // before the host's handoff.create settles.
-    expect(face.teamCreate).not.toHaveBeenCalled()
+    // NO standard path on this flow: no team.create v2, no admit, no
+    // creation-path open before the host's handoff.create settles.
+    expect(face.teamCreateV2).not.toHaveBeenCalled()
+    expect(face.teamAdmitInitialWorkV2).not.toHaveBeenCalled()
     expect(openCreatedSession).not.toHaveBeenCalled()
     // Busy: the create button disables mid-flight.
     expect(createButton(view.container).disabled).toBe(true)
@@ -489,14 +496,14 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     expect(view.container.querySelector('[data-intent-handoff-cancel]')).toBeNull()
   })
 
-  it('Continue without handoff is the client-local explicit decision: the standard create path, no handoff re-drive (UI §32.4)', async () => {
-    const teamCreateMock = vi.fn(
-      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
-        Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create')),
+  it('Continue without handoff is the client-local explicit decision: the standard two-stage v2 create path (create-only: the draft carries no initial work), no handoff re-drive (UI §32.4; TCM M4)', async () => {
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create')),
     )
     const face = makeFace({
       create: vi.fn(() => Promise.resolve(okResponse(AWAITING_DATA, 'handoff.create'))),
-      teamCreate: teamCreateMock,
+      teamCreateV2: teamCreateV2Mock,
     })
     const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
@@ -518,14 +525,20 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     expect(face.create).toHaveBeenCalledTimes(1)
     // D-3: the standard path mints the root id client-side (the `session-`
     // shape — no native pre-create); the host creates the session under it.
-    // The standard sequence settles across awaits (mint → team.create →
-    // open the root); flush the microtask chain before asserting its later
-    // legs.
+    // The standard sequence settles across awaits (mint → team.create v2
+    // → open the root); flush the microtask chain before asserting its
+    // later legs.
     await vi.waitFor(() => {
-      expect(face.teamCreate).toHaveBeenCalledTimes(1)
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
     })
-    const mintedId = teamCreateMock.mock.calls[0]![0]!.rootSessionId
+    const mintedId = teamCreateV2Mock.mock.calls[0]![0]!.rootSessionId
     expect(mintedId.startsWith('session-')).toBe(true)
+    // The standard path is v2 (CREATE-ONLY): the workspace PATH is in the
+    // request and NO initialWork field — and this draft carries no initial
+    // work, so the admit never runs (create + open only).
+    expect(teamCreateV2Mock.mock.calls[0]![0]!.workspace).toBe('C:\\work\\one')
+    expect('initialWork' in teamCreateV2Mock.mock.calls[0]![0]!).toBe(false)
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
     await vi.waitFor(() => {
       expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })
@@ -535,13 +548,13 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
   })
 
   it('Cancel discards the attempt client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5)', async () => {
-    const teamCreateMock = vi.fn(
-      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
-        Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create')),
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create')),
     )
     const face = makeFace({
       create: vi.fn(() => Promise.resolve(okResponse(AWAITING_DATA, 'handoff.create'))),
-      teamCreate: teamCreateMock,
+      teamCreateV2: teamCreateV2Mock,
     })
     const openCreatedSession = vi.fn(async () => undefined)
     const view = render(
@@ -555,20 +568,24 @@ describe('TeamCreationPanel (handoff, S5-D)', () => {
     fireEvent.click(view.container.querySelector('[data-intent-handoff-cancel]')!)
     // Client-local: no remote call of any kind.
     expect(face.create).toHaveBeenCalledTimes(1)
-    expect(face.teamCreate).not.toHaveBeenCalled()
+    expect(face.teamCreateV2).not.toHaveBeenCalled()
+    expect(face.teamAdmitInitialWorkV2).not.toHaveBeenCalled()
     expect(openCreatedSession).not.toHaveBeenCalled()
     expect(view.container.querySelector('[data-intent-handoff-canceled]')?.textContent).toBe('Handoff canceled')
     expect(view.container.querySelector('[data-intent-handoff-failed]')).toBeNull()
     // Terminal: a later create click must not silently re-open the handoff.
     fireEvent.click(createButton(view.container))
     expect(face.create).toHaveBeenCalledTimes(1)
-    // The later create settles across awaits (minted root → team.create
+    // The later create settles across awaits (minted root → team.create v2
     // → open); flush the microtask chain before asserting its later legs.
     await vi.waitFor(() => {
-      expect(face.teamCreate).toHaveBeenCalledTimes(1)
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
     })
-    const mintedId = teamCreateMock.mock.calls[0]![0]!.rootSessionId
+    const mintedId = teamCreateV2Mock.mock.calls[0]![0]!.rootSessionId
     expect(mintedId.startsWith('session-')).toBe(true)
+    // The draft here carries no initial work: the standard path is
+    // create + open only (no admit).
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
     await vi.waitFor(() => {
       expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })

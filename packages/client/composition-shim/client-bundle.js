@@ -160,7 +160,7 @@ var __dshFactory = (require) => {
 			 * @returns the trigger row (and the overlay while open).
 			 */
 			function NewTeamEntry(props) {
-			    const { wide, listCatalog, getCatalog, probeCompatibility, teamCreate, openCreatedSession, listAgentPresets, currentSessionId, useWorkspaces, t, } = props;
+			    const { wide, listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2, openCreatedSession, listAgentPresets, currentSessionId, useWorkspaces, t, } = props;
 			    const [overlayOpen, setOverlayOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority).
 			    // The overlay holds its own copy — a fresh empty draft on every open.
@@ -172,12 +172,11 @@ var __dshFactory = (require) => {
 			        // Team-owned panel on a fresh draft.
 			        // R121 (live-trial finding): prefill the draft from the current
 			        // selection (the §32.2 prefill pattern, session-independent): the
-			        // workspace containing the current session. D-3 note: the created
-			        // Root session is created by the HOST during `team.create` and lands
-			        // in the host's default workspace (the frozen team.create params
-			        // carry no workspace field) — the selector is informational (frozen
-			        // UI surface), it no longer steers the root's location. The user can
-			        // still change it in the panel (or clear it back to Default).
+			        // workspace containing the current session. TCM M4 (plan §15.6): the
+			        // selected workspace is REAL again — the v2 `team.create` binds the
+			        // created TeamSession to the resolved workspace (the host resolves it
+			        // through the public workspace registry, TCM M2); the user can still
+			        // change the pick in the panel (or clear it back to Default).
 			        const sid = currentSessionId();
 			        const workspaceId = sid === null
 			            ? null
@@ -188,15 +187,15 @@ var __dshFactory = (require) => {
 			    const closeOverlay = () => {
 			        setOverlayOpen(false);
 			    };
-			    // The close timing (D-3): a successful create navigates to the freshly
-			    // opened root, so the overlay closes as SOON AS the creation-path open
-			    // succeeds (the panel awaits this after `team.create` ok). A failed open
-			    // rejects before the close — the overlay (and the panel's typed error
-			    // lane) stays visible; the root remains openable from the session list.
-			    const openSessionAfterCreate = (sessionId) => openCreatedSession(sessionId).then(() => {
-			        closeOverlay();
-			    });
-			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreate: teamCreate, openCreatedSession: openSessionAfterCreate, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
+			    // The close timing (TCM M4, plan §7 minimum UI constraint): the overlay
+			    // closes ONLY on the panel's terminal-success face (`onCreated`) — after
+			    // the two-stage flow settles (root created + open AND, when initial work
+			    // is pending, the deferred `team.admitInitialWork` v2 admitted it). A
+			    // second-stage failure keeps the overlay MOUNTED on the opened real Root
+			    // with the panel's typed error lane + the retryable token (no new banner
+			    // architecture); a failed open likewise keeps the overlay visible; the
+			    // root remains openable from the session list either way.
+			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreateV2: teamCreateV2, teamAdmitInitialWorkV2: teamAdmitInitialWorkV2, openCreatedSession: openCreatedSession, onCreated: closeOverlay, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
 			}
 			Object.defineProperty(exports, "NewTeamEntry", { enumerable: true, get: () => NewTeamEntry });
 			//# sourceMappingURL=NewTeamEntry.js.map
@@ -513,7 +512,7 @@ var __dshFactory = (require) => {
 			                })
 			                : null;
 			        return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, children: t('view.zero') }), legacyNote !== null && (_jsx("p", { className: styles.legacyNote, "data-legacy-note": true, children: legacyNote })), creationOpen
-			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreate: creation.teamCreate, openCreatedSession: creation.openCreatedSession, listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
+			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreateV2: creation.teamCreateV2, teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2, openCreatedSession: creation.openCreatedSession, onCreated: () => setCreationOpen(false), listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
 			                        : (_jsx("button", { type: "button", className: styles.zeroStart, "data-intent-start-here": true, onClick: () => setCreationOpen(true), children: t('intent.startHere') }))] }) }));
 			    }
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
@@ -784,7 +783,12 @@ var __dshFactory = (require) => {
 			        listCatalog: () => teamRemote.catalogList(),
 			        getCatalog: (params) => teamRemote.catalogGet(params),
 			        probeCompatibility: (params) => teamRemote.intentProbe(params),
-			        teamCreate: (params) => teamRemote.teamCreate(params),
+			        // TCM M4 (plan §15.3/§15.6): the new creation flow uses ONLY the two
+			        // v2 wrappers (contract version 2): the workspace-aware CREATE-ONLY
+			        // `team.create` and the v2-only `team.admitInitialWork`. Every
+			        // non-create wrapper on `teamRemote` stays on the frozen v1 default.
+			        teamCreateV2: (params) => teamRemote.teamCreateV2(params),
+			        teamAdmitInitialWorkV2: (params) => teamRemote.teamAdmitInitialWorkV2(params),
 			        openCreatedSession,
 			        listAgentPresets: async () => {
 			            // The frozen public seam answers the RemoteResult envelope (the roster
@@ -924,7 +928,8 @@ var __dshFactory = (require) => {
 			            listCatalog: creation.listCatalog,
 			            getCatalog: creation.getCatalog,
 			            probeCompatibility: creation.probeCompatibility,
-			            teamCreate: creation.teamCreate,
+			            teamCreateV2: creation.teamCreateV2,
+			            teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2,
 			            openCreatedSession: creation.openCreatedSession,
 			            listAgentPresets: creation.listAgentPresets,
 			            currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
@@ -1173,6 +1178,7 @@ var __dshFactory = (require) => {
 			    workspaceId: null,
 			    initialWork: '',
 			    ack: false,
+			    rootWorkRequestToken: null,
 			};
 			Object.defineProperty(exports, "emptyTeamIntentDraft", { enumerable: true, get: () => emptyTeamIntentDraft });
 			/**
@@ -1220,33 +1226,89 @@ var __dshFactory = (require) => {
 			    return `session-${crypto.randomUUID()}`;
 			}
 			Object.defineProperty(exports, "mintRootSessionId", { enumerable: true, get: () => mintRootSessionId });
+			/**
+			 * TCM M4 (plan §15.6) — mint the stable creation-time initial-work token
+			 * for one page-run draft (`team-work-<uuid>`). The host treats the token
+			 * as an opaque echo idempotency marker keyed by `rootSessionId`; the
+			 * client only guarantees stability within the draft's page run (the retry
+			 * of a failed second stage replays the SAME token — never a fresh one,
+			 * which the host would read as a different work intent).
+			 * @returns a fresh opaque work token.
+			 */
+			function mintRootWorkRequestToken() {
+			    return `team-work-${crypto.randomUUID()}`;
+			}
+			Object.defineProperty(exports, "mintRootWorkRequestToken", { enumerable: true, get: () => mintRootWorkRequestToken });
+			/**
+			 * TCM M4 (plan §7.2) — build the attempt snapshot from the draft:
+			 * the selected workspace resolves to its OPTION PATH (never the id — the
+			 * v2 create's `workspace` field is the registry-resolved path), the
+			 * prompt is trimmed (blank = create-only), and the stable work token is
+			 * the draft's (minted when the draft has none yet — the panel writes the
+			 * minted token back into the draft so the page run owns it).
+			 * @param blueprintId - the selected blueprint (non-null: the panel gates
+			 *   the click on the create gate first).
+			 * @param draft - the current draft (only the four frozen-input fields are
+			 *   read).
+			 * @param workspaces - the native workspace feed options.
+			 * @returns the frozen plan, or the typed unknown-workspace refusal.
+			 */
+			function planTeamCreateAttempt(blueprintId, draft, workspaces) {
+			    let workspacePath;
+			    if (draft.workspaceId !== null) {
+			        const option = workspaces.find(candidate => candidate.id === draft.workspaceId);
+			        if (option === undefined) {
+			            // The selected workspace left the native feed (a stale selection):
+			            // refuse BEFORE any RPC (loud, never a silent default-workspace
+			            // fallback — the user asked for a workspace the host cannot resolve
+			            // from this client's feed).
+			            return { ok: false, reason: 'unknown-workspace', workspaceId: draft.workspaceId };
+			        }
+			        workspacePath = option.path;
+			    }
+			    const prompt = draft.initialWork.trim();
+			    return {
+			        ok: true,
+			        plan: {
+			            blueprintId,
+			            blueprintRevision: draft.revision ?? undefined,
+			            workspacePath,
+			            prompt,
+			            requestToken: draft.rootWorkRequestToken ?? mintRootWorkRequestToken(),
+			        },
+			    };
+			}
+			Object.defineProperty(exports, "planTeamCreateAttempt", { enumerable: true, get: () => planTeamCreateAttempt });
 			//# sourceMappingURL=team-intent-model.js.map
 			}, exports: {} };
 		__mods["ui/TeamCreationPanel.js"] = { done: false, fn: function (exports) {
 			const __imp0 = __extReq("react/jsx-runtime");
 			const _jsx = __imp0.jsx;
 			const _jsxs = __imp0.jsxs;
-			const __imp36 = __extReq("react");
-			const useEffect = __imp36.useEffect;
-			const useRef = __imp36.useRef;
-			const useState = __imp36.useState;
-			const __imp37 = __req("model/team-intent-model.js");
-			const intentCreateGate = __imp37.intentCreateGate;
-			const intentEnvironmentFacts = __imp37.intentEnvironmentFacts;
-			const isPersonaPresetFatal = __imp37.isPersonaPresetFatal;
-			const mintRootSessionId = __imp37.mintRootSessionId;
-			const parseBlueprintDetail = __imp37.parseBlueprintDetail;
-			const parseCatalogList = __imp37.parseCatalogList;
-			const parseCompatibilityResult = __imp37.parseCompatibilityResult;
-			const selectDefaultPresetId = __imp37.selectDefaultPresetId;
-			const __imp38 = __req("model/team-member-commands.js");
-			const createRequestTokenGenerator = __imp38.createRequestTokenGenerator;
-			const __imp39 = __req("model/team-handoff.js");
-			const HANDOFF_DECISION_OPTIONS = __imp39.HANDOFF_DECISION_OPTIONS;
-			const handoffDecisionActions = __imp39.handoffDecisionActions;
-			const handoffRetryPlan = __imp39.handoffRetryPlan;
-			const parseHandoffCreateState = __imp39.parseHandoffCreateState;
-			const parseHandoffPrepareValue = __imp39.parseHandoffPrepareValue;
+			const __imp44 = __extReq("react");
+			const useEffect = __imp44.useEffect;
+			const useRef = __imp44.useRef;
+			const useState = __imp44.useState;
+			const __imp45 = __req("model/team-intent-model.js");
+			const intentCreateGate = __imp45.intentCreateGate;
+			const intentEnvironmentFacts = __imp45.intentEnvironmentFacts;
+			const isPersonaPresetFatal = __imp45.isPersonaPresetFatal;
+			const mintRootSessionId = __imp45.mintRootSessionId;
+			const parseBlueprintDetail = __imp45.parseBlueprintDetail;
+			const parseCatalogList = __imp45.parseCatalogList;
+			const parseCompatibilityResult = __imp45.parseCompatibilityResult;
+			const planTeamCreateAttempt = __imp45.planTeamCreateAttempt;
+			const selectDefaultPresetId = __imp45.selectDefaultPresetId;
+			const __imp46 = __req("model/team-create-flow.js");
+			const runTeamCreateFlow = __imp46.runTeamCreateFlow;
+			const __imp47 = __req("model/team-member-commands.js");
+			const createRequestTokenGenerator = __imp47.createRequestTokenGenerator;
+			const __imp48 = __req("model/team-handoff.js");
+			const HANDOFF_DECISION_OPTIONS = __imp48.HANDOFF_DECISION_OPTIONS;
+			const handoffDecisionActions = __imp48.handoffDecisionActions;
+			const handoffRetryPlan = __imp48.handoffRetryPlan;
+			const parseHandoffCreateState = __imp48.parseHandoffCreateState;
+			const parseHandoffPrepareValue = __imp48.parseHandoffPrepareValue;
 			const styles = __css("ui/TeamCreationPanel.module.css");
 			/**
 			 * P9-T7 (S5-A) — the New Team creation panel (UI doc §3–§9, plan P9-S5
@@ -1259,19 +1321,27 @@ var __dshFactory = (require) => {
 			 * default-checked) acknowledgement, FATAL ✕ with no Continue-anyway
 			 * (the §7.4 complete-persona preset conflict gets its dedicated copy).
 			 *
-			 * Create sequence (UI §4.3 canonical order, locked T7; D-3 revision):
-			 * CREATING → mint the Root session id client-side (`session-<uuid>`,
-			 * {@link mintRootSessionId}) → frozen `team.create` (the host binds the
-			 * TeamSession AND starts the root leader agent — the session is created
-			 * by the host under the minted id, the validated handoff shape: NO native
-			 * pre-created session, which would carry the standard preset agent the
-			 * host cannot replace — and admits the initial work through the real
-			 * path) → `openCreatedSession(rootId)` (one host-list re-pull covers the
-			 * stream increment lagging the RPC). On a typed `team.create` failure the
-			 * panel stays mounted on CREATION_FAILED with the typed error preserved
-			 * verbatim (NO optimistic authority patch) and a RETRY that re-runs
-			 * `team.create` on the SAME retained root (cold-root recovery); the real
-			 * root is never pretended away.
+			 * Create sequence (UI §4.3 canonical order, locked T7; D-3 revision; TCM
+			 * M4 two-stage v2, plan §15.6): CREATING → freeze the attempt snapshot
+			 * ({@link planTeamCreateAttempt}: the minted Root session id
+			 * `session-<uuid>`, {@link mintRootSessionId}; the selected workspace's
+			 * OPTION PATH — never the id; the trimmed prompt; the draft-owned stable
+			 * work token) → `team.create` v2 (workspace-aware, CREATE-ONLY: NO
+			 * initialWork — the host binds the TeamSession to the resolved workspace,
+			 * creates the session under the minted id, and starts the root leader
+			 * agent: NO native pre-created session, which would carry the standard
+			 * preset agent the host cannot replace) → `openCreatedSession(rootId)`
+			 * (one host-list re-pull covers the stream increment lagging the RPC) →
+			 * when the attempt carries initial work: `team.admitInitialWork` v2 (the
+			 * deferred creation-time initial work through the Team
+			 * compatibility/admission authority). On a typed failure at ANY stage the
+			 * panel stays mounted on the retained lane with the typed error preserved
+			 * verbatim (NO optimistic authority patch) and a RETRY: a stage
+			 * create/open failure re-runs the flow from `team.create` v2 on the SAME
+			 * retained root (cold-root recovery); a stage work failure re-sends ONLY
+			 * the admit with the SAME stable token + prompt (the real Root stays
+			 * open). The flow never calls a native `sessions.create` and never falls
+			 * into an ordinary New Session.
 			 *
 			 * Authority discipline: the selected preset reaches the pre-creation
 			 * probe ONLY through the frozen `environmentFacts` channel (a persona
@@ -1314,7 +1384,7 @@ var __dshFactory = (require) => {
 			}
 			/** The New Team creation panel (UI §3–§9). */
 			function TeamCreationPanel(props) {
-			    const { listCatalog, getCatalog, probeCompatibility, teamCreate, openCreatedSession, listAgentPresets, workspaces, handoffSource, handoffFace, draft, onDraftChange, onCancel, t, } = props;
+			    const { listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2, openCreatedSession, listAgentPresets, workspaces, handoffSource, handoffFace, draft, onDraftChange, onCancel, t, onCreated, } = props;
 			    // -- catalog + per-row details (the §6 picker display names) -------------
 			    const [catalog, setCatalog] = useState(undefined);
 			    const [catalogDetails, setCatalogDetails] = useState({});
@@ -1325,9 +1395,16 @@ var __dshFactory = (require) => {
 			    const [checking, setChecking] = useState(false);
 			    const [compat, setCompat] = useState(undefined);
 			    const [detail, setDetail] = useState(undefined);
-			    // -- create (CREATING / CREATION_FAILED on the retained root) -------------
+			    // -- create (CREATING / the retained lane on the frozen attempt) ----------
 			    const [creating, setCreating] = useState(false);
-			    const [createdRootId, setCreatedRootId] = useState(null);
+			    /**
+			     * TCM M4 — the frozen parameter snapshot of the current creation attempt
+			     * (plan §7.7): null = no attempt yet; set on the first create click and
+			     * retained on every later failure (the RETRY re-runs against it — a
+			     * changed draft can never alter a started create's parameters).
+			     */
+			    const [attempt, setAttempt] = useState(null);
+			    /** The typed failure lane (stage + code + message, verbatim, G5). */
 			    const [createError, setCreateError] = useState(null);
 			    // -- handoff (P9-T8 S5-D, UI §32): inert when the face or the source is
 			    // absent; enabled by default (§32.2) when both are present. -------------
@@ -1536,10 +1613,13 @@ var __dshFactory = (require) => {
 			        });
 			    }, [draft.blueprintId, draft.revision]);
 			    // A blueprint / revision change starts a NEW creation attempt: the
-			    // retained root and its error belong to the previous attempt (the old
-			    // bound root stays real and reachable; it is never pretended away).
+			    // retained attempt snapshot and its error belong to the previous
+			    // attempt (the old bound root stays real and reachable; it is never
+			    // pretended away). NOTE: the workspace / initial-work selections are
+			    // deliberately NOT part of the attempt identity — retry freezes the
+			    // snapshotted workspace path and prompt (plan §7.7).
 			    useEffect(() => {
-			        setCreatedRootId(null);
+			        setAttempt(null);
 			        setCreateError(null);
 			    }, [draft.blueprintId, draft.revision]);
 			    const rows = catalog !== undefined && catalog.ok ? catalog.rows : [];
@@ -1573,56 +1653,74 @@ var __dshFactory = (require) => {
 			            return;
 			        if (!retry && !gate.enabled)
 			            return;
-			        const blueprintId = draft.blueprintId;
-			        if (blueprintId === null)
+			        // A stale lane (the blueprint change already reset the attempt):
+			        // nothing to retry.
+			        if (retry && attempt === null)
 			            return;
+			        // TCM M4 (plan §7.7): a previous stage-`work` failure resumes ONLY
+			        // the admit stage — the real Root is already open, and the SAME
+			        // stable token + prompt replay (the at-most-one initial-work slot is
+			        // per-root; a fresh token would be a different work intent). Every
+			        // other failure (and every fresh attempt) runs the full create →
+			        // open → (work) sequence.
+			        const resumeAt = createError !== null && createError.stage === 'work' ? 'work' : undefined;
 			        setCreating(true);
 			        setCreateError(null);
 			        void (async () => {
-			            try {
-			                // 1) the minted Root session id (retained on every later
-			                // failure). D-3: the HOST creates the session under this id
-			                // during `team.create` (the leader agent owns it from birth);
-			                // a native pre-create is forbidden — the standard preset agent
-			                // of a natively created session can never be replaced (the DSH
-			                // agent registry collision boundary), and the team would land
-			                // on a paper root with no leader.
-			                let rootSessionId = createdRootId;
-			                if (rootSessionId === null) {
-			                    rootSessionId = mintRootSessionId();
-			                    setCreatedRootId(rootSessionId);
-			                }
-			                // 2) the frozen team.create on that root (cold path on retry).
-			                const initialWork = draft.initialWork.trim();
-			                const params = {
-			                    rootSessionId,
-			                    blueprintId,
-			                    ...(draft.revision !== null ? { blueprintRevision: draft.revision } : {}),
-			                    ...(initialWork !== '' ? { initialWork: { prompt: initialWork } } : {}),
-			                };
-			                const response = await teamCreate(params);
-			                if (!response.ok) {
-			                    // CREATION_FAILED: the typed Remote result, verbatim (G5). The
-			                    // root id is retained; RETRY re-runs team.create on the same
-			                    // root (the host re-drives the leader start on the cold path).
-			                    setCreateError({ code: response.error.code, message: response.error.message });
+			            let snap = attempt;
+			            if (snap === null) {
+			                // 1) freeze the attempt snapshot from the CURRENT draft (plan
+			                // §7.2): the minted Root session id (D-3 — the HOST creates the
+			                // session under it during `team.create` v2; a native pre-create
+			                // is forbidden: the standard preset agent of a natively created
+			                // session can never be replaced), the selected workspace
+			                // option's PATH (never the id), the trimmed prompt, and the
+			                // draft-owned stable work token.
+			                const blueprintId = draft.blueprintId;
+			                if (blueprintId === null)
+			                    return;
+			                const planned = planTeamCreateAttempt(blueprintId, draft, workspaces);
+			                if (!planned.ok) {
+			                    // Unknown selected workspace: NO RPC (a local typed failure,
+			                    // the id verbatim; the user re-picks and clicks Create again).
+			                    setCreateError({
+			                        code: 'WORKSPACE_UNRESOLVED',
+			                        message: planned.workspaceId,
+			                        stage: 'create',
+			                    });
 			                    return;
 			                }
-			                // 3) Root + TeamSession exist (host-created) → open the Root
-			                // (UI §4.3 order; the one host-list re-pull covers the stream
-			                // increment lagging the RPC).
-			                await openCreatedSession(rootSessionId);
+			                snap = { ...planned.plan, rootSessionId: mintRootSessionId() };
+			                if (planned.plan.requestToken !== draft.rootWorkRequestToken) {
+			                    // The draft owned no token yet: hand the minted one back so
+			                    // the page-run draft owns it (UI §5.3: retained across panel
+			                    // close/reopen within the run).
+			                    onDraftChange({ ...draft, rootWorkRequestToken: planned.plan.requestToken });
+			                }
+			                setAttempt(snap);
 			            }
-			            catch (error) {
-			                // Channel loss (the only Remote rejection kind) or a failed
-			                // creation-path open: a local marker code, the message verbatim.
-			                // The minted root stays retained for RETRY either way.
-			                setCreateError({ code: 'native-error', message: throwableMessage(error) });
+			            // 2) the two-stage v2 flow (the pure orchestrator): `team.create`
+			            // v2 (workspace-aware, CREATE-ONLY — NO initialWork) → open the
+			            // real Root → (when work is pending) `team.admitInitialWork` v2.
+			            // Typed failures preserved verbatim (G5); the ONLY rejection kind
+			            // (channel loss / failed open) maps onto the local marker.
+			            const outcome = await runTeamCreateFlow({
+			                createV2: teamCreateV2,
+			                openCreatedSession,
+			                admitInitialWorkV2: teamAdmitInitialWorkV2,
+			            }, snap, resumeAt);
+			            if (outcome.ok) {
+			                // Terminal success: the owning surface may close (the entry
+			                // overlay closes only AFTER the deferred initial work settles —
+			                // plan §7 minimum UI constraint).
+			                onCreated?.();
 			            }
-			            finally {
-			                setCreating(false);
+			            else {
+			                setCreateError({ code: outcome.code, message: outcome.message, stage: outcome.stage });
 			            }
-			        })();
+			        })().finally(() => {
+			            setCreating(false);
+			        });
 			    };
 			    // -- the handoff create flow (P9-T8 S5-D, Gate P9-G5) ---------------------
 			    // The frozen `handoff.create` is a command flow: NO optimistic authority
@@ -1757,7 +1855,11 @@ var __dshFactory = (require) => {
 			                                    message: `${handoffFailure.code}: ${handoffFailure.message}`,
 			                                }) }), _jsxs("div", { className: styles.handoffTriad, children: [handoffActions.includes('retry') && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-handoff-retry": true, disabled: handoffCreateBusy, onClick: runHandoffRetry, children: t('handoff.retry') })), handoffActions.includes('continue-without-handoff') && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-handoff-continue": true, disabled: handoffCreateBusy, onClick: continueWithoutHandoff, children: t('handoff.continue') })), handoffActions.includes('cancel') && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-handoff-cancel": true, disabled: handoffCreateBusy, onClick: cancelHandoff, children: t('handoff.cancel') }))] })] })), handoffCanceled && (_jsx("p", { className: styles.handoffNote, "data-intent-handoff-canceled": true, children: t('handoff.canceled') }))] })), _jsxs("label", { className: styles.field, children: [_jsx("span", { className: styles.fieldLabel, children: t('intent.preset') }), _jsxs("select", { className: styles.select, "data-intent-preset": true, value: draft.presetId ?? '', disabled: !presetsReady || presets.length === 0, onChange: event => setPreset(event.target.value), children: [!presetsReady && _jsx("option", { value: "", children: t('intent.blueprint.loading') }), presetsReady && presets.length === 0 && _jsx("option", { value: "", children: t('intent.blueprint.empty') }), presets.map(row => (_jsx("option", { value: row.id, children: row.name !== undefined ? row.name : row.id }, row.id)))] })] }), _jsx("p", { className: styles.hint, children: t('intent.preset.hint') }), _jsxs("label", { className: styles.field, children: [_jsx("span", { className: styles.fieldLabel, children: t('intent.initialWork') }), _jsx("textarea", { className: styles.textarea, "data-intent-initial-work": true, value: draft.initialWork, placeholder: t('intent.initialWork.placeholder'), onChange: event => setInitialWork(event.target.value) })] }), _jsxs("div", { className: styles.compat, "data-intent-compatibility": true, "data-intent-status": status, role: "status", children: [_jsx("span", { className: styles.compatTitle, children: t('intent.compatibility') }), status === 'checking' && (_jsx("p", { className: styles.compatNote, children: t('intent.compatibility.checking') })), status === 'OPEN' && (_jsx("p", { className: styles.compatReady, children: t('intent.compatibility.ready') })), status === 'DEGRADED_ACKNOWLEDGED' && (_jsx("p", { className: styles.compatNote, children: t('intent.compatibility.degraded') })), status === 'unknown' && (_jsx("p", { className: styles.compatUnknown, children: t('intent.compatibility.unknown', {
 			                            message: compat !== undefined && !compat.ok ? compat.message : '',
-			                        }) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsx("ul", { className: styles.warningList, children: compat.warnings.map(row => (_jsxs("li", { className: styles.warningRow, "data-intent-warning": true, children: [_jsxs("span", { className: styles.warningOwner, children: [t('intent.compatibility.owner'), " ", row.requirementId] }), row.unavailableSubjects.length > 0 && (_jsxs("span", { className: styles.warningSubjects, children: [t('intent.compatibility.subjects'), ": ", row.unavailableSubjects.join(', ')] })), _jsx("span", { className: styles.warningDetail, children: row.detail })] }, row.requirementId))) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsxs("label", { className: styles.ack, "data-intent-ack": true, children: [_jsx("input", { type: "checkbox", checked: draft.ack, onChange: event => setAck(event.target.checked) }), t('intent.ack')] })), status === 'BLOCKED_FATAL' && (_jsxs("div", { className: styles.fatal, "data-intent-fatal": true, children: [_jsx("p", { className: styles.fatalTitle, children: t('intent.compatibility.fatal') }), compat !== undefined && compat.ok && compat.fatals.map(row => (_jsxs("p", { className: styles.fatalRow, children: [t('intent.compatibility.owner'), " ", row.requirementId, " \u2014 ", row.detail] }, row.requirementId))), isPersonaPresetFatal(compat) && (_jsx("p", { className: styles.fatalPreset, children: t('intent.fatal.preset') }))] }))] }), createError !== null && (_jsxs("div", { className: styles.error, "data-intent-error": true, "data-intent-create-error": true, children: [t('intent.error', { message: `${createError.code}: ${createError.message}` }), createdRootId !== null && _jsx("p", { className: styles.rootKept, children: t('intent.rootKept') })] })), _jsxs("div", { className: styles.actions, children: [_jsx("button", { type: "button", className: styles.primary, "data-intent-create": true, disabled: !gate.enabled || creating || handoffCreateBusy, onClick: handleCreateClick, children: creating ? t('intent.creating') : t(CREATE_LABEL_KEYS[gate.label]) }), createError !== null && createdRootId !== null && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-retry": true, disabled: creating, onClick: () => runCreate(true), children: t('intent.retry') })), _jsx("button", { type: "button", className: styles.secondary, "data-intent-cancel": true, disabled: creating, onClick: onCancel, children: t('intent.cancel') })] })] }));
+			                        }) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsx("ul", { className: styles.warningList, children: compat.warnings.map(row => (_jsxs("li", { className: styles.warningRow, "data-intent-warning": true, children: [_jsxs("span", { className: styles.warningOwner, children: [t('intent.compatibility.owner'), " ", row.requirementId] }), row.unavailableSubjects.length > 0 && (_jsxs("span", { className: styles.warningSubjects, children: [t('intent.compatibility.subjects'), ": ", row.unavailableSubjects.join(', ')] })), _jsx("span", { className: styles.warningDetail, children: row.detail })] }, row.requirementId))) })), compat !== undefined && compat.ok && compat.status === 'BLOCKED_WARNING' && (_jsxs("label", { className: styles.ack, "data-intent-ack": true, children: [_jsx("input", { type: "checkbox", checked: draft.ack, onChange: event => setAck(event.target.checked) }), t('intent.ack')] })), status === 'BLOCKED_FATAL' && (_jsxs("div", { className: styles.fatal, "data-intent-fatal": true, children: [_jsx("p", { className: styles.fatalTitle, children: t('intent.compatibility.fatal') }), compat !== undefined && compat.ok && compat.fatals.map(row => (_jsxs("p", { className: styles.fatalRow, children: [t('intent.compatibility.owner'), " ", row.requirementId, " \u2014 ", row.detail] }, row.requirementId))), isPersonaPresetFatal(compat) && (_jsx("p", { className: styles.fatalPreset, children: t('intent.fatal.preset') }))] }))] }), createError !== null && (_jsxs("div", { className: styles.error, "data-intent-error": true, "data-intent-create-error": true, "data-intent-create-error-stage": createError.stage, children: [createError.stage === 'work'
+			                        ? t('intent.workError', { message: `${createError.code}: ${createError.message}` })
+			                        : t('intent.error', { message: `${createError.code}: ${createError.message}` }), createError.stage === 'work'
+			                        ? _jsx("p", { className: styles.rootKept, children: t('intent.workKept') })
+			                        : attempt !== null && _jsx("p", { className: styles.rootKept, children: t('intent.rootKept') })] })), _jsxs("div", { className: styles.actions, children: [_jsx("button", { type: "button", className: styles.primary, "data-intent-create": true, disabled: !gate.enabled || creating || handoffCreateBusy, onClick: handleCreateClick, children: creating ? t('intent.creating') : t(CREATE_LABEL_KEYS[gate.label]) }), createError !== null && attempt !== null && (_jsx("button", { type: "button", className: styles.secondary, "data-intent-retry": true, disabled: creating, onClick: () => runCreate(true), children: t('intent.retry') })), _jsx("button", { type: "button", className: styles.secondary, "data-intent-cancel": true, disabled: creating, onClick: onCancel, children: t('intent.cancel') })] })] }));
 			}
 			Object.defineProperty(exports, "TeamCreationPanel", { enumerable: true, get: () => TeamCreationPanel });
 			//# sourceMappingURL=TeamCreationPanel.js.map
@@ -4629,6 +4731,8 @@ var __dshFactory = (require) => {
 			    'intent.retry': '重试',
 			    'intent.cancel': '取消',
 			    'intent.rootKept': 'Root 会话 ID 已保留；团队创建失败，可重试（重试复用同一 ID）。',
+			    'intent.workError': '初始任务发送失败：{message}',
+			    'intent.workKept': '团队已创建且 Root 已打开；初始任务未投递，可重试（重试复用同一任务令牌，Root 保持打开）。',
 			    'intent.fatal.preset': '该运行时预设拥有完整的系统人格，无法承载此团队蓝图的 Leader/Member 身份（不改变 DSH 核心语义）。',
 			    'member.action.sendWork': '发送任务…',
 			    'member.action.followup': '发送跟进',
@@ -4839,6 +4943,8 @@ var __dshFactory = (require) => {
 			    'intent.retry': 'Retry',
 			    'intent.cancel': 'Cancel',
 			    'intent.rootKept': 'The Root session id is retained; team creation failed — retry it (the retry reuses the same id).',
+			    'intent.workError': 'Initial work failed: {message}',
+			    'intent.workKept': 'The team is created and the Root is open; the initial work was not delivered — retry it (the retry reuses the same work token and the Root stays open).',
 			    'intent.fatal.preset': "This runtime preset owns a complete system persona and cannot host this Team Blueprint's Leader/Member identity without changing DSH core semantics.",
 			    'member.action.sendWork': 'Send work…',
 			    'member.action.followup': 'Send follow-up',
@@ -4951,6 +5057,139 @@ var __dshFactory = (require) => {
 			};
 			Object.defineProperty(exports, "en", { enumerable: true, get: () => en });
 			//# sourceMappingURL=locales.js.map
+			}, exports: {} };
+		__mods["model/team-create-flow.js"] = { done: false, fn: function (exports) {
+			/**
+			 * TCM M4 (plan §7 / §15.6) — the two-stage v2 Team creation flow (PURE):
+			 *
+			 * ```text
+			 * stage 1: team.create v2 (workspace-aware, CREATE-ONLY — NO initialWork)
+			 * stage 2: open the real Root (the host-created session)
+			 * stage 3: team.admitInitialWork v2 (the deferred creation-time initial
+			 *          work — only when the attempt's prompt is non-empty)
+			 * ```
+			 *
+			 * The order is the frozen §1.1 order: create TeamSession → open Root →
+			 * admit initial work → Root first turn. The React panel
+			 * (TeamCreationPanel) is the sole caller: it freezes ONE
+			 * {@link TeamCreateAttempt} snapshot from the draft
+			 * (`planTeamCreateAttempt`) and drives this function; a stage-3 failure
+			 * resumes ONLY the admit stage (the real Root stays open; the SAME stable
+			 * token + prompt replay — never a fresh token, never an ordinary
+			 * `sessions.create`, never a New Session).
+			 *
+			 * Failure discipline (frozen `TeamRemoteClient` contract, mirrored here):
+			 * every RPC-level outcome arrives as a typed `RemoteResponse` (the
+			 * closed `code` / `message` preserved verbatim); the faces REJECT only
+			 * on transport-level loss or a failed creation-path open, which the flow
+			 * maps onto the panel's local `native-error` marker code — the ONLY
+			 * rejection kind.
+			 *
+			 * Pure module: no React, no I/O, no transport — the three faces are
+			 * injected (the panel binds them to the frozen Remote wrappers). Erasable
+			 * TS only.
+			 * @module @dsh-agent-team/client/model/team-create-flow
+			 */
+			/** The local marker code for a face rejection (channel loss / failed open). */
+			const LOCAL_ERROR_CODE = 'native-error';
+			/** A thrown face error rendered to a string (verbatim). */
+			function throwableMessage(error) {
+			    return error instanceof Error ? error.message : String(error);
+			}
+			/**
+			 * Run the two-stage v2 creation flow for one frozen attempt.
+			 * @param faces - the injected faces (bound to the frozen Remote wrappers
+			 *   by the panel; the v2 wrappers stamp contract version 2, the rest of
+			 *   the client stays on v1 — TCM vNext §15.3).
+			 * @param attempt - the frozen attempt snapshot (plan §7.7: the parameters
+			 *   of a started create are immutable for the attempt's lifetime).
+			 * @param resumeAt - `'work'` when the previous attempt failed at stage 3
+			 *   (the real Root already exists and is open: ONLY the admit is
+			 *   re-sent, with the SAME token + prompt). `undefined` = the full
+			 *   create → open → (work) sequence.
+			 * @returns the terminal outcome (never throws).
+			 */
+			async function runTeamCreateFlow(faces, attempt, resumeAt = undefined) {
+			    if (resumeAt === undefined) {
+			        // STAGE 1 — the v2 workspace-aware create. CREATE-ONLY: the closed v2
+			        // field set carries `workspace?` and NO `initialWork` (the creation-
+			        // time initial work travels stage 3, after the root is open).
+			        const createParams = {
+			            rootSessionId: attempt.rootSessionId,
+			            blueprintId: attempt.blueprintId,
+			            ...(attempt.blueprintRevision !== undefined
+			                ? { blueprintRevision: attempt.blueprintRevision }
+			                : {}),
+			            ...(attempt.workspacePath !== undefined
+			                ? { workspace: attempt.workspacePath }
+			                : {}),
+			        };
+			        let createResponse;
+			        try {
+			            createResponse = await faces.createV2(createParams);
+			        }
+			        catch (error) {
+			            return { ok: false, stage: 'create', code: LOCAL_ERROR_CODE, message: throwableMessage(error) };
+			        }
+			        if (!createResponse.ok) {
+			            return {
+			                ok: false,
+			                stage: 'create',
+			                code: createResponse.error.code,
+			                message: createResponse.error.message,
+			            };
+			        }
+			        // STAGE 2 — open the real Root (the frozen §1.1 order: open BEFORE
+			        // work). The host created the session under the minted id during
+			        // stage 1; the face re-pulls the host list once when the stream
+			        // increment lags the RPC.
+			        try {
+			            await faces.openCreatedSession(attempt.rootSessionId);
+			        }
+			        catch (error) {
+			            return { ok: false, stage: 'open', code: LOCAL_ERROR_CODE, message: throwableMessage(error) };
+			        }
+			        // Empty initial work: the flow is terminal after create + open
+			        // (plan §15.6: 无 initial work时只执行 create[+open]).
+			        if (attempt.prompt === '')
+			            return { ok: true };
+			    }
+			    else if (attempt.prompt === '') {
+			        // Defensive total: a `work` resume carries nothing to admit (the panel
+			        // can only resume from a stage-`work` failure, which requires a
+			        // non-empty prompt) — a trivial success, never an empty-prompt RPC.
+			        return { ok: true };
+			    }
+			    // STAGE 3 — the deferred creation-time initial work (the v2-only command
+			    // through the Team compatibility/admission authority). The stable
+			    // `(rootSessionId, requestToken)` idempotency identity is the draft's:
+			    // a same-token same-payload replay is a zero-delivery terminal replay;
+			    // a same-token different-payload mismatch is a typed failure the host
+			    // refuses.
+			    const workParams = {
+			        rootSessionId: attempt.rootSessionId,
+			        requestToken: attempt.requestToken,
+			        prompt: attempt.prompt,
+			    };
+			    let workResponse;
+			    try {
+			        workResponse = await faces.admitInitialWorkV2(workParams);
+			    }
+			    catch (error) {
+			        return { ok: false, stage: 'work', code: LOCAL_ERROR_CODE, message: throwableMessage(error) };
+			    }
+			    if (!workResponse.ok) {
+			        return {
+			            ok: false,
+			            stage: 'work',
+			            code: workResponse.error.code,
+			            message: workResponse.error.message,
+			        };
+			    }
+			    return { ok: true };
+			}
+			Object.defineProperty(exports, "runTeamCreateFlow", { enumerable: true, get: () => runTeamCreateFlow });
+			//# sourceMappingURL=team-create-flow.js.map
 			}, exports: {} };
 		__mods["model/team-member-commands.js"] = { done: false, fn: function (exports) {
 			/**

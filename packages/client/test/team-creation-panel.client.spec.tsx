@@ -11,13 +11,19 @@
  * Continue-anyway.
  *
  * Create sequence coverage (UI §4.3 canonical order, locked T7; D-3
- * revision): minted root id (`session-<uuid>`, no native pre-create) →
- * frozen `team.create` (the host mints the session + starts the leader)
- * → `openCreatedSession(rootId)`; a typed `team.create` failure keeps the
- * verbatim error + the retained-root note + a retry that reuses the SAME
- * minted id (G5: no optimistic authority patch anywhere, the rendered
- * state stays projection-driven); a failed creation-path open surfaces
- * the local `native-error` marker with the retained root (D-3).
+ * revision; TCM M4 two-stage v2, plan §15.6): minted root id
+ * (`session-<uuid>`, no native pre-create) → `team.create` v2
+ * (workspace-aware, CREATE-ONLY — the selected workspace's PATH, NO
+ * initialWork field) → `openCreatedSession(rootId)` BEFORE the work →
+ * `team.admitInitialWork` v2 (the deferred creation-time initial work,
+ * same root + the draft-owned stable token + the snapshot prompt). A
+ * typed create/open failure keeps the verbatim error + the retained-root
+ * note + a retry that reuses the SAME minted id (G5: no optimistic
+ * authority patch anywhere, the rendered state stays projection-driven);
+ * a typed second-stage (work) failure keeps the REAL ROOT open with the
+ * work lane + a retry that re-sends ONLY the admit (same token + prompt);
+ * an unknown selected workspace sends NO RPC; a changed draft cannot
+ * alter a started create's parameters (the snapshot wins).
  *
  * The draft is parent-held here (the harness mirrors TeamView, which owns
  * the draft in view state so it persists within the page run, UI §5.3).
@@ -29,7 +35,8 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
-  RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue, RemoteTeamCreateParams,
+  RemoteCatalogGetParams, RemoteIntentProbeParams, RemoteResponse, RemoteSafeJsonValue,
+  RemoteTeamAdmitInitialWorkParams, RemoteTeamCreateParamsV2,
 } from '../../remote/src/index.js'
 import type {
   TeamIntentDraft, TeamPresetRow, TeamWorkspaceOption,
@@ -147,7 +154,8 @@ interface PanelFace {
   listCatalog: () => Promise<RemoteResponse>
   getCatalog: (params: RemoteCatalogGetParams) => Promise<RemoteResponse>
   probeCompatibility: (params: RemoteIntentProbeParams) => Promise<RemoteResponse>
-  teamCreate: (params: RemoteTeamCreateParams) => Promise<RemoteResponse>
+  teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
+  teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
 }
 
@@ -156,7 +164,8 @@ function makeFace(overrides: Partial<PanelFace> = {}): PanelFace {
     listCatalog: vi.fn(() => Promise.resolve(okResponse(CATALOG_DATA, 'catalog.list'))),
     getCatalog: vi.fn(() => Promise.resolve(okResponse(DETAIL_DATA, 'catalog.get'))),
     probeCompatibility: vi.fn(() => Promise.resolve(okResponse(OPEN_DATA, 'intent.probe'))),
-    teamCreate: vi.fn(() => Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create'))),
+    teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create'))),
+    teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     listAgentPresets: vi.fn(() => Promise.resolve(PRESETS)),
     ...overrides,
   }
@@ -173,6 +182,7 @@ function PanelHarness(props: {
   readonly workspaces?: readonly TeamWorkspaceOption[]
   readonly initialDraft?: TeamIntentDraft
   readonly onCancel?: (() => void) | undefined
+  readonly onCreated?: (() => void) | undefined
   readonly onDraftChangeSpy?: ((draft: TeamIntentDraft) => void) | undefined
 }) {
   const [draft, setDraft] = useState<TeamIntentDraft>(props.initialDraft ?? emptyTeamIntentDraft)
@@ -181,7 +191,8 @@ function PanelHarness(props: {
       listCatalog={props.face.listCatalog}
       getCatalog={props.face.getCatalog}
       probeCompatibility={props.face.probeCompatibility}
-      teamCreate={props.face.teamCreate}
+      teamCreateV2={props.face.teamCreateV2}
+      teamAdmitInitialWorkV2={props.face.teamAdmitInitialWorkV2}
       listAgentPresets={props.face.listAgentPresets}
       openCreatedSession={props.openCreatedSession ?? (async () => undefined)}
       workspaces={props.workspaces ?? []}
@@ -191,6 +202,7 @@ function PanelHarness(props: {
         setDraft(next)
       }}
       onCancel={props.onCancel ?? (() => undefined)}
+      onCreated={props.onCreated}
       t={makeTranslate(zh)}
     />
   )
@@ -386,19 +398,25 @@ describe('TeamCreationPanel', () => {
     })
   })
 
-  it('create happy path: minted root id → frozen team.create → open the Root (UI §4.3 order; D-3)', async () => {
+  it('create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6)', async () => {
     const created = deferred<RemoteResponse>()
-    const teamCreateMock = vi.fn(
-      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> => created.promise,
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> => created.promise,
     )
-    const face = makeFace({ teamCreate: teamCreateMock })
+    const admitMock = vi.fn(
+      (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork')),
+    )
+    const face = makeFace({ teamCreateV2: teamCreateV2Mock, teamAdmitInitialWorkV2: admitMock })
     const openCreatedSession = vi.fn(async () => undefined)
+    const onCreated = vi.fn(() => undefined)
     const view = render(
       <PanelHarness
         face={face}
         openCreatedSession={openCreatedSession}
         workspaces={WORKSPACE}
         initialDraft={{ ...BP_DRAFT, workspaceId: 'wsp-1', initialWork: ' 调研 ' }}
+        onCreated={onCreated}
       />,
     )
     const button = createButton(view.container)
@@ -412,31 +430,122 @@ describe('TeamCreationPanel', () => {
     // D-3: the id is minted client-side (the `session-` shape) — no native
     // pre-creation anywhere; the host mints the session under this id.
     await vi.waitFor(() => {
-      expect(face.teamCreate).toHaveBeenCalledTimes(1)
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
     })
-    const createParams = teamCreateMock.mock.calls[0]![0]!
+    const createParams = teamCreateV2Mock.mock.calls[0]![0]!
     expect(typeof createParams.rootSessionId).toBe('string')
     expect(createParams.rootSessionId.startsWith('session-')).toBe(true)
-    await act(async () => {
-      created.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create'))
-    })
     expect(createParams.blueprintId).toBe(BP)
     expect(createParams.blueprintRevision).toBe(2)
-    expect(createParams.initialWork).toEqual({ prompt: '调研' })
+    // The selected workspace travels as its OPTION PATH (never the id)…
+    expect(createParams.workspace).toBe('C:\\work\\one')
+    // …and the v2 create is CREATE-ONLY: NO initialWork field at all (the
+    // deferred work travels the v2-only admit after the root is open).
+    expect('initialWork' in createParams).toBe(false)
+    await act(async () => {
+      created.resolve(okResponse({ path: createParams.rootSessionId, durable: true, bind: {} }, 'team.create'))
+    })
+    // The open happens BEFORE the admit (the frozen §1.1 order).
     await vi.waitFor(() => {
       expect(openCreatedSession).toHaveBeenCalledTimes(1)
     })
     expect(openCreatedSession).toHaveBeenCalledWith(createParams.rootSessionId)
+    expect(admitMock).toHaveBeenCalledTimes(0)
+    await vi.waitFor(() => {
+      expect(admitMock).toHaveBeenCalledTimes(1)
+    })
+    // The admit reuses the SAME root + the draft-owned stable token + the
+    // TRIMMED prompt (the frozen §7.7 retry identity).
+    const admitParams = admitMock.mock.calls[0]![0]!
+    expect(admitParams.rootSessionId).toBe(createParams.rootSessionId)
+    expect(admitParams.prompt).toBe('调研')
+    expect(typeof admitParams.requestToken).toBe('string')
+    expect(admitParams.requestToken.startsWith('team-work-')).toBe(true)
+    // Terminal success fires the owning-surface close face exactly once.
+    await vi.waitFor(() => {
+      expect(onCreated).toHaveBeenCalledTimes(1)
+    })
+    expect(view.container.querySelector('[data-intent-create-error]')).toBeNull()
   })
 
-  it('a typed team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5)', async () => {
-    const teamCreateMock = vi.fn(
-      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
-        Promise.resolve(errorResponse('ADMISSION_REJECTED', 'prompt too long', 'team.create')),
-    )
-    const face = makeFace({ teamCreate: teamCreateMock })
+  it('empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open)', async () => {
+    const face = makeFace()
     const openCreatedSession = vi.fn(async () => undefined)
-    const view = render(<PanelHarness face={face} openCreatedSession={openCreatedSession} initialDraft={BP_DRAFT} />)
+    const onCreated = vi.fn(() => undefined)
+    const view = render(
+      <PanelHarness
+        face={face}
+        openCreatedSession={openCreatedSession}
+        workspaces={WORKSPACE}
+        initialDraft={{ ...BP_DRAFT, workspaceId: 'wsp-1', initialWork: '   ' }}
+        onCreated={onCreated}
+      />,
+    )
+    const button = createButton(view.container)
+    await vi.waitFor(() => {
+      expect(button.disabled).toBe(false)
+    })
+    fireEvent.click(button)
+    await vi.waitFor(() => {
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+      expect(openCreatedSession).toHaveBeenCalledTimes(1)
+    })
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
+    await vi.waitFor(() => {
+      expect(onCreated).toHaveBeenCalledTimes(1)
+    })
+    // The v2 create carries the workspace path but no work.
+    expect(face.teamCreateV2).toHaveBeenCalledWith(expect.objectContaining({ workspace: 'C:\\work\\one' }))
+  })
+
+  it('an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt)', async () => {
+    const face = makeFace()
+    const openCreatedSession = vi.fn(async () => undefined)
+    const onCreated = vi.fn(() => undefined)
+    // A stale selection: the workspace id is not in the feed the panel was
+    // given (the native feed shrank since the draft was filled).
+    const view = render(
+      <PanelHarness
+        face={face}
+        openCreatedSession={openCreatedSession}
+        workspaces={WORKSPACE}
+        initialDraft={{ ...BP_DRAFT, workspaceId: 'wsp-ghost' }}
+        onCreated={onCreated}
+      />,
+    )
+    const button = createButton(view.container)
+    await vi.waitFor(() => {
+      expect(button.disabled).toBe(false)
+    })
+    fireEvent.click(button)
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-intent-create-error]')).toBeTruthy()
+    })
+    // No RPC of any kind left the panel (plan §7 必须测试).
+    expect(face.teamCreateV2).toHaveBeenCalledTimes(0)
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
+    expect(openCreatedSession).not.toHaveBeenCalled()
+    expect(onCreated).not.toHaveBeenCalled()
+    // The refusal is local + verbatim (the stale id rides in the message).
+    const lane = view.container.querySelector('[data-intent-create-error]')!
+    expect(lane.textContent).toContain('WORKSPACE_UNRESOLVED: wsp-ghost')
+    expect(lane.getAttribute('data-intent-create-error-stage')).toBe('create')
+    // No retry button: nothing was started (the user re-picks the
+    // workspace and clicks Create again).
+    expect(view.container.querySelector('[data-intent-retry]')).toBeNull()
+  })
+
+  it('a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5)', async () => {
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> =>
+        Promise.resolve(errorResponse('TEAM_CREATE_WORKSPACE_NOT_FOUND', "no workspace 'C:\\work\\gone'", 'team.create')),
+    )
+    const face = makeFace({ teamCreateV2: teamCreateV2Mock })
+    const openCreatedSession = vi.fn(async () => undefined)
+    const onCreated = vi.fn(() => undefined)
+    const view = render(
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} initialDraft={BP_DRAFT} onCreated={onCreated} />,
+    )
     const button = createButton(view.container)
     await vi.waitFor(() => {
       expect(button.disabled).toBe(false)
@@ -447,33 +556,39 @@ describe('TeamCreationPanel', () => {
     })
     // The typed Remote result, verbatim (no optimistic authority patch).
     expect(view.container.querySelector('[data-intent-create-error]')?.textContent)
-      .toBe('创建失败：ADMISSION_REJECTED: prompt too longRoot 会话 ID 已保留；团队创建失败，可重试（重试复用同一 ID）。')
+      .toBe("创建失败：TEAM_CREATE_WORKSPACE_NOT_FOUND: no workspace 'C:\\work\\gone'Root 会话 ID 已保留；团队创建失败，可重试（重试复用同一 ID）。")
+    expect(view.container.querySelector('[data-intent-create-error]')?.getAttribute('data-intent-create-error-stage')).toBe('create')
     expect(openCreatedSession).not.toHaveBeenCalled()
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
+    expect(onCreated).not.toHaveBeenCalled()
     const retry = view.container.querySelector<HTMLButtonElement>('[data-intent-retry]')
     expect(retry).not.toBeNull()
     fireEvent.click(retry!)
     await vi.waitFor(() => {
-      expect(face.teamCreate).toHaveBeenCalledTimes(2)
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(2)
     })
-    // RETRY re-runs team.create on the SAME retained minted root (the host
-    // re-drives the leader start on the cold path).
-    expect(face.teamCreate).toHaveBeenLastCalledWith(expect.objectContaining({
-      rootSessionId: teamCreateMock.mock.calls[0]![0]!.rootSessionId,
+    // RETRY re-runs team.create v2 on the SAME retained minted root (the
+    // host re-drives the leader start + the attach on the cold path).
+    expect(face.teamCreateV2).toHaveBeenLastCalledWith(expect.objectContaining({
+      rootSessionId: teamCreateV2Mock.mock.calls[0]![0]!.rootSessionId,
       blueprintId: BP,
       blueprintRevision: 2,
     }))
   })
 
-  it('a failed creation-path open surfaces the native-error marker with the retained root (D-3)', async () => {
-    const teamCreateMock = vi.fn(
-      (_params: RemoteTeamCreateParams): Promise<RemoteResponse> =>
-        Promise.resolve(okResponse({ teamSessionId: 'root-1' }, 'team.create')),
+  it('a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3)', async () => {
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create')),
     )
-    const face = makeFace({ teamCreate: teamCreateMock })
+    const face = makeFace({ teamCreateV2: teamCreateV2Mock })
     const openCreatedSession = vi.fn(async () => {
       throw new Error('sessions.select: unknown session session-x')
     })
-    const view = render(<PanelHarness face={face} openCreatedSession={openCreatedSession} initialDraft={BP_DRAFT} />)
+    const onCreated = vi.fn(() => undefined)
+    const view = render(
+      <PanelHarness face={face} openCreatedSession={openCreatedSession} initialDraft={BP_DRAFT} onCreated={onCreated} />,
+    )
     const button = createButton(view.container)
     await vi.waitFor(() => {
       expect(button.disabled).toBe(false)
@@ -484,17 +599,129 @@ describe('TeamCreationPanel', () => {
     })
     // The verbatim open failure under the local marker code; the minted
     // root is retained (the team is durable host-side) so RETRY is offered
-    // and reuses the SAME id.
+    // and reuses the SAME id. The admit never ran (the root is not open).
     expect(view.container.querySelector('[data-intent-create-error]')?.textContent)
       .toBe('创建失败：native-error: sessions.select: unknown session session-xRoot 会话 ID 已保留；团队创建失败，可重试（重试复用同一 ID）。')
+    expect(view.container.querySelector('[data-intent-create-error]')?.getAttribute('data-intent-create-error-stage')).toBe('open')
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
+    expect(onCreated).not.toHaveBeenCalled()
     const retry = view.container.querySelector<HTMLButtonElement>('[data-intent-retry]')
     expect(retry).not.toBeNull()
     fireEvent.click(retry!)
     await vi.waitFor(() => {
-      expect(face.teamCreate).toHaveBeenCalledTimes(2)
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(2)
     })
-    expect(face.teamCreate).toHaveBeenLastCalledWith(expect.objectContaining({
-      rootSessionId: teamCreateMock.mock.calls[0]![0]!.rootSessionId,
+    expect(face.teamCreateV2).toHaveBeenLastCalledWith(expect.objectContaining({
+      rootSessionId: teamCreateV2Mock.mock.calls[0]![0]!.rootSessionId,
+    }))
+  })
+
+  it('a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session)', async () => {
+    const admitFailure = errorResponse(
+      'TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED',
+      'the glue refused delivery',
+      'team.admitInitialWork',
+    )
+    let admitCalls = 0
+    const admitMock = vi.fn(
+      (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> => {
+        admitCalls += 1
+        return admitCalls === 1
+          ? Promise.resolve(admitFailure)
+          : Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))
+      },
+    )
+    const face = makeFace({ teamAdmitInitialWorkV2: admitMock })
+    const openCreatedSession = vi.fn(async () => undefined)
+    const onCreated = vi.fn(() => undefined)
+    const view = render(
+      <PanelHarness
+        face={face}
+        openCreatedSession={openCreatedSession}
+        workspaces={WORKSPACE}
+        initialDraft={{ ...BP_DRAFT, workspaceId: 'wsp-1', initialWork: 'deploy the harbor service' }}
+        onCreated={onCreated}
+      />,
+    )
+    const button = createButton(view.container)
+    await vi.waitFor(() => {
+      expect(button.disabled).toBe(false)
+    })
+    fireEvent.click(button)
+    // The first admit fails: the lane is the WORK stage (the real Root is
+    // open — the create + open legs succeeded).
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-intent-create-error]')).toBeTruthy()
+    })
+    const lane = view.container.querySelector('[data-intent-create-error]')!
+    expect(lane.getAttribute('data-intent-create-error-stage')).toBe('work')
+    expect(lane.textContent).toContain('初始任务发送失败：TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED: the glue refused delivery')
+    expect(lane.textContent).toContain('初始任务未投递，可重试')
+    // The real Root WAS opened (and stays open) — exactly once.
+    expect(openCreatedSession).toHaveBeenCalledTimes(1)
+    expect(onCreated).not.toHaveBeenCalled()
+    // RETRY: ONLY the admit re-sends — no re-create, no re-open.
+    const retry = view.container.querySelector<HTMLButtonElement>('[data-intent-retry]')
+    expect(retry).not.toBeNull()
+    fireEvent.click(retry!)
+    await vi.waitFor(() => {
+      expect(admitMock).toHaveBeenCalledTimes(2)
+    })
+    expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    expect(openCreatedSession).toHaveBeenCalledTimes(1)
+    // The SAME stable token + prompt (a fresh token would be a different
+    // work intent — the host's at-most-one slot is per-root).
+    expect(admitMock.mock.calls[1]![0]).toEqual(admitMock.mock.calls[0]![0])
+    expect(admitMock.mock.calls[0]![0]).toEqual(expect.objectContaining({
+      prompt: 'deploy the harbor service',
+    }))
+    // The retry settles successfully: onCreated fires (the overlay closes).
+    await vi.waitFor(() => {
+      expect(onCreated).toHaveBeenCalledTimes(1)
+    })
+    expect(view.container.querySelector('[data-intent-create-error]')).toBeNull()
+  })
+
+  it('a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试)', async () => {
+    const created = deferred<RemoteResponse>()
+    const teamCreateV2Mock = vi.fn(
+      (_params: RemoteTeamCreateParamsV2): Promise<RemoteResponse> => created.promise,
+    )
+    const admitMock = vi.fn(
+      (_params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse> =>
+        Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork')),
+    )
+    const face = makeFace({ teamCreateV2: teamCreateV2Mock, teamAdmitInitialWorkV2: admitMock })
+    const view = render(
+      <PanelHarness
+        face={face}
+        workspaces={WORKSPACE}
+        initialDraft={{ ...BP_DRAFT, workspaceId: 'wsp-1', initialWork: 'original prompt' }}
+      />,
+    )
+    const button = createButton(view.container)
+    await vi.waitFor(() => {
+      expect(button.disabled).toBe(false)
+    })
+    fireEvent.click(button)
+    // The create is in flight…
+    await vi.waitFor(() => {
+      expect(face.teamCreateV2).toHaveBeenCalledTimes(1)
+    })
+    // …and the user edits the initial-work draft while it is pending.
+    const workInput = view.container.querySelector<HTMLTextAreaElement>('[data-intent-initial-work]')
+    expect(workInput).not.toBeNull()
+    fireEvent.change(workInput!, { target: { value: 'edited prompt' } })
+    await act(async () => {
+      created.resolve(okResponse({ path: 'root-1', durable: true, bind: {} }, 'team.create'))
+    })
+    // The deferred admit uses the SNAPSHOT prompt (the draft edit at
+    // click time), never the edited one.
+    await vi.waitFor(() => {
+      expect(admitMock).toHaveBeenCalledTimes(1)
+    })
+    expect(admitMock.mock.calls[0]![0]).toEqual(expect.objectContaining({
+      prompt: 'original prompt',
     }))
   })
 
@@ -549,7 +776,8 @@ describe('TeamCreationPanel', () => {
     // The seam fired exactly once…
     expect(onCancel).toHaveBeenCalledTimes(1)
     // …and nothing on the backend moved (no creation attempt of any kind).
-    expect(face.teamCreate).toHaveBeenCalledTimes(0)
+    expect(face.teamCreateV2).toHaveBeenCalledTimes(0)
+    expect(face.teamAdmitInitialWorkV2).toHaveBeenCalledTimes(0)
     expect(view.container.querySelector('[data-intent-create-error]')).toBeNull()
     // …and the parent-held draft never changed (the panel routes every
     // control through onDraftChange; cancel is not one of them).
