@@ -2,9 +2,9 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 12 structural ports, each of which the host wiring (a
- * later P8 harness task) implements over the P7/P8 runtime APIs
- * (design note §3 table, "Backing API" column). Every port method returns
+ * surface is these 14 structural ports (12 frozen P8-T3 ports + the two
+ * TCM vNext §15.6 v2 ports), each of which the host wiring implements
+ * over the runtime APIs (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
  * the remote layer never sees a live DSH object.
  *
@@ -209,14 +209,67 @@ export interface RemoteLegacyPort {
     inspect(dshHome: string, workspaceCwd: string | undefined, projectDir: string | undefined): RemoteSafeRecord;
 }
 /**
- * The complete dependency surface of the handler layer: exactly 12 ports,
- * none of which is a mirror of the upstream session controller, a session
- * log artifact, or an upstream private API (G8).
+ * The v2 `team.create` port (TCM vNext §15.6): the workspace-aware
+ * creation variant. v2 create is CREATE-ONLY — it never carries initial
+ * work (that travels the v2-only `team.admitInitialWork` command,
+ * port 14, after the root is open). Typed failures raised here (e.g.
+ * `TEAM_CREATE_WORKSPACE_*`) pass through the dispatcher unchanged
+ * (invariant 4b, the closed backing vocabulary).
+ */
+export interface RemoteTeamCreateV2Port {
+    /**
+     * Bind a fresh root (or rehydrate a cold root) for the requested
+     * blueprint, resolving `workspace` through the host workspace registry
+     * and attaching the root session to it (TCM vNext §2.2/§15.6).
+     * @param rootSessionId - the validated root session id.
+     * @param blueprintId - the validated blueprint id.
+     * @param blueprintRevision - the requested revision, or `undefined`
+     *   for the latest.
+     * @param workspace - the selected workspace path (the client's
+     *   `TeamWorkspaceOption.path`), or `undefined` for the host default
+     *   workspace.
+     * @returns the same value object as v1:
+     *   `{ path: 'fresh-root' | 'cold-root', durable: <state> | null,
+     *   bind: <bind result> }` (lossless JSON).
+     */
+    create(rootSessionId: string, blueprintId: string, blueprintRevision: number | undefined, workspace: string | undefined): RemoteSafeRecord;
+}
+/**
+ * The v2-only `team.admitInitialWork` port. The host admits the
+ * creation-time initial work for ONE root through the Team
+ * compatibility/admission authority with a Root-specific strategy (never
+ * the generic Member follow-up; TCM vNext §4.2). Idempotent per
+ * `(rootSessionId, requestToken)`: a replayed terminal success
+ * redelivers nothing; the same token with a different canonical payload
+ * is a typed mismatch. Typed failures raised here (e.g.
+ * `TEAM_CREATE_ROOT_WORK_*`) pass through the dispatcher unchanged
+ * (invariant 4b, the closed backing vocabulary).
+ */
+export interface RemoteTeamAdmitInitialWorkPort {
+    /**
+     * Admit (or replay-reject) the creation-time initial work for one root.
+     * @param rootSessionId - the validated root session id.
+     * @param requestToken - the caller-stable opaque work token
+     *   (idempotency identity).
+     * @param prompt - the initial work prompt (free-form, 1..200000).
+     * @param attachedContext - optional attached context text
+     *   (free-form, 1..200000); the host folds it into the delivered work.
+     * @returns the admission outcome (lossless JSON).
+     */
+    admit(rootSessionId: string, requestToken: string, prompt: string, attachedContext: string | undefined): RemoteSafeRecord;
+}
+/**
+ * The complete dependency surface of the handler layer: exactly 14 ports
+ * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports), none of
+ * which is a mirror of the upstream session controller, a session log
+ * artifact, or an upstream private API (G8).
  */
 export interface RemoteHandlerDeps {
     readonly catalog: RemoteCatalogPort;
     readonly intent: RemoteIntentPort;
     readonly teamCreate: RemoteTeamCreatePort;
+    readonly teamCreateV2: RemoteTeamCreateV2Port;
+    readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
     readonly admission: RemoteAdmissionPort;

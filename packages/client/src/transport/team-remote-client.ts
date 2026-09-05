@@ -9,6 +9,11 @@
  * `RemoteResponse` (frozen `code` / `details` / `provenance` intact) is
  * returned as-is, never exception-ified.
  *
+ * Version stamping (TCM vNext §15.3) is also exclusive to this module:
+ * every existing wrapper stamps contract version 1 (frozen v1 wire
+ * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
+ * contract version 2.
+ *
  * Failure discipline (frozen `RemotePushTransport` contract, mirrored
  * here for the unary path): every RPC-level outcome arrives as a typed
  * `RemoteResponse`; the promise REJECTS only on transport-level
@@ -30,8 +35,10 @@
 
 import {
   REMOTE_CONTRACT_VERSION,
+  REMOTE_CONTRACT_VERSION_V2,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
+  type RemoteContractVersion,
   type RemoteCatalogGetParams,
   type RemoteCompatibilityAckParams,
   type RemoteCompatibilityGetParams,
@@ -52,17 +59,27 @@ import {
   type RemoteResponse,
   type RemoteSafeRecord,
   type RemoteTeamCreateParams,
+  type RemoteTeamCreateParamsV2,
+  type RemoteTeamAdmitInitialWorkParams,
 } from '../../../remote/src/index.js'
 import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
  * The Team Remote client surface (plan §6.1): the frozen unary endpoint
- * `call` plus typed wrappers for every catalog method (23, frozen
- * method catalog of `@dsh-agent-team/remote`).
+ * `call` plus typed wrappers for every catalog method (24 — the 23
+ * frozen v1 methods + the v2-only `team.admitInitialWork`).
+ *
+ * **Version routing (TCM vNext §15.3)**: every EXISTING wrapper stamps
+ * contract version **1** (the frozen v1 wire behavior — unchanged); only
+ * the two v2 wrappers — {@link teamCreateV2} and
+ * {@link teamAdmitInitialWorkV2} — stamp contract version **2**. The
+ * generic {@link call} also defaults to version 1.
  */
 export interface TeamRemoteClient {
   /**
    * Call one frozen catalog method with its closed param object.
+   * STAMPS CONTRACT VERSION 1 (the frozen default — TCM vNext §15.3:
+   * the client defaults every existing method to v1).
    * @param method - the catalog method name (e.g. `team.getProjection`).
    * @param params - the method's closed param object: one of the frozen
    *   `Remote*Params` interfaces (use the typed wrappers). Typed as
@@ -93,8 +110,26 @@ export interface TeamRemoteClient {
   catalogGet(params: RemoteCatalogGetParams): Promise<RemoteResponse>
   /** `intent.probe` — compatibility preflight for a blueprint. */
   intentProbe(params: RemoteIntentProbeParams): Promise<RemoteResponse>
-  /** `team.create` — materialize a fresh TeamSession. */
+  /**
+   * `team.create` (contract v1) — materialize a fresh TeamSession.
+   * Stamps contract version 1 (frozen v1 wire behavior).
+   */
   teamCreate(params: RemoteTeamCreateParams): Promise<RemoteResponse>
+  /**
+   * `team.create` (contract v2, TCM vNext §15.6) — the workspace-aware
+   * creation variant. CREATE-ONLY: the closed v2 field set carries
+   * `workspace?` and NO `initialWork` (the creation-time initial work is
+   * issued with {@link teamAdmitInitialWorkV2} after the root is open).
+   * Stamps contract version 2.
+   */
+  teamCreateV2(params: RemoteTeamCreateParamsV2): Promise<RemoteResponse>
+  /**
+   * `team.admitInitialWork` (contract v2, v2-only method, TCM vNext
+   * §15.6) — admit the creation-time initial work for one root through
+   * the Team compatibility/admission authority (idempotent per
+   * `(rootSessionId, requestToken)`). Stamps contract version 2.
+   */
+  teamAdmitInitialWorkV2(params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse>
   /** `member.create` — admit one member instance. */
   memberCreate(params: RemoteMemberCreateParams): Promise<RemoteResponse>
   /** `member.send` — first message to a member instance. */
@@ -138,13 +173,18 @@ export interface TeamRemoteClient {
  * @returns the client; all methods share the one carrier.
  */
 export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClient {
-  const call = async (method: string, params: object): Promise<RemoteResponse> => {
-    // The single envelope-assembly boundary (plan §6.1): the cast papers
-    // over nominal/readonly variance against the RemoteSafeRecord index
-    // signature only — the wire value is exactly the frozen fields and
-    // the host validates them per field.
+  // The single envelope-assembly boundary (plan §6.1 + TCM vNext §15.3):
+  // `version` is the remote contract version THIS call declares. The cast
+  // papers over nominal/readonly variance against the RemoteSafeRecord
+  // index signature only — the wire value is exactly the frozen fields
+  // and the host validates them per field.
+  const callWithVersion = async (
+    method: string,
+    params: object,
+    version: RemoteContractVersion,
+  ): Promise<RemoteResponse> => {
     const envelope = {
-      version: REMOTE_CONTRACT_VERSION,
+      version,
       params: params as RemoteSafeRecord,
     }
     let result: TeamRpcResult
@@ -167,6 +207,12 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     return result
   }
 
+  // TCM vNext §15.3: the public generic `call` STAMPS CONTRACT VERSION 1
+  // (the frozen default — the client defaults every existing method to
+  // v1); only the two V2 wrappers below stamp version 2.
+  const call = (method: string, params: object): Promise<RemoteResponse> =>
+    callWithVersion(method, params, REMOTE_CONTRACT_VERSION)
+
   return {
     call,
     getProjection: (teamSessionId) => call('team.getProjection', { teamSessionId }),
@@ -176,6 +222,9 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     catalogGet: (params) => call('catalog.get', params),
     intentProbe: (params) => call('intent.probe', params),
     teamCreate: (params) => call('team.create', params),
+    teamCreateV2: (params) => callWithVersion('team.create', params, REMOTE_CONTRACT_VERSION_V2),
+    teamAdmitInitialWorkV2: (params) =>
+      callWithVersion('team.admitInitialWork', params, REMOTE_CONTRACT_VERSION_V2),
     memberCreate: (params) => call('member.create', params),
     memberSend: (params) => call('member.send', params),
     memberFollowup: (params) => call('member.followup', params),

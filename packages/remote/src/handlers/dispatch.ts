@@ -10,8 +10,12 @@
  *    `unknown-method` even with a garbage payload;
  * 2. envelope parse failure → `malformed-request` /
  *    `contract-version-unsupported`;
- * 3. param validation failure → `malformed-params` (with `field` in
- *    details) or the mirrored frozen P3 ID codes (deviation D-1/D-3);
+ * 3. version-aware param validation failure → `method-version-unsupported`
+ *    (a v1 request to a v2-only method — TCM vNext §15.3, the catalog is a
+ *    versioned union), `malformed-params` (with `field` in details) or the
+ *    mirrored frozen P3 ID codes (deviation D-1/D-3); the request version
+ *    is passed to BOTH the param parser and the category handler, so every
+ *    request is served against the closed schema of its own version;
  * 4. typed domain error whose string `code` is a member of the CLOSED
  *    backing vocabulary ({@link REMOTE_BACKING_ERROR_CODE_SET}) →
  *    pass-through code + message, source identity under `details.cause`
@@ -66,16 +70,27 @@ import type { RemoteHandlerDeps, RemoteHandlerOutcome } from './ports.js'
 /** One request of the public seam: endpoint + raw payload. */
 export type RemoteDispatcher = (endpoint: string, payload: unknown) => Promise<RemoteResponse>
 
-/** One category handler as wired by the dispatcher. */
-type CategoryHandler = (method: string, params: RemoteMethodParams) => RemoteHandlerOutcome
+/**
+ * One category handler as wired by the dispatcher. The third argument is
+ * the request's contract version (TCM vNext §15.3: the dispatcher passes
+ * `request.version` through to the parser AND the handlers; a handler
+ * that has no version-specific behavior simply ignores it).
+ */
+type CategoryHandler = (
+  method: string,
+  params: RemoteMethodParams,
+  version: number,
+) => RemoteHandlerOutcome
 
-/** Wire the twelve ports into the nine category handlers. */
+/** Wire the fourteen ports into the nine category handlers. */
 function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteCategory, CategoryHandler>> {
   return {
     [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
     [REMOTE_CATEGORIES.INTENT]: createRemoteIntentHandler(deps.intent),
     [REMOTE_CATEGORIES.TEAM]: createRemoteTeamHandler({
       teamCreate: deps.teamCreate,
+      teamCreateV2: deps.teamCreateV2,
+      teamAdmitInitialWork: deps.teamAdmitInitialWork,
       projection: deps.projection,
       ledger: deps.ledger,
     }),
@@ -118,7 +133,10 @@ function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteC
  * - contracts v1 `TEAM_CONTRACT_ERROR_CODES` (the frozen identity/DTO rules);
  * - the S6 plugin's remote-facing codes (s6-principal `S6_PRINCIPAL_ERROR_CODES`
  *   + s6-remote `S6_REMOTE_ERROR_CODES`), which the production dispatcher
- *   raises inside its handlers.
+ *   raises inside its handlers;
+ * - the TCM vNext §15.6 team-create v2 codes (M2 workspace attach + M3 Root
+ *   initial-work strategy), raised by the v2 team.create /
+ *   team.admitInitialWork ports of both dispatchers.
  *
  * Maintenance rule: when a backing module introduces a NEW closed code that
  * must reach a remote caller, add its literal here and re-verify the
@@ -243,6 +261,16 @@ export const REMOTE_BACKING_ERROR_CODES = [
   // s6-remote — S6_REMOTE_ERROR_CODES (D-3 root-agent start, team.create)
   'TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE',
   'TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED',
+  // s6-remote — TCM vNext §15.6 team-create v2 surface (M2 workspace attach /
+  // M3 Root initial-work strategy; the codes are typed at the ports and
+  // must reach the client through both dispatchers unchanged)
+  'TEAM_CREATE_WORKSPACE_NOT_FOUND',
+  'TEAM_CREATE_WORKSPACE_MISMATCH',
+  'TEAM_CREATE_WORKSPACE_ATTACH_FAILED',
+  'TEAM_CREATE_REQUEST_PAYLOAD_MISMATCH',
+  'TEAM_CREATE_ROOT_WORK_UNAVAILABLE',
+  'TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH',
+  'TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED',
 ] as const
 
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
@@ -304,7 +332,7 @@ function toRemoteErrorResult(error: unknown, ctx: RemoteProvenanceContext): Remo
 
 /**
  * Create the throw-proof dispatcher for one deps object.
- * @param deps - the twelve backing ports (injected; no global state).
+ * @param deps - the fourteen backing ports (injected; no global state).
  * @returns the seam entry point: `(endpoint, payload) => Promise<RemoteResponse>`.
  */
 export function createRemoteDispatcher(deps: RemoteHandlerDeps): RemoteDispatcher {
@@ -318,22 +346,27 @@ export function createRemoteDispatcher(deps: RemoteHandlerDeps): RemoteDispatche
     }
     let response: RemoteResponse
     try {
-      // Invariant 1: unknown endpoint (checked before the envelope).
+      // Invariant 1: unknown endpoint (checked before the envelope — the
+      // versioned-union catalog is the endpoint membership set).
       if (!isRemoteMethod(endpoint)) {
         throw remoteContractError(
           REMOTE_CONTRACT_ERROR_CODES.UNKNOWN_METHOD,
-          `endpoint '${endpoint}' is not a method of the closed Remote contract v1 catalog`,
+          `endpoint '${endpoint}' is not a method of the closed Remote contract catalog`,
           { reason: 'unknown-endpoint' },
         )
       }
       // Invariant 2: the request envelope (closed: version + params).
       const request = parseRemoteRequest(payload)
       ctx = { ...ctx, contractVersion: request.version }
-      // Invariant 3: the method's closed param schema.
-      const parsed = parseRemoteMethodParams(endpoint, request.params)
+      // Invariant 3: the method's closed param schema AT THE REQUEST'S
+      // version (TCM vNext §15.3: the dispatcher passes request.version
+      // through; a v1 request to a v2-only method is typed-rejected here,
+      // after the envelope parse).
+      const parsed = parseRemoteMethodParams(request.version, endpoint, request.params)
       ctx = { ...ctx, requestToken: parsed.requestToken }
-      // Invariants 4/5: the category handler (the backing port call).
-      const outcome = handlers[remoteCategoryOf(endpoint)](endpoint, parsed.params)
+      // Invariants 4/5: the category handler (the backing port call) — the
+      // request version rides along for the version-aware handlers.
+      const outcome = handlers[remoteCategoryOf(endpoint)](endpoint, parsed.params, request.version)
       // Invariant 6: lossless check + provenance on the success value.
       response = buildRemoteSuccess(outcome.data, {
         ...ctx,

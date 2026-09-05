@@ -16,13 +16,15 @@
  *    optional provenance is absent), so no handoff provenance enters
  *    the durable world on this path.
  * 3. THE CLOSED CATALOG (the code-level proof that no backend method
- *    can drive a decision): the Remote contract v1 catalog is CLOSED at
- *    9 categories / 23 methods and the `handoff` category exposes
- *    EXACTLY `handoff.prepare` (read-only) + `handoff.create` (the
- *    start entry) — there is NO remote decision method; the decision
- *    triad is resolvable only in-process (the client), and the S6
- *    handoff port surface carries no decision channel (the decisions
- *    stay client-side in v1).
+ *    can drive a decision): the Remote contract catalog is CLOSED at
+ *    9 categories / 24 methods (the versioned union — 23 frozen v1
+ *    methods + the v2-only `team.admitInitialWork`, TCM vNext §15.3)
+ *    and the `handoff` category exposes EXACTLY `handoff.prepare`
+ *    (read-only) + `handoff.create` (the start entry) — there is NO
+ *    remote decision method in EITHER version; the decision triad is
+ *    resolvable only in-process (the client), and the S6 handoff port
+ *    surface carries no decision channel (the decisions stay
+ *    client-side in v1 and v2 alike).
  *
  * Plus the RETRY leg of the triad: the one-shot summarization re-runs
  * from the FROZEN snapshot (summarize count +1, the source is NOT
@@ -50,6 +52,7 @@ import {
   REMOTE_CATEGORIES,
   REMOTE_METHOD_NAMES,
   REMOTE_METHODS_BY_CATEGORY,
+  REMOTE_V2_ONLY_METHODS,
 } from '../../remote/src/contracts/catalog.js'
 
 const SRC = P7T5_FIXTURE.sourceSessionId
@@ -240,15 +243,19 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     }
   })
 
-  it('S4: the closed catalog carries no decision method — the handoff category is exactly prepare + create (v1-CLOSED 9/23)', () => {
+  it('S4: the closed catalog carries no decision method — the handoff category is exactly prepare + create (versioned union 9/24: 23 v1 + 1 v2-only)', () => {
     // The handoff category: EXACTLY the two v1 methods (read-only prepare
     // + the create entry that starts the operation). No decision method.
     expect(REMOTE_METHODS_BY_CATEGORY[REMOTE_CATEGORIES.HANDOFF]).toEqual([
       'handoff.create',
       'handoff.prepare',
     ])
-    // The catalog stays CLOSED at 9 categories / 23 methods.
-    expect(REMOTE_METHOD_NAMES.length).toBe(23)
+    // The catalog stays CLOSED: 9 categories / 24 methods — the 23 frozen
+    // v1 methods + the v2-only `team.admitInitialWork` (TCM vNext §15.3:
+    // the catalog is a versioned union; the v2-only closed set is exactly
+    // the one method that has no v1 counterpart).
+    expect(REMOTE_METHOD_NAMES.length).toBe(24)
+    expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     expect(Object.keys(REMOTE_METHODS_BY_CATEGORY).sort()).toEqual([
       'catalog',
       'compatibility',

@@ -1236,8 +1236,11 @@ export function createS6RemoteDispatcher(ports, principal, principalContext) {
             // Invariant 2: the request envelope (closed: version + params).
             const request = parseRemoteRequest(payload);
             ctx = { ...ctx, contractVersion: request.version };
-            // Invariant 3: the method's closed param schema.
-            const parsed = parseRemoteMethodParams(endpoint, request.params);
+            // Invariant 3: the method's closed param schema AT THE REQUEST'S
+            // version (TCM vNext §15.3: the dispatcher passes request.version
+            // through; a v1 request to a v2-only method is typed-rejected here,
+            // after the envelope parse).
+            const parsed = parseRemoteMethodParams(request.version, endpoint, request.params);
             ctx = { ...ctx, requestToken: parsed.requestToken };
             // Invariant 4: the category handler (the backing port call) — the
             // async mirror awaits (the frozen dispatcher calls synchronously).

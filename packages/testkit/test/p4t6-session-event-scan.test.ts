@@ -49,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec)', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -336,8 +336,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // sibling change (t12a-live-bridge.d.mts registeredTools field) is an
     // in-place edit (no count change); the new file carries zero denylist
     // vocabulary (the scan over it passes).
-    expect(scanResult.filesScanned).toBe(607)
-    expect(scanResult.files.length).toBe(607)
+    // TCM-M1 v2-surface pin (+2): this commit adds
+    // packages/remote/test/tcm-m1-remote-v2.test.ts (the versioned-contract
+    // dispatcher spec: v1 byte-compat, the per-version closed sets, the
+    // v2-only method gating, the seven team-create v2 backing codes) and
+    // packages/runtime/test/tcm-m1-s6-v2-routing.test.ts (the S6
+    // production-dispatcher version-routing spec); both carry zero
+    // denylist vocabulary (the scan over them passes). All other M1
+    // changes (remote contracts/handlers/index, the s6-remote version
+    // pass-through, the client transport, the updated focused specs, the
+    // rebuilt install-surface artifacts) are in-place edits (no count
+    // change).
+    expect(scanResult.filesScanned).toBe(609)
+    expect(scanResult.files.length).toBe(609)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

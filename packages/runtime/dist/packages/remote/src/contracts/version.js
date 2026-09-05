@@ -21,12 +21,30 @@
  */
 import { remoteContractError } from './errors.js';
 /**
- * The remote contract version stamped by this build.
- * Frozen by P8-T3; changing or replacing it is a remote contract change.
+ * The frozen remote contract v1 baseline (contract v1, frozen by P8-T3).
+ * This is the version the legacy (pre-v2) client wrappers stamp on every
+ * request — v1 wire behavior is preserved byte-for-byte (TCM vNext §15.6:
+ * "keep all v1 methods; the client defaults every existing wrapper to
+ * v1"). Changing or replacing it is a remote contract change.
  */
 export const REMOTE_CONTRACT_VERSION = 1;
-/** All remote contract versions this build accepts. Frozen: `[1]`. */
-export const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [1];
+/**
+ * The remote contract v2 (TCM vNext §15.6, the Team-create minimal fix):
+ * the workspace-aware `team.create` variant plus the v2-only
+ * `team.admitInitialWork` command. Only the two v2 client wrappers
+ * (`teamCreateV2` / `teamAdmitInitialWorkV2`) stamp this version; every
+ * other wrapper keeps stamping {@link REMOTE_CONTRACT_VERSION}.
+ */
+export const REMOTE_CONTRACT_VERSION_V2 = 2;
+/**
+ * All remote contract versions this build accepts: `[1, 2]`.
+ * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision
+ * (a version bump ADDS supported versions, never edits v1 semantics).
+ */
+export const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
+    REMOTE_CONTRACT_VERSION,
+    REMOTE_CONTRACT_VERSION_V2,
+];
 /**
  * Is `value` a supported remote contract version (a positive integer in the
  * supported set)?

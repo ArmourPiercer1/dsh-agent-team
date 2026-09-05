@@ -12,7 +12,13 @@
  *
  * The envelope is CLOSED: unknown top-level fields are rejected
  * (`malformed-request`). Per-method `params` validation lives in
- * `params.ts` (each method has its own closed field set).
+ * `params.ts` — VERSION-AWARE (TCM vNext §15.3): each method's closed
+ * field set depends on the request `version` (v1 and v2 of `team.create`
+ * differ; `team.admitInitialWork` is v2-only). The envelope parse itself
+ * only checks that `version` is a supported integer (`1 | 2`); the
+ * version-specific semantics are the param parser's job, so a v1 request
+ * to a v2-only method is rejected AFTER this parse, as a typed
+ * `method-version-unsupported`.
  *
  * Pure module: no I/O, no node: builtins, no runtime environment assumptions.
  * @module @dsh-agent-team/remote/contracts/request

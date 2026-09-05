@@ -17,6 +17,7 @@ import { expect } from 'vitest'
 import {
   createRemoteDispatcher,
   REMOTE_CONTRACT_VERSION,
+  REMOTE_CONTRACT_VERSION_V2,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -39,6 +40,8 @@ import type {
   RemoteSafeRecord,
   RemoteSuccessResult,
   RemoteTeamCreatePort,
+  RemoteTeamCreateV2Port,
+  RemoteTeamAdmitInitialWorkPort,
   RemoteOverridePort,
 } from '../src/index.js'
 
@@ -177,7 +180,7 @@ const P8T3_LEGACY_INSPECTION: RemoteSafeRecord = {
   teamId: 'legacy-1',
 }
 
-// --- the twelve fake ports ---------------------------------------------------
+// --- the fourteen fake ports --------------------------------------------------
 
 /** The fake port set with its call log (the ports are plain objects). */
 export interface P8T3FakePorts extends RemoteHandlerDeps {
@@ -247,6 +250,35 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
           blueprintId,
           ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
         },
+      }
+    },
+  }
+
+  const teamCreateV2: RemoteTeamCreateV2Port = {
+    create(rootSessionId, blueprintId, blueprintRevision, workspace) {
+      calls.push('team.create.v2')
+      return {
+        path: 'fresh-root',
+        durable: { rootSessionId, blueprintId },
+        bind: {
+          rootSessionId,
+          blueprintId,
+          ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
+          ...(workspace !== undefined ? { workspace } : {}),
+        },
+      }
+    },
+  }
+
+  const teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort = {
+    admit(rootSessionId, requestToken, prompt, attachedContext) {
+      calls.push('team.admitInitialWork')
+      return {
+        admitted: true,
+        rootSessionId,
+        requestToken,
+        prompt,
+        ...(attachedContext !== undefined ? { attachedContext } : {}),
       }
     },
   }
@@ -392,6 +424,8 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     catalog,
     intent,
     teamCreate,
+    teamCreateV2,
+    teamAdmitInitialWork,
     projection,
     ledger,
     admission,
@@ -429,6 +463,11 @@ export function makeDispatcher(overrides: Partial<RemoteHandlerDeps> = {}): P8T3
 /** One wire request envelope of contract v1. */
 export function p8t3Wire(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION, params }
+}
+
+/** One wire request envelope of contract v2 (TCM vNext §15.3). */
+export function p8t3WireV2(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V2, params }
 }
 
 /** Assert a success result and return it (narrows the union). */

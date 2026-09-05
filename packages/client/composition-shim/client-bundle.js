@@ -4377,10 +4377,11 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-projection-store.js.map
 			}, exports: {} };
 		__mods["transport/team-remote-client.js"] = { done: false, fn: function (exports) {
-			const __imp29 = __req("../../remote/src/index.js");
-			const REMOTE_CONTRACT_VERSION = __imp29.REMOTE_CONTRACT_VERSION;
-			const REMOTE_RPC_CHANNEL = __imp29.REMOTE_RPC_CHANNEL;
-			const PushTransportLossError = __imp29.PushTransportLossError;
+			const __imp34 = __req("../../remote/src/index.js");
+			const REMOTE_CONTRACT_VERSION = __imp34.REMOTE_CONTRACT_VERSION;
+			const REMOTE_CONTRACT_VERSION_V2 = __imp34.REMOTE_CONTRACT_VERSION_V2;
+			const REMOTE_RPC_CHANNEL = __imp34.REMOTE_RPC_CHANNEL;
+			const PushTransportLossError = __imp34.PushTransportLossError;
 			/**
 			 * P9-T3 (S2-A) — the Team Remote client over the frozen public seam.
 			 *
@@ -4391,6 +4392,11 @@ var __dshFactory = (require) => {
 			 * or the envelope, and no UI mapping happens here — the typed
 			 * `RemoteResponse` (frozen `code` / `details` / `provenance` intact) is
 			 * returned as-is, never exception-ified.
+			 *
+			 * Version stamping (TCM vNext §15.3) is also exclusive to this module:
+			 * every existing wrapper stamps contract version 1 (frozen v1 wire
+			 * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
+			 * contract version 2.
 			 *
 			 * Failure discipline (frozen `RemotePushTransport` contract, mirrored
 			 * here for the unary path): every RPC-level outcome arrives as a typed
@@ -4417,13 +4423,14 @@ var __dshFactory = (require) => {
 			 * @returns the client; all methods share the one carrier.
 			 */
 			function createTeamRemoteClient(carrier) {
-			    const call = async (method, params) => {
-			        // The single envelope-assembly boundary (plan §6.1): the cast papers
-			        // over nominal/readonly variance against the RemoteSafeRecord index
-			        // signature only — the wire value is exactly the frozen fields and
-			        // the host validates them per field.
+			    // The single envelope-assembly boundary (plan §6.1 + TCM vNext §15.3):
+			    // `version` is the remote contract version THIS call declares. The cast
+			    // papers over nominal/readonly variance against the RemoteSafeRecord
+			    // index signature only — the wire value is exactly the frozen fields
+			    // and the host validates them per field.
+			    const callWithVersion = async (method, params, version) => {
 			        const envelope = {
-			            version: REMOTE_CONTRACT_VERSION,
+			            version,
 			            params: params,
 			        };
 			        let result;
@@ -4442,6 +4449,10 @@ var __dshFactory = (require) => {
 			        }
 			        return result;
 			    };
+			    // TCM vNext §15.3: the public generic `call` STAMPS CONTRACT VERSION 1
+			    // (the frozen default — the client defaults every existing method to
+			    // v1); only the two V2 wrappers below stamp version 2.
+			    const call = (method, params) => callWithVersion(method, params, REMOTE_CONTRACT_VERSION);
 			    return {
 			        call,
 			        getProjection: (teamSessionId) => call('team.getProjection', { teamSessionId }),
@@ -4450,6 +4461,8 @@ var __dshFactory = (require) => {
 			        catalogGet: (params) => call('catalog.get', params),
 			        intentProbe: (params) => call('intent.probe', params),
 			        teamCreate: (params) => call('team.create', params),
+			        teamCreateV2: (params) => callWithVersion('team.create', params, REMOTE_CONTRACT_VERSION_V2),
+			        teamAdmitInitialWorkV2: (params) => callWithVersion('team.admitInitialWork', params, REMOTE_CONTRACT_VERSION_V2),
 			        memberCreate: (params) => call('member.create', params),
 			        memberSend: (params) => call('member.send', params),
 			        memberFollowup: (params) => call('member.followup', params),
@@ -5986,6 +5999,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteBlueprintRevision", { enumerable: true, get: () => __re2.parseRemoteBlueprintRevision });
 			const __re2 = __req("../../remote/src/contracts/ids.js");
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION });
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V2", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V2 });
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => __re3.SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			Object.defineProperty(exports, "isSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.isSupportedRemoteContractVersion });
 			Object.defineProperty(exports, "assertSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.assertSupportedRemoteContractVersion });
@@ -5996,7 +6010,9 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_METHOD_CATALOG", { enumerable: true, get: () => __re4.REMOTE_METHOD_CATALOG });
 			Object.defineProperty(exports, "REMOTE_METHOD_NAMES", { enumerable: true, get: () => __re4.REMOTE_METHOD_NAMES });
 			Object.defineProperty(exports, "REMOTE_METHODS_BY_CATEGORY", { enumerable: true, get: () => __re4.REMOTE_METHODS_BY_CATEGORY });
+			Object.defineProperty(exports, "REMOTE_V2_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V2_ONLY_METHODS });
 			Object.defineProperty(exports, "isRemoteMethod", { enumerable: true, get: () => __re4.isRemoteMethod });
+			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => __re4.isRemoteMethodAvailableInVersion });
 			Object.defineProperty(exports, "remoteCategoryOf", { enumerable: true, get: () => __re4.remoteCategoryOf });
 			const __re4 = __req("../../remote/src/contracts/catalog.js");
 			Object.defineProperty(exports, "REMOTE_REQUEST_FIELDS", { enumerable: true, get: () => __re5.REMOTE_REQUEST_FIELDS });
@@ -6015,6 +6031,8 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CATALOG_GET_FIELDS", { enumerable: true, get: () => __re7.REMOTE_CATALOG_GET_FIELDS });
 			Object.defineProperty(exports, "REMOTE_INTENT_PROBE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_INTENT_PROBE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_CREATE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_CREATE_FIELDS });
+			Object.defineProperty(exports, "REMOTE_TEAM_CREATE_FIELDS_V2", { enumerable: true, get: () => __re7.REMOTE_TEAM_CREATE_FIELDS_V2 });
+			Object.defineProperty(exports, "REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_MEMBER_CREATE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_MEMBER_CREATE_FIELDS });
@@ -6036,6 +6054,8 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteCatalogGetParams", { enumerable: true, get: () => __re7.parseRemoteCatalogGetParams });
 			Object.defineProperty(exports, "parseRemoteIntentProbeParams", { enumerable: true, get: () => __re7.parseRemoteIntentProbeParams });
 			Object.defineProperty(exports, "parseRemoteTeamCreateParams", { enumerable: true, get: () => __re7.parseRemoteTeamCreateParams });
+			Object.defineProperty(exports, "parseRemoteTeamCreateParamsV2", { enumerable: true, get: () => __re7.parseRemoteTeamCreateParamsV2 });
+			Object.defineProperty(exports, "parseRemoteTeamAdmitInitialWorkParams", { enumerable: true, get: () => __re7.parseRemoteTeamAdmitInitialWorkParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetProjectionParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetProjectionParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetLedgerPageParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetLedgerPageParams });
 			Object.defineProperty(exports, "parseRemoteMemberCreateParams", { enumerable: true, get: () => __re7.parseRemoteMemberCreateParams });
@@ -6669,6 +6689,14 @@ var __dshFactory = (require) => {
 			    MALFORMED_REQUEST: 'malformed-request',
 			    /** A method's `params` object fails that method's closed schema. */
 			    MALFORMED_PARAMS: 'malformed-params',
+			    /**
+			     * The method is a member of the closed catalog but NOT available in the
+			     * request's contract version (TCM vNext §15.3: the catalog is a
+			     * versioned union — a v1 request to the v2-only
+			     * `team.admitInitialWork` is typed-rejected after the envelope parse).
+			     * Added with the v2 bump; never used by v1-era requests.
+			     */
+			    METHOD_VERSION_UNSUPPORTED: 'method-version-unsupported',
 			    /** Last-resort dispatcher failure (handler/port threw an untyped error). */
 			    INTERNAL_ERROR: 'internal-error',
 			};
@@ -6917,13 +6945,32 @@ var __dshFactory = (require) => {
 			 * @module @dsh-agent-team/remote/contracts/version
 			 */
 			/**
-			 * The remote contract version stamped by this build.
-			 * Frozen by P8-T3; changing or replacing it is a remote contract change.
+			 * The frozen remote contract v1 baseline (contract v1, frozen by P8-T3).
+			 * This is the version the legacy (pre-v2) client wrappers stamp on every
+			 * request — v1 wire behavior is preserved byte-for-byte (TCM vNext §15.6:
+			 * "keep all v1 methods; the client defaults every existing wrapper to
+			 * v1"). Changing or replacing it is a remote contract change.
 			 */
 			const REMOTE_CONTRACT_VERSION = 1;
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION });
-			/** All remote contract versions this build accepts. Frozen: `[1]`. */
-			const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [1];
+			/**
+			 * The remote contract v2 (TCM vNext §15.6, the Team-create minimal fix):
+			 * the workspace-aware `team.create` variant plus the v2-only
+			 * `team.admitInitialWork` command. Only the two v2 client wrappers
+			 * (`teamCreateV2` / `teamAdmitInitialWorkV2`) stamp this version; every
+			 * other wrapper keeps stamping {@link REMOTE_CONTRACT_VERSION}.
+			 */
+			const REMOTE_CONTRACT_VERSION_V2 = 2;
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V2", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V2 });
+			/**
+			 * All remote contract versions this build accepts: `[1, 2]`.
+			 * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision
+			 * (a version bump ADDS supported versions, never edits v1 semantics).
+			 */
+			const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
+			    REMOTE_CONTRACT_VERSION,
+			    REMOTE_CONTRACT_VERSION_V2,
+			];
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			/**
 			 * Is `value` a supported remote contract version (a positive integer in the
@@ -7011,8 +7058,12 @@ var __dshFactory = (require) => {
 			const REMOTE_CATEGORY_VALUES = Object.freeze(Object.values(REMOTE_CATEGORIES));
 			Object.defineProperty(exports, "REMOTE_CATEGORY_VALUES", { enumerable: true, get: () => REMOTE_CATEGORY_VALUES });
 			/**
-			 * The closed Remote contract v1 method catalog (23 methods).
-			 * Key = endpoint = method name (dotted: `<category>.<action>`).
+			 * The closed Remote contract method catalog — a VERSIONED UNION
+			 * (TCM vNext §15.3): the 23 frozen v1 methods plus the v2-only
+			 * `team.admitInitialWork` (24 methods total). Key = endpoint = method
+			 * name (dotted: `<category>.<action>`). Per-version availability is the
+			 * closed {@link REMOTE_V2_ONLY_METHODS} set below; per-method param
+			 * schemas are version-aware in `params.ts`.
 			 */
 			const REMOTE_METHOD_CATALOG = {
 			    'catalog.list': { category: REMOTE_CATEGORIES.CATALOG },
@@ -7021,6 +7072,7 @@ var __dshFactory = (require) => {
 			    'team.create': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.getProjection': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.getLedgerPage': { category: REMOTE_CATEGORIES.TEAM },
+			    'team.admitInitialWork': { category: REMOTE_CATEGORIES.TEAM },
 			    'member.create': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.send': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -7063,13 +7115,43 @@ var __dshFactory = (require) => {
 			});
 			Object.defineProperty(exports, "REMOTE_METHODS_BY_CATEGORY", { enumerable: true, get: () => REMOTE_METHODS_BY_CATEGORY });
 			/**
-			 * Is `name` a method of the closed catalog?
+			 * Is `name` a method of the closed (versioned-union) catalog?
 			 * @param name - the candidate endpoint / method name.
 			 */
 			function isRemoteMethod(name) {
 			    return typeof name === 'string' && name in REMOTE_METHOD_CATALOG;
 			}
 			Object.defineProperty(exports, "isRemoteMethod", { enumerable: true, get: () => isRemoteMethod });
+			/**
+			 * The closed set of catalog methods that exist ONLY in remote contract v2
+			 * (TCM vNext §15.6: the v2 bump adds exactly one method,
+			 * `team.admitInitialWork`; every v1 method stays available in v2).
+			 */
+			const REMOTE_V2_ONLY_METHODS = ['team.admitInitialWork'];
+			Object.defineProperty(exports, "REMOTE_V2_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V2_ONLY_METHODS });
+			/**
+			 * Is `method` a catalog method available in remote contract `version`?
+			 *
+			 * This is the version-aware membership check the version-aware param
+			 * parser uses (TCM vNext §15.3): a v1 request to a v2-only method is a
+			 * typed rejection (`method-version-unsupported`) AFTER the envelope
+			 * parse — the endpoint itself passes the pre-envelope closed-catalog
+			 * check, so the version can only be consulted once the envelope is
+			 * known.
+			 *
+			 * @param method - the candidate method name (must be in the catalog).
+			 * @param version - the request's contract version (supported: 1 | 2).
+			 */
+			function isRemoteMethodAvailableInVersion(method, version) {
+			    if (!(method in REMOTE_METHOD_CATALOG))
+			        return false;
+			    if (version === 1) {
+			        return !REMOTE_V2_ONLY_METHODS.includes(method);
+			    }
+			    // version === 2: every v1 method plus the v2-only methods.
+			    return true;
+			}
+			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => isRemoteMethodAvailableInVersion });
 			/**
 			 * The category of a catalog method.
 			 * @param method - a method name known to be in the catalog.
@@ -7086,12 +7168,12 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=catalog.js.map
 			}, exports: {} };
 		__mods["../../remote/src/contracts/request.js"] = { done: false, fn: function (exports) {
-			const __imp19 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp19.remoteContractError;
-			const __imp20 = __req("../../remote/src/contracts/remote-safe.js");
-			const assertRemoteSafeJsonValue = __imp20.assertRemoteSafeJsonValue;
-			const __imp21 = __req("../../remote/src/contracts/version.js");
-			const parseRemoteContractVersion = __imp21.parseRemoteContractVersion;
+			const __imp25 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp25.remoteContractError;
+			const __imp26 = __req("../../remote/src/contracts/remote-safe.js");
+			const assertRemoteSafeJsonValue = __imp26.assertRemoteSafeJsonValue;
+			const __imp27 = __req("../../remote/src/contracts/version.js");
+			const parseRemoteContractVersion = __imp27.parseRemoteContractVersion;
 			/**
 			 * The Remote contract v1 request envelope.
 			 *
@@ -7106,7 +7188,13 @@ var __dshFactory = (require) => {
 			 *
 			 * The envelope is CLOSED: unknown top-level fields are rejected
 			 * (`malformed-request`). Per-method `params` validation lives in
-			 * `params.ts` (each method has its own closed field set).
+			 * `params.ts` — VERSION-AWARE (TCM vNext §15.3): each method's closed
+			 * field set depends on the request `version` (v1 and v2 of `team.create`
+			 * differ; `team.admitInitialWork` is v2-only). The envelope parse itself
+			 * only checks that `version` is a supported integer (`1 | 2`); the
+			 * version-specific semantics are the param parser's job, so a v1 request
+			 * to a v2-only method is rejected AFTER this parse, as a typed
+			 * `method-version-unsupported`.
 			 *
 			 * Pure module: no I/O, no node: builtins, no runtime environment assumptions.
 			 * @module @dsh-agent-team/remote/contracts/request
@@ -7274,19 +7362,23 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=response.js.map
 			}, exports: {} };
 		__mods["../../remote/src/contracts/params.js"] = { done: false, fn: function (exports) {
-			const __imp24 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp24.remoteContractError;
-			const __imp25 = __req("../../remote/src/contracts/ids.js");
-			const parseRemoteBlueprintId = __imp25.parseRemoteBlueprintId;
-			const parseRemoteBlueprintRevision = __imp25.parseRemoteBlueprintRevision;
-			const parseRemoteInstanceId = __imp25.parseRemoteInstanceId;
-			const parseRemoteRootSessionId = __imp25.parseRemoteRootSessionId;
-			const parseRemoteSessionId = __imp25.parseRemoteSessionId;
-			const parseRemoteTeamSessionId = __imp25.parseRemoteTeamSessionId;
-			const parseRemoteTemplateId = __imp25.parseRemoteTemplateId;
-			const REMOTE_ID_MAX_LENGTH = __imp25.REMOTE_ID_MAX_LENGTH;
-			const __imp26 = __req("../../remote/src/contracts/remote-safe.js");
-			const assertRemoteSafeJsonValue = __imp26.assertRemoteSafeJsonValue;
+			const __imp35 = __req("../../remote/src/contracts/catalog.js");
+			const isRemoteMethodAvailableInVersion = __imp35.isRemoteMethodAvailableInVersion;
+			const __imp36 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp36.remoteContractError;
+			const __imp37 = __req("../../remote/src/contracts/ids.js");
+			const parseRemoteBlueprintId = __imp37.parseRemoteBlueprintId;
+			const parseRemoteBlueprintRevision = __imp37.parseRemoteBlueprintRevision;
+			const parseRemoteInstanceId = __imp37.parseRemoteInstanceId;
+			const parseRemoteRootSessionId = __imp37.parseRemoteRootSessionId;
+			const parseRemoteSessionId = __imp37.parseRemoteSessionId;
+			const parseRemoteTeamSessionId = __imp37.parseRemoteTeamSessionId;
+			const parseRemoteTemplateId = __imp37.parseRemoteTemplateId;
+			const REMOTE_ID_MAX_LENGTH = __imp37.REMOTE_ID_MAX_LENGTH;
+			const __imp38 = __req("../../remote/src/contracts/remote-safe.js");
+			const assertRemoteSafeJsonValue = __imp38.assertRemoteSafeJsonValue;
+			const __imp39 = __req("../../remote/src/contracts/version.js");
+			const assertSupportedRemoteContractVersion = __imp39.assertSupportedRemoteContractVersion;
 			/**
 			 * Per-method closed param schemas of the Remote contract v1.
 			 *
@@ -7306,6 +7398,17 @@ var __dshFactory = (require) => {
 			 * Free-form content fields (the message `body`, the compatibility `note`)
 			 * are exempt from the no-control-char / no-whitespace ID rule — newlines
 			 * are legal content — but bound by a length cap (design note §3).
+			 *
+			 * **Version awareness (TCM vNext §15.3/§15.6)**: the module is the
+			 * single version-aware closed schema. Every v1 field list, parser and
+			 * behavior is unchanged; the v2 bump adds exactly one method
+			 * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
+			 * method (`team.create`, whose v2 closed set swaps `initialWork` for
+			 * `workspace`). {@link parseRemoteMethodParams} routes on the request
+			 * version: a v1 request to a v2-only method is typed-rejected
+			 * (`method-version-unsupported`) AFTER the envelope parse, and each
+			 * request version sees only its own closed field sets (no cross-version
+			 * field leakage in either direction).
 			 *
 			 * Pure module: no I/O, no node: builtins, no runtime environment
 			 * assumptions.
@@ -7365,6 +7468,29 @@ var __dshFactory = (require) => {
 			    'rootSessionId',
 			];
 			Object.defineProperty(exports, "REMOTE_TEAM_CREATE_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_CREATE_FIELDS });
+			/**
+			 * `team.create` — the CLOSED v2 field set (TCM vNext §15.6): the v1 set
+			 * minus `initialWork`, plus `workspace`. `initialWork` on a v2 request is
+			 * an unknown field (typed `malformed-params` / `unknown-field`).
+			 */
+			const REMOTE_TEAM_CREATE_FIELDS_V2 = [
+			    'blueprintId',
+			    'blueprintRevision',
+			    'rootSessionId',
+			    'workspace',
+			];
+			Object.defineProperty(exports, "REMOTE_TEAM_CREATE_FIELDS_V2", { enumerable: true, get: () => REMOTE_TEAM_CREATE_FIELDS_V2 });
+			/**
+			 * `team.admitInitialWork` — the CLOSED v2-only field set (TCM vNext
+			 * §15.6).
+			 */
+			const REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS = [
+			    'attachedContext',
+			    'prompt',
+			    'requestToken',
+			    'rootSessionId',
+			];
+			Object.defineProperty(exports, "REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS });
 			const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
@@ -7809,6 +7935,37 @@ var __dshFactory = (require) => {
 			    };
 			}
 			Object.defineProperty(exports, "parseRemoteTeamCreateParams", { enumerable: true, get: () => parseRemoteTeamCreateParams });
+			/** Parse `team.create` params (contract v2 — the workspace-aware variant). */
+			function parseRemoteTeamCreateParamsV2(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_TEAM_CREATE_FIELDS_V2);
+			    const rawRevision = optionalField(method, params, 'blueprintRevision');
+			    const rawWorkspace = optionalField(method, params, 'workspace');
+			    return {
+			        rootSessionId: parseRemoteRootSessionId(requiredField(method, params, 'rootSessionId'), 'rootSessionId'),
+			        blueprintId: parseRemoteBlueprintId(requiredField(method, params, 'blueprintId'), 'blueprintId'),
+			        ...(rawRevision === undefined
+			            ? {}
+			            : { blueprintRevision: parseRemoteBlueprintRevision(rawRevision, 'blueprintRevision') }),
+			        ...(rawWorkspace === undefined
+			            ? {}
+			            : { workspace: parseRemotePath(rawWorkspace, method, 'workspace') }),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteTeamCreateParamsV2", { enumerable: true, get: () => parseRemoteTeamCreateParamsV2 });
+			/** Parse `team.admitInitialWork` params (v2-only). */
+			function parseRemoteTeamAdmitInitialWorkParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS);
+			    const rawAttachedContext = optionalField(method, params, 'attachedContext');
+			    return {
+			        rootSessionId: parseRemoteRootSessionId(requiredField(method, params, 'rootSessionId'), 'rootSessionId'),
+			        requestToken: parseRemoteOpaqueToken(requiredField(method, params, 'requestToken'), method, 'requestToken'),
+			        prompt: parseRemoteBody(requiredField(method, params, 'prompt'), method, 'prompt'),
+			        ...(rawAttachedContext === undefined
+			            ? {}
+			            : { attachedContext: parseRemoteBody(rawAttachedContext, method, 'attachedContext') }),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteTeamAdmitInitialWorkParams", { enumerable: true, get: () => parseRemoteTeamAdmitInitialWorkParams });
 			/** Parse `team.getProjection` params. */
 			function parseRemoteTeamGetProjectionParams(method, params) {
 			    assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -8067,15 +8224,27 @@ var __dshFactory = (require) => {
 			// Generic entry point (used by the dispatcher)
 			// ---------------------------------------------------------------------------
 			/**
-			 * Parse `params` for the given catalog method.
+			 * Parse `params` for the given catalog method AT THE REQUEST'S contract
+			 * version (TCM vNext §15.3: the dispatcher passes `request.version`
+			 * through, so every request is parsed against the closed schema of its
+			 * own version — no cross-version field leakage).
+			 * @param version - the request envelope's contract version (supported:
+			 *   `1 | 2`; the envelope parse already guarantees this, the assertion is
+			 *   defensive for direct callers).
 			 * @param method - a catalog method name (dotted `<category>.<action>`).
 			 * @param params - the request envelope's `params` object.
 			 * @returns the typed param object plus the request token echo.
 			 * @throws {RemoteContractError} `unknown-method` (defensive — the dispatcher
-			 *   checks membership first), `malformed-params`, or the mirrored frozen P3
-			 *   ID codes on structural ID violations.
+			 *   checks membership first), `method-version-unsupported` (a v1 request
+			 *   to a v2-only method — typed AFTER the envelope parse),
+			 *   `malformed-params`, or the mirrored frozen P3 ID codes on structural
+			 *   ID violations.
 			 */
-			function parseRemoteMethodParams(method, params) {
+			function parseRemoteMethodParams(version, method, params) {
+			    assertSupportedRemoteContractVersion(version);
+			    if (!isRemoteMethodAvailableInVersion(method, version)) {
+			        throw remoteContractError('method-version-unsupported', `method '${method}' is not available in remote contract v${version} (it is a v2-only method)`, { method, field: 'method', reason: 'method-not-available-in-version' });
+			    }
 			    switch (method) {
 			        case 'catalog.list':
 			            return wrapParsed(method, parseRemoteCatalogListParams(method, params));
@@ -8084,7 +8253,15 @@ var __dshFactory = (require) => {
 			        case 'intent.probe':
 			            return wrapParsed(method, parseRemoteIntentProbeParams(method, params));
 			        case 'team.create':
+			            // Version-aware closed schemas: v1 keeps the frozen field set
+			            // (incl. `initialWork`); v2 uses the workspace-aware set.
+			            if (version === 2) {
+			                return wrapParsed(method, parseRemoteTeamCreateParamsV2(method, params));
+			            }
 			            return wrapParsed(method, parseRemoteTeamCreateParams(method, params));
+			        case 'team.admitInitialWork':
+			            // v2-only (the availability check above guarantees version === 2).
+			            return wrapParsed(method, parseRemoteTeamAdmitInitialWorkParams(method, params));
 			        case 'team.getProjection':
 			            return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
 			        case 'team.getLedgerPage':
@@ -8124,7 +8301,7 @@ var __dshFactory = (require) => {
 			        case 'legacy.inspect':
 			            return wrapParsed(method, parseRemoteLegacyInspectParams(method, params));
 			        default:
-			            throw remoteContractError('unknown-method', `method '${String(method)}' is not part of the closed Remote contract v1 catalog`, { field: 'method' });
+			            throw remoteContractError('unknown-method', `method '${String(method)}' is not part of the closed Remote contract catalog`, { field: 'method' });
 			    }
 			}
 			Object.defineProperty(exports, "parseRemoteMethodParams", { enumerable: true, get: () => parseRemoteMethodParams });
@@ -8256,17 +8433,21 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=intent.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/team.js"] = { done: false, fn: function (exports) {
-			const __imp16 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp16.remoteContractError;
-			const __imp17 = __req("../../remote/src/contracts/types.js");
-			const REMOTE_LEDGER_ENTRY_FIELDS = __imp17.REMOTE_LEDGER_ENTRY_FIELDS;
-			const REMOTE_PROJECTION_FIELDS = __imp17.REMOTE_PROJECTION_FIELDS;
+			const __imp20 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp20.remoteContractError;
+			const __imp21 = __req("../../remote/src/contracts/types.js");
+			const REMOTE_LEDGER_ENTRY_FIELDS = __imp21.REMOTE_LEDGER_ENTRY_FIELDS;
+			const REMOTE_PROJECTION_FIELDS = __imp21.REMOTE_PROJECTION_FIELDS;
 			/**
 			 * The `team` category handler (design note §3): TeamSession creation,
-			 * whole-projection observation, and ledger pages. Backed by three ports:
+			 * whole-projection observation, and ledger pages. Backed by five ports:
 			 * {@link RemoteTeamCreatePort} (root binding, P5-T5),
+			 * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
+			 * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
+			 * (the v2-only creation-time initial work command, TCM vNext §15.6),
 			 * {@link RemoteProjectionPort} (ProjectionService, P8-T2), and
-			 * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter, D-5).
+			 * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter,
+			 * D-5).
 			 *
 			 * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
 			 * `TeamProjectionDto` fields must be present with the right structural
@@ -8361,40 +8542,69 @@ var __dshFactory = (require) => {
 			    };
 			}
 			/**
-			 * The team category handler (`team.create`, `team.getProjection`,
+			 * Validate a `team.create` port return value (v1 and v2 share the exact
+			 * wire shape: `{ path: 'fresh-root' | 'cold-root', durable, bind }`).
+			 */
+			function normalizeTeamCreateValue(portName, created) {
+			    if (!isPlainRecord(created)) {
+			        throw portContractError(portName, `expected an object, got ${String(created)}`);
+			    }
+			    const path = created['path'];
+			    if (path !== 'fresh-root' && path !== 'cold-root') {
+			        throw portContractError(`${portName}.path`, `must be 'fresh-root' or 'cold-root', got ${String(path)}`);
+			    }
+			    const durable = created['durable'];
+			    if (durable !== undefined &&
+			        durable !== null &&
+			        (typeof durable !== 'object' || Array.isArray(durable))) {
+			        throw portContractError(`${portName}.durable`, 'must be an object or null');
+			    }
+			    const bind = created['bind'];
+			    if (!isPlainRecord(bind)) {
+			        throw portContractError(`${portName}.bind`, 'must be an object');
+			    }
+			    return {
+			        data: {
+			            path,
+			            durable: durable === undefined ? null : durable,
+			            bind,
+			        },
+			    };
+			}
+			/**
+			 * The team category handler (`team.create` [v1 + v2],
+			 * `team.admitInitialWork` [v2-only], `team.getProjection`,
 			 * `team.getLedgerPage`).
+			 *
+			 * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
+			 * contract version; `team.create` routes to the v1 port (closed v1 field
+			 * set, `initialWork` allowed) or the v2 port (closed v2 field set,
+			 * `workspace` allowed, CREATE-ONLY) — the version-specific parsed param
+			 * object is already the matching typed shape.
 			 */
 			function createRemoteTeamHandler(ports) {
-			    return (method, params) => {
+			    return (method, params, version) => {
 			        switch (method) {
 			            case 'team.create': {
+			                if (version === 2) {
+			                    const createParams = params;
+			                    const created = ports.teamCreateV2.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.workspace);
+			                    return normalizeTeamCreateValue('teamCreateV2', created);
+			                }
 			                const createParams = params;
 			                const teamCreate = ports.teamCreate;
 			                const created = teamCreate.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.initialWork);
-			                if (!isPlainRecord(created)) {
-			                    throw portContractError('teamCreate', `expected an object, got ${String(created)}`);
+			                return normalizeTeamCreateValue('teamCreate', created);
+			            }
+			            case 'team.admitInitialWork': {
+			                // v2-only: the version-aware param parser guarantees the request
+			                // version is 2 (a v1 request is typed-rejected before dispatch).
+			                const admitParams = params;
+			                const admitted = ports.teamAdmitInitialWork.admit(admitParams.rootSessionId, admitParams.requestToken, admitParams.prompt, admitParams.attachedContext);
+			                if (!isPlainRecord(admitted)) {
+			                    throw portContractError('teamAdmitInitialWork', `expected an object, got ${String(admitted)}`);
 			                }
-			                const path = created['path'];
-			                if (path !== 'fresh-root' && path !== 'cold-root') {
-			                    throw portContractError('teamCreate.path', `must be 'fresh-root' or 'cold-root', got ${String(path)}`);
-			                }
-			                const durable = created['durable'];
-			                if (durable !== undefined &&
-			                    durable !== null &&
-			                    (typeof durable !== 'object' || Array.isArray(durable))) {
-			                    throw portContractError('teamCreate.durable', 'must be an object or null');
-			                }
-			                const bind = created['bind'];
-			                if (!isPlainRecord(bind)) {
-			                    throw portContractError('teamCreate.bind', 'must be an object');
-			                }
-			                return {
-			                    data: {
-			                        path,
-			                        durable: durable === undefined ? null : durable,
-			                        bind,
-			                    },
-			                };
+			                return { data: admitted };
 			            }
 			            case 'team.getProjection': {
 			                const projectionParams = params;
@@ -8787,41 +8997,41 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=legacy.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/dispatch.js"] = { done: false, fn: function (exports) {
-			const __imp32 = __req("../../remote/src/contracts/catalog.js");
-			const REMOTE_CATEGORIES = __imp32.REMOTE_CATEGORIES;
-			const isRemoteMethod = __imp32.isRemoteMethod;
-			const remoteCategoryOf = __imp32.remoteCategoryOf;
-			const __imp33 = __req("../../remote/src/contracts/errors.js");
-			const REMOTE_CONTRACT_ERROR_CODES = __imp33.REMOTE_CONTRACT_ERROR_CODES;
-			const isRemoteContractError = __imp33.isRemoteContractError;
-			const remoteContractError = __imp33.remoteContractError;
-			const __imp34 = __req("../../remote/src/contracts/params.js");
-			const parseRemoteMethodParams = __imp34.parseRemoteMethodParams;
-			const __imp35 = __req("../../remote/src/contracts/request.js");
-			const parseRemoteRequest = __imp35.parseRemoteRequest;
-			const __imp36 = __req("../../remote/src/contracts/response.js");
-			const buildRemoteError = __imp36.buildRemoteError;
-			const buildRemoteSuccess = __imp36.buildRemoteSuccess;
-			const __imp37 = __req("../../remote/src/contracts/version.js");
-			const REMOTE_CONTRACT_VERSION = __imp37.REMOTE_CONTRACT_VERSION;
-			const __imp38 = __req("../../remote/src/handlers/catalog.js");
-			const createRemoteCatalogHandler = __imp38.createRemoteCatalogHandler;
-			const __imp39 = __req("../../remote/src/handlers/compatibility.js");
-			const createRemoteCompatibilityHandler = __imp39.createRemoteCompatibilityHandler;
-			const __imp40 = __req("../../remote/src/handlers/handoff.js");
-			const createRemoteHandoffHandler = __imp40.createRemoteHandoffHandler;
-			const __imp41 = __req("../../remote/src/handlers/intent.js");
-			const createRemoteIntentHandler = __imp41.createRemoteIntentHandler;
-			const __imp42 = __req("../../remote/src/handlers/legacy.js");
-			const createRemoteLegacyHandler = __imp42.createRemoteLegacyHandler;
-			const __imp43 = __req("../../remote/src/handlers/member.js");
-			const createRemoteMemberHandler = __imp43.createRemoteMemberHandler;
-			const __imp44 = __req("../../remote/src/handlers/override.js");
-			const createRemoteOverrideHandler = __imp44.createRemoteOverrideHandler;
-			const __imp45 = __req("../../remote/src/handlers/policy-state.js");
-			const createRemotePolicyStateHandler = __imp45.createRemotePolicyStateHandler;
-			const __imp46 = __req("../../remote/src/handlers/team.js");
-			const createRemoteTeamHandler = __imp46.createRemoteTeamHandler;
+			const __imp36 = __req("../../remote/src/contracts/catalog.js");
+			const REMOTE_CATEGORIES = __imp36.REMOTE_CATEGORIES;
+			const isRemoteMethod = __imp36.isRemoteMethod;
+			const remoteCategoryOf = __imp36.remoteCategoryOf;
+			const __imp37 = __req("../../remote/src/contracts/errors.js");
+			const REMOTE_CONTRACT_ERROR_CODES = __imp37.REMOTE_CONTRACT_ERROR_CODES;
+			const isRemoteContractError = __imp37.isRemoteContractError;
+			const remoteContractError = __imp37.remoteContractError;
+			const __imp38 = __req("../../remote/src/contracts/params.js");
+			const parseRemoteMethodParams = __imp38.parseRemoteMethodParams;
+			const __imp39 = __req("../../remote/src/contracts/request.js");
+			const parseRemoteRequest = __imp39.parseRemoteRequest;
+			const __imp40 = __req("../../remote/src/contracts/response.js");
+			const buildRemoteError = __imp40.buildRemoteError;
+			const buildRemoteSuccess = __imp40.buildRemoteSuccess;
+			const __imp41 = __req("../../remote/src/contracts/version.js");
+			const REMOTE_CONTRACT_VERSION = __imp41.REMOTE_CONTRACT_VERSION;
+			const __imp42 = __req("../../remote/src/handlers/catalog.js");
+			const createRemoteCatalogHandler = __imp42.createRemoteCatalogHandler;
+			const __imp43 = __req("../../remote/src/handlers/compatibility.js");
+			const createRemoteCompatibilityHandler = __imp43.createRemoteCompatibilityHandler;
+			const __imp44 = __req("../../remote/src/handlers/handoff.js");
+			const createRemoteHandoffHandler = __imp44.createRemoteHandoffHandler;
+			const __imp45 = __req("../../remote/src/handlers/intent.js");
+			const createRemoteIntentHandler = __imp45.createRemoteIntentHandler;
+			const __imp46 = __req("../../remote/src/handlers/legacy.js");
+			const createRemoteLegacyHandler = __imp46.createRemoteLegacyHandler;
+			const __imp47 = __req("../../remote/src/handlers/member.js");
+			const createRemoteMemberHandler = __imp47.createRemoteMemberHandler;
+			const __imp48 = __req("../../remote/src/handlers/override.js");
+			const createRemoteOverrideHandler = __imp48.createRemoteOverrideHandler;
+			const __imp49 = __req("../../remote/src/handlers/policy-state.js");
+			const createRemotePolicyStateHandler = __imp49.createRemotePolicyStateHandler;
+			const __imp50 = __req("../../remote/src/handlers/team.js");
+			const createRemoteTeamHandler = __imp50.createRemoteTeamHandler;
 			/**
 			 * The throw-proof dispatcher of the Remote contract v1 (design note §6).
 			 *
@@ -8834,8 +9044,12 @@ var __dshFactory = (require) => {
 			 *    `unknown-method` even with a garbage payload;
 			 * 2. envelope parse failure → `malformed-request` /
 			 *    `contract-version-unsupported`;
-			 * 3. param validation failure → `malformed-params` (with `field` in
-			 *    details) or the mirrored frozen P3 ID codes (deviation D-1/D-3);
+			 * 3. version-aware param validation failure → `method-version-unsupported`
+			 *    (a v1 request to a v2-only method — TCM vNext §15.3, the catalog is a
+			 *    versioned union), `malformed-params` (with `field` in details) or the
+			 *    mirrored frozen P3 ID codes (deviation D-1/D-3); the request version
+			 *    is passed to BOTH the param parser and the category handler, so every
+			 *    request is served against the closed schema of its own version;
 			 * 4. typed domain error whose string `code` is a member of the CLOSED
 			 *    backing vocabulary ({@link REMOTE_BACKING_ERROR_CODE_SET}) →
 			 *    pass-through code + message, source identity under `details.cause`
@@ -8854,13 +9068,15 @@ var __dshFactory = (require) => {
 			 * assumptions.
 			 * @module @dsh-agent-team/remote/handlers/dispatch
 			 */
-			/** Wire the twelve ports into the nine category handlers. */
+			/** Wire the fourteen ports into the nine category handlers. */
 			function buildCategoryHandlers(deps) {
 			    return {
 			        [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
 			        [REMOTE_CATEGORIES.INTENT]: createRemoteIntentHandler(deps.intent),
 			        [REMOTE_CATEGORIES.TEAM]: createRemoteTeamHandler({
 			            teamCreate: deps.teamCreate,
+			            teamCreateV2: deps.teamCreateV2,
+			            teamAdmitInitialWork: deps.teamAdmitInitialWork,
 			            projection: deps.projection,
 			            ledger: deps.ledger,
 			        }),
@@ -8902,7 +9118,10 @@ var __dshFactory = (require) => {
 			 * - contracts v1 `TEAM_CONTRACT_ERROR_CODES` (the frozen identity/DTO rules);
 			 * - the S6 plugin's remote-facing codes (s6-principal `S6_PRINCIPAL_ERROR_CODES`
 			 *   + s6-remote `S6_REMOTE_ERROR_CODES`), which the production dispatcher
-			 *   raises inside its handlers.
+			 *   raises inside its handlers;
+			 * - the TCM vNext §15.6 team-create v2 codes (M2 workspace attach + M3 Root
+			 *   initial-work strategy), raised by the v2 team.create /
+			 *   team.admitInitialWork ports of both dispatchers.
 			 *
 			 * Maintenance rule: when a backing module introduces a NEW closed code that
 			 * must reach a remote caller, add its literal here and re-verify the
@@ -9027,6 +9246,16 @@ var __dshFactory = (require) => {
 			    // s6-remote — S6_REMOTE_ERROR_CODES (D-3 root-agent start, team.create)
 			    'TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE',
 			    'TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED',
+			    // s6-remote — TCM vNext §15.6 team-create v2 surface (M2 workspace attach /
+			    // M3 Root initial-work strategy; the codes are typed at the ports and
+			    // must reach the client through both dispatchers unchanged)
+			    'TEAM_CREATE_WORKSPACE_NOT_FOUND',
+			    'TEAM_CREATE_WORKSPACE_MISMATCH',
+			    'TEAM_CREATE_WORKSPACE_ATTACH_FAILED',
+			    'TEAM_CREATE_REQUEST_PAYLOAD_MISMATCH',
+			    'TEAM_CREATE_ROOT_WORK_UNAVAILABLE',
+			    'TEAM_CREATE_ROOT_WORK_PAYLOAD_MISMATCH',
+			    'TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
@@ -9080,7 +9309,7 @@ var __dshFactory = (require) => {
 			}
 			/**
 			 * Create the throw-proof dispatcher for one deps object.
-			 * @param deps - the twelve backing ports (injected; no global state).
+			 * @param deps - the fourteen backing ports (injected; no global state).
 			 * @returns the seam entry point: `(endpoint, payload) => Promise<RemoteResponse>`.
 			 */
 			function createRemoteDispatcher(deps) {
@@ -9094,18 +9323,23 @@ var __dshFactory = (require) => {
 			        };
 			        let response;
 			        try {
-			            // Invariant 1: unknown endpoint (checked before the envelope).
+			            // Invariant 1: unknown endpoint (checked before the envelope — the
+			            // versioned-union catalog is the endpoint membership set).
 			            if (!isRemoteMethod(endpoint)) {
-			                throw remoteContractError(REMOTE_CONTRACT_ERROR_CODES.UNKNOWN_METHOD, `endpoint '${endpoint}' is not a method of the closed Remote contract v1 catalog`, { reason: 'unknown-endpoint' });
+			                throw remoteContractError(REMOTE_CONTRACT_ERROR_CODES.UNKNOWN_METHOD, `endpoint '${endpoint}' is not a method of the closed Remote contract catalog`, { reason: 'unknown-endpoint' });
 			            }
 			            // Invariant 2: the request envelope (closed: version + params).
 			            const request = parseRemoteRequest(payload);
 			            ctx = { ...ctx, contractVersion: request.version };
-			            // Invariant 3: the method's closed param schema.
-			            const parsed = parseRemoteMethodParams(endpoint, request.params);
+			            // Invariant 3: the method's closed param schema AT THE REQUEST'S
+			            // version (TCM vNext §15.3: the dispatcher passes request.version
+			            // through; a v1 request to a v2-only method is typed-rejected here,
+			            // after the envelope parse).
+			            const parsed = parseRemoteMethodParams(request.version, endpoint, request.params);
 			            ctx = { ...ctx, requestToken: parsed.requestToken };
-			            // Invariants 4/5: the category handler (the backing port call).
-			            const outcome = handlers[remoteCategoryOf(endpoint)](endpoint, parsed.params);
+			            // Invariants 4/5: the category handler (the backing port call) — the
+			            // request version rides along for the version-aware handlers.
+			            const outcome = handlers[remoteCategoryOf(endpoint)](endpoint, parsed.params, request.version);
 			            // Invariant 6: lossless check + provenance on the success value.
 			            response = buildRemoteSuccess(outcome.data, {
 			                ...ctx,

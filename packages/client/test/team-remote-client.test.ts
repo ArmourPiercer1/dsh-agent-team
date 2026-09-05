@@ -9,6 +9,11 @@
  * typed wrappers spread the frozen param objects verbatim and
  * `getLedgerPage` applies the frozen wire defaults (0 / 50).
  *
+ * Version routing (TCM vNext §15.3): the generic `call` and every
+ * EXISTING wrapper stamp contract version 1 (frozen v1 wire behavior);
+ * ONLY `teamCreateV2` / `teamAdmitInitialWorkV2` stamp contract version 2
+ * — and a typed error served to a v2 wrapper still resolves intact.
+ *
  * Shim-constrained spec (run-tests.mjs): the `it()` bodies are
  * synchronous assertions on captured scenario state; the async scenarios
  * run at module level (top-level await, the P8-T3 round-trip pattern).
@@ -17,6 +22,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   REMOTE_CONTRACT_VERSION,
+  REMOTE_CONTRACT_VERSION_V2,
   REMOTE_RPC_CHANNEL,
   buildRemoteError,
   buildRemoteSuccess,
@@ -211,6 +217,69 @@ const wrapperMappingScenario = await (async () => {
   return { calls, endpoints }
 })()
 
+// --- TCM vNext §15.3: v2 version routing ------------------------------------
+
+const teamCreateV1DefaultScenario = await (async () => {
+  const { carrier, calls } = makeCarrier(() => successEnvelope())
+  const client = createTeamRemoteClient(carrier)
+  // The v1 wrapper is UNCHANGED: it stamps version 1 and carries the
+  // v1-only `initialWork` field verbatim.
+  await client.teamCreate({
+    rootSessionId: 's0',
+    blueprintId: 'b1',
+    initialWork: { prompt: 'the v1 initial work' },
+  })
+  return { calls }
+})()
+
+const teamCreateV2Scenario = await (async () => {
+  const { carrier, calls } = makeCarrier(() => successEnvelope())
+  const client = createTeamRemoteClient(carrier)
+  await client.teamCreateV2({
+    rootSessionId: 's0',
+    blueprintId: 'b1',
+    blueprintRevision: 2,
+    workspace: '/w/proj-v2',
+  })
+  return { calls }
+})()
+
+const teamAdmitInitialWorkV2Scenario = await (async () => {
+  const { carrier, calls } = makeCarrier(() => successEnvelope())
+  const client = createTeamRemoteClient(carrier)
+  await client.teamAdmitInitialWorkV2({
+    rootSessionId: 's0',
+    requestToken: 'ik-v2-1',
+    prompt: 'the initial work',
+    attachedContext: 'attached context block',
+  })
+  return { calls }
+})()
+
+const v2TypedErrorScenario = await (async () => {
+  const envelope = buildRemoteError(
+    'TEAM_CREATE_ROOT_WORK_UNAVAILABLE',
+    'the root initial-work authority is unavailable',
+    {
+      method: 'team.admitInitialWork',
+      endpoint: 'team.admitInitialWork',
+      contractVersion: REMOTE_CONTRACT_VERSION_V2,
+      requestToken: 'ik-v2-1',
+    },
+    { reason: 'domain-error' },
+  )
+  const { carrier, calls } = makeCarrier(() => envelope)
+  const client = createTeamRemoteClient(carrier)
+  const result = await capture(() =>
+    client.teamAdmitInitialWorkV2({
+      rootSessionId: 's0',
+      requestToken: 'ik-v2-1',
+      prompt: 'the initial work',
+    }),
+  )
+  return { envelope, calls, result }
+})()
+
 const successIntactScenario = await (async () => {
   const envelope = successEnvelope()
   const { carrier } = makeCarrier(() => envelope)
@@ -329,6 +398,72 @@ describe('createTeamRemoteClient — envelope assembly (S2-A)', () => {
     expect(calls.length).toBe(endpoints.length)
     for (let i = 0; i < endpoints.length; i++) {
       expect(calls[i]!.endpoint).toBe(endpoints[i]!)
+    }
+  })
+})
+
+describe('createTeamRemoteClient — v2 version routing (TCM vNext §15.3)', () => {
+  it('the v1 teamCreate wrapper stays on version 1 (frozen wire behavior, initialWork intact)', () => {
+    expect(teamCreateV1DefaultScenario.calls.length).toBe(1)
+    expect(teamCreateV1DefaultScenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
+    expect(teamCreateV1DefaultScenario.calls[0]!.endpoint).toBe('team.create')
+    expect(teamCreateV1DefaultScenario.calls[0]!.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION,
+      params: {
+        rootSessionId: 's0',
+        blueprintId: 'b1',
+        initialWork: { prompt: 'the v1 initial work' },
+      },
+    })
+  })
+
+  it('teamCreateV2 stamps version 2 on team.create and spreads the v2 closed fields verbatim', () => {
+    expect(teamCreateV2Scenario.calls.length).toBe(1)
+    expect(teamCreateV2Scenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
+    expect(teamCreateV2Scenario.calls[0]!.endpoint).toBe('team.create')
+    expect(teamCreateV2Scenario.calls[0]!.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V2,
+      params: {
+        rootSessionId: 's0',
+        blueprintId: 'b1',
+        blueprintRevision: 2,
+        workspace: '/w/proj-v2',
+      },
+    })
+  })
+
+  it('teamAdmitInitialWorkV2 stamps version 2 on the v2-only endpoint with the token intact', () => {
+    expect(teamAdmitInitialWorkV2Scenario.calls.length).toBe(1)
+    expect(teamAdmitInitialWorkV2Scenario.calls[0]!.channel).toBe(REMOTE_RPC_CHANNEL)
+    expect(teamAdmitInitialWorkV2Scenario.calls[0]!.endpoint).toBe('team.admitInitialWork')
+    expect(teamAdmitInitialWorkV2Scenario.calls[0]!.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V2,
+      params: {
+        rootSessionId: 's0',
+        requestToken: 'ik-v2-1',
+        prompt: 'the initial work',
+        attachedContext: 'attached context block',
+      },
+    })
+  })
+
+  it('a typed error served to a v2 wrapper resolves intact (never exception-ified)', () => {
+    const { envelope, calls, result } = v2TypedErrorScenario
+    expect(calls[0]!.payload).toEqual({
+      version: REMOTE_CONTRACT_VERSION_V2,
+      params: {
+        rootSessionId: 's0',
+        requestToken: 'ik-v2-1',
+        prompt: 'the initial work',
+      },
+    })
+    expect(result.caught).toBe(undefined)
+    expect(result.response).toBe(envelope)
+    expect(result.response?.ok).toBe(false)
+    if (result.response !== undefined && !result.response.ok) {
+      expect(result.response.error.code).toBe('TEAM_CREATE_ROOT_WORK_UNAVAILABLE')
+      expect(result.response.error.details.contractVersion).toBe(REMOTE_CONTRACT_VERSION_V2)
+      expect(result.response.error.details.requestToken).toBe('ik-v2-1')
     }
   })
 })

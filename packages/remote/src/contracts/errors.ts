@@ -42,6 +42,14 @@ export const REMOTE_CONTRACT_ERROR_CODES = {
   MALFORMED_REQUEST: 'malformed-request',
   /** A method's `params` object fails that method's closed schema. */
   MALFORMED_PARAMS: 'malformed-params',
+  /**
+   * The method is a member of the closed catalog but NOT available in the
+   * request's contract version (TCM vNext §15.3: the catalog is a
+   * versioned union — a v1 request to the v2-only
+   * `team.admitInitialWork` is typed-rejected after the envelope parse).
+   * Added with the v2 bump; never used by v1-era requests.
+   */
+  METHOD_VERSION_UNSUPPORTED: 'method-version-unsupported',
   /** Last-resort dispatcher failure (handler/port threw an untyped error). */
   INTERNAL_ERROR: 'internal-error',
 } as const

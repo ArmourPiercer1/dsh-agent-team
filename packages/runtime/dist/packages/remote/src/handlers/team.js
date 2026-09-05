@@ -1,9 +1,13 @@
 /**
  * The `team` category handler (design note §3): TeamSession creation,
- * whole-projection observation, and ledger pages. Backed by three ports:
+ * whole-projection observation, and ledger pages. Backed by five ports:
  * {@link RemoteTeamCreatePort} (root binding, P5-T5),
+ * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
+ * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
+ * (the v2-only creation-time initial work command, TCM vNext §15.6),
  * {@link RemoteProjectionPort} (ProjectionService, P8-T2), and
- * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter, D-5).
+ * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter,
+ * D-5).
  *
  * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
  * `TeamProjectionDto` fields must be present with the right structural
@@ -100,40 +104,69 @@ function normalizeLedgerEntry(raw) {
     };
 }
 /**
- * The team category handler (`team.create`, `team.getProjection`,
+ * Validate a `team.create` port return value (v1 and v2 share the exact
+ * wire shape: `{ path: 'fresh-root' | 'cold-root', durable, bind }`).
+ */
+function normalizeTeamCreateValue(portName, created) {
+    if (!isPlainRecord(created)) {
+        throw portContractError(portName, `expected an object, got ${String(created)}`);
+    }
+    const path = created['path'];
+    if (path !== 'fresh-root' && path !== 'cold-root') {
+        throw portContractError(`${portName}.path`, `must be 'fresh-root' or 'cold-root', got ${String(path)}`);
+    }
+    const durable = created['durable'];
+    if (durable !== undefined &&
+        durable !== null &&
+        (typeof durable !== 'object' || Array.isArray(durable))) {
+        throw portContractError(`${portName}.durable`, 'must be an object or null');
+    }
+    const bind = created['bind'];
+    if (!isPlainRecord(bind)) {
+        throw portContractError(`${portName}.bind`, 'must be an object');
+    }
+    return {
+        data: {
+            path,
+            durable: durable === undefined ? null : durable,
+            bind,
+        },
+    };
+}
+/**
+ * The team category handler (`team.create` [v1 + v2],
+ * `team.admitInitialWork` [v2-only], `team.getProjection`,
  * `team.getLedgerPage`).
+ *
+ * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
+ * contract version; `team.create` routes to the v1 port (closed v1 field
+ * set, `initialWork` allowed) or the v2 port (closed v2 field set,
+ * `workspace` allowed, CREATE-ONLY) — the version-specific parsed param
+ * object is already the matching typed shape.
  */
 export function createRemoteTeamHandler(ports) {
-    return (method, params) => {
+    return (method, params, version) => {
         switch (method) {
             case 'team.create': {
+                if (version === 2) {
+                    const createParams = params;
+                    const created = ports.teamCreateV2.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.workspace);
+                    return normalizeTeamCreateValue('teamCreateV2', created);
+                }
                 const createParams = params;
                 const teamCreate = ports.teamCreate;
                 const created = teamCreate.create(createParams.rootSessionId, createParams.blueprintId, createParams.blueprintRevision, createParams.initialWork);
-                if (!isPlainRecord(created)) {
-                    throw portContractError('teamCreate', `expected an object, got ${String(created)}`);
+                return normalizeTeamCreateValue('teamCreate', created);
+            }
+            case 'team.admitInitialWork': {
+                // v2-only: the version-aware param parser guarantees the request
+                // version is 2 (a v1 request is typed-rejected before dispatch).
+                const admitParams = params;
+                const admitted = ports.teamAdmitInitialWork.admit(admitParams.rootSessionId, admitParams.requestToken, admitParams.prompt, admitParams.attachedContext);
+                if (!isPlainRecord(admitted)) {
+                    throw portContractError('teamAdmitInitialWork', `expected an object, got ${String(admitted)}`);
                 }
-                const path = created['path'];
-                if (path !== 'fresh-root' && path !== 'cold-root') {
-                    throw portContractError('teamCreate.path', `must be 'fresh-root' or 'cold-root', got ${String(path)}`);
-                }
-                const durable = created['durable'];
-                if (durable !== undefined &&
-                    durable !== null &&
-                    (typeof durable !== 'object' || Array.isArray(durable))) {
-                    throw portContractError('teamCreate.durable', 'must be an object or null');
-                }
-                const bind = created['bind'];
-                if (!isPlainRecord(bind)) {
-                    throw portContractError('teamCreate.bind', 'must be an object');
-                }
-                return {
-                    data: {
-                        path,
-                        durable: durable === undefined ? null : durable,
-                        bind,
-                    },
-                };
+                return { data: admitted };
             }
             case 'team.getProjection': {
                 const projectionParams = params;

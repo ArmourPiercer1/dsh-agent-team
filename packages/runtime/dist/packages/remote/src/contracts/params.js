@@ -18,13 +18,26 @@
  * are exempt from the no-control-char / no-whitespace ID rule — newlines
  * are legal content — but bound by a length cap (design note §3).
  *
+ * **Version awareness (TCM vNext §15.3/§15.6)**: the module is the
+ * single version-aware closed schema. Every v1 field list, parser and
+ * behavior is unchanged; the v2 bump adds exactly one method
+ * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
+ * method (`team.create`, whose v2 closed set swaps `initialWork` for
+ * `workspace`). {@link parseRemoteMethodParams} routes on the request
+ * version: a v1 request to a v2-only method is typed-rejected
+ * (`method-version-unsupported`) AFTER the envelope parse, and each
+ * request version sees only its own closed field sets (no cross-version
+ * field leakage in either direction).
+ *
  * Pure module: no I/O, no node: builtins, no runtime environment
  * assumptions.
  * @module @dsh-agent-team/remote/contracts/params
  */
+import { isRemoteMethodAvailableInVersion } from './catalog.js';
 import { remoteContractError, } from './errors.js';
 import { parseRemoteBlueprintId, parseRemoteBlueprintRevision, parseRemoteInstanceId, parseRemoteRootSessionId, parseRemoteSessionId, parseRemoteTeamSessionId, parseRemoteTemplateId, REMOTE_ID_MAX_LENGTH, } from './ids.js';
 import { assertRemoteSafeJsonValue, } from './remote-safe.js';
+import { assertSupportedRemoteContractVersion } from './version.js';
 // ---------------------------------------------------------------------------
 // Shared closed vocabularies (value-level mirrors of the frozen contracts)
 // ---------------------------------------------------------------------------
@@ -68,6 +81,27 @@ export const REMOTE_TEAM_CREATE_FIELDS = [
     'blueprintId',
     'blueprintRevision',
     'initialWork',
+    'rootSessionId',
+];
+/**
+ * `team.create` — the CLOSED v2 field set (TCM vNext §15.6): the v1 set
+ * minus `initialWork`, plus `workspace`. `initialWork` on a v2 request is
+ * an unknown field (typed `malformed-params` / `unknown-field`).
+ */
+export const REMOTE_TEAM_CREATE_FIELDS_V2 = [
+    'blueprintId',
+    'blueprintRevision',
+    'rootSessionId',
+    'workspace',
+];
+/**
+ * `team.admitInitialWork` — the CLOSED v2-only field set (TCM vNext
+ * §15.6).
+ */
+export const REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS = [
+    'attachedContext',
+    'prompt',
+    'requestToken',
     'rootSessionId',
 ];
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
@@ -493,6 +527,35 @@ export function parseRemoteTeamCreateParams(method, params) {
             : { initialWork: parseRemoteLosslessRecord(rawInitialWork, method, 'initialWork') }),
     };
 }
+/** Parse `team.create` params (contract v2 — the workspace-aware variant). */
+export function parseRemoteTeamCreateParamsV2(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_CREATE_FIELDS_V2);
+    const rawRevision = optionalField(method, params, 'blueprintRevision');
+    const rawWorkspace = optionalField(method, params, 'workspace');
+    return {
+        rootSessionId: parseRemoteRootSessionId(requiredField(method, params, 'rootSessionId'), 'rootSessionId'),
+        blueprintId: parseRemoteBlueprintId(requiredField(method, params, 'blueprintId'), 'blueprintId'),
+        ...(rawRevision === undefined
+            ? {}
+            : { blueprintRevision: parseRemoteBlueprintRevision(rawRevision, 'blueprintRevision') }),
+        ...(rawWorkspace === undefined
+            ? {}
+            : { workspace: parseRemotePath(rawWorkspace, method, 'workspace') }),
+    };
+}
+/** Parse `team.admitInitialWork` params (v2-only). */
+export function parseRemoteTeamAdmitInitialWorkParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS);
+    const rawAttachedContext = optionalField(method, params, 'attachedContext');
+    return {
+        rootSessionId: parseRemoteRootSessionId(requiredField(method, params, 'rootSessionId'), 'rootSessionId'),
+        requestToken: parseRemoteOpaqueToken(requiredField(method, params, 'requestToken'), method, 'requestToken'),
+        prompt: parseRemoteBody(requiredField(method, params, 'prompt'), method, 'prompt'),
+        ...(rawAttachedContext === undefined
+            ? {}
+            : { attachedContext: parseRemoteBody(rawAttachedContext, method, 'attachedContext') }),
+    };
+}
 /** Parse `team.getProjection` params. */
 export function parseRemoteTeamGetProjectionParams(method, params) {
     assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -732,15 +795,27 @@ export function parseRemoteLegacyInspectParams(method, params) {
 // Generic entry point (used by the dispatcher)
 // ---------------------------------------------------------------------------
 /**
- * Parse `params` for the given catalog method.
+ * Parse `params` for the given catalog method AT THE REQUEST'S contract
+ * version (TCM vNext §15.3: the dispatcher passes `request.version`
+ * through, so every request is parsed against the closed schema of its
+ * own version — no cross-version field leakage).
+ * @param version - the request envelope's contract version (supported:
+ *   `1 | 2`; the envelope parse already guarantees this, the assertion is
+ *   defensive for direct callers).
  * @param method - a catalog method name (dotted `<category>.<action>`).
  * @param params - the request envelope's `params` object.
  * @returns the typed param object plus the request token echo.
  * @throws {RemoteContractError} `unknown-method` (defensive — the dispatcher
- *   checks membership first), `malformed-params`, or the mirrored frozen P3
- *   ID codes on structural ID violations.
+ *   checks membership first), `method-version-unsupported` (a v1 request
+ *   to a v2-only method — typed AFTER the envelope parse),
+ *   `malformed-params`, or the mirrored frozen P3 ID codes on structural
+ *   ID violations.
  */
-export function parseRemoteMethodParams(method, params) {
+export function parseRemoteMethodParams(version, method, params) {
+    assertSupportedRemoteContractVersion(version);
+    if (!isRemoteMethodAvailableInVersion(method, version)) {
+        throw remoteContractError('method-version-unsupported', `method '${method}' is not available in remote contract v${version} (it is a v2-only method)`, { method, field: 'method', reason: 'method-not-available-in-version' });
+    }
     switch (method) {
         case 'catalog.list':
             return wrapParsed(method, parseRemoteCatalogListParams(method, params));
@@ -749,7 +824,15 @@ export function parseRemoteMethodParams(method, params) {
         case 'intent.probe':
             return wrapParsed(method, parseRemoteIntentProbeParams(method, params));
         case 'team.create':
+            // Version-aware closed schemas: v1 keeps the frozen field set
+            // (incl. `initialWork`); v2 uses the workspace-aware set.
+            if (version === 2) {
+                return wrapParsed(method, parseRemoteTeamCreateParamsV2(method, params));
+            }
             return wrapParsed(method, parseRemoteTeamCreateParams(method, params));
+        case 'team.admitInitialWork':
+            // v2-only (the availability check above guarantees version === 2).
+            return wrapParsed(method, parseRemoteTeamAdmitInitialWorkParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':
@@ -789,7 +872,7 @@ export function parseRemoteMethodParams(method, params) {
         case 'legacy.inspect':
             return wrapParsed(method, parseRemoteLegacyInspectParams(method, params));
         default:
-            throw remoteContractError('unknown-method', `method '${String(method)}' is not part of the closed Remote contract v1 catalog`, { field: 'method' });
+            throw remoteContractError('unknown-method', `method '${String(method)}' is not part of the closed Remote contract catalog`, { field: 'method' });
     }
 }
 /** Attach the method + request-token echo to a parsed param object. */

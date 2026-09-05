@@ -66,6 +66,7 @@ export {
 
 export {
   REMOTE_CONTRACT_VERSION,
+  REMOTE_CONTRACT_VERSION_V2,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   isSupportedRemoteContractVersion,
   assertSupportedRemoteContractVersion,
@@ -82,7 +83,9 @@ export {
   REMOTE_METHOD_CATALOG,
   REMOTE_METHOD_NAMES,
   REMOTE_METHODS_BY_CATEGORY,
+  REMOTE_V2_ONLY_METHODS,
   isRemoteMethod,
+  isRemoteMethodAvailableInVersion,
   remoteCategoryOf,
 } from './contracts/catalog.js'
 
@@ -126,6 +129,8 @@ export {
   REMOTE_CATALOG_GET_FIELDS,
   REMOTE_INTENT_PROBE_FIELDS,
   REMOTE_TEAM_CREATE_FIELDS,
+  REMOTE_TEAM_CREATE_FIELDS_V2,
+  REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
   REMOTE_TEAM_GET_PROJECTION_FIELDS,
   REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS,
   REMOTE_MEMBER_CREATE_FIELDS,
@@ -147,6 +152,8 @@ export {
   parseRemoteCatalogGetParams,
   parseRemoteIntentProbeParams,
   parseRemoteTeamCreateParams,
+  parseRemoteTeamCreateParamsV2,
+  parseRemoteTeamAdmitInitialWorkParams,
   parseRemoteTeamGetProjectionParams,
   parseRemoteTeamGetLedgerPageParams,
   parseRemoteMemberCreateParams,
@@ -185,6 +192,8 @@ export type {
   RemoteCatalogGetParams,
   RemoteIntentProbeParams,
   RemoteTeamCreateParams,
+  RemoteTeamCreateParamsV2,
+  RemoteTeamAdmitInitialWorkParams,
   RemoteTeamGetProjectionParams,
   RemoteTeamGetLedgerPageParams,
   RemoteMemberCreateParams,
@@ -243,6 +252,8 @@ export type {
   RemoteCatalogPort,
   RemoteIntentPort,
   RemoteTeamCreatePort,
+  RemoteTeamCreateV2Port,
+  RemoteTeamAdmitInitialWorkPort,
   RemoteProjectionPort,
   RemoteLedgerPort,
   RemoteAdmissionRequest,

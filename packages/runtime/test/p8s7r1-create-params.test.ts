@@ -34,6 +34,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   REMOTE_CONTRACT_ERROR_CODES,
+  REMOTE_CONTRACT_VERSION,
   REMOTE_TEAM_CREATE_FIELDS,
   createRemoteTeamHandler,
   parseRemoteTeamCreateParams,
@@ -42,7 +43,9 @@ import type {
   RemoteLedgerPort,
   RemoteProjectionPort,
   RemoteSafeRecord,
+  RemoteTeamAdmitInitialWorkPort,
   RemoteTeamCreatePort,
+  RemoteTeamCreateV2Port,
 } from '../../remote/src/index.js'
 
 const METHOD = 'team.create'
@@ -182,13 +185,15 @@ function recordingCreatePort(arity: 3 | 4): {
   return { port, calls }
 }
 
-/** The team handler over one recording create port (the other two ports unused). */
+/** The team handler over one recording create port (the other ports unused). */
 function handlerWith(create: RemoteTeamCreatePort) {
   function unused(): never {
-    throw new Error('this test only routes team.create')
+    throw new Error('this test only routes v1 team.create')
   }
   return createRemoteTeamHandler({
     teamCreate: create,
+    teamCreateV2: { create: unused } as unknown as RemoteTeamCreateV2Port,
+    teamAdmitInitialWork: { admit: unused } as unknown as RemoteTeamAdmitInitialWorkPort,
     projection: { project: unused } as unknown as RemoteProjectionPort,
     ledger: { listEntries: unused, countEntries: unused } as unknown as RemoteLedgerPort,
   })
@@ -207,7 +212,7 @@ describe('P8-S7R1 R1-A W4: team handler passes the optional fourth argument', ()
       blueprintId: BP_ID,
       initialWork: WORK,
     } as RemoteSafeRecord)
-    const outcome = handler('team.create', params) as CreateReply
+    const outcome = handler('team.create', params, REMOTE_CONTRACT_VERSION) as CreateReply
     expect(calls.length).toBe(1)
     expect(calls[0]).toEqual([ROOT_ID, BP_ID, undefined, WORK])
     // the reply is the frozen { path, durable, bind } — no work field
@@ -222,7 +227,7 @@ describe('P8-S7R1 R1-A W4: team handler passes the optional fourth argument', ()
       rootSessionId: ROOT_ID,
       blueprintId: BP_ID,
     } as RemoteSafeRecord)
-    handler('team.create', params)
+    handler('team.create', params, REMOTE_CONTRACT_VERSION)
     expect(calls.length).toBe(1)
     expect(calls[0]).toEqual([ROOT_ID, BP_ID, undefined, undefined])
   })
@@ -236,7 +241,7 @@ describe('P8-S7R1 R1-A W4: team handler passes the optional fourth argument', ()
       blueprintRevision: 2,
       initialWork: WORK,
     } as RemoteSafeRecord)
-    const outcome = handler('team.create', params) as CreateReply
+    const outcome = handler('team.create', params, REMOTE_CONTRACT_VERSION) as CreateReply
     // the frozen port sees exactly the three frozen arguments — initialWork
     // is never delivered to a 3-arg implementation (byte-identical behavior)
     expect(calls.length).toBe(1)

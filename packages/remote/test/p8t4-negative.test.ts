@@ -53,7 +53,10 @@ const P8T4_EXPECTED_FILES = [
   'packages/remote/test/p8t4-test-client.ts',
 ]
 
-/** The exact 12 `RemoteHandlerDeps` port keys, sorted. */
+/**
+ * The exact 14 `RemoteHandlerDeps` port keys, sorted (the 12 frozen
+ * P8-T3 ports + the two TCM vNext §15.6 v2 ports).
+ */
 const P8T4_EXPECTED_PORT_KEYS = [
   'admission',
   'catalog',
@@ -66,7 +69,9 @@ const P8T4_EXPECTED_PORT_KEYS = [
   'override',
   'policyState',
   'projection',
+  'teamAdmitInitialWork',
   'teamCreate',
+  'teamCreateV2',
 ]
 
 /** The test-runner specifier exempted from the relative-only rule (R6). */
@@ -133,7 +138,7 @@ describe('P8-T4 negative scan (push engine + test surface)', () => {
     expect(r5.length).toBe(2)
   })
 
-  it('pins the handler dependency surface to exactly the 12 frozen ports', () => {
+  it('pins the handler dependency surface to exactly the 14 ports (12 frozen + 2 v2)', () => {
     const ports = makeFakePorts()
     const keys = Object.keys(ports)
       .filter((key) => key !== 'calls' && key !== 'admissionRequests')
