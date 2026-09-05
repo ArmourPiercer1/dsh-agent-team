@@ -25,3 +25,7 @@ packages/client/composition-shim/
 
 # characterization harness per-run scratch (P2 integration)
 tests/characterization/.run-logs/
+
+# test scratch (runtime artifacts from .test.ts worlds; the test pre-clean
+# destroyDir already handles staleness on every run)
+packages/testkit/test/.tmp-fault/
