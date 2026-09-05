@@ -1,0 +1,25 @@
+=== GATE 2: build (tsc -p packages/<pkg>/tsconfig.build.json, dependency order) ===
+ts: 2026-09-05T19:03:48
+[contracts] exit=0
+[domain] exit=0
+[storage] exit=0
+[remote] exit=0
+[tools] exit=0
+[client] exit=0
+[legacy] exit=0
+[testkit] exit=0
+[runtime] exit=0
+9/9 built; failed: 
+end: 2026-09-05T19:04:25
+place-dist-glue exit=0
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition exit=0
+build-client-composition: 85 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\RMR-REV6\packages\client\composition-shim\client-bundle.js (845690 B)
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\RMR-REV6\packages\client\composition-shim\index.js (node half)
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\RMR-REV6\packages\client\composition-shim\package.json
+client-bundle.js size=845690 (expected 845690)
+gate2 done: 2026-09-05T19:04:30

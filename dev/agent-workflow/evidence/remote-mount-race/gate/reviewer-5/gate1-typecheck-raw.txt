@@ -1,0 +1,18 @@
+﻿[contracts] cfg=tsconfig.json exit=0 out=
+[domain] cfg=tsconfig.json exit=0 out=
+[storage] cfg=tsconfig.json exit=0 out=
+[remote] cfg=tsconfig.json exit=0 out=
+[tools] cfg=tsconfig.json exit=0 out=
+[client] cfg=tsconfig.json exit=2 out=packages/client/src/ui/NewTeamEntry.tsx(112,29): error TS7006: Parameter 'w' implicitly has an 'any' type.
+packages/client/src/ui/NewTeamEntry.tsx(112,52): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/client/src/ui/TeamDock.tsx(231,3): error TS2339: Property 'sessionId' does not exist on type 'InputZone & SessionStandardProps & GlobalStandardProps & Omit<TeamDockInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+packages/client/src/ui/TeamView.tsx(125,5): error TS2339: Property 'sessionId' does not exist on type 'ConvViewOwnerProps & SessionStandardProps & GlobalStandardProps & Omit<TeamViewInjected, "hooks"> & PropsHooks<...> & { ...; }'.
+packages/client/src/ui/TeamView.tsx(149,9): error TS7006: Parameter 'item' implicitly has an 'any' type.
+packages/client/test
+[legacy] cfg=tsconfig.build.json exit=0 out=
+[testkit] cfg=tsconfig.json exit=2 out=packages/testkit/test/t6-1-no-agent-dependency.test.ts(62,14): error TS2304: Cannot find name 'URL'.
+packages/testkit/test/t6-1-no-agent-dependency.test.ts(62,51): error TS2339: Property 'url' does not exist on type 'ImportMeta'.
+[runtime] cfg=tsconfig.json exit=2 out=packages/runtime/test/rmr-remote-mount-race.test.ts(212,18): error TS2345: Argument of type '(value: unknown) => void' is not assignable to parameter of type '() => void'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.
+packages/runtime/test/rmr-remote-mount-race.test.ts(302,14): error TS2345: Argument of type '(value: unknown) => void' is not assignable to parameter of type '() => void'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.

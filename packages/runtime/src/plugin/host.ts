@@ -719,9 +719,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // The row-level `create-or-open` is RESOLVED here, after the domain
   // decision, to the exact two-value phase the durable world carries: a
   // fresh medium was just created → the root MINTS the Team identity
-  // (`create`); a stamped medium was adopted → the root LOADS it
-  // (`resume`). The root and the live glue keep their strict two-value
-  // contract unchanged.
+  // (`create`); a stamped medium WITH its durable Team identity was
+  // adopted → the root LOADS it (`resume`); a stamped medium WITHOUT the
+  // identity (crashed between the stamp and the mint, or a pre-fix first
+  // boot that stamped and died) → the stamps are adopted and the missing
+  // identity MINTED (D-1 self-heal, `create` — the root create is
+  // idempotent, never re-mints). The root and the live glue keep their
+  // strict two-value contract unchanged.
   let domain: TeamDomain
   let resolvedPhase: 'create' | 'resume'
   if (rowConfig.bootPhase === 'create') {
@@ -733,7 +737,23 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   } else {
     const outcome = await createOrOpenTeamDomainDetailed(seam)
     domain = outcome.domain
-    resolvedPhase = outcome.created ? 'create' : 'resume'
+    if (outcome.created) {
+      resolvedPhase = 'create'
+    } else if (domain.repositories.teamSessions.get(rowConfig.rootSessionId) !== undefined) {
+      resolvedPhase = 'resume'
+    } else {
+      // D-1 (user real-machine state, R138): a STAMPED domain without the
+      // Team identity — a crash between the stamp commit and the
+      // identity-mint commit, or a pre-fix first boot that stamped and
+      // died before minting. Adopt the stamps (never re-stamp) and MINT
+      // the missing identity: the root's create phase is idempotent
+      // (existing-record verification, never re-mints), so a stamped-empty
+      // home converges to the canonical shape instead of failing closed
+      // with TEAM_PLUGIN_RESUME_STATE_MISSING on every boot. The strict
+      // `resume` entry stays load-only (T12-B2 W4) — only create-or-open
+      // self-heals this state.
+      resolvedPhase = 'create'
+    }
   }
   const resolvedRowConfig: TeamPluginConfig =
     resolvedPhase === rowConfig.bootPhase ? rowConfig : { ...rowConfig, bootPhase: resolvedPhase }

@@ -18,6 +18,20 @@
  *      medium STILL fails closed with TEAM_DOMAIN_EXISTS — the new phase
  *      never leaks into the strict fresh-world contract (and `resume`
  *      stays strict load-only per plan §7-B2 / t12b2 W4).
+ *   S4/S5/S6 the D-1 state (user real-machine home): the full eight-store
+ *      stamp is present but the Team identity was NEVER committed (a
+ *      pre-fix first boot that stamped and died before minting, or a
+ *      crash between the stamp commit and the mint commit). The medium is
+ *      tampered to exactly that shape (L1 + L2 stamps kept, every other
+ *      table zeroed):
+ *        S4 strict `resume` over it STILL fails closed (a resume never
+ *           self-heals — T12-B2 load-only is preserved for the strict
+ *           entry);
+ *        S5 `create-or-open` SELF-HEALS it: the stamps are ADOPTED
+ *           (byte-identical, never re-stamped) and the missing identity
+ *           is MINTED (fresh createdAt, one Team row, exactly the Leader);
+ *        S6 the healed home RESTARTS: create-or-open adopts + LOADS
+ *           (createdAt stable — no re-mint).
  *
  * The resolution lives in the host: the domain step learns whether the
  * medium was created or adopted (`createOrOpenTeamDomainDetailed`) and
@@ -34,7 +48,10 @@ import { describe, expect, it } from 'vitest'
 import {
   destroyDir,
   FileStorageSeam,
+  listFiles,
+  readText,
   scratchDir,
+  writeText,
 } from '../../testkit/fault-injection/file-seam.mjs'
 import * as hostEntry from '../src/plugin/host.js'
 import type { TeamPluginHostContext } from '../src/plugin/host.js'
@@ -202,6 +219,7 @@ destroyDir(scratchDir('rmrcoo-boot'))
 
 let teamCount1 = 0
 let teamCount2 = 0
+let teamCount3 = 0
 let strictFail: { code: string | null; message: string } = { code: null, message: '' }
 
 const seam = new FileStorageSeam(scratchDir('rmrcoo-boot'))
@@ -230,6 +248,67 @@ await root2.close()
 // S3 — strict create over the now-stamped medium: must fail closed.
 strictFail = await applyWorldFailing(makeWorld(seam), rowConfig({ bootPhase: 'create' }))
 
+// --- S4 + S5 + S6: the D-1 stamped-no-identity state (user real-machine home) ---
+// The user's 405 world after the pre-fix fix: the FIRST boot stamped all
+// eight stores, then the process died before the Team identity was minted
+// (stamps committed, data tables empty). Tamper the medium to exactly that
+// shape: keep the L1 meta + the `schema_meta` L2 stamps, zero every other
+// table file (the file-seam's plain tamper helpers — designed for this).
+
+const DOMAIN_NAME = 'team_domain'
+const DATA_TABLES = [
+  'team_sessions',
+  'member_instances',
+  'session_bindings',
+  'overrides',
+  'compatibility',
+  'operations',
+  'ledger',
+] as const
+
+const domainDir = seam.dirFor(DOMAIN_NAME)
+for (const table of [...DATA_TABLES, 'schema_meta']) {
+  const file = `${table}.json`
+  check(listFiles(domainDir).includes(file), `D-1: the tamper precondition — table file present: ${file}`)
+}
+const stampsBeforeHeal = readText(seam.pathFor(DOMAIN_NAME, 'schema_meta'))
+for (const table of DATA_TABLES) {
+  writeText(seam.pathFor(DOMAIN_NAME, table), '{}')
+}
+
+// S4 — strict resume over stamped-no-identity: fails closed (W4 preserved —
+// the strict entry never self-heals).
+let resumeFail: { code: string | null; message: string } = { code: null, message: '' }
+resumeFail = await applyWorldFailing(makeWorld(seam), rowConfig({ bootPhase: 'resume' }))
+
+// S5 — create-or-open over stamped-no-identity: SELF-HEALS (adopts the
+// stamps, mints the missing identity). The failed S4 root boot leaves the
+// previous realm's domain open (the row-stop backstop would release it; the
+// test ctx does not run row-stop effects) — exactly what a crashed/rejected
+// bootstrap does in a real process. The restart therefore uses a FRESH
+// seam instance over the same medium: the file-seam's documented process-
+// restart model (durable files outlive the realm).
+const seam2 = new FileStorageSeam(seam.scratchDir)
+const root3 = await applyWorld(makeWorld(seam2), rowConfig({}))
+const repos3 = root3.domain.repositories
+const team3 = repos3.teamSessions.get(ROOT_SID)
+const binding3 = repos3.sessionBindings.get(ROOT_SID)
+const members3 = repos3.memberInstances.list(ROOT_SID)
+check(team3 !== undefined, 'S5: the create-or-open heal minted the TeamSession record')
+check(binding3 !== undefined, 'S5: the create-or-open heal minted the team-root binding')
+check(members3.length === 1, 'S5: the create-or-open heal minted exactly the Leader')
+teamCount3 = repos3.teamSessions.list().length
+const createdAt3 = team3.createdAt
+const stampsAfterHeal = readText(seam.pathFor(DOMAIN_NAME, 'schema_meta'))
+await root3.close()
+
+// S6 — the healed home RESTARTS: create-or-open adopts + loads (stable).
+const root4 = await applyWorld(makeWorld(seam2), rowConfig({}))
+const team4 = root4.domain.repositories.teamSessions.get(ROOT_SID)
+const teamCount4 = root4.domain.repositories.teamSessions.list().length
+check(team4 !== undefined, 'S6: the healed home restart loaded the minted identity')
+await root4.close()
+
 describe('rmr create-or-open boot (row-level phase resolution, root cause B)', () => {
   it('S1: fresh medium — create-or-open initializes the domain and mints the Team identity (resolved create)', () => {
     expect(team1 !== undefined).toBe(true)
@@ -251,5 +330,28 @@ describe('rmr create-or-open boot (row-level phase resolution, root cause B)', (
   it('S3: strict create over the stamped medium still fails closed (phase separation preserved)', () => {
     expect(strictFail.code).toBe('TEAM_DOMAIN_EXISTS')
     expect(strictFail.message.includes('already exists')).toBe(true)
+  })
+
+  it('S4: strict resume over stamped-no-identity fails closed (the strict entry never self-heals — W4 preserved)', () => {
+    expect(resumeFail.code).toBe('TEAM_PLUGIN_RESUME_STATE_MISSING')
+    expect(resumeFail.message.includes('found no durable TeamSession record')).toBe(true)
+  })
+
+  it('S5: create-or-open SELF-HEALS stamped-no-identity (stamps adopted byte-identical, missing identity minted)', () => {
+    expect(team3 !== undefined).toBe(true)
+    expect(binding3 !== undefined).toBe(true)
+    expect(members3.length).toBe(1)
+    expect(members3[0].instanceId).toBe(LEADER_INSTANCE_ID)
+    expect(teamCount3).toBe(1)
+    // A FRESH mint (not a load): the identity did not exist before the heal.
+    expect(createdAt3).not.toBe(createdAt1)
+    // ADOPT, never re-stamp: the L2 stamps are byte-identical across the heal.
+    expect(stampsAfterHeal).toBe(stampsBeforeHeal)
+  })
+
+  it('S6: the healed home restarts — create-or-open adopts + loads (no re-mint, createdAt stable)', () => {
+    expect(team4 !== undefined).toBe(true)
+    expect(team4.createdAt).toBe(createdAt3)
+    expect(teamCount4).toBe(1)
   })
 })

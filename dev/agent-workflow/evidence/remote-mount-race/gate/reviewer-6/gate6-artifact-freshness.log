@@ -1,0 +1,5 @@
+=== GATE 6: artifact freshness (raw git status after fresh build) ===
+ts: 2026-09-05T19:04:36
+ M packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+core.autocrlf=true
+done: 2026-09-05T19:04:37
