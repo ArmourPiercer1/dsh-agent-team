@@ -1,10 +1,10 @@
 # STATUS — Team vNext 当前状态总览
 
 > **性质**：living 快照文档，**不是权威源**。权威 = `dev/agent-workflow/graph.yaml`（编排状态唯一来源）+
-> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R138）。
+> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R139）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-05（R138：用户实机暴露 **D-1**（stamped-no-identity home：盖章在、Team 身份缺，每次 boot 响亮失败——新 observability 生效；R137「无需删 domain 文件」指引对该状态有误，已更正）→ **D-1 自愈修复** `88c80df`（create-or-open 三分支解析：采纳盖章 + 幂等铸造缺失身份；严格 resume 不变）+ 自测五门全绿 + 用户状态回放垂直 200 → **已再推送 origin**（master `18fe8a2 → 16aa84a`(+R138) + int `e25ceeb → d8a1ca9`，用户裁决「自测完毕直接推送」）→ 待用户实机绿 → 三盲审（reviewer-7/8/9）找潜在问题）。
+> **最近更新**：2026-09-05（R139：用户实机测试轮 2 —— 405 消失 + 团队 UI 完整渲染 + **D-1 自愈实机确认**（未动 `team_domain.json`）；新报告 **D-2「leader 看不到团队工具」= 误报**（会话日志决定性证据：用户对话发生在 `D:\test` 的**普通 web 会话**，其 `request/header` = 恰好 24 个 DSH 标准工具、零 `team_*`；真 Leader `team-root` 零回合从未被问）→ 生产接线代码路径核验正确 + **真实缺口 = 注册循环零测试覆盖** → **D-2 测试补盲** `858bc79`（`t12a-team-tools-registration` 3 测试：真实 glue + 真实十工具栈，create/resume/close 三阶段；零 src 变更）+ 自测五门全绿（2454/2458）→ **已推送 origin**（master `b4e8d4f → 9029c9a` + int `d8a1ca9 → e6f591e`，常设授权「自测完毕直接推送」）→ 待用户复测（**问对会话**：团队 tab → Leader 行「回到 leader」打开 `team-root`）→ 绿后三盲审（reviewer-7/8/9）找潜在问题）。
 
 ## 1. 一句话现状
 
@@ -40,6 +40,31 @@ MOUNTED + catalog.list 200 `my-team-bp-1` + stamps 字节一致 + 身份铸造�
 **用户实机测试指引（D-1 版）**：原机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
 （更新到含 D-1 的 master）→ 重启 `dsh web` → Team UI / 新建团队 → 预期 405 消失、catalog.list 200 + 蓝图列表；
 **`team_domain.json` 无需处理**（stamped-no-identity 自愈；若已删除 = fresh 路径，同样覆盖）。
+
+**D-2 测试轮 2：误报定位 + 注册边界测试补盲 + 推送（R139，常设授权「自测完毕直接推送」）**：用户实机
+（D-1 master 安装面）**405 消失、团队 UI 完整渲染、团队 1 运行中**——D-1 修复在真实机器上确认。新报告
+「leader 看不到对应的团队工具」（leader 回答引用了 `list_teammates` 等 5 个工具名并判断「当前会话没有
+挂载 Team 插件」）。**诊断 = 误报（会话日志决定性证据）**：用户 19:40 的对话发生在 **`D:\test` 工作区的
+普通 web 会话** `session-0bf2409a-…`（随机 UUID，非团队会话）——解码其日志的 `request/header` epoch
+（模型可见工具列表）= **恰好 24 个 DSH 标准工具、零 `team_*`**，与用户引用逐一对应（普通会话本就不携带
+团队工具——agent 的回答对它自身完全正确）；**真正的 Leader（`team-root`，19:39:07 由 D-1 自愈 boot 创建）
+日志仅一行会话头、零回合**——用户从未向真 Leader 发过消息。附注：用户引用的 5 个工具名是 **legacy
+（pre-vNext）词汇**，vNext 实际 10 工具（`team_list_members`/`team_list_templates`/`team_inspect_config`/
+`team_create_member`/`team_delegate`/`team_follow_up`/`team_send_message`/`team_report_progress`/
+`team_request_control`/`team_resolve_control`）。**生产接线代码路径核验 = 正确**（`teamToolsRef` 装配期
+无条件填充；glue 的 create/resume 两分支 setup 均把栈注册进 agent ctx；DSH core 保证 agent-scoped
+`tools.register` 进入模型可见 assembly）——无代码缺陷。**真实缺口 = glue 注册循环零测试覆盖**（全部 T12A
+bridge 世界 `teamToolsRef.current = undefined`，只走跳过分支）。**D-2 修复 `858bc79`**（3 文件 +156/−3，
+**零 src 变更**）：新 `t12a-team-tools-registration.test.ts`（真实 glue + 真实 `createTeamTools` 十工具栈：
+D2-1 create 阶段 root+种子成员恰好 10 个、同一 def 对象、栈序 / D2-2 **cold-root 重启（resume）重注册 10 个**
+= 用户场景精确对应 / D2-3 `close()` 处置全部注册）+ `t12a-live-bridge.d.mts` 补 `registeredTools` 类型面
++ p4t6 文件清单 pin 606→607。自测五门全绿（typecheck 9/9 + build 9/9 + lint 0 + **2454/2458**（4 = 基线；
++3 新测试，连跑 ×2 稳定）+ smoke 0 + **dist 零变更**）。**已推送 origin**：master `b4e8d4f → 9029c9a` +
+int `d8a1ca9 → e6f591e`（零 force-push，ls-remote 核验）。
+
+**用户实机复测指引（D-2 更正版——关键：问对会话）**：真 Leader 是团队会话 `team-root`，**在团队 tab 点击
+Leader 行（「回到 leader」）打开它**，在那里提问（如「你能看到哪些 `team_` 前缀的工具?」）——预期列出
+10 个 `team_*` 工具。**不要在普通聊天会话里问**（普通会话没有团队工具是设计使然，不是 bug）。
 
 **前序收口（plugin-prebuilt-artifacts，R131–R134，2026-09-05，已推送 origin @ `05721fd`）**：
 plugin-bundle-form 推送 origin 后，用户新机（DSH 0.1.3-alpha.1 user build，pnpm v11.7.0）首跑
@@ -84,7 +109,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 
 | 阶段 | 状态 | 关键证据 / 指针 |
 | --- | --- | --- |
-| remote-mount-race（R135–，2026-09-05，**已推送 D-1，待实机绿 + 绿后审查**） | 用户新机「新建团队 405」修复：task `677b029` + 修复 `ab4b904` + 卫生 `f32d775` → R137 推送（master `05721fd→e25ceeb`）→ 实机暴露 **D-1 stamped-no-identity**（REV3 台账预测态；R137 指引有误已更正）→ D-1 自愈修复 `88c80df`（create-or-open 三分支 + S4/S5/S6 + 用户状态回放垂直 200）→ **R138 再推送**（master `18fe8a2→16aa84a`(+R138) + int `e25ceeb→d8a1ca9`）；round 2 用户手动停止（部分证据归档）→ **绿后三盲审 reviewer-7/8/9** | `evidence/remote-mount-race/`（root-cause-confirmation / repro-notes / after+fresh boot+probe / gate-summary / gate/reviewer-{1,2,3}/ 裁决 + reviewer-{5,6}/ 中断轮部分证据）；`graph.yaml` REMOTE-MOUNT-RACE + G-RMR-REVIEW 块 |
+| remote-mount-race（R135–，2026-09-05，**D-1+D-2 已推送，待实机复测 + 绿后审查**） | 用户新机「新建团队 405」修复：task `677b029` + 修复 `ab4b904` + 卫生 `f32d775` → R137 推送（master `05721fd→e25ceeb`）→ 实机暴露 **D-1 stamped-no-identity**（REV3 台账预测态；R137 指引有误已更正）→ D-1 自愈修复 `88c80df`（create-or-open 三分支 + S4/S5/S6 + 用户状态回放垂直 200）→ **R138 再推送**（master `18fe8a2→16aa84a`(+R138) + int `e25ceeb→d8a1ca9`）；round 2 用户手动停止（部分证据归档）→ 实机轮 2：**D-1 实机确认**（405 消失 + UI 完整）+ **D-2 误报定位**（用户问的是普通会话；会话日志 request/header = 24 标准工具零 team_*；真 Leader team-root 零回合）+ **注册边界测试补盲 `858bc79`**（t12a-team-tools-registration 3 测试，零 src）→ **R139 再推送**（master `b4e8d4f→9029c9a` + int `d8a1ca9→e6f591e`）→ **绿后三盲审 reviewer-7/8/9**（含 D-2 工具注册面） | `evidence/remote-mount-race/`（root-cause-confirmation / repro-notes / after+fresh boot+probe / gate-summary / gate/reviewer-{1,2,3}/ 裁决 + reviewer-{5,6}/ 中断轮部分证据）；`graph.yaml` REMOTE-MOUNT-RACE + G-RMR-REVIEW 块 |
 | P0–P8（G0–G7） | 全部 Gate PASS（3/3）；master 历史已推送至 push #7 | `graph.yaml` tasks 区；`dev/agent-workflow/evidence/<task>/` |
 | P8-S backend closure | S0–S7 DONE（S7-FREEZE：`backend-contract-freeze.md` = P9 唯一 backend contract reference）；S8 / G8-S 未派发（**PAUSED**，用户指令 R83；T12 GO 后是否仍必要待用户裁决，见 §4） | `evidence/P8-S/`（S1A/B/C 审计、confirmed-repair-list、backend-contract-freeze.md） |
 | G8-REVIEW | round-1 2/3（1 补充内容）→ G8-S1 实质性补充（1/3）→ round-2 **3/3 通过**（@ `3fa4c1f`） | `evidence/G8-REVIEW/reviewer-{4,5,6}/` |
@@ -113,7 +138,7 @@ fresh-machine 可安装性已验证，安装链见 `docs/INSTALL.md`）。
 
 ## 4. 待办 / 等待用户（按优先级）
 
-1. **remote-mount-race 收口（D-1 已推送 origin @ `16aa84a`，R138）**：**用户侧** = 按 §1 实机测试指引验证（原机重跑 add → 重启 → 预期 MOUNTED + 405 消失）；**绿后** = 派发 3 全新盲审 reviewer-7/8/9（目标 `16aa84a`/`d8a1ca9`，定位找潜在问题，含 D-1 三分支解析专项）→ PASS 3/3 → CLOSED 收口簿记 + teardown（reviewer worktrees/端口/世界）；若审查出 gate-deciding 发现 → 修复 + 新的推送授权。
+1. **remote-mount-race 收口（D-1+D-2 已推送 origin @ `9029c9a`/`e6f591e`，R139）**：**用户侧** = 按 §1 复测指引验证（**问对会话**：团队 tab → Leader 行「回到 leader」打开 `team-root` 会话提问，预期 10 个 `team_*` 工具；普通聊天会话本就不带团队工具）；**绿后** = 派发 3 全新盲审 reviewer-7/8/9（目标 `9029c9a`/`e6f591e`，定位找潜在问题，含 D-1 三分支解析专项 + D-2 工具注册面 + legacy 工具名词汇残留观察项）→ PASS 3/3 → CLOSED 收口簿记 + teardown（reviewer worktrees/端口/世界）；若审查出 gate-deciding 发现 → 修复 + 新的推送授权。
 2. ~~**推送授权**~~ — **四轮均已完成**：R124（2026-09-04，master + 5 refs）、R126（2026-09-05，master `2f3f61b` + `int/P9-master-product-closure`）、R130（2026-09-05，master `e832d73` + `int/plugin-bundle-form` 新建）、R134（2026-09-05，master `05721fd` + `int/plugin-prebuilt-artifacts` 新建），各按用户一次性授权执行并 ls-remote 验证；**后续任何推送仍需新的显式授权**（红线不变），gated 历史禁 force-push。本地 master 领先 origin 1 提交（R134 收口簿记），随下次授权推送携带（R124 先例）。**待用户验证**：新机重跑 `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`（预期首跑成功、零 allowBuilds、Team UI 可用）。
 3. ~~**P9 task 分支入 master**~~ — **已完成（R125 Gate PASS + R126，2026-09-05）**：`int/P9-master-product-closure` @ `d23c606`（gate）/ `4233816`（bookkeeping）ff 进 master 并推送；安装链产品化 + fresh-machine 验证随线入库（`docs/INSTALL.md`）。
 4. **P10 加固**（P9 计划 L1789）：F-9 untracked-burst emitter 定位 + post-test-gate porcelain 检查；F-7 两个 excluded browser-surface specs；carry-over 清单 = UI_BACKEND_GAP（client node entry `packages/client/dist/plugin/client.js:50` 读 `ctx.slots` 未声明 inject，非规范路径）/ p6t1-parallel flake 类（~1/3，R125 轮 3/4 两位 reviewer 独立复现-隔离确认，建议降载加固）/ testkit `.tmp-fault` scratch 竞态（destroyDir Windows 重试）/ tsc build 内联发射卫生 / 360 s 窗口核心埋点（T12 记录，T12-V16 已修产品面，埋点留 P10）。
