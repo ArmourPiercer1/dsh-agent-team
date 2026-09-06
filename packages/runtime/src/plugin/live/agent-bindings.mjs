@@ -109,6 +109,19 @@
  *   surface                      (TeamAgentSetupSurface; no-op per SD-SURFACE)
  *   sessionInput.submitAttributedInput(input)
  *   workDelivery.deliver(args)
+ *                                 (v2 D2 / task C2: submits the explicit
+ *                                  prompt as a REAL model-visible input
+ *                                  turn on the child, observes the turn
+ *                                  to idle, materializes the durable log,
+ *                                  then reads the delivered turn back
+ *                                  through the public session seam and
+ *                                  RETURNS the frozen WorkDeliveryResult
+ *                                  (C1 contract: succeeded + member
+ *                                  business body / failed + stable code /
+ *                                  unavailable); a rejection = delivery
+ *                                  failure — the admission fact is
+ *                                  retained, the settlement commits
+ *                                  'delivery-failed', R6)
  *   createRootAgent(rootSessionId)
  *                                 (T12-GLUE: the B6 handoff target Root
  *                                  Agent start — create-or-ensure on one
@@ -192,6 +205,190 @@ const LEADER_INSTANCE_ID = 'inst-leader'
 
 /** The per-tool-call execution budget (activation involves real agent work). */
 const TOOL_EXEC_TIMEOUT_MS = 120_000
+
+// ── v2 D2 (task C2): the minimal member-result normalization ──────────────────
+//
+// The frozen WorkDeliveryResult contract (task C1, packages/runtime/
+// admission/types.ts) is normalized HERE at the delivery boundary: the
+// delivered turn is read back from the member child's own Session through
+// the public session seam (Session.ownEvents — the same live face class
+// the glue already drives: followup / whenIdle / cancel / session), and
+// mapped to the closed status vocabulary. Stable error codes (the set the
+// C1 contract pins for this seam; the chain's WORK_DELIVERY_FAILED covers
+// the throw path and WORK_REPLAYED is synthesized by the chain on replay):
+
+/** The delivered turn completed but no readable non-empty assistant text exists. */
+const WORK_RESULT_CODE_NO_BODY = 'WORK_NO_ASSISTANT_BODY'
+/** The delivered turn was aborted (a cancellation request interrupted it). */
+const WORK_RESULT_CODE_TURN_ABORTED = 'WORK_TURN_ABORTED'
+/** The delivered turn hit its output-token ceiling. */
+const WORK_RESULT_CODE_TURN_MAX_TOKENS = 'WORK_TURN_MAX_TOKENS'
+/** The delivered turn was blocked. */
+const WORK_RESULT_CODE_TURN_BLOCKED = 'WORK_TURN_BLOCKED'
+/** The delivered turn failed (no structured LlmFailure code carried). */
+const WORK_RESULT_CODE_TURN_ERROR = 'WORK_TURN_ERROR'
+/** The delivered turn was closed after a crash (cold-read closer; defensive). */
+const WORK_RESULT_CODE_TURN_INTERRUPTED = 'WORK_TURN_INTERRUPTED'
+/** The delivered turn cannot be attributed/read in the session log (defensive). */
+const WORK_RESULT_CODE_TURN_UNREADABLE = 'WORK_TURN_UNREADABLE'
+
+/**
+ * The readable text of one message (the join of its `type === 'text'`
+ * content blocks — the upstream text-block convention).
+ * @param {object|undefined} message - a UserMessage/AssistantMessage (or a
+ *   shape-compatible log payload).
+ * @returns {string} the concatenated text (empty when no text block).
+ */
+function workMessageText(message) {
+  const content = message !== null && typeof message === 'object' ? message.content : undefined
+  if (!Array.isArray(content)) return ''
+  let text = ''
+  for (const block of content) {
+    if (block !== null && typeof block === 'object' && block.type === 'text' && typeof block.text === 'string') {
+      text += block.text
+    }
+  }
+  return text
+}
+
+/**
+ * v2 D2 (task C2): read the delivered turn of one work request through the
+ * public session seam and normalize it into the frozen WorkDeliveryResult.
+ *
+ * Correlation is EXACT: the glue builds the delivered user message itself
+ * with the deterministic `[team-work requestToken=<token>]` prefix, so the
+ * LAST `user/message` event whose text starts with that prefix IS this
+ * delivery's input (the A4 correlation point — a resume redelivers, and
+ * the fresh delivery is the one this call observes). The authoritative
+ * outcome is the `turn/end` reason of the delivered message's enclosing
+ * turn; the business body is that turn's last non-empty
+ * `assistant/message` text (succeeded only).
+ *
+ * An unreadable log (the token-prefixed message or its turn/end is
+ * absent) is a defensive case: the result is explicit `unavailable` —
+ * never `succeeded`, never a throw (the control plane has already closed
+ * the turn; the fail-closed throw contract is reserved for faults of the
+ * delivery/observation itself, which reject before this read). The same
+ * explicit `unavailable` mapping covers a handle whose session object
+ * exposes no log-read seam at all (a seam regression must degrade to an
+ * explicit "the seam cannot determine the outcome", never to a crashed
+ * settlement or a disguised success).
+ *
+ * @param {object} session - the member child's Session (the live face).
+ * @param {string} requestToken - the token the Leader used (echoed verbatim).
+ * @returns {object} the frozen WorkDeliveryResult.
+ */
+function readDeliveredWorkTurn(session, requestToken) {
+  const prefix = `[team-work requestToken=${requestToken}] `
+  const ownEvents =
+    session !== null && typeof session === 'object' && typeof session.ownEvents === 'function'
+      ? session.ownEvents
+      : undefined
+  if (ownEvents === undefined) {
+    return {
+      requestToken,
+      status: 'unavailable',
+      error: {
+        code: WORK_RESULT_CODE_TURN_UNREADABLE,
+        message: 'the session log read seam (Session.ownEvents) is unavailable on the live session handle',
+      },
+    }
+  }
+  const events = ownEvents.call(session)
+  const unavailable = (code, message) => ({ requestToken, status: 'unavailable', error: { code, message } })
+  const failed = (code, message) => ({ requestToken, status: 'failed', error: { code, message } })
+  // Locate the delivered message and the turn opened around it.
+  let currentTurn
+  let deliveredIndex = -1
+  let deliveredTurn
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
+    if (event.type === 'turn/start') {
+      currentTurn = event.data.turn
+    } else if (event.type === 'turn/end') {
+      if (currentTurn === event.data.turn) currentTurn = undefined
+    } else if (event.type === 'user/message' && workMessageText(event.data).startsWith(prefix)) {
+      deliveredIndex = i
+      deliveredTurn = currentTurn
+    }
+  }
+  if (deliveredIndex === -1) {
+    return unavailable(
+      WORK_RESULT_CODE_TURN_UNREADABLE,
+      `no delivered user message for requestToken '${requestToken}' found in the child session log`,
+    )
+  }
+  // The end of the delivered turn (its own turn number; the first closing
+  // end after the message when the start marker was lost).
+  let endIndex = -1
+  for (let j = deliveredIndex + 1; j < events.length; j++) {
+    const event = events[j]
+    if (event.type !== 'turn/end') continue
+    if (deliveredTurn === undefined || event.data.turn === deliveredTurn) {
+      endIndex = j
+      break
+    }
+  }
+  if (endIndex === -1) {
+    return unavailable(
+      WORK_RESULT_CODE_TURN_UNREADABLE,
+      `the delivered turn of requestToken '${requestToken}' has no turn/end in the child session log`,
+    )
+  }
+  const reason = events[endIndex].data.reason
+  const kind = reason !== null && typeof reason === 'object' ? reason.kind : undefined
+  if (kind === 'completed') {
+    // succeeded ONLY with a readable non-empty business body (the turn's
+    // last non-empty assistant message; an empty-content turn is NOT a
+    // success — it is explicit unavailable).
+    let body
+    for (let j = deliveredIndex + 1; j < endIndex; j++) {
+      const event = events[j]
+      if (event.type !== 'assistant/message') continue
+      if (deliveredTurn !== undefined && event.data.turn !== deliveredTurn) continue
+      const text = workMessageText(event.data.message)
+      if (text.length > 0) body = text
+    }
+    if (body !== undefined) return { requestToken, status: 'succeeded', body }
+    return unavailable(
+      WORK_RESULT_CODE_NO_BODY,
+      'the delivered turn completed but carries no non-empty assistant text',
+    )
+  }
+  if (kind === 'error') {
+    const failure = reason.error
+    const hasFailure = failure !== null && typeof failure === 'object'
+    const code = hasFailure && typeof failure.code === 'string' && failure.code !== ''
+      ? failure.code
+      : WORK_RESULT_CODE_TURN_ERROR
+    const message = hasFailure && typeof failure.message === 'string' && failure.message !== ''
+      ? failure.message
+      : 'the member turn failed'
+    return failed(code, message)
+  }
+  if (kind === 'aborted') {
+    return failed(WORK_RESULT_CODE_TURN_ABORTED, 'the member turn was aborted before completion')
+  }
+  if (kind === 'max-tokens') {
+    return failed(WORK_RESULT_CODE_TURN_MAX_TOKENS, 'the member turn hit its output token ceiling')
+  }
+  if (kind === 'blocked') {
+    return failed(WORK_RESULT_CODE_TURN_BLOCKED, 'the member turn was blocked')
+  }
+  if (kind === 'interrupted') {
+    // Defensive: the loop never emits this marker live (crash-orphan
+    // closer / cold-read synthesis) — the live read sees it only if the
+    // log was closed after a crash. Never succeeded, never failed.
+    return unavailable(
+      WORK_RESULT_CODE_TURN_INTERRUPTED,
+      'the member turn was closed after a crash (no live outcome)',
+    )
+  }
+  return unavailable(
+    WORK_RESULT_CODE_TURN_UNREADABLE,
+    `the delivered turn of requestToken '${requestToken}' ended with an unrecognized reason kind '${String(kind)}'`,
+  )
+}
 
 /**
  * Create the bindings closure over one row instance's deps.
@@ -1195,7 +1392,11 @@ export function createAgentBindings(deps) {
   // the requestToken rides visibly so at-least-once deliveries stay
   // dedupe-able from the durable child log, and the turn is observed to
   // idle before the chain settles. A fault here throws: the chain settles
-  // fail-closed, never a fake RUNNING success.
+  // fail-closed, never a fake RUNNING success. v2 D2 (task C2): after the
+  // turn settles durably, the delivered turn is read back through the
+  // public session seam and the port RETURNS the frozen WorkDeliveryResult
+  // (the C1 contract: succeeded + the member business body / failed + a
+  // stable code / unavailable) — the throw contract above is unchanged.
   const workDelivery = {
     async deliver(args) {
       const handle = await ensureLiveAgent(String(args.childSessionId))
@@ -1246,6 +1447,14 @@ export function createAgentBindings(deps) {
       // driver boundary and reported, not propagated), so reaching here
       // means the model-visible message was submitted and the turn is over.
       await sessionPersistence.ensureMaterialized(handle.agent.session)
+      // v2 D2 (task C2): the delivered turn is now read back through the
+      // public session seam and normalized into the frozen
+      // WorkDeliveryResult (the C1 contract) — the Leader sees the
+      // member's business text or an explicit failure instead of only
+      // settled=true. The fail-closed throw contract above is unchanged:
+      // a fault of the delivery/observation itself still rejects (the
+      // throw IS the signal; no result is formed on that path).
+      return readDeliveredWorkTurn(handle.agent.session, String(args.requestToken))
     },
   }
 
