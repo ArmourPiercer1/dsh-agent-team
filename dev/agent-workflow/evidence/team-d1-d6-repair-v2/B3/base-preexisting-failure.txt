@@ -1,4 +1,4 @@
-﻿
+
  RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-B3/packages/client
 
  ❯ test/team-creation-panel.client.spec.tsx (19 tests | 1 failed) 1607ms
@@ -21,14 +21,14 @@
      ✓ a loud unknown probe verdict disables Create (never a silent ready) 56ms
      ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 64ms
      ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 64ms
-pnpm.exe : 
+pnpm.exe :
 At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > create happy path (TCM M4 two-s
@@ -50,4 +50,3 @@ AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
       Tests  1 failed | 18 passed (19)
    Start at  01:31:22
    Duration  4.34s (transform 875ms, setup 0ms, import 1.89s, tests 1.61s, environment 572ms)
-

@@ -91,7 +91,7 @@ File: `packages/runtime/src/plugin/live/agent-bindings.mjs`
 @@ -759,6 +778,32 @@ export function createAgentBindings(deps) {
      )
    }
- 
+
 +  /**
 +   * D3 (Team D1-D6 repair v2, B2): the concise machine-readable Team
 +   * identity context appended to the MEMBER agent's scoped persona
