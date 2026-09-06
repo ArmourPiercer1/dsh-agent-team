@@ -1980,3 +1980,5 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - 2026-09-07T00:03:19.6418724+08:00 — C0 final PASS confirmed; T1 implementation remains active. C2/T3 and T6 outcomes recorded; awaiting T1/T4/T5 final commits/evidence.
 
 - 2026-09-07T00:05:18.1284915+08:00 — T5-D5 PASS: 5/5 focused tests; provider-owned deterministic instanceId contract confirmed; commit 5db518425d83dfd48311510f60acc40aaa3f1ed3.
+
+- 2026-09-07T00:12:12.6913566+08:00 — Execution round 2 closeout: T1 DEFERRED (no commit; host-owned adapter wiring required); T2 DEFERRED after 2 attempts (DEPENDENCY_BLOCKER yaml); T3 DEFERRED (CONTRACT_CHANGE_REQUEST); T4 DEFERRED (CONTRACT_CHANGE_REQUEST); T5 PASS 5/5; T6 BLOCKED CORE_SEAM_BLOCKER (upstream 76fda729, no public Web resume interception). Main runtime sweep: 1183 passed/6 baseline-harness failures; D5 focused PASS; no upstream/stable changes.
