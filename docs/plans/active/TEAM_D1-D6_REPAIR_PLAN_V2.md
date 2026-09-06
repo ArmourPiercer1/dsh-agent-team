@@ -494,8 +494,8 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 | G3 | 40m | 2026-09-07T03:28:02+08:00（round 3 裁决齐，记录于 `4891855`） | PASS（round 1：2×通过+1×裁决传输丢失 → 替补位 2b = 补充内容（effects dist 未随 C2 提交）→ 补充 `5795d50`；round 2：1×补充（日志行尾空白，owner 日志 here-string 反引号转义自伤）+1×传输丢失+1×补充（client composition-shim bundle 陈旧，B3 未重建安装面）→ 补充 `3397f1b`+日志行修复；round 3：三名全新盲审全部“通过” `6a6db5c`，含全链 fresh-build artifact gate（1028 文件 OK）；风险台账累计已记） | `evidence/team-d1-d6-repair-v2/G3/` |
 | D1–D4 D6 Team UI | 180m累计 | 2026-09-07T05:25:00+08:00（D4 worker 完成；集成 head `4bbae3e`） | PASS ×4（D1 索引+remote v3 冻结 `ae3676c`；D2 Team-mode open `a074df3`；D3 ordinary fallback `1386a9b`；D4 真实 host 重启验收 `4bbae3e`，36/36 断言；卫生补充 `b8d772c`） | `evidence/team-d1-d6-repair-v2/D1..D4/` |
 | G4 | 45m | 2026-09-07T06:05:29+08:00（记录于 `e72796c`） | PASS（三名全新盲审全部“通过” `4b90d09`；三名 reviewer 各自独立复跑 d4-restart-reopen.mjs 真实 host 冒烟 pass=true 55/55（:3180 端口轮询协调，跑后端口释放）；7 项出口判据全过；风险台账新增 4 项已记） | `evidence/team-d1-d6-repair-v2/G4/` |
-| E1 D4-A2 design | 30m | 待执行 | — | `evidence/team-d1-d6-repair/E1/` |
-| G5 final | 90m | 待执行 | — | `evidence/team-d1-d6-repair/G5/` |
+| E1 D4-A2 design | 30m | 2026-09-07T06:21:34+08:00（记录于 `3b53e40`） | PASS（纯设计，无产品改动；冻结 wire = 既有 host→client 转发事件流 `api-session/status` 触发既有 generation 门控 single-flight pull，无新 wire/无 v4/无 upstream 改动；发现 override-lane stamp gap 记入未来任务；12 测试矩阵 T1–T12 冻结） | `evidence/team-d1-d6-repair-v2/E1/` |
+| G5 final | 90m | 2026-09-07T07:20:00+08:00（记录于本轮，head `f26a0ad`） | PASS（G5A 成员 E2E runner `2602d73` 68/68 真实 host；三名全新盲审：2×通过 + 1×投机通过，无阻塞；三名各自独立复跑 d4-restart-reopen（55/55）与 g5-member-e2e（68/68）均 pass=true；15.1 八行矩阵逐断言核验覆盖；§1 全部用户裁决与 §16 全部明确不承诺项经代码核验成立；投机通过 residual = E1 override-lane stamp gap（有界、已设计、按用户确认计划推迟至 v2 后单 writer 任务）→ 风险台账） | `evidence/team-d1-d6-repair-v2/G5/` |
 
 > 这里的累计 worker 时间不是墙钟保证。若 10h 内无法同时满足实现、测试和三方审查，必须在 Gate 报告中明确 PASS/DEFERRED/BLOCKED，不得降低语义标准。
 
@@ -503,7 +503,13 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 
 ## 18. 当前状态
 
-v2 执行进度：P0-v2 PASS → A1–A4 PASS → G1 PASS → B1–B4 PASS → G2 PASS → C1–C2 PASS → G3 PASS（round 3 三名全新盲审全部“通过”，head `6a6db5c`）。下一步：Wave D（D1–D4，D6 Team UI 专用模式与重启，单一 writer，remote v3 契约变更已经 G1 用户批准），随后 G4。
+v2 执行已收束：P0-v2 PASS → A1–A4 PASS → G1 PASS → B1–B4 PASS → G2 PASS → C1–C2 PASS → G3 PASS → D1–D4 PASS → G4 PASS → E1 PASS → G5A PASS → **G5 PASS**（head `f26a0ad`；三名全新盲审 2×通过+1×投机通过，无阻塞；15.1 验收矩阵八行全覆盖并经真实 host 复跑验证）。CORE PATCH BUDGET 保持 0，upstream 全程 pristine @ `76fda729`，:3080 未触碰。本地 master 领先 origin 且**未推送**（推送需用户明确批准）。
+
+**v2 后待办（均已设计/已留痕，非本计划范围）**：
+1. D4-A2 实现任务（单 writer）：按 E1 冻结设计落地 `api-session/status` 触发 + Hook C（override-lane stamp）+ T1–T12 测试矩阵；用户决策点 Q1（turn 边界 staleness 上限）/Q2（member 子代理 status 事件行为，T6 先行）见 E1 文档。
+2. 预存 client 竞态修复（`team-creation-panel.client.spec.tsx` "create happy path (TCM M4 two-stage v2)"，base 即失败，独立小任务）。
+3. p6t1/p8s3 家族的 Windows scratch-fixture teardown flake（基础设施层，独立小任务）。
+4. upstream 耦合观察：OUTSIDE_TEAM 映射字符串匹配 agents-registry 报错文本（upstream 改词则降级为 START_FAILED，仍 fail-closed）；upstream 版本升级时复核。
 
 **计划确认时间**：`2026-09-07T00:48:34.9956605+08:00`  
-**计划最后更新时间**：`2026-09-07T03:45:00+08:00`
+**计划最后更新时间**：`2026-09-07T07:20:00+08:00`
