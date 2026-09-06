@@ -1996,3 +1996,14 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - Route check: main agent qwen3.8-27b per session declaration; all workflow-launched workers carry explicit provider=qiyuan-self model=qwen3.8-27b overrides (user directive: use workflow tool so provider/model is not silently ignored).
 - P0-v2 baseline: ce46df3d838f5e3cdafcb267a09bc80e3f360376; test-use 76fda72 clean; int/team-d1-d6-v2 created.
 - Wave A (A1-A4) characterization launched via workflow tool.
+
+## G1 scope and contract gate (2026-09-07T01:14:06.9451247+08:00)
+
+- A1 D1: seam_verdict=yes — public AgentPresets.mount(agentCtx, presetId); host.ts injects via lazy ctx.get('agentPresets') at glue.createAgentBindings; members-only scope; no hard-inject change. -> B1 GO.
+- A2 D3: seam_verdict=yes — insertion agent-bindings.mjs:735 (member branch of installScopedPersona); identity fields sufficient; dependency proof PASS (pnpm install --ignore-scripts, tcm-d4 7/7 in fresh worktree). -> B2 GO.
+- A3 D6: seam_verdict=yes — live-first reopen PATTERN HOLDS: upstream createOrAdopt reuses already-live agent (createOrAdopt L442-446), setup closure is sole tool-registration point. D6 v2 requires ZERO upstream changes; needs Team-owned remote v3 bump: team.ensureRootLive(rootSessionId) + team.listRoots() (read-only). -> Wave D GO.
+- A4 D2: seam_verdict=yes — public transcript read seam exists (handle.agent.session.ownEvents()/snapshotEvents() + turn/end reason kinds); minimal contract delta Team-owned (admission/types.ts, work-execution.ts, effects.ts, agent-bindings.mjs); no storage/remote schema. -> C1/C2 GO.
+- B3 D4-A1: existing UI mutation callbacks + pullProjection confirmed -> GO (scope: existing callbacks only; Agent/tool mutations NOT COVERED, D4-A2 design-only).
+- B4 D5: regression confirmation -> GO.
+- CONTRACT_CHANGE_REQUEST (approved, user-ruled v2 semantics): Team remote contract v1/v2 -> v3 adds team.ensureRootLive + team.listRoots; single writer = Wave D (D1/D2 tasks); no upstream change; no second state source (index rebuilt from TeamDomain).
+- Gate verdict: PASS (all routing conditions met; no CORE_SEAM_BLOCKER remains for D6 under v2 semantics).
