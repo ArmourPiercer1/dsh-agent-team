@@ -493,7 +493,7 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 | C1–C2 D2 | 150m累计/contract串行 | 2026-09-07T02:31:00+08:00（C2 worker 完成；集成 head `805a510`） | PASS ×2（C1 契约冻结 `497d737`；C2 glue/effect 集成 `805a510`；16 TDD pins；全量 1203/1203） | `evidence/team-d1-d6-repair-v2/C1..C2/` |
 | G3 | 40m | 2026-09-07T03:28:02+08:00（round 3 裁决齐，记录于 `4891855`） | PASS（round 1：2×通过+1×裁决传输丢失 → 替补位 2b = 补充内容（effects dist 未随 C2 提交）→ 补充 `5795d50`；round 2：1×补充（日志行尾空白，owner 日志 here-string 反引号转义自伤）+1×传输丢失+1×补充（client composition-shim bundle 陈旧，B3 未重建安装面）→ 补充 `3397f1b`+日志行修复；round 3：三名全新盲审全部“通过” `6a6db5c`，含全链 fresh-build artifact gate（1028 文件 OK）；风险台账累计已记） | `evidence/team-d1-d6-repair-v2/G3/` |
 | D1–D4 D6 Team UI | 180m累计 | 2026-09-07T05:25:00+08:00（D4 worker 完成；集成 head `4bbae3e`） | PASS ×4（D1 索引+remote v3 冻结 `ae3676c`；D2 Team-mode open `a074df3`；D3 ordinary fallback `1386a9b`；D4 真实 host 重启验收 `4bbae3e`，36/36 断言；卫生补充 `b8d772c`） | `evidence/team-d1-d6-repair-v2/D1..D4/` |
-| G4 | 45m | 2026-09-07T05:55:00+08:00（记录于本轮） | PASS（三名全新盲审全部“通过” `4b90d09`；三名 reviewer 各自独立复跑 d4-restart-reopen.mjs 真实 host 冒烟 pass=true 55/55（:3180 端口轮询协调，跑后端口释放）；7 项出口判据全过；风险台账新增 4 项已记） | `evidence/team-d1-d6-repair-v2/G4/` |
+| G4 | 45m | 2026-09-07T06:05:29+08:00（记录于 `e72796c`） | PASS（三名全新盲审全部“通过” `4b90d09`；三名 reviewer 各自独立复跑 d4-restart-reopen.mjs 真实 host 冒烟 pass=true 55/55（:3180 端口轮询协调，跑后端口释放）；7 项出口判据全过；风险台账新增 4 项已记） | `evidence/team-d1-d6-repair-v2/G4/` |
 | E1 D4-A2 design | 30m | 待执行 | — | `evidence/team-d1-d6-repair/E1/` |
 | G5 final | 90m | 待执行 | — | `evidence/team-d1-d6-repair/G5/` |
 
