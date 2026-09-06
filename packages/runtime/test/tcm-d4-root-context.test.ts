@@ -37,7 +37,11 @@
  *        (canonical rootSessionId N, the leader instanceId, and the
  *        rootSessionId + unique-requestToken contract); the boot root
  *        carries its OWN id; the member keeps the template persona
- *        verbatim (no block);
+ *        verbatim, prefixed by the D3/B2 machine-readable member identity
+ *        block (owning boot root + the member's own instanceId,
+ *        role=member) — and the root block does NOT leak into the member
+ *        branch (B2 superseded the v1 "no block for non-root agents"
+ *        assertion);
  *   D4-5 request boundaries: deliverRootWork reaches the N root
  *        (token-leading); the attributed input + the delegate work reach
  *        the boot-root member (the boot-root behavior is unchanged —
@@ -109,6 +113,15 @@ const MEMBER_PERSONA = 'You are member t12a-worker of the t12a test team.'
 const rootContext = (sid: string): string =>
   `[team-root-context rootSessionId=${sid} leaderInstanceId=inst-leader]\n` +
   `Every team_* tool call must include rootSessionId="${sid}" and a unique requestToken.`
+
+/**
+ * The concise machine-readable member Team identity context the glue
+ * appends to the MEMBER agent's scoped persona section (D3, B2; must stay
+ * byte-identical to agent-bindings.mjs `memberTeamContextBlock`).
+ */
+const memberContext = (root: string, instanceId: string): string =>
+  `[team-member-context rootSessionId="${root}" instanceId="${instanceId}" role="member"]\n` +
+  `Every team_* tool call must include rootSessionId="${root}" and a fresh unique requestToken; do not use another teams rootSessionId or another members instanceId.`
 
 function names(ctx: AgentCtxDouble): string[] {
   return ctx.registeredTools.map((def) => String((def as { name?: string }).name ?? ''))
@@ -375,10 +388,17 @@ describe('TCM-D4 the second root in a boot-root world (the freshly created team)
     // (the scoped section shadows the global).
     expect(bootPersonaEntries.length).toBe(1)
     expect(bootPersonaEntries[0]!.scope).toBe('scoped')
-    // The member keeps the template persona verbatim — no root context
-    // block for non-root agents.
+    // D3 (B2): the member keeps the template persona verbatim, prefixed
+    // by the machine-readable member identity context block — the OWNING
+    // boot root + the member's own instanceId, role=member — and the ROOT
+    // context block does NOT leak into the member branch.
     expect(workerPersonaAfterCreate !== undefined).toBe(true)
-    expect(workerPersonaAfterCreate!.text).toBe(MEMBER_PERSONA)
+    expect(workerPersonaAfterCreate!.text).toBe(`${MEMBER_PERSONA}\n\n${memberContext(BOOT, WORKER.instanceId)}`)
+    expect(workerPersonaAfterCreate!.text.includes(`rootSessionId="${BOOT}"`)).toBe(true)
+    expect(workerPersonaAfterCreate!.text.includes(`instanceId="${WORKER.instanceId}"`)).toBe(true)
+    expect(workerPersonaAfterCreate!.text.includes('role="member"')).toBe(true)
+    expect(workerPersonaAfterCreate!.text.includes('[team-root-context')).toBe(false)
+    expect(workerPersonaAfterCreate!.text.includes('leaderInstanceId=')).toBe(false)
   })
 
   it('D4-5 request boundaries: deliverRootWork reaches N; the boot-root member boundaries are unchanged', () => {

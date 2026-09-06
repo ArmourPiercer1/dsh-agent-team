@@ -14,8 +14,10 @@
  * agents double carries a working systemPrompt.section/assemble pair per
  * ctx, with a shared global layer per world — NOT via projection fields):
  *   M2-1 setup installs the blueprint persona as a scoped
- *        deployment:persona section on the root (leader persona) and the
- *        seeded member (template persona) BEFORE any work on the session;
+ *        deployment:persona section on the root (leader persona + the
+ *        TCM-D4 root context block) and the seeded member (template
+ *        persona + the D3/B2 member identity context block) BEFORE any
+ *        work on the session;
  *   M2-2 the scoped section SHADOWS the same-named global section: exactly
  *        one deployment:persona entry assembles, and it is the scoped one;
  *   M2-3 the request boundary (submitAttributedInput) re-applies the
@@ -65,6 +67,15 @@ const rootContext = (sid: string): string =>
   `[team-root-context rootSessionId=${sid} leaderInstanceId=inst-leader]\n` +
   `Every team_* tool call must include rootSessionId="${sid}" and a unique requestToken.`
 const LEADER_PERSONA_WITH_CONTEXT = `${LEADER_PERSONA}\n\n${rootContext(ROOT)}`
+
+// D3 (B2): the concise machine-readable member Team identity context the
+// glue appends to the MEMBER agent's scoped persona section (the OWNING
+// root + the member's own instanceId, role=member) — must stay byte-
+// identical to agent-bindings.mjs `memberTeamContextBlock`.
+const memberContext = (root: string, instanceId: string): string =>
+  `[team-member-context rootSessionId="${root}" instanceId="${instanceId}" role="member"]\n` +
+  `Every team_* tool call must include rootSessionId="${root}" and a fresh unique requestToken; do not use another teams rootSessionId or another members instanceId.`
+const MEMBER_PERSONA_WITH_CONTEXT = `${MEMBER_PERSONA}\n\n${memberContext(ROOT, INSTANCE)}`
 
 /** The bundle's session input port (structural; the glue reads id + text). */
 interface SessionInputBinding {
@@ -181,12 +192,15 @@ describe('T12-M2 the blueprint persona installed into the real DSH Agent prompt'
     expect(followupsAfterBoot).toBe(0)
     expect(rootPersonaAfterBoot !== undefined).toBe(true)
     // TCM-D4: the ROOT section = the blueprint leader persona + the
-    // machine-readable root Team context block (the member section keeps
-    // the template persona verbatim — no context block).
+    // machine-readable root Team context block. D3 (B2): the MEMBER
+    // section = the template persona verbatim + the machine-readable
+    // member identity context block (owning root + own instanceId,
+    // role=member) — and the ROOT block does NOT leak into the member.
     expect(rootPersonaAfterBoot!.text).toBe(LEADER_PERSONA_WITH_CONTEXT)
     expect(rootPersonaAfterBoot!.order).toBe(0)
     expect(memberPersonaAfterBoot !== undefined).toBe(true)
-    expect(memberPersonaAfterBoot!.text).toBe(MEMBER_PERSONA)
+    expect(memberPersonaAfterBoot!.text).toBe(MEMBER_PERSONA_WITH_CONTEXT)
+    expect(memberPersonaAfterBoot!.text.includes('[team-root-context')).toBe(false)
   })
 
   it('M2-2 the scoped section shadows the global deployment:persona (exactly one entry)', () => {
@@ -200,7 +214,9 @@ describe('T12-M2 the blueprint persona installed into the real DSH Agent prompt'
     expect(world.records.followups.length).toBe(1)
     expect(world.records.followups[0]!.sessionId).toBe(CHILD)
     expect(memberPersonaAfterRequest !== undefined).toBe(true)
-    expect(memberPersonaAfterRequest!.text).toBe(MEMBER_PERSONA)
+    // D3 (B2): the request boundary leaves the member identity block in
+    // place (the scoped section is untouched by the boundary reconcile).
+    expect(memberPersonaAfterRequest!.text).toBe(MEMBER_PERSONA_WITH_CONTEXT)
   })
 
   it('M2-4 restore disposes exactly the scoped entry (global falls back, root unaffected)', () => {
