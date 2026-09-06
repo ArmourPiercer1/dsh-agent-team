@@ -1986,3 +1986,8 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - 2026-09-07T00:13:37.9971754+08:00 — Protocol stop: T6 CORE_SEAM_BLOCKER is gate-level; no further feature development or G2/G3 cross-gate work may proceed without user解除. T1/T2 retries stopped; no product commits. Plan/evidence closeout pending.
 
 - 2026-09-07T00:13:58.6647045+08:00 — Final round-2 closeout recorded: G2/G3 not entered because T6 gate-level CORE_SEAM_BLOCKER; upstream test-use HEAD 76fda729799fe9b3848dbe2c211d4b231032b81e, status clean; stable :3080 untouched. No further development authorized without user解除.
+
+### Team D1-D6 repair plan v2 (2026-09-07T00:49:01.3636429+08:00)
+- User decisions confirmed: no upstream modification; D6 Team UI explicit Team-mode/ordinary-mode switch; reuse TeamDomain for lightweight ownership/index; D2 minimal structured result; D4 layered (UI callback first, Agent/tool signal later).
+- Plan: docs/plans/active/TEAM_D1-D6_REPAIR_PLAN_V2.md, committed 1c7d3d7.
+- No v2 implementation started; next step P0-v2.
