@@ -784,7 +784,8 @@ export function createAgentBindings(deps) {
           // appended to the SAME single scoped section the blueprint
           // persona composed (the blueprint text stays verbatim ahead of
           // the block; the re-registration below converges to exactly one
-          // entry). Members and non-root identities are unchanged.
+          // entry). D3 (B2): the MEMBER branch appends the analogous
+          // machine-readable member identity block (below).
           const sid = String(sessionId)
           if (identity.kind === 'root') {
             const base = String(identity.personaText ?? '')
@@ -792,7 +793,25 @@ export function createAgentBindings(deps) {
             registerPersonaSection(sid, agentCtx, { ...identity, personaText: combined })
             return
           }
-          registerPersonaSection(sid, agentCtx, identity)
+          // D3 (Team D1-D6 repair v2, B2): the MEMBER branch appends the
+          // concise machine-readable Team identity context — the OWNING
+          // durable root (identity.rootSessionId — NEVER the child session
+          // id `sid`, which would silently break cross-root members) and
+          // the member's own instanceId (both durable facts resolved by
+          // installPersonaForSetup under the owning root: the committed
+          // MemberInstance row, or the fresh-create instanceIdHint bridging
+          // the pre-commit window) — to the SAME single scoped section the
+          // blueprint persona composed (the blueprint text stays verbatim
+          // ahead of the block; the spread copy keeps the frozen identity
+          // intact; the re-registration converges to exactly one entry, as
+          // for the root branch). The block is identical on fresh create
+          // and cold resume (both flow through this one install seam).
+          const memberBase = String(identity.personaText ?? '')
+          const memberBlock = memberTeamContextBlock(String(identity.rootSessionId), String(identity.instanceId))
+          registerPersonaSection(sid, agentCtx, {
+            ...identity,
+            personaText: memberBase === '' ? memberBlock : `${memberBase}\n\n${memberBlock}`,
+          })
         },
       },
     })
@@ -816,6 +835,32 @@ export function createAgentBindings(deps) {
       `leaderInstanceId=${String(LEADER_INSTANCE_ID)}]\n` +
       `Every team_* tool call must include rootSessionId="${rootSessionId}" ` +
       `and a unique requestToken.`
+    )
+  }
+
+  /**
+   * D3 (Team D1-D6 repair v2, B2): the concise machine-readable Team
+   * identity context appended to the MEMBER agent's scoped persona
+   * section: the canonical OWNING rootSessionId (identity.rootSessionId —
+   * the root the durable MemberInstance row / fresh-create request was
+   * committed under, never the child session id), the member's own
+   * instanceId, the member role, and the contract that every team_* call
+   * must carry that rootSessionId + a FRESH UNIQUE requestToken (the
+   * closed tool layer rejects a missing rootSessionId / requestToken as
+   * bad arguments, an unknown root as TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND,
+   * and a root the caller does not belong to as TEAM_RUNTIME_CALLER_NOT_
+   * FOUND — the member needs these facts to address its own team).
+   * @param {string} rootSessionId the OWNING team root
+   * @param {string} instanceId the member's own instance id
+   * @returns {string} the two-line context block
+   */
+  function memberTeamContextBlock(rootSessionId, instanceId) {
+    return (
+      `[team-member-context rootSessionId="${rootSessionId}" ` +
+      `instanceId="${instanceId}" role="member"]\n` +
+      `Every team_* tool call must include rootSessionId="${rootSessionId}" ` +
+      `and a fresh unique requestToken; do not use another team's ` +
+      `rootSessionId or another member's instanceId.`
     )
   }
 

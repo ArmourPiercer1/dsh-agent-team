@@ -74,7 +74,7 @@ const LEADER_PERSONA_WITH_CONTEXT = `${LEADER_PERSONA}\n\n${rootContext(ROOT)}`
 // identical to agent-bindings.mjs `memberTeamContextBlock`.
 const memberContext = (root: string, instanceId: string): string =>
   `[team-member-context rootSessionId="${root}" instanceId="${instanceId}" role="member"]\n` +
-  `Every team_* tool call must include rootSessionId="${root}" and a fresh unique requestToken; do not use another teams rootSessionId or another members instanceId.`
+  `Every team_* tool call must include rootSessionId="${root}" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.`
 const MEMBER_PERSONA_WITH_CONTEXT = `${MEMBER_PERSONA}\n\n${memberContext(ROOT, INSTANCE)}`
 
 /** The bundle's session input port (structural; the glue reads id + text). */

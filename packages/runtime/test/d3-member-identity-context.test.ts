@@ -17,7 +17,7 @@
  * which appends:
  *
  *   [team-member-context rootSessionId="<root>" instanceId="<instance>" role="member"]
- *   Every team_* tool call must include rootSessionId="<root>" and a fresh unique requestToken; do not use another teams rootSessionId or another members instanceId.
+ *   Every team_* tool call must include rootSessionId="<root>" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.
  *
  * Contract (asserted at the REAL glue boundary through the t12a-live-
  * bridge doubles — the real agent-bindings.mjs — with the REAL ten-tool
@@ -54,12 +54,14 @@ import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import {
   WORKTREE_ROOT,
+  createAgentPresetsDouble,
   createLiveWorld,
   removeFixtureHome,
   withDshHome,
   writeDurableFixture,
 } from './t12a-live-bridge.mjs'
 import { destroyP6T1World } from './p6t1-helpers.js'
+import { destroyDir, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
 import { P6T2_NOW, P6T2_ROOT, P6T2_SEEDS } from './p6t2-helpers.js'
 import { createP6T6World, execFor } from '../../tools/test/p6t6-helpers.js'
 import { createTeamTools } from '../../tools/src/index.js'
@@ -86,6 +88,14 @@ interface AgentCtxDouble {
   registeredTools: unknown[]
   systemPrompt: { assemble(): AssembledPromptSection[] }
 }
+/** The glue's public agentSetup factory signature (agent-bindings.mjs). */
+type AgentSetupFn = (
+  sessionId: string,
+  instanceIdHint: string | undefined,
+  templateIdHint: string | undefined,
+  bindPath: string,
+  teamRootSid: string,
+) => (ctx: unknown) => Promise<void>
 
 const LEADER_PERSONA = 'You are the leader of the t12a test team.'
 const MEMBER_PERSONA = 'You are member t12a-worker of the t12a test team.'
@@ -127,7 +137,7 @@ const CROSS_CHILD = childId(N, CROSS.instanceId)
  */
 const memberContext = (root: string, instanceId: string): string =>
   `[team-member-context rootSessionId="${root}" instanceId="${instanceId}" role="member"]\n` +
-  `Every team_* tool call must include rootSessionId="${root}" and a fresh unique requestToken; do not use another teams rootSessionId or another members instanceId.`
+  `Every team_* tool call must include rootSessionId="${root}" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.`
 
 /** The root context block (the pre-existing TCM-D4 shape — the control). */
 const rootContext = (sid: string): string =>
@@ -147,6 +157,12 @@ function scopedPersonaEntries(ctx: AgentCtxDouble): AssembledPromptSection[] {
 }
 
 // ── the REAL durable team world (P6-T2) + the second root N ─────────────────
+// Pre-create cleanup: the fixed scratch basename (see p6t1-helpers
+// scratchDir) survives a failed prior run (module-level world creation
+// throws before afterAll can destroy it), which would fail every
+// subsequent run with "team_domain already exists". Destroying first
+// keeps this suite re-runnable on a dirty checkout.
+destroyDir(scratchDir('d3-member-identity'))
 const p6t6 = await createP6T6World('d3-member-identity')
 
 // Seed the second root N into the durable domain exactly the way the
@@ -177,6 +193,7 @@ const p6t6 = await createP6T6World('d3-member-identity')
 // root's member row + the N root's committed member row (CROSS_CHILD).
 const world = await createLiveWorld({
   rootSessionId: BOOT,
+  agentPresets: createAgentPresetsDouble(),
   members: [{ childSessionId: WORKER.childSessionId, instanceId: WORKER.instanceId, templateId: WORKER.templateId }],
   membersByRoot: {
     [N]: [{ childSessionId: CROSS_CHILD, instanceId: CROSS.instanceId, templateId: CROSS.templateId }],
@@ -190,6 +207,11 @@ const world = await createLiveWorld({
     seedMembers: [WORKER],
   },
 })
+
+// The bridge .d.mts declares `binding` as `object & {...}` without agentSetup
+// (the D3-5 / D3-4 probes reach the public factory directly); structural
+// cast to the glue's public signature keeps the calls checked.
+const agentSetup: AgentSetupFn = (world.binding as unknown as { agentSetup: AgentSetupFn }).agentSetup
 
 // The production wiring (root.ts A04): the REAL ten-tool stack over the
 // P6-T2 runtime + satellites, with the GLUE's OWN resolveCaller as the
@@ -214,11 +236,13 @@ const freshCross = await world.binding.childFactory.createChildSession({
   rootSessionId: N,
   instanceId: CROSS.instanceId,
   templateId: CROSS.templateId,
+  label: 'd3-cross',
 })
 const freshHint = await world.binding.childFactory.createChildSession({
   rootSessionId: N,
   instanceId: HINT.instanceId,
   templateId: HINT.templateId,
+  label: 'd3-hint',
 })
 
 const workerCtx = world.agents.handles.get(WORKER.childSessionId)!.agent.ctx as unknown as AgentCtxDouble
@@ -238,7 +262,7 @@ const workerPersonaTextBefore = workerPersonaBefore?.text
 // run on the SAME live ctx): the re-install disposes the previous scoped
 // entry first, so exactly one section remains with unchanged text.
 {
-  await world.binding.agentSetup(WORKER.childSessionId, WORKER.instanceId, WORKER.templateId, 'fresh-member', BOOT)(
+  await agentSetup(WORKER.childSessionId, WORKER.instanceId, WORKER.templateId, 'fresh-member', BOOT)(
     workerCtx,
   )
 }
@@ -269,11 +293,13 @@ const listMissingRoot = await runGlueTool('team_list_members', { requestToken: '
 // shape) must fail closed — the setup rejects and no block with the foreign
 // root is ever installed. A throwaway ctx keeps the probe off the real
 // handles (all snapshots above are already taken).
-const foreignProbe = await world.agents.create({ sessionId: 'session-d3-foreign-probe' })
+const foreignProbe = (await world.agents.create({ sessionId: 'session-d3-foreign-probe' })) as unknown as {
+  agent: { ctx: unknown }
+}
 const foreignCtx = foreignProbe.agent.ctx as unknown as AgentCtxDouble
 const foreignSetupError = await (async () => {
   try {
-    await world.binding.agentSetup(WORKER.childSessionId, undefined, undefined, 'cold-member', N)(foreignCtx)
+    await agentSetup(WORKER.childSessionId, undefined, undefined, 'cold-member', N)(foreignCtx)
     return undefined
   } catch (error) {
     return error

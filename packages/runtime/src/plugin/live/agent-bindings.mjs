@@ -859,8 +859,8 @@ export function createAgentBindings(deps) {
       `[team-member-context rootSessionId="${rootSessionId}" ` +
       `instanceId="${instanceId}" role="member"]\n` +
       `Every team_* tool call must include rootSessionId="${rootSessionId}" ` +
-      `and a fresh unique requestToken; do not use another teams ` +
-      `rootSessionId or another members instanceId.`
+      `and a fresh unique requestToken; do not use another team's ` +
+      `rootSessionId or another member's instanceId.`
     )
   }
 
