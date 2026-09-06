@@ -1006,16 +1006,16 @@ reviewer 不接收其他 reviewer 意见，不直接修改实现。
 | 阶段/任务 | 完成时间（+08:00） | 结果 | 证据 |
 |---|---|---|---|
 | P0 基线与 evidence 准备 | 2026-09-06T23:48:26.2065938+08:00 | PASS | `dev/agent-workflow/evidence/team-d1-d6-repair/P0/baseline.md` |
-| C1 D3 seam characterization | 2026-09-07（约 00:00，worker elapsed 约20m） | PASS | `dev/agent-workflow/evidence/team-d1-d6-repair/C1/C1-result.md` |
-| C2 D2/D4 seam characterization | 2026-09-07（主 Agent 收到结果时） | D2/D4 DEFERRED | `dev/agent-workflow/evidence/team-d1-d6-repair/C2/C2Result.md` |
-| C0 D1 seam characterization | 2026-09-07（主 Agent 收到结果时） | PASS，批准 T1 | `dev/agent-workflow/evidence/team-d1-d6-repair/C0/C0Result.md` |
-| G1 方案分流 | 2026-09-07（C0/C1/C2 结果齐备后） | T1/T2/T5进入；T3/T4 deferred；T6 blocker | `dev/agent-workflow/SESSION_ROUTER_LOG.md` |
-| T2 D3 实现 | 2026-09-07（attempt 2 收尾时） | DEFERRED，`DEPENDENCY_BLOCKER`（fresh worktree 缺 `yaml`，focused test 未收集） | `dev/agent-workflow/evidence/team-d1-d6-repair/T2-d3-status.md` |
-| T3 D2 实现 | 2026-09-07（C2 后） | DEFERRED，`CONTRACT_CHANGE_REQUEST` | `dev/agent-workflow/evidence/team-d1-d6-repair/C2/C2Result.md` |
-| T4 D4-A 实现 | 2026-09-07（收尾时） | DEFERRED，`CONTRACT_CHANGE_REQUEST` | `dev/agent-workflow/evidence/team-d1-d6-repair/T4-d4/T4Result.md` |
-| T5 D5 契约对齐 | 2026-09-07T00:04:40+08:00（worker commit 时间） | PASS，5/5 focused tests | `packages/runtime/test/d5-instance-contract.test.ts`; `dev/agent-workflow/evidence/team-d1-d6-repair/T5-d5/summary.md` |
-| T6 D6 restart/reopen | 2026-09-07（收尾时） | BLOCKED，`CORE_SEAM_BLOCKER` | `dev/agent-workflow/evidence/team-d1-d6-repair/T6-d6/core-seam-blocker.md` |
-| T1 D1 成员基础工具 | 2026-09-07（时间盒收尾时） | DEFERRED，未形成有效绿态；需 host-owned adapter/dependency wiring | C0 evidence + worker TaskResult |
+| C1 D3 seam characterization | 2026-09-07T00:00:00+08:00（worker elapsed 约20m；commit 记录 00:00:19） | PASS | `dev/agent-workflow/evidence/team-d1-d6-repair/C1/C1-result.md` |
+| C2 D2/D4 seam characterization | 2026-09-06T23:56:17+08:00（evidence commit） | D2/D4 DEFERRED | `dev/agent-workflow/evidence/team-d1-d6-repair/C2/C2Result.md` |
+| C0 D1 seam characterization | 2026-09-07T00:00:47+08:00（evidence commit） | PASS，批准 T1 | `dev/agent-workflow/evidence/team-d1-d6-repair/C0/C0Result.md` |
+| G1 方案分流 | 2026-09-07T00:01:00+08:00（主 Agent 记录） | T1/T2/T5进入；T3/T4 deferred；T6 blocker | `dev/agent-workflow/SESSION_ROUTER_LOG.md` |
+| T2 D3 实现 | 2026-09-07T00:06:10+08:00（attempt 2 evidence commit） | DEFERRED，`DEPENDENCY_BLOCKER`（fresh worktree 缺 `yaml`，focused test 未收集） | `dev/agent-workflow/evidence/team-d1-d6-repair/T2-d3-status.md` |
+| T3 D2 实现 | 2026-09-07T00:02:00+08:00（C2 后收尾） | DEFERRED，`CONTRACT_CHANGE_REQUEST` | `dev/agent-workflow/evidence/team-d1-d6-repair/C2/C2Result.md` |
+| T4 D4-A 实现 | 2026-09-07T00:06:12+08:00（evidence commit） | DEFERRED，`CONTRACT_CHANGE_REQUEST` | `dev/agent-workflow/evidence/team-d1-d6-repair/T4-d4/T4Result.md` |
+| T5 D5 契约对齐 | 2026-09-07T00:06:11+08:00（worker commit） | PASS，5/5 focused tests | `packages/runtime/test/d5-instance-contract.test.ts`; `dev/agent-workflow/evidence/team-d1-d6-repair/T5-d5/summary.md` |
+| T6 D6 restart/reopen | 2026-09-07T00:07:00+08:00（blocker evidence 收尾） | BLOCKED，`CORE_SEAM_BLOCKER` | `dev/agent-workflow/evidence/team-d1-d6-repair/T6-d6/core-seam-blocker.md` |
+| T1 D1 成员基础工具 | 2026-09-07T00:07:30+08:00（时间盒收尾） | DEFERRED，未形成有效绿态；需 host-owned adapter/dependency wiring | C0 evidence + worker TaskResult |
 
 ## 12.1 本轮最终范围
 
