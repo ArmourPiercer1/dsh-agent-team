@@ -41,21 +41,36 @@ export const REMOTE_CONTRACT_VERSION = 1 as const
 export const REMOTE_CONTRACT_VERSION_V2 = 2 as const
 
 /**
+ * The remote contract v3 (Team D1-D6 repair v2, D1 — user-approved at G1
+ * as a single CONTRACT_CHANGE_REQUEST): the v3-only read/ensure pair for
+ * the Team UI dedicated mode — `team.listRoots` (the durable ownership /
+ * root-identity query over the TeamDomain) and `team.ensureRootLive`
+ * (the explicit open-in-Team-mode guarantee; the host handler is wired by
+ * D2, the v3-only client wrapper is inert until then). Every v1/v2 method
+ * stays available in v3; v1 and v2 wire behavior is preserved.
+ */
+export const REMOTE_CONTRACT_VERSION_V3 = 3 as const
+
+/**
  * Type of a remote contract version field this build accepts: exactly
- * `1 | 2` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`).
+ * `1 | 2 | 3` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`, extended
+ * by the D1 v3 bump).
  */
 export type RemoteContractVersion =
   | typeof REMOTE_CONTRACT_VERSION
   | typeof REMOTE_CONTRACT_VERSION_V2
+  | typeof REMOTE_CONTRACT_VERSION_V3
 
 /**
- * All remote contract versions this build accepts: `[1, 2]`.
- * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision
- * (a version bump ADDS supported versions, never edits v1 semantics).
+ * All remote contract versions this build accepts: `[1, 2, 3]`.
+ * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
+ * v3 by the Team D1-D6 repair v2 D1 task (a version bump ADDS supported
+ * versions, never edits v1/v2 semantics).
  */
 export const SUPPORTED_REMOTE_CONTRACT_VERSIONS: readonly number[] = [
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
+  REMOTE_CONTRACT_VERSION_V3,
 ]
 
 /**

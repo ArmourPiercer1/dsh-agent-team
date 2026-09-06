@@ -122,3 +122,51 @@
   font: var(--dsw-font-xxxs-11);
   word-break: break-all;
 }
+
+/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted
+   root-identity rows of the zero state (read-only in D1 — D2/D3 add the
+   open action). */
+
+.roots {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.rootsTitle {
+  margin: 0;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+}
+
+.rootsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rootRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.rootRow span {
+  word-break: break-all;
+}
+
+.rootId {
+  color: var(--dsw-alias-label-primary);
+}

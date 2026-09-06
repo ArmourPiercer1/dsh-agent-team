@@ -18,13 +18,16 @@
  * are exempt from the no-control-char / no-whitespace ID rule — newlines
  * are legal content — but bound by a length cap (design note §3).
  *
- * **Version awareness (TCM vNext §15.3/§15.6)**: the module is the
- * single version-aware closed schema. Every v1 field list, parser and
- * behavior is unchanged; the v2 bump adds exactly one method
- * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
- * method (`team.create`, whose v2 closed set swaps `initialWork` for
- * `workspace`). {@link parseRemoteMethodParams} routes on the request
- * version: a v1 request to a v2-only method is typed-rejected
+ * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
+ * v3 bump)**: the module is the single version-aware closed schema.
+ * Every v1/v2 field list, parser and behavior is unchanged; the v2 bump
+ * adds exactly one method (`team.admitInitialWork`, v2-only) and one v2
+ * variant of an existing method (`team.create`, whose v2 closed set
+ * swaps `initialWork` for `workspace`); the v3 bump (frozen by D1) adds
+ * exactly the two v3-only methods `team.listRoots` (closed set: no
+ * fields) and `team.ensureRootLive` (closed set: `teamSessionId`).
+ * {@link parseRemoteMethodParams} routes on the request version: a
+ * request to a method of a NEWER version is typed-rejected
  * (`method-version-unsupported`) AFTER the envelope parse, and each
  * request version sees only its own closed field sets (no cross-version
  * field leakage in either direction).
@@ -169,6 +172,31 @@ export interface RemoteTeamAdmitInitialWorkParams {
      */
     readonly attachedContext?: string;
 }
+/**
+ * `team.listRoots` (contract v3, Team D1-D6 repair v2 D1) — the durable
+ * ownership / root-identity query. CLOSED field set: NONE (an empty
+ * object; the host answers from its own durable TeamDomain — there is no
+ * client input, no caller claim, no token). The response `data` is
+ * `{ roots: [...] }` — one remote-safe row per TeamSession root:
+ * `{ rootSessionId, blueprintId, revision, defaultWorkspace?, createdAt,
+ * generation, memberCount }`.
+ */
+export type RemoteTeamListRootsParams = object;
+/**
+ * `team.ensureRootLive` (contract v3, Team D1-D6 repair v2 D1) — the
+ * explicit open-in-Team-mode guarantee for one persisted root. CLOSED
+ * field set: `teamSessionId` only (the TeamSession id — which is the
+ * RootSession id, invariant 9; no caller claim, no token — the host
+ * authority is the connection gate). On success the response `data` is
+ * `{ rootSessionId, mode: "team", live: true }`. The typed failure
+ * vocabulary (port absent / no durable session artifact / already live
+ * outside the Team glue / glue start failure) is reserved in this
+ * version; the emitting host handler is wired by D2.
+ */
+export interface RemoteTeamEnsureRootLiveParams {
+    /** The TeamSession (root session) id to guarantee live-in-Team-mode. */
+    readonly teamSessionId: string;
+}
 /** `team.getProjection`. */
 export interface RemoteTeamGetProjectionParams {
     readonly teamSessionId: string;
@@ -278,7 +306,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideResetParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideResetParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -303,6 +331,16 @@ export declare const REMOTE_TEAM_CREATE_FIELDS_V2: readonly string[];
  * §15.6).
  */
 export declare const REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS: readonly string[];
+/**
+ * `team.listRoots` (contract v3) — the CLOSED field set: empty (no
+ * fields; the host answers from its own durable TeamDomain).
+ */
+export declare const REMOTE_TEAM_LIST_ROOTS_FIELDS: readonly string[];
+/**
+ * `team.ensureRootLive` (contract v3) — the CLOSED field set:
+ * `teamSessionId` only.
+ */
+export declare const REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_GET_PROJECTION_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS: readonly string[];
 export declare const REMOTE_MEMBER_CREATE_FIELDS: readonly string[];
@@ -332,6 +370,10 @@ export declare function parseRemoteTeamCreateParams(method: string, params: Remo
 export declare function parseRemoteTeamCreateParamsV2(method: string, params: RemoteSafeRecord): RemoteTeamCreateParamsV2;
 /** Parse `team.admitInitialWork` params (v2-only). */
 export declare function parseRemoteTeamAdmitInitialWorkParams(method: string, params: RemoteSafeRecord): RemoteTeamAdmitInitialWorkParams;
+/** Parse `team.listRoots` params (the closed v3 set is empty). */
+export declare function parseRemoteTeamListRootsParams(method: string, params: RemoteSafeRecord): RemoteTeamListRootsParams;
+/** Parse `team.ensureRootLive` params (contract v3). */
+export declare function parseRemoteTeamEnsureRootLiveParams(method: string, params: RemoteSafeRecord): RemoteTeamEnsureRootLiveParams;
 /** Parse `team.getProjection` params. */
 export declare function parseRemoteTeamGetProjectionParams(method: string, params: RemoteSafeRecord): RemoteTeamGetProjectionParams;
 /** Parse `team.getLedgerPage` params (defaults: afterSequence 0, limit 50). */
@@ -376,8 +418,8 @@ export declare function parseRemoteLegacyInspectParams(method: string, params: R
  * through, so every request is parsed against the closed schema of its
  * own version — no cross-version field leakage).
  * @param version - the request envelope's contract version (supported:
- *   `1 | 2`; the envelope parse already guarantees this, the assertion is
- *   defensive for direct callers).
+ *   `1 | 2 | 3`; the envelope parse already guarantees this, the
+ *   assertion is defensive for direct callers).
  * @param method - a catalog method name (dotted `<category>.<action>`).
  * @param params - the request envelope's `params` object.
  * @returns the typed param object plus the request token echo.

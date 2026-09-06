@@ -82,7 +82,7 @@ type CategoryHandler = (
   version: number,
 ) => RemoteHandlerOutcome
 
-/** Wire the fourteen ports into the nine category handlers. */
+/** Wire the sixteen ports into the nine category handlers. */
 function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteCategory, CategoryHandler>> {
   return {
     [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -91,6 +91,8 @@ function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteC
       teamCreate: deps.teamCreate,
       teamCreateV2: deps.teamCreateV2,
       teamAdmitInitialWork: deps.teamAdmitInitialWork,
+      teamRoots: deps.teamRoots,
+      teamEnsureRootLive: deps.teamEnsureRootLive,
       projection: deps.projection,
       ledger: deps.ledger,
     }),
@@ -278,6 +280,31 @@ export const REMOTE_BACKING_ERROR_CODES = [
   'TEAM_RUNTIME_COMPATIBILITY_BLOCKED',
   'TEAM_RUNTIME_INITIAL_WORK_ALREADY_ADMITTED',
   'TEAM_RUNTIME_DURABLE_WRITE_FAILED',
+  // s6-remote — Team D1-D6 repair v2 D1 (remote contract v3,
+  // user-approved at G1): the v3-only team.listRoots / team.ensureRootLive
+  // wire vocabulary. D1 emits TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (the
+  // listRoots port is absent from the host wiring) and
+  // TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED (the ensureRootLive host
+  // handler is not wired yet — D2); the TEAM_REMOTE_TEAM_ROOT_LIVE_* codes
+  // below are RESERVED for the D2 handler (the A3 Q2 typed failure
+  // vocabulary: port absent / no durable session artifact / already live
+  // outside the Team glue / other glue start failure) so D2 needs no
+  // further closed-set change.
+  'TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE',
+  'TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED',
+  'TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE',
+  'TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT',
+  'TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM',
+  'TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED',
+  // runtime/team-ownership-index — Team D1-D6 repair v2 D1: the durable
+  // ownership-index integrity failures (a root whose binding rows are
+  // inconsistent; raised by the D1 pure index module and surfaced by
+  // team.listRoots). A corrupt (undecodable) row is NOT re-coded here:
+  // the storage layer's RECORD_INVALID / MALFORMED_DTO vocabulary already
+  // covers it and passes through unchanged.
+  'TEAM_OWNERSHIP_INDEX_ROOT_BINDING_MISMATCH',
+  'TEAM_OWNERSHIP_INDEX_MEMBER_BINDING_MISMATCH',
+  'TEAM_OWNERSHIP_INDEX_MEMBER_BINDING_CONFLICT',
 ] as const
 
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

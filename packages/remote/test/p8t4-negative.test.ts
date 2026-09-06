@@ -54,8 +54,9 @@ const P8T4_EXPECTED_FILES = [
 ]
 
 /**
- * The exact 14 `RemoteHandlerDeps` port keys, sorted (the 12 frozen
- * P8-T3 ports + the two TCM vNext §15.6 v2 ports).
+ * The exact 16 `RemoteHandlerDeps` port keys, sorted (the 12 frozen
+ * P8-T3 ports + the two TCM vNext §15.6 v2 ports + the two D1
+ * Team-D1-D6-repair-v2 v3 ports).
  */
 const P8T4_EXPECTED_PORT_KEYS = [
   'admission',
@@ -72,6 +73,8 @@ const P8T4_EXPECTED_PORT_KEYS = [
   'teamAdmitInitialWork',
   'teamCreate',
   'teamCreateV2',
+  'teamEnsureRootLive',
+  'teamRoots',
 ]
 
 /** The test-runner specifier exempted from the relative-only rule (R6). */
@@ -138,7 +141,7 @@ describe('P8-T4 negative scan (push engine + test surface)', () => {
     expect(r5.length).toBe(2)
   })
 
-  it('pins the handler dependency surface to exactly the 14 ports (12 frozen + 2 v2)', () => {
+  it('pins the handler dependency surface to exactly the 16 ports (12 frozen + 2 v2 + 2 v3)', () => {
     const ports = makeFakePorts()
     const keys = Object.keys(ports)
       .filter((key) => key !== 'calls' && key !== 'admissionRequests')

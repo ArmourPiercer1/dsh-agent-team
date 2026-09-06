@@ -25,6 +25,7 @@ import type {
   RemoteTeamAdmitInitialWorkParams,
   RemoteTeamCreateParams,
   RemoteTeamCreateParamsV2,
+  RemoteTeamEnsureRootLiveParams,
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
   RemoteMethodParams,
@@ -42,15 +43,22 @@ import type {
   RemoteTeamAdmitInitialWorkPort,
   RemoteTeamCreatePort,
   RemoteTeamCreateV2Port,
+  RemoteTeamEnsureRootLivePort,
+  RemoteTeamRootsPort,
 } from './ports.js'
 
-/** The ports the team category needs (v1 trio + the two v2 ports). */
+/** The ports the team category needs (v1 trio + the two v2 ports + the
+ *  two v3 ports). */
 export interface RemoteTeamHandlerPorts {
   readonly teamCreate: RemoteTeamCreatePort
   /** TCM vNext §15.6: the v2 workspace-aware creation variant. */
   readonly teamCreateV2: RemoteTeamCreateV2Port
   /** TCM vNext §15.6: the v2-only creation-time initial work command. */
   readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort
+  /** Team D1-D6 repair v2 D1: the v3-only durable root ownership list. */
+  readonly teamRoots: RemoteTeamRootsPort
+  /** Team D1-D6 repair v2 D1 (D2-wired): the v3-only Team-mode ensure. */
+  readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort
   readonly projection: RemoteProjectionPort
   readonly ledger: RemoteLedgerPort
 }
@@ -206,8 +214,70 @@ function normalizeTeamCreateValue(portName: string, created: unknown): RemoteHan
 }
 
 /**
+ * Validate one `team.listRoots` root row against the closed v3 wire
+ * shape (D-4 discipline: the top-level fields are checked, the nested
+ * values pass through): `{ rootSessionId, blueprintId, revision,
+ * defaultWorkspace?, createdAt, generation, memberCount }`.
+ */
+function normalizeTeamRootRow(raw: unknown, index: number): RemoteSafeRecord {
+  if (!isPlainRecord(raw)) {
+    throw portContractError(
+      `listRoots.root[${index}]`,
+      `expected an object, got ${String(raw)}`,
+    )
+  }
+  for (const field of ['rootSessionId', 'blueprintId', 'revision', 'createdAt']) {
+    const value = raw[field]
+    if (typeof value !== 'string' || value.length === 0) {
+      throw portContractError(`listRoots.root[${index}].${field}`, 'must be a non-empty string')
+    }
+  }
+  const generation = raw['generation']
+  if (typeof generation !== 'number' || !Number.isSafeInteger(generation) || generation < 1) {
+    throw portContractError(`listRoots.root[${index}].generation`, 'must be a safe integer >= 1')
+  }
+  const memberCount = raw['memberCount']
+  if (typeof memberCount !== 'number' || !Number.isSafeInteger(memberCount) || memberCount < 0) {
+    throw portContractError(`listRoots.root[${index}].memberCount`, 'must be a safe integer >= 0')
+  }
+  const defaultWorkspace = raw['defaultWorkspace']
+  if (defaultWorkspace !== undefined && typeof defaultWorkspace !== 'string') {
+    throw portContractError(
+      `listRoots.root[${index}].defaultWorkspace`,
+      'must be a string when present',
+    )
+  }
+  // The port contract guarantees a lossless-JSON-safe record; the field
+  // checks above are the structural half of that guarantee.
+  return raw as unknown as RemoteSafeRecord
+}
+
+/**
+ * Validate the `team.ensureRootLive` success value against the closed
+ * v3 response shape: `{ rootSessionId, mode: "team", live: true }`.
+ */
+function normalizeTeamEnsureRootLiveValue(raw: unknown): RemoteSafeRecord {
+  if (!isPlainRecord(raw)) {
+    throw portContractError('teamEnsureRootLive', `expected an object, got ${String(raw)}`)
+  }
+  const rootSessionId = raw['rootSessionId']
+  if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) {
+    throw portContractError('teamEnsureRootLive.rootSessionId', 'must be a non-empty string')
+  }
+  if (raw['mode'] !== 'team') {
+    throw portContractError('teamEnsureRootLive.mode', `must be 'team', got ${String(raw['mode'])}`)
+  }
+  if (raw['live'] !== true) {
+    throw portContractError('teamEnsureRootLive.live', `must be true, got ${String(raw['live'])}`)
+  }
+  // The port contract guarantees a lossless-JSON-safe record.
+  return raw as unknown as RemoteSafeRecord
+}
+
+/**
  * The team category handler (`team.create` [v1 + v2],
- * `team.admitInitialWork` [v2-only], `team.getProjection`,
+ * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
+ * `team.ensureRootLive` [v3-only], `team.getProjection`,
  * `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
@@ -257,6 +327,29 @@ export function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts) {
           )
         }
         return { data: admitted }
+      }
+      case 'team.listRoots': {
+        // v3-only: the version-aware param parser guarantees the request
+        // version is 3 (an older-version request is typed-rejected before
+        // dispatch). READ-ONLY: the port performs no repository writes and
+        // no agent effects.
+        const roots = ports.teamRoots.listRoots()
+        const rows: RemoteSafeRecord[] = []
+        for (let i = 0; i < roots.length; i++) {
+          rows.push(normalizeTeamRootRow(roots[i], i))
+        }
+        return { data: { roots: rows } }
+      }
+      case 'team.ensureRootLive': {
+        // v3-only (the availability check guarantees version === 3). The
+        // production S6 handler is wired by D2 over the live glue's
+        // ensureLiveAgent; until then it answers the method with the
+        // typed TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED failure (never
+        // a silent success). The port value is validated against the
+        // closed v3 success shape when a real handler is present.
+        const ensureParams = params as RemoteTeamEnsureRootLiveParams
+        const ensured = ports.teamEnsureRootLive.ensureRootLive(ensureParams.teamSessionId)
+        return { data: normalizeTeamEnsureRootLiveValue(ensured) }
       }
       case 'team.getProjection': {
         const projectionParams = params as RemoteTeamGetProjectionParams

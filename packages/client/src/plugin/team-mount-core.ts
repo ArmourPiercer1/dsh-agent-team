@@ -76,7 +76,7 @@ import type { TeamCreationHandoffFace } from '../ui/TeamCreationPanel.js'
 import type { TeamGovernanceFace } from '../ui/TeamGovernance.js'
 import type { TeamMembersCommandFace } from '../ui/TeamMembers.js'
 import type { TeamSettingsSection } from '../ui/TeamSettingsSection.js'
-import type { TeamView, TeamViewCreationFace, TeamViewInjected } from '../ui/TeamView.js'
+import type { TeamView, TeamViewCreationFace, TeamViewInjected, TeamViewRootsFace } from '../ui/TeamView.js'
 
 /**
  * Locale namespace + settings-slot declaration merges. The `team` namespace
@@ -592,6 +592,19 @@ export function applyTeamMount(
     create: (params) => teamRemote.handoffCreate(params),
   }
 
+  // (15b) D1 (Team D1-D6 repair v2, remote contract v3) — the persisted
+  // root-identity face (frozen Remote wrappers verbatim): the zero-state
+  // Team UI reads the durable roots through `listRoots` and opens a
+  // persisted root in Team mode through `ensureRootLive` (INERT until D2 —
+  // the host handler is wired by D2; until then the call resolves to the
+  // typed TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED failure, never a
+  // silent success). Always present (no config gate — the transport is a
+  // hard seam).
+  const roots: TeamViewRootsFace = {
+    listRoots: () => teamRemote.teamListRootsV3(),
+    ensureRootLive: (teamSessionId) => teamRemote.teamEnsureRootLiveV3(teamSessionId),
+  }
+
   // (16) D-T9-1: the parameterless legacyInspect face binds the `dshHome`
   // closure here; absent/blank config -> the face is omitted (the T8
   // degraded zero-state path).
@@ -640,6 +653,7 @@ export function applyTeamMount(
     memberCommands,
     governance,
     handoff,
+    roots,
     ...(legacyInspect === undefined ? {} : { legacyInspect }),
   })
   const dockInject = (): TeamDockInjected => ({

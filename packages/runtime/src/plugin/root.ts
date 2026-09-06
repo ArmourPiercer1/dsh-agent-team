@@ -252,6 +252,7 @@ import { activePolicyState } from '../../policy-adapter.js'
 import { createLiveResidencyOverlay } from './s6-live-overlay.js'
 import { createServerPrincipalDerivation } from './s6-principal.js'
 import { createS6RemoteSurfaces } from './s6-remote.js'
+import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js'
 import type { DurableTemplateRow } from '../../projection/index.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import type {
@@ -1539,6 +1540,15 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // root is created by the host, NO native root). Absent (a glue-less
     // world) → team.create fails closed with a typed error.
     startRootAgent: live.createRootAgent,
+    // D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
+    // durable root ownership list behind the v3-only team.listRoots: the
+    // D1 pure ownership-index module over the ALREADY-INJECTED
+    // repositories (NO repository writes, NO agent effects). A corrupt or
+    // inconsistent row fails closed typed (the index's
+    // TEAM_OWNERSHIP_INDEX_* codes + the storage layer's typed row
+    // errors — closed backing vocabulary, invariant 4b).
+    listRoots: () =>
+      Promise.resolve(buildTeamRootOwnershipIndex(repos).map((row) => toTeamRootWireRow(row))),
     // TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
     // entry's closure over the hard-injected public workspaceRegistry):
     // the v2 team.create resolves the requested workspace through it

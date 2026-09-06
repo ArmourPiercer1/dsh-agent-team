@@ -19,20 +19,26 @@
  * @module @dsh-agent-team/remote/handlers/team
  */
 import type { RemoteMethodParams } from '../contracts/params.js';
-import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port } from './ports.js';
-/** The ports the team category needs (v1 trio + the two v2 ports). */
+import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port, RemoteTeamEnsureRootLivePort, RemoteTeamRootsPort } from './ports.js';
+/** The ports the team category needs (v1 trio + the two v2 ports + the
+ *  two v3 ports). */
 export interface RemoteTeamHandlerPorts {
     readonly teamCreate: RemoteTeamCreatePort;
     /** TCM vNext §15.6: the v2 workspace-aware creation variant. */
     readonly teamCreateV2: RemoteTeamCreateV2Port;
     /** TCM vNext §15.6: the v2-only creation-time initial work command. */
     readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort;
+    /** Team D1-D6 repair v2 D1: the v3-only durable root ownership list. */
+    readonly teamRoots: RemoteTeamRootsPort;
+    /** Team D1-D6 repair v2 D1 (D2-wired): the v3-only Team-mode ensure. */
+    readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
 }
 /**
  * The team category handler (`team.create` [v1 + v2],
- * `team.admitInitialWork` [v2-only], `team.getProjection`,
+ * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
+ * `team.ensureRootLive` [v3-only], `team.getProjection`,
  * `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's

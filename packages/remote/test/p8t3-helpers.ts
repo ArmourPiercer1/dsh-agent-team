@@ -1,7 +1,7 @@
 /**
  * p8t3-helpers.ts — shared fixtures of the P8-T3 Remote contract v1 suite:
- * twelve fake backing ports (call-logged), a dispatcher factory, and the
- * wire-envelope / result assert helpers.
+ * the sixteen fake backing ports (call-logged), a dispatcher factory, and
+ * the wire-envelope / result assert helpers.
  *
  * The fakes are plain data objects (lossless-JSON-safe records only): the
  * remote layer under test is REAL (contracts + handlers + dispatcher); only
@@ -18,6 +18,7 @@ import {
   createRemoteDispatcher,
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
+  REMOTE_CONTRACT_VERSION_V3,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -42,6 +43,8 @@ import type {
   RemoteTeamCreatePort,
   RemoteTeamCreateV2Port,
   RemoteTeamAdmitInitialWorkPort,
+  RemoteTeamRootsPort,
+  RemoteTeamEnsureRootLivePort,
   RemoteOverridePort,
 } from '../src/index.js'
 
@@ -180,6 +183,18 @@ const P8T3_LEGACY_INSPECTION: RemoteSafeRecord = {
   teamId: 'legacy-1',
 }
 
+/** The D1 v3 `team.listRoots` fake: one durable root wire row. */
+export const P8T3_ROOTS: readonly RemoteSafeRecord[] = [
+  {
+    rootSessionId: P8T3_TEAM_SESSION_ID,
+    blueprintId: P8T3_BLUEPRINT_ID,
+    revision: '2',
+    createdAt: '2026-08-29T00:00:01.000Z',
+    generation: 1,
+    memberCount: 1,
+  },
+]
+
 // --- the fourteen fake ports --------------------------------------------------
 
 /** The fake port set with its call log (the ports are plain objects). */
@@ -279,6 +294,24 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
         requestToken,
         prompt,
         ...(attachedContext !== undefined ? { attachedContext } : {}),
+      }
+    },
+  }
+
+  const teamRoots: RemoteTeamRootsPort = {
+    listRoots() {
+      calls.push('team.listRoots')
+      return P8T3_ROOTS
+    },
+  }
+
+  const teamEnsureRootLive: RemoteTeamEnsureRootLivePort = {
+    ensureRootLive(teamSessionId) {
+      calls.push('team.ensureRootLive')
+      return {
+        rootSessionId: teamSessionId,
+        mode: 'team',
+        live: true,
       }
     },
   }
@@ -426,6 +459,8 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     teamCreate,
     teamCreateV2,
     teamAdmitInitialWork,
+    teamRoots,
+    teamEnsureRootLive,
     projection,
     ledger,
     admission,
@@ -468,6 +503,11 @@ export function p8t3Wire(params: Record<string, unknown>): Record<string, unknow
 /** One wire request envelope of contract v2 (TCM vNext §15.3). */
 export function p8t3WireV2(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION_V2, params }
+}
+
+/** One wire request envelope of contract v3 (Team D1-D6 repair v2 D1). */
+export function p8t3WireV3(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V3, params }
 }
 
 /** Assert a success result and return it (narrows the union). */

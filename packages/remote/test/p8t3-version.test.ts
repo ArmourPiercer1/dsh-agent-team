@@ -2,13 +2,13 @@
  * p8t3-version.test.ts — P8-T3 mandatory test 4: VERSION MISMATCH +
  * unknown endpoint + malformed envelope (brief §91; design note §6
  * invariants 1/2/3) — UPDATED for the TCM vNext §15.3 versioned contract
- * (supported set = {1, 2}):
+ * (supported set = {1, 2, 3} since the D1 Team-D1-D6-repair-v2 v3 bump):
  *
- *  - a SUPPORTED version (1 or 2) routes the request: a v2 request to a
- *    v1-legal method succeeds with provenance echoing version 2;
+ *  - a SUPPORTED version (1, 2, or 3) routes the request: a v2 request to
+ *    a v1-legal method succeeds with provenance echoing version 2;
  *  - an unsupported contract version → typed
  *    `contract-version-unsupported` (a positive integer OUTSIDE the
- *    supported set, e.g. 3) — never a handler throw;
+ *    supported set, e.g. 4) — never a handler throw;
  *  - a non-integer / missing version → typed `malformed-request`;
  *  - a v1 request to the v2-only `team.admitInitialWork` method → typed
  *    `method-version-unsupported` (checked in the version-aware param
@@ -59,10 +59,11 @@ const RT = await (async () => {
     version: 99,
     params: { teamSessionId: P8T3_TEAM_SESSION_ID },
   })
-  // A future version outside the closed supported set {1, 2} (TCM vNext
-  // §15.3: the unsupported-version negative is now pinned at 3).
-  const version3 = await dispatch('team.getProjection', {
-    version: 3,
+  // A future version outside the closed supported set {1, 2, 3} (TCM
+  // vNext §15.3: the unsupported-version negative is pinned at 4 since
+  // the D1 Team-D1-D6-repair-v2 v3 bump admitted contract version 3).
+  const version4 = await dispatch('team.getProjection', {
+    version: 4,
     params: { teamSessionId: P8T3_TEAM_SESSION_ID },
   })
   const version15 = await dispatch('catalog.list', { version: 1.5, params: {} })
@@ -96,7 +97,7 @@ const RT = await (async () => {
     version2,
     v1ToV2OnlyMethod,
     version99,
-    version3,
+    version4,
     version15,
     versionString,
     versionMissing,
@@ -139,8 +140,8 @@ describe('P8-T3 version mismatch + envelope negatives (versioned contract, TCM v
     expect(error.error.message.length).toBeGreaterThan(0)
   })
 
-  it('an unsupported contract version (3) → contract-version-unsupported, no throw', () => {
-    const error = expectError(RT.version3)
+  it('an unsupported contract version (4) → contract-version-unsupported, no throw', () => {
+    const error = expectError(RT.version4)
     expect(error.error.code).toBe(REMOTE_CONTRACT_ERROR_CODES.CONTRACT_VERSION_UNSUPPORTED)
     expect(error.error.code).toBe('contract-version-unsupported')
     const details = error.error.details as unknown as Record<string, unknown>

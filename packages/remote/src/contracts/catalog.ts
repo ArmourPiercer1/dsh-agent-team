@@ -8,7 +8,7 @@
  *   catalog, intent, team, member, override, policyState,
  *   compatibility, handoff, legacy
  *
- * 9 categories, 23 methods. Adding a method or category is a remote
+ * 9 categories. Adding a method or category is a remote
  * contract change (a version bump), never a silent edit — the catalog is
  * the closed surface a client may call through the seam channel
  * `/team-remote` (one dotted method name per endpoint; see
@@ -55,11 +55,13 @@ export interface RemoteMethodSpec {
 
 /**
  * The closed Remote contract method catalog — a VERSIONED UNION
- * (TCM vNext §15.3): the 23 frozen v1 methods plus the v2-only
- * `team.admitInitialWork` (24 methods total). Key = endpoint = method
- * name (dotted: `<category>.<action>`). Per-version availability is the
- * closed {@link REMOTE_V2_ONLY_METHODS} set below; per-method param
- * schemas are version-aware in `params.ts`.
+ * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump):
+ * the 23 frozen v1 methods plus the v2-only `team.admitInitialWork`
+ * plus the v3-only `team.listRoots` / `team.ensureRootLive` (26 methods
+ * total). Key = endpoint = method name (dotted: `<category>.<action>`).
+ * Per-version availability is the closed {@link REMOTE_V2_ONLY_METHODS}
+ * + {@link REMOTE_V3_ONLY_METHODS} sets below; per-method param schemas
+ * are version-aware in `params.ts`.
  */
 export const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>> = {
   'catalog.list': { category: REMOTE_CATEGORIES.CATALOG },
@@ -69,6 +71,8 @@ export const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>> =
   'team.getProjection': { category: REMOTE_CATEGORIES.TEAM },
   'team.getLedgerPage': { category: REMOTE_CATEGORIES.TEAM },
   'team.admitInitialWork': { category: REMOTE_CATEGORIES.TEAM },
+  'team.listRoots': { category: REMOTE_CATEGORIES.TEAM },
+  'team.ensureRootLive': { category: REMOTE_CATEGORIES.TEAM },
   'member.create': { category: REMOTE_CATEGORIES.MEMBER },
   'member.send': { category: REMOTE_CATEGORIES.MEMBER },
   'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -130,24 +134,40 @@ export function isRemoteMethod(name: unknown): name is string {
 export const REMOTE_V2_ONLY_METHODS: readonly string[] = ['team.admitInitialWork']
 
 /**
+ * The closed set of catalog methods that exist ONLY in remote contract v3
+ * (Team D1-D6 repair v2, D1 — frozen by that task; D2 only consumes):
+ * the Team UI dedicated-mode pair — `team.listRoots` (the durable
+ * ownership / root-identity query) and `team.ensureRootLive` (the
+ * explicit open-in-Team-mode guarantee). Every v1/v2 method stays
+ * available in v3.
+ */
+export const REMOTE_V3_ONLY_METHODS: readonly string[] = [
+  'team.ensureRootLive',
+  'team.listRoots',
+]
+
+/**
  * Is `method` a catalog method available in remote contract `version`?
  *
  * This is the version-aware membership check the version-aware param
- * parser uses (TCM vNext §15.3): a v1 request to a v2-only method is a
- * typed rejection (`method-version-unsupported`) AFTER the envelope
- * parse — the endpoint itself passes the pre-envelope closed-catalog
- * check, so the version can only be consulted once the envelope is
- * known.
+ * parser uses (TCM vNext §15.3): a request to a method of a NEWER
+ * version is a typed rejection (`method-version-unsupported`) AFTER the
+ * envelope parse — the endpoint itself passes the pre-envelope
+ * closed-catalog check, so the version can only be consulted once the
+ * envelope is known.
  *
  * @param method - the candidate method name (must be in the catalog).
- * @param version - the request's contract version (supported: 1 | 2).
+ * @param version - the request's contract version (supported: 1 | 2 | 3).
  */
 export function isRemoteMethodAvailableInVersion(method: string, version: number): boolean {
   if (!(method in REMOTE_METHOD_CATALOG)) return false
   if (version === 1) {
-    return !REMOTE_V2_ONLY_METHODS.includes(method)
+    return !REMOTE_V2_ONLY_METHODS.includes(method) && !REMOTE_V3_ONLY_METHODS.includes(method)
   }
-  // version === 2: every v1 method plus the v2-only methods.
+  if (version === 2) {
+    return !REMOTE_V3_ONLY_METHODS.includes(method)
+  }
+  // version === 3: every v1/v2 method plus the v3-only methods.
   return true
 }
 

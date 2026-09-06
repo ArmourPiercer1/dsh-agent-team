@@ -2,9 +2,10 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 14 structural ports (12 frozen P8-T3 ports + the two
- * TCM vNext §15.6 v2 ports), each of which the host wiring implements
- * over the runtime APIs (design note §3 table, "Backing API" column). Every port method returns
+ * surface is these 16 structural ports (12 frozen P8-T3 ports + the two
+ * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports),
+ * each of which the host wiring implements over the runtime APIs
+ * (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
  * the remote layer never sees a live DSH object.
  *
@@ -381,14 +382,67 @@ export interface RemoteTeamAdmitInitialWorkPort {
 }
 
 // ---------------------------------------------------------------------------
+// Port 15 — team.listRoots (v3-only durable ownership query,
+// Team D1-D6 repair v2 D1)
+// ---------------------------------------------------------------------------
+
+/**
+ * The v3-only `team.listRoots` port: the durable Team root ownership /
+ * identity list of the host's TeamDomain (the D1 pure ownership-index
+ * module is the production implementation; it reads `teamSessions` /
+ * `memberInstances` / `sessionBindings` and FAILS CLOSED on a corrupt or
+ * inconsistent row — never a silent empty list). READ-ONLY: no
+ * repository writes, no agent effects.
+ */
+export interface RemoteTeamRootsPort {
+  /**
+   * The durable root rows, sorted by root session id.
+   * @returns the remote-safe root rows, each of the closed wire shape
+   *   `{ rootSessionId, blueprintId, revision, defaultWorkspace?,
+   *   createdAt, generation, memberCount }` (lossless JSON).
+   */
+  listRoots(): readonly RemoteSafeRecord[]
+}
+
+// ---------------------------------------------------------------------------
+// Port 16 — team.ensureRootLive (v3-only Team-mode ensure,
+// Team D1-D6 repair v2 D1 — the handler arrives with D2)
+// ---------------------------------------------------------------------------
+
+/**
+ * The v3-only `team.ensureRootLive` port: guarantees the named persisted
+ * root is live IN TEAM MODE (root ownership + Team glue + Leader setup +
+ * the `team_*` tools — the A3 Q2 host wiring, wired by D2 over the live
+ * glue's `ensureLiveAgent`). Until D2, the production S6 handler serves
+ * the method with the typed `TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED`
+ * failure (never a silent success). The typed failure vocabulary this
+ * port will raise (A3 Q2): the glue port absent
+ * (`TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE`), the root with no
+ * durable session artifact (`TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT`),
+ * the session already live OUTSIDE the Team glue
+ * (`TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM`), and the other glue
+ * start failures (`TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED`).
+ */
+export interface RemoteTeamEnsureRootLivePort {
+  /**
+   * Ensure the named root is live in Team mode.
+   * @param teamSessionId - the validated TeamSession (root session) id.
+   * @returns the closed success shape
+   *   `{ rootSessionId, mode: "team", live: true }` (lossless JSON).
+   */
+  ensureRootLive(teamSessionId: string): RemoteSafeRecord
+}
+
+// ---------------------------------------------------------------------------
 // Deps + handler contract
 // ---------------------------------------------------------------------------
 
 /**
- * The complete dependency surface of the handler layer: exactly 14 ports
- * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports), none of
- * which is a mirror of the upstream session controller, a session log
- * artifact, or an upstream private API (G8).
+ * The complete dependency surface of the handler layer: exactly 16 ports
+ * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports + the
+ * two Team D1-D6 repair v2 v3 ports), none of which is a mirror of the
+ * upstream session controller, a session log artifact, or an upstream
+ * private API (G8).
  */
 export interface RemoteHandlerDeps {
   readonly catalog: RemoteCatalogPort
@@ -396,6 +450,8 @@ export interface RemoteHandlerDeps {
   readonly teamCreate: RemoteTeamCreatePort
   readonly teamCreateV2: RemoteTeamCreateV2Port
   readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort
+  readonly teamRoots: RemoteTeamRootsPort
+  readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort
   readonly projection: RemoteProjectionPort
   readonly ledger: RemoteLedgerPort
   readonly admission: RemoteAdmissionPort

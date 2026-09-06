@@ -87,6 +87,88 @@ export interface TeamViewCreationFace {
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
 }
 
+/**
+ * One remote-safe row of the v3 `team.listRoots` response — the frozen
+ * D1 wire shape (mirror of `packages/runtime/src/team-ownership-index.ts`
+ * `TeamRootWireRow`; the client must not value-import the runtime
+ * package, so the shape is mirrored locally):
+ * `{ rootSessionId, blueprintId, revision, defaultWorkspace?, createdAt,
+ * generation, memberCount }`.
+ */
+export interface TeamRootRowWire {
+  readonly rootSessionId: string
+  readonly blueprintId: string
+  /** The blueprint revision of the snapshot binding (human-readable string). */
+  readonly revision: string
+  readonly defaultWorkspace?: string
+  readonly createdAt: string
+  readonly generation: number
+  readonly memberCount: number
+}
+
+/**
+ * D1 (Team D1-D6 repair v2, remote contract v3) — the persisted
+ * root-identity face of the zero state: the durable roots query
+ * (`team.listRoots`, contract v3) and the explicit Team-mode open
+ * guarantee (`team.ensureRootLive`, contract v3 — INERT until D2: the
+ * host handler is wired by D2, until then the call resolves to the typed
+ * `TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED` failure, never a silent
+ * success). Absent → the zero state shows no persisted-roots rows.
+ * D1 renders the rows WITHOUT open actions (the open action is added by
+ * D2/D3 over this same face).
+ */
+export interface TeamViewRootsFace {
+  /** `team.listRoots` (contract v3; raw RemoteResponse). */
+  readonly listRoots: () => Promise<RemoteResponse>
+  /**
+   * `team.ensureRootLive` (contract v3; raw RemoteResponse; INERT until
+   * D2 — see the face doc).
+   */
+  readonly ensureRootLive: (teamSessionId: string) => Promise<RemoteResponse>
+}
+
+/**
+ * Parse the v3 `team.listRoots` success value (`data.roots`) into the
+ * frozen wire rows (defensive client-boundary parse — a malformed row
+ * keeps the zero state with the typed-error note lane, never a throw).
+ * @param data - the success `value.data` (`{ roots: [...] }`).
+ * @returns the wire rows, or `null` when the value is malformed.
+ */
+export function parseTeamRootsList(data: unknown): readonly TeamRootRowWire[] | null {
+  if (typeof data !== 'object' || data === null) return null
+  const roots = (data as Record<string, unknown>)['roots']
+  if (!Array.isArray(roots)) return null
+  const rows: TeamRootRowWire[] = []
+  for (const raw of roots) {
+    if (typeof raw !== 'object' || raw === null) return null
+    const row = raw as Record<string, unknown>
+    if (
+      typeof row['rootSessionId'] !== 'string' ||
+      row['rootSessionId'] === '' ||
+      typeof row['blueprintId'] !== 'string' ||
+      row['blueprintId'] === '' ||
+      typeof row['revision'] !== 'string' ||
+      row['revision'] === '' ||
+      typeof row['createdAt'] !== 'string' ||
+      typeof row['generation'] !== 'number' ||
+      typeof row['memberCount'] !== 'number' ||
+      (row['defaultWorkspace'] !== undefined && typeof row['defaultWorkspace'] !== 'string')
+    ) {
+      return null
+    }
+    rows.push({
+      rootSessionId: row['rootSessionId'],
+      blueprintId: row['blueprintId'],
+      revision: row['revision'],
+      defaultWorkspace: row['defaultWorkspace'],
+      createdAt: row['createdAt'],
+      generation: row['generation'],
+      memberCount: row['memberCount'],
+    })
+  }
+  return rows
+}
+
 export interface TeamViewInjected {
   /** Bare mirror sources; the renderer binds them to the `use*` selector hooks. */
   hooks: {
@@ -122,6 +204,12 @@ export interface TeamViewInjected {
   legacyInspect?: () => Promise<RemoteResponse>
   /** P9-T8 (S5-D): the handoff face (absent → the panel has no handoff block). */
   handoff?: TeamCreationHandoffFace
+  /**
+   * D1 (Team D1-D6 repair v2, remote contract v3): the persisted
+   * root-identity face (absent → the zero state shows no persisted-roots
+   * rows; the T7/T8 zero state is unchanged).
+   */
+  roots?: TeamViewRootsFace
 }
 
 /** Full team-view props: the view-slot runtime share, injected face, and locale seat. */
@@ -148,7 +236,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   const {
     sessionId, useProjectionMirror, useTeamLedgers,
     ensureProjection, pullProjection, refreshTeamLedger, openSession,
-    creation, memberCommands, governance, legacyInspect, handoff,
+    creation, memberCommands, governance, legacyInspect, handoff, roots,
     useWorkspaces, t,
   } = props
   const [creationOpen, setCreationOpen] = useState(false)
@@ -224,11 +312,101 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     })
     return () => { live = false }
   }, [inZeroState, legacyInspect, creationOpen, sessionId])
+  // D1 (Team D1-D6 repair v2, remote contract v3): the one-shot persisted
+  // roots read for the ZERO state — the same read-not-command discipline
+  // as the legacy inspection above (gated to the zero state, skipped while
+  // the creation panel is open, one verbatim note on a typed failure).
+  // The rows render WITHOUT open actions in D1 (D2/D3 add the open action
+  // over this same face); the list is read-only here.
+  const [teamRoots, setTeamRoots] = useState<
+    | { readonly status: 'pending' }
+    | { readonly status: 'ok'; readonly rows: readonly TeamRootRowWire[] }
+    | { readonly status: 'error'; readonly code: string; readonly message: string }
+    | null
+  >(null)
+  useEffect(() => {
+    if (!inZeroState || roots === undefined || creationOpen) return
+    let live = true
+    setTeamRoots({ status: 'pending' })
+    void roots.listRoots().then(response => {
+      if (!live) return
+      if (!response.ok) {
+        setTeamRoots({ status: 'error', code: response.error.code, message: response.error.message })
+        return
+      }
+      const rows = parseTeamRootsList(response.value.data)
+      if (rows === null) {
+        setTeamRoots({
+          status: 'error',
+          code: 'malformed-response',
+          message: 'the team.listRoots response did not carry the closed roots list',
+        })
+        return
+      }
+      setTeamRoots({ status: 'ok', rows })
+    }).catch(error => {
+      if (!live) return
+      setTeamRoots({
+        status: 'error',
+        code: 'native-error',
+        message: error instanceof Error ? error.message : String(error),
+      })
+    })
+    return () => { live = false }
+  }, [inZeroState, roots, creationOpen, sessionId])
   const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? ''])
   const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState])
+  // D1 (Team D1-D6 repair v2, remote contract v3): the persisted-roots
+  // zero-state share — the typed-failure note (ONE verbatim line, UI §38
+  // greyed-surface discipline) + the read-only rows (blueprint@revision,
+  // default workspace, member count, creation time, root id). NO open
+  // action in D1 (D2/D3 add the action over the same face). An empty
+  // list renders nothing (the host has no persisted teams yet).
+  const rootsNote =
+    teamRoots !== null && teamRoots.status === 'error'
+      ? t('view.roots.note', { message: `${teamRoots.code}: ${teamRoots.message}` })
+      : null
+  const rootsList =
+    teamRoots !== null && teamRoots.status === 'ok' && teamRoots.rows.length > 0
+      ? (
+        <div className={styles.roots} data-team-roots>
+          <h3 className={styles.rootsTitle}>{t('view.roots.title')}</h3>
+          <ul className={styles.rootsList} data-team-roots-list>
+            {teamRoots.rows.map(row => (
+              <li
+                key={row.rootSessionId}
+                className={styles.rootRow}
+                data-team-root-row
+                data-root-session-id={row.rootSessionId}
+              >
+                <span className={styles.rootId} data-root-id>{row.rootSessionId}</span>
+                <span data-root-blueprint>{`${row.blueprintId}@${row.revision}`}</span>
+                <span data-root-workspace>
+                  {row.defaultWorkspace ?? t('view.roots.noWorkspace')}
+                </span>
+                <span data-root-members>
+                  {t('view.roots.members', { count: String(row.memberCount) })}
+                </span>
+                <span data-root-created title={row.createdAt}>{row.createdAt}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+      : null
   if (resolution === undefined || snapshot === null) {
     if (creation === undefined) {
-      return <div className={styles.zero} data-team-zero>{t('view.zero')}</div>
+      return (
+        <div className={styles.zero} data-team-zero>
+          <div className={styles.zeroInner}>
+            <p className={styles.zeroText}>{t('view.zero')}</p>
+            {rootsNote !== null && (
+              <p className={styles.legacyNote} data-roots-note>{rootsNote}</p>
+            )}
+            {rootsList}
+          </div>
+        </div>
+      )
     }
     // P9-T8 (S5-D, UI §34.1): a decoded `legacy-team` inspection REPLACES
     // the ordinary zero state with the persistent read-only banner — NO
@@ -299,6 +477,10 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           {legacyNote !== null && (
             <p className={styles.legacyNote} data-legacy-note>{legacyNote}</p>
           )}
+          {rootsNote !== null && (
+            <p className={styles.legacyNote} data-roots-note>{rootsNote}</p>
+          )}
+          {rootsList}
           {creationOpen
             ? <TeamCreationPanel
                 listCatalog={creation.listCatalog}

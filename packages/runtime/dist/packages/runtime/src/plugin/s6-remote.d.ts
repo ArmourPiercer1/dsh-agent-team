@@ -42,6 +42,7 @@
 import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
+import type { TeamRootWireRow } from '../team-ownership-index.js';
 import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
 import type { TeamDomainRepositories } from '../../../storage/repositories/index.js';
@@ -114,6 +115,24 @@ export declare const S6_REMOTE_ERROR_CODES: {
      *  retry recovers. The strategy's WORK_DELIVERY_FAILED mapped onto the
      *  M1 closed wire vocabulary). */
     readonly TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED: "TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED";
+    /** D1 (Team D1-D6 repair v2, remote contract v3) — team.listRoots:
+     *  the host wiring exposes no listRoots port (the TeamDomain
+     *  repositories are not reachable from this root) — fail-closed
+     *  BEFORE any read; never a silent empty list. */
+    readonly TEAM_ROOTS_UNAVAILABLE: "TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE";
+    /** D1 (Team D1-D6 repair v2, remote contract v3) — team.ensureRootLive:
+     *  the v3 method is reserved; the production host handler is wired by
+     *  D2 (over the live glue's `ensureLiveAgent`, A3 Q2). Until then the
+     *  method fails closed typed — NEVER a silent success. */
+    readonly TEAM_ROOT_LIVE_NOT_IMPLEMENTED: "TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED";
+    /** D2-RESERVED (A3 Q2) — the ensureRootLive glue port is absent. */
+    readonly TEAM_ROOT_LIVE_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE";
+    /** D2-RESERVED (A3 Q2) — the root has no durable session artifact. */
+    readonly TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT: "TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT";
+    /** D2-RESERVED (A3 Q2) — the session is already live OUTSIDE the Team glue. */
+    readonly TEAM_ROOT_LIVE_OUTSIDE_TEAM: "TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM";
+    /** D2-RESERVED (A3 Q2) — the glue start failed for another reason. */
+    readonly TEAM_ROOT_LIVE_START_FAILED: "TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
 /**
@@ -245,6 +264,38 @@ export interface S6RemoteTeamAdmitInitialWorkPort {
      */
     admit(rootSessionId: string, requestToken: string, prompt: string, attachedContext: string | undefined): Promise<RemoteSafeRecord>;
 }
+/** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
+ *  `team.listRoots` port (the production async mirror of the frozen
+ *  `RemoteTeamRootsPort`): the durable Team root ownership / identity
+ *  list. READ-ONLY: no repository writes, no agent effects. The
+ *  production backing is the D1 pure ownership-index module
+ *  (`team-ownership-index.ts` over the already-injected TeamDomain
+ *  repositories); it FAILS CLOSED on a corrupt or inconsistent row (the
+ *  index's `TEAM_OWNERSHIP_INDEX_*` codes + the storage layer's
+ *  `RECORD_INVALID` / `MALFORMED_DTO` codes — all members of the closed
+ *  backing vocabulary, invariant 4b), never a silent empty list. */
+export interface S6RemoteTeamRootsPort {
+    /** The durable root wire rows, sorted by root session id. */
+    listRoots(): Promise<readonly TeamRootWireRow[]>;
+}
+/** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
+ *  `team.ensureRootLive` port (the production async mirror of the frozen
+ *  `RemoteTeamEnsureRootLivePort`). TEAM-SCOPED like `team.admitInitialWork`:
+ *  the bound-root guard runs BEFORE anything else (fail-closed
+ *  FOREIGN_TEAM). D1 (this commit) answers every guarded call with the
+ *  typed TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED — NEVER a silent
+ *  success. D2 replaces the port body with the live glue's Team-mode
+ *  ensure (the A3 Q2 wiring; the reserved TEAM_REMOTE_TEAM_ROOT_LIVE_*
+ *  failure codes are already in the closed backing set). */
+export interface S6RemoteTeamEnsureRootLivePort {
+    /**
+     * Ensure the named root is live in Team mode.
+     * @param teamSessionId - the validated TeamSession (root session) id.
+     * @returns the closed v3 success shape
+     *   `{ rootSessionId, mode: "team", live: true }` (lossless JSON).
+     */
+    ensureRootLive(teamSessionId: string): Promise<RemoteSafeRecord>;
+}
 /** Port 4/12 — the whole-projection observation (`team.getProjection`). */
 export interface S6RemoteProjectionPort {
     project(teamSessionId: string): Promise<RemoteSafeRecord>;
@@ -292,8 +343,9 @@ export interface S6RemoteHandoffPort {
 export interface S6RemoteLegacyPort {
     inspect(dshHome: string, workspaceCwd?: string, projectDir?: string): Promise<RemoteSafeRecord>;
 }
-/** The fifteen production ports (the frozen twelve + the T12-V16 messaging
- *  coordinator port + the two TCM vNext §15.6 team-create v2 ports). */
+/** The sixteen production ports (the frozen twelve + the T12-V16 messaging
+ *  coordinator port + the two TCM vNext §15.6 team-create v2 ports + the
+ *  D1 remote-contract-v3 `team.listRoots` port). */
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
@@ -302,6 +354,13 @@ export interface S6RemotePorts {
     readonly teamCreateV2: S6RemoteTeamCreateV2Port;
     /** TCM vNext §15.6 (G1) — the v2-only `team.admitInitialWork` port. */
     readonly teamAdmitInitialWork: S6RemoteTeamAdmitInitialWorkPort;
+    /** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
+     *  `team.listRoots` port (the durable root ownership list). */
+    readonly teamRoots: S6RemoteTeamRootsPort;
+    /** D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
+     *  `team.ensureRootLive` port (D1: fails closed typed; D2: the live
+     *  glue's Team-mode ensure). */
+    readonly teamEnsureRootLive: S6RemoteTeamEnsureRootLivePort;
     readonly projection: S6RemoteProjectionPort;
     readonly ledger: S6RemoteLedgerPort;
     readonly admission: S6RemoteAdmissionPort;
@@ -446,6 +505,19 @@ export interface S6RemoteOptions {
      * remote that cannot start one must not pretend otherwise.
      */
     readonly startRootAgent?: (rootSessionId: string) => Promise<void>;
+    /**
+     * D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
+     * durable root ownership list behind the v3-only `team.listRoots`:
+     * the host entry's closure over the already-injected TeamDomain
+     * repositories (the D1 pure ownership-index module — see
+     * `team-ownership-index.ts`; NO repository writes, NO agent effects).
+     * Absent (test worlds without the TeamDomain wiring): `team.listRoots`
+     * fails closed with the typed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE —
+     * never a silent empty list. The production host entry (root.ts)
+     * wires it; a typed integrity failure raised by the closure propagates
+     * unchanged through the dispatcher (invariant 4b).
+     */
+    readonly listRoots?: () => Promise<readonly TeamRootWireRow[]>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
 }

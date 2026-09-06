@@ -36,6 +36,7 @@
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
+  REMOTE_CONTRACT_VERSION_V3,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   type RemoteContractVersion,
@@ -66,14 +67,17 @@ import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
  * The Team Remote client surface (plan §6.1): the frozen unary endpoint
- * `call` plus typed wrappers for every catalog method (24 — the 23
- * frozen v1 methods + the v2-only `team.admitInitialWork`).
+ * `call` plus typed wrappers for every catalog method (26 — the 23
+ * frozen v1 methods + the v2-only `team.admitInitialWork` + the v3-only
+ * `team.listRoots` / `team.ensureRootLive`).
  *
  * **Version routing (TCM vNext §15.3)**: every EXISTING wrapper stamps
- * contract version **1** (the frozen v1 wire behavior — unchanged); only
- * the two v2 wrappers — {@link teamCreateV2} and
- * {@link teamAdmitInitialWorkV2} — stamp contract version **2**. The
- * generic {@link call} also defaults to version 1.
+ * contract version **1** (the frozen v1 wire behavior — unchanged); the
+ * two v2 wrappers — {@link teamCreateV2} and
+ * {@link teamAdmitInitialWorkV2} — stamp contract version **2**; the two
+ * v3 wrappers — {@link teamListRootsV3} and {@link teamEnsureRootLiveV3}
+ * — stamp contract version **3** (Team D1-D6 repair v2, D1). The generic
+ * {@link call} also defaults to version 1.
  */
 export interface TeamRemoteClient {
   /**
@@ -130,6 +134,27 @@ export interface TeamRemoteClient {
    * `(rootSessionId, requestToken)`). Stamps contract version 2.
    */
   teamAdmitInitialWorkV2(params: RemoteTeamAdmitInitialWorkParams): Promise<RemoteResponse>
+  /**
+   * `team.listRoots` (contract v3, v3-only method, Team D1-D6 repair v2
+   * D1) — the durable ownership / root-identity query. No fields (closed
+   * v3 set is empty; the host answers from its own durable TeamDomain).
+   * On success `data.roots` is the remote-safe root rows
+   * (`{ rootSessionId, blueprintId, revision, defaultWorkspace?,
+   * createdAt, generation, memberCount }`). Stamps contract version 3.
+   */
+  teamListRootsV3(): Promise<RemoteResponse>
+  /**
+   * `team.ensureRootLive` (contract v3, v3-only method, Team D1-D6 repair
+   * v2 D1) — the explicit open-in-Team-mode guarantee for one persisted
+   * root. **INERT until D2**: the v3-only client wrapper is shipped now
+   * (stamping contract version 3, params `{ teamSessionId }`) but the
+   * production host handler is wired by D2 (the live glue's
+   * `ensureLiveAgent`); until then a call resolves to the typed
+   * `TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED` failure — never a
+   * silent success. Stamps contract version 3.
+   * @param teamSessionId - the TeamSession (root session) id to guarantee.
+   */
+  teamEnsureRootLiveV3(teamSessionId: string): Promise<RemoteResponse>
   /** `member.create` — admit one member instance. */
   memberCreate(params: RemoteMemberCreateParams): Promise<RemoteResponse>
   /** `member.send` — first message to a member instance. */
@@ -225,6 +250,12 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     teamCreateV2: (params) => callWithVersion('team.create', params, REMOTE_CONTRACT_VERSION_V2),
     teamAdmitInitialWorkV2: (params) =>
       callWithVersion('team.admitInitialWork', params, REMOTE_CONTRACT_VERSION_V2),
+    // Team D1-D6 repair v2 D1 — the two v3-only wrappers (contract
+    // version 3). `team.ensureRootLive` is inert until D2 (the host
+    // handler arrives with D2; see the interface doc).
+    teamListRootsV3: () => callWithVersion('team.listRoots', {}, REMOTE_CONTRACT_VERSION_V3),
+    teamEnsureRootLiveV3: (teamSessionId) =>
+      callWithVersion('team.ensureRootLive', { teamSessionId }, REMOTE_CONTRACT_VERSION_V3),
     memberCreate: (params) => call('member.create', params),
     memberSend: (params) => call('member.send', params),
     memberFollowup: (params) => call('member.followup', params),

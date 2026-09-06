@@ -2,9 +2,10 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 14 structural ports (12 frozen P8-T3 ports + the two
- * TCM vNext §15.6 v2 ports), each of which the host wiring implements
- * over the runtime APIs (design note §3 table, "Backing API" column). Every port method returns
+ * surface is these 16 structural ports (12 frozen P8-T3 ports + the two
+ * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports),
+ * each of which the host wiring implements over the runtime APIs
+ * (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
  * the remote layer never sees a live DSH object.
  *

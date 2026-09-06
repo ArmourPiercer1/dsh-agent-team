@@ -116,6 +116,24 @@ export const S6_REMOTE_ERROR_CODES = {
      *  retry recovers. The strategy's WORK_DELIVERY_FAILED mapped onto the
      *  M1 closed wire vocabulary). */
     TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED: 'TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED',
+    /** D1 (Team D1-D6 repair v2, remote contract v3) — team.listRoots:
+     *  the host wiring exposes no listRoots port (the TeamDomain
+     *  repositories are not reachable from this root) — fail-closed
+     *  BEFORE any read; never a silent empty list. */
+    TEAM_ROOTS_UNAVAILABLE: 'TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE',
+    /** D1 (Team D1-D6 repair v2, remote contract v3) — team.ensureRootLive:
+     *  the v3 method is reserved; the production host handler is wired by
+     *  D2 (over the live glue's `ensureLiveAgent`, A3 Q2). Until then the
+     *  method fails closed typed — NEVER a silent success. */
+    TEAM_ROOT_LIVE_NOT_IMPLEMENTED: 'TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED',
+    /** D2-RESERVED (A3 Q2) — the ensureRootLive glue port is absent. */
+    TEAM_ROOT_LIVE_PORT_UNAVAILABLE: 'TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE',
+    /** D2-RESERVED (A3 Q2) — the root has no durable session artifact. */
+    TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT: 'TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT',
+    /** D2-RESERVED (A3 Q2) — the session is already live OUTSIDE the Team glue. */
+    TEAM_ROOT_LIVE_OUTSIDE_TEAM: 'TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM',
+    /** D2-RESERVED (A3 Q2) — the glue start failed for another reason. */
+    TEAM_ROOT_LIVE_START_FAILED: 'TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED',
 };
 // --- small local helpers ------------------------------------------------------------------
 /** True for a plain (non-array, non-null) object. */
@@ -404,6 +422,43 @@ export function createS6RemotePorts(options) {
             if (error instanceof TeamPluginError)
                 throw error;
             throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_CREATE_ROOT_START_FAILED, `team.create: starting the root (leader) agent for '${rootSessionId}' failed: ${error instanceof Error ? error.message : String(error)}`, { reason: 'root-start-failed' });
+        }
+    }
+    /**
+     * D1 (Team D1-D6 repair v2, remote contract v3) — the fail-closed
+     * `team.listRoots` preflight: the host wiring must expose the
+     * read-only durable root ownership list. Absent → the typed
+     * TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE BEFORE any read (never a silent
+     * empty list). A typed integrity failure the closure raises (the D1
+     * index's TEAM_OWNERSHIP_INDEX_* codes, the storage layer's
+     * RECORD_INVALID / MALFORMED_DTO) is rethrown UNMAPPED (invariant 4b
+     * pass-through); only an untyped throw is re-wrapped as the same
+     * unavailable code with the message preserved for diagnosis.
+     */
+    function requireListRootsPort() {
+        const port = options.listRoots;
+        if (port === undefined) {
+            throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOTS_UNAVAILABLE, 'team.listRoots cannot read the durable root ownership list: the host wiring does not provide the listRoots port — failing closed (never a silent empty list)', { reason: 'team-roots-unavailable' });
+        }
+        return port;
+    }
+    async function listRoots() {
+        try {
+            return await requireListRootsPort()();
+        }
+        catch (error) {
+            if (error instanceof TeamPluginError)
+                throw error;
+            // A typed non-TeamPluginError whose string code is a member of the
+            // closed backing vocabulary (the D1 index's TEAM_OWNERSHIP_INDEX_*
+            // codes, the storage layer's RECORD_INVALID / MALFORMED_DTO, …)
+            // propagates UNMAPPED (invariant 4b — the dispatcher passes code +
+            // message through). Only a genuinely untyped throw is re-wrapped.
+            const code = error instanceof Error ? error.code : undefined;
+            if (typeof code === 'string' && REMOTE_BACKING_ERROR_CODE_SET.has(code)) {
+                throw error;
+            }
+            throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOTS_UNAVAILABLE, `team.listRoots failed while reading the durable root ownership list: ${error instanceof Error ? error.message : String(error)}`, { reason: 'team-roots-unavailable' });
         }
     }
     // --- TCM vNext §15 (G1) — the Root initial-work authority + the workspace port ---
@@ -833,6 +888,33 @@ export function createS6RemotePorts(options) {
                 return outcome;
             },
         },
+        // --- D1 (Team D1-D6 repair v2, remote contract v3): team.listRoots ---------
+        teamRoots: {
+            listRoots() {
+                // v3-only READ-ONLY: the host answers from its own durable
+                // TeamDomain (no root addressed — the bound-root guard does not
+                // apply; no repository writes, no agent effects). Typed integrity
+                // failures propagate unchanged (invariant 4b).
+                return listRoots();
+            },
+        },
+        // --- D1 (Team D1-D6 repair v2, remote contract v3): team.ensureRootLive ----
+        teamEnsureRootLive: {
+            async ensureRootLive(requestedTeamSessionId) {
+                // TEAM-SCOPED (like team.admitInitialWork): the addressed root
+                // must be owned — the bound-root guard runs FIRST (fail-closed
+                // FOREIGN_TEAM), exactly as the D2 handler will do.
+                const teamSessionId = assertBoundRoot('team.ensureRootLive', requestedTeamSessionId);
+                // D1 — the method is RESERVED: the production host handler is
+                // wired by D2 (over the live glue's `ensureLiveAgent`, A3 Q2 —
+                // the typed failure vocabulary TEAM_REMOTE_TEAM_ROOT_LIVE_*
+                // PORT_UNAVAILABLE / NO_DURABLE_ARTIFACT / OUTSIDE_TEAM /
+                // START_FAILED is already reserved in the closed backing set).
+                // Until then the method fails closed typed — NEVER a silent
+                // success; the durable root row is untouched.
+                throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_NOT_IMPLEMENTED, `team.ensureRootLive is reserved: the host handler (the live glue's Team-mode ensure) is not wired yet — the durable root row of '${teamSessionId}' is untouched`, { reason: 'team-root-live-not-implemented', teamSessionId });
+            },
+        },
         // --- 4/12 projection: the projection service (durable source + overlay) ---------
         projection: {
             async project(teamSessionId) {
@@ -1244,6 +1326,35 @@ function buildS6CategoryHandlers(ports, principal) {
                     const admitParams = params;
                     return ports
                         .teamAdmitInitialWork.admit(admitParams.rootSessionId, admitParams.requestToken, admitParams.prompt, admitParams.attachedContext)
+                        .then((result) => ({ data: result }));
+                }
+                case 'team.listRoots': {
+                    // D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
+                    // durable ownership / root-identity query. The version-aware
+                    // param parser guarantees the request version is 3 (an
+                    // older-version request is typed-rejected before dispatch).
+                    // READ-ONLY, no root addressed (the host-authority read of the
+                    // host's own durable TeamDomain — the bound-root guard does
+                    // not apply); the port fails closed typed when the host wiring
+                    // is absent, and the index's integrity failures propagate
+                    // unchanged (the closed backing vocabulary, invariant 4b).
+                    return ports.teamRoots.listRoots().then((roots) => ({ data: { roots } }));
+                }
+                case 'team.ensureRootLive': {
+                    // D1 (Team D1-D6 repair v2, remote contract v3) — the v3-only
+                    // explicit open-in-Team-mode guarantee. TEAM-SCOPED like
+                    // `team.admitInitialWork`: the bound-root guard runs in the
+                    // port (fail-closed FOREIGN_TEAM), and D1's port body fails
+                    // closed with the typed TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED
+                    // — the production host handler is wired by D2 (over the live
+                    // glue's `ensureLiveAgent`, A3 Q2; the reserved
+                    // TEAM_REMOTE_TEAM_ROOT_LIVE_* failure codes are already in
+                    // the closed backing set). Typed failures pass through the
+                    // dispatcher unchanged (the closed backing vocabulary,
+                    // invariant 4b).
+                    const ensureParams = params;
+                    return ports
+                        .teamEnsureRootLive.ensureRootLive(ensureParams.teamSessionId)
                         .then((result) => ({ data: result }));
                 }
                 case 'team.getProjection': {

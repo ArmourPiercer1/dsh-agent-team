@@ -18,13 +18,16 @@
  * are exempt from the no-control-char / no-whitespace ID rule — newlines
  * are legal content — but bound by a length cap (design note §3).
  *
- * **Version awareness (TCM vNext §15.3/§15.6)**: the module is the
- * single version-aware closed schema. Every v1 field list, parser and
- * behavior is unchanged; the v2 bump adds exactly one method
- * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
- * method (`team.create`, whose v2 closed set swaps `initialWork` for
- * `workspace`). {@link parseRemoteMethodParams} routes on the request
- * version: a v1 request to a v2-only method is typed-rejected
+ * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
+ * v3 bump)**: the module is the single version-aware closed schema.
+ * Every v1/v2 field list, parser and behavior is unchanged; the v2 bump
+ * adds exactly one method (`team.admitInitialWork`, v2-only) and one v2
+ * variant of an existing method (`team.create`, whose v2 closed set
+ * swaps `initialWork` for `workspace`); the v3 bump (frozen by D1) adds
+ * exactly the two v3-only methods `team.listRoots` (closed set: no
+ * fields) and `team.ensureRootLive` (closed set: `teamSessionId`).
+ * {@link parseRemoteMethodParams} routes on the request version: a
+ * request to a method of a NEWER version is typed-rejected
  * (`method-version-unsupported`) AFTER the envelope parse, and each
  * request version sees only its own closed field sets (no cross-version
  * field leakage in either direction).
@@ -104,6 +107,16 @@ export const REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS = [
     'requestToken',
     'rootSessionId',
 ];
+/**
+ * `team.listRoots` (contract v3) — the CLOSED field set: empty (no
+ * fields; the host answers from its own durable TeamDomain).
+ */
+export const REMOTE_TEAM_LIST_ROOTS_FIELDS = [];
+/**
+ * `team.ensureRootLive` (contract v3) — the CLOSED field set:
+ * `teamSessionId` only.
+ */
+export const REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS = ['teamSessionId'];
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 export const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
     'afterSequence',
@@ -556,6 +569,18 @@ export function parseRemoteTeamAdmitInitialWorkParams(method, params) {
             : { attachedContext: parseRemoteBody(rawAttachedContext, method, 'attachedContext') }),
     };
 }
+/** Parse `team.listRoots` params (the closed v3 set is empty). */
+export function parseRemoteTeamListRootsParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_LIST_ROOTS_FIELDS);
+    return {};
+}
+/** Parse `team.ensureRootLive` params (contract v3). */
+export function parseRemoteTeamEnsureRootLiveParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS);
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+    };
+}
 /** Parse `team.getProjection` params. */
 export function parseRemoteTeamGetProjectionParams(method, params) {
     assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -800,8 +825,8 @@ export function parseRemoteLegacyInspectParams(method, params) {
  * through, so every request is parsed against the closed schema of its
  * own version — no cross-version field leakage).
  * @param version - the request envelope's contract version (supported:
- *   `1 | 2`; the envelope parse already guarantees this, the assertion is
- *   defensive for direct callers).
+ *   `1 | 2 | 3`; the envelope parse already guarantees this, the
+ *   assertion is defensive for direct callers).
  * @param method - a catalog method name (dotted `<category>.<action>`).
  * @param params - the request envelope's `params` object.
  * @returns the typed param object plus the request token echo.
@@ -814,7 +839,7 @@ export function parseRemoteLegacyInspectParams(method, params) {
 export function parseRemoteMethodParams(version, method, params) {
     assertSupportedRemoteContractVersion(version);
     if (!isRemoteMethodAvailableInVersion(method, version)) {
-        throw remoteContractError('method-version-unsupported', `method '${method}' is not available in remote contract v${version} (it is a v2-only method)`, { method, field: 'method', reason: 'method-not-available-in-version' });
+        throw remoteContractError('method-version-unsupported', `method '${method}' is not available in remote contract v${version} (it is only available in a newer remote contract version)`, { method, field: 'method', reason: 'method-not-available-in-version' });
     }
     switch (method) {
         case 'catalog.list':
@@ -833,6 +858,12 @@ export function parseRemoteMethodParams(version, method, params) {
         case 'team.admitInitialWork':
             // v2-only (the availability check above guarantees version === 2).
             return wrapParsed(method, parseRemoteTeamAdmitInitialWorkParams(method, params));
+        case 'team.listRoots':
+            // v3-only (the availability check above guarantees version === 3).
+            return wrapParsed(method, parseRemoteTeamListRootsParams(method, params));
+        case 'team.ensureRootLive':
+            // v3-only (the availability check above guarantees version === 3).
+            return wrapParsed(method, parseRemoteTeamEnsureRootLiveParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':

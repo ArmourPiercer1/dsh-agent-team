@@ -16,6 +16,10 @@ export type TeamKey =
   | 'field.context'
   | 'view.team'
   | 'view.zero'
+  | 'view.roots.title'
+  | 'view.roots.note'
+  | 'view.roots.members'
+  | 'view.roots.noWorkspace'
   | 'view.timeline.title'
   | 'view.timeline.empty'
   | 'view.timeline.aria'
@@ -228,6 +232,10 @@ export const zh: Record<TeamKey, string> = {
   'field.context': '上下文策略',
   'view.team': '团队',
   'view.zero': '当前会话未加入任何团队',
+  'view.roots.title': '已持久化的团队',
+  'view.roots.note': '读取持久化团队失败：{message}',
+  'view.roots.members': '{count} 名成员',
+  'view.roots.noWorkspace': '（无默认工作区）',
   'view.timeline.title': '时间线',
   'view.timeline.empty': '暂无委派记录',
   'view.timeline.aria': '团队委派时间线：滚轮缩放，拖拽平移，方向键平移，按 0 复位',
@@ -440,6 +448,10 @@ export const en: Record<TeamKey, string> = {
   'field.context': 'Context Policy',
   'view.team': 'Team',
   'view.zero': 'This session is not part of a team',
+  'view.roots.title': 'Persisted teams',
+  'view.roots.note': 'Failed to read the persisted teams: {message}',
+  'view.roots.members': '{count} member(s)',
+  'view.roots.noWorkspace': '(no default workspace)',
   'view.timeline.title': 'Timeline',
   'view.timeline.empty': 'No delegations yet',
   'view.timeline.aria': 'Team delegation timeline: wheel to zoom, drag to pan, arrow keys to pan, press 0 to reset',
