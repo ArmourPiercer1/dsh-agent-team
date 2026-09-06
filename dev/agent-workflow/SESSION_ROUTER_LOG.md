@@ -2045,3 +2045,4 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - test-use pristine: HEAD 76fda729799fe9b3848dbe2c211d4b231032b81e, porcelain empty=True.
 - C2 flagged for G3 ratification: one new stable defensive error code WORK_TURN_UNREADABLE (status stays the frozen 'unavailable').
 - Next: 3 independent G3 reviewers via workflow tool (blind; range 9b74fa0..d26c27d).
+- Log correction: the G3 owner-verification line above shows literal placeholders due to a here-string quoting slip; actual state: test-use HEAD 76fda729799fe9b3848dbe2c211d4b231032b81e, porcelain EMPTY (pristine).
