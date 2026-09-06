@@ -112,6 +112,8 @@ export interface TeamRuntimeActionRequest {
    * (with the standard envelope fields).
    */
   readonly payload?: Record<string, unknown>
+  /** Transient caller cancellation; never serialized or persisted. */
+  readonly signal?: unknown
 }
 
 // --- effects / results -------------------------------------------------------------
@@ -291,6 +293,8 @@ export interface WorkDeliveryPort {
     readonly requestToken: string
     readonly prompt: string
     readonly attachedContext?: string
+    /** Transient cancellation signal for the live turn; never durable. */
+    readonly signal?: unknown
   }): Promise<void>
 }
 

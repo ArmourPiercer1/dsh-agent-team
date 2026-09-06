@@ -93,8 +93,16 @@ export declare function executeEffect(teamLocks: Map<string, Promise<unknown>>, 
  * @returns the durable effect (lossless JSON).
  */
 export declare function executeEffectLocked(ctx: EffectContext): Promise<RuntimeActionEffect>;
-/** The per-team promise chain (the P6-T1 lock pattern, reused). */
-export declare function withTeamLock<T>(teamLocks: Map<string, Promise<unknown>>, rootSessionId: string, work: () => Promise<T>): Promise<T>;
+type AbortLike = {
+    readonly aborted: boolean;
+    readonly reason?: unknown;
+    addEventListener(type: 'abort', listener: () => void, options?: {
+        readonly once?: boolean;
+    }): void;
+    removeEventListener(type: 'abort', listener: () => void): void;
+};
+export declare function asAbortLike(value: unknown): AbortLike | undefined;
+export declare function withTeamLock<T>(teamLocks: Map<string, Promise<unknown>>, rootSessionId: string, work: () => Promise<T>, signal?: AbortLike): Promise<T>;
 /**
  * Commit one durable fact (the evidence half of a two-write effect, or the
  * whole effect for coordination actions). The sequence is ALLOCATED through
@@ -115,4 +123,5 @@ export declare function withTeamLock<T>(teamLocks: Map<string, Promise<unknown>>
  * must already hold the router's per-team lock for the root session.
  */
 export declare function commitDurableFact(repositories: TeamDomainRepositories, rootSessionId: string, now: () => string, factType: string, payload: Record<string, unknown>): Promise<number>;
+export {};
 //# sourceMappingURL=effects.d.ts.map

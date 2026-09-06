@@ -104,6 +104,8 @@ export interface WorkChainDeps {
   readonly prompt: string
   readonly attachedContext?: string
   readonly taskSummary?: string
+  /** Transient cancellation signal for the live delivery; never durable. */
+  readonly signal?: unknown
 }
 
 /** The durable work-unit facts found by the dedup scan (min sequence each). */
@@ -423,6 +425,7 @@ export async function executeWorkChain(deps: WorkChainDeps): Promise<WorkChainRe
       requestToken,
       prompt: deps.prompt,
       ...(deps.attachedContext !== undefined ? { attachedContext: deps.attachedContext } : {}),
+      ...(deps.signal !== undefined ? { signal: deps.signal } : {}),
     })
   } catch (error) {
     // R6: fail-closed — settle before throwing; never a fake RUNNING.

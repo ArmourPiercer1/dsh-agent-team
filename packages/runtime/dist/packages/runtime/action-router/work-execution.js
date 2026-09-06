@@ -283,6 +283,7 @@ export async function executeWorkChain(deps) {
             requestToken,
             prompt: deps.prompt,
             ...(deps.attachedContext !== undefined ? { attachedContext: deps.attachedContext } : {}),
+            ...(deps.signal !== undefined ? { signal: deps.signal } : {}),
         });
     }
     catch (error) {

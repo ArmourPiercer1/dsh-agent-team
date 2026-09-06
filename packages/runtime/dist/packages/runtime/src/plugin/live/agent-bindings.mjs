@@ -1107,7 +1107,33 @@ export function createAgentBindings(deps) {
         source: { kind: 'user' },
       })
       handle.agent.followup(message)
-      await handle.agent.whenIdle()
+      const signal = args.signal
+      if (
+        signal !== null &&
+        typeof signal === 'object' &&
+        typeof signal.addEventListener === 'function' &&
+        typeof signal.removeEventListener === 'function'
+      ) {
+        if (signal.aborted) {
+          handle.agent.cancel({ kind: 'user' })
+          throw signal.reason ?? new Error('team work delivery aborted')
+        }
+        let onAbort
+        const aborted = new Promise((_, reject) => {
+          onAbort = () => {
+            handle.agent.cancel({ kind: 'user' })
+            reject(signal.reason ?? new Error('team work delivery aborted'))
+          }
+          signal.addEventListener('abort', onAbort, { once: true })
+        })
+        try {
+          await Promise.race([handle.agent.whenIdle(), aborted])
+        } finally {
+          signal.removeEventListener('abort', onAbort)
+        }
+      } else {
+        await handle.agent.whenIdle()
+      }
       // Materialize the durable log (the same public persistence seam the
       // activation barrier uses) so the delivered turn's model-visible
       // content is on disk before the chain settles. A contained upstream

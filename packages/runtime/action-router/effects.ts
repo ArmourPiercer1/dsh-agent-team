@@ -125,7 +125,8 @@ export function executeEffect(
   teamLocks: Map<string, Promise<unknown>>,
   ctx: EffectContext,
 ): Promise<RuntimeActionEffect> {
-  return withTeamLock(teamLocks, ctx.rootSessionId, () => runEffect(ctx))
+  if (ctx.spec.category === 'read') return runEffect(ctx)
+  return withTeamLock(teamLocks, ctx.rootSessionId, () => runEffect(ctx), asAbortLike(ctx.request.signal))
 }
 
 /**
@@ -142,14 +143,42 @@ export function executeEffectLocked(ctx: EffectContext): Promise<RuntimeActionEf
   return runEffect(ctx)
 }
 
-/** The per-team promise chain (the P6-T1 lock pattern, reused). */
+type AbortLike = {
+  readonly aborted: boolean
+  readonly reason?: unknown
+  addEventListener(type: 'abort', listener: () => void, options?: { readonly once?: boolean }): void
+  removeEventListener(type: 'abort', listener: () => void): void
+}
+
+export function asAbortLike(value: unknown): AbortLike | undefined {
+  if (value === null || typeof value !== 'object') return undefined
+  const candidate = value as Partial<AbortLike>
+  if (typeof candidate.aborted !== 'boolean' || typeof candidate.addEventListener !== 'function' || typeof candidate.removeEventListener !== 'function') return undefined
+  return candidate as AbortLike
+}
+
 export function withTeamLock<T>(
   teamLocks: Map<string, Promise<unknown>>,
   rootSessionId: string,
   work: () => Promise<T>,
+  signal?: AbortLike,
 ): Promise<T> {
   const previous = teamLocks.get(rootSessionId) ?? Promise.resolve()
-  const next = previous.catch(() => undefined).then(() => work())
+  const wait = signal === undefined
+    ? previous
+    : new Promise<void>((resolve, reject) => {
+        if (signal.aborted) { reject(signal.reason ?? new Error('operation aborted')); return }
+        const onAbort = () => reject(signal.reason ?? new Error('operation aborted'))
+        signal.addEventListener('abort', onAbort, { once: true })
+        previous.then(
+          () => { signal.removeEventListener('abort', onAbort); resolve() },
+          () => { signal.removeEventListener('abort', onAbort); resolve() },
+        )
+      })
+  const next = wait.catch(() => undefined).then(() => {
+    if (signal?.aborted) return Promise.reject(signal.reason ?? new Error('operation aborted'))
+    return work()
+  })
   teamLocks.set(rootSessionId, next.catch(() => undefined))
   return next
 }
@@ -588,6 +617,7 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect> {
       prompt: String(ctx.request.payload?.['prompt'] ?? ''),
       ...(optionalStringField(ctx.request.payload, 'attachedContext')),
       ...(optionalStringField(ctx.request.payload, 'taskSummary')),
+      ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
     })
     return {
       ...activated,

@@ -38,7 +38,7 @@
  *      state first, evidence second — see action-router/effects.ts).
  */
 import { checkCallerRoleAuthority, callerEnvelope, enforceCompatibilityGate, enforceEnvelope, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, } from '../admission/index.js';
-import { executeEffect, executeEffectLocked, withTeamLock } from './effects.js';
+import { executeEffect, executeEffectLocked, withTeamLock, asAbortLike } from './effects.js';
 /**
  * Create the TeamRuntime over the injected ports.
  *
@@ -100,7 +100,7 @@ export function createTeamRuntime(options) {
                 const environmentFacts = await options.environmentFacts();
                 await enforceCompatibilityGate(repositories, blueprint, rootSessionId, environmentFacts, options.now);
                 return executeEffectLocked(ctx);
-            })
+            }, asAbortLike(request.signal))
             : await executeEffect(teamLocks, ctx);
         return {
             status: 'executed',

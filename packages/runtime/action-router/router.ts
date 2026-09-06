@@ -54,7 +54,7 @@ import type {
   TeamRuntimeActionRequest,
   TeamRuntimeOptions,
 } from '../admission/index.js'
-import { executeEffect, executeEffectLocked, withTeamLock } from './effects.js'
+import { executeEffect, executeEffectLocked, withTeamLock, asAbortLike } from './effects.js'
 import type { EffectContext } from './effects.js'
 
 /**
@@ -129,7 +129,7 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
             options.now,
           )
           return executeEffectLocked(ctx)
-        })
+        }, asAbortLike(request.signal))
       : await executeEffect(teamLocks, ctx)
 
     return {

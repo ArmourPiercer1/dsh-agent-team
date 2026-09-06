@@ -236,6 +236,7 @@ interface ToolCallContext {
   readonly rootSessionId: string
   readonly requestToken: string
   readonly caller: ActionCaller
+  readonly signal?: unknown
 }
 
 /**
@@ -278,6 +279,16 @@ async function executeGuarded(
     }
   }
   return execute()
+}
+
+async function performRuntimeAction(
+  ctx: ToolCallContext,
+  request: Parameters<TeamToolsOptions['teamRuntime']['performAction']>[0],
+): Promise<TeamRuntimeActionOutcome> {
+  return ctx.options.teamRuntime.performAction({
+    ...request,
+    ...(ctx.signal !== undefined ? { signal: ctx.signal } : {}),
+  })
 }
 
 /** Project one facade outcome to the `executed` result (lossless). */
@@ -365,6 +376,7 @@ function makeDefinition(
           rootSessionId,
           requestToken,
           caller: callerResolution.caller,
+          signal: exec.signal,
         }
         return await spec.run(ctx, args)
       } catch (error) {
@@ -389,7 +401,7 @@ function listMembersSpec(): ToolSpec {
     },
     required: ['rootSessionId', 'requestToken'],
     async run(ctx) {
-      const outcome = await ctx.options.teamRuntime.performAction({
+      const outcome = await performRuntimeAction(ctx, {
         rootSessionId: ctx.rootSessionId,
         action: ACTION_NAMES.LIST_MEMBERS,
         caller: ctx.caller,
@@ -411,7 +423,7 @@ function listTemplatesSpec(): ToolSpec {
     },
     required: ['rootSessionId', 'requestToken'],
     async run(ctx) {
-      const outcome = await ctx.options.teamRuntime.performAction({
+      const outcome = await performRuntimeAction(ctx, {
         rootSessionId: ctx.rootSessionId,
         action: ACTION_NAMES.LIST_TEMPLATES,
         caller: ctx.caller,
@@ -435,7 +447,7 @@ function inspectConfigSpec(): ToolSpec {
     required: ['rootSessionId', 'requestToken', 'targetInstanceId'],
     async run(ctx, args) {
       const targetInstanceId = requireStringField(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH)
-      const outcome = await ctx.options.teamRuntime.performAction({
+      const outcome = await performRuntimeAction(ctx, {
         rootSessionId: ctx.rootSessionId,
         action: ACTION_NAMES.INSPECT_CONFIG,
         caller: ctx.caller,
@@ -483,7 +495,7 @@ function createMemberSpec(): ToolSpec {
         requestToken: ctx.requestToken,
         payload,
       }
-      const outcome = await ctx.options.teamRuntime.performAction(request)
+      const outcome = await performRuntimeAction(ctx, request)
       return toExecutedResult(outcome)
     },
   }
@@ -564,7 +576,7 @@ function delegateSpec(): ToolSpec {
         ...(instanceId !== undefined ? { delegationInstanceId: instanceId } : {}),
       }
       const execute = async (): Promise<TeamToolsResult> =>
-        toExecutedResult(await ctx.options.teamRuntime.performAction(request))
+        toExecutedResult(await performRuntimeAction(ctx, request))
       // The continue form admits work on an EXISTING instance: it is guarded
       // on that target (SD-GUARD); the create form has no existing target
       // (SD-CREATE: the activation authority is the gate).
@@ -614,7 +626,7 @@ function followUpSpec(): ToolSpec {
       if (attachedContext !== undefined) payload.attachedContext = attachedContext
       return executeGuarded(ctx, targetInstanceId, ACTION_NAMES.FOLLOW_UP, async () =>
         toExecutedResult(
-          await ctx.options.teamRuntime.performAction({
+          await performRuntimeAction(ctx, {
             rootSessionId: ctx.rootSessionId,
             action: ACTION_NAMES.FOLLOW_UP,
             caller: ctx.caller,

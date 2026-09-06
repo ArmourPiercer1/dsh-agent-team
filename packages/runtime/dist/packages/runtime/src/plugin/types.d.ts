@@ -649,6 +649,7 @@ export interface TeamAgentBindings {
         readonly name: string;
         readonly args: Record<string, unknown>;
         readonly callId?: string;
+        readonly signal?: unknown;
     }) => Promise<unknown>;
     /** The consumption state of one session (the /__p6t6/state route; sync). */
     readonly getConsumptionState: (sessionId: string) => unknown;

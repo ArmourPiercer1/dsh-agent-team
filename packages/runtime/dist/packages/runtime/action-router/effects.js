@@ -63,7 +63,9 @@ const FACT_COORDINATION = 'team-coordination-recorded';
  * @returns the durable effect (lossless JSON).
  */
 export function executeEffect(teamLocks, ctx) {
-    return withTeamLock(teamLocks, ctx.rootSessionId, () => runEffect(ctx));
+    if (ctx.spec.category === 'read')
+        return runEffect(ctx);
+    return withTeamLock(teamLocks, ctx.rootSessionId, () => runEffect(ctx), asAbortLike(ctx.request.signal));
 }
 /**
  * Execute the action's effect WITHOUT acquiring the per-team lock — the
@@ -78,10 +80,32 @@ export function executeEffect(teamLocks, ctx) {
 export function executeEffectLocked(ctx) {
     return runEffect(ctx);
 }
-/** The per-team promise chain (the P6-T1 lock pattern, reused). */
-export function withTeamLock(teamLocks, rootSessionId, work) {
+export function asAbortLike(value) {
+    if (value === null || typeof value !== 'object')
+        return undefined;
+    const candidate = value;
+    if (typeof candidate.aborted !== 'boolean' || typeof candidate.addEventListener !== 'function' || typeof candidate.removeEventListener !== 'function')
+        return undefined;
+    return candidate;
+}
+export function withTeamLock(teamLocks, rootSessionId, work, signal) {
     const previous = teamLocks.get(rootSessionId) ?? Promise.resolve();
-    const next = previous.catch(() => undefined).then(() => work());
+    const wait = signal === undefined
+        ? previous
+        : new Promise((resolve, reject) => {
+            if (signal.aborted) {
+                reject(signal.reason ?? new Error('operation aborted'));
+                return;
+            }
+            const onAbort = () => reject(signal.reason ?? new Error('operation aborted'));
+            signal.addEventListener('abort', onAbort, { once: true });
+            previous.then(() => { signal.removeEventListener('abort', onAbort); resolve(); }, () => { signal.removeEventListener('abort', onAbort); resolve(); });
+        });
+    const next = wait.catch(() => undefined).then(() => {
+        if (signal?.aborted)
+            return Promise.reject(signal.reason ?? new Error('operation aborted'));
+        return work();
+    });
     teamLocks.set(rootSessionId, next.catch(() => undefined));
     return next;
 }
@@ -473,6 +497,7 @@ async function runDelegate(ctx) {
             prompt: String(ctx.request.payload?.['prompt'] ?? ''),
             ...(optionalStringField(ctx.request.payload, 'attachedContext')),
             ...(optionalStringField(ctx.request.payload, 'taskSummary')),
+            ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
         });
         return {
             ...activated,
