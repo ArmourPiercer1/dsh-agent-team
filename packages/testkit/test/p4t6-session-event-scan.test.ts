@@ -347,8 +347,30 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // pass-through, the client transport, the updated focused specs, the
     // rebuilt install-surface artifacts) are in-place edits (no count
     // change).
-    expect(scanResult.filesScanned).toBe(609)
-    expect(scanResult.files.length).toBe(609)
+    // Missed-increment record (+8, the pin was stale at the TCM-D4 base
+    // 4216f47c — the same "record the missed pin" precedent as the P9-S8
+    // bug #5/#9 entries): the commits merged after TCM-M1 added eight
+    // scannable files without recording the increment — TCM-M2 adds
+    // packages/runtime/src/plugin/workspace-attach.ts +
+    // packages/runtime/test/tcm-m2-workspace-attach.test.ts; TCM-M3 adds
+    // packages/runtime/action-router/root-initial-work.ts +
+    // packages/runtime/test/tcm-m3-root-initial-work.test.ts +
+    // packages/runtime/test/tcm-m3-root-work-glue.test.ts; TCM-G1 adds
+    // packages/runtime/test/tcm-g1-s6-integration.test.ts; the
+    // client team-create flow adds packages/client/src/model/
+    // team-create-flow.ts + packages/client/test/team-create-flow.test.ts.
+    // All eight carry zero denylist vocabulary (the scan over them
+    // passes).
+    // TCM-D4 second-root regression pin (+1): this commit adds
+    // packages/runtime/test/tcm-d4-root-context.test.ts (the second-root
+    // in a boot-root world spec: own-leader caller resolution, the
+    // owning-root request boundaries, the model-visible root Team context
+    // block, the cold-resume tool re-registration); the sibling changes
+    // (agent-bindings.mjs, the t12a bridge .mjs/.d.mts, the M2/handoff
+    // persona specs) are in-place edits (no count change); the new file
+    // carries zero denylist vocabulary (the scan over it passes).
+    expect(scanResult.filesScanned).toBe(618)
+    expect(scanResult.files.length).toBe(618)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

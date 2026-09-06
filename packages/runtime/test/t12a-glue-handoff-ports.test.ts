@@ -70,6 +70,14 @@ const TOKEN_A = 'tok-t12a-glue-1'
 const TEXT_A = `handoff-context ${TOKEN_A}\n{"contextToken":"tok-t12a-glue-1","note":"frozen context"}`
 const LEADER_PERSONA = 'You are the leader of the t12a test team.'
 
+// TCM-D4: the concise machine-readable root Team context the glue appends
+// to the ROOT agent's scoped persona section (the canonical rootSessionId,
+// the leader instanceId, and the team_* call contract) — the blueprint
+// persona text stays verbatim ahead of the block.
+const rootContext = (sid: string): string =>
+  `[team-root-context rootSessionId=${sid} leaderInstanceId=inst-leader]\n` +
+  `Every team_* tool call must include rootSessionId="${sid}" and a unique requestToken.`
+
 function scopedPersona(ctx: AgentCtxDouble): AssembledPromptSection | undefined {
   return ctx.systemPrompt.assemble().find(
     (section) => section.name === 'deployment:persona' && section.scope === 'scoped',
@@ -251,7 +259,9 @@ describe('T12-GLUE the production live glue for the handoff ports', () => {
   it('GLUE-3 the setup installs the leader persona under the target root identity', () => {
     expect(aCreateSetupProvided).toBe(true)
     expect(aPersonaAfterCreate !== undefined).toBe(true)
-    expect(aPersonaAfterCreate!.text).toBe(LEADER_PERSONA)
+    // TCM-D4: + the root Team context block with the target's OWN
+    // canonical rootSessionId (the handoff root, not the boot root).
+    expect(aPersonaAfterCreate!.text).toBe(`${LEADER_PERSONA}\n\n${rootContext(HANDOFF_A)}`)
     expect(aPersonaAfterCreate!.order).toBe(0)
   })
 
@@ -259,7 +269,7 @@ describe('T12-GLUE the production live glue for the handoff ports', () => {
     const entries = aAssembledAfterCreate.filter((section) => section.name === 'deployment:persona')
     expect(entries.length).toBe(1)
     expect(entries[0]!.scope).toBe('scoped')
-    expect(entries[0]!.text).toBe(LEADER_PERSONA)
+    expect(entries[0]!.text).toBe(`${LEADER_PERSONA}\n\n${rootContext(HANDOFF_A)}`)
   })
 
   it('GLUE-5 createRootAgent is create-or-ensure: a second start for the live root is a no-op', () => {
@@ -315,6 +325,6 @@ describe('T12-GLUE the production live glue for the handoff ports', () => {
     expect(dResumeEntry.setupProvided).toBe(true)
     expect(dHandle !== undefined).toBe(true)
     expect(dPersona !== undefined).toBe(true)
-    expect(dPersona!.text).toBe(LEADER_PERSONA)
+    expect(dPersona!.text).toBe(`${LEADER_PERSONA}\n\n${rootContext(HANDOFF_D)}`)
   })
 })

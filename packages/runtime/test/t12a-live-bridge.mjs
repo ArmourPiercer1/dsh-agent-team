@@ -292,22 +292,48 @@ export function createSessionPersistenceDouble() {
  * production code path).
  *
  * @param {object} [params]
- * @param {object[]} [params.members] memberInstance rows (childSessionId/instanceId)
- * @param {object[]} [params.overrides] governance override records
- * @param {object} [params.teamSession] the durable TeamSession row (T12-M2:
- *   always exposed as repositories.teamSessions — the persona step record
- *   for the root)
+ * @param {object[]} [params.members] memberInstance rows of the DEFAULT
+ *   root (childSessionId/instanceId)
+ * @param {Object<string, object[]>} [params.membersByRoot] TCM-D4: per-root
+ *   memberInstance rows for NON-default roots (a key present with an empty
+ *   array says "this root has no members"; an absent key falls back to
+ *   `members`, preserving the pre-TCM-D4 behavior)
+ * @param {object[]} [params.overrides] governance override records of the
+ *   DEFAULT root
+ * @param {Object<string, object[]>} [params.overridesByRoot] TCM-D4: per-root
+ *   governance override rows for NON-default roots (same fallback semantics
+ *   as membersByRoot)
+ * @param {object} [params.teamSession] the durable TeamSession row of the
+ *   DEFAULT root (T12-M2: exposed as repositories.teamSessions — the
+ *   persona step record for the root)
+ * @param {object[]} [params.teamSessions] TCM-D4: the durable TeamSession
+ *   rows of EVERY team root of the world (a multi-root domain — a freshly
+ *   created team is a team root of the same row; `teamSession` is appended
+ *   as the default root's row when both are given). `get(id)` resolves by
+ *   the row's rootSessionId (the pre-TCM-D4 double returned the default
+ *   row for EVERY id — a single-root world cannot observe the difference).
  */
-export async function createDomainDouble({ members = [], overrides = [], teamSession = undefined } = {}) {
+export async function createDomainDouble({
+  members = [],
+  membersByRoot = {},
+  overrides = [],
+  overridesByRoot = {},
+  teamSession = undefined,
+  teamSessions = [],
+} = {}) {
   const [modelModule, capabilityModule] = await Promise.all([
     import('../agent-setup/model/index.js'),
     import('../agent-setup/capability/index.js'),
   ])
+  const rows = teamSession === undefined ? [...teamSessions] : [...teamSessions, teamSession]
+  const findRow = (id) => rows.find((row) => String(row.rootSessionId) === String(id))
+  const pickByRoot = (byRoot, root, fallback) =>
+    Object.prototype.hasOwnProperty.call(byRoot, String(root)) ? byRoot[String(root)] : fallback
   return {
     repositories: {
-      memberInstances: { list: () => members },
-      overrides: { list: () => overrides },
-      teamSessions: { get: () => teamSession, list: () => (teamSession === undefined ? [] : [teamSession]) },
+      memberInstances: { list: (root) => pickByRoot(membersByRoot, root, members) },
+      overrides: { list: (root) => pickByRoot(overridesByRoot, root, overrides) },
+      teamSessions: { get: (id) => findRow(id), list: () => rows },
     },
     consumption: {
       model: { resolveDurableModelSelection: modelModule.resolveDurableModelSelection },
@@ -371,9 +397,18 @@ export async function observeAssembly(agentCtx) {
  *
  * @param {object} [options]
  * @param {string} [options.rootSessionId]
- * @param {object[]} [options.members] domain memberInstance rows
+ * @param {object[]} [options.members] domain memberInstance rows of the
+ *   world's default (boot) root
+ * @param {Object<string, object[]>} [options.membersByRoot] TCM-D4: per-root
+ *   member rows for non-boot roots (see createDomainDouble)
  * @param {object[]} [options.overrides] domain governance override records
- * @param {object} [options.teamSession] the durable TeamSession row (T12-M2)
+ *   of the world's default (boot) root
+ * @param {Object<string, object[]>} [options.overridesByRoot] TCM-D4: per-root
+ *   override rows for non-boot roots (see createDomainDouble)
+ * @param {object} [options.teamSession] the durable TeamSession row of the
+ *   world's default (boot) root (T12-M2)
+ * @param {object[]} [options.teamSessions] TCM-D4: the durable TeamSession
+ *   rows of every team root of the world (multi-root domain)
  * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
  *   the world's global prompt layer (T12-M2; default: harness:identity +
  *   a global deployment:persona with empty text)
@@ -395,10 +430,18 @@ export async function createLiveWorld(options = {}) {
   const sessionPersistence = createSessionPersistenceDouble()
   const domain = await createDomainDouble({
     members: options.members ?? [],
+    membersByRoot: options.membersByRoot ?? {},
     overrides: options.overrides ?? [],
+    overridesByRoot: options.overridesByRoot ?? {},
+    teamSessions: options.teamSessions,
+    // The default root's row is synthesized only when the caller did not
+    // supply the row list at all (a multi-root list is assumed to carry
+    // the default root's own row — no duplicate at one key).
     teamSession:
       options.teamSession ??
-      { rootSessionId, sessionId: rootSessionId, blueprintId: 'team.t12a', generation: 1 },
+      (options.teamSessions === undefined
+        ? { rootSessionId, sessionId: rootSessionId, blueprintId: 'team.t12a', generation: 1 }
+        : undefined),
   })
   const config = {
     bootPhase: 'create',

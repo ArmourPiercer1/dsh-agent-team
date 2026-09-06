@@ -149,10 +149,18 @@ export interface DomainDouble {
 
 /** The domain-double params. */
 export interface DomainDoubleParams {
+  /** memberInstance rows of the default (boot) root. */
   readonly members?: object[]
+  /** TCM-D4: per-root member rows for non-default roots. */
+  readonly membersByRoot?: Record<string, object[]>
+  /** governance override rows of the default (boot) root. */
   readonly overrides?: object[]
+  /** TCM-D4: per-root override rows for non-default roots. */
+  readonly overridesByRoot?: Record<string, object[]>
   /** The durable TeamSession row (T12-M2: exposed as repositories.teamSessions). */
   readonly teamSession?: object
+  /** TCM-D4: the durable TeamSession rows of every team root (multi-root). */
+  readonly teamSessions?: object[]
 }
 
 /** The subagents service double options (see the `.mjs` createSubagentsDouble). */
@@ -200,6 +208,39 @@ export interface LiveWorld {
       installScopedPersona(sessionId: string, identity: unknown): void
       restoreScopedPersona(sessionId: string): void
     }
+    /** The caller map (SD-CALLER: the tool layer LOOKS UP the identity here). */
+    resolveCaller(sessionId: string): Promise<{ readonly kind: 'instance'; readonly instanceId: string }>
+    /** The SessionInputPort over live agents (attributed relay delivery). */
+    readonly sessionInput: {
+      submitAttributedInput(input: {
+        readonly sessionId: string
+        readonly text: string
+        readonly attribution: unknown
+      }): Promise<void>
+    }
+    /** The work-delivery port (the ONLY model-visible work path). */
+    readonly workDelivery: {
+      deliver(args: {
+        readonly childSessionId: string
+        readonly requestToken: string
+        readonly prompt: string
+        readonly attachedContext?: string
+      }): Promise<void>
+    }
+    /** Route one tool call onto the session's live agent (the request boundary runs first). */
+    executeTool(
+      sessionId: string,
+      request: { readonly name: string; readonly args?: Record<string, unknown>; readonly callId?: string },
+    ): Promise<{ readonly ok: boolean; readonly callId?: string }>
+    /** Forget + dispose one live handle ({dropped, disposeError?}). */
+    dropResidency(sessionId: string): Promise<{ readonly dropped: boolean; readonly disposeError?: string }>
+    /** The Root initial-work delivery (token-leading text into the root agent, no dedupe). */
+    deliverRootWork(input: {
+      readonly rootSessionId: string
+      readonly requestToken: string
+      readonly prompt: string
+      readonly attachedContext?: string
+    }): Promise<void>
     /** The B6 handoff port: start (or re-attach) the team root's REAL DSH Agent (T12-GLUE). */
     createRootAgent(rootSessionId: string): Promise<void>
     /** The B6 handoff port: deliver the frozen context as a REAL model-visible input turn (T12-GLUE). */
@@ -237,10 +278,18 @@ export interface LiveWorld {
 /** The live-world options (see the `.mjs` createLiveWorld). */
 export interface LiveWorldOptions {
   readonly rootSessionId?: string
+  /** memberInstance rows of the world's default (boot) root. */
   readonly members?: object[]
+  /** TCM-D4: per-root member rows for non-boot roots. */
+  readonly membersByRoot?: Record<string, object[]>
+  /** governance override rows of the world's default (boot) root. */
   readonly overrides?: object[]
-  /** The durable TeamSession row (T12-M2). */
+  /** TCM-D4: per-root override rows for non-boot roots. */
+  readonly overridesByRoot?: Record<string, object[]>
+  /** The durable TeamSession row of the world's default (boot) root (T12-M2). */
   readonly teamSession?: object
+  /** TCM-D4: the durable TeamSession rows of every team root (multi-root). */
+  readonly teamSessions?: object[]
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
   readonly configOverrides?: Record<string, unknown>

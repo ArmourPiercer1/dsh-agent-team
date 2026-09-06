@@ -10,6 +10,16 @@
  * work-delivery ports, the lifecycle ports (interrupt / drain / residency),
  * the caller map, and the row-owned tool execution budget.
  *
+ * TCM-D4 (additive): every request boundary now resolves the session's
+ * OWNING team root from the public durable repositories (a session with
+ * its own TeamSession row is a team root of this row — it resolves under
+ * ITSELF, not the boot root) and threads it through setup/preparation;
+ * the caller map recognizes such a root as its own leader (inst-leader);
+ * and the ROOT agent's scoped persona section carries a concise
+ * machine-readable root Team context (canonical rootSessionId + leader
+ * instanceId + the team_* call contract). Boot-root behavior is
+ * unchanged; unknown sessions fail closed exactly as before.
+ *
  * Plain JS ESM: node: builtins + prebuilt @deepseek-ai/* packages only (no
  * TypeScript, no loader hooks — the production host row runs as built
  * host.js under plain Node). The built production host dynamically imports
@@ -307,6 +317,60 @@ export function createAgentBindings(deps) {
       if (String(member.childSessionId) === sessionId) return String(member.instanceId)
     }
     throw new Error(`p6t6 consumption: no team instance for session '${sessionId}'`)
+  }
+
+  /**
+   * TCM-D4: the team root that OWNS one session of this row's domain —
+   * resolved from the public durable repositories (never a caller claim,
+   * never the boot root by default):
+   *
+   *   1. the boot root owns itself;
+   *   2. a session that carries its own durable TeamSession row IS a team
+   *      root of this row (a freshly created TeamSession / team-root
+   *      binding — the row's domain hosts every team root, T12-GLUE) and
+   *      owns itself;
+   *   3. a bound member child is owned by the root whose member list
+   *      carries it — the boot root first (its TeamSession row may be
+   *      absent in older worlds), then the other team roots of the domain.
+   *
+   * `undefined` when no ownership can be established: the callers then
+   * fail closed exactly as before (the boot root is NOT a fallback for
+   * unknown sessions).
+   * @param {string} sessionId
+   * @returns {string|undefined} the owning root session id
+   */
+  function teamRootOfSession(sessionId) {
+    const sid = String(sessionId)
+    if (sid === rootSid) return rootSid
+    // (2) the session IS a team root of this row's domain.
+    if (domain.repositories.teamSessions !== undefined) {
+      try {
+        if (domain.repositories.teamSessions.get(sid) !== undefined) return sid
+      } catch {
+        // a malformed root session id is not a team row — ownership stays
+        // unresolved (fail closed)
+      }
+    }
+    const isMemberOf = (teamRoot) => {
+      for (const member of domain.repositories.memberInstances.list(teamRoot)) {
+        if (String(member.childSessionId) === sid) return true
+      }
+      return false
+    }
+    // (3) a bound member child of this row's teams.
+    if (isMemberOf(rootSid)) return rootSid
+    if (domain.repositories.teamSessions !== undefined) {
+      try {
+        for (const row of domain.repositories.teamSessions.list()) {
+          const root = String(row.rootSessionId)
+          if (root === rootSid || root === sid) continue
+          if (isMemberOf(root)) return root
+        }
+      } catch {
+        // an unavailable listing leaves the ownership unresolved
+      }
+    }
+    return undefined
   }
 
   /**
@@ -652,11 +716,47 @@ export function createAgentBindings(deps) {
           if (agentCtx === undefined) {
             throw new Error(`agent-bindings: persona overlay install for '${sessionId}': no live agent ctx (the overlay slot only installs at setup time)`)
           }
-          registerPersonaSection(String(sessionId), agentCtx, identity)
+          // TCM-D4: the ROOT agent's scoped persona section ALSO carries
+          // the concise machine-readable root Team context — the canonical
+          // rootSessionId, the leader instanceId, and the team_* call
+          // contract (every call includes rootSessionId + a requestToken) —
+          // the three facts the model needs to address this team. It is
+          // appended to the SAME single scoped section the blueprint
+          // persona composed (the blueprint text stays verbatim ahead of
+          // the block; the re-registration below converges to exactly one
+          // entry). Members and non-root identities are unchanged.
+          const sid = String(sessionId)
+          if (identity.kind === 'root') {
+            const base = String(identity.personaText ?? '')
+            const combined = base === '' ? rootTeamContextBlock(sid) : `${base}\n\n${rootTeamContextBlock(sid)}`
+            registerPersonaSection(sid, agentCtx, { ...identity, personaText: combined })
+            return
+          }
+          registerPersonaSection(sid, agentCtx, identity)
         },
       },
     })
     return personaSlot
+  }
+
+  /**
+   * TCM-D4: the concise machine-readable root Team context appended to the
+   * ROOT agent's scoped persona section: the canonical rootSessionId, the
+   * leader instanceId, and the contract that every team_* call must carry
+   * rootSessionId + a requestToken (the closed tool layer rejects a
+   * missing rootSessionId / requestToken as bad arguments, and a caller
+   * the map cannot resolve as TEAM_TOOL_CALLER_UNRESOLVED — the two
+   * failures a root agent cannot self-correct without these facts).
+   * @param {string} rootSessionId
+   * @returns {string} the two-line context block
+   */
+  function rootTeamContextBlock(rootSessionId) {
+    return (
+      `[team-root-context rootSessionId=${rootSessionId} ` +
+      `leaderInstanceId=${String(LEADER_INSTANCE_ID)}]\n` +
+      `Every team_* tool call must include rootSessionId="${rootSessionId}" ` +
+      `and a unique requestToken.`
+    )
   }
 
   /**
@@ -690,14 +790,18 @@ export function createAgentBindings(deps) {
       target = { kind: 'root', sessionId: teamRoot, rootSessionId: teamRoot, instanceId: LEADER_INSTANCE_ID }
       record = row ?? {}
     } else {
-      const members = domain.repositories.memberInstances.list(rootSid)
+      // TCM-D4: a member resolves its persona under the ROOT THAT OWNS IT
+      // (the threaded owning root when present — a member of a non-boot
+      // team root — the boot root when absent, as before).
+      const membersRoot = teamRoot !== undefined ? teamRoot : rootSid
+      const members = domain.repositories.memberInstances.list(membersRoot)
       const row = members.find((member) => String(member.childSessionId) === sessionId)
       if (row !== undefined) {
-        target = { kind: 'member', sessionId, rootSessionId: rootSid, instanceId: String(row.instanceId) }
+        target = { kind: 'member', sessionId, rootSessionId: membersRoot, instanceId: String(row.instanceId) }
         record = row
       } else if (templateIdHint !== undefined && templateIdHint !== '') {
         // The fresh-create window: the row commits AFTER this setup runs.
-        target = { kind: 'member', sessionId, rootSessionId: rootSid, instanceId }
+        target = { kind: 'member', sessionId, rootSessionId: membersRoot, instanceId }
         record = { childSessionId: sessionId, instanceId, templateId: templateIdHint }
       } else {
         throw new Error(`agent-bindings: persona install for member '${sessionId}': no committed MemberInstance row and no templateId hint (fail closed — no silent persona-less member)`)
@@ -721,9 +825,21 @@ export function createAgentBindings(deps) {
     }
     resumingSessions.add(sessionId)
     try {
+      // TCM-D4: the cold resume re-applies the durable truth under the
+      // session's OWNING root (a team root of this row's domain re-
+      // attaches under ITSELF — the same identity the create path
+      // installed; a member child under its root). The boot root is only
+      // the default for sessions that belong to it, never a fallback.
+      const teamRoot = teamRootOfSession(sessionId)
       const handle = await agents.resume({
         resumeSessionId: SessionId(sessionId),
-        setup: agentSetup(sessionId, undefined, undefined, 'cold-member'),
+        setup: agentSetup(
+          sessionId,
+          undefined,
+          undefined,
+          teamRoot !== undefined && teamRoot === sessionId ? 'cold-root' : 'cold-member',
+          teamRoot,
+        ),
       })
       liveAgents.set(sessionId, handle)
       return handle
@@ -792,7 +908,10 @@ export function createAgentBindings(deps) {
       if (sessionIsDurable(childSid)) {
         const handle = await agents.resume({
           resumeSessionId: SessionId(childSid),
-          setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'cold-member'),
+          // TCM-D4: the child's consumption + persona resolve under the
+          // OWNING root (the request's rootSessionId — the boot root only
+          // when the field is absent, as before).
+          setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'cold-member', childRoot),
         })
         liveAgents.set(childSid, handle)
         return { childSessionId: childSid }
@@ -808,7 +927,10 @@ export function createAgentBindings(deps) {
       const handle = await agents.create({
         sessionId: SessionId(childSid),
         meta: { cwd: memberCwd },
-        setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'fresh-member'),
+        // TCM-D4: the child's consumption + persona resolve under the
+        // OWNING root (the request's rootSessionId — the boot root only
+        // when the field is absent, as before).
+        setup: agentSetup(childSid, instanceIdHint, templateIdHint, 'fresh-member', childRoot),
       })
       liveAgents.set(childSid, handle)
       return { childSessionId: childSid }
@@ -945,7 +1067,10 @@ export function createAgentBindings(deps) {
     async submitAttributedInput(input) {
       const handle = await ensureLiveAgent(String(input.sessionId))
       // P8-S4B: request boundary — re-apply the durable truth first.
-      await prepareAgentForRequest(String(input.sessionId))
+      // TCM-D4: under the session's OWNING root (the boot root only when
+      // the session belongs to it; a member of another team root — or a
+      // team root itself — resolves under its own root's truth).
+      await prepareAgentForRequest(String(input.sessionId), teamRootOfSession(input.sessionId))
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
         source: { kind: 'user' },
@@ -970,7 +1095,10 @@ export function createAgentBindings(deps) {
     async deliver(args) {
       const handle = await ensureLiveAgent(String(args.childSessionId))
       // P8-S4B: request boundary — re-apply the durable truth first.
-      await prepareAgentForRequest(String(args.childSessionId))
+      // TCM-D4: under the child's OWNING root (the boot root only when the
+      // child belongs to it — a member of another team root resolves
+      // under its own root's truth).
+      await prepareAgentForRequest(String(args.childSessionId), teamRootOfSession(args.childSessionId))
       const text = args.attachedContext !== undefined && args.attachedContext.length > 0
         ? `${args.prompt}\n\n[attached-context]\n${args.attachedContext}`
         : args.prompt
@@ -1304,13 +1432,23 @@ export function createAgentBindings(deps) {
   // SD-CALLER: the tool layer only LOOKS UP the caller identity from the
   // durable domain; the runtime re-validates it on every call.
   const resolveCaller = async (sessionId) => {
-    if (sessionId === rootSid) {
+    const sid = String(sessionId)
+    // TCM-D4: the caller resolves under the session's OWNING team root from
+    // the durable domain (never the boot root by default): a session that
+    // is itself a team root of this row's domain (a freshly created
+    // TeamSession / team-root binding) is that team's LEADER (inst-leader);
+    // a member child resolves under the root whose member list carries it
+    // (the boot root's members keep the pre-existing behavior). Unknown
+    // sessions fail closed exactly as before.
+    const teamRoot = teamRootOfSession(sid)
+    if (teamRoot !== undefined && teamRoot === sid) {
       return { kind: 'instance', instanceId: String(LEADER_INSTANCE_ID) }
     }
-    const members = domain.repositories.memberInstances.list(rootSid)
-    for (const member of members) {
-      if (String(member.childSessionId) === sessionId) {
-        return { kind: 'instance', instanceId: String(member.instanceId) }
+    if (teamRoot !== undefined) {
+      for (const member of domain.repositories.memberInstances.list(teamRoot)) {
+        if (String(member.childSessionId) === sid) {
+          return { kind: 'instance', instanceId: String(member.instanceId) }
+        }
       }
     }
     throw new Error(`p6t6 caller map: no caller for session ${sessionId}`)
@@ -1386,8 +1524,11 @@ export function createAgentBindings(deps) {
     }
     // P8-S4B: request boundary — the next real request runs on the
     // durable truth (an in-flight turn on `sessionId` keeps its own snapshot).
+    // TCM-D4: under the session's OWNING root (the boot root only when the
+    // session belongs to it; a member of another team root — or a team root
+    // itself — resolves under its own root's truth).
     try {
-      await prepareAgentForRequest(String(sessionId))
+      await prepareAgentForRequest(String(sessionId), teamRootOfSession(sessionId))
     } catch (error) {
       throw toolRouteError('CONSUMPTION_BOUNDARY', error instanceof Error ? error.message : String(error))
     }

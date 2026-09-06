@@ -56,6 +56,15 @@ const MEMBER_PERSONA = 'You are member tpl-t12a of the t12a test team.'
 // distinguishable from the blueprint personas so shadowing is observable.
 const GLOBAL_PERSONA = 'You are the global deployment persona (the DSH service layer).'
 
+// TCM-D4: the concise machine-readable root Team context the glue appends
+// to the ROOT agent's scoped persona section (the canonical rootSessionId,
+// the leader instanceId, and the team_* call contract) — the blueprint
+// persona text stays verbatim ahead of the block.
+const rootContext = (sid: string): string =>
+  `[team-root-context rootSessionId=${sid} leaderInstanceId=inst-leader]\n` +
+  `Every team_* tool call must include rootSessionId="${sid}" and a unique requestToken.`
+const LEADER_PERSONA_WITH_CONTEXT = `${LEADER_PERSONA}\n\n${rootContext(ROOT)}`
+
 /** The bundle's session input port (structural; the glue reads id + text). */
 interface SessionInputBinding {
   readonly sessionInput: {
@@ -167,7 +176,10 @@ describe('T12-M2 the blueprint persona installed into the real DSH Agent prompt'
     expect(world.records.creates.length).toBe(2)
     expect(followupsAfterBoot).toBe(0)
     expect(rootPersonaAfterBoot !== undefined).toBe(true)
-    expect(rootPersonaAfterBoot!.text).toBe(LEADER_PERSONA)
+    // TCM-D4: the ROOT section = the blueprint leader persona + the
+    // machine-readable root Team context block (the member section keeps
+    // the template persona verbatim — no context block).
+    expect(rootPersonaAfterBoot!.text).toBe(LEADER_PERSONA_WITH_CONTEXT)
     expect(rootPersonaAfterBoot!.order).toBe(0)
     expect(memberPersonaAfterBoot !== undefined).toBe(true)
     expect(memberPersonaAfterBoot!.text).toBe(MEMBER_PERSONA)
@@ -177,7 +189,7 @@ describe('T12-M2 the blueprint persona installed into the real DSH Agent prompt'
     const entries = rootAssembledAfterBoot.filter((section) => section.name === 'deployment:persona')
     expect(entries.length).toBe(1)
     expect(entries[0]!.scope).toBe('scoped')
-    expect(entries[0]!.text).toBe(LEADER_PERSONA)
+    expect(entries[0]!.text).toBe(LEADER_PERSONA_WITH_CONTEXT)
   })
 
   it('M2-3 the request boundary (attributed input) leaves the persona in place', () => {
@@ -195,7 +207,7 @@ describe('T12-M2 the blueprint persona installed into the real DSH Agent prompt'
     expect(world.agents.globalSections).toEqual(globalsSnapshot)
     const rootPersona = scopedPersona(rootCtx)
     expect(rootPersona !== undefined).toBe(true)
-    expect(rootPersona!.text).toBe(LEADER_PERSONA)
+    expect(rootPersona!.text).toBe(LEADER_PERSONA_WITH_CONTEXT)
   })
 
   it('M2-5 a second restore for the same session is a no-op (idempotent)', () => {
@@ -219,7 +231,9 @@ describe('T12-M2 the blueprint persona installed into the real DSH Agent prompt'
     expect(worldE.records.creates.length).toBe(0)
     const persona = scopedPersona(rootCtxE)
     expect(persona !== undefined).toBe(true)
-    expect(persona!.text).toBe(LEADER_PERSONA)
+    // TCM-D4: the resumed root carries the context block with its OWN
+    // canonical rootSessionId.
+    expect(persona!.text).toBe(`${LEADER_PERSONA}\n\n${rootContext(ROOT_E)}`)
   })
 
   it('M2-8 a pre-boot installScopedPersona (the pending window) flushes at setup, before any work', () => {
