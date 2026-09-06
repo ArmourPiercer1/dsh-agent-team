@@ -1,4 +1,4 @@
-﻿
+
  RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-C1/packages/runtime
 
  ✓ test/p7t2-escalation.test.ts (22 tests) 7ms
@@ -29,11 +29,11 @@ At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (stderr | test/t...-attach.test.ts:String) [], RemoteExc 
+    + CategoryInfo          : NotSpecified: (stderr | test/t...-attach.test.ts:String) [], RemoteExc
    eption
     + FullyQualifiedErrorId : NativeCommandError
- 
-[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent 
+
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent
 from the plugin context (the web profile provides it through the workspace row — the team row hard-in
 jects it)
     at assertWorkspaceRegistryLike (D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-C
@@ -270,7 +270,7 @@ red
 red
 
 stderr | test/rmr-remote-mount-race.test.ts
-[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected 
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected
 connection.rpc.handle to be a function
 
  ✓ test/p8s7r2-effective-config.test.ts (19 tests) 102ms
@@ -318,7 +318,7 @@ storage/repositories/team-domain.ts:176:13)
 /src/plugin/host.ts:813:14)
 
 stderr | test/rmr-create-or-open-boot.test.ts
-[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no 
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no
 durable TeamSession record — a resume loads the existing Team identity, it never mints one (the creat
 e boots it)
     at Object.boot (D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-C1/packages/runti
@@ -496,5 +496,3 @@ le-runner.js:1135:10)
       Tests  1187 passed (1187)
    Start at  02:18:24
    Duration  20.18s (transform 173.56s, setup 0ms, import 485.69s, tests 957ms, environment 12ms)
-
-

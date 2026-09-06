@@ -1,4 +1,4 @@
-﻿
+
  RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-C1/packages/runtime
 
  ❯ test/p8s3-work-chain.test.ts (12 tests | 4 failed) 9ms
@@ -14,14 +14,14 @@
      × C1: failed/unavailable are carried verbatim, and settled=true never maps to succeeded 1ms
      × C1: a replay of an already-settled token synthesizes the SAME unavailable result — no re-delivery, no re-report 0ms
      × C1: resume mode carries the fresh this-attempt result (at-least-once, visible dedup) 0ms
-pnpm.exe : 
+pnpm.exe :
 At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: full mo
@@ -84,7 +84,7 @@ undefined
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
 
- FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: resume 
+ FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: resume
 mode carries the fresh this-attempt result (at-least-once, visible dedup)
 AssertionError: expected undefined to be 'failed' // Object.is equality
 
@@ -109,5 +109,3 @@ undefined
       Tests  4 failed | 8 passed (12)
    Start at  02:16:12
    Duration  862ms (transform 363ms, setup 0ms, import 738ms, tests 9ms, environment 0ms)
-
-
