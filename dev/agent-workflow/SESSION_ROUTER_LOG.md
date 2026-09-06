@@ -1991,3 +1991,8 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - User decisions confirmed: no upstream modification; D6 Team UI explicit Team-mode/ordinary-mode switch; reuse TeamDomain for lightweight ownership/index; D2 minimal structured result; D4 layered (UI callback first, Agent/tool signal later).
 - Plan: docs/plans/active/TEAM_D1-D6_REPAIR_PLAN_V2.md, committed 1c7d3d7.
 - No v2 implementation started; next step P0-v2.
+
+## Team D1-D6 repair v2 execution start (2026-09-07T00:58:03.0134971+08:00)
+- Route check: main agent qwen3.8-27b per session declaration; all workflow-launched workers carry explicit provider=qiyuan-self model=qwen3.8-27b overrides (user directive: use workflow tool so provider/model is not silently ignored).
+- P0-v2 baseline: ce46df3d838f5e3cdafcb267a09bc80e3f360376; test-use 76fda72 clean; int/team-d1-d6-v2 created.
+- Wave A (A1-A4) characterization launched via workflow tool.
