@@ -1,0 +1,1257 @@
+{
+  "task": "D4 (Team D1-D6 repair v2, Wave D — restart/reopen Team UI acceptance)",
+  "nonce": "mtqc5oi495c6f4",
+  "startedAt": "2026-09-06T21:40:38.861Z",
+  "finishedAt": "2026-09-06T21:40:48.310Z",
+  "durationMs": 9449,
+  "host": {
+    "source": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+    "hostSha": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+    "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test",
+    "port": 3180,
+    "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+    "rowDist": "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+  },
+  "roots": {
+    "ROOT_A": "session-d4v2-a-mtqc5oi495c6f4",
+    "ROOT_B": "session-d4v2-b-mtqc5oi495c6f4",
+    "blueprintId": "d4v2-bp"
+  },
+  "scenarios": {
+    "S0": {
+      "criterion": "S0 pre-flight: test-use pristine at the pinned SHA; :3080 only probed read-only; worktree D1-D3 dist import-probed; junction bridges wired",
+      "pass": true,
+      "durationMs": 391,
+      "assertions": [
+        {
+          "name": "test-use HEAD == 76fda729 (the pinned audit baseline)",
+          "ok": true,
+          "detail": "head=76fda729799fe9b3848dbe2c211d4b231032b81e"
+        },
+        {
+          "name": "test-use git status --porcelain empty (pre)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "name": "stable :3080 reachable read-only (pre; NO interaction)",
+          "ok": true,
+          "detail": "status=401"
+        },
+        {
+          "name": "worktree dist carries the D1-D3 build artifacts (host/root/s6-remote/glue)",
+          "ok": true,
+          "detail": "{\"plugin/host.js\":true,\"plugin/root.js\":true,\"plugin/s6-remote.js\":true,\"plugin/live/agent-bindings.mjs\":true}"
+        },
+        {
+          "name": "dist import probe: the D1-D3 dist row loads under plain node",
+          "ok": true,
+          "detail": "LOADED name=dsh-agent-team"
+        },
+        {
+          "name": "junction bridges wired (worktree node_modules only; host tree untouched)",
+          "ok": true,
+          "detail": "RUNTIME_LINKS + PACKAGES_LINKS"
+        }
+      ],
+      "evidence": {
+        "testUsePre": {
+          "head": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+          "statusEmpty": true,
+          "diffEmpty": true,
+          "errors": []
+        },
+        "stablePre": {
+          "url": "http://127.0.0.1:3080/",
+          "httpStatus": 401
+        },
+        "distFiles": {
+          "plugin/host.js": true,
+          "plugin/root.js": true,
+          "plugin/s6-remote.js": true,
+          "plugin/live/agent-bindings.mjs": true
+        },
+        "homePreExistingRoots": [
+          "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+          "session-d4v2-a-mtqbc35w96f4f5",
+          "session-d4v2-a-mtqbczpy6e4fed",
+          "session-d4v2-a-mtqbe03c96d7cf",
+          "session-d4v2-a-mtqbk47c94e592",
+          "session-d4v2-a-mtqbpakj76cd36",
+          "session-d4v2-a-mtqbtxn1d000e5",
+          "session-d4v2-a-mtqbvsieefe5ee",
+          "session-d4v2-b-mtqbe03c96d7cf",
+          "session-d4v2-b-mtqbk47c94e592",
+          "session-d4v2-b-mtqbpakj76cd36",
+          "session-d4v2-b-mtqbtxn1d000e5",
+          "session-d4v2-b-mtqbvsieefe5ee",
+          "team-root"
+        ]
+      },
+      "notes": [
+        "pre-existing durable roots in the shared home: [\"session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9\",\"session-d4v2-a-mtqbc35w96f4f5\",\"session-d4v2-a-mtqbczpy6e4fed\",\"session-d4v2-a-mtqbe03c96d7cf\",\"session-d4v2-a-mtqbk47c94e592\",\"session-d4v2-a-mtqbpakj76cd36\",\"session-d4v2-a-mtqbtxn1d000e5\",\"session-d4v2-a-mtqbvsieefe5ee\",\"session-d4v2-b-mtqbe03c96d7cf\",\"session-d4v2-b-mtqbk47c94e592\",\"session-d4v2-b-mtqbpakj76cd36\",\"session-d4v2-b-mtqbtxn1d000e5\",\"session-d4v2-b-mtqbvsieefe5ee\",\"team-root\"] (preserved; listed by listRoots after boot)"
+      ]
+    },
+    "S1": {
+      "criterion": "S1 (step 1): boot 1 on the shared home (create-or-open resolves to create for the nonce row root ROOT_A) + dynamic team root ROOT_B via the browser-facing public remote channel team.create (contract v2) + a real Leader turn on ROOT_B",
+      "pass": true,
+      "durationMs": 4494,
+      "assertions": [
+        {
+          "name": "row mounted (production row + p6t6 observability row in the composed profile)",
+          "ok": true,
+          "detail": "{\"dsh-agent-team\":true,\"p6t6-team-tools\":true}"
+        },
+        {
+          "name": "health: row ready with EXACTLY the ten team tool registrations (row level)",
+          "ok": true,
+          "detail": "toolCount=10"
+        },
+        {
+          "name": "live root agent ROOT_A materialized by the row create boot",
+          "ok": true,
+          "detail": "[\"session-d4v2-a-mtqc5oi495c6f4\"]"
+        },
+        {
+          "name": "remote team.create (v2) minted the dynamic root ROOT_B",
+          "ok": true,
+          "detail": "{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"blueprint\":{\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40\"},\"createdAt\":\"2026-09-06T21:40:42.415Z\",\"generation\":1,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\"},\"binding\":{\"schemaVersion\":1"
+        },
+        {
+          "name": "Leader prompt accepted on ROOT_B (browser-facing chat path)",
+          "ok": true,
+          "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"d4v2-10f7a72b0e77\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+        },
+        {
+          "name": "boot-1 turn settled (the assistant message carrying the mock ack is durable in ROOT_B)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "baseline: the ten team_* tools are registered on the live ROOT_B agent (model request tool schema)",
+          "ok": true,
+          "detail": "tools=[\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+        }
+      ],
+      "evidence": {
+        "boot1": {
+          "url": "http://127.0.0.1:3180/?token=ccv4Y9sU9Q6nJ7cO4i6hRcY-A9vg898mDWmWxU1Up34",
+          "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G4\\d4-rerun-owner\\instances\\BOOT1\\instance-port3180.log",
+          "rowMounted": {
+            "dsh-agent-team": true,
+            "p6t6-team-tools": true
+          },
+          "health": {
+            "status": 200,
+            "toolCount": 10,
+            "liveSessions": [
+              "session-d4v2-a-mtqc5oi495c6f4"
+            ]
+          }
+        },
+        "teamCreate": {
+          "status": 200,
+          "value": {
+            "path": "fresh-root",
+            "durable": {
+              "teamSession": {
+                "schemaVersion": 1,
+                "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+                "blueprint": {
+                  "blueprintId": "d4v2-bp",
+                  "revision": "1",
+                  "contentHash": "sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40"
+                },
+                "createdAt": "2026-09-06T21:40:42.415Z",
+                "generation": 1,
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team"
+              },
+              "binding": {
+                "schemaVersion": 1,
+                "kind": "team-root",
+                "sessionId": "session-d4v2-b-mtqc5oi495c6f4"
+              },
+              "wrote": true,
+              "leaderRow": {
+                "schemaVersion": 2,
+                "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "createdAt": "2026-09-06T21:40:42.531Z",
+                "activityVersion": 1
+              }
+            },
+            "bind": {
+              "requested": "fresh-root",
+              "bound": true,
+              "installed": true,
+              "identity": {
+                "kind": "root",
+                "sessionId": "session-d4v2-b-mtqc5oi495c6f4",
+                "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4"
+              },
+              "admitted": true,
+              "admissionCode": "ADMISSION_OPEN",
+              "emittedEvents": [
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "persona"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "model"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "capability"
+                },
+                {
+                  "name": "agent-setup/admission-decided",
+                  "detail": "ADMISSION_OPEN"
+                }
+              ]
+            }
+          }
+        },
+        "boot1Prompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "d4v2-10f7a72b0e77",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "toolTableBoot1": {
+          "seq": 1,
+          "model": "d4v2-model",
+          "toolNames": [
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_send_message"
+          ],
+          "systemText": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3180. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nD4V2 leader: you lead the d4v2 restart-reopen acceptance team.\n\n[team-root-context rootSessionId=session-d4v2-b-mtqc5oi495c6f4 leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-d4v2-b-mtqc5oi495c6f4\" and a unique requestToken.\n\nWhen you successfully create or modify files, mention the primary outputs in your final response. To make those and any other changed-file references clickable in Web, format them as Markdown inline code using the exact file-tool path, or a basename when unique among the files changed in that turn."
+        }
+      },
+      "notes": [
+        "ROOT_B agent tool table at boot 1 (10 tools): [\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+      ]
+    },
+    "S2": {
+      "criterion": "S2 (step 2): root/member durable rows (row state route + v3 team.listRoots + team_domain.json forensic read) and the native session artifacts of ROOT_A/ROOT_B",
+      "pass": true,
+      "durationMs": 21,
+      "assertions": [
+        {
+          "name": "row state: ROOT_A TeamSession durable row + Leader member row",
+          "ok": true,
+          "detail": "members=[\"inst-leader\"]"
+        },
+        {
+          "name": "team.listRoots (v3) enumerates BOTH new roots + the pre-existing home roots (multi-root, read-only host authority)",
+          "ok": true,
+          "detail": "roots=[\"session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9\",\"session-d4v2-a-mtqbc35w96f4f5\",\"session-d4v2-a-mtqbczpy6e4fed\",\"session-d4v2-a-mtqbe03c96d7cf\",\"session-d4v2-a-mtqbk47c94e592\",\"session-d4v2-a-mtqbpakj76cd36\",\"session-d4v2-a-mtqbtxn1d000e5\",\"session-d4v2-a-mtqbvsieefe5ee\",\"session-d4v2-a-mtqc5oi495c6f4\",\"session-d4v2-b-mtqbe03c96d7cf\",\"session-d4v2-b-mtqbk47c94e592\",\"session-d4v2-b-mtqbpakj76cd36\",\"session-d4v2-b-mtqbtxn1d000e5\",\"session-d4v2-b-mtqbvsieefe5ee\",\"session-d4v2-b-mtqc5oi495c6f4\",\"team-root\"]"
+        },
+        {
+          "name": "ROOT_A wire row carries the closed v3 shape {rootSessionId, blueprintId, revision, defaultWorkspace?, createdAt, generation, memberCount}",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-d4v2-a-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:41.221Z\",\"generation\":2,\"memberCount\":0}"
+        },
+        {
+          "name": "ROOT_B wire row carries the closed v3 shape (the dynamic root is indexed like any durable root)",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:42.415Z\",\"generation\":1,\"memberCount\":0}"
+        },
+        {
+          "name": "ROOT_B memberCount excludes the Leader (zero seeded members)",
+          "ok": true,
+          "detail": "memberCount=0"
+        },
+        {
+          "name": "team_domain.json: ROOT_A TeamSession + Leader row + team-root binding durable",
+          "ok": true,
+          "detail": "{\"teamSession\":{\"blueprint\":{\"blueprintId\":\"d4v2-bp\",\"contentHash\":\"sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40\",\"revision\":\"1\"},\"createdAt\":\"2026-09-06T21:40:41.221Z\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"generation\":2,\"rootSessionId\":\"session-d4v2-a-mtqc5oi495c6f4\",\"schemaVersion\":1},\"leader\":{\"activityVersion\":1,\"createdAt\":\"2026-09-06T21:40:41.339Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-d4v2-a-mtqc5oi495c6f4"
+        },
+        {
+          "name": "team_domain.json: ROOT_B TeamSession + Leader row + team-root binding durable (the remote create path writes the same canonical rows)",
+          "ok": true,
+          "detail": "{\"teamSession\":{\"blueprint\":{\"blueprintId\":\"d4v2-bp\",\"contentHash\":\"sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40\",\"revision\":\"1\"},\"createdAt\":\"2026-09-06T21:40:42.415Z\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"generation\":1,\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"schemaVersion\":1},\"leader\":{\"activityVersion\":1,\"createdAt\":\"2026-09-06T21:40:42.531Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4"
+        },
+        {
+          "name": "native session artifact for ROOT_A under DSH_HOME (real Root Agent session)",
+          "ok": true,
+          "detail": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test\\sessions\\--D-AgentDev-dsh-plugins-dsh-agent-team--\\session-d4v2-a-mtqc5oi495c6f4\\session.jsonl.zstd"
+        },
+        {
+          "name": "native session artifact for ROOT_B under DSH_HOME (the dynamic root is a real DSH session)",
+          "ok": true,
+          "detail": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test\\sessions\\--D-AgentDev-dsh-plugins-dsh-agent-team--\\session-d4v2-b-mtqc5oi495c6f4\\session.jsonl.zstd"
+        },
+        {
+          "name": "ROOT_B session header cwd == the row default workspace (session meta, not projection)",
+          "ok": true,
+          "detail": "cwd=D:\\AgentDev\\dsh-plugins\\dsh-agent-team"
+        }
+      ],
+      "evidence": {
+        "rowStateRootA": {
+          "status": 200,
+          "body": {
+            "boot": 1,
+            "phase": "create",
+            "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+            "teamSession": {
+              "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "contentHash": "sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:40:41.221Z",
+              "generation": 2
+            },
+            "members": [
+              {
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "childSessionId": "undefined",
+                "lifecycle": "undefined",
+                "activityVersion": 1
+              }
+            ],
+            "control": {
+              "requests": [],
+              "decisions": [],
+              "consumptions": []
+            },
+            "activity": [],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "governance": {
+              "overrides": [],
+              "sessions": {
+                "session-d4v2-a-mtqc5oi495c6f4": {
+                  "instanceId": "inst-leader",
+                  "model": {
+                    "current": {
+                      "provider": "deepseek-official",
+                      "model": "d4v2-model"
+                    },
+                    "selection": {
+                      "provider": "deepseek-official",
+                      "model": "d4v2-model"
+                    },
+                    "source": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null
+                    },
+                    "suppressed": [],
+                    "unavailable": false,
+                    "deniedBy": {
+                      "by": "team",
+                      "reason": "unspecifiedFailClosed"
+                    },
+                    "pendingNextBoundary": [],
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "mcp": {
+                    "mounted": false,
+                    "serverName": null
+                  }
+                },
+                "session-d4v2-b-mtqc5oi495c6f4": {
+                  "instanceId": "inst-leader",
+                  "model": {
+                    "current": {
+                      "provider": "deepseek-official",
+                      "model": "d4v2-model"
+                    },
+                    "assembled": {
+                      "provider": "deepseek-official",
+                      "model": "d4v2-model"
+                    },
+                    "selection": {
+                      "provider": "deepseek-official",
+                      "model": "d4v2-model"
+                    },
+                    "source": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null
+                    },
+                    "suppressed": [],
+                    "unavailable": false,
+                    "deniedBy": {
+                      "by": "team",
+                      "reason": "unspecifiedFailClosed"
+                    },
+                    "pendingNextBoundary": [],
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "mcp": {
+                    "mounted": false,
+                    "serverName": null
+                  }
+                }
+              }
+            },
+            "observations": []
+          }
+        },
+        "listRootsBoot1": {
+          "status": 200,
+          "roots": [
+            {
+              "rootSessionId": "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+              "blueprintId": "my-team-bp-1",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T13:03:23.217Z",
+              "generation": 27,
+              "memberCount": 2
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbc35w96f4f5",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace",
+              "createdAt": "2026-09-06T21:17:40.628Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbczpy6e4fed",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace",
+              "createdAt": "2026-09-06T21:18:22.667Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbe03c96d7cf",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:19:09.798Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbk47c94e592",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:23:55.100Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbpakj76cd36",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:27:56.567Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbtxn1d000e5",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:31:33.103Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbvsieefe5ee",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:32:59.783Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:40:41.221Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbe03c96d7cf",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:19:10.969Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbk47c94e592",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:23:56.282Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbpakj76cd36",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:27:57.743Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbtxn1d000e5",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:31:34.280Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbvsieefe5ee",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:33:00.961Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:40:42.415Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "team-root",
+              "blueprintId": "my-team-bp-1",
+              "revision": "1",
+              "defaultWorkspace": "D:/AgentDev/dsh-plugins/dsh-agent-team",
+              "createdAt": "2026-09-06T13:01:58.399Z",
+              "generation": 2,
+              "memberCount": 0
+            }
+          ]
+        },
+        "durableRows": {
+          "ROOT_A": {
+            "teamSession": {
+              "blueprint": {
+                "blueprintId": "d4v2-bp",
+                "contentHash": "sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40",
+                "revision": "1"
+              },
+              "createdAt": "2026-09-06T21:40:41.221Z",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "generation": 2,
+              "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+              "schemaVersion": 1
+            },
+            "leader": {
+              "activityVersion": 1,
+              "createdAt": "2026-09-06T21:40:41.339Z",
+              "instanceId": "inst-leader",
+              "label": "leader",
+              "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+              "schemaVersion": 2,
+              "templateId": "leader"
+            },
+            "binding": {
+              "kind": "team-root",
+              "schemaVersion": 1,
+              "sessionId": "session-d4v2-a-mtqc5oi495c6f4"
+            }
+          },
+          "ROOT_B": {
+            "teamSession": {
+              "blueprint": {
+                "blueprintId": "d4v2-bp",
+                "contentHash": "sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40",
+                "revision": "1"
+              },
+              "createdAt": "2026-09-06T21:40:42.415Z",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "generation": 1,
+              "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+              "schemaVersion": 1
+            },
+            "leader": {
+              "activityVersion": 1,
+              "createdAt": "2026-09-06T21:40:42.531Z",
+              "instanceId": "inst-leader",
+              "label": "leader",
+              "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+              "schemaVersion": 2,
+              "templateId": "leader"
+            },
+            "binding": {
+              "kind": "team-root",
+              "schemaVersion": 1,
+              "sessionId": "session-d4v2-b-mtqc5oi495c6f4"
+            }
+          }
+        },
+        "sessionArtifacts": {
+          "ROOT_A": {
+            "file": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test\\sessions\\--D-AgentDev-dsh-plugins-dsh-agent-team--\\session-d4v2-a-mtqc5oi495c6f4\\session.jsonl.zstd",
+            "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+            "id": "session-d4v2-a-mtqc5oi495c6f4"
+          },
+          "ROOT_B": {
+            "file": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test\\sessions\\--D-AgentDev-dsh-plugins-dsh-agent-team--\\session-d4v2-b-mtqc5oi495c6f4\\session.jsonl.zstd",
+            "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+            "id": "session-d4v2-b-mtqc5oi495c6f4"
+          }
+        }
+      },
+      "notes": []
+    },
+    "S3": {
+      "criterion": "S3 (step 3): the test host stops cleanly and port 3180 is free",
+      "pass": true,
+      "durationMs": 48,
+      "assertions": [
+        {
+          "name": "instance 1 stopped and port 3180 free",
+          "ok": true,
+          "detail": "portFree=true"
+        }
+      ],
+      "evidence": {
+        "stop": {
+          "portFree": true
+        }
+      },
+      "notes": []
+    },
+    "S4": {
+      "criterion": "S4 (step 4): RESTART on the same references/.dsh-test (create-or-open now resolves to resume; the row re-activates its config root ROOT_A only; ROOT_B stays cold) and the D1 index rebuilds byte-identically",
+      "pass": true,
+      "durationMs": 2057,
+      "assertions": [
+        {
+          "name": "row mounted again (both rows)",
+          "ok": true,
+          "detail": "{\"dsh-agent-team\":true,\"p6t6-team-tools\":true}"
+        },
+        {
+          "name": "health: row ready with the ten tool registrations after restart",
+          "ok": true,
+          "detail": "toolCount=10"
+        },
+        {
+          "name": "row state after restart: ROOT_A phase=resume with the SAME durable TeamSession id (a resume loads, never re-mints)",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-d4v2-a-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:41.221Z\",\"generation\":2}"
+        },
+        {
+          "name": "the row resume boot re-activated its config root ROOT_A live (row semantics)",
+          "ok": true,
+          "detail": "[\"session-d4v2-a-mtqc5oi495c6f4\"]"
+        },
+        {
+          "name": "ROOT_B is COLD after the restart (the D2 ensure precondition: the row re-activates only its config root)",
+          "ok": true,
+          "detail": "[\"session-d4v2-a-mtqc5oi495c6f4\"]"
+        },
+        {
+          "name": "team.listRoots after restart still enumerates both new roots + the pre-existing home roots",
+          "ok": true,
+          "detail": "roots=[\"session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9\",\"session-d4v2-a-mtqbc35w96f4f5\",\"session-d4v2-a-mtqbczpy6e4fed\",\"session-d4v2-a-mtqbe03c96d7cf\",\"session-d4v2-a-mtqbk47c94e592\",\"session-d4v2-a-mtqbpakj76cd36\",\"session-d4v2-a-mtqbtxn1d000e5\",\"session-d4v2-a-mtqbvsieefe5ee\",\"session-d4v2-a-mtqc5oi495c6f4\",\"session-d4v2-b-mtqbe03c96d7cf\",\"session-d4v2-b-mtqbk47c94e592\",\"session-d4v2-b-mtqbpakj76cd36\",\"session-d4v2-b-mtqbtxn1d000e5\",\"session-d4v2-b-mtqbvsieefe5ee\",\"session-d4v2-b-mtqc5oi495c6f4\",\"team-root\"]"
+        },
+        {
+          "name": "D1 index rebuild: the ROOT_A wire row is BYTE-IDENTICAL across the restart (same durable rows, same index)",
+          "ok": true,
+          "detail": "boot1={\"rootSessionId\":\"session-d4v2-a-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:41.221Z\",\"generation\":2,\"memberCount\":0} boot2={\"rootSessionId\":\"session-d4v2-a-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:41.221Z\",\"generation\":2,\"memberCount\":0}"
+        },
+        {
+          "name": "D1 index rebuild: the ROOT_B wire row is BYTE-IDENTICAL across the restart",
+          "ok": true,
+          "detail": "boot1={\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:42.415Z\",\"generation\":1,\"memberCount\":0} boot2={\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"blueprintId\":\"d4v2-bp\",\"revision\":\"1\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\",\"createdAt\":\"2026-09-06T21:40:42.415Z\",\"generation\":1,\"memberCount\":0}"
+        }
+      ],
+      "evidence": {
+        "boot2": {
+          "url": "http://127.0.0.1:3180/?token=UNWqjjFDuNIgouEvmY5_449O04s2GrciTC9gXrrI80s",
+          "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G4\\d4-rerun-owner\\instances\\BOOT2\\instance-port3180.log",
+          "rowMounted": {
+            "dsh-agent-team": true,
+            "p6t6-team-tools": true
+          },
+          "health": {
+            "status": 200,
+            "toolCount": 10,
+            "liveSessions": [
+              "session-d4v2-a-mtqc5oi495c6f4"
+            ]
+          }
+        },
+        "rowStateRootAResume": {
+          "status": 200,
+          "teamSession": {
+            "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+            "blueprintId": "d4v2-bp",
+            "revision": "1",
+            "contentHash": "sha256:7eaf06288bbf67b09e928708c029a8490419937f7d54b77df910ac2bf31ffd40",
+            "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+            "createdAt": "2026-09-06T21:40:41.221Z",
+            "generation": 2
+          },
+          "members": [
+            "inst-leader"
+          ]
+        },
+        "listRootsBoot2": {
+          "status": 200,
+          "roots": [
+            {
+              "rootSessionId": "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+              "blueprintId": "my-team-bp-1",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T13:03:23.217Z",
+              "generation": 27,
+              "memberCount": 2
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbc35w96f4f5",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace",
+              "createdAt": "2026-09-06T21:17:40.628Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbczpy6e4fed",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace",
+              "createdAt": "2026-09-06T21:18:22.667Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbe03c96d7cf",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:19:09.798Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbk47c94e592",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:23:55.100Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbpakj76cd36",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:27:56.567Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbtxn1d000e5",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:31:33.103Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqbvsieefe5ee",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:32:59.783Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:40:41.221Z",
+              "generation": 2,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbe03c96d7cf",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:19:10.969Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbk47c94e592",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:23:56.282Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbpakj76cd36",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:27:57.743Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbtxn1d000e5",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:31:34.280Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqbvsieefe5ee",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:33:00.961Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+              "blueprintId": "d4v2-bp",
+              "revision": "1",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T21:40:42.415Z",
+              "generation": 1,
+              "memberCount": 0
+            },
+            {
+              "rootSessionId": "team-root",
+              "blueprintId": "my-team-bp-1",
+              "revision": "1",
+              "defaultWorkspace": "D:/AgentDev/dsh-plugins/dsh-agent-team",
+              "createdAt": "2026-09-06T13:01:58.399Z",
+              "generation": 2,
+              "memberCount": 0
+            }
+          ]
+        }
+      },
+      "notes": []
+    },
+    "S5": {
+      "criterion": "S5 (step 5): the Team UI \"以 Team 模式打开\" entry for ROOT_B — the D2 openTeamMode phase (a): the v3 team.ensureRootLive cold-ensures the durable root through the live glue (A3 Q1/Q2); phase (b): the native session open (session/page)",
+      "pass": true,
+      "durationMs": 90,
+      "assertions": [
+        {
+          "name": "team.ensureRootLive (v3) on the COLD root succeeds with the closed shape {rootSessionId, mode:\"team\", live:true}",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"mode\":\"team\",\"live\":true}"
+        },
+        {
+          "name": "the durable ROOT_B log has a committed cursor to page from (the boot-1 turn is durable before the open)",
+          "ok": true,
+          "detail": "lastSeq=23"
+        },
+        {
+          "name": "the native open (session/page) of ROOT_B succeeds after the ensure",
+          "ok": true,
+          "detail": "status=200"
+        }
+      ],
+      "evidence": {
+        "ensureRootLive1": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "d4v2-03aab66d4c20",
+            "result": {
+              "ok": true,
+              "value": {
+                "data": {
+                  "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+                  "mode": "team",
+                  "live": true
+                },
+                "provenance": {
+                  "origin": "team-remote",
+                  "method": "team.ensureRootLive",
+                  "endpoint": "team.ensureRootLive",
+                  "contractVersion": 3,
+                  "requestToken": null,
+                  "projectionGeneration": null,
+                  "effectSequence": null
+                }
+              }
+            }
+          }
+        },
+        "openPage": {
+          "status": 200,
+          "bodyJson": "{\"type\":\"server-response\",\"rpcId\":\"d4v2-4408377d0041\",\"result\":{\"ok\":true,\"value\":{\"records\":[{\"type\":\"event\",\"event\":{\"type\":\"permission/preset\",\"seq\":0,\"time\":1788730842575,\"data\":{\"preset\":\"workspace-write\"}}},{\"type\":\"event\",\"event\":{\"type\":\"sandbox/mode\",\"seq\":1,\"time\":1788730842575,\"data\":{\"mode\":\"workspace-write\"}}},{\"type\":\"event\",\"event\":{\"type\":\"approval/policy\",\"seq\":2,\"time\":1788730842575,\"data\":{\"policy\":\"ask\"}}},{\"type\":\"event\",\"event\":{\"type\":\"agent/inbox/spliced\",\"seq\":3,\"time\":1788730842727,\"data\":{\"target\":\"next-turn\",\"start\":0,\"inserted\":[{\"content\":[{\"type\":\"text\",\"text\":\"f"
+        }
+      },
+      "notes": []
+    },
+    "S6": {
+      "criterion": "S6 (step 6): VERIFY — root history renders, the Leader prompt is reachable, the ten team_* tools are registered on the live root agent, and a REAL team_* tool call executes on the restarted host",
+      "pass": true,
+      "durationMs": 1043,
+      "assertions": [
+        {
+          "name": "root history renders: the boot-1 user turn comes back through session/page",
+          "ok": true,
+          "detail": "records=24"
+        },
+        {
+          "name": "root history renders: the boot-1 assistant reply (mock ack) comes back too",
+          "ok": true,
+          "detail": "records=24"
+        },
+        {
+          "name": "the Leader prompt is reachable on the restarted host (session/prompt accepted)",
+          "ok": true,
+          "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"d4v2-328ba59b07b2\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+        },
+        {
+          "name": "the post-restart Leader turn settles (assistant ack durable in the log)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "the ten team_* tools are registered on the LIVE root agent after the ensure (model request tool schema)",
+          "ok": true,
+          "detail": "tools=[\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+        },
+        {
+          "name": "the scoped root Team context block is installed on the live agent (persona seam)",
+          "ok": true,
+          "detail": "systemExcerpt=You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location"
+        },
+        {
+          "name": "a REAL team_* tool call (team_list_members) executes successfully on the restarted host",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\"}]},\"requestToken\":\"d4v2-list-1-mtqc5oi495c6f4\"}"
+        }
+      ],
+      "evidence": {
+        "boot2Prompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "d4v2-328ba59b07b2",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "toolTableBoot2": {
+          "seq": 3,
+          "model": "d4v2-model",
+          "toolNames": [
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_send_message"
+          ],
+          "systemText": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3180. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nD4V2 leader: you lead the d4v2 restart-reopen acceptance team.\n\n[team-root-context rootSessionId=session-d4v2-b-mtqc5oi495c6f4 leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-d4v2-b-mtqc5oi495c6f4\" and a unique requestToken.\n\nWhen you successfully create or modify files, mention the primary outputs in your final response. To make those and any other changed-file references clickable in Web, format them as Markdown inline code using the exact file-tool path, or a basename when unique among the files changed in that turn."
+        },
+        "teamToolCall1": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "list-members",
+              "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "members-listed",
+                "members": [
+                  {
+                    "instanceId": "inst-leader",
+                    "templateId": "leader",
+                    "label": "leader"
+                  }
+                ]
+              },
+              "requestToken": "d4v2-list-1-mtqc5oi495c6f4"
+            }
+          }
+        }
+      },
+      "notes": []
+    },
+    "S7": {
+      "criterion": "S7 (step 7): the explicit \"以普通模式打开\" entry — a pure native session load with ZERO team.* remote calls (no ensure-live); the ordinary entry does not strip the live Team agent (documented A3 caveat: no team_* promise, no removal)",
+      "pass": true,
+      "durationMs": 1044,
+      "assertions": [
+        {
+          "name": "the ordinary entry loads the same session (session/page succeeds, no team remote involved)",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "the session remains usable through the ordinary entry (Leader turn accepted)",
+          "ok": true,
+          "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"d4v2-eccb13f0f365\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+        },
+        {
+          "name": "the post-ordinary-open turn settles",
+          "ok": true,
+          "detail": "ack present"
+        },
+        {
+          "name": "NO ensure-live remote call occurred during the ordinary-mode window (the D3 explicit-ordinary semantics)",
+          "ok": true,
+          "detail": "ensureRootLive calls before=1 after=1"
+        }
+      ],
+      "evidence": {
+        "ordinaryOpenPage": {
+          "status": 200,
+          "bodyJson": "{\"type\":\"server-response\",\"rpcId\":\"d4v2-e3bcd3b08690\",\"result\":{\"ok\":true,\"value\":{\"records\":[{\"type\":\"event\",\"event\":{\"type\":\"permission/preset\",\"seq\":0,\"time\":1788730842575,\"data\":{\"preset\":\"workspace-write\"}}},{\"type\":\"event\",\"event\":{\"type\":\"sandbox/mode\",\"seq\":1,\"time\":1788730842575,\"data\":{\"mode\":\"workspace-write\"}}},{\"type\":\"event\",\"event\":{\"type\":\"approval/policy\",\"seq\":2,\"time\":1788730842"
+        },
+        "afterOrdinaryPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "d4v2-eccb13f0f365",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "toolTableAfterOrdinary": {
+          "seq": 4,
+          "model": "d4v2-model",
+          "toolNames": [
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_send_message"
+          ],
+          "systemText": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3180. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nD4V2 leader: you lead the d4v2 restart-reopen acceptance team.\n\n[team-root-context rootSessionId=session-d4v2-b-mtqc5oi495c6f4 leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-d4v2-b-mtqc5oi495c6f4\" and a unique requestToken.\n\nWhen you successfully create or modify files, mention the primary outputs in your final response. To make those and any other changed-file references clickable in Web, format them as Markdown inline code using the exact file-tool path, or a basename when unique among the files changed in that turn."
+        }
+      },
+      "notes": [
+        "client-side mode badge (\"ordinary\" shown; \"team\" only after a completed openTeamMode) is pinned by the committed client unit tests packages/client/test/d3-open-ordinary-mode.test.ts + d2-open-team-mode.test.ts — cited, not re-claimed here",
+        "A3 documented caveat (recorded, NOT a promise): the ordinary entry adopts the already-live Team agent (upstream live-first resolve), so the ten team_* tools REMAIN registered on this live agent; the ordinary entry guarantees no team_* availability — it simply performs no Team ensure"
+      ]
+    },
+    "S8": {
+      "criterion": "S8 (step 8): switch BACK to Team mode — the second team.ensureRootLive is a no-op adoption (the live glue returns the existing agent; a second agents.resume would have surfaced the upstream already-registered rejection as typed OUTSIDE_TEAM); the agents registry holds exactly one agent for the root session id; no second durable session; the Team setup re-takes over",
+      "pass": true,
+      "durationMs": 39,
+      "assertions": [
+        {
+          "name": "the second ensureRootLive SUCCEEDS with the closed v3 shape (no-op adoption — NOT a second setup; a double registration attempt would have failed typed OUTSIDE_TEAM/START_FAILED)",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"mode\":\"team\",\"live\":true}"
+        },
+        {
+          "name": "the agents registry holds EXACTLY one agent for the root session id (liveSessions contains ROOT_B once)",
+          "ok": true,
+          "detail": "[\"session-d4v2-a-mtqc5oi495c6f4\",\"session-d4v2-b-mtqc5oi495c6f4\"]"
+        },
+        {
+          "name": "exactly ONE durable session artifact for ROOT_B (no second session minted by the switch)",
+          "ok": true,
+          "detail": "count=1"
+        },
+        {
+          "name": "the Team setup re-takes over: a real team_list_members call still succeeds after the switch back",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-d4v2-b-mtqc5oi495c6f4\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\"}]},\"requestToken\":\"d4v2-list-2-mtqc5oi495c6f4\"}"
+        }
+      ],
+      "evidence": {
+        "ensureRootLive2": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "d4v2-8b421a183c99",
+            "result": {
+              "ok": true,
+              "value": {
+                "data": {
+                  "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+                  "mode": "team",
+                  "live": true
+                },
+                "provenance": {
+                  "origin": "team-remote",
+                  "method": "team.ensureRootLive",
+                  "endpoint": "team.ensureRootLive",
+                  "contractVersion": 3,
+                  "requestToken": null,
+                  "projectionGeneration": null,
+                  "effectSequence": null
+                }
+              }
+            }
+          }
+        },
+        "healthAfterSwitchBack": {
+          "status": 200,
+          "liveSessions": [
+            "session-d4v2-a-mtqc5oi495c6f4",
+            "session-d4v2-b-mtqc5oi495c6f4"
+          ],
+          "toolCount": 10
+        },
+        "rootBSessionArtifacts": 1,
+        "teamToolCall2": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "list-members",
+              "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "members-listed",
+                "members": [
+                  {
+                    "instanceId": "inst-leader",
+                    "templateId": "leader",
+                    "label": "leader"
+                  }
+                ]
+              },
+              "requestToken": "d4v2-list-2-mtqc5oi495c6f4"
+            }
+          }
+        }
+      },
+      "notes": []
+    },
+    "CLEANUP": {
+      "criterion": "cleanup: the test host is stopped, port 3180 is free, the mock model is closed, and test-use is still pristine at the pinned SHA",
+      "pass": true,
+      "durationMs": 208,
+      "assertions": [
+        {
+          "name": "no host process left on port 3180",
+          "ok": true,
+          "detail": "portFree=true"
+        },
+        {
+          "name": "stable :3080 reachable read-only (post; never touched)",
+          "ok": true,
+          "detail": "status=401"
+        },
+        {
+          "name": "test-use HEAD still 76fda729 (post)",
+          "ok": true,
+          "detail": "head=76fda729799fe9b3848dbe2c211d4b231032b81e"
+        },
+        {
+          "name": "test-use git status --porcelain still empty (post — the tree was only read/booted, never written)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "name": "test-use git diff still empty (post)",
+          "ok": true,
+          "detail": "diff=\"\""
+        }
+      ],
+      "evidence": {
+        "port3180FreeAtEnd": true,
+        "stablePost": {
+          "url": "http://127.0.0.1:3080/",
+          "httpStatus": 401
+        },
+        "testUsePost": {
+          "head": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+          "statusEmpty": true,
+          "diffEmpty": true,
+          "errors": []
+        }
+      },
+      "notes": []
+    }
+  },
+  "pass": true,
+  "boundary": {
+    "statement": "the ordinary SESSION LIST open is NOT auto-Team (plan §12 D4 不测试/不宣称). This run exercised ONLY: the row create/resume boot of ROOT_A (row semantics, its config root); the dynamic ROOT_B created via the browser-facing public remote channel team.create (v2); the explicit Team-mode entry (team.ensureRootLive v3 x2 + session/page) on ROOT_B; and the explicit ordinary-mode entry (session/page, zero team.* remote calls) on ROOT_B. No ordinary-list session was opened and NO team_* availability is claimed for the ordinary list.",
+    "entriesExercised": [
+      "row create boot: ROOT_A=session-d4v2-a-mtqc5oi495c6f4 (bootPhase create-or-open -> create)",
+      "row resume boot: ROOT_A=session-d4v2-a-mtqc5oi495c6f4 (bootPhase create-or-open -> resume)",
+      "remote team.create (v2): ROOT_B=session-d4v2-b-mtqc5oi495c6f4",
+      "remote team.ensureRootLive (v3): ROOT_B (S5 cold ensure + S8 switch-back adoption)",
+      "remote team.listRoots (v3): host-authority read (S2 + S4)",
+      "api/session/prompt: ROOT_B (S1 boot-1 turn, S6 post-Team-open turn, S7 post-ordinary-open turn)",
+      "api/session/page: ROOT_B (S5 Team-mode native open, S7 ordinary native open)",
+      "p6t6 observability: team_list_members tool calls on ROOT_B (S6, S8)"
+    ],
+    "notExercised": [
+      "ordinary session-list open of an arbitrary session (auto-Team not claimed, not tested)"
+    ]
+  }
+}

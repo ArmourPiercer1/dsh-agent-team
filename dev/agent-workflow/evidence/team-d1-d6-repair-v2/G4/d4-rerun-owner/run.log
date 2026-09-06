@@ -1,0 +1,44 @@
+[2026-09-06T21:40:38.862Z] == d4-restart-reopen 2026-09-06T21:40:38.861Z (nonce mtqc5oi495c6f4) ==
+[2026-09-06T21:40:38.863Z] ROOT_A=session-d4v2-a-mtqc5oi495c6f4 ROOT_B=session-d4v2-b-mtqc5oi495c6f4 home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T21:40:39.240Z] runtime link: @deepseek-ai/dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-agent
+[2026-09-06T21:40:39.242Z] runtime link: @deepseek-ai/dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-llm
+[2026-09-06T21:40:39.243Z] runtime link: @deepseek-ai/dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-mcp-client
+[2026-09-06T21:40:39.245Z] runtime link: @deepseek-ai/dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-session
+[2026-09-06T21:40:39.247Z] runtime link: @deepseek-ai/dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-storage-domain
+[2026-09-06T21:40:39.249Z] runtime link: zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\zod
+[2026-09-06T21:40:39.250Z] packages link: @deepseek-ai/dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-agent
+[2026-09-06T21:40:39.250Z] packages link: @deepseek-ai/dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-llm
+[2026-09-06T21:40:39.251Z] packages link: @deepseek-ai/dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-mcp-client
+[2026-09-06T21:40:39.251Z] packages link: @deepseek-ai/dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-session
+[2026-09-06T21:40:39.252Z] packages link: @deepseek-ai/dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-storage-domain
+[2026-09-06T21:40:39.253Z] packages link: @deepseek-ai/dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-scope
+[2026-09-06T21:40:39.253Z] packages link: @deepseek-ai/dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-system-prompt
+[2026-09-06T21:40:39.254Z] S0: pass=true
+[2026-09-06T21:40:39.265Z] mock: mock: listening on 127.0.0.1:64257
+[2026-09-06T21:40:39.265Z] mock model on 127.0.0.1:64257
+[2026-09-06T21:40:39.266Z] BOOT1: profile already initialized
+[2026-09-06T21:40:39.267Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:40:39.267Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T21:40:41.225Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:40:42.400Z] BOOT1: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqc5oi495c6f4"]
+[2026-09-06T21:40:42.917Z] mock: mock: 1 text reply (29 chars): "D4V2_B1_T1_mtqc5oi495c6f4_ACK"
+[2026-09-06T21:40:42.918Z] mock: mock: 2 text reply (29 chars): "D4V2_B1_T1_mtqc5oi495c6f4_ACK"
+[2026-09-06T21:40:43.759Z] S1: pass=true
+[2026-09-06T21:40:43.780Z] S2: pass=true
+[2026-09-06T21:40:43.828Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T21:40:43.828Z] S3: pass=true
+[2026-09-06T21:40:43.829Z] BOOT2: profile already initialized
+[2026-09-06T21:40:43.829Z] BOOT2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:40:43.830Z] BOOT2: directive written (boot=2 phase=resume)
+[2026-09-06T21:40:45.743Z] BOOT2: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:40:45.863Z] BOOT2: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqc5oi495c6f4"]
+[2026-09-06T21:40:45.885Z] S4: pass=true
+[2026-09-06T21:40:45.975Z] S5: pass=true
+[2026-09-06T21:40:46.150Z] mock: mock: 3 text reply (29 chars): "D4V2_B2_T2_mtqc5oi495c6f4_ACK"
+[2026-09-06T21:40:47.018Z] S6: pass=true
+[2026-09-06T21:40:47.135Z] mock: mock: 4 text reply (29 chars): "D4V2_B2_T3_mtqc5oi495c6f4_ACK"
+[2026-09-06T21:40:48.062Z] S7: pass=true
+[2026-09-06T21:40:48.102Z] S8: pass=true
+[2026-09-06T21:40:48.149Z] BOOT2: stopped (killed=true portFree=true)
+[2026-09-06T21:40:48.310Z] CLEANUP: pass=true
+[2026-09-06T21:40:48.311Z] == done: pass=true (duration 9.4s) ==
