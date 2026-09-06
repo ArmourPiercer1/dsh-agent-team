@@ -1,0 +1,1166 @@
+{
+  "task": "G5A-live-host-member-e2e",
+  "plan": "Team D1-D6 repair v2 — 15.1 acceptance-matrix row \"D1 member tools\" + D2 live result + D3 live identity + ordinary session non-regression",
+  "nonce": "mtqf214k35d635",
+  "startedAt": "2026-09-06T23:01:47.446Z",
+  "finishedAt": "2026-09-06T23:01:59.779Z",
+  "durationMs": 12333,
+  "host": {
+    "source": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+    "baselineSha": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+    "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test",
+    "port": 3180,
+    "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team"
+  },
+  "roots": {
+    "directiveRowRoot": "session-g5a-a-mtqf214k35d635",
+    "dynamicTeamRoot": "session-g5a-b-mtqf214k35d635",
+    "ordinary": "session-g5a-ord-mtqf214k35d635"
+  },
+  "member": {
+    "instanceId": "inst-013r5030v1p9",
+    "childSessionId": "session-team-child-d943dda337a0452e169259d91fd59e93",
+    "workspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace"
+  },
+  "scenarios": {
+    "S0": {
+      "criterion": "S0 pre-flight: test-use pristine at the pinned SHA; :3080 only probed read-only; the committed dist host row exists + import-probed; the junction bridges wired; the shared home pre-existing roots recorded; port 3180 verified free (up to 20 min polling); the mock model started; the member workspace + control file pre-created",
+      "pass": true,
+      "durationMs": 371,
+      "assertions": [
+        {
+          "name": "test-use HEAD == 76fda729 (the pinned audit baseline)",
+          "ok": true,
+          "detail": "head=76fda729799fe9b3848dbe2c211d4b231032b81e"
+        },
+        {
+          "name": "test-use git status --porcelain empty (pre)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "name": "stable :3080 reachable read-only (pre; NO interaction)",
+          "ok": true,
+          "detail": "status=401"
+        },
+        {
+          "name": "worktree carries the committed D1-D4 artifacts (host row / glue / seam / p6t6 plugin)",
+          "ok": true,
+          "detail": "{\"plugin/host.js\":true,\"plugin/live/agent-bindings.mjs\":true,\"root-binding/harness/seam.mjs\":true,\"tools/harness/plugin.mjs\":true}"
+        },
+        {
+          "name": "dist import probe: the committed dist row loads under plain node",
+          "ok": true,
+          "detail": "LOADED name=dsh-agent-team"
+        },
+        {
+          "name": "junction bridges wired (worktree node_modules only; host tree untouched)",
+          "ok": true,
+          "detail": "RUNTIME_LINKS + PACKAGES_LINKS"
+        },
+        {
+          "name": "member workspace + control file pre-created (the S4a read target)",
+          "ok": true,
+          "detail": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\\g5a-control-mtqf214k35d635.txt"
+        },
+        {
+          "name": "port 3180 free before boot (up to 20 min polling allowance)",
+          "ok": true,
+          "detail": "waitedMs=1"
+        }
+      ],
+      "evidence": {
+        "testUsePre": {
+          "head": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+          "statusEmpty": true,
+          "diffEmpty": true,
+          "errors": []
+        },
+        "stablePre": {
+          "url": "http://127.0.0.1:3080/",
+          "httpStatus": 401
+        },
+        "distFiles": {
+          "plugin/host.js": true,
+          "plugin/live/agent-bindings.mjs": true,
+          "root-binding/harness/seam.mjs": true,
+          "tools/harness/plugin.mjs": true
+        },
+        "homePreExistingRoots": [
+          "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+          "session-d4v2-a-mtqbc35w96f4f5",
+          "session-d4v2-a-mtqbczpy6e4fed",
+          "session-d4v2-a-mtqbe03c96d7cf",
+          "session-d4v2-a-mtqbk47c94e592",
+          "session-d4v2-a-mtqbpakj76cd36",
+          "session-d4v2-a-mtqbtxn1d000e5",
+          "session-d4v2-a-mtqbvsieefe5ee",
+          "session-d4v2-a-mtqc5oi495c6f4",
+          "session-d4v2-a-mtqcdfdoea02b7",
+          "session-d4v2-a-mtqce4i8e31844",
+          "session-d4v2-a-mtqcn84k0b6ddc",
+          "session-d4v2-b-mtqbe03c96d7cf",
+          "session-d4v2-b-mtqbk47c94e592",
+          "session-d4v2-b-mtqbpakj76cd36",
+          "session-d4v2-b-mtqbtxn1d000e5",
+          "session-d4v2-b-mtqbvsieefe5ee",
+          "session-d4v2-b-mtqc5oi495c6f4",
+          "session-d4v2-b-mtqcdfdoea02b7",
+          "session-d4v2-b-mtqce4i8e31844",
+          "session-d4v2-b-mtqcn84k0b6ddc",
+          "session-g5a-a-mtqeb36a48a3b3",
+          "session-g5a-a-mtqefm8h5a8ec3",
+          "session-g5a-a-mtqeripwf7c228",
+          "session-g5a-a-mtqewt3l5192e2",
+          "session-g5a-a-mtqeygl503f54c",
+          "session-g5a-b-mtqeb36a48a3b3",
+          "session-g5a-b-mtqefm8h5a8ec3",
+          "session-g5a-b-mtqeripwf7c228",
+          "session-g5a-b-mtqewt3l5192e2",
+          "session-g5a-b-mtqeygl503f54c",
+          "team-root"
+        ],
+        "portWait": {
+          "free": true,
+          "waitedMs": 1
+        }
+      },
+      "notes": [
+        "pre-existing durable roots in the shared home: [\"session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9\",\"session-d4v2-a-mtqbc35w96f4f5\",\"session-d4v2-a-mtqbczpy6e4fed\",\"session-d4v2-a-mtqbe03c96d7cf\",\"session-d4v2-a-mtqbk47c94e592\",\"session-d4v2-a-mtqbpakj76cd36\",\"session-d4v2-a-mtqbtxn1d000e5\",\"session-d4v2-a-mtqbvsieefe5ee\",\"session-d4v2-a-mtqc5oi495c6f4\",\"session-d4v2-a-mtqcdfdoea02b7\",\"session-d4v2-a-mtqce4i8e31844\",\"session-d4v2-a-mtqcn84k0b6ddc\",\"session-d4v2-b-mtqbe03c96d7cf\",\"session-d4v2-b-mtqbk47c94e592\",\"session-d4v2-b-mtqbpakj76cd36\",\"session-d4v2-b-mtqbtxn1d000e5\",\"session-d4v2-b-mtqbvsieefe5ee\",\"session-d4v2-b-mtqc5oi495c6f4\",\"session-d4v2-b-mtqcdfdoea02b7\",\"session-d4v2-b-mtqce4i8e31844\",\"session-d4v2-b-mtqcn84k0b6ddc\",\"session-g5a-a-mtqeb36a48a3b3\",\"session-g5a-a-mtqefm8h5a8ec3\",\"session-g5a-a-mtqeripwf7c228\",\"session-g5a-a-mtqewt3l5192e2\",\"session-g5a-a-mtqeygl503f54c\",\"session-g5a-b-mtqeb36a48a3b3\",\"session-g5a-b-mtqefm8h5a8ec3\",\"session-g5a-b-mtqeripwf7c228\",\"session-g5a-b-mtqewt3l5192e2\",\"session-g5a-b-mtqeygl503f54c\",\"team-root\"] (preserved; never destroyed — this run adds only its nonce roots)"
+      ]
+    },
+    "S1": {
+      "criterion": "S1: BOOT 1 on 3180 (row boot; create-or-open resolves to create for the nonce row root ROOT_A → the directive root goes live) + ROOT_B created over the browser-facing public remote channel team.create (contract v2 — the same path the Team UI New-Team entry drives; D4/t12 boot+drive precedent)",
+      "pass": true,
+      "durationMs": 3370,
+      "assertions": [
+        {
+          "name": "rows mounted (production row + p6t6 observability row in the composed profile)",
+          "ok": true,
+          "detail": "{\"dsh-agent-team\":true,\"p6t6-team-tools\":true}"
+        },
+        {
+          "name": "health: row ready with EXACTLY the ten team tool registrations (row level)",
+          "ok": true,
+          "detail": "toolCount=10"
+        },
+        {
+          "name": "live root agent ROOT_A materialized by the row create boot",
+          "ok": true,
+          "detail": "[\"session-g5a-a-mtqf214k35d635\"]"
+        },
+        {
+          "name": "row state well-formed for ROOT_A (create phase)",
+          "ok": true,
+          "detail": "{\"boot\":1,\"phase\":\"create\",\"rootSessionId\":\"session-g5a-a-mtqf214k35d635\",\"teamSession\":{\"rootSessionId\":\"session-g5a-a-mtqf214k35d635\",\"blueprintId\":\"g5a-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:389118d75369c63676e450cac6f050e37c2b51b6d3cf838c994e5800eff9ba33\",\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-"
+        },
+        {
+          "name": "remote team.create (v2) over the public remote channel minted the dynamic root ROOT_B",
+          "ok": true,
+          "detail": "{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"blueprint\":{\"blueprintId\":\"g5a-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:389118d75369c63676e450cac6f050e37c2b51b6d3cf838c994e5800eff9ba33\"},\"createdAt\":\"2026-09-06T23:01:50.934Z\",\"generation\":1,\"defaultWorkspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\"},\"binding\":{\"schemaVersion\":1,\""
+        },
+        {
+          "name": "team.listRoots (v3) enumerates BOTH new roots + the pre-existing home roots (read-only host authority)",
+          "ok": true,
+          "detail": "roots=[\"session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9\",\"session-d4v2-a-mtqbc35w96f4f5\",\"session-d4v2-a-mtqbczpy6e4fed\",\"session-d4v2-a-mtqbe03c96d7cf\",\"session-d4v2-a-mtqbk47c94e592\",\"session-d4v2-a-mtqbpakj76cd36\",\"session-d4v2-a-mtqbtxn1d000e5\",\"session-d4v2-a-mtqbvsieefe5ee\",\"session-d4v2-a-mtqc5oi495c6f4\",\"session-d4v2-a-mtqcdfdoea02b7\",\"session-d4v2-a-mtqce4i8e31844\",\"session-d4v2-a-mtqcn84k0b6ddc\",\"session-d4v2-b-mtqbe03c96d7cf\",\"session-d4v2-b-mtqbk47c94e592\",\"session-d4v2-b-mtqbpakj76cd36\",\"session-d4v2-b-mtqbtxn1d000e5\",\"session-d4v2-b-mtqbvsieefe5ee\",\"session-d4v2-b-mtqc5oi495c6f4\",\"session-d4v2-b-mtqcdfdoea02b7\",\"session-d4v2-b-mtqce4i8e31844\",\"session-d4v2-b-mtqcn84k0b6ddc\",\"session-g5a-a-mtqeb36a48a3b3\",\"session-g5a-a-mtqefm8h5a8ec3\",\"session-g5a-a-mtqeripwf7c228\",\"session-g5a-a-mtqewt3l5192e2\",\"session-g5a-a-mtqeygl503f54c\",\"session-g5a-a-mtqf214k35d635\",\"session-g5a-b-mtqeb36a48a3b3\",\"session-g5a-b-mtqefm8h5a8ec3\",\"session-g5a-b-mtqeripwf7c228\",\"session-g5a-b-mtqewt3l5192e2\",\"session-g5a-b-mtqeygl503f54c\",\"session-g5a-b-mtqf214k35d635\",\"team-root\"]"
+        }
+      ],
+      "evidence": {
+        "boot1": {
+          "url": "http://127.0.0.1:3180/?token=0AQJzsywz5F6dB5wNZKUG48UZDIDRKjwpYnzWrGbO18",
+          "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\instances\\BOOT1\\instance-port3180.log",
+          "rowMounted": {
+            "dsh-agent-team": true,
+            "p6t6-team-tools": true
+          },
+          "health": {
+            "status": 200,
+            "toolCount": 10,
+            "liveSessions": [
+              "session-g5a-a-mtqf214k35d635"
+            ]
+          }
+        },
+        "rowState1": {
+          "status": 200,
+          "body": {
+            "boot": 1,
+            "phase": "create",
+            "rootSessionId": "session-g5a-a-mtqf214k35d635",
+            "teamSession": {
+              "rootSessionId": "session-g5a-a-mtqf214k35d635",
+              "blueprintId": "g5a-bp",
+              "revision": "1",
+              "contentHash": "sha256:389118d75369c63676e450cac6f050e37c2b51b6d3cf838c994e5800eff9ba33",
+              "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+              "createdAt": "2026-09-06T23:01:49.766Z",
+              "generation": 2
+            },
+            "members": [
+              {
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "childSessionId": "undefined",
+                "lifecycle": "undefined",
+                "activityVersion": 1
+              }
+            ],
+            "control": {
+              "requests": [],
+              "decisions": [],
+              "consumptions": []
+            },
+            "activity": [],
+            "pendingDeliveries": {
+              "recovered": [],
+              "skipped": []
+            },
+            "governance": {
+              "overrides": [],
+              "sessions": {
+                "session-g5a-a-mtqf214k35d635": {
+                  "instanceId": "inst-leader",
+                  "model": {
+                    "current": {
+                      "provider": "deepseek-official",
+                      "model": "g5a-model"
+                    },
+                    "selection": {
+                      "provider": "deepseek-official",
+                      "model": "g5a-model"
+                    },
+                    "source": {
+                      "layer": "unspecified",
+                      "origin": "static",
+                      "recordId": null
+                    },
+                    "suppressed": [],
+                    "unavailable": false,
+                    "deniedBy": {
+                      "by": "team",
+                      "reason": "unspecifiedFailClosed"
+                    },
+                    "pendingNextBoundary": [],
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "mcp": {
+                    "mounted": false,
+                    "serverName": null
+                  }
+                }
+              }
+            },
+            "observations": []
+          }
+        },
+        "teamCreate": {
+          "status": 200,
+          "value": {
+            "path": "fresh-root",
+            "durable": {
+              "teamSession": {
+                "schemaVersion": 1,
+                "rootSessionId": "session-g5a-b-mtqf214k35d635",
+                "blueprint": {
+                  "blueprintId": "g5a-bp",
+                  "revision": "1",
+                  "contentHash": "sha256:389118d75369c63676e450cac6f050e37c2b51b6d3cf838c994e5800eff9ba33"
+                },
+                "createdAt": "2026-09-06T23:01:50.934Z",
+                "generation": 1,
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team"
+              },
+              "binding": {
+                "schemaVersion": 1,
+                "kind": "team-root",
+                "sessionId": "session-g5a-b-mtqf214k35d635"
+              },
+              "wrote": true,
+              "leaderRow": {
+                "schemaVersion": 2,
+                "rootSessionId": "session-g5a-b-mtqf214k35d635",
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "createdAt": "2026-09-06T23:01:51.020Z",
+                "activityVersion": 1
+              }
+            },
+            "bind": {
+              "requested": "fresh-root",
+              "bound": true,
+              "installed": true,
+              "identity": {
+                "kind": "root",
+                "sessionId": "session-g5a-b-mtqf214k35d635",
+                "rootSessionId": "session-g5a-b-mtqf214k35d635"
+              },
+              "admitted": true,
+              "admissionCode": "ADMISSION_OPEN",
+              "emittedEvents": [
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "persona"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "model"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "capability"
+                },
+                {
+                  "name": "agent-setup/admission-decided",
+                  "detail": "ADMISSION_OPEN"
+                }
+              ]
+            }
+          }
+        },
+        "listRoots": {
+          "status": 200,
+          "roots": [
+            "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+            "session-d4v2-a-mtqbc35w96f4f5",
+            "session-d4v2-a-mtqbczpy6e4fed",
+            "session-d4v2-a-mtqbe03c96d7cf",
+            "session-d4v2-a-mtqbk47c94e592",
+            "session-d4v2-a-mtqbpakj76cd36",
+            "session-d4v2-a-mtqbtxn1d000e5",
+            "session-d4v2-a-mtqbvsieefe5ee",
+            "session-d4v2-a-mtqc5oi495c6f4",
+            "session-d4v2-a-mtqcdfdoea02b7",
+            "session-d4v2-a-mtqce4i8e31844",
+            "session-d4v2-a-mtqcn84k0b6ddc",
+            "session-d4v2-b-mtqbe03c96d7cf",
+            "session-d4v2-b-mtqbk47c94e592",
+            "session-d4v2-b-mtqbpakj76cd36",
+            "session-d4v2-b-mtqbtxn1d000e5",
+            "session-d4v2-b-mtqbvsieefe5ee",
+            "session-d4v2-b-mtqc5oi495c6f4",
+            "session-d4v2-b-mtqcdfdoea02b7",
+            "session-d4v2-b-mtqce4i8e31844",
+            "session-d4v2-b-mtqcn84k0b6ddc",
+            "session-g5a-a-mtqeb36a48a3b3",
+            "session-g5a-a-mtqefm8h5a8ec3",
+            "session-g5a-a-mtqeripwf7c228",
+            "session-g5a-a-mtqewt3l5192e2",
+            "session-g5a-a-mtqeygl503f54c",
+            "session-g5a-a-mtqf214k35d635",
+            "session-g5a-b-mtqeb36a48a3b3",
+            "session-g5a-b-mtqefm8h5a8ec3",
+            "session-g5a-b-mtqeripwf7c228",
+            "session-g5a-b-mtqewt3l5192e2",
+            "session-g5a-b-mtqeygl503f54c",
+            "session-g5a-b-mtqf214k35d635",
+            "team-root"
+          ]
+        }
+      },
+      "notes": []
+    },
+    "S2": {
+      "criterion": "S2 MEMBER PROVISIONING — the public surface used (cited): there is NO team.* remote method that creates a member (the public remote surface at base 3b53e40 is team.create / team.admitInitialWork / team.listRoots / team.ensureRootLive / team.getProjection / team.getLedgerPage — packages/runtime/src/plugin/s6-remote.ts, read by G5A). The CANONICAL path is the Leader team_create_member tool via a REAL Leader turn: POST /api/session/prompt on ROOT_B whose mock-replied tool call executes over the real runtime. The member must end as a LIVE child bound to ROOT_B.",
+      "pass": true,
+      "durationMs": 2086,
+      "assertions": [
+        {
+          "name": "Leader MC prompt accepted on ROOT_B (browser-facing chat path)",
+          "ok": true,
+          "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"g5a-fd6e49e295f4\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+        },
+        {
+          "name": "Leader MC turn settled (the assistant ack is durable in ROOT_B)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "exactly ONE non-leader MemberInstance row for ROOT_B",
+          "ok": true,
+          "detail": "[\"inst-013r5030v1p9\"]"
+        },
+        {
+          "name": "member row childSessionId == childSessionIdFor(ROOT_B, instanceId) (recomputed from the public formula; no private handle)",
+          "ok": true,
+          "detail": "row=session-team-child-d943dda337a0452e169259d91fd59e93 computed=session-team-child-d943dda337a0452e169259d91fd59e93"
+        },
+        {
+          "name": "member child session artifact exists under DSH_HOME (a real DSH session)",
+          "ok": true,
+          "detail": "{\"file\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test\\\\sessions\\\\--D-AgentDev-dsh-plugins-dsh-agent-team-dev-agent-workflow-evidence-team-d1-d6-repair-v2-G5-g5a-rerun-owner-member-workspace--\\\\session-team-child-d943dda337a0452e169259d91fd59e93\\\\session.jsonl.zstd\",\"id\":\"session-team-child-d943dda337a0452e169259d91fd59e93\",\"cwd\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\team-d1-d6-repair-v2\\\\G5\\\\g5a-rerun-owner\\\\member-workspace\"}"
+        },
+        {
+          "name": "member session header cwd == the member workspace passed to team_create_member (the child factory honors request.workspace)",
+          "ok": true,
+          "detail": "cwd=D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace expected=D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace"
+        },
+        {
+          "name": "health liveSessions includes the member child session (a LIVE child bound to ROOT_B)",
+          "ok": true,
+          "detail": "[\"session-g5a-a-mtqf214k35d635\",\"session-g5a-b-mtqf214k35d635\",\"session-team-child-d943dda337a0452e169259d91fd59e93\"]"
+        },
+        {
+          "name": "health liveSessions includes ROOT_B (the leader stays live too)",
+          "ok": true,
+          "detail": "[\"session-g5a-a-mtqf214k35d635\",\"session-g5a-b-mtqf214k35d635\",\"session-team-child-d943dda337a0452e169259d91fd59e93\"]"
+        },
+        {
+          "name": "team_list_members (the pattern-sanctioned observability seam) lists the new member on ROOT_B",
+          "ok": true,
+          "detail": "{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-013r5030v1p9\",\"templateId\":\"worker\",\"label\":\"G5A Worker\",\"lifecycle\":\"CREATED\",\"childSessionId\":\"session-team-child-d943d"
+        }
+      ],
+      "evidence": {
+        "mcPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-fd6e49e295f4",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "memberRows": [
+          {
+            "key": "{\"instanceId\":\"inst-013r5030v1p9\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\"}",
+            "row": {
+              "activityVersion": 1,
+              "childSessionId": "session-team-child-d943dda337a0452e169259d91fd59e93",
+              "createdAt": "2026-09-06T23:01:51.875Z",
+              "instanceId": "inst-013r5030v1p9",
+              "label": "G5A Worker",
+              "lifecycle": "CREATED",
+              "rootSessionId": "session-g5a-b-mtqf214k35d635",
+              "schemaVersion": 1,
+              "templateId": "worker",
+              "workspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace"
+            }
+          }
+        ],
+        "memberSessionArtifact": {
+          "file": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test\\sessions\\--D-AgentDev-dsh-plugins-dsh-agent-team-dev-agent-workflow-evidence-team-d1-d6-repair-v2-G5-g5a-rerun-owner-member-workspace--\\session-team-child-d943dda337a0452e169259d91fd59e93\\session.jsonl.zstd",
+          "id": "session-team-child-d943dda337a0452e169259d91fd59e93",
+          "cwd": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace"
+        },
+        "liveSessionsAfterS2": [
+          "session-g5a-a-mtqf214k35d635",
+          "session-g5a-b-mtqf214k35d635",
+          "session-team-child-d943dda337a0452e169259d91fd59e93"
+        ],
+        "teamListMembers": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "list-members",
+              "rootSessionId": "session-g5a-b-mtqf214k35d635",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "members-listed",
+                "members": [
+                  {
+                    "instanceId": "inst-013r5030v1p9",
+                    "templateId": "worker",
+                    "label": "G5A Worker",
+                    "lifecycle": "CREATED",
+                    "childSessionId": "session-team-child-d943dda337a0452e169259d91fd59e93"
+                  },
+                  {
+                    "instanceId": "inst-leader",
+                    "templateId": "leader",
+                    "label": "leader"
+                  }
+                ]
+              },
+              "requestToken": "g5a-list-mtqf214k35d635-tok"
+            }
+          }
+        }
+      },
+      "notes": []
+    },
+    "S3": {
+      "criterion": "S3 MEMBER TOOL TABLE — from the real member model request (mock capture — the real dsh-llm adapter wire; the model request tools schema is the public seam the repo tests use, t12-vertical V2 deferred checks): the member sees BOTH the ordinary base tools (the standard preset file/shell tools — ACTUAL names enumerated from the capture) AND exactly the ten team_* tools",
+      "pass": true,
+      "durationMs": 0,
+      "assertions": [
+        {
+          "name": "a real member model request exists (the mock captured the agent wire)",
+          "ok": true,
+          "detail": "seq=6"
+        },
+        {
+          "name": "the member sees EXACTLY the ten team_* tools (no more, no less)",
+          "ok": true,
+          "detail": "[\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\"]"
+        },
+        {
+          "name": "the member sees the standard preset file-read tool 'read' in its base tool table",
+          "ok": true,
+          "detail": "baseTools=[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+        },
+        {
+          "name": "the member sees the win32 shell tool 'pwsh' in its base tool table",
+          "ok": true,
+          "detail": "baseTools=[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+        }
+      ],
+      "evidence": {
+        "memberToolTable": {
+          "seq": 6,
+          "model": "g5a-model",
+          "toolNames": [
+            "ask_user_question",
+            "create_goal",
+            "edit",
+            "exit_plan_mode",
+            "get_goal",
+            "glob",
+            "grep",
+            "interrupt_agent",
+            "job_kill",
+            "job_list",
+            "job_output",
+            "list_agents",
+            "pwsh",
+            "ralph",
+            "read",
+            "read_image",
+            "send_message",
+            "skill",
+            "subagent",
+            "subagent_fork",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_send_message",
+            "todo_write",
+            "update_goal",
+            "web_fetch",
+            "web_search",
+            "workflow",
+            "write"
+          ]
+        },
+        "memberBaseTools": [
+          "ask_user_question",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "memberTeamTools": [
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_send_message"
+        ]
+      },
+      "notes": [
+        "member tool table (36 tools): [\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_send_message\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+      ]
+    },
+    "S4": {
+      "criterion": "S4 MEMBER REAL TOOL CALLS — (a) file read of the pre-created control file (content round-trips into the tool result), (b) pwsh pwd (output == the member workspace path), (c) team_report_progress with the OWNING rootSessionId + a FRESH unique requestToken; all real executions: tool/call + tool/result durable events in the member session log, correlated by callId, plus the mock-captured tool call/result the agent actually saw",
+      "pass": true,
+      "durationMs": 3099,
+      "assertions": [
+        {
+          "name": "member MF turn settled (the assistant ack is durable in the member session log)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "member MF turn: the captured tool call is read{file_path} targeting the control file (the agent actually issued it)",
+          "ok": true,
+          "detail": "{\"file_path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\team-d1-d6-repair-v2\\\\G5\\\\g5a-rerun-owner\\\\member-workspace\\\\g5a-control-mtqf214k35d635.txt\"}"
+        },
+        {
+          "name": "member MF turn: the captured tool RESULT the agent saw contains the control token (content round-trips)",
+          "ok": true,
+          "detail": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\\g5a-control-mtqf214k35d635.txt</path>\n<type>file</type>\n<content>\n1: G5A-CONTROL-TOKEN-mtqf214k35d635: member base file tool round-trip sentinel; the quick brown fox jump"
+        },
+        {
+          "name": "member MF turn: the durable log carries the real tool/call event (read of the control file)",
+          "ok": true,
+          "detail": "{\"seq\":24,\"callId\":\"g5a-mc-mtqf214k35d635-read\",\"name\":\"read\",\"file_path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\team-d1-d6-repair-v2\\\\G5\\\\g5a-rerun-owner\\\\member-workspace\\\\g5a-control-mtqf214k35d635.txt\"}"
+        },
+        {
+          "name": "member MF turn: the durable log carries the correlated tool/result with the control token (real execution)",
+          "ok": true,
+          "detail": "{\"seq\":25,\"hasToken\":true,\"textHead\":\"<path>D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\team-d1-d6-repair-v2\\\\G5\\\\g5a-rerun-owner\\\\member-workspace\\\\g5a-control-mtqf214k35d635.txt</path>\\n<type>file</type>\\n<content>\\n1: G5A-CONTROL-TOKEN-mtqf214k35d635: member base file tool round-trip sentinel; the quick brown fox jump\"}"
+        },
+        {
+          "name": "member MP turn settled (the assistant ack is durable in the member session log)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "member MP turn: the captured tool call is the pwsh pwd command (raw path expansion)",
+          "ok": true,
+          "detail": "{\"command\":\"pwd | Select-Object -ExpandProperty Path\",\"description\":\"Print the current working directory (raw path)\"}"
+        },
+        {
+          "name": "member MP turn: the captured pwd tool result IS the member workspace path (exact, case-insensitive — win32)",
+          "ok": true,
+          "detail": "out=\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\team-d1-d6-repair-v2\\\\G5\\\\g5a-rerun-owner\\\\member-workspace\" expected=D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace"
+        },
+        {
+          "name": "member MP turn: the durable log carries the real pwsh tool/call event",
+          "ok": true,
+          "detail": "{\"seq\":50,\"callId\":\"g5a-mc-mtqf214k35d635-pwd\",\"name\":\"pwsh\"}"
+        },
+        {
+          "name": "member MP turn: the durable log carries the correlated tool/result that IS the member workspace path (real execution)",
+          "ok": true,
+          "detail": "{\"seq\":51,\"exactWorkspace\":true,\"text\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\dev\\\\agent-workflow\\\\evidence\\\\team-d1-d6-repair-v2\\\\G5\\\\g5a-rerun-owner\\\\member-workspace\"}"
+        },
+        {
+          "name": "member MT turn settled (the assistant ack is durable in the member session log)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "member MT turn: the captured team_report_progress call carries the OWNING rootSessionId (ROOT_B)",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"requestToken\":\"g5a-memteam-mtqf214k35d635-tok\",\"instanceId\":\"inst-013r5030v1p9\",\"subject\":\"g5a member real team call\",\"progress\":\"completed\",\"summary\":\"member inst-013r5030v1p9 reports the real team_* call landed\"}"
+        },
+        {
+          "name": "member MT turn: the captured team_report_progress call carries a FRESH unique requestToken (tok= value, per-run nonce)",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"requestToken\":\"g5a-memteam-mtqf214k35d635-tok\",\"instanceId\":\"inst-013r5030v1p9\",\"subject\":\"g5a member real team call\",\"progress\":\"completed\",\"summary\":\"member inst-013r5030v1p9 reports the real team_* call landed\"}"
+        },
+        {
+          "name": "member MT turn: the captured team_report_progress call carries the member OWN instanceId",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"requestToken\":\"g5a-memteam-mtqf214k35d635-tok\",\"instanceId\":\"inst-013r5030v1p9\",\"subject\":\"g5a member real team call\",\"progress\":\"completed\",\"summary\":\"member inst-013r5030v1p9 reports the real team_* call landed\"}"
+        },
+        {
+          "name": "member MT turn: the tool result settled in the capture (the agent saw the progress-recorded result)",
+          "ok": true,
+          "detail": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"instanceId\":\"inst-013r5030v1p9\",\"row\":{\"globalSequence\":56,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"instanceId\":\"inst-013r5030v1p9\",\"subject\":\"g5a member real team call\",\"sequ"
+        },
+        {
+          "name": "member MT turn: the durable log carries the real team_report_progress tool/call event",
+          "ok": true,
+          "detail": "{\"seq\":76,\"callId\":\"g5a-mc-mtqf214k35d635-rep\",\"name\":\"team_report_progress\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"requestToken\":\"g5a-memteam-mtqf214k35d635-tok\",\"instanceId\":\"inst-013r5030v1p9\"}"
+        },
+        {
+          "name": "member MT turn: the durable log carries the correlated tool/result with the progress-recorded payload (real execution)",
+          "ok": true,
+          "detail": "{\"seq\":77,\"textHead\":\"{\\\"status\\\":\\\"progress-recorded\\\",\\\"rootSessionId\\\":\\\"session-g5a-b-mtqf214k35d635\\\",\\\"instanceId\\\":\\\"inst-013r5030v1p9\\\",\\\"row\\\":{\\\"globalSequence\\\":56,\\\"factType\\\":\\\"activity-progress-recorded\\\",\\\"rootSessionId\\\":\\\"session-g5a-b-mtqf214k35d635\\\",\\\"instanceId\\\":\\\"inst-013r5030v1p9\\\",\\\"subject\\\":\\\"g5a member real team call\\\",\\\"sequ\"}"
+        }
+      ],
+      "evidence": {
+        "mfPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-4ada96dcfc93",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "mfToolCall": {
+          "captureSeq": 6,
+          "arguments": {
+            "file_path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\\g5a-control-mtqf214k35d635.txt"
+          }
+        },
+        "mfCapturedToolResult": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\\g5a-control-mtqf214k35d635.txt</path>\n<type>file</type>\n<content>\n1: G5A-CONTROL-TOKEN-mtqf214k35d635: member base file tool round-trip sentinel; the quick brown fox jumps over the lazy dog 1234567890.\n\n(End of file - total 1 lines)\n</content>",
+        "mfDurableCall": {
+          "seq": 24,
+          "callId": "g5a-mc-mtqf214k35d635-read",
+          "name": "read",
+          "file_path": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\\g5a-control-mtqf214k35d635.txt"
+        },
+        "mfDurableResult": {
+          "seq": 25,
+          "hasToken": true,
+          "textHead": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\\g5a-control-mtqf214k35d635.txt</path>\n<type>file</type>\n<content>\n1: G5A-CONTROL-TOKEN-mtqf214k35d635: member base file tool round-trip sentinel; the quick brown fox jump"
+        },
+        "mpPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-5bf066795210",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "mpToolCall": {
+          "captureSeq": 8,
+          "arguments": {
+            "command": "pwd | Select-Object -ExpandProperty Path",
+            "description": "Print the current working directory (raw path)"
+          }
+        },
+        "mpToolResult": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace\r\n",
+        "mpDurableCall": {
+          "seq": 50,
+          "callId": "g5a-mc-mtqf214k35d635-pwd",
+          "name": "pwsh"
+        },
+        "mpDurableResult": {
+          "seq": 51,
+          "exactWorkspace": true,
+          "text": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\g5a-rerun-owner\\member-workspace"
+        },
+        "mtPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-3b38391fa456",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "mtToolCall": {
+          "captureSeq": 10,
+          "arguments": {
+            "rootSessionId": "session-g5a-b-mtqf214k35d635",
+            "requestToken": "g5a-memteam-mtqf214k35d635-tok",
+            "instanceId": "inst-013r5030v1p9",
+            "subject": "g5a member real team call",
+            "progress": "completed",
+            "summary": "member inst-013r5030v1p9 reports the real team_* call landed"
+          }
+        },
+        "mtCapturedToolResult": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"instanceId\":\"inst-013r5030v1p9\",\"row\":{\"globalSequence\":56,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"instanceId\":\"inst-013r5030v1p9\",\"subject\":\"g5a member real team call\",\"sequence\":1,\"op\":\"progress\",\"progress\":\"completed\",\"requestToken\":\"g5a-memteam-mtqf214k35d635-tok\",\"reportedByInstanceId\":\"inst-013r5030v1p9\",\"createdAt\":\"2026-09-06T23:01:55.713Z\",\"summary\":\"member inst-",
+        "mtDurableCall": {
+          "seq": 76,
+          "callId": "g5a-mc-mtqf214k35d635-rep",
+          "name": "team_report_progress",
+          "rootSessionId": "session-g5a-b-mtqf214k35d635",
+          "requestToken": "g5a-memteam-mtqf214k35d635-tok",
+          "instanceId": "inst-013r5030v1p9"
+        },
+        "mtDurableResult": {
+          "seq": 77,
+          "textHead": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"instanceId\":\"inst-013r5030v1p9\",\"row\":{\"globalSequence\":56,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"instanceId\":\"inst-013r5030v1p9\",\"subject\":\"g5a member real team call\",\"sequ"
+        }
+      },
+      "notes": []
+    },
+    "S5": {
+      "criterion": "S5 D2 LIVE RESULT — a delegated work item on the member: a real Leader turn on ROOT_B whose mock-replied tool call executes team_delegate (continue form, the existing member instance). The Leader-facing ACTION RESULT — read through the same public seam the Leader model sees it (the Leader own real model request, whose role=tool message carries the tool result; the durable ROOT_B log carries the same event) — carries the C1/C2 frozen structured result: the tool layer executed with effect.memberResult = {requestToken, status:\"succeeded\", body:<the member business body>} (C2: deliver() returns the frozen WorkDeliveryResult; the work-admitted effect copies memberResult on the delegate path)",
+      "pass": true,
+      "durationMs": 2065,
+      "assertions": [
+        {
+          "name": "Leader MW prompt accepted on ROOT_B",
+          "ok": true,
+          "detail": "status=200"
+        },
+        {
+          "name": "Leader MW turn settled (the delegate tool call blocked until the member work turn settled; the assistant ack is durable in ROOT_B)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "the Leader-facing action result carries the memberResult structured payload (the delegate tool result the Leader model saw)",
+          "ok": true,
+          "detail": "via=parsed.effect"
+        },
+        {
+          "name": "the memberResult carries the frozen status \"succeeded\" (C1: deliver() succeeded = completed + last non-empty assistant text)",
+          "ok": true,
+          "detail": "status=\"succeeded\""
+        },
+        {
+          "name": "the memberResult carries the FRESH requestToken (WORK_TOK)",
+          "ok": true,
+          "detail": "requestToken=\"g5a-work-mtqf214k35d635-tok\""
+        },
+        {
+          "name": "the memberResult body IS the member business body (the member actually did the work)",
+          "ok": true,
+          "detail": "body=\"G5A-WORK-BODY-mtqf214k35d635: delegated work unit completed — the control sentinel is G5A-CONTROL-TOKEN-mtqf214k35d635.\""
+        },
+        {
+          "name": "the tool layer reports status \"executed\" (the tool layer envelope around the effect)",
+          "ok": true,
+          "detail": "toolLayerStatus=\"executed\""
+        },
+        {
+          "name": "the durable ROOT_B log carries the real team_delegate tool/call event",
+          "ok": true,
+          "detail": "{\"seq\":48,\"callId\":\"g5a-mc-mtqf214k35d635-delegate\",\"name\":\"team_delegate\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"requestToken\":\"g5a-work-mtqf214k35d635-tok\",\"delegationInstanceId\":\"inst-013r5030v1p9\"}"
+        },
+        {
+          "name": "the durable ROOT_B log carries the correlated tool/result with the memberResult payload",
+          "ok": true,
+          "detail": "{\"seq\":49,\"hasMemberResult\":true,\"textHead\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-g5a-b-mtqf214k35d635\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-admitted\\\",\\\"instanceId\\\":\\\"inst-013r5030v1p9\\\",\\\"fromLifecycle\\\":\\\"CREATED\\\",\\\"lifecycleCommitted\\\":true,\\\"sequence\\\":57,\\\"replayed\\\":false,\\\"settled\\\":true,\\\"settledSequence\\\":60,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"g5a-work-mtqf214k35d635-tok\\\",\\\"status\\\":\\\"succeeded\\\",\\\"body\\\":\\\"G5A-WORK-BODY-mtqf214k35d635: delegated work unit completed — the control sentinel is G5A-CONTROL-TOKEN-mtqf214k35d\"}"
+        },
+        {
+          "name": "the member session log carries the work delivery prefix [team-work requestToken=<WORK_TOK>] (C2 frozen delivery text)",
+          "ok": true,
+          "detail": "WORK_TOK=g5a-work-mtqf214k35d635-tok"
+        },
+        {
+          "name": "the member session log carries the member business body as a real assistant message",
+          "ok": true,
+          "detail": "G5A-WORK-BODY-mtqf214k35d635: delegated work unit completed — the control sentinel is G5A-CONTROL-TOKEN-mtqf214k35d635."
+        }
+      ],
+      "evidence": {
+        "mwPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-0d29037f7dbe",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "leaderFacingResult": {
+          "captureSeq": 13,
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-013r5030v1p9\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":57,\"replayed\":false,\"settled\":true,\"settledSequence\":60,\"memberResult\":{\"requestToken\":\"g5a-work-mtqf214k35d635-tok\",\"status\":\"succeeded\",\"body\":\"G5A-WORK-BODY-mtqf214k35d635: delegated work unit completed — the control sentinel is G5A-CONTROL-TOKEN-mtqf214k35d635.\"}},\"requestToken\":\"g5a-work-mtqf214k35d635-tok\"}"
+        },
+        "memberResultExtract": {
+          "via": "parsed.effect",
+          "memberResult": {
+            "requestToken": "g5a-work-mtqf214k35d635-tok",
+            "status": "succeeded",
+            "body": "G5A-WORK-BODY-mtqf214k35d635: delegated work unit completed — the control sentinel is G5A-CONTROL-TOKEN-mtqf214k35d635."
+          },
+          "toolLayerStatus": "executed"
+        },
+        "rootBDelegateCall": {
+          "seq": 48,
+          "callId": "g5a-mc-mtqf214k35d635-delegate",
+          "name": "team_delegate",
+          "rootSessionId": "session-g5a-b-mtqf214k35d635",
+          "requestToken": "g5a-work-mtqf214k35d635-tok",
+          "delegationInstanceId": "inst-013r5030v1p9"
+        },
+        "rootBDelegateResult": {
+          "seq": 49,
+          "hasMemberResult": true,
+          "textHead": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-g5a-b-mtqf214k35d635\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-013r5030v1p9\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":57,\"replayed\":false,\"settled\":true,\"settledSequence\":60,\"memberResult\":{\"requestToken\":\"g5a-work-mtqf214k35d635-tok\",\"status\":\"succeeded\",\"body\":\"G5A-WORK-BODY-mtqf214k35d635: delegated work unit completed — the control sentinel is G5A-CONTROL-TOKEN-mtqf214k35d"
+        }
+      },
+      "notes": []
+    },
+    "S6": {
+      "criterion": "S6 D3 LIVE IDENTITY — from the member model-request messages (mock capture — the real dsh-llm adapter wire): the agent-scoped prompt (system text) contains the B2 scoped team-member-context block with the OWNING root session id (ROOT_B), the member OWN instanceId, role=member, and the fresh-requestToken rule line — verbatim",
+      "pass": true,
+      "durationMs": 2,
+      "assertions": [
+        {
+          "name": "the member model request system text carries the EXACT B2 team-member-context block (owning root ROOT_B + member OWN instanceId + role=member + the fresh-requestToken rule line) — verified on the wire capture, corroborated by the durable request/header record",
+          "ok": true,
+          "detail": "capture=true durable=true"
+        },
+        {
+          "name": "the member model request system text does NOT carry the team-ROOT context block (member, not root)",
+          "ok": true,
+          "detail": "capture=false durable=false"
+        }
+      ],
+      "evidence": {
+        "captureSeq": 5,
+        "captureSystemText": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3180. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nG5A worker persona: you are the deterministic g5a worker member.\n\n[team-member-context rootSessionId=\"session-g5a-b-mtqf214k35d635\" instanceId=\"inst-013r5030v1p9\" role=\"member\"]\nEvery team_* tool call must include rootSessionId=\"session-g5a-b-mtqf214k35d635\" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.\n\nTokens prefixed with @ are workspace paths the user explicitly referenced, relative to the workspace root. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nNon-zero exits are reported as `[exit code: N]` markers; investigate failures before moving on. On Windows a killed process settles as `[exit code: 1]` without a signal marker; treat a bare exit 1 after an interruption as a termination, not a command failure.\n\nUse the read tool — not shell commands like cat — to inspect text files. Results include line numbers. Use offset and limit to continue reading large files.\n\nUse the write tool to create files or completely replace file contents. Existing files are overwritten, so read an existing file first (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nUse the edit tool for targeted changes to existing UTF-8 text files. It replaces literal old_string with new_string; by default old_string must appear exactly once. If old_string appears multiple times, provide a more specific old_string or set replace_all to true. Read the file first (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nUse the glob tool — not shell find — to discover files by path pattern. A pattern with no \"/\" matches basenames at any depth, so \"*\" matches every file in the tree rather than its top level. Results are files only, never directories, and include hidden and ignored files: a result that fits comes back in modification-time order, while a larger one keeps the modification-time-ordered head.\n\nUse the grep tool — not shell grep or rg — to search file contents. Use read on a matched file when you need surrounding context.\n\nTrack every background job id you start. You are notified in-session when a job finishes — do not busy-poll or sleep on one; keep working on independent steps and do not duplicate a running job's work. Before giving a final answer, collect every still-relevant job with job_output (set wait: true only when you are ge",
+        "durableHeaderSeq": 12,
+        "durableSystemText": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use\\. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3180. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nG5A worker persona: you are the deterministic g5a worker member.\n\n[team-member-context rootSessionId=\"session-g5a-b-mtqf214k35d635\" instanceId=\"inst-013r5030v1p9\" role=\"member\"]\nEvery team_* tool call must include rootSessionId=\"session-g5a-b-mtqf214k35d635\" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.\n\nTokens prefixed with @ are workspace paths the user explicitly referenced, relative to the workspace root. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nNon-zero exits are reported as `[exit code: N]` markers; investigate failures before moving on. On Windows a killed process settles as `[exit code: 1]` without a signal marker; treat a bare exit 1 after an interruption as a termination, not a command failure.\n\nUse the read tool — not shell commands like cat — to inspect text files. Results include line numbers. Use offset and limit to continue reading large files.\n\nUse the write tool to create files or completely replace file contents. Existing files are overwritten, so read an existing file first (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nUse the edit tool for targeted changes to existing UTF-8 text files. It replaces literal old_string with new_string; by default old_string must appear exactly once. If old_string appears multiple times, provide a more specific old_string or set replace_all to true. Read the file first (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nUse the glob tool — not shell find — to discover files by path pattern. A pattern with no \"/\" matches basenames at any depth, so \"*\" matches every file in the tree rather than its top level. Results are files only, never directories, and include hidden and ignored files: a result that fits comes back in modification-time order, while a larger one keeps the modification-time-ordered head.\n\nUse the grep tool — not shell grep or rg — to search file contents. Use read on a matched file when you need surrounding context.\n\nTrack every background job id you start. You are notified in-session when a job finishes — do not busy-poll or sleep on one; keep working on independent steps and do not duplicate a running job's work. Before giving a final answer, collect every still-relevant job with job_output (set wait: true only when you are ge",
+        "expectedBlock": "[team-member-context rootSessionId=\"session-g5a-b-mtqf214k35d635\" instanceId=\"inst-013r5030v1p9\" role=\"member\"]\nEvery team_* tool call must include rootSessionId=\"session-g5a-b-mtqf214k35d635\" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId."
+      },
+      "notes": []
+    },
+    "S7": {
+      "criterion": "S7 ORDINARY SESSION NON-REGRESSION — an ordinary (non-Team) session on the same host, created over the public POST /api/session/create; its session-local model selection steered at the mock-reachable provider over the public POST /api/session/selectModel seam (deepseek-official — the same provider the team row drives; the deepseek adapter resolveModel is a LOCAL lookup, no provider I/O); its tool table captured from the REAL model request has NO team_* tool (while the standard preset read/pwsh are); a basic turn completes; the deployment default model is restored afterwards",
+      "pass": true,
+      "durationMs": 1141,
+      "assertions": [
+        {
+          "name": "ordinary session created over the public session/create seam",
+          "ok": true,
+          "detail": "{\"type\":\"server-response\",\"rpcId\":\"g5a-712612fb8511\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-g5a-ord-mtqf214k35d635\",\"agentPreset\":\"standard\"}}}"
+        },
+        {
+          "name": "session-local model selection steered to the mock-reachable provider (selectModel public seam)",
+          "ok": true,
+          "detail": "{\"type\":\"server-response\",\"rpcId\":\"g5a-e61e5ffeb205\",\"result\":{\"ok\":true,\"value\":{\"selected\":{\"provider\":\"deepseek-official\",\"model\":\"g5a-ordinary\",\"reasoningEffort\":\"high\"}}}}"
+        },
+        {
+          "name": "ordinary basic turn completed (the assistant ack is durable in the ordinary session log)",
+          "ok": true,
+          "detail": "assistant ack present"
+        },
+        {
+          "name": "the ordinary session log carries a turn/end event (the turn fully settled)",
+          "ok": true,
+          "detail": "turnEndLines=1"
+        },
+        {
+          "name": "the ordinary session tool table has NO team_* tool (non-regression: Team capability is not leaking into ordinary sessions)",
+          "ok": true,
+          "detail": "tools=[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+        },
+        {
+          "name": "the ordinary session still has the standard preset 'read' + 'pwsh' base tools",
+          "ok": true,
+          "detail": "tools=[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+        },
+        {
+          "name": "deployment default model RESTORED to qiyuan-self/qwen3.8-27b (the test home real provider; the selectModel side effect is undone)",
+          "ok": true,
+          "detail": "{\"type\":\"server-response\",\"rpcId\":\"g5a-c614a7181d4d\",\"result\":{\"ok\":true,\"value\":{\"selected\":{\"provider\":\"qiyuan-self\",\"model\":\"qwen3.8-27b\"}}}}"
+        }
+      ],
+      "evidence": {
+        "ordinaryCreate": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-712612fb8511",
+            "result": {
+              "ok": true,
+              "value": {
+                "sessionId": "session-g5a-ord-mtqf214k35d635",
+                "agentPreset": "standard"
+              }
+            }
+          }
+        },
+        "selectModelMock": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-e61e5ffeb205",
+            "result": {
+              "ok": true,
+              "value": {
+                "selected": {
+                  "provider": "deepseek-official",
+                  "model": "g5a-ordinary",
+                  "reasoningEffort": "high"
+                }
+              }
+            }
+          }
+        },
+        "moPrompt": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-1cf971f4fd07",
+            "result": {
+              "ok": true,
+              "value": {
+                "accepted": true
+              }
+            }
+          }
+        },
+        "ordinaryToolTable": {
+          "seq": 15,
+          "model": "g5a-ordinary",
+          "toolNames": [
+            "ask_user_question",
+            "create_goal",
+            "edit",
+            "exit_plan_mode",
+            "get_goal",
+            "glob",
+            "grep",
+            "interrupt_agent",
+            "job_kill",
+            "job_list",
+            "job_output",
+            "list_agents",
+            "pwsh",
+            "ralph",
+            "read",
+            "read_image",
+            "send_message",
+            "skill",
+            "subagent",
+            "subagent_fork",
+            "todo_write",
+            "update_goal",
+            "web_fetch",
+            "web_search",
+            "workflow",
+            "write"
+          ]
+        },
+        "ordinaryTeamTools": [],
+        "ordinaryBaseTools": [
+          "ask_user_question",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "selectModelRestore": {
+          "status": 200,
+          "body": {
+            "type": "server-response",
+            "rpcId": "g5a-c614a7181d4d",
+            "result": {
+              "ok": true,
+              "value": {
+                "selected": {
+                  "provider": "qiyuan-self",
+                  "model": "qwen3.8-27b"
+                }
+              }
+            }
+          }
+        }
+      },
+      "notes": [
+        "ordinary tool table (26 tools): [\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]",
+        "state change recorded: the shared home deployment default model moved to deepseek-official/g5a-ordinary during the ordinary turn and back to qiyuan-self/qwen3.8-27b after S7 (the documented saveSelection side effect)"
+      ]
+    },
+    "S8": {
+      "criterion": "S8 CLEANUP — the test host stops; port 3180 is free and the host process is gone; test-use is pristine after (porcelain empty + HEAD unchanged); the mock capture + summary.json are written",
+      "pass": true,
+      "durationMs": 185,
+      "assertions": [
+        {
+          "name": "the test host stopped and port 3180 is free (no host process left behind)",
+          "ok": true,
+          "detail": "stop={\"killed\":true,\"portFree\":true} portFreeAfter=true portBusyAfter=false"
+        },
+        {
+          "name": "test-use HEAD still == 76fda729 after the run",
+          "ok": true,
+          "detail": "head=76fda729799fe9b3848dbe2c211d4b231032b81e"
+        },
+        {
+          "name": "test-use git status --porcelain empty (post)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "name": "stable :3080 still reachable after the run (untouched — read-only probe only)",
+          "ok": true,
+          "detail": "status=401"
+        }
+      ],
+      "evidence": {
+        "stop": {
+          "killed": true,
+          "portFree": true
+        },
+        "portAfter": {
+          "portFreeAfter": true,
+          "portBusyAfter": false
+        },
+        "testUsePost": {
+          "head": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+          "headSource": "git",
+          "statusEmpty": true,
+          "diffEmpty": true,
+          "errors": []
+        },
+        "stablePost": {
+          "url": "http://127.0.0.1:3080/",
+          "httpStatus": 401
+        }
+      },
+      "notes": []
+    }
+  },
+  "pass": true,
+  "boundary": {
+    "stableInstance": "read-only GET probe on :3080 pre + post only; no operation was ever sent to the stable instance or D:\\deepseek-harness",
+    "testUse": "references/deepseek-harness-test-use verified pristine before and after (porcelain empty + HEAD pinned at 76fda729)",
+    "sharedHome": "pre-existing roots preserved (nonce-unique roots accumulate, as in every previous run); the deployment default model moved by the S7 selectModel side effect and was RESTORED to qiyuan-self/qwen3.8-27b (recorded in S7 evidence)",
+    "process": "the host process is stopped; port 3180 verified free after stop",
+    "publicSeamsUsed": [
+      "profile-patch seam (profiles/web/cordis.patch.yml): the production dist host row + the p6t6 observability row mount",
+      "remote team.create (v2): the dynamic team root ROOT_B (the browser-facing public channel the Team UI New-Team entry drives)",
+      "remote team.listRoots (v3): host-authority root enumeration",
+      "api/session/prompt: ROOT_B leader turns (S2 member create, S5 delegate) + the member child session (S4a/b/c real tool turns) — the public member-session prompt path; session-controller resolve() prefers the live agent",
+      "api/session/create + api/session/selectModel: the ordinary session (S7) + the session-local model steering (side effect restored)",
+      "p6t6 observability seam: team_list_members on ROOT_B (S2)",
+      "the mock capture of REAL model requests (the real dsh-llm adapter wire): S3 tool table, S4 tool calls/results, S5 Leader-facing action result, S6 identity block",
+      "the durable zstd session logs: every turn/tool event"
+    ],
+    "notExercised": [
+      "remote team.admitInitialWork (not needed — the delegation went through the team_delegate tool on the existing member)",
+      "the member UI entry (this matrix row is the agent-side D1 row)"
+    ]
+  }
+}
