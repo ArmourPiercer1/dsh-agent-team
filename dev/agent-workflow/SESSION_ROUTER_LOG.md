@@ -2036,3 +2036,12 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - G2 exit criteria met: B1/B2 no blockers; D3 block in agent-scoped prompt (fresh/cold/cross-root/fail-closed/no-dup/no-leak); ordinary session unchanged; upstream pristine; typechecks green; diff --check clean.
 - Non-gate follow-ups (risk ledger): (a) separate client task for the pre-existing TCM M4 timing race; (b) host-level service-absent test for the lazy agentPresets accessor; (c) G5 must execute the 15.1 D1 row live-host member E2E (file read + pwd/shell + team_* call on :3180).
 - Next: Wave C (C1 D2 structured result contract -> C2 glue/effect integration), single contract writer, via workflow tool.
+
+## G3 owner verification (2026-09-07T02:44:07.7676002+08:00)
+
+- Integration head d26c27d (C1 497d737, C2 805a510, hygiene d26c27d) over base 9b74fa0.
+- C1/C2 both PASS in their worktrees (C1 full suite 1187/1187; C2 full suite 1203/1203, 16 TDD pins red-first).
+- Owner checks at integrated head: focused 7 files 63/63 (p8s3-work-chain 12, p8s3b-result-effects 16, d1 6, d3 5, tcm-d4 7, t12a-m2 8, d5 9); full runtime 1203/1203 (130 files); runtime typecheck exit 0; full client 526/527 at G3 head (single failure = the known pre-existing TCM M4 timing race, already ledgered at G2; Wave C touched no client files); git diff --check 9b74fa0..d26c27d exit 0 (after proactive C1-transcript whitespace hygiene d26c27d, same class as the G2 supplement).
+- test-use pristine: HEAD 76fda729799fe9b3848dbe2c211d4b231032b81e, porcelain empty=True.
+- C2 flagged for G3 ratification: one new stable defensive error code WORK_TURN_UNREADABLE (status stays the frozen 'unavailable').
+- Next: 3 independent G3 reviewers via workflow tool (blind; range 9b74fa0..d26c27d).
