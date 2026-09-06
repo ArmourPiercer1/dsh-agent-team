@@ -1540,6 +1540,20 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // root is created by the host, NO native root). Absent (a glue-less
     // world) → team.create fails closed with a typed error.
     startRootAgent: live.createRootAgent,
+    // D2 (Team D1-D6 repair v2, remote contract v3) — the Team-mode live
+    // ensure behind the v3-only team.ensureRootLive: the live glue's
+    // ensureLiveAgent (A3 Q2 — live-first: the upstream agent registry
+    // resolves a live agent and reuses it, so a second agent under one
+    // root is structurally impossible; a root without a durable session
+    // artifact fails closed typed). The glue's typed surface is ALREADY
+    // exported (TeamAgentBindings.ensureLiveAgent) — NO glue change. The
+    // await wrapper adapts the glue's `Promise<unknown>` result surface to
+    // the port's `Promise<void>` contract: the S6 handler never consumes the
+    // return value — it only needs the success/failure distinction (the
+    // success envelope is built by the handler itself).
+    ensureRootLive: async (rootSessionId) => {
+      await live.ensureLiveAgent(rootSessionId)
+    },
     // D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
     // durable root ownership list behind the v3-only team.listRoots: the
     // D1 pure ownership-index module over the ALREADY-INJECTED

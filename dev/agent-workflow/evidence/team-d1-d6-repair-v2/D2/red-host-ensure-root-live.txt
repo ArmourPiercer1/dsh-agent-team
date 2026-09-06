@@ -1,0 +1,169 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D2
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts (10 tests | 7 failed) 8ms
+     × an owned durable root: the port is called exactly once with the rootSessionId and the closed v3 shape resolves 4ms
+     × the glue port is called exactly once with the addressed bound root 1ms
+     ✓ the READ-ONLY contract: no repository access of any kind (the trip-wire was never touched) 0ms
+     × a durably OWNED root (P9-S8, not the bound root) is accepted and ensured 0ms
+     ✓ a FOREIGN/unknown root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE the port runs 0ms
+     ✓ the glue port was NEVER called for the foreign root 0ms
+     × an ABSENT ensureRootLive option → typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE (fail closed, the D-3 discipline mirrored) 1ms
+     × the registry collision rejection (already live OUTSIDE the Team glue) → TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM (never a silent adoption) 0ms
+     × the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT 0ms
+     × every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message preserved for diagnosis) 0ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): team.ensureRootLi
+ve success > an owned durable root: the port is called exactly once with the rootSessionId and the cl
+osed v3 shape resolves
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:229:35
+    227| describe('D2 (S6 host handler): team.ensureRootLive success', () => {
+    228|   it('an owned durable root: the port is called exactly once with the …
+    229|     expect(D2.successResponse.ok).toBe(true)
+       |                                   ^
+    230|     if (!D2.successResponse.ok) throw new Error('D2-S6 guard: expected…
+    231|     expect(D2.successResponse.value.provenance.contractVersion).toBe(R…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): team.ensureRootLi
+ve success > the glue port is called exactly once with the addressed bound root
+AssertionError: expected [] to deeply equal [ 'root-session-d2-s6' ]
+
+- Expected
++ Received
+
+- [
+-   "root-session-d2-s6",
+- ]
++ []
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:239:29
+    237|
+    238|   it('the glue port is called exactly once with the addressed bound ro…
+    239|     expect(D2.successCalls).toEqual([ROOT_SID])
+       |                             ^
+    240|   })
+    241|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): team.ensureRootLi
+ve success > a durably OWNED root (P9-S8, not the bound root) is accepted and ensured
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:247:33
+    245|
+    246|   it('a durably OWNED root (P9-S8, not the bound root) is accepted and…
+    247|     expect(D2.ownedResponse.ok).toBe(true)
+       |                                 ^
+    248|     if (D2.ownedResponse.ok) {
+    249|       expect(dataOf(D2.ownedResponse)).toEqual({ rootSessionId: OWNED_…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): the typed failure
+ vocabulary (A3 Q2) > an ABSENT ensureRootLive option → typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAIL
+ABLE (fail closed, the D-3 discipline mirrored)
+AssertionError: expected 'TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEM…' to be 'TEAM_REMOTE_TEAM_ROOT_LIVE_P
+ORT_UNAVA…' // Object.is equality
+
+Expected: "TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE"
+Received: "TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED"
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:271:27
+    269|   it('an ABSENT ensureRootLive option → typed TEAM_REMOTE_TEAM_ROOT_LI…
+    270|     const error = errorOf(D2.absentResponse)
+    271|     expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_PO…
+       |                           ^
+    272|     expect(error['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAI…
+    273|     const details = error['details'] as Record<string, unknown>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): the typed failure
+ vocabulary (A3 Q2) > the registry collision rejection (already live OUTSIDE the Team glue) → TEAM_RE
+MOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM (never a silent adoption)
+AssertionError: expected 'TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEM…' to be 'TEAM_REMOTE_TEAM_ROOT_LIVE_O
+UTSIDE_TE…' // Object.is equality
+
+Expected: "TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM"
+Received: "TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED"
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:280:27
+    278|   it('the registry collision rejection (already live OUTSIDE the Team …
+    279|     const error = errorOf(D2.outsideResponse)
+    280|     expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_OU…
+       |                           ^
+    281|     expect(error['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEA…
+    282|     const details = error['details'] as Record<string, unknown>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): the typed failure
+ vocabulary (A3 Q2) > the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_
+ARTIFACT
+AssertionError: expected 'TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEM…' to be 'TEAM_REMOTE_TEAM_ROOT_LIVE_N
+O_DURABLE…' // Object.is equality
+
+Expected: "TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT"
+Received: "TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED"
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:290:27
+    288|   it('the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_L…
+    289|     const error = errorOf(D2.noDurableResponse)
+    290|     expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_NO…
+       |                           ^
+    291|     expect(error['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_…
+    292|     expect(String(error['message'])).toContain(`'${ROOT_SID}'`)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): the typed failure
+ vocabulary (A3 Q2) > every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message
+ preserved for diagnosis)
+AssertionError: expected 'TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEM…' to be 'TEAM_REMOTE_TEAM_ROOT_LIVE_S
+TART_FAIL…' // Object.is equality
+
+Expected: "TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED"
+Received: "TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED"
+
+ ❯ packages/runtime/test/d2-s6-ensure-root-live.test.ts:298:27
+    296|   it('every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAIL…
+    297|     const error = errorOf(D2.startFailedResponse)
+    298|     expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_ST…
+       |                           ^
+    299|     expect(error['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILE…
+    300|     expect(String(error['message'])).toContain('model provider explode…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 3 passed (10)
+   Start at  04:25:15
+   Duration  560ms (transform 332ms, setup 0ms, import 436ms, tests 8ms, environment 0ms)
+

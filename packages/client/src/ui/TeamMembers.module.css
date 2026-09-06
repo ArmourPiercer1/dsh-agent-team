@@ -207,3 +207,49 @@
   outline: 1px solid var(--dsw-alias-state-business-primary);
   outline-offset: -1px;
 }
+
+/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row
+   (the explicit "以 Team 模式打开 / 回到 Leader" button) + the current
+   open-mode badge. */
+.teamModeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 10px 6px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  background: transparent;
+}
+
+.teamModeOpen {
+  padding: 2px 10px;
+  border: 1px solid var(--dsw-alias-state-business-primary);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-state-business-primary);
+  font: var(--dsw-font-xxxs-11);
+  cursor: pointer;
+}
+
+.teamModeOpen:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.teamModeOpen:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: -1px;
+}
+
+.teamModeOpen:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.teamModeBadge {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+  white-space: nowrap;
+}

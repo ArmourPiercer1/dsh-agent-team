@@ -1,0 +1,113 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D2/packages/client
+
+ ❯ test/d2-open-team-mode.test.ts (0 test)
+ ❯ test/d2-team-mode-entry.client.spec.tsx (7 tests | 5 failed) 3237ms
+     × renders the explicit entry on each persisted-roots row and triggers openTeamMode with the row root id 75ms
+     × a typed openTeamMode failure renders ONE verbatim error note on that row 59ms
+     ✓ WITHOUT the openTeamMode face the picker rows stay the D1 read-only surface (no entry) 62ms
+     × renders the entry on the root/leader row and triggers openTeamMode with the team session id 1013ms
+     × renders the current open-mode badge (team) for the leader row when teamOpenMode reads team 1010ms
+     × renders NO badge when teamOpenMode reads null (the root was not opened in Team mode here) 1013ms
+     ✓ WITHOUT the openTeamMode face the leader row stays the D1 surface (no entry, no badge) 3ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/d2-open-team-mode.test.ts [ test/d2-open-team-mode.test.ts ]
+Error: D2 mount test: openTeamMode face missing
+ ❯ test/d2-open-team-mode.test.ts:302:41
+    300|   const { face } = await mountedView(fixture)
+    301|   const openTeamMode = face.openTeamMode
+    302|   if (openTeamMode === undefined) throw new Error('D2 mount test: open…
+       |                                         ^
+    303|   const result = await openTeamMode(ROOT)
+    304|   fixture.disposeAll()
+ ❯ test/d2-open-team-mode.test.ts:287:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/d2-team-mode-entry.client.spec.tsx > TeamView: the D2 open-in-Team-mode entry (zero-state
+ picker rows) > renders the explicit entry on each persisted-roots row and triggers openTeamMode with
+ the row root id
+AssertionError: expected null not to be null
+ ❯ test/d2-team-mode-entry.client.spec.tsx:164:23
+    162|     expect(row).not.toBeNull()
+    163|     const entry = row?.querySelector<HTMLButtonElement>('[data-team-mo…
+    164|     expect(entry).not.toBeNull()
+       |                       ^
+    165|     expect(entry?.textContent).toBe('以 Team 模式打开 / 回到 Leader')
+    166|     fireEvent.click(entry as unknown as HTMLElement)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/d2-team-mode-entry.client.spec.tsx > TeamView: the D2 open-in-Team-mode entry (zero-state
+ picker rows) > a typed openTeamMode failure renders ONE verbatim error note on that row
+Error: the picker-row entry did not render
+ ❯ test/d2-team-mode-entry.client.spec.tsx:193:31
+    191|       .querySelector('[data-team-root-row][data-root-session-id="root-…
+    192|       ?.querySelector('[data-team-mode-open-root]')
+    193|     if (entry === null) throw new Error('the picker-row entry did not …
+       |                               ^
+    194|     fireEvent.click(entry)
+    195|     const note = await vi.waitFor(() => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/d2-team-mode-entry.client.spec.tsx > TeamView: the D2 open-in-Team-mode entry (the member
+s section leader row) > renders the entry on the root/leader row and triggers openTeamMode with the t
+eam session id
+AssertionError: expected null not to be null
+ ❯ test/d2-team-mode-entry.client.spec.tsx:230:90
+    228|     )
+    229|     await vi.waitFor(() => {
+    230|       expect(view.container.querySelector('[data-member-group][data-le…
+       |                                                                                          ^
+    231|     })
+    232|     const leaderGroup = view.container.querySelector('[data-member-gro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/d2-team-mode-entry.client.spec.tsx > TeamView: the D2 open-in-Team-mode entry (the member
+s section leader row) > renders the current open-mode badge (team) for the leader row when teamOpenMo
+de reads team
+AssertionError: expected null not to be null
+ ❯ test/d2-team-mode-entry.client.spec.tsx:261:90
+    259|     )
+    260|     await vi.waitFor(() => {
+    261|       expect(view.container.querySelector('[data-member-group][data-le…
+       |                                                                                          ^
+    262|     })
+    263|     const badge = view.container.querySelector('[data-team-mode-badge]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/d2-team-mode-entry.client.spec.tsx > TeamView: the D2 open-in-Team-mode entry (the member
+s section leader row) > renders NO badge when teamOpenMode reads null (the root was not opened in Tea
+m mode here)
+AssertionError: expected null not to be null
+ ❯ test/d2-team-mode-entry.client.spec.tsx:281:90
+    279|     )
+    280|     await vi.waitFor(() => {
+    281|       expect(view.container.querySelector('[data-member-group][data-le…
+       |                                                                                          ^
+    282|     })
+    283|     expect(view.container.querySelector('[data-team-mode-badge]')).toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 2 passed (7)
+   Start at  04:29:39
+   Duration  5.44s (transform 915ms, setup 0ms, import 1.55s, tests 3.24s, environment 540ms)
+

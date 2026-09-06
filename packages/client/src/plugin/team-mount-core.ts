@@ -329,6 +329,21 @@ export const inject = ['slots', 'locale', 'sessions', 'connection', 'remote', 'r
 export const name = 'dsh-agent-team-client'
 
 /**
+ * D2 (Team D1-D6 repair v2, D6) — the settled outcome of the explicit
+ * open-in-Team-mode entry (`openTeamMode`): the AWAITED two-phase
+ * sequence (A3 Q1 live-first) — (a) the v3 `team.ensureRootLive`
+ * guarantee MUST complete before (b) the native `sessions.open`. On a
+ * typed ensure failure the session is NOT opened (never a silent open,
+ * never a silent adoption — the host's OUTSIDE_TEAM discipline) and the
+ * typed error (code + message) is returned for the UI's explicit error
+ * lane. NO remote field, NO push/event/polling: the per-root open-mode
+ * fact is CLIENT-LOCAL (the mount's state map, reset on session switch).
+ */
+export type TeamOpenModeOutcome =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly code: string; readonly message: string }
+
+/**
  * Mount the Team client on the public seams (the full P9-S6 body).
  *
  * @param ctx - the Cordis client plugin context (the five public seams + effect).
@@ -361,12 +376,21 @@ export function applyTeamMount(
   // Last applied projection generation per team (drives the ledger re-pull:
   // a generation advance means the durable ledger may hold new entries).
   const ledgerRefreshGeneration = new Map<string, number>()
+  // D2 (Team D1-D6 repair v2, D6) — the per-root CLIENT-LOCAL open-mode
+  // state: `'team'` when THIS client completed an openTeamMode for the
+  // root and the session selection is still on that root (reset on every
+  // session switch away — see the list effect below). The fact is
+  // deliberately NOT remote: the host's `team.ensureRootLive` is the
+  // guarantee, the mode mark is the client's own knowledge (no remote
+  // field, no push/event/polling).
+  const openModeByRoot = new Map<string, 'team'>()
   ctx.effect(
     () => () => {
       for (const dispose of storeDisposers.splice(0).reverse()) dispose()
       for (const store of projectionStores.values()) store.reset()
       for (const store of ledgerStores.values()) store.reset()
       ledgerRefreshGeneration.clear()
+      openModeByRoot.clear()
     },
     'dsh-agent-team: store teardown',
   )
@@ -490,6 +514,46 @@ export function applyTeamMount(
   const openSession = (sessionId: string): void => {
     ctx.sessions.open(sessionId)
   }
+
+  // (9.0) D2 (Team D1-D6 repair v2, D6) — the explicit open-in-Team-mode
+  // entry (the dedicated "以 Team 模式打开 / 回到 Leader" entry): the
+  // AWAITED two-phase sequence (A3 Q1 live-first): (a) the v3
+  // `team.ensureRootLive` guarantee MUST settle BEFORE (b) the native
+  // `ctx.sessions.open` — on a typed ensure failure the session is NOT
+  // opened (never a silent open, never a silent adoption) and the typed
+  // error is returned for the UI's explicit error lane. On success the
+  // per-root open-mode mark is set ('team'); the session switch itself
+  // drives the badge re-render (the sessions.list effect below keeps the
+  // map honest on every switch). NO remote field, NO push/event/polling.
+  const openTeamMode = async (rootSessionId: string): Promise<TeamOpenModeOutcome> => {
+    const result = await teamRemote.teamEnsureRootLiveV3(rootSessionId)
+    if (result.ok === false) {
+      // The ensure failed typed: never open, never mark (a stale 'team'
+      // mark from a prior attempt of the same root is cleared too).
+      openModeByRoot.delete(rootSessionId)
+      return { ok: false, code: result.error.code, message: result.error.message }
+    }
+    // (b) only AFTER the guarantee settled: the native switch.
+    ctx.sessions.open(rootSessionId)
+    openModeByRoot.set(rootSessionId, 'team')
+    return { ok: true }
+  }
+
+  // (9.0b) D2 (D6) — the open-mode reset: when the session-list current
+  // selection changes, every root whose mark is NOT the new current
+  // loses it (the mode badge is a per-client-session fact — the root is
+  // only "opened in Team mode" while this client sits on it).
+  ctx.effect(
+    () => {
+      return ctx.sessions.list.subscribe(() => {
+        const current = ctx.sessions.list.getSnapshot().current
+        for (const root of [...openModeByRoot.keys()]) {
+          if (root !== current) openModeByRoot.delete(root)
+        }
+      })
+    },
+    'dsh-agent-team: open-mode reset on session switch',
+  )
 
   // (9.1) The creation-path session open (D-3): the host mints the root
   // session during `team.create` / `handoff.create`, and its list
@@ -649,6 +713,12 @@ export function applyTeamMount(
     pullProjection,
     refreshTeamLedger: refreshTeamLedgerFor(sessionId),
     openSession,
+    // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
+    // (the AWAITED two-phase sequence) + the per-root client-local
+    // open-mode read face (the 'team' badge source; 'team' only while
+    // this client sits on a root it opened in Team mode).
+    openTeamMode,
+    teamOpenMode: (rootSessionId) => openModeByRoot.get(rootSessionId) ?? null,
     creation,
     memberCommands,
     governance,

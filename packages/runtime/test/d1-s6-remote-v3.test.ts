@@ -26,10 +26,13 @@
  *    an UNtyped throw is re-wrapped as the same unavailable code (the
  *    message preserved for diagnosis);
  *  - `team.ensureRootLive` (v3-only) — TEAM-SCOPED: a FOREIGN root fails
- *    closed with `TEAM_REMOTE_FOREIGN_TEAM` BEFORE the reservation error;
- *    the bound root (D1) fails closed typed with
- *    `TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED` (the handler is wired
- *    by D2 — NEVER a silent success; the promise never rejects);
+ *    closed with `TEAM_REMOTE_FOREIGN_TEAM` BEFORE any ensure work; the
+ *    bound root with an ABSENT `ensureRootLive` port fails closed typed
+ *    with `TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE` (D2 replaced the
+ *    D1 reservation error — the full D2 handler behavior, including the
+ *    success shape and the typed failure mapping, is pinned in
+ *    d2-s6-ensure-root-live.test.ts; NEVER a silent success; the promise
+ *    never rejects);
  *  - version routing: v1/v2 requests to either v3 method → typed
  *    `method-version-unsupported` AFTER the envelope parse (details echo
  *    the request's own version).
@@ -311,8 +314,8 @@ describe('D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty 
   })
 })
 
-describe('D1 (S6 host wiring): team.ensureRootLive (v3-only, reserved until D2)', () => {
-  it('a FOREIGN root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE the reservation error (the bound-root guard runs first)', () => {
+describe('D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior)', () => {
+  it('a FOREIGN root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE any ensure work (the bound-root guard runs first)', () => {
     const error = errorOf(D1.ensureV3Foreign)
     expect(error['code']).toBe('TEAM_REMOTE_FOREIGN_TEAM')
     // the guard's diagnostic (the addressed + bound root) rides in the
@@ -323,15 +326,15 @@ describe('D1 (S6 host wiring): team.ensureRootLive (v3-only, reserved until D2)'
     expect(String(error['message'])).toContain(`bound root '${ROOT_SID}'`)
   })
 
-  it('the bound root (D1) fails closed typed TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED — NEVER a silent success', () => {
+  it('the bound root with an ABSENT ensureRootLive port fails closed typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE — NEVER a silent success (D2 replaced the D1 reservation error)', () => {
     const error = errorOf(D1.ensureV3Bound)
-    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_NOT_IMPLEMENTED)
-    expect(error['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED')
+    expect(error['code']).toBe(S6_REMOTE_ERROR_CODES.TEAM_ROOT_LIVE_PORT_UNAVAILABLE)
+    expect(error['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE')
     const details = error['details'] as Record<string, unknown>
     expect(details['reason']).toBe('domain-error')
     const cause = details['cause'] as Record<string, unknown>
-    expect(cause['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED')
-    expect(String(error['message'])).toContain('reserved')
+    expect(cause['code']).toBe('TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE')
+    expect(String(error['message'])).toContain('does not provide the ensureRootLive port')
   })
 
   it('the READ-ONLY contract holds for ensureRootLive as well (the trip-wire was never touched)', () => {

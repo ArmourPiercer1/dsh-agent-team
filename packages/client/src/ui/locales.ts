@@ -34,6 +34,9 @@ export type TeamKey =
   | 'view.members.noInstances'
   | 'view.members.action.empty'
   | 'view.members.waiting'
+  | 'view.members.openTeamMode'
+  | 'view.members.openMode.team'
+  | 'view.members.openMode.error'
   | 'view.activity.title'
   | 'view.activity.empty'
   | 'view.activity.member'
@@ -250,6 +253,9 @@ export const zh: Record<TeamKey, string> = {
   'view.members.noInstances': '尚无实例',
   'view.members.action.empty': '暂无动作',
   'view.members.waiting': '{count} 项待裁决',
+  'view.members.openTeamMode': '以 Team 模式打开 / 回到 Leader',
+  'view.members.openMode.team': 'Team 模式',
+  'view.members.openMode.error': '以 Team 模式打开失败：{code}: {message}',
   'view.activity.title': '活动与进度',
   'view.activity.empty': '暂无活动进度',
   'view.activity.member': '负责人 {member}',
@@ -466,6 +472,9 @@ export const en: Record<TeamKey, string> = {
   'view.members.noInstances': 'No instances yet',
   'view.members.action.empty': 'No action yet',
   'view.members.waiting': '{count} pending',
+  'view.members.openTeamMode': 'Open in Team mode / back to Leader',
+  'view.members.openMode.team': 'Team mode',
+  'view.members.openMode.error': 'Failed to open in Team mode: {code}: {message}',
   'view.activity.title': 'Activity & Progress',
   'view.activity.empty': 'No activity progress yet',
   'view.activity.member': 'Assignee {member}',

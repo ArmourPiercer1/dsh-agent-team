@@ -31,6 +31,7 @@ import {
 import type { TeamLedgerState } from '../state/team-ledger-store.js'
 import { adaptTeamProjection } from '../model/projection-adapter.js'
 import { ledgerModelFromStoreState } from '../model/ledger-adapter.js'
+import type { TeamOpenModeOutcome } from '../plugin/team-mount-core.js'
 import type { TeamIntentDraft, TeamPresetRow } from '../model/team-intent-model.js'
 import {
   emptyTeamIntentDraft, teamWorkspaceOptions,
@@ -210,6 +211,23 @@ export interface TeamViewInjected {
    * rows; the T7/T8 zero state is unchanged).
    */
   roots?: TeamViewRootsFace
+  /**
+   * D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
+   * (the dedicated "以 Team 模式打开 / 回到 Leader" entry): the AWAITED
+   * two-phase sequence — the v3 `team.ensureRootLive` guarantee (over the
+   * `roots` face) MUST complete before the native session switch; a typed
+   * ensure failure returns `{ ok: false, code, message }` WITHOUT opening
+   * the session (never a silent open / adoption). Absent → the D1 surface
+   * (no entry on the picker rows, no entry/badge on the leader row).
+   */
+  openTeamMode?: (rootSessionId: string) => Promise<TeamOpenModeOutcome>
+  /**
+   * D2 (D6): the per-root client-local open-mode read — `'team'` when this
+   * client completed an openTeamMode for the root and still sits on it
+   * (reset on every session switch away); `null` otherwise. The mode
+   * badge source. Absent → no badge.
+   */
+  teamOpenMode?: (rootSessionId: string) => 'team' | null
 }
 
 /** Full team-view props: the view-slot runtime share, injected face, and locale seat. */
@@ -237,6 +255,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     sessionId, useProjectionMirror, useTeamLedgers,
     ensureProjection, pullProjection, refreshTeamLedger, openSession,
     creation, memberCommands, governance, legacyInspect, handoff, roots,
+    openTeamMode, teamOpenMode,
     useWorkspaces, t,
   } = props
   const [creationOpen, setCreationOpen] = useState(false)
@@ -354,13 +373,52 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     })
     return () => { live = false }
   }, [inZeroState, roots, creationOpen, sessionId])
+  // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
+  // row (root id → pending) and the last typed failure per row (ONE
+  // verbatim note, the UI §38 greyed-surface discipline). Page-run UI
+  // state only — the open-mode FACT stays in the mount (client-local).
+  const [rootOpenTeamPending, setRootOpenTeamPending] = useState<Readonly<Record<string, boolean>>>({})
+  const [rootOpenTeamErrors, setRootOpenTeamErrors] = useState<
+    Readonly<Record<string, { readonly code: string; readonly message: string }>>
+  >({})
+  /** Run the row's explicit open-in-Team-mode entry through the face (the two-phase
+   *  sequence lives in the mount; the row only triggers it and renders the
+   *  settled typed failure when it comes back). */
+  const runPickerOpenTeamMode = (rootSessionId: string): void => {
+    const face = openTeamMode
+    if (face === undefined) return
+    setRootOpenTeamPending(prev => ({ ...prev, [rootSessionId]: true }))
+    setRootOpenTeamErrors(prev => {
+      const next = { ...prev }
+      delete next[rootSessionId]
+      return next
+    })
+    void face(rootSessionId).then(outcome => {
+      if (!outcome.ok) {
+        setRootOpenTeamErrors(prev => ({
+          ...prev,
+          [rootSessionId]: { code: outcome.code, message: outcome.message },
+        }))
+      }
+    }).finally(() => {
+      setRootOpenTeamPending(prev => {
+        if (prev[rootSessionId] !== true) return prev
+        const next = { ...prev }
+        delete next[rootSessionId]
+        return next
+      })
+    })
+  }
   const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? ''])
   const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState])
   // D1 (Team D1-D6 repair v2, remote contract v3): the persisted-roots
   // zero-state share — the typed-failure note (ONE verbatim line, UI §38
   // greyed-surface discipline) + the read-only rows (blueprint@revision,
-  // default workspace, member count, creation time, root id). NO open
-  // action in D1 (D2/D3 add the action over the same face). An empty
+  // default workspace, member count, creation time, root id). D2 (D6)
+  // adds the dedicated open-in-Team-mode entry over the SAME face: each
+  // row gains the explicit "以 Team 模式打开 / 回到 Leader" button
+  // (absent without the `openTeamMode` face — the D1 surface unchanged),
+  // with a per-row pending mark + ONE verbatim typed error note. An empty
   // list renders nothing (the host has no persisted teams yet).
   const rootsNote =
     teamRoots !== null && teamRoots.status === 'error'
@@ -372,24 +430,54 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         <div className={styles.roots} data-team-roots>
           <h3 className={styles.rootsTitle}>{t('view.roots.title')}</h3>
           <ul className={styles.rootsList} data-team-roots-list>
-            {teamRoots.rows.map(row => (
-              <li
-                key={row.rootSessionId}
-                className={styles.rootRow}
-                data-team-root-row
-                data-root-session-id={row.rootSessionId}
-              >
-                <span className={styles.rootId} data-root-id>{row.rootSessionId}</span>
-                <span data-root-blueprint>{`${row.blueprintId}@${row.revision}`}</span>
-                <span data-root-workspace>
-                  {row.defaultWorkspace ?? t('view.roots.noWorkspace')}
-                </span>
-                <span data-root-members>
-                  {t('view.roots.members', { count: String(row.memberCount) })}
-                </span>
-                <span data-root-created title={row.createdAt}>{row.createdAt}</span>
-              </li>
-            ))}
+            {teamRoots.rows.map(row => {
+              const rowError = rootOpenTeamErrors[row.rootSessionId]
+              return (
+                <li
+                  key={row.rootSessionId}
+                  className={styles.rootRow}
+                  data-team-root-row
+                  data-root-session-id={row.rootSessionId}
+                >
+                  <span className={styles.rootId} data-root-id>{row.rootSessionId}</span>
+                  <span data-root-blueprint>{`${row.blueprintId}@${row.revision}`}</span>
+                  <span data-root-workspace>
+                    {row.defaultWorkspace ?? t('view.roots.noWorkspace')}
+                  </span>
+                  <span data-root-members>
+                    {t('view.roots.members', { count: String(row.memberCount) })}
+                  </span>
+                  <span data-root-created title={row.createdAt}>{row.createdAt}</span>
+                  {/* D2 (D6): the dedicated open-in-Team-mode entry — the
+                      face-only trigger (the AWAITED two-phase sequence lives
+                      in the mount); ABSENT without the face (the D1 surface
+                      is unchanged). */}
+                  {openTeamMode !== undefined
+                    ? (
+                      <button
+                        type="button"
+                        className={styles.rootRowOpen}
+                        data-team-mode-open-root={row.rootSessionId}
+                        disabled={rootOpenTeamPending[row.rootSessionId] === true || undefined}
+                        onClick={() => { runPickerOpenTeamMode(row.rootSessionId) }}
+                      >
+                        {t('view.members.openTeamMode')}
+                      </button>
+                    )
+                    : null}
+                  {rowError !== undefined
+                    ? (
+                      <div className={styles.legacyNote} data-team-mode-open-error>
+                        {t('view.members.openMode.error', {
+                          code: rowError.code,
+                          message: rowError.message,
+                        })}
+                      </div>
+                    )
+                    : null}
+                </li>
+              )
+            })}
           </ul>
         </div>
       )
@@ -537,6 +625,8 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           currentSessionId={sessionId}
           onSelectSession={openSession}
           memberCommands={memberCommands}
+          openTeamMode={openTeamMode}
+          teamOpenMode={teamOpenMode}
           workspaces={workspaceOptions}
           t={t}
         />

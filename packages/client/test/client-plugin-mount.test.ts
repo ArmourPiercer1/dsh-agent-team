@@ -684,11 +684,12 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     ])
   })
 
-  it('tracks exactly three fiber effects, in mount order', () => {
-    expect(aScenario.effectsCount).toBe(3)
+  it('tracks exactly four fiber effects, in mount order (D2 adds the open-mode reset on session switch)', () => {
+    expect(aScenario.effectsCount).toBe(4)
     expect(aScenario.effectLabels).toEqual([
       'dsh-agent-team: dictionaries',
       'dsh-agent-team: store teardown',
+      'dsh-agent-team: open-mode reset on session switch',
       'dsh-agent-team: generation rebaseline',
     ])
   })
@@ -919,7 +920,7 @@ describe('P9-T9 (P9-S6) client mount — dshHome variants (scenario D)', () => {
       'conversation.input.dock',
       'sidebar.footer.action',
     ])
-    expect(dScenario.d1EffectsCount).toBe(3)
+    expect(dScenario.d1EffectsCount).toBe(4)
   })
 })
 

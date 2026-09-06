@@ -64,6 +64,7 @@ import {
   type MemberInstanceCommand,
 } from '../model/team-member-commands.js'
 import type { TeamWorkspaceOption } from '../model/team-intent-model.js'
+import type { TeamOpenModeOutcome } from '../plugin/team-mount-core.js'
 import {
   TeamConfirmDialog,
   TeamCreateMemberDialog,
@@ -86,6 +87,19 @@ export interface TeamMembersProps {
   onSelectSession: (sessionId: string) => void
   /** The S5-B command face; absent → the section stays display-only. */
   memberCommands?: TeamMembersCommandFace
+  /**
+   * D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry —
+   * the AWAITED two-phase sequence over the team session (the v3
+   * `team.ensureRootLive` guarantee before the native open). Absent → the
+   * leader row stays the D1 surface (no entry, no badge).
+   */
+  openTeamMode?: (rootSessionId: string) => Promise<TeamOpenModeOutcome>
+  /**
+   * D2 (D6): the per-root client-local open-mode read (`'team'` when this
+   * client opened the root in Team mode and still sits on it). The mode
+   * badge source; absent → no badge.
+   */
+  teamOpenMode?: (rootSessionId: string) => 'team' | null
   /** The workspace choices for the create dialog (absent/empty → hidden field). */
   workspaces?: readonly TeamWorkspaceOption[]
   /** The team dictionary translate seat. */
@@ -275,6 +289,17 @@ interface MemberGroupProps {
   readonly createPending?: boolean
   /** The last typed create failure for the group's template (the group note). */
   readonly createError?: MemberCommandError | undefined
+  /**
+   * D2 (D6): the explicit open-in-Team-mode trigger — present ONLY on the
+   * leader group row (absent → the leader row stays the D1 surface).
+   */
+  readonly openTeamMode?: (() => void) | undefined
+  /** D2 (D6): the in-flight open-in-Team-mode mark (disables the entry). */
+  readonly teamModePending?: boolean
+  /** D2 (D6): the last typed open-in-Team-mode failure (the group note). */
+  readonly teamModeError?: { readonly code: string; readonly message: string } | undefined
+  /** D2 (D6): whether the mode badge renders (teamOpenMode reads 'team'). */
+  readonly teamModeBadge?: boolean
   readonly t: PropsLocale<'team'>['t']
 }
 
@@ -282,7 +307,8 @@ interface MemberGroupProps {
 function MemberGroup({
   group, current, currentSessionId, onSelectSession, onSelectLeader,
   onCommand, pendingByInstance, errorsByInstance, onCreateInstance,
-  createPending, createError, t,
+  createPending, createError, openTeamMode, teamModePending, teamModeError,
+  teamModeBadge, t,
 }: MemberGroupProps): React.JSX.Element {
   const name = group.name ?? t('member.leader')
   const label = `${name} · ${t('view.members.active', { count: group.activeCount })}`
@@ -309,6 +335,7 @@ function MemberGroup({
           </div>
         )
         : (
+          <>
           <button
             type="button"
             className={styles.groupRow}
@@ -318,6 +345,46 @@ function MemberGroup({
           >
             <span className={styles.groupName} data-member-group-name>{label}</span>
           </button>
+          {/* D2 (D6): the dedicated open-in-Team-mode entry on the root/
+              leader row (the explicit "以 Team 模式打开 / 回到 Leader"
+              entry — the face-only trigger; the AWAITED two-phase
+              sequence lives in the mount). ABSENT without the face (the
+              D1 surface is unchanged). The current open-mode badge
+              renders beside it while this client sits on the root it
+              opened in Team mode. */}
+          {openTeamMode !== undefined
+            ? (
+              <div className={styles.teamModeRow} data-team-mode-row>
+                <button
+                  type="button"
+                  className={styles.teamModeOpen}
+                  data-team-mode-open
+                  disabled={teamModePending === true || undefined}
+                  onClick={openTeamMode}
+                >
+                  {t('view.members.openTeamMode')}
+                </button>
+                {teamModeBadge === true
+                  ? (
+                    <span className={styles.teamModeBadge} data-team-mode-badge>
+                      {t('view.members.openMode.team')}
+                    </span>
+                  )
+                  : null}
+              </div>
+            )
+            : null}
+          {teamModeError !== undefined
+            ? (
+              <div className={styles.commandError} data-member-command-error data-team-mode-error>
+                {t('view.members.openMode.error', {
+                  code: teamModeError.code,
+                  message: teamModeError.message,
+                })}
+              </div>
+            )
+            : null}
+          </>
         )}
       {createError !== undefined
         ? (
@@ -364,12 +431,19 @@ function MemberGroup({
  */
 export function TeamMembers({
   snapshot, ledger, currentSessionId, onSelectSession,
-  memberCommands, workspaces, t,
+  memberCommands, openTeamMode, teamOpenMode, workspaces, t,
 }: TeamMembersProps): React.JSX.Element {
   const model = deriveTeamMembers(snapshot, ledger)
   const [open, setOpen] = useState<OpenMemberDialog | null>(null)
   const [pending, setPending] = useState<Readonly<Record<string, MemberCommandKind>>>({})
   const [errors, setErrors] = useState<Readonly<Record<string, MemberCommandError>>>({})
+  // D2 (Team D1-D6 repair v2, D6): the leader row's explicit open-in-Team-
+  // mode entry — the in-flight mark + the last typed failure (ONE verbatim
+  // note). Page-run UI state only; the open-mode FACT stays in the mount.
+  const [teamModePending, setTeamModePending] = useState(false)
+  const [teamModeError, setTeamModeError] = useState<
+    { readonly code: string; readonly message: string } | null
+  >(null)
   const nextToken = useMemo(() => createRequestTokenGenerator('ui'), [])
   const teamSessionId = snapshot.teamSessionId
   const workspaceOptions = workspaces ?? []
@@ -494,6 +568,29 @@ export function TeamMembers({
     })))
   }
 
+  /**
+   * D2 (D6) — run the leader row's explicit open-in-Team-mode entry
+   * through the face (the AWAITED two-phase sequence: the v3
+   * `team.ensureRootLive` guarantee before the native open — the mount
+   * owns the ordering and the client-local mode mark). On a typed
+   * failure the note renders verbatim under the row; on success the
+   * native switch (performed by the face) moves the current session and
+   * the mode badge appears on the next render.
+   */
+  const runOpenTeamMode = (): void => {
+    const face = openTeamMode
+    if (face === undefined) return
+    setTeamModePending(true)
+    setTeamModeError(null)
+    void face(teamSessionId).then(outcome => {
+      if (!outcome.ok) {
+        setTeamModeError({ code: outcome.code, message: outcome.message })
+      }
+    }).finally(() => {
+      setTeamModePending(false)
+    })
+  }
+
   const createTemplate = open?.kind === 'create'
     ? snapshot.templates.find(template => template.templateId === open.group.templateId)
     : undefined
@@ -506,6 +603,10 @@ export function TeamMembers({
         currentSessionId={currentSessionId}
         onSelectSession={onSelectSession}
         onSelectLeader={() => { onSelectSession(snapshot.teamSessionId) }}
+        openTeamMode={openTeamMode === undefined ? undefined : runOpenTeamMode}
+        teamModePending={teamModePending}
+        teamModeError={teamModeError === null ? undefined : teamModeError}
+        teamModeBadge={teamOpenMode?.(teamSessionId) === 'team'}
         t={t}
       />
       {model.groups.map(group => (
