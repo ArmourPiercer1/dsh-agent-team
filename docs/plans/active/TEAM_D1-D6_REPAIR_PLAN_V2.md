@@ -495,7 +495,7 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 | D1–D4 D6 Team UI | 180m累计 | 2026-09-07T05:25:00+08:00（D4 worker 完成；集成 head `4bbae3e`） | PASS ×4（D1 索引+remote v3 冻结 `ae3676c`；D2 Team-mode open `a074df3`；D3 ordinary fallback `1386a9b`；D4 真实 host 重启验收 `4bbae3e`，36/36 断言；卫生补充 `b8d772c`） | `evidence/team-d1-d6-repair-v2/D1..D4/` |
 | G4 | 45m | 2026-09-07T06:05:29+08:00（记录于 `e72796c`） | PASS（三名全新盲审全部“通过” `4b90d09`；三名 reviewer 各自独立复跑 d4-restart-reopen.mjs 真实 host 冒烟 pass=true 55/55（:3180 端口轮询协调，跑后端口释放）；7 项出口判据全过；风险台账新增 4 项已记） | `evidence/team-d1-d6-repair-v2/G4/` |
 | E1 D4-A2 design | 30m | 2026-09-07T06:21:34+08:00（记录于 `3b53e40`） | PASS（纯设计，无产品改动；冻结 wire = 既有 host→client 转发事件流 `api-session/status` 触发既有 generation 门控 single-flight pull，无新 wire/无 v4/无 upstream 改动；发现 override-lane stamp gap 记入未来任务；12 测试矩阵 T1–T12 冻结） | `evidence/team-d1-d6-repair-v2/E1/` |
-| G5 final | 90m | 2026-09-07T07:20:00+08:00（记录于本轮，head `f26a0ad`） | PASS（G5A 成员 E2E runner `2602d73` 68/68 真实 host；三名全新盲审：2×通过 + 1×投机通过，无阻塞；三名各自独立复跑 d4-restart-reopen（55/55）与 g5-member-e2e（68/68）均 pass=true；15.1 八行矩阵逐断言核验覆盖；§1 全部用户裁决与 §16 全部明确不承诺项经代码核验成立；投机通过 residual = E1 override-lane stamp gap（有界、已设计、按用户确认计划推迟至 v2 后单 writer 任务）→ 风险台账） | `evidence/team-d1-d6-repair-v2/G5/` |
+| G5 final | 90m | 2026-09-07T07:20:15.4663260+08:00（记录于 `4ca1ae7`，head `f26a0ad`） | PASS（G5A 成员 E2E runner `2602d73` 68/68 真实 host；三名全新盲审：2×通过 + 1×投机通过，无阻塞；三名各自独立复跑 d4-restart-reopen（55/55）与 g5-member-e2e（68/68）均 pass=true；15.1 八行矩阵逐断言核验覆盖；§1 全部用户裁决与 §16 全部明确不承诺项经代码核验成立；投机通过 residual = E1 override-lane stamp gap（有界、已设计、按用户确认计划推迟至 v2 后单 writer 任务）→ 风险台账） | `evidence/team-d1-d6-repair-v2/G5/` |
 
 > 这里的累计 worker 时间不是墙钟保证。若 10h 内无法同时满足实现、测试和三方审查，必须在 Gate 报告中明确 PASS/DEFERRED/BLOCKED，不得降低语义标准。
 
