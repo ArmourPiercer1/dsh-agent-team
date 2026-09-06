@@ -185,8 +185,10 @@ export type RuntimeActionEffect =
         readonly instanceId: string;
         readonly templateId: string;
         readonly label: string;
-        readonly lifecycle: MemberLifecycleState;
-        readonly childSessionId: string;
+        /** Absent for the v2 LeaderInstance record. */
+        readonly lifecycle?: MemberLifecycleState;
+        /** Absent for the v2 LeaderInstance record. */
+        readonly childSessionId?: string;
     }[];
 }
 /** The template list view (list-templates, from the bound blueprint). */
@@ -385,7 +387,7 @@ export declare function memberSummary(member: MemberInstanceRecordDto): {
     readonly instanceId: string;
     readonly templateId: string;
     readonly label: string;
-    readonly lifecycle: MemberLifecycleState;
-    readonly childSessionId: string;
+    readonly lifecycle?: MemberLifecycleState;
+    readonly childSessionId?: string;
 };
 //# sourceMappingURL=types.d.ts.map

@@ -137,6 +137,19 @@ function memberFacts(effect: unknown): MemberSummaryFacts[] {
   })
 }
 
+function assertNoUndefinedValues(value: unknown, path = '$'): void {
+  if (value === undefined) throw new Error(`undefined value at ${path}`)
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => assertNoUndefinedValues(item, `${path}[${index}]`))
+    return
+  }
+  if (typeof value === 'object' && value !== null) {
+    for (const [key, item] of Object.entries(value)) {
+      assertNoUndefinedValues(item, `${path}.${key}`)
+    }
+  }
+}
+
 function effectKind(effect: unknown): string | undefined {
   if (typeof effect !== 'object' || effect === null) return undefined
   const kind = (effect as { kind?: unknown }).kind
@@ -336,6 +349,7 @@ interface BSnapshot {
   readonly mintLeaderRow: LeaderRowFacts
   readonly listError: unknown
   readonly listKind: string | undefined
+  readonly listEffect: unknown
   readonly listMembers: readonly MemberSummaryFacts[]
   readonly delegateError: unknown
   readonly delegateKind: string | undefined
@@ -474,6 +488,7 @@ try {
     mintLeaderRow,
     listError,
     listKind: effectKind(listEffect),
+    listEffect,
     listMembers: listEffect === undefined ? [] : memberFacts(listEffect),
     delegateError,
     delegateKind: effectKind(delegateEffect),
@@ -544,6 +559,7 @@ describe('P8-S2 B: the Leader caller resolves from the durable Root/Team identit
 
     expect(bSnapshot.listError).toBe(undefined)
     expect(bSnapshot.listKind).toBe('members-listed')
+    assertNoUndefinedValues(bSnapshot.listEffect)
     const ids = bSnapshot.listMembers.map((m) => m.instanceId)
     expect(ids.includes(LEADER_ID)).toBe(true)
     expect(ids.includes(String(P6T2_SEEDS.worker.instanceId))).toBe(true)

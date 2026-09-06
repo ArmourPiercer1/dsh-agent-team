@@ -60,8 +60,8 @@ export function memberSummary(member) {
         instanceId: member.instanceId,
         templateId: member.templateId,
         label: member.label,
-        lifecycle: member.lifecycle,
-        childSessionId: member.childSessionId,
+        ...(member.lifecycle !== undefined ? { lifecycle: member.lifecycle } : {}),
+        ...(member.childSessionId !== undefined ? { childSessionId: member.childSessionId } : {}),
     };
 }
 //# sourceMappingURL=types.js.map
