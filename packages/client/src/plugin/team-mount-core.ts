@@ -516,6 +516,13 @@ export function applyTeamMount(
   const openTeamTab = (): void => {}
 
   // (11) The post-success projection pull (the final-state authority).
+  // D4-A1 (Team D1-D6 repair v2): every EXISTING Team UI mutation callback
+  // goes through this pull after success — the S5-B member commands, the
+  // S5-C governance commands, and the two creation flows (the standard
+  // two-stage `team.create` v2 flow and `handoff.create`), which target
+  // the NEW team's id (invariant 9: the minted Root id IS the team id).
+  // Agent/tool-originated mutations are OUT of this pull's coverage (they
+  // bypass every React callback) — that is the D4-A2 design item.
   const pullProjection = (teamSessionId: string): Promise<unknown> =>
     projectionStoreOf(teamSessionId).pull(teamSessionId)
 
@@ -624,6 +631,9 @@ export function applyTeamMount(
   const viewInject = (sessionId: string): TeamViewInjected => ({
     hooks: { projectionMirror: mirrorStore, teamLedgers: ledgerStatesStore },
     ensureProjection,
+    // D4-A1: the zero-state creation panel's post-success refresh (the
+    // same generation-safe pull; targets the NEW team's id).
+    pullProjection,
     refreshTeamLedger: refreshTeamLedgerFor(sessionId),
     openSession,
     creation,
@@ -700,6 +710,9 @@ export function applyTeamMount(
           teamCreateV2: creation.teamCreateV2,
           teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2,
           openCreatedSession: creation.openCreatedSession,
+          // D4-A1: the overlay create-success refresh (the same
+          // generation-safe pull; targets the NEW team's id).
+          pullProjection,
           listAgentPresets: creation.listAgentPresets,
           currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
         }),

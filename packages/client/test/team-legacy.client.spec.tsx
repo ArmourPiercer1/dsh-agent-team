@@ -180,6 +180,8 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     ensureProjection: vi.fn(() => Promise.resolve()),
+    // D4-A1: the post-mutation pull (unused by the legacy fixtures here).
+    pullProjection: vi.fn(() => Promise.resolve()),
     refreshTeamLedger: vi.fn(() => Promise.resolve()),
     openSession: vi.fn(),
     t: overrides.t ?? makeTranslate(en),

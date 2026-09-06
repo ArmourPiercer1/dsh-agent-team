@@ -184,6 +184,22 @@ export interface TeamCreationPanelProps {
    * overlay stays on the opened Root — no new banner architecture).
    */
   readonly onCreated?: () => void
+  /**
+   * D4-A1 (Team D1-D6 repair v2) — the post-mutation projection refresh:
+   * called EXACTLY ONCE per terminal create-flow success — the standard
+   * two-stage flow's `{ ok: true }`, or the `handoff.create` stored state
+   * settled to `completed` / `completed-without-handoff` after the Root
+   * opens — targeting the NEW team's id (invariant 9: the minted Root
+   * session id IS the TeamSession id), so a UI-initiated team creation
+   * updates the projection without F5. Never called on a typed /
+   * transport failure, a non-terminal stored state (`awaiting-decision` /
+   * `creation-failed` / `canceled`), or a read (the T7 catalog precedent).
+   * Fire-and-forget: the generation-safe pull settles typed failures into
+   * its own store state and never rejects, so a failed pull cannot break
+   * the success lane. Absent → the T7/T8 behavior (the new session's
+   * TeamView cold-pull is the only refresh).
+   */
+  readonly pullProjection?: (teamSessionId: string) => Promise<unknown>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /**
@@ -239,6 +255,7 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
     openCreatedSession, listAgentPresets, workspaces,
     handoffSource, handoffFace,
     draft, onDraftChange, onCancel, t, onCreated,
+    pullProjection,
   } = props
 
   // -- catalog + per-row details (the §6 picker display names) -------------
@@ -568,6 +585,12 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
         resumeAt,
       )
       if (outcome.ok) {
+        // D4-A1: terminal success — refresh the NEW team's projection via
+        // the existing pull (generation-safe; invariant 9: the minted Root
+        // id IS the team id) BEFORE the owning surface closes, so the
+        // UI-initiated mutation updates without F5. Fire-and-forget: the
+        // store settles failures into its own state, never rejects.
+        void pullProjection?.(snap.rootSessionId)
         // Terminal success: the owning surface may close (the entry
         // overlay closes only AFTER the deferred initial work settles —
         // plan §7 minimum UI constraint).
@@ -583,9 +606,11 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
   // -- the handoff create flow (P9-T8 S5-D, Gate P9-G5) ---------------------
   // The frozen `handoff.create` is a command flow: NO optimistic authority
   // patch (the panel renders the stored state / typed error verbatim), the
-  // typed Remote result preserved (G5(b)), the new team's projection
-  // cold-pulled exactly once — by the NEW session's TeamView after
-  // `openCreatedSession(rootSessionId)` (G5(c); D-3: the host-created
+  // typed Remote result preserved (G5(b)). On a settled `completed` /
+  // `completed-without-handoff` state the NEW team's projection is pulled
+  // via the existing `pullProjection` right after the Root opens (D4-A1:
+  // UI-initiated mutation, no F5) and the new session's TeamView
+  // cold-pull remains the mirror's backstop (G5(c); D-3: the host-created
   // session, one host-list re-pull covers the stream lag) — and the
   // rendered final state comes from that Projection (G5(d)).
 
@@ -631,6 +656,12 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
           // covers the stream lag); the new session's TeamView
           // cold-pulls the projection.
           await openCreatedSession(state.rootSessionId)
+          // D4-A1: the handoff command succeeded — refresh the NEW team's
+          // projection via the existing pull (generation-safe; fire-and-
+          // forget, the store never rejects) so the UI-initiated mutation
+          // updates without F5. Non-terminal states (awaiting-decision /
+          // creation-failed / canceled) never reach this line.
+          void pullProjection?.(state.rootSessionId)
         }
       })
       .catch(error => {

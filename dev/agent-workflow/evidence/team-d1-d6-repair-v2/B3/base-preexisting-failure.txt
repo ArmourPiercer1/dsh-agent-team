@@ -1,0 +1,53 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-B3/packages/client
+
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 1 failed) 1607ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 92ms
+     ✓ shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 71ms
+     ✓ selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 129ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 60ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 65ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 63ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 58ms
+     ✓ switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 124ms
+     × create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6) 69ms
+     ✓ empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open) 121ms
+     ✓ an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt) 64ms
+     ✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 125ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 126ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 188ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 65ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 4ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 56ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 64ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 64ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > create happy path (TCM M4 two-s
+tage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and
+ the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6)
+AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
+ ❯ test/team-creation-panel.client.spec.tsx:453:23
+    451|     })
+    452|     expect(openCreatedSession).toHaveBeenCalledWith(createParams.rootS…
+    453|     expect(admitMock).toHaveBeenCalledTimes(0)
+       |                       ^
+    454|     await vi.waitFor(() => {
+    455|       expect(admitMock).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  01:31:22
+   Duration  4.34s (transform 875ms, setup 0ms, import 1.89s, tests 1.61s, environment 572ms)
+

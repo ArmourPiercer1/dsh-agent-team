@@ -1,0 +1,100 @@
+﻿pnpm.exe : $ vitest run
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-B3/packages/client
+
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 8ms
+ ✓ test/team-ledger-model.client.spec.ts (20 tests) 14ms
+ ✓ test/team-handoff.test.ts (23 tests) 11ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 7ms
+ ✓ test/team-intent-model.test.ts (22 tests) 13ms
+ ✓ test/projection-adapter.test.ts (16 tests) 10ms
+ ✓ test/ledger-adapter.test.ts (24 tests) 11ms
+ ✓ test/team-legacy.test.ts (12 tests) 8ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 15ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 7ms
+ ✓ test/team-member-commands.test.ts (11 tests) 8ms
+ ✓ test/team-members-model.client.spec.ts (10 tests) 9ms
+ ✓ test/team-create-flow.test.ts (10 tests) 8ms
+ ✓ test/team-ledger-store.test.ts (13 tests) 6ms
+ ✓ test/team-remote-client.test.ts (15 tests) 6ms
+ ✓ test/team-projection-store.test.ts (14 tests) 8ms
+ ✓ test/team-members-model.test.ts (5 tests) 3ms
+ ✓ test/client-plugin-mount.test.ts (33 tests) 7ms
+ ✓ test/client.test.ts (2 tests) 3ms
+ ✓ test/team-remote-categories.test.ts (5 tests) 6ms
+ ✓ test/team-governance.test.ts (43 tests) 10ms
+ ✓ test/team-command-flow.test.ts (6 tests) 6ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 73ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 128ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 161ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 226ms
+ ✓ test/team-view.client.spec.tsx (13 tests) 232ms
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 276ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a successful tw
+o-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 m
+inimum UI constraint)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/team-members-actions.client.spec.tsx (16 tests) 600ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage 
+(admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends O
+NLY the admit and the success closes (plan §7; never a New Session)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/new-team-entry.client.spec.tsx (8 tests) 806ms
+ ✓ test/team-ledger.client.spec.tsx (19 tests) 1078ms
+     ✓ deepens the window on load-earlier clicks (local axis only)  471ms
+ ✓ test/team-governance.client.spec.tsx (24 tests) 1084ms
+ ✓ test/team-creation-handoff.client.spec.tsx (15 tests) 1370ms
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 1 failed) 1575ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 80ms
+     ✓ shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 59ms
+     ✓ selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 126ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 64ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 65ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 59ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 60ms
+     ✓ switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 123ms
+     × create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6) 67ms
+     ✓ empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open) 120ms
+     ✓ an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt) 64ms
+     ✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 126ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 125ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 186ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 63ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 4ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 57ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 63ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 64ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 2274ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > create happy path (TCM M4 two-s
+tage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and
+ the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6)
+AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
+ ❯ test/team-creation-panel.client.spec.tsx:453:23
+    451|     })
+    452|     expect(openCreatedSession).toHaveBeenCalledWith(createParams.rootS…
+    453|     expect(admitMock).toHaveBeenCalledTimes(0)
+       |                       ^
+    454|     await vi.waitFor(() => {
+    455|       expect(admitMock).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 34 passed (35)
+      Tests  1 failed | 526 passed (527)
+   Start at  01:33:51
+   Duration  6.39s (transform 14.20s, setup 0ms, import 35.24s, tests 10.07s, environment 15.09s)
+
+[ELIFECYCLE] Test failed. See above for more details.

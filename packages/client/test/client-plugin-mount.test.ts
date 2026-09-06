@@ -600,6 +600,72 @@ const dScenario = await (async () => {
 })()
 
 // ---------------------------------------------------------------------------
+// Scenario E: D4-A1 — the post-mutation pull wiring (view + entry faces)
+// ---------------------------------------------------------------------------
+
+const eScenario = await (async () => {
+  const e = makeMount()
+  applyTeamMount(e.ctx, { components: e.components })
+  const viewFace = viewFaceOf(e, 't9')
+  const entryReg = e.registers.find(
+    (r) => (r.options as { name?: unknown }).name === 'sidebar.footer.action',
+  )
+  if (entryReg === undefined) throw new Error('mount test: sidebar.footer.action registration missing')
+  const entryInject = (entryReg.options.inject as () => Record<string, unknown>)()
+
+  // The view face's D4-A1 pull: a direct store pull for the named team
+  // (one carrier round trip, the frozen endpoint shape).
+  e.enqueue('team.getProjection', () => projectionSuccess('t9', 1))
+  await viewFace.pullProjection('t9')
+  const t9CallsAfterPull = e.log.filter(
+    (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't9',
+  ).length
+
+  // Single-flight regression (D-T9-5 unchanged by D4-A1): concurrent cold
+  // reads on the SAME new team coalesce into ONE carrier call.
+  e.enqueue('team.getProjection', () => projectionSuccess('t9b', 1))
+  const pendingA = viewFace.ensureProjection('t9b')
+  const pendingB = viewFace.ensureProjection('t9b')
+  await Promise.all([pendingA, pendingB])
+  const t9bCalls = e.log.filter(
+    (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't9b',
+  ).length
+
+  // The entry face carries the same pull and round-trips it for the named
+  // team (the overlay create-success path targets the NEW team's id).
+  e.enqueue('team.getProjection', () => projectionSuccess('t9', 2))
+  const entryPull = entryInject.pullProjection
+  await (entryPull as (id: string) => Promise<unknown>)('t9')
+  const t9CallsAfterEntryPull = e.log.filter(
+    (c) => c.endpoint === 'team.getProjection' && c.params.teamSessionId === 't9',
+  ).length
+
+  // Failure discipline: a typed pull failure settles in the store and NEVER
+  // rejects (the panel's fire-and-forget success lane cannot break).
+  e.enqueue('team.getProjection', () => buildRemoteError(
+    'TEAM_UNKNOWN',
+    'no such team',
+    { method: METHOD, endpoint: METHOD, contractVersion: REMOTE_CONTRACT_VERSION, requestToken: null },
+  ))
+  let pullRejected = false
+  try {
+    await viewFace.pullProjection('t-nope')
+  } catch {
+    pullRejected = true
+  }
+
+  e.disposeAll()
+  return {
+    viewHasPull: typeof viewFace.pullProjection === 'function',
+    entryHasPull: typeof entryPull === 'function',
+    t9CallsAfterPull,
+    singleFlightT9b: pendingA === pendingB && t9bCalls === 1,
+    t9CallsAfterEntryPull,
+    pullRejected,
+  }
+})()
+
+// ---------------------------------------------------------------------------
 // Assertions (synchronous; the scenarios above are captured)
 // ---------------------------------------------------------------------------
 
@@ -854,5 +920,31 @@ describe('P9-T9 (P9-S6) client mount — dshHome variants (scenario D)', () => {
       'sidebar.footer.action',
     ])
     expect(dScenario.d1EffectsCount).toBe(3)
+  })
+})
+
+describe('D4-A1 client mount — post-mutation pull wiring (scenario E)', () => {
+  it('the view inject face carries the D4-A1 pullProjection', () => {
+    expect(eScenario.viewHasPull).toBe(true)
+  })
+
+  it('the sidebar entry inject face carries the D4-A1 pullProjection', () => {
+    expect(eScenario.entryHasPull).toBe(true)
+  })
+
+  it('the view pull round-trips the frozen projection endpoint for the named team', () => {
+    expect(eScenario.t9CallsAfterPull).toBe(1)
+  })
+
+  it('the entry pull round-trips the same endpoint for the named team', () => {
+    expect(eScenario.t9CallsAfterEntryPull).toBe(2)
+  })
+
+  it('concurrent cold reads still single-flight (no double-pull race regression)', () => {
+    expect(eScenario.singleFlightT9b).toBe(true)
+  })
+
+  it('a typed pull failure settles in the store and never rejects', () => {
+    expect(eScenario.pullRejected).toBe(false)
   })
 })

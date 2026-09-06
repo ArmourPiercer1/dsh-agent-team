@@ -97,6 +97,13 @@ export interface TeamViewInjected {
   }
   /** Cold-read the named session's team projection when the mirror lacks it (single-flight). */
   ensureProjection: (sessionId: string) => Promise<void>
+  /**
+   * D4-A1 (Team D1-D6 repair v2): the post-mutation projection refresh —
+   * the existing generation-safe pull. The zero-state creation panel calls
+   * it exactly once per terminal create/handoff success, targeting the
+   * NEW team's id, so a UI-initiated team creation updates without F5.
+   */
+  pullProjection: (teamSessionId: string) => Promise<unknown>
   /** Re-request the team ledger's catch-up episode after a typed failure. */
   refreshTeamLedger: () => Promise<void>
   /** Switch the current session to the named member session (D9 navigation). */
@@ -140,7 +147,7 @@ export type TeamViewProps =
 export function TeamView(props: TeamViewProps): React.JSX.Element {
   const {
     sessionId, useProjectionMirror, useTeamLedgers,
-    ensureProjection, refreshTeamLedger, openSession,
+    ensureProjection, pullProjection, refreshTeamLedger, openSession,
     creation, memberCommands, governance, legacyInspect, handoff,
     useWorkspaces, t,
   } = props
@@ -301,6 +308,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                 teamAdmitInitialWorkV2={creation.teamAdmitInitialWorkV2}
                 openCreatedSession={creation.openCreatedSession}
                 onCreated={() => setCreationOpen(false)}
+                pullProjection={pullProjection}
                 listAgentPresets={creation.listAgentPresets}
                 workspaces={workspaceOptions}
                 handoffSource={handoffSource}

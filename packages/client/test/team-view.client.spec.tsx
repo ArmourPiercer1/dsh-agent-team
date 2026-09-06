@@ -244,6 +244,9 @@ function viewProps(
     useProjectionMirror: selector => selector(projectionMirror),
     useTeamLedgers: selector => selector(teamLedgers),
     ensureProjection: vi.fn(() => Promise.resolve()),
+    // D4-A1: the post-mutation pull (the zero-state creation panel's
+    // success-lane refresh; unused by the projection-only fixtures here).
+    pullProjection: vi.fn(() => Promise.resolve()),
     refreshTeamLedger: vi.fn(() => Promise.resolve()),
     openSession: vi.fn(),
     t: makeTranslate(zh),

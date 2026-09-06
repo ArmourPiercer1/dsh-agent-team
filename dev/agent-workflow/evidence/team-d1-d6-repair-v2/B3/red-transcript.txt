@@ -1,0 +1,103 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-B3/packages/client
+
+ ❯ test/client-plugin-mount.test.ts (0 test)
+ ❯ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests | 4 failed) 4158ms
+     × terminal success (with initial work) pulls the NEW team projection exactly once 197ms
+     × terminal success (create-only, no initial work) pulls exactly once 186ms
+     ✓ a typed create-stage failure does NOT pull 188ms
+     ✓ a typed work-stage (admit) failure does NOT pull (the Root stays open, the lane retries) 188ms
+     ✓ without the pullProjection prop the success flow still settles (back-compat) 188ms
+     × a stored `completed` state pulls the NEW team projection exactly once 1139ms
+     × a stored `completed-without-handoff` state pulls exactly once 1129ms
+     ✓ a typed handoff.create response failure does NOT pull 188ms
+     ✓ a stored `creation-failed` state does NOT pull 190ms
+     ✓ a stored `awaiting-decision` state does NOT pull (no team exists yet) 189ms
+     ✓ a member lifecycle command success pulls exactly once (archive) 64ms
+     ✓ a member lifecycle command typed failure does NOT pull (dispose) 61ms
+     ✓ a governance policy commit success pulls exactly once 127ms
+     ✓ a governance policy commit typed failure does NOT pull 123ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/client-plugin-mount.test.ts [ test/client-plugin-mount.test.ts ]
+TypeError: viewFace.pullProjection is not a function
+ ❯ test/client-plugin-mount.test.ts:619:18
+    617|   // (one carrier round trip, the frozen endpoint shape).
+    618|   e.enqueue('team.getProjection', () => projectionSuccess('t9', 1))
+    619|   await viewFace.pullProjection('t9')
+       |                  ^
+    620|   const t9CallsAfterPull = e.log.filter(
+    621|     (c) => c.endpoint === 'team.getProjection' && c.params.teamSession…
+ ❯ test/client-plugin-mount.test.ts:666:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-d4-a1-ui-pull.client.spec.tsx > D4-A1 — standard create flow (UI-initiated mutation)
+ > terminal success (with initial work) pulls the NEW team projection exactly once
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-d4-a1-ui-pull.client.spec.tsx:346:28
+    344|     // The pull fired for the minted root (invariant 9: root id IS the…
+    345|     // id) — exactly once, targeting the opened root.
+    346|     expect(pullProjection).toHaveBeenCalledTimes(1)
+       |                            ^
+    347|     const pulled = pullProjection.mock.calls[0]?.[0] ?? ''
+    348|     expect(pulled).toMatch(/^session-/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/team-d4-a1-ui-pull.client.spec.tsx > D4-A1 — standard create flow (UI-initiated mutation)
+ > terminal success (create-only, no initial work) pulls exactly once
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-d4-a1-ui-pull.client.spec.tsx:367:28
+    365|       expect(onCreatedSpy).toHaveBeenCalledTimes(1)
+    366|     })
+    367|     expect(pullProjection).toHaveBeenCalledTimes(1)
+       |                            ^
+    368|     expect(pullProjection.mock.calls[0]?.[0] ?? '').toMatch(/^session-…
+    369|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/team-d4-a1-ui-pull.client.spec.tsx > D4-A1 — handoff.create (UI-initiated mutation) > a s
+tored `completed` state pulls the NEW team projection exactly once
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-d4-a1-ui-pull.client.spec.tsx:454:30
+    452|     fireEvent.click(createButton(view.container))
+    453|     await vi.waitFor(() => {
+    454|       expect(pullProjection).toHaveBeenCalledTimes(1)
+       |                              ^
+    455|     })
+    456|     expect(pullProjection).toHaveBeenCalledWith('root-h')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/team-d4-a1-ui-pull.client.spec.tsx > D4-A1 — handoff.create (UI-initiated mutation) > a s
+tored `completed-without-handoff` state pulls exactly once
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-d4-a1-ui-pull.client.spec.tsx:479:30
+    477|     fireEvent.click(createButton(view.container))
+    478|     await vi.waitFor(() => {
+    479|       expect(pullProjection).toHaveBeenCalledTimes(1)
+       |                              ^
+    480|     })
+    481|     expect(pullProjection).toHaveBeenCalledWith('root-h2')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 10 passed (14)
+   Start at  01:26:23
+   Duration  6.39s (transform 923ms, setup 0ms, import 1.56s, tests 4.16s, environment 550ms)
+

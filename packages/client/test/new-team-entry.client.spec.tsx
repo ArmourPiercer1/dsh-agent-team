@@ -104,6 +104,8 @@ interface EntryFace {
   teamCreateV2: (params: RemoteTeamCreateParamsV2) => Promise<RemoteResponse>
   teamAdmitInitialWorkV2: (params: RemoteTeamAdmitInitialWorkParams) => Promise<RemoteResponse>
   openCreatedSession: (sessionId: string) => Promise<void>
+  /** D4-A1: the post-mutation projection refresh (the overlay panel's success lane). */
+  pullProjection: (teamSessionId: string) => Promise<unknown>
   listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   currentSessionId: () => string | null
 }
@@ -116,6 +118,8 @@ function makeFace(overrides: Partial<EntryFace> = {}): EntryFace {
     teamCreateV2: vi.fn(() => Promise.resolve(okResponse({ path: 'ts-1', durable: true, bind: {} }, 'team.create'))),
     teamAdmitInitialWorkV2: vi.fn(() => Promise.resolve(okResponse({ workOutcome: 'delivered' }, 'team.admitInitialWork'))),
     openCreatedSession: vi.fn(() => Promise.resolve()),
+    // D4-A1: the post-mutation pull (the overlay create-success lane).
+    pullProjection: vi.fn(() => Promise.resolve()),
     listAgentPresets: vi.fn(() => Promise.resolve([
       { id: 'team', name: 'Team', isDefault: false },
     ] satisfies readonly TeamPresetRow[])),
@@ -164,6 +168,7 @@ function entryProps(
     teamCreateV2: face.teamCreateV2,
     teamAdmitInitialWorkV2: face.teamAdmitInitialWorkV2,
     openCreatedSession: face.openCreatedSession,
+    pullProjection: face.pullProjection,
     listAgentPresets: face.listAgentPresets,
     currentSessionId: face.currentSessionId,
     t: makeTranslate(zh),

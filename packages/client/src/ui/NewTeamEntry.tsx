@@ -75,6 +75,13 @@ export interface NewTeamEntryInjected {
    * lags the RPC. Rejects when the session is unknown after the re-pull.
    */
   readonly openCreatedSession: (sessionId: string) => Promise<void>
+  /**
+   * D4-A1 (Team D1-D6 repair v2): the post-mutation projection refresh —
+   * the existing generation-safe pull. The overlay's creation panel calls
+   * it exactly once per terminal create/handoff success, targeting the
+   * NEW team's id, so a UI-initiated team creation updates without F5.
+   */
+  readonly pullProjection: (teamSessionId: string) => Promise<unknown>
   /** The runtime preset rows (the S0 seam-6 mapping; broken rows filtered). */
   readonly listAgentPresets: () => Promise<readonly TeamPresetRow[]>
   /** The currently selected native session id (the Seam 3 list read face; null = none). */
@@ -100,7 +107,7 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
   const {
     wide,
     listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2,
-    openCreatedSession, listAgentPresets, currentSessionId,
+    openCreatedSession, pullProjection, listAgentPresets, currentSessionId,
     useWorkspaces, t,
   } = props
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -174,6 +181,7 @@ export function NewTeamEntry(props: NewTeamEntryProps): React.JSX.Element {
               teamAdmitInitialWorkV2={teamAdmitInitialWorkV2}
               openCreatedSession={openCreatedSession}
               onCreated={closeOverlay}
+              pullProjection={pullProjection}
               listAgentPresets={listAgentPresets}
               workspaces={workspaces}
               draft={draft}
