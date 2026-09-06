@@ -1,0 +1,113 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-C1/packages/runtime
+
+ ❯ test/p8s3-work-chain.test.ts (12 tests | 4 failed) 9ms
+     ✓ R3: work admission fails closed without the lifecycle commit port (zero writes) 1ms
+     ✓ partial install (commit port only) never runs the chain — the P6-T2 evidence path stands 0ms
+     ✓ W4: a failed delivery settles fail-closed — no fake RUNNING, a delivery-failed settlement fact 1ms
+     ✓ W6: the work unit opens and closes its activity interval (subject work-unit, correlation = token) 0ms
+     ✓ W9: a same-token retry is a durable REPLAY — no re-delivery, no duplicate member/session; a new token still executes 0ms
+     ✓ resume: a pre-seeded admission fact redelivers exactly once and converges to SETTLED without re-admitting 0ms
+     ✓ R1 (package-level vertical): a delegate-create runs the full chain on the NEW instance and leaves it durably SETTLED 0ms
+     ✓ R2: the delivered prompt is the explicit request prompt (no default inheritance), with attachedContext when provided 0ms
+     × C1: full mode carries the port result — succeeded with the business body, requestToken verbatim 4ms
+     × C1: failed/unavailable are carried verbatim, and settled=true never maps to succeeded 1ms
+     × C1: a replay of an already-settled token synthesizes the SAME unavailable result — no re-delivery, no re-report 0ms
+     × C1: resume mode carries the fresh this-attempt result (at-least-once, visible dedup) 0ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: full mo
+de carries the port result — succeeded with the business body, requestToken verbatim
+AssertionError: expected undefined to be 'succeeded' // Object.is equality
+
+- Expected:
+"succeeded"
+
++ Received:
+undefined
+
+ ❯ test/p8s3-work-chain.test.ts:1110:25
+    1108|     expect(c1s1.mode).toBe('full')
+    1109|     expect(c1s1.settled).toBe(true)
+    1110|     expect(c1s1.status).toBe('succeeded')
+       |                         ^
+    1111|     expect(c1s1.body).toBe('member business answer')
+    1112|     expect(c1s1.errorAbsent).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: failed/
+unavailable are carried verbatim, and settled=true never maps to succeeded
+AssertionError: expected undefined to be 'failed' // Object.is equality
+
+- Expected:
+"failed"
+
++ Received:
+undefined
+
+ ❯ test/p8s3-work-chain.test.ts:1121:31
+    1119|     expect(c1s2.failedMode).toBe('full')
+    1120|     expect(c1s2.failedSettled).toBe(true)
+    1121|     expect(c1s2.failedStatus).toBe('failed')
+       |                               ^
+    1122|     expect(c1s2.failedCode).toBe('WORK_TURN_ERROR')
+    1123|     expect(c1s2.failedMessage).toBe('llm call failed (contained in the…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: a repla
+y of an already-settled token synthesizes the SAME unavailable result — no re-delivery, no re-report
+AssertionError: expected undefined to be 'succeeded' // Object.is equality
+
+- Expected:
+"succeeded"
+
++ Received:
+undefined
+
+ ❯ test/p8s3-work-chain.test.ts:1140:30
+    1138|   it('C1: a replay of an already-settled token synthesizes the SAME un…
+    1139|     expect(c1s3.firstMode).toBe('full')
+    1140|     expect(c1s3.firstStatus).toBe('succeeded')
+       |                              ^
+    1141|     expect(c1s3.firstBody).toBe('original member answer')
+    1142|     expect(c1s3.secondMode).toBe('replay')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: resume 
+mode carries the fresh this-attempt result (at-least-once, visible dedup)
+AssertionError: expected undefined to be 'failed' // Object.is equality
+
+- Expected:
+"failed"
+
++ Received:
+undefined
+
+ ❯ test/p8s3-work-chain.test.ts:1166:25
+    1164|     expect(c1s4.mode).toBe('resume')
+    1165|     expect(c1s4.settled).toBe(true)
+    1166|     expect(c1s4.status).toBe('failed')
+       |                         ^
+    1167|     expect(c1s4.code).toBe('WORK_TURN_ABORTED')
+    1168|     expect(c1s4.token).toBe('tok-c1-s4')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 8 passed (12)
+   Start at  02:16:12
+   Duration  862ms (transform 363ms, setup 0ms, import 738ms, tests 9ms, environment 0ms)
+
+

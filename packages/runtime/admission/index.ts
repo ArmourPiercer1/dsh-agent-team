@@ -48,6 +48,7 @@ export type { TeamRuntimeErrorCode } from './errors.js'
 export {
   CALLER_ROLES,
   CALLER_ROLE_VALUES,
+  WORK_DELIVERY_STATUSES,
   effectivePolicyView,
   memberSummary,
 } from './types.js'
@@ -62,6 +63,8 @@ export type {
   TeamRuntimeOptions,
   WorkActivityPort,
   WorkDeliveryPort,
+  WorkDeliveryResult,
+  WorkDeliveryStatus,
 } from './types.js'
 
 export {

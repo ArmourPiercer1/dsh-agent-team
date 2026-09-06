@@ -123,6 +123,13 @@ function fenceRuntime(world: P6T1World): TeamRuntime {
     workDelivery: {
       async deliver(args: { readonly instanceId: string; readonly requestToken: string }) {
         deliveryCalls.push({ instanceId: args.instanceId, requestToken: args.requestToken })
+        // v2 C1: the port now returns the frozen WorkDeliveryResult; the
+        // fake produces no member body (test-neutral, result unused here).
+        return {
+          requestToken: args.requestToken,
+          status: 'unavailable',
+          error: { code: 'TEST_FAKE_NO_BODY', message: 'test fake delivery: no member body produced' },
+        }
       },
     },
     workActivity: createWorkActivityWriter({ teamDomain: world.domain, now: () => P6T2_NOW }),

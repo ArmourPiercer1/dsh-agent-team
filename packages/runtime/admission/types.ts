@@ -150,6 +150,14 @@ export type RuntimeActionEffect =
       /** P8-S3 work chain: the durable fact sequence of the settlement
        *  (`member-lifecycle-changed` with `to: 'SETTLED'`). */
       readonly settledSequence?: number
+      /** v2 D2 (frozen by C1): the minimal member result carried by the
+       *  work chain — present when the P8-S3 chain ran (full/resume: the
+       *  port's normalized result; replay: the synthesized
+       *  unavailable/WORK_REPLAYED result). Absent on the P6-T2 evidence
+       *  path and on the fail-closed delivery-failure throw (no effect is
+       *  formed then). `settled` above stays control-plane: it never
+       *  implies `memberResult.status === 'succeeded'`. */
+      readonly memberResult?: WorkDeliveryResult
     }
   /** A lifecycle operation was durably applied (archive/restore/dispose;
    *  the transition was committed through the injected lifecycle commit
@@ -183,6 +191,11 @@ export type RuntimeActionEffect =
       /** P8-S3 work chain: true when the work unit reached the durable
        *  SETTLED state during this execution. */
       readonly workSettled?: boolean
+      /** v2 D2 (frozen by C1): the minimal member result of the delegate
+       *  create's work chain (the delegate-create runs the same chain as
+       *  the follow-up — the same carriers, same semantics; `workSettled`
+       *  above stays control-plane). */
+      readonly memberResult?: WorkDeliveryResult
     }
   /** The per-capability effective policy view (inspect-config). */
   | { readonly kind: 'config-inspected'; readonly effective: Record<string, PolicyEntry> }
@@ -267,10 +280,67 @@ export interface LifecycleCommitPort {
   }): Promise<void>
 }
 
+// --- member work result (v2 D2; FROZEN by task C1) ---------------------------------
+
 /**
- * The production work-delivery seam (P8-S3 R1/R6). The ONLY path that
- * submits the model-visible prompt/attached-context of an admitted work
- * request to the member's child session and observes the turn's completion.
+ * The closed status vocabulary of the minimal member result (frozen, v2
+ * task C1; plan §1.3 / §10-C1).
+ *
+ * - `succeeded`: the member turn genuinely completed AND a readable
+ *   non-empty business body exists (`body` present);
+ * - `failed`: the delivery/turn failed explicitly (turn reason
+ *   error / aborted / max-tokens / blocked) — `error` carries a stable
+ *   code + a user-visible message;
+ * - `unavailable`: the turn completed but no readable business body is
+ *   available, or the seam cannot determine the outcome — `error` carries
+ *   the reason code.
+ *
+ * The control-plane settlement is SEPARATE: a settled work unit is not a
+ * succeeded one. `settled: true` alone must NEVER be mapped to
+ * `succeeded` anywhere in the Team surface.
+ */
+export const WORK_DELIVERY_STATUSES = ['succeeded', 'failed', 'unavailable'] as const
+
+/** One of the closed member-result statuses. */
+export type WorkDeliveryStatus = (typeof WORK_DELIVERY_STATUSES)[number]
+
+/**
+ * The minimal Team-owned structured delivery result (v2 D2 decision;
+ * FROZEN by task C1 — the single shared DTO of the D2 result closure).
+ *
+ * It closes the user-visible gap: after a delegate/follow-up, the Leader
+ * sees the member's business text or an explicit failure instead of only
+ * `settled: true` (the control-plane settlement, which is NOT business
+ * success). No transcript: exactly one delivered turn's normalized
+ * outcome.
+ *
+ * Shape (lossless JSON; the Leader-facing tool/remote envelopes carry it
+ * verbatim — `packages/tools` copies the effect, `packages/remote`
+ * applies no field allowlist):
+ *
+ *   { requestToken, status, body?, error? }
+ */
+export interface WorkDeliveryResult {
+  /** The requestToken the result correlates to, verbatim (the token the
+   *  Leader used; echoed, never re-mapped). */
+  readonly requestToken: string
+  /** The closed status (see {@link WORK_DELIVERY_STATUSES}). */
+  readonly status: WorkDeliveryStatus
+  /** The member's business text (present ONLY for `succeeded`: the
+   *  delivered turn's readable non-empty assistant text). */
+  readonly body?: string
+  /** The stable failure/unavailability code + user-visible message
+   *  (present for `failed`/`unavailable`). */
+  readonly error?: { readonly code: string; readonly message: string }
+}
+
+/**
+ * The production work-delivery seam (P8-S3 R1/R6; v2 D2: now
+ * result-returning). The ONLY path that submits the model-visible
+ * prompt/attached-context of an admitted work request to the member's
+ * child session, observes the turn's completion, and extracts/normalizes
+ * the minimal member result (the frozen {@link WorkDeliveryResult}
+ * contract).
  *
  * Absent in the P6-T2 default wiring (admission evidence only); the
  * production harness row installs it so delegate/follow-up actually reach
@@ -280,11 +350,17 @@ export interface LifecycleCommitPort {
 export interface WorkDeliveryPort {
   /**
    * Deliver one admitted work request's prompt/context to the member's
-   * child session and await the turn's completion.
+   * child session, await the turn's completion, and normalize the turn
+   * into the frozen WorkDeliveryResult (status per the turn's outcome:
+   * succeeded only with a readable non-empty body; failed for an explicit
+   * turn failure; unavailable when no readable body exists or the seam
+   * cannot determine it; the requestToken echoed verbatim).
    * @param args - the delivery target and the request's model-visible
    *   content (requestToken doubles as the visible correlation for the
    *   at-least-once delivery contract's dedup).
-   * @throws on any delivery/observation failure (fail-closed settlement).
+   * @returns the normalized member result (the v2 C1 frozen DTO).
+   * @throws on any delivery/observation failure (fail-closed settlement;
+   *   no result in that case — the throw IS the signal).
    */
   deliver(args: {
     readonly rootSessionId: string
@@ -295,7 +371,7 @@ export interface WorkDeliveryPort {
     readonly attachedContext?: string
     /** Transient cancellation signal for the live turn; never durable. */
     readonly signal?: unknown
-  }): Promise<void>
+  }): Promise<WorkDeliveryResult>
 }
 
 /**

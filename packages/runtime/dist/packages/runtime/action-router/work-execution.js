@@ -32,6 +32,23 @@
  *   `settleAdmittedWork`);
  * - NEITHER exists -> the FULL chain.
  *
+ * RESULT PROPAGATION (v2 D2, frozen by task C1): the chain carries the
+ * WorkDeliveryPort's normalized minimal member result
+ * (`WorkDeliveryResult`) through the `WorkChainResult.memberResult`:
+ *
+ * - full / resume: `memberResult` IS the port's result for THIS execution
+ *   (at-least-once: a resume re-delivers and carries the FRESH result);
+ * - replay: the port is never called; the chain SYNTHESIZES the SAME
+ *   explicit result for every replay — `status: 'unavailable'` with
+ *   `error.code: 'WORK_REPLAYED'` (existing durable state only: the
+ *   settlement fact's presence; no re-delivery, no second business
+ *   report, no storage change);
+ * - fail-closed delivery fault: the chain THROWS — no result is formed
+ *   (the throw is the signal; the fail-closed settlement fact stands).
+ *
+ * The control-plane `settled` stays SEPARATE: it never implies
+ * `memberResult.status === 'succeeded'`.
+ *
  * TCM-M3 boundary: facts carrying `targetKind: 'root'` (the creation-time
  * Root initial work — the Root strategy's durable side, see
  * `root-initial-work.ts`) are SKIPPED by this scan: a member chain never
@@ -62,6 +79,18 @@ const FACT_LIFECYCLE_CHANGED = 'member-lifecycle-changed';
 /** The fixed activity lane of admitted work units (one interval per
  *  requestToken correlation on this subject). */
 export const WORK_ACTIVITY_SUBJECT = 'work-unit';
+/**
+ * The frozen replay synthesis of the minimal member result (v2 D2, task
+ * C1): a requestToken that is already durably settled re-reports nothing —
+ * the chain synthesizes this SAME explicit result for every replay (using
+ * only the existing durable state — the settlement fact's presence; no
+ * re-delivery, no second business report, no storage change). The
+ * original business result is deliberately NOT re-served (plan §1.3:
+ * replay 不重复 delivery、不重复业务报告; the full transcript is out of
+ * scope). `settled: true` alone is never mapped to `succeeded`.
+ */
+export const WORK_RESULT_CODE_REPLAYED = 'WORK_REPLAYED';
+const WORK_REPLAY_MESSAGE = 'work unit already settled (settlement fact present); original result not re-reported';
 /**
  * Scan the TeamLedger for the work-unit facts of one requestToken.
  *
@@ -207,6 +236,14 @@ export async function executeWorkChain(deps) {
             sequence: admitted.sequence,
             settled: true,
             settledSequence: facts.settled.sequence,
+            // v2 D2 (frozen by C1): the replay re-reports nothing — the SAME
+            // synthesized unavailable result for every replay (existing durable
+            // state only; no re-delivery, no second business report).
+            memberResult: {
+                requestToken,
+                status: 'unavailable',
+                error: { code: WORK_RESULT_CODE_REPLAYED, message: WORK_REPLAY_MESSAGE },
+            },
         };
     }
     const mode = facts.admitted !== undefined ? 'resume' : 'full';
@@ -275,8 +312,9 @@ export async function executeWorkChain(deps) {
         }
     }
     // --- delivery (model-visible; observe the turn's completion) -------------
+    let delivered;
     try {
-        await deps.workDelivery.deliver({
+        delivered = await deps.workDelivery.deliver({
             rootSessionId,
             instanceId,
             childSessionId,
@@ -309,6 +347,9 @@ export async function executeWorkChain(deps) {
         sequence,
         settled: settle.to === 'SETTLED',
         ...(settle.sequence !== undefined ? { settledSequence: settle.sequence } : {}),
+        // v2 D2 (frozen by C1): carry the port's normalized member result for
+        // this execution (at-least-once: a resume carries the FRESH result).
+        memberResult: delivered,
     };
 }
 /** Close the interval, tolerating a close-without-open (crash window). */

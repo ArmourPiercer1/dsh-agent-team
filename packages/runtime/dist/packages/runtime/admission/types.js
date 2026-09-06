@@ -36,6 +36,25 @@ export const CALLER_ROLES = {
 };
 /** Every caller role value, for membership checks. */
 export const CALLER_ROLE_VALUES = Object.values(CALLER_ROLES);
+// --- member work result (v2 D2; FROZEN by task C1) ---------------------------------
+/**
+ * The closed status vocabulary of the minimal member result (frozen, v2
+ * task C1; plan §1.3 / §10-C1).
+ *
+ * - `succeeded`: the member turn genuinely completed AND a readable
+ *   non-empty business body exists (`body` present);
+ * - `failed`: the delivery/turn failed explicitly (turn reason
+ *   error / aborted / max-tokens / blocked) — `error` carries a stable
+ *   code + a user-visible message;
+ * - `unavailable`: the turn completed but no readable business body is
+ *   available, or the seam cannot determine the outcome — `error` carries
+ *   the reason code.
+ *
+ * The control-plane settlement is SEPARATE: a settled work unit is not a
+ * succeeded one. `settled: true` alone must NEVER be mapped to
+ * `succeeded` anywhere in the Team surface.
+ */
+export const WORK_DELIVERY_STATUSES = ['succeeded', 'failed', 'unavailable'];
 // --- shared helpers -----------------------------------------------------------------
 /**
  * The per-capability effective values of a resolved policy, in canonical

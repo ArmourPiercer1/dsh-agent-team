@@ -32,6 +32,23 @@
  *   `settleAdmittedWork`);
  * - NEITHER exists -> the FULL chain.
  *
+ * RESULT PROPAGATION (v2 D2, frozen by task C1): the chain carries the
+ * WorkDeliveryPort's normalized minimal member result
+ * (`WorkDeliveryResult`) through the `WorkChainResult.memberResult`:
+ *
+ * - full / resume: `memberResult` IS the port's result for THIS execution
+ *   (at-least-once: a resume re-delivers and carries the FRESH result);
+ * - replay: the port is never called; the chain SYNTHESIZES the SAME
+ *   explicit result for every replay — `status: 'unavailable'` with
+ *   `error.code: 'WORK_REPLAYED'` (existing durable state only: the
+ *   settlement fact's presence; no re-delivery, no second business
+ *   report, no storage change);
+ * - fail-closed delivery fault: the chain THROWS — no result is formed
+ *   (the throw is the signal; the fail-closed settlement fact stands).
+ *
+ * The control-plane `settled` stays SEPARATE: it never implies
+ * `memberResult.status === 'succeeded'`.
+ *
  * TCM-M3 boundary: facts carrying `targetKind: 'root'` (the creation-time
  * Root initial work — the Root strategy's durable side, see
  * `root-initial-work.ts`) are SKIPPED by this scan: a member chain never
@@ -53,11 +70,22 @@
  */
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js';
 import type { TeamDomainRepositories } from '../../storage/repositories/index.js';
-import type { LifecycleCommitPort, WorkActivityPort, WorkDeliveryPort } from '../admission/types.js';
+import type { LifecycleCommitPort, WorkActivityPort, WorkDeliveryPort, WorkDeliveryResult } from '../admission/types.js';
 import type { ResolvedCaller } from '../admission/resolve.js';
 /** The fixed activity lane of admitted work units (one interval per
  *  requestToken correlation on this subject). */
 export declare const WORK_ACTIVITY_SUBJECT = "work-unit";
+/**
+ * The frozen replay synthesis of the minimal member result (v2 D2, task
+ * C1): a requestToken that is already durably settled re-reports nothing —
+ * the chain synthesizes this SAME explicit result for every replay (using
+ * only the existing durable state — the settlement fact's presence; no
+ * re-delivery, no second business report, no storage change). The
+ * original business result is deliberately NOT re-served (plan §1.3:
+ * replay 不重复 delivery、不重复业务报告; the full transcript is out of
+ * scope). `settled: true` alone is never mapped to `succeeded`.
+ */
+export declare const WORK_RESULT_CODE_REPLAYED = "WORK_REPLAYED";
 /**
  * Everything one work chain execution needs (read-phase outputs + the
  * injected work ports). The caller MUST already hold the router's
@@ -121,6 +149,14 @@ export interface WorkChainResult {
     /** The durable sequence of the settlement fact (when written or
      *  already present). */
     readonly settledSequence?: number;
+    /** v2 D2 (frozen by C1): the minimal member result of this execution —
+     *  full/resume: the WorkDeliveryPort's normalized result for THIS
+     *  attempt; replay: the synthesized unavailable/WORK_REPLAYED result
+     *  (identical for every replay, see the module docs). Absent only on
+     *  the fail-closed delivery-failure path, where the chain throws
+     *  instead of returning. `settled` above stays control-plane and never
+     *  implies `memberResult.status === 'succeeded'`. */
+    readonly memberResult?: WorkDeliveryResult;
 }
 /**
  * The settlement outcome of {@link settleAdmittedWork}.

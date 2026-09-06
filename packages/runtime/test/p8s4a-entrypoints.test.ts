@@ -35,7 +35,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LedgerEntry } from '../../storage/schema/index.js'
 import { createTeamRuntime } from '../action-router/index.js'
-import type { TeamRuntime, TeamRuntimeActionRequest } from '../admission/index.js'
+import type { TeamRuntime, TeamRuntimeActionRequest, WorkDeliveryResult } from '../admission/index.js'
 import { TEAM_RUNTIME_ERROR_CODES } from '../admission/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
 import {
@@ -113,7 +113,7 @@ function createP8S4ADeliveryPort(
       readonly requestToken: string
       readonly prompt: string
       readonly attachedContext?: string
-    }): Promise<void> {
+    }): Promise<WorkDeliveryResult> {
       calls.push({
         instanceId: args.instanceId,
         requestToken: args.requestToken,
@@ -121,6 +121,13 @@ function createP8S4ADeliveryPort(
       })
       if (driftTo !== undefined && calls.length === 1) {
         facts.current = driftTo
+      }
+      // v2 C1: the port now returns the frozen WorkDeliveryResult; the
+      // fake produces no member body (test-neutral, result unused here).
+      return {
+        requestToken: args.requestToken,
+        status: 'unavailable',
+        error: { code: 'TEST_FAKE_NO_BODY', message: 'test fake delivery: no member body produced' },
       }
     },
   }
@@ -138,7 +145,7 @@ function createP8S4AWorkChainRuntime(
       readonly requestToken: string
       readonly prompt: string
       readonly attachedContext?: string
-    }): Promise<void>
+    }): Promise<WorkDeliveryResult>
   },
 ): TeamRuntime {
   return createTeamRuntime({

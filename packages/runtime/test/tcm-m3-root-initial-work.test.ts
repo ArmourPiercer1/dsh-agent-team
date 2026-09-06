@@ -191,6 +191,13 @@ function createFakeMemberDelivery(): FakeMemberDelivery {
   const port: WorkDeliveryPort = {
     async deliver(args) {
       calls.push({ ...args })
+      // v2 C1: the port now returns the frozen WorkDeliveryResult; the
+      // fake produces no member body (test-neutral, result unused here).
+      return {
+        requestToken: args.requestToken,
+        status: 'unavailable',
+        error: { code: 'TEST_FAKE_NO_BODY', message: 'test fake delivery: no member body produced' },
+      }
     },
   }
   return { port, calls }

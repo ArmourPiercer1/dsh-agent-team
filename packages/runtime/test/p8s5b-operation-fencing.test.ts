@@ -71,7 +71,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createTeamRuntime } from '../action-router/index.js'
-import type { TeamRuntime, TeamRuntimeActionRequest } from '../admission/index.js'
+import type { TeamRuntime, TeamRuntimeActionRequest, WorkDeliveryResult } from '../admission/index.js'
 import { TEAM_RUNTIME_ERROR_CODES } from '../admission/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
 import { createCompatibilityAuthority } from '../compatibility/index.js'
@@ -175,7 +175,7 @@ function noopDelivery(): {
       readonly requestToken: string
       readonly prompt: string
       readonly attachedContext?: string
-    }): Promise<void>
+    }): Promise<WorkDeliveryResult>
   }
   readonly calls: { readonly instanceId: string; readonly requestToken: string }[]
 } {
@@ -185,8 +185,15 @@ function noopDelivery(): {
       async deliver(args: {
         readonly instanceId: string
         readonly requestToken: string
-      }): Promise<void> {
+      }): Promise<WorkDeliveryResult> {
         calls.push({ instanceId: args.instanceId, requestToken: args.requestToken })
+        // v2 C1: the port now returns the frozen WorkDeliveryResult; the
+        // fake produces no member body (test-neutral, result unused here).
+        return {
+          requestToken: args.requestToken,
+          status: 'unavailable',
+          error: { code: 'TEST_FAKE_NO_BODY', message: 'test fake delivery: no member body produced' },
+        }
       },
     },
     calls,

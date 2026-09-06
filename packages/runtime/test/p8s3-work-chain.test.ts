@@ -30,6 +30,14 @@
  * - R2: the delivered prompt is the explicit request prompt (no default
  *   transcript inheritance), with the explicit attachedContext when
  *   provided.
+ * - C1 (v2 D2 frozen contract, work-execution level): the chain carries
+ *   the WorkDeliveryPort's minimal member result (WorkDeliveryResult) —
+ *   succeeded with the business body / failed with a stable code+message /
+ *   unavailable, the requestToken echoed verbatim, and `settled` (control
+ *   plane) staying separate from the business status; a replay of an
+ *   already-settled token synthesizes the SAME explicit
+ *   unavailable/WORK_REPLAYED result (no re-delivery, no re-report, zero
+ *   durable writes); a resume carries the fresh this-attempt result.
  *
  * House pattern of the runtime package: async world construction and
  * action execution at the TOP LEVEL (one bare block per scenario, each
@@ -41,13 +49,15 @@
 
 import { describe, expect, it } from 'vitest'
 import type { LedgerEntry } from '../../storage/schema/index.js'
-import { createTeamRuntime } from '../action-router/index.js'
+import { createTeamRuntime, executeWorkChain } from '../action-router/index.js'
 import { TEAM_RUNTIME_ERROR_CODES } from '../admission/index.js'
 import type {
+  ResolvedCaller,
   RuntimeActionEffect,
   TeamRuntime,
   TeamRuntimeActionOutcome,
   WorkDeliveryPort,
+  WorkDeliveryResult,
 } from '../admission/index.js'
 import { createWorkActivityWriter } from '../activity/index.js'
 import { destroyP6T1World } from './p6t1-helpers.js'
@@ -137,7 +147,8 @@ function memberRow(world: P6T1World, instanceId: string) {
 
 // --- fakes ----------------------------------------------------------------------
 
-/** The model-visible delivery port fake (records the exact submit calls). */
+/** The model-visible delivery port fake (records the exact submit calls
+ *  and returns the armed WorkDeliveryResult — the v2 C1 frozen shape). */
 interface FakeDeliveryPort {
   readonly port: WorkDeliveryPort
   readonly calls: {
@@ -150,17 +161,28 @@ interface FakeDeliveryPort {
   }[]
   /** Arm a failure for every subsequent delivery (R6/W4). */
   setFailure(message: string): void
+  /** Arm the exact result the next successful delivery returns (default:
+   *  a succeeded result with a deterministic business body). */
+  armResult(result: WorkDeliveryResult): void
 }
 
 function createFakeDeliveryPort(): FakeDeliveryPort {
   const calls: FakeDeliveryPort['calls'] = []
   let failMessage: string | undefined
+  let armed: WorkDeliveryResult | undefined
   const port: WorkDeliveryPort = {
     async deliver(args) {
       calls.push({ ...args })
       if (failMessage !== undefined) {
         throw new Error(failMessage)
       }
+      return (
+        armed ?? {
+          requestToken: args.requestToken,
+          status: 'succeeded',
+          body: 'fake member business body',
+        }
+      )
     },
   }
   return {
@@ -168,6 +190,9 @@ function createFakeDeliveryPort(): FakeDeliveryPort {
     calls,
     setFailure(message: string) {
       failMessage = message
+    },
+    armResult(result: WorkDeliveryResult) {
+      armed = result
     },
   }
 }
@@ -194,6 +219,39 @@ function createWorkChainRuntime(
       options.lifecycleCommit ?? createFakeLifecycleCommitPort(world),
     workDelivery: delivery,
     workActivity: createWorkActivityWriter({ teamDomain: world.domain, now: () => P6T2_NOW }),
+  })
+}
+
+/**
+ * Execute one work chain directly at the work-execution seam (the v2 C1
+ * contract level — the result contract is pinned on `executeWorkChain`'s
+ * own outcome, before the effect mapping that C2 owns). The chain takes no
+ * lock of its own; the scenarios run single-threaded per world, so calling
+ * it outside the router is the honest work-execution-level seam.
+ */
+function runChainDirect(
+  world: P6T1World,
+  delivery: WorkDeliveryPort,
+  requestToken: string,
+  prompt: string,
+) {
+  const leaderRow = world.domain.repositories.memberInstances.get(P6T2_ROOT, 'inst-leader')
+  if (leaderRow === undefined) {
+    throw new Error('runChainDirect: the leader seed row is missing')
+  }
+  const caller: ResolvedCaller = { role: 'leader', callerMember: leaderRow }
+  return executeWorkChain({
+    repositories: world.domain.repositories,
+    lifecycleCommit: createFakeLifecycleCommitPort(world),
+    workDelivery: delivery,
+    workActivity: createWorkActivityWriter({ teamDomain: world.domain, now: () => P6T2_NOW }),
+    now: () => P6T2_NOW,
+    rootSessionId: P6T2_ROOT,
+    instanceId: WORKER_ID,
+    action: 'follow-up',
+    caller,
+    requestToken,
+    prompt,
   })
 }
 
@@ -318,6 +376,61 @@ interface R2Case {
   readonly factAttached: unknown
 }
 
+/** C1-S1: full mode carries the port's succeeded result (token verbatim). */
+interface C1S1Case {
+  readonly mode: string
+  readonly settled: boolean
+  readonly status: string | undefined
+  readonly body: string | undefined
+  readonly errorAbsent: boolean
+  readonly token: string | undefined
+  readonly deliveries: number
+}
+
+/** C1-S2: failed/unavailable mapping; settled never implies succeeded. */
+interface C1S2Case {
+  readonly failedMode: string
+  readonly failedSettled: boolean
+  readonly failedStatus: string | undefined
+  readonly failedCode: string | undefined
+  readonly failedMessage: string | undefined
+  readonly failedBody: string | undefined
+  readonly failedToken: string | undefined
+  readonly unavailableMode: string
+  readonly unavailableSettled: boolean
+  readonly unavailableStatus: string | undefined
+  readonly unavailableCode: string | undefined
+  readonly unavailableBody: string | undefined
+  readonly unavailableToken: string | undefined
+}
+
+/** C1-S3: replay = the SAME synthesized result, exactly once, zero writes. */
+interface C1S3Case {
+  readonly firstMode: string
+  readonly firstStatus: string | undefined
+  readonly firstBody: string | undefined
+  readonly secondMode: string
+  readonly secondSettled: boolean
+  readonly secondResult: WorkDeliveryResult | undefined
+  readonly thirdResult: WorkDeliveryResult | undefined
+  readonly secondHasNoBody: boolean
+  readonly deliveries: number
+  readonly ledgerUnchangedOnReplay: boolean
+  readonly ledgerUnchangedOnReplay2: boolean
+  readonly sameSequence: boolean
+}
+
+/** C1-S4: resume mode carries the fresh this-attempt result. */
+interface C1S4Case {
+  readonly mode: string
+  readonly settled: boolean
+  readonly status: string | undefined
+  readonly code: string | undefined
+  readonly token: string | undefined
+  readonly sameAdmissionSequence: boolean
+  readonly deliveries: number
+}
+
 let r3a: R3aCase
 let r3b: R3bCase
 let w4: W4Case
@@ -326,6 +439,10 @@ let w9: W9Case
 let resume: ResumeCase
 let delegate: DelegateCase
 let r2: R2Case
+let c1s1: C1S1Case
+let c1s2: C1S2Case
+let c1s3: C1S3Case
+let c1s4: C1S4Case
 
 // --- scenario: R3a (no lifecycle commit port) -----------------------------------
 
@@ -722,6 +839,158 @@ let r2: R2Case
   }
 }
 
+// --- scenario: C1-S1 (full mode: the port's succeeded result is carried) ----
+
+{
+  const world = await createP6T2World('p8s3wc-c1s1', ['leader', 'worker'])
+  try {
+    const delivery = createFakeDeliveryPort()
+    delivery.armResult({
+      requestToken: 'tok-c1-s1',
+      status: 'succeeded',
+      body: 'member business answer',
+    })
+    const result = await runChainDirect(world, delivery.port, 'tok-c1-s1', 'p8s3 C1-S1 prompt')
+    c1s1 = {
+      mode: result.mode,
+      settled: result.settled,
+      status: result.memberResult?.status,
+      body: result.memberResult?.body,
+      errorAbsent: result.memberResult?.error === undefined,
+      token: result.memberResult?.requestToken,
+      deliveries: delivery.calls.length,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
+// --- scenario: C1-S2 (failed + unavailable mapping; settled/succeeded split) --
+
+{
+  const world = await createP6T2World('p8s3wc-c1s2', ['leader', 'worker'])
+  try {
+    const delivery = createFakeDeliveryPort()
+    // failed: the delivery/turn failed with a stable code + message
+    delivery.armResult({
+      requestToken: 'tok-c1-s2f',
+      status: 'failed',
+      error: { code: 'WORK_TURN_ERROR', message: 'llm call failed (contained in the turn)' },
+    })
+    const failed = await runChainDirect(world, delivery.port, 'tok-c1-s2f', 'p8s3 C1-S2 failing turn')
+    // unavailable: the turn completed but no readable business body exists
+    delivery.armResult({
+      requestToken: 'tok-c1-s2u',
+      status: 'unavailable',
+      error: { code: 'WORK_NO_ASSISTANT_BODY', message: 'no assistant text in the delivered turn' },
+    })
+    const unavailable = await runChainDirect(world, delivery.port, 'tok-c1-s2u', 'p8s3 C1-S2 bodyless turn')
+    c1s2 = {
+      failedMode: failed.mode,
+      failedSettled: failed.settled,
+      failedStatus: failed.memberResult?.status,
+      failedCode: failed.memberResult?.error?.code,
+      failedMessage: failed.memberResult?.error?.message,
+      failedBody: failed.memberResult?.body,
+      failedToken: failed.memberResult?.requestToken,
+      unavailableMode: unavailable.mode,
+      unavailableSettled: unavailable.settled,
+      unavailableStatus: unavailable.memberResult?.status,
+      unavailableCode: unavailable.memberResult?.error?.code,
+      unavailableBody: unavailable.memberResult?.body,
+      unavailableToken: unavailable.memberResult?.requestToken,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
+// --- scenario: C1-S3 (replay: identical synthesis, exactly once, no re-report)
+
+{
+  const world = await createP6T2World('p8s3wc-c1s3', ['leader', 'worker'])
+  try {
+    const delivery = createFakeDeliveryPort()
+    delivery.armResult({
+      requestToken: 'tok-c1-s3',
+      status: 'succeeded',
+      body: 'original member answer',
+    })
+    const first = await runChainDirect(world, delivery.port, 'tok-c1-s3', 'p8s3 C1-S3 prompt')
+    const ledgerAfterFirst = world.domain.repositories.ledger.list().length
+    // a retry of the SAME settled logical work: zero delivery, zero writes
+    const second = await runChainDirect(world, delivery.port, 'tok-c1-s3', 'p8s3 C1-S3 prompt')
+    const ledgerAfterSecond = world.domain.repositories.ledger.list().length
+    // a third identical replay: the synthesis is idempotent
+    const third = await runChainDirect(world, delivery.port, 'tok-c1-s3', 'p8s3 C1-S3 prompt')
+    const ledgerAfterThird = world.domain.repositories.ledger.list().length
+    c1s3 = {
+      firstMode: first.mode,
+      firstStatus: first.memberResult?.status,
+      firstBody: first.memberResult?.body,
+      secondMode: second.mode,
+      secondSettled: second.settled,
+      secondResult: second.memberResult,
+      thirdResult: third.memberResult,
+      secondHasNoBody: second.memberResult?.body === undefined,
+      deliveries: delivery.calls.length,
+      ledgerUnchangedOnReplay: ledgerAfterSecond === ledgerAfterFirst,
+      ledgerUnchangedOnReplay2: ledgerAfterThird === ledgerAfterSecond,
+      sameSequence: second.sequence === first.sequence,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
+// --- scenario: C1-S4 (resume: the fresh this-attempt result is carried) ------
+
+{
+  const world = await createP6T2World('p8s3wc-c1s4', ['leader', 'worker'])
+  try {
+    // the crash window: the earlier attempt committed the admission fact
+    // durably but died before the settlement (same seed as the resume case)
+    const token = 'tok-c1-s4'
+    const admittedSequence = await world.domain.repositories.ledger.allocateSequence()
+    await world.domain.repositories.ledger.put({
+      schemaVersion: 1,
+      sequence: admittedSequence,
+      rootSessionId: P6T2_ROOT,
+      factType: 'team-work-admitted',
+      payload: {
+        action: 'follow-up',
+        caller: leaderCaller(),
+        targetInstanceId: WORKER_ID,
+        childSessionId: WORKER_CHILD,
+        fromLifecycle: 'SETTLED',
+        lifecycleCommitted: true,
+        prompt: 'p8s3 C1-S4 original prompt',
+        requestToken: token,
+        at: P6T2_NOW,
+      },
+      createdAt: P6T2_NOW,
+    })
+    const delivery = createFakeDeliveryPort()
+    delivery.armResult({
+      requestToken: token,
+      status: 'failed',
+      error: { code: 'WORK_TURN_ABORTED', message: 'turn aborted by the caller' },
+    })
+    const result = await runChainDirect(world, delivery.port, token, 'p8s3 C1-S4 resume prompt')
+    c1s4 = {
+      mode: result.mode,
+      settled: result.settled,
+      status: result.memberResult?.status,
+      code: result.memberResult?.error?.code,
+      token: result.memberResult?.requestToken,
+      sameAdmissionSequence: result.sequence === admittedSequence,
+      deliveries: delivery.calls.length,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
 // --- assertions (synchronous; the shim supports no async `it`) --------------------
 
 describe('P8-S3 work execution chain (R1–R6, package level)', () => {
@@ -833,5 +1102,71 @@ describe('P8-S3 work execution chain (R1–R6, package level)', () => {
     expect(r2.token).toBe('tok-p8s3-r2')
     expect(r2.factPrompt).toBe('the exact model-visible prompt')
     expect(r2.factAttached).toBe('explicit attached context block')
+  })
+
+  it('C1: full mode carries the port result — succeeded with the business body, requestToken verbatim', () => {
+    expect(c1s1.mode).toBe('full')
+    expect(c1s1.settled).toBe(true)
+    expect(c1s1.status).toBe('succeeded')
+    expect(c1s1.body).toBe('member business answer')
+    expect(c1s1.errorAbsent).toBe(true)
+    expect(c1s1.token).toBe('tok-c1-s1')
+    expect(c1s1.deliveries).toBe(1)
+  })
+
+  it('C1: failed/unavailable are carried verbatim, and settled=true never maps to succeeded', () => {
+    // failed: an explicit delivery/turn failure with a stable code+message
+    expect(c1s2.failedMode).toBe('full')
+    expect(c1s2.failedSettled).toBe(true)
+    expect(c1s2.failedStatus).toBe('failed')
+    expect(c1s2.failedCode).toBe('WORK_TURN_ERROR')
+    expect(c1s2.failedMessage).toBe('llm call failed (contained in the turn)')
+    expect(c1s2.failedBody).toBeUndefined()
+    expect(c1s2.failedToken).toBe('tok-c1-s2f')
+    // unavailable: the turn completed but no readable body is available
+    expect(c1s2.unavailableMode).toBe('full')
+    expect(c1s2.unavailableSettled).toBe(true)
+    expect(c1s2.unavailableStatus).toBe('unavailable')
+    expect(c1s2.unavailableCode).toBe('WORK_NO_ASSISTANT_BODY')
+    expect(c1s2.unavailableBody).toBeUndefined()
+    expect(c1s2.unavailableToken).toBe('tok-c1-s2u')
+    // settled (control plane) and the business status stay separate
+    expect(c1s2.failedSettled && c1s2.failedStatus !== 'succeeded').toBe(true)
+    expect(c1s2.unavailableSettled && c1s2.unavailableStatus !== 'succeeded').toBe(true)
+  })
+
+  it('C1: a replay of an already-settled token synthesizes the SAME unavailable result — no re-delivery, no re-report', () => {
+    expect(c1s3.firstMode).toBe('full')
+    expect(c1s3.firstStatus).toBe('succeeded')
+    expect(c1s3.firstBody).toBe('original member answer')
+    expect(c1s3.secondMode).toBe('replay')
+    expect(c1s3.secondSettled).toBe(true)
+    // the frozen replay synthesis (existing durable state only)
+    expect(c1s3.secondResult).toEqual({
+      requestToken: 'tok-c1-s3',
+      status: 'unavailable',
+      error: {
+        code: 'WORK_REPLAYED',
+        message: 'work unit already settled (settlement fact present); original result not re-reported',
+      },
+    })
+    // idempotent: the third replay is identical to the second
+    expect(c1s3.thirdResult).toEqual(c1s3.secondResult)
+    // no second business report, no double delivery, zero durable writes
+    expect(c1s3.secondHasNoBody).toBe(true)
+    expect(c1s3.deliveries).toBe(1)
+    expect(c1s3.ledgerUnchangedOnReplay).toBe(true)
+    expect(c1s3.ledgerUnchangedOnReplay2).toBe(true)
+    expect(c1s3.sameSequence).toBe(true)
+  })
+
+  it('C1: resume mode carries the fresh this-attempt result (at-least-once, visible dedup)', () => {
+    expect(c1s4.mode).toBe('resume')
+    expect(c1s4.settled).toBe(true)
+    expect(c1s4.status).toBe('failed')
+    expect(c1s4.code).toBe('WORK_TURN_ABORTED')
+    expect(c1s4.token).toBe('tok-c1-s4')
+    expect(c1s4.sameAdmissionSequence).toBe(true)
+    expect(c1s4.deliveries).toBe(1)
   })
 })

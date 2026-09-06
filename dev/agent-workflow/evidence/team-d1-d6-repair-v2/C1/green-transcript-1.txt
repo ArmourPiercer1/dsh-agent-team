@@ -1,0 +1,11 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-C1/packages/runtime
+
+ ✓ test/p8s3-work-chain.test.ts (12 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  02:18:17
+   Duration  858ms (transform 365ms, setup 0ms, import 748ms, tests 5ms, environment 0ms)
+
+
