@@ -14,14 +14,14 @@
      ✓ WITHOUT the openOrdinaryMode face the picker rows carry ONLY the D2 Team-mode entry 62ms
      ✓ WITHOUT the openOrdinaryMode face the leader row stays the D2 surface (no ordinary entry, no badge) 3ms
      ✓ WITHOUT either open face there is no entry and no badge (the D1 surface) 2ms
-pnpm.exe : 
+pnpm.exe :
 At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 ⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  test/d3-open-ordinary-mode.test.ts [ test/d3-open-ordinary-mode.test.ts ]
@@ -160,4 +160,3 @@ undefined
       Tests  7 failed | 4 passed (11)
    Start at  04:50:48
    Duration  2.47s (transform 912ms, setup 0ms, import 1.54s, tests 274ms, environment 540ms)
-

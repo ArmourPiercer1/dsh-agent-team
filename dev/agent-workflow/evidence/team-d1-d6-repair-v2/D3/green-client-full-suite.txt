@@ -42,14 +42,14 @@ At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (stderr | test/n... UI constraint):String) [], RemoteExc 
+    + CategoryInfo          : NotSpecified: (stderr | test/n... UI constraint):String) [], RemoteExc
    eption
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 Warning: The current testing environment is not configured to support act(...)
 
  ✓ test/team-members-actions.client.spec.tsx (16 tests) 559ms
-stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage 
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage
 (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends O
 NLY the admit and the success closes (plan §7; never a New Session)
 Warning: The current testing environment is not configured to support act(...)
@@ -102,4 +102,3 @@ AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
       Tests  1 failed | 577 passed (578)
    Start at  05:01:01
    Duration  6.47s (transform 16.35s, setup 0ms, import 44.86s, tests 10.86s, environment 18.54s)
-

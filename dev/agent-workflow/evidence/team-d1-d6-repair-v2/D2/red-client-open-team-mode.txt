@@ -10,14 +10,14 @@
      × renders the current open-mode badge (team) for the leader row when teamOpenMode reads team 1010ms
      × renders NO badge when teamOpenMode reads null (the root was not opened in Team mode here) 1013ms
      ✓ WITHOUT the openTeamMode face the leader row stays the D1 surface (no entry, no badge) 3ms
-pnpm.exe : 
+pnpm.exe :
 At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 ⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  test/d2-open-team-mode.test.ts [ test/d2-open-team-mode.test.ts ]
@@ -110,4 +110,3 @@ AssertionError: expected null not to be null
       Tests  5 failed | 2 passed (7)
    Start at  04:29:39
    Duration  5.44s (transform 915ms, setup 0ms, import 1.55s, tests 3.24s, environment 540ms)
-

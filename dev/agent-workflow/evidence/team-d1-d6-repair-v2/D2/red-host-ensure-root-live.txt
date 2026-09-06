@@ -12,14 +12,14 @@
      × the registry collision rejection (already live OUTSIDE the Team glue) → TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM (never a silent adoption) 0ms
      × the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT 0ms
      × every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message preserved for diagnosis) 0ms
-pnpm.exe : 
+pnpm.exe :
 At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
 7553ec1c\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
 +   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  packages/runtime/test/d2-s6-ensure-root-live.test.ts > D2 (S6 host handler): team.ensureRootLi
@@ -166,4 +166,3 @@ Received: "TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED"
       Tests  7 failed | 3 passed (10)
    Start at  04:25:15
    Duration  560ms (transform 332ms, setup 0ms, import 436ms, tests 8ms, environment 0ms)
-
