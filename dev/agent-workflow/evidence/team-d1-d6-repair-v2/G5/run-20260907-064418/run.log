@@ -1,0 +1,43 @@
+[2026-09-06T22:44:21.715Z] == g5-member-e2e 2026-09-06T22:44:21.714Z (nonce mtqefm8h5a8ec3) ==
+[2026-09-06T22:44:21.716Z] ROOT_A=session-g5a-a-mtqefm8h5a8ec3 ROOT_B=session-g5a-b-mtqefm8h5a8ec3 ORDINARY=session-g5a-ord-mtqefm8h5a8ec3 home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T22:44:21.716Z] control file: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\team-d1-d6-v2-G5A\dev\agent-workflow\evidence\team-d1-d6-repair-v2\G5\run-20260907-064418\member-workspace\g5a-control-mtqefm8h5a8ec3.txt
+[2026-09-06T22:44:22.073Z] S0: pass=true
+[2026-09-06T22:44:22.084Z] mock: mock: listening on 127.0.0.1:64230
+[2026-09-06T22:44:22.085Z] mock model on 127.0.0.1:64230
+[2026-09-06T22:44:22.086Z] BOOT1: profile already initialized
+[2026-09-06T22:44:22.087Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T22:44:22.087Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T22:44:24.024Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T22:44:25.187Z] BOOT1: row ready — toolCount=10 liveSessions=["session-g5a-a-mtqefm8h5a8ec3"]
+[2026-09-06T22:44:25.515Z] S1: pass=true
+[2026-09-06T22:44:25.700Z] mock: mock: 1 tool-call reply: team_create_member
+[2026-09-06T22:44:25.701Z] mock: mock: 2 text reply (24 chars): "G5A title mtqefm8h5a8ec3"
+[2026-09-06T22:44:26.818Z] mock: mock: 3 text reply (30 chars): "G5A-MC-mtqefm8h5a8ec3_LEAD_ACK"
+[2026-09-06T22:44:27.581Z] S2: pass=true
+[2026-09-06T22:44:27.799Z] mock: mock: 4 text reply (24 chars): "G5A title mtqefm8h5a8ec3"
+[2026-09-06T22:44:27.800Z] mock: mock: 5 tool-call reply: read
+[2026-09-06T22:44:28.001Z] mock: mock: 6 text reply (29 chars): "G5A-MF-mtqefm8h5a8ec3_MEM_ACK"
+[2026-09-06T22:44:28.614Z] S3: pass=true
+[2026-09-06T22:44:28.748Z] mock: mock: 7 tool-call reply: pwsh
+[2026-09-06T22:44:29.185Z] mock: mock: 8 text reply (29 chars): "G5A-MP-mtqefm8h5a8ec3_MEM_ACK"
+[2026-09-06T22:44:29.776Z] mock: mock: 9 tool-call reply: team_report_progress
+[2026-09-06T22:44:30.167Z] mock: mock: 10 text reply (29 chars): "G5A-MT-mtqefm8h5a8ec3_MEM_ACK"
+[2026-09-06T22:44:30.668Z] S4: pass=false
+[2026-09-06T22:44:30.819Z] mock: mock: 11 tool-call reply: team_delegate
+[2026-09-06T22:44:31.320Z] mock: mock: 12 text reply (119 chars): "G5A-WORK-BODY-mtqefm8h5a8ec3: delegated work unit completed — the control sentin"
+[2026-09-06T22:44:31.831Z] mock: mock: 13 text reply (30 chars): "G5A-MW-mtqefm8h5a8ec3_LEAD_ACK"
+[2026-09-06T22:44:32.718Z] S5: pass=false
+[2026-09-06T22:44:32.719Z] S6: pass=false
+[2026-09-06T22:44:33.105Z] mock: mock: 14 text reply (25 chars): "G5A-MO-mtqefm8h5a8ec3_ACK"
+[2026-09-06T22:44:33.106Z] mock: mock: 15 text reply (24 chars): "G5A title mtqefm8h5a8ec3"
+[2026-09-06T22:44:33.872Z] S7: pass=true
+[2026-09-06T22:44:33.921Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T22:44:33.922Z] FATAL main: Error: ENOENT: no such file or directory, open 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\team-d1-d6-v2-G5A\dev\agent-workflow\evidence\team-d1-d6-repair-v2\G5\run-20260907-064418\git-post\git-head.log'
+    at Object.openSync (node:fs:622:18)
+    at writeFileSync (node:fs:2497:35)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-G5A/tests/characterization/lib/util.mjs:55:5
+    at new Promise (<anonymous>)
+    at spawnToLog (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-G5A/tests/characterization/lib/util.mjs:54:10)
+    at captureGitState (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-G5A/tests/characterization/lib/tree-clean.mjs:25:28)
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-G5A/packages/tools/harness/g5-member-e2e.mjs:1511:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

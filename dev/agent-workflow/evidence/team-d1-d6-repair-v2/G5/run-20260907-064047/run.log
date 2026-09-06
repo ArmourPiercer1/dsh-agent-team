@@ -1,0 +1,27 @@
+[2026-09-06T22:40:50.388Z] == g5-member-e2e 2026-09-06T22:40:50.388Z (nonce mtqeb36a48a3b3) ==
+[2026-09-06T22:40:50.389Z] ROOT_A=session-g5a-a-mtqeb36a48a3b3 ROOT_B=session-g5a-b-mtqeb36a48a3b3 ORDINARY=session-g5a-ord-mtqeb36a48a3b3 home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T22:40:50.389Z] control file: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\team-d1-d6-v2-G5A\dev\agent-workflow\evidence\team-d1-d6-repair-v2\G5\run-20260907-064047\member-workspace\g5a-control-mtqeb36a48a3b3.txt
+[2026-09-06T22:40:50.747Z] runtime link: @deepseek-ai/dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-agent
+[2026-09-06T22:40:50.749Z] runtime link: @deepseek-ai/dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-llm
+[2026-09-06T22:40:50.751Z] runtime link: @deepseek-ai/dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-mcp-client
+[2026-09-06T22:40:50.752Z] runtime link: @deepseek-ai/dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-session
+[2026-09-06T22:40:50.754Z] runtime link: @deepseek-ai/dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-storage-domain
+[2026-09-06T22:40:50.755Z] runtime link: zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\zod
+[2026-09-06T22:40:50.756Z] packages link: @deepseek-ai/dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-agent
+[2026-09-06T22:40:50.757Z] packages link: @deepseek-ai/dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-llm
+[2026-09-06T22:40:50.758Z] packages link: @deepseek-ai/dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-mcp-client
+[2026-09-06T22:40:50.758Z] packages link: @deepseek-ai/dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-session
+[2026-09-06T22:40:50.759Z] packages link: @deepseek-ai/dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-storage-domain
+[2026-09-06T22:40:50.759Z] packages link: @deepseek-ai/dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-scope
+[2026-09-06T22:40:50.760Z] packages link: @deepseek-ai/dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-system-prompt
+[2026-09-06T22:40:50.763Z] S0: pass=true
+[2026-09-06T22:40:50.774Z] mock: mock: listening on 127.0.0.1:58707
+[2026-09-06T22:40:50.774Z] mock model on 127.0.0.1:58707
+[2026-09-06T22:40:50.775Z] BOOT1: profile already initialized
+[2026-09-06T22:40:50.776Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T22:40:50.776Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T22:40:52.873Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T22:40:55.050Z] BOOT1: row ready — toolCount=10 liveSessions=["session-g5a-a-mtqeb36a48a3b3"]
+[2026-09-06T22:40:55.924Z] S1: pass=true
+[2026-09-06T22:40:56.114Z] mock: mock: 1 text reply (27 chars): "mtqeb36a48a3b3_LEAD_DEFAULT"
+[2026-09-06T22:40:56.116Z] mock: mock: 2 text reply (24 chars): "G5A title mtqeb36a48a3b3"

@@ -1,0 +1,368 @@
+[
+  {
+    "at": "2026-09-06T22:53:40.380Z",
+    "method": "team.create",
+    "version": 2,
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g5a-e573c17d4101",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "path": "fresh-root",
+            "durable": {
+              "teamSession": {
+                "schemaVersion": 1,
+                "rootSessionId": "session-g5a-b-mtqeripwf7c228",
+                "blueprint": {
+                  "blueprintId": "g5a-bp",
+                  "revision": "1",
+                  "contentHash": "sha256:389118d75369c63676e450cac6f050e37c2b51b6d3cf838c994e5800eff9ba33"
+                },
+                "createdAt": "2026-09-06T22:53:40.394Z",
+                "generation": 1,
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team"
+              },
+              "binding": {
+                "schemaVersion": 1,
+                "kind": "team-root",
+                "sessionId": "session-g5a-b-mtqeripwf7c228"
+              },
+              "wrote": true,
+              "leaderRow": {
+                "schemaVersion": 2,
+                "rootSessionId": "session-g5a-b-mtqeripwf7c228",
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "createdAt": "2026-09-06T22:53:40.476Z",
+                "activityVersion": 1
+              }
+            },
+            "bind": {
+              "requested": "fresh-root",
+              "bound": true,
+              "installed": true,
+              "identity": {
+                "kind": "root",
+                "sessionId": "session-g5a-b-mtqeripwf7c228",
+                "rootSessionId": "session-g5a-b-mtqeripwf7c228"
+              },
+              "admitted": true,
+              "admissionCode": "ADMISSION_OPEN",
+              "emittedEvents": [
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "persona"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "model"
+                },
+                {
+                  "name": "agent-setup/overlay-installed",
+                  "detail": "capability"
+                },
+                {
+                  "name": "agent-setup/admission-decided",
+                  "detail": "ADMISSION_OPEN"
+                }
+              ]
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.create",
+            "endpoint": "team.create",
+            "contractVersion": 2,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-09-06T22:53:40.667Z",
+    "method": "team.listRoots",
+    "version": 3,
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "g5a-5b33c0a93924",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "roots": [
+              {
+                "rootSessionId": "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+                "blueprintId": "my-team-bp-1",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T13:03:23.217Z",
+                "generation": 27,
+                "memberCount": 2
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbc35w96f4f5",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace",
+                "createdAt": "2026-09-06T21:17:40.628Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbczpy6e4fed",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace",
+                "createdAt": "2026-09-06T21:18:22.667Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbe03c96d7cf",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:19:09.798Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbk47c94e592",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:23:55.100Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbpakj76cd36",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:27:56.567Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbtxn1d000e5",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:31:33.103Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqbvsieefe5ee",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:32:59.783Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqc5oi495c6f4",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:40:41.221Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqcdfdoea02b7",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:46:54.990Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqce4i8e31844",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:47:53.031Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-a-mtqcn84k0b6ddc",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:54:51.232Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqbe03c96d7cf",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:19:10.969Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqbk47c94e592",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:23:56.282Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqbpakj76cd36",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:27:57.743Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqbtxn1d000e5",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:31:34.280Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqbvsieefe5ee",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:33:00.961Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqc5oi495c6f4",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:40:42.415Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqcdfdoea02b7",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:46:58.093Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqce4i8e31844",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:48:04.200Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-d4v2-b-mtqcn84k0b6ddc",
+                "blueprintId": "d4v2-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T21:54:54.701Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-g5a-a-mtqeb36a48a3b3",
+                "blueprintId": "g5a-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T22:40:52.846Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-g5a-a-mtqefm8h5a8ec3",
+                "blueprintId": "g5a-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T22:44:24.020Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-g5a-a-mtqeripwf7c228",
+                "blueprintId": "g5a-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T22:53:39.334Z",
+                "generation": 2,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-g5a-b-mtqeb36a48a3b3",
+                "blueprintId": "g5a-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T22:40:55.068Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "session-g5a-b-mtqefm8h5a8ec3",
+                "blueprintId": "g5a-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T22:44:25.206Z",
+                "generation": 9,
+                "memberCount": 1
+              },
+              {
+                "rootSessionId": "session-g5a-b-mtqeripwf7c228",
+                "blueprintId": "g5a-bp",
+                "revision": "1",
+                "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+                "createdAt": "2026-09-06T22:53:40.394Z",
+                "generation": 1,
+                "memberCount": 0
+              },
+              {
+                "rootSessionId": "team-root",
+                "blueprintId": "my-team-bp-1",
+                "revision": "1",
+                "defaultWorkspace": "D:/AgentDev/dsh-plugins/dsh-agent-team",
+                "createdAt": "2026-09-06T13:01:58.399Z",
+                "generation": 2,
+                "memberCount": 0
+              }
+            ]
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.listRoots",
+            "endpoint": "team.listRoots",
+            "contractVersion": 3,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  }
+]

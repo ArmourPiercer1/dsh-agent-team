@@ -1,0 +1,633 @@
+[
+  {
+    "seq": 1,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "tool-call",
+      "name": "team_create_member"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "root",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A leader turn G5A-MC-mtqeripwf7c228: create the team worker member (template worker) in the worksp"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      }
+    ],
+    "toolMsgs": [],
+    "assistantToolCalls": []
+  },
+  {
+    "seq": 2,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A title mtqeripwf7c228"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "other",
+    "systemHead": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "Generate the session title from this JSON array of human messages:\n[{\"seq\":7,\"text\":\"G5A leader turn"
+      }
+    ],
+    "toolMsgs": [],
+    "assistantToolCalls": []
+  },
+  {
+    "seq": 3,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-MC-mtqeripwf7c228_LEAD_ACK"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "root",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "tool",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A leader turn G5A-MC-mtqeripwf7c228: create the team worker member (template worker) in the worksp"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-g5a-b-mtqeripwf7c228\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0rphoo31wm95\",\"templateId\":\"wo"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "team_create_member"
+      ]
+    ]
+  },
+  {
+    "seq": 4,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "tool-call",
+      "name": "read"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      }
+    ],
+    "toolMsgs": [],
+    "assistantToolCalls": []
+  },
+  {
+    "seq": 5,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A title mtqeripwf7c228"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "other",
+    "systemHead": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "Generate the session title from this JSON array of human messages:\n[{\"seq\":7,\"text\":\"G5A member turn"
+      }
+    ],
+    "toolMsgs": [],
+    "assistantToolCalls": []
+  },
+  {
+    "seq": 6,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-MF-mtqeripwf7c228_MEM_ACK"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "tool",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-G5A\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\run-20260907-065333\\member-workspace\\g5a-control-mtqeripwf7c228.txt</path>"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "read"
+      ]
+    ]
+  },
+  {
+    "seq": 7,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "tool-call",
+      "name": "pwsh"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MP-mtqeripwf7c228: print your current working directory with the shell tool."
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-G5A\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\run-20260907-065333\\member-workspace\\g5a-control-mtqeripwf7c228.txt</path>"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "read"
+      ]
+    ]
+  },
+  {
+    "seq": 8,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-MP-mtqeripwf7c228_MEM_ACK"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "tool",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MP-mtqeripwf7c228: print your current working directory with the shell tool."
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-G5A\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\run-20260907-065333\\member-workspace\\g5a-control-mtqeripwf7c228.txt</path>"
+      },
+      {
+        "contentKind": "string",
+        "head": "\r\nPath                                                                                                 \r\n----                                                                                           "
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "read"
+      ],
+      [
+        "pwsh"
+      ]
+    ]
+  },
+  {
+    "seq": 9,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "tool-call",
+      "name": "team_report_progress"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MP-mtqeripwf7c228: print your current working directory with the shell tool."
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MT-mtqeripwf7c228: report your progress over the team tool; use rootSessionId se"
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-G5A\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\run-20260907-065333\\member-workspace\\g5a-control-mtqeripwf7c228.txt</path>"
+      },
+      {
+        "contentKind": "string",
+        "head": "\r\nPath                                                                                                 \r\n----                                                                                           "
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "read"
+      ],
+      [
+        "pwsh"
+      ]
+    ]
+  },
+  {
+    "seq": 10,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-MT-mtqeripwf7c228_MEM_ACK"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "tool",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MP-mtqeripwf7c228: print your current working directory with the shell tool."
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MT-mtqeripwf7c228: report your progress over the team tool; use rootSessionId se"
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-G5A\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\run-20260907-065333\\member-workspace\\g5a-control-mtqeripwf7c228.txt</path>"
+      },
+      {
+        "contentKind": "string",
+        "head": "\r\nPath                                                                                                 \r\n----                                                                                           "
+      },
+      {
+        "contentKind": "string",
+        "head": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqeripwf7c228\",\"instanceId\":\"inst-0rphoo31wm95\",\"row\":{\"globalSequence\":35,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"sessio"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "read"
+      ],
+      [
+        "pwsh"
+      ],
+      [
+        "team_report_progress"
+      ]
+    ]
+  },
+  {
+    "seq": 11,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "tool-call",
+      "name": "team_delegate"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "root",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A leader turn G5A-MC-mtqeripwf7c228: create the team worker member (template worker) in the worksp"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "G5A leader turn G5A-MW-mtqeripwf7c228: delegate a work unit to the worker member and confirm its res"
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-g5a-b-mtqeripwf7c228\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0rphoo31wm95\",\"templateId\":\"wo"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "team_create_member"
+      ]
+    ]
+  },
+  {
+    "seq": 12,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-WORK-BODY-mtqeripwf7c228: delegated work unit completed — the control sentin"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "member",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MF-mtqeripwf7c228: read the control file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MP-mtqeripwf7c228: print your current working directory with the shell tool."
+      },
+      {
+        "kind": "string",
+        "head": "G5A member turn G5A-MT-mtqeripwf7c228: report your progress over the team tool; use rootSessionId se"
+      },
+      {
+        "kind": "string",
+        "head": "[team-work requestToken=g5a-work-mtqeripwf7c228-tok] G5A-MW-mtqeripwf7c228 Complete the delegated wo"
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-G5A\\dev\\agent-workflow\\evidence\\team-d1-d6-repair-v2\\G5\\run-20260907-065333\\member-workspace\\g5a-control-mtqeripwf7c228.txt</path>"
+      },
+      {
+        "contentKind": "string",
+        "head": "\r\nPath                                                                                                 \r\n----                                                                                           "
+      },
+      {
+        "contentKind": "string",
+        "head": "{\"status\":\"progress-recorded\",\"rootSessionId\":\"session-g5a-b-mtqeripwf7c228\",\"instanceId\":\"inst-0rphoo31wm95\",\"row\":{\"globalSequence\":35,\"factType\":\"activity-progress-recorded\",\"rootSessionId\":\"sessio"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "read"
+      ],
+      [
+        "pwsh"
+      ],
+      [
+        "team_report_progress"
+      ]
+    ]
+  },
+  {
+    "seq": 13,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-MW-mtqeripwf7c228_LEAD_ACK"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "root",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "tool",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "G5A leader turn G5A-MC-mtqeripwf7c228: create the team worker member (template worker) in the worksp"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "G5A leader turn G5A-MW-mtqeripwf7c228: delegate a work unit to the worker member and confirm its res"
+      }
+    ],
+    "toolMsgs": [
+      {
+        "contentKind": "string",
+        "head": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-g5a-b-mtqeripwf7c228\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0rphoo31wm95\",\"templateId\":\"wo"
+      },
+      {
+        "contentKind": "string",
+        "head": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-g5a-b-mtqeripwf7c228\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0rphoo31wm95\",\"fromLifecycle\":\"CREATED"
+      }
+    ],
+    "assistantToolCalls": [
+      [
+        "team_create_member"
+      ],
+      [
+        "team_delegate"
+      ]
+    ]
+  },
+  {
+    "seq": 14,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A-MO-mtqeripwf7c228_ACK"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "other",
+    "systemHead": "You are an AI agent powered by DeepSeek Harness.\n\nThe DeepSeek Harness implementation checkout is at D:\\AgentDev\\dsh-plu",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "ordinary acceptance turn G5A-MO-mtqeripwf7c228: basic sanity turn on a non-team session — confirm yo"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as gui"
+      },
+      {
+        "kind": "string",
+        "head": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH fi"
+      },
+      {
+        "kind": "string",
+        "head": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are "
+      }
+    ],
+    "toolMsgs": [],
+    "assistantToolCalls": []
+  },
+  {
+    "seq": 15,
+    "path": "/chat/completions",
+    "status": 200,
+    "reply": {
+      "kind": "text",
+      "name": "G5A title mtqeripwf7c228"
+    },
+    "systemRoleFound": true,
+    "systemKind": "string",
+    "cls": "other",
+    "systemHead": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one",
+    "lastRole": "user",
+    "lastContentKind": "string",
+    "userMsgs": [
+      {
+        "kind": "string",
+        "head": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"ordinary accept"
+      }
+    ],
+    "toolMsgs": [],
+    "assistantToolCalls": []
+  }
+]

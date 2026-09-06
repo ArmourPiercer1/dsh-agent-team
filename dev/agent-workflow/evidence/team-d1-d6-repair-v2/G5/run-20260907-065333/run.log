@@ -1,0 +1,36 @@
+[2026-09-06T22:53:37.030Z] == g5-member-e2e 2026-09-06T22:53:37.030Z (nonce mtqeripwf7c228) ==
+[2026-09-06T22:53:37.031Z] ROOT_A=session-g5a-a-mtqeripwf7c228 ROOT_B=session-g5a-b-mtqeripwf7c228 ORDINARY=session-g5a-ord-mtqeripwf7c228 home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T22:53:37.031Z] control file: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\team-d1-d6-v2-G5A\dev\agent-workflow\evidence\team-d1-d6-repair-v2\G5\run-20260907-065333\member-workspace\g5a-control-mtqeripwf7c228.txt
+[2026-09-06T22:53:37.379Z] S0: pass=true
+[2026-09-06T22:53:37.389Z] mock: mock: listening on 127.0.0.1:64727
+[2026-09-06T22:53:37.390Z] mock model on 127.0.0.1:64727
+[2026-09-06T22:53:37.391Z] BOOT1: profile already initialized
+[2026-09-06T22:53:37.392Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T22:53:37.392Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T22:53:39.207Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T22:53:40.374Z] BOOT1: row ready — toolCount=10 liveSessions=["session-g5a-a-mtqeripwf7c228"]
+[2026-09-06T22:53:40.689Z] S1: pass=true
+[2026-09-06T22:53:40.899Z] mock: mock: 1 tool-call reply: team_create_member
+[2026-09-06T22:53:40.900Z] mock: mock: 2 text reply (24 chars): "G5A title mtqeripwf7c228"
+[2026-09-06T22:53:41.980Z] mock: mock: 3 text reply (30 chars): "G5A-MC-mtqeripwf7c228_LEAD_ACK"
+[2026-09-06T22:53:42.763Z] S2: pass=true
+[2026-09-06T22:53:42.967Z] mock: mock: 4 tool-call reply: read
+[2026-09-06T22:53:42.968Z] mock: mock: 5 text reply (24 chars): "G5A title mtqeripwf7c228"
+[2026-09-06T22:53:43.154Z] mock: mock: 6 text reply (29 chars): "G5A-MF-mtqeripwf7c228_MEM_ACK"
+[2026-09-06T22:53:43.796Z] S3: pass=true
+[2026-09-06T22:53:43.917Z] mock: mock: 7 tool-call reply: pwsh
+[2026-09-06T22:53:44.433Z] mock: mock: 8 text reply (29 chars): "G5A-MP-mtqeripwf7c228_MEM_ACK"
+[2026-09-06T22:53:44.979Z] mock: mock: 9 tool-call reply: team_report_progress
+[2026-09-06T22:53:45.538Z] mock: mock: 10 text reply (29 chars): "G5A-MT-mtqeripwf7c228_MEM_ACK"
+[2026-09-06T22:53:45.854Z] S4: pass=false
+[2026-09-06T22:53:45.959Z] mock: mock: 11 tool-call reply: team_delegate
+[2026-09-06T22:53:46.508Z] mock: mock: 12 text reply (119 chars): "G5A-WORK-BODY-mtqeripwf7c228: delegated work unit completed — the control sentin"
+[2026-09-06T22:53:46.993Z] mock: mock: 13 text reply (30 chars): "G5A-MW-mtqeripwf7c228_LEAD_ACK"
+[2026-09-06T22:53:47.889Z] S5: pass=false
+[2026-09-06T22:53:47.890Z] S6: pass=true
+[2026-09-06T22:53:48.183Z] mock: mock: 14 text reply (25 chars): "G5A-MO-mtqeripwf7c228_ACK"
+[2026-09-06T22:53:48.184Z] mock: mock: 15 text reply (24 chars): "G5A title mtqeripwf7c228"
+[2026-09-06T22:53:48.978Z] S7: pass=true
+[2026-09-06T22:53:49.025Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T22:53:49.163Z] S8: pass=true
+[2026-09-06T22:53:49.164Z] == done: pass=false (duration 12.1s) ==
