@@ -330,6 +330,11 @@ async function runWorkChainOn(ctx, fresh, actionLabel, chain) {
         prompt: String(ctx.request.payload?.['prompt'] ?? ''),
         ...(optionalStringField(ctx.request.payload, 'attachedContext')),
         ...(optionalStringField(ctx.request.payload, 'taskSummary')),
+        // v2 D2 (task C2, frozen C1 decision): propagate the caller's
+        // transient cancellation into the delivery (the delegate-create path
+        // already did; the follow-up path dropped it — an abort mid-
+        // follow-up-delivery was not honored until the next boundary).
+        ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
     });
     return {
         kind: 'work-admitted',
@@ -340,6 +345,11 @@ async function runWorkChainOn(ctx, fresh, actionLabel, chain) {
         replayed: result.mode === 'replay',
         settled: result.settled,
         ...(result.settledSequence !== undefined ? { settledSequence: result.settledSequence } : {}),
+        // v2 D2 (task C2): the chain's normalized member result rides the same
+        // lossless effect to the Leader (the tool/remote envelopes carry it
+        // verbatim; absent on the evidence path, where no chain ran, and on
+        // the fail-closed throw, where no effect is formed).
+        ...(result.memberResult !== undefined ? { memberResult: result.memberResult } : {}),
     };
 }
 /**
@@ -503,6 +513,10 @@ async function runDelegate(ctx) {
             ...activated,
             workSequence: work.sequence,
             workSettled: work.settled,
+            // v2 D2 (task C2): the delegate-create's chain result rides the same
+            // carriers as the follow-up path (the Leader sees the member's
+            // business outcome on the creation effect itself).
+            ...(work.memberResult !== undefined ? { memberResult: work.memberResult } : {}),
         };
     }
     // continued: the provider did NO durable write; the router admits the
