@@ -160,7 +160,7 @@ var __dshFactory = (require) => {
 			 * @returns the trigger row (and the overlay while open).
 			 */
 			function NewTeamEntry(props) {
-			    const { wide, listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2, openCreatedSession, listAgentPresets, currentSessionId, useWorkspaces, t, } = props;
+			    const { wide, listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2, openCreatedSession, pullProjection, listAgentPresets, currentSessionId, useWorkspaces, t, } = props;
 			    const [overlayOpen, setOverlayOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority).
 			    // The overlay holds its own copy — a fresh empty draft on every open.
@@ -195,7 +195,7 @@ var __dshFactory = (require) => {
 			    // with the panel's typed error lane + the retryable token (no new banner
 			    // architecture); a failed open likewise keeps the overlay visible; the
 			    // root remains openable from the session list either way.
-			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreateV2: teamCreateV2, teamAdmitInitialWorkV2: teamAdmitInitialWorkV2, openCreatedSession: openCreatedSession, onCreated: closeOverlay, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
+			    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: t('entry.label'), delayMs: 500, disabled: wide, children: _jsxs("button", { type: "button", className: wide ? styles.wide : styles.rail, "aria-label": t('entry.label'), "data-new-team-entry": true, onClick: openOverlay, children: [_jsx(IconUserOutline16, { size: wide ? 14 : 18 }), wide && _jsx("span", { className: styles.label, children: t('entry.label') })] }) }), overlayOpen && (_jsx("div", { className: styles.backdrop, "data-new-team-overlay": true, onClick: closeOverlay, children: _jsx("div", { className: styles.dialog, role: "dialog", "aria-modal": "true", "aria-label": t('entry.label'), onClick: event => event.stopPropagation(), children: _jsx(TeamCreationPanel, { listCatalog: listCatalog, getCatalog: getCatalog, probeCompatibility: probeCompatibility, teamCreateV2: teamCreateV2, teamAdmitInitialWorkV2: teamAdmitInitialWorkV2, openCreatedSession: openCreatedSession, onCreated: closeOverlay, pullProjection: pullProjection, listAgentPresets: listAgentPresets, workspaces: workspaces, draft: draft, onDraftChange: setDraft, onCancel: closeOverlay, t: t }) }) }))] }));
 			}
 			Object.defineProperty(exports, "NewTeamEntry", { enumerable: true, get: () => NewTeamEntry });
 			//# sourceMappingURL=NewTeamEntry.js.map
@@ -418,7 +418,7 @@ var __dshFactory = (require) => {
 			 * @returns the view body.
 			 */
 			function TeamView(props) {
-			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, useWorkspaces, t, } = props;
+			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, useWorkspaces, t, } = props;
 			    const [creationOpen, setCreationOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority) —
 			    // held here so the panel can open and close in the zero state without
@@ -512,7 +512,7 @@ var __dshFactory = (require) => {
 			                })
 			                : null;
 			        return (_jsx("div", { className: styles.zero, "data-team-zero": true, children: _jsxs("div", { className: styles.zeroInner, children: [_jsx("p", { className: styles.zeroText, children: t('view.zero') }), legacyNote !== null && (_jsx("p", { className: styles.legacyNote, "data-legacy-note": true, children: legacyNote })), creationOpen
-			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreateV2: creation.teamCreateV2, teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2, openCreatedSession: creation.openCreatedSession, onCreated: () => setCreationOpen(false), listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
+			                        ? _jsx(TeamCreationPanel, { listCatalog: creation.listCatalog, getCatalog: creation.getCatalog, probeCompatibility: creation.probeCompatibility, teamCreateV2: creation.teamCreateV2, teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2, openCreatedSession: creation.openCreatedSession, onCreated: () => setCreationOpen(false), pullProjection: pullProjection, listAgentPresets: creation.listAgentPresets, workspaces: workspaceOptions, handoffSource: handoffSource, handoffFace: handoff, draft: intentDraft, onDraftChange: setIntentDraft, onCancel: () => setCreationOpen(false), t: t })
 			                        : (_jsx("button", { type: "button", className: styles.zeroStart, "data-intent-start-here": true, onClick: () => setCreationOpen(true), children: t('intent.startHere') }))] }) }));
 			    }
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
@@ -775,6 +775,13 @@ var __dshFactory = (require) => {
 			    // dock entry's own session context through the ordinary renderer path.
 			    const openTeamTab = () => { };
 			    // (11) The post-success projection pull (the final-state authority).
+			    // D4-A1 (Team D1-D6 repair v2): every EXISTING Team UI mutation callback
+			    // goes through this pull after success — the S5-B member commands, the
+			    // S5-C governance commands, and the two creation flows (the standard
+			    // two-stage `team.create` v2 flow and `handoff.create`), which target
+			    // the NEW team's id (invariant 9: the minted Root id IS the team id).
+			    // Agent/tool-originated mutations are OUT of this pull's coverage (they
+			    // bypass every React callback) — that is the D4-A2 design item.
 			    const pullProjection = (teamSessionId) => projectionStoreOf(teamSessionId).pull(teamSessionId);
 			    // (12) The S5-A New Team creation face (frozen Remote wrappers + the
 			    // native seam members; the seam-6 preset mapping filters the `broken`
@@ -873,6 +880,9 @@ var __dshFactory = (require) => {
 			    const viewInject = (sessionId) => ({
 			        hooks: { projectionMirror: mirrorStore, teamLedgers: ledgerStatesStore },
 			        ensureProjection,
+			        // D4-A1: the zero-state creation panel's post-success refresh (the
+			        // same generation-safe pull; targets the NEW team's id).
+			        pullProjection,
 			        refreshTeamLedger: refreshTeamLedgerFor(sessionId),
 			        openSession,
 			        creation,
@@ -931,6 +941,9 @@ var __dshFactory = (require) => {
 			            teamCreateV2: creation.teamCreateV2,
 			            teamAdmitInitialWorkV2: creation.teamAdmitInitialWorkV2,
 			            openCreatedSession: creation.openCreatedSession,
+			            // D4-A1: the overlay create-success refresh (the same
+			            // generation-safe pull; targets the NEW team's id).
+			            pullProjection,
 			            listAgentPresets: creation.listAgentPresets,
 			            currentSessionId: () => ctx.sessions.list.getSnapshot().current ?? null,
 			        }),
@@ -1384,7 +1397,7 @@ var __dshFactory = (require) => {
 			}
 			/** The New Team creation panel (UI §3–§9). */
 			function TeamCreationPanel(props) {
-			    const { listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2, openCreatedSession, listAgentPresets, workspaces, handoffSource, handoffFace, draft, onDraftChange, onCancel, t, onCreated, } = props;
+			    const { listCatalog, getCatalog, probeCompatibility, teamCreateV2, teamAdmitInitialWorkV2, openCreatedSession, listAgentPresets, workspaces, handoffSource, handoffFace, draft, onDraftChange, onCancel, t, onCreated, pullProjection, } = props;
 			    // -- catalog + per-row details (the §6 picker display names) -------------
 			    const [catalog, setCatalog] = useState(undefined);
 			    const [catalogDetails, setCatalogDetails] = useState({});
@@ -1710,6 +1723,12 @@ var __dshFactory = (require) => {
 			                admitInitialWorkV2: teamAdmitInitialWorkV2,
 			            }, snap, resumeAt);
 			            if (outcome.ok) {
+			                // D4-A1: terminal success — refresh the NEW team's projection via
+			                // the existing pull (generation-safe; invariant 9: the minted Root
+			                // id IS the team id) BEFORE the owning surface closes, so the
+			                // UI-initiated mutation updates without F5. Fire-and-forget: the
+			                // store settles failures into its own state, never rejects.
+			                void pullProjection?.(snap.rootSessionId);
 			                // Terminal success: the owning surface may close (the entry
 			                // overlay closes only AFTER the deferred initial work settles —
 			                // plan §7 minimum UI constraint).
@@ -1725,9 +1744,11 @@ var __dshFactory = (require) => {
 			    // -- the handoff create flow (P9-T8 S5-D, Gate P9-G5) ---------------------
 			    // The frozen `handoff.create` is a command flow: NO optimistic authority
 			    // patch (the panel renders the stored state / typed error verbatim), the
-			    // typed Remote result preserved (G5(b)), the new team's projection
-			    // cold-pulled exactly once — by the NEW session's TeamView after
-			    // `openCreatedSession(rootSessionId)` (G5(c); D-3: the host-created
+			    // typed Remote result preserved (G5(b)). On a settled `completed` /
+			    // `completed-without-handoff` state the NEW team's projection is pulled
+			    // via the existing `pullProjection` right after the Root opens (D4-A1:
+			    // UI-initiated mutation, no F5) and the new session's TeamView
+			    // cold-pull remains the mirror's backstop (G5(c); D-3: the host-created
 			    // session, one host-list re-pull covers the stream lag) — and the
 			    // rendered final state comes from that Projection (G5(d)).
 			    /** The display failure: the typed response failure, else the stored
@@ -1769,6 +1790,12 @@ var __dshFactory = (require) => {
 			                // covers the stream lag); the new session's TeamView
 			                // cold-pulls the projection.
 			                await openCreatedSession(state.rootSessionId);
+			                // D4-A1: the handoff command succeeded — refresh the NEW team's
+			                // projection via the existing pull (generation-safe; fire-and-
+			                // forget, the store never rejects) so the UI-initiated mutation
+			                // updates without F5. Non-terminal states (awaiting-decision /
+			                // creation-failed / canceled) never reach this line.
+			                void pullProjection?.(state.rootSessionId);
 			            }
 			        })
 			            .catch(error => {
