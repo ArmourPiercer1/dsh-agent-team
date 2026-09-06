@@ -490,8 +490,8 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 | G1 | 20m | 2026-09-07T01:16:00+08:00（记录于 commit `700f510`） | PASS（B1/B2/B3/B4/C1/C2/D1–D4 全部 GO；remote v3 CONTRACT_CHANGE_REQUEST 按用户裁决批准，Wave D 单一 writer） | `SESSION_ROUTER_LOG.md` |
 | B1–B4 | 120m累计/并行 | 2026-09-07T01:37:00+08:00（worker 完成；集成 head `d10d1ae`） | PASS ×4（B1 `f9d6c89` / B2 `11149ae` / B3 `504a0b3` / B4 `4738b73`；集成修复 `b6dfbd0`+`e4a57eb`） | `evidence/team-d1-d6-repair-v2/B1..B4/` |
 | G2 | 30m | 2026-09-07T01:58:00+08:00（round 2 裁决齐） | PASS（round 1：2×补充内容+1×通过 → 卫生补充 `e4a57eb` → round 2 三名全新盲审全部“通过” `d10d1ae`；风险台账 5 项已记） | `evidence/team-d1-d6-repair-v2/G2/` |
-| C1–C2 D2 | 150m累计/contract串行 | 待执行 | — | `evidence/team-d1-d6-repair/C*/` |
-| G3 | 40m | 待执行 | — | `evidence/team-d1-d6-repair/G3/` |
+| C1–C2 D2 | 150m累计/contract串行 | 2026-09-07T02:31:00+08:00（C2 worker 完成；集成 head `805a510`） | PASS ×2（C1 契约冻结 `497d737`；C2 glue/effect 集成 `805a510`；16 TDD pins；全量 1203/1203） | `evidence/team-d1-d6-repair-v2/C1..C2/` |
+| G3 | 40m | 2026-09-07T03:41:00+08:00（round 3 裁决齐） | PASS（round 1：2×通过+1×裁决传输丢失 → 替补位 2b = 补充内容（effects dist 未随 C2 提交）→ 补充 `5795d50`；round 2：1×补充（日志行尾空白，owner 日志 here-string 反引号转义自伤）+1×传输丢失+1×补充（client composition-shim bundle 陈旧，B3 未重建安装面）→ 补充 `3397f1b`+日志行修复；round 3：三名全新盲审全部“通过” `6a6db5c`，含全链 fresh-build artifact gate（1028 文件 OK）；风险台账累计已记） | `evidence/team-d1-d6-repair-v2/G3/` |
 | D1–D4 D6 Team UI | 180m累计 | 待执行 | — | `evidence/team-d1-d6-repair/D*/` |
 | G4 | 45m | 待执行 | — | `evidence/team-d1-d6-repair/G4/` |
 | E1 D4-A2 design | 30m | 待执行 | — | `evidence/team-d1-d6-repair/E1/` |
@@ -503,7 +503,7 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 
 ## 18. 当前状态
 
-本计划已经完成决策澄清，尚未开始 v2 执行。下一步应从 P0-v2 开始，不得直接跳到 D6 实现。
+v2 执行进度：P0-v2 PASS → A1–A4 PASS → G1 PASS → B1–B4 PASS → G2 PASS → C1–C2 PASS → G3 PASS（round 3 三名全新盲审全部“通过”，head `6a6db5c`）。下一步：Wave D（D1–D4，D6 Team UI 专用模式与重启，单一 writer，remote v3 契约变更已经 G1 用户批准），随后 G4。
 
 **计划确认时间**：`2026-09-07T00:48:34.9956605+08:00`  
-**计划最后更新时间**：`2026-09-07T00:48:34.9956605+08:00`
+**计划最后更新时间**：`2026-09-07T03:45:00+08:00`
