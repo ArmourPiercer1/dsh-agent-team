@@ -222,12 +222,27 @@ export interface TeamViewInjected {
    */
   openTeamMode?: (rootSessionId: string) => Promise<TeamOpenModeOutcome>
   /**
-   * D2 (D6): the per-root client-local open-mode read — `'team'` when this
-   * client completed an openTeamMode for the root and still sits on it
-   * (reset on every session switch away); `null` otherwise. The mode
-   * badge source. Absent → no badge.
+   * D3 (Team D1-D6 repair v2, D6): the EXPLICIT ordinary-mode fallback
+   * entry ("以普通模式打开", v2 plan §1.1.3) on the SAME rows as the
+   * Team-mode entry: the pure native session open (Seam 3
+   * `ctx.sessions.open`) — NO team-remote call, NO ensure-live step. The
+   * entry's promise is "no Team ensure is performed / team_* tools are
+   * NOT guaranteed" — it is NOT a tool-removal operation (a root whose
+   * agent is already live with the Team setup is adopted as-is; the mode
+   * badge shows which entry was used, so the UI never claims a removal).
+   * Absent → the D2 surface (no ordinary entry on the picker rows or the
+   * leader row).
    */
-  teamOpenMode?: (rootSessionId: string) => 'team' | null
+  openOrdinaryMode?: (rootSessionId: string) => void
+  /**
+   * D2/D3 (D6): the per-root client-local open-mode read — WHICH explicit
+   * entry this client used while it still sits on the root: `'team'` for
+   * openTeamMode, `'ordinary'` for the explicit ordinary entry (D3) —
+   * reset on every session switch away; `null` otherwise. The mode badge
+   * source (v2 plan §1.1.5: the UI shows which entry was used).
+   * Absent → no badge.
+   */
+  teamOpenMode?: (rootSessionId: string) => 'team' | 'ordinary' | null
 }
 
 /** Full team-view props: the view-slot runtime share, injected face, and locale seat. */
@@ -255,7 +270,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     sessionId, useProjectionMirror, useTeamLedgers,
     ensureProjection, pullProjection, refreshTeamLedger, openSession,
     creation, memberCommands, governance, legacyInspect, handoff, roots,
-    openTeamMode, teamOpenMode,
+    openTeamMode, openOrdinaryMode, teamOpenMode,
     useWorkspaces, t,
   } = props
   const [creationOpen, setCreationOpen] = useState(false)
@@ -465,7 +480,27 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
                       </button>
                     )
                     : null}
-                  {rowError !== undefined
+                   {/* D3 (D6): the explicit ordinary-mode fallback entry — the
+                     SAME rows as the Team-mode entry (v2 plan §1.1.3): the face-only
+                     trigger (the pure native open lives in the mount; no team-remote
+                     call, no ensure-live step). ABSENT without the face (the D2 surface
+                     is unchanged). The title carries the semantic promise: no Team ensure
+                     is performed / team_* tools are NOT guaranteed (never a tool-removal
+                     claim). */}
+                   {openOrdinaryMode !== undefined
+                     ? (
+                       <button
+                         type="button"
+                         className={styles.rootRowOpen}
+                         data-team-ordinary-open-root={row.rootSessionId}
+                         title={t('view.members.openOrdinaryMode.hint')}
+                         onClick={() => { openOrdinaryMode(row.rootSessionId) }}
+                       >
+                         {t('view.members.openOrdinaryMode')}
+                       </button>
+                     )
+                     : null}
+                   {rowError !== undefined
                     ? (
                       <div className={styles.legacyNote} data-team-mode-open-error>
                         {t('view.members.openMode.error', {
@@ -626,6 +661,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           onSelectSession={openSession}
           memberCommands={memberCommands}
           openTeamMode={openTeamMode}
+          openOrdinaryMode={openOrdinaryMode}
           teamOpenMode={teamOpenMode}
           workspaces={workspaceOptions}
           t={t}

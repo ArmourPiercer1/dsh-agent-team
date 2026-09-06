@@ -1,0 +1,163 @@
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D3/packages/client
+
+ ❯ test/d3-open-ordinary-mode.test.ts (0 test)
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx (11 tests | 7 failed) 274ms
+     × renders the explicit ordinary entry on each persisted-roots row (zh) and triggers openOrdinaryMode with the row root id 71ms
+     × the ordinary entry copy carries the semantic promise (zh) and claims NO tool removal 58ms
+     × renders the ordinary entry on the root/leader row (zh) and triggers openOrdinaryMode with the team session id 10ms
+     × renders the mode badge for the entry USED (zh): ordinary → 普通模式 3ms
+     × renders the mode badge for the D2 team entry (regression): team → Team 模式 4ms
+     ✓ renders NO badge when teamOpenMode reads null (the root was not explicitly opened here) 2ms
+     × renders the en entry copy on the picker row + leader row and the en badge for the ordinary entry 2ms
+     × renders the en picker-row entry with the en semantic promise (the en zero state carries the picker list) 55ms
+     ✓ WITHOUT the openOrdinaryMode face the picker rows carry ONLY the D2 Team-mode entry 62ms
+     ✓ WITHOUT the openOrdinaryMode face the leader row stays the D2 surface (no ordinary entry, no badge) 3ms
+     ✓ WITHOUT either open face there is no entry and no badge (the D1 surface) 2ms
+pnpm.exe : 
+At D:\.pnpm-store\v11\links\@pnpm\exe\11.7.0\a254132c028a4f0368fb9ee996a0169a530281496d7f26c4b2de752a
+7553ec1c\bin\pnpm.ps1:14 char:3
++   & "$basedir/../node_modules/@pnpm/exe/pnpm.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/d3-open-ordinary-mode.test.ts [ test/d3-open-ordinary-mode.test.ts ]
+Error: D3 mount test: openOrdinaryMode face missing
+ ❯ test/d3-open-ordinary-mode.test.ts:325:45
+    323|   const { face } = await mountedView(fixture)
+    324|   const openOrdinaryMode = face.openOrdinaryMode
+    325|   if (openOrdinaryMode === undefined) throw new Error('D3 mount test: …
+       |                                             ^
+    326|   const teamOpenMode = face.teamOpenMode
+    327|   if (teamOpenMode === undefined) throw new Error('D3 mount test: team…
+ ❯ test/d3-open-ordinary-mode.test.ts:321:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry (zero-state
+ picker rows) > renders the explicit ordinary entry on each persisted-roots row (zh) and triggers ope
+nOrdinaryMode with the row root id
+AssertionError: expected null not to be null
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:172:23
+    170|     expect(teamEntry?.textContent).toBe('以 Team 模式打开 / 回到 Leader')
+    171|     const entry = row?.querySelector<HTMLButtonElement>('[data-team-or…
+    172|     expect(entry).not.toBeNull()
+       |                       ^
+    173|     expect(entry?.textContent).toBe('以普通模式打开')
+    174|     fireEvent.click(entry as unknown as HTMLElement)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry (zero-state
+ picker rows) > the ordinary entry copy carries the semantic promise (zh) and claims NO tool removal
+Error: the picker-row ordinary entry did not render
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:196:30
+    194|     const entry = view.container
+    195|       .querySelector('[data-team-root-row][data-root-session-id="root-…
+    196|     if (entry == null) throw new Error('the picker-row ordinary entry …
+       |                              ^
+    197|     // the promise: no Team ensure is performed / team_* tools NOT gua…
+    198|     expect(entry.title).toBe('不执行 Team ensure，不保证 team_* 工具')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry (the member
+s section leader row) > renders the ordinary entry on the root/leader row (zh) and triggers openOrdin
+aryMode with the team session id
+AssertionError: expected null not to be null
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:230:23
+    228|     expect(leaderGroup?.querySelector('[data-team-mode-open]')?.textCo…
+    229|     const entry = leaderGroup?.querySelector<HTMLButtonElement>('[data…
+    230|     expect(entry).not.toBeNull()
+       |                       ^
+    231|     expect(entry?.textContent).toBe('以普通模式打开')
+    232|     expect(entry?.title).toBe('不执行 Team ensure，不保证 team_* 工具')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry (the member
+s section leader row) > renders the mode badge for the entry USED (zh): ordinary → 普通模式
+AssertionError: expected null not to be null
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:259:23
+    257|     })
+    258|     const badge = view.container.querySelector('[data-team-mode-badge]…
+    259|     expect(badge).not.toBeNull()
+       |                       ^
+    260|     expect(badge?.textContent).toBe('普通模式')
+    261|     expect(badge?.getAttribute('data-open-mode')).toBe('ordinary')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry (the member
+s section leader row) > renders the mode badge for the D2 team entry (regression): team → Team 模式
+AssertionError: expected null to be 'team' // Object.is equality
+
+- Expected:
+"team"
+
++ Received:
+null
+
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:284:51
+    282|     expect(badge).not.toBeNull()
+    283|     expect(badge?.textContent).toBe('Team 模式')
+    284|     expect(badge?.getAttribute('data-open-mode')).toBe('team')
+       |                                                   ^
+    285|   })
+    286|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry copy (en) >
+ renders the en entry copy on the picker row + leader row and the en badge for the ordinary entry
+AssertionError: expected undefined to be 'Open in ordinary mode' // Object.is equality
+
+- Expected:
+"Open in ordinary mode"
+
++ Received:
+undefined
+
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:324:38
+    322|       ?.closest('[data-member-group]')
+    323|     const leaderEntry = leaderGroup?.querySelector<HTMLButtonElement>(…
+    324|     expect(leaderEntry?.textContent).toBe('Open in ordinary mode')
+       |                                      ^
+    325|     expect(leaderEntry?.title).toBe('No Team ensure is performed; team…
+    326|     // the copy must not claim tool removal (en)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  test/d3-ordinary-mode-entry.client.spec.tsx > TeamView: the D3 ordinary-mode entry copy (en) >
+ renders the en picker-row entry with the en semantic promise (the en zero state carries the picker l
+ist)
+AssertionError: expected undefined to be 'Open in ordinary mode' // Object.is equality
+
+- Expected:
+"Open in ordinary mode"
+
++ Received:
+undefined
+
+ ❯ test/d3-ordinary-mode-entry.client.spec.tsx:346:32
+    344|     const entry = view.container
+    345|       .querySelector('[data-team-root-row][data-root-session-id="root-…
+    346|     expect(entry?.textContent).toBe('Open in ordinary mode')
+       |                                ^
+    347|     expect(entry?.title).toBe('No Team ensure is performed; team_* too…
+    348|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 4 passed (11)
+   Start at  04:50:48
+   Duration  2.47s (transform 912ms, setup 0ms, import 1.54s, tests 274ms, environment 540ms)
+

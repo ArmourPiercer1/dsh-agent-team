@@ -35,7 +35,10 @@ export type TeamKey =
   | 'view.members.action.empty'
   | 'view.members.waiting'
   | 'view.members.openTeamMode'
+  | 'view.members.openOrdinaryMode'
+  | 'view.members.openOrdinaryMode.hint'
   | 'view.members.openMode.team'
+  | 'view.members.openMode.ordinary'
   | 'view.members.openMode.error'
   | 'view.activity.title'
   | 'view.activity.empty'
@@ -254,7 +257,10 @@ export const zh: Record<TeamKey, string> = {
   'view.members.action.empty': '暂无动作',
   'view.members.waiting': '{count} 项待裁决',
   'view.members.openTeamMode': '以 Team 模式打开 / 回到 Leader',
+  'view.members.openOrdinaryMode': '以普通模式打开',
+  'view.members.openOrdinaryMode.hint': '不执行 Team ensure，不保证 team_* 工具',
   'view.members.openMode.team': 'Team 模式',
+  'view.members.openMode.ordinary': '普通模式',
   'view.members.openMode.error': '以 Team 模式打开失败：{code}: {message}',
   'view.activity.title': '活动与进度',
   'view.activity.empty': '暂无活动进度',
@@ -473,7 +479,10 @@ export const en: Record<TeamKey, string> = {
   'view.members.action.empty': 'No action yet',
   'view.members.waiting': '{count} pending',
   'view.members.openTeamMode': 'Open in Team mode / back to Leader',
+  'view.members.openOrdinaryMode': 'Open in ordinary mode',
+  'view.members.openOrdinaryMode.hint': 'No Team ensure is performed; team_* tools are not guaranteed',
   'view.members.openMode.team': 'Team mode',
+  'view.members.openMode.ordinary': 'Ordinary mode',
   'view.members.openMode.error': 'Failed to open in Team mode: {code}: {message}',
   'view.activity.title': 'Activity & Progress',
   'view.activity.empty': 'No activity progress yet',

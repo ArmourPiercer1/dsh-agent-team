@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D3/packages/client
+
+ ✓ test/d3-open-ordinary-mode.test.ts (11 tests) 3ms
+ ✓ test/d3-ordinary-mode-entry.client.spec.tsx (11 tests) 275ms
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  04:58:45
+   Duration  2.48s (transform 922ms, setup 0ms, import 1.68s, tests 278ms, environment 540ms)
+

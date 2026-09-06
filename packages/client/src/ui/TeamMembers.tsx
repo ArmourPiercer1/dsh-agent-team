@@ -95,11 +95,23 @@ export interface TeamMembersProps {
    */
   openTeamMode?: (rootSessionId: string) => Promise<TeamOpenModeOutcome>
   /**
-   * D2 (D6): the per-root client-local open-mode read (`'team'` when this
-   * client opened the root in Team mode and still sits on it). The mode
-   * badge source; absent → no badge.
+   * D3 (Team D1-D6 repair v2, D6): the EXPLICIT ordinary-mode fallback
+   * entry ("以普通模式打开", v2 plan §1.1.3) — the pure native session
+   * open (no team-remote call, no ensure-live step). The entry's promise
+   * is "no Team ensure is performed / team_* tools are NOT guaranteed" —
+   * never a tool-removal claim (a live Team agent is adopted as-is).
+   * Present ONLY on the root/leader row. Absent → the leader row stays
+   * the D2 surface (no ordinary entry).
    */
-  teamOpenMode?: (rootSessionId: string) => 'team' | null
+  openOrdinaryMode?: (rootSessionId: string) => void
+  /**
+   * D2/D3 (D6): the per-root client-local open-mode read — WHICH explicit
+   * entry this client used while the session selection is still on the
+   * root: 'team' for openTeamMode, 'ordinary' for the ordinary entry
+   * (D3); `null` otherwise (reset on every session switch away). The
+   * mode badge source. Absent → no badge.
+   */
+  teamOpenMode?: (rootSessionId: string) => 'team' | 'ordinary' | null
   /** The workspace choices for the create dialog (absent/empty → hidden field). */
   workspaces?: readonly TeamWorkspaceOption[]
   /** The team dictionary translate seat. */
@@ -298,8 +310,19 @@ interface MemberGroupProps {
   readonly teamModePending?: boolean
   /** D2 (D6): the last typed open-in-Team-mode failure (the group note). */
   readonly teamModeError?: { readonly code: string; readonly message: string } | undefined
-  /** D2 (D6): whether the mode badge renders (teamOpenMode reads 'team'). */
-  readonly teamModeBadge?: boolean
+  /**
+   * D3 (D6): the explicit ordinary-mode fallback trigger — present ONLY
+   * on the leader group row (the pure native open; no team-remote call,
+   * no ensure-live step; the promise is "no Team ensure is performed /
+   * team_* tools are NOT guaranteed", never a tool-removal claim).
+   * Absent → the leader row stays the D2 surface (no ordinary entry).
+   */
+  readonly openOrdinaryMode?: (() => void) | undefined
+  /**
+   * D2/D3 (D6): the current open mode of the root — which explicit entry
+   * this client used ('team' / 'ordinary') — or null (no badge).
+   */
+  readonly openMode?: 'team' | 'ordinary' | null
   readonly t: PropsLocale<'team'>['t']
 }
 
@@ -308,7 +331,7 @@ function MemberGroup({
   group, current, currentSessionId, onSelectSession, onSelectLeader,
   onCommand, pendingByInstance, errorsByInstance, onCreateInstance,
   createPending, createError, openTeamMode, teamModePending, teamModeError,
-  teamModeBadge, t,
+  openOrdinaryMode, openMode, t,
 }: MemberGroupProps): React.JSX.Element {
   const name = group.name ?? t('member.leader')
   const label = `${name} · ${t('view.members.active', { count: group.activeCount })}`
@@ -345,35 +368,64 @@ function MemberGroup({
           >
             <span className={styles.groupName} data-member-group-name>{label}</span>
           </button>
-          {/* D2 (D6): the dedicated open-in-Team-mode entry on the root/
-              leader row (the explicit "以 Team 模式打开 / 回到 Leader"
-              entry — the face-only trigger; the AWAITED two-phase
-              sequence lives in the mount). ABSENT without the face (the
-              D1 surface is unchanged). The current open-mode badge
-              renders beside it while this client sits on the root it
-              opened in Team mode. */}
-          {openTeamMode !== undefined
-            ? (
-              <div className={styles.teamModeRow} data-team-mode-row>
-                <button
-                  type="button"
-                  className={styles.teamModeOpen}
-                  data-team-mode-open
-                  disabled={teamModePending === true || undefined}
-                  onClick={openTeamMode}
-                >
-                  {t('view.members.openTeamMode')}
-                </button>
-                {teamModeBadge === true
-                  ? (
-                    <span className={styles.teamModeBadge} data-team-mode-badge>
-                      {t('view.members.openMode.team')}
-                    </span>
-                  )
-                  : null}
-              </div>
-            )
-            : null}
+           {/* D2 (D6): the dedicated open-in-Team-mode entry on the root/
+               leader row (the explicit "以 Team 模式打开 / 回到 Leader"
+               entry — the face-only trigger; the AWAITED two-phase
+               sequence lives in the mount). ABSENT without the face (the
+               D1 surface is unchanged). D3 (D6): the explicit
+               ordinary-mode fallback entry ("以普通模式打开") shares the
+               SAME row — the pure native open (no team-remote call, no
+               ensure-live step); its title carries the semantic promise
+               (no Team ensure is performed / team_* tools are NOT
+               guaranteed — never a tool-removal claim). The current
+               open-mode badge renders beside the entries while this
+               client sits on the root: 'team' for the Team entry,
+               'ordinary' for the ordinary entry (v2 plan §1.1.5). */}
+           {(openTeamMode !== undefined || openOrdinaryMode !== undefined)
+             ? (
+               <div className={styles.teamModeRow} data-team-mode-row>
+                 {openTeamMode !== undefined
+                   ? (
+                     <button
+                       type="button"
+                       className={styles.teamModeOpen}
+                       data-team-mode-open
+                       disabled={teamModePending === true || undefined}
+                       onClick={openTeamMode}
+                     >
+                       {t('view.members.openTeamMode')}
+                     </button>
+                   )
+                   : null}
+                 {openOrdinaryMode !== undefined
+                   ? (
+                     <button
+                       type="button"
+                       className={styles.teamModeOpen}
+                       data-team-ordinary-open
+                       title={t('view.members.openOrdinaryMode.hint')}
+                       onClick={openOrdinaryMode}
+                     >
+                       {t('view.members.openOrdinaryMode')}
+                     </button>
+                   )
+                   : null}
+                 {(openMode === 'team' || openMode === 'ordinary')
+                   ? (
+                     <span
+                       className={styles.teamModeBadge}
+                       data-team-mode-badge
+                       data-open-mode={openMode}
+                     >
+                       {openMode === 'team'
+                         ? t('view.members.openMode.team')
+                         : t('view.members.openMode.ordinary')}
+                     </span>
+                   )
+                   : null}
+               </div>
+             )
+             : null}
           {teamModeError !== undefined
             ? (
               <div className={styles.commandError} data-member-command-error data-team-mode-error>
@@ -431,7 +483,7 @@ function MemberGroup({
  */
 export function TeamMembers({
   snapshot, ledger, currentSessionId, onSelectSession,
-  memberCommands, openTeamMode, teamOpenMode, workspaces, t,
+  memberCommands, openTeamMode, openOrdinaryMode, teamOpenMode, workspaces, t,
 }: TeamMembersProps): React.JSX.Element {
   const model = deriveTeamMembers(snapshot, ledger)
   const [open, setOpen] = useState<OpenMemberDialog | null>(null)
@@ -606,7 +658,8 @@ export function TeamMembers({
         openTeamMode={openTeamMode === undefined ? undefined : runOpenTeamMode}
         teamModePending={teamModePending}
         teamModeError={teamModeError === null ? undefined : teamModeError}
-        teamModeBadge={teamOpenMode?.(teamSessionId) === 'team'}
+        openOrdinaryMode={openOrdinaryMode === undefined ? undefined : () => { openOrdinaryMode(teamSessionId) }}
+        openMode={teamOpenMode?.(teamSessionId) ?? null}
         t={t}
       />
       {model.groups.map(group => (

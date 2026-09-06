@@ -377,13 +377,16 @@ export function applyTeamMount(
   // a generation advance means the durable ledger may hold new entries).
   const ledgerRefreshGeneration = new Map<string, number>()
   // D2 (Team D1-D6 repair v2, D6) — the per-root CLIENT-LOCAL open-mode
-  // state: `'team'` when THIS client completed an openTeamMode for the
-  // root and the session selection is still on that root (reset on every
-  // session switch away — see the list effect below). The fact is
-  // deliberately NOT remote: the host's `team.ensureRootLive` is the
-  // guarantee, the mode mark is the client's own knowledge (no remote
+  // state: WHICH explicit entry this client last used to sit the current
+  // session on the root — `'team'` when the openTeamMode two-phase
+  // sequence completed, `'ordinary'` when the explicit ordinary entry
+  // (D3, the pure native open) was used — for as long as the session
+  // selection is still on that root (reset on every session switch away —
+  // see the list effect below). The fact is deliberately NOT remote: the
+  // host's `team.ensureRootLive` is the Team-mode guarantee, the mode mark
+  // is the client's own knowledge of which entry was used (no remote
   // field, no push/event/polling).
-  const openModeByRoot = new Map<string, 'team'>()
+  const openModeByRoot = new Map<string, 'team' | 'ordinary'>()
   ctx.effect(
     () => () => {
       for (const dispose of storeDisposers.splice(0).reverse()) dispose()
@@ -537,6 +540,26 @@ export function applyTeamMount(
     ctx.sessions.open(rootSessionId)
     openModeByRoot.set(rootSessionId, 'team')
     return { ok: true }
+  }
+
+  // (9.0c) D3 (Team D1-D6 repair v2, D6) — the EXPLICIT ordinary-mode
+  // fallback entry ("以普通模式打开", v2 plan §1.1.3): the EXISTING
+  // `openSession` verbatim (Seam 3, the pure `ctx.sessions.open`) — NO
+  // team-remote call (no `team.ensureRootLive`, no other `team.*`
+  // method), NO `session/create`-with-preset (A3 Q1 caveat: that path is
+  // rejected on a live Team root), NO ensure-live step, NO list refresh.
+  // The entry is a promise of "no Team ensure is performed / team_* tools
+  // are NOT guaranteed" — NOT a tool-removal operation (A3 Q1 caveat 2:
+  // a root whose agent is ALREADY live with the Team setup is adopted
+  // as-is; the `team_*` tools remain registered — the mode badge shows
+  // which entry was used, so the UI never claims a removal). Open first,
+  // mark after: the session switch (and the reset effect it drives)
+  // settles before the mode fact is written, and a failed open (unknown
+  // id — the seam's own throw) leaves the prior mark intact (a failed
+  // switch is no switch).
+  const openOrdinaryMode = (rootSessionId: string): void => {
+    openSession(rootSessionId)
+    openModeByRoot.set(rootSessionId, 'ordinary')
   }
 
   // (9.0b) D2 (D6) — the open-mode reset: when the session-list current
@@ -714,10 +737,16 @@ export function applyTeamMount(
     refreshTeamLedger: refreshTeamLedgerFor(sessionId),
     openSession,
     // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
-    // (the AWAITED two-phase sequence) + the per-root client-local
-    // open-mode read face (the 'team' badge source; 'team' only while
-    // this client sits on a root it opened in Team mode).
+    // (the AWAITED two-phase sequence).
     openTeamMode,
+    // D3 (Team D1-D6 repair v2, D6): the explicit ordinary-mode fallback
+    // entry (the pure native open — no team-remote call, no ensure-live
+    // step; its promise is "no Team ensure is performed / team_* tools
+    // are NOT guaranteed", never a tool-removal claim).
+    openOrdinaryMode,
+    // D2/D3: the per-root client-local open-mode read face — the badge
+    // source showing WHICH explicit entry was used ('team' / 'ordinary')
+    // while this client sits on the root; null otherwise.
     teamOpenMode: (rootSessionId) => openModeByRoot.get(rootSessionId) ?? null,
     creation,
     memberCommands,

@@ -461,7 +461,7 @@ var __dshFactory = (require) => {
 			 * @returns the view body.
 			 */
 			function TeamView(props) {
-			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, openTeamMode, teamOpenMode, useWorkspaces, t, } = props;
+			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, openTeamMode, openOrdinaryMode, teamOpenMode, useWorkspaces, t, } = props;
 			    const [creationOpen, setCreationOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority) —
 			    // held here so the panel can open and close in the zero state without
@@ -618,6 +618,8 @@ var __dshFactory = (require) => {
 			                        const rowError = rootOpenTeamErrors[row.rootSessionId];
 			                        return (_jsxs("li", { className: styles.rootRow, "data-team-root-row": true, "data-root-session-id": row.rootSessionId, children: [_jsx("span", { className: styles.rootId, "data-root-id": true, children: row.rootSessionId }), _jsx("span", { "data-root-blueprint": true, children: `${row.blueprintId}@${row.revision}` }), _jsx("span", { "data-root-workspace": true, children: row.defaultWorkspace ?? t('view.roots.noWorkspace') }), _jsx("span", { "data-root-members": true, children: t('view.roots.members', { count: String(row.memberCount) }) }), _jsx("span", { "data-root-created": true, title: row.createdAt, children: row.createdAt }), openTeamMode !== undefined
 			                                    ? (_jsx("button", { type: "button", className: styles.rootRowOpen, "data-team-mode-open-root": row.rootSessionId, disabled: rootOpenTeamPending[row.rootSessionId] === true || undefined, onClick: () => { runPickerOpenTeamMode(row.rootSessionId); }, children: t('view.members.openTeamMode') }))
+			                                    : null, openOrdinaryMode !== undefined
+			                                    ? (_jsx("button", { type: "button", className: styles.rootRowOpen, "data-team-ordinary-open-root": row.rootSessionId, title: t('view.members.openOrdinaryMode.hint'), onClick: () => { openOrdinaryMode(row.rootSessionId); }, children: t('view.members.openOrdinaryMode') }))
 			                                    : null, rowError !== undefined
 			                                    ? (_jsx("div", { className: styles.legacyNote, "data-team-mode-open-error": true, children: t('view.members.openMode.error', {
 			                                            code: rowError.code,
@@ -662,7 +664,7 @@ var __dshFactory = (require) => {
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
 			        ? resolution.perspective.memberInstanceId
 			        : undefined;
-			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, t: t })] })] }));
+			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, t: t })] })] }));
 			}
 			Object.defineProperty(exports, "TeamView", { enumerable: true, get: () => TeamView });
 			//# sourceMappingURL=TeamView.js.map
@@ -770,11 +772,14 @@ var __dshFactory = (require) => {
 			    // a generation advance means the durable ledger may hold new entries).
 			    const ledgerRefreshGeneration = new Map();
 			    // D2 (Team D1-D6 repair v2, D6) — the per-root CLIENT-LOCAL open-mode
-			    // state: `'team'` when THIS client completed an openTeamMode for the
-			    // root and the session selection is still on that root (reset on every
-			    // session switch away — see the list effect below). The fact is
-			    // deliberately NOT remote: the host's `team.ensureRootLive` is the
-			    // guarantee, the mode mark is the client's own knowledge (no remote
+			    // state: WHICH explicit entry this client last used to sit the current
+			    // session on the root — `'team'` when the openTeamMode two-phase
+			    // sequence completed, `'ordinary'` when the explicit ordinary entry
+			    // (D3, the pure native open) was used — for as long as the session
+			    // selection is still on that root (reset on every session switch away —
+			    // see the list effect below). The fact is deliberately NOT remote: the
+			    // host's `team.ensureRootLive` is the Team-mode guarantee, the mode mark
+			    // is the client's own knowledge of which entry was used (no remote
 			    // field, no push/event/polling).
 			    const openModeByRoot = new Map();
 			    ctx.effect(() => () => {
@@ -926,6 +931,25 @@ var __dshFactory = (require) => {
 			        ctx.sessions.open(rootSessionId);
 			        openModeByRoot.set(rootSessionId, 'team');
 			        return { ok: true };
+			    };
+			    // (9.0c) D3 (Team D1-D6 repair v2, D6) — the EXPLICIT ordinary-mode
+			    // fallback entry ("以普通模式打开", v2 plan §1.1.3): the EXISTING
+			    // `openSession` verbatim (Seam 3, the pure `ctx.sessions.open`) — NO
+			    // team-remote call (no `team.ensureRootLive`, no other `team.*`
+			    // method), NO `session/create`-with-preset (A3 Q1 caveat: that path is
+			    // rejected on a live Team root), NO ensure-live step, NO list refresh.
+			    // The entry is a promise of "no Team ensure is performed / team_* tools
+			    // are NOT guaranteed" — NOT a tool-removal operation (A3 Q1 caveat 2:
+			    // a root whose agent is ALREADY live with the Team setup is adopted
+			    // as-is; the `team_*` tools remain registered — the mode badge shows
+			    // which entry was used, so the UI never claims a removal). Open first,
+			    // mark after: the session switch (and the reset effect it drives)
+			    // settles before the mode fact is written, and a failed open (unknown
+			    // id — the seam's own throw) leaves the prior mark intact (a failed
+			    // switch is no switch).
+			    const openOrdinaryMode = (rootSessionId) => {
+			        openSession(rootSessionId);
+			        openModeByRoot.set(rootSessionId, 'ordinary');
 			    };
 			    // (9.0b) D2 (D6) — the open-mode reset: when the session-list current
 			    // selection changes, every root whose mark is NOT the new current
@@ -1087,10 +1111,16 @@ var __dshFactory = (require) => {
 			        refreshTeamLedger: refreshTeamLedgerFor(sessionId),
 			        openSession,
 			        // D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
-			        // (the AWAITED two-phase sequence) + the per-root client-local
-			        // open-mode read face (the 'team' badge source; 'team' only while
-			        // this client sits on a root it opened in Team mode).
+			        // (the AWAITED two-phase sequence).
 			        openTeamMode,
+			        // D3 (Team D1-D6 repair v2, D6): the explicit ordinary-mode fallback
+			        // entry (the pure native open — no team-remote call, no ensure-live
+			        // step; its promise is "no Team ensure is performed / team_* tools
+			        // are NOT guaranteed", never a tool-removal claim).
+			        openOrdinaryMode,
+			        // D2/D3: the per-root client-local open-mode read face — the badge
+			        // source showing WHICH explicit entry was used ('team' / 'ordinary')
+			        // while this client sits on the root; null otherwise.
 			        teamOpenMode: (rootSessionId) => openModeByRoot.get(rootSessionId) ?? null,
 			        creation,
 			        memberCommands,
@@ -3191,16 +3221,22 @@ var __dshFactory = (require) => {
 			                : null] }));
 			}
 			/** One member group: the container row (plus the §17 "+" on teammate rows) and the instance expansion. */
-			function MemberGroup({ group, current, currentSessionId, onSelectSession, onSelectLeader, onCommand, pendingByInstance, errorsByInstance, onCreateInstance, createPending, createError, openTeamMode, teamModePending, teamModeError, teamModeBadge, t, }) {
+			function MemberGroup({ group, current, currentSessionId, onSelectSession, onSelectLeader, onCommand, pendingByInstance, errorsByInstance, onCreateInstance, createPending, createError, openTeamMode, teamModePending, teamModeError, openOrdinaryMode, openMode, t, }) {
 			    const name = group.name ?? t('member.leader');
 			    const label = `${name} · ${t('view.members.active', { count: group.activeCount })}`;
 			    return (_jsxs("div", { className: styles.group, "data-member-group": true, "data-current": current || undefined, children: [onSelectLeader === undefined
 			                ? (_jsxs("div", { className: styles.groupRow, "data-member-group-row": true, children: [_jsx("span", { className: styles.groupName, "data-member-group-name": true, children: label }), onCreateInstance !== undefined
 			                            ? (_jsx("button", { type: "button", className: styles.createButton, "data-member-create-instance": true, "aria-label": t('member.action.create'), disabled: createPending || undefined, onClick: onCreateInstance, children: "+" }))
 			                            : null] }))
-			                : (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: styles.groupRow, "data-member-group-row": true, "data-leader": "true", onClick: onSelectLeader, children: _jsx("span", { className: styles.groupName, "data-member-group-name": true, children: label }) }), openTeamMode !== undefined
-			                            ? (_jsxs("div", { className: styles.teamModeRow, "data-team-mode-row": true, children: [_jsx("button", { type: "button", className: styles.teamModeOpen, "data-team-mode-open": true, disabled: teamModePending === true || undefined, onClick: openTeamMode, children: t('view.members.openTeamMode') }), teamModeBadge === true
-			                                        ? (_jsx("span", { className: styles.teamModeBadge, "data-team-mode-badge": true, children: t('view.members.openMode.team') }))
+			                : (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: styles.groupRow, "data-member-group-row": true, "data-leader": "true", onClick: onSelectLeader, children: _jsx("span", { className: styles.groupName, "data-member-group-name": true, children: label }) }), (openTeamMode !== undefined || openOrdinaryMode !== undefined)
+			                            ? (_jsxs("div", { className: styles.teamModeRow, "data-team-mode-row": true, children: [openTeamMode !== undefined
+			                                        ? (_jsx("button", { type: "button", className: styles.teamModeOpen, "data-team-mode-open": true, disabled: teamModePending === true || undefined, onClick: openTeamMode, children: t('view.members.openTeamMode') }))
+			                                        : null, openOrdinaryMode !== undefined
+			                                        ? (_jsx("button", { type: "button", className: styles.teamModeOpen, "data-team-ordinary-open": true, title: t('view.members.openOrdinaryMode.hint'), onClick: openOrdinaryMode, children: t('view.members.openOrdinaryMode') }))
+			                                        : null, (openMode === 'team' || openMode === 'ordinary')
+			                                        ? (_jsx("span", { className: styles.teamModeBadge, "data-team-mode-badge": true, "data-open-mode": openMode, children: openMode === 'team'
+			                                                ? t('view.members.openMode.team')
+			                                                : t('view.members.openMode.ordinary') }))
 			                                        : null] }))
 			                            : null, teamModeError !== undefined
 			                            ? (_jsx("div", { className: styles.commandError, "data-member-command-error": true, "data-team-mode-error": true, children: t('view.members.openMode.error', {
@@ -3228,7 +3264,7 @@ var __dshFactory = (require) => {
 			 *   feed, and the dictionary.
 			 * @returns the members section.
 			 */
-			function TeamMembers({ snapshot, ledger, currentSessionId, onSelectSession, memberCommands, openTeamMode, teamOpenMode, workspaces, t, }) {
+			function TeamMembers({ snapshot, ledger, currentSessionId, onSelectSession, memberCommands, openTeamMode, openOrdinaryMode, teamOpenMode, workspaces, t, }) {
 			    const model = deriveTeamMembers(snapshot, ledger);
 			    const [open, setOpen] = useState(null);
 			    const [pending, setPending] = useState({});
@@ -3383,7 +3419,7 @@ var __dshFactory = (require) => {
 			    const createTemplate = open?.kind === 'create'
 			        ? snapshot.templates.find(template => template.templateId === open.group.templateId)
 			        : undefined;
-			    return (_jsxs("div", { className: styles.root, "data-team-members": true, children: [_jsx(MemberGroup, { group: model.leader, current: snapshot.teamSessionId === currentSessionId, currentSessionId: currentSessionId, onSelectSession: onSelectSession, onSelectLeader: () => { onSelectSession(snapshot.teamSessionId); }, openTeamMode: openTeamMode === undefined ? undefined : runOpenTeamMode, teamModePending: teamModePending, teamModeError: teamModeError === null ? undefined : teamModeError, teamModeBadge: teamOpenMode?.(teamSessionId) === 'team', t: t }), model.groups.map(group => (_jsx(MemberGroup, { group: group, current: group.instances.some(instance => instance.childSessionId === currentSessionId), currentSessionId: currentSessionId, onSelectSession: onSelectSession, onCommand: memberCommands === undefined ? undefined : (kind, instance) => {
+			    return (_jsxs("div", { className: styles.root, "data-team-members": true, children: [_jsx(MemberGroup, { group: model.leader, current: snapshot.teamSessionId === currentSessionId, currentSessionId: currentSessionId, onSelectSession: onSelectSession, onSelectLeader: () => { onSelectSession(snapshot.teamSessionId); }, openTeamMode: openTeamMode === undefined ? undefined : runOpenTeamMode, teamModePending: teamModePending, teamModeError: teamModeError === null ? undefined : teamModeError, openOrdinaryMode: openOrdinaryMode === undefined ? undefined : () => { openOrdinaryMode(teamSessionId); }, openMode: teamOpenMode?.(teamSessionId) ?? null, t: t }), model.groups.map(group => (_jsx(MemberGroup, { group: group, current: group.instances.some(instance => instance.childSessionId === currentSessionId), currentSessionId: currentSessionId, onSelectSession: onSelectSession, onCommand: memberCommands === undefined ? undefined : (kind, instance) => {
 			                    if (kind === 'restore') {
 			                        // §23.4: restore is a direct click (no confirmation, no model
 			                        // call — ARCHIVED → SETTLED after the real admission).
@@ -4947,7 +4983,10 @@ var __dshFactory = (require) => {
 			    'view.members.action.empty': '暂无动作',
 			    'view.members.waiting': '{count} 项待裁决',
 			    'view.members.openTeamMode': '以 Team 模式打开 / 回到 Leader',
+			    'view.members.openOrdinaryMode': '以普通模式打开',
+			    'view.members.openOrdinaryMode.hint': '不执行 Team ensure，不保证 team_* 工具',
 			    'view.members.openMode.team': 'Team 模式',
+			    'view.members.openMode.ordinary': '普通模式',
 			    'view.members.openMode.error': '以 Team 模式打开失败：{code}: {message}',
 			    'view.activity.title': '活动与进度',
 			    'view.activity.empty': '暂无活动进度',
@@ -5166,7 +5205,10 @@ var __dshFactory = (require) => {
 			    'view.members.action.empty': 'No action yet',
 			    'view.members.waiting': '{count} pending',
 			    'view.members.openTeamMode': 'Open in Team mode / back to Leader',
+			    'view.members.openOrdinaryMode': 'Open in ordinary mode',
+			    'view.members.openOrdinaryMode.hint': 'No Team ensure is performed; team_* tools are not guaranteed',
 			    'view.members.openMode.team': 'Team mode',
+			    'view.members.openMode.ordinary': 'Ordinary mode',
 			    'view.members.openMode.error': 'Failed to open in Team mode: {code}: {message}',
 			    'view.activity.title': 'Activity & Progress',
 			    'view.activity.empty': 'No activity progress yet',
