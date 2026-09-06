@@ -1982,3 +1982,7 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - 2026-09-07T00:05:18.1284915+08:00 — T5-D5 PASS: 5/5 focused tests; provider-owned deterministic instanceId contract confirmed; commit 5db518425d83dfd48311510f60acc40aaa3f1ed3.
 
 - 2026-09-07T00:12:12.6913566+08:00 — Execution round 2 closeout: T1 DEFERRED (no commit; host-owned adapter wiring required); T2 DEFERRED after 2 attempts (DEPENDENCY_BLOCKER yaml); T3 DEFERRED (CONTRACT_CHANGE_REQUEST); T4 DEFERRED (CONTRACT_CHANGE_REQUEST); T5 PASS 5/5; T6 BLOCKED CORE_SEAM_BLOCKER (upstream 76fda729, no public Web resume interception). Main runtime sweep: 1183 passed/6 baseline-harness failures; D5 focused PASS; no upstream/stable changes.
+
+- 2026-09-07T00:13:37.9971754+08:00 — Protocol stop: T6 CORE_SEAM_BLOCKER is gate-level; no further feature development or G2/G3 cross-gate work may proceed without user解除. T1/T2 retries stopped; no product commits. Plan/evidence closeout pending.
+
+- 2026-09-07T00:13:58.6647045+08:00 — Final round-2 closeout recorded: G2/G3 not entered because T6 gate-level CORE_SEAM_BLOCKER; upstream test-use HEAD 76fda729799fe9b3848dbe2c211d4b231032b81e, status clean; stable :3080 untouched. No further development authorized without user解除.
