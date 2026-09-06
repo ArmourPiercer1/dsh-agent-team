@@ -491,7 +491,7 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 | B1–B4 | 120m累计/并行 | 2026-09-07T01:37:00+08:00（worker 完成；集成 head `d10d1ae`） | PASS ×4（B1 `f9d6c89` / B2 `11149ae` / B3 `504a0b3` / B4 `4738b73`；集成修复 `b6dfbd0`+`e4a57eb`） | `evidence/team-d1-d6-repair-v2/B1..B4/` |
 | G2 | 30m | 2026-09-07T01:58:00+08:00（round 2 裁决齐） | PASS（round 1：2×补充内容+1×通过 → 卫生补充 `e4a57eb` → round 2 三名全新盲审全部“通过” `d10d1ae`；风险台账 5 项已记） | `evidence/team-d1-d6-repair-v2/G2/` |
 | C1–C2 D2 | 150m累计/contract串行 | 2026-09-07T02:31:00+08:00（C2 worker 完成；集成 head `805a510`） | PASS ×2（C1 契约冻结 `497d737`；C2 glue/effect 集成 `805a510`；16 TDD pins；全量 1203/1203） | `evidence/team-d1-d6-repair-v2/C1..C2/` |
-| G3 | 40m | 2026-09-07T03:41:00+08:00（round 3 裁决齐） | PASS（round 1：2×通过+1×裁决传输丢失 → 替补位 2b = 补充内容（effects dist 未随 C2 提交）→ 补充 `5795d50`；round 2：1×补充（日志行尾空白，owner 日志 here-string 反引号转义自伤）+1×传输丢失+1×补充（client composition-shim bundle 陈旧，B3 未重建安装面）→ 补充 `3397f1b`+日志行修复；round 3：三名全新盲审全部“通过” `6a6db5c`，含全链 fresh-build artifact gate（1028 文件 OK）；风险台账累计已记） | `evidence/team-d1-d6-repair-v2/G3/` |
+| G3 | 40m | 2026-09-07T03:28:02+08:00（round 3 裁决齐，记录于 `4891855`） | PASS（round 1：2×通过+1×裁决传输丢失 → 替补位 2b = 补充内容（effects dist 未随 C2 提交）→ 补充 `5795d50`；round 2：1×补充（日志行尾空白，owner 日志 here-string 反引号转义自伤）+1×传输丢失+1×补充（client composition-shim bundle 陈旧，B3 未重建安装面）→ 补充 `3397f1b`+日志行修复；round 3：三名全新盲审全部“通过” `6a6db5c`，含全链 fresh-build artifact gate（1028 文件 OK）；风险台账累计已记） | `evidence/team-d1-d6-repair-v2/G3/` |
 | D1–D4 D6 Team UI | 180m累计 | 待执行 | — | `evidence/team-d1-d6-repair/D*/` |
 | G4 | 45m | 待执行 | — | `evidence/team-d1-d6-repair/G4/` |
 | E1 D4-A2 design | 30m | 待执行 | — | `evidence/team-d1-d6-repair/E1/` |
