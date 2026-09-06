@@ -2046,3 +2046,13 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - C2 flagged for G3 ratification: one new stable defensive error code WORK_TURN_UNREADABLE (status stays the frozen 'unavailable').
 - Next: 3 independent G3 reviewers via workflow tool (blind; range 9b74fa0..d26c27d).
 - Log correction: the G3 owner-verification line above shows literal placeholders due to a here-string quoting slip; actual state: test-use HEAD 76fda729799fe9b3848dbe2c211d4b231032b81e, porcelain EMPTY (pristine).
+
+## G3 review round 1 + supplement (2026-09-07T03:03:42.0224282+08:00)
+
+- Round 1 (3 blind reviewers, range 9b74fa0..8b7c743, provider qiyuan-self model qwen3.8-27b): verdicts = pass (R1) / [R2 structured result lost in transport — seat not re-runnable from transcript] / pass (R3). Because one seat's verdict is unrecoverable, an independent replacement seat (G3-REVIEWER-2b, same blind brief, same range) was run: verdict = supplementary.
+- R2b finding (confirmed and reproduced by the owner): C2 changed effects.ts but did NOT rebuild/commit its dist install-surface artifacts (effects.js / effects.js.map / effects.d.ts.map were byte-identical to base); the production host load chain loads dist effects.js, so on the committed install surface the D2 memberResult would be dropped. The repo's own gate node scripts/check-artifacts-committed.mjs flags exactly those 3 files. C1's commit had honored the same-commit rebuild rule; C2 had only run the glue .mjs placement, not the tsc dist build.
+- Supplement (mechanical, in C2 owned zone, reviewer-argued compatible): rebuilt packages/runtime dist (tsc -p tsconfig.build.json) and committed the 3 drifted artifacts -> commit 5795d50; check-artifacts-committed.mjs now exit 0 ("1028 files; committed install-surface artifacts match the fresh build"); full runtime suite 1203/1203; git diff --check 9b74fa0..5795d50 exit 0.
+- Process lesson recorded: Wave C owner verification now includes 
+ode scripts/check-artifacts-committed.mjs for every TS-affecting wave (added to the owner checklist for G4/G5).
+- R2b minor note (no gate impact): WORK_RESULT_CODE_REPLAYED is exported from work-execution.ts but not re-exported by the action-router barrel; consumers read the code string; left as-is, noted here.
+- Per ROUTER_RULES 3.3.3: full adversarial re-review required: 3 NEW blind reviewers, whole gate, range 9b74fa0..5795d50, no knowledge of round 1.
