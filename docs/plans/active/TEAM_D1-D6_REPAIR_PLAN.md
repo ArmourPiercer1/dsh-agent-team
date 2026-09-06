@@ -1,6 +1,6 @@
 # Team D1–D6 最小修复详细执行计划
 
-**状态**：执行中（本轮已完成 seam characterization；D5 已实现；D1/D3/D2/D4/D6 按 public seam 与预算规则分别 DEFERRED/BLOCKED）  
+**状态**：因 T6 Gate-level `CORE_SEAM_BLOCKER` 暂停，等待用户明确解除  
 **本轮执行启动**：2026-09-06T23:48:26.2065938+08:00  
 **适用问题**：D1–D6（D6 沿用既有诊断文档，不重复建档）  
 **目标仓库**：`dsh-agent-team`  
