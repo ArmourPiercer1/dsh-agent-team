@@ -22,7 +22,11 @@
  *        DSH_HOME).
  */
 import { describe, expect, it } from 'vitest'
-import { createLiveWorld, WORKTREE_ROOT } from './t12a-live-bridge.mjs'
+import {
+  createAgentPresetsDouble,
+  createLiveWorld,
+  WORKTREE_ROOT,
+} from './t12a-live-bridge.mjs'
 
 const ROOT = 'session-t12a-m1-root'
 const SEED_CHILD = 'session-team-child-m1seed'
@@ -33,6 +37,9 @@ const MEMBER_WS = `${WORKTREE_ROOT}/m1-member-ws`
 
 const world = await createLiveWorld({
   rootSessionId: ROOT,
+  // D1 (v2): the member base-tool substrate (member paths fail closed
+  // without it — this world drives a seeded member + factory children).
+  agentPresets: createAgentPresetsDouble(),
   members: [{ childSessionId: SEED_CHILD, instanceId: 'inst-t12am1seed', templateId: 'tpl-t12a' }],
   configOverrides: {
     defaultWorkspace: TEAM_WS,

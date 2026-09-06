@@ -36,6 +36,7 @@ import { describe, expect, it } from 'vitest'
 import type { AgentCtxDouble } from './t12a-live-bridge.mjs'
 import {
   WORKTREE_ROOT,
+  createAgentPresetsDouble,
   createLiveWorld,
   removeFixtureHome,
   withDshHome,
@@ -72,6 +73,9 @@ const CHILD_A = 'session-d2-child-create'
 const worldA = await createLiveWorld({
   rootSessionId: ROOT_A,
   teamTools: { tools: p6t6.tools },
+  // D1 (v2): the member base-tool substrate (member paths fail closed
+  // without it — this world drives a seeded member).
+  agentPresets: createAgentPresetsDouble(),
   configOverrides: {
     seedMembers: [
       { instanceId: 'inst-d2a', templateId: 'tpl-t12a', label: 'Member A', childSessionId: CHILD_A },

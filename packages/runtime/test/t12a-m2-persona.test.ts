@@ -37,6 +37,7 @@ import { describe, expect, it } from 'vitest'
 import type { AgentCtxDouble, AssembledPromptSection } from './t12a-live-bridge.mjs'
 import {
   WORKTREE_ROOT,
+  createAgentPresetsDouble,
   createLiveWorld,
   removeFixtureHome,
   withDshHome,
@@ -87,6 +88,9 @@ function scopedPersona(ctx: AgentCtxDouble): AssembledPromptSection | undefined 
 // ── world A: boot (create phase) + request boundary + restore ─────────────
 const world = await createLiveWorld({
   rootSessionId: ROOT,
+  // D1 (v2): the member base-tool substrate (member paths fail closed
+  // without it — this world drives a seeded member).
+  agentPresets: createAgentPresetsDouble(),
   members: [{ childSessionId: CHILD, instanceId: INSTANCE, templateId: 'tpl-t12a' }],
   configOverrides: {
     seedMembers: [

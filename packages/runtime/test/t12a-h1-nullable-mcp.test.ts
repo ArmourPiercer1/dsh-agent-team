@@ -22,7 +22,7 @@
  * where the old code dereferenced the null server.
  */
 import { describe, expect, it } from 'vitest'
-import { createLiveWorld } from './t12a-live-bridge.mjs'
+import { createAgentPresetsDouble, createLiveWorld } from './t12a-live-bridge.mjs'
 
 const ROOT = 'session-t12a-h1-root'
 const INSTANCE = 'inst-t12ah1member'
@@ -33,6 +33,9 @@ const memberRow = { childSessionId: CHILD, instanceId: INSTANCE, templateId: 'tp
 // Acceptance world: no MCP server configured at all.
 const world = await createLiveWorld({
   rootSessionId: ROOT,
+  // D1 (v2): the member base-tool substrate (member paths fail closed
+  // without it — this world drives a seeded member).
+  agentPresets: createAgentPresetsDouble(),
   members: [memberRow],
   configOverrides: {
     mcpServer: null,

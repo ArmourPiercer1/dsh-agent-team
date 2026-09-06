@@ -210,6 +210,15 @@ export function validateTeamPluginConfig(raw) {
             c.remoteMountWaitMs < 0)) {
         fail('remoteMountWaitMs must be a non-negative integer (milliseconds) when present');
     }
+    // D1 (v2): the member preset id is an OPTIONAL additive field — absent
+    // (undefined) selects the deployment default preset (the glue passes no
+    // id to the service); when present it must be a non-empty string (an
+    // empty id would fail closed at service resolution anyway — fail early
+    // at the composition boundary, loudly).
+    if (c.memberPresetId !== undefined &&
+        (typeof c.memberPresetId !== 'string' || c.memberPresetId.length === 0)) {
+        fail('memberPresetId must be a non-empty string when present (absent = the deployment default preset)');
+    }
     return c;
 }
 /**
@@ -365,6 +374,28 @@ export async function apply(ctx, config) {
                 throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "sessions" public service is absent (or lacks flush) — it is resolved lazily per call and must be up before agent materialization runs');
             }
             return svc.flush(session);
+        },
+    };
+    // D1 (v2): the lazy agentPresets accessor (served to the glue under its
+    // `agentPresets` deps key as `mount`): resolved per call so the first
+    // member setup — long after the stock host is fully up — observes a
+    // settled service, not a concurrent profile load (the web profile's
+    // `agent-presets` row provides the service on its own fiber). A
+    // composition WITHOUT the service fails closed with a stable code at the
+    // FIRST member mount instead of a TypeError — and, through the setup
+    // rejection, the unpublished member agent rolls back (the AgentSetup
+    // contract): a member must never silently run without its ordinary base
+    // tools (the D1 defect). Deliberately NOT in the hard `inject` array:
+    // parking this row on an optional service would break compositions that
+    // never create members; the lazy read + setup-time fail-closed is the
+    // additive pattern (cf. the pre-S5A sessionPersistence row).
+    const agentPresets = {
+        mount(agentCtx, presetId) {
+            const svc = ctx.get('agentPresets');
+            if (svc === undefined || svc === null || typeof svc.mount !== 'function') {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "agentPresets" public service is absent (or lacks mount) — it is resolved lazily per call and must be up before a member agent setup mounts its ordinary preset');
+            }
+            return svc.mount(agentCtx, presetId);
         },
     };
     // The bootstrap (config validation, resolver hook arming, services,
@@ -647,6 +678,11 @@ export async function apply(ctx, config) {
             teamToolsRef,
             now: () => new Date().toISOString(),
             subagents: ctx.get('subagents'),
+            // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
+            // wrapper pattern — resolved per member mount, fail-closed when the
+            // service is absent). Additive optional dep: never in the hard inject
+            // array (see the accessor's rationale).
+            agentPresets,
         });
         // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
         // --- production layout FIRST; the root never imports the legacy sources

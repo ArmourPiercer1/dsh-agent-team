@@ -180,6 +180,27 @@ export interface SubagentsDouble {
   listDescendants(rootSessionId: string): Promise<readonly object[]>
 }
 
+/** One recorded agentPresets.mount call (D1 v2: the member base tools). */
+export interface RecordedPresetMount {
+  readonly agentCtx: unknown
+  /** The preset id passed through (undefined = the deployment default). */
+  readonly presetId: string | undefined
+}
+
+/** The agentPresets-double options (see the `.mjs` createAgentPresetsDouble). */
+export interface AgentPresetsDoubleOptions {
+  /** `'reject'` makes mount() reject (the real service rejects an unknown preset id). */
+  readonly mountBehavior?: 'reject'
+  readonly mountErrorMessage?: string
+}
+
+/** The agentPresets service double (the DSH AgentPresets public service — the
+ *  ordinary-preset base-tool substrate for member agents, D1 v2). */
+export interface AgentPresetsDouble {
+  readonly mounts: RecordedPresetMount[]
+  mount(agentCtx: unknown, presetId?: string): Promise<object>
+}
+
 /** One live-binding test world (see the `.mjs` createLiveWorld). */
 export interface LiveWorld {
   readonly rootSessionId: string
@@ -234,6 +255,10 @@ export interface LiveWorld {
     ): Promise<{ readonly ok: boolean; readonly callId?: string }>
     /** Forget + dispose one live handle ({dropped, disposeError?}). */
     dropResidency(sessionId: string): Promise<{ readonly dropped: boolean; readonly disposeError?: string }>
+    /** Whether the session has a live agent (the liveAgents map). */
+    hasLive(sessionId: string): boolean
+    /** The live-agent-or-resume resolver (creates on demand, cold-resumes over durable sessions). */
+    ensureLiveAgent(sessionId: string): Promise<LiveAgentHandle>
     /** The Root initial-work delivery (token-leading text into the root agent, no dedupe). */
     deliverRootWork(input: {
       readonly rootSessionId: string
@@ -265,6 +290,9 @@ export interface LiveWorld {
   readonly domain: DomainDouble
   readonly teamToolsRef: { current: unknown }
   readonly subagents: SubagentsDouble | undefined
+  /** D1 v2: the agentPresets service double (absent = the host seam not wired: a
+   *  member setup fails closed with the typed member-base-tools-unavailable). */
+  readonly agentPresets: AgentPresetsDouble | undefined
   readonly records: {
     readonly creates: RecordedCreate[]
     readonly resumes: RecordedResume[]
@@ -296,6 +324,8 @@ export interface LiveWorldOptions {
   readonly teamTools?: { readonly tools: readonly unknown[] }
   readonly agents?: AgentsDoubleOptions
   readonly subagents?: SubagentsDouble
+  /** D1 v2: the agentPresets service double (the member base-tool substrate). */
+  readonly agentPresets?: AgentPresetsDouble
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */
@@ -321,6 +351,9 @@ export declare function createDomainDouble(params?: DomainDoubleParams): Promise
 
 /** Build the subagents service double. */
 export declare function createSubagentsDouble(options?: SubagentsDoubleOptions): SubagentsDouble
+
+/** Build the agentPresets service double (the ordinary-preset base-tool substrate, D1 v2). */
+export declare function createAgentPresetsDouble(options?: AgentPresetsDoubleOptions): AgentPresetsDouble
 
 /**
  * Invoke the real `system-prompt/assemble` waterfall listener the glue's

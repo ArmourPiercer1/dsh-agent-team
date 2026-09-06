@@ -28,7 +28,7 @@
  *        (step (a) runs first — no drain, no fake quiescence).
  */
 import { describe, expect, it } from 'vitest'
-import { createLiveWorld, createSubagentsDouble } from './t12a-live-bridge.mjs'
+import { createAgentPresetsDouble, createLiveWorld, createSubagentsDouble } from './t12a-live-bridge.mjs'
 
 const ROOT = 'session-t12a-m3-root'
 const INSTANCE = 'inst-t12am3member'
@@ -39,6 +39,9 @@ const seed = [{ instanceId: INSTANCE, templateId: 'tpl-t12a', label: 'member M3'
 async function buildWorld(options: Record<string, unknown>) {
   const world = await createLiveWorld({
     rootSessionId: ROOT,
+    // D1 (v2): the member base-tool substrate (member paths fail closed
+    // without it — every world here drives a seeded member).
+    agentPresets: createAgentPresetsDouble(),
     members: [memberRow],
     configOverrides: { seedMembers: seed },
     ...options,

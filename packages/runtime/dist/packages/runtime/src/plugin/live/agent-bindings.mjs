@@ -69,6 +69,25 @@
  *                        `subagents: ctx.get('subagents')` to the glue deps
  *                        (additive; the glue reads deps.subagents
  *                        defensively).
+ *   agentPresets (OPTIONAL) - the DSH agentPresets public service surface
+ *                        { mount(agentCtx, id?) }: D1 (v2) - the ordinary
+ *                        preset base-tool substrate (file/shell) the MEMBER
+ *                        agents mount IN ADDITION to the ten team tools.
+ *                        host.ts passes a LAZY accessor that resolves the
+ *                        service per mount call (the sessionPersistence
+ *                        wrapper pattern; a composition without the service
+ *                        fails closed with the typed
+ *                        TEAM_PLUGIN_SERVICE_MISSING). The shared agent
+ *                        setup calls it on the MEMBER bind paths ONLY
+ *                        (fresh-member / cold-member - v2 scope: the root
+ *                        paths never mount); config.memberPresetId absent
+ *                        (undefined) = mount with the deployment default
+ *                        (the glue passes no id). ABSENT OR UNUSABLE on a
+ *                        member path -> the setup fails closed with the
+ *                        typed member-base-tools-unavailable error (a
+ *                        member must never silently run without its base
+ *                        tools - the setup rejection rolls the unpublished
+ *                        agent back, the AgentSetup contract).
  *
  * Returned bindings (the harness observability surface first — the
  * production host exposes this WHOLE bundle as the teamRoot.live field):
@@ -180,7 +199,10 @@ const TOOL_EXEC_TIMEOUT_MS = 120_000
  * @returns {object} the bindings (see the module header).
  */
 export function createAgentBindings(deps) {
-  const { agents, sessionPersistence, domain, config, teamToolsRef } = deps
+  // D1 (v2): agentPresets is OPTIONAL (the host serves it as a lazy accessor;
+  // a test world may omit it) — the member bind paths fail closed with the
+  // typed member-base-tools-unavailable when it is absent or unusable.
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets } = deps
   if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
   if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
   if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
@@ -536,6 +558,16 @@ export function createAgentBindings(deps) {
    * last layer it installs onto). A pre-setup
    * personaSurface.installScopedPersona for the same session flushes here
    * too. Both installs precede any work on the session.
+   *
+   * D1 (v2): on the MEMBER bind paths (fresh-member / cold-member) the
+   * setup also mounts the ordinary AgentPreset substrate (the file/shell
+   * base tools) through the public agentPresets.mount seam, IN ADDITION
+   * to the ten team tools — members-only v2 scope: the root bind paths
+   * never mount. config.memberPresetId undefined = the deployment default
+   * (no id passed). A missing/unusable agentPresets service on a member
+   * path fails closed with the typed member-base-tools-unavailable error
+   * (the setup rejection rolls the unpublished agent back — a member never
+   * runs without its base tools).
    * @param {string} [teamRootSid] - the team root the session belongs to
    *   (T12-GLUE; absent = this row's boot root, as before).
    * @returns {function(object): Promise<void>} the AgentSetup callback.
@@ -558,6 +590,34 @@ export function createAgentBindings(deps) {
       }
       consumptionState.set(sessionId, state)
       toolDisposers.push(installModelSelection(agentCtx, ref))
+      // D1 (v2): the member base tools — on the MEMBER bind paths only,
+      // mount the ordinary AgentPreset substrate (the file/shell base tools)
+      // on the member's agent scope, IN ADDITION to the ten team tools the
+      // loop below registers. The ordering mirrors the upstream
+      // session-controller composition (model selection, then the preset
+      // mount, then the Team's own registrations). v2 scope is members
+      // ONLY: the root (leader) bind paths never mount — the root keeps
+      // exactly today's tool table.
+      //
+      // config.memberPresetId absent (undefined) = the deployment DEFAULT
+      // preset: the glue passes no id and the service resolves its own
+      // defaultId (the web bundle: standard) — the glue never invents an id.
+      //
+      // FAIL CLOSED: a member setup without the presets service (absent or
+      // unusable) must never silently deliver a base-tool-less member (the
+      // D1 defect). The typed rejection propagates out of the AgentSetup
+      // callback, which rolls the unpublished agent back (the AgentSetup
+      // contract) — the member never runs.
+      if (bindPath === 'fresh-member' || bindPath === 'cold-member') {
+        const presets = agentPresets
+        if (presets === undefined || presets === null || typeof presets.mount !== 'function') {
+          throw memberBaseToolsUnavailable(
+            sessionId,
+            'the agentPresets service is absent from the glue deps (or lacks a callable mount) — a member must never run without its ordinary base tools',
+          )
+        }
+        await presets.mount(agentCtx, config.memberPresetId)
+      }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
       // registration loop is skipped, as before.
@@ -1353,6 +1413,21 @@ export function createAgentBindings(deps) {
     const error = new Error(`agent-bindings: recursive drain unavailable for '${sessionId}': ${reason} (code: recursive-drain-unavailable)`)
     error.code = 'recursive-drain-unavailable'
     observations.push(`p6t6: recursive-drain-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // D1 (v2): the typed fail-closed error for a member setup that cannot
+  // mount its ordinary preset substrate (the agentPresets service absent or
+  // unusable). Carries code 'member-base-tools-unavailable'; the rejection
+  // propagates out of the AgentSetup callback, which rolls the unpublished
+  // agent back (the AgentSetup contract) — a member never runs without its
+  // base tools (the D1 defect), and the production host's lazy accessor
+  // fails with the same stability for a service-less composition (a
+  // TeamPluginError surfaced through the same setup rejection).
+  function memberBaseToolsUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: member base tools unavailable for '${sessionId}': ${reason} (code: member-base-tools-unavailable)`)
+    error.code = 'member-base-tools-unavailable'
+    observations.push(`p6t6: member-base-tools-unavailable for ${sessionId}: ${reason}`)
     return error
   }
 

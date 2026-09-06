@@ -136,6 +136,21 @@ interface GlueModule {
      * `recursive-drain-unavailable` (documented in the glue).
      */
     readonly subagents?: unknown
+    /**
+     * D1 (v2, optional additive): the DSH `agentPresets` public service
+     * surface — `mount(agentCtx, id?)` binds one agent scope to the ordinary
+     * preset composition (the file/shell base-tool substrate). The
+     * production host passes a LAZY accessor that resolves the service per
+     * mount call (the sessionPersistence wrapper pattern — immune to row
+     * apply-order); a composition without the service fails closed with the
+     * typed TEAM_PLUGIN_SERVICE_MISSING at the first member setup, and a
+     * TEST world that passes no dep at all gets the glue's own typed
+     * fail-closed (`member-base-tools-unavailable`). Members only (v2 scope):
+     * the root/leader paths never mount.
+     */
+    readonly agentPresets?: {
+      mount(agentCtx: unknown, presetId?: string): Promise<unknown>
+    }
   }): TeamAgentBindings
 }
 
@@ -324,6 +339,17 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   ) {
     fail('remoteMountWaitMs must be a non-negative integer (milliseconds) when present')
   }
+  // D1 (v2): the member preset id is an OPTIONAL additive field — absent
+  // (undefined) selects the deployment default preset (the glue passes no
+  // id to the service); when present it must be a non-empty string (an
+  // empty id would fail closed at service resolution anyway — fail early
+  // at the composition boundary, loudly).
+  if (
+    c.memberPresetId !== undefined &&
+    (typeof c.memberPresetId !== 'string' || c.memberPresetId.length === 0)
+  ) {
+    fail('memberPresetId must be a non-empty string when present (absent = the deployment default preset)')
+  }
   return c as unknown as TeamPluginConfig
 }
 
@@ -497,6 +523,35 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
         )
       }
       return svc.flush(session)
+    },
+  }
+
+  // D1 (v2): the lazy agentPresets accessor (served to the glue under its
+  // `agentPresets` deps key as `mount`): resolved per call so the first
+  // member setup — long after the stock host is fully up — observes a
+  // settled service, not a concurrent profile load (the web profile's
+  // `agent-presets` row provides the service on its own fiber). A
+  // composition WITHOUT the service fails closed with a stable code at the
+  // FIRST member mount instead of a TypeError — and, through the setup
+  // rejection, the unpublished member agent rolls back (the AgentSetup
+  // contract): a member must never silently run without its ordinary base
+  // tools (the D1 defect). Deliberately NOT in the hard `inject` array:
+  // parking this row on an optional service would break compositions that
+  // never create members; the lazy read + setup-time fail-closed is the
+  // additive pattern (cf. the pre-S5A sessionPersistence row).
+  const agentPresets = {
+    mount(agentCtx: unknown, presetId?: string): Promise<unknown> {
+      const svc = ctx.get('agentPresets') as
+        | { mount?: (agentCtx: unknown, presetId?: string) => Promise<unknown> }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.mount !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks mount) — it is resolved lazily per call and must be up before a member agent setup mounts its ordinary preset',
+        )
+      }
+      return svc.mount(agentCtx, presetId)
     },
   }
 
@@ -824,6 +879,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     teamToolsRef,
     now: () => new Date().toISOString(),
     subagents: ctx.get('subagents'),
+    // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
+    // wrapper pattern — resolved per member mount, fail-closed when the
+    // service is absent). Additive optional dep: never in the hard inject
+    // array (see the accessor's rationale).
+    agentPresets,
   })
 
   // --- the frozen legacy reader (A29): layout-agnostic candidate search, --

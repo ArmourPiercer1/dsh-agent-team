@@ -375,6 +375,31 @@ export function createSubagentsDouble(options = {}) {
 }
 
 /**
+ * The agentPresets service double (the DSH AgentPresets public service —
+ * the ordinary-preset base-tool substrate for member agents, D1 v2):
+ * records every `mount(agentCtx, presetId)` call (`presetId` undefined =
+ * the deployment default the service resolves itself); a configurable
+ * rejection (the real service rejects on an unknown preset id).
+ *
+ * @param {object} [options]
+ * @param {'reject'} [options.mountBehavior] reject the mount call
+ * @param {string} [options.mountErrorMessage]
+ */
+export function createAgentPresetsDouble(options = {}) {
+  const mounts = []
+  return {
+    mounts,
+    mount(agentCtx, presetId) {
+      mounts.push({ agentCtx, presetId })
+      if (options.mountBehavior === 'reject') {
+        return Promise.reject(new Error(options.mountErrorMessage ?? 'agent presets mount failed'))
+      }
+      return Promise.resolve({ presetId: presetId ?? 'default' })
+    },
+  }
+}
+
+/**
  * Invoke the REAL `system-prompt/assemble` waterfall listener the glue's
  * agentSetup registered through installModelSelection (the public DSH
  * seam), with next() returning the minimal assembled payload. The result
@@ -418,6 +443,10 @@ export async function observeAssembly(agentCtx) {
  * @param {object} [options.agents] extra agents-double options (whenIdleBehavior)
  * @param {object} [options.subagents] the subagents service double (absent = the
  *   production host seam not wired: drain is typed fail-closed)
+ * @param {object} [options.agentPresets] the agentPresets service double
+ *   (D1 v2: the ordinary-preset base-tool substrate for member agents;
+ *   absent = the production host seam not wired: a member setup fails
+ *   closed with the typed member-base-tools-unavailable error)
  * @returns {Promise<object>} the world (binding + records + doubles).
  */
 export async function createLiveWorld(options = {}) {
@@ -491,6 +520,7 @@ export async function createLiveWorld(options = {}) {
     teamToolsRef,
     now,
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
+    ...(options.agentPresets !== undefined ? { agentPresets: options.agentPresets } : {}),
   })
   return {
     rootSessionId,
@@ -501,6 +531,7 @@ export async function createLiveWorld(options = {}) {
     domain,
     teamToolsRef,
     subagents: options.subagents,
+    agentPresets: options.agentPresets,
     records: {
       creates: agents.creates,
       resumes: agents.resumes,

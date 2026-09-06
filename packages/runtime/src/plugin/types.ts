@@ -232,6 +232,20 @@ export interface TeamPluginConfig {
    */
   readonly remoteMountWaitMs?: number
   /**
+   * D1 (v2) — the AgentPreset id the MEMBER agents mount for their ordinary
+   * base tools (the file/shell substrate) IN ADDITION to the ten team tools:
+   * the public `agentPresets.mount(agentCtx, id?)` seam, called inside the
+   * shared agent setup on the member bind paths only (members-only v2 scope —
+   * the root/leader paths never mount). `undefined` (the default) means mount
+   * with the DEPLOYMENT DEFAULT preset — the glue passes NO id to the service,
+   * which resolves its own `defaultId` (the web bundle: `standard`). The
+   * service is an additive optional glue dep: a composition without it fails
+   * closed on the member path with the typed
+   * `member-base-tools-unavailable` (a member must never silently run without
+   * its base tools).
+   */
+  readonly memberPresetId?: string
+  /**
    * T12-B1 — explicit TEST FIXTURE mode (plan §7-B1 "test fixture mode"):
    * when `true`, the `create` boot phase seeds the frozen deterministic
    * scenario world (`seedBootWorld`: frozen TeamSession/root binding/leader/

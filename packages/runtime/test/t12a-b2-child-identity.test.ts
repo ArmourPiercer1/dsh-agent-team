@@ -30,6 +30,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   WORKTREE_ROOT,
+  createAgentPresetsDouble,
   createLiveWorld,
   removeFixtureHome,
   withDshHome,
@@ -55,8 +56,11 @@ const requestB = {
 }
 
 // ── the worlds (two team roots, one bindings instance each) ──────────────
-const worldA = await createLiveWorld({ rootSessionId: ROOT_A })
-const worldB = await createLiveWorld({ rootSessionId: ROOT_B })
+// D1 (v2): every member-driving live world wires the agentPresets recording
+// double (the ordinary-preset base-tool substrate) — the member bind paths
+// now fail closed without it (never a silently base-tool-less member).
+const worldA = await createLiveWorld({ rootSessionId: ROOT_A, agentPresets: createAgentPresetsDouble() })
+const worldB = await createLiveWorld({ rootSessionId: ROOT_B, agentPresets: createAgentPresetsDouble() })
 
 // B2-1 / B2-2: the derivation exposed on the bundle (pure over the pair).
 const idA = worldA.binding.childSessionIdFor(ROOT_A, INSTANCE)
@@ -79,7 +83,7 @@ const createdBFallback = await worldB.binding.childFactory.createChildSession({
 // under a fake DSH_HOME), so the factory takes the RESUME branch and
 // returns that same id instead of creating a second child.
 const restartHome = `${WORKTREE_ROOT}/.tmp-t12a-b2-home`
-const worldA2 = await createLiveWorld({ rootSessionId: ROOT_A })
+const worldA2 = await createLiveWorld({ rootSessionId: ROOT_A, agentPresets: createAgentPresetsDouble() })
 const idA2 = worldA2.binding.childSessionIdFor(ROOT_A, INSTANCE)
 const resumedOnRestart = await withDshHome(restartHome, async () => {
   writeDurableFixture(restartHome, idA2)

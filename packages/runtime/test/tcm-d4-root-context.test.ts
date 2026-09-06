@@ -52,6 +52,7 @@ import { describe, expect, it } from 'vitest'
 import type { AgentCtxDouble, AssembledPromptSection } from './t12a-live-bridge.mjs'
 import {
   WORKTREE_ROOT,
+  createAgentPresetsDouble,
   createLiveWorld,
   removeFixtureHome,
   withDshHome,
@@ -155,6 +156,11 @@ const p6t6 = await createP6T6World('tcm-d4-root-ctx')
 // and the boot root's member row; N has no members.
 const world = await createLiveWorld({
   rootSessionId: BOOT,
+  // D1 (v2): the member base-tool substrate (the member bind paths fail
+  // closed without it — this world drives the boot root's seeded worker;
+  // the D4 assertions about the ten team tools are unchanged: the mount
+  // composes IN ADDITION to the team registration, it never replaces it).
+  agentPresets: createAgentPresetsDouble(),
   members: [{ childSessionId: WORKER.childSessionId, instanceId: WORKER.instanceId, templateId: WORKER.templateId }],
   membersByRoot: { [N]: [] },
   teamSessions: [

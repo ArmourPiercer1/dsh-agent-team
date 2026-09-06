@@ -32,7 +32,11 @@
  */
 import { describe, expect, it } from 'vitest'
 import { parseGovernanceOverride, type GovernanceOverrideRecord } from '../../storage/schema/index.js'
-import { createLiveWorld, observeAssembly } from './t12a-live-bridge.mjs'
+import {
+  createAgentPresetsDouble,
+  createLiveWorld,
+  observeAssembly,
+} from './t12a-live-bridge.mjs'
 
 const ROOT = 'session-t12a-b3-root'
 const INSTANCE = 'inst-t12ab3member'
@@ -58,6 +62,9 @@ const memberRow = { childSessionId: CHILD, instanceId: INSTANCE, templateId: 'tp
 async function buildWorld(externalPolicyFacts: Record<string, unknown>) {
   const world = await createLiveWorld({
     rootSessionId: ROOT,
+    // D1 (v2): the member base-tool substrate (member paths fail closed
+    // without it — this world drives a seeded member).
+    agentPresets: createAgentPresetsDouble(),
     members: [memberRow],
     overrides: [rAllow],
     configOverrides: {
