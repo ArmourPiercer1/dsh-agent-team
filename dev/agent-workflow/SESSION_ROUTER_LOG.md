@@ -2007,3 +2007,24 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - B4 D5: regression confirmation -> GO.
 - CONTRACT_CHANGE_REQUEST (approved, user-ruled v2 semantics): Team remote contract v1/v2 -> v3 adds team.ensureRootLive + team.listRoots; single writer = Wave D (D1/D2 tasks); no upstream change; no second state source (index rebuilt from TeamDomain).
 - Gate verdict: PASS (all routing conditions met; no CORE_SEAM_BLOCKER remains for D6 under v2 semantics).
+
+## G2 member-setup gate: owner verification (2026-09-07T01:44:17.6598400+08:00)
+
+- Integration head b6dfbd0 (B1 f9d6c89, B2 11149ae, B3 504a0b3, B4 4738b73, integration fixes b6dfbd0).
+- R1 ruling: plan section 8 B2 wording canonical (possessive); applied in agent-bindings.mjs + 3 test files.
+- Parallel-worktree integration gap found + fixed: d3 test world needed B1's agentPresets double (B1 updated 8 pre-existing worlds; B2's new file was unknown to B1); bridge type alignment (label required on createChildSession; agentSetup structural cast); fixture pre-create cleanup for re-runnability (known v1 fixture-isolation weakness).
+- Owner checks (integrated state): focused 35/35 (d1 6 + d3 5 + tcm-d4 7 + t12a-m2 8 + d5 9); full runtime 1183/1183 (129 files); runtime typecheck green; client typecheck green; full client 526/527 in clean worktree (single failure = pre-existing TCM M4 timing race, base-verified in B3 evidence base-preexisting-failure.txt); git diff --check clean; dist glue byte-identical (place-dist-glue.mjs); test-use pristine 76fda72.
+- 3180-host member-turn regression (B1 recipe) is a G5 final-acceptance item (needs host boot with real preset assets), recorded as such.
+- Next: 3 independent G2 reviewers via workflow tool (explicit provider/model).
+
+## G2 review round 1 + supplement (2026-09-07T01:58:38.0766780+08:00)
+
+- 3 blind reviewers (workflow tool, provider qiyuan-self model qwen3.8-27b) over 0b968d7..b6dfbd0: verdicts = supplementary / supplementary / pass. No blocking.
+- Supplement (compatibility verified, reviewer-argued): stripped trailing whitespace / EOF blank lines in 5 worker-owned evidence transcripts (B1/typecheck.txt, B2/B2Result.md, B3/base-preexisting-failure.txt, B3/green-transcript-full-suite.txt, B3/red-transcript.txt) -> commit e4a57eb; git diff --check 0b968d7..e4a57eb now exit 0.
+- Per ROUTER_RULES 3.3.3: full adversarial re-review now required (3 NEW blind reviewers, whole gate, no knowledge of round 1).
+- Risk ledger (append-only):
+  G2 / pre-existing client timing race: team-creation-panel.client.spec.tsx "create happy path (TCM M4 two-stage v2)" line 453 admitMock timing assertion fails identically at base 0b968d7 (all 3 reviewers re-verified on base worktrees); unrelated to B3; separate client fix task recommended.
+  G2 / D1 host E2E: base-tool proof is pinned at the real-glue boundary (public agentPresets.mount, fail-closed, root-never-mounts); live-host member file-read/shell E2E is a G5 final-acceptance item by plan design (15.1 D1 row).
+  G2 / dist mirror EOL convention: packages/runtime/dist/** is pinned to LF by .gitattributes while src checks out CRLF on this host; raw byte equality between working trees is unreachable by convention (pre-existing at base); reviewer-verified content identical modulo EOL. Future gates: compare normalized or committed blobs.
+  G2 / full-suite concurrency fragility: running runtime + client suites simultaneously produced a transient p6t1-parallel activation error (pre-existing infra property, files unchanged in range); scratch leftovers in packages/testkit/test/.tmp-fault from a failed run break subsequent runs until cleaned (d3 test now pre-cleans its own scratch).
+  G2 / coverage gap (minor): host-level lazy accessor fail-closed TEAM_PLUGIN_SERVICE_MISSING for agentPresets not directly test-pinned (glue-level counterpart pinned; sibling-service pattern covered).
