@@ -1950,3 +1950,33 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
 - **执行计数**：任务仍 1/3（D-3 = 同任务同用户机器的垂直延伸：实机轮 3 报告 → 修复 → 自测 → 推送，一次执行闭环）；substantive 补充 0/2。
 - **红线自检（本条）**：本次推送 = 用户常设授权「自测完毕可直接推送」（范围 = master + int/remote-mount-race）；零 force-push（双 ref 均 fast-forward）；`:3080` + `D:\deepseek-harness\` 零触碰；test-use pristine @ `76fda72979` 未动；`C:\Users\user\.dsh-dev` **只读**（诊断只解码用户 domain/会话日志到工作区证据目录，未写用户 home 任何字节）；无运行中服务器/端口占用（本 span 无新增垂直）；CORE PATCH BUDGET=0（全部变更在 dsh-agent-team packages 内）。
 
+
+### Team D1-D6 repair execution start (2026-09-06T23:50:50.9436082+08:00)
+- P0 completed_at: 2026-09-06T23:50:50.9436082+08:00
+- base SHA: 6b81a4743de6ea08ed476287fc414622340633bd
+- route: qiyuan-self/qwen3.8-27b
+- C0/C1/C2 dispatched in parallel; awaiting TaskResult.
+
+- 2026-09-06T23:53:21.4491543+08:00 — P0 evidence verified; C0/C1/C2 remain in progress. Current HEAD 6b81a47.
+
+- 2026-09-06T23:53:49.1088525+08:00 — C1 completed: PASS; evidence commit 66f38c7a6220db0d4a94e5809a3482132f3118b0d0b4a94e5809a3482132f3118b0 (worker-reported; main worktree evidence pending cherry-pick).
+
+- 2026-09-06T23:55:55.8752216+08:00 — C1 evidence read from isolated worktree; C1 PASS. T2 implementation dispatched to separate task worktree per one-task-one-writer rule.
+
+- 2026-09-06T23:57:00.8256201+08:00 — C2 complete: D2 DEFERRED/CONTRACT_CHANGE_REQUEST (existing completion seam but no Leader-facing result contract); D4-A DEFERRED (no mutation invalidation seam). Evidence commit 3de2f53b6542943dee1c67b03d56391617fba317.
+
+- 2026-09-06T23:58:15.7199726+08:00 — G1 preliminary routing: C1 PASS→T2; C2 D2 DEFERRED CONTRACT_CHANGE_REQUEST and D4-A DEFERRED. T2/T5/T3/T4/T6 dispatched in isolated worktrees; C0 pending.
+
+- 2026-09-06T23:59:52.0224161+08:00 — C2 evidence received and G1 routing recorded; D2/D4-A deferred per seam findings. D5/T2/T3/T4/T6 workers active; no upstream/stable instance changes.
+
+- 2026-09-07T00:00:58.5486057+08:00 — T2 attempt 1 DEFERRED due fresh worktree missing yaml (DEPENDENCY_BLOCKER); retry 2 authorized. T4 confirms C2 no mutation invalidation seam, awaiting final deferred evidence.
+
+- 2026-09-07T00:01:23.9641442+08:00 — T2 retry 2 still DEFERRED: dependency yaml absent in isolated worktree; no product change. T6 CORE_SEAM_BLOCKER confirmed: ordinary Web reopen has no public Team setup interception seam; worker stopped per protocol.
+
+- 2026-09-07T00:01:47.6694562+08:00 — C0 PASS: public composition seam yes; T1 approved. Evidence commit 8beaa8b484b9f32977a5fb60917c4bc98e3ccadc.
+
+- 2026-09-07T00:02:25.8665827+08:00 — C0 PASS and T1 dispatched. T3 final DEFERRED/CONTRACT_CHANGE_REQUEST per C2; no code changed.
+
+- 2026-09-07T00:03:19.6418724+08:00 — C0 final PASS confirmed; T1 implementation remains active. C2/T3 and T6 outcomes recorded; awaiting T1/T4/T5 final commits/evidence.
+
+- 2026-09-07T00:05:18.1284915+08:00 — T5-D5 PASS: 5/5 focused tests; provider-owned deterministic instanceId contract confirmed; commit 5db518425d83dfd48311510f60acc40aaa3f1ed3.
