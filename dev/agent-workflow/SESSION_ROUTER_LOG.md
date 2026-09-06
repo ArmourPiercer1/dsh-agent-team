@@ -2028,3 +2028,11 @@ fresh world（home `.dsh-test-s8-2026-09-03T20-25-30`，instance pid 55284，:31
   G2 / dist mirror EOL convention: packages/runtime/dist/** is pinned to LF by .gitattributes while src checks out CRLF on this host; raw byte equality between working trees is unreachable by convention (pre-existing at base); reviewer-verified content identical modulo EOL. Future gates: compare normalized or committed blobs.
   G2 / full-suite concurrency fragility: running runtime + client suites simultaneously produced a transient p6t1-parallel activation error (pre-existing infra property, files unchanged in range); scratch leftovers in packages/testkit/test/.tmp-fault from a failed run break subsequent runs until cleaned (d3 test now pre-cleans its own scratch).
   G2 / coverage gap (minor): host-level lazy accessor fail-closed TEAM_PLUGIN_SERVICE_MISSING for agentPresets not directly test-pinned (glue-level counterpart pinned; sibling-service pattern covered).
+
+## G2 gate FINAL verdict: PASS (2026-09-07T02:09:39.7219801+08:00)
+
+- Round 2 (3 NEW blind reviewers, whole gate, no round-1 knowledge, provider qiyuan-self / model qwen3.8-27b, range 0b968d7..d10d1ae): verdicts = pass / pass / pass (G2R2-REVIEWER-1/2/3, 15/17/34 min).
+- Per ROUTER_RULES 3.3.1: 3-of-3 pass/speculative-pass -> G2 PASS. No speculative-pass risk entries from round 2 (their concerns mirror the round-1 ledger entries already recorded: pre-existing client race, D1 host E2E deferred to G5 by plan design, dist EOL convention, full-suite concurrency fragility, host-level accessor coverage gap).
+- G2 exit criteria met: B1/B2 no blockers; D3 block in agent-scoped prompt (fresh/cold/cross-root/fail-closed/no-dup/no-leak); ordinary session unchanged; upstream pristine; typechecks green; diff --check clean.
+- Non-gate follow-ups (risk ledger): (a) separate client task for the pre-existing TCM M4 timing race; (b) host-level service-absent test for the lazy agentPresets accessor; (c) G5 must execute the 15.1 D1 row live-host member E2E (file read + pwd/shell + team_* call on :3180).
+- Next: Wave C (C1 D2 structured result contract -> C2 glue/effect integration), single contract writer, via workflow tool.

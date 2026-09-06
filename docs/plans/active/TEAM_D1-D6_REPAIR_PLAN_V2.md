@@ -488,8 +488,8 @@ Every team_* tool call must include rootSessionId="<root>" and a fresh unique re
 | P0-v2 | 20m | 2026-09-07T00:58:03.7399532+08:00 | PASS（commit `2baad2f`；test-use `76fda72` clean） | `evidence/team-d1-d6-repair-v2/P0/baseline.md` |
 | A1–A4 | 60m墙钟 | 2026-09-07T01:11:15+08:00（最后一个 A 证据 commit `f84d7e7`） | PASS ×4（seam verdict 全部 yes；evidence `8b4089f`/`1a8a23f`/`88d9cc8`/`f84d7e7`） | `evidence/team-d1-d6-repair-v2/A1..A4/` |
 | G1 | 20m | 2026-09-07T01:16:00+08:00（记录于 commit `700f510`） | PASS（B1/B2/B3/B4/C1/C2/D1–D4 全部 GO；remote v3 CONTRACT_CHANGE_REQUEST 按用户裁决批准，Wave D 单一 writer） | `SESSION_ROUTER_LOG.md` |
-| B1–B4 | 120m累计/并行 | 待执行 | — | `evidence/team-d1-d6-repair/B*/` |
-| G2 | 30m | 待执行 | — | `evidence/team-d1-d6-repair/G2/` |
+| B1–B4 | 120m累计/并行 | 2026-09-07T01:37:00+08:00（worker 完成；集成 head `d10d1ae`） | PASS ×4（B1 `f9d6c89` / B2 `11149ae` / B3 `504a0b3` / B4 `4738b73`；集成修复 `b6dfbd0`+`e4a57eb`） | `evidence/team-d1-d6-repair-v2/B1..B4/` |
+| G2 | 30m | 2026-09-07T01:58:00+08:00（round 2 裁决齐） | PASS（round 1：2×补充内容+1×通过 → 卫生补充 `e4a57eb` → round 2 三名全新盲审全部“通过” `d10d1ae`；风险台账 5 项已记） | `evidence/team-d1-d6-repair-v2/G2/` |
 | C1–C2 D2 | 150m累计/contract串行 | 待执行 | — | `evidence/team-d1-d6-repair/C*/` |
 | G3 | 40m | 待执行 | — | `evidence/team-d1-d6-repair/G3/` |
 | D1–D4 D6 Team UI | 180m累计 | 待执行 | — | `evidence/team-d1-d6-repair/D*/` |
