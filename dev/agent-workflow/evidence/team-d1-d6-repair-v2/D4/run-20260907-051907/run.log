@@ -1,0 +1,24 @@
+[2026-09-06T21:19:07.514Z] == d4-restart-reopen 2026-09-06T21:19:07.513Z (nonce mtqbe03c96d7cf) ==
+[2026-09-06T21:19:07.515Z] ROOT_A=session-d4v2-a-mtqbe03c96d7cf ROOT_B=session-d4v2-b-mtqbe03c96d7cf home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T21:19:07.883Z] S0: pass=true
+[2026-09-06T21:19:07.894Z] mock: mock: listening on 127.0.0.1:59788
+[2026-09-06T21:19:07.894Z] mock model on 127.0.0.1:59788
+[2026-09-06T21:19:07.895Z] BOOT1: profile already initialized
+[2026-09-06T21:19:07.896Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:19:07.896Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T21:19:09.802Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:19:10.949Z] BOOT1: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqbe03c96d7cf"]
+[2026-09-06T21:19:11.391Z] mock: mock: 1 POST /v1/chat/completions -> 404
+[2026-09-06T21:19:11.392Z] mock: mock: 2 POST /v1/chat/completions -> 404
+[2026-09-06T21:22:11.486Z] S1: pass=false
+[2026-09-06T21:22:11.505Z] S2: pass=true
+[2026-09-06T21:22:11.545Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T21:22:11.545Z] S3: pass=true
+[2026-09-06T21:22:11.546Z] BOOT2: profile already initialized
+[2026-09-06T21:22:11.547Z] BOOT2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:22:11.547Z] BOOT2: directive written (boot=2 phase=resume)
+[2026-09-06T21:22:13.341Z] BOOT2: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:22:14.499Z] BOOT2: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqbe03c96d7cf"]
+[2026-09-06T21:22:14.520Z] S4: pass=true
+[2026-09-06T21:22:14.595Z] S5: pass=true
+[2026-09-06T21:22:14.785Z] mock: mock: 3 POST /v1/chat/completions -> 404

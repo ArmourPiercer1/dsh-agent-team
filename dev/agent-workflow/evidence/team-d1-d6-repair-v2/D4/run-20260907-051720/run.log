@@ -1,0 +1,13 @@
+[2026-09-06T21:17:20.978Z] == d4-restart-reopen 2026-09-06T21:17:20.978Z (nonce mtqbbpw1ce3303) ==
+[2026-09-06T21:17:20.979Z] ROOT_A=session-d4v2-a-mtqbbpw1ce3303 ROOT_B=session-d4v2-b-mtqbbpw1ce3303 home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T21:17:20.980Z] FATAL main: Error: ENOENT: no such file or directory, open 'D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\team-d1-d6-v2-D4\dev\agent-workflow\evidence\team-d1-d6-repair-v2\D4\run-20260907-051720\git\git-head.log'
+    at Object.openSync (node:fs:622:18)
+    at writeFileSync (node:fs:2497:35)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/tests/characterization/lib/util.mjs:55:5
+    at new Promise (<anonymous>)
+    at spawnToLog (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/tests/characterization/lib/util.mjs:54:10)
+    at captureGitState (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/tests/characterization/lib/tree-clean.mjs:25:28)
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/tools/harness/d4-restart-reopen.mjs:845:24)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/tools/harness/d4-restart-reopen.mjs:1189:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26

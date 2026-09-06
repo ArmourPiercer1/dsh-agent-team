@@ -1,0 +1,151 @@
+{
+  "task": "D4 (Team D1-D6 repair v2, Wave D — restart/reopen Team UI acceptance)",
+  "nonce": "mtqbc35w96f4f5",
+  "startedAt": "2026-09-06T21:17:38.181Z",
+  "finishedAt": "2026-09-06T21:17:44.075Z",
+  "durationMs": 5894,
+  "host": {
+    "source": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+    "hostSha": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+    "dshHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test",
+    "port": 3180,
+    "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\team-d1-d6-v2-D4",
+    "rowDist": "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+  },
+  "roots": {
+    "ROOT_A": "session-d4v2-a-mtqbc35w96f4f5",
+    "ROOT_B": "session-d4v2-b-mtqbc35w96f4f5",
+    "blueprintId": "d4v2-bp"
+  },
+  "scenarios": {
+    "S0": {
+      "criterion": "S0 pre-flight: test-use pristine at the pinned SHA; :3080 only probed read-only; worktree D1-D3 dist import-probed; junction bridges wired",
+      "pass": true,
+      "durationMs": 373,
+      "assertions": [
+        {
+          "name": "test-use HEAD == 76fda729 (the pinned audit baseline)",
+          "ok": true,
+          "detail": "head=76fda729799fe9b3848dbe2c211d4b231032b81e"
+        },
+        {
+          "name": "test-use git status --porcelain empty (pre)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "name": "stable :3080 reachable read-only (pre; NO interaction)",
+          "ok": true,
+          "detail": "status=401"
+        },
+        {
+          "name": "worktree dist carries the D1-D3 build artifacts (host/root/s6-remote/glue)",
+          "ok": true,
+          "detail": "{\"plugin/host.js\":true,\"plugin/root.js\":true,\"plugin/s6-remote.js\":true,\"plugin/live/agent-bindings.mjs\":true}"
+        },
+        {
+          "name": "dist import probe: the D1-D3 dist row loads under plain node",
+          "ok": true,
+          "detail": "LOADED name=dsh-agent-team"
+        },
+        {
+          "name": "junction bridges wired (worktree node_modules only; host tree untouched)",
+          "ok": true,
+          "detail": "RUNTIME_LINKS + PACKAGES_LINKS"
+        }
+      ],
+      "evidence": {
+        "testUsePre": {
+          "head": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+          "statusEmpty": true,
+          "diffEmpty": true,
+          "errors": []
+        },
+        "stablePre": {
+          "url": "http://127.0.0.1:3080/",
+          "httpStatus": 401
+        },
+        "distFiles": {
+          "plugin/host.js": true,
+          "plugin/root.js": true,
+          "plugin/s6-remote.js": true,
+          "plugin/live/agent-bindings.mjs": true
+        },
+        "homePreExistingRoots": [
+          "session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9",
+          "team-root"
+        ]
+      },
+      "notes": [
+        "pre-existing durable roots in the shared home: [\"session-577e4c3c-f09f-42eb-80f9-c3356b7cfde9\",\"team-root\"] (preserved; listed by listRoots after boot)"
+      ]
+    },
+    "FATAL": {
+      "pass": false,
+      "error": "team.create: remote error: {\"code\":\"INVALID_BLUEPRINT_REVISION\",\"message\":\"blueprintRevision must be a positive integer, got \\\"1\\\"\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":2,\"requestToken\":null,\"field\":\"blueprintRevision\"}}"
+    },
+    "CLEANUP": {
+      "criterion": "cleanup: the test host is stopped, port 3180 is free, the mock model is closed, and test-use is still pristine at the pinned SHA",
+      "pass": true,
+      "durationMs": 180,
+      "assertions": [
+        {
+          "name": "no host process left on port 3180",
+          "ok": true,
+          "detail": "portFree=true"
+        },
+        {
+          "name": "stable :3080 reachable read-only (post; never touched)",
+          "ok": true,
+          "detail": "status=401"
+        },
+        {
+          "name": "test-use HEAD still 76fda729 (post)",
+          "ok": true,
+          "detail": "head=76fda729799fe9b3848dbe2c211d4b231032b81e"
+        },
+        {
+          "name": "test-use git status --porcelain still empty (post — the tree was only read/booted, never written)",
+          "ok": true,
+          "detail": "status=\"\""
+        },
+        {
+          "name": "test-use git diff still empty (post)",
+          "ok": true,
+          "detail": "diff=\"\""
+        }
+      ],
+      "evidence": {
+        "port3180FreeAtEnd": true,
+        "stablePost": {
+          "url": "http://127.0.0.1:3080/",
+          "httpStatus": 401
+        },
+        "testUsePost": {
+          "head": "76fda729799fe9b3848dbe2c211d4b231032b81e",
+          "statusEmpty": true,
+          "diffEmpty": true,
+          "errors": []
+        }
+      },
+      "notes": []
+    }
+  },
+  "pass": false,
+  "boundary": {
+    "statement": "the ordinary SESSION LIST open is NOT auto-Team (plan §12 D4 不测试/不宣称). This run exercised ONLY: the row create/resume boot of ROOT_A (row semantics, its config root); the dynamic ROOT_B created via the browser-facing public remote channel team.create (v2); the explicit Team-mode entry (team.ensureRootLive v3 x2 + session/page) on ROOT_B; and the explicit ordinary-mode entry (session/page, zero team.* remote calls) on ROOT_B. No ordinary-list session was opened and NO team_* availability is claimed for the ordinary list.",
+    "entriesExercised": [
+      "row create boot: ROOT_A=session-d4v2-a-mtqbc35w96f4f5 (bootPhase create-or-open -> create)",
+      "row resume boot: ROOT_A=session-d4v2-a-mtqbc35w96f4f5 (bootPhase create-or-open -> resume)",
+      "remote team.create (v2): ROOT_B=session-d4v2-b-mtqbc35w96f4f5",
+      "remote team.ensureRootLive (v3): ROOT_B (S5 cold ensure + S8 switch-back adoption)",
+      "remote team.listRoots (v3): host-authority read (S2 + S4)",
+      "api/session/prompt: ROOT_B (S1 boot-1 turn, S6 post-Team-open turn, S7 post-ordinary-open turn)",
+      "api/session/page: ROOT_B (S5 Team-mode native open, S7 ordinary native open)",
+      "p6t6 observability: team_list_members tool calls on ROOT_B (S6, S8)"
+    ],
+    "notExercised": [
+      "ordinary session-list open of an arbitrary session (auto-Team not claimed, not tested)"
+    ]
+  }
+}

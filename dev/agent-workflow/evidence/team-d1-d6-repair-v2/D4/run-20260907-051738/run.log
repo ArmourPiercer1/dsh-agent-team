@@ -1,0 +1,30 @@
+[2026-09-06T21:17:38.182Z] == d4-restart-reopen 2026-09-06T21:17:38.181Z (nonce mtqbc35w96f4f5) ==
+[2026-09-06T21:17:38.183Z] ROOT_A=session-d4v2-a-mtqbc35w96f4f5 ROOT_B=session-d4v2-b-mtqbc35w96f4f5 home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T21:17:38.542Z] runtime link: @deepseek-ai/dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-agent
+[2026-09-06T21:17:38.544Z] runtime link: @deepseek-ai/dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-llm
+[2026-09-06T21:17:38.546Z] runtime link: @deepseek-ai/dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-mcp-client
+[2026-09-06T21:17:38.548Z] runtime link: @deepseek-ai/dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-session
+[2026-09-06T21:17:38.549Z] runtime link: @deepseek-ai/dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-storage-domain
+[2026-09-06T21:17:38.551Z] runtime link: zod -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\zod
+[2026-09-06T21:17:38.552Z] packages link: @deepseek-ai/dsh-agent -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-agent
+[2026-09-06T21:17:38.553Z] packages link: @deepseek-ai/dsh-llm -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-llm
+[2026-09-06T21:17:38.553Z] packages link: @deepseek-ai/dsh-mcp-client -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-mcp-client
+[2026-09-06T21:17:38.554Z] packages link: @deepseek-ai/dsh-session -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-session
+[2026-09-06T21:17:38.554Z] packages link: @deepseek-ai/dsh-storage-domain -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-storage-domain
+[2026-09-06T21:17:38.555Z] packages link: @deepseek-ai/dsh-scope -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-scope
+[2026-09-06T21:17:38.556Z] packages link: @deepseek-ai/dsh-system-prompt -> D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use\node_modules\.pnpm\node_modules\@deepseek-ai\dsh-system-prompt
+[2026-09-06T21:17:38.556Z] S0: pass=true
+[2026-09-06T21:17:38.568Z] mock: mock: listening on 127.0.0.1:49636
+[2026-09-06T21:17:38.569Z] mock model on 127.0.0.1:49636
+[2026-09-06T21:17:38.570Z] BOOT1: profile already initialized
+[2026-09-06T21:17:38.570Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:17:38.571Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T21:17:40.665Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:17:43.875Z] BOOT1: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqbc35w96f4f5"]
+[2026-09-06T21:17:43.895Z] FATAL: Error: team.create: remote error: {"code":"INVALID_BLUEPRINT_REVISION","message":"blueprintRevision must be a positive integer, got \"1\"","details":{"method":"team.create","endpoint":"team.create","contractVersion":2,"requestToken":null,"field":"blueprintRevision"}}
+    at remoteValue (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/tools/harness/d4-restart-reopen.mjs:612:28)
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/tools/harness/d4-restart-reopen.mjs:910:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-09-06T21:17:43.942Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T21:17:44.075Z] CLEANUP: pass=true
+[2026-09-06T21:17:44.076Z] == done: pass=false (duration 5.9s) ==

@@ -1,0 +1,31 @@
+[2026-09-06T21:32:57.496Z] == d4-restart-reopen 2026-09-06T21:32:57.495Z (nonce mtqbvsieefe5ee) ==
+[2026-09-06T21:32:57.496Z] ROOT_A=session-d4v2-a-mtqbvsieefe5ee ROOT_B=session-d4v2-b-mtqbvsieefe5ee home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T21:32:57.874Z] S0: pass=true
+[2026-09-06T21:32:57.886Z] mock: mock: listening on 127.0.0.1:50770
+[2026-09-06T21:32:57.887Z] mock model on 127.0.0.1:50770
+[2026-09-06T21:32:57.888Z] BOOT1: profile already initialized
+[2026-09-06T21:32:57.888Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:32:57.889Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T21:32:59.787Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:33:00.943Z] BOOT1: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqbvsieefe5ee"]
+[2026-09-06T21:33:04.603Z] mock: mock: 1 text reply (29 chars): "D4V2_B1_T1_mtqbvsieefe5ee_ACK"
+[2026-09-06T21:33:04.604Z] mock: mock: 2 text reply (29 chars): "D4V2_B1_T1_mtqbvsieefe5ee_ACK"
+[2026-09-06T21:33:05.426Z] S1: pass=true
+[2026-09-06T21:33:05.463Z] S2: pass=true
+[2026-09-06T21:33:05.512Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T21:33:05.512Z] S3: pass=true
+[2026-09-06T21:33:05.513Z] BOOT2: profile already initialized
+[2026-09-06T21:33:05.514Z] BOOT2: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:33:05.514Z] BOOT2: directive written (boot=2 phase=resume)
+[2026-09-06T21:33:11.008Z] BOOT2: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:33:12.147Z] BOOT2: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqbvsieefe5ee"]
+[2026-09-06T21:33:15.955Z] S4: pass=true
+[2026-09-06T21:33:16.246Z] S5: pass=true
+[2026-09-06T21:33:16.572Z] mock: mock: 3 text reply (29 chars): "D4V2_B2_T2_mtqbvsieefe5ee_ACK"
+[2026-09-06T21:33:17.387Z] S6: pass=true
+[2026-09-06T21:33:18.086Z] mock: mock: 4 text reply (29 chars): "D4V2_B2_T3_mtqbvsieefe5ee_ACK"
+[2026-09-06T21:33:18.451Z] S7: pass=true
+[2026-09-06T21:33:19.074Z] S8: pass=true
+[2026-09-06T21:33:19.639Z] BOOT2: stopped (killed=true portFree=true)
+[2026-09-06T21:33:27.668Z] CLEANUP: pass=true
+[2026-09-06T21:33:27.669Z] == done: pass=true (duration 30.2s) ==

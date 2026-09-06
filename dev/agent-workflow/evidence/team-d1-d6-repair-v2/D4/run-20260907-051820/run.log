@@ -1,0 +1,17 @@
+[2026-09-06T21:18:20.376Z] == d4-restart-reopen 2026-09-06T21:18:20.376Z (nonce mtqbczpy6e4fed) ==
+[2026-09-06T21:18:20.377Z] ROOT_A=session-d4v2-a-mtqbczpy6e4fed ROOT_B=session-d4v2-b-mtqbczpy6e4fed home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test port=3180
+[2026-09-06T21:18:20.727Z] S0: pass=true
+[2026-09-06T21:18:20.739Z] mock: mock: listening on 127.0.0.1:56922
+[2026-09-06T21:18:20.739Z] mock model on 127.0.0.1:56922
+[2026-09-06T21:18:20.740Z] BOOT1: profile already initialized
+[2026-09-06T21:18:20.741Z] BOOT1: patch layer written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test\profiles\web\cordis.patch.yml (phase=create-or-open)
+[2026-09-06T21:18:20.741Z] BOOT1: directive written (boot=1 phase=create)
+[2026-09-06T21:18:22.670Z] BOOT1: booted at http://127.0.0.1:3180; auth cookie exchanged
+[2026-09-06T21:18:23.823Z] BOOT1: row ready — toolCount=10 liveSessions=["session-d4v2-a-mtqbczpy6e4fed"]
+[2026-09-06T21:18:23.845Z] FATAL: Error: team.create: remote error: {"code":"TEAM_CREATE_WORKSPACE_NOT_FOUND","message":"no workspace is registered for path \"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace\" (the directory exists but no workspace owns it)","details":{"method":"team.create","endpoint":"team.create","contractVersion":2,"requestToken":null,"reason":"domain-error","cause":{"code":"TEAM_CREATE_WORKSPACE_NOT_FOUND","message":"no workspace is registered for path \"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\d4v2-workspace\" (the directory exists but no workspace owns it)"}}}
+    at remoteValue (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/tools/harness/d4-restart-reopen.mjs:613:28)
+    at main (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/team-d1-d6-v2-D4/packages/tools/harness/d4-restart-reopen.mjs:911:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-09-06T21:18:23.893Z] BOOT1: stopped (killed=true portFree=true)
+[2026-09-06T21:18:24.039Z] CLEANUP: pass=true
+[2026-09-06T21:18:24.040Z] == done: pass=false (duration 3.7s) ==
