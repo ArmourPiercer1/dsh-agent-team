@@ -1023,7 +1023,7 @@ reviewer 不接收其他 reviewer 意见，不直接修改实现。
 - **DEFERRED**：D1、D2、D3、D4-A。
 - **BLOCKED**：D6，原因是 upstream 普通 Web reopen 没有 downstream Team setup interception public seam；禁止 patch upstream/private API。
 - **未修改**：upstream 测试源码、稳定实例 `:3080`、`D:\deepseek-harness`。
-- **已集成到当前本地 `master` 的本轮提交**：C0 evidence、C2 evidence、T2 deferred evidence、T4 deferred evidence、T5 test/evidence；T6 evidence 尚未合入（工作区存在未跟踪 evidence，待最终整理）。
+- **已集成到当前本地 `master` 的本轮提交**：C0 evidence、C2 evidence、T2 deferred evidence、T4 deferred evidence、T5 test/evidence、T6 CORE_SEAM_BLOCKER evidence；C1 evidence 保留在其独立 worktree/commit `66f38c7a`，未 cherry-pick（避免把重复的 characterization 文档带入当前 master）。
 - **未宣称**：D2 完整结果协议、D4-B/D4-C、D6 restart/reopen。
 
 ## 12.2 复盘注意
