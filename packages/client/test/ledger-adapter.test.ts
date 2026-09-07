@@ -27,9 +27,10 @@
  * Matchers used: toBe / toEqual (+ .not) only.
  */
 import { describe, expect, it } from 'vitest'
-import { adaptTeamLedger, adaptTeamUi } from '../src/model/ledger-adapter.js'
+import { adaptTeamLedger, adaptTeamUi, ledgerModelFromStoreState } from '../src/model/ledger-adapter.js'
 import { projectionFromWire } from '../src/model/projection-adapter.js'
 import type { TeamPerspective } from '../src/state/team-session-resolution.js'
+import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
 import type { RemoteLedgerEntryValue, RemoteProjectionValue } from '../../remote/src/index.js'
 
 /**
@@ -100,6 +101,58 @@ function wireFrame(overrides: Record<string, unknown> = {}): RemoteProjectionVal
 }
 
 const ROOT_PERSPECTIVE: TeamPerspective = { kind: 'team-root' }
+
+// ---------------------------------------------------------------------------
+// F11 (repair-r1) — count-based completeness (INV-9.2) fixtures
+// ---------------------------------------------------------------------------
+
+/**
+ * One published store state (the T4 store's snapshot shape) over the given
+ * entries: `total` defaults to the entry count (a truthful server),
+ * `completeThrough` to the highest sequence (the store's frontier).
+ */
+function storeState(
+  entries: readonly RemoteLedgerEntryValue[],
+  overrides: Partial<TeamLedgerState> = {},
+): TeamLedgerState {
+  const orderedSequences = [...entries].sort((a, b) => a.sequence - b.sequence).map(item => item.sequence)
+  const entriesBySequence = new Map<number, RemoteLedgerEntryValue>()
+  for (const entry of entries) entriesBySequence.set(entry.sequence, entry)
+  return {
+    teamSessionId: 'team-1',
+    entriesBySequence,
+    orderedSequences,
+    total: entries.length,
+    completeThrough: orderedSequences[orderedSequences.length - 1] ?? 0,
+    loading: false,
+    ...overrides,
+  } as TeamLedgerState
+}
+
+/**
+ * The 68-entry dtestp6 shape (seq 69–136) with one PENDING control request
+ * in the tail (seq 130 — inside the 18 entries the pre-fix truncation
+ * dropped after the first 50-page).
+ */
+function tailRequestEntries(): RemoteLedgerEntryValue[] {
+  const entries: RemoteLedgerEntryValue[] = []
+  for (let sequence = 69; sequence <= 136; sequence += 1) {
+    if (sequence === 130) {
+      entries.push(entry(sequence, 'control-request-recorded', {
+        requestId: 'r-tail',
+        targetInstanceId: 'i-tail',
+        actionName: 'tool.execute',
+        correlation: 'c-tail',
+      }))
+    } else {
+      entries.push(entry(sequence, 'team-message-delivered', {
+        recipientInstanceId: 'i-tail',
+        subject: `m${sequence}`,
+      }))
+    }
+  }
+  return entries
+}
 
 // ---------------------------------------------------------------------------
 // Entry rows — identity + category
@@ -467,5 +520,54 @@ describe('adaptTeamUi — the combined output', () => {
     )
     expect(must(state.snapshot.members[0], 'member row 0').pendingControlCount).toBe(null)
     expect(state.ledger.pendingControlByInstance).toEqual({})
+  })
+})
+
+// ---------------------------------------------------------------------------
+// F11 (repair-r1) — ledgerModelFromStoreState: count-based completeness
+// (INV-9.2)
+// ---------------------------------------------------------------------------
+
+describe('ledgerModelFromStoreState — F11 count-based completeness (INV-9.2)', () => {
+  it('F11-T4: 50 of 68 loaded (frontier 118) is partial — no pending badges; 68 of 68 is complete — the tail request badges', () => {
+    const all = tailRequestEntries()
+    const partial = ledgerModelFromStoreState(storeState(all.slice(0, 50), { total: 68 }))
+    expect(partial.completeness).toBe('partial')
+    expect(partial.pendingControlByInstance).toEqual({})
+    expect(partial.progress).toEqual([])
+    const complete = ledgerModelFromStoreState(storeState(all, { total: 68 }))
+    expect(complete.completeness).toBe('complete')
+    expect(complete.pendingControlByInstance).toEqual({ 'i-tail': 1 })
+  })
+
+  it('F11-T4: the §7.3 gate flips exactly at full load (67/68 stays partial despite the loaded request)', () => {
+    const all = tailRequestEntries()
+    // 67 loaded (69–135): the seq-130 request IS loaded, but the ledger is
+    // still short one entry — the gate must NOT open.
+    const sixtySeven = ledgerModelFromStoreState(storeState(all.slice(0, 67), { total: 68 }))
+    expect(sixtySeven.completeness).toBe('partial')
+    expect(sixtySeven.pendingControlByInstance).toEqual({})
+    // 68 loaded: the gate opens on exactly the last entry.
+    const sixtyEight = ledgerModelFromStoreState(storeState(all.slice(0, 68), { total: 68 }))
+    expect(sixtyEight.completeness).toBe('complete')
+    expect(sixtyEight.pendingControlByInstance).toEqual({ 'i-tail': 1 })
+  })
+
+  it('F11-T6 case 9: total known vs null — a null total never claims complete (no early completion), a known total counts loaded entries, not the frontier', () => {
+    const entries = [
+      entry(69, 'team-work-admitted', {}),
+      entry(70, 'team-work-admitted', {}),
+      entry(71, 'team-work-admitted', {}),
+    ]
+    // total null (unknown) + a high frontier: NEVER complete.
+    expect(ledgerModelFromStoreState(storeState(entries, { total: null, completeThrough: 9999 })).completeness).toBe('partial')
+    // No binding at all: the empty partial model.
+    expect(ledgerModelFromStoreState(undefined).completeness).toBe('partial')
+    // Known total: the verdict is the loaded UNIQUE count vs the total —
+    // 3 of 3 → complete even though the base is shifted (frontier 71);
+    // 3 of 5 → partial even though the frontier (71) far outruns the total
+    // (5) — `frontier >= total` would have claimed complete here.
+    expect(ledgerModelFromStoreState(storeState(entries, { total: 3, completeThrough: 71 })).completeness).toBe('complete')
+    expect(ledgerModelFromStoreState(storeState(entries, { total: 5, completeThrough: 71 })).completeness).toBe('partial')
   })
 })

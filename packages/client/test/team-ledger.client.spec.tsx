@@ -331,6 +331,27 @@ describe('TeamLedger', () => {
     expect(loading.view.container.querySelector('[data-ledger-empty]')?.textContent).toBe('正在加载团队事件…')
   })
 
+  it('F11 (companion): the error state renders in the zero-rows branch — a typed failure is never swallowed by the empty note (NOTES L208 OBS(1))', () => {
+    const view0 = renderLedger({
+      ledger: ledgerModel([]),
+      ledgerState: state([], { error: { ok: false, reason: 'transport-loss' } }),
+    })
+    expect(view0.view.container.querySelector('[data-ledger-empty]')).toBeNull()
+    expect(view0.view.container.querySelector('[data-ledger-error]')?.textContent).toContain('transport-loss')
+    const retry = view0.view.container.querySelector<HTMLButtonElement>('[data-ledger-retry]')
+    if (retry === null) throw new Error('the retry button did not render')
+    expect(retry.textContent).toBe('重试')
+    fireEvent.click(retry)
+    expect(view0.props.onRetry).toHaveBeenCalledTimes(1)
+    // The RPC-error flavor: the verbatim message rides the same note.
+    const view1 = renderLedger({
+      ledger: ledgerModel([]),
+      ledgerState: state([], { error: { ok: false, error: { code: 'remote', message: 'boom', details: { method: 'team.getLedgerPage', endpoint: 'team', contractVersion: 1, requestToken: null } } } }),
+    })
+    expect(view1.view.container.querySelector('[data-ledger-empty]')).toBeNull()
+    expect(view1.view.container.querySelector('[data-ledger-error]')?.textContent).toContain('boom')
+  })
+
   it('switches sessions on row click (D9) and stays inert without a resolved session', () => {
     const entries = [
       uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 'to mate' }, 'message'),

@@ -12,7 +12,9 @@
  *    "older than loaded" state; the depth append covers the loaded set
  *    (plan §8.8; the store is the paging authority);
  *  - counted remainder → re-bound to the partial-ledger remainder
- *    (`total - completeThrough`, 0 before the total is known);
+ *    (`total` minus the loaded unique entry count — count domain per
+ *    INV-9.2: 0 before the total is known; the sequence frontier never
+ *    subtracts from the total);
  *  - name resolution + session bind (D19) / unbound member → empty session
  *    / first row wins → the snapshot member resolution (label + navigation
  *    target, '' for inert rows);
@@ -231,9 +233,12 @@ describe('deriveTeamLedgerSection', () => {
     expect(model.rows.map(row => row.sequence)).toEqual([2])
   })
 
-  it('reports the partial-ledger remainder and zero before the total is known', () => {
+  it('reports the partial-ledger remainder as server total minus loaded entries (count domain, INV-9.2)', () => {
     const entries = [uiEntry(1, 'team-message-delivered', T, { recipientInstanceId: 'mate', subject: 'm' }, 'message')]
-    expect(derive({ ledger: ledger(entries), total: 100, completeThrough: 60 }).remainingCount).toBe(40)
+    // 1 loaded entry of total 100 → 99 remain. The frontier (60) is a
+    // SEQUENCE-domain value: it never subtracts from the total (pre-fix
+    // this asserted 40 = total − completeThrough — the unit mismatch).
+    expect(derive({ ledger: ledger(entries), total: 100, completeThrough: 60 }).remainingCount).toBe(99)
     expect(derive({ ledger: ledger(entries), total: null, completeThrough: 0 }).remainingCount).toBe(0)
     const complete = derive({
       ledger: ledger(entries, { completeness: 'complete' }),
@@ -242,6 +247,23 @@ describe('deriveTeamLedgerSection', () => {
     })
     expect(complete.complete).toBe(true)
     expect(complete.remainingCount).toBe(0)
+  })
+
+  it('F11-T5: total 68 with 50 loaded entries (frontier 118) → not complete, 18 remaining (count domain)', () => {
+    const fifty = Array.from({ length: 50 }, (_, index) =>
+      uiEntry(69 + index, 'team-message-delivered', T + (index + 1) * 1000, {
+        recipientInstanceId: 'mate', subject: `m${69 + index}`,
+      }, 'message'))
+    const model = derive({ ledger: ledger(fifty), total: 68, completeThrough: 118 })
+    expect(model.complete).toBe(false)
+    expect(model.remainingCount).toBe(18)
+    const all = Array.from({ length: 68 }, (_, index) =>
+      uiEntry(69 + index, 'team-message-delivered', T + (index + 1) * 1000, {
+        recipientInstanceId: 'mate', subject: `m${69 + index}`,
+      }, 'message'))
+    const completeModel = derive({ ledger: ledger(all, { completeness: 'complete' }), total: 68, completeThrough: 136 })
+    expect(completeModel.complete).toBe(true)
+    expect(completeModel.remainingCount).toBe(0)
   })
 
   it('resolves actor labels from the snapshot and falls back to the raw id', () => {

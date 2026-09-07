@@ -19,7 +19,11 @@
  * pages FORWARD from the ledger head, so the legacy anchor wire-paging arm
  * is gone: "load earlier" is a pure local window deepening over the loaded
  * set, and the legacy counted remainder re-binds to the partial-ledger
- * remainder (`total - completeThrough`).
+ * remainder (`total` minus the loaded entry count — count domain per
+ * INV-9.2; the sequence frontier never subtracts from the total). The
+ * loud error note + retry also renders in the zero-rows branch, where a
+ * typed failure is no longer swallowed by the plain empty note (F11
+ * companion; NOTES L208 OBS(1)).
  *
  * Row families (plan §8.9): one family per frozen fact type, plus the safe
  * generic row for an unknown / future fact type (no throw, no actor or
@@ -234,9 +238,28 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
     <div className={styles.root} data-team-ledger>
       {section.total === 0
         ? (
-          <span className={styles.empty} data-ledger-empty>
-            {loading ? t('view.ledger.loading') : t('view.ledger.empty')}
-          </span>
+          // F11 companion: a typed failure in the zero-rows state is the
+          // LOUD error + retry, never the plain empty/loading note (the
+          // pre-fix empty span swallowed the tracker reject / RPC error).
+          error !== undefined
+            ? (
+              <div className={styles.top} data-ledger-top>
+                <span className={styles.loadFailed} data-ledger-error>{t('view.ledger.loadFailed', { message: errorMessage })}</span>
+                <button
+                  type="button"
+                  className={styles.loadEarlier}
+                  data-ledger-retry
+                  onClick={() => { void onRetry() }}
+                >
+                  {t('view.ledger.retry')}
+                </button>
+              </div>
+            )
+            : (
+              <span className={styles.empty} data-ledger-empty>
+                {loading ? t('view.ledger.loading') : t('view.ledger.empty')}
+              </span>
+            )
         )
         : (
           <>

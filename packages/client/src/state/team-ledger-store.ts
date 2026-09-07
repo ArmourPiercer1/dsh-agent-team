@@ -27,9 +27,16 @@
  *      earlier") is client-visible state, never ledger authority;
  *   5. `completeThrough` is the HIGHEST LOADED sequence (the tracker's
  *      anchor advances only on cursor pages, so the store tracks the
- *      frontier itself); completeness = `total !== null &&
- *      completeThrough >= total` — a partial ledger is never presented
- *      as complete;
+ *      frontier itself) — a SEQUENCE-domain fact. Completion is a
+ *      COUNT-domain rule (INV-9.2: the ledger sequence and the entry
+ *      count are distinct numeric domains, never compared as
+ *      interchangeable scalars): `tailReached || (total !== null &&
+ *      loadedUniqueEntryCount >= total)` — the loaded entries are
+ *      sequence-deduped, so the map size IS the loaded unique count, and
+ *      `total` is the server's per-team entry count. A partial ledger is
+ *      never presented as complete, and a shifted sequence base
+ *      (sequences starting above the count, e.g. seq 69–136 / total 68)
+ *      can never end the catch-up early (F11);
  *   6. a new event appends: `refresh()` re-pulls at the tracker's
  *      current anchor (the frozen stable re-read), and the dedupe merge
  *      keeps the loaded window un-reordered.
@@ -243,12 +250,18 @@ export function createTeamLedgerStore(options: TeamLedgerStoreOptions): TeamLedg
           if (entry.sequence > frontier) frontier = entry.sequence
         }
         const total = check.total
-        const nextComplete = total !== null && frontier >= total
         const tailReached = page.nextAfterSequence === null
-        // `loading` mirrors the loop: true only while another page will be
-        // fetched, so every episode exit publishes loading: false.
-        const continuePaging = tailReached === false && nextComplete === false
+        // INV-9.2 (F11): completion is a COUNT-domain rule — the loaded
+        // entries are sequence-deduped, so the map size IS the loaded
+        // unique count, compared against the server's per-team COUNT.
+        // The `completeThrough` frontier is a SEQUENCE-domain value and
+        // must never be compared to the total: a shifted sequence base
+        // (e.g. seq 69–136, total 68) would make `frontier >= total`
+        // true after the first page and silently truncate the catch-up.
+        const continuePaging = tailReached === false && !(total !== null && entriesBySequence.size >= total)
         publish({
+          // `loading` mirrors the loop: true only while another page will
+          // be fetched, so every episode exit publishes loading: false.
           ...state,
           loading: continuePaging,
           error: undefined,
@@ -259,7 +272,7 @@ export function createTeamLedgerStore(options: TeamLedgerStoreOptions): TeamLedg
         })
         // The frozen slicer sets the cursor only while more entries
         // remain: the tail ends the catch-up episode (the completeness
-        // verdict stands on the numbers, a total/frontier mismatch is
+        // verdict stands on the count — a total/count mismatch is
         // reported by the `partial` marker, never by a fetch loop).
         if (continuePaging === false) return
       }

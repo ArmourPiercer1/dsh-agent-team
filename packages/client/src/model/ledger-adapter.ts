@@ -336,8 +336,10 @@ function adaptProgressRow(
  * @param entries - the store's merged, sequence-ordered loaded entries
  *   (the adapter re-sorts defensively; the store is the order authority).
  * @param complete - the store's completeness verdict
- *   (`total !== null && completeThrough >= total`); the authority for the
- *   `progress` / `pendingControlByInstance` gates.
+ *   (`total !== null && loadedUniqueEntryCount >= total` — a count-domain
+ *   rule per INV-9.2: the loaded unique count, never the sequence
+ *   frontier); the authority for the `progress` /
+ *   `pendingControlByInstance` gates.
  */
 export function adaptTeamLedger(
   entries: readonly RemoteLedgerEntryValue[],
@@ -463,9 +465,13 @@ export function adaptTeamUi(
  * snapshot) into the UI ledger model: the loaded entries are replayed
  * through the same pure `adaptTeamLedger`, and completeness is the
  * store's own verdict rule — known complete iff the last accepted `total`
- * is non-null and the catch-up frontier has reached it. `undefined` (no
- * binding yet) yields the empty partial model: a partial ledger clearly
- * represented (gate G3), never a claim over an unknown ledger.
+ * is non-null and the LOADED UNIQUE ENTRY COUNT has reached it (the
+ * `orderedSequences` length; INV-9.2: a count-domain rule — the
+ * `completeThrough` frontier is a SEQUENCE-domain value and is never
+ * compared to the total, so a shifted sequence base can never claim
+ * completion early). `undefined` (no binding yet) yields the empty
+ * partial model: a partial ledger clearly represented (gate G3), never a
+ * claim over an unknown ledger.
  *
  * Type-only import of the store state (no runtime cycle: the store module
  * imports nothing from `model/`).
@@ -481,6 +487,6 @@ export function ledgerModelFromStoreState(
     const entry = state.entriesBySequence.get(sequence)
     if (entry !== undefined) entries.push(entry)
   }
-  const complete = state.total !== null && state.completeThrough >= state.total
+  const complete = state.total !== null && state.orderedSequences.length >= state.total
   return adaptTeamLedger(entries, complete)
 }

@@ -280,8 +280,10 @@ export interface TeamUiProgressRow {
 /**
  * The normalized durable-ledger model (plan §7.1 `TeamUiLedgerModel`;
  * the `...` fields resolved). `completeness` is the authority marker:
- * `partial` while `completeThrough < total` (or the total is unknown);
- * everything that is only meaningful over the WHOLE ledger
+ * `partial` while the LOADED UNIQUE ENTRY COUNT is below the server
+ * total (or the total is unknown) — INV-9.2: sequence and count are
+ * distinct numeric domains, so the sequence frontier is never compared
+ * to the total; everything that is only meaningful over the WHOLE ledger
  * (`progress`, `pendingControlByInstance`) is empty under `partial`.
  */
 export interface TeamUiLedgerModel {

@@ -18,7 +18,8 @@
  * ledger head, so there is no "older than loaded" state: the depth append
  * over the loaded set covers everything displayable, and the legacy
  * counted-remainder fact re-binds to the partial-ledger remainder
- * (`total - completeThrough`).
+ * (`total` minus the LOADED UNIQUE ENTRY COUNT — a count-domain rule per
+ * INV-9.2; the sequence frontier never subtracts from the total).
  *
  * Row families (plan §8.9): one family per frozen fact type, plus the
  * safe GENERIC row for unknown / future fact types (factType + sequence +
@@ -131,7 +132,12 @@ export interface TeamLedgerSectionModel {
   readonly hasMore: boolean
   /** The loaded completeness (the adapter's authority marker). */
   readonly complete: boolean
-  /** Entries beyond the loaded frontier (the partial ledger's counted remainder). */
+  /**
+   * Entries beyond the loaded set (the partial ledger's counted
+   * remainder: the server total minus the loaded unique entry count —
+   * count domain per INV-9.2; 0 when the total is unknown or fully
+   * loaded).
+   */
   readonly remainingCount: number
 }
 
@@ -142,9 +148,13 @@ export interface TeamLedgerSectionInput {
   /** How many of the most recent filtered rows the section currently renders. */
   readonly loadedCount: number
   readonly filter: TeamLedgerFilter
-  /** The store's ledger total (null before the first page). */
+  /** The store's ledger total (null before the first page; a per-team COUNT). */
   readonly total: number | null
-  /** The store's loaded frontier (the highest loaded sequence). */
+  /**
+   * The store's loaded frontier (the highest loaded SEQUENCE — a
+   * SEQUENCE-domain fact; the remainder derives from the loaded entry
+   * count, never from this value — INV-9.2).
+   */
   readonly completeThrough: number
 }
 
@@ -338,7 +348,10 @@ function buildRow(
  *   ledger's counted remainder.
  */
 export function deriveTeamLedgerSection(input: TeamLedgerSectionInput): TeamLedgerSectionModel {
-  const { ledger, snapshot, loadedCount, filter, total, completeThrough } = input
+  // `completeThrough` (the SEQUENCE-domain frontier) is NOT read: the
+  // remainder is a count-domain subtraction (INV-9.2, F11) — it derives
+  // from the loaded unique entry count, never from the frontier.
+  const { ledger, snapshot, loadedCount, filter, total } = input
 
   const labels = new Map<string, string>()
   const navSessions = new Map<string, string>()
@@ -381,7 +394,12 @@ export function deriveTeamLedgerSection(input: TeamLedgerSectionInput): TeamLedg
   const filteredTotal = items.length
   const limit = Math.max(0, Math.min(loadedCount, filteredTotal))
   const rows = items.slice(filteredTotal - limit).map(item => item.row)
-  const remainingCount = total === null ? 0 : Math.max(0, total - completeThrough)
+  // INV-9.2 (F11): the remainder is a COUNT-domain subtraction — the
+  // server's per-team total minus the loaded unique entry count. The
+  // sequence frontier is never subtracted (a shifted base, e.g. total 68
+  // with frontier 118 and 50 loaded, would have under-reported the
+  // remainder to 0).
+  const remainingCount = total === null ? 0 : Math.max(0, total - ledger.entries.length)
   return {
     rows,
     total: filteredTotal,
