@@ -23,7 +23,24 @@
  * production wiring therefore only uses strictly SEQUENTIAL acquisitions
  * (release, then re-acquire — e.g. the activity ledger's facade audit fact
  * releases the chain before its guarded commit re-acquires it) and never a
- * nested one. The ActivationProvider deliberately keeps its PRIVATE map
+ * nested one.
+ *
+ * INV-9.1 (repair-r1 F3-A) — the member work chain is the canonical
+ * LONG-HOLD case of this rule. Its three lock-scope phases
+ * (`work-execution.ts`): Phase A (admission — gate + CAS + fact +
+ * interval open) runs in ONE acquisition; the chain is then RELEASED
+ * while Phase B delivers the member's model turn — so the member's own
+ * team tools (e.g. `team_report_progress`) can re-enter the router's
+ * facade and acquire the SAME chain during the turn (holding the chain
+ * across the turn is exactly the deadlock this split removes); Phase C
+ * (settlement) re-acquires the SAME chain WITHOUT the request signal
+ * (a request aborted during delivery still settles — Phase C durability
+ * after abort). The documented H3 overlap semantics (a second work unit
+ * for the same instance admitted during the first's delivery, converging
+ * via the fresh-read settlement) follow from the release — see
+ * `work-execution.ts` for the full note.
+ *
+ * The ActivationProvider deliberately keeps its PRIVATE map
  * (see the production root wiring comment): sharing this chain would make
  * the router-mediated flow deadlock, which is itself the proof that every
  * production provider write already sits inside this chain's critical

@@ -37,6 +37,17 @@
  * provider's own per-team lock (the quota/instance-id protocol), which is
  * nested inside the router lock — no deadlock (the provider never calls
  * back into the router).
+ *
+ * WORK CHAIN LOCK SCOPE (INV-9.1, repair-r1 F3-A): the P8-S3 work chain
+ * no longer runs end-to-end inside the effect acquisition. Its Phase A
+ * (admission) runs INSIDE it (the new-work path: compatibility gate +
+ * Phase A in one acquisition), the acquisition is then RELEASED, and
+ * Phase B (delivery — the member's model turn, during which the member's
+ * own team tools re-enter this facade and take the SAME chain — the F3
+ * deadlock) + Phase C (settlement — re-acquired WITHOUT the request
+ * signal, N6) run outside it, as a {@link WorkChainStage} completed by
+ * the router. See `work-execution.ts` for the full topology + the
+ * documented H3 overlap semantics.
  */
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 import { CAPABILITY_NAME_VALUES } from '../../domain/policy/src/index.js';
@@ -50,17 +61,26 @@ import { archiveMember, disposeMember, restoreMember } from '../lifecycle/index.
 import { isLifecycleRuntimeError } from '../lifecycle/errors.js';
 import { effectivePolicyView, memberSummary } from '../admission/types.js';
 import { ACTION_NAMES } from '../admission/actions.js';
-import { executeWorkChain } from './work-execution.js';
+import { admitWorkLocked, completeWorkChainAfterAdmission, } from './work-execution.js';
 /** The durable fact families (see admission/actions.ts for the contract). */
 const FACT_WORK_ADMITTED = 'team-work-admitted';
 const FACT_LIFECYCLE_CHANGED = 'member-lifecycle-changed';
 const FACT_COORDINATION = 'team-coordination-recorded';
+/** The type guard for a staged work-chain effect (plain data effects are
+ *  closed JSON records — they never carry a `complete` function). */
+export function isWorkChainStage(value) {
+    return 'complete' in value;
+}
 /**
  * Execute the action's effect under the per-team lock.
  *
- * @param teamLocks - the per-team promise-chain map (owned by the runtime).
+ * @param teamLocks - the per-team promise-chain map (owned by the runtime
+ *   or shared — INV-9.1).
  * @param ctx - the effect context.
- * @returns the durable effect (lossless JSON).
+ * @returns the durable effect (lossless JSON) — for a full-wiring work
+ *   chain this acquisition completes Phase A only and returns the
+ *   {@link WorkChainStage}; the router completes Phase B/C after the lock
+ *   is released.
  */
 export function executeEffect(teamLocks, ctx) {
     if (ctx.spec.category === 'read')
@@ -70,12 +90,15 @@ export function executeEffect(teamLocks, ctx) {
 /**
  * Execute the action's effect WITHOUT acquiring the per-team lock — the
  * caller must already hold this runtime's team chain for
- * `ctx.rootSessionId` (P8-S5B: the new-work admission path holds the chain
- * across the compatibility gate AND the effect in one acquisition, so the
- * effect itself must not re-acquire it — chains are not re-entrant).
+ * `ctx.rootSessionId` (P8-S5B: the new-work admission path holds the
+ * chain across the compatibility gate AND Phase A of the work effect in
+ * one acquisition — the CR-8/R5 rule, preserved by INV-9.1 — so the
+ * effect itself must not re-acquire it; chains are not re-entrant).
  *
  * @param ctx - the effect context.
- * @returns the durable effect (lossless JSON).
+ * @returns the durable effect (lossless JSON), or the staged work chain
+ *   (Phase A complete; Phase B/C run after the caller's acquisition
+ *   releases — the router's job).
  */
 export function executeEffectLocked(ctx) {
     return runEffect(ctx);
@@ -279,7 +302,7 @@ async function runWorkAdmission(ctx, actionLabel) {
 async function admitWorkOn(ctx, fresh, actionLabel) {
     const chain = workChainPorts(ctx);
     if (chain !== undefined) {
-        return runWorkChainOn(ctx, fresh, actionLabel, chain);
+        return stageWorkChainOn(ctx, fresh, actionLabel, chain);
     }
     const from = fresh.lifecycle;
     let lifecycleCommitted = false;
@@ -314,16 +337,47 @@ function workChainPorts(ctx) {
     }
     return { lifecycleCommit, workDelivery, workActivity };
 }
-/** The P8-S3 vertical chain on an admitted target (R1). */
-async function runWorkChainOn(ctx, fresh, actionLabel, chain) {
-    const result = await executeWorkChain({
+/**
+ * The P8-S3 vertical chain in STAGED form (INV-9.1, repair-r1 F3-A).
+ * Phase A (fresh read, dedup scan, CAS + admission fact, activity-
+ * interval open) runs INLINE here — the caller (the router's new-work
+ * acquisition) already holds this team's chain, and the compatibility
+ * gate and Phase A stay in ONE acquisition (H5/CR-8: a racing new-work
+ * consultation cannot interleave its re-probe into this window). A
+ * REPLAY completes the chain inside the lock (zero writes, zero
+ * delivery — no Phase B/C); an ADMITTED unit returns the
+ * {@link WorkChainStage} — Phase B (delivery: NO shared lock, the
+ * member's own team tools proceed on the same chain — the F3 hang
+ * removed) and Phase C (settlement: re-acquires the SAME chain WITHOUT
+ * the request signal, N6) run after the caller's acquisition releases.
+ */
+async function stageWorkChainOn(ctx, fresh, actionLabel, chain) {
+    const deps = workChainDeps(ctx, fresh.instanceId, actionLabel, chain);
+    const phaseA = await admitWorkLocked(deps);
+    if (phaseA.kind === 'replay') {
+        return mapWorkChainEffect(phaseA.result);
+    }
+    return {
+        complete: async () => {
+            const result = await completeWorkChainAfterAdmission(deps, phaseA);
+            return mapWorkChainEffect(result);
+        },
+    };
+}
+/**
+ * The WorkChainDeps of one staged chain (the ports + identity + the
+ * model-visible content + the shared chain map for Phase C re-acquisition
+ * — INV-9.1).
+ */
+function workChainDeps(ctx, instanceId, actionLabel, chain) {
+    return {
         repositories: ctx.repositories,
         lifecycleCommit: chain.lifecycleCommit,
         workDelivery: chain.workDelivery,
         workActivity: chain.workActivity,
         now: ctx.now,
         rootSessionId: ctx.rootSessionId,
-        instanceId: fresh.instanceId,
+        instanceId,
         action: actionLabel,
         caller: ctx.caller,
         requestToken: ctx.request.requestToken,
@@ -335,7 +389,12 @@ async function runWorkChainOn(ctx, fresh, actionLabel, chain) {
         // already did; the follow-up path dropped it — an abort mid-
         // follow-up-delivery was not honored until the next boundary).
         ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
-    });
+        teamLocks: ctx.teamLocks,
+    };
+}
+/** Map one chain outcome to the closed `work-admitted` effect (v2 D2
+ *  carriers unchanged). */
+function mapWorkChainEffect(result) {
     return {
         kind: 'work-admitted',
         instanceId: result.instanceId,
@@ -489,34 +548,39 @@ async function runDelegate(ctx) {
         // it continues into the work chain on the new instance (admission,
         // delivery, settlement). The effect kind stays `member-activated` (the
         // creation is the headline effect; the work fields extend it).
+        // INV-9.1 (repair-r1 F3-A): Phase A runs inline here — the provider's
+        // durable writes and the admission share this ONE chain acquisition;
+        // the admitted unit returns the stage (Phase B without the chain,
+        // Phase C re-acquired without the request signal).
         const fresh = ctx.repositories.memberInstances.get(ctx.rootSessionId, result.instanceId);
         if (fresh === undefined) {
             internalInvariant('the provider activated an instance but its member row is missing');
         }
-        const work = await executeWorkChain({
-            repositories: ctx.repositories,
-            lifecycleCommit: chain.lifecycleCommit,
-            workDelivery: chain.workDelivery,
-            workActivity: chain.workActivity,
-            now: ctx.now,
-            rootSessionId: ctx.rootSessionId,
-            instanceId: result.instanceId,
-            action: 'delegate',
-            caller: ctx.caller,
-            requestToken: ctx.request.requestToken,
-            prompt: String(ctx.request.payload?.['prompt'] ?? ''),
-            ...(optionalStringField(ctx.request.payload, 'attachedContext')),
-            ...(optionalStringField(ctx.request.payload, 'taskSummary')),
-            ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
-        });
+        const deps = workChainDeps(ctx, result.instanceId, 'delegate', chain);
+        const phaseA = await admitWorkLocked(deps);
+        if (phaseA.kind === 'replay') {
+            return {
+                ...activated,
+                workSequence: phaseA.result.sequence,
+                workSettled: phaseA.result.settled,
+                // v2 D2 (task C2): the replay's synthesized result rides the same
+                // carriers (unavailable/WORK_REPLAYED — no re-delivery, zero writes).
+                ...(phaseA.result.memberResult !== undefined ? { memberResult: phaseA.result.memberResult } : {}),
+            };
+        }
         return {
-            ...activated,
-            workSequence: work.sequence,
-            workSettled: work.settled,
-            // v2 D2 (task C2): the delegate-create's chain result rides the same
-            // carriers as the follow-up path (the Leader sees the member's
-            // business outcome on the creation effect itself).
-            ...(work.memberResult !== undefined ? { memberResult: work.memberResult } : {}),
+            complete: async () => {
+                const work = await completeWorkChainAfterAdmission(deps, phaseA);
+                return {
+                    ...activated,
+                    workSequence: work.sequence,
+                    workSettled: work.settled,
+                    // v2 D2 (task C2): the delegate-create's chain result rides the same
+                    // carriers as the follow-up path (the Leader sees the member's
+                    // business outcome on the creation effect itself).
+                    ...(work.memberResult !== undefined ? { memberResult: work.memberResult } : {}),
+                };
+            },
         };
     }
     // continued: the provider did NO durable write; the router admits the

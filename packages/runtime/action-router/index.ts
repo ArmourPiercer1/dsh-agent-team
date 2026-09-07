@@ -19,15 +19,25 @@
  */
 
 export { createTeamRuntime } from './router.js'
-export { executeEffect, withTeamLock, commitDurableFact } from './effects.js'
-export type { EffectContext } from './effects.js'
+export { executeEffect, isWorkChainStage, withTeamLock, commitDurableFact } from './effects.js'
+export type { EffectContext, WorkChainStage } from './effects.js'
 export {
+  admitWorkLocked,
+  completeWorkChainAfterAdmission,
+  deliverWork,
   executeWorkChain,
   scanWorkUnitFacts,
   settleAdmittedWork,
+  settleWorkLocked,
   WORK_ACTIVITY_SUBJECT,
 } from './work-execution.js'
-export type { WorkChainDeps, WorkChainResult, WorkUnitFacts, SettleOutcome } from './work-execution.js'
+export type {
+  WorkChainDeps,
+  WorkChainPhaseA,
+  WorkChainResult,
+  WorkUnitFacts,
+  SettleOutcome,
+} from './work-execution.js'
 export {
   createAdmitRootInitialWork,
   computeRootWorkPayloadFingerprint,

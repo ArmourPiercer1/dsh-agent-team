@@ -12,11 +12,67 @@
  *   `settleAdmittedWork` (R5: the single production settlement owner) ->
  *   RUNNING -> SETTLED CAS + `member-lifecycle-changed` fact.
  *
- * The chain runs INSIDE the router's per-team lock (the caller is
- * `runEffect`, which serializes every effect of one team) — it takes no
- * lock of its own, and the injected `WorkActivityPort` is the in-facade
- * interval writer (guarded commit only, no facade stage, no second lock
- * map), so no re-entrant lock is ever acquired.
+ * LOCK TOPOLOGY (INV-9.1, repair-r1 F3-A: the three-phase lock split).
+ * The chain is ONE logical operation in THREE lock-scope phases — the
+ * shared per-team chain (the router's `teamLocks` map; the production
+ * root wires the same map into the activity ledger's guarded commit, the
+ * lifecycle service and the Root initial-work authority) is NEVER held
+ * across the model-visible turn:
+ *
+ *   Phase A `admitWorkLocked` — fresh read + dedup scan +
+ *     (replay | CAS + admission fact) + activity-interval open. Runs
+ *     UNDER the chain acquisition, WITH the request signal (an abort
+ *     while waiting rejects with the abort reason and admits nothing).
+ *     On the router-mediated new-work path the acquisition is the
+ *     router's own: the compatibility gate AND Phase A run in ONE
+ *     acquisition (the CR-8/R5 rule is preserved — a racing new-work
+ *     consultation cannot interleave its re-probe into this
+ *     consultation's read→probe→re-read→admit window).
+ *   Phase B `deliverWork` — the WorkDeliveryPort call ONLY. Runs
+ *     WITHOUT the shared chain (the chain is released before delivery
+ *     starts), with the request signal (an abort cancels the live
+ *     turn — the pre-fix behavior). This is what frees the team while
+ *     the member's turn runs: the member's own team tools (e.g.
+ *     `team_report_progress` — the F3 hang) re-enter the router's
+ *     facade and acquire the SAME chain; they must not queue behind
+ *     the delivery that started them (the deadlock this split removes).
+ *   Phase C `settleWorkLocked` — activity-interval close +
+ *     `settleAdmittedWork` / fail-closed settlement. RE-ACQUIRES the
+ *     same chain (strictly sequential with every other team-mutating
+ *     op) WITHOUT the request signal: a request aborted during delivery
+ *     still gets its fail-closed settlement committed (N6/H4 — Phase C
+ *     durability after abort).
+ *
+ * On a delivery fault Phase C (fail-closed) runs FIRST and the
+ * `WORK_DELIVERY_FAILED` throw comes AFTER the settlement is durable
+ * (N3: throw-after-settle — never a fake RUNNING, and the leader's
+ * typed rejection always lands on a settled member).
+ *
+ * `executeWorkChain` is the three-phase orchestrator (the direct test
+ * seam): with `teamLocks` installed it performs the Phase A / Phase C
+ * acquisitions itself; the router-mediated path instead runs Phase A
+ * inline inside the router's gate acquisition and completes Phase B/C
+ * through `completeWorkChainAfterAdmission` after the lock is released.
+ * Both paths share the SAME phase bodies — one admission algorithm, one
+ * delivery call, one settlement owner. The injected `WorkActivityPort`
+ * is the in-facade interval writer (guarded commit only, no facade
+ * stage, no second lock map), so no re-entrant lock is ever acquired.
+ *
+ * OVERLAP SEMANTICS (H3, documented): Phase B holds no chain, so a
+ * second work unit for the SAME instance MAY be admitted (its own
+ * Phase A) while the first unit's delivery is still in flight: both
+ * units carry their own admission fact and their own interval
+ * (correlation = their own requestToken — the interval guard's
+ * per-correlation invariant is untouched). At Phase C both settle
+ * through the SAME fresh-read convergence (`settleAdmittedWork`): the
+ * first to settle commits the RUNNING -> SETTLED transition; the other
+ * converges on the fresh record (already SETTLED -> it writes only its
+ * own settlement fact, the crash-window repair branch, no state
+ * commit). Both settlement facts are durable, the member ends
+ * durably SETTLED, and no RUNNING state survives — the overlap is a
+ * documented, convergent interleave, not a race the chain must hide.
+ * (The Root initial-work closure — `root-initial-work.ts` — keeps its
+ * own one-shot acquisition and is outside this seam: repair-r1 F3-B.)
  *
  * RETRY PROTOCOL (requestToken = the stable operation identity; the
  * visible/deduped at-least-once contract, closure plan §CR2):
@@ -88,8 +144,19 @@ export declare const WORK_ACTIVITY_SUBJECT = "work-unit";
 export declare const WORK_RESULT_CODE_REPLAYED = "WORK_REPLAYED";
 /**
  * Everything one work chain execution needs (read-phase outputs + the
- * injected work ports). The caller MUST already hold the router's
- * per-team lock for `rootSessionId`.
+ * injected work ports).
+ *
+ * Lock scope (INV-9.1): the phase BODIES (`admitWorkLocked`,
+ * `deliverWork`, `settleWorkLocked`) take no lock of their own — the
+ * caller owns the acquisition boundary. With `teamLocks` installed,
+ * `executeWorkChain` performs the Phase A acquisition (with the request
+ * signal) and the Phase C acquisition (without it) on that map; the
+ * router-mediated path holds the router's gate acquisition across
+ * Phase A and re-acquires for Phase C through
+ * `completeWorkChainAfterAdmission`. `teamLocks` is absent ONLY in the
+ * direct test seam (the `runChainDirect` shape): the phases then run
+ * without the shared chain (the test world is single-threaded per
+ * world).
  */
 export interface WorkChainDeps {
     readonly repositories: TeamDomainRepositories;
@@ -113,6 +180,14 @@ export interface WorkChainDeps {
     readonly taskSummary?: string;
     /** Transient cancellation signal for the live delivery; never durable. */
     readonly signal?: unknown;
+    /** The shared per-team operation chain (the router's `teamLocks` map —
+     *  the same map the production root wires into the activity ledger's
+     *  guarded commit, the lifecycle service and the Root initial-work
+     *  authority; INV-9.1). Present: `executeWorkChain` acquires it for
+     *  Phase A (WITH the request signal) and re-acquires it for Phase C
+     *  (WITHOUT the request signal); Phase B never holds it. Absent: the
+     *  direct test seam runs the phases without the shared chain. */
+    readonly teamLocks?: Map<string, Promise<unknown>>;
 }
 /** The durable work-unit facts found by the dedup scan (min sequence each). */
 export interface WorkUnitFacts {
@@ -180,10 +255,96 @@ export interface SettleOutcome {
  */
 export declare function scanWorkUnitFacts(repositories: TeamDomainRepositories, rootSessionId: string, requestToken: string): WorkUnitFacts;
 /**
- * Execute the full work chain for one admitted work request.
+ * Phase A (admission) of the work chain (INV-9.1): the fresh read, the
+ * dedup scan, the replay shortcut, the (full-mode) CAS + admission fact,
+ * and the activity-interval open — the complete pre-delivery durable
+ * half. Takes NO lock of its own: the caller owns the acquisition
+ * boundary (the router's gate acquisition on the mediated path; the
+ * orchestrator's own Phase A acquisition with the request signal on the
+ * direct seam).
  *
  * @param deps - the chain dependencies (ports, identity, model-visible
- *        content). The caller must hold the router's per-team lock.
+ *   content).
+ * @returns `replay` — the unit completed durably on an earlier attempt:
+ *   the chain is DONE (zero writes, zero delivery; no Phase B/C) — or
+ *   `admitted` — the unit is durably admitted and owes Phase B/C.
+ * @throws LIFECYCLE_COMMIT_UNAVAILABLE (zero writes) when the ports are
+ *   absent; INSTANCE_NOT_FOUND when the target vanished;
+ *   LIFECYCLE_TRANSITION_REJECTED on an illegal ADMIT_WORK edge;
+ *   DURABLE_WRITE_FAILED on durable protocol faults (an interval-open
+ *   fault fails the unit closed FIRST and rethrows the mapped fault).
+ */
+export declare function admitWorkLocked(deps: WorkChainDeps): Promise<WorkChainPhaseA>;
+/**
+ * The Phase A outcome (INV-9.1): `replay` — the chain is DONE with the
+ * synthesized result (no Phase B/C); `admitted` — the unit is durably
+ * admitted (fact + interval open; full mode: CAS committed) and owes
+ * Phase B (delivery) + Phase C (settlement).
+ */
+export type WorkChainPhaseA = {
+    readonly kind: 'replay';
+    readonly result: WorkChainResult;
+} | {
+    readonly kind: 'admitted';
+    readonly mode: 'full' | 'resume';
+    readonly childSessionId: string;
+    readonly fromLifecycle: MemberInstanceRecordDto['lifecycle'];
+    readonly lifecycleCommitted: boolean;
+    readonly sequence: number;
+};
+/**
+ * Phase B (delivery) of the work chain (INV-9.1): the WorkDeliveryPort
+ * call ONLY — the model-visible prompt/context goes to the member's
+ * child session and the turn's completion is observed. Runs WITHOUT the
+ * shared per-team chain (the member's own team tools can re-enter the
+ * router's facade on the same chain during this window — the F3 hang the
+ * split removes), with the request signal (an abort cancels the live
+ * turn; the pre-fix behavior). Takes no lock of its own.
+ *
+ * @throws on any delivery/observation fault (fail-closed settlement is
+ *   the caller's job — see {@link completeWorkChainAfterAdmission}).
+ */
+export declare function deliverWork(deps: WorkChainDeps, admitted: {
+    readonly childSessionId: string;
+}): Promise<WorkDeliveryResult>;
+/**
+ * Phase C (settlement) of the work chain (INV-9.1): the activity-interval
+ * close + `settleAdmittedWork` (the single production settlement owner)
+ * for a SUCCESSFUL delivery. Takes no lock of its own: the caller owns
+ * the Phase C acquisition (WITHOUT the request signal — N6).
+ */
+export declare function settleWorkLocked(deps: WorkChainDeps, admitted: {
+    readonly mode: 'full' | 'resume';
+    readonly childSessionId: string;
+    readonly fromLifecycle: MemberInstanceRecordDto['lifecycle'];
+    readonly lifecycleCommitted: boolean;
+    readonly sequence: number;
+}, delivered: WorkDeliveryResult): Promise<WorkChainResult>;
+/**
+ * Phase B + Phase C of an ALREADY-ADMITTED unit (INV-9.1): the delivery
+ * WITHOUT the shared chain, then the settlement re-acquired on the SAME
+ * chain WITHOUT the request signal. Shared by the `executeWorkChain`
+ * orchestrator (direct seam) and the router-mediated staged path (where
+ * Phase A ran inside the router's gate acquisition and the lock is
+ * released before this is called).
+ *
+ * @throws WORK_DELIVERY_FAILED (fail-closed settlement already committed
+ *   — N3: throw-after-settle) on any delivery fault; DURABLE_WRITE_FAILED
+ *   when the fail-closed settlement ITSELF faults (the original fault in
+ *   `details`); DURABLE_WRITE_FAILED on durable protocol faults.
+ */
+export declare function completeWorkChainAfterAdmission(deps: WorkChainDeps, admitted: Extract<WorkChainPhaseA, {
+    readonly kind: 'admitted';
+}>): Promise<WorkChainResult>;
+/**
+ * Execute the full work chain for one admitted work request — the
+ * THREE-PHASE ORCHESTRATOR (INV-9.1, module docs): Phase A under the
+ * chain (with the request signal) → Phase B without the chain → Phase C
+ * re-acquired (without the request signal). With `teamLocks` absent
+ * (the direct test seam) the phases run without the shared chain.
+ *
+ * @param deps - the chain dependencies (ports, identity, model-visible
+ *        content, the optional shared chain).
  * @returns the chain outcome (see {@link WorkChainResult}).
  * @throws WORK_DELIVERY_FAILED (fail-closed settlement already performed)
  *   on any delivery fault; LIFECYCLE_COMMIT_UNAVAILABLE (zero writes) when

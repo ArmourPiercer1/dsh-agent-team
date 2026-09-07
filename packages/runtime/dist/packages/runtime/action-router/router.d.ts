@@ -35,7 +35,13 @@
  *      creation/delegate effects (single source of truth; the provider
  *      serializes per team) — QUOTA_EXCEEDED_*;
  *   7. EFFECT — the durable writes under the per-team lock (fresh views;
- *      state first, evidence second — see action-router/effects.ts).
+ *      state first, evidence second — see action-router/effects.ts). For
+ *      the full-wiring WORK chain the effect is three-phased (INV-9.1,
+ *      repair-r1 F3-A): Phase A (admission) stays under the lock TOGETHER
+ *      with the gate (step 5); the lock is then released and Phase B
+ *      (delivery — the member's turn, no shared lock) + Phase C
+ *      (settlement — re-acquired WITHOUT the request signal) run outside
+ *      it. See `work-execution.ts` for the topology.
  */
 import type { TeamRuntime, TeamRuntimeOptions } from '../admission/index.js';
 /**

@@ -1232,14 +1232,14 @@ describe('P8-S3b (v2 D2, task C2): the effect carriers of the frozen member resu
     expect(e34.failedStatus).toBe('failed')
     expect(e34.failedCode).toBe('WORK_TURN_ERROR')
     expect(e34.failedMessage).toBe('llm call failed (contained in the turn)')
-    expect(e34.failedBody).toBeUndefined()
+    expect(e34.failedBody).toBe(undefined)
     expect(e34.failedSettled).toBe(true)
   })
 
   it('E4: unavailable — completed-without-body maps to unavailable on the effect, NOT succeeded', () => {
     expect(e34.unavailableStatus).toBe('unavailable')
     expect(e34.unavailableCode).toBe('WORK_NO_ASSISTANT_BODY')
-    expect(e34.unavailableBody).toBeUndefined()
+    expect(e34.unavailableBody).toBe(undefined)
     expect(e34.unavailableSettled).toBe(true)
   })
 

@@ -1121,14 +1121,14 @@ describe('P8-S3 work execution chain (R1–R6, package level)', () => {
     expect(c1s2.failedStatus).toBe('failed')
     expect(c1s2.failedCode).toBe('WORK_TURN_ERROR')
     expect(c1s2.failedMessage).toBe('llm call failed (contained in the turn)')
-    expect(c1s2.failedBody).toBeUndefined()
+    expect(c1s2.failedBody).toBe(undefined)
     expect(c1s2.failedToken).toBe('tok-c1-s2f')
     // unavailable: the turn completed but no readable body is available
     expect(c1s2.unavailableMode).toBe('full')
     expect(c1s2.unavailableSettled).toBe(true)
     expect(c1s2.unavailableStatus).toBe('unavailable')
     expect(c1s2.unavailableCode).toBe('WORK_NO_ASSISTANT_BODY')
-    expect(c1s2.unavailableBody).toBeUndefined()
+    expect(c1s2.unavailableBody).toBe(undefined)
     expect(c1s2.unavailableToken).toBe('tok-c1-s2u')
     // settled (control plane) and the business status stay separate
     expect(c1s2.failedSettled && c1s2.failedStatus !== 'succeeded').toBe(true)

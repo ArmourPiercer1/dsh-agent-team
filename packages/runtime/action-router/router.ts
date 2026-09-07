@@ -35,7 +35,13 @@
  *      creation/delegate effects (single source of truth; the provider
  *      serializes per team) — QUOTA_EXCEEDED_*;
  *   7. EFFECT — the durable writes under the per-team lock (fresh views;
- *      state first, evidence second — see action-router/effects.ts).
+ *      state first, evidence second — see action-router/effects.ts). For
+ *      the full-wiring WORK chain the effect is three-phased (INV-9.1,
+ *      repair-r1 F3-A): Phase A (admission) stays under the lock TOGETHER
+ *      with the gate (step 5); the lock is then released and Phase B
+ *      (delivery — the member's turn, no shared lock) + Phase C
+ *      (settlement — re-acquired WITHOUT the request signal) run outside
+ *      it. See `work-execution.ts` for the topology.
  */
 
 import {
@@ -49,13 +55,14 @@ import {
   validateActionRequest,
 } from '../admission/index.js'
 import type {
+  RuntimeActionEffect,
   TeamRuntime,
   TeamRuntimeActionOutcome,
   TeamRuntimeActionRequest,
   TeamRuntimeOptions,
 } from '../admission/index.js'
-import { executeEffect, executeEffectLocked, withTeamLock, asAbortLike } from './effects.js'
-import type { EffectContext } from './effects.js'
+import { executeEffect, executeEffectLocked, isWorkChainStage, withTeamLock, asAbortLike } from './effects.js'
+import type { EffectContext, WorkChainStage } from './effects.js'
 
 /**
  * Create the TeamRuntime over the injected ports.
@@ -94,14 +101,16 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
     enforceEnvelope(spec, envelope)
 
     // Step 5/6/7 — the effect phase. For NEW WORK admissions the
-    // compatibility gate and the effect run in ONE team-chain acquisition
-    // (P8-S5B, CR-8/R5): the gate may re-probe inline (a durable
-    // compatibility write), so a racing new-work admission for the same
-    // team cannot interleave its own re-probe into this consultation's
-    // read→probe→re-read window. Non-new-work actions keep the documented
-    // order: steps 1–4 outside the lock, the effect alone inside it.
-    // (Quota inside the provider for creation; durable writes under the
-    // per-team lock.)
+    // compatibility gate and Phase A of the work effect (the admission:
+    // fresh read, dedup scan, CAS + admission fact, activity-interval
+    // open) run in ONE team-chain acquisition (P8-S5B, CR-8/R5, preserved
+    // by INV-9.1): the gate may re-probe inline (a durable compatibility
+    // write), so a racing new-work admission for the same team cannot
+    // interleave its own re-probe into this consultation's
+    // read→probe→re-read→admit window. Non-new-work actions keep the
+    // documented order: steps 1–4 outside the lock, the effect alone
+    // inside it. (Quota inside the provider for creation; durable writes
+    // under the per-team lock.)
     const ctx: EffectContext = {
       repositories,
       activationProvider: options.activationProvider,
@@ -116,9 +125,10 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
       workDelivery: options.workDelivery,
       workActivity: options.workActivity,
       lifecyclePorts: options.lifecyclePorts,
+      teamLocks,
       ...(resolved.target !== undefined ? { target: resolved.target } : {}),
     }
-    const effect = isNewWorkAdmission(spec)
+    const staged: RuntimeActionEffect | WorkChainStage = isNewWorkAdmission(spec)
       ? await withTeamLock(teamLocks, rootSessionId, async () => {
           const environmentFacts = await options.environmentFacts()
           await enforceCompatibilityGate(
@@ -131,6 +141,18 @@ export function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime {
           return executeEffectLocked(ctx)
         }, asAbortLike(request.signal))
       : await executeEffect(teamLocks, ctx)
+
+    // INV-9.1 (repair-r1 F3-A): a full-wiring work admission returns the
+    // STAGED chain — Phase A completed inside the acquisition above and
+    // the chain is now RELEASED. `complete` runs Phase B (delivery: NO
+    // shared lock — the member's own team tools, e.g.
+    // `team_report_progress`, re-enter this facade and take the SAME
+    // chain while the turn runs: the F3 deadlock removed) and Phase C
+    // (settlement: re-acquires the SAME chain WITHOUT the request signal
+    // — N6/H4: a request aborted during delivery still gets its
+    // fail-closed settlement committed) outside it. Every other effect
+    // (and the P6-T2 evidence wiring) is plain data — no staging.
+    const effect = isWorkChainStage(staged) ? await staged.complete() : staged
 
     return {
       status: 'executed',

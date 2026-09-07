@@ -37,6 +37,17 @@
  * provider's own per-team lock (the quota/instance-id protocol), which is
  * nested inside the router lock — no deadlock (the provider never calls
  * back into the router).
+ *
+ * WORK CHAIN LOCK SCOPE (INV-9.1, repair-r1 F3-A): the P8-S3 work chain
+ * no longer runs end-to-end inside the effect acquisition. Its Phase A
+ * (admission) runs INSIDE it (the new-work path: compatibility gate +
+ * Phase A in one acquisition), the acquisition is then RELEASED, and
+ * Phase B (delivery — the member's model turn, during which the member's
+ * own team tools re-enter this facade and take the SAME chain — the F3
+ * deadlock) + Phase C (settlement — re-acquired WITHOUT the request
+ * signal, N6) run outside it, as a {@link WorkChainStage} completed by
+ * the router. See `work-execution.ts` for the full topology + the
+ * documented H3 overlap semantics.
  */
 import type { MemberInstanceRecordDto } from '../../contracts/src/index.js';
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js';
@@ -73,26 +84,60 @@ export interface EffectContext {
     /** The read-phase target (instance-targeted actions; re-read fresh in the
      *  effect — the fresh view is authoritative). */
     readonly target?: MemberInstanceRecordDto;
+    /** The per-team operation chain map (the runtime's own private map or
+     *  the P8-S5B shared coordinator chain — INV-9.1). The work chain's
+     *  Phase A runs inside the caller's acquisition of this map; Phase C
+     *  (settlement / fail-closed) re-acquires the SAME map after delivery,
+     *  without the request signal. */
+    readonly teamLocks: Map<string, Promise<unknown>>;
 }
+/**
+ * A staged work-chain effect (INV-9.1, repair-r1 F3-A). The full P8-S3
+ * chain splits its lock scope in three: Phase A (admission — fresh read,
+ * dedup scan, CAS + admission fact, activity-interval open) ran INSIDE
+ * the caller's chain acquisition (the new-work path: the compatibility
+ * gate AND Phase A in one acquisition — the CR-8/R5 rule), and the lock
+ * is now RELEASED. `complete` runs Phase B (delivery — NO shared lock;
+ * the member's own team tools can proceed on the same chain — the F3
+ * hang removed) and Phase C (settlement — re-acquires the SAME chain
+ * WITHOUT the request signal, N6) OUTSIDE the caller's acquisition. A
+ * delivery fault settles fail-closed FIRST, then throws
+ * WORK_DELIVERY_FAILED (N3: throw-after-settle). Plain data effects
+ * (every other action, and the P6-T2 evidence wiring) never stage: they
+ * complete inside the acquisition.
+ */
+export interface WorkChainStage {
+    readonly complete: () => Promise<RuntimeActionEffect>;
+}
+/** The type guard for a staged work-chain effect (plain data effects are
+ *  closed JSON records — they never carry a `complete` function). */
+export declare function isWorkChainStage(value: RuntimeActionEffect | WorkChainStage): value is WorkChainStage;
 /**
  * Execute the action's effect under the per-team lock.
  *
- * @param teamLocks - the per-team promise-chain map (owned by the runtime).
+ * @param teamLocks - the per-team promise-chain map (owned by the runtime
+ *   or shared — INV-9.1).
  * @param ctx - the effect context.
- * @returns the durable effect (lossless JSON).
+ * @returns the durable effect (lossless JSON) — for a full-wiring work
+ *   chain this acquisition completes Phase A only and returns the
+ *   {@link WorkChainStage}; the router completes Phase B/C after the lock
+ *   is released.
  */
-export declare function executeEffect(teamLocks: Map<string, Promise<unknown>>, ctx: EffectContext): Promise<RuntimeActionEffect>;
+export declare function executeEffect(teamLocks: Map<string, Promise<unknown>>, ctx: EffectContext): Promise<RuntimeActionEffect | WorkChainStage>;
 /**
  * Execute the action's effect WITHOUT acquiring the per-team lock — the
  * caller must already hold this runtime's team chain for
- * `ctx.rootSessionId` (P8-S5B: the new-work admission path holds the chain
- * across the compatibility gate AND the effect in one acquisition, so the
- * effect itself must not re-acquire it — chains are not re-entrant).
+ * `ctx.rootSessionId` (P8-S5B: the new-work admission path holds the
+ * chain across the compatibility gate AND Phase A of the work effect in
+ * one acquisition — the CR-8/R5 rule, preserved by INV-9.1 — so the
+ * effect itself must not re-acquire it; chains are not re-entrant).
  *
  * @param ctx - the effect context.
- * @returns the durable effect (lossless JSON).
+ * @returns the durable effect (lossless JSON), or the staged work chain
+ *   (Phase A complete; Phase B/C run after the caller's acquisition
+ *   releases — the router's job).
  */
-export declare function executeEffectLocked(ctx: EffectContext): Promise<RuntimeActionEffect>;
+export declare function executeEffectLocked(ctx: EffectContext): Promise<RuntimeActionEffect | WorkChainStage>;
 type AbortLike = {
     readonly aborted: boolean;
     readonly reason?: unknown;
