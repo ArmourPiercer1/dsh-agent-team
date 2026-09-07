@@ -167,7 +167,10 @@ import {
   compatibilityRequirementsOf,
 } from '../../compatibility/index.js'
 import type { CompatibilityProber } from '../../compatibility/index.js'
-import { evaluateCompatibility } from '../../../domain/compatibility/src/index.js'
+import {
+  evaluateCompatibility,
+  parseEnvironmentFacts,
+} from '../../../domain/compatibility/src/index.js'
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import type {
   BlueprintCatalog,
@@ -329,7 +332,35 @@ export interface S6RemoteCatalogPort {
   list(): Promise<readonly RemoteSafeRecord[]>
   get(blueprintId: string, blueprintRevision?: number): Promise<RemoteSafeRecord>
 }
-/** Port 2/12 — the pre-creation compatibility probe (`intent.probe`). */
+/**
+ * Port 2/12 — the pre-creation compatibility probe (`intent.probe`).
+ *
+ * T1.4-B (U5/T1-B strict; the shared v4 semantic entry 2, CF2; the wire
+ * shape is UNCHANGED — same v1 method, same params, same result shape;
+ * only the host-side fact completion changed): the probe is a FAITHFUL
+ * PREDICTOR of the post-creation admission gate. It evaluates the SAME
+ * world the gate consumes: the host row-config environment facts (the
+ * same injected source — {@link S6RemoteOptions.environmentFacts})
+ * merged with the caller's wire facts under the strict U5 rule:
+ *
+ * - the caller contributes ONLY the `persona` domain (the selected
+ *   preset is the explicit user intent; the row's persona fact is the
+ *   deployment default and yields to the selection — diverging against
+ *   a required persona makes the probe STRICTER than the gate, the
+ *   documented safe direction; the §7.4 complete:true preset-conflict
+ *   semantics are untouched);
+ * - every other domain is host-only: caller capability claims are
+ *   DISCARDED, not overridden (the fact-forgery hole closed — a wire
+ *   payload cannot self-attest the environment, CR-4 discipline).
+ *
+ * INV-9.4: "A compatibility verdict is authoritative only when every
+ * required requirement domain is represented by an authoritative
+ * environment fact source. Missing required facts remain fail-closed;
+ * the fix for incomplete observation is to complete the observation,
+ * not weaken the verdict." — required → FATAL (no downgrade, no
+ * Continue-anyway), optional → WARNING + the explicit ack path, all
+ * preserved (compatibility red line, Architecture §27.2, invariant 47).
+ */
 export interface S6RemoteIntentPort {
   probe(
     blueprintId: string,
@@ -624,6 +655,26 @@ export interface S6RemoteOptions {
    * team carries no default workspace.
    */
   readonly defaultWorkspace?: string
+  /**
+   * T1.4-B (U5/T1-B strict, CF2 entry 2) — the authoritative host
+   * row-config environment facts: the SAME injected source the
+   * post-creation admission gate consumes (the production root passes
+   * its fresh-read fact thunk over `config.environmentFacts — the very
+   * source the prober / authority / runtime wiring reads).
+   * `intent.probe` merges these with the caller's wire facts under the
+   * strict U5 rule ({@link mergeProbeEnvironmentFacts}): the caller
+   * contributes ONLY the `persona` domain (the selected preset — user
+   * intent); every other domain is taken exclusively from these host
+   * facts (caller capability claims are discarded, not overridden —
+   * the fact-forgery hole closed). Absent (factory / test worlds
+   * without the host entry): the capability world is EMPTY — the
+   * merge still applies, so a caller claim can NEVER substitute for a
+   * host fact (fail-closed, the same direction the admission gate
+   * fails when its facts source is empty; INV-9.4: missing required
+   * facts remain fail-closed — the observation is completed, the
+   * verdict is never weakened).
+   */
+  readonly environmentFacts?: () => Promise<readonly EnvironmentFact[]>
   /**
    * TCM vNext §15.5 (M2) — the narrow workspace attach port (the host
    * entry's closure over the hard-injected public `workspaceRegistry`
@@ -1029,6 +1080,55 @@ function compatibilityCurrentOf(state: Record<string, unknown>): RemoteSafeRecor
       staleAcknowledgement: counts['staleAcknowledgement'],
     },
   }
+}
+
+// --- T1.4-B the strict probe/gate fact merge (U5 / T1-B, CF2 entry 2) -----------------------
+
+/**
+ * T1.4-B (U5/T1-B strict, CF2 entry 2) — the strict probe/gate fact
+ * merge (INV-9.4: the probe and the admission gate evaluate the SAME
+ * world — "complete the observation, never weaken the verdict"):
+ *
+ * - every domain EXCEPT `persona` comes exclusively from the host
+ *   row-config facts — the same injected source the post-creation
+ *   admission gate consumes. The caller's capability claims (any
+ *   non-persona fact on the wire) are DISCARDED: the wire channel
+ *   cannot self-attest the environment (the fact-forgery hole closed —
+ *   a caller claiming `mcpServer/X available: true` against an
+ *   unavailable host row changes nothing, and a caller denying an
+ *   available host capability changes nothing either; CR-4 discipline:
+ *   a claim is input, never authority);
+ * - the `persona` domain is driven by the caller's selected preset
+ *   (the explicit user intent): the row's persona fact is the
+ *   deployment default and yields to the explicit selection. When the
+ *   two diverge against a required persona, the probe is strictly
+ *   STRICTER than the gate (it refuses a creation the gate would
+ *   admit) — the documented safe direction (U5 nuance); the §7.4
+ *   complete:true preset-conflict semantics are untouched. A caller
+ *   without persona facts sees an EMPTY persona world (fail-closed —
+ *   identical to the pre-T1.4 pure-caller evaluation).
+ *
+ * The merge never creates a duplicate (domain, subject) pair across the
+ * two halves (persona subjects come from the caller only; every other
+ * subject from the host only), so the engine's duplicate-fact
+ * validation fires on the merged world exactly as it fired pre-T1.4 on
+ * the caller's own list — the wire validation behavior is unchanged.
+ *
+ * Pure: no I/O, no mutation (returns a new array; the inputs —
+ * deep-frozen domain facts — are never touched).
+ *
+ * @param hostFacts - the authoritative host row-config facts.
+ * @param callerFacts - the caller's (already-validated) wire facts.
+ * @returns the merged environment fact list for the probe evaluation.
+ */
+export function mergeProbeEnvironmentFacts(
+  hostFacts: readonly EnvironmentFact[],
+  callerFacts: readonly EnvironmentFact[],
+): readonly EnvironmentFact[] {
+  return [
+    ...callerFacts.filter((fact) => fact.domain === 'persona'),
+    ...hostFacts.filter((fact) => fact.domain !== 'persona'),
+  ]
 }
 
 // --- the port builders ---------------------------------------------------------------------
@@ -1520,7 +1620,22 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       },
     },
 
-    // --- 2/12 intent: the pure domain probe (no local recompute of durable state) ---
+    // --- 2/12 intent: the host-completed pre-creation probe (T1.4-B) ------------
+    // INV-9.4 — the probe and the post-creation admission gate evaluate the
+    // SAME world: the authoritative host row-config facts (the same
+    // injected source the gate consumes — options.environmentFacts),
+    // completed with the caller's wire facts under the strict U5 rule
+    // ({@link mergeProbeEnvironmentFacts}: the caller contributes ONLY the
+    // persona domain — the selected preset is the explicit user intent;
+    // every other domain is host-only, caller capability claims
+    // discarded — the fact-forgery hole closed). The wire shape is
+    // UNCHANGED (the v1 method, same params, same result shape); the
+    // caller list is validated with the EXACT frozen engine parser first
+    // (malformed caller facts still fail loud MALFORMED_DTO, exactly as
+    // pre-T1.4). Required → FATAL (no downgrade, no Continue-anyway),
+    // optional → WARNING + the explicit ack path, missing host fact →
+    // unavailable → fail-closed: all preserved (Architecture §27.2,
+    // invariant 47).
     intent: {
       async probe(
         blueprintId: string,
@@ -1528,9 +1643,11 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         environmentFacts: readonly RemoteSafeRecord[],
       ): Promise<RemoteSafeRecord> {
         const resolved = resolveBlueprint(blueprintId, blueprintRevision)
+        const callerFacts = parseEnvironmentFacts(environmentFacts)
+        const hostFacts = (await options.environmentFacts?.()) ?? []
         const result = evaluateCompatibility({
           requirements: compatibilityRequirementsOf(resolved),
-          environmentFacts: environmentFacts as unknown as readonly EnvironmentFact[],
+          environmentFacts: mergeProbeEnvironmentFacts(hostFacts, callerFacts),
         })
         return result as unknown as RemoteSafeRecord
       },

@@ -1501,6 +1501,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     ...(config.defaultWorkspace !== undefined
       ? { defaultWorkspace: config.defaultWorkspace }
       : {}),
+    // T1.4-B — the row-config environment facts: the SAME injected source
+    // the post-creation admission gate consumes (the prober / authority /
+    // activation / runtime wiring above all read this very thunk over
+    // `config.environmentFacts`). The intent.probe port merges it with
+    // the caller's persona fact, so the pre-creation probe and the gate
+    // evaluate the same world (INV-9.4 — the T1.4 two-worlds mismatch
+    // closed: the UI probe no longer sees client persona facts only, and
+    // a required MCP present in the row facts now passes the pre-create
+    // probe exactly as it passes the gate).
+    environmentFacts,
     repositories: repos,
     catalog,
     blueprint,

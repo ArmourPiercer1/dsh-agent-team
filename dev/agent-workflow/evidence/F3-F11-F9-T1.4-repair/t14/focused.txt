@@ -1,0 +1,42 @@
+# T14-H focused non-regression (29 suites: T14-H + S6/remote + assembly + gate + F3 + compat)
+PASS packages\runtime\test\t14h-probe-merge.test.ts (10 tests)
+PASS packages\runtime\test\tcm-g1-s6-integration.test.ts (11 tests)
+PASS packages\runtime\test\tcm-m1-s6-v2-routing.test.ts (5 tests)
+node : [dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plu
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolv
+PASS packages\runtime\test\tcm-m2-workspace-attach.test.ts (14 tests)
+PASS packages\runtime\test\tcm-m3-root-initial-work.test.ts (18 tests)
+PASS packages\runtime\test\p8s7r1-initial-work.test.ts (9 tests)
+PASS packages\runtime\test\p8s7r1-create-params.test.ts (8 tests)
+PASS packages\runtime\test\p8s6-pagination.test.ts (9 tests)
+PASS packages\runtime\test\p8s6-principal.test.ts (20 tests)
+PASS packages\runtime\test\p8s6-projection.test.ts (14 tests)
+PASS packages\runtime\test\p8s6-push-reconnect.test.ts (5 tests)
+PASS packages\runtime\test\p8s6-remote-commands.test.ts (7 tests)
+PASS packages\runtime\test\t12h4-s6-fail-closed.test.ts (2 tests)
+PASS packages\runtime\test\t12b4-principal-context.test.ts (8 tests)
+run-file: all named files pass
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-t14/packages/runtime/src/plugin/host.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+PASS packages\runtime\test\p8s5a-production-assembly.test.ts (7 tests)
+PASS packages\runtime\test\p8s5a-host-loadability.test.ts (3 tests)
+PASS packages\runtime\test\p8s3-work-chain.test.ts (12 tests)
+PASS packages\runtime\test\p8s3-work-request.test.ts (5 tests)
+PASS packages\runtime\test\p8s3b-result-effects.test.ts (16 tests)
+PASS packages\runtime\test\p8s5b-operation-fencing.test.ts (26 tests)
+PASS packages\runtime\test\p7t1-ack-fingerprint.test.ts (16 tests)
+PASS packages\runtime\test\p7t1-cold-resume.test.ts (12 tests)
+PASS packages\runtime\test\p7t1-inflight-drift.test.ts (14 tests)
+PASS packages\runtime\test\p7t1-probe-generation.test.ts (19 tests)
+PASS packages\runtime\test\f3a-lock-scope.test.ts (7 tests)
+PASS packages\runtime\test\f3b-root-initial-work-lock-scope.test.ts (12 tests)
+PASS packages\runtime\test\f3c-messaging-sibling.test.ts (2 tests)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 8 stamp row(s)); use o
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession
+PASS packages\runtime\test\rmr-create-or-open-boot.test.ts (6 tests)
+[dsh-agent-team] remote mount: FAILED ¡ª the "connection" public service appeared malformed: expected connection.rpc.hand
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative 
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-t14/packages/runtime/src/plugin/host.ts
+PASS packages\runtime\test\rmr-remote-mount-race.test.ts (7 tests)
+run-file: all named files pass
