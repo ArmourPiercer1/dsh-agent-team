@@ -19,18 +19,23 @@
  * are legal content — but bound by a length cap (design note §3).
  *
  * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
- * v3 bump)**: the module is the single version-aware closed schema.
- * Every v1/v2 field list, parser and behavior is unchanged; the v2 bump
- * adds exactly one method (`team.admitInitialWork`, v2-only) and one v2
- * variant of an existing method (`team.create`, whose v2 closed set
- * swaps `initialWork` for `workspace`); the v3 bump (frozen by D1) adds
- * exactly the two v3-only methods `team.listRoots` (closed set: no
- * fields) and `team.ensureRootLive` (closed set: `teamSessionId`).
- * {@link parseRemoteMethodParams} routes on the request version: a
- * request to a method of a NEWER version is typed-rejected
- * (`method-version-unsupported`) AFTER the envelope parse, and each
- * request version sees only its own closed field sets (no cross-version
- * field leakage in either direction).
+ * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump)**: the module is
+ * the single version-aware closed schema. Every v1/v2/v3 field list,
+ * parser and behavior is unchanged; the v2 bump adds exactly one method
+ * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
+ * method (`team.create`, whose v2 closed set swaps `initialWork` for
+ * `workspace`); the v3 bump (frozen by D1) adds exactly the two v3-only
+ * methods `team.listRoots` (closed set: no fields) and
+ * `team.ensureRootLive` (closed set: `teamSessionId`); the v4 bump
+ * (frozen by the F9 adjudications U2/U3) adds exactly the one v4-only
+ * method `team.resolveControl` (closed set: `teamSessionId`,
+ * `requestId`, `decision`, optional `note` — NO caller/role/principal
+ * fields: the host derives the human principal, the payload is a
+ * command, never an identity). {@link parseRemoteMethodParams} routes on
+ * the request version: a request to a method of a NEWER version is
+ * typed-rejected (`method-version-unsupported`) AFTER the envelope
+ * parse, and each request version sees only its own closed field sets
+ * (no cross-version field leakage in either direction).
  *
  * Pure module: no I/O, no node: builtins, no runtime environment
  * assumptions.
@@ -197,6 +202,38 @@ export interface RemoteTeamEnsureRootLiveParams {
     /** The TeamSession (root session) id to guarantee live-in-Team-mode. */
     readonly teamSessionId: string;
 }
+/** The closed decision values of the control plane (the wire mirror of
+ *  `packages/runtime/control` `CONTROL_DECISION_VALUE_VALUES` minus the
+ *  service-only `stale-denied` — a human resolves `allow` or `deny` only;
+ *  `stale-denied` is recorded by the service itself, never by a caller). */
+export declare const REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS: readonly ["allow", "deny"];
+/** One of the closed control decision values a human may resolve. */
+export type RemoteTeamResolveControlDecision = (typeof REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS)[number];
+/**
+ * `team.resolveControl` (contract v4, F3/F11/F9/T1.4 repair round r1 F9 —
+ * user adjudications U2/U3, 2026-09-07) — the human ingress of the durable
+ * control plane: a trusted authenticated human resolves ONE pending
+ * control request of one team (allow / deny). CLOSED field set:
+ * `teamSessionId` + `requestId` + `decision` + optional `note` — NO
+ * caller/role/principal fields (adjudication U3: the payload is a COMMAND
+ * that never carries identity; the host derives the human principal from
+ * the T12-B4 connection-gate authority basis — the trusted authenticated
+ * UI/session ownership — and the frozen `CONTROL_RESOLVER_ROLES` stay the
+ * only resolver authority). On success the response `data` is
+ * `{ decision: <the durable ControlDecision record> }`; the typed control
+ * vocabulary (already-decided / not-found / resolver-not-authorized /
+ * stale / external-policy) passes through unmapped (invariant 4b).
+ */
+export interface RemoteTeamResolveControlParams {
+    /** The TeamSession (root session) id owning the control request. */
+    readonly teamSessionId: string;
+    /** The durable control request id (opaque, 1..255). */
+    readonly requestId: string;
+    /** The frozen decision the human makes. */
+    readonly decision: RemoteTeamResolveControlDecision;
+    /** The decider's free-form note (1..2048; evidence text, not authority). */
+    readonly note?: string;
+}
 /** `team.getProjection`. */
 export interface RemoteTeamGetProjectionParams {
     readonly teamSessionId: string;
@@ -306,7 +343,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideResetParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideResetParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -341,6 +378,7 @@ export declare const REMOTE_TEAM_LIST_ROOTS_FIELDS: readonly string[];
  * `teamSessionId` only.
  */
 export declare const REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS: readonly string[];
+export declare const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_GET_PROJECTION_FIELDS: readonly string[];
 export declare const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS: readonly string[];
 export declare const REMOTE_MEMBER_CREATE_FIELDS: readonly string[];
@@ -374,6 +412,8 @@ export declare function parseRemoteTeamAdmitInitialWorkParams(method: string, pa
 export declare function parseRemoteTeamListRootsParams(method: string, params: RemoteSafeRecord): RemoteTeamListRootsParams;
 /** Parse `team.ensureRootLive` params (contract v3). */
 export declare function parseRemoteTeamEnsureRootLiveParams(method: string, params: RemoteSafeRecord): RemoteTeamEnsureRootLiveParams;
+/** Parse `team.resolveControl` params (contract v4, v4-only method). */
+export declare function parseRemoteTeamResolveControlParams(method: string, params: RemoteSafeRecord): RemoteTeamResolveControlParams;
 /** Parse `team.getProjection` params. */
 export declare function parseRemoteTeamGetProjectionParams(method: string, params: RemoteSafeRecord): RemoteTeamGetProjectionParams;
 /** Parse `team.getLedgerPage` params (defaults: afterSequence 0, limit 50). */

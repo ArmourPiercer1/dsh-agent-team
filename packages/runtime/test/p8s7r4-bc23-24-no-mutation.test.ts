@@ -16,15 +16,19 @@
  *    optional provenance is absent), so no handoff provenance enters
  *    the durable world on this path.
  * 3. THE CLOSED CATALOG (the code-level proof that no backend method
- *    can drive a decision): the Remote contract catalog is CLOSED at
- *    9 categories / 24 methods (the versioned union — 23 frozen v1
- *    methods + the v2-only `team.admitInitialWork`, TCM vNext §15.3)
- *    and the `handoff` category exposes EXACTLY `handoff.prepare`
- *    (read-only) + `handoff.create` (the start entry) — there is NO
- *    remote decision method in EITHER version; the decision triad is
- *    resolvable only in-process (the client), and the S6 handoff port
- *    surface carries no decision channel (the decisions stay
- *    client-side in v1 and v2 alike).
+ *    can drive an AGENT-side decision): the Remote contract catalog is
+ *    CLOSED at 9 categories / 27 methods (the versioned union — 23
+ *    frozen v1 methods + the v2-only `team.admitInitialWork`, TCM vNext
+ *    §15.3 + the two D1 (Team D1-D6 repair v2) v3-only methods
+ *    `team.listRoots` / `team.ensureRootLive` + the F9 (F3/F11/F9/T1.4
+ *    repair round r1) v4-only method `team.resolveControl`, the
+ *    HUMAN control surface whose decider principal the HOST derives —
+ *    the wire carries no caller field) and the `handoff` category
+ *    exposes EXACTLY `handoff.prepare` (read-only) + `handoff.create`
+ *    (the start entry) — there is NO remote decision method in v1 /
+ *    v2 / v3; the handoff decision triad is resolvable only in-process
+ *    (the client), and the S6 handoff port surface carries no decision
+ *    channel (the decisions stay client-side).
  *
  * Plus the RETRY leg of the triad: the one-shot summarization re-runs
  * from the FROZEN snapshot (summarize count +1, the source is NOT
@@ -53,6 +57,7 @@ import {
   REMOTE_METHOD_NAMES,
   REMOTE_METHODS_BY_CATEGORY,
   REMOTE_V2_ONLY_METHODS,
+  REMOTE_V4_ONLY_METHODS,
 } from '../../remote/src/contracts/catalog.js'
 
 const SRC = P7T5_FIXTURE.sourceSessionId
@@ -243,21 +248,24 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     }
   })
 
-  it('S4: the closed catalog carries no decision method — the handoff category is exactly prepare + create (versioned union 9/26: 23 v1 + 1 v2-only + 2 v3-only)', () => {
+  it('S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 9/27: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only)', () => {
     // The handoff category: EXACTLY the two v1 methods (read-only prepare
     // + the create entry that starts the operation). No decision method.
     expect(REMOTE_METHODS_BY_CATEGORY[REMOTE_CATEGORIES.HANDOFF]).toEqual([
       'handoff.create',
       'handoff.prepare',
     ])
-    // The catalog stays CLOSED: 9 categories / 26 methods — the 23 frozen
+    // The catalog stays CLOSED: 9 categories / 27 methods — the 23 frozen
     // v1 methods + the v2-only `team.admitInitialWork` (TCM vNext §15.3)
     // + the two D1 (Team D1-D6 repair v2) v3-only methods
-    // `team.listRoots` / `team.ensureRootLive` (the catalog is a
-    // versioned union; the v2-only closed set is exactly the one method
-    // that has no v1 counterpart).
-    expect(REMOTE_METHOD_NAMES.length).toBe(26)
+    // `team.listRoots` / `team.ensureRootLive` + the F9 (F3/F11/F9/T1.4
+    // repair round r1) v4-only method `team.resolveControl` (the human
+    // control decision surface; the host derives the decider principal).
+    // The catalog is a versioned union; the v2-only closed set is
+    // exactly the one method that has no v1 counterpart.
+    expect(REMOTE_METHOD_NAMES.length).toBe(27)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
+    expect(REMOTE_V4_ONLY_METHODS).toEqual(['team.resolveControl'])
     expect(Object.keys(REMOTE_METHODS_BY_CATEGORY).sort()).toEqual([
       'catalog',
       'compatibility',
@@ -269,9 +277,14 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
       'policyState',
       'team',
     ])
-    // NO method of the whole closed catalog can drive a decision:
+    // NO method of the whole closed catalog can drive an AGENT-side
+    // decision: the only decision-named method is the F9 v4-only human
+    // control surface `team.resolveControl` (its decider is the
+    // host-derived human principal — the wire carries no caller field).
     expect(REMOTE_METHOD_NAMES.some((name) => name.includes('decision'))).toBe(false)
-    expect(REMOTE_METHOD_NAMES.some((name) => name.includes('resolve'))).toBe(false)
+    expect(REMOTE_METHOD_NAMES.filter((name) => name.includes('resolve'))).toEqual([
+      'team.resolveControl',
+    ])
   })
 })
 

@@ -60,6 +60,7 @@ function buildCategoryHandlers(deps) {
             teamAdmitInitialWork: deps.teamAdmitInitialWork,
             teamRoots: deps.teamRoots,
             teamEnsureRootLive: deps.teamEnsureRootLive,
+            teamResolveControl: deps.teamResolveControl,
             projection: deps.projection,
             ledger: deps.ledger,
         }),
@@ -271,6 +272,26 @@ export const REMOTE_BACKING_ERROR_CODES = [
     'TEAM_OWNERSHIP_INDEX_ROOT_BINDING_MISMATCH',
     'TEAM_OWNERSHIP_INDEX_MEMBER_BINDING_MISMATCH',
     'TEAM_OWNERSHIP_INDEX_MEMBER_BINDING_CONFLICT',
+    // F3/F11/F9/T1.4 repair round r1 F9 (remote contract v4): the
+    // team.resolveControl wire vocabulary. The S6 port emits
+    // TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE (the control service
+    // closure is absent from the host wiring — fail closed, never a silent
+    // success); the CONTROL_* codes are the runtime/control service's
+    // closed vocabulary (resolveControl's reachable codes: malformed
+    // input / request-time staleness / decision lookup-and-state /
+    // resolver role closure / resolve-time staleness / external hard
+    // policy) — the durable exactly-once semantics (CONTROL_REQUEST_DECIDED
+    // on a second resolution) ride these codes. The guard-only codes
+    // (CONTROL_GUARD_MALFORMED / CONTROL_GUARD_AMBIGUOUS) are NOT reachable
+    // from resolveControl and stay out of the set.
+    'TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE',
+    'CONTROL_REQUEST_MALFORMED',
+    'CONTROL_TARGET_STALE',
+    'CONTROL_REQUEST_NOT_FOUND',
+    'CONTROL_REQUEST_DECIDED',
+    'CONTROL_RESOLVER_NOT_AUTHORIZED',
+    'CONTROL_REQUEST_STALE',
+    'CONTROL_EXTERNAL_POLICY_DENIED',
 ];
 /** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */
 export const REMOTE_BACKING_ERROR_CODE_SET = new Set(REMOTE_BACKING_ERROR_CODES);

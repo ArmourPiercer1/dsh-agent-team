@@ -1,0 +1,39 @@
+﻿FAIL packages\remote\test\d1-remote-v3.test.ts (5/33 tests)
+     ✗ D1 (remote contract v3): team.listRoots › a v3 request with the empty closed params succeeds: data is { roots: [...] } from the port
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:302:30
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:300:3
+     ✗ D1 (remote contract v3): team.listRoots › the success provenance echoes contractVersion 3 (the request version)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:310:36
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:309:3
+     ✗ D1 (remote contract v3): team.ensureRootLive › a v3 request forwards teamSessionId verbatim to the port and echoes the closed success shape
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:331:27
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:329:3
+     ✗ D1 (remote contract v3): backing error allow-list (invariant 4b) › every D1-emitted + D2-reserved v3 wire code + the three index integrity codes passes through with code + message
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:402:22
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:399:3
+     ✗ D1 (remote contract v3): v1/v2 wire behavior is preserved › a v1 team.getProjection still round-trips on the v1 envelope
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:421:32
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/remote/test/d1-remote-v3.test.ts:418:3
+PASS packages\remote\test\f9-remote-v4.test.ts (36 tests)
+PASS packages\remote\test\p8t3-admission.test.ts (6 tests)
+PASS packages\remote\test\p8t3-invalid-ids.test.ts (9 tests)
+PASS packages\remote\test\p8t3-negative.test.ts (7 tests)
+PASS packages\remote\test\p8t3-round-trip.test.ts (14 tests)
+PASS packages\remote\test\p8t3-version.test.ts (16 tests)
+PASS packages\remote\test\p8t4-engine.test.ts (23 tests)
+PASS packages\remote\test\p8t4-negative.test.ts (7 tests)
+PASS packages\remote\test\p8t4-sync.test.ts (11 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\remote\test\tcm-m1-remote-v2.test.ts (26 tests)
+
+run-tests (plain-node vitest-equivalent): 185 passed, 5 failed, 190 total, 125 ms

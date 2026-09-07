@@ -55,13 +55,15 @@ export interface RemoteMethodSpec {
 
 /**
  * The closed Remote contract method catalog — a VERSIONED UNION
- * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump):
- * the 23 frozen v1 methods plus the v2-only `team.admitInitialWork`
- * plus the v3-only `team.listRoots` / `team.ensureRootLive` (26 methods
- * total). Key = endpoint = method name (dotted: `<category>.<action>`).
- * Per-version availability is the closed {@link REMOTE_V2_ONLY_METHODS}
- * + {@link REMOTE_V3_ONLY_METHODS} sets below; per-method param schemas
- * are version-aware in `params.ts`.
+ * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump and
+ * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump): the 23 frozen v1
+ * methods plus the v2-only `team.admitInitialWork` plus the v3-only
+ * `team.listRoots` / `team.ensureRootLive` plus the v4-only
+ * `team.resolveControl` (27 methods total). Key = endpoint = method name
+ * (dotted: `<category>.<action>`). Per-version availability is the closed
+ * {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS} +
+ * {@link REMOTE_V4_ONLY_METHODS} sets below; per-method param schemas are
+ * version-aware in `params.ts`.
  */
 export const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>> = {
   'catalog.list': { category: REMOTE_CATEGORIES.CATALOG },
@@ -73,6 +75,7 @@ export const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>> =
   'team.admitInitialWork': { category: REMOTE_CATEGORIES.TEAM },
   'team.listRoots': { category: REMOTE_CATEGORIES.TEAM },
   'team.ensureRootLive': { category: REMOTE_CATEGORIES.TEAM },
+  'team.resolveControl': { category: REMOTE_CATEGORIES.TEAM },
   'member.create': { category: REMOTE_CATEGORIES.MEMBER },
   'member.send': { category: REMOTE_CATEGORIES.MEMBER },
   'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -147,6 +150,19 @@ export const REMOTE_V3_ONLY_METHODS: readonly string[] = [
 ]
 
 /**
+ * The closed set of catalog methods that exist ONLY in remote contract v4
+ * (F3/F11/F9/T1.4 repair round r1, F9 — user adjudications U1–U3,
+ * 2026-09-07): the human control-resolution command `team.resolveControl`
+ * (the existing `team` category, adjudication U2 — no new category; the
+ * closed param set `{ teamSessionId, requestId, decision, note? }`
+ * carries NO caller/role/principal fields, adjudication U3 — the host
+ * derives the human principal from the trusted authenticated UI/session
+ * ownership, the T12-B4 connection-gate authority basis). Every
+ * v1/v2/v3 method stays available in v4.
+ */
+export const REMOTE_V4_ONLY_METHODS: readonly string[] = ['team.resolveControl']
+
+/**
  * Is `method` a catalog method available in remote contract `version`?
  *
  * This is the version-aware membership check the version-aware param
@@ -157,17 +173,25 @@ export const REMOTE_V3_ONLY_METHODS: readonly string[] = [
  * envelope is known.
  *
  * @param method - the candidate method name (must be in the catalog).
- * @param version - the request's contract version (supported: 1 | 2 | 3).
+ * @param version - the request's contract version (supported:
+ *   1 | 2 | 3 | 4).
  */
 export function isRemoteMethodAvailableInVersion(method: string, version: number): boolean {
   if (!(method in REMOTE_METHOD_CATALOG)) return false
   if (version === 1) {
-    return !REMOTE_V2_ONLY_METHODS.includes(method) && !REMOTE_V3_ONLY_METHODS.includes(method)
+    return (
+      !REMOTE_V2_ONLY_METHODS.includes(method) &&
+      !REMOTE_V3_ONLY_METHODS.includes(method) &&
+      !REMOTE_V4_ONLY_METHODS.includes(method)
+    )
   }
   if (version === 2) {
-    return !REMOTE_V3_ONLY_METHODS.includes(method)
+    return !REMOTE_V3_ONLY_METHODS.includes(method) && !REMOTE_V4_ONLY_METHODS.includes(method)
   }
-  // version === 3: every v1/v2 method plus the v3-only methods.
+  if (version === 3) {
+    return !REMOTE_V4_ONLY_METHODS.includes(method)
+  }
+  // version === 4: every v1/v2/v3 method plus the v4-only methods.
   return true
 }
 

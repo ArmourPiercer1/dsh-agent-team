@@ -54,6 +54,10 @@ export type TeamKey =
   | 'view.ledger.loadEarlier'
   | 'view.ledger.loadFailed'
   | 'view.ledger.pending'
+  | 'view.ledger.resolve.allow'
+  | 'view.ledger.resolve.deny'
+  | 'view.ledger.resolve.busy'
+  | 'view.ledger.resolve.error'
   | 'view.ledger.filter.all'
   | 'view.ledger.filter.team'
   | 'view.ledger.filter.members'
@@ -276,6 +280,10 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.loadEarlier': '加载更早',
   'view.ledger.loadFailed': '事件加载失败：{message}',
   'view.ledger.pending': '等待裁决',
+  'view.ledger.resolve.allow': '允许',
+  'view.ledger.resolve.deny': '拒绝',
+  'view.ledger.resolve.busy': '裁决中…',
+  'view.ledger.resolve.error': '裁决失败（{code}）：{message}',
   'view.ledger.filter.all': '全部',
   'view.ledger.filter.team': '团队',
   'view.ledger.filter.members': '成员',
@@ -498,6 +506,10 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.loadEarlier': 'Load earlier',
   'view.ledger.loadFailed': 'Loading events failed: {message}',
   'view.ledger.pending': 'Pending decision',
+  'view.ledger.resolve.allow': 'Allow',
+  'view.ledger.resolve.deny': 'Deny',
+  'view.ledger.resolve.busy': 'Resolving…',
+  'view.ledger.resolve.error': 'Resolve failed ({code}): {message}',
   'view.ledger.filter.all': 'All',
   'view.ledger.filter.team': 'Team',
   'view.ledger.filter.members': 'Members',

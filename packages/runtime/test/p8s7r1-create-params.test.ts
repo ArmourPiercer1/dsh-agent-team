@@ -47,6 +47,7 @@ import type {
   RemoteTeamCreatePort,
   RemoteTeamCreateV2Port,
   RemoteTeamEnsureRootLivePort,
+  RemoteTeamResolveControlPort,
   RemoteTeamRootsPort,
 } from '../../remote/src/index.js'
 
@@ -198,6 +199,7 @@ function handlerWith(create: RemoteTeamCreatePort) {
     teamAdmitInitialWork: { admit: unused } as unknown as RemoteTeamAdmitInitialWorkPort,
     teamRoots: { listRoots: unused } as unknown as RemoteTeamRootsPort,
     teamEnsureRootLive: { ensureRootLive: unused } as unknown as RemoteTeamEnsureRootLivePort,
+    teamResolveControl: { resolveControl: unused } as unknown as RemoteTeamResolveControlPort,
     projection: { project: unused } as unknown as RemoteProjectionPort,
     ledger: { listEntries: unused, countEntries: unused } as unknown as RemoteLedgerPort,
   })

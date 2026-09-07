@@ -79,6 +79,7 @@ import type {
   RemoteTeamEnsureRootLiveParams,
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
+  RemoteTeamResolveControlParams,
 } from '../../../remote/src/contracts/params.js'
 import { parseRemoteRequest } from '../../../remote/src/contracts/request.js'
 import type { RemoteRequest } from '../../../remote/src/contracts/request.js'
@@ -261,6 +262,12 @@ export const S6_REMOTE_ERROR_CODES = {
   TEAM_ROOT_LIVE_OUTSIDE_TEAM: 'TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM',
   /** D2-RESERVED (A3 Q2) — the glue start failed for another reason. */
   TEAM_ROOT_LIVE_START_FAILED: 'TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED',
+  /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) —
+   *  team.resolveControl: the host wiring exposes no control-service
+   *  closure (the durable control plane is not reachable from this
+   *  root) — fail-closed BEFORE any decision; NEVER a silent success
+   *  (never a default decision, never a no-op). */
+  TEAM_RESOLVE_CONTROL_UNAVAILABLE: 'TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE',
 } as const
 
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES]
@@ -454,6 +461,41 @@ export interface S6RemoteTeamEnsureRootLivePort {
    */
   ensureRootLive(teamSessionId: string): Promise<RemoteSafeRecord>
 }
+/** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the v4-only
+ *  `team.resolveControl` port (the production async mirror of the frozen
+ *  `RemoteTeamResolveControlPort`). TEAM-SCOPED like `team.admitInitialWork`:
+ *  the bound-root guard runs BEFORE anything else (fail-closed
+ *  FOREIGN_TEAM). The wire params carry NO caller/role/principal fields
+ *  (adjudication U3) — the host derives the human principal from the
+ *  T12-B4 trusted principal seam (the connection-gate authority basis;
+ *  the single authenticated operator) and passes it HERE, stamped:
+ *  `caller` is host-derived, never a client claim. The port drives the
+ *  host's `resolveControl` option (the existing durable control service,
+ *  A25 — `CONTROL_RESOLVER_ROLES` + the durable exactly-once semantics
+ *  UNCHANGED; this port is the command surface, not a second authority)
+ *  and passes the service's closed CONTROL_* failures through unmapped
+ *  (invariant 4b) — NEVER a silent success, never a default decision. */
+export interface S6RemoteTeamResolveControlPort {
+  /**
+   * Resolve one pending control request (allow / deny) as the derived
+   * human principal.
+   * @param teamSessionId - the validated TeamSession (root session) id.
+   * @param requestId - the validated opaque control request id.
+   * @param decision - the frozen decision (`allow` / `deny`).
+   * @param note - the decider's free-form note (1..2048), or `undefined`.
+   * @param caller - the HOST-DERIVED ActionCaller (the T12-B4 seam; the
+   *   v4 branch stamps `{ kind: 'human', humanId: <owned teamSessionId> }`
+   *   — never a client claim).
+   * @returns the durable decision record (lossless JSON).
+   */
+  resolveControl(
+    teamSessionId: string,
+    requestId: string,
+    decision: 'allow' | 'deny',
+    note: string | undefined,
+    caller: ActionCaller,
+  ): Promise<RemoteSafeRecord>
+}
 /** Port 4/12 — the whole-projection observation (`team.getProjection`). */
 export interface S6RemoteProjectionPort {
   project(teamSessionId: string): Promise<RemoteSafeRecord>
@@ -526,6 +568,9 @@ export interface S6RemotePorts {
    *  `team.ensureRootLive` port (D1: fails closed typed; D2: the live
    *  glue's Team-mode ensure). */
   readonly teamEnsureRootLive: S6RemoteTeamEnsureRootLivePort
+  /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the v4-only
+   *  `team.resolveControl` port (the human control-resolution command). */
+  readonly teamResolveControl: S6RemoteTeamResolveControlPort
   readonly projection: S6RemoteProjectionPort
   readonly ledger: S6RemoteLedgerPort
   readonly admission: S6RemoteAdmissionPort
@@ -694,6 +739,29 @@ export interface S6RemoteOptions {
    * unchanged, invariant 4a/4b).
    */
   readonly ensureRootLive?: (rootSessionId: string) => Promise<void>
+  /**
+   * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
+   * durable control-service closure behind the v4-only
+   * `team.resolveControl`: resolves ONE pending control request of the
+   * addressed owned root through the EXISTING control-service authority
+   * (A25: `CONTROL_RESOLVER_ROLES` + the durable exactly-once decision
+   * semantics — unchanged; the wire is the command surface, never a
+   * second authority). The `caller` argument is HOST-DERIVED (the T12-B4
+   * trusted principal seam stamps the human operator of the addressed
+   * root — never a client claim; the v4 wire carries no caller fields).
+   * Absent (test worlds without the control-plane wiring):
+   * `team.resolveControl` fails closed with the typed
+   * TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE — never a silent
+   * success, never a default decision. The production host entry
+   * (root.ts) wires it over the always-built A25 control service.
+   */
+  readonly resolveControl?: (args: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly requestId: string
+    readonly decision: 'allow' | 'deny'
+    readonly note?: string
+  }) => Promise<RemoteSafeRecord>
   /**
    * D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
    * durable root ownership list behind the v3-only `team.listRoots`:
@@ -1188,6 +1256,49 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       throw mapEnsureRootLiveError(error, teamSessionId)
     }
     return { rootSessionId: teamSessionId, mode: 'team', live: true }
+  }
+
+  /**
+   * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the v4-only
+   * `team.resolveControl` port body: the bound-root guard runs FIRST
+   * (fail-closed FOREIGN_TEAM — before any decision), then the host's
+   * control-service closure (the EXISTING A25 authority:
+   * `CONTROL_RESOLVER_ROLES` + the durable exactly-once decision
+   * semantics — UNCHANGED; the wire is the command surface, never a
+   * second authority). The `caller` argument is HOST-DERIVED (the T12-B4
+   * trusted principal seam stamps `{ kind: 'human', humanId: <owned
+   * teamSessionId> }` — never a client claim; the v4 wire carries no
+   * caller/role fields, adjudication U3). A missing closure fails closed
+   * with the typed TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE (before
+   * any decision — never a silent success, never a default decision).
+   * The service's closed CONTROL_* rejections (the facade-reused
+   * TeamRuntimeError codes + the control service's ControlError codes)
+   * propagate UNCHANGED — invariant 4b (every resolveControl-reachable
+   * code is a member of the closed backing vocabulary).
+   */
+  async function resolveControl(
+    requestedTeamSessionId: string,
+    requestId: string,
+    decision: 'allow' | 'deny',
+    note: string | undefined,
+    caller: ActionCaller,
+  ): Promise<RemoteSafeRecord> {
+    const teamSessionId = assertBoundRoot('team.resolveControl', requestedTeamSessionId)
+    const port = options.resolveControl
+    if (port === undefined) {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_RESOLVE_CONTROL_UNAVAILABLE,
+        'team.resolveControl cannot resolve the control request: the host wiring does not provide the control-service closure — failing closed before any decision',
+        { reason: 'team-resolve-control-unavailable', teamSessionId },
+      )
+    }
+    return port({
+      rootSessionId: teamSessionId,
+      caller,
+      requestId,
+      decision,
+      ...(note !== undefined ? { note } : {}),
+    })
   }
 
   // --- TCM vNext §15 (G1) — the Root initial-work authority + the workspace port ---
@@ -1744,6 +1855,28 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       },
     },
 
+    // --- F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4):
+    // --- team.resolveControl (the human control-resolution command) ----
+    teamResolveControl: {
+      resolveControl(
+        requestedTeamSessionId: string,
+        requestId: string,
+        decision: 'allow' | 'deny',
+        note: string | undefined,
+        caller: ActionCaller,
+      ): Promise<RemoteSafeRecord> {
+        // The F9 production handler: the bound-root guard FIRST (fail-
+        // closed FOREIGN_TEAM — before any decision), then the host's
+        // control-service closure (the existing A25 authority —
+        // CONTROL_RESOLVER_ROLES + the durable exactly-once semantics,
+        // UNCHANGED). The `caller` is HOST-DERIVED (the T12-B4 seam; the
+        // wire carries no caller fields — adjudication U3). Typed
+        // CONTROL_* failures propagate unchanged (invariant 4b); a
+        // missing closure fails closed typed. NEVER a silent success.
+        return resolveControl(requestedTeamSessionId, requestId, decision, note, caller)
+      },
+    },
+
     // --- 4/12 projection: the projection service (durable source + overlay) ---------
     projection: {
       async project(teamSessionId: string): Promise<RemoteSafeRecord> {
@@ -2274,6 +2407,34 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             return ports
               .teamEnsureRootLive.ensureRootLive(ensureParams.teamSessionId)
               .then((result) => ({ data: result }))
+          }
+          case 'team.resolveControl': {
+            // F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) —
+            // the v4-only human control-resolution command (TEAM-SCOPED
+            // like `team.admitInitialWork`). The derivation runs FIRST:
+            // the T12-B4 trusted principal seam stamps the human operator
+            // of the addressed (assertTeamScoped-validated, owned) root —
+            // the v4 wire params carry NO caller/role fields
+            // (adjudication U3), and a foreign teamSessionId fails closed
+            // FOREIGN_TEAM before any port work. The port then drives the
+            // existing control-service authority (A25 —
+            // CONTROL_RESOLVER_ROLES + the durable exactly-once semantics,
+            // UNCHANGED); the service's closed CONTROL_* failures pass
+            // through the dispatcher unchanged (the closed backing
+            // vocabulary, invariant 4b). Success: the durable decision
+            // record under `data.decision` (the closed v4 shape).
+            const resolveParams = params as RemoteTeamResolveControlParams
+            return Promise.resolve(
+              principal({ method, request: envelope }),
+            ).then((caller) =>
+              ports.teamResolveControl.resolveControl(
+                resolveParams.teamSessionId,
+                resolveParams.requestId,
+                resolveParams.decision,
+                resolveParams.note,
+                caller,
+              ),
+            ).then((decision) => ({ data: { decision } }))
           }
           case 'team.getProjection': {
             const projectionParams = params as RemoteTeamGetProjectionParams

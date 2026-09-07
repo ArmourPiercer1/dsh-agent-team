@@ -1,6 +1,6 @@
 /**
  * p8t3-helpers.ts — shared fixtures of the P8-T3 Remote contract v1 suite:
- * the sixteen fake backing ports (call-logged), a dispatcher factory, and
+ * the seventeen fake backing ports (call-logged), a dispatcher factory, and
  * the wire-envelope / result assert helpers.
  *
  * The fakes are plain data objects (lossless-JSON-safe records only): the
@@ -19,6 +19,7 @@ import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V4,
 } from '../src/index.js'
 import type {
   RemoteAdmissionPort,
@@ -45,6 +46,7 @@ import type {
   RemoteTeamAdmitInitialWorkPort,
   RemoteTeamRootsPort,
   RemoteTeamEnsureRootLivePort,
+  RemoteTeamResolveControlPort,
   RemoteOverridePort,
 } from '../src/index.js'
 
@@ -316,6 +318,22 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     },
   }
 
+  const teamResolveControl: RemoteTeamResolveControlPort = {
+    resolveControl(teamSessionId, requestId, decision, note) {
+      calls.push('team.resolveControl')
+      return {
+        requestId,
+        decision,
+        decider: { kind: 'human', humanId: teamSessionId },
+        ...(note !== undefined ? { note } : {}),
+        scope: { teamSessionId },
+        requestSequence: 1,
+        decisionSequence: 2,
+        createdAt: '2026-08-29T00:00:09.000Z',
+      }
+    },
+  }
+
   const projection: RemoteProjectionPort = {
     project(teamSessionId) {
       calls.push('team.getProjection')
@@ -461,6 +479,7 @@ export function makeFakePorts(overrides: Partial<RemoteHandlerDeps> = {}): P8T3F
     teamAdmitInitialWork,
     teamRoots,
     teamEnsureRootLive,
+    teamResolveControl,
     projection,
     ledger,
     admission,
@@ -508,6 +527,11 @@ export function p8t3WireV2(params: Record<string, unknown>): Record<string, unkn
 /** One wire request envelope of contract v3 (Team D1-D6 repair v2 D1). */
 export function p8t3WireV3(params: Record<string, unknown>): Record<string, unknown> {
   return { version: REMOTE_CONTRACT_VERSION_V3, params }
+}
+
+/** One wire request envelope of contract v4 (F3/F11/F9/T1.4 repair r1 F9). */
+export function p8t3WireV4(params: Record<string, unknown>): Record<string, unknown> {
+  return { version: REMOTE_CONTRACT_VERSION_V4, params }
 }
 
 /** Assert a success result and return it (narrows the union). */

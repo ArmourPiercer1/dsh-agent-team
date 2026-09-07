@@ -100,6 +100,13 @@ export interface TeamLedgerEventRow {
   readonly detail: string
   /** Control request rows only: no paired decision in the loaded facts. */
   readonly pending: boolean
+  /**
+   * Control request rows only: the durable control request id (the
+   * command identity of the F9 v4 `team.resolveControl` surface — the
+   * row's Allow/Deny commands address this id; ABSENT for every other
+   * family and for a control-request fact whose payload names no id).
+   */
+  readonly requestId?: string
   /** Control decision rows only: the frozen decision value (open string on the wire). */
   readonly decisionValue?: string
   /** Control decision rows only: the decision reason (leaf `reason`, else `note`). */
@@ -210,6 +217,7 @@ function buildRow(
   let summary = ''
   let detail = ''
   let pending = false
+  let requestId: string | undefined
   let decisionValue: string | undefined
   let decisionReason: string | undefined
   let progressValue: ProgressValue | undefined
@@ -245,8 +253,9 @@ function buildRow(
         .filter(part => part !== undefined && part !== '')
         .join(' · ')
       if (detail === '') detail = safePayloadSummary(payload)
-      const requestId = str(payload, 'requestId')
-      pending = requestId === undefined ? false : pendingRequestIds.has(requestId)
+      const rowRequestId = str(payload, 'requestId')
+      requestId = rowRequestId
+      pending = rowRequestId === undefined ? false : pendingRequestIds.has(rowRequestId)
       break
     }
     case 'control-decision': {
@@ -330,6 +339,7 @@ function buildRow(
     summary,
     detail,
     pending,
+    ...(requestId === undefined ? {} : { requestId }),
     ...(decisionValue === undefined ? {} : { decisionValue }),
     ...(decisionReason === undefined ? {} : { decisionReason }),
     ...(progressValue === undefined ? {} : { progressValue }),

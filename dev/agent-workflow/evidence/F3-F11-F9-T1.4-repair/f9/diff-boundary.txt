@@ -1,0 +1,157 @@
+﻿F9 diff boundary (F3/F11/F9/T1.4 repair round r1)
+base: int/repair-r1 @ 4f6e4f9 ; branch: task/repair-r1-f9-human-control
+
+=== git status --short (working tree vs base commit) ===
+ M packages/client/composition-shim/client-bundle.js
+ M packages/client/src/model/team-ledger-model.ts
+ M packages/client/src/plugin/team-mount-core.ts
+ M packages/client/src/transport/team-remote-client.ts
+ M packages/client/src/ui/TeamLedger.module.css
+ M packages/client/src/ui/TeamLedger.tsx
+ M packages/client/src/ui/TeamView.tsx
+ M packages/client/src/ui/locales.ts
+ M packages/remote/src/contracts/catalog.ts
+ M packages/remote/src/contracts/params.ts
+ M packages/remote/src/contracts/version.ts
+ M packages/remote/src/handlers/dispatch.ts
+ M packages/remote/src/handlers/ports.ts
+ M packages/remote/src/handlers/team.ts
+ M packages/remote/src/index.ts
+ M packages/remote/test/d1-remote-v3.test.ts
+ M packages/remote/test/p8t3-helpers.ts
+ M packages/remote/test/p8t3-negative.test.ts
+ M packages/remote/test/p8t3-version.test.ts
+ M packages/remote/test/p8t4-negative.test.ts
+ M packages/remote/test/tcm-m1-remote-v2.test.ts
+ M packages/runtime/dist/packages/remote/src/contracts/catalog.d.ts
+ M packages/runtime/dist/packages/remote/src/contracts/catalog.d.ts.map
+ M packages/runtime/dist/packages/remote/src/contracts/catalog.js
+ M packages/runtime/dist/packages/remote/src/contracts/catalog.js.map
+ M packages/runtime/dist/packages/remote/src/contracts/params.d.ts
+ M packages/runtime/dist/packages/remote/src/contracts/params.d.ts.map
+ M packages/runtime/dist/packages/remote/src/contracts/params.js
+ M packages/runtime/dist/packages/remote/src/contracts/params.js.map
+ M packages/runtime/dist/packages/remote/src/contracts/version.d.ts
+ M packages/runtime/dist/packages/remote/src/contracts/version.d.ts.map
+ M packages/runtime/dist/packages/remote/src/contracts/version.js
+ M packages/runtime/dist/packages/remote/src/contracts/version.js.map
+ M packages/runtime/dist/packages/remote/src/handlers/dispatch.d.ts
+ M packages/runtime/dist/packages/remote/src/handlers/dispatch.d.ts.map
+ M packages/runtime/dist/packages/remote/src/handlers/dispatch.js
+ M packages/runtime/dist/packages/remote/src/handlers/dispatch.js.map
+ M packages/runtime/dist/packages/remote/src/handlers/ports.d.ts
+ M packages/runtime/dist/packages/remote/src/handlers/ports.d.ts.map
+ M packages/runtime/dist/packages/remote/src/handlers/ports.js
+ M packages/runtime/dist/packages/remote/src/handlers/ports.js.map
+ M packages/runtime/dist/packages/remote/src/handlers/team.d.ts
+ M packages/runtime/dist/packages/remote/src/handlers/team.d.ts.map
+ M packages/runtime/dist/packages/remote/src/handlers/team.js
+ M packages/runtime/dist/packages/remote/src/handlers/team.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+ M packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/root.js
+ M packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-principal.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-principal.js
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-principal.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+ M packages/runtime/src/plugin/root.ts
+ M packages/runtime/src/plugin/s6-principal.ts
+ M packages/runtime/src/plugin/s6-remote.ts
+ M packages/runtime/test/p8s7r1-create-params.test.ts
+ M packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts
+ M packages/runtime/test/t12m4-remote-mount.test.ts
+?? .f9-vitest-netuse-stub.mjs
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/f9/
+?? packages/client/test/f9-remote-client-v4.test.ts
+?? packages/client/test/f9-resolve-control-ui.client.spec.tsx
+?? packages/remote/test/f9-remote-v4.test.ts
+?? packages/runtime/test/f9-control-exactly-once.test.ts
+?? packages/runtime/test/f9-s6-resolve-control.test.ts
+?? scripts/f9-debug-s6.mjs
+?? scripts/f9-targeted-run.mjs
+
+=== git diff --stat (tracked files) ===
+ packages/client/composition-shim/client-bundle.js  | 510 +++++++++++++++++----
+ packages/client/src/model/team-ledger-model.ts     |  14 +-
+ packages/client/src/plugin/team-mount-core.ts      |  15 +-
+ .../client/src/transport/team-remote-client.ts     |  37 +-
+ packages/client/src/ui/TeamLedger.module.css       |  60 +++
+ packages/client/src/ui/TeamLedger.tsx              | 154 ++++++-
+ packages/client/src/ui/TeamView.tsx                |  47 ++
+ packages/client/src/ui/locales.ts                  |  12 +
+ packages/remote/src/contracts/catalog.ts           |  46 +-
+ packages/remote/src/contracts/params.ts            | 102 ++++-
+ packages/remote/src/contracts/version.ts           |  28 +-
+ packages/remote/src/handlers/dispatch.ts           |  21 +
+ packages/remote/src/handlers/ports.ts              |  53 ++-
+ packages/remote/src/handlers/team.ts               |  97 +++-
+ packages/remote/src/index.ts                       |   8 +
+ packages/remote/test/d1-remote-v3.test.ts          |  51 ++-
+ packages/remote/test/p8t3-helpers.ts               |  26 +-
+ packages/remote/test/p8t3-negative.test.ts         |   7 +-
+ packages/remote/test/p8t3-version.test.ts          |  42 +-
+ packages/remote/test/p8t4-negative.test.ts         |   7 +-
+ packages/remote/test/tcm-m1-remote-v2.test.ts      |  19 +-
+ .../packages/remote/src/contracts/catalog.d.ts     |  31 +-
+ .../packages/remote/src/contracts/catalog.d.ts.map |   2 +-
+ .../dist/packages/remote/src/contracts/catalog.js  |  43 +-
+ .../packages/remote/src/contracts/catalog.js.map   |   2 +-
+ .../dist/packages/remote/src/contracts/params.d.ts |  66 ++-
+ .../packages/remote/src/contracts/params.d.ts.map  |   2 +-
+ .../dist/packages/remote/src/contracts/params.js   |  54 ++-
+ .../packages/remote/src/contracts/params.js.map    |   2 +-
+ .../packages/remote/src/contracts/version.d.ts     |  27 +-
+ .../packages/remote/src/contracts/version.d.ts.map |   2 +-
+ .../dist/packages/remote/src/contracts/version.js  |  22 +-
+ .../packages/remote/src/contracts/version.js.map   |   2 +-
+ .../packages/remote/src/handlers/dispatch.d.ts     |   2 +-
+ .../packages/remote/src/handlers/dispatch.d.ts.map |   2 +-
+ .../dist/packages/remote/src/handlers/dispatch.js  |  21 +
+ .../packages/remote/src/handlers/dispatch.js.map   |   2 +-
+ .../dist/packages/remote/src/handlers/ports.d.ts   |  42 +-
+ .../packages/remote/src/handlers/ports.d.ts.map    |   2 +-
+ .../dist/packages/remote/src/handlers/ports.js     |   5 +-
+ .../dist/packages/remote/src/handlers/ports.js.map |   2 +-
+ .../dist/packages/remote/src/handlers/team.d.ts    |  22 +-
+ .../packages/remote/src/handlers/team.d.ts.map     |   2 +-
+ .../dist/packages/remote/src/handlers/team.js      |  78 +++-
+ .../dist/packages/remote/src/handlers/team.js.map  |   2 +-
+ .../dist/packages/runtime/src/plugin/root.d.ts.map |   2 +-
+ .../dist/packages/runtime/src/plugin/root.js       |  21 +
+ .../dist/packages/runtime/src/plugin/root.js.map   |   2 +-
+ .../runtime/src/plugin/s6-principal.d.ts.map       |   2 +-
+ .../packages/runtime/src/plugin/s6-principal.js    |  18 +
+ .../runtime/src/plugin/s6-principal.js.map         |   2 +-
+ .../packages/runtime/src/plugin/s6-remote.d.ts     |  61 +++
+ .../packages/runtime/src/plugin/s6-remote.d.ts.map |   2 +-
+ .../dist/packages/runtime/src/plugin/s6-remote.js  |  71 +++
+ .../packages/runtime/src/plugin/s6-remote.js.map   |   2 +-
+ packages/runtime/src/plugin/root.ts                |  21 +
+ packages/runtime/src/plugin/s6-principal.ts        |  18 +
+ packages/runtime/src/plugin/s6-remote.ts           | 161 +++++++
+ packages/runtime/test/p8s7r1-create-params.test.ts |   2 +
+ .../test/p8s7r4-bc23-24-no-mutation.test.ts        |  47 +-
+ packages/runtime/test/t12m4-remote-mount.test.ts   |  11 +-
+ 61 files changed, 1925 insertions(+), 311 deletions(-)
+
+=== untracked (new test files committed; scratch files NOT committed) ===
+COMMIT:  packages/client/test/f9-remote-client-v4.test.ts
+COMMIT:  packages/client/test/f9-resolve-control-ui.client.spec.tsx
+COMMIT:  packages/remote/test/f9-remote-v4.test.ts
+COMMIT:  packages/runtime/test/f9-control-exactly-once.test.ts
+COMMIT:  packages/runtime/test/f9-s6-resolve-control.test.ts
+SCRATCH: .f9-vitest-netuse-stub.mjs (F11 vitest stub copy, uncommitted)
+SCRATCH: scripts/f9-debug-s6.mjs (uncommitted debug scratch)
+SCRATCH: scripts/f9-targeted-run.mjs (uncommitted targeted runner, see run-recipe.md)
+
+DO-NOT-TOUCH verification (all clean):
+  references/ (upstream): no changes
+  docs/plans/active/: no changes
+  dev/agent-workflow/graph.yaml: no changes
+  dev/agent-workflow/SESSION_ROUTER_LOG.md: no changes
+  T1.4 source files: no changes (T1.4 code is T14-H scope)
+

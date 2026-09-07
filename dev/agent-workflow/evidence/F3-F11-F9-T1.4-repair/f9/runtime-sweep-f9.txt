@@ -1,0 +1,431 @@
+﻿FAIL packages\runtime\test\d1-member-base-tools.test.ts (3/6 tests)
+     ✗ D1 (v2) member base tools: the ordinary preset mounts on member paths only › D1-2 memberPresetId undefined: mount is called with NO id (the deployment default)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-member-base-tools.test.ts:217:34
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-member-base-tools.test.ts:213:3
+     ✗ D1 (v2) member base tools: the ordinary preset mounts on member paths only › D1-4 cold-member resume mounts exactly once per agent lifecycle (no double registration)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-member-base-tools.test.ts:244:35
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-member-base-tools.test.ts:232:3
+     ✗ D1 (v2) member base tools: the ordinary preset mounts on member paths only › D1-5 absent service on the member path fails closed with the typed error (no base-tool-less member)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-member-base-tools.test.ts:255:27
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-member-base-tools.test.ts:248:3
+FAIL packages\runtime\test\d1-s6-remote-v3.test.ts (6/14 tests)
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › an ABSENT listRoots option → typed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (diagnostic in the message)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:283:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:279:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › the D1 index integrity failure propagates UNMAPPED (code + message + cause identity, invariant 4b)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:289:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:286:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › the storage typed error (RECORD_INVALID) propagates UNMAPPED (invariant 4b)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:307:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:304:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › an untyped throw is re-wrapped as TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (message preserved)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:313:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:310:3
+     ✗ D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior) › a FOREIGN root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE any ensure work (the bound-root guard runs first)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:325:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:318:3
+     ✗ D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior) › the bound root with an ABSENT ensureRootLive port fails closed typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE — NEVER a silent success (D2 replaced the D1 reservation error)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:337:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-s6-remote-v3.test.ts:329:3
+FAIL packages\runtime\test\d1-team-ownership-index.test.ts (5/16 tests)
+     ✗ D1 (ownership index): the full two-root world › root A carries the exact durable identity (blueprint A@17, workspace, generation 1)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:418:17
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:416:3
+     ✗ D1 (ownership index): the full two-root world › root B carries its durable identity and EXCLUDES the legacy v1 leader row (memberCount 1)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:428:17
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:426:3
+     ✗ D1 (ownership index): the full two-root world › attribution carries the per-session kind where bound, and ABSENT kind where the child is unbound (non-failure)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:450:39
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:446:3
+     ✗ D1 (ownership index): the closed v3 wire row (toTeamRootWireRow) › the wire row is exactly { rootSessionId, blueprintId, revision, defaultWorkspace?, createdAt, generation, memberCount } — no attribution
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:483:19
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:462:3
+     ✗ D1 (ownership index): corrupt rows propagate the storage typed error as-is › an undecodable team_sessions row → the storage layer RECORD_INVALID (not re-coded, not swallowed)
+       TypeError: expect(...).toBeInstanceOf is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:559:19
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d1-team-ownership-index.test.ts:556:3
+FAIL packages\runtime\test\d2-s6-ensure-root-live.test.ts (5/10 tests)
+     ✗ D2 (S6 host handler): the bound-root guard (TEAM-SCOPED, fail-closed) › a FOREIGN/unknown root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE the port runs
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:259:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:256:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › an ABSENT ensureRootLive option → typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE (fail closed, the D-3 discipline mirrored)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:277:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:269:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › the registry collision rejection (already live OUTSIDE the Team glue) → TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM (never a silent adoption)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:287:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:280:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:295:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:291:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message preserved for diagnosis)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:303:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d2-s6-ensure-root-live.test.ts:299:3
+FAIL packages\runtime\test\d3-member-identity-context.test.ts (1/5 tests)
+     ✗ D3 the member identity context block (Team D1-D6 repair v2, B2) › D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d3-member-identity-context.test.ts:445:50
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/d3-member-identity-context.test.ts:423:3
+PASS packages\runtime\test\f3a-lock-scope.test.ts (7 tests)
+PASS packages\runtime\test\f3b-root-initial-work-lock-scope.test.ts (12 tests)
+PASS packages\runtime\test\f3c-messaging-sibling.test.ts (2 tests)
+PASS packages\runtime\test\f9-control-exactly-once.test.ts (8 tests)
+PASS packages\runtime\test\f9-s6-resolve-control.test.ts (14 tests)
+PASS packages\runtime\test\g8s1-generation-stamp.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-binder-core.test.ts (15 tests)
+PASS packages\runtime\test\p5t1-double-bind.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-fresh-cold-paths.test.ts (8 tests)
+PASS packages\runtime\test\p5t1-ordinary-noop.test.ts (5 tests)
+PASS packages\runtime\test\p5t1-overlay-slots.test.ts (8 tests)
+PASS packages\runtime\test\p5t2-persona-cold-bind.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-compatible.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-complete-fatal.test.ts (3 tests)
+PASS packages\runtime\test\p5t2-persona-no-persona.test.ts (3 tests)
+PASS packages\runtime\test\p5t3-future-boundary.test.ts (9 tests)
+PASS packages\runtime\test\p5t3-restart.test.ts (3 tests)
+PASS packages\runtime\test\p5t4-cold-resume.test.ts (1 tests)
+PASS packages\runtime\test\p5t4-intersection.test.ts (15 tests)
+PASS packages\runtime\test\p5t5-admission.test.ts (5 tests)
+PASS packages\runtime\test\p5t5-cold-root.test.ts (7 tests)
+PASS packages\runtime\test\p5t5-fresh-root.test.ts (9 tests)
+PASS packages\runtime\test\p5t6-cold-member.test.ts (8 tests)
+PASS packages\runtime\test\p5t6-evict-readmit.test.ts (7 tests)
+PASS packages\runtime\test\p5t6-fresh-member.test.ts (26 tests)
+PASS packages\runtime\test\p6t1-checks.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-delegate.test.ts (15 tests)
+PASS packages\runtime\test\p6t1-explicit.test.ts (27 tests)
+PASS packages\runtime\test\p6t1-parallel.test.ts (9 tests)
+PASS packages\runtime\test\p6t1-recovery.test.ts (15 tests)
+PASS packages\runtime\test\p6t2-actions.test.ts (30 tests)
+PASS packages\runtime\test\p6t2-addressing.test.ts (13 tests)
+PASS packages\runtime\test\p6t2-authority.test.ts (10 tests)
+PASS packages\runtime\test\p6t2-quota.test.ts (6 tests)
+PASS packages\runtime\test\p6t3-mediation.test.ts (7 tests)
+PASS packages\runtime\test\p6t3-restart.test.ts (5 tests)
+PASS packages\runtime\test\p6t3-send-delivery.test.ts (8 tests)
+PASS packages\runtime\test\p6t4-allow-once.test.ts (4 tests)
+PASS packages\runtime\test\p6t4-deny.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-external-policy.test.ts (6 tests)
+PASS packages\runtime\test\p6t4-negatives.test.ts (11 tests)
+PASS packages\runtime\test\p6t4-restart.test.ts (3 tests)
+PASS packages\runtime\test\p6t4-stale.test.ts (5 tests)
+PASS packages\runtime\test\p6t5-authority.test.ts (12 tests)
+PASS packages\runtime\test\p6t5-intervals.test.ts (9 tests)
+PASS packages\runtime\test\p6t5-progress.test.ts (14 tests)
+PASS packages\runtime\test\p6t5-projection.test.ts (8 tests)
+PASS packages\runtime\test\p6t5-restart.test.ts (6 tests)
+PASS packages\runtime\test\p7t1-ack-fingerprint.test.ts (16 tests)
+PASS packages\runtime\test\p7t1-cold-resume.test.ts (12 tests)
+PASS packages\runtime\test\p7t1-inflight-drift.test.ts (14 tests)
+PASS packages\runtime\test\p7t1-probe-generation.test.ts (19 tests)
+PASS packages\runtime\test\p7t2-creation-fields.test.ts (13 tests)
+PASS packages\runtime\test\p7t2-escalation.test.ts (40 tests)
+PASS packages\runtime\test\p7t2-future-boundary.test.ts (16 tests)
+PASS packages\runtime\test\p7t2-override-precedence.test.ts (12 tests)
+PASS packages\runtime\test\p7t2-policy-state.test.ts (18 tests)
+PASS packages\runtime\test\p7t2-provenance.test.ts (12 tests)
+PASS packages\runtime\test\p7t3-archive-running.test.ts (7 tests)
+PASS packages\runtime\test\p7t3-descendant-drain.test.ts (5 tests)
+PASS packages\runtime\test\p7t3-dispose-race.test.ts (6 tests)
+PASS packages\runtime\test\p7t3-lifecycle-fact.test.ts (7 tests)
+PASS packages\runtime\test\p7t3-restore-no-agent.test.ts (6 tests)
+PASS packages\runtime\test\p7t4-crash-sidecar.test.ts (9 tests)
+PASS packages\runtime\test\p7t4-member-fork.test.ts (6 tests)
+PASS packages\runtime\test\p7t4-ordinary-fork.test.ts (7 tests)
+PASS packages\runtime\test\p7t4-repeat-reconcile.test.ts (8 tests)
+PASS packages\runtime\test\p7t4-root-fork.test.ts (17 tests)
+PASS packages\runtime\test\p7t5-failure-before-root-create.test.ts (11 tests)
+PASS packages\runtime\test\p7t5-no-creation-scan.test.ts (5 tests)
+PASS packages\runtime\test\p7t5-snapshot-once.test.ts (7 tests)
+PASS packages\runtime\test\p7t5-source-mutate.test.ts (4 tests)
+PASS packages\runtime\test\p7t5-target-inspect.test.ts (6 tests)
+PASS packages\runtime\test\p8s2-leader-contract.test.ts (12 tests)
+PASS packages\runtime\test\p8s3-work-chain.test.ts (12 tests)
+PASS packages\runtime\test\p8s3-work-request.test.ts (5 tests)
+PASS packages\runtime\test\p8s3b-result-effects.test.ts (16 tests)
+PASS packages\runtime\test\p8s4a-chain.test.ts (11 tests)
+PASS packages\runtime\test\p8s4a-entrypoints.test.ts (11 tests)
+PASS packages\runtime\test\p8s4b-cell-provenance.test.ts (10 tests)
+PASS packages\runtime\test\p8s4b-mcp-facet.test.ts (11 tests)
+PASS packages\runtime\test\p8s4b-model-consumption.test.ts (11 tests)
+PASS packages\runtime\test\p8s4b-override-admission.test.ts (28 tests)
+PASS packages\runtime\test\p8s5a-host-loadability.test.ts (3 tests)
+node : [dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+At line:1 char:452
++ ... EXITCODE" ; node scripts/f9-targeted-run.mjs --sweep-runtime 2>&1 | O ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([dsh-agent-team...(headless host):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "
+create-or-open"
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/host.ts:
+266:11)
+    at validateTeamPluginConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime
+/src/plugin/host.ts:273:97)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:728:29)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/
+host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/p8s5a-production-ass
+embly.test.ts:697:16
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/p8s5a-producti
+on-assembly.test.ts:685:13
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:735:13)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/
+host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/p8s5a-production-ass
+embly.test.ts:724:16
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/p8s5a-producti
+on-assembly.test.ts:685:13
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+PASS packages\runtime\test\p8s5a-production-assembly.test.ts (7 tests)
+PASS packages\runtime\test\p8s5b-operation-fencing.test.ts (26 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-pagination.test.ts (9 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-principal.test.ts (20 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-projection.test.ts (14 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-push-reconnect.test.ts (5 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-remote-commands.test.ts (7 tests)
+PASS packages\runtime\test\p8s7r1-create-params.test.ts (8 tests)
+PASS packages\runtime\test\p8s7r1-initial-work.test.ts (9 tests)
+PASS packages\runtime\test\p8s7r2-disposed-history.test.ts (10 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s7r2-effective-config.test.ts (19 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s7r2-model-state.test.ts (16 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s7r2-policy-state-durable.test.ts (8 tests)
+PASS packages\runtime\test\p8s7r2-residency-resuming.test.ts (7 tests)
+PASS packages\runtime\test\p8s7r4-bc22-idempotency.test.ts (5 tests)
+PASS packages\runtime\test\p8s7r4-bc23-24-no-mutation.test.ts (4 tests)
+PASS packages\runtime\test\p8s7r4-fork-describe.test.ts (10 tests)
+PASS packages\runtime\test\p8s7r4-handoff-surface.test.ts (7 tests)
+PASS packages\runtime\test\p8s7r4-handoff-wiring.test.ts (8 tests)
+PASS packages\runtime\test\p8t2-cold.test.ts (7 tests)
+PASS packages\runtime\test\p8t2-fifty.test.ts (6 tests)
+PASS packages\runtime\test\p8t2-negative.test.ts (6 tests)
+PASS packages\runtime\test\p8t2-overlay.test.ts (7 tests)
+PASS packages\runtime\test\p8t2-terminal.test.ts (5 tests)
+FAIL packages\runtime\test\pbf-default-artifact-urls.test.ts (3/9 tests)
+     ✗ plugin-bundle-form: location-derived artifact URLs › defaultSeamUrlCandidates source layout: the second candidate is the package seam
+       TypeError: expect(...).toHaveLength is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/pbf-default-artifact-urls.test.ts:76:24
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/pbf-default-artifact-urls.test.ts:74:3
+     ✗ plugin-bundle-form: location-derived artifact URLs › the validator accepts a shipped-form config (no glueUrl/seamUrl)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/pbf-default-artifact-urls.test.ts:85:31
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/pbf-default-artifact-urls.test.ts:82:3
+     ✗ plugin-bundle-form: location-derived artifact URLs › withDefaultWorkspace derives the launch directory when absent (bundle row, D9)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/pbf-default-artifact-urls.test.ts:116:40
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/pbf-default-artifact-urls.test.ts:114:3
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 8 stamp row(s)); use o
+penTeamDomain
+    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/storage/schema/e
+rrors.ts:98:10)
+    at createTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/storage/reposit
+ories/team-domain.ts:176:13)
+    at async bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plug
+in/host.ts:813:14)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession
+ record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/r
+oot.ts:1758:15)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:922:19)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+PASS packages\runtime\test\rmr-create-or-open-boot.test.ts (6 tests)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 111ms — the connection service appeared after t
+he mount step)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear
+ within 200ms (headless host, or the web connection service was not provided in time)
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.hand
+le to be a function
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative 
+integer (milliseconds) when present
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/host.ts:
+266:11)
+    at validateTeamPluginConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime
+/src/plugin/host.ts:340:5)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:728:29)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/
+host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/rmr-remote-mount-rac
+e.test.ts:328:17
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+PASS packages\runtime\test\rmr-remote-mount-race.test.ts (7 tests)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/host.ts:
+266:11)
+    at validateTeamPluginConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime
+/src/plugin/host.ts:272:64)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:728:29)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/
+host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/runtime.test.ts:28:2
+0
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+    at async node:internal/modules/esm/loader:647:26
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/scripts/f9-targeted-run.mjs:59:5
+PASS packages\runtime\test\runtime.test.ts (3 tests)
+PASS packages\runtime\test\t12a-b2-child-identity.test.ts (4 tests)
+PASS packages\runtime\test\t12a-b3-external-deny.test.ts (4 tests)
+PASS packages\runtime\test\t12a-glue-handoff-ports.test.ts (12 tests)
+PASS packages\runtime\test\t12a-h1-nullable-mcp.test.ts (4 tests)
+PASS packages\runtime\test\t12a-m1-effective-cwd.test.ts (5 tests)
+PASS packages\runtime\test\t12a-m2-persona.test.ts (8 tests)
+PASS packages\runtime\test\t12a-m3-recursive-drain.test.ts (5 tests)
+PASS packages\runtime\test\t12a-team-tools-registration.test.ts (3 tests)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 8 stamp row(s)); use o
+penTeamDomain
+    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/storage/schema/e
+rrors.ts:98:10)
+    at createTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/storage/reposit
+ories/team-domain.ts:176:13)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+    at async bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plug
+in/host.ts:813:14)
+PASS packages\runtime\test\t12b1-real-create.test.ts (4 tests)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: schema_meta stamp for store 'schema_meta' is missing (partial create
+ or corruption)
+    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/storage/schema/e
+rrors.ts:98:10)
+    at openTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/storage/repositor
+ies/team-domain.ts:215:15)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+    at async bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plug
+in/host.ts:816:14)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-t12b2foreign" found no durable TeamSessi
+on record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/r
+oot.ts:1758:15)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:922:19)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+PASS packages\runtime\test\t12b2-resume-separation.test.ts (5 tests)
+PASS packages\runtime\test\t12b4-principal-context.test.ts (8 tests)
+PASS packages\runtime\test\t12b6-handoff-agent-start.test.ts (7 tests)
+PASS packages\runtime\test\t12h4-s6-fail-closed.test.ts (2 tests)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rp
+c.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:976:11)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (on
+e owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugi
+n/host.ts:629:15)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:981:27)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+PASS packages\runtime\test\t12m4-remote-mount.test.ts (9 tests)
+PASS packages\runtime\test\tcm-d4-root-context.test.ts (7 tests)
+PASS packages\runtime\test\tcm-g1-s6-integration.test.ts (11 tests)
+PASS packages\runtime\test\tcm-m1-s6-v2-routing.test.ts (5 tests)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plugin con
+text (the web profile provides it through the workspace row — the team row hard-injects it)
+    at assertWorkspaceRegistryLike (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runt
+ime/src/plugin/workspace-attach.ts:65:11)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:752:7)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/
+host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/tcm-m2-workspace-att
+ach.test.ts:421:17
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolv
+eByPath and list to be functions
+    at assertWorkspaceRegistryLike (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runt
+ime/src/plugin/workspace-attach.ts:75:11)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/hos
+t.ts:752:7)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/src/plugin/
+host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9/packages/runtime/test/tcm-m2-workspace-att
+ach.test.ts:442:17
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\tcm-m2-workspace-attach.test.ts (14 tests)
+PASS packages\runtime\test\tcm-m3-root-initial-work.test.ts (18 tests)
+PASS packages\runtime\test\tcm-m3-root-work-glue.test.ts (9 tests)
+
+f9-targeted-run: 1287 passed, 23 failed, 1310 total, 9061 ms

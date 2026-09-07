@@ -3,10 +3,11 @@
  * v3 / v3-only-method surface of `@dsh-agent-team/remote`.
  *
  * Must-covers (D1 task card, remote half):
- *  - catalog facts: the 26-method versioned union (23 v1 + 1 v2-only +
- *    2 v3-only), the frozen v1 baseline constant still 1, the closed
- *    v3-only set, the version-aware availability matrix (v1/v2 reject the
- *    v3 methods, v3 admits everything);
+ *  - catalog facts: the 27-method versioned union (23 v1 + 1 v2-only +
+ *    2 v3-only + 1 v4-only — the v4 bump is F9, `team.resolveControl`),
+ *    the frozen v1 baseline constant still 1, the closed v3-only set,
+ *    the version-aware availability matrix (v1/v2 reject the v3 methods,
+ *    v3 admits everything except the v4-only method, v4 admits all);
  *  - `team.listRoots` (v3-only): the closed param set is EMPTY (a non-
  *    empty params object → `malformed-params` unknown-field; no fields to
  *    forward), the success `data` is `{ roots: [...] }` from the
@@ -45,12 +46,14 @@ import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS,
   REMOTE_TEAM_LIST_ROOTS_FIELDS,
   REMOTE_V2_ONLY_METHODS,
   REMOTE_V3_ONLY_METHODS,
+  REMOTE_V4_ONLY_METHODS,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   type RemoteErrorResult,
   type RemoteSafeRecord,
@@ -236,41 +239,55 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('D1 (remote contract v3): catalog facts', () => {
-  it('the catalog is the 26-method versioned union (23 v1 + 1 v2-only + 2 v3-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(26)
-    expect(REMOTE_METHOD_NAMES).toContain('team.listRoots')
-    expect(REMOTE_METHOD_NAMES).toContain('team.ensureRootLive')
-    // the frozen v1 methods are all still present (23) + the v2-only one
-    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length).toBe(23)
+  it('the catalog is the 27-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(27)
+    expect(REMOTE_METHOD_NAMES.includes('team.listRoots')).toBe(true)
+    expect(REMOTE_METHOD_NAMES.includes('team.ensureRootLive')).toBe(true)
+    // F9: the v4-only method is in the union; the frozen v1 methods are
+    // all still present (23) + the v2-only one
+    expect(REMOTE_METHOD_NAMES.includes('team.resolveControl')).toBe(true)
+    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length).toBe(23)
   })
 
-  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3]', () => {
+  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4] (the F9 v4 bump)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3])
+    expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4])
   })
 
-  it('the closed v3-only set is exactly the two D1 methods', () => {
+  it('the closed v3-only set is exactly the two D1 methods; the closed v4-only set is exactly team.resolveControl', () => {
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
     expect([...REMOTE_V2_ONLY_METHODS].sort()).toEqual(['team.admitInitialWork'])
+    expect([...REMOTE_V4_ONLY_METHODS].sort()).toEqual(['team.resolveControl'])
   })
 
-  it('the availability matrix: v3-only methods are v3-only; v1/v2 methods stay available in v3', () => {
-    // v1: no v2-only, no v3-only
+  it('the availability matrix: v3-only methods are v3-only; v1/v2 methods stay available in v3; the v4-only method is v4-only', () => {
+    // v1: no v2-only, no v3-only, no v4-only
     expect(isRemoteMethodAvailableInVersion('team.admitInitialWork', 1)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('team.listRoots', 1)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('team.ensureRootLive', 1)).toBe(false)
-    // v2: no v3-only
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 1)).toBe(false)
+    // v2: no v3-only, no v4-only
     expect(isRemoteMethodAvailableInVersion('team.listRoots', 2)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('team.ensureRootLive', 2)).toBe(false)
-    // v3: everything
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 2)).toBe(false)
+    // v3: everything EXCEPT the v4-only method
     expect(isRemoteMethodAvailableInVersion('team.listRoots', 3)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('team.ensureRootLive', 3)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('team.admitInitialWork', 3)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('team.getProjection', 3)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 3)).toBe(false)
+    // v4: everything (the F9 bump admits the full v1-v3 surface too)
+    expect(isRemoteMethodAvailableInVersion('team.getProjection', 4)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('team.admitInitialWork', 4)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('team.listRoots', 4)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('team.ensureRootLive', 4)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 4)).toBe(true)
     // non-catalog method: never available
     expect(isRemoteMethodAvailableInVersion('team.notACatalogMethod', 3)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('team.notACatalogMethod', 4)).toBe(false)
   })
 
   it('the closed param field sets are frozen (listRoots: none; ensureRootLive: teamSessionId)', () => {

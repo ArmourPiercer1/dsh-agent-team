@@ -240,6 +240,22 @@ export function createServerPrincipalDerivation(options) {
         }
         return { kind: 'human', humanId: acknowledgedBy };
     }
+    /** Derive the human decider of `team.resolveControl` (F9, contract v4).
+     *
+     *  The v4 wire contract carries NO caller/role/principal fields
+     *  (adjudication U3): the payload is a pure COMMAND, and its closed
+     *  field set rejects any identity claim before derivation runs. The
+     *  decider is therefore always the host operator — the human id of
+     *  the addressed (assertTeamScoped-validated, owned) root (the
+     *  invariant 9 identity channel, the same channel the
+     *  deriveMutationActor human branch uses). The trusted
+     *  connection-gate authority basis (T12-B4) is what makes the
+     *  operator class the trust ceiling: no client-supplied role can
+     *  grant, narrow, or spoof this derivation. */
+    function deriveControlCaller(method, params) {
+        assertTeamScoped(method, params);
+        return { kind: 'human', humanId: String(params['teamSessionId']) };
+    }
     return (input) => {
         // T12-B4 — the context is consulted on the derivation path itself, on
         // every call, BEFORE any payload claim is read: the transport's
@@ -257,6 +273,8 @@ export function createServerPrincipalDerivation(options) {
             return deriveMutationActor(method, params);
         if (method === 'compatibility.ack')
             return deriveAckCaller(params);
+        if (method === 'team.resolveControl')
+            return deriveControlCaller(method, params);
         // Every other method (queries, team.create, lifecycle, handoff, legacy,
         // catalog, intent) is a host-initiated operation: the host operator.
         return { kind: 'human', humanId: rootSessionId };

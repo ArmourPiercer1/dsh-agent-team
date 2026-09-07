@@ -47,16 +47,31 @@ export declare const REMOTE_CONTRACT_VERSION_V2: 2;
  */
 export declare const REMOTE_CONTRACT_VERSION_V3: 3;
 /**
- * Type of a remote contract version field this build accepts: exactly
- * `1 | 2 | 3` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`, extended
- * by the D1 v3 bump).
+ * The remote contract v4 (F3/F11/F9/T1.4 repair round r1, F9 — user
+ * adjudications U1–U4, 2026-09-07): the v4-only `team.resolveControl`
+ * command — the human ingress for the durable control plane (a human
+ * resolves a pending control request through the trusted authenticated
+ * UI; the host derives the human principal from the connection-gate
+ * authority basis, never from a payload claim — the wire carries NO
+ * caller/actor fields). The v4 shared record also documents the T1.4
+ * probe-semantics entry (T14-H carries its code; this build freezes only
+ * the F9 method — the version exists, the entry is additive). Every
+ * v1/v2/v3 method stays available in v4; v1/v2/v3 wire behavior is
+ * preserved.
  */
-export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMOTE_CONTRACT_VERSION_V2 | typeof REMOTE_CONTRACT_VERSION_V3;
+export declare const REMOTE_CONTRACT_VERSION_V4: 4;
 /**
- * All remote contract versions this build accepts: `[1, 2, 3]`.
+ * Type of a remote contract version field this build accepts: exactly
+ * `1 | 2 | 3 | 4` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
+ * extended by the D1 v3 bump and the F9 v4 bump).
+ */
+export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMOTE_CONTRACT_VERSION_V2 | typeof REMOTE_CONTRACT_VERSION_V3 | typeof REMOTE_CONTRACT_VERSION_V4;
+/**
+ * All remote contract versions this build accepts: `[1, 2, 3, 4]`.
  * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
- * v3 by the Team D1-D6 repair v2 D1 task (a version bump ADDS supported
- * versions, never edits v1/v2 semantics).
+ * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
+ * repair round r1 F9 task (a version bump ADDS supported versions,
+ * never edits v1/v2/v3 semantics).
  */
 export declare const SUPPORTED_REMOTE_CONTRACT_VERSIONS: readonly number[];
 /**

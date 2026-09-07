@@ -2,8 +2,9 @@
  * The backing ports of the Remote handler layer (deviation D-2).
  *
  * The handler layer depends on NO runtime types: its entire dependency
- * surface is these 16 structural ports (12 frozen P8-T3 ports + the two
- * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports),
+ * surface is these 17 structural ports (12 frozen P8-T3 ports + the two
+ * TCM vNext §15.6 v2 ports + the two Team D1-D6 repair v2 v3 ports + the
+ * F3/F11/F9/T1.4 repair round r1 F9 v4 port),
  * each of which the host wiring implements over the runtime APIs
  * (design note §3 table, "Backing API" column). Every port method returns
  * a lossless-JSON-safe record (or `null` where the wire shape allows it):
@@ -434,15 +435,54 @@ export interface RemoteTeamEnsureRootLivePort {
 }
 
 // ---------------------------------------------------------------------------
+// Port 17 — team.resolveControl (v4-only human control resolution,
+// F3/F11/F9/T1.4 repair round r1 F9)
+// ---------------------------------------------------------------------------
+
+/**
+ * The v4-only `team.resolveControl` port: the human ingress of the durable
+ * control plane (F9). The host resolves ONE pending control request of
+ * ONE owned team through the existing control-service authority
+ * (`CONTROL_RESOLVER_ROLES` + the durable exactly-once decision
+ * semantics — unchanged; this port is the command surface, not a second
+ * authority). The wire carries NO caller/role/principal fields
+ * (adjudication U3): the production host (the S6 plugin) derives the
+ * human principal from the T12-B4 connection-gate authority basis — the
+ * trusted authenticated UI/session ownership — and stamps it on the
+ * service call (the S6 async port carries the derived caller; this pure
+ * port's synchronous signature is the contract layer's, where no
+ * derivation exists). Typed failures raised here (the control service's
+ * closed `CONTROL_*` vocabulary + the reused facade's
+ * `TEAM_RUNTIME_*` codes) pass through the dispatcher unchanged
+ * (invariant 4b).
+ */
+export interface RemoteTeamResolveControlPort {
+  /**
+   * Resolve one pending control request (allow / deny).
+   * @param teamSessionId - the validated TeamSession (root session) id.
+   * @param requestId - the validated opaque control request id.
+   * @param decision - the frozen decision (`allow` / `deny`).
+   * @param note - the decider's free-form note (1..2048), or `undefined`.
+   * @returns the durable decision record (lossless JSON).
+   */
+  resolveControl(
+    teamSessionId: string,
+    requestId: string,
+    decision: 'allow' | 'deny',
+    note: string | undefined,
+  ): RemoteSafeRecord
+}
+
+// ---------------------------------------------------------------------------
 // Deps + handler contract
 // ---------------------------------------------------------------------------
 
 /**
- * The complete dependency surface of the handler layer: exactly 16 ports
+ * The complete dependency surface of the handler layer: exactly 17 ports
  * (the 12 frozen P8-T3 ports + the two TCM vNext §15.6 v2 ports + the
- * two Team D1-D6 repair v2 v3 ports), none of which is a mirror of the
- * upstream session controller, a session log artifact, or an upstream
- * private API (G8).
+ * two Team D1-D6 repair v2 v3 ports + the F9 v4 port), none of which is a
+ * mirror of the upstream session controller, a session log artifact, or
+ * an upstream private API (G8).
  */
 export interface RemoteHandlerDeps {
   readonly catalog: RemoteCatalogPort
@@ -452,6 +492,7 @@ export interface RemoteHandlerDeps {
   readonly teamAdmitInitialWork: RemoteTeamAdmitInitialWorkPort
   readonly teamRoots: RemoteTeamRootsPort
   readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort
+  readonly teamResolveControl: RemoteTeamResolveControlPort
   readonly projection: RemoteProjectionPort
   readonly ledger: RemoteLedgerPort
   readonly admission: RemoteAdmissionPort

@@ -1,13 +1,16 @@
 /**
  * The `team` category handler (design note §3): TeamSession creation,
- * whole-projection observation, and ledger pages. Backed by five ports:
+ * whole-projection observation, ledger pages, and the v4-only human
+ * control resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair
+ * round r1 F9). Backed by six ports:
  * {@link RemoteTeamCreatePort} (root binding, P5-T5),
  * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
  * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
  * (the v2-only creation-time initial work command, TCM vNext §15.6),
- * {@link RemoteProjectionPort} (ProjectionService, P8-T2), and
- * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter,
- * D-5).
+ * {@link RemoteTeamResolveControlPort} (the v4-only human control
+ * resolution command, F9), {@link RemoteProjectionPort}
+ * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
+ * ledger behind a slicing adapter, D-5).
  *
  * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
  * `TeamProjectionDto` fields must be present with the right structural
@@ -19,9 +22,9 @@
  * @module @dsh-agent-team/remote/handlers/team
  */
 import type { RemoteMethodParams } from '../contracts/params.js';
-import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port, RemoteTeamEnsureRootLivePort, RemoteTeamRootsPort } from './ports.js';
+import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreatePort, RemoteTeamCreateV2Port, RemoteTeamEnsureRootLivePort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
 /** The ports the team category needs (v1 trio + the two v2 ports + the
- *  two v3 ports). */
+ *  two v3 ports + the F9 v4 port). */
 export interface RemoteTeamHandlerPorts {
     readonly teamCreate: RemoteTeamCreatePort;
     /** TCM vNext §15.6: the v2 workspace-aware creation variant. */
@@ -32,14 +35,17 @@ export interface RemoteTeamHandlerPorts {
     readonly teamRoots: RemoteTeamRootsPort;
     /** Team D1-D6 repair v2 D1 (D2-wired): the v3-only Team-mode ensure. */
     readonly teamEnsureRootLive: RemoteTeamEnsureRootLivePort;
+    /** F3/F11/F9/T1.4 repair round r1 F9: the v4-only human control
+     *  resolution command. */
+    readonly teamResolveControl: RemoteTeamResolveControlPort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
 }
 /**
  * The team category handler (`team.create` [v1 + v2],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
- * `team.ensureRootLive` [v3-only], `team.getProjection`,
- * `team.getLedgerPage`).
+ * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
+ * `team.getProjection`, `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
  * contract version; `team.create` routes to the v1 port (closed v1 field

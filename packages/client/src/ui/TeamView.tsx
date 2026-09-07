@@ -23,6 +23,7 @@ import type {
   RemoteResponse,
   RemoteTeamAdmitInitialWorkParams,
   RemoteTeamCreateParamsV2,
+  RemoteTeamResolveControlParams,
 } from '../../../remote/src/index.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
 import {
@@ -129,6 +130,26 @@ export interface TeamViewRootsFace {
 }
 
 /**
+ * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the human
+ * control-resolution face: the v4-only `team.resolveControl` wrapper.
+ * The HOST derives the human principal from the trusted authenticated
+ * UI/session ownership (the T12-B4 connection-gate authority basis) —
+ * the closed v4 wire carries NO caller/role fields (adjudication U3),
+ * and the frozen `CONTROL_RESOLVER_ROLES` + durable exactly-once
+ * semantics stay the only resolver authority (a typed failure is
+ * rendered as the row's typed error note). Absent → the Events section
+ * renders no Allow/Deny commands (the legacy surface is unchanged).
+ */
+export interface TeamViewControlFace {
+  /**
+   * `team.resolveControl` (contract v4; raw RemoteResponse — the typed
+   * control vocabulary arrives as the frozen `RemoteResponse` error,
+   * never exception-ified).
+   */
+  readonly resolveControl: (params: RemoteTeamResolveControlParams) => Promise<RemoteResponse>
+}
+
+/**
  * Parse the v3 `team.listRoots` success value (`data.roots`) into the
  * frozen wire rows (defensive client-boundary parse — a malformed row
  * keeps the zero state with the typed-error note lane, never a throw).
@@ -212,6 +233,12 @@ export interface TeamViewInjected {
    */
   roots?: TeamViewRootsFace
   /**
+   * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4): the human
+   * control-resolution face (absent → the Events section has no
+   * Allow/Deny commands; the legacy surface is unchanged).
+   */
+  control?: TeamViewControlFace
+  /**
    * D2 (Team D1-D6 repair v2, D6): the explicit open-in-Team-mode entry
    * (the dedicated "以 Team 模式打开 / 回到 Leader" entry): the AWAITED
    * two-phase sequence — the v3 `team.ensureRootLive` guarantee (over the
@@ -270,6 +297,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     sessionId, useProjectionMirror, useTeamLedgers,
     ensureProjection, pullProjection, refreshTeamLedger, openSession,
     creation, memberCommands, governance, legacyInspect, handoff, roots,
+    control,
     openTeamMode, openOrdinaryMode, teamOpenMode,
     useWorkspaces, t,
   } = props
@@ -426,6 +454,24 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   }
   const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? ''])
   const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState])
+  // F9 (remote contract v4) — the human control-resolution command face
+  // wiring: the v4 wrapper (the host derives the human principal — the
+  // wire carries no caller fields) plus the D4-A1 post-success
+  // projection pull (the decision settles the projection's
+  // pending-control facts without F5; the LEDGER catch-up re-pull is the
+  // TeamLedger side — it re-requests after every completed command,
+  // success and typed failure alike). Absent face → the surface renders
+  // no commands (the legacy surface is unchanged).
+  const onResolveControl = useMemo(() => {
+    if (control === undefined) return undefined
+    return (teamSessionId: string, requestId: string, decision: 'allow' | 'deny'): Promise<RemoteResponse> =>
+      control.resolveControl({ teamSessionId, requestId, decision }).then(response => {
+        if (response.ok === true) {
+          void pullProjection(teamSessionId)
+        }
+        return response
+      })
+  }, [control, pullProjection])
   // D1 (Team D1-D6 repair v2, remote contract v3): the persisted-roots
   // zero-state share — the typed-failure note (ONE verbatim line, UI §38
   // greyed-surface discipline) + the read-only rows (blueprint@revision,
@@ -685,6 +731,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           ledgerState={ledgerState}
           onRetry={refreshTeamLedger}
           onSelectSession={openSession}
+          onResolveControl={onResolveControl}
           t={t}
         />
       </section>

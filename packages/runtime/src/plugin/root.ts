@@ -1554,6 +1554,27 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     ensureRootLive: async (rootSessionId) => {
       await live.ensureLiveAgent(rootSessionId)
     },
+    // F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
+    // durable control-service closure behind the v4-only
+    // team.resolveControl: the EXISTING A25 control service (built
+    // above — always present in production; NO new service, NO
+    // authority change: CONTROL_RESOLVER_ROLES + the durable
+    // exactly-once decision semantics stay the only resolver
+    // authority). The `caller` argument is HOST-DERIVED (the T12-B4
+    // trusted principal seam stamps the human operator of the
+    // addressed root — the v4 wire carries no caller/role fields,
+    // adjudication U3). The service's closed CONTROL_* rejections
+    // pass through the dispatcher unchanged (invariant 4b).
+    resolveControl: async ({ rootSessionId, caller, requestId, decision, note }) => {
+      const record = await control.resolveControl({
+        rootSessionId,
+        caller,
+        requestId,
+        decision,
+        ...(note !== undefined ? { note } : {}),
+      })
+      return record as unknown as RemoteSafeRecord
+    },
     // D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
     // durable root ownership list behind the v3-only team.listRoots: the
     // D1 pure ownership-index module over the ALREADY-INJECTED

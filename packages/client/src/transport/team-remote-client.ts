@@ -12,7 +12,9 @@
  * Version stamping (TCM vNext §15.3) is also exclusive to this module:
  * every existing wrapper stamps contract version 1 (frozen v1 wire
  * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
- * contract version 2.
+ * contract version 2, the two D1 v3 wrappers stamp contract version 3,
+ * and `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
+ * contract version 4.
  *
  * Failure discipline (frozen `RemotePushTransport` contract, mirrored
  * here for the unary path): every RPC-level outcome arrives as a typed
@@ -37,6 +39,7 @@ import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V4,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   type RemoteContractVersion,
@@ -62,22 +65,26 @@ import {
   type RemoteTeamCreateParams,
   type RemoteTeamCreateParamsV2,
   type RemoteTeamAdmitInitialWorkParams,
+  type RemoteTeamResolveControlParams,
 } from '../../../remote/src/index.js'
 import type { TeamRpcCarrier, TeamRpcResult } from './host-seams.js'
 
 /**
  * The Team Remote client surface (plan §6.1): the frozen unary endpoint
- * `call` plus typed wrappers for every catalog method (26 — the 23
+ * `call` plus typed wrappers for every catalog method (27 — the 23
  * frozen v1 methods + the v2-only `team.admitInitialWork` + the v3-only
- * `team.listRoots` / `team.ensureRootLive`).
+ * `team.listRoots` / `team.ensureRootLive` + the v4-only
+ * `team.resolveControl`).
  *
  * **Version routing (TCM vNext §15.3)**: every EXISTING wrapper stamps
  * contract version **1** (the frozen v1 wire behavior — unchanged); the
  * two v2 wrappers — {@link teamCreateV2} and
  * {@link teamAdmitInitialWorkV2} — stamp contract version **2**; the two
  * v3 wrappers — {@link teamListRootsV3} and {@link teamEnsureRootLiveV3}
- * — stamp contract version **3** (Team D1-D6 repair v2, D1). The generic
- * {@link call} also defaults to version 1.
+ * — stamp contract version **3** (Team D1-D6 repair v2, D1); the v4
+ * wrapper — {@link teamResolveControlV4} — stamps contract version **4**
+ * (F3/F11/F9/T1.4 repair round r1 F9). The generic {@link call} also
+ * defaults to version 1.
  */
 export interface TeamRemoteClient {
   /**
@@ -155,6 +162,21 @@ export interface TeamRemoteClient {
    * @param teamSessionId - the TeamSession (root session) id to guarantee.
    */
   teamEnsureRootLiveV3(teamSessionId: string): Promise<RemoteResponse>
+  /**
+   * `team.resolveControl` (contract v4, v4-only method, F3/F11/F9/T1.4
+   * repair round r1 F9) — the human ingress of the durable control
+   * plane: resolve ONE pending control request of one team (allow /
+   * deny). The closed v4 param set is `{ teamSessionId, requestId,
+   * decision, note? }` — NO caller/role/principal fields (adjudication
+   * U3): the host derives the human principal from the trusted
+   * authenticated UI/session ownership (the T12-B4 connection-gate
+   * authority basis). On success `data.decision` is the durable
+   * ControlDecision record; the typed control vocabulary (already-
+   * decided / not-found / resolver-not-authorized / stale / external
+   * policy) arrives as the typed `RemoteResponse` error. Stamps contract
+   * version 4.
+   */
+  teamResolveControlV4(params: RemoteTeamResolveControlParams): Promise<RemoteResponse>
   /** `member.create` — admit one member instance. */
   memberCreate(params: RemoteMemberCreateParams): Promise<RemoteResponse>
   /** `member.send` — first message to a member instance. */
@@ -256,6 +278,11 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     teamListRootsV3: () => callWithVersion('team.listRoots', {}, REMOTE_CONTRACT_VERSION_V3),
     teamEnsureRootLiveV3: (teamSessionId) =>
       callWithVersion('team.ensureRootLive', { teamSessionId }, REMOTE_CONTRACT_VERSION_V3),
+    // F3/F11/F9/T1.4 repair round r1 F9 — the v4-only human control-
+    // resolution command (contract version 4; the host derives the human
+    // principal — the closed v4 param set carries no caller fields).
+    teamResolveControlV4: (params) =>
+      callWithVersion('team.resolveControl', params, REMOTE_CONTRACT_VERSION_V4),
     memberCreate: (params) => call('member.create', params),
     memberSend: (params) => call('member.send', params),
     memberFollowup: (params) => call('member.followup', params),

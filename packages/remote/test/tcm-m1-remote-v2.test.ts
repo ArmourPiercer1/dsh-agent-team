@@ -43,6 +43,7 @@ import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
+  REMOTE_CONTRACT_VERSION_V4,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
@@ -50,6 +51,7 @@ import {
   REMOTE_TEAM_CREATE_FIELDS_V2,
   REMOTE_V2_ONLY_METHODS,
   REMOTE_V3_ONLY_METHODS,
+  REMOTE_V4_ONLY_METHODS,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   type RemoteSafeRecord,
 } from '../src/index.js'
@@ -559,18 +561,21 @@ describe('TCM M1: backing error allow-list (the seven team-create v2 codes)', ()
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: catalog facts (versioned union, closed)', () => {
-  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 bump extends the supported set', () => {
+  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 bumps extend the supported set', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
-    expect(SUPPORTED_REMOTE_CONTRACT_VERSIONS).toEqual([1, 2, 3])
+    expect(REMOTE_CONTRACT_VERSION_V4).toBe(4)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4])
   })
 
-  it('the closed catalog is the versioned union: 26 methods (23 v1 + 1 v2-only + 2 v3-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(26)
+  it('the closed catalog is the versioned union: 27 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(27)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     // the D1 (Team D1-D6 repair v2) v3-only closed set
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
+    // the F9 (repair r1) v4-only closed set
+    expect([...REMOTE_V4_ONLY_METHODS].sort()).toEqual(['team.resolveControl'])
   })
 
   it('the closed field sets are frozen per version', () => {
@@ -594,12 +599,16 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     ])
   })
 
-  it('the availability matrix: v2-only set is closed; everything else is v1-legal', () => {
+  it('the availability matrix: v2-only set is closed; everything else is v1-legal; the v4-only method is v4-only (F9)', () => {
     expect(isRemoteMethodAvailableInVersion('team.admitInitialWork', 1)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('team.admitInitialWork', 2)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('team.create', 1)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('team.create', 2)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('catalog.list', 2)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('nope.notInCatalog', 2)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 1)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 2)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 3)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('team.resolveControl', 4)).toBe(true)
   })
 })

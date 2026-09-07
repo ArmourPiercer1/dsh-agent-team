@@ -5,7 +5,7 @@ var __dshFactory = (require) => {
 		/* S8 composition adapter (D-T9-11 territory): the P9 client product ships a plain tsc ESM dist; this single-file facade inlines its module graph, externalizes the baseline module-table specifiers, and maps .module.css to identity class maps with real CSS <style> injection. */
 		var __extCache = {};
 		function __extReq(spec) { var m = __extCache[spec]; if (m === undefined) { m = __extCache[spec] = require(spec); } return m; }
-		var __cssTable = {"ui/NewTeamEntry.module.css":{"classes":{"rail":"rail","wide":"wide","label":"label","backdrop":"backdrop","dialog":"dialog"},"text":"/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the\r\n   wrapping Tooltip (delay 500ms, the native New Session row pattern). */\r\n.rail {\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  width: 100%;\r\n  padding: 6px 0;\r\n  border: none;\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  cursor: pointer;\r\n}\r\n\r\n.rail:hover {\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.rail:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n/* Wide (expanded) entry: icon + text label row — the expanded button carries\r\n   its own label, so the tooltip is disabled in this state. */\r\n.wide {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  width: 100%;\r\n  padding: 6px 8px;\r\n  border: none;\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-align: left;\r\n  cursor: pointer;\r\n}\r\n\r\n.wide:hover {\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.wide:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n/* The expanded-state text label (rail state renders icon-only). */\r\n.label {\r\n  white-space: nowrap;\r\n}\r\n\r\n/* The creation overlay: the sidebar column clips overflow, so the Team-owned\r\n   panel mounts as a fixed full-viewport backdrop with a centered dialog\r\n   (the same reason the ui-cordis footer panel is position: fixed). */\r\n.backdrop {\r\n  position: fixed;\r\n  inset: 0;\r\n  z-index: 1000;\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  padding: 24px;\r\n  background: var(--dsw-alias-bg-mask-1);\r\n}\r\n\r\n.dialog {\r\n  width: 100%;\r\n  max-width: 560px;\r\n  max-height: calc(100vh - 48px);\r\n  overflow-y: auto;\r\n}\r\n"},"ui/TeamDock.module.css":{"classes":{"root":"root","row":"row","jump":"jump","title":"title","sep":"sep","readout":"readout","chevron":"chevron","expanded":"expanded","members":"members","tasks":"tasks","member":"member","task":"task","dotSlot":"dotSlot","name":"name","subject":"subject","taskStatus":"taskStatus","empty":"empty"},"text":"/* Team dock in the composer context stack (the D12 thin readout): one\r\n   collapsed 13px row in the shared dock column (same card alignment as the\r\n   todo/queue strips above it), the expanded body a compact member status and\r\n   task list. The --dsh-composer-* width axis inherits from the conversation\r\n   root, whose subtree hosts the dock slot. */\r\n\r\n.root {\r\n  box-sizing: border-box;\r\n  flex: none;\r\n  overflow: hidden;\r\n  margin: 0 auto;\r\n  width: calc(\r\n    100% -\r\n    var(--dsh-composer-side-clearance) -\r\n    var(--dsh-composer-side-clearance) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset)\r\n  );\r\n  max-width: calc(\r\n    var(--dsh-composer-card-max-width) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset)\r\n  );\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 12px;\r\n  background: var(--dsw-specific-tip);\r\n  /* Elevated surface: the same tip rung as the sibling dock cards, and the\r\n     expanded lists scroll inside this card, so the thumb takes the l2\r\n     elevation tokens (they inherit down to the lists). */\r\n  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);\r\n  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);\r\n}\r\n\r\n.row {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 2px;\r\n  padding: 0 4px 0 12px;\r\n}\r\n\r\n.jump {\r\n  display: flex;\r\n  flex: 1 1 auto;\r\n  align-items: center;\r\n  min-width: 0;\r\n  padding: 4px;\r\n  border: none;\r\n  border-radius: 8px;\r\n  background: transparent;\r\n  text-align: left;\r\n  cursor: pointer;\r\n}\r\n\r\n.title {\r\n  flex: none;\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 500;\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n/* The D12 separators (title→first segment, segment→segment) share one\r\n   en-space joiner, so the readout line carries its own spacing and the\r\n   flex gap stays zero. */\r\n.sep {\r\n  flex: none;\r\n  font: var(--dsw-font-xs-13);\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.readout {\r\n  min-width: 0;\r\n  overflow: hidden;\r\n  font: var(--dsw-font-xs-13);\r\n  color: var(--dsw-alias-label-tertiary);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.jump:hover .sep,\r\n.jump:focus-visible .sep,\r\n.jump:hover .readout,\r\n.jump:focus-visible .readout {\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.jump:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.chevron {\r\n  display: grid;\r\n  flex: none;\r\n  place-items: center;\r\n  padding: 6px;\r\n  border: none;\r\n  border-radius: 8px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  cursor: pointer;\r\n}\r\n\r\n.chevron:hover {\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.chevron:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.expanded {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  padding: 2px 12px 8px;\r\n}\r\n\r\n.members,\r\n.tasks {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  margin: 0;\r\n  padding: 0;\r\n  list-style: none;\r\n  max-height: 132px;\r\n  overflow-y: auto;\r\n}\r\n\r\n.member,\r\n.task {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n  font: var(--dsw-font-xs-13);\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.dotSlot {\r\n  display: grid;\r\n  flex: none;\r\n  place-items: center;\r\n  width: 14px;\r\n  height: 14px;\r\n}\r\n\r\n.name,\r\n.subject {\r\n  min-width: 0;\r\n  overflow: hidden;\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.taskStatus {\r\n  flex: none;\r\n  font: var(--dsw-font-xxxs-11);\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.empty {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n"},"ui/TeamSettingsSection.module.css":{"classes":{"container":"container","title":"title","emptyState":"emptyState","emptyTitle":"emptyTitle","emptyDescription":"emptyDescription","steps":"steps"},"text":".container {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 12px;\r\n  padding: 16px;\r\n}\r\n\r\n.title {\r\n  font-size: 16px;\r\n  font-weight: 600;\r\n  color: var(--dsw-alias-label-primary);\r\n  margin: 0;\r\n}\r\n\r\n.emptyState {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  padding: 12px;\r\n  border-radius: 8px;\r\n  background: var(--dsw-alias-bg-module-platform);\r\n}\r\n\r\n.emptyTitle {\r\n  font-weight: 500;\r\n  color: var(--dsw-alias-label-secondary);\r\n  margin: 0;\r\n}\r\n\r\n.emptyDescription {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  margin: 0;\r\n}\r\n\r\n.steps {\r\n  margin: 0;\r\n  padding-left: 24px;\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n}\r\n\r\n.steps li {\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.steps code {\r\n  font-family: var(--ds-font-family-code);\r\n  font-size: 13px;\r\n  background: var(--dsw-alias-bg-overlay);\r\n  padding: 2px 6px;\r\n  border-radius: 4px;\r\n}\r\n"},"ui/TeamView.module.css":{"classes":{"zero":"zero","zeroInner":"zeroInner","zeroText":"zeroText","zeroStart":"zeroStart","body":"body","section":"section","sectionTitle":"sectionTitle","legacyBanner":"legacyBanner","legacySummary":"legacySummary","legacySummaryTitle":"legacySummaryTitle","legacyNote":"legacyNote","roots":"roots","rootsTitle":"rootsTitle","rootsList":"rootsList","rootRow":"rootRow","rootId":"rootId","rootRowOpen":"rootRowOpen"},"text":".zero {\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  min-height: 100%;\r\n  padding: 24px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.zeroInner {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 12px;\r\n  width: 100%;\r\n  max-width: 720px;\r\n}\r\n\r\n.zeroText {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.zeroStart {\r\n  padding: 6px 14px;\r\n  border: 1px solid var(--dsw-alias-state-business-primary);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-business-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.zeroStart:hover {\r\n  opacity: 0.88;\r\n}\r\n\r\n.zeroStart:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n.body {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 16px;\r\n  min-height: 100%;\r\n  padding: 16px 24px;\r\n}\r\n\r\n.section {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.sectionTitle {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */\r\n\r\n.legacyBanner {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-state-warn-primary);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n}\r\n\r\n.legacyBanner p {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.4;\r\n}\r\n\r\n.legacySummary {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.legacySummaryTitle {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.legacySummary p {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.legacySummary ul {\r\n  margin: 0;\r\n  padding-left: 16px;\r\n  list-style: none;\r\n}\r\n\r\n.legacySummary li {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.legacyNote {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted\r\n   root-identity rows of the zero state (read-only in D1 — D2/D3 add the\r\n   open action). */\r\n\r\n.roots {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  width: 100%;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.rootsTitle {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.rootsList {\r\n  margin: 0;\r\n  padding: 0;\r\n  list-style: none;\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n}\r\n\r\n.rootRow {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: baseline;\r\n  gap: 4px 12px;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.rootRow span {\r\n  word-break: break-all;\r\n}\r\n\r\n.rootId {\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n/* D2 (D6) — the dedicated open-in-Team-mode entry on a persisted-roots\r\n   row (the explicit \"以 Team 模式打开 / 回到 Leader\" button). */\r\n.rootRowOpen {\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-state-business-primary);\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-state-business-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.rootRowOpen:hover {\r\n  opacity: 0.88;\r\n}\r\n\r\n.rootRowOpen:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n.rootRowOpen:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n"},"ui/TeamCreationPanel.module.css":{"classes":{"panel":"panel","title":"title","field":"field","fieldLabel":"fieldLabel","select":"select","textarea":"textarea","hint":"hint","detail":"detail","detailName":"detailName","detailSource":"detailSource","detailDescription":"detailDescription","detailTemplates":"detailTemplates","compat":"compat","compatTitle":"compatTitle","compatNote":"compatNote","compatReady":"compatReady","compatUnknown":"compatUnknown","warningList":"warningList","warningRow":"warningRow","warningOwner":"warningOwner","warningSubjects":"warningSubjects","warningDetail":"warningDetail","ack":"ack","fatal":"fatal","fatalTitle":"fatalTitle","fatalRow":"fatalRow","fatalPreset":"fatalPreset","error":"error","rootKept":"rootKept","actions":"actions","primary":"primary","secondary":"secondary","handoff":"handoff","handoffTitle":"handoffTitle","handoffNote":"handoffNote","handoffReady":"handoffReady","handoffPreview":"handoffPreview","handoffError":"handoffError","handoffFailed":"handoffFailed","handoffTriad":"handoffTriad"},"text":".panel {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 12px;\r\n  padding: 14px 16px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 8px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.title {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-s-14);\r\n  font-weight: 600;\r\n}\r\n\r\n.field {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  min-width: 0;\r\n}\r\n\r\n.fieldLabel {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.select,\r\n.textarea {\r\n  width: 100%;\r\n  padding: 5px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.textarea {\r\n  min-height: 54px;\r\n  resize: vertical;\r\n}\r\n\r\n.select:focus-visible,\r\n.textarea:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.select:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.hint {\r\n  margin: -6px 0 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n}\r\n\r\n.detail {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: baseline;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.detailName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.detailSource {\r\n  padding: 1px 6px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.detailDescription {\r\n  flex-basis: 100%;\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.detailTemplates {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.compat {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.compatTitle {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.compatNote,\r\n.compatReady,\r\n.compatUnknown {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.compatReady {\r\n  color: var(--dsw-alias-state-success-primary);\r\n}\r\n\r\n.compatUnknown {\r\n  color: var(--dsw-alias-state-error-primary);\r\n}\r\n\r\n.warningList {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  margin: 0;\r\n  padding: 0;\r\n  list-style: none;\r\n}\r\n\r\n.warningRow {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  padding: 6px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n}\r\n\r\n.warningOwner {\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.warningSubjects,\r\n.warningDetail {\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n}\r\n\r\n.ack {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 6px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.ack input {\r\n  margin: 0;\r\n}\r\n\r\n.fatal {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-error-secondary);\r\n}\r\n\r\n.fatalTitle,\r\n.fatalRow {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.fatalRow {\r\n  font: var(--dsw-font-xxxs-11);\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.fatalPreset {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.5;\r\n}\r\n\r\n.error {\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-error-secondary);\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.rootKept {\r\n  margin: 4px 0 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  gap: 8px;\r\n}\r\n\r\n.primary,\r\n.secondary {\r\n  padding: 6px 14px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.primary {\r\n  background: var(--dsw-alias-state-business-primary);\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.primary:hover:not(:disabled),\r\n.secondary:hover:not(:disabled) {\r\n  opacity: 0.88;\r\n}\r\n\r\n.primary:focus-visible,\r\n.secondary:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n.primary:disabled,\r\n.secondary:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */\r\n\r\n.handoff {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.handoffTitle {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.handoff > span:not(.handoffTitle) {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.handoff > label {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 6px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.handoff > label:has(input:disabled) {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.handoffNote {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.handoffReady {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 8px;\r\n}\r\n\r\n.handoffReady > span {\r\n  color: var(--dsw-alias-state-success-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n}\r\n\r\n.handoffPreview {\r\n  width: 100%;\r\n  padding: 6px 8px;\r\n  border-left: 2px solid var(--dsw-alias-border-l2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.handoffPreview > p {\r\n  margin: 0 0 3px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n.handoffPreview ul {\r\n  margin: 0;\r\n  padding-left: 16px;\r\n  list-style: disc;\r\n}\r\n\r\n.handoffPreview li {\r\n  margin: 1px 0;\r\n  word-break: break-word;\r\n}\r\n\r\n.handoffError,\r\n.handoffFailed > p {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.handoffFailed {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border: 1px solid var(--dsw-alias-state-error-secondary);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.handoffTriad {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 6px;\r\n}\r\n"},"ui/TeamTimeline.module.css":{"classes":{"root":"root","empty":"empty","plot":"plot","corner":"corner","axis":"axis","tick":"tick","gutter":"gutter","gutterRow":"gutterRow","swatch":"swatch","laneName":"laneName","track":"track","domain":"domain","lane":"lane","bar":"bar"},"text":".root {\r\n  --team-lane-height: 28px;\r\n  display: flex;\r\n  flex-direction: column;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l2);\r\n  user-select: none;\r\n}\r\n\r\n.root :global([role='tooltip']) {\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.empty {\r\n  margin: 0;\r\n  padding: 12px 16px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.plot {\r\n  display: grid;\r\n  grid-template-columns: 160px minmax(0, 1fr);\r\n  grid-template-rows: 20px auto;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.corner {\r\n  border-right: 1px solid var(--dsw-alias-border-l1);\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.axis {\r\n  position: relative;\r\n  overflow: hidden;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.tick {\r\n  position: absolute;\r\n  top: 3px;\r\n  left: var(--team-tick-left);\r\n  padding-left: 4px;\r\n  border-left: 1px solid var(--dsw-alias-border-l2);\r\n  height: 100%;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n  white-space: nowrap;\r\n}\r\n\r\n.gutter {\r\n  border-right: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.gutterRow {\r\n  display: flex;\r\n  gap: 6px;\r\n  align-items: center;\r\n  height: var(--team-lane-height);\r\n  padding: 0 8px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.gutterRow:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.swatch {\r\n  flex: none;\r\n  width: 8px;\r\n  height: 8px;\r\n  border-radius: 2px;\r\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\r\n}\r\n\r\n.laneName {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.gutterRow[data-current='true'] .laneName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n.track {\r\n  position: relative;\r\n  overflow: hidden;\r\n  height: calc(var(--team-lane-count, 1) * var(--team-lane-height));\r\n  cursor: grab;\r\n  touch-action: none;\r\n}\r\n\r\n.track[data-panning='true'] {\r\n  cursor: grabbing;\r\n}\r\n\r\n.track:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.domain {\r\n  position: absolute;\r\n  top: 0;\r\n  bottom: 0;\r\n  left: var(--team-domain-left);\r\n  width: var(--team-domain-width);\r\n}\r\n\r\n.lane {\r\n  position: relative;\r\n  height: var(--team-lane-height);\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.lane:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.lane[data-current='true'] {\r\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\r\n}\r\n\r\n.bar {\r\n  position: absolute;\r\n  top: 50%;\r\n  left: var(--team-bar-left);\r\n  width: max(2px, var(--team-bar-width));\r\n  height: 14px;\r\n  min-width: 2px;\r\n  transform: translateY(-50%);\r\n  border-radius: 2px;\r\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\r\n  opacity: 0.85;\r\n  cursor: pointer;\r\n}\r\n\r\n.bar:hover {\r\n  opacity: 1;\r\n}\r\n\r\n.bar[data-running='true'] {\r\n  animation: team-bar-pulse 1.2s ease-in-out infinite;\r\n}\r\n\r\n@keyframes team-bar-pulse {\r\n  0%,\r\n  100% {\r\n    opacity: 1;\r\n  }\r\n\r\n  50% {\r\n    opacity: 0.55;\r\n  }\r\n}\r\n\r\n@media (prefers-reduced-motion: reduce) {\r\n  .bar[data-running='true'] {\r\n    animation: none;\r\n  }\r\n}\r\n\r\n/* The lane-color ramp (slot index → existing state token; the tint tier\r\n   lightens a hue toward the layer background for members beyond the four\r\n   base colors). */\r\n[data-lane-color='0'] {\r\n  --team-lane-color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n[data-lane-color='1'] {\r\n  --team-lane-color: var(--dsw-alias-state-success-primary);\r\n}\r\n\r\n[data-lane-color='2'] {\r\n  --team-lane-color: var(--dsw-alias-state-warn-primary);\r\n}\r\n\r\n[data-lane-color='3'] {\r\n  --team-lane-color: var(--dsw-alias-state-error-primary);\r\n}\r\n\r\n[data-lane-color='4'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n\r\n[data-lane-color='5'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n\r\n[data-lane-color='6'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n\r\n[data-lane-color='7'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n"},"ui/TeamMembers.module.css":{"classes":{"root":"root","group":"group","groupRow":"groupRow","groupName":"groupName","instances":"instances","instanceRow":"instanceRow","instanceNav":"instanceNav","actions":"actions","actionButton":"actionButton","commandError":"commandError","dotSlot":"dotSlot","instanceStatus":"instanceStatus","instanceAction":"instanceAction","waitingBadge":"waitingBadge","noInstances":"noInstances","createButton":"createButton","teamModeRow":"teamModeRow","teamModeOpen":"teamModeOpen","teamModeBadge":"teamModeBadge"},"text":".root {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.group {\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.group[data-current='true'] {\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n.groupRow {\r\n  display: flex;\r\n  align-items: center;\r\n  width: 100%;\r\n  padding: 6px 10px;\r\n  border: 0;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n  text-align: left;\r\n}\r\n\r\n.groupRow[data-leader='true'] {\r\n  cursor: pointer;\r\n}\r\n\r\n.groupRow[data-leader='true']:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.groupRow[data-leader='true']:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.groupName {\r\n  overflow: hidden;\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.group[data-current='true'] .groupName {\r\n  color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n.instances {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.instanceRow {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 4px 8px;\r\n  width: 100%;\r\n  padding: 6px 10px 6px 18px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.instanceRow:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.instanceRow[data-current='true'] {\r\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n.instanceNav {\r\n  display: flex;\r\n  flex: 1 1 auto;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n  padding: 0;\r\n  border: 0;\r\n  background: transparent;\r\n  color: inherit;\r\n  font: inherit;\r\n  text-align: left;\r\n  cursor: pointer;\r\n}\r\n\r\n.instanceNav:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.instanceNav:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 2px;\r\n}\r\n\r\n.instanceNav:disabled {\r\n  cursor: default;\r\n  opacity: 0.55;\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  flex: none;\r\n  gap: 4px;\r\n}\r\n\r\n.actionButton {\r\n  padding: 2px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.actionButton:hover:not(:disabled) {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.actionButton:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.actionButton:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.commandError {\r\n  width: 100%;\r\n  padding: 4px 8px;\r\n  border-radius: 4px;\r\n  background: color-mix(in srgb, var(--dsw-alias-state-error-secondary) 18%, transparent);\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n  word-break: break-word;\r\n}\r\n\r\n.dotSlot {\r\n  display: inline-flex;\r\n  flex: none;\r\n  align-items: center;\r\n}\r\n\r\n.instanceStatus {\r\n  flex: none;\r\n}\r\n\r\n.instanceAction {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-caption);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.waitingBadge {\r\n  flex: none;\r\n  margin-left: auto;\r\n  padding: 0 6px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.noInstances {\r\n  display: block;\r\n  padding: 6px 10px 6px 18px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.createButton {\r\n  flex: none;\r\n  margin-left: auto;\r\n  padding: 0 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 4px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 18px;\r\n  cursor: pointer;\r\n}\r\n\r\n.createButton:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n.createButton:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row\r\n   (the explicit \"以 Team 模式打开 / 回到 Leader\" button) + the current\r\n   open-mode badge. */\r\n.teamModeRow {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  width: 100%;\r\n  padding: 4px 10px 6px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n}\r\n\r\n.teamModeOpen {\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-state-business-primary);\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-state-business-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.teamModeOpen:hover:not(:disabled) {\r\n  opacity: 0.88;\r\n}\r\n\r\n.teamModeOpen:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.teamModeOpen:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.teamModeBadge {\r\n  padding: 1px 8px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  white-space: nowrap;\r\n}\r\n"},"ui/TeamActivity.module.css":{"classes":{"root":"root","empty":"empty","taskRow":"taskRow","dotSlot":"dotSlot","taskMain":"taskMain","taskLine":"taskLine","taskSubject":"taskSubject","taskStatus":"taskStatus","taskAssignee":"taskAssignee","taskSummary":"taskSummary"},"text":".root {\r\n  display: flex;\r\n  flex-direction: column;\r\n  min-width: 0;\r\n  overflow: hidden;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.empty {\r\n  display: block;\r\n  padding: 6px 10px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.taskRow {\r\n  display: flex;\r\n  gap: 8px;\r\n  padding: 6px 10px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  min-width: 0;\r\n}\r\n\r\n.taskRow:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.dotSlot {\r\n  display: inline-flex;\r\n  flex: none;\r\n  align-items: flex-start;\r\n  padding-top: 3px;\r\n}\r\n\r\n.taskMain {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  min-width: 0;\r\n}\r\n\r\n.taskLine {\r\n  display: flex;\r\n  align-items: baseline;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.taskSubject {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.taskStatus {\r\n  flex: none;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.taskAssignee {\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.taskSummary {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n"},"ui/TeamLedger.module.css":{"classes":{"root":"root","empty":"empty","top":"top","loadEarlier":"loadEarlier","loadFailed":"loadFailed","truncated":"truncated","rows":"rows","row":"row","dotSlot":"dotSlot","time":"time","marker":"marker","actor":"actor","summary":"summary","state":"state","stateReason":"stateReason","filter":"filter"},"text":".root {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.empty {\r\n  display: block;\r\n  padding: 12px 16px;\r\n  border: 1px dashed var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-align: center;\r\n}\r\n\r\n.top {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-height: 22px;\r\n}\r\n\r\n.loadEarlier {\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.loadEarlier:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n.loadEarlier:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.loadFailed {\r\n  padding: 2px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.truncated {\r\n  padding: 2px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.rows {\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.row {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  width: 100%;\r\n  padding: 6px 10px;\r\n  border: 0;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-align: left;\r\n  cursor: pointer;\r\n  min-width: 0;\r\n}\r\n\r\n.row:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.row:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.row:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.row:disabled {\r\n  cursor: default;\r\n  opacity: 0.55;\r\n}\r\n\r\n.dotSlot {\r\n  display: inline-flex;\r\n  flex: none;\r\n  align-items: center;\r\n}\r\n\r\n.time {\r\n  flex: none;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-variant-numeric: tabular-nums;\r\n}\r\n\r\n.marker {\r\n  flex: none;\r\n  padding: 0 6px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.actor {\r\n  flex: none;\r\n  max-width: 220px;\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-primary);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.summary {\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  flex: 1 1 auto;\r\n  color: var(--dsw-alias-label-secondary);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.state {\r\n  display: inline-flex;\r\n  align-items: center;\r\n  gap: 6px;\r\n  flex: none;\r\n  max-width: 40%;\r\n  padding: 0 6px;\r\n  border-radius: 4px;\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.state[data-pending='true'] {\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n}\r\n\r\n.state:not([data-pending='true']) {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.stateReason {\r\n  overflow: hidden;\r\n  max-width: 100%;\r\n  color: var(--dsw-alias-label-caption);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n/* P9-T6 addition (UI §27.4): the client-local category / instance filter\r\n   selects, styled in the same control language as `.loadEarlier`. */\r\n.filter {\r\n  padding: 2px 6px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  max-width: 180px;\r\n  cursor: pointer;\r\n}\r\n\r\n.filter:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n"},"ui/TeamGovernance.module.css":{"classes":{"section":"section","card":"card","cardHead":"cardHead","cardTitle":"cardTitle","badge":"badge","badgeUnknown":"badgeUnknown","counts":"counts","meta":"meta","freshRead":"freshRead","freshReadTitle":"freshReadTitle","actions":"actions","primary":"primary","secondary":"secondary","help":"help","note":"note","noteError":"noteError","cells":"cells","cell":"cell","cellName":"cellName","cellLocked":"cellLocked","cellCurrent":"cellCurrent","cellEditor":"cellEditor","select":"select","input":"input","preview":"preview","memberBlock":"memberBlock","memberName":"memberName","lanes":"lanes","lane":"lane","laneName":"laneName","laneValue":"laneValue","laneState":"laneState","laneFlag":"laneFlag","hardPolicy":"hardPolicy","override":"override","overrideEditor":"overrideEditor"},"text":".section {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n  min-width: 0;\r\n}\r\n\r\n.card {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  min-width: 0;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.cardHead {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.cardTitle {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-s-14);\r\n  font-weight: 600;\r\n}\r\n\r\n.badge {\r\n  padding: 1px 8px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-state-success-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n  white-space: nowrap;\r\n}\r\n\r\n.badge[data-governance-compat-mark='warning'] {\r\n  background: var(--dsw-alias-state-warn-primary);\r\n}\r\n\r\n.badge[data-governance-compat-mark='fatal'] {\r\n  background: var(--dsw-alias-state-error-primary);\r\n}\r\n\r\n.badgeUnknown {\r\n  padding: 1px 8px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n  white-space: nowrap;\r\n}\r\n\r\n.counts {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  min-width: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.meta {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.freshRead {\r\n  padding: 6px 8px;\r\n  border-left: 2px solid var(--dsw-alias-border-l2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.freshReadTitle {\r\n  margin: 0 0 2px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 6px;\r\n}\r\n\r\n.primary,\r\n.secondary {\r\n  padding: 3px 10px;\r\n  border-radius: 4px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.primary {\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n  background: var(--dsw-alias-state-business-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.primary:disabled,\r\n.secondary:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.help {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.note {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.noteError {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.cells {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n}\r\n\r\n.cell {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 8px;\r\n  padding: 6px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.cellName {\r\n  min-width: 90px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.cellLocked {\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 400;\r\n}\r\n\r\n.cellCurrent {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.cellEditor {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 6px;\r\n  margin-left: auto;\r\n}\r\n\r\n.select,\r\n.input {\r\n  padding: 2px 6px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.preview {\r\n  margin: 0;\r\n  padding: 4px 8px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.memberBlock {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.memberName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.lanes {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 3px;\r\n}\r\n\r\n.lane {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 8px;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.laneName {\r\n  min-width: 110px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n.laneValue {\r\n  min-width: 120px;\r\n  word-break: break-all;\r\n}\r\n\r\n.laneState {\r\n  font-weight: 600;\r\n}\r\n\r\n.laneFlag {\r\n  padding: 0 6px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.hardPolicy {\r\n  padding: 1px 6px;\r\n  border-radius: 3px;\r\n  background: var(--dsw-alias-state-error-secondary);\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.override {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n}\r\n\r\n.overrideEditor {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 6px;\r\n}\r\n"},"ui/TeamMemberDialogs.module.css":{"classes":{"dialog":"dialog","title":"title","body":"body","warning":"warning","notice":"notice","field":"field","fieldLabel":"fieldLabel","templateName":"templateName","actions":"actions","button":"button"},"text":".dialog {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n  width: min(420px, 100%);\r\n  padding: 14px 16px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 8px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);\r\n}\r\n\r\n.title {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-s-14);\r\n  font-weight: 600;\r\n}\r\n\r\n.body {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.warning {\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.notice {\r\n  padding: 6px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n}\r\n\r\n.field {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  min-width: 0;\r\n}\r\n\r\n.fieldLabel {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.field input,\r\n.field select {\r\n  width: 100%;\r\n  padding: 5px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.field input:focus-visible,\r\n.field select:focus-visible,\r\n.field textarea:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.field textarea {\r\n  width: 100%;\r\n  padding: 5px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  resize: vertical;\r\n}\r\n\r\n.templateName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  justify-content: flex-end;\r\n  gap: 8px;\r\n  margin-top: 4px;\r\n}\r\n\r\n.button {\r\n  padding: 5px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.button:hover:not(:disabled) {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.button:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.button:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n"}};
+		var __cssTable = {"ui/NewTeamEntry.module.css":{"classes":{"rail":"rail","wide":"wide","label":"label","backdrop":"backdrop","dialog":"dialog"},"text":"/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the\r\n   wrapping Tooltip (delay 500ms, the native New Session row pattern). */\r\n.rail {\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  width: 100%;\r\n  padding: 6px 0;\r\n  border: none;\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  cursor: pointer;\r\n}\r\n\r\n.rail:hover {\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.rail:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n/* Wide (expanded) entry: icon + text label row — the expanded button carries\r\n   its own label, so the tooltip is disabled in this state. */\r\n.wide {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  width: 100%;\r\n  padding: 6px 8px;\r\n  border: none;\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-align: left;\r\n  cursor: pointer;\r\n}\r\n\r\n.wide:hover {\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.wide:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n/* The expanded-state text label (rail state renders icon-only). */\r\n.label {\r\n  white-space: nowrap;\r\n}\r\n\r\n/* The creation overlay: the sidebar column clips overflow, so the Team-owned\r\n   panel mounts as a fixed full-viewport backdrop with a centered dialog\r\n   (the same reason the ui-cordis footer panel is position: fixed). */\r\n.backdrop {\r\n  position: fixed;\r\n  inset: 0;\r\n  z-index: 1000;\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  padding: 24px;\r\n  background: var(--dsw-alias-bg-mask-1);\r\n}\r\n\r\n.dialog {\r\n  width: 100%;\r\n  max-width: 560px;\r\n  max-height: calc(100vh - 48px);\r\n  overflow-y: auto;\r\n}\r\n"},"ui/TeamDock.module.css":{"classes":{"root":"root","row":"row","jump":"jump","title":"title","sep":"sep","readout":"readout","chevron":"chevron","expanded":"expanded","members":"members","tasks":"tasks","member":"member","task":"task","dotSlot":"dotSlot","name":"name","subject":"subject","taskStatus":"taskStatus","empty":"empty"},"text":"/* Team dock in the composer context stack (the D12 thin readout): one\r\n   collapsed 13px row in the shared dock column (same card alignment as the\r\n   todo/queue strips above it), the expanded body a compact member status and\r\n   task list. The --dsh-composer-* width axis inherits from the conversation\r\n   root, whose subtree hosts the dock slot. */\r\n\r\n.root {\r\n  box-sizing: border-box;\r\n  flex: none;\r\n  overflow: hidden;\r\n  margin: 0 auto;\r\n  width: calc(\r\n    100% -\r\n    var(--dsh-composer-side-clearance) -\r\n    var(--dsh-composer-side-clearance) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset)\r\n  );\r\n  max-width: calc(\r\n    var(--dsh-composer-card-max-width) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset) -\r\n    var(--dsh-composer-dock-inset)\r\n  );\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 12px;\r\n  background: var(--dsw-specific-tip);\r\n  /* Elevated surface: the same tip rung as the sibling dock cards, and the\r\n     expanded lists scroll inside this card, so the thumb takes the l2\r\n     elevation tokens (they inherit down to the lists). */\r\n  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);\r\n  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);\r\n}\r\n\r\n.row {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 2px;\r\n  padding: 0 4px 0 12px;\r\n}\r\n\r\n.jump {\r\n  display: flex;\r\n  flex: 1 1 auto;\r\n  align-items: center;\r\n  min-width: 0;\r\n  padding: 4px;\r\n  border: none;\r\n  border-radius: 8px;\r\n  background: transparent;\r\n  text-align: left;\r\n  cursor: pointer;\r\n}\r\n\r\n.title {\r\n  flex: none;\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 500;\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n/* The D12 separators (title→first segment, segment→segment) share one\r\n   en-space joiner, so the readout line carries its own spacing and the\r\n   flex gap stays zero. */\r\n.sep {\r\n  flex: none;\r\n  font: var(--dsw-font-xs-13);\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.readout {\r\n  min-width: 0;\r\n  overflow: hidden;\r\n  font: var(--dsw-font-xs-13);\r\n  color: var(--dsw-alias-label-tertiary);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.jump:hover .sep,\r\n.jump:focus-visible .sep,\r\n.jump:hover .readout,\r\n.jump:focus-visible .readout {\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.jump:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.chevron {\r\n  display: grid;\r\n  flex: none;\r\n  place-items: center;\r\n  padding: 6px;\r\n  border: none;\r\n  border-radius: 8px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  cursor: pointer;\r\n}\r\n\r\n.chevron:hover {\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.chevron:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.expanded {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  padding: 2px 12px 8px;\r\n}\r\n\r\n.members,\r\n.tasks {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  margin: 0;\r\n  padding: 0;\r\n  list-style: none;\r\n  max-height: 132px;\r\n  overflow-y: auto;\r\n}\r\n\r\n.member,\r\n.task {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n  font: var(--dsw-font-xs-13);\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.dotSlot {\r\n  display: grid;\r\n  flex: none;\r\n  place-items: center;\r\n  width: 14px;\r\n  height: 14px;\r\n}\r\n\r\n.name,\r\n.subject {\r\n  min-width: 0;\r\n  overflow: hidden;\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.taskStatus {\r\n  flex: none;\r\n  font: var(--dsw-font-xxxs-11);\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.empty {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n"},"ui/TeamSettingsSection.module.css":{"classes":{"container":"container","title":"title","emptyState":"emptyState","emptyTitle":"emptyTitle","emptyDescription":"emptyDescription","steps":"steps"},"text":".container {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 12px;\r\n  padding: 16px;\r\n}\r\n\r\n.title {\r\n  font-size: 16px;\r\n  font-weight: 600;\r\n  color: var(--dsw-alias-label-primary);\r\n  margin: 0;\r\n}\r\n\r\n.emptyState {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  padding: 12px;\r\n  border-radius: 8px;\r\n  background: var(--dsw-alias-bg-module-platform);\r\n}\r\n\r\n.emptyTitle {\r\n  font-weight: 500;\r\n  color: var(--dsw-alias-label-secondary);\r\n  margin: 0;\r\n}\r\n\r\n.emptyDescription {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  margin: 0;\r\n}\r\n\r\n.steps {\r\n  margin: 0;\r\n  padding-left: 24px;\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n}\r\n\r\n.steps li {\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.steps code {\r\n  font-family: var(--ds-font-family-code);\r\n  font-size: 13px;\r\n  background: var(--dsw-alias-bg-overlay);\r\n  padding: 2px 6px;\r\n  border-radius: 4px;\r\n}\r\n"},"ui/TeamView.module.css":{"classes":{"zero":"zero","zeroInner":"zeroInner","zeroText":"zeroText","zeroStart":"zeroStart","body":"body","section":"section","sectionTitle":"sectionTitle","legacyBanner":"legacyBanner","legacySummary":"legacySummary","legacySummaryTitle":"legacySummaryTitle","legacyNote":"legacyNote","roots":"roots","rootsTitle":"rootsTitle","rootsList":"rootsList","rootRow":"rootRow","rootId":"rootId","rootRowOpen":"rootRowOpen"},"text":".zero {\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  min-height: 100%;\r\n  padding: 24px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.zeroInner {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 12px;\r\n  width: 100%;\r\n  max-width: 720px;\r\n}\r\n\r\n.zeroText {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n}\r\n\r\n.zeroStart {\r\n  padding: 6px 14px;\r\n  border: 1px solid var(--dsw-alias-state-business-primary);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-business-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.zeroStart:hover {\r\n  opacity: 0.88;\r\n}\r\n\r\n.zeroStart:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n.body {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 16px;\r\n  min-height: 100%;\r\n  padding: 16px 24px;\r\n}\r\n\r\n.section {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.sectionTitle {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */\r\n\r\n.legacyBanner {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-state-warn-primary);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n}\r\n\r\n.legacyBanner p {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.4;\r\n}\r\n\r\n.legacySummary {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.legacySummaryTitle {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.legacySummary p {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.legacySummary ul {\r\n  margin: 0;\r\n  padding-left: 16px;\r\n  list-style: none;\r\n}\r\n\r\n.legacySummary li {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.legacyNote {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted\r\n   root-identity rows of the zero state (read-only in D1 — D2/D3 add the\r\n   open action). */\r\n\r\n.roots {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  width: 100%;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.rootsTitle {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.rootsList {\r\n  margin: 0;\r\n  padding: 0;\r\n  list-style: none;\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n}\r\n\r\n.rootRow {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: baseline;\r\n  gap: 4px 12px;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.rootRow span {\r\n  word-break: break-all;\r\n}\r\n\r\n.rootId {\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n/* D2 (D6) — the dedicated open-in-Team-mode entry on a persisted-roots\r\n   row (the explicit \"以 Team 模式打开 / 回到 Leader\" button). */\r\n.rootRowOpen {\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-state-business-primary);\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-state-business-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.rootRowOpen:hover {\r\n  opacity: 0.88;\r\n}\r\n\r\n.rootRowOpen:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n.rootRowOpen:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n"},"ui/TeamCreationPanel.module.css":{"classes":{"panel":"panel","title":"title","field":"field","fieldLabel":"fieldLabel","select":"select","textarea":"textarea","hint":"hint","detail":"detail","detailName":"detailName","detailSource":"detailSource","detailDescription":"detailDescription","detailTemplates":"detailTemplates","compat":"compat","compatTitle":"compatTitle","compatNote":"compatNote","compatReady":"compatReady","compatUnknown":"compatUnknown","warningList":"warningList","warningRow":"warningRow","warningOwner":"warningOwner","warningSubjects":"warningSubjects","warningDetail":"warningDetail","ack":"ack","fatal":"fatal","fatalTitle":"fatalTitle","fatalRow":"fatalRow","fatalPreset":"fatalPreset","error":"error","rootKept":"rootKept","actions":"actions","primary":"primary","secondary":"secondary","handoff":"handoff","handoffTitle":"handoffTitle","handoffNote":"handoffNote","handoffReady":"handoffReady","handoffPreview":"handoffPreview","handoffError":"handoffError","handoffFailed":"handoffFailed","handoffTriad":"handoffTriad"},"text":".panel {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 12px;\r\n  padding: 14px 16px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 8px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.title {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-s-14);\r\n  font-weight: 600;\r\n}\r\n\r\n.field {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  min-width: 0;\r\n}\r\n\r\n.fieldLabel {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.select,\r\n.textarea {\r\n  width: 100%;\r\n  padding: 5px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.textarea {\r\n  min-height: 54px;\r\n  resize: vertical;\r\n}\r\n\r\n.select:focus-visible,\r\n.textarea:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.select:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.hint {\r\n  margin: -6px 0 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n}\r\n\r\n.detail {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: baseline;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.detailName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.detailSource {\r\n  padding: 1px 6px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.detailDescription {\r\n  flex-basis: 100%;\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.detailTemplates {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.compat {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.compatTitle {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.compatNote,\r\n.compatReady,\r\n.compatUnknown {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.compatReady {\r\n  color: var(--dsw-alias-state-success-primary);\r\n}\r\n\r\n.compatUnknown {\r\n  color: var(--dsw-alias-state-error-primary);\r\n}\r\n\r\n.warningList {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  margin: 0;\r\n  padding: 0;\r\n  list-style: none;\r\n}\r\n\r\n.warningRow {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  padding: 6px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n}\r\n\r\n.warningOwner {\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.warningSubjects,\r\n.warningDetail {\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n}\r\n\r\n.ack {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 6px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.ack input {\r\n  margin: 0;\r\n}\r\n\r\n.fatal {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-error-secondary);\r\n}\r\n\r\n.fatalTitle,\r\n.fatalRow {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.fatalRow {\r\n  font: var(--dsw-font-xxxs-11);\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.fatalPreset {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.5;\r\n}\r\n\r\n.error {\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-error-secondary);\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.rootKept {\r\n  margin: 4px 0 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  gap: 8px;\r\n}\r\n\r\n.primary,\r\n.secondary {\r\n  padding: 6px 14px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.primary {\r\n  background: var(--dsw-alias-state-business-primary);\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.primary:hover:not(:disabled),\r\n.secondary:hover:not(:disabled) {\r\n  opacity: 0.88;\r\n}\r\n\r\n.primary:focus-visible,\r\n.secondary:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 1px;\r\n}\r\n\r\n.primary:disabled,\r\n.secondary:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */\r\n\r\n.handoff {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.handoffTitle {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.handoff > span:not(.handoffTitle) {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.handoff > label {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 6px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.handoff > label:has(input:disabled) {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.handoffNote {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.handoffReady {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 8px;\r\n}\r\n\r\n.handoffReady > span {\r\n  color: var(--dsw-alias-state-success-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n}\r\n\r\n.handoffPreview {\r\n  width: 100%;\r\n  padding: 6px 8px;\r\n  border-left: 2px solid var(--dsw-alias-border-l2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.handoffPreview > p {\r\n  margin: 0 0 3px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n.handoffPreview ul {\r\n  margin: 0;\r\n  padding-left: 16px;\r\n  list-style: disc;\r\n}\r\n\r\n.handoffPreview li {\r\n  margin: 1px 0;\r\n  word-break: break-word;\r\n}\r\n\r\n.handoffError,\r\n.handoffFailed > p {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.handoffFailed {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border: 1px solid var(--dsw-alias-state-error-secondary);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.handoffTriad {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 6px;\r\n}\r\n"},"ui/TeamTimeline.module.css":{"classes":{"root":"root","empty":"empty","plot":"plot","corner":"corner","axis":"axis","tick":"tick","gutter":"gutter","gutterRow":"gutterRow","swatch":"swatch","laneName":"laneName","track":"track","domain":"domain","lane":"lane","bar":"bar"},"text":".root {\r\n  --team-lane-height: 28px;\r\n  display: flex;\r\n  flex-direction: column;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l2);\r\n  user-select: none;\r\n}\r\n\r\n.root :global([role='tooltip']) {\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.empty {\r\n  margin: 0;\r\n  padding: 12px 16px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.plot {\r\n  display: grid;\r\n  grid-template-columns: 160px minmax(0, 1fr);\r\n  grid-template-rows: 20px auto;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.corner {\r\n  border-right: 1px solid var(--dsw-alias-border-l1);\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.axis {\r\n  position: relative;\r\n  overflow: hidden;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.tick {\r\n  position: absolute;\r\n  top: 3px;\r\n  left: var(--team-tick-left);\r\n  padding-left: 4px;\r\n  border-left: 1px solid var(--dsw-alias-border-l2);\r\n  height: 100%;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n  white-space: nowrap;\r\n}\r\n\r\n.gutter {\r\n  border-right: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.gutterRow {\r\n  display: flex;\r\n  gap: 6px;\r\n  align-items: center;\r\n  height: var(--team-lane-height);\r\n  padding: 0 8px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.gutterRow:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.swatch {\r\n  flex: none;\r\n  width: 8px;\r\n  height: 8px;\r\n  border-radius: 2px;\r\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\r\n}\r\n\r\n.laneName {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.gutterRow[data-current='true'] .laneName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n.track {\r\n  position: relative;\r\n  overflow: hidden;\r\n  height: calc(var(--team-lane-count, 1) * var(--team-lane-height));\r\n  cursor: grab;\r\n  touch-action: none;\r\n}\r\n\r\n.track[data-panning='true'] {\r\n  cursor: grabbing;\r\n}\r\n\r\n.track:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.domain {\r\n  position: absolute;\r\n  top: 0;\r\n  bottom: 0;\r\n  left: var(--team-domain-left);\r\n  width: var(--team-domain-width);\r\n}\r\n\r\n.lane {\r\n  position: relative;\r\n  height: var(--team-lane-height);\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n}\r\n\r\n.lane:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.lane[data-current='true'] {\r\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\r\n}\r\n\r\n.bar {\r\n  position: absolute;\r\n  top: 50%;\r\n  left: var(--team-bar-left);\r\n  width: max(2px, var(--team-bar-width));\r\n  height: 14px;\r\n  min-width: 2px;\r\n  transform: translateY(-50%);\r\n  border-radius: 2px;\r\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\r\n  opacity: 0.85;\r\n  cursor: pointer;\r\n}\r\n\r\n.bar:hover {\r\n  opacity: 1;\r\n}\r\n\r\n.bar[data-running='true'] {\r\n  animation: team-bar-pulse 1.2s ease-in-out infinite;\r\n}\r\n\r\n@keyframes team-bar-pulse {\r\n  0%,\r\n  100% {\r\n    opacity: 1;\r\n  }\r\n\r\n  50% {\r\n    opacity: 0.55;\r\n  }\r\n}\r\n\r\n@media (prefers-reduced-motion: reduce) {\r\n  .bar[data-running='true'] {\r\n    animation: none;\r\n  }\r\n}\r\n\r\n/* The lane-color ramp (slot index → existing state token; the tint tier\r\n   lightens a hue toward the layer background for members beyond the four\r\n   base colors). */\r\n[data-lane-color='0'] {\r\n  --team-lane-color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n[data-lane-color='1'] {\r\n  --team-lane-color: var(--dsw-alias-state-success-primary);\r\n}\r\n\r\n[data-lane-color='2'] {\r\n  --team-lane-color: var(--dsw-alias-state-warn-primary);\r\n}\r\n\r\n[data-lane-color='3'] {\r\n  --team-lane-color: var(--dsw-alias-state-error-primary);\r\n}\r\n\r\n[data-lane-color='4'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n\r\n[data-lane-color='5'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n\r\n[data-lane-color='6'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n\r\n[data-lane-color='7'] {\r\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, var(--dsw-alias-bg-layer-2));\r\n}\r\n"},"ui/TeamMembers.module.css":{"classes":{"root":"root","group":"group","groupRow":"groupRow","groupName":"groupName","instances":"instances","instanceRow":"instanceRow","instanceNav":"instanceNav","actions":"actions","actionButton":"actionButton","commandError":"commandError","dotSlot":"dotSlot","instanceStatus":"instanceStatus","instanceAction":"instanceAction","waitingBadge":"waitingBadge","noInstances":"noInstances","createButton":"createButton","teamModeRow":"teamModeRow","teamModeOpen":"teamModeOpen","teamModeBadge":"teamModeBadge"},"text":".root {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.group {\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.group[data-current='true'] {\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n.groupRow {\r\n  display: flex;\r\n  align-items: center;\r\n  width: 100%;\r\n  padding: 6px 10px;\r\n  border: 0;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n  text-align: left;\r\n}\r\n\r\n.groupRow[data-leader='true'] {\r\n  cursor: pointer;\r\n}\r\n\r\n.groupRow[data-leader='true']:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.groupRow[data-leader='true']:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.groupName {\r\n  overflow: hidden;\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.group[data-current='true'] .groupName {\r\n  color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n.instances {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.instanceRow {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 4px 8px;\r\n  width: 100%;\r\n  padding: 6px 10px 6px 18px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.instanceRow:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.instanceRow[data-current='true'] {\r\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n.instanceNav {\r\n  display: flex;\r\n  flex: 1 1 auto;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n  padding: 0;\r\n  border: 0;\r\n  background: transparent;\r\n  color: inherit;\r\n  font: inherit;\r\n  text-align: left;\r\n  cursor: pointer;\r\n}\r\n\r\n.instanceNav:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.instanceNav:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: 2px;\r\n}\r\n\r\n.instanceNav:disabled {\r\n  cursor: default;\r\n  opacity: 0.55;\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  flex: none;\r\n  gap: 4px;\r\n}\r\n\r\n.actionButton {\r\n  padding: 2px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.actionButton:hover:not(:disabled) {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.actionButton:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.actionButton:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.commandError {\r\n  width: 100%;\r\n  padding: 4px 8px;\r\n  border-radius: 4px;\r\n  background: color-mix(in srgb, var(--dsw-alias-state-error-secondary) 18%, transparent);\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n  word-break: break-word;\r\n}\r\n\r\n.dotSlot {\r\n  display: inline-flex;\r\n  flex: none;\r\n  align-items: center;\r\n}\r\n\r\n.instanceStatus {\r\n  flex: none;\r\n}\r\n\r\n.instanceAction {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-caption);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.waitingBadge {\r\n  flex: none;\r\n  margin-left: auto;\r\n  padding: 0 6px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.noInstances {\r\n  display: block;\r\n  padding: 6px 10px 6px 18px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.createButton {\r\n  flex: none;\r\n  margin-left: auto;\r\n  padding: 0 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 4px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 18px;\r\n  cursor: pointer;\r\n}\r\n\r\n.createButton:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n.createButton:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row\r\n   (the explicit \"以 Team 模式打开 / 回到 Leader\" button) + the current\r\n   open-mode badge. */\r\n.teamModeRow {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  width: 100%;\r\n  padding: 4px 10px 6px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n}\r\n\r\n.teamModeOpen {\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-state-business-primary);\r\n  border-radius: 6px;\r\n  background: transparent;\r\n  color: var(--dsw-alias-state-business-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.teamModeOpen:hover:not(:disabled) {\r\n  opacity: 0.88;\r\n}\r\n\r\n.teamModeOpen:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.teamModeOpen:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.teamModeBadge {\r\n  padding: 1px 8px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  white-space: nowrap;\r\n}\r\n"},"ui/TeamActivity.module.css":{"classes":{"root":"root","empty":"empty","taskRow":"taskRow","dotSlot":"dotSlot","taskMain":"taskMain","taskLine":"taskLine","taskSubject":"taskSubject","taskStatus":"taskStatus","taskAssignee":"taskAssignee","taskSummary":"taskSummary"},"text":".root {\r\n  display: flex;\r\n  flex-direction: column;\r\n  min-width: 0;\r\n  overflow: hidden;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.empty {\r\n  display: block;\r\n  padding: 6px 10px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.taskRow {\r\n  display: flex;\r\n  gap: 8px;\r\n  padding: 6px 10px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  min-width: 0;\r\n}\r\n\r\n.taskRow:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.dotSlot {\r\n  display: inline-flex;\r\n  flex: none;\r\n  align-items: flex-start;\r\n  padding-top: 3px;\r\n}\r\n\r\n.taskMain {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  min-width: 0;\r\n}\r\n\r\n.taskLine {\r\n  display: flex;\r\n  align-items: baseline;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.taskSubject {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.taskStatus {\r\n  flex: none;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.taskAssignee {\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.taskSummary {\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n"},"ui/TeamLedger.module.css":{"classes":{"root":"root","empty":"empty","top":"top","loadEarlier":"loadEarlier","loadFailed":"loadFailed","truncated":"truncated","rows":"rows","row":"row","dotSlot":"dotSlot","time":"time","marker":"marker","actor":"actor","summary":"summary","state":"state","stateReason":"stateReason","filter":"filter","resolveBar":"resolveBar","resolveBtn":"resolveBtn","resolveBusy":"resolveBusy","resolveError":"resolveError"},"text":".root {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.empty {\r\n  display: block;\r\n  padding: 12px 16px;\r\n  border: 1px dashed var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-align: center;\r\n}\r\n\r\n.top {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-height: 22px;\r\n}\r\n\r\n.loadEarlier {\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.loadEarlier:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-primary);\r\n}\r\n\r\n.loadEarlier:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.loadFailed {\r\n  padding: 2px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.truncated {\r\n  padding: 2px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.rows {\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.row {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  width: 100%;\r\n  padding: 6px 10px;\r\n  border: 0;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: transparent;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  text-align: left;\r\n  cursor: pointer;\r\n  min-width: 0;\r\n}\r\n\r\n.row:last-child {\r\n  border-bottom: 0;\r\n}\r\n\r\n.row:hover {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.row:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.row:disabled {\r\n  cursor: default;\r\n  opacity: 0.55;\r\n}\r\n\r\n.dotSlot {\r\n  display: inline-flex;\r\n  flex: none;\r\n  align-items: center;\r\n}\r\n\r\n.time {\r\n  flex: none;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-variant-numeric: tabular-nums;\r\n}\r\n\r\n.marker {\r\n  flex: none;\r\n  padding: 0 6px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.actor {\r\n  flex: none;\r\n  max-width: 220px;\r\n  overflow: hidden;\r\n  color: var(--dsw-alias-label-primary);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.summary {\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  flex: 1 1 auto;\r\n  color: var(--dsw-alias-label-secondary);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n.state {\r\n  display: inline-flex;\r\n  align-items: center;\r\n  gap: 6px;\r\n  flex: none;\r\n  max-width: 40%;\r\n  padding: 0 6px;\r\n  border-radius: 4px;\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.state[data-pending='true'] {\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n}\r\n\r\n.state:not([data-pending='true']) {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n}\r\n\r\n.stateReason {\r\n  overflow: hidden;\r\n  max-width: 100%;\r\n  color: var(--dsw-alias-label-caption);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n\r\n/* P9-T6 addition (UI §27.4): the client-local category / instance filter\r\n   selects, styled in the same control language as `.loadEarlier`. */\r\n.filter {\r\n  padding: 2px 6px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  max-width: 180px;\r\n  cursor: pointer;\r\n}\r\n\r\n.filter:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n/* F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4): the human\r\n   control-resolution command bar rendered under a PENDING control-request\r\n   row (the row itself is a <button> — the bar is its sibling, never\r\n   nested): the Allow / Deny commands, the in-flight busy note, and the\r\n   typed error note (the frozen control vocabulary code + message).\r\n   Absent `onResolveControl` face → the bar never renders (legacy surface\r\n   unchanged). */\r\n.resolveBar {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n  padding: 4px 10px 6px;\r\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.resolveBtn {\r\n  flex: none;\r\n  padding: 2px 10px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  cursor: pointer;\r\n}\r\n\r\n.resolveBtn:hover:not(:disabled) {\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n}\r\n\r\n.resolveBtn:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.resolveBtn:disabled {\r\n  cursor: default;\r\n  opacity: 0.55;\r\n}\r\n\r\n.resolveBusy {\r\n  flex: none;\r\n  color: var(--dsw-alias-label-caption);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.resolveError {\r\n  overflow: hidden;\r\n  min-width: 0;\r\n  max-width: 100%;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  text-overflow: ellipsis;\r\n  white-space: nowrap;\r\n}\r\n"},"ui/TeamGovernance.module.css":{"classes":{"section":"section","card":"card","cardHead":"cardHead","cardTitle":"cardTitle","badge":"badge","badgeUnknown":"badgeUnknown","counts":"counts","meta":"meta","freshRead":"freshRead","freshReadTitle":"freshReadTitle","actions":"actions","primary":"primary","secondary":"secondary","help":"help","note":"note","noteError":"noteError","cells":"cells","cell":"cell","cellName":"cellName","cellLocked":"cellLocked","cellCurrent":"cellCurrent","cellEditor":"cellEditor","select":"select","input":"input","preview":"preview","memberBlock":"memberBlock","memberName":"memberName","lanes":"lanes","lane":"lane","laneName":"laneName","laneValue":"laneValue","laneState":"laneState","laneFlag":"laneFlag","hardPolicy":"hardPolicy","override":"override","overrideEditor":"overrideEditor"},"text":".section {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n  min-width: 0;\r\n}\r\n\r\n.card {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  min-width: 0;\r\n  padding: 10px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n}\r\n\r\n.cardHead {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: 8px;\r\n  min-width: 0;\r\n}\r\n\r\n.cardTitle {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-s-14);\r\n  font-weight: 600;\r\n}\r\n\r\n.badge {\r\n  padding: 1px 8px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-state-success-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n  white-space: nowrap;\r\n}\r\n\r\n.badge[data-governance-compat-mark='warning'] {\r\n  background: var(--dsw-alias-state-warn-primary);\r\n}\r\n\r\n.badge[data-governance-compat-mark='fatal'] {\r\n  background: var(--dsw-alias-state-error-primary);\r\n}\r\n\r\n.badgeUnknown {\r\n  padding: 1px 8px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n  white-space: nowrap;\r\n}\r\n\r\n.counts {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 2px;\r\n  min-width: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.meta {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.freshRead {\r\n  padding: 6px 8px;\r\n  border-left: 2px solid var(--dsw-alias-border-l2);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.freshReadTitle {\r\n  margin: 0 0 2px;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 600;\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 6px;\r\n}\r\n\r\n.primary,\r\n.secondary {\r\n  padding: 3px 10px;\r\n  border-radius: 4px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.primary {\r\n  border-color: var(--dsw-alias-state-business-primary);\r\n  background: var(--dsw-alias-state-business-primary);\r\n  color: var(--dsw-alias-bg-layer-1);\r\n}\r\n\r\n.primary:disabled,\r\n.secondary:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n\r\n.help {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.note {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.noteError {\r\n  margin: 0;\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.cells {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n}\r\n\r\n.cell {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 8px;\r\n  padding: 6px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.cellName {\r\n  min-width: 90px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.cellLocked {\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n  font-weight: 400;\r\n}\r\n\r\n.cellCurrent {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.cellEditor {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 6px;\r\n  margin-left: auto;\r\n}\r\n\r\n.select,\r\n.input {\r\n  padding: 2px 6px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.preview {\r\n  margin: 0;\r\n  padding: 4px 8px;\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.memberBlock {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 6px;\r\n  padding: 8px 10px;\r\n  border: 1px solid var(--dsw-alias-border-l1);\r\n  border-radius: 4px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.memberName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  font-weight: 600;\r\n}\r\n\r\n.lanes {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 3px;\r\n}\r\n\r\n.lane {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 8px;\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.laneName {\r\n  min-width: 110px;\r\n  color: var(--dsw-alias-label-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n.laneValue {\r\n  min-width: 120px;\r\n  word-break: break-all;\r\n}\r\n\r\n.laneState {\r\n  font-weight: 600;\r\n}\r\n\r\n.laneFlag {\r\n  padding: 0 6px;\r\n  border-radius: 999px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.hardPolicy {\r\n  padding: 1px 6px;\r\n  border-radius: 3px;\r\n  background: var(--dsw-alias-state-error-secondary);\r\n  color: var(--dsw-alias-state-error-primary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  word-break: break-all;\r\n}\r\n\r\n.override {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n}\r\n\r\n.overrideEditor {\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  align-items: center;\r\n  gap: 6px;\r\n}\r\n"},"ui/TeamMemberDialogs.module.css":{"classes":{"dialog":"dialog","title":"title","body":"body","warning":"warning","notice":"notice","field":"field","fieldLabel":"fieldLabel","templateName":"templateName","actions":"actions","button":"button"},"text":".dialog {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n  width: min(420px, 100%);\r\n  padding: 14px 16px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 8px;\r\n  background: var(--dsw-alias-bg-layer-1);\r\n  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);\r\n}\r\n\r\n.title {\r\n  margin: 0;\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-s-14);\r\n  font-weight: 600;\r\n}\r\n\r\n.body {\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.warning {\r\n  padding: 8px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-state-warn-tertiary);\r\n  color: var(--dsw-alias-state-warn-label);\r\n  font: var(--dsw-font-xs-13);\r\n  line-height: 1.5;\r\n}\r\n\r\n.notice {\r\n  padding: 6px 10px;\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-3);\r\n  color: var(--dsw-alias-label-secondary);\r\n  font: var(--dsw-font-xxxs-11);\r\n  line-height: 1.4;\r\n}\r\n\r\n.field {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 4px;\r\n  min-width: 0;\r\n}\r\n\r\n.fieldLabel {\r\n  color: var(--dsw-alias-label-tertiary);\r\n  font: var(--dsw-font-xxxs-11);\r\n}\r\n\r\n.field input,\r\n.field select {\r\n  width: 100%;\r\n  padding: 5px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.field input:focus-visible,\r\n.field select:focus-visible,\r\n.field textarea:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.field textarea {\r\n  width: 100%;\r\n  padding: 5px 8px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  resize: vertical;\r\n}\r\n\r\n.templateName {\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n}\r\n\r\n.actions {\r\n  display: flex;\r\n  justify-content: flex-end;\r\n  gap: 8px;\r\n  margin-top: 4px;\r\n}\r\n\r\n.button {\r\n  padding: 5px 12px;\r\n  border: 1px solid var(--dsw-alias-border-l2);\r\n  border-radius: 6px;\r\n  background: var(--dsw-alias-bg-layer-2);\r\n  color: var(--dsw-alias-label-primary);\r\n  font: var(--dsw-font-xs-13);\r\n  cursor: pointer;\r\n}\r\n\r\n.button:hover:not(:disabled) {\r\n  background: var(--dsw-alias-bg-layer-3);\r\n}\r\n\r\n.button:focus-visible {\r\n  outline: 1px solid var(--dsw-alias-state-business-primary);\r\n  outline-offset: -1px;\r\n}\r\n\r\n.button:disabled {\r\n  opacity: 0.5;\r\n  cursor: default;\r\n}\r\n"}};
 		var __cssDone = {};
 		function __css(key) {
 			if (!__cssDone[key]) {
@@ -461,7 +461,7 @@ var __dshFactory = (require) => {
 			 * @returns the view body.
 			 */
 			function TeamView(props) {
-			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, openTeamMode, openOrdinaryMode, teamOpenMode, useWorkspaces, t, } = props;
+			    const { sessionId, useProjectionMirror, useTeamLedgers, ensureProjection, pullProjection, refreshTeamLedger, openSession, creation, memberCommands, governance, legacyInspect, handoff, roots, control, openTeamMode, openOrdinaryMode, teamOpenMode, useWorkspaces, t, } = props;
 			    const [creationOpen, setCreationOpen] = useState(false);
 			    // UI §5.3: the intent draft is page-run UI state only (never authority) —
 			    // held here so the panel can open and close in the zero state without
@@ -601,6 +601,24 @@ var __dshFactory = (require) => {
 			    };
 			    const ledgerState = useTeamLedgers(map => map[snapshot?.teamSessionId ?? '']);
 			    const ledger = useMemo(() => ledgerModelFromStoreState(ledgerState), [ledgerState]);
+			    // F9 (remote contract v4) — the human control-resolution command face
+			    // wiring: the v4 wrapper (the host derives the human principal — the
+			    // wire carries no caller fields) plus the D4-A1 post-success
+			    // projection pull (the decision settles the projection's
+			    // pending-control facts without F5; the LEDGER catch-up re-pull is the
+			    // TeamLedger side — it re-requests after every completed command,
+			    // success and typed failure alike). Absent face → the surface renders
+			    // no commands (the legacy surface is unchanged).
+			    const onResolveControl = useMemo(() => {
+			        if (control === undefined)
+			            return undefined;
+			        return (teamSessionId, requestId, decision) => control.resolveControl({ teamSessionId, requestId, decision }).then(response => {
+			            if (response.ok === true) {
+			                void pullProjection(teamSessionId);
+			            }
+			            return response;
+			        });
+			    }, [control, pullProjection]);
 			    // D1 (Team D1-D6 repair v2, remote contract v3): the persisted-roots
 			    // zero-state share — the typed-failure note (ONE verbatim line, UI §38
 			    // greyed-surface discipline) + the read-only rows (blueprint@revision,
@@ -664,7 +682,7 @@ var __dshFactory = (require) => {
 			    const currentInstanceId = resolution.perspective.kind === 'member-child'
 			        ? resolution.perspective.memberInstanceId
 			        : undefined;
-			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, t: t })] })] }));
+			    return (_jsxs("div", { className: styles.body, "data-team-view": true, children: [_jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, onResolveControl: onResolveControl, t: t })] })] }));
 			}
 			Object.defineProperty(exports, "TeamView", { enumerable: true, get: () => TeamView });
 			//# sourceMappingURL=TeamView.js.map
@@ -1070,6 +1088,17 @@ var __dshFactory = (require) => {
 			        listRoots: () => teamRemote.teamListRootsV3(),
 			        ensureRootLive: (teamSessionId) => teamRemote.teamEnsureRootLiveV3(teamSessionId),
 			    };
+			    // (15c) F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
+			    // human control-resolution face (frozen Remote wrapper verbatim): the
+			    // v4-only `team.resolveControl` command stamps contract version 4; the
+			    // host derives the human principal from the trusted authenticated
+			    // UI/session ownership (the T12-B4 connection-gate authority basis —
+			    // the closed v4 wire carries no caller/role fields, adjudication U3).
+			    // Always present (no config gate — the transport is a hard seam; the
+			    // production host always builds the A25 control service).
+			    const control = {
+			        resolveControl: (params) => teamRemote.teamResolveControlV4(params),
+			    };
 			    // (16) D-T9-1: the parameterless legacyInspect face binds the `dshHome`
 			    // closure here; absent/blank config -> the face is omitted (the T8
 			    // degraded zero-state path).
@@ -1127,6 +1156,7 @@ var __dshFactory = (require) => {
 			        governance,
 			        handoff,
 			        roots,
+			        control,
 			        ...(legacyInspect === undefined ? {} : { legacyInspect }),
 			    });
 			    const dockInject = () => ({
@@ -2740,8 +2770,10 @@ var __dshFactory = (require) => {
 			 * @param entries - the store's merged, sequence-ordered loaded entries
 			 *   (the adapter re-sorts defensively; the store is the order authority).
 			 * @param complete - the store's completeness verdict
-			 *   (`total !== null && completeThrough >= total`); the authority for the
-			 *   `progress` / `pendingControlByInstance` gates.
+			 *   (`total !== null && loadedUniqueEntryCount >= total` — a count-domain
+			 *   rule per INV-9.2: the loaded unique count, never the sequence
+			 *   frontier); the authority for the `progress` /
+			 *   `pendingControlByInstance` gates.
 			 */
 			function adaptTeamLedger(entries, complete) {
 			    const ordered = [...entries].sort((a, b) => a.sequence - b.sequence);
@@ -2856,9 +2888,13 @@ var __dshFactory = (require) => {
 			 * snapshot) into the UI ledger model: the loaded entries are replayed
 			 * through the same pure `adaptTeamLedger`, and completeness is the
 			 * store's own verdict rule — known complete iff the last accepted `total`
-			 * is non-null and the catch-up frontier has reached it. `undefined` (no
-			 * binding yet) yields the empty partial model: a partial ledger clearly
-			 * represented (gate G3), never a claim over an unknown ledger.
+			 * is non-null and the LOADED UNIQUE ENTRY COUNT has reached it (the
+			 * `orderedSequences` length; INV-9.2: a count-domain rule — the
+			 * `completeThrough` frontier is a SEQUENCE-domain value and is never
+			 * compared to the total, so a shifted sequence base can never claim
+			 * completion early). `undefined` (no binding yet) yields the empty
+			 * partial model: a partial ledger clearly represented (gate G3), never a
+			 * claim over an unknown ledger.
 			 *
 			 * Type-only import of the store state (no runtime cycle: the store module
 			 * imports nothing from `model/`).
@@ -2874,7 +2910,7 @@ var __dshFactory = (require) => {
 			        if (entry !== undefined)
 			            entries.push(entry);
 			    }
-			    const complete = state.total !== null && state.completeThrough >= state.total;
+			    const complete = state.total !== null && state.orderedSequences.length >= state.total;
 			    return adaptTeamLedger(entries, complete);
 			}
 			Object.defineProperty(exports, "ledgerModelFromStoreState", { enumerable: true, get: () => ledgerModelFromStoreState });
@@ -3502,17 +3538,18 @@ var __dshFactory = (require) => {
 			const _jsx = __imp0.jsx;
 			const _jsxs = __imp0.jsxs;
 			const _Fragment = __imp0.Fragment;
-			const __imp28 = __extReq("react");
-			const useEffect = __imp28.useEffect;
-			const useState = __imp28.useState;
-			const __imp29 = __extReq("@deepseek-ai/dsh-client-ui-primitives");
-			const StateDot = __imp29.StateDot;
-			const __imp30 = __req("model/team-ledger-model.js");
-			const TEAM_LEDGER_INITIAL_LIMIT = __imp30.TEAM_LEDGER_INITIAL_LIMIT;
-			const TEAM_LEDGER_STEP = __imp30.TEAM_LEDGER_STEP;
-			const deriveTeamLedgerSection = __imp30.deriveTeamLedgerSection;
-			const __imp31 = __req("model/team-timeline-model.js");
-			const formatTeamClock = __imp31.formatTeamClock;
+			const __imp32 = __extReq("react");
+			const Fragment = __imp32.Fragment;
+			const useEffect = __imp32.useEffect;
+			const useState = __imp32.useState;
+			const __imp33 = __extReq("@deepseek-ai/dsh-client-ui-primitives");
+			const StateDot = __imp33.StateDot;
+			const __imp34 = __req("model/team-ledger-model.js");
+			const TEAM_LEDGER_INITIAL_LIMIT = __imp34.TEAM_LEDGER_INITIAL_LIMIT;
+			const TEAM_LEDGER_STEP = __imp34.TEAM_LEDGER_STEP;
+			const deriveTeamLedgerSection = __imp34.deriveTeamLedgerSection;
+			const __imp35 = __req("model/team-timeline-model.js");
+			const formatTeamClock = __imp35.formatTeamClock;
 			const styles = __css("ui/TeamLedger.module.css");
 			/**
 			 * The "团队" tab's durable-ledger Events section (P9-T6, plan §8.9 ADAPT,
@@ -3535,7 +3572,11 @@ var __dshFactory = (require) => {
 			 * pages FORWARD from the ledger head, so the legacy anchor wire-paging arm
 			 * is gone: "load earlier" is a pure local window deepening over the loaded
 			 * set, and the legacy counted remainder re-binds to the partial-ledger
-			 * remainder (`total - completeThrough`).
+			 * remainder (`total` minus the loaded entry count — count domain per
+			 * INV-9.2; the sequence frontier never subtracts from the total). The
+			 * loud error note + retry also renders in the zero-rows branch, where a
+			 * typed failure is no longer swallowed by the plain empty note (F11
+			 * companion; NOTES L208 OBS(1)).
 			 *
 			 * Row families (plan §8.9): one family per frozen fact type, plus the safe
 			 * generic row for an unknown / future fact type (no throw, no actor or
@@ -3664,6 +3705,7 @@ var __dshFactory = (require) => {
 			    useEffect(() => {
 			        setLoadedCount(TEAM_LEDGER_INITIAL_LIMIT);
 			        setFilter({ category: 'all', instanceId: null });
+			        setResolveStates(new Map());
 			    }, [snapshot.teamSessionId]);
 			    const section = deriveTeamLedgerSection({
 			        ledger,
@@ -3676,11 +3718,80 @@ var __dshFactory = (require) => {
 			    const error = ledgerState?.error;
 			    const errorMessage = error === undefined ? '' : ('reason' in error ? error.reason : error.error.message);
 			    const loading = ledgerState?.loading ?? false;
+			    // F9 — the per-request command flights (keyed by the durable control
+			    // request id): the Allow/Deny busy state + the typed error note.
+			    const [resolveStates, setResolveStates] = useState(new Map());
+			    const runResolve = (requestId, decision) => {
+			        const resolve = props.onResolveControl;
+			        if (resolve === undefined)
+			            return;
+			        const teamSessionId = snapshot.teamSessionId;
+			        setResolveStates(prev => new Map(prev).set(requestId, { phase: 'busy' }));
+			        resolve(teamSessionId, requestId, decision).then(response => {
+			            setResolveStates(prev => {
+			                const next = new Map(prev);
+			                next.delete(requestId);
+			                if (response.ok === false) {
+			                    // The typed failure (the frozen control vocabulary, invariant
+			                    // 4b pass-through): rendered as the row's typed error note —
+			                    // never swallowed, never exception-ified.
+			                    next.set(requestId, {
+			                        phase: 'error',
+			                        code: response.error.code,
+			                        message: response.error.message,
+			                    });
+			                }
+			                return next;
+			            });
+			            // The catch-up re-pull (the same discipline as a typed store
+			            // failure): the decision fact settles the row's pending badge —
+			            // including the typed failures that record a durable decision
+			            // FIRST (stale / external-policy close the request durably).
+			            void onRetry();
+			        }, (fail) => {
+			            // Transport-level channel loss (the ONLY rejection kind): the
+			            // row stays pending with the loud loss note.
+			            setResolveStates(prev => new Map(prev).set(requestId, {
+			                phase: 'error',
+			                code: 'transport-loss',
+			                message: fail instanceof Error ? fail.message : String(fail),
+			            }));
+			        });
+			    };
+			    /**
+			     * F9 — the command bar under one row: rendered ONLY for a pending
+			     * control-request row that carries a durable request id, while the
+			     * `onResolveControl` face is present (absent face → no commands, the
+			     * legacy surface unchanged). The bar is a SIBLING of the row button
+			     * (the row is a `<button>` — nested buttons are invalid HTML).
+			     */
+			    const renderResolveBar = (row) => {
+			        if (props.onResolveControl === undefined
+			            || row.kind !== 'control-request'
+			            || row.pending === false
+			            || row.requestId === undefined) {
+			            return null;
+			        }
+			        const requestId = row.requestId;
+			        const state = resolveStates.get(requestId);
+			        const busy = state !== undefined && state.phase === 'busy';
+			        return (_jsxs("div", { className: styles.resolveBar, "data-ledger-resolve-bar": true, "data-request-id": requestId, children: [_jsx("button", { type: "button", className: styles.resolveBtn, "data-ledger-resolve-allow": true, disabled: busy, onClick: () => { runResolve(requestId, 'allow'); }, children: t('view.ledger.resolve.allow') }), _jsx("button", { type: "button", className: styles.resolveBtn, "data-ledger-resolve-deny": true, disabled: busy, onClick: () => { runResolve(requestId, 'deny'); }, children: t('view.ledger.resolve.deny') }), busy
+			                    ? _jsx("span", { className: styles.resolveBusy, "data-ledger-resolve-busy": true, children: t('view.ledger.resolve.busy') })
+			                    : null, state !== undefined && state.phase === 'error'
+			                    ? (_jsx("span", { className: styles.resolveError, "data-ledger-resolve-error": true, "data-resolve-error-code": state.code, title: state.message, children: t('view.ledger.resolve.error', { code: state.code, message: state.message }) }))
+			                    : null] }));
+			    };
 			    const loadEarlier = () => {
 			        setLoadedCount(count => Math.min(count + TEAM_LEDGER_STEP, section.total));
 			    };
 			    return (_jsx("div", { className: styles.root, "data-team-ledger": true, children: section.total === 0
-			            ? (_jsx("span", { className: styles.empty, "data-ledger-empty": true, children: loading ? t('view.ledger.loading') : t('view.ledger.empty') }))
+			            ? (
+			            // F11 companion: a typed failure in the zero-rows state is the
+			            // LOUD error + retry, never the plain empty/loading note (the
+			            // pre-fix empty span swallowed the tracker reject / RPC error).
+			            error !== undefined
+			                ? (_jsxs("div", { className: styles.top, "data-ledger-top": true, children: [_jsx("span", { className: styles.loadFailed, "data-ledger-error": true, children: t('view.ledger.loadFailed', { message: errorMessage }) }), _jsx("button", { type: "button", className: styles.loadEarlier, "data-ledger-retry": true, onClick: () => { void onRetry(); }, children: t('view.ledger.retry') })] }))
+			                : (_jsx("span", { className: styles.empty, "data-ledger-empty": true, children: loading ? t('view.ledger.loading') : t('view.ledger.empty') })))
 			            : (_jsxs(_Fragment, { children: [_jsxs("div", { className: styles.top, "data-ledger-top": true, children: [_jsxs("select", { className: styles.filter, "data-ledger-filter-category": true, value: filter.category, onChange: event => {
 			                                    const value = event.target.value;
 			                                    setFilter(current => ({ ...current, category: value === 'all' ? 'all' : value }));
@@ -3695,7 +3806,7 @@ var __dshFactory = (require) => {
 			                                ? (_jsx("button", { type: "button", className: styles.loadEarlier, "data-ledger-load-earlier": true, disabled: loading, onClick: loadEarlier, children: t('view.ledger.loadEarlier') }))
 			                                : null, section.complete === false && section.remainingCount > 0
 			                                ? _jsx("span", { className: styles.truncated, "data-ledger-remaining": true, children: t('view.ledger.remaining', { count: section.remainingCount }) })
-			                                : null] }), _jsx("div", { className: styles.rows, children: section.rows.map(row => (_jsx(LedgerRow, { row: row, onSelect: row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId); }, t: t }, row.key))) })] })) }));
+			                                : null] }), _jsx("div", { className: styles.rows, children: section.rows.map(row => (_jsxs(Fragment, { children: [_jsx(LedgerRow, { row: row, onSelect: row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId); }, t: t }), renderResolveBar(row)] }, row.key))) })] })) }));
 			}
 			Object.defineProperty(exports, "TeamLedger", { enumerable: true, get: () => TeamLedger });
 			//# sourceMappingURL=TeamLedger.js.map
@@ -4235,8 +4346,8 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-legacy.js.map
 			}, exports: {} };
 		__mods["state/team-ledger-store.js"] = { done: false, fn: function (exports) {
-			const __imp54 = __req("../../remote/src/index.js");
-			const createLedgerPageTracker = __imp54.createLedgerPageTracker;
+			const __imp61 = __req("../../remote/src/index.js");
+			const createLedgerPageTracker = __imp61.createLedgerPageTracker;
 			/**
 			 * P9-T4 (S2-C) — the cursor-safe durable-ledger store.
 			 *
@@ -4266,9 +4377,16 @@ var __dshFactory = (require) => {
 			 *      earlier") is client-visible state, never ledger authority;
 			 *   5. `completeThrough` is the HIGHEST LOADED sequence (the tracker's
 			 *      anchor advances only on cursor pages, so the store tracks the
-			 *      frontier itself); completeness = `total !== null &&
-			 *      completeThrough >= total` — a partial ledger is never presented
-			 *      as complete;
+			 *      frontier itself) — a SEQUENCE-domain fact. Completion is a
+			 *      COUNT-domain rule (INV-9.2: the ledger sequence and the entry
+			 *      count are distinct numeric domains, never compared as
+			 *      interchangeable scalars): `tailReached || (total !== null &&
+			 *      loadedUniqueEntryCount >= total)` — the loaded entries are
+			 *      sequence-deduped, so the map size IS the loaded unique count, and
+			 *      `total` is the server's per-team entry count. A partial ledger is
+			 *      never presented as complete, and a shifted sequence base
+			 *      (sequences starting above the count, e.g. seq 69–136 / total 68)
+			 *      can never end the catch-up early (F11);
 			 *   6. a new event appends: `refresh()` re-pulls at the tracker's
 			 *      current anchor (the frozen stable re-read), and the dedupe merge
 			 *      keeps the loaded window un-reordered.
@@ -4391,12 +4509,18 @@ var __dshFactory = (require) => {
 			                        frontier = entry.sequence;
 			                }
 			                const total = check.total;
-			                const nextComplete = total !== null && frontier >= total;
 			                const tailReached = page.nextAfterSequence === null;
-			                // `loading` mirrors the loop: true only while another page will be
-			                // fetched, so every episode exit publishes loading: false.
-			                const continuePaging = tailReached === false && nextComplete === false;
+			                // INV-9.2 (F11): completion is a COUNT-domain rule — the loaded
+			                // entries are sequence-deduped, so the map size IS the loaded
+			                // unique count, compared against the server's per-team COUNT.
+			                // The `completeThrough` frontier is a SEQUENCE-domain value and
+			                // must never be compared to the total: a shifted sequence base
+			                // (e.g. seq 69–136, total 68) would make `frontier >= total`
+			                // true after the first page and silently truncate the catch-up.
+			                const continuePaging = tailReached === false && !(total !== null && entriesBySequence.size >= total);
 			                publish({
+			                    // `loading` mirrors the loop: true only while another page will
+			                    // be fetched, so every episode exit publishes loading: false.
 			                    ...state,
 			                    loading: continuePaging,
 			                    error: undefined,
@@ -4407,7 +4531,7 @@ var __dshFactory = (require) => {
 			                });
 			                // The frozen slicer sets the cursor only while more entries
 			                // remain: the tail ends the catch-up episode (the completeness
-			                // verdict stands on the numbers, a total/frontier mismatch is
+			                // verdict stands on the count — a total/count mismatch is
 			                // reported by the `partial` marker, never by a fetch loop).
 			                if (continuePaging === false)
 			                    return;
@@ -4794,12 +4918,13 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=team-projection-store.js.map
 			}, exports: {} };
 		__mods["transport/team-remote-client.js"] = { done: false, fn: function (exports) {
-			const __imp34 = __req("../../remote/src/index.js");
-			const REMOTE_CONTRACT_VERSION = __imp34.REMOTE_CONTRACT_VERSION;
-			const REMOTE_CONTRACT_VERSION_V2 = __imp34.REMOTE_CONTRACT_VERSION_V2;
-			const REMOTE_CONTRACT_VERSION_V3 = __imp34.REMOTE_CONTRACT_VERSION_V3;
-			const REMOTE_RPC_CHANNEL = __imp34.REMOTE_RPC_CHANNEL;
-			const PushTransportLossError = __imp34.PushTransportLossError;
+			const __imp36 = __req("../../remote/src/index.js");
+			const REMOTE_CONTRACT_VERSION = __imp36.REMOTE_CONTRACT_VERSION;
+			const REMOTE_CONTRACT_VERSION_V2 = __imp36.REMOTE_CONTRACT_VERSION_V2;
+			const REMOTE_CONTRACT_VERSION_V3 = __imp36.REMOTE_CONTRACT_VERSION_V3;
+			const REMOTE_CONTRACT_VERSION_V4 = __imp36.REMOTE_CONTRACT_VERSION_V4;
+			const REMOTE_RPC_CHANNEL = __imp36.REMOTE_RPC_CHANNEL;
+			const PushTransportLossError = __imp36.PushTransportLossError;
 			/**
 			 * P9-T3 (S2-A) — the Team Remote client over the frozen public seam.
 			 *
@@ -4814,7 +4939,9 @@ var __dshFactory = (require) => {
 			 * Version stamping (TCM vNext §15.3) is also exclusive to this module:
 			 * every existing wrapper stamps contract version 1 (frozen v1 wire
 			 * behavior); ONLY `teamCreateV2` and `teamAdmitInitialWorkV2` stamp
-			 * contract version 2.
+			 * contract version 2, the two D1 v3 wrappers stamp contract version 3,
+			 * and `teamResolveControlV4` (F3/F11/F9/T1.4 repair round r1 F9) stamps
+			 * contract version 4.
 			 *
 			 * Failure discipline (frozen `RemotePushTransport` contract, mirrored
 			 * here for the unary path): every RPC-level outcome arrives as a typed
@@ -4886,6 +5013,10 @@ var __dshFactory = (require) => {
 			        // handler arrives with D2; see the interface doc).
 			        teamListRootsV3: () => callWithVersion('team.listRoots', {}, REMOTE_CONTRACT_VERSION_V3),
 			        teamEnsureRootLiveV3: (teamSessionId) => callWithVersion('team.ensureRootLive', { teamSessionId }, REMOTE_CONTRACT_VERSION_V3),
+			        // F3/F11/F9/T1.4 repair round r1 F9 — the v4-only human control-
+			        // resolution command (contract version 4; the host derives the human
+			        // principal — the closed v4 param set carries no caller fields).
+			        teamResolveControlV4: (params) => callWithVersion('team.resolveControl', params, REMOTE_CONTRACT_VERSION_V4),
 			        memberCreate: (params) => call('member.create', params),
 			        memberSend: (params) => call('member.send', params),
 			        memberFollowup: (params) => call('member.followup', params),
@@ -5002,6 +5133,10 @@ var __dshFactory = (require) => {
 			    'view.ledger.loadEarlier': '加载更早',
 			    'view.ledger.loadFailed': '事件加载失败：{message}',
 			    'view.ledger.pending': '等待裁决',
+			    'view.ledger.resolve.allow': '允许',
+			    'view.ledger.resolve.deny': '拒绝',
+			    'view.ledger.resolve.busy': '裁决中…',
+			    'view.ledger.resolve.error': '裁决失败（{code}）：{message}',
 			    'view.ledger.filter.all': '全部',
 			    'view.ledger.filter.team': '团队',
 			    'view.ledger.filter.members': '成员',
@@ -5224,6 +5359,10 @@ var __dshFactory = (require) => {
 			    'view.ledger.loadEarlier': 'Load earlier',
 			    'view.ledger.loadFailed': 'Loading events failed: {message}',
 			    'view.ledger.pending': 'Pending decision',
+			    'view.ledger.resolve.allow': 'Allow',
+			    'view.ledger.resolve.deny': 'Deny',
+			    'view.ledger.resolve.busy': 'Resolving…',
+			    'view.ledger.resolve.error': 'Resolve failed ({code}): {message}',
 			    'view.ledger.filter.all': 'All',
 			    'view.ledger.filter.team': 'Team',
 			    'view.ledger.filter.members': 'Members',
@@ -6330,6 +6469,7 @@ var __dshFactory = (require) => {
 			    let summary = '';
 			    let detail = '';
 			    let pending = false;
+			    let requestId;
 			    let decisionValue;
 			    let decisionReason;
 			    let progressValue;
@@ -6368,8 +6508,9 @@ var __dshFactory = (require) => {
 			                .join(' · ');
 			            if (detail === '')
 			                detail = safePayloadSummary(payload);
-			            const requestId = str(payload, 'requestId');
-			            pending = requestId === undefined ? false : pendingRequestIds.has(requestId);
+			            const rowRequestId = str(payload, 'requestId');
+			            requestId = rowRequestId;
+			            pending = rowRequestId === undefined ? false : pendingRequestIds.has(rowRequestId);
 			            break;
 			        }
 			        case 'control-decision': {
@@ -6457,6 +6598,7 @@ var __dshFactory = (require) => {
 			        summary,
 			        detail,
 			        pending,
+			        ...(requestId === undefined ? {} : { requestId }),
 			        ...(decisionValue === undefined ? {} : { decisionValue }),
 			        ...(decisionReason === undefined ? {} : { decisionReason }),
 			        ...(progressValue === undefined ? {} : { progressValue }),
@@ -6474,7 +6616,10 @@ var __dshFactory = (require) => {
 			 *   ledger's counted remainder.
 			 */
 			function deriveTeamLedgerSection(input) {
-			    const { ledger, snapshot, loadedCount, filter, total, completeThrough } = input;
+			    // `completeThrough` (the SEQUENCE-domain frontier) is NOT read: the
+			    // remainder is a count-domain subtraction (INV-9.2, F11) — it derives
+			    // from the loaded unique entry count, never from the frontier.
+			    const { ledger, snapshot, loadedCount, filter, total } = input;
 			    const labels = new Map();
 			    const navSessions = new Map();
 			    const templates = new Map();
@@ -6515,7 +6660,12 @@ var __dshFactory = (require) => {
 			    const filteredTotal = items.length;
 			    const limit = Math.max(0, Math.min(loadedCount, filteredTotal));
 			    const rows = items.slice(filteredTotal - limit).map(item => item.row);
-			    const remainingCount = total === null ? 0 : Math.max(0, total - completeThrough);
+			    // INV-9.2 (F11): the remainder is a COUNT-domain subtraction — the
+			    // server's per-team total minus the loaded unique entry count. The
+			    // sequence frontier is never subtracted (a shifted base, e.g. total 68
+			    // with frontier 118 and 50 loaded, would have under-reported the
+			    // remainder to 0).
+			    const remainingCount = total === null ? 0 : Math.max(0, total - ledger.entries.length);
 			    return {
 			        rows,
 			        total: filteredTotal,
@@ -6581,6 +6731,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V2", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V2 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V3", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V3 });
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V4", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V4 });
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => __re3.SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			Object.defineProperty(exports, "isSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.isSupportedRemoteContractVersion });
 			Object.defineProperty(exports, "assertSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.assertSupportedRemoteContractVersion });
@@ -6593,6 +6744,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_METHODS_BY_CATEGORY", { enumerable: true, get: () => __re4.REMOTE_METHODS_BY_CATEGORY });
 			Object.defineProperty(exports, "REMOTE_V2_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V2_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V3_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V3_ONLY_METHODS });
+			Object.defineProperty(exports, "REMOTE_V4_ONLY_METHODS", { enumerable: true, get: () => __re4.REMOTE_V4_ONLY_METHODS });
 			Object.defineProperty(exports, "isRemoteMethod", { enumerable: true, get: () => __re4.isRemoteMethod });
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => __re4.isRemoteMethodAvailableInVersion });
 			Object.defineProperty(exports, "remoteCategoryOf", { enumerable: true, get: () => __re4.remoteCategoryOf });
@@ -6617,6 +6769,8 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_LIST_ROOTS_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_LIST_ROOTS_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS });
+			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS", { enumerable: true, get: () => __re7.REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS });
+			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_RESOLVE_CONTROL_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS });
 			Object.defineProperty(exports, "REMOTE_MEMBER_CREATE_FIELDS", { enumerable: true, get: () => __re7.REMOTE_MEMBER_CREATE_FIELDS });
@@ -6642,6 +6796,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "parseRemoteTeamAdmitInitialWorkParams", { enumerable: true, get: () => __re7.parseRemoteTeamAdmitInitialWorkParams });
 			Object.defineProperty(exports, "parseRemoteTeamListRootsParams", { enumerable: true, get: () => __re7.parseRemoteTeamListRootsParams });
 			Object.defineProperty(exports, "parseRemoteTeamEnsureRootLiveParams", { enumerable: true, get: () => __re7.parseRemoteTeamEnsureRootLiveParams });
+			Object.defineProperty(exports, "parseRemoteTeamResolveControlParams", { enumerable: true, get: () => __re7.parseRemoteTeamResolveControlParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetProjectionParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetProjectionParams });
 			Object.defineProperty(exports, "parseRemoteTeamGetLedgerPageParams", { enumerable: true, get: () => __re7.parseRemoteTeamGetLedgerPageParams });
 			Object.defineProperty(exports, "parseRemoteMemberCreateParams", { enumerable: true, get: () => __re7.parseRemoteMemberCreateParams });
@@ -7560,15 +7715,32 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V3 = 3;
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V3", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V3 });
 			/**
-			 * All remote contract versions this build accepts: `[1, 2, 3]`.
+			 * The remote contract v4 (F3/F11/F9/T1.4 repair round r1, F9 — user
+			 * adjudications U1–U4, 2026-09-07): the v4-only `team.resolveControl`
+			 * command — the human ingress for the durable control plane (a human
+			 * resolves a pending control request through the trusted authenticated
+			 * UI; the host derives the human principal from the connection-gate
+			 * authority basis, never from a payload claim — the wire carries NO
+			 * caller/actor fields). The v4 shared record also documents the T1.4
+			 * probe-semantics entry (T14-H carries its code; this build freezes only
+			 * the F9 method — the version exists, the entry is additive). Every
+			 * v1/v2/v3 method stays available in v4; v1/v2/v3 wire behavior is
+			 * preserved.
+			 */
+			const REMOTE_CONTRACT_VERSION_V4 = 4;
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V4", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V4 });
+			/**
+			 * All remote contract versions this build accepts: `[1, 2, 3, 4]`.
 			 * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
-			 * v3 by the Team D1-D6 repair v2 D1 task (a version bump ADDS supported
-			 * versions, never edits v1/v2 semantics).
+			 * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
+			 * repair round r1 F9 task (a version bump ADDS supported versions,
+			 * never edits v1/v2/v3 semantics).
 			 */
 			const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
 			    REMOTE_CONTRACT_VERSION,
 			    REMOTE_CONTRACT_VERSION_V2,
 			    REMOTE_CONTRACT_VERSION_V3,
+			    REMOTE_CONTRACT_VERSION_V4,
 			];
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			/**
@@ -7658,13 +7830,15 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CATEGORY_VALUES", { enumerable: true, get: () => REMOTE_CATEGORY_VALUES });
 			/**
 			 * The closed Remote contract method catalog — a VERSIONED UNION
-			 * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump):
-			 * the 23 frozen v1 methods plus the v2-only `team.admitInitialWork`
-			 * plus the v3-only `team.listRoots` / `team.ensureRootLive` (26 methods
-			 * total). Key = endpoint = method name (dotted: `<category>.<action>`).
-			 * Per-version availability is the closed {@link REMOTE_V2_ONLY_METHODS}
-			 * + {@link REMOTE_V3_ONLY_METHODS} sets below; per-method param schemas
-			 * are version-aware in `params.ts`.
+			 * (TCM vNext §15.3, extended by the Team D1-D6 repair v2 D1 v3 bump and
+			 * the F3/F11/F9/T1.4 repair round r1 F9 v4 bump): the 23 frozen v1
+			 * methods plus the v2-only `team.admitInitialWork` plus the v3-only
+			 * `team.listRoots` / `team.ensureRootLive` plus the v4-only
+			 * `team.resolveControl` (27 methods total). Key = endpoint = method name
+			 * (dotted: `<category>.<action>`). Per-version availability is the closed
+			 * {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS} +
+			 * {@link REMOTE_V4_ONLY_METHODS} sets below; per-method param schemas are
+			 * version-aware in `params.ts`.
 			 */
 			const REMOTE_METHOD_CATALOG = {
 			    'catalog.list': { category: REMOTE_CATEGORIES.CATALOG },
@@ -7676,6 +7850,7 @@ var __dshFactory = (require) => {
 			    'team.admitInitialWork': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.listRoots': { category: REMOTE_CATEGORIES.TEAM },
 			    'team.ensureRootLive': { category: REMOTE_CATEGORIES.TEAM },
+			    'team.resolveControl': { category: REMOTE_CATEGORIES.TEAM },
 			    'member.create': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.send': { category: REMOTE_CATEGORIES.MEMBER },
 			    'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -7746,6 +7921,19 @@ var __dshFactory = (require) => {
 			];
 			Object.defineProperty(exports, "REMOTE_V3_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V3_ONLY_METHODS });
 			/**
+			 * The closed set of catalog methods that exist ONLY in remote contract v4
+			 * (F3/F11/F9/T1.4 repair round r1, F9 — user adjudications U1–U3,
+			 * 2026-09-07): the human control-resolution command `team.resolveControl`
+			 * (the existing `team` category, adjudication U2 — no new category; the
+			 * closed param set `{ teamSessionId, requestId, decision, note? }`
+			 * carries NO caller/role/principal fields, adjudication U3 — the host
+			 * derives the human principal from the trusted authenticated UI/session
+			 * ownership, the T12-B4 connection-gate authority basis). Every
+			 * v1/v2/v3 method stays available in v4.
+			 */
+			const REMOTE_V4_ONLY_METHODS = ['team.resolveControl'];
+			Object.defineProperty(exports, "REMOTE_V4_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V4_ONLY_METHODS });
+			/**
 			 * Is `method` a catalog method available in remote contract `version`?
 			 *
 			 * This is the version-aware membership check the version-aware param
@@ -7756,18 +7944,24 @@ var __dshFactory = (require) => {
 			 * envelope is known.
 			 *
 			 * @param method - the candidate method name (must be in the catalog).
-			 * @param version - the request's contract version (supported: 1 | 2 | 3).
+			 * @param version - the request's contract version (supported:
+			 *   1 | 2 | 3 | 4).
 			 */
 			function isRemoteMethodAvailableInVersion(method, version) {
 			    if (!(method in REMOTE_METHOD_CATALOG))
 			        return false;
 			    if (version === 1) {
-			        return !REMOTE_V2_ONLY_METHODS.includes(method) && !REMOTE_V3_ONLY_METHODS.includes(method);
+			        return (!REMOTE_V2_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V3_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V4_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 2) {
-			        return !REMOTE_V3_ONLY_METHODS.includes(method);
+			        return !REMOTE_V3_ONLY_METHODS.includes(method) && !REMOTE_V4_ONLY_METHODS.includes(method);
 			    }
-			    // version === 3: every v1/v2 method plus the v3-only methods.
+			    if (version === 3) {
+			        return !REMOTE_V4_ONLY_METHODS.includes(method);
+			    }
+			    // version === 4: every v1/v2/v3 method plus the v4-only methods.
 			    return true;
 			}
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => isRemoteMethodAvailableInVersion });
@@ -7981,23 +8175,23 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=response.js.map
 			}, exports: {} };
 		__mods["../../remote/src/contracts/params.js"] = { done: false, fn: function (exports) {
-			const __imp38 = __req("../../remote/src/contracts/catalog.js");
-			const isRemoteMethodAvailableInVersion = __imp38.isRemoteMethodAvailableInVersion;
-			const __imp39 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp39.remoteContractError;
-			const __imp40 = __req("../../remote/src/contracts/ids.js");
-			const parseRemoteBlueprintId = __imp40.parseRemoteBlueprintId;
-			const parseRemoteBlueprintRevision = __imp40.parseRemoteBlueprintRevision;
-			const parseRemoteInstanceId = __imp40.parseRemoteInstanceId;
-			const parseRemoteRootSessionId = __imp40.parseRemoteRootSessionId;
-			const parseRemoteSessionId = __imp40.parseRemoteSessionId;
-			const parseRemoteTeamSessionId = __imp40.parseRemoteTeamSessionId;
-			const parseRemoteTemplateId = __imp40.parseRemoteTemplateId;
-			const REMOTE_ID_MAX_LENGTH = __imp40.REMOTE_ID_MAX_LENGTH;
-			const __imp41 = __req("../../remote/src/contracts/remote-safe.js");
-			const assertRemoteSafeJsonValue = __imp41.assertRemoteSafeJsonValue;
-			const __imp42 = __req("../../remote/src/contracts/version.js");
-			const assertSupportedRemoteContractVersion = __imp42.assertSupportedRemoteContractVersion;
+			const __imp43 = __req("../../remote/src/contracts/catalog.js");
+			const isRemoteMethodAvailableInVersion = __imp43.isRemoteMethodAvailableInVersion;
+			const __imp44 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp44.remoteContractError;
+			const __imp45 = __req("../../remote/src/contracts/ids.js");
+			const parseRemoteBlueprintId = __imp45.parseRemoteBlueprintId;
+			const parseRemoteBlueprintRevision = __imp45.parseRemoteBlueprintRevision;
+			const parseRemoteInstanceId = __imp45.parseRemoteInstanceId;
+			const parseRemoteRootSessionId = __imp45.parseRemoteRootSessionId;
+			const parseRemoteSessionId = __imp45.parseRemoteSessionId;
+			const parseRemoteTeamSessionId = __imp45.parseRemoteTeamSessionId;
+			const parseRemoteTemplateId = __imp45.parseRemoteTemplateId;
+			const REMOTE_ID_MAX_LENGTH = __imp45.REMOTE_ID_MAX_LENGTH;
+			const __imp46 = __req("../../remote/src/contracts/remote-safe.js");
+			const assertRemoteSafeJsonValue = __imp46.assertRemoteSafeJsonValue;
+			const __imp47 = __req("../../remote/src/contracts/version.js");
+			const assertSupportedRemoteContractVersion = __imp47.assertSupportedRemoteContractVersion;
 			/**
 			 * Per-method closed param schemas of the Remote contract v1.
 			 *
@@ -8019,18 +8213,23 @@ var __dshFactory = (require) => {
 			 * are legal content — but bound by a length cap (design note §3).
 			 *
 			 * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
-			 * v3 bump)**: the module is the single version-aware closed schema.
-			 * Every v1/v2 field list, parser and behavior is unchanged; the v2 bump
-			 * adds exactly one method (`team.admitInitialWork`, v2-only) and one v2
-			 * variant of an existing method (`team.create`, whose v2 closed set
-			 * swaps `initialWork` for `workspace`); the v3 bump (frozen by D1) adds
-			 * exactly the two v3-only methods `team.listRoots` (closed set: no
-			 * fields) and `team.ensureRootLive` (closed set: `teamSessionId`).
-			 * {@link parseRemoteMethodParams} routes on the request version: a
-			 * request to a method of a NEWER version is typed-rejected
-			 * (`method-version-unsupported`) AFTER the envelope parse, and each
-			 * request version sees only its own closed field sets (no cross-version
-			 * field leakage in either direction).
+			 * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump)**: the module is
+			 * the single version-aware closed schema. Every v1/v2/v3 field list,
+			 * parser and behavior is unchanged; the v2 bump adds exactly one method
+			 * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
+			 * method (`team.create`, whose v2 closed set swaps `initialWork` for
+			 * `workspace`); the v3 bump (frozen by D1) adds exactly the two v3-only
+			 * methods `team.listRoots` (closed set: no fields) and
+			 * `team.ensureRootLive` (closed set: `teamSessionId`); the v4 bump
+			 * (frozen by the F9 adjudications U2/U3) adds exactly the one v4-only
+			 * method `team.resolveControl` (closed set: `teamSessionId`,
+			 * `requestId`, `decision`, optional `note` — NO caller/role/principal
+			 * fields: the host derives the human principal, the payload is a
+			 * command, never an identity). {@link parseRemoteMethodParams} routes on
+			 * the request version: a request to a method of a NEWER version is
+			 * typed-rejected (`method-version-unsupported`) AFTER the envelope
+			 * parse, and each request version sees only its own closed field sets
+			 * (no cross-version field leakage in either direction).
 			 *
 			 * Pure module: no I/O, no node: builtins, no runtime environment
 			 * assumptions.
@@ -8070,6 +8269,12 @@ var __dshFactory = (require) => {
 			    'follow-up',
 			];
 			Object.defineProperty(exports, "REMOTE_ADMISSION_ACTIONS", { enumerable: true, get: () => REMOTE_ADMISSION_ACTIONS });
+			/** The closed decision values of the control plane (the wire mirror of
+			 *  `packages/runtime/control` `CONTROL_DECISION_VALUE_VALUES` minus the
+			 *  service-only `stale-denied` — a human resolves `allow` or `deny` only;
+			 *  `stale-denied` is recorded by the service itself, never by a caller). */
+			const REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS = ['allow', 'deny'];
+			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS", { enumerable: true, get: () => REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS });
 			// ---------------------------------------------------------------------------
 			// Closed field sets (one per method — the "closed" part of the schemas)
 			// ---------------------------------------------------------------------------
@@ -8125,6 +8330,13 @@ var __dshFactory = (require) => {
 			 */
 			const REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS });
+			const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS = [
+			    'decision',
+			    'note',
+			    'requestId',
+			    'teamSessionId',
+			];
+			Object.defineProperty(exports, "REMOTE_TEAM_RESOLVE_CONTROL_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_RESOLVE_CONTROL_FIELDS });
 			const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 			Object.defineProperty(exports, "REMOTE_TEAM_GET_PROJECTION_FIELDS", { enumerable: true, get: () => REMOTE_TEAM_GET_PROJECTION_FIELDS });
 			const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
@@ -8614,6 +8826,18 @@ var __dshFactory = (require) => {
 			    };
 			}
 			Object.defineProperty(exports, "parseRemoteTeamEnsureRootLiveParams", { enumerable: true, get: () => parseRemoteTeamEnsureRootLiveParams });
+			/** Parse `team.resolveControl` params (contract v4, v4-only method). */
+			function parseRemoteTeamResolveControlParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_TEAM_RESOLVE_CONTROL_FIELDS);
+			    const rawNote = optionalField(method, params, 'note');
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			        requestId: parseRemoteOpaqueToken(requiredField(method, params, 'requestId'), method, 'requestId'),
+			        decision: parseRemoteEnum(requiredField(method, params, 'decision'), method, 'decision', REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS),
+			        ...(rawNote === undefined ? {} : { note: parseRemoteNote(rawNote, method, 'note') }),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteTeamResolveControlParams", { enumerable: true, get: () => parseRemoteTeamResolveControlParams });
 			/** Parse `team.getProjection` params. */
 			function parseRemoteTeamGetProjectionParams(method, params) {
 			    assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -8916,6 +9140,9 @@ var __dshFactory = (require) => {
 			        case 'team.ensureRootLive':
 			            // v3-only (the availability check above guarantees version === 3).
 			            return wrapParsed(method, parseRemoteTeamEnsureRootLiveParams(method, params));
+			        case 'team.resolveControl':
+			            // v4-only (the availability check above guarantees version === 4).
+			            return wrapParsed(method, parseRemoteTeamResolveControlParams(method, params));
 			        case 'team.getProjection':
 			            return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
 			        case 'team.getLedgerPage':
@@ -9087,21 +9314,24 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=intent.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/team.js"] = { done: false, fn: function (exports) {
-			const __imp20 = __req("../../remote/src/contracts/errors.js");
-			const remoteContractError = __imp20.remoteContractError;
-			const __imp21 = __req("../../remote/src/contracts/types.js");
-			const REMOTE_LEDGER_ENTRY_FIELDS = __imp21.REMOTE_LEDGER_ENTRY_FIELDS;
-			const REMOTE_PROJECTION_FIELDS = __imp21.REMOTE_PROJECTION_FIELDS;
+			const __imp23 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp23.remoteContractError;
+			const __imp24 = __req("../../remote/src/contracts/types.js");
+			const REMOTE_LEDGER_ENTRY_FIELDS = __imp24.REMOTE_LEDGER_ENTRY_FIELDS;
+			const REMOTE_PROJECTION_FIELDS = __imp24.REMOTE_PROJECTION_FIELDS;
 			/**
 			 * The `team` category handler (design note §3): TeamSession creation,
-			 * whole-projection observation, and ledger pages. Backed by five ports:
+			 * whole-projection observation, ledger pages, and the v4-only human
+			 * control resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair
+			 * round r1 F9). Backed by six ports:
 			 * {@link RemoteTeamCreatePort} (root binding, P5-T5),
 			 * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
 			 * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
 			 * (the v2-only creation-time initial work command, TCM vNext §15.6),
-			 * {@link RemoteProjectionPort} (ProjectionService, P8-T2), and
-			 * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter,
-			 * D-5).
+			 * {@link RemoteTeamResolveControlPort} (the v4-only human control
+			 * resolution command, F9), {@link RemoteProjectionPort}
+			 * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
+			 * ledger behind a slicing adapter, D-5).
 			 *
 			 * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
 			 * `TeamProjectionDto` fields must be present with the right structural
@@ -9278,11 +9508,60 @@ var __dshFactory = (require) => {
 			    // The port contract guarantees a lossless-JSON-safe record.
 			    return raw;
 			}
+			/** The closed decision values the durable control plane records. */
+			const TEAM_RESOLVE_CONTROL_DECISION_VALUES = ['allow', 'deny', 'stale-denied'];
+			/**
+			 * Validate the `team.resolveControl` success value against the closed v4
+			 * response shape (D-4 discipline: the top-level fields are checked, the
+			 * nested `decider` / `scope` values pass through): the durable
+			 * ControlDecision record — `{ requestId, decision, decider, reason?,
+			 * note?, scope, requestSequence, decisionSequence, createdAt }`.
+			 */
+			function normalizeTeamResolveControlValue(raw) {
+			    if (!isPlainRecord(raw)) {
+			        throw portContractError('teamResolveControl.decision', `expected an object, got ${String(raw)}`);
+			    }
+			    const requestId = raw['requestId'];
+			    if (typeof requestId !== 'string' || requestId.length === 0) {
+			        throw portContractError('teamResolveControl.decision.requestId', 'must be a non-empty string');
+			    }
+			    const decision = raw['decision'];
+			    if (typeof decision !== 'string' ||
+			        !TEAM_RESOLVE_CONTROL_DECISION_VALUES.includes(decision)) {
+			        throw portContractError('teamResolveControl.decision.decision', `must be one of ${JSON.stringify([...TEAM_RESOLVE_CONTROL_DECISION_VALUES])}, got ${String(decision)}`);
+			    }
+			    const decider = raw['decider'];
+			    if (!isPlainRecord(decider)) {
+			        throw portContractError('teamResolveControl.decision.decider', 'must be an object');
+			    }
+			    const scope = raw['scope'];
+			    if (!isPlainRecord(scope)) {
+			        throw portContractError('teamResolveControl.decision.scope', 'must be an object');
+			    }
+			    for (const field of ['requestSequence', 'decisionSequence']) {
+			        const value = raw[field];
+			        if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) {
+			            throw portContractError(`teamResolveControl.decision.${field}`, 'must be a safe integer >= 1');
+			        }
+			    }
+			    const createdAt = raw['createdAt'];
+			    if (typeof createdAt !== 'string' || createdAt.length === 0) {
+			        throw portContractError('teamResolveControl.decision.createdAt', 'must be a non-empty string');
+			    }
+			    for (const field of ['reason', 'note']) {
+			        const value = raw[field];
+			        if (value !== undefined && typeof value !== 'string') {
+			            throw portContractError(`teamResolveControl.decision.${field}`, 'must be a string when present');
+			        }
+			    }
+			    // The port contract guarantees a lossless-JSON-safe record.
+			    return raw;
+			}
 			/**
 			 * The team category handler (`team.create` [v1 + v2],
 			 * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
-			 * `team.ensureRootLive` [v3-only], `team.getProjection`,
-			 * `team.getLedgerPage`).
+			 * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
+			 * `team.getProjection`, `team.getLedgerPage`).
 			 *
 			 * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
 			 * contract version; `team.create` routes to the v1 port (closed v1 field
@@ -9336,6 +9615,20 @@ var __dshFactory = (require) => {
 			                const ensureParams = params;
 			                const ensured = ports.teamEnsureRootLive.ensureRootLive(ensureParams.teamSessionId);
 			                return { data: normalizeTeamEnsureRootLiveValue(ensured) };
+			            }
+			            case 'team.resolveControl': {
+			                // v4-only (the availability check guarantees version === 4). The
+			                // human ingress of the durable control plane (F3/F11/F9/T1.4
+			                // repair round r1 F9): the wire params carry NO caller field
+			                // (adjudication U3) — the production host (the S6 plugin)
+			                // derives the human principal from the T12-B4 connection-gate
+			                // authority basis and stamps it on the service call; the frozen
+			                // CONTROL_RESOLVER_ROLES + durable exactly-once semantics stay
+			                // the only resolver authority (the port's typed CONTROL_* /
+			                // TEAM_RUNTIME_* failures pass through invariant 4b).
+			                const resolveParams = params;
+			                const decision = ports.teamResolveControl.resolveControl(resolveParams.teamSessionId, resolveParams.requestId, resolveParams.decision, resolveParams.note);
+			                return { data: { decision: normalizeTeamResolveControlValue(decision) } };
 			            }
 			            case 'team.getProjection': {
 			                const projectionParams = params;
@@ -9810,6 +10103,7 @@ var __dshFactory = (require) => {
 			            teamAdmitInitialWork: deps.teamAdmitInitialWork,
 			            teamRoots: deps.teamRoots,
 			            teamEnsureRootLive: deps.teamEnsureRootLive,
+			            teamResolveControl: deps.teamResolveControl,
 			            projection: deps.projection,
 			            ledger: deps.ledger,
 			        }),
@@ -10021,6 +10315,26 @@ var __dshFactory = (require) => {
 			    'TEAM_OWNERSHIP_INDEX_ROOT_BINDING_MISMATCH',
 			    'TEAM_OWNERSHIP_INDEX_MEMBER_BINDING_MISMATCH',
 			    'TEAM_OWNERSHIP_INDEX_MEMBER_BINDING_CONFLICT',
+			    // F3/F11/F9/T1.4 repair round r1 F9 (remote contract v4): the
+			    // team.resolveControl wire vocabulary. The S6 port emits
+			    // TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE (the control service
+			    // closure is absent from the host wiring — fail closed, never a silent
+			    // success); the CONTROL_* codes are the runtime/control service's
+			    // closed vocabulary (resolveControl's reachable codes: malformed
+			    // input / request-time staleness / decision lookup-and-state /
+			    // resolver role closure / resolve-time staleness / external hard
+			    // policy) — the durable exactly-once semantics (CONTROL_REQUEST_DECIDED
+			    // on a second resolution) ride these codes. The guard-only codes
+			    // (CONTROL_GUARD_MALFORMED / CONTROL_GUARD_AMBIGUOUS) are NOT reachable
+			    // from resolveControl and stay out of the set.
+			    'TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE',
+			    'CONTROL_REQUEST_MALFORMED',
+			    'CONTROL_TARGET_STALE',
+			    'CONTROL_REQUEST_NOT_FOUND',
+			    'CONTROL_REQUEST_DECIDED',
+			    'CONTROL_RESOLVER_NOT_AUTHORIZED',
+			    'CONTROL_REQUEST_STALE',
+			    'CONTROL_EXTERNAL_POLICY_DENIED',
 			];
 			Object.defineProperty(exports, "REMOTE_BACKING_ERROR_CODES", { enumerable: true, get: () => REMOTE_BACKING_ERROR_CODES });
 			/** The closed set form of {@link REMOTE_BACKING_ERROR_CODES} (O(1) lookup). */

@@ -76,7 +76,7 @@ import type { TeamCreationHandoffFace } from '../ui/TeamCreationPanel.js'
 import type { TeamGovernanceFace } from '../ui/TeamGovernance.js'
 import type { TeamMembersCommandFace } from '../ui/TeamMembers.js'
 import type { TeamSettingsSection } from '../ui/TeamSettingsSection.js'
-import type { TeamView, TeamViewCreationFace, TeamViewInjected, TeamViewRootsFace } from '../ui/TeamView.js'
+import type { TeamView, TeamViewControlFace, TeamViewCreationFace, TeamViewInjected, TeamViewRootsFace } from '../ui/TeamView.js'
 
 /**
  * Locale namespace + settings-slot declaration merges. The `team` namespace
@@ -692,6 +692,18 @@ export function applyTeamMount(
     ensureRootLive: (teamSessionId) => teamRemote.teamEnsureRootLiveV3(teamSessionId),
   }
 
+  // (15c) F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the
+  // human control-resolution face (frozen Remote wrapper verbatim): the
+  // v4-only `team.resolveControl` command stamps contract version 4; the
+  // host derives the human principal from the trusted authenticated
+  // UI/session ownership (the T12-B4 connection-gate authority basis —
+  // the closed v4 wire carries no caller/role fields, adjudication U3).
+  // Always present (no config gate — the transport is a hard seam; the
+  // production host always builds the A25 control service).
+  const control: TeamViewControlFace = {
+    resolveControl: (params) => teamRemote.teamResolveControlV4(params),
+  }
+
   // (16) D-T9-1: the parameterless legacyInspect face binds the `dshHome`
   // closure here; absent/blank config -> the face is omitted (the T8
   // degraded zero-state path).
@@ -753,6 +765,7 @@ export function applyTeamMount(
     governance,
     handoff,
     roots,
+    control,
     ...(legacyInspect === undefined ? {} : { legacyInspect }),
   })
   const dockInject = (): TeamDockInjected => ({

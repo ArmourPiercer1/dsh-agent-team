@@ -1,0 +1,5 @@
+﻿PASS packages\runtime\test\f9-s6-resolve-control.test.ts (14 tests)
+PASS packages\runtime\test\f9-control-exactly-once.test.ts (8 tests)
+
+f9-targeted-run: 22 passed, 0 failed, 22 total, 823 ms
+RESULT: PASS f9-targeted-run (0 failures)

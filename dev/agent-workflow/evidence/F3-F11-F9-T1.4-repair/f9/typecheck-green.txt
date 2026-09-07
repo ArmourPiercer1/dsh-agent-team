@@ -1,0 +1,13 @@
+﻿F9 typecheck (F3/F11/F9/T1.4 repair round r1)
+worktree: .worktrees/repair-r1-f9 (branch task/repair-r1-f9-human-control from int/repair-r1 @ 4f6e4f9)
+
+packages/remote : npx tsc -p packages/remote/tsconfig.json --noEmit
+  exit code: 0
+
+packages/runtime : npx tsc -p packages/runtime/tsconfig.json --noEmit
+  exit code: 0
+
+packages/client : npx tsc -p packages/client/tsconfig.json --noEmit
+  exit code: 0
+
+ALL TYPECHECKS GREEN: True

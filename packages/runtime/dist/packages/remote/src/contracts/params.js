@@ -19,18 +19,23 @@
  * are legal content — but bound by a length cap (design note §3).
  *
  * **Version awareness (TCM vNext §15.3/§15.6, Team D1-D6 repair v2 D1
- * v3 bump)**: the module is the single version-aware closed schema.
- * Every v1/v2 field list, parser and behavior is unchanged; the v2 bump
- * adds exactly one method (`team.admitInitialWork`, v2-only) and one v2
- * variant of an existing method (`team.create`, whose v2 closed set
- * swaps `initialWork` for `workspace`); the v3 bump (frozen by D1) adds
- * exactly the two v3-only methods `team.listRoots` (closed set: no
- * fields) and `team.ensureRootLive` (closed set: `teamSessionId`).
- * {@link parseRemoteMethodParams} routes on the request version: a
- * request to a method of a NEWER version is typed-rejected
- * (`method-version-unsupported`) AFTER the envelope parse, and each
- * request version sees only its own closed field sets (no cross-version
- * field leakage in either direction).
+ * v3 bump, F3/F11/F9/T1.4 repair round r1 F9 v4 bump)**: the module is
+ * the single version-aware closed schema. Every v1/v2/v3 field list,
+ * parser and behavior is unchanged; the v2 bump adds exactly one method
+ * (`team.admitInitialWork`, v2-only) and one v2 variant of an existing
+ * method (`team.create`, whose v2 closed set swaps `initialWork` for
+ * `workspace`); the v3 bump (frozen by D1) adds exactly the two v3-only
+ * methods `team.listRoots` (closed set: no fields) and
+ * `team.ensureRootLive` (closed set: `teamSessionId`); the v4 bump
+ * (frozen by the F9 adjudications U2/U3) adds exactly the one v4-only
+ * method `team.resolveControl` (closed set: `teamSessionId`,
+ * `requestId`, `decision`, optional `note` — NO caller/role/principal
+ * fields: the host derives the human principal, the payload is a
+ * command, never an identity). {@link parseRemoteMethodParams} routes on
+ * the request version: a request to a method of a NEWER version is
+ * typed-rejected (`method-version-unsupported`) AFTER the envelope
+ * parse, and each request version sees only its own closed field sets
+ * (no cross-version field leakage in either direction).
  *
  * Pure module: no I/O, no node: builtins, no runtime environment
  * assumptions.
@@ -70,6 +75,11 @@ export const REMOTE_ADMISSION_ACTIONS = [
     'send-message',
     'follow-up',
 ];
+/** The closed decision values of the control plane (the wire mirror of
+ *  `packages/runtime/control` `CONTROL_DECISION_VALUE_VALUES` minus the
+ *  service-only `stale-denied` — a human resolves `allow` or `deny` only;
+ *  `stale-denied` is recorded by the service itself, never by a caller). */
+export const REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS = ['allow', 'deny'];
 // ---------------------------------------------------------------------------
 // Closed field sets (one per method — the "closed" part of the schemas)
 // ---------------------------------------------------------------------------
@@ -117,6 +127,12 @@ export const REMOTE_TEAM_LIST_ROOTS_FIELDS = [];
  * `teamSessionId` only.
  */
 export const REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS = ['teamSessionId'];
+export const REMOTE_TEAM_RESOLVE_CONTROL_FIELDS = [
+    'decision',
+    'note',
+    'requestId',
+    'teamSessionId',
+];
 export const REMOTE_TEAM_GET_PROJECTION_FIELDS = ['teamSessionId'];
 export const REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS = [
     'afterSequence',
@@ -581,6 +597,17 @@ export function parseRemoteTeamEnsureRootLiveParams(method, params) {
         teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
     };
 }
+/** Parse `team.resolveControl` params (contract v4, v4-only method). */
+export function parseRemoteTeamResolveControlParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_RESOLVE_CONTROL_FIELDS);
+    const rawNote = optionalField(method, params, 'note');
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+        requestId: parseRemoteOpaqueToken(requiredField(method, params, 'requestId'), method, 'requestId'),
+        decision: parseRemoteEnum(requiredField(method, params, 'decision'), method, 'decision', REMOTE_TEAM_RESOLVE_CONTROL_DECISIONS),
+        ...(rawNote === undefined ? {} : { note: parseRemoteNote(rawNote, method, 'note') }),
+    };
+}
 /** Parse `team.getProjection` params. */
 export function parseRemoteTeamGetProjectionParams(method, params) {
     assertNoUnknownFields(method, params, REMOTE_TEAM_GET_PROJECTION_FIELDS);
@@ -864,6 +891,9 @@ export function parseRemoteMethodParams(version, method, params) {
         case 'team.ensureRootLive':
             // v3-only (the availability check above guarantees version === 3).
             return wrapParsed(method, parseRemoteTeamEnsureRootLiveParams(method, params));
+        case 'team.resolveControl':
+            // v4-only (the availability check above guarantees version === 4).
+            return wrapParsed(method, parseRemoteTeamResolveControlParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':

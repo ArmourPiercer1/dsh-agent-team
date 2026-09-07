@@ -29,10 +29,11 @@
  * generic row for an unknown / future fact type (no throw, no actor or
  * session-link guessing — see `team-ledger-model`).
  */
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { LedgerCategory, ProgressValue } from '../../../contracts/src/index.js'
+import type { RemoteResponse } from '../../../remote/src/index.js'
 import type { TeamLedgerState } from '../state/team-ledger-store.js'
 import type { TeamUiLedgerModel, TeamUiSnapshot } from '../model/team-ui-snapshot.js'
 import {
@@ -56,9 +57,46 @@ export interface TeamLedgerProps {
   readonly onRetry: () => Promise<void>
   /** Switch the current session to the clicked row's session (D9 navigation). */
   readonly onSelectSession: (sessionId: string) => void
+  /**
+   * F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) — the human
+   * control-resolution command (`team.resolveControl`): resolve ONE
+   * pending control-request row (allow / deny) as the trusted
+   * authenticated operator. The HOST derives the human principal (the
+   * closed v4 wire carries no caller/role fields — adjudication U3);
+   * the frozen resolver-role closure + the durable exactly-once
+   * semantics stay the only authority — a typed failure (already-
+   * decided / not-found / resolver-not-authorized / stale / external-
+   * policy) is rendered as the row's typed error note, never
+   * swallowed. ABSENT → the surface renders no commands (the legacy
+   * surface is unchanged).
+   * @param teamSessionId - the team (root) session id of the addressed row.
+   * @param requestId - the row's durable control request id.
+   * @param decision - the frozen decision the human makes.
+   * @returns the typed `RemoteResponse` (never exception-ified); the
+   *   promise rejects ONLY on transport-level channel loss (the frozen
+   *   `PushTransportLossError`).
+   */
+  readonly onResolveControl?: (
+    teamSessionId: string,
+    requestId: string,
+    decision: 'allow' | 'deny',
+  ) => Promise<RemoteResponse>
   /** The team dictionary translate seat. */
   readonly t: PropsLocale<'team'>['t']
 }
+
+/**
+ * F9 — the per-request state of one human control-resolution command
+ * flight (Allow / Deny on a pending control-request row): `busy` while
+ * the v4 `team.resolveControl` round trip is in flight, `error` for the
+ * typed failure (the frozen control vocabulary code + message) or the
+ * transport-level loss. No other state exists: a successful resolution
+ * CLEARS the entry (the catch-up re-pull then settles the row's badge
+ * through the ordinary ledger flow).
+ */
+type ResolveControlState =
+  | { readonly phase: 'busy' }
+  | { readonly phase: 'error'; readonly code: string; readonly message: string }
 
 /** The closed frozen category filter options (the contracts `LedgerCategory` set). */
 const CATEGORY_FILTER_OPTIONS: readonly (readonly [LedgerCategory, TeamKey])[] = [
@@ -219,6 +257,7 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
   useEffect(() => {
     setLoadedCount(TEAM_LEDGER_INITIAL_LIMIT)
     setFilter({ category: 'all', instanceId: null })
+    setResolveStates(new Map())
   }, [snapshot.teamSessionId])
   const section = deriveTeamLedgerSection({
     ledger,
@@ -231,6 +270,105 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
   const error = ledgerState?.error
   const errorMessage = error === undefined ? '' : ('reason' in error ? error.reason : error.error.message)
   const loading = ledgerState?.loading ?? false
+  // F9 — the per-request command flights (keyed by the durable control
+  // request id): the Allow/Deny busy state + the typed error note.
+  const [resolveStates, setResolveStates] = useState<ReadonlyMap<string, ResolveControlState>>(new Map())
+  const runResolve = (requestId: string, decision: 'allow' | 'deny'): void => {
+    const resolve = props.onResolveControl
+    if (resolve === undefined) return
+    const teamSessionId = snapshot.teamSessionId
+    setResolveStates(prev => new Map(prev).set(requestId, { phase: 'busy' }))
+    resolve(teamSessionId, requestId, decision).then(
+      response => {
+        setResolveStates(prev => {
+          const next = new Map(prev)
+          next.delete(requestId)
+          if (response.ok === false) {
+            // The typed failure (the frozen control vocabulary, invariant
+            // 4b pass-through): rendered as the row's typed error note —
+            // never swallowed, never exception-ified.
+            next.set(requestId, {
+              phase: 'error',
+              code: response.error.code,
+              message: response.error.message,
+            })
+          }
+          return next
+        })
+        // The catch-up re-pull (the same discipline as a typed store
+        // failure): the decision fact settles the row's pending badge —
+        // including the typed failures that record a durable decision
+        // FIRST (stale / external-policy close the request durably).
+        void onRetry()
+      },
+      (fail: unknown) => {
+        // Transport-level channel loss (the ONLY rejection kind): the
+        // row stays pending with the loud loss note.
+        setResolveStates(prev => new Map(prev).set(requestId, {
+          phase: 'error',
+          code: 'transport-loss',
+          message: fail instanceof Error ? fail.message : String(fail),
+        }))
+      },
+    )
+  }
+  /**
+   * F9 — the command bar under one row: rendered ONLY for a pending
+   * control-request row that carries a durable request id, while the
+   * `onResolveControl` face is present (absent face → no commands, the
+   * legacy surface unchanged). The bar is a SIBLING of the row button
+   * (the row is a `<button>` — nested buttons are invalid HTML).
+   */
+  const renderResolveBar = (row: TeamLedgerEventRow): React.JSX.Element | null => {
+    if (
+      props.onResolveControl === undefined
+      || row.kind !== 'control-request'
+      || row.pending === false
+      || row.requestId === undefined
+    ) {
+      return null
+    }
+    const requestId = row.requestId
+    const state = resolveStates.get(requestId)
+    const busy = state !== undefined && state.phase === 'busy'
+    return (
+      <div className={styles.resolveBar} data-ledger-resolve-bar data-request-id={requestId}>
+        <button
+          type="button"
+          className={styles.resolveBtn}
+          data-ledger-resolve-allow
+          disabled={busy}
+          onClick={() => { runResolve(requestId, 'allow') }}
+        >
+          {t('view.ledger.resolve.allow')}
+        </button>
+        <button
+          type="button"
+          className={styles.resolveBtn}
+          data-ledger-resolve-deny
+          disabled={busy}
+          onClick={() => { runResolve(requestId, 'deny') }}
+        >
+          {t('view.ledger.resolve.deny')}
+        </button>
+        {busy
+          ? <span className={styles.resolveBusy} data-ledger-resolve-busy>{t('view.ledger.resolve.busy')}</span>
+          : null}
+        {state !== undefined && state.phase === 'error'
+          ? (
+            <span
+              className={styles.resolveError}
+              data-ledger-resolve-error
+              data-resolve-error-code={state.code}
+              title={state.message}
+            >
+              {t('view.ledger.resolve.error', { code: state.code, message: state.message })}
+            </span>
+          )
+          : null}
+      </div>
+    )
+  }
   const loadEarlier = (): void => {
     setLoadedCount(count => Math.min(count + TEAM_LEDGER_STEP, section.total))
   }
@@ -329,12 +467,14 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
             </div>
             <div className={styles.rows}>
               {section.rows.map(row => (
-                <LedgerRow
-                  key={row.key}
-                  row={row}
-                  onSelect={row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId) }}
-                  t={t}
-                />
+                <Fragment key={row.key}>
+                  <LedgerRow
+                    row={row}
+                    onSelect={row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId) }}
+                    t={t}
+                  />
+                  {renderResolveBar(row)}
+                </Fragment>
               ))}
             </div>
           </>

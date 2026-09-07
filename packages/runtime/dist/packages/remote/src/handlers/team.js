@@ -1,13 +1,16 @@
 /**
  * The `team` category handler (design note §3): TeamSession creation,
- * whole-projection observation, and ledger pages. Backed by five ports:
+ * whole-projection observation, ledger pages, and the v4-only human
+ * control resolution (`team.resolveControl`, F3/F11/F9/T1.4 repair
+ * round r1 F9). Backed by six ports:
  * {@link RemoteTeamCreatePort} (root binding, P5-T5),
  * {@link RemoteTeamCreateV2Port} (the v2 workspace-aware creation
  * variant, TCM vNext §15.6), {@link RemoteTeamAdmitInitialWorkPort}
  * (the v2-only creation-time initial work command, TCM vNext §15.6),
- * {@link RemoteProjectionPort} (ProjectionService, P8-T2), and
- * {@link RemoteLedgerPort} (storage ledger behind a slicing adapter,
- * D-5).
+ * {@link RemoteTeamResolveControlPort} (the v4-only human control
+ * resolution command, F9), {@link RemoteProjectionPort}
+ * (ProjectionService, P8-T2), and {@link RemoteLedgerPort} (storage
+ * ledger behind a slicing adapter, D-5).
  *
  * The projection is validated at the TOP LEVEL only (D-4): the nine frozen
  * `TeamProjectionDto` fields must be present with the right structural
@@ -186,11 +189,60 @@ function normalizeTeamEnsureRootLiveValue(raw) {
     // The port contract guarantees a lossless-JSON-safe record.
     return raw;
 }
+/** The closed decision values the durable control plane records. */
+const TEAM_RESOLVE_CONTROL_DECISION_VALUES = ['allow', 'deny', 'stale-denied'];
+/**
+ * Validate the `team.resolveControl` success value against the closed v4
+ * response shape (D-4 discipline: the top-level fields are checked, the
+ * nested `decider` / `scope` values pass through): the durable
+ * ControlDecision record — `{ requestId, decision, decider, reason?,
+ * note?, scope, requestSequence, decisionSequence, createdAt }`.
+ */
+function normalizeTeamResolveControlValue(raw) {
+    if (!isPlainRecord(raw)) {
+        throw portContractError('teamResolveControl.decision', `expected an object, got ${String(raw)}`);
+    }
+    const requestId = raw['requestId'];
+    if (typeof requestId !== 'string' || requestId.length === 0) {
+        throw portContractError('teamResolveControl.decision.requestId', 'must be a non-empty string');
+    }
+    const decision = raw['decision'];
+    if (typeof decision !== 'string' ||
+        !TEAM_RESOLVE_CONTROL_DECISION_VALUES.includes(decision)) {
+        throw portContractError('teamResolveControl.decision.decision', `must be one of ${JSON.stringify([...TEAM_RESOLVE_CONTROL_DECISION_VALUES])}, got ${String(decision)}`);
+    }
+    const decider = raw['decider'];
+    if (!isPlainRecord(decider)) {
+        throw portContractError('teamResolveControl.decision.decider', 'must be an object');
+    }
+    const scope = raw['scope'];
+    if (!isPlainRecord(scope)) {
+        throw portContractError('teamResolveControl.decision.scope', 'must be an object');
+    }
+    for (const field of ['requestSequence', 'decisionSequence']) {
+        const value = raw[field];
+        if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) {
+            throw portContractError(`teamResolveControl.decision.${field}`, 'must be a safe integer >= 1');
+        }
+    }
+    const createdAt = raw['createdAt'];
+    if (typeof createdAt !== 'string' || createdAt.length === 0) {
+        throw portContractError('teamResolveControl.decision.createdAt', 'must be a non-empty string');
+    }
+    for (const field of ['reason', 'note']) {
+        const value = raw[field];
+        if (value !== undefined && typeof value !== 'string') {
+            throw portContractError(`teamResolveControl.decision.${field}`, 'must be a string when present');
+        }
+    }
+    // The port contract guarantees a lossless-JSON-safe record.
+    return raw;
+}
 /**
  * The team category handler (`team.create` [v1 + v2],
  * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
- * `team.ensureRootLive` [v3-only], `team.getProjection`,
- * `team.getLedgerPage`).
+ * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
+ * `team.getProjection`, `team.getLedgerPage`).
  *
  * Version-aware (TCM vNext §15.3): the dispatcher passes the request's
  * contract version; `team.create` routes to the v1 port (closed v1 field
@@ -244,6 +296,20 @@ export function createRemoteTeamHandler(ports) {
                 const ensureParams = params;
                 const ensured = ports.teamEnsureRootLive.ensureRootLive(ensureParams.teamSessionId);
                 return { data: normalizeTeamEnsureRootLiveValue(ensured) };
+            }
+            case 'team.resolveControl': {
+                // v4-only (the availability check guarantees version === 4). The
+                // human ingress of the durable control plane (F3/F11/F9/T1.4
+                // repair round r1 F9): the wire params carry NO caller field
+                // (adjudication U3) — the production host (the S6 plugin)
+                // derives the human principal from the T12-B4 connection-gate
+                // authority basis and stamps it on the service call; the frozen
+                // CONTROL_RESOLVER_ROLES + durable exactly-once semantics stay
+                // the only resolver authority (the port's typed CONTROL_* /
+                // TEAM_RUNTIME_* failures pass through invariant 4b).
+                const resolveParams = params;
+                const decision = ports.teamResolveControl.resolveControl(resolveParams.teamSessionId, resolveParams.requestId, resolveParams.decision, resolveParams.note);
+                return { data: { decision: normalizeTeamResolveControlValue(decision) } };
             }
             case 'team.getProjection': {
                 const projectionParams = params;
