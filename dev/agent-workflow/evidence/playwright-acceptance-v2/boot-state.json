@@ -1,0 +1,12 @@
+{
+  "rootSessionId": "session-82359530-9b58-4a18-aea1-57c1496de187",
+  "nonce": "pwmtqnkzyz0184",
+  "url": "http://127.0.0.1:3180/?token=w04qHmLq2EK-j1-7lSmsYjd6vDyFHhSPZ6btVUtNdwU",
+  "origin": "http://127.0.0.1:3180",
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\playwright-acceptance-v2\\instances\\PWBOOT\\instance-port3180.log",
+  "model": {
+    "provider": "qiyuan-self",
+    "model": "qwen3.8-27b"
+  },
+  "bootedAt": "2026-09-07T03:00:31.836Z"
+}

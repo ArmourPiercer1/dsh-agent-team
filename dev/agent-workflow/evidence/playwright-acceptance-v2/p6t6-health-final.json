@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "boot": 2,
+  "ready": true,
+  "rootSessionId": "session-82359530-9b58-4a18-aea1-57c1496de187",
+  "liveSessions": [
+    "session-82359530-9b58-4a18-aea1-57c1496de187",
+    "session-pw2-pwmtqmvxgyb840",
+    "session-team-child-ca039f03216c16895b402d7883a0c852"
+  ],
+  "toolCount": 10
+}

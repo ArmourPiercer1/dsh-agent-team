@@ -1,0 +1,138 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-pw2-pwmtqmvxgyb840",
+  "teamSession": {
+    "rootSessionId": "session-pw2-pwmtqmvxgyb840",
+    "blueprintId": "pw2-bp",
+    "revision": "1",
+    "contentHash": "sha256:6014ef6ba3316e02a125313eca01f26fa69e18b5290b9f45b14758d47861cdd7",
+    "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+    "createdAt": "2026-09-07T02:41:01.778Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-82359530-9b58-4a18-aea1-57c1496de187": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "assembled": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "selection": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-pw2-pwmtqmvxgyb840": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "selection": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-team-child-ca039f03216c16895b402d7883a0c852": {
+        "instanceId": "inst-0nyvml71o9dq",
+        "model": {
+          "current": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "assembled": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "selection": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      }
+    }
+  },
+  "observations": []
+}

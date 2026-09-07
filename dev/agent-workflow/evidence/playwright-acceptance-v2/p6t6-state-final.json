@@ -1,0 +1,165 @@
+{
+  "boot": 2,
+  "phase": "resume",
+  "rootSessionId": "session-82359530-9b58-4a18-aea1-57c1496de187",
+  "teamSession": {
+    "rootSessionId": "session-82359530-9b58-4a18-aea1-57c1496de187",
+    "blueprintId": "pw2-bp",
+    "revision": "1",
+    "contentHash": "sha256:6014ef6ba3316e02a125313eca01f26fa69e18b5290b9f45b14758d47861cdd7",
+    "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team",
+    "createdAt": "2026-09-07T02:52:59.467Z",
+    "generation": 7
+  },
+  "members": [
+    {
+      "instanceId": "inst-0nyvml71o9dq",
+      "templateId": "worker",
+      "label": "W1",
+      "childSessionId": "session-team-child-ca039f03216c16895b402d7883a0c852",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [
+    {
+      "globalSequence": 84,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-0nyvml71o9dq",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "delegate-w1-read-001",
+      "requestToken": "delegate-w1-read-001"
+    },
+    {
+      "globalSequence": 85,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-0nyvml71o9dq",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "delegate-w1-read-001",
+      "requestToken": "delegate-w1-read-001"
+    }
+  ],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-82359530-9b58-4a18-aea1-57c1496de187": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "assembled": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "selection": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-pw2-pwmtqmvxgyb840": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "selection": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-team-child-ca039f03216c16895b402d7883a0c852": {
+        "instanceId": "inst-0nyvml71o9dq",
+        "model": {
+          "current": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "selection": {
+            "provider": "qiyuan-self",
+            "model": "qwen3.8-27b"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      }
+    }
+  },
+  "observations": []
+}

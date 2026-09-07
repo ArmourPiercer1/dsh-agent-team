@@ -1,0 +1,2 @@
+﻿control-line-1: the quick brown fox jumps over the lazy dog
+control-line-2: sentinel=PW2-SENTINEL-20260907103534-x9q
