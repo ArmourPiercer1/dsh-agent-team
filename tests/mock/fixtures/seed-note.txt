@@ -1,0 +1,6 @@
+DTest 种子笔记（供 collector 工作流 B 使用）：
+
+- 第 1 行：本部署是全新 DSH_HOME（tests/mock/.dsh-home），宿主端口 3181，真实模型 qwen3.8-27b，无 mock。
+- 第 2 行：插件 MCP facet 服务端名为 dtest-mini（端口 3491），宿主级 MCP 服务端名为 dtesthttp（端口 3492），两者都只提供单个工具 ping。
+- 第 3 行：blueprint dtest-bp 含 worker 与 collector 两个成员模板，成员配额为 4 个实例。
+- 第 4 行：外部硬策略（externalPolicyFacts）优先级最高，team 审批无法绕过它。

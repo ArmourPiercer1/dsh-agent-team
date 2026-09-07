@@ -1,0 +1,57 @@
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: store 'team_sessions' operation 'update' was rejected: the TeamDomain is closed
+    at normalizeSeamError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/storage/schema/errors.js:148:16)
+    at TeamSessionsRepository.updateRaw (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/base.js:170:19)
+    at async TeamSessionsRepository.advanceGeneration (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/team-sessions.js:116:25)
+    at async replaceState (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/compatibility/probe.js:189:9)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/compatibility/probe.js:219:13
+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1511
+		throw new Error(`${binName}: ${stage}: ${detail}${stack}`, { cause });
+		      ^
+
+Error: dsh: plugin tree failed to load: failed to apply loader entry include (cordis:include): failed to apply loader entry dtest-mcp-http (@deepseek-ai/dsh-mcp-client): mcp-client(dtesthttp): initial connection or tool synchronization failed
+Error: connect ECONNREFUSED 127.0.0.1:3499
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2017:16)
+    at boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1511:9)
+    at async runProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/profile-boot-BTzzdrGY.js:261:14)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/bin.js:130:3 {
+  [cause]: Error: failed to apply loader entry include (cordis:include): failed to apply loader entry dtest-mcp-http (@deepseek-ai/dsh-mcp-client): mcp-client(dtesthttp): initial connection or tool synchronization failed
+      at updateError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:309:9)
+      at Entry._init (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:529:10)
+      at async Entry.init (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:505:4)
+      at async Entry.update (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:426:37)
+      at async EntryGroup.create (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:65:4)
+      at async Proxy.create (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:227:14)
+      at async mountRootInclude (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1309:20)
+      at async boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:1500:3)
+      at async runProfile (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/profile-boot-BTzzdrGY.js:261:14)
+      at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/apps/cli/lib/bin.js:130:3 {
+    [cause]: Error: failed to apply loader entry dtest-mcp-http (@deepseek-ai/dsh-mcp-client): mcp-client(dtesthttp): initial connection or tool synchronization failed
+        at updateError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:309:9)
+        at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/tests/mock/.dsh-home/profiles/web/#include {
+      [cause]: Error: mcp-client(dtesthttp): initial connection or tool synchronization failed
+          at Object.apply [as callback] (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/mcp/mcp-client/lib/index.js:783:67)
+          at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+          at async Fiber._reload (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1355:5)
+          at async Fiber.await (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:1399:24)
+          at async Entry._start (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:538:4)
+          at async Entry._init (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:527:4)
+          at async Entry.init (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:505:4)
+          at async Entry.update (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:426:37)
+          at async EntryGroup.create (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/loader/lib/index.js:65:4)
+          at async Promise.allSettled (index 148) {
+        [cause]: [TypeError: fetch failed] {
+          [cause]: Error: connect ECONNREFUSED 127.0.0.1:3499
+              at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2017:16) {
+            errno: -4078,
+            code: 'ECONNREFUSED',
+            syscall: 'connect',
+            address: '127.0.0.1',
+            port: 3499
+          }
+        }
+      }
+    }
+  }
+}
+
+Node.js v24.20.0

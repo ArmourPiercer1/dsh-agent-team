@@ -1,0 +1,4 @@
+{
+  "error": "cannot prepare session \"session-team-child-13456a4a17e2b41a7ed8870416bec677\" while it is live",
+  "stack": "Error: cannot prepare session \"session-team-child-13456a4a17e2b41a7ed8870416bec677\" while it is live\n    at PersistenceCoordinator.prepare (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/session/session-persistence/lib/index.js:954:52)\n    at async raceAbort (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:965:10)\n    at async raceAbortCall (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:975:10)\n    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1370:20"
+}

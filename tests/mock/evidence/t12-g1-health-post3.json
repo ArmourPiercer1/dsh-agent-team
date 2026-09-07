@@ -1,0 +1,10 @@
+﻿{
+    "ok":  true,
+    "boot":  1,
+    "ready":  true,
+    "rootSessionId":  "session-dtestmtr0i8cxb3de",
+    "liveSessions":  [
+                         "session-dtestmtr0i8cxb3de"
+                     ],
+    "toolCount":  10
+}

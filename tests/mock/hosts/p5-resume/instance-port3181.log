@@ -1,0 +1,2 @@
+﻿dsh web: http://127.0.0.1:3181/?token=[REDACTED]
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote

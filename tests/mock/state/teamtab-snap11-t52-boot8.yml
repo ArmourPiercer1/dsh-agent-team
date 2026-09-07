@@ -1,0 +1,563 @@
+- generic [ref=f13e4]:
+  - generic [ref=f13e7]:
+    - generic [ref=f13e8]:
+      - button "新建会话" [ref=f13e9] [cursor=pointer]:
+        - generic [ref=f13e17]:
+          - generic [ref=f13e18]: DSH 本地构建
+          - generic [ref=f13e19]: 0.1.2-rc.1-a66e470
+      - button "收起侧边栏" [ref=f13e20] [cursor=pointer]
+    - button "新建会话" [ref=f13e23] [cursor=pointer]:
+      - generic [ref=f13e26]: 新会话
+    - generic [ref=f13e29]:
+      - generic [ref=f13e30]:
+        - generic [ref=f13e31]: 工作区
+        - generic [ref=f13e33]:
+          - button "搜索会话" [ref=f13e34] [cursor=pointer]
+          - textbox "搜索会话…"
+        - generic [ref=f13e38]:
+          - button "视图选项" [ref=f13e40] [cursor=pointer]
+          - button "添加工作区" [ref=f13e43] [cursor=pointer]
+      - tree "会话" [ref=f13e49]:
+        - generic [ref=f13e104]:
+          - treeitem "test" [expanded] [ref=f13e106] [cursor=pointer]
+          - treeitem "请只回复：OK 4小时" [ref=f13e114] [cursor=pointer]:
+            - generic [ref=f13e116]: 请只回复：OK
+            - generic [ref=f13e117]: 4小时
+        - generic [ref=f13e118]:
+          - treeitem "mock" [expanded] [ref=f13e120] [cursor=pointer]
+          - treeitem "请只回复：OK 3小时" [ref=f13e128] [cursor=pointer]:
+            - generic [ref=f13e130]: 请只回复：OK
+            - generic [ref=f13e131]: 3小时
+        - generic [ref=f13e132]:
+          - treeitem "未分组" [expanded] [ref=f13e133] [cursor=pointer]
+          - treeitem "[team-work requestToken=followup-w1-prob 刚刚" [ref=f13e141] [cursor=pointer]:
+            - generic [ref=f13e143]: "[team-work requestToken=followup-w1-prob"
+            - generic [ref=f13e144]: 刚刚
+          - treeitem "请初始化团队：先用 team_list_te 刚刚" [selected] [ref=f13e146] [cursor=pointer]:
+            - generic [ref=f13e148]: 请初始化团队：先用 team_list_te
+            - generic [ref=f13e149]: 刚刚
+          - 'treeitem "[team-relay] from=inst-leader (label: le 6分钟" [ref=f13e151] [cursor=pointer]':
+            - generic [ref=f13e153]: "[team-relay] from=inst-leader (label: le"
+            - generic [ref=f13e154]: 6分钟
+          - treeitem "[team-work requestToken=dtest-p41-w1-fol 1小时" [ref=f13e156] [cursor=pointer]:
+            - generic [ref=f13e158]: "[team-work requestToken=dtest-p41-w1-fol"
+            - generic [ref=f13e159]: 1小时
+          - treeitem "请初始化团队：先用 team_list_te 1小时" [ref=f13e161] [cursor=pointer]:
+            - generic [ref=f13e163]: 请初始化团队：先用 team_list_te
+            - generic [ref=f13e164]: 1小时
+          - button "展开其余 4 个会话" [ref=f13e165] [cursor=pointer]
+    - generic [ref=f13e51]:
+      - button "新建团队" [ref=f13e54] [cursor=pointer]
+      - button "设置" [ref=f13e62] [cursor=pointer]
+  - generic [ref=f13e71]:
+    - banner [ref=f13e167]:
+      - generic [ref=f13e168]:
+        - navigation "会话层级" [ref=f13e170]:
+          - button "请初始化团队：先用 team_list_te" [disabled] [ref=f13e172]
+        - button "Session 日志" [ref=f13e175] [cursor=pointer]
+      - tablist [ref=f13e179]:
+        - tab "对话" [ref=f13e180] [cursor=pointer]
+        - tab "轨迹" [ref=f13e181] [cursor=pointer]
+        - tab "团队" [selected] [ref=f13e182] [cursor=pointer]
+    - generic [ref=f13e73]:
+      - generic [ref=f13e186]:
+        - generic [ref=f13e187]:
+          - heading "时间线" [level=3] [ref=f13e188]
+          - generic [ref=f13e190]:
+            - generic [ref=f13e193]:
+              - generic [ref=f13e194]: 20:10:00
+              - generic [ref=f13e195]: 20:26:40
+              - generic [ref=f13e196]: 20:43:20
+              - generic [ref=f13e197]: 21:00:00
+            - generic [ref=f13e198]:
+              - generic [ref=f13e199]: W2
+              - generic [ref=f13e202]: W1
+            - generic "团队委派时间线：滚轮缩放，拖拽平移，方向键平移，按 0 复位" [ref=f13e205]:
+              - generic [ref=f13e208]:
+                - generic [aria-hidden] [ref=f13e209] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e210] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e211] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e212] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e213] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e214] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e215] [cursor=pointer]
+                - generic [aria-hidden] [ref=f13e216] [cursor=pointer]
+        - generic [ref=f13e217]:
+          - heading "成员组" [level=3] [ref=f13e218]
+          - generic [ref=f13e219]:
+            - generic [ref=f13e220]:
+              - button "leader · 1 活跃" [ref=f13e221] [cursor=pointer]
+              - generic [ref=f13e223]:
+                - button "以 Team 模式打开 / 回到 Leader" [ref=f13e224] [cursor=pointer]
+                - button "以普通模式打开" [ref=f13e225] [cursor=pointer]
+              - button "运行中 暂无动作" [disabled] [ref=f13e228]:
+                - generic [ref=f13e239]: 运行中
+                - generic [ref=f13e240]: 暂无动作
+            - generic [ref=f13e241]:
+              - generic [ref=f13e242]:
+                - generic [ref=f13e243]: DTest Collector · 0 活跃
+                - button "创建成员实例" [ref=f13e244] [cursor=pointer]: +
+              - generic [ref=f13e246]:
+                - button "已创建 暂无动作" [ref=f13e247] [cursor=pointer]:
+                  - generic [ref=f13e250]: 已创建
+                  - generic [ref=f13e251]: 暂无动作
+                - generic [ref=f13e252]:
+                  - button "发送任务…" [ref=f13e253] [cursor=pointer]
+                  - button "发送跟进" [ref=f13e254] [cursor=pointer]
+                  - button "归档" [ref=f13e255] [cursor=pointer]
+                  - button "处置" [ref=f13e256] [cursor=pointer]
+            - generic [ref=f13e257]:
+              - generic [ref=f13e258]:
+                - generic [ref=f13e259]: DTest Worker · 0 活跃
+                - button "创建成员实例" [ref=f13e260] [cursor=pointer]: +
+              - generic [ref=f13e262]:
+                - button "已结算 暂无动作 1 项待裁决" [ref=f13e263] [cursor=pointer]:
+                  - generic [ref=f13e266]: 已结算
+                  - generic [ref=f13e267]: 暂无动作
+                  - generic [ref=f13e268]: 1 项待裁决
+                - generic [ref=f13e269]:
+                  - button "发送消息…" [ref=f13e270] [cursor=pointer]
+                  - button "恢复…" [ref=f13e271] [cursor=pointer]
+                  - button "归档" [ref=f13e272] [cursor=pointer]
+                  - button "处置" [ref=f13e273] [cursor=pointer]
+        - generic [ref=f13e274]:
+          - heading "治理" [level=3] [ref=f13e275]
+          - generic [ref=f13e276]:
+            - generic [ref=f13e277]:
+              - generic [ref=f13e278]:
+                - generic [ref=f13e279]: 兼容性
+                - generic [ref=f13e280]: ✓ 兼容
+              - generic [ref=f13e281]:
+                - text: 0 项警告 · 0 项致命 · 0 项已确认
+                - generic [ref=f13e282]: 代数 1
+                - generic [ref=f13e283]: 最后探测于 2026-09-07T11:57:17.736Z
+              - generic [ref=f13e284]:
+                - button "审查" [ref=f13e285] [cursor=pointer]
+                - button "重新检查" [ref=f13e286] [cursor=pointer]
+                - button "确认警告" [disabled] [ref=f13e287]
+              - paragraph [ref=f13e288]: 重新检查会生成新的兼容性代数；旧的确认不会自动覆盖新代数。
+            - generic [ref=f13e289]:
+              - generic [ref=f13e290]: 策略 [ default ]
+              - paragraph [ref=f13e291]: 策略控制团队当前的运行时治理范围，不代表任务进度。
+              - generic [ref=f13e292]:
+                - button "审查" [ref=f13e293] [cursor=pointer]
+                - button "提交" [disabled] [ref=f13e294]
+            - generic [ref=f13e295]:
+              - generic [ref=f13e296]: 生效配置
+              - generic [ref=f13e297]:
+                - generic [ref=f13e298]: W2
+                - generic [ref=f13e299]:
+                  - generic [ref=f13e300]:
+                    - generic [ref=f13e301]: model
+                    - generic [ref=f13e302]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f13e303]: capability
+                    - generic [ref=f13e304]: Inherited
+                  - generic [ref=f13e305]:
+                    - generic [ref=f13e306]: workspace
+                    - generic [ref=f13e307]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f13e308]: instance-creation
+                    - generic [ref=f13e309]: Inherited
+                  - generic [ref=f13e310]:
+                    - generic [ref=f13e311]: autonomy
+                    - generic [ref=f13e312]: —
+                    - generic [ref=f13e313]: autonomy-overlay
+                    - generic [ref=f13e314]: Inherited
+                - generic [ref=f13e316]:
+                  - combobox [ref=f13e317]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f13e318]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f13e319]
+                  - button "查看覆盖" [ref=f13e320] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f13e321]
+                  - button "重置覆盖" [ref=f13e322] [cursor=pointer]
+              - generic [ref=f13e323]:
+                - generic [ref=f13e324]: W1
+                - generic [ref=f13e325]:
+                  - generic [ref=f13e326]:
+                    - generic [ref=f13e327]: model
+                    - generic [ref=f13e328]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f13e329]: capability
+                    - generic [ref=f13e330]: Inherited
+                  - generic [ref=f13e331]:
+                    - generic [ref=f13e332]: workspace
+                    - generic [ref=f13e333]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f13e334]: instance-creation
+                    - generic [ref=f13e335]: Locked
+                  - generic [ref=f13e336]:
+                    - generic [ref=f13e337]: autonomy
+                    - generic [ref=f13e338]: —
+                    - generic [ref=f13e339]: autonomy-overlay
+                    - generic [ref=f13e340]: Inherited
+                - generic [ref=f13e342]:
+                  - combobox [ref=f13e343]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f13e344]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f13e345]
+                  - button "查看覆盖" [ref=f13e346] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f13e347]
+                  - button "重置覆盖" [ref=f13e348] [cursor=pointer]
+              - generic [ref=f13e349]:
+                - generic [ref=f13e350]: leader
+                - generic [ref=f13e351]:
+                  - generic [ref=f13e352]:
+                    - generic [ref=f13e353]: model
+                    - generic [ref=f13e354]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f13e355]: capability
+                    - generic [ref=f13e356]: Inherited
+                  - generic [ref=f13e357]:
+                    - generic [ref=f13e358]: workspace
+                    - generic [ref=f13e359]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f13e360]: blueprint
+                    - generic [ref=f13e361]: Locked
+                  - generic [ref=f13e362]:
+                    - generic [ref=f13e363]: autonomy
+                    - generic [ref=f13e364]: —
+                    - generic [ref=f13e365]: autonomy-overlay
+                    - generic [ref=f13e366]: Inherited
+                - generic [ref=f13e368]:
+                  - combobox [ref=f13e369]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f13e370]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f13e371]
+                  - button "查看覆盖" [ref=f13e372] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f13e373]
+                  - button "重置覆盖" [ref=f13e374] [cursor=pointer]
+        - generic [ref=f13e375]:
+          - heading "活动与进度" [level=3] [ref=f13e376]
+          - generic [ref=f13e377]: 暂无活动进度
+        - generic [ref=f13e379]:
+          - heading "团队事件" [level=3] [ref=f13e380]
+          - generic [ref=f13e381]:
+            - generic [ref=f13e382]:
+              - combobox [ref=f13e383] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "团队"
+                - option "成员"
+                - option "生命周期"
+                - option "消息"
+                - option "控制"
+                - option "策略"
+                - option "兼容"
+                - option "进度"
+              - combobox [ref=f13e384] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "W2"
+                - option "W1"
+                - option "leader"
+                - option "leader"
+                - option "DTest Worker"
+                - option "DTest Collector"
+            - generic [ref=f13e385]:
+              - 'button "19:59:31 成员创建 W1 {\"instanceId\":\"inst-1yabcoe00jed\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f13e386] [cursor=pointer]':
+                - generic [ref=f13e397]: 19:59:31
+                - generic [ref=f13e398]: 成员创建
+                - generic [ref=f13e399]: W1
+                - 'generic "provision-member-instance · #69 · 2026-09-07T11:59:31.326Z {\"instanceId\":\"inst-1yabcoe00jed\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f13e400]': "{\"instanceId\":\"inst-1yabcoe00jed\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+              - 'button "19:59:31 成员创建 W2 {\"instanceId\":\"inst-0zb3tna1drgr\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f13e401] [cursor=pointer]':
+                - generic [ref=f13e412]: 19:59:31
+                - generic [ref=f13e413]: 成员创建
+                - generic [ref=f13e414]: W2
+                - 'generic "provision-member-instance · #70 · 2026-09-07T11:59:31.920Z {\"instanceId\":\"inst-0zb3tna1drgr\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f13e415]': "{\"instanceId\":\"inst-0zb3tna1drgr\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+              - 'button "20:02:39 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:02:39.738Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"你需要在路径 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1.txt 创建文件，内容为 W1-PROBE-OK。该路径在你的工作区自治边界之外，按团队规则你必须先调用 team_request_control 工具（kind 用 user-approval，operation 描述为在该路径创建文件 probe-w1.txt，reason 写明业务原因）请求用户授权；只有在授权被批准后，才允许执行写文件操作。若 team_request_control 返回等待中或未批准，请停止并如实报告。另外：本轮禁止调用 team_report_progress 工具（直接以文本报告即可）。\",\"requestToken\":\"followup-w1-probe-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 请求在 mock-outside 边界外创建 probe-w1.txt，需先 user-approval 授权\"}" [ref=f13e416] [cursor=pointer]':
+                - generic [ref=f13e427]: 20:02:39
+                - generic [ref=f13e428]: 工作准入
+                - generic [ref=f13e429]: W1
+                - 'generic "team-work-admitted · #71 · 2026-09-07T12:02:39.775Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:02:39.738Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"你需要在路径 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1.txt 创建文件，内容为 W1-PROBE-OK。该路径在你的工作区自治边界之外，按团队规则你必须先调用 team_request_control 工具（kind 用 user-approval，operation 描述为在该路径创建文件 probe-w1.txt，reason 写明业务原因）请求用户授权；只有在授权被批准后，才允许执行写文件操作。若 team_request_control 返回等待中或未批准，请停止并如实报告。另外：本轮禁止调用 team_report_progress 工具（直接以文本报告即可）。\",\"requestToken\":\"followup-w1-probe-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 请求在 mock-outside 边界外创建 probe-w1.txt，需先 user-approval 授权\"}" [ref=f13e430]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:02:39.738Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"你需要在路径 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1.txt 创建文件，内容为 W1-PROBE-OK。该路径在你的工作区自治边界之外，按团队规则你必须先调用 team_request_control 工具（kind 用 user-approval，operation 描述为在该路径创建文件 probe-w1.txt，reason 写明业务原因）请求用户授权；只有在授权被批准后，才允许执行写文件操作。若 team_request_control 返回等待中或未批准，请停止并如实报告。另外：本轮禁止调用 team_report_progress 工具（直接以文本报告即可）。\",\"requestToken\":\"followup-w1-probe-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 请求在 mock-outside 边界外创建 probe-w1.txt，需先 user-approval 授权\"}"
+              - button "20:02:39 活动开始 W1 work-unit" [ref=f13e431] [cursor=pointer]:
+                - generic [ref=f13e442]: 20:02:39
+                - generic [ref=f13e443]: 活动开始
+                - generic [ref=f13e444]: W1
+                - generic "followup-w1-probe-1 · work-unit" [ref=f13e445]: work-unit
+              - 'button "20:02:56 控制请求 W1 write: create file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock-outside\\probe\\probe-w1.txt (content: W1-PROBE-OK) 等待裁决" [ref=f13e446] [cursor=pointer]':
+                - generic [ref=f13e449]: 20:02:56
+                - generic [ref=f13e450]: 控制请求
+                - generic [ref=f13e451]: W1
+                - 'generic "write: create file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock-outside\\probe\\probe-w1.txt (content: W1-PROBE-OK) · write · Business reason: W1 workspace-boundary probe — verifying that a member may create a file outside its workspace autonomy boundary only after the human resolver approves the user-approval control request." [ref=f13e452]': "write: create file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock-outside\\probe\\probe-w1.txt (content: W1-PROBE-OK)"
+                - generic [ref=f13e453]: 等待裁决
+              - 'button "20:03:03 活动结束 W1 {\"correlation\":\"followup-w1-probe-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-probe-1\",\"sequence\":2,\"subject\":\"work-unit\"}" [ref=f13e454] [cursor=pointer]':
+                - generic [ref=f13e457]: 20:03:03
+                - generic [ref=f13e458]: 活动结束
+                - generic [ref=f13e459]: W1
+                - 'generic "followup-w1-probe-1 · {\"correlation\":\"followup-w1-probe-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-probe-1\",\"sequence\":2,\"subject\":\"work-unit\"}" [ref=f13e460]': "{\"correlation\":\"followup-w1-probe-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-probe-1\",\"sequence\":2,\"subject\":\"work-unit\"}"
+              - 'button "20:03:03 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:03:03.459Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-probe-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e461] [cursor=pointer]':
+                - generic [ref=f13e472]: 20:03:03
+                - generic [ref=f13e473]: 生命周期
+                - generic [ref=f13e474]: W1
+                - 'generic "member-lifecycle-changed · #75 · 2026-09-07T12:03:03.522Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:03:03.459Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-probe-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e475]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:03:03.459Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-probe-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "20:14:51 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:14:51.558Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"你需要在路径 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1b.txt 创建文件，内容为 W1-LEADER-OK。该路径在你的工作区自治边界之外。这次请改用 team_request_control 请求 kind=leader-approval 的授权：requestToken 用 w1-leader-approval-001，actionName 描述为在 mock-outside 的 probe 目录创建 probe-w1b.txt（内容 W1-LEADER-OK），reason 写明业务原因，targetInstanceId 用你自己的 instanceId。请求发出后把请求结果逐字报告（特别是 requestId），然后停止等待裁决；本阶段不要执行写文件。另外：本轮禁止调用 team_report_progress 工具。\",\"requestToken\":\"followup-w1-leader-approval-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 请求在 mock-outside 创建 probe-w1b.txt，改走 leader-approval 授权\"}" [ref=f13e476] [cursor=pointer]':
+                - generic [ref=f13e487]: 20:14:51
+                - generic [ref=f13e488]: 工作准入
+                - generic [ref=f13e489]: W1
+                - generic [ref=f13e490]: "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:14:51.558Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"你需要在路径 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1b.txt 创建文件，内容为 W1-LEADER-OK。该路径在你的工作区自治边界之外。这次请改用 team_request_control 请求 kind=leader-approval 的授权：requestToken 用 w1-leader-approval-001，actionName 描述为在 mock-outside 的 probe 目录创建 probe-w1b.txt（内容 W1-LEADER-OK），reason 写明业务原因，targetInstanceId 用你自己的 instanceId。请求发出后把请求结果逐字报告（特别是 requestId），然后停止等待裁决；本阶段不要执行写文件。另外：本轮禁止调用 team_report_progress 工具。\",\"requestToken\":\"followup-w1-leader-approval-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 请求在 mock-outside 创建 probe-w1b.txt，改走 leader-approval 授权\"}"
+              - button "20:14:51 活动开始 W1 work-unit" [ref=f13e491] [cursor=pointer]:
+                - generic [ref=f13e502]: 20:14:51
+                - generic [ref=f13e503]: 活动开始
+                - generic [ref=f13e504]: W1
+                - generic "followup-w1-leader-approval-1 · work-unit" [ref=f13e505]: work-unit
+              - 'button "20:14:54 控制请求 W1 write: create file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock-outside\\probe\\probe-w1b.txt (content: W1-LEADER-OK)" [ref=f13e506] [cursor=pointer]':
+                - generic [ref=f13e509]: 20:14:54
+                - generic [ref=f13e510]: 控制请求
+                - generic [ref=f13e511]: W1
+                - 'generic "write: create file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock-outside\\probe\\probe-w1b.txt (content: W1-LEADER-OK) · write · Business reason: W1 follow-up boundary probe (leader-approval variant) — verifying the leader-approval control path for a file creation outside the member''s workspace autonomy boundary." [ref=f13e512]': "write: create file D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock-outside\\probe\\probe-w1b.txt (content: W1-LEADER-OK)"
+              - 'button "20:14:58 活动结束 W1 {\"correlation\":\"followup-w1-leader-approval-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-leader-approval-1\",\"sequence\":4,\"subject\":\"work-unit\"}" [ref=f13e513] [cursor=pointer]':
+                - generic [ref=f13e516]: 20:14:58
+                - generic [ref=f13e517]: 活动结束
+                - generic [ref=f13e518]: W1
+                - 'generic "followup-w1-leader-approval-1 · {\"correlation\":\"followup-w1-leader-approval-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-leader-approval-1\",\"sequence\":4,\"subject\":\"work-unit\"}" [ref=f13e519]': "{\"correlation\":\"followup-w1-leader-approval-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-leader-approval-1\",\"sequence\":4,\"subject\":\"work-unit\"}"
+              - 'button "20:14:59 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:14:59.091Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-leader-approval-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e520] [cursor=pointer]':
+                - generic [ref=f13e531]: 20:14:59
+                - generic [ref=f13e532]: 生命周期
+                - generic [ref=f13e533]: W1
+                - 'generic "member-lifecycle-changed · #80 · 2026-09-07T12:14:59.136Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:14:59.091Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-leader-approval-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e534]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:14:59.091Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-leader-approval-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button "20:19:43 控制裁决 W1 allow · leader approves boundary probe w1b 允许 leader approves boundary probe w1b" [ref=f13e535] [cursor=pointer]:
+                - generic [ref=f13e538]: 20:19:43
+                - generic [ref=f13e539]: 控制裁决
+                - generic [ref=f13e540]: W1
+                - generic "ctrl-0agrtlw1xck6vr1ypk3bq0l2 · allow · leader approves boundary probe w1b" [ref=f13e541]: allow · leader approves boundary probe w1b
+                - generic [ref=f13e542]:
+                  - text: 允许
+                  - generic "leader approves boundary probe w1b" [ref=f13e543]
+              - 'button "20:21:47 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:21:47.288Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"你之前请求的 kind=leader-approval 授权（在 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1b.txt 创建文件，内容 W1-LEADER-OK，correlation w1-leader-approval-001）已被 leader 批准。现在请执行该写入操作：直接创建该文件，内容为 W1-LEADER-OK。完成后把执行结果逐字报告（成功或拒绝的完整内容）。另外：本轮禁止调用 team_report_progress 工具。\",\"requestToken\":\"followup-w1-execute-write-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 凭已批准的 leader-approval 执行 probe-w1b.txt 写文件\"}" [ref=f13e544] [cursor=pointer]':
+                - generic [ref=f13e555]: 20:21:47
+                - generic [ref=f13e556]: 工作准入
+                - generic [ref=f13e557]: W1
+                - 'generic "team-work-admitted · #82 · 2026-09-07T12:21:47.358Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:21:47.288Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"你之前请求的 kind=leader-approval 授权（在 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1b.txt 创建文件，内容 W1-LEADER-OK，correlation w1-leader-approval-001）已被 leader 批准。现在请执行该写入操作：直接创建该文件，内容为 W1-LEADER-OK。完成后把执行结果逐字报告（成功或拒绝的完整内容）。另外：本轮禁止调用 team_report_progress 工具。\",\"requestToken\":\"followup-w1-execute-write-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 凭已批准的 leader-approval 执行 probe-w1b.txt 写文件\"}" [ref=f13e558]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:21:47.288Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"你之前请求的 kind=leader-approval 授权（在 D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock-outside\\\\probe\\\\probe-w1b.txt 创建文件，内容 W1-LEADER-OK，correlation w1-leader-approval-001）已被 leader 批准。现在请执行该写入操作：直接创建该文件，内容为 W1-LEADER-OK。完成后把执行结果逐字报告（成功或拒绝的完整内容）。另外：本轮禁止调用 team_report_progress 工具。\",\"requestToken\":\"followup-w1-execute-write-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"W1 凭已批准的 leader-approval 执行 probe-w1b.txt 写文件\"}"
+              - button "20:21:47 活动开始 W1 work-unit" [ref=f13e559] [cursor=pointer]:
+                - generic [ref=f13e570]: 20:21:47
+                - generic [ref=f13e571]: 活动开始
+                - generic [ref=f13e572]: W1
+                - generic "followup-w1-execute-write-1 · work-unit" [ref=f13e573]: work-unit
+              - 'button "20:26:11 活动结束 W1 {\"correlation\":\"followup-w1-execute-write-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-execute-write-1\",\"sequence\":6,\"subject\":\"work-unit\"}" [ref=f13e574] [cursor=pointer]':
+                - generic [ref=f13e577]: 20:26:11
+                - generic [ref=f13e578]: 活动结束
+                - generic [ref=f13e579]: W1
+                - 'generic "followup-w1-execute-write-1 · {\"correlation\":\"followup-w1-execute-write-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-execute-write-1\",\"sequence\":6,\"subject\":\"work-unit\"}" [ref=f13e580]': "{\"correlation\":\"followup-w1-execute-write-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-execute-write-1\",\"sequence\":6,\"subject\":\"work-unit\"}"
+              - 'button "20:26:11 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:26:11.923Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-execute-write-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e581] [cursor=pointer]':
+                - generic [ref=f13e592]: 20:26:11
+                - generic [ref=f13e593]: 生命周期
+                - generic [ref=f13e594]: W1
+                - 'generic "member-lifecycle-changed · #85 · 2026-09-07T12:26:11.967Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:26:11.923Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-execute-write-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e595]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:26:11.923Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-execute-write-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "20:28:06 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:28:06.963Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t44-deny-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 follow-up，toolName 用 team_follow_up，summary 用 T4.4 deny path gate。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.4 测试：W1 发起一条将用于 deny 路径的 leader-approval 控制请求\"}" [ref=f13e596] [cursor=pointer]':
+                - generic [ref=f13e607]: 20:28:06
+                - generic [ref=f13e608]: 工作准入
+                - generic [ref=f13e609]: W1
+                - 'generic "team-work-admitted · #86 · 2026-09-07T12:28:06.988Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:28:06.963Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t44-deny-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 follow-up，toolName 用 team_follow_up，summary 用 T4.4 deny path gate。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.4 测试：W1 发起一条将用于 deny 路径的 leader-approval 控制请求\"}" [ref=f13e610]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:28:06.963Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t44-deny-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 follow-up，toolName 用 team_follow_up，summary 用 T4.4 deny path gate。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.4 测试：W1 发起一条将用于 deny 路径的 leader-approval 控制请求\"}"
+              - button "20:28:07 活动开始 W1 work-unit" [ref=f13e611] [cursor=pointer]:
+                - generic [ref=f13e622]: 20:28:07
+                - generic [ref=f13e623]: 活动开始
+                - generic [ref=f13e624]: W1
+                - generic "followup-w1-t44-deny-req-1 · work-unit" [ref=f13e625]: work-unit
+              - button "20:28:09 控制请求 W1 follow-up" [ref=f13e626] [cursor=pointer]:
+                - generic [ref=f13e629]: 20:28:09
+                - generic [ref=f13e630]: 控制请求
+                - generic [ref=f13e631]: W1
+                - generic "follow-up · team_follow_up · T4.4 deny path gate" [ref=f13e632]: follow-up
+              - 'button "20:28:13 活动结束 W1 {\"correlation\":\"followup-w1-t44-deny-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"sequence\":8,\"subject\":\"work-unit\"}" [ref=f13e633] [cursor=pointer]':
+                - generic [ref=f13e636]: 20:28:13
+                - generic [ref=f13e637]: 活动结束
+                - generic [ref=f13e638]: W1
+                - 'generic "followup-w1-t44-deny-req-1 · {\"correlation\":\"followup-w1-t44-deny-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"sequence\":8,\"subject\":\"work-unit\"}" [ref=f13e639]': "{\"correlation\":\"followup-w1-t44-deny-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"sequence\":8,\"subject\":\"work-unit\"}"
+              - 'button "20:28:13 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:28:13.336Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e640] [cursor=pointer]':
+                - generic [ref=f13e651]: 20:28:13
+                - generic [ref=f13e652]: 生命周期
+                - generic [ref=f13e653]: W1
+                - 'generic "member-lifecycle-changed · #90 · 2026-09-07T12:28:13.363Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:28:13.336Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e654]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:28:13.336Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t44-deny-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button "20:32:55 控制裁决 W1 deny · leader denies T4.4 gate 拒绝 leader denies T4.4 gate" [ref=f13e655] [cursor=pointer]:
+                - generic [ref=f13e658]: 20:32:55
+                - generic [ref=f13e659]: 控制裁决
+                - generic [ref=f13e660]: W1
+                - generic "ctrl-1ex2uvz124kelo0o103v11o4 · deny · leader denies T4.4 gate" [ref=f13e661]: deny · leader denies T4.4 gate
+                - generic [ref=f13e662]:
+                  - text: 拒绝
+                  - generic "leader denies T4.4 gate" [ref=f13e663]
+              - 'button "20:36:54 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:36:54.529Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t45-once-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 follow-up，toolName 用 team_follow_up，summary 用 T4.5 exactly-once gate。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.5 测试：W1 发起一条将用于 exactly-once 授权语义验证的 leader-approval 控制请求\"}" [ref=f13e664] [cursor=pointer]':
+                - generic [ref=f13e675]: 20:36:54
+                - generic [ref=f13e676]: 工作准入
+                - generic [ref=f13e677]: W1
+                - 'generic "team-work-admitted · #92 · 2026-09-07T12:36:54.574Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:36:54.529Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t45-once-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 follow-up，toolName 用 team_follow_up，summary 用 T4.5 exactly-once gate。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.5 测试：W1 发起一条将用于 exactly-once 授权语义验证的 leader-approval 控制请求\"}" [ref=f13e678]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:36:54.529Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t45-once-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 follow-up，toolName 用 team_follow_up，summary 用 T4.5 exactly-once gate。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.5 测试：W1 发起一条将用于 exactly-once 授权语义验证的 leader-approval 控制请求\"}"
+              - button "20:36:54 活动开始 W1 work-unit" [ref=f13e679] [cursor=pointer]:
+                - generic [ref=f13e690]: 20:36:54
+                - generic [ref=f13e691]: 活动开始
+                - generic [ref=f13e692]: W1
+                - generic "followup-w1-t45-once-req-1 · work-unit" [ref=f13e693]: work-unit
+              - button "20:36:56 控制请求 W1 follow-up" [ref=f13e694] [cursor=pointer]:
+                - generic [ref=f13e697]: 20:36:56
+                - generic [ref=f13e698]: 控制请求
+                - generic [ref=f13e699]: W1
+                - generic "follow-up · team_follow_up · T4.5 exactly-once gate" [ref=f13e700]: follow-up
+              - 'button "20:36:59 活动结束 W1 {\"correlation\":\"followup-w1-t45-once-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"sequence\":10,\"subject\":\"work-unit\"}" [ref=f13e701] [cursor=pointer]':
+                - generic [ref=f13e704]: 20:36:59
+                - generic [ref=f13e705]: 活动结束
+                - generic [ref=f13e706]: W1
+                - 'generic "followup-w1-t45-once-req-1 · {\"correlation\":\"followup-w1-t45-once-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"sequence\":10,\"subject\":\"work-unit\"}" [ref=f13e707]': "{\"correlation\":\"followup-w1-t45-once-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"sequence\":10,\"subject\":\"work-unit\"}"
+              - 'button "20:36:59 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:36:59.830Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e708] [cursor=pointer]':
+                - generic [ref=f13e719]: 20:36:59
+                - generic [ref=f13e720]: 生命周期
+                - generic [ref=f13e721]: W1
+                - 'generic "member-lifecycle-changed · #96 · 2026-09-07T12:36:59.888Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:36:59.830Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e722]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:36:59.830Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t45-once-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button "20:41:38 控制裁决 W1 allow · leader allows T4.5 once-gate 允许 leader allows T4.5 once-gate" [ref=f13e723] [cursor=pointer]:
+                - generic [ref=f13e726]: 20:41:38
+                - generic [ref=f13e727]: 控制裁决
+                - generic [ref=f13e728]: W1
+                - generic "ctrl-0uo9g0p0woqd4u0bqizmn182 · allow · leader allows T4.5 once-gate" [ref=f13e729]: allow · leader allows T4.5 once-gate
+                - generic [ref=f13e730]:
+                  - text: 允许
+                  - generic "leader allows T4.5 once-gate" [ref=f13e731]
+              - 'button "20:43:39 裁决消费 {\"consumedAt\":\"2026-09-07T12:43:39.626Z\",\"decisionSequence\":97,\"requestId\":\"ctrl-0uo9g0p0woqd4u0bqizmn182\",\"scope\":{\"actionName\":\"follow-up\",\"correlation\":\"dtest-t45-once-correlation\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"toolName\":\"team_follow_up\"}}" [disabled] [ref=f13e732]':
+                - generic [ref=f13e735]: 20:43:39
+                - generic [ref=f13e736]: 裁决消费
+                - 'generic "control-allow-consumed · #98 · 2026-09-07T12:43:39.626Z {\"consumedAt\":\"2026-09-07T12:43:39.626Z\",\"decisionSequence\":97,\"requestId\":\"ctrl-0uo9g0p0woqd4u0bqizmn182\",\"scope\":{\"actionName\":\"follow-up\",\"correlation\":\"dtest-t45-once-correlation\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"toolName\":\"team_follow_up\"}}" [ref=f13e737]': "{\"consumedAt\":\"2026-09-07T12:43:39.626Z\",\"decisionSequence\":97,\"requestId\":\"ctrl-0uo9g0p0woqd4u0bqizmn182\",\"scope\":{\"actionName\":\"follow-up\",\"correlation\":\"dtest-t45-once-correlation\",\"rootSessionId\":\"session-dtestp61051185350112102111120115117\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"toolName\":\"team_follow_up\"}}"
+              - 'button "20:43:39 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:43:39.762Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK\",\"requestToken\":\"dtest-t45-once-correlation\",\"targetInstanceId\":\"inst-1yabcoe00jed\"}" [ref=f13e738] [cursor=pointer]':
+                - generic [ref=f13e749]: 20:43:39
+                - generic [ref=f13e750]: 工作准入
+                - generic [ref=f13e751]: W1
+                - 'generic "team-work-admitted · #99 · 2026-09-07T12:43:39.794Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:43:39.762Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK\",\"requestToken\":\"dtest-t45-once-correlation\",\"targetInstanceId\":\"inst-1yabcoe00jed\"}" [ref=f13e752]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:43:39.762Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK\",\"requestToken\":\"dtest-t45-once-correlation\",\"targetInstanceId\":\"inst-1yabcoe00jed\"}"
+              - button "20:43:39 活动开始 W1 work-unit" [ref=f13e753] [cursor=pointer]:
+                - generic [ref=f13e764]: 20:43:39
+                - generic [ref=f13e765]: 活动开始
+                - generic [ref=f13e766]: W1
+                - generic "dtest-t45-once-correlation · work-unit" [ref=f13e767]: work-unit
+              - 'button "20:43:41 活动结束 W1 {\"correlation\":\"dtest-t45-once-correlation\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-t45-once-correlation\",\"sequence\":12,\"subject\":\"work-unit\"}" [ref=f13e768] [cursor=pointer]':
+                - generic [ref=f13e771]: 20:43:41
+                - generic [ref=f13e772]: 活动结束
+                - generic [ref=f13e773]: W1
+                - 'generic "dtest-t45-once-correlation · {\"correlation\":\"dtest-t45-once-correlation\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-t45-once-correlation\",\"sequence\":12,\"subject\":\"work-unit\"}" [ref=f13e774]': "{\"correlation\":\"dtest-t45-once-correlation\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-t45-once-correlation\",\"sequence\":12,\"subject\":\"work-unit\"}"
+              - 'button "20:43:41 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:43:41.678Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"dtest-t45-once-correlation\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e775] [cursor=pointer]':
+                - generic [ref=f13e786]: 20:43:41
+                - generic [ref=f13e787]: 生命周期
+                - generic [ref=f13e788]: W1
+                - 'generic "member-lifecycle-changed · #102 · 2026-09-07T12:43:41.716Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:43:41.678Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"dtest-t45-once-correlation\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e789]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:43:41.678Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"dtest-t45-once-correlation\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button [ref=f13e790] [cursor=pointer]:
+                - generic [ref=f13e801]: 20:50:04
+                - generic [ref=f13e802]: 工作准入
+                - generic [ref=f13e803]: W1
+                - generic [ref=f13e804]: "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:50:04.167Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请执行两步。第一步：调用 team_request_control 发起一个 kind=leader-approval 的控制请求，参数逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t46-self-resolve-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 send-message，toolName 用 team_send_message，summary 用 T4.6 self-resolve probe。第二步：拿到第一步返回里的 requestId 后，立即调用 team_resolve_control 尝试裁决你自己刚发起的这个请求，参数逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t46-self-resolve-1，requestId 用第一步返回的 requestId，decision 用 allow，note 用 W1 self-resolve attempt。把两个工具的返回完整逐字报告。禁止调用 team_report_progress。\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.6 测试：W1 发起控制请求后尝试自我裁决（member 不应是 resolver）\"}"
+              - button "20:50:04 活动开始 W1 work-unit" [ref=f13e805] [cursor=pointer]:
+                - generic [ref=f13e816]: 20:50:04
+                - generic [ref=f13e817]: 活动开始
+                - generic [ref=f13e818]: W1
+                - generic "followup-w1-t46-self-resolve-1 · work-unit" [ref=f13e819]: work-unit
+              - button "20:50:08 控制请求 W1 send-message" [ref=f13e820] [cursor=pointer]:
+                - generic [ref=f13e823]: 20:50:08
+                - generic [ref=f13e824]: 控制请求
+                - generic [ref=f13e825]: W1
+                - generic "send-message · team_send_message · T4.6 self-resolve probe" [ref=f13e826]: send-message
+              - 'button "20:50:13 活动结束 W1 {\"correlation\":\"followup-w1-t46-self-resolve-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"sequence\":14,\"subject\":\"work-unit\"}" [ref=f13e827] [cursor=pointer]':
+                - generic [ref=f13e830]: 20:50:13
+                - generic [ref=f13e831]: 活动结束
+                - generic [ref=f13e832]: W1
+                - 'generic "followup-w1-t46-self-resolve-1 · {\"correlation\":\"followup-w1-t46-self-resolve-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"sequence\":14,\"subject\":\"work-unit\"}" [ref=f13e833]': "{\"correlation\":\"followup-w1-t46-self-resolve-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"sequence\":14,\"subject\":\"work-unit\"}"
+              - 'button "20:50:14 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:50:14.047Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e834] [cursor=pointer]':
+                - generic [ref=f13e845]: 20:50:14
+                - generic [ref=f13e846]: 生命周期
+                - generic [ref=f13e847]: W1
+                - 'generic "member-lifecycle-changed · #107 · 2026-09-07T12:50:14.097Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T12:50:14.047Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e848]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T12:50:14.047Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t46-self-resolve-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button "20:55:17 控制裁决 W1 deny · cleanup after T4.6 probe 拒绝 cleanup after T4.6 probe" [ref=f13e849] [cursor=pointer]:
+                - generic [ref=f13e852]: 20:55:17
+                - generic [ref=f13e853]: 控制裁决
+                - generic [ref=f13e854]: W1
+                - generic "ctrl-1rep75m0mgx4b10hjkvyg0ei · deny · cleanup after T4.6 probe" [ref=f13e855]: deny · cleanup after T4.6 probe
+                - generic [ref=f13e856]:
+                  - text: 拒绝
+                  - generic "cleanup after T4.6 probe" [ref=f13e857]
+              - 'button "21:05:43 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T13:05:43.787Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t47-hard-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 write: hard-tools probe，toolName 用 write，summary 用 T4.7 hard tools external policy probe。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.7 测试：W1 发起 hard-tools/external-policy 探针的 leader-approval 控制请求\"}" [ref=f13e858] [cursor=pointer]':
+                - generic [ref=f13e869]: 21:05:43
+                - generic [ref=f13e870]: 工作准入
+                - generic [ref=f13e871]: W1
+                - 'generic "team-work-admitted · #109 · 2026-09-07T13:05:43.811Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T13:05:43.787Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t47-hard-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 write: hard-tools probe，toolName 用 write，summary 用 T4.7 hard tools external policy probe。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.7 测试：W1 发起 hard-tools/external-policy 探针的 leader-approval 控制请求\"}" [ref=f13e872]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T13:05:43.787Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-13456a4a17e2b41a7ed8870416bec677\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请调用 team_request_control 工具发起一个 kind=leader-approval 的控制请求，参数必须逐字使用：rootSessionId 用当前 root，requestToken 用 dtest-t47-hard-correlation，targetInstanceId 用你自己的 instanceId（inst-1yabcoe00jed），actionName 用 write: hard-tools probe，toolName 用 write，summary 用 T4.7 hard tools external policy probe。发出后把请求结果逐字报告（特别是 requestId），然后停止。本轮禁止调用 team_report_progress，也不要执行任何其他工具。\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"targetInstanceId\":\"inst-1yabcoe00jed\",\"taskSummary\":\"T4.7 测试：W1 发起 hard-tools/external-policy 探针的 leader-approval 控制请求\"}"
+              - button "21:05:43 活动开始 W1 work-unit" [ref=f13e873] [cursor=pointer]:
+                - generic [ref=f13e884]: 21:05:43
+                - generic [ref=f13e885]: 活动开始
+                - generic [ref=f13e886]: W1
+                - generic "followup-w1-t47-hard-req-1 · work-unit" [ref=f13e887]: work-unit
+              - 'button "21:05:45 控制请求 W1 write: hard-tools probe" [ref=f13e888] [cursor=pointer]':
+                - generic [ref=f13e891]: 21:05:45
+                - generic [ref=f13e892]: 控制请求
+                - generic [ref=f13e893]: W1
+                - 'generic "write: hard-tools probe · write · T4.7 hard tools external policy probe" [ref=f13e894]': "write: hard-tools probe"
+              - 'button "21:05:48 活动结束 W1 {\"correlation\":\"followup-w1-t47-hard-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"sequence\":16,\"subject\":\"work-unit\"}" [ref=f13e895] [cursor=pointer]':
+                - generic [ref=f13e898]: 21:05:48
+                - generic [ref=f13e899]: 活动结束
+                - generic [ref=f13e900]: W1
+                - 'generic "followup-w1-t47-hard-req-1 · {\"correlation\":\"followup-w1-t47-hard-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"sequence\":16,\"subject\":\"work-unit\"}" [ref=f13e901]': "{\"correlation\":\"followup-w1-t47-hard-req-1\",\"instanceId\":\"inst-1yabcoe00jed\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"sequence\":16,\"subject\":\"work-unit\"}"
+              - 'button "21:05:49 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-07T13:05:49.009Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e902] [cursor=pointer]':
+                - generic [ref=f13e913]: 21:05:49
+                - generic [ref=f13e914]: 生命周期
+                - generic [ref=f13e915]: W1
+                - 'generic "member-lifecycle-changed · #113 · 2026-09-07T13:05:49.045Z {\"action\":\"follow-up\",\"at\":\"2026-09-07T13:05:49.009Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f13e916]': "{\"action\":\"follow-up\",\"at\":\"2026-09-07T13:05:49.009Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1yabcoe00jed\",\"requestToken\":\"followup-w1-t47-hard-req-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button "21:10:35 控制裁决 W1 deny · external-policy 拒绝 external-policy" [ref=f13e917] [cursor=pointer]:
+                - generic [ref=f13e920]: 21:10:35
+                - generic [ref=f13e921]: 控制裁决
+                - generic [ref=f13e922]: W1
+                - generic "ctrl-0tzigz81azfc4h19i9zqq15k · deny · external-policy" [ref=f13e923]: deny · external-policy
+                - generic [ref=f13e924]:
+                  - text: 拒绝
+                  - generic "external-policy" [ref=f13e925]
+              - 'button "21:14:41 消息 W2 {\"action\":\"send-message\",\"at\":\"2026-09-07T13:14:41.794Z\",\"body\":\"纯协调探针：external hard policy 下协调是否畅通\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"recipientInstanceId\":\"inst-0zb3tna1drgr\",\"requestToken\":\"dtest-t47-coord-1\",\"targetInstanceId\":\"inst-0zb3tna1drgr\"}" [ref=f13e926] [cursor=pointer]':
+                - generic [ref=f13e937]: 21:14:41
+                - generic [ref=f13e938]: 消息
+                - generic [ref=f13e939]: W2
+                - generic "→ W2" [ref=f13e940]: "{\"action\":\"send-message\",\"at\":\"2026-09-07T13:14:41.794Z\",\"body\":\"纯协调探针：external hard policy 下协调是否畅通\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"recipientInstanceId\":\"inst-0zb3tna1drgr\",\"requestToken\":\"dtest-t47-coord-1\",\"targetInstanceId\":\"inst-0zb3tna1drgr\"}"
+              - 'button "21:15:00 消息 W2 {\"action\":\"report-progress\",\"at\":\"2026-09-07T13:15:00.688Z\",\"caller\":{\"instanceId\":\"inst-0zb3tna1drgr\",\"kind\":\"instance\",\"role\":\"member\"},\"progress\":\"in-progress\",\"requestToken\":\"w2-probe-20260905-prog-001\",\"summary\":\"W2 收到 leader 纯协调探针，开始通道核验（roster/遥测/回信）\",\"targetInstanceId\":\"inst-0zb3tna1drgr\"}" [ref=f13e941] [cursor=pointer]':
+                - generic [ref=f13e952]: 21:15:00
+                - generic [ref=f13e953]: 消息
+                - generic [ref=f13e954]: W2
+                - generic "→ W2" [ref=f13e955]: "{\"action\":\"report-progress\",\"at\":\"2026-09-07T13:15:00.688Z\",\"caller\":{\"instanceId\":\"inst-0zb3tna1drgr\",\"kind\":\"instance\",\"role\":\"member\"},\"progress\":\"in-progress\",\"requestToken\":\"w2-probe-20260905-prog-001\",\"summary\":\"W2 收到 leader 纯协调探针，开始通道核验（roster/遥测/回信）\",\"targetInstanceId\":\"inst-0zb3tna1drgr\"}"
+              - button "21:15:00 进度 W2 coordination-probe 进行中" [ref=f13e956] [cursor=pointer]:
+                - generic [ref=f13e967]: 21:15:00
+                - generic [ref=f13e968]: 进度
+                - generic [ref=f13e969]: W2
+                - generic "coordination-probe · in-progress" [ref=f13e970]: coordination-probe
+                - generic [ref=f13e971]: 进行中
+              - 'button "21:15:14 消息 W2 {\"action\":\"report-progress\",\"at\":\"2026-09-07T13:15:14.411Z\",\"caller\":{\"instanceId\":\"inst-0zb3tna1drgr\",\"kind\":\"instance\",\"role\":\"member\"},\"progress\":\"completed\",\"requestToken\":\"w2-probe-20260905-prog-002\",\"summary\":\"探针完成：relay 下行/roster/遥测均畅通；member→leader 直接 team_send_message(inst-leader) 被拒 target-stale，回信走 final-message relay 路径\",\"targetInstanceId\":\"inst-0zb3tna1drgr\"}" [ref=f13e972] [cursor=pointer]':
+                - generic [ref=f13e983]: 21:15:14
+                - generic [ref=f13e984]: 消息
+                - generic [ref=f13e985]: W2
+                - generic "→ W2" [ref=f13e986]: "{\"action\":\"report-progress\",\"at\":\"2026-09-07T13:15:14.411Z\",\"caller\":{\"instanceId\":\"inst-0zb3tna1drgr\",\"kind\":\"instance\",\"role\":\"member\"},\"progress\":\"completed\",\"requestToken\":\"w2-probe-20260905-prog-002\",\"summary\":\"探针完成：relay 下行/roster/遥测均畅通；member→leader 直接 team_send_message(inst-leader) 被拒 target-stale，回信走 final-message relay 路径\",\"targetInstanceId\":\"inst-0zb3tna1drgr\"}"
+      - generic [ref=f13e77]:
+        - region "团队" [ref=f13e988]:
+          - generic [ref=f13e989] [cursor=pointer]:
+            - button "团队 1 运行中 · 1 待裁决" [ref=f13e990]:
+              - generic [ref=f13e991]: 团队
+              - generic [aria-hidden] [ref=f13e992]: ·
+              - generic [ref=f13e993]: 1 运行中 · 1 待裁决
+            - button "展开团队概览" [ref=f13e994]
+        - generic [ref=f13e95]:
+          - generic [ref=f13e96]:
+            - generic [ref=f13e98]:
+              - textbox "发消息或做任务… / 调用指令 @ 文件或对话" [active] [ref=f13e997]
+              - generic [aria-hidden]: 发消息或做任务… / 调用指令 @ 文件或对话
+            - generic [ref=f13e100]:
+              - generic [ref=f13e101]:
+                - button "指令" [ref=f13e998] [cursor=pointer]
+                - button "访问模式，当前：工作区内修改" [ref=f13e1003] [cursor=pointer]:
+                  - generic [ref=f13e1011]: 工作区内修改
+              - generic [ref=f13e102]:
+                - button "选择模型，当前 qwen3.8-27b" [ref=f13e1017] [cursor=pointer]:
+                  - generic [ref=f13e1018]: qwen3.8-27b
+                - button "上下文已用 13%" [ref=f13e1022] [cursor=pointer]
+                - button "发送消息" [disabled] [ref=f13e1026]
+          - generic [ref=f13e1029]: 20 轮 · 42 步| LLM 2分45秒 · 工具调用 6分10秒| 首 token 平均 0.7秒 · 159 tok/s| 缓存命中 98%| 输入 846K tok · 输出 21.3K tok
+  - generic [ref=f13e1034]:
+    - generic [ref=f13e1035]:
+      - generic: 详情
+      - button "关闭详情" [ref=f13e1036] [cursor=pointer]
+    - generic [ref=f13e1039]: 点击消息流中的工具行查看详情

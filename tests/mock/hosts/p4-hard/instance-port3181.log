@@ -1,0 +1,6 @@
+dsh web: http://127.0.0.1:3181/?token=AIqWu3_HmkgaKa_y80d8lhycjbBVWA-DyYxceM_TZLk
+[dsh-agent-team] bootstrap FAILED: Error: cannot prepare session "session-team-child-13456a4a17e2b41a7ed8870416bec677" while it is live
+    at PersistenceCoordinator.prepare (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/session/session-persistence/lib/index.js:954:52)
+    at async raceAbort (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:965:10)
+    at async raceAbortCall (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:975:10)
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1370:20
