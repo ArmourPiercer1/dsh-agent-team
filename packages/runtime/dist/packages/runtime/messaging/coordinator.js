@@ -22,26 +22,42 @@
  *    per-team lock). Any rejection is a `TeamRuntimeError` with ZERO
  *    durable writes — it propagates UNMAPPED (the facade stays the single
  *    authority; this module never re-implements admission).
- * 4. **Delivery phase** (under the COORDINATOR's per-team lock — the
- *    exported `withTeamLock` seam, its own lock map, so the two lock
- *    owners compose: the facade serializes its effects, the coordinator
- *    serializes its deliveries):
- *      - the delivery plan is re-derived from the DURE intent fact
+ * 4. **Delivery phase** — THREE lock-scope acquisitions of the
+ *    COORDINATOR's per-team lock (the exported `withTeamLock` seam, its
+ *    own lock map, so the two lock owners compose: the facade serializes
+ *    its effects, the coordinator serializes its delivery decisions and
+ *    its confirmation commits). INV-9.1 (repair-r1 F3-C — the
+ *    private-chain extension of the F3-A rule): no chain, shared or
+ *    private, may be held across a turn it observes. The port call (the
+ *    recipient's ENTIRE model execution) therefore runs with the private
+ *    chain RELEASED, so a `team_send_message` issued by the recipient
+ *    inside the message-triggered turn re-enters this same coordinator
+ *    and acquires the chain freely (pre-fix it queued behind the outer
+ *    send's own pending tail — the H2 self-deadlock):
+ *      - **Phase A** (chain held): the durable intent fact is read and
+ *        validated; the delivery plan is re-derived from the intent
  *        (`payload.caller` + `payload.recipientInstanceId`) + the FRESH
  *        override records (same pure rule as recovery — one code path);
- *      - the delivery target record is read fresh and must be
+ *        the delivery target record is read fresh and must be
  *        work-accepting (CREATED/RUNNING/SETTLED, the facade's live set —
- *        `WORK_ACCEPTING_STATES`), else `MESSAGING_TARGET_NOT_LIVE`;
- *      - the attributed input is submitted through the injected
- *        `SessionInputPort`; a rejection is `MESSAGING_DELIVERY_FAILED`
+ *        `WORK_ACCEPTING_STATES`), else `MESSAGING_TARGET_NOT_LIVE`; the
+ *        relay attribution + text are rendered (pure).
+ *      - **Phase B** (chain RELEASED — no lock held): the attributed
+ *        input is submitted through the injected `SessionInputPort`
+ *        (commit-or-throws); a rejection is `MESSAGING_DELIVERY_FAILED`
  *        and the intent fact REMAINS durable (Architecture §24.2 orders
- *        the intent before the delivery — the coordination is recoverable);
- *      - the **confirmation fact** `team-message-delivered` is committed
+ *        the intent before the delivery — the coordination is recoverable).
+ *      - **Phase C** (chain re-acquired — the SAME private chain): the
+ *        **confirmation fact** `team-message-delivered` is committed
  *        through the ledger repository (sequence allocated through the
- *        atomic counter); a commit failure is
- *        `MESSAGING_LEDGER_WRITE_FAILED` (the input may already have been
- *        delivered — at-least-once, detectable through the correlation
- *        token).
+ *        atomic counter on the domain write chain — concurrent confirms
+ *        can never interleave writes); if a confirmation for the SAME
+ *        intent is already durable (the at-least-once redelivery race the
+ *        released Phase B makes possible) the commit CONVERGES on the
+ *        existing fact (exactly-once on the TeamLedger — R3); a commit
+ *        failure is `MESSAGING_LEDGER_WRITE_FAILED` (the input may
+ *        already have been delivered — at-least-once, detectable through
+ *        the correlation token).
  *
  * ## Documented rulings (the semantics this module is accountable for)
  *
@@ -64,7 +80,13 @@
  *   confirmation commit). It is exactly-once on the TeamLedger (one
  *   confirmation per pending intent) and at-least-once on the session
  *   input (a crash between the input write and the confirmation commit
- *   redelivers — detectable through the correlation token).
+ *   redelivers — detectable through the correlation token). The
+ *   exactly-once-on-ledger property is enforced in Phase C under the
+ *   private chain: two concurrent deliveries of the same pending intent
+ *   (now possible because Phase B holds no chain) both re-deliver the
+ *   input (the documented at-least-once residue) but only the first
+ *   commits a confirmation — the second converges on the existing fact
+ *   and reports it.
  * - **R4 (dead targets at recovery are skipped):** a pending delivery
  *   whose (re-derived) target record is missing or not work-accepting is
  *   SKIPPED with the closed reason (`delivery-target-missing` /
@@ -75,10 +97,14 @@
  *   failure during recovery aborts the scan with the typed error;
  *   deliveries confirmed earlier in the run stay durable, the rest stay
  *   pending for the next scan.
- * - **R6 (ordering):** the coordinator's delivery phase runs under its own
- *   per-team lock; the ledger sequence is the team-order authority
- *   (invariant 44) — the session-input order of two concurrent sends may
- *   interleave, the ledger does not.
+ * - **R6 (ordering):** the coordinator's delivery DECISIONS (Phase A —
+ *   plan + liveness + the recovery's scan/skip verdicts) and its
+ *   CONFIRMATION COMMITS (Phase C) run under its own per-team lock; the
+ *   session input port call (Phase B — the recipient's model execution)
+ *   runs with the chain released (INV-9.1). The ledger sequence is the
+ *   team-order authority (invariant 44) — the session-input order of two
+ *   concurrent (or re-entering) sends may interleave, the ledger does
+ *   not.
  * - **R7 (no Team SessionEvents, invariant 42):** the module creates
  *   exactly two record kinds — the facade's ledger intent row and its own
  *   ledger confirmation row — plus ordinary attributed input on the target
@@ -217,12 +243,13 @@ export function createMessagingCoordinator(options) {
         }
     }
     /**
-     * Deliver one durable intent fact: fresh plan (R1), fresh target view,
-     * attributed input through the port (at-least-once), confirmation fact
-     * (exactly-once). Used by BOTH the live send path and recovery — one
-     * code path (R1/R3).
+     * Delivery Phase A (the CALLER holds the coordinator's private chain):
+     * re-derive the plan from the durable intent + the FRESH governance
+     * state (R1), read the delivery target fresh and require work-accepting
+     * liveness, render the relay attribution + text (pure). Reads + typed
+     * rejections only — NO port call, NO confirmation write.
      */
-    async function deliverOne(intent) {
+    function prepareDeliveryLocked(intent) {
         const rootSessionId = String(intent.rootSessionId);
         const payload = intent.payload;
         const caller = parseCallerRef(payload['caller']);
@@ -292,30 +319,69 @@ export function createMessagingCoordinator(options) {
                 correlation: { requestToken, factSequence: intent.sequence },
             },
         };
-        // (a) Deliver — at-least-once (R2/R3): a failure leaves the intent
-        // pending; the input commit-or-throws contract is the port's.
+        return { intent, caller, recipientInstanceId, requestToken, plan, target, input };
+    }
+    /**
+     * Delivery Phase B (NO chain held): the session input port call only.
+     * This IS the recipient's model execution — the long external
+     * execution the private chain must not span (INV-9.1, the H2 hazard):
+     * the recipient's own `team_send_message` re-enters this coordinator
+     * while the port call is in flight and must be able to acquire the
+     * chain. Commit-or-throws (the port contract): a rejection is
+     * MESSAGING_DELIVERY_FAILED and the intent fact stays pending (R2/R3:
+     * at-least-once input, the coordination is recoverable).
+     */
+    async function submitDeliveryInput(prep) {
+        const rootSessionId = String(prep.intent.rootSessionId);
         try {
-            await options.sessionInput.submitAttributedInput(input);
+            await options.sessionInput.submitAttributedInput(prep.input);
         }
         catch (error) {
-            fail(MESSAGING_ERROR_CODES.MESSAGING_DELIVERY_FAILED, `messaging: the session input port rejected the attributed input for '${requestToken}' — the intent fact remains durable; the coordination is recoverable (R2/R3)`, {
+            fail(MESSAGING_ERROR_CODES.MESSAGING_DELIVERY_FAILED, `messaging: the session input port rejected the attributed input for '${prep.requestToken}' — the intent fact remains durable; the coordination is recoverable (R2/R3)`, {
                 rootSessionId,
-                requestToken,
-                factSequence: intent.sequence,
+                requestToken: prep.requestToken,
+                factSequence: prep.intent.sequence,
                 cause: describeError(error),
             });
         }
-        // (b) Confirm — exactly-once per logical delivery (R3): the
-        // delivery/result correlation row of the ledger.
+    }
+    /**
+     * Delivery Phase C (the caller re-acquires the SAME private chain):
+     * commit the confirmation fact — exactly-once per logical delivery on
+     * the TeamLedger (R3). The sequence allocation is atomic on the domain
+     * write chain, so concurrent confirms can never interleave writes; if
+     * a confirmation for the SAME intent (requestToken + intent fact
+     * sequence) is already durable — the at-least-once redelivery race the
+     * released Phase B makes possible — converge on the existing fact (no
+     * second confirmation; the duplicate session input stays the documented
+     * at-least-once residue, detectable through the correlation token).
+     */
+    async function commitConfirmationLocked(prep) {
+        const rootSessionId = String(prep.intent.rootSessionId);
+        const { requestToken, recipientInstanceId, plan, target } = prep;
+        const existing = repositories.ledger.list().find((entry) => entry.factType === MESSAGING_FACT_DELIVERED &&
+            String(entry.rootSessionId) === rootSessionId &&
+            entry.payload['requestToken'] === requestToken &&
+            entry.payload['factSequence'] === prep.intent.sequence);
+        if (existing !== undefined) {
+            return {
+                requestToken,
+                recipientInstanceId,
+                deliveryMode: existing.payload['deliveryMode'] === 'mediated' ? 'mediated' : 'direct',
+                deliveredToInstanceId: String(existing.payload['deliveredToInstanceId']),
+                deliveredToSessionId: String(existing.payload['deliveredToSessionId']),
+                deliveredSequence: existing.sequence,
+            };
+        }
         const deliveredSequence = await allocateSequenceGuarded(rootSessionId);
         const at = options.now();
         const confirmationPayload = {
             action: 'send-message',
             requestToken,
-            factSequence: intent.sequence,
-            ...(caller.kind === 'human'
-                ? { fromHumanId: caller.humanId }
-                : { fromInstanceId: caller.instanceId }),
+            factSequence: prep.intent.sequence,
+            ...(prep.caller.kind === 'human'
+                ? { fromHumanId: prep.caller.humanId }
+                : { fromInstanceId: prep.caller.instanceId }),
             recipientInstanceId,
             deliveryMode: plan.deliveryMode,
             deliveredToInstanceId: plan.deliveredToInstanceId,
@@ -336,7 +402,7 @@ export function createMessagingCoordinator(options) {
             fail(MESSAGING_ERROR_CODES.MESSAGING_LEDGER_WRITE_FAILED, `messaging: the confirmation fact commit failed for '${requestToken}' — the input may have been delivered (at-least-once, detectable through the correlation token; R3)`, {
                 rootSessionId,
                 requestToken,
-                factSequence: intent.sequence,
+                factSequence: prep.intent.sequence,
                 sequence: deliveredSequence,
                 cause: describeError(error),
             });
@@ -349,6 +415,21 @@ export function createMessagingCoordinator(options) {
             deliveredToSessionId: String(target.childSessionId),
             deliveredSequence,
         };
+    }
+    /**
+     * Deliver one durable intent fact through the three lock-scope phases
+     * (R1/R3; INV-9.1 private-chain extension): Phase A (plan + liveness +
+     * input) under the coordinator's private chain → RELEASE → Phase B
+     * (the session input port call — the recipient's model execution)
+     * WITHOUT the chain → Phase C (the confirmation fact) re-acquiring the
+     * SAME private chain. Used by BOTH the live send path and recovery —
+     * one code path (R1/R3).
+     */
+    async function deliverOne(intent) {
+        const rootSessionId = String(intent.rootSessionId);
+        const prep = await withTeamLock(teamLocks, rootSessionId, async () => prepareDeliveryLocked(intent));
+        await submitDeliveryInput(prep);
+        return await withTeamLock(teamLocks, rootSessionId, async () => commitConfirmationLocked(prep));
     }
     async function sendTeamMessage(request) {
         // (1) Module input validation — zero writes.
@@ -372,36 +453,49 @@ export function createMessagingCoordinator(options) {
             fail(MESSAGING_ERROR_CODES.MESSAGING_INTERNAL, 'messaging: the facade recorded an unexpected effect for send-message', { effectKind: outcome.effect.kind });
         }
         const factSequence = outcome.effect.sequence;
-        // (4) The delivery phase under the COORDINATOR's per-team lock (R6).
-        return withTeamLock(teamLocks, request.rootSessionId, async () => {
-            const intent = repositories.ledger.get(factSequence);
-            if (intent === undefined ||
-                intent.factType !== MESSAGING_FACT_COORDINATION) {
+        // (4) The delivery phase — three lock-scope acquisitions of the
+        // COORDINATOR's per-team chain (R6; INV-9.1): the intent fact read
+        // (the Phase A durable precondition) under the chain, then
+        // deliverOne's Phase A (plan + liveness + input, chain held) →
+        // Phase B (the session input port call — the recipient's model
+        // turn, chain RELEASED — a re-entering `team_send_message` from
+        // inside that turn acquires the chain freely) → Phase C
+        // (confirmation fact, the SAME chain re-acquired).
+        const intent = await withTeamLock(teamLocks, request.rootSessionId, async () => {
+            const fact = repositories.ledger.get(factSequence);
+            if (fact === undefined ||
+                fact.factType !== MESSAGING_FACT_COORDINATION) {
                 fail(MESSAGING_ERROR_CODES.MESSAGING_INTERNAL, 'messaging: the intent fact is missing from the ledger after a facade success', { sequence: factSequence });
             }
-            const delivered = await deliverOne(intent);
-            return {
-                status: 'delivered',
-                rootSessionId: request.rootSessionId,
-                action: 'send-message',
-                callerRole: outcome.callerRole,
-                recipientInstanceId: delivered.recipientInstanceId,
-                deliveryMode: delivered.deliveryMode,
-                deliveredToInstanceId: delivered.deliveredToInstanceId,
-                deliveredToSessionId: delivered.deliveredToSessionId,
-                factSequence,
-                deliveredSequence: delivered.deliveredSequence,
-                requestToken: request.requestToken,
-            };
+            return fact;
         });
+        const delivered = await deliverOne(intent);
+        return {
+            status: 'delivered',
+            rootSessionId: request.rootSessionId,
+            action: 'send-message',
+            callerRole: outcome.callerRole,
+            recipientInstanceId: delivered.recipientInstanceId,
+            deliveryMode: delivered.deliveryMode,
+            deliveredToInstanceId: delivered.deliveredToInstanceId,
+            deliveredToSessionId: delivered.deliveredToSessionId,
+            factSequence,
+            deliveredSequence: delivered.deliveredSequence,
+            requestToken: request.requestToken,
+        };
     }
     async function recoverPendingDeliveries(rootSessionId) {
-        return withTeamLock(teamLocks, rootSessionId, async () => {
-            if (!nonEmptyString(rootSessionId)) {
-                fail(MESSAGING_ERROR_CODES.MESSAGING_REQUEST_MALFORMED, 'messaging: rootSessionId must be a non-empty string', { problem: 'rootSessionId' });
-            }
-            // The durable scan: pending = send-message intents (R3) whose
-            // requestToken has no confirmation fact yet.
+        if (!nonEmptyString(rootSessionId)) {
+            fail(MESSAGING_ERROR_CODES.MESSAGING_REQUEST_MALFORMED, 'messaging: rootSessionId must be a non-empty string', { problem: 'rootSessionId' });
+        }
+        // R3 — the durable scan under the private chain: pending =
+        // send-message intents whose requestToken has no confirmation fact
+        // yet, in intent-fact sequence order. The scan itself holds the chain
+        // for ONE acquisition only; each pending intent is then delivered
+        // through deliverOne's own three phases (Phase A + Phase C re-acquire
+        // the chain, Phase B — the recipient's model execution — runs with it
+        // released, INV-9.1).
+        const pending = await withTeamLock(teamLocks, rootSessionId, async () => {
             const entries = repositories.ledger.list();
             const confirmedTokens = new Set();
             const intents = [];
@@ -420,22 +514,24 @@ export function createMessagingCoordinator(options) {
                     continue;
                 intents.push(entry);
             }
-            const pending = intents
+            return intents
                 .filter((intent) => {
                 const token = intent.payload['requestToken'];
                 return !nonEmptyString(token) || !confirmedTokens.has(token);
             })
                 .sort((a, b) => a.sequence - b.sequence);
-            const recovered = [];
-            const skipped = [];
-            for (const intent of pending) {
-                const rawToken = intent.payload['requestToken'];
-                const requestToken = nonEmptyString(rawToken)
-                    ? rawToken
-                    : `<fact-${intent.sequence}>`;
-                // R4 — a fresh view of the (re-derived) delivery target decides
-                // skip-vs-deliver BEFORE the delivery attempt (no side effects for
-                // a dead target).
+        });
+        const recovered = [];
+        const skipped = [];
+        for (const intent of pending) {
+            const rawToken = intent.payload['requestToken'];
+            const requestToken = nonEmptyString(rawToken)
+                ? rawToken
+                : `<fact-${intent.sequence}>`;
+            // R4 — a fresh view of the (re-derived) delivery target decides
+            // skip-vs-deliver BEFORE the delivery attempt (no side effects for
+            // a dead target), under the private chain.
+            const verdict = await withTeamLock(teamLocks, rootSessionId, async () => {
                 const caller = parseCallerRef(intent.payload['caller']);
                 const rawRecipient = intent.payload['recipientInstanceId'];
                 const recipientInstanceId = nonEmptyString(rawRecipient) ? rawRecipient : '';
@@ -451,34 +547,42 @@ export function createMessagingCoordinator(options) {
                         reason: DELIVERY_PLAN_REASONS.MEMBER_TO_MEMBER_DEFAULT,
                     };
                 const target = repositories.memberInstances.get(rootSessionId, plan.deliveredToInstanceId);
-                if (target === undefined) {
-                    skipped.push({
-                        requestToken,
-                        factSequence: intent.sequence,
-                        reason: 'delivery-target-missing',
-                    });
-                    continue;
-                }
+                if (target === undefined)
+                    return 'missing';
                 if (!LIVE_DELIVERY_LIFECYCLES.includes(target.lifecycle)) {
-                    skipped.push({
-                        requestToken,
-                        factSequence: intent.sequence,
-                        reason: 'delivery-target-not-live',
-                    });
-                    continue;
+                    return 'not-live';
                 }
-                // R3/R5 — deliver + confirm (one code path with the live send).
-                const delivered = await deliverOne(intent);
-                recovered.push({
-                    requestToken: delivered.requestToken,
+                return 'ok';
+            });
+            if (verdict === 'missing') {
+                skipped.push({
+                    requestToken,
                     factSequence: intent.sequence,
-                    deliveryMode: delivered.deliveryMode,
-                    deliveredToInstanceId: delivered.deliveredToInstanceId,
-                    deliveredSequence: delivered.deliveredSequence,
+                    reason: 'delivery-target-missing',
                 });
+                continue;
             }
-            return { rootSessionId, recovered, skipped };
-        });
+            if (verdict === 'not-live') {
+                skipped.push({
+                    requestToken,
+                    factSequence: intent.sequence,
+                    reason: 'delivery-target-not-live',
+                });
+                continue;
+            }
+            // R3/R5 — deliver + confirm (one code path with the live send; each
+            // phase acquires/releases the private chain itself — the scan no
+            // longer holds it across the recipient's turn).
+            const delivered = await deliverOne(intent);
+            recovered.push({
+                requestToken: delivered.requestToken,
+                factSequence: intent.sequence,
+                deliveryMode: delivered.deliveryMode,
+                deliveredToInstanceId: delivered.deliveredToInstanceId,
+                deliveredSequence: delivered.deliveredSequence,
+            });
+        }
+        return { rootSessionId, recovered, skipped };
     }
     return { sendTeamMessage, recoverPendingDeliveries };
 }

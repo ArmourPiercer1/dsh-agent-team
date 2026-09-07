@@ -22,26 +22,42 @@
  *    per-team lock). Any rejection is a `TeamRuntimeError` with ZERO
  *    durable writes — it propagates UNMAPPED (the facade stays the single
  *    authority; this module never re-implements admission).
- * 4. **Delivery phase** (under the COORDINATOR's per-team lock — the
- *    exported `withTeamLock` seam, its own lock map, so the two lock
- *    owners compose: the facade serializes its effects, the coordinator
- *    serializes its deliveries):
- *      - the delivery plan is re-derived from the DURE intent fact
+ * 4. **Delivery phase** — THREE lock-scope acquisitions of the
+ *    COORDINATOR's per-team lock (the exported `withTeamLock` seam, its
+ *    own lock map, so the two lock owners compose: the facade serializes
+ *    its effects, the coordinator serializes its delivery decisions and
+ *    its confirmation commits). INV-9.1 (repair-r1 F3-C — the
+ *    private-chain extension of the F3-A rule): no chain, shared or
+ *    private, may be held across a turn it observes. The port call (the
+ *    recipient's ENTIRE model execution) therefore runs with the private
+ *    chain RELEASED, so a `team_send_message` issued by the recipient
+ *    inside the message-triggered turn re-enters this same coordinator
+ *    and acquires the chain freely (pre-fix it queued behind the outer
+ *    send's own pending tail — the H2 self-deadlock):
+ *      - **Phase A** (chain held): the durable intent fact is read and
+ *        validated; the delivery plan is re-derived from the intent
  *        (`payload.caller` + `payload.recipientInstanceId`) + the FRESH
  *        override records (same pure rule as recovery — one code path);
- *      - the delivery target record is read fresh and must be
+ *        the delivery target record is read fresh and must be
  *        work-accepting (CREATED/RUNNING/SETTLED, the facade's live set —
- *        `WORK_ACCEPTING_STATES`), else `MESSAGING_TARGET_NOT_LIVE`;
- *      - the attributed input is submitted through the injected
- *        `SessionInputPort`; a rejection is `MESSAGING_DELIVERY_FAILED`
+ *        `WORK_ACCEPTING_STATES`), else `MESSAGING_TARGET_NOT_LIVE`; the
+ *        relay attribution + text are rendered (pure).
+ *      - **Phase B** (chain RELEASED — no lock held): the attributed
+ *        input is submitted through the injected `SessionInputPort`
+ *        (commit-or-throws); a rejection is `MESSAGING_DELIVERY_FAILED`
  *        and the intent fact REMAINS durable (Architecture §24.2 orders
- *        the intent before the delivery — the coordination is recoverable);
- *      - the **confirmation fact** `team-message-delivered` is committed
+ *        the intent before the delivery — the coordination is recoverable).
+ *      - **Phase C** (chain re-acquired — the SAME private chain): the
+ *        **confirmation fact** `team-message-delivered` is committed
  *        through the ledger repository (sequence allocated through the
- *        atomic counter); a commit failure is
- *        `MESSAGING_LEDGER_WRITE_FAILED` (the input may already have been
- *        delivered — at-least-once, detectable through the correlation
- *        token).
+ *        atomic counter on the domain write chain — concurrent confirms
+ *        can never interleave writes); if a confirmation for the SAME
+ *        intent is already durable (the at-least-once redelivery race the
+ *        released Phase B makes possible) the commit CONVERGES on the
+ *        existing fact (exactly-once on the TeamLedger — R3); a commit
+ *        failure is `MESSAGING_LEDGER_WRITE_FAILED` (the input may
+ *        already have been delivered — at-least-once, detectable through
+ *        the correlation token).
  *
  * ## Documented rulings (the semantics this module is accountable for)
  *
@@ -64,7 +80,13 @@
  *   confirmation commit). It is exactly-once on the TeamLedger (one
  *   confirmation per pending intent) and at-least-once on the session
  *   input (a crash between the input write and the confirmation commit
- *   redelivers — detectable through the correlation token).
+ *   redelivers — detectable through the correlation token). The
+ *   exactly-once-on-ledger property is enforced in Phase C under the
+ *   private chain: two concurrent deliveries of the same pending intent
+ *   (now possible because Phase B holds no chain) both re-deliver the
+ *   input (the documented at-least-once residue) but only the first
+ *   commits a confirmation — the second converges on the existing fact
+ *   and reports it.
  * - **R4 (dead targets at recovery are skipped):** a pending delivery
  *   whose (re-derived) target record is missing or not work-accepting is
  *   SKIPPED with the closed reason (`delivery-target-missing` /
@@ -75,10 +97,14 @@
  *   failure during recovery aborts the scan with the typed error;
  *   deliveries confirmed earlier in the run stay durable, the rest stay
  *   pending for the next scan.
- * - **R6 (ordering):** the coordinator's delivery phase runs under its own
- *   per-team lock; the ledger sequence is the team-order authority
- *   (invariant 44) — the session-input order of two concurrent sends may
- *   interleave, the ledger does not.
+ * - **R6 (ordering):** the coordinator's delivery DECISIONS (Phase A —
+ *   plan + liveness + the recovery's scan/skip verdicts) and its
+ *   CONFIRMATION COMMITS (Phase C) run under its own per-team lock; the
+ *   session input port call (Phase B — the recipient's model execution)
+ *   runs with the chain released (INV-9.1). The ledger sequence is the
+ *   team-order authority (invariant 44) — the session-input order of two
+ *   concurrent (or re-entering) sends may interleave, the ledger does
+ *   not.
  * - **R7 (no Team SessionEvents, invariant 42):** the module creates
  *   exactly two record kinds — the facade's ledger intent row and its own
  *   ledger confirmation row — plus ordinary attributed input on the target
