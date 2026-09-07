@@ -1,0 +1,9 @@
+F3-B (repair-r1) - pre-fix focused baseline (source = 68ff124, pre-F3-B fix; plain-node runner f3/run-file.mjs)
+2026-09-08T03:38:25+08:00
+
+PASS packages\runtime\test\tcm-m3-root-initial-work.test.ts (18 tests)
+PASS packages\runtime\test\tcm-m3-root-work-glue.test.ts (9 tests)
+PASS packages\runtime\test\p8s7r1-initial-work.test.ts (9 tests)
+PASS packages\runtime\test\tcm-g1-s6-integration.test.ts (11 tests)
+PASS packages\runtime\test\f3a-lock-scope.test.ts (7 tests)
+run-file: all named files pass

@@ -14,11 +14,22 @@
  * `member-lifecycle-changed` settlement (plan §2.3 / §15.8: none of those
  * may appear here). This module is the narrow alternative:
  *
- *   withTeamLock (the caller's shared coordination.chains) ->
- *   enforceCompatibilityGate (the existing single compatibility
- *   authority — the gate runs BEFORE any scan decision, exactly like the
- *   router's new-work admission) ->
- *   executeRootInitialWorkLocked (the two-fact scanner + strategy).
+ *   Phase A, under ONE withTeamLock acquisition (the shared
+ *   coordination.chains):
+ *     enforceCompatibilityGate (the existing single compatibility
+ *     authority — the gate runs BEFORE any scan decision, exactly like
+ *     the router's new-work admission) ->
+ *     admitRootInitialWorkLocked (the two-fact scanner + strategy: the
+ *     replay decision | the typed rejection | the durable admission
+ *     fact);
+ *   -> the chain is RELEASED
+ *   -> Phase B (WITHOUT the chain): the `deliverRootWork` port call —
+ *      the ROOT TURN itself (the leader's own team tools can re-enter
+ *      the router's facade on the SAME chain during it — the N1
+ *      deadlock the split removes);
+ *   -> Phase C, RE-ACQUIRING the same chain (no abort signal — this
+ *      seam accepts none): the terminal fact (fresh-read convergence —
+ *      a concurrent same-token delivery's terminal is never duplicated).
  *
  * DURABLE REPRESENTATION (plan §15.7; NO new schema, NO new ledger
  * category — both fact types map to the existing `team` category):
@@ -71,15 +82,68 @@
  * initial-work fact sharing a token with a member work request must never
  * be resumed (or settled) by a member chain (token-collision guard).
  *
- * LOCKING: `executeRootInitialWorkLocked` takes NO lock of its own — the
- * production wiring (the `createAdmitRootInitialWork` closure below) runs
- * it inside the SAME per-team promise chain the router / activity /
- * lifecycle modules share (`coordination.chains`), so the scan->admit->
- * deliver->terminal sequence is serialized per team and cannot interleave
- * with a racing admission (P8-S5B CR-8 shape). The closure also keeps the
- * compatibility gate INSIDE the lock (the gate may re-probe inline — a
- * durable compatibility write — and a racing new-work admission for the
- * same team must not interleave into its read->probe->re-read window).
+ * LOCK TOPOLOGY (INV-9.1, repair-r1 F3-B: the three-phase lock split —
+ * the N1 sibling of F3-A's member work-chain split; the shared per-team
+ * chain is NEVER held across the ROOT turn):
+ *
+ *   Phase A `admitRootInitialWorkLocked` — validation, scan, decision
+ *     (replay | typed rejection | fresh admission fact | admitted-only
+ *     retry decision). Takes NO lock of its own: the production closure
+ *     runs it inside ONE acquisition that also carries the
+ *     compatibility gate (the CR-8 analog — the gate may re-probe inline,
+ *     a durable compatibility write, and a racing new-work admission for
+ *     the same team must not interleave into its read→probe→re-read→admit
+ *     window). A replay or a typed rejection completes INSIDE that
+ *     acquisition (zero further writes).
+ *   Phase B `deliverRootWork` — the port call ONLY. Runs WITHOUT the
+ *     shared chain (the chain is released before the ROOT TURN starts),
+ *     with NO abort signal (this seam accepts no request signal at all —
+ *     the S6 command surface is transport-cancellation-free). This is
+ *     what frees the team while the leader's turn runs: the leader's own
+ *     team tools (`team_delegate` / `team_follow_up` /
+ *     `team_report_progress` — the N1 hang) re-enter the router's facade
+ *     and acquire the SAME chain; they must not queue behind the
+ *     delivery that started them (the deadlock this split removes).
+ *   Phase C `settleRootInitialWorkLocked` — the terminal fact.
+ *     RE-ACQUIRES the same chain WITHOUT any abort signal (N6: the
+ *     terminal settlement is a durable obligation and is never gated by a
+ *     request signal — on this seam there is none to gate it). It
+ *     FRESH-READS the durable state first: a concurrent same-token
+ *     delivery that already committed the terminal is never duplicated
+ *     (zero writes; the existing terminal sequence is reported).
+ *
+ * THROW-AFTER-SETTLE (N3, preserved): on a delivery fault Phase C does
+ * not write (this strategy's fail-closed writes NOTHING — a delivery
+ * failure leaves the terminal absent by design) and the typed
+ * `WORK_DELIVERY_FAILED` rejection propagates: the leader's rejection
+ * always lands on the durable state the same-token retry recovers from
+ * (the admission fact retained, the terminal absent), and a half-
+ * committed terminal never exists.
+ *
+ * OVERLAP SEMANTICS (H3-root, documented — the root analog of F3-A's
+ * H3, per the round's U6 sub-decision (i) "accept + document"): because
+ * Phase B holds no chain, a CONCURRENT same-token admit can pass its
+ * Phase A as an ADMITTED-ONLY RETRY while the first call's delivery is
+ * still in flight (the pre-fix lock coupling made it a zero-delivery
+ * replay — that serialization was the coupling this split removes). Both
+ * model-visible deliveries then run at-least-once: plan §15.7 is
+ * explicit that the ambiguous window (admission durable, terminal not
+ * yet) is NOT claimed exactly-once, and the model-visible text carries
+ * the requestToken so the model dedupes. The durable state converges via
+ * the Phase C fresh-read — exactly ONE admission fact and exactly ONE
+ * terminal fact for the token, no fake state (this strategy owns none),
+ * no new error code. The overlap is a documented, convergent interleave,
+ * not a race the chain must hide. (A concurrent DIFFERENT-token call
+ * still gets the typed INITIAL_WORK_ALREADY_ADMITTED from its Phase A
+ * scan — the one-slot rule is untouched.)
+ *
+ * `executeRootInitialWorkLocked` is the three-phase orchestrator (the
+ * direct test seam): with `teamLocks` installed it performs the Phase A
+ * acquisition itself and Phase C re-acquires it; without (the pre-F3-B
+ * tcm-m3 shape) the phases run without the shared chain — the test
+ * world is single-threaded per world. Both paths share the SAME phase
+ * bodies — one scan, one admission algorithm, one delivery call, one
+ * settlement owner.
  *
  * I/O only through the injected TeamDomain repositories (invariant 41)
  * and the injected delivery port; no member lifecycle, no activity, no
@@ -143,9 +207,17 @@ export interface RootWorkDeliveryPort {
 }
 
 /**
- * Everything one execution of the Root initial-work strategy needs
- * (the caller already holds the team's coordination chain; the
- * compatibility gate was already enforced by the closure).
+ * Everything one execution of the Root initial-work strategy needs.
+ *
+ * Lock scope (INV-9.1): the phase BODIES (`admitRootInitialWorkLocked`,
+ * the `deliverRootWork` port call, `settleRootInitialWorkLocked`) take no
+ * lock of their own — the caller owns the acquisition boundary. With
+ * `teamLocks` installed, `executeRootInitialWorkLocked` performs the Phase
+ * A acquisition and Phase C re-acquires it; the production closure holds
+ * the gate + Phase A in ONE acquisition and completes Phase B/C after the
+ * lock is released. `teamLocks` is absent ONLY in the direct test seam
+ * (the tcm-m3 shape): the phases then run without the shared chain (the
+ * test world is single-threaded per world).
  */
 export interface RootInitialWorkDeps {
   /** The durable authority (ledger list + append). */
@@ -164,6 +236,15 @@ export interface RootInitialWorkDeps {
   readonly attachedContext?: string
   /** The live Root input delivery port. */
   readonly deliverRootWork: RootWorkDeliveryPort
+  /** The shared per-team operation chain (the production `coordination.
+   *  chains` — the same map the production root wires into the router
+   *  facade, the activity ledger's guarded commit, the lifecycle service
+   *  and this module's closure; INV-9.1). Present: `executeRootInitial-
+   *  WorkLocked` acquires it for Phase A and Phase C re-acquires it
+   *  (WITHOUT any abort signal — this seam accepts none); Phase B never
+   *  holds it. Absent: the direct test seam runs the phases without the
+   *  shared chain. */
+  readonly teamLocks?: TeamOperationChainMap
 }
 
 /** The outcome of one Root initial-work execution. */
@@ -177,7 +258,7 @@ export interface RootInitialWorkResult {
   readonly payloadFingerprint: string
   /** The durable sequence of the (original) `team-work-admitted` fact. On a `replay` where the admission fact is somehow absent (unreachable — the terminal is only ever committed after the admission), the terminal sequence stands in. */
   readonly sequence: number
-  /** The durable sequence of the terminal `team-root-work-delivered` fact (committed by this call, or the pre-existing one on a `replay`). */
+  /** The durable sequence of the terminal `team-root-work-delivered` fact (committed by this call, or the pre-existing one on a `replay` / a concurrent same-token settlement — the Phase C fresh-read convergence). */
   readonly terminalSequence: number
   /** Whether this call performed a model-visible delivery (false on `replay`). */
   readonly delivered: boolean
@@ -339,13 +420,22 @@ function alreadyAdmittedError(deps: RootInitialWorkDeps, occupant: RootWorkFactR
 }
 
 /**
- * Deliver the Root initial work (the at-least-once model-visible submit).
+ * Phase B (delivery) of the Root initial-work chain (INV-9.1): the
+ * `deliverRootWork` port call ONLY — the token-leading model-visible text
+ * goes to the Root (leader) session and the ROOT TURN runs. Runs WITHOUT
+ * the shared per-team chain (the leader's own team tools can re-enter the
+ * router's facade on the same chain during this window — the N1 hang the
+ * split removes) and with NO abort signal (this seam accepts none). Takes
+ * no lock of its own.
+ *
  * A fault propagates as WORK_DELIVERY_FAILED (the closed delivery code,
  * reused from the member work chain): the durable admission stays, NO
  * terminal fact is written, and the same-token retry recovers from the
  * admission fact (plan §15.7).
+ *
+ * @throws WORK_DELIVERY_FAILED on any delivery fault.
  */
-async function deliverLocked(deps: RootInitialWorkDeps): Promise<void> {
+async function deliverRootInitialWork(deps: RootInitialWorkDeps): Promise<void> {
   try {
     await deps.deliverRootWork.deliverRootWork({
       rootSessionId: deps.rootSessionId,
@@ -395,26 +485,41 @@ function terminalFactPayload(deps: RootInitialWorkDeps, fingerprint: string): Re
 }
 
 /**
- * Execute the Root initial-work strategy for one team (the plan §15.8
- * "locked executor"). The caller MUST already hold the team's
- * coordination chain AND have enforced the compatibility gate (the
- * `createAdmitRootInitialWork` closure does both) — this function takes
- * no lock of its own (chains are not re-entrant).
- *
- * Durable order (STATE/EVIDENCE — plan §15.7): the admission fact FIRST
- * (the operation identity + intent), then the model-visible delivery,
- * then the terminal fact. A delivery fault leaves the admission durable
- * and the terminal absent (the same-token retry recovers); a terminal
- * fault leaves an admitted-but-undelivered unit the same retry recovers.
- *
- * @throws {@link TeamRuntimeError} REQUEST_MALFORMED (input shape),
- *   ROOT_WORK_PAYLOAD_MISMATCH (same token, different payload),
- *   INITIAL_WORK_ALREADY_ADMITTED (another token's slot),
- *   WORK_DELIVERY_FAILED (the delivery fault, admission retained).
+ * The Phase A outcome (INV-9.1): `replay` — the chain is DONE with the
+ * result (zero delivery, zero writes; no Phase B/C); `owed` — the unit is
+ * durably admitted (fresh: the fact committed by this Phase A; retry: the
+ * pre-existing fact) and owes Phase B (delivery) + Phase C (the terminal
+ * fact).
  */
-export async function executeRootInitialWorkLocked(
+export type RootInitialWorkPhaseA =
+  | { readonly kind: 'replay'; readonly result: RootInitialWorkResult }
+  | {
+      readonly kind: 'owed'
+      readonly mode: 'fresh' | 'retry'
+      readonly sequence: number
+      readonly fingerprint: string
+    }
+
+/**
+ * Phase A (admission) of the Root initial-work chain (INV-9.1): the
+ * validation, the scan, the plan §15.6 decision table, and — on the FRESH
+ * branch — the durable admission fact. The complete pre-delivery durable
+ * half. Takes NO lock of its own: the caller owns the acquisition
+ * boundary (the production closure's gate acquisition; the orchestrator's
+ * own Phase A acquisition with `teamLocks` installed).
+ *
+ * @param deps - the strategy dependencies (ports, identity, content).
+ * @returns `replay` — the chain is DONE (zero delivery, zero writes; no
+ *   Phase B/C) — or `owed` — the unit is durably admitted and owes
+ *   Phase B (delivery) + Phase C (the terminal fact).
+ * @throws REQUEST_MALFORMED (input shape); ROOT_WORK_PAYLOAD_MISMATCH
+ *   (same token, different payload); INITIAL_WORK_ALREADY_ADMITTED
+ *   (another token's slot); DURABLE_WRITE_FAILED on a durable protocol
+ *   fault.
+ */
+export async function admitRootInitialWorkLocked(
   deps: RootInitialWorkDeps,
-): Promise<RootInitialWorkResult> {
+): Promise<RootInitialWorkPhaseA> {
   validateDeps(deps)
   const fingerprint = computeRootWorkPayloadFingerprint(deps.prompt, deps.attachedContext)
   const scan = scanRootInitialWorkFacts(deps.repositories, deps.rootSessionId, deps.requestToken)
@@ -448,17 +553,20 @@ export async function executeRootInitialWorkLocked(
       )
     }
     return {
-      mode: 'replay',
-      rootSessionId: deps.rootSessionId,
-      requestToken: deps.requestToken,
-      payloadFingerprint: fingerprint,
-      // The original admission sequence (absent is structurally
-      // unreachable — the terminal is only ever committed after the
-      // admission; the terminal sequence stands in as the honest
-      // fallback rather than a fabricated number).
-      sequence: scan.admitted?.sequence ?? scan.terminal.sequence,
-      terminalSequence: scan.terminal.sequence,
-      delivered: false,
+      kind: 'replay',
+      result: {
+        mode: 'replay',
+        rootSessionId: deps.rootSessionId,
+        requestToken: deps.requestToken,
+        payloadFingerprint: fingerprint,
+        // The original admission sequence (absent is structurally
+        // unreachable — the terminal is only ever committed after the
+        // admission; the terminal sequence stands in as the honest
+        // fallback rather than a fabricated number).
+        sequence: scan.admitted?.sequence ?? scan.terminal.sequence,
+        terminalSequence: scan.terminal.sequence,
+        delivered: false,
+      },
     }
   }
 
@@ -476,7 +584,7 @@ export async function executeRootInitialWorkLocked(
 
   // 3. ADMITTED (same token, no terminal): the crash window between the
   //    admission commit and the terminal commit — ADMITTED-ONLY RETRY:
-  //    delivery is re-driven, NO second admission fact.
+  //    delivery is re-driven (Phase B), NO second admission fact.
   if (scan.admitted !== undefined) {
     if (scan.admitted.payload['payloadFingerprint'] !== fingerprint) {
       throw mismatchError(
@@ -486,28 +594,17 @@ export async function executeRootInitialWorkLocked(
         scan.admitted.sequence,
       )
     }
-    const sequence = scan.admitted.sequence
-    await deliverLocked(deps)
-    const terminalSequence = await commitDurableFact(
-      deps.repositories,
-      deps.rootSessionId,
-      deps.now,
-      FACT_ROOT_WORK_DELIVERED,
-      terminalFactPayload(deps, fingerprint),
-    )
     return {
+      kind: 'owed',
       mode: 'retry',
-      rootSessionId: deps.rootSessionId,
-      requestToken: deps.requestToken,
-      payloadFingerprint: fingerprint,
-      sequence,
-      terminalSequence,
-      delivered: true,
+      sequence: scan.admitted.sequence,
+      fingerprint,
     }
   }
 
-  // 4. FRESH: no root facts for the token — the full chain: the
-  //    admission fact FIRST, then delivery, then the terminal fact.
+  // 4. FRESH: no root facts for the token — the admission fact FIRST
+  //    (the operation identity + intent); Phase B/C owe the delivery and
+  //    the terminal fact.
   const sequence = await commitDurableFact(
     deps.repositories,
     deps.rootSessionId,
@@ -515,23 +612,155 @@ export async function executeRootInitialWorkLocked(
     FACT_WORK_ADMITTED,
     admissionFactPayload(deps, fingerprint),
   )
-  await deliverLocked(deps)
+  return {
+    kind: 'owed',
+    mode: 'fresh',
+    sequence,
+    fingerprint,
+  }
+}
+
+/**
+ * Phase C (settlement) of the Root initial-work chain (INV-9.1): the
+ * terminal `team-root-work-delivered` fact for a SUCCESSFUL delivery.
+ * Takes no lock of its own: the caller owns the Phase C acquisition
+ * (WITHOUT any abort signal — N6; this seam accepts no request signal at
+ * all).
+ *
+ * Fresh-read convergence (the H3-root overlap, documented): a concurrent
+ * same-token delivery may have committed the terminal first — the durable
+ * pair stays UNIQUE (zero writes here; the existing terminal sequence is
+ * reported). A contradictory-fingerprint terminal is ledger corruption:
+ * fail closed (the typed mismatch), zero writes.
+ *
+ * @throws ROOT_WORK_PAYLOAD_MISMATCH (corrupt contradictory terminal).
+ */
+async function settleRootInitialWorkLocked(
+  deps: RootInitialWorkDeps,
+  admitted: Extract<RootInitialWorkPhaseA, { readonly kind: 'owed' }>,
+): Promise<RootInitialWorkResult> {
+  const rescan = scanRootInitialWorkFacts(
+    deps.repositories,
+    deps.rootSessionId,
+    deps.requestToken,
+  )
+  if (rescan.terminal !== undefined) {
+    const terminalFingerprint = rescan.terminal.payload['payloadFingerprint']
+    if (terminalFingerprint !== admitted.fingerprint) {
+      throw mismatchError(
+        deps,
+        terminalFingerprint,
+        admitted.fingerprint,
+        rescan.terminal.sequence,
+      )
+    }
+    return {
+      mode: admitted.mode,
+      rootSessionId: deps.rootSessionId,
+      requestToken: deps.requestToken,
+      payloadFingerprint: admitted.fingerprint,
+      sequence: admitted.sequence,
+      terminalSequence: rescan.terminal.sequence,
+      delivered: true,
+    }
+  }
   const terminalSequence = await commitDurableFact(
     deps.repositories,
     deps.rootSessionId,
     deps.now,
     FACT_ROOT_WORK_DELIVERED,
-    terminalFactPayload(deps, fingerprint),
+    terminalFactPayload(deps, admitted.fingerprint),
   )
   return {
-    mode: 'fresh',
+    mode: admitted.mode,
     rootSessionId: deps.rootSessionId,
     requestToken: deps.requestToken,
-    payloadFingerprint: fingerprint,
-    sequence,
+    payloadFingerprint: admitted.fingerprint,
+    sequence: admitted.sequence,
     terminalSequence,
     delivered: true,
   }
+}
+
+/**
+ * The Phase C acquisition (INV-9.1 / N6): re-acquire the shared chain for
+ * the terminal settlement WITHOUT any abort signal — this seam accepts no
+ * request signal at all (the S6 command surface is transport-
+ * cancellation-free), so the terminal settlement is a durable obligation
+ * that runs unconditionally once the delivery resolves. With no chain
+ * installed (the direct test seam) the work runs as-is.
+ */
+async function acquirePhaseC(
+  deps: RootInitialWorkDeps,
+  work: () => Promise<unknown>,
+): Promise<unknown> {
+  if (deps.teamLocks === undefined) return work()
+  return withTeamLock(deps.teamLocks, deps.rootSessionId, work)
+}
+
+/**
+ * Phase B + Phase C of an ALREADY-ADMITTED Root initial work (INV-9.1):
+ * the delivery WITHOUT the shared chain (the ROOT TURN — the leader's own
+ * team tools re-enter the router's facade on the same chain during it:
+ * the N1 hang the split removes), then the terminal fact re-acquired on
+ * the SAME chain WITHOUT any abort signal (N6). Shared by the
+ * `executeRootInitialWorkLocked` orchestrator (direct seam) and the
+ * production closure (where Phase A ran inside the gate acquisition and
+ * the lock is released before this is called).
+ *
+ * On a delivery fault NO terminal fact is written (this strategy's
+ * fail-closed writes nothing — plan §15.7) and the typed
+ * `WORK_DELIVERY_FAILED` rejection propagates: the leader's rejection
+ * always lands on the durable state the same-token retry recovers from
+ * (the admission retained, the terminal absent) — throw-after-settle
+ * (N3), never a half-committed terminal.
+ *
+ * @throws WORK_DELIVERY_FAILED (the durable state is consistent — N3) on
+ *   any delivery fault; ROOT_WORK_PAYLOAD_MISMATCH (corrupt terminal)
+ *   from the Phase C convergence; DURABLE_WRITE_FAILED on durable
+ *   protocol faults.
+ */
+export async function completeRootInitialWorkAfterAdmission(
+  deps: RootInitialWorkDeps,
+  admitted: Extract<RootInitialWorkPhaseA, { readonly kind: 'owed' }>,
+): Promise<RootInitialWorkResult> {
+  // Phase B — no shared chain (INV-9.1), no abort signal (this seam
+  // accepts none): the ROOT TURN.
+  await deliverRootInitialWork(deps)
+  // Phase C — re-acquired (N6: never gated by a request signal).
+  return (await acquirePhaseC(
+    deps,
+    () => settleRootInitialWorkLocked(deps, admitted),
+  )) as RootInitialWorkResult
+}
+
+/**
+ * Execute the Root initial-work strategy for one team — the THREE-PHASE
+ * ORCHESTRATOR (INV-9.1, module docs): Phase A (gate-free — the
+ * compatibility gate is the closure's, inside its ONE acquisition) under
+ * the chain when `teamLocks` is installed → Phase B without the chain →
+ * Phase C re-acquired (without any abort signal). With `teamLocks`
+ * absent (the direct test seam — the tcm-m3 shape) the phases run
+ * without the shared chain (the test world is single-threaded per world;
+ * the pre-F3-B behavior of this seam is preserved exactly).
+ *
+ * @param deps - the strategy dependencies (ports, identity, content, the
+ *        optional shared chain).
+ * @returns the strategy outcome (see {@link RootInitialWorkResult}).
+ * @throws {@link TeamRuntimeError} REQUEST_MALFORMED (input shape),
+ *   ROOT_WORK_PAYLOAD_MISMATCH (same token, different payload),
+ *   INITIAL_WORK_ALREADY_ADMITTED (another token's slot),
+ *   WORK_DELIVERY_FAILED (the delivery fault, admission retained).
+ */
+export async function executeRootInitialWorkLocked(
+  deps: RootInitialWorkDeps,
+): Promise<RootInitialWorkResult> {
+  const admitted =
+    deps.teamLocks === undefined
+      ? await admitRootInitialWorkLocked(deps)
+      : await withTeamLock(deps.teamLocks, deps.rootSessionId, () => admitRootInitialWorkLocked(deps))
+  if (admitted.kind === 'replay') return admitted.result
+  return completeRootInitialWorkAfterAdmission(deps, admitted)
 }
 
 /** The closure's per-call arguments (the v1/v2 shared entry point). */
@@ -552,7 +781,7 @@ export interface RootInitialWorkArgs {
 
 /** The closure inputs the production root wires (plan §15.8). */
 export interface RootInitialWorkClosureInput {
-  /** The SHARED per-team operation chain (the production `coordination.chains` — the strategy runs inside the same lock the router / activity / lifecycle modules use). */
+  /** The SHARED per-team operation chain (the production `coordination.chains` — the Phase A (gate + admission) acquisition and the Phase C re-acquisition run on it; Phase B, the ROOT TURN, never holds it — INV-9.1 / N1). */
   readonly teamLocks: TeamOperationChainMap
   /** The durable authority (the opened TeamDomain repositories). */
   readonly repositories: TeamDomainRepositories
@@ -568,13 +797,26 @@ export interface RootInitialWorkClosureInput {
 export type AdmitRootInitialWork = (args: RootInitialWorkArgs) => Promise<RootInitialWorkResult>
 
 /**
- * Build the production `admitRootInitialWork` closure (plan §15.8):
+ * Build the production `admitRootInitialWork` closure (plan §15.8) — the
+ * THREE-PHASE lock scope (INV-9.1, repair-r1 F3-B):
  *
- *   withTeamLock (the shared coordination.chains) ->
- *   enforceCompatibilityGate (the existing single compatibility
- *   authority, INSIDE the lock: the gate may re-probe inline and a
- *   racing new-work admission for the same team must not interleave) ->
- *   executeRootInitialWorkLocked.
+ *   Phase A, in ONE withTeamLock acquisition of the shared
+ *   coordination.chains:
+ *     enforceCompatibilityGate (the existing single compatibility
+ *     authority, INSIDE the lock: the gate may re-probe inline and a
+ *     racing new-work admission for the same team must not interleave —
+ *     the CR-8 analog, gate + Phase A in ONE acquisition) ->
+ *     admitRootInitialWorkLocked (scan + decision + the fresh admission
+ *     fact; a replay / a typed rejection completes in the same
+ *     acquisition).
+ *   -> the chain is RELEASED
+ *   -> Phase B (WITHOUT the chain): the `deliverRootWork` port call —
+ *      the ROOT TURN. The leader's own team tools (`team_delegate` /
+ *      `team_follow_up` / `team_report_progress`) re-enter the router's
+ *      facade and acquire the SAME chain during it (the N1 deadlock the
+ *      pre-fix single-hold caused is removed).
+ *   -> Phase C, RE-ACQUIRING the same chain (no abort signal — N6):
+ *      the terminal fact (fresh-read convergence).
  *
  * This is NOT a second TeamRuntime facade: the S6 remote handler calls
  * this closure directly (no `performAction`, no Member lifecycle /
@@ -583,25 +825,40 @@ export type AdmitRootInitialWork = (args: RootInitialWorkArgs) => Promise<RootIn
 export function createAdmitRootInitialWork(
   input: RootInitialWorkClosureInput,
 ): AdmitRootInitialWork {
-  return (args: RootInitialWorkArgs): Promise<RootInitialWorkResult> =>
-    withTeamLock(input.teamLocks, args.rootSessionId, async () => {
-      const environmentFacts = await input.environmentFacts()
-      await enforceCompatibilityGate(
-        input.repositories,
-        args.blueprint,
-        args.rootSessionId,
-        environmentFacts,
-        input.now,
-      )
-      return executeRootInitialWorkLocked({
-        repositories: input.repositories,
-        now: input.now,
-        rootSessionId: args.rootSessionId,
-        caller: args.caller,
-        requestToken: args.requestToken,
-        prompt: args.prompt,
-        ...(args.attachedContext !== undefined ? { attachedContext: args.attachedContext } : {}),
-        deliverRootWork: input.deliverRootWork,
-      })
-    })
+  return async (args: RootInitialWorkArgs): Promise<RootInitialWorkResult> => {
+    const deps: RootInitialWorkDeps = {
+      repositories: input.repositories,
+      now: input.now,
+      rootSessionId: args.rootSessionId,
+      caller: args.caller,
+      requestToken: args.requestToken,
+      prompt: args.prompt,
+      ...(args.attachedContext !== undefined ? { attachedContext: args.attachedContext } : {}),
+      deliverRootWork: input.deliverRootWork,
+      teamLocks: input.teamLocks,
+    }
+    // Phase A — the compatibility gate + the admission decision in ONE
+    // acquisition of the shared chain (the CR-8 analog). A replay or a
+    // typed rejection completes inside this acquisition (zero further
+    // writes); an `owed` unit releases the chain and owes Phase B/C.
+    const admitted = await withTeamLock(
+      input.teamLocks,
+      args.rootSessionId,
+      async () => {
+        const environmentFacts = await input.environmentFacts()
+        await enforceCompatibilityGate(
+          input.repositories,
+          args.blueprint,
+          args.rootSessionId,
+          environmentFacts,
+          input.now,
+        )
+        return admitRootInitialWorkLocked(deps)
+      },
+    )
+    if (admitted.kind === 'replay') return admitted.result
+    // Phase B (the ROOT TURN — chain released) + Phase C (re-acquired,
+    // no abort signal) run AFTER the acquisition releases (INV-9.1).
+    return completeRootInitialWorkAfterAdmission(deps, admitted)
+  }
 }

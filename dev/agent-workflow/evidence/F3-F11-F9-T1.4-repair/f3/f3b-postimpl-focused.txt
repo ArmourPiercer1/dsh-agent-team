@@ -1,0 +1,11 @@
+F3-B (repair-r1) - post-fix focused non-regression (source = post-3-phase-split, F3-B)
+Runner: plain-node f3/run-file.mjs
+Date: 2026-09-08T03:42:29+08:00
+
+PASS packages\runtime\test\f3b-root-initial-work-lock-scope.test.ts (12 tests)
+PASS packages\runtime\test\tcm-m3-root-initial-work.test.ts (18 tests)
+PASS packages\runtime\test\tcm-m3-root-work-glue.test.ts (9 tests)
+PASS packages\runtime\test\p8s7r1-initial-work.test.ts (9 tests)
+PASS packages\runtime\test\tcm-g1-s6-integration.test.ts (11 tests)
+PASS packages\runtime\test\f3a-lock-scope.test.ts (7 tests)
+run-file: all named files pass

@@ -1,0 +1,24 @@
+F3-B (repair-r1) - RED before green (source = 68ff124 pre-fix behavior, new test files in place)
+Runner: plain-node f3/run-file.mjs (vitest unusable in sandbox - see f3/NOTES blocker 1)
+Date: 2026-09-08T03:41:17+08:00
+
+FAIL packages\runtime\test\f3b-root-initial-work-lock-scope.test.ts (4/12 tests)
+     (T1 x3 + T3 x1 - the deadlock verdicts: resolved=false / mode=undefined /
+      progressFacts=0 / mutationResolved=false after the microtask+macrotask
+      pump budget of 200,000 exhausts - a definitive hang, no wall clock)
+     - T1 "resolves: the leader team_report_progress DURING the root turn takes the shared chain (no deadlock)": actual toBe true - actual: false
+     - T1 "settles the fresh chain: mode fresh, delivered, one admission fact + one terminal fact": actual toBe "fresh" - actual: undefined
+     - T1 "commits the re-entry progress fact durably": actual toBe 1 - actual: 0
+     - T3 "runs AND commits an unrelated same-team mutation while the delivery is gated in flight": actual toBe true - actual: false
+     GREEN pre-fix (behavior preserved, not changed by the split): T2 (the
+     direct-orchestrator seam held no chain pre-fix - vacuously green), T4
+     (throw-after-settle + retry/replay already held pre-fix).
+
+FAIL packages\runtime\test\tcm-m3-root-initial-work.test.ts (1/18 tests)
+     - LOCK-1 "converges concurrent same-token admits ... (H3-root)":
+       actual toBe "fresh+retry" - actual: "fresh+replay" (pre-fix the lock
+       coupling serialized the second admit into a zero-delivery replay;
+       the split removes that coupling - the documented H3-root overlap)
+     The other 17 scenarios (HONEST-1..4, RETRY-1/2, COMPAT-1, CORRUPT-PAIR,
+     COLLIDE-1, FP-1) GREEN pre-fix: replay/retry/payload-mismatch/terminal-
+     fact semantics unchanged by the split.

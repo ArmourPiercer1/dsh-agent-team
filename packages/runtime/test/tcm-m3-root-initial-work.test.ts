@@ -3,11 +3,12 @@
  * Root initial-work strategy over the REAL durable world.
  *
  * Every scenario wires the production closure (`createAdmitRootInitialWork`
- * — withTeamLock → enforceCompatibilityGate → executeRootInitialWorkLocked
- * over a shared team-lock chain) against a real FileStorageSeam world
- * (real repositories, real ledger counter); only the model-visible delivery
- * port is a fake (it records the exact submit call and can fail on
- * command). The durable representation is the plan §15.7 two-fact pair
+ * — Phase A (compatibility gate + admission) under withTeamLock, Phase B
+ * (the root delivery) WITH THE CHAIN RELEASED, Phase C (the terminal
+ * fact) re-acquired — over a shared team-lock chain; INV-9.1, repair-r1
+ * F3-B) against a real FileStorageSeam world (real repositories, real
+ * ledger counter); only the model-visible delivery port is a fake (it
+ * records the exact submit call and can fail on command). The durable representation is the plan §15.7 two-fact pair
  * (the EXISTING `team-work-admitted` type carrying `targetKind: 'root'` +
  * the ONE new terminal `team-root-work-delivered`), both in the existing
  * `team` ledger category.
@@ -28,9 +29,15 @@
  *   fact WITHOUT re-admitting;
  * - COMPAT-1: the gate runs BEFORE the scan — a blocked environment
  *   rejects with COMPATIBILITY_BLOCKED, zero ledger facts, zero delivery;
- * - LOCK-1: two concurrent same-token admits serialize on the shared
- *   chain (exactly one admission fact; one fresh + one replay; one
- *   delivery);
+ * - LOCK-1: two concurrent same-token admits over the shared chain:
+ *   exactly ONE admission fact and exactly ONE terminal fact; one FRESH
+ *   + one ADMITTED-ONLY RETRY — the documented H3-root overlap (the
+ *   second admit's Phase A passes while the first's delivery is in
+ *   flight, so it re-drives the delivery; at-least-once + the model-side
+ *   token dedupe — plan §15.7), two model-visible deliveries, and ONE
+ *   terminal fact via the Phase C fresh-read convergence (pre-fix, the
+ *   lock coupling made the second a zero-delivery replay — one delivery;
+ *   that serialization was the coupling the F3-B split removes);
  * - COLLIDE-1: a same-token `targetKind: 'root'` fact is invisible to the
  *   ORDINARY member scanner (the token-collision guard) and a member
  *   follow-up with that token runs its OWN full chain (a fresh member
@@ -542,7 +549,13 @@ let compat: CompatCase
   }
 }
 
-// --- scenario: LOCK (concurrent same-token admits serialize) ----------------------
+// --- scenario: LOCK (concurrent same-token admits over the shared chain; H3-root) --
+//
+// One FRESH + one ADMITTED-ONLY RETRY (the documented H3-root overlap —
+// the second admit's Phase A passes while the first's delivery is in
+// flight; at-least-once, the model-side token dedupes, plan §15.7);
+// exactly ONE admission fact, exactly ONE terminal fact (the Phase C
+// fresh-read convergence), two model-visible deliveries.
 
 let lock: LockCase
 
@@ -811,12 +824,12 @@ describe('TCM-M3: the creation-time Root initial-work strategy (plan §15.7/§15
     })
   })
 
-  describe('the shared team-lock chain (the plan §15.8 closure lock)', () => {
-    it('serializes concurrent same-token admits: one admission fact, one fresh + one replay, one delivery', () => {
-      expect(lock.modes).toBe('fresh+replay')
+  describe('the shared team-lock chain (the plan §15.8 closure lock, INV-9.1)', () => {
+    it('converges concurrent same-token admits: one admission fact, one fresh + one retry-overlap (H3-root), one terminal fact', () => {
+      expect(lock.modes).toBe('fresh+retry')
       expect(lock.admittedFacts).toBe(1)
       expect(lock.terminalFacts).toBe(1)
-      expect(lock.deliveryCalls).toBe(1)
+      expect(lock.deliveryCalls).toBe(2)
       expect(lock.sameAdmittedSequence).toBe(true)
     })
   })
