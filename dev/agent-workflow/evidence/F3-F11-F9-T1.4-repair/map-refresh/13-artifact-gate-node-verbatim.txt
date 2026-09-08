@@ -1,0 +1,49 @@
+﻿cmd: node scripts/check-artifacts-committed.mjs   (verbatim, committed gate)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-map-refresh
+started: 2026-09-08 13:47:01 +08:00
+---
+node:internal/child_process:1160
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+System.Management.Automation.RemoteException
+<ref *1> Error: spawnSync git EPERM
+    at Object.spawnSync (node:internal/child_process:1160:20)
+    at spawnSync (node:child_process:928:24)
+    at execFileSync (node:child_process:971:15)
+    at git (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-map-refresh/scripts/check-artifacts-committed.mjs:45:10)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-map-refresh/scripts/check-artifacts-committed.mjs:88:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawnSync git',
+  path: 'git',
+  spawnargs: [
+    'ls-files',
+    '--ignored',
+    '--exclude-standard',
+    '-o',
+    '--',
+    'packages/runtime/dist',
+    'packages/client/composition-shim'
+  ],
+  error: [Circular *1],
+  status: null,
+  signal: null,
+  output: null,
+  pid: 0,
+  stdout: undefined,
+  stderr: undefined
+}
+System.Management.Automation.RemoteException
+Node.js v24.20.0
+---
+exit: 1
+
+Note: the node gate spawns git via execFileSync with piped stdio. In this workspace-write sandbox
+node-initiated piped-stdio child spawns are EPERM (TEST_METHODS.md §5; same signature recorded in
+batch1-validation/19-artifacts-cleanliness.txt). If EPERM is observed above, the pwsh-level three-way
+reproduction (run-14-three-way.ps1, outputs 14/16) is the authoritative artifact-consistency check;
+it implements A/B/C exactly as the node gate does.
+

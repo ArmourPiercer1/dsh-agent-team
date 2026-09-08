@@ -1,0 +1,30 @@
+﻿three-way reproduction of node scripts/check-artifacts-committed.mjs (pwsh-level)
+worktree: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-map-refresh
+HEAD: 97d4729e3a4643130ebe4352280bbc4fcfbc4d0e
+started: 2026-09-08 13:47:06 +08:00
+
+=== results ===
+tracked (index): 1032
+produced on disk (minus ignored): 1032
+A tracked-but-absent: 0
+B produced-but-untracked: 0
+C content-drift: 4
+    packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+    packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+GATE FAIL: see A/B/C lists above (== node gate would exit 1)
+
+=== worktree git status --short --branch ===
+## task/repair-r1-map-refresh
+ M packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/map-refresh/
+
+=== git diff --check ===
+
+
+finished: 2026-09-08 13:47:11 +08:00
+

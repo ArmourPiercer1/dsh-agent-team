@@ -1,0 +1,122 @@
+﻿== env baseline (map-refresh task, repair-r1) ==
+date: 2026-09-08 13:44:53 +08:00
+powershell: 5.1.26100.9168
+node: v24.20.0
+pnpm: 11.7.0
+git: git version 2.49.0.windows.1
+
+== worktree ==
+created by: git worktree add -b task/repair-r1-map-refresh .worktrees/repair-r1-map-refresh 97d4729e3a4643130ebe4352280bbc4fcfbc4d0e
+path: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-map-refresh
+== branch / head ==
+## task/repair-r1-map-refresh
+HEAD: 97d4729e3a4643130ebe4352280bbc4fcfbc4d0e
+candidate tip (int/repair-r1): 97d4729e3a4643130ebe4352280bbc4fcfbc4d0e
+int/repair-r1 == HEAD: True
+
+== pre-build worktree cleanliness (git status --porcelain; MUST BE EMPTY) ==
+
+
+== committed blob SHAs of the 4 reported-stale map artifacts at HEAD ==
+a727c63cb0f7552ebf88d651708b034dc814b76f  packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+2a6bfbc2b5d384b3802c8372d5f52812e4b4de54  packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+5662e7875981e40d62d206afde363384f0486f9d  packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+f86337a60e2f7ae0606716e0c51be05d65af211f  packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+
+== tracked file counts on install surface (git ls-files) ==
+packages/runtime/dist: 1029
+packages/client/composition-shim: 3
+
+== typescript pin (devDep at root; resolved version from lockfile) ==
+typescript@6.0.3
+├─┬ @lexical/clipboard@0.49.0
+│ └─┬ @lexical/plain-text@0.49.0
+│   └─┬ @deepseek-ai/dsh-client-ui-conversation@0.1.2-rc.1
+│     ├─┬ @deepseek-ai/dsh-client-test-runtime@0.1.2-rc.1
+│     │ └── @dsh-agent-team/client@0.0.0 (devDependencies)
+│     └── @dsh-agent-team/client@0.0.0 (devDependencies)
+├─┬ @lexical/dragon@0.49.0
+│ └── @lexical/plain-text@0.49.0 [deduped]
+├─┬ @lexical/extension@0.49.0
+│ ├── @lexical/clipboard@0.49.0 [deduped]
+│ ├── @lexical/dragon@0.49.0 [deduped]
+│ ├─┬ @lexical/history@0.49.0
+│ │ └── @deepseek-ai/dsh-client-ui-conversation@0.1.2-rc.1 [deduped]
+│ ├─┬ @lexical/html@0.49.0
+│ │ ├── @lexical/clipboard@0.49.0 [deduped]
+│ │ └─┬ @lexical/list@0.49.0
+│ │   └── @lexical/clipboard@0.49.0 [deduped]
+│ ├── @lexical/list@0.49.0 [deduped]
+│ └── @lexical/plain-text@0.49.0 [deduped]
+├── @lexical/history@0.49.0 [deduped]
+├── @lexical/html@0.49.0 [deduped]
+├─┬ @lexical/internal@0.49.0
+│ ├── @lexical/clipboard@0.49.0 [deduped]
+│ ├── @lexical/extension@0.49.0 [deduped]
+│ ├── @lexical/html@0.49.0 [deduped]
+│ ├── @lexical/list@0.49.0 [deduped]
+│ ├─┬ @lexical/selection@0.49.0
+│ │ ├── @lexical/clipboard@0.49.0 [deduped]
+│ │ ├── @lexical/html@0.49.0 [deduped]
+│ │ ├── @lexical/plain-text@0.49.0 [deduped]
+│ │ └─┬ @lexical/utils@0.49.0
+│ │   ├── @deepseek-ai/dsh-client-ui-conversation@0.1.2-rc.1 [deduped]
+│ │   ├── @lexical/clipboard@0.49.0 [deduped]
+│ │   ├── @lexical/extension@0.49.0 [deduped]
+│ │   ├── @lexical/history@0.49.0 [deduped]
+│ │   ├── @lexical/html@0.49.0 [deduped]
+│ │   ├── @lexical/list@0.49.0 [deduped]
+│ │   └── @lexical/plain-text@0.49.0 [deduped]
+│ ├─┬ @lexical/text@0.49.0
+│ │ └── @deepseek-ai/dsh-client-ui-conversation@0.1.2-rc.1 [deduped]
+│ ├── @lexical/utils@0.49.0 [deduped]
+│ └─┬ lexical@0.49.0
+│   ├── @deepseek-ai/dsh-client-ui-conversation@0.1.2-rc.1 [deduped]
+│   ├── @lexical/clipboard@0.49.0 [deduped]
+│   ├── @lexical/dragon@0.49.0 [deduped]
+│   ├── @lexical/extension@0.49.0 [deduped]
+│   ├── @lexical/history@0.49.0 [deduped]
+│   ├── @lexical/html@0.49.0 [deduped]
+│   ├── @lexical/list@0.49.0 [deduped]
+│   ├── @lexical/plain-text@0.49.0 [deduped]
+│   ├── @lexical/selection@0.49.0 [deduped]
+│   ├── @lexical/text@0.49.0 [deduped]
+│   └── @lexical/utils@0.49.0 [deduped]
+├── @lexical/list@0.49.0 [deduped]
+├── @lexical/plain-text@0.49.0 [deduped]
+├── @lexical/selection@0.49.0 [deduped]
+├── @lexical/text@0.49.0 [deduped]
+├── @lexical/utils@0.49.0 [deduped]
+├─┬ @typescript-eslint/eslint-plugin@8.68.0
+│ └─┬ typescript-eslint@8.68.0
+│   └── dsh-agent-team@0.0.0 (devDependencies)
+├─┬ @typescript-eslint/parser@8.68.0
+│ ├── @typescript-eslint/eslint-plugin@8.68.0 [deduped]
+│ └── typescript-eslint@8.68.0 [deduped]
+├─┬ @typescript-eslint/project-service@8.68.0
+│ └─┬ @typescript-eslint/typescript-estree@8.68.0
+│   ├── @typescript-eslint/parser@8.68.0 [deduped]
+│   ├─┬ @typescript-eslint/type-utils@8.68.0
+│   │ └── @typescript-eslint/eslint-plugin@8.68.0 [deduped]
+│   ├─┬ @typescript-eslint/utils@8.68.0
+│   │ ├── @typescript-eslint/eslint-plugin@8.68.0 [deduped]
+│   │ ├── @typescript-eslint/type-utils@8.68.0 [deduped]
+│   │ └── typescript-eslint@8.68.0 [deduped]
+│   └── typescript-eslint@8.68.0 [deduped]
+├─┬ @typescript-eslint/tsconfig-utils@8.68.0
+│ ├── @typescript-eslint/project-service@8.68.0 [deduped]
+│ └── @typescript-eslint/typescript-estree@8.68.0 [deduped]
+├── @typescript-eslint/type-utils@8.68.0 [deduped]
+├── @typescript-eslint/typescript-estree@8.68.0 [deduped]
+├── @typescript-eslint/utils@8.68.0 [deduped]
+├── dsh-agent-team@0.0.0 (devDependencies)
+├── lexical@0.49.0 [deduped]
+├─┬ ts-api-utils@2.5.0
+│ ├── @typescript-eslint/eslint-plugin@8.68.0 [deduped]
+│ ├── @typescript-eslint/type-utils@8.68.0 [deduped]
+│ └── @typescript-eslint/typescript-estree@8.68.0 [deduped]
+└── typescript-eslint@8.68.0 [deduped]
+
+Found 1 version of typescript
+
+

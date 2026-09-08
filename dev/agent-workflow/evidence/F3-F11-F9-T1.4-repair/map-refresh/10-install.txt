@@ -1,0 +1,70 @@
+﻿cmd: pnpm install --ignore-scripts --store-dir D:\AgentDev\dsh-plugins\dsh-agent-team\.pnpm-store\v11
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-map-refresh
+ps: 5.1.26100.9168
+started: 2026-09-08 13:45:56 +08:00
+---
+Scope: all 10 workspace projects
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +463
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 463, reused 2, downloaded 0, added 0
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.3.4.      │
+   │     Changelog: https://pnpm.io/v/12.3.4      │
+   │   To update, run: corepack use pnpm@12.3.4   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 463, reused 463, downloaded 0, added 0
+Progress: resolved 463, reused 463, downloaded 0, added 1
+Progress: resolved 463, reused 463, downloaded 0, added 65
+Progress: resolved 463, reused 463, downloaded 0, added 66
+Progress: resolved 463, reused 463, downloaded 0, added 99
+Progress: resolved 463, reused 463, downloaded 0, added 100
+Progress: resolved 463, reused 463, downloaded 0, added 136
+Progress: resolved 463, reused 463, downloaded 0, added 137
+Progress: resolved 463, reused 463, downloaded 0, added 170
+Progress: resolved 463, reused 463, downloaded 0, added 171
+Progress: resolved 463, reused 463, downloaded 0, added 193
+Progress: resolved 463, reused 463, downloaded 0, added 194
+Progress: resolved 463, reused 463, downloaded 0, added 237
+Progress: resolved 463, reused 463, downloaded 0, added 238
+Progress: resolved 463, reused 463, downloaded 0, added 270
+Progress: resolved 463, reused 463, downloaded 0, added 271
+Progress: resolved 463, reused 463, downloaded 0, added 296
+Progress: resolved 463, reused 463, downloaded 0, added 297
+Progress: resolved 463, reused 463, downloaded 0, added 350
+Progress: resolved 463, reused 463, downloaded 0, added 351
+Progress: resolved 463, reused 463, downloaded 0, added 379
+Progress: resolved 463, reused 463, downloaded 0, added 380
+Progress: resolved 463, reused 463, downloaded 0, added 382
+Progress: resolved 463, reused 463, downloaded 0, added 383
+Progress: resolved 463, reused 463, downloaded 0, added 429
+Progress: resolved 463, reused 463, downloaded 0, added 430
+Progress: resolved 463, reused 463, downloaded 0, added 463, done
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 55.4s using pnpm v11.7.0
+---
+exit: 0
+elapsed-seconds: 55.7
+finished: 2026-09-08 13:45:56 +08:00
+
+typescript resolved version (root devDep):
+6.0.3
+tsc --version:
+Version 6.0.3
+post-install worktree git status --porcelain (expect empty; node_modules gitignored):
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/map-refresh/
+

@@ -1,0 +1,53 @@
+﻿
+=== scope ===
+tracked files on install surface (index @ HEAD 97d4729): 1032
+produced on disk (minus ignored): 1032
+files compared (tracked AND on disk): 1032
+expected drifted set (the 4 reported-stale maps): 4
+
+=== drifted files (worktree blob != committed blob) ===
+count: 4
+  packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map  2a6bfbc2b5d384b3802c8372d5f52812e4b4de54 -> efdc03591f364f50750d11eadd021a982f5a5a68
+  packages/runtime/dist/packages/runtime/src/plugin/root.js.map  a727c63cb0f7552ebf88d651708b034dc814b76f -> 9582f5daf293310823bbe0761230caabb547b40e
+  packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map  f86337a60e2f7ae0606716e0c51be05d65af211f -> 4a13e42cb33d628240309416df1e3ee4290b6dea
+  packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map  5662e7875981e40d62d206afde363384f0486f9d -> 1a9ffb03e71bbfd3cfd31d09a1089ed3ae5e6653
+
+=== byte-identical files (worktree blob == committed blob) ===
+count: 1028
+  of which .js / .d.ts: 516
+
+=== verdict ===
+BYTE-IDENTITY PASS: drifted set is EXACTLY the 4 reported-stale maps; all other tracked artifacts (every .js/.d.ts, 516 js/d.ts files) are byte-identical to HEAD; no untracked/absent files in either install-surface path.
+
+=== the 4 maps: committed vs rebuilt (blob SHA + sha256 of new bytes) ===
+packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+    committed: a727c63cb0f7552ebf88d651708b034dc814b76f
+    rebuilt  : 9582f5daf293310823bbe0761230caabb547b40e
+    sha256(new): a62e574d313e897c8739a93674addd21d296099be312eede5dde486b14408b57
+packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+    committed: 2a6bfbc2b5d384b3802c8372d5f52812e4b4de54
+    rebuilt  : efdc03591f364f50750d11eadd021a982f5a5a68
+    sha256(new): 291a0d3681932af484dea8b526bd52bad10dbaee7b0657041b87f6ddc72a1f2f
+packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+    committed: 5662e7875981e40d62d206afde363384f0486f9d
+    rebuilt  : 1a9ffb03e71bbfd3cfd31d09a1089ed3ae5e6653
+    sha256(new): 176559fbe0c15be881e78df04c3adcb15013ab4e6e631a73283bc3d43b82bfa8
+packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+    committed: f86337a60e2f7ae0606716e0c51be05d65af211f
+    rebuilt  : 4a13e42cb33d628240309416df1e3ee4290b6dea
+    sha256(new): 12e7bb3134eab1c81597a6fc09ec608ac8cfeae6c5484674877d3d71eb541db3
+
+=== rebuilt maps: structural validation (JSON parse + source-map v3 fields) ===
+packages/runtime/dist/packages/runtime/src/plugin/root.js.map -> OK: version=3 file=root.js sources=1 mappings-len=35807
+packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map -> OK: version=3 file=root.d.ts sources=1 mappings-len=2177
+packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map -> OK: version=3 file=s6-remote.js sources=1 mappings-len=60654
+packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map -> OK: version=3 file=s6-remote.d.ts sources=1 mappings-len=10832
+
+=== untracked or absent under the two paths (git status --porcelain) ===
+M packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+
+finished: 2026-09-08 13:46:38 +08:00
+

@@ -1,0 +1,12 @@
+﻿cmd: node node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+    (== packages/runtime package.json script "build": tsc -p tsconfig.build.json; invoked via node directly — tsc is a pure-node process, no child spawns, sandbox-safe; identical binary to the pnpm shim target)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-map-refresh\packages\runtime
+tsc: Version 6.0.3 (root devDep typescript 6.0.3 — the pinned version the audits built with)
+started: 2026-09-08 13:46:07 +08:00
+---
+(no stdout/stderr — tsc success is silent)
+---
+exit: 0
+elapsed-seconds: 1.7
+finished: 2026-09-08 13:46:07 +08:00
+
