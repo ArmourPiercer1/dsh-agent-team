@@ -1,0 +1,31 @@
+﻿R3-CAPTURE preflight: ports 3181/3491/3492, :3080 GET-only probe, test-use HEAD+porcelain, main repo tracked status, task-branch provenance diff
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+ts: 2026-09-08T16:48:12.3466893+08:00
+port 3181 busy=False
+port 3491 busy=False
+port 3492 busy=False
+:3080 GET status=401 (HTTP status from exception)
+a66e4702047846cdaa10c66c9d3df3951f5ea70d
+testuse porcelain: []
+main repo tracked-mods: []
+--- git diff --name-status 9555aa0..2285427 (base..task) ---
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/01-selftest.txt
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/02-pending-prestate-toolname.txt
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/03-pending-prestate-legacy.txt
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/04-filter-backcompat.txt
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/REPORT.md
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/diff.patch
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/run-01-selftest.ps1
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/run-02-pending-toolname.ps1
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/run-02-wrapper.mjs
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/run-03-pending-legacy.ps1
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/run-03-wrapper.mjs
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/run-04-filter-backcompat.mjs
+A	dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/g4-recipe-fix/scratch/f9-pending-prestate-legacy.json
+M	tests/mock/scripts/f9-check.mjs
+M	tests/mock/scripts/prompts/b6-req.md
+--- git diff --stat 9555aa0..2285427 -- tests/mock/scripts (non-evidence runtime assets) ---
+ tests/mock/scripts/f9-check.mjs      | 10 +++++++---
+ tests/mock/scripts/prompts/b6-req.md |  2 +-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+EXIT_CODE=0

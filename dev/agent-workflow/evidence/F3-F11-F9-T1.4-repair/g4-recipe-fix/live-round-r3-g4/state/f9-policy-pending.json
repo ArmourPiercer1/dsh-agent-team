@@ -1,0 +1,17 @@
+{
+  "root": "session-dtestmts69xkr6b54",
+  "requestId": "ctrl-04ih1151nw6m9m0nagf8z10w",
+  "kind": "leader-approval",
+  "requester": {
+    "instanceId": "inst-0fi1an617bjs",
+    "kind": "instance",
+    "role": "member"
+  },
+  "targetInstanceId": "inst-0fi1an617bjs",
+  "actionName": "write",
+  "toolName": "write",
+  "summary": "写入 work/v2-hard.txt",
+  "correlation": "dtest-v2-hard-req-2",
+  "sequence": 16,
+  "createdAt": "2026-09-08T08:52:34.149Z"
+}

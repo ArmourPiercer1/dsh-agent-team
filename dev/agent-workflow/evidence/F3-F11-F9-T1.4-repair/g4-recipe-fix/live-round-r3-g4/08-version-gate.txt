@@ -1,0 +1,13 @@
+﻿R3-CAPTURE
+cmd: node tests/mock/scripts/f9-check.mjs version-gate  (main-checkout copy; version-gate phase byte-identical to task branch)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+ts: 2026-09-08T16:52:07.7631445+08:00
+PASS  version-gate v1 -> method-version-unsupported
+PASS  version-gate v2 -> method-version-unsupported
+PASS  version-gate v3 -> method-version-unsupported
+PASS  version-gate v4 accepted (reaches the control port: CONTROL_REQUEST_NOT_FOUND)
+PASS  version-gate v4 spoofed caller field -> malformed-params unknown-field (before any derivation/port work)
+
+[f9-check] 5 PASS, 0 FAIL — OK
+EXIT_CODE=0

@@ -1,0 +1,439 @@
+- generic [ref=f2e4]:
+  - generic [ref=f2e7]:
+    - generic [ref=f2e8]:
+      - button "新建会话" [ref=f2e9] [cursor=pointer]:
+        - generic [ref=f2e17]:
+          - generic [ref=f2e18]: DSH 本地构建
+          - generic [ref=f2e19]: 0.1.2-rc.1-a66e470
+      - button "收起侧边栏" [ref=f2e20] [cursor=pointer]
+    - button "新建会话" [ref=f2e23] [cursor=pointer]:
+      - generic [ref=f2e26]: 新会话
+    - generic [ref=f2e29]:
+      - generic [ref=f2e30]:
+        - generic [ref=f2e31]: 工作区
+        - generic [ref=f2e33]:
+          - button "搜索会话" [ref=f2e34] [cursor=pointer]
+          - textbox "搜索会话…"
+        - generic [ref=f2e38]:
+          - button "视图选项" [ref=f2e40] [cursor=pointer]
+          - button "添加工作区" [ref=f2e43] [cursor=pointer]
+      - tree "会话" [ref=f2e49]:
+        - treeitem "mock" [expanded] [ref=f2e106] [cursor=pointer]
+        - generic [ref=f2e117]:
+          - treeitem "未分组" [expanded] [ref=f2e118] [cursor=pointer]
+          - treeitem "请依次调用 team_request_control 四 4分钟" [ref=f2e182] [cursor=pointer]:
+            - generic [ref=f2e128]: 请依次调用 team_request_control 四
+            - generic [ref=f2e129]: 4分钟
+          - treeitem "请初始化团队：先用 team_list_te 53分钟" [selected] [ref=f2e131] [cursor=pointer]:
+            - generic [ref=f2e133]: 请初始化团队：先用 team_list_te
+            - generic [ref=f2e134]: 53分钟
+    - generic [ref=f2e51]:
+      - button "新建团队" [ref=f2e54] [cursor=pointer]
+      - button "设置" [ref=f2e62] [cursor=pointer]
+  - generic [ref=f2e183]:
+    - banner [ref=f2e185]:
+      - generic [ref=f2e186]:
+        - navigation "会话层级" [ref=f2e188]:
+          - button "请初始化团队：先用 team_list_te" [disabled] [ref=f2e190]
+        - button "Session 日志" [ref=f2e193] [cursor=pointer]
+      - tablist [ref=f2e197]:
+        - tab "对话" [ref=f2e198] [cursor=pointer]
+        - tab "轨迹" [ref=f2e199] [cursor=pointer]
+        - tab "团队" [selected] [ref=f2e200] [cursor=pointer]
+    - generic [ref=f2e202]:
+      - generic [ref=f2e486]:
+        - generic [ref=f2e487]:
+          - heading "时间线" [level=3] [ref=f2e488]
+          - generic [ref=f2e490]:
+            - generic [ref=f2e493]:
+              - generic [ref=f2e494]: 16:03:20
+              - generic [ref=f2e495]: 16:03:30
+              - generic [ref=f2e496]: 16:03:40
+              - generic [ref=f2e497]: 16:03:50
+            - generic [ref=f2e498]:
+              - generic [ref=f2e499]: W1
+              - generic [ref=f2e502]: W2
+            - generic "团队委派时间线：滚轮缩放，拖拽平移，方向键平移，按 0 复位" [ref=f2e505]:
+              - generic [aria-hidden] [ref=f2e508] [cursor=pointer]
+        - generic [ref=f2e510]:
+          - heading "成员组" [level=3] [ref=f2e511]
+          - generic [ref=f2e512]:
+            - generic [ref=f2e513]:
+              - button "leader · 1 活跃" [ref=f2e514] [cursor=pointer]
+              - generic [ref=f2e516]:
+                - button "以 Team 模式打开 / 回到 Leader" [ref=f2e517] [cursor=pointer]
+                - button "以普通模式打开" [ref=f2e518] [cursor=pointer]
+              - button "运行中 暂无动作" [disabled] [ref=f2e521]:
+                - generic [ref=f2e532]: 运行中
+                - generic [ref=f2e533]: 暂无动作
+            - generic [ref=f2e534]:
+              - generic [ref=f2e535]:
+                - generic [ref=f2e536]: DTest Worker · 0 活跃
+                - button "创建成员实例" [ref=f2e537] [cursor=pointer]: +
+              - generic [ref=f2e539]:
+                - button "已结算 暂无动作 3 项待裁决" [ref=f2e540] [cursor=pointer]:
+                  - generic [ref=f2e543]: 已结算
+                  - generic [ref=f2e544]: 暂无动作
+                  - generic [ref=f2e545]: 3 项待裁决
+                - generic [ref=f2e546]:
+                  - button "发送消息…" [ref=f2e547] [cursor=pointer]
+                  - button "恢复…" [ref=f2e548] [cursor=pointer]
+                  - button "归档" [ref=f2e549] [cursor=pointer]
+                  - button "处置" [ref=f2e550] [cursor=pointer]
+            - generic [ref=f2e551]:
+              - generic [ref=f2e552]:
+                - generic [ref=f2e553]: DTest Collector · 0 活跃
+                - button "创建成员实例" [ref=f2e554] [cursor=pointer]: +
+              - generic [ref=f2e556]:
+                - button "已创建 暂无动作" [ref=f2e557] [cursor=pointer]:
+                  - generic [ref=f2e560]: 已创建
+                  - generic [ref=f2e561]: 暂无动作
+                - generic [ref=f2e562]:
+                  - button "发送任务…" [ref=f2e563] [cursor=pointer]
+                  - button "发送跟进" [ref=f2e564] [cursor=pointer]
+                  - button "归档" [ref=f2e565] [cursor=pointer]
+                  - button "处置" [ref=f2e566] [cursor=pointer]
+        - generic [ref=f2e567]:
+          - heading "治理" [level=3] [ref=f2e568]
+          - generic [ref=f2e569]:
+            - generic [ref=f2e570]:
+              - generic [ref=f2e571]:
+                - generic [ref=f2e572]: 兼容性
+                - generic [ref=f2e573]: ✓ 兼容
+              - generic [ref=f2e574]:
+                - text: 0 项警告 · 0 项致命 · 0 项已确认
+                - generic [ref=f2e575]: 代数 1
+                - generic [ref=f2e576]: 最后探测于 2026-09-08T04:31:33.981Z
+              - generic [ref=f2e577]:
+                - button "审查" [ref=f2e578] [cursor=pointer]
+                - button "重新检查" [ref=f2e579] [cursor=pointer]
+                - button "确认警告" [disabled] [ref=f2e580]
+              - paragraph [ref=f2e581]: 重新检查会生成新的兼容性代数；旧的确认不会自动覆盖新代数。
+            - generic [ref=f2e582]:
+              - generic [ref=f2e583]: 策略 [ default ]
+              - paragraph [ref=f2e584]: 策略控制团队当前的运行时治理范围，不代表任务进度。
+              - generic [ref=f2e585]:
+                - button "审查" [ref=f2e586] [cursor=pointer]
+                - button "提交" [disabled] [ref=f2e587]
+            - generic [ref=f2e588]:
+              - generic [ref=f2e589]: 生效配置
+              - generic [ref=f2e590]:
+                - generic [ref=f2e591]: W1
+                - generic [ref=f2e592]:
+                  - generic [ref=f2e593]:
+                    - generic [ref=f2e594]: model
+                    - generic [ref=f2e595]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f2e596]: capability
+                    - generic [ref=f2e597]: Inherited
+                  - generic [ref=f2e598]:
+                    - generic [ref=f2e599]: workspace
+                    - generic [ref=f2e600]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f2e601]: instance-creation
+                    - generic [ref=f2e602]: Locked
+                  - generic [ref=f2e603]:
+                    - generic [ref=f2e604]: autonomy
+                    - generic [ref=f2e605]: —
+                    - generic [ref=f2e606]: autonomy-overlay
+                    - generic [ref=f2e607]: Inherited
+                - generic [ref=f2e609]:
+                  - combobox [ref=f2e610]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f2e611]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f2e612]
+                  - button "查看覆盖" [ref=f2e613] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f2e614]
+                  - button "重置覆盖" [ref=f2e615] [cursor=pointer]
+              - generic [ref=f2e616]:
+                - generic [ref=f2e617]: W2
+                - generic [ref=f2e618]:
+                  - generic [ref=f2e619]:
+                    - generic [ref=f2e620]: model
+                    - generic [ref=f2e621]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f2e622]: capability
+                    - generic [ref=f2e623]: Inherited
+                  - generic [ref=f2e624]:
+                    - generic [ref=f2e625]: workspace
+                    - generic [ref=f2e626]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f2e627]: instance-creation
+                    - generic [ref=f2e628]: Inherited
+                  - generic [ref=f2e629]:
+                    - generic [ref=f2e630]: autonomy
+                    - generic [ref=f2e631]: —
+                    - generic [ref=f2e632]: autonomy-overlay
+                    - generic [ref=f2e633]: Inherited
+                - generic [ref=f2e635]:
+                  - combobox [ref=f2e636]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f2e637]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f2e638]
+                  - button "查看覆盖" [ref=f2e639] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f2e640]
+                  - button "重置覆盖" [ref=f2e641] [cursor=pointer]
+              - generic [ref=f2e642]:
+                - generic [ref=f2e643]: leader
+                - generic [ref=f2e644]:
+                  - generic [ref=f2e645]:
+                    - generic [ref=f2e646]: model
+                    - generic [ref=f2e647]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f2e648]: capability
+                    - generic [ref=f2e649]: Inherited
+                  - generic [ref=f2e650]:
+                    - generic [ref=f2e651]: workspace
+                    - generic [ref=f2e652]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f2e653]: blueprint
+                    - generic [ref=f2e654]: Locked
+                  - generic [ref=f2e655]:
+                    - generic [ref=f2e656]: autonomy
+                    - generic [ref=f2e657]: —
+                    - generic [ref=f2e658]: autonomy-overlay
+                    - generic [ref=f2e659]: Inherited
+                - generic [ref=f2e661]:
+                  - combobox [ref=f2e662]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f2e663]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f2e664]
+                  - button "查看覆盖" [ref=f2e665] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f2e666]
+                  - button "重置覆盖" [ref=f2e667] [cursor=pointer]
+        - generic [ref=f2e668]:
+          - heading "活动与进度" [level=3] [ref=f2e669]
+          - generic [ref=f2e670]: 暂无活动进度
+        - generic [ref=f2e672]:
+          - heading "团队事件" [level=3] [ref=f2e673]
+          - generic [ref=f2e674]:
+            - generic [ref=f2e675]:
+              - combobox [ref=f2e676] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "团队"
+                - option "成员"
+                - option "生命周期"
+                - option "消息"
+                - option "控制"
+                - option "策略"
+                - option "兼容"
+                - option "进度"
+              - combobox [ref=f2e677] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "W1"
+                - option "W2"
+                - option "leader"
+                - option "leader"
+                - option "DTest Worker"
+                - option "DTest Collector"
+            - generic [ref=f2e678]:
+              - 'button "15:55:07 成员创建 W1 {\"instanceId\":\"inst-0fi1an617bjs\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f2e679] [cursor=pointer]':
+                - generic [ref=f2e690]: 15:55:07
+                - generic [ref=f2e691]: 成员创建
+                - generic [ref=f2e692]: W1
+                - 'generic "provision-member-instance · #1 · 2026-09-08T07:55:07.212Z {\"instanceId\":\"inst-0fi1an617bjs\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f2e693]': "{\"instanceId\":\"inst-0fi1an617bjs\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+              - 'button "15:55:07 成员创建 W2 {\"instanceId\":\"inst-1ds2q2n0nete\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f2e694] [cursor=pointer]':
+                - generic [ref=f2e705]: 15:55:07
+                - generic [ref=f2e706]: 成员创建
+                - generic [ref=f2e707]: W2
+                - 'generic "provision-member-instance · #2 · 2026-09-08T07:55:07.778Z {\"instanceId\":\"inst-1ds2q2n0nete\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f2e708]': "{\"instanceId\":\"inst-1ds2q2n0nete\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+              - button "16:00:43 控制请求 W1 write" [ref=f2e709] [cursor=pointer]:
+                - generic [ref=f2e712]: 16:00:43
+                - generic [ref=f2e713]: 控制请求
+                - generic [ref=f2e714]: W1
+                - generic "write · 写入 tests/mock-outside/probe/v2-probe-1.txt" [ref=f2e715]: write
+              - button "16:00:43 控制请求 W1 write" [ref=f2e716] [cursor=pointer]:
+                - generic [ref=f2e719]: 16:00:43
+                - generic [ref=f2e720]: 控制请求
+                - generic [ref=f2e721]: W1
+                - generic "write · 写入 work/v2-l1.txt" [ref=f2e722]: write
+              - button "16:00:43 控制请求 W1 write 等待裁决" [ref=f2e723] [cursor=pointer]:
+                - generic [ref=f2e726]: 16:00:43
+                - generic [ref=f2e727]: 控制请求
+                - generic [ref=f2e728]: W1
+                - generic "write · 写入 work/v2-l2.txt" [ref=f2e729]: write
+                - generic [ref=f2e730]: 等待裁决
+              - generic [ref=f2e731]:
+                - generic [ref=f2e732]:
+                  - generic [ref=f2e733]:
+                    - term [ref=f2e734]: 请求方
+                    - definition [ref=f2e735]: W1
+                  - generic [ref=f2e736]:
+                    - term [ref=f2e737]: 请求类型
+                    - definition [ref=f2e738]: leader-approval
+                  - generic [ref=f2e739]:
+                    - term [ref=f2e740]: 请求操作
+                    - definition [ref=f2e741]: write
+                  - generic [ref=f2e742]:
+                    - term [ref=f2e743]: 原因
+                    - definition [ref=f2e744]: 写入 work/v2-l2.txt
+                  - generic [ref=f2e745]:
+                    - term [ref=f2e746]: 创建时间
+                    - definition [ref=f2e747]: 16:00:43
+                  - generic [ref=f2e748]:
+                    - term [ref=f2e749]: 当前状态
+                    - definition [ref=f2e750]: 等待裁决
+                  - generic [ref=f2e751]:
+                    - term [ref=f2e752]: 请求权限
+                    - definition [ref=f2e753]: leader / human
+                - button "允许" [ref=f2e754] [cursor=pointer]
+                - button "拒绝" [ref=f2e755] [cursor=pointer]
+              - button "16:00:43 控制请求 W1 write 等待裁决" [ref=f2e756] [cursor=pointer]:
+                - generic [ref=f2e759]: 16:00:43
+                - generic [ref=f2e760]: 控制请求
+                - generic [ref=f2e761]: W1
+                - generic "write · 写入 work/v2-self.txt" [ref=f2e762]: write
+                - generic [ref=f2e763]: 等待裁决
+              - generic [ref=f2e764]:
+                - generic [ref=f2e765]:
+                  - generic [ref=f2e766]:
+                    - term [ref=f2e767]: 请求方
+                    - definition [ref=f2e768]: W1
+                  - generic [ref=f2e769]:
+                    - term [ref=f2e770]: 请求类型
+                    - definition [ref=f2e771]: leader-approval
+                  - generic [ref=f2e772]:
+                    - term [ref=f2e773]: 请求操作
+                    - definition [ref=f2e774]: write
+                  - generic [ref=f2e775]:
+                    - term [ref=f2e776]: 原因
+                    - definition [ref=f2e777]: 写入 work/v2-self.txt
+                  - generic [ref=f2e778]:
+                    - term [ref=f2e779]: 创建时间
+                    - definition [ref=f2e780]: 16:00:43
+                  - generic [ref=f2e781]:
+                    - term [ref=f2e782]: 当前状态
+                    - definition [ref=f2e783]: 等待裁决
+                  - generic [ref=f2e784]:
+                    - term [ref=f2e785]: 请求权限
+                    - definition [ref=f2e786]: leader / human
+                - button "允许" [ref=f2e787] [cursor=pointer]
+                - button "拒绝" [ref=f2e788] [cursor=pointer]
+              - button "16:02:38 控制裁决 W1 allow 允许" [ref=f2e789] [cursor=pointer]:
+                - generic [ref=f2e792]: 16:02:38
+                - generic [ref=f2e793]: 控制裁决
+                - generic [ref=f2e794]: W1
+                - generic "ctrl-1utbsww1kjuqwl08yzyyu0ma · allow" [ref=f2e795]: allow
+                - generic [ref=f2e796]: 允许
+              - 'button "16:03:10 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T08:03:10.087Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-f1898fca80a5114128eec10671624fd2\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"你之前声明的越界写入请求已获批准，现在请把逐字内容 V2-UA-CONTENT 写入 tests/mock-outside/probe/v2-probe-1.txt 并回显（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-v2-ua-exec\",\"targetInstanceId\":\"inst-0fi1an617bjs\"}" [ref=f2e797] [cursor=pointer]':
+                - generic [ref=f2e808]: 16:03:10
+                - generic [ref=f2e809]: 工作准入
+                - generic [ref=f2e810]: W1
+                - 'generic "team-work-admitted · #8 · 2026-09-08T08:03:10.145Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T08:03:10.087Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-f1898fca80a5114128eec10671624fd2\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"你之前声明的越界写入请求已获批准，现在请把逐字内容 V2-UA-CONTENT 写入 tests/mock-outside/probe/v2-probe-1.txt 并回显（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-v2-ua-exec\",\"targetInstanceId\":\"inst-0fi1an617bjs\"}" [ref=f2e811]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T08:03:10.087Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-f1898fca80a5114128eec10671624fd2\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"你之前声明的越界写入请求已获批准，现在请把逐字内容 V2-UA-CONTENT 写入 tests/mock-outside/probe/v2-probe-1.txt 并回显（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-v2-ua-exec\",\"targetInstanceId\":\"inst-0fi1an617bjs\"}"
+              - button "16:03:10 活动开始 W1 work-unit" [ref=f2e812] [cursor=pointer]:
+                - generic [ref=f2e823]: 16:03:10
+                - generic [ref=f2e824]: 活动开始
+                - generic [ref=f2e825]: W1
+                - generic "dtest-v2-ua-exec · work-unit" [ref=f2e826]: work-unit
+              - 'button "16:03:50 活动结束 W1 {\"correlation\":\"dtest-v2-ua-exec\",\"instanceId\":\"inst-0fi1an617bjs\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-v2-ua-exec\",\"sequence\":2,\"subject\":\"work-unit\"}" [ref=f2e827] [cursor=pointer]':
+                - generic [ref=f2e830]: 16:03:50
+                - generic [ref=f2e831]: 活动结束
+                - generic [ref=f2e832]: W1
+                - 'generic "dtest-v2-ua-exec · {\"correlation\":\"dtest-v2-ua-exec\",\"instanceId\":\"inst-0fi1an617bjs\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-v2-ua-exec\",\"sequence\":2,\"subject\":\"work-unit\"}" [ref=f2e833]': "{\"correlation\":\"dtest-v2-ua-exec\",\"instanceId\":\"inst-0fi1an617bjs\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-v2-ua-exec\",\"sequence\":2,\"subject\":\"work-unit\"}"
+              - 'button "16:03:50 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T08:03:50.760Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-0fi1an617bjs\",\"requestToken\":\"dtest-v2-ua-exec\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f2e834] [cursor=pointer]':
+                - generic [ref=f2e845]: 16:03:50
+                - generic [ref=f2e846]: 生命周期
+                - generic [ref=f2e847]: W1
+                - 'generic "member-lifecycle-changed · #11 · 2026-09-08T08:03:50.812Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T08:03:50.760Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-0fi1an617bjs\",\"requestToken\":\"dtest-v2-ua-exec\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f2e848]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T08:03:50.760Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-0fi1an617bjs\",\"requestToken\":\"dtest-v2-ua-exec\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - button "16:08:34 控制请求 W1 write" [ref=f2e849] [cursor=pointer]:
+                - generic [ref=f2e852]: 16:08:34
+                - generic [ref=f2e853]: 控制请求
+                - generic [ref=f2e854]: W1
+                - generic "write · 写入 tests/mock-outside/probe/v2-probe-2.txt" [ref=f2e855]: write
+              - button "16:09:23 控制裁决 W1 deny 拒绝" [ref=f2e856] [cursor=pointer]:
+                - generic [ref=f2e859]: 16:09:23
+                - generic [ref=f2e860]: 控制裁决
+                - generic [ref=f2e861]: W1
+                - generic "ctrl-1vnalzt1jpvxto08p0d9v0mk · deny" [ref=f2e862]: deny
+                - generic [ref=f2e863]: 拒绝
+              - button "16:15:58 控制请求 W1 write 等待裁决" [ref=f2e864] [cursor=pointer]:
+                - generic [ref=f2e867]: 16:15:58
+                - generic [ref=f2e868]: 控制请求
+                - generic [ref=f2e869]: W1
+                - generic "write · 写入 work/v2-hard.txt" [ref=f2e870]: write
+                - generic [ref=f2e871]: 等待裁决
+              - generic [ref=f2e872]:
+                - generic [ref=f2e873]:
+                  - generic [ref=f2e874]:
+                    - term [ref=f2e875]: 请求方
+                    - definition [ref=f2e876]: W1
+                  - generic [ref=f2e877]:
+                    - term [ref=f2e878]: 请求类型
+                    - definition [ref=f2e879]: leader-approval
+                  - generic [ref=f2e880]:
+                    - term [ref=f2e881]: 请求操作
+                    - definition [ref=f2e882]: write
+                  - generic [ref=f2e883]:
+                    - term [ref=f2e884]: 原因
+                    - definition [ref=f2e885]: 写入 work/v2-hard.txt
+                  - generic [ref=f2e886]:
+                    - term [ref=f2e887]: 创建时间
+                    - definition [ref=f2e888]: 16:15:58
+                  - generic [ref=f2e889]:
+                    - term [ref=f2e890]: 当前状态
+                    - definition [ref=f2e891]: 等待裁决
+                  - generic [ref=f2e892]:
+                    - term [ref=f2e893]: 请求权限
+                    - definition [ref=f2e894]: leader / human
+                - button "允许" [ref=f2e895] [cursor=pointer]
+                - button "拒绝" [ref=f2e896] [cursor=pointer]
+              - button "16:16:28 控制裁决 W1 allow 允许" [ref=f2e897] [cursor=pointer]:
+                - generic [ref=f2e900]: 16:16:28
+                - generic [ref=f2e901]: 控制裁决
+                - generic [ref=f2e902]: W1
+                - generic "ctrl-0f8mo951hnv44s1ytucq70l3 · allow" [ref=f2e903]: allow
+                - generic [ref=f2e904]: 允许
+              - button "16:52:34 控制请求 W1 write" [ref=f2e905] [cursor=pointer]:
+                - generic [ref=f2e908]: 16:52:34
+                - generic [ref=f2e909]: 控制请求
+                - generic [ref=f2e910]: W1
+                - generic "write · write · 写入 work/v2-hard.txt" [ref=f2e911]: write
+              - button "16:56:37 控制裁决 W1 deny · external-policy 团队裁决：已允许 执行：被托管策略阻止" [ref=f2e912] [cursor=pointer]:
+                - generic [ref=f2e915]: 16:56:37
+                - generic [ref=f2e916]: 控制裁决
+                - generic [ref=f2e917]: W1
+                - generic "ctrl-04ih1151nw6m9m0nagf8z10w · deny · external-policy" [ref=f2e918]: deny · external-policy
+                - generic [ref=f2e919]:
+                  - generic [ref=f2e920]: 团队裁决：已允许
+                  - generic [ref=f2e921]: 执行：被托管策略阻止
+      - generic [ref=f2e424]:
+        - region "团队" [ref=f2e426]:
+          - generic [ref=f2e427] [cursor=pointer]:
+            - button "团队 1 运行中 · 4 待裁决" [ref=f2e428]:
+              - generic [ref=f2e429]: 团队
+              - generic [aria-hidden] [ref=f2e430]: ·
+              - generic [ref=f2e431]: 1 运行中 · 4 待裁决
+            - button "展开团队概览" [ref=f2e432]
+        - generic [ref=f2e436]:
+          - generic [ref=f2e437]:
+            - generic [ref=f2e439]:
+              - textbox "发消息或做任务… / 调用指令 @ 文件或对话" [active] [ref=f2e440]
+              - generic [aria-hidden]: 发消息或做任务… / 调用指令 @ 文件或对话
+            - generic [ref=f2e441]:
+              - generic [ref=f2e442]:
+                - button "指令" [ref=f2e443] [cursor=pointer]
+                - button "访问模式，当前：工作区内修改" [ref=f2e448] [cursor=pointer]:
+                  - generic [ref=f2e456]: 工作区内修改
+              - generic [ref=f2e460]:
+                - button "选择模型，当前 qwen3.8-27b" [ref=f2e463] [cursor=pointer]:
+                  - generic [ref=f2e464]: qwen3.8-27b
+                - button "上下文已用 3%" [ref=f2e468] [cursor=pointer]
+                - button "发送消息" [disabled] [ref=f2e472]
+          - generic [ref=f2e475]: 2 轮 · 6 步| LLM 17秒 · 工具调用 43.3秒| 首 token 平均 0.7秒 · 135 tok/s| 缓存命中 68%| 输入 30.4K tok · 输出 1.7K tok
+  - generic [ref=f2e480]:
+    - generic [ref=f2e481]:
+      - generic: 详情
+      - button "关闭详情" [ref=f2e482] [cursor=pointer]
+    - generic [ref=f2e485]: 点击消息流中的工具行查看详情

@@ -1,0 +1,10 @@
+﻿R3-CAPTURE
+cmd: node <ev>\tools\run-asset.mjs .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs policy --request-id ctrl-04ih1151nw6m9m0nagf8z10w --json @<ev>\args\policy-check.json  (expect: deny + reason=external-policy + decider=human + zero consumption)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+ts: 2026-09-08T16:57:02.0828804+08:00
+[run-asset] node .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs "policy" "--request-id" "ctrl-04ih1151nw6m9m0nagf8z10w" "--json" "{\"root\": \"session-dtestmts69xkr6b54\"}\n"
+PASS  managed-policy (deny + reason external-policy + decider human + no consumption)
+
+[f9-check] 1 PASS, 0 FAIL — OK
+EXIT_CODE=0

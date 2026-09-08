@@ -1,0 +1,87 @@
+R3-CAPTURE — f9-g4-policy gate: execution history + VALID run console
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+ts: 2026-09-08T16:59:30+08:00 (consolidated from managed job logs pwsh-129 / pwsh-131 / pwsh-132)
+
+==========================================================================
+ATTEMPT 1 (job pwsh-129, 16:53 local) — INFRA FAIL, no page interaction
+==========================================================================
+cmd: node tests/mock/scripts/ui-gate.mjs tests/mock/scripts/gates/f9-g4-policy.json
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+     PWTEST_DAEMON_SESSION_DIR=tests/mock/.playwright-cli/daemon   (RELATIVE)
+console:
+  [ui-gate] playwright-cli 0.1.19 (C:\nvm4w\nodejs\node_modules\@playwright\cli\playwright-cli.js)
+  goto failed (first run?) — opening session: The browser 'mocktest' is not open, please run open first
+  [stderr]
+  [ui-gate] open failed: ...playwright-core\lib\tools\cli-client\session.js:170
+      const rejectWithPid = (reject, message) => reject(Object.assign(new Error(`Daemon pid=${child.pid}: ${message}`), { daemonPid: child.pid }));
+  EXIT=1 (ui-gate aborted in the open fallback)
+classification: INFRA (playwright daemon registration failed — see NOTES-r3.md §4.2).
+world mutation: NONE (no page load, no click; request seq 16 stayed pending).
+
+recovery: manual `playwright-cli -s=mocktest open` from the repo-root cwd (relative daemon
+dir then resolves correctly) → browser mocktest opened (pid 47084), session registered in
+tests/mock/.playwright-cli/daemon/a464ccf0618f34da/. The stray nested dir created by the
+failed attempt (tests/mock/tests/mock/.playwright-cli, 0-byte .err only) was removed in
+postflight.
+
+==========================================================================
+ATTEMPT 2 (job pwsh-131, 16:55 local) — PAGE-STATE FAIL, no click
+==========================================================================
+env: same as attempt 1 but PWTEST_DAEMON_SESSION_DIR=D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\.playwright-cli\daemon (ABSOLUTE)
+console:
+  [ui-gate] playwright-cli 0.1.19 (...)
+  goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+  find root "请初始化团队": NO REF (out: No matches found for "请初始化团队".)
+  teamTab "团队" via role=tab eval -> "not-found"
+  PASS clickEval (... value="false"            <- precondition unmet (no resolve bar on page); quoted-string quirk, see NOTES-r3.md §4.3
+  FAIL eval (...data-decision... value=false   <- decision row absent (page never on the root's team tab)
+  PASS eval (...data-ledger-resolve-error... value=true   <- vacuous (no chips on welcome screen)
+  PASS eval (...data-request-id...=== null value=true    <- vacuous (no bar at all)
+  snapshot -> state/teamtab-f9-g4-policy.yml code=0
+  screenshot -> evidence/screenshots/f9-g4-policy.png code=0
+  [ui-gate] f9-g4-policy: FAIL (1)
+  EXIT=1
+classification: INFRA (fresh browser session → sidebar group 未分组 collapsed → root treeitem
+not in the aria tree; the committed f9-g4-policy.json has no rootGroup — in r2 the group had
+already been expanded by the preceding smoke-g1 gate on the persistent browser session).
+world mutation: NONE (clickEval found no button → returned 'false'; Allow never clicked;
+request seq 16 stayed pending). Snapshot/screenshot of attempt 2 were overwritten by the
+valid run's artifacts.
+
+recovery: one manual raw-eval click on the collapsed 未分组 treeitem (navigation aid only —
+no product interaction, no assertion), verified root treeitem visible:
+  eval "(() => { const items=[...document.querySelectorAll('[role=treeitem]')]; const g=items.find(x=>x.textContent.trim().startsWith('未分组')); if(!g) return 'not-found'; g.click(); return 'clicked' })()" → "clicked"
+  find '请初始化团队' → 2 matches (root treeitem ref=f1e180 + W1 child)
+
+==========================================================================
+ATTEMPT 3 = VALID G4 EXECUTION (job pwsh-132, 16:56 local) — PASS
+==========================================================================
+cmd: node tests/mock/scripts/ui-gate.mjs tests/mock/scripts/gates/f9-g4-policy.json   (committed gate, UNCHANGED)
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+     PWTEST_DAEMON_SESSION_DIR=D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\.playwright-cli\daemon (ABSOLUTE)
+varsFile: state/f9-policy-pending.json → requestId=ctrl-04ih1151nw6m9m0nagf8z10w (seq 16, toolName=write, corr dtest-v2-hard-req-2)
+console:
+  [ui-gate] playwright-cli 0.1.19 (C:\nvm4w\nodejs\node_modules\@playwright\cli\playwright-cli.js)
+  goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+  click root "请初始化团队" ref=f2e131 -> code=0
+  teamTab "团队" via role=tab eval -> "clicked"
+  PASS clickEval (() => { const b = document.querySelector('div[data-ledger-r… expect=truthy value="clicked"
+  PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=true
+  PASS eval (() => { const errs = [...document.querySelectorAll('span[da… expect=truthy value=true
+  PASS eval document.querySelector('div[data-ledger-resolve-bar][data-re… expect=truthy value=true
+  snapshot -> state/teamtab-f9-g4-policy.yml code=0
+  screenshot -> evidence/screenshots/f9-g4-policy.png code=0
+  [ui-gate] f9-g4-policy: PASS
+  EXIT=0
+Asserts (committed f9-g4-policy.json, verbatim semantics):
+  1. Allow button of the resolve bar for {{requestId}} clicked (value "clicked"; 8 s settle)
+  2. a control-decision row exists whose state span is [data-decision="deny"][data-external-policy="true"]
+     AND carries the frozen §26.4 sub-text ("Team decision: Allowed"/"Execution: Blocked by managed
+     policy" or zh 团队裁决：已允许 / 执行：被托管策略阻止) AND the row contains NO plain "Denied"/"拒绝"
+  3. every span[data-ledger-resolve-error] present carries data-resolve-error-code=CONTROL_EXTERNAL_POLICY_DENIED
+  4. the resolve bar for {{requestId}} is gone
+Rendered row (from state/teamtab-f9-g4-policy.yml, valid run):
+  button "16:56:37 控制裁决 W1 deny · external-policy 团队裁决：已允许 执行：被托管策略阻止"
+    - generic "ctrl-04ih1151nw6m9m0nagf8z10w · deny · external-policy"
+    - generic: 团队裁决：已允许
+    - generic: 执行：被托管策略阻止

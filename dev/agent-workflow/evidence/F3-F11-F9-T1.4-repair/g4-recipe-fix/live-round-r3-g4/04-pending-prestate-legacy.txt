@@ -1,0 +1,14 @@
+﻿R3-CAPTURE
+cmd: node <ev>\tools\run-asset.mjs .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs pending --json @<ev>\args\prestate-legacy.json  (expect: 3 matches seq 5/6/14, chosen seq 5, exit 0 — legacy selection still ambiguous)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+ts: 2026-09-08T16:48:43.1592318+08:00
+[run-asset] node .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmts69xkr6b54\", \"kind\": \"leader-approval\", \"target\": \"inst-0fi1an617bjs\", \"action\": \"write\", \"out\": \"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\.worktrees\\\\repair-r1-g4\\\\dev\\\\agent-workflow\\\\evidence\\\\F3-F11-F9-T1.4-repair\\\\g4-recipe-fix\\\\live-round-r3-g4\\\\scratch\\\\f9-pending-prestate-legacy.json\"}\n"
+[f9-check] 3 pending requests match — taking the first (sequence 5); the others stay pending:
+  - seq 6 requestId=ctrl-0ppmycw17v2axd0ws2xbi03q kind=leader-approval action=write
+  - seq 14 requestId=ctrl-1eaer590x95ko00wdd0y71jw kind=leader-approval action=write
+PASS  pending detail fields (requestId ctrl-0eenv68… kind=leader-approval)
+[f9-check] wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-g4\dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\g4-recipe-fix\live-round-r3-g4\scratch\f9-pending-prestate-legacy.json (vars for the ui-gate.mjs F9 configs)
+
+[f9-check] 1 PASS, 0 FAIL — OK
+EXIT_CODE=0

@@ -1,0 +1,28 @@
+﻿RAW_ROW_START
+{
+  "type": "tool/call",
+  "seq": 3668,
+  "time": 1788857553319,
+  "data": {
+    "turn": 5,
+    "step": 1,
+    "callId": "call_802ed3fde44b4b1cab4f9612",
+    "name": "team_request_control",
+    "arguments": "{\"actionName\":\"write\",\"kind\":\"leader-approval\",\"requestToken\":\"dtest-v2-hard-req-2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"summary\":\"写入 work/v2-hard.txt\",\"targetInstanceId\":\"inst-0fi1an617bjs\",\"toolName\":\"write\"}"
+  }
+}
+RAW_ROW_END
+RAW_ROW_START
+{
+  "type": "tool/call",
+  "seq": 3995,
+  "time": 1788857561794,
+  "data": {
+    "turn": 5,
+    "step": 2,
+    "callId": "call_93997bc5d6e54975aa883877",
+    "name": "team_request_control",
+    "arguments": "{\"actionName\":\"write\",\"kind\":\"leader-approval\",\"requestToken\":\"dtest-v2-hard-req-2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"summary\":\"写入 work/v2-hard.txt\",\"targetInstanceId\":\"inst-0fi1an617bjs\",\"toolName\":\"write\"}"
+  }
+}
+RAW_ROW_END

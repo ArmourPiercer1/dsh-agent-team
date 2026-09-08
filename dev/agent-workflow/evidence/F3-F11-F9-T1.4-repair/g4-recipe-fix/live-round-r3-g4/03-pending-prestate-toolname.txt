@@ -1,0 +1,15 @@
+﻿R3-CAPTURE
+cmd: node <ev>\tools\run-asset.mjs .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs pending --json @<ev>\args\prestate-toolname.json  (expect: 0 matches, exit 2 — discriminator empty pre-live)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+ts: 2026-09-08T16:48:37.0650226+08:00
+[run-asset] node .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmts69xkr6b54\", \"toolName\": \"write\"}\n"
+node : [f9-check] no pending control request matches the filter ({"toolName":"write"}) — deliver the request prompt (b4-
+requests.md / b6-req.md) first, then re-run
+At line:1 char:833
++ ... oding utf8; node "$ev\tools\run-asset.mjs" ".worktrees\repair-r1-g4\t ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([f9-check] no p...st, then re-run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+EXIT_CODE=2

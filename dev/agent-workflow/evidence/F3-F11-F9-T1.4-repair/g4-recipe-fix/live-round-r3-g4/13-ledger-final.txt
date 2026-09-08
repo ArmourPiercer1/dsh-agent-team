@@ -1,0 +1,25 @@
+﻿R3-CAPTURE
+cmd: node -e <inline domain scan: member instances + all control facts + ledger totals>
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+ts: 2026-09-08T16:57:16.5246911+08:00
+=== control requests ===
+seq=3 rid=ctrl-1utbsww1kjuqwl08yzyyu0ma kind=user-approval target=inst-0fi1an617bjs action=write toolName=null corr=dtest-v2-req-ua-1 DECIDED
+seq=4 rid=ctrl-0f8mo951hnv44s1ytucq70l3 kind=leader-approval target=inst-0fi1an617bjs action=write toolName=null corr=dtest-v2-req-la-1 DECIDED
+seq=5 rid=ctrl-0eenv681ihtx7p002pwg20kt kind=leader-approval target=inst-0fi1an617bjs action=write toolName=null corr=dtest-v2-req-la-2 PENDING
+seq=6 rid=ctrl-0ppmycw17v2axd0ws2xbi03q kind=leader-approval target=inst-0fi1an617bjs action=write toolName=null corr=dtest-v2-req-self-1 PENDING
+seq=12 rid=ctrl-1vnalzt1jpvxto08p0d9v0mk kind=user-approval target=inst-0fi1an617bjs action=write toolName=null corr=dtest-v2-req-ua-2 DECIDED
+seq=14 rid=ctrl-1eaer590x95ko00wdd0y71jw kind=leader-approval target=inst-0fi1an617bjs action=write toolName=null corr=dtest-v2-hard-req-1 PENDING
+seq=16 rid=ctrl-04ih1151nw6m9m0nagf8z10w kind=leader-approval target=inst-0fi1an617bjs action=write toolName="write" corr=dtest-v2-hard-req-2 DECIDED
+=== control decisions ===
+seq=7 rid=ctrl-1utbsww1kjuqwl08yzyyu0ma decision=allow decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"} reason=null
+seq=13 rid=ctrl-1vnalzt1jpvxto08p0d9v0mk decision=deny decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"} reason=null
+seq=15 rid=ctrl-0f8mo951hnv44s1ytucq70l3 decision=allow decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"} reason=null
+seq=17 rid=ctrl-04ih1151nw6m9m0nagf8z10w decision=deny decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"} reason="external-policy"
+=== consumptions ===: 0
+ledger total facts=17 maxseq=17
+pending now:
+  seq=5 rid=ctrl-0eenv681ihtx7p002pwg20kt corr=dtest-v2-req-la-2 toolName=null
+  seq=6 rid=ctrl-0ppmycw17v2axd0ws2xbi03q corr=dtest-v2-req-self-1 toolName=null
+  seq=14 rid=ctrl-1eaer590x95ko00wdd0y71jw corr=dtest-v2-hard-req-1 toolName=null
+EXIT_CODE=0

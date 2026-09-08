@@ -1,0 +1,10 @@
+﻿R3-CAPTURE
+cmd: node <ev>\tools\deliver-r2.mjs session-team-child-f1898fca80a5114128eec10671624fd2 D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-g4\tests\mock\scripts\prompts\b6-req.md  (FIXED prompt from task branch 2285427: toolName=write + requestToken dtest-v2-hard-req-2)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+ts: 2026-09-08T16:52:28.1019092+08:00
+[deliver] session=session-team-child-f1898fca80a5114128eec10671624fd2 file=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-g4\tests\mock\scripts\prompts\b6-req.md chars=181
+[deliver] prompt head: 请调用 team_request_control 一次：kind=leader-approval，action=write，toolName=write，目标说
+[deliver] status=200 ok=true
+[deliver] value={"accepted":true}
+EXIT_CODE=0

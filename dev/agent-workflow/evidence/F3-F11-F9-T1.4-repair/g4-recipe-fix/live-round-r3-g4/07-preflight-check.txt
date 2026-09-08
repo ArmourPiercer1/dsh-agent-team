@@ -1,0 +1,17 @@
+﻿R3-CAPTURE
+cmd: node tests/mock/scripts/preflight-check.mjs  (main-checkout copy; byte-identical to task branch per git diff)
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+env: MOCK_DSH_HOME=tests/mock/.dsh-home-repair-r1
+note: first run of this file omitted the per-invocation env (fresh pwsh process) and read the wrong home; this run is authoritative
+ts: 2026-09-08T16:52:02.1135435+08:00
+PASS  cookie-auth  GET / -> 200 (24395 bytes)
+PASS  row-health  status=200 ok=true toolCount=10 rootLive=true
+PASS  blueprint-binding  patch=dtest-bp@1 sha256:e1b1df8f7cc4… domain=sha256:e1b1df8f7cc4… match=true
+PASS  envelope-intersection  team(8) ∩ member(worker,collector) contain request-control/resolve-control
+PASS  workspace-registry  initialized=true workspaces=1 mockRow=sessions=1 rootBound=false
+PASS  mcp-endpoints  facet:3491=true host:3492=true
+PASS  team-binding  team_sessions[session-dtestmts69…]=gen=17 bp=dtest-bp@1 rootLog=true
+PASS  team-remote-seam  getProjection gen=17 (origin=team-remote)
+
+[preflight] 8 PASS, 0 WARN, 0 FAIL — CLEAR to run model turns
+EXIT_CODE=0
