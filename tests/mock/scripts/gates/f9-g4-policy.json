@@ -10,7 +10,7 @@
       "settleMs": 8000
     },
     {
-      "eval": "(() => { const rows = [...document.querySelectorAll('button[data-ledger-row][data-ledger-kind=\"control-decision\"]')]; return rows.some((r) => { const b = r.querySelector('span[data-ledger-state][data-decision=\"deny\"]'); const reason = r.querySelector('span[data-ledger-state-reason]'); return b !== null && (b.textContent.trim().startsWith('Denied') || b.textContent.trim().startsWith('拒绝')) && reason !== null && reason.textContent.trim() === 'external-policy' && reason.getAttribute('title') === 'external-policy' }) })()",
+      "eval": "(() => { const rows = [...document.querySelectorAll('button[data-ledger-row][data-ledger-kind=\"control-decision\"]')]; return rows.some((r) => { const b = r.querySelector('span[data-ledger-state][data-decision=\"deny\"][data-external-policy=\"true\"]'); if (!b) return false; const team = b.querySelector('[data-external-policy-team-decision]')?.textContent.trim(); const execution = b.querySelector('[data-external-policy-execution]')?.textContent.trim(); const frozenEn = team === 'Team decision: Allowed' && execution === 'Execution: Blocked by managed policy'; const frozenZh = team === '团队裁决：已允许' && execution === '执行：被托管策略阻止'; const plainDenied = b.textContent.includes('Denied') || b.textContent.includes('拒绝'); return (frozenEn || frozenZh) && !plainDenied }) })()",
       "expect": "truthy"
     },
     {

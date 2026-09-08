@@ -103,12 +103,11 @@ gate 配置里的 eval 字符串按此断言；**文案双语**（en/zh 均接�
 | allow 徽标 | `span[data-ledger-state][data-decision="allow"]` | `Allowed` / `允许` | `view.ledger.decision.allow` |
 | deny 徽标 | `span[data-ledger-state][data-decision="deny"]` | `Denied` / `拒绝` | `view.ledger.decision.deny` |
 | stale-denied 徽标 | `span[data-ledger-state][data-decision="stale-denied"]` | `Stale denied` / `过期拒绝` | `view.ledger.decision.stale_denied` |
-| 外部策略原因 | `span[data-ledger-state-reason]`（`title` + 文本均 = `external-policy`） | `external-policy` | `payload.reason` |
+| §26.4 外部策略徽标 | `span[data-ledger-state][data-decision="deny"][data-external-policy="true"]` | **子标记必须同时存在**：`[data-external-policy-team-decision]` = `Team decision: Allowed` / `团队裁决：已允许`；`[data-external-policy-execution]` = `Execution: Blocked by managed policy` / `执行：被托管策略阻止`；徽标文本不得含 `Denied` / `拒绝` | `view.ledger.externalPolicy.teamDecision` + `view.ledger.externalPolicy.execution` |
 
-> **注意**：allow / deny 徽标的 `textContent` 是**纯**文案（`Allowed`/`Denied`），
-> 因为 `reason` 是**子** span（`data-ledger-state-reason`），不在徽标自身文本里——
-> 所以 `f9-g3-allow.json`/`f9-g3-deny.json` 用 `===` 精确比对，
-> 而 `f9-g4-policy.json` 用 `startsWith('Denied')` + 独立查 `data-ledger-state-reason`。
+> **注意**：§26.4 的 durable `decision` 仍为 `deny`，但冻结 UI 不渲染普通 `Denied` / `拒绝` 文案。
+> gate 必须锁定 `data-external-policy="true"`、两个子标记、en/zh 两组冻结文本，并显式断言不存在普通 Denied/拒绝；
+> `CONTROL_EXTERNAL_POLICY_DENIED` 与裁决命令条消失仍由后续断言覆盖。
 
 ### 2.3 wire 层精确期望（`f9-check.mjs version-gate`）
 
