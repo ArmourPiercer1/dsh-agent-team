@@ -1,0 +1,24 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-p4t6-pin
+
+ ✓ packages/testkit/test/testkit.test.ts (2 tests) 3ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+ ✓ packages/testkit/test/t6-5-compat-complete-true.test.ts (6 tests) 12ms
+ ✓ packages/testkit/test/t6-7-fresh-per-delegation.test.ts (6 tests) 14ms
+ ✓ packages/testkit/test/t6-1-no-agent-dependency.test.ts (6 tests) 7ms
+ ✓ packages/testkit/test/t6-8-serialization-roundtrip.test.ts (9 tests) 19ms
+ ✓ packages/testkit/test/t6-6-snapshot-immutability.test.ts (8 tests) 28ms
+ ✓ packages/testkit/test/t6-10-composition-pipeline.test.ts (5 tests) 12ms
+ ✓ packages/testkit/test/t6-3-lifecycle-matrix.test.ts (8 tests) 10ms
+ ✓ packages/testkit/test/t6-4-policy-precedence.test.ts (11 tests) 48ms
+ ✓ packages/testkit/test/t6-9-negative-matrix.test.ts (12 tests) 28ms
+ ✓ packages/testkit/test/t6-2-template-n-instances.test.ts (8 tests) 38ms
+ ✓ packages/testkit/test/p4t5-corrupt-version.test.ts (10 tests) 3ms
+ ✓ packages/testkit/test/p4t5-retry-restart.test.ts (10 tests) 4ms
+ ✓ packages/testkit/test/p4t5-crash-matrix.test.ts (13 tests) 6ms
+
+ Test Files  15 passed (15)
+      Tests  124 passed (124)
+   Start at  13:49:18
+   Duration  672ms (transform 2.56s, setup 0ms, import 4.29s, tests 237ms, environment 1ms)
+

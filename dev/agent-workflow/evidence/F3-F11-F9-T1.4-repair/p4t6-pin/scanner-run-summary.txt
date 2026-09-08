@@ -1,0 +1,7 @@
+repoRoot=D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-p4t6-pin
+filesScanned=642
+filesLength=642
+packageDirs=["client","contracts","domain","legacy","remote","runtime","storage","testkit","tools"]
+summary={"eventString":15,"payloadSymbol":0,"declarationMerge":0,"total":15}
+excludedSelfFiles=["packages/testkit/fault-injection/session-event-scan.mjs","packages/testkit/test/p4t6-session-event-scan.test.ts"]
+skippedDirs=[{"name":"dist","path":"packages/runtime/dist"}]

@@ -408,8 +408,29 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // in-place edits + the .tsx spec, outside the scanner's
     // .ts/.mts/.mjs scope) are no count change. The new file carries
     // zero denylist vocabulary (the scan over it passes).
-    expect(scanResult.filesScanned).toBe(630)
-    expect(scanResult.files.length).toBe(630)
+    // repair-r1 pin (630 + 12, the pin was stale at the D3 commit
+    // 1386a9b — the same "record the missed pin" precedent as the
+    // TCM-D4 stale-base entries): the F3/F11/F9/T1.4 repair round r1
+    // work merged into int/repair-r1 (base 97d4729) added twelve
+    // scannable files without recording the increment — F3 adds its
+    // three lock-scope specs (runtime test f3a-lock-scope,
+    // f3b-root-initial-work-lock-scope, f3c-messaging-sibling); F9
+    // adds its six (remote test f9-remote-v4, client test
+    // f9-remote-client-v4, runtime test f9-control-exactly-once,
+    // runtime test f9-s6-resolve-control, the client-local
+    // control-surface model packages/client/src/model/control-surface.ts
+    // + its spec client test f9u-control-surface-model); T1.4 (T14-H)
+    // adds its pre-creation probe-merge spec (runtime test
+    // t14h-probe-merge); the Team D1-D6 repair v2 acceptance runners add
+    // two tools/harness .mjs (d4-restart-reopen, g5-member-e2e). All
+    // twelve carry zero denylist vocabulary (the scan over them passes
+    // — the frozen quarantine hit set is unchanged at fifteen
+    // occurrences). Independently re-verified on the clean candidate
+    // worktree (filesystem walk + git ls-files enumeration byte-identical
+    // to the committed scanner's file list; evidence:
+    // dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/p4t6-pin/).
+    expect(scanResult.filesScanned).toBe(642)
+    expect(scanResult.files.length).toBe(642)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

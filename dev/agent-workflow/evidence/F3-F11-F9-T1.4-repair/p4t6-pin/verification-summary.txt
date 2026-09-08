@@ -1,0 +1,56 @@
+p4t6 coverage pin repair — independent verification from the clean candidate tree
+=================================================================================
+
+Candidate tree   : worktree .worktrees/repair-r1-p4t6-pin
+                   branch task/repair-r1-p4t6-pin @ 97d4729e3a4643130ebe4352280bbc4fcfbc4d0e
+                   (= int/repair-r1 tip; `git status --porcelain` empty at verification time)
+Scanner base pin : 630 (last recorded at commit 1386a9b "D3: D6 explicit
+                   ordinary-mode fallback ... (v2)", the last commit touching
+                   packages/testkit/test/p4t6-session-event-scan.test.ts)
+
+Method 1 — committed scanner (packages/testkit/fault-injection/
+session-event-scan.mjs, run via run-scanner.mjs, see scanner-run-summary.txt)
+  filesScanned = 642, files.length = 642
+  summary = {"eventString":15,"payloadSymbol":0,"declarationMerge":0,"total":15}
+  excludedSelfFiles = [packages/testkit/fault-injection/session-event-scan.mjs,
+                       packages/testkit/test/p4t6-session-event-scan.test.ts]
+  skippedDirs = [{name:"dist", path:"packages/runtime/dist"}]
+  full list: scanner-file-list.txt (642 POSIX paths, ordinal-sorted)
+
+Method 2 — independent PowerShell filesystem walk of packages/** (no scanner
+code; same documented scope: .ts/.mts/.mjs, skip dir segments node_modules/
+dist/.tmp-fault, exclude the two self-referential files)
+  count = 642 -> enum-a-filesystem.txt (ordinal-sorted)
+
+Method 3 — independent `git ls-files packages/` on the clean checkout
+(tracked files = committed tree; same scope filters)
+  count = 642 -> enum-b-gitlsfiles.txt (ordinal-sorted)
+
+Three-way comparison (ordinal, element-wise, [string]::CompareOrdinal):
+  scanner vs filesystem walk : IDENTICAL (642 == 642)
+  scanner vs git ls-files    : IDENTICAL (642 == 642)
+  scanner list ordinal-sorted: True
+
+Cross-check against git history (diff-since-1386a9b-pin-scan-scope.txt):
+  1386a9b..97d4729 in scanner scope = 12 ADDED, 0 DELETED, 0 RENAMED
+  => 630 + 12 = 642, matching all three methods exactly.
+
+The twelve added files (all zero denylist vocabulary — scanner summary shows
+the frozen quarantine set unchanged at 15 event-string hits in the two
+quarantine files, 0 payload symbols, 0 declaration merges):
+  1  packages/client/src/model/control-surface.ts        (F9U control-surface model)
+  2  packages/client/test/f9-remote-client-v4.test.ts    (F9 client v4 wrapper spec)
+  3  packages/client/test/f9u-control-surface-model.test.ts (F9U model spec)
+  4  packages/remote/test/f9-remote-v4.test.ts           (F9 remote contract v4 spec)
+  5  packages/runtime/test/f3a-lock-scope.test.ts        (F3-A work-chain lock scope)
+  6  packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (F3-B)
+  7  packages/runtime/test/f3c-messaging-sibling.test.ts (F3-C private-chain)
+  8  packages/runtime/test/f9-control-exactly-once.test.ts (F9 durable exactly-once)
+  9  packages/runtime/test/f9-s6-resolve-control.test.ts (F9 S6 dispatcher wiring)
+  10 packages/runtime/test/t14h-probe-merge.test.ts      (T1.4/T14-H probe merge)
+  11 packages/tools/harness/d4-restart-reopen.mjs        (Team D1-D6 v2 D4 real-host runner)
+  12 packages/tools/harness/g5-member-e2e.mjs            (Team D1-D6 v2 G5A member e2e runner)
+
+VERDICT: exact current scanner count on the clean candidate tree = 642.
+Pin updated 630 -> 642; denylist/quarantine semantics and the required
+P4 suite list untouched.
