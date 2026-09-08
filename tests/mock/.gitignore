@@ -1,0 +1,10 @@
+# dtest workspace runtime artifacts — never commit (credential-ish / per-boot)
+.dsh-home/
+.dsh-home-smoke/
+.playwright-cli/
+state/
+hosts/
+work/
+evidence/screenshots/
+p6t6-directive.json
+*.log

@@ -1,0 +1,40 @@
+# Baseline — client vitest full suite (stubbed run), pre-change
+# Run: node --import ./.f11-vitest-netuse-stub.mjs node_modules/vitest/vitest.mjs run --root packages/client
+# State: worktree .worktrees/repair-r1-f11 @ 9b582a1 + test-only doc-header edit
+#        (no behavior change); the 12 F11 tests not yet added.
+# (tail transcript — last 40 lines + failure block, as captured by the worker session)
+
+✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 125ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 124ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 184ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 63ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 6ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 67ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 61ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 65ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 2293ms
+
+ Test Files  1 failed | 40 passed (41)
+      Tests  1 failed | 577 passed (578)
+   Start at  03:02:54
+   Duration  30.68s (transform 29.30s, setup 0ms, import 197.81s, tests 11.10s, environment 246.56s)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > create happy path (TCM M4 two-stage v2): the works
+pace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stab
+le token + prompt (UI §4.3 order; plan §15.6)
+AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
+ ❯ test/team-creation-panel.client.spec.tsx:453:23
+    451|     })
+    452|     expect(openCreatedSession).toHaveBeenCalledWith(createParams.rootS…
+    453|     expect(admitMock).toHaveBeenCalledTimes(0)
+    454|     await vi.waitFor(() => {
+    455|       expect(admitMock).toHaveBeenCalledTimes(1)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+NOTE (unstubbed baseline attempt): without the stub, vitest dies at config load with
+`spawn EPERM` inside vite's optimizeSafeRealPathSync `exec("net use")` probe
+(full trace preserved in the worker session; see run-recipe.md). The failure above
+is the ONE pre-existing baseline failure, byte-identical to
+dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/full-client.txt
+("the same pre-existing baseline failure D1 verified at a6d1778").

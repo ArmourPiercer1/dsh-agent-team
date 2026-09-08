@@ -1,0 +1,42 @@
+# RED phase — focused F11 test files, pre-fix (tests added, source NOT yet changed)
+# Run: node --import ./.f11-vitest-netuse-stub.mjs node_modules/vitest/vitest.mjs run --root packages/client \
+#        test/team-ledger-store.test.ts test/ledger-adapter.test.ts test/team-ledger-model.client.spec.ts test/team-ledger.client.spec.tsx
+# (tail transcript — last 75 lines + failure block, as captured by the worker session)
+
+ Test Files  4 failed (4)
+      Tests  12 failed | 80 passed (92)
+   Start at  03:05:55
+   Duration  2.53s (transform 781ms, setup 0ms, import 1.49s, tests 688ms, environment 501ms)
+
+The 12 failures (all F11, all as designed RED pre-fix):
+
+test/team-ledger-store.test.ts
+  ✗ F11-T1: a shifted base (69–136, total 68, limit 50) pages to the real tail — exactly 2 calls, 68 loaded
+      (pre-fix stops after page 1: frontier 118 >= total 68 → 1 call, 50 loaded)
+  ✗ F11-T2: a small shifted base (7–11, total 5, limit 2) pages 7-8 | 9-10 | 11 — all 5 loaded
+      (pre-fix stops after page 1: frontier 8 >= 5 → 1 call, 2 loaded)
+  ✗ case 2 — base 69: no early completion (frontier 70 >= total 4 must not stop the catch-up)
+  ✗ case 3 — base 10000: the same count rule at a large base
+  ✗ case 4 — total < first sequence (3 < 5): no early completion; the tail ends the episode…
+      AssertionError: expected [ 0 ] to deeply equal [ 0, 6 ]
+      ❯ test/team-ledger-store.test.ts:690:45
+  ✗ case 7 — duplicate-sequence append on refresh (total grows 5→6): the unique count is the map size
+      (initially failed also on a fixture bug — the server-append `phase` flag was set after refresh;
+       fixture corrected, see green-f11-focused.txt; the store-side RED behavior is the same early stop)
+
+test/ledger-adapter.test.ts
+  ✗ F11-T4: 50 of 68 loaded (frontier 118) is partial — no pending badges; 68 of 68 is complete — the tail request badges
+      (pre-fix: completeThrough 118 >= 68 → 'complete' with badges)
+  ✗ F11-T4: the §7.3 gate flips exactly at full load (67/68 stays partial despite the loaded request)
+  ✗ F11-T6 case 9: total known vs null — … (pre-fix: frontier 71 >= total 5 → 'complete' where the count rule says partial)
+
+test/team-ledger-model.client.spec.ts
+  ✗ reports the partial-ledger remainder as server total minus loaded entries (count domain, INV-9.2)
+      (pre-fix: total 100 − frontier 60 = 40 asserted, count rule says 99)
+  ✗ F11-T5: total 68 with 50 loaded entries (frontier 118) → not complete, 18 remaining (count domain)
+      (pre-fix: 68 − 118 → max(0, -50) = 0)
+
+test/team-ledger.client.spec.tsx
+  ✗ F11 (companion): the error state renders in the zero-rows branch — a typed failure is never swallowed by the empty note
+      AssertionError: expected <span class="_empty_5ae5b6" …(1)></span> to be null
+      ❯ test/team-ledger.client.spec.tsx:339:71  (the empty note 暂无团队事件 rendered over the transport-loss error)

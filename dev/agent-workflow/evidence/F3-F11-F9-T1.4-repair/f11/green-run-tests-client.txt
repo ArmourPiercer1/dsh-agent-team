@@ -1,0 +1,73 @@
+﻿PASS packages\client\test\client-architecture-negatives.test.ts (9 tests)
+PASS packages\client\test\client-plugin-mount.test.ts (33 tests)
+PASS packages\client\test\client.test.ts (2 tests)
+FAIL packages\client\test\d1-team-remote-v3.test.ts (5/8 tests)
+     ✗ D1 (client transport): teamListRootsV3 › the success envelope resolves intact (the { roots: [...] } data + provenance contractVersion 3)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:212:22
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:210:3
+     ✗ D1 (client transport): teamListRootsV3 › the fail-closed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE typed error resolves intact (never exception-ified)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:234:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:232:3
+     ✗ D1 (client transport): teamEnsureRootLiveV3 › the D1 reserved TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED typed error resolves intact (the method is inert until D2 — no client-side error)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:255:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:253:3
+     ✗ D1 (client transport): the rejection kind is unchanged › a carrier rejection still maps to the frozen PushTransportLossError (the v3 wrappers add no new rejection kind)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:276:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:274:3
+     ✗ D1 (client transport): the version stamping discipline is unchanged › each wrapper stamps exactly its own contract version (v1 generic, v2 create/admit, v3 the two D1 methods)
+       TypeError: expect.objectContaining is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:286:14
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d1-team-remote-v3.test.ts:282:3
+FAIL packages\client\test\d2-open-team-mode.test.ts (3/6 tests)
+     ✗ D2 (client mount): the ensure-failure gate (never a silent open) › a typed ensure failure: the session is NOT opened, the error is surfaced, the mode state reads null
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d2-open-team-mode.test.ts:394:30
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d2-open-team-mode.test.ts:388:3
+     ✗ D2 (client mount): the per-root client-local open-mode state › after a completed openTeamMode the root reads team; an unopened root reads null
+       TypeError: expect(...).toBeNull is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d2-open-team-mode.test.ts:403:41
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d2-open-team-mode.test.ts:401:3
+     ✗ D2 (client mount): the per-root client-local open-mode state › a session switch away from the root resets the team mark
+       TypeError: expect(...).toBeNull is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d2-open-team-mode.test.ts:407:43
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d2-open-team-mode.test.ts:406:3
+FAIL packages\client\test\d3-open-ordinary-mode.test.ts (2/11 tests)
+     ✗ D3 (client mount): the session-switch reset (the D2 reset effect covers the ordinary mark too) › after an ordinary open the root reads ordinary; a switch away drops the ordinary mark
+       TypeError: expect(...).toBeNull is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d3-open-ordinary-mode.test.ts:478:43
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d3-open-ordinary-mode.test.ts:476:3
+     ✗ D3 (client mount): the failed ordinary switch (open first, mark after) › an unknown session id: the seam throw propagates, no open happens, and the prior team mark is left intact (a failed switch is no switch)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d3-open-ordinary-mode.test.ts:485:42
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client/test/d3-open-ordinary-mode.test.ts:483:3
+PASS packages\client\test\ledger-adapter.test.ts (27 tests)
+PASS packages\client\test\projection-adapter.test.ts (16 tests)
+PASS packages\client\test\team-command-flow.test.ts (6 tests)
+PASS packages\client\test\team-create-flow.test.ts (10 tests)
+PASS packages\client\test\team-governance.test.ts (43 tests)
+PASS packages\client\test\team-handoff.test.ts (23 tests)
+PASS packages\client\test\team-intent-model.test.ts (22 tests)
+PASS packages\client\test\team-ledger-store.test.ts (24 tests)
+PASS packages\client\test\team-legacy.test.ts (12 tests)
+PASS packages\client\test\team-member-commands.test.ts (11 tests)
+PASS packages\client\test\team-members-model.test.ts (5 tests)
+PASS packages\client\test\team-projection-store.test.ts (14 tests)
+PASS packages\client\test\team-remote-categories.test.ts (5 tests)
+PASS packages\client\test\team-remote-client.test.ts (15 tests)
+PASS packages\client\test\team-session-resolution.test.ts (9 tests)
+
+run-tests (plain-node vitest-equivalent): 301 passed, 10 failed, 311 total, 160 ms

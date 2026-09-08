@@ -1,0 +1,33 @@
+﻿ packages/client/src/model/ledger-adapter.ts        |  18 +-
+ packages/client/src/model/team-ledger-model.ts     |  30 +-
+ packages/client/src/model/team-ui-snapshot.ts      |   6 +-
+ packages/client/src/state/team-ledger-store.ts     |  29 +-
+ packages/client/src/ui/TeamLedger.tsx              |  31 +-
+ packages/client/test/ledger-adapter.test.ts        | 104 ++++++-
+ .../client/test/team-ledger-model.client.spec.ts   |  28 +-
+ packages/client/test/team-ledger-store.test.ts     | 340 ++++++++++++++++++++-
+ packages/client/test/team-ledger.client.spec.tsx   |  21 ++
+ 9 files changed, 572 insertions(+), 35 deletions(-)
+ M packages/client/src/model/ledger-adapter.ts
+ M packages/client/src/model/team-ledger-model.ts
+ M packages/client/src/model/team-ui-snapshot.ts
+ M packages/client/src/state/team-ledger-store.ts
+ M packages/client/src/ui/TeamLedger.tsx
+ M packages/client/test/ledger-adapter.test.ts
+ M packages/client/test/team-ledger-model.client.spec.ts
+ M packages/client/test/team-ledger-store.test.ts
+ M packages/client/test/team-ledger.client.spec.tsx
+?? .f11-vitest-netuse-stub.mjs
+
+--- committed boundary 9b582a1..HEAD (commit 49527a4) ---
+ packages/client/src/model/ledger-adapter.ts        |  18 +-
+ packages/client/src/model/team-ledger-model.ts     |  30 +-
+ packages/client/src/model/team-ui-snapshot.ts      |   6 +-
+ packages/client/src/state/team-ledger-store.ts     |  29 +-
+ packages/client/src/ui/TeamLedger.tsx              |  31 +-
+ packages/client/test/ledger-adapter.test.ts        | 104 ++++++-
+ .../client/test/team-ledger-model.client.spec.ts   |  28 +-
+ packages/client/test/team-ledger-store.test.ts     | 340 ++++++++++++++++++++-
+ packages/client/test/team-ledger.client.spec.tsx   |  21 ++
+ 9 files changed, 572 insertions(+), 35 deletions(-)
+commit: 49527a4 (task/repair-r1-f11-ledger)

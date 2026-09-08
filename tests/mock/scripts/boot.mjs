@@ -39,15 +39,27 @@
   *     endpoints as SEPARATE node processes (mini-standalone.mjs) so each
   *     can be killed/restarted independently while the 3181 host stays up
   *     (default = in-process listeners, unkillable independently)
+  *   MOCK_DSH_HOME=<dir>        use an ALTERNATE home (scratch-home smoke
+  *     runs; the campaign home tests/mock/.dsh-home stays untouched).
+  *     Default: tests/mock/.dsh-home.
+  *   MOCK_PRESEEDED_WORKSPACES=0  disable the D1 workspace-registry
+  *     pre-seed (default ON; no-op when workspace.json already exists)
  *
  * Prints BOOT_URL=http://127.0.0.1:3181/?token=... + MOCKBOOT_READY once
- * healthy; stays alive until SIGTERM/SIGINT, then stops cleanly and
- * verifies all three ports (3181/3491/3492) are free.
+ * healthy (D2: also persists state/cookie-header.txt + prints
+ * PLAYWRIGHT_NAV for the ui-gate scripts); stays alive until SIGTERM/SIGINT,
+ * then stops cleanly and verifies all three ports (3181/3491/3492) are
+ * free. Kill->restart recipe (V2 plan D6): after killing a boot that left
+ * sessions OPEN, the first restart may fail with "cannot prepare session
+ * ... while it is live" (the new process revives the open session, then the
+ * team prepare collides; the failing process retires it and appends
+ * session/end-seed) — run wait-end-seed.mjs to confirm the retire, then
+ * retry the boot once (round-1 boot#7 proven).
  */
 
 import { spawn, spawnSync } from 'node:child_process'
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import net from 'node:net'
@@ -61,7 +73,9 @@ const MOCK_ROOT = resolve(HERE, '..')
 const REPO_ROOT = resolve(HERE, '..', '..', '..')
 const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
 const SRC_HOME = join(REPO_ROOT, 'references', '.dsh-test')
-const DSH_HOME = join(MOCK_ROOT, '.dsh-home')
+const DSH_HOME = process.env.MOCK_DSH_HOME
+  ? resolve(process.env.MOCK_DSH_HOME)
+  : join(MOCK_ROOT, '.dsh-home')
 const PORT = 3181
 const FACET_PORT_CANDIDATES = [3491]
 const HOST_MCP_PORT_CANDIDATES = [3492]
@@ -414,6 +428,29 @@ async function main() {
 
   bootstrapHome()
 
+  // ── D1: workspace-registry pre-seed (V2 plan §1 D1) ──────────────────────
+  // FRESH homes only: when storages/workspace.json is ABSENT, seed it with
+  // the mock workspace row + the directive root session, so the UI session
+  // tree shows the root from the first boot (removes the round-1 T1.2
+  // manual bootstrap detour). Existing home: no-op — the live registry is
+  // never touched by a script.
+  if (process.env.MOCK_PRESEEDED_WORKSPACES !== '0') {
+    const wsPath = join(DSH_HOME, 'storages', 'workspace.json')
+    if (!existsSync(wsPath)) {
+      mkdirSync(join(DSH_HOME, 'storages'), { recursive: true })
+      const wsId = randomUUID()
+      const now = new Date().toISOString()
+      writeFileSync(wsPath, JSON.stringify({
+        unit: { name: 'workspace', version: 2 },
+        global: { initialized: true, workspaceIds: [wsId], archivedSessionIds: [] },
+        tables: { workspaces: { [wsId]: { path: MOCK_ROOT, title: 'mock', sessionIds: [ROOT_A], createdAt: now, updatedAt: now } } },
+      }, null, 2))
+      log(`D1: workspace registry pre-seeded (workspace=${wsId.slice(0, 8)}… path=${MOCK_ROOT} sessionIds=[${ROOT_A}])`)
+    } else {
+      log('D1: workspace registry already present — no-op (existing home)')
+    }
+  }
+
   const instLogDir = join(MOCK_ROOT, 'hosts', BOOT_LABEL)
   mkdirSync(instLogDir, { recursive: true })
 
@@ -558,6 +595,17 @@ async function main() {
   }, null, 2))
   console.log(`BOOT_URL=${url}`)
   console.log(`MOCKBOOT_READY host up at ${origin} (keyConfigured=${keyConfigured}); keep-alive until killed`)
+
+  // ── D2: cookie automation (V2 plan §1 D2) ────────────────────────────────
+  // Persist the session cookie for the suite scripts (suite-*,
+  // preflight-check, ui-gate read state/cookie-header.txt) and print the
+  // playwright navigation command — the round-1 manual 4-step chain
+  // (open/goto/click root/click team tab) collapses to one documented
+  // command. Cookie value itself is never printed.
+  writeFileSync(join(MOCK_ROOT, 'state', 'cookie-header.txt'), cookie)
+  log('D2: cookie persisted to state/cookie-header.txt (value never printed)')
+  console.log('COOKIED=1')
+  console.log(`PLAYWRIGHT_NAV: playwright-cli -s=mocktest goto ${url}`)
 
   let stopping = false
   const stopMini = async (m) => {

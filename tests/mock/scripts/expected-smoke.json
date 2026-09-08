@@ -1,0 +1,15 @@
+{
+  "minFacts": 68,
+  "facts": [
+    { "factType": "team-work-admitted", "minCount": 12 },
+    { "factType": "control-request-recorded", "minCount": 6 },
+    { "factType": "control-decision-recorded", "minCount": 5 },
+    { "factType": "control-allow-consumed", "minCount": 1 },
+    { "factType": "team-message-delivered", "minCount": 1 }
+  ],
+  "minMembers": 2,
+  "members": [
+    { "label": "W1" },
+    { "label": "W2" }
+  ]
+}

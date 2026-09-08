@@ -1,0 +1,13 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f11/packages/client
+
+ ✓ test/team-ledger-model.client.spec.ts (21 tests) 7ms
+ ✓ test/ledger-adapter.test.ts (27 tests) 5ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 5ms
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 661ms
+
+ Test Files  4 passed (4)
+      Tests  92 passed (92)
+   Start at  03:09:10
+   Duration  2.52s (transform 793ms, setup 0ms, import 1.48s, tests 678ms, environment 496ms)
+

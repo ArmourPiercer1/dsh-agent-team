@@ -1,0 +1,1 @@
+读 fixtures/requirements.md。拆两个工作流：① W1 把 fixtures/sentinel.txt 的内容逐字写入 work/alpha.md；② W2 用工具读 fixtures/seed-note.txt 并总结写入 work/summary.md；然后 ③ W2 读取 work/alpha.md 与 work/summary.md，把两者的完整路径、sentinel 逐字内容、summary 要点合并写入 work/final.md。派发任务时，要求 W1 和 W2 各调用一次 team_report_progress 上报进展（in-progress 与 completed 各一次即可）。全部工作流 settle 后，回复中逐字给出三个文件的路径。
