@@ -1,0 +1,10 @@
+﻿[wrapper] node D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs pending --json {"kind":"leader-approval","target":"inst-0fi1an617bjs","action":"write","root":"session-dtestmts69xkr6b54","out":"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\repair-r1-g4\\dev\\agent-workflow\\evidence\\F3-F11-F9-T1.4-repair\\g4-recipe-fix\\scratch\\f9-pending-prestate-legacy.json"}
+[wrapper] MOCK_DSH_HOME=D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\.dsh-home-repair-r1
+[f9-check] 3 pending requests match — taking the first (sequence 5); the others stay pending:
+  - seq 6 requestId=ctrl-0ppmycw17v2axd0ws2xbi03q kind=leader-approval action=write
+  - seq 14 requestId=ctrl-1eaer590x95ko00wdd0y71jw kind=leader-approval action=write
+PASS  pending detail fields (requestId ctrl-0eenv68… kind=leader-approval)
+[f9-check] wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-g4\dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\g4-recipe-fix\scratch\f9-pending-prestate-legacy.json (vars for the ui-gate.mjs F9 configs)
+
+[f9-check] 1 PASS, 0 FAIL — OK
+EXIT_CODE=0 (expected 0: legacy filter still matches the toolName-less residuals; chosen = first by sequence)

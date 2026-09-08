@@ -1,0 +1,20 @@
+﻿PASS  source contains:   const { kind, target, action, toolName, out } = opts
+PASS  source contains:     (kind === undefined || f.payload.kind === kind)
+PASS  source contains:     && (target === undefined || f.payload.targetInstanceId === target)
+PASS  source contains:     && (action === undefined || String(f.payload.actionName).includes(…
+PASS  source contains:     && (toolName === undefined || f.payload.toolName === toolName))
+PASS  source contains: //   toolName  exact toolName filter (pending): selects the request th…
+PASS  source contains: //             DSH tool (the frozen external-policy discriminator — a …
+PASS  source contains: //             derives capabilityDomain 'tools'); requests without a t…
+PASS  source contains: { kind, target, action, toolName }
+PASS  source contains: deliver the request prompt (b4-requests.md / b6-req.md) first, then re…
+PASS  source no longer names t41-deny-req.md in the no-match message
+PASS  selftest still defines 23 checks
+PASS  backward compat (empty opts): old and new match sets identical
+PASS  backward compat (G3-style kind+target+action): old and new match sets identical
+PASS  legacy filter still ambiguous (matches all 4, first = seq 5, no toolName)
+PASS  new toolName filter selects EXACTLY the new request (seq 16, corr dtest-v2-hard-req-2)
+PASS  exact match: a substring toolName prefix (writ) matches nothing
+PASS  exact match: a different toolName matches nothing
+
+[filter-backcompat] 18 PASS, 0 FAIL — OK

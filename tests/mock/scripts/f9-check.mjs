@@ -28,6 +28,9 @@
 //   kind      request kind filter (pending): user-approval | leader-approval | envelope-mutation
 //   target    targetInstanceId filter (pending)
 //   action    actionName substring filter (pending)
+//   toolName  exact toolName filter (pending): selects the request that carries the named
+//             DSH tool (the frozen external-policy discriminator — a present toolName
+//             derives capabilityDomain 'tools'); requests without a toolName never match
 //   out       state file for pending (default state/f9-pending.json)
 //
 // exit 0 = all checks PASS; 1 = any FAIL; 2 = usage / precondition absent.
@@ -257,14 +260,15 @@ async function phaseVersionGate(root) {
 }
 
 function phasePending(root, opts) {
-  const { kind, target, action, out } = opts
+  const { kind, target, action, toolName, out } = opts
   const { pending } = splitControlFacts(readFacts(root))
   const matched = pending.filter((f) =>
     (kind === undefined || f.payload.kind === kind)
     && (target === undefined || f.payload.targetInstanceId === target)
-    && (action === undefined || String(f.payload.actionName).includes(action)))
+    && (action === undefined || String(f.payload.actionName).includes(action))
+    && (toolName === undefined || f.payload.toolName === toolName))
   if (matched.length === 0) {
-    console.error(`[f9-check] no pending control request matches the filter (${JSON.stringify({ kind, target, action })}) — deliver the request prompt (b4-requests.md / t41-deny-req.md) first, then re-run`)
+    console.error(`[f9-check] no pending control request matches the filter (${JSON.stringify({ kind, target, action, toolName })}) — deliver the request prompt (b4-requests.md / b6-req.md) first, then re-run`)
     process.exit(2)
   }
   if (matched.length > 1) {
