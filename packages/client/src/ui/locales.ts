@@ -81,6 +81,22 @@ export type TeamKey =
   | 'view.ledger.decision.allow'
   | 'view.ledger.decision.deny'
   | 'view.ledger.decision.stale_denied'
+  // F9U (gate-review supplements) — the UI §26.2 control-request detail
+  // field labels, the §26.4 external hard policy two-line display, and
+  // the served-version-gated read-only note.
+  | 'view.ledger.control.requester'
+  | 'view.ledger.control.kind'
+  | 'view.ledger.control.action'
+  | 'view.ledger.control.tool'
+  | 'view.ledger.control.reason'
+  | 'view.ledger.control.time'
+  | 'view.ledger.control.status'
+  | 'view.ledger.control.status.pending'
+  | 'view.ledger.control.authority'
+  | 'view.ledger.control.human'
+  | 'view.ledger.control.readOnly'
+  | 'view.ledger.externalPolicy.teamDecision'
+  | 'view.ledger.externalPolicy.execution'
   | 'intent.startHere'
   | 'intent.title'
   | 'intent.blueprint'
@@ -307,6 +323,19 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.decision.allow': '允许',
   'view.ledger.decision.deny': '拒绝',
   'view.ledger.decision.stale_denied': '过期拒绝',
+  'view.ledger.control.requester': '请求方',
+  'view.ledger.control.kind': '请求类型',
+  'view.ledger.control.action': '请求操作',
+  'view.ledger.control.tool': '工具',
+  'view.ledger.control.reason': '原因',
+  'view.ledger.control.time': '创建时间',
+  'view.ledger.control.status': '当前状态',
+  'view.ledger.control.status.pending': '等待裁决',
+  'view.ledger.control.authority': '请求权限',
+  'view.ledger.control.human': '人工',
+  'view.ledger.control.readOnly': '当前宿主未提供 v4 人工控制裁决，此面板为只读。',
+  'view.ledger.externalPolicy.teamDecision': '团队裁决：已允许',
+  'view.ledger.externalPolicy.execution': '执行：被托管策略阻止',
   'intent.startHere': '从此处开始团队',
   'intent.title': '新建团队',
   'intent.blueprint': '团队蓝图',
@@ -533,6 +562,19 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.decision.allow': 'Allowed',
   'view.ledger.decision.deny': 'Denied',
   'view.ledger.decision.stale_denied': 'Stale denied',
+  'view.ledger.control.requester': 'Requester',
+  'view.ledger.control.kind': 'Request kind',
+  'view.ledger.control.action': 'Requested operation',
+  'view.ledger.control.tool': 'Tool',
+  'view.ledger.control.reason': 'Reason',
+  'view.ledger.control.time': 'Creation time',
+  'view.ledger.control.status': 'Current status',
+  'view.ledger.control.status.pending': 'Pending decision',
+  'view.ledger.control.authority': 'Requested authority',
+  'view.ledger.control.human': 'Human',
+  'view.ledger.control.readOnly': 'The served host does not serve the v4 human control resolution; this panel is read-only.',
+  'view.ledger.externalPolicy.teamDecision': 'Team decision: Allowed',
+  'view.ledger.externalPolicy.execution': 'Execution: Blocked by managed policy',
   'intent.startHere': 'Start Team from Here',
   'intent.title': 'New Team',
   'intent.blueprint': 'Team blueprint',

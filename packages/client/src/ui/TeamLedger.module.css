@@ -248,3 +248,71 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* F9U (gate-review supplement 2, UI §26.4): the external hard policy
+   blocked an allowed team decision — the badge switches from the plain
+   decision label to the frozen two-line "Team decision / Execution"
+   display (stacked, right-aligned in the row's badge slot). Never the
+   plain "denied" label. */
+.state[data-external-policy='true'] {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 2px 6px;
+}
+
+.externalPolicyLine {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* F9U (gate-review supplement 1, UI §26.2): the control-request detail
+   panel field rows (requester / kind / requested operation / tool /
+   reason / creation time / current status / requested authority) — a
+   wrapping definition list in the caption label language. */
+.controlDetail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+}
+
+.controlField {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.controlField dt {
+  flex: none;
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.controlField dd {
+  overflow: hidden;
+  min-width: 0;
+  margin: 0;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xxxs-11);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* F9U (gate-review supplement 4): the served-version-gated read-only
+   note (the served host is pre-v4 — the detail panel stays, the
+   commands do not). */
+.readOnlyNote {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xxxs-11);
+}

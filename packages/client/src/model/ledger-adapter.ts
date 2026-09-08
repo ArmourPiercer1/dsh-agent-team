@@ -111,6 +111,8 @@ interface ControlDraft {
   toolName?: string
   capabilityDomain?: string
   summary?: string
+  requesterId?: string
+  requesterRefKind?: 'instance' | 'human'
   decision?: {
     value: string
     sequence: number
@@ -176,6 +178,21 @@ function adaptControlRequestDraft(
   const targetInstanceId = str(payload, 'targetInstanceId')
   const actionName = str(payload, 'actionName')
   if (requestId === undefined || targetInstanceId === undefined || actionName === undefined) return undefined
+  // F9U (UI §26.2 "requester"): the durable `ControlCallerRef` ref —
+  // fail-safe leaf reads (a malformed ref is ABSENT, never invented).
+  const requester = payload['requester']
+  let requesterId: string | undefined
+  let requesterRefKind: 'instance' | 'human' | undefined
+  if (typeof requester === 'object' && requester !== null) {
+    const ref = requester as Payload
+    if (ref['kind'] === 'instance') {
+      requesterId = str(ref, 'instanceId')
+      if (requesterId !== undefined) requesterRefKind = 'instance'
+    } else if (ref['kind'] === 'human') {
+      requesterId = str(ref, 'humanId')
+      if (requesterId !== undefined) requesterRefKind = 'human'
+    }
+  }
   return {
     requestId,
     requestSequence: entry.sequence,
@@ -187,6 +204,8 @@ function adaptControlRequestDraft(
     toolName: str(payload, 'toolName'),
     capabilityDomain: str(payload, 'capabilityDomain'),
     summary: str(payload, 'summary'),
+    ...(requesterId === undefined ? {} : { requesterId }),
+    ...(requesterRefKind === undefined ? {} : { requesterRefKind }),
   }
 }
 

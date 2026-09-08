@@ -11,7 +11,7 @@
  * the UI §12.1 fixed order — Timeline → Members → Activity → Events —
  * from ONE input.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the conversation.view slot declaration (declared by
 // ui-conversation's session body) must be in the program for this props type.
@@ -32,6 +32,10 @@ import {
 import type { TeamLedgerState } from '../state/team-ledger-store.js'
 import { adaptTeamProjection } from '../model/projection-adapter.js'
 import { ledgerModelFromStoreState } from '../model/ledger-adapter.js'
+import {
+  interpretResolveControlProbe,
+  RESOLVE_CONTROL_PROBE_REQUEST_ID,
+} from '../model/control-surface.js'
 import type { TeamOpenModeOutcome } from '../plugin/team-mount-core.js'
 import type { TeamIntentDraft, TeamPresetRow } from '../model/team-intent-model.js'
 import {
@@ -472,6 +476,74 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         return response
       })
   }, [control, pullProjection])
+  // F9U (gate-review supplement 4) — the served-version-gated command
+  // surface: ONE side-effect-free v4 probe per team session decides
+  // whether the SERVED host serves the v4-only `team.resolveControl`.
+  // The probe's closed `requestId` (the empty string) fails the closed
+  // 1..255 opaque-token rule, so a v4 host answers with a TYPED
+  // `malformed-params` BEFORE any port work — the probe never reaches
+  // the control service, never resolves a request, and never writes.
+  // A pre-v4 build's closed catalog lacks the v4-only method, so it
+  // answers `unknown-method` before the envelope is even parsed. The
+  // typed outcomes map (the control-surface model): v4 served →
+  // 'enabled' (the Allow/Deny commands go live); a pre-v4 build →
+  // 'read-only' (the UI §26 pending state stays visible, the commands
+  // do not). A transport rejection leaves the mode unresolved
+  // (fail-closed: no command affordance) and the probe re-runs on the
+  // next ledger publish (the effect deps carry the store state
+  // identity); a team switch re-probes for the new team.
+  const [controlSurfaceProbe, setControlSurfaceProbe] = useState<
+    | { readonly status: 'unresolved' }
+    | { readonly status: 'resolved'; readonly teamSessionId: string; readonly mode: 'read-only' | 'enabled' }
+  >({ status: 'unresolved' })
+  const controlProbeInFlight = useRef(false)
+  const ledgerHasPendingControl = useMemo(
+    () => ledger.controls.some(chain => chain.pending && chain.requestId !== ''),
+    [ledger.controls],
+  )
+  useEffect(() => {
+    if (control === undefined || snapshot === null) return
+    if (ledgerHasPendingControl === false) return
+    if (
+      controlSurfaceProbe.status === 'resolved'
+      && controlSurfaceProbe.teamSessionId === snapshot.teamSessionId
+    ) {
+      return
+    }
+    if (controlProbeInFlight.current) return
+    controlProbeInFlight.current = true
+    let live = true
+    const teamSessionId = snapshot.teamSessionId
+    void control.resolveControl({
+      teamSessionId,
+      requestId: RESOLVE_CONTROL_PROBE_REQUEST_ID,
+      decision: 'allow',
+    }).then(response => {
+      if (!live) return
+      setControlSurfaceProbe({
+        status: 'resolved',
+        teamSessionId,
+        mode: interpretResolveControlProbe(response),
+      })
+    }).catch(() => {
+      // Transport-level channel loss (the ONLY rejection kind): the
+      // mode stays unresolved (fail-closed) — the next ledger publish
+      // re-runs the probe.
+    }).finally(() => {
+      controlProbeInFlight.current = false
+    })
+    return () => {
+      live = false
+      controlProbeInFlight.current = false
+    }
+  }, [control, snapshot, ledgerHasPendingControl, ledgerState, controlSurfaceProbe])
+  // The display input for the Events section (absent = unresolved —
+  // fail-closed: the detail panel renders, the commands wait for the
+  // v4 proof).
+  const controlSurfaceMode =
+    controlSurfaceProbe.status === 'resolved' && controlSurfaceProbe.teamSessionId === snapshot?.teamSessionId
+      ? controlSurfaceProbe.mode
+      : undefined
   // D1 (Team D1-D6 repair v2, remote contract v3): the persisted-roots
   // zero-state share — the typed-failure note (ONE verbatim line, UI §38
   // greyed-surface discipline) + the read-only rows (blueprint@revision,
@@ -732,6 +804,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           onRetry={refreshTeamLedger}
           onSelectSession={openSession}
           onResolveControl={onResolveControl}
+          controlSurfaceMode={controlSurfaceMode}
           t={t}
         />
       </section>

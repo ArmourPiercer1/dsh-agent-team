@@ -212,6 +212,19 @@ export interface TeamUiControlChain {
   readonly toolName?: string
   readonly capabilityDomain?: string
   readonly summary?: string
+  /**
+   * The requesting principal (the request payload's `requester` ref,
+   * F9U UI §26.2 "requester"): the instance id for an instance ref, the
+   * human id for a human ref. ABSENT when the fact names no requester
+   * (fail-safe — never invented).
+   */
+  readonly requesterId?: string
+  /**
+   * The requesting principal's closed ref kind (`'instance'` |
+   * `'human'`), mirroring the durable `ControlCallerRef` discriminator;
+   * ABSENT with `requesterId`.
+   */
+  readonly requesterRefKind?: 'instance' | 'human'
   readonly requestedAt: string
   readonly pending: boolean
   readonly decision?: {

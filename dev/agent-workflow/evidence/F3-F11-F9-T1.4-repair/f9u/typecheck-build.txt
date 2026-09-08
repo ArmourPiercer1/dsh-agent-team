@@ -1,0 +1,16 @@
+﻿=== typecheck (npx tsc -p packages/client/tsconfig.json --noEmit) ===
+tsc-exit=0
+
+=== build (npx tsc -p packages/client/tsconfig.build.json) ===
+build-exit=0
+
+=== composition rebuild ===
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 87 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-f9u\packages\client\composition-shim\client-bundle.js (959026 B)
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-f9u\packages\client\composition-shim\index.js (node half)
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\repair-r1-f9u\packages\client\composition-shim\package.json
+compose-exit=0

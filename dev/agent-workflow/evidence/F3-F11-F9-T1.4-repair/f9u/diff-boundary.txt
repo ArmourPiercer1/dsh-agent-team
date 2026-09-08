@@ -1,0 +1,40 @@
+=== git status --porcelain (task worktree, pre-commit) ===
+ M packages/client/composition-shim/client-bundle.js
+ M packages/client/src/model/ledger-adapter.ts
+ M packages/client/src/model/team-ui-snapshot.ts
+ M packages/client/src/ui/TeamLedger.module.css
+ M packages/client/src/ui/TeamLedger.tsx
+ M packages/client/src/ui/TeamView.tsx
+ M packages/client/src/ui/locales.ts
+ M packages/client/test/f9-resolve-control-ui.client.spec.tsx
+?? .f9u-vitest-netuse-stub.mjs
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/f9u/
+?? packages/client/src/model/control-surface.ts
+?? packages/client/test/f9u-control-panel.client.spec.tsx
+?? packages/client/test/f9u-control-surface-model.test.ts
+?? packages/client/test/f9u-control-surface-probe.client.spec.tsx
+
+=== git diff --stat HEAD (modified tracked files) ===
+ packages/client/composition-shim/client-bundle.js  | 767 +++++++++++++++------
+ packages/client/src/model/ledger-adapter.ts        |  19 +
+ packages/client/src/model/team-ui-snapshot.ts      |  13 +
+ packages/client/src/ui/TeamLedger.module.css       |  68 ++
+ packages/client/src/ui/TeamLedger.tsx              | 231 ++++++-
+ packages/client/src/ui/TeamView.tsx                |  75 +-
+ packages/client/src/ui/locales.ts                  |  42 ++
+ .../test/f9-resolve-control-ui.client.spec.tsx     |  10 +-
+ 8 files changed, 967 insertions(+), 258 deletions(-)
+
+=== composition-shim tracked state (git ls-files) ===
+packages/client/composition-shim/client-bundle.js
+packages/client/composition-shim/index.js
+packages/client/composition-shim/package.json
+
+=== packages/client/dist tracked? (expect empty: untracked build output) ===
+
+=== .gitattributes eol pins (artifact trees) ===
+packages/client/composition-shim/client-bundle.js: text: set
+packages/client/composition-shim/client-bundle.js: eol: lf
+
+=== check-ignore on packages/client/dist (expect exit 0 = gitignored build output, never committed) ===
+check-ignore-dist-exit=0

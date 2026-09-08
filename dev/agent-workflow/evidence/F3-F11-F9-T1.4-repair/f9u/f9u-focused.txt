@@ -1,0 +1,13 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/repair-r1-f9u/packages/client
+
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 3ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 80ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 111ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 402ms
+
+ Test Files  4 passed (4)
+      Tests  41 passed (41)
+   Start at  11:24:39
+   Duration  2.65s (transform 2.25s, setup 0ms, import 4.51s, tests 596ms, environment 1.68s)
+

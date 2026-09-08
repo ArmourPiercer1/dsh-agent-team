@@ -29,18 +29,25 @@
  * generic row for an unknown / future fact type (no throw, no actor or
  * session-link guessing — see `team-ledger-model`).
  */
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { StateDot, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { LedgerCategory, ProgressValue } from '../../../contracts/src/index.js'
 import type { RemoteResponse } from '../../../remote/src/index.js'
 import type { TeamLedgerState } from '../state/team-ledger-store.js'
-import type { TeamUiLedgerModel, TeamUiSnapshot } from '../model/team-ui-snapshot.js'
+import type {
+  TeamUiControlChain, TeamUiLedgerModel, TeamUiSnapshot,
+} from '../model/team-ui-snapshot.js'
 import {
   TEAM_LEDGER_INITIAL_LIMIT, TEAM_LEDGER_STEP,
   deriveTeamLedgerSection,
   type TeamLedgerEventRow, type TeamLedgerFilter, type TeamLedgerRowKind,
 } from '../model/team-ledger-model.js'
+import {
+  humanMayResolveControlKind,
+  requestedAuthorityForKind,
+  type ControlSurfaceMode,
+} from '../model/control-surface.js'
 import { formatTeamClock } from '../model/team-timeline-model.js'
 import type { TeamKey } from './locales.js'
 import styles from './TeamLedger.module.css'
@@ -81,6 +88,27 @@ export interface TeamLedgerProps {
     requestId: string,
     decision: 'allow' | 'deny',
   ) => Promise<RemoteResponse>
+  /**
+   * F9U (gate-review supplement, served-version gating) — the mode the
+   * view's side-effect-free v4 probe resolved for the SERVED host
+   * (remote contract v4 vs a pre-v4 build):
+   *
+   * - `'enabled'` — the served host serves the v4-only
+   *   `team.resolveControl`; the Allow / Deny commands are LIVE (subject
+   *   to the kind-aware closed human resolver-role map);
+   * - `'read-only'` — the served host is pre-v4 (the probe answered a
+   *   typed `unknown-method` / version-unsupported error); the UI §26.2
+   *   detail panel stays visible for the pending state, the commands do
+   *   NOT render (the v3 surface is read-only — never a silent allow);
+   * - ABSENT — the probe has not settled (in flight / a transport
+   *   rejection left it unresolved): FAIL-CLOSED — no command affordance
+   *   yet (the detail panel renders, the commands wait for the v4 proof).
+   *
+   * The probe is exclusive to the view (it names the `/team-remote`
+   * channel through the face); this prop is the mode's display input
+   * only.
+   */
+  readonly controlSurfaceMode?: ControlSurfaceMode
   /** The team dictionary translate seat. */
   readonly t: PropsLocale<'team'>['t']
 }
@@ -185,6 +213,22 @@ function stateBadge(row: TeamLedgerEventRow, t: PropsLocale<'team'>['t']): React
   if (row.kind === 'control-decision') {
     const value = row.decisionValue
     if (value === undefined) return null
+    // F9U (UI §26.4): the frozen two-line display for the closed
+    // combination where the team (human) decision was ALLOW but the
+    // external DSH hard policy blocked the execution — the durable row
+    // records it as a `deny` decision with the frozen `external-policy`
+    // reason. The badge renders the frozen "Team decision: Allowed /
+    // Execution: Blocked by managed policy" block and NEVER the plain
+    // "denied" label (UI §26.4: it must not be displayed as an approval
+    // failure).
+    if (row.decisionReason === 'external-policy') {
+      return (
+        <span className={styles.state} data-ledger-state data-decision={value} data-external-policy="true">
+          <span className={styles.externalPolicyLine} data-external-policy-team-decision>{t('view.ledger.externalPolicy.teamDecision')}</span>
+          <span className={styles.externalPolicyLine} data-external-policy-execution>{t('view.ledger.externalPolicy.execution')}</span>
+        </span>
+      )
+    }
     const key = DECISION_KEYS[value]
     return (
       <span className={styles.state} data-ledger-state data-decision={value}>
@@ -312,14 +356,40 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
       },
     )
   }
+  // F9U (UI §26.2) — the §26.2 detail-panel join: the loaded control
+  // chain per durable request id. The detail fields ride the PAIRED
+  // chain (the S3-B control-chain model) — fail-safe: a pending row
+  // whose chain is absent (broken identity leaves) renders the
+  // row-derived fields only, never an invented value.
+  const chainByRequest = useMemo(() => {
+    const map = new Map<string, TeamUiControlChain>()
+    for (const chain of ledger.controls) {
+      if (chain.requestId !== '' && map.has(chain.requestId) === false) map.set(chain.requestId, chain)
+    }
+    return map
+  }, [ledger.controls])
   /**
-   * F9 — the command bar under one row: rendered ONLY for a pending
-   * control-request row that carries a durable request id, while the
-   * `onResolveControl` face is present (absent face → no commands, the
-   * legacy surface unchanged). The bar is a SIBLING of the row button
-   * (the row is a `<button>` — nested buttons are invalid HTML).
+   * F9 / F9U — the contextual decision panel under one row: rendered
+   * ONLY for a pending control-request row that carries a durable
+   * request id, while the `onResolveControl` face is present (absent
+   * face → no panel, the legacy surface unchanged). The panel is a
+   * SIBLING of the row button (the row is a `<button>` — nested
+   * buttons are invalid HTML).
+   *
+   * F9U (gate-review supplements):
+   *  - the UI §26.2 control-request DETAIL fields (requester / request
+   *    kind / requested operation / tool / reason / creation time /
+   *    current status / requested authority) always render for the
+   *    pending state;
+   *  - the Allow / Deny affordance is KIND-AWARE (the closed human
+   *    resolver-role map: a closed kind whose role set includes
+   *    'human' → the commands render; an unknown / absent kind → the
+   *    panel shows, the command does NOT — fail-closed) AND gated by
+   *    the SERVED version (the view's v4 probe: 'enabled' → live,
+   *    'read-only' → the v3 surface is read-only with the note,
+   *    absent / unresolved → fail-closed: no command affordance yet).
    */
-  const renderResolveBar = (row: TeamLedgerEventRow): React.JSX.Element | null => {
+  const renderControlPanel = (row: TeamLedgerEventRow): React.JSX.Element | null => {
     if (
       props.onResolveControl === undefined
       || row.kind !== 'control-request'
@@ -329,30 +399,131 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
       return null
     }
     const requestId = row.requestId
+    const chain = chainByRequest.get(requestId)
     const state = resolveStates.get(requestId)
     const busy = state !== undefined && state.phase === 'busy'
+    // F9U — the kind-aware affordance (supplement 3): the closed human
+    // resolver-role map is the ONLY authority for the command
+    // affordance — a kind absent from the map (unknown / future wire
+    // value, or an absent leaf) grants NO human resolution.
+    const humanMayResolve = humanMayResolveControlKind(chain?.kind)
+    // F9U — the served-version gate (supplement 4): the commands render
+    // ONLY when the probe proved the SERVED host serves v4 (absent /
+    // unresolved mode → fail-closed: the detail panel stays, the
+    // commands do not).
+    const surfaceEnabled = props.controlSurfaceMode === 'enabled'
+    const showCommands = surfaceEnabled && humanMayResolve
+    // UI §26.2 "requester": the durable ControlCallerRef — an instance
+    // ref resolves through the snapshot member rows (the raw id is the
+    // display fallback), a human ref renders the fixed human label.
+    const requesterId = chain?.requesterId
+    const requesterLabel =
+      requesterId === undefined
+        ? undefined
+        : chain?.requesterRefKind === 'human'
+          ? t('view.ledger.control.human')
+          : snapshot.members.find(member => member.instanceId === requesterId)?.label ?? requesterId
+    // UI §26.2 "requested authority": the closed resolver role set for
+    // the closed kind; ABSENT for an unknown kind (never invented).
+    const authority = requestedAuthorityForKind(chain?.kind)
     return (
-      <div className={styles.resolveBar} data-ledger-resolve-bar data-request-id={requestId}>
-        <button
-          type="button"
-          className={styles.resolveBtn}
-          data-ledger-resolve-allow
-          disabled={busy}
-          onClick={() => { runResolve(requestId, 'allow') }}
-        >
-          {t('view.ledger.resolve.allow')}
-        </button>
-        <button
-          type="button"
-          className={styles.resolveBtn}
-          data-ledger-resolve-deny
-          disabled={busy}
-          onClick={() => { runResolve(requestId, 'deny') }}
-        >
-          {t('view.ledger.resolve.deny')}
-        </button>
-        {busy
-          ? <span className={styles.resolveBusy} data-ledger-resolve-busy>{t('view.ledger.resolve.busy')}</span>
+      <div
+        className={styles.resolveBar}
+        data-ledger-resolve-bar
+        data-request-id={requestId}
+        data-control-surface={props.controlSurfaceMode ?? 'unresolved'}
+      >
+        <dl className={styles.controlDetail} data-control-detail>
+          {requesterLabel !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-requester>
+                <dt>{t('view.ledger.control.requester')}</dt>
+                <dd>{requesterLabel}</dd>
+              </div>
+            )
+            : null}
+          {chain?.kind !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-kind>
+                <dt>{t('view.ledger.control.kind')}</dt>
+                <dd>{chain.kind}</dd>
+              </div>
+            )
+            : null}
+          {chain?.actionName !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-action>
+                <dt>{t('view.ledger.control.action')}</dt>
+                <dd>{chain.actionName}</dd>
+              </div>
+            )
+            : null}
+          {chain?.toolName !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-tool>
+                <dt>{t('view.ledger.control.tool')}</dt>
+                <dd>{chain.toolName}</dd>
+              </div>
+            )
+            : null}
+          {chain?.summary !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-reason>
+                <dt>{t('view.ledger.control.reason')}</dt>
+                <dd>{chain.summary}</dd>
+              </div>
+            )
+            : null}
+          <div className={styles.controlField} data-control-detail-time>
+            <dt>{t('view.ledger.control.time')}</dt>
+            <dd>{formatTeamClock(row.at)}</dd>
+          </div>
+          <div className={styles.controlField} data-control-detail-status>
+            <dt>{t('view.ledger.control.status')}</dt>
+            <dd>{t('view.ledger.control.status.pending')}</dd>
+          </div>
+          {authority !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-authority>
+                <dt>{t('view.ledger.control.authority')}</dt>
+                <dd>{authority.join(' / ')}</dd>
+              </div>
+            )
+            : null}
+        </dl>
+        {showCommands
+          ? (
+            <>
+              <button
+                type="button"
+                className={styles.resolveBtn}
+                data-ledger-resolve-allow
+                disabled={busy}
+                onClick={() => { runResolve(requestId, 'allow') }}
+              >
+                {t('view.ledger.resolve.allow')}
+              </button>
+              <button
+                type="button"
+                className={styles.resolveBtn}
+                data-ledger-resolve-deny
+                disabled={busy}
+                onClick={() => { runResolve(requestId, 'deny') }}
+              >
+                {t('view.ledger.resolve.deny')}
+              </button>
+              {busy
+                ? <span className={styles.resolveBusy} data-ledger-resolve-busy>{t('view.ledger.resolve.busy')}</span>
+                : null}
+            </>
+          )
+          : null}
+        {props.controlSurfaceMode === 'read-only'
+          ? (
+            <span className={styles.readOnlyNote} data-control-surface-read-only>
+              {t('view.ledger.control.readOnly')}
+            </span>
+          )
           : null}
         {state !== undefined && state.phase === 'error'
           ? (
@@ -473,7 +644,7 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
                     onSelect={row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId) }}
                     t={t}
                   />
-                  {renderResolveBar(row)}
+                  {renderControlPanel(row)}
                 </Fragment>
               ))}
             </div>

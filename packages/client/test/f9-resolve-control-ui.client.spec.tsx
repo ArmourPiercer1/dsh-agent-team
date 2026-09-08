@@ -140,6 +140,10 @@ function renderLedger(overrides: Partial<TeamLedgerProps> = {}): { view: RenderR
     ledgerState: state([]),
     onRetry: vi.fn(() => Promise.resolve()),
     onSelectSession: vi.fn(),
+    // F9U — the v4 proof (served-version gating): the command tests
+    // assume the served host serves v4; the gating itself is covered by
+    // the F9U supplement spec.
+    controlSurfaceMode: 'enabled',
     t: makeTranslate(zh),
     ...overrides,
   }
@@ -152,7 +156,7 @@ const CONTROL_ENTRY = uiEntry(
   1,
   'control-request-recorded',
   T,
-  { requestId: 'r1', targetInstanceId: 'mate', actionName: 'write_file' },
+  { requestId: 'r1', kind: 'user-approval', targetInstanceId: 'mate', actionName: 'write_file' },
   'control',
 )
 
@@ -161,6 +165,7 @@ const controlModel = (extra: readonly TeamUiLedgerRow[] = []) =>
   ledgerModel([CONTROL_ENTRY, ...extra], {
     controls: [{
       requestId: 'r1', requestSequence: 1, targetInstanceId: 'mate', actionName: 'write_file',
+      kind: 'user-approval',
       requestedAt: iso(T), pending: true,
     }],
   })
@@ -231,6 +236,7 @@ describe('F9 (UI command surface): the pending-request Allow / Deny bar', () => 
       ledger: ledgerModel(entries, {
         controls: [{
           requestId: 'r1', requestSequence: 1, targetInstanceId: 'mate', actionName: 'write_file',
+          kind: 'user-approval',
           requestedAt: iso(T), pending: true,
         }],
       }),
@@ -433,10 +439,12 @@ describe('F9 (UI command surface): the pending-request Allow / Deny bar', () => 
         controls: [
           {
             requestId: 'r1', requestSequence: 1, targetInstanceId: 'mate', actionName: 'write_file',
+            kind: 'user-approval',
             requestedAt: iso(T), pending: true,
           },
           {
             requestId: 'r2', requestSequence: 2, targetInstanceId: 'lead', actionName: 'send_message',
+            kind: 'user-approval',
             requestedAt: iso(T + 1000), pending: true,
           },
         ],
