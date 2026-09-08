@@ -1,0 +1,25 @@
+﻿{
+  "rootSessionId": "session-dtestmtsgjlo4a725",
+  "nonce": "dtestmtsgjlo4a725",
+  "url": "http://127.0.0.1:3181/?token=[redacted]",
+  "origin": "http://127.0.0.1:3181",
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\tests\\mock\\hosts\\repair-r4-b1\\instance-port3181.log",
+  "model": {
+    "provider": "qiyuan-self",
+    "model": "qwen3.8-27b",
+    "keyConfigured": true
+  },
+  "mcp": {
+    "facet": {
+      "serverName": "dtest-mini",
+      "port": 3491
+    },
+    "host": {
+      "serverName": "dtesthttp",
+      "port": 3492
+    }
+  },
+  "hardTools": false,
+  "blueprint": "dtest-bp@1",
+  "bootedAt": "2026-09-08T09:19:05.518Z"
+}

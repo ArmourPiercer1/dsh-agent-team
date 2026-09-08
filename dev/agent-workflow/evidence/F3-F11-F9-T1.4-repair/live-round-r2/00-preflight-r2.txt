@@ -1,0 +1,12 @@
+﻿### preflight-check (r2, boot repair-r2-b1r)
+PASS  cookie-auth  GET / -> 200 (24395 bytes)
+PASS  row-health  status=200 ok=true toolCount=10 rootLive=true
+PASS  blueprint-binding  patch=dtest-bp@1 sha256:e1b1df8f7cc4… domain=sha256:e1b1df8f7cc4… match=true
+PASS  envelope-intersection  team(8) ∩ member(worker,collector) contain request-control/resolve-control
+PASS  workspace-registry  initialized=true workspaces=1 mockRow=sessions=1 rootBound=false
+PASS  mcp-endpoints  facet:3491=true host:3492=true
+PASS  team-binding  team_sessions[session-dtestmts69…]=gen=2 bp=dtest-bp@1 rootLog=true
+PASS  team-remote-seam  getProjection gen=2 (origin=team-remote)
+
+[preflight] 8 PASS, 0 WARN, 0 FAIL — CLEAR to run model turns
+preflight EXIT_CODE=0

@@ -1,0 +1,17 @@
+goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+---
+click rootGroup "未分组" ref=f1e118 -> code=0
+---
+click root "请初始化团队" ref=f1e180 -> code=0
+---
+teamTab "团队" via role=tab eval -> "clicked"
+---
+PASS find "W1" expect=present present=true
+---
+PASS find "W2" expect=present present=true
+---
+PASS find "时间线" expect=present present=true
+---
+snapshot -> state/teamtab-v2-smoke-g1.yml code=0
+---
+screenshot -> evidence/screenshots/v2-smoke-g1.png code=0

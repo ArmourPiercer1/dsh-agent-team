@@ -1,0 +1,23 @@
+﻿[ui-gate] playwright-cli 0.1.19 (C:\nvm4w\nodejs\node_modules\@playwright\cli\playwright-cli.js)
+goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+find root "请初始化团队：先用 team_create_member": NO REF (out: No matches found for "请初始化团队：先用 team_create_member".
+)
+node : [ui-gate] root click failed — continuing to asserts for diagnostics
+At line:1 char:729
++ ... repair-r1'; node tests\mock\scripts\ui-gate.mjs dev\agent-workflow\ev ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([ui-gate] root ...for diagnostics:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+teamTab "团队" via role=tab eval -> "clicked"
+FAIL eval document.querySelectorAll('button[data-ledger-row]').length … expect=truthy value=false
+PASS eval document.querySelector('[data-ledger-remaining]') === null… expect=truthy value=true
+PASS eval document.querySelector('[data-ledger-load-earlier]') === nul… expect=truthy value=true
+PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=ReferenceError: member is not defined
+    at eval (eval at <anonymous> (eval at 
+PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=ReferenceError: provision is not defined
+    at eval (eval at <anonymous> (eval 
+snapshot -> state/teamtab-f11-g5-teamB-r4.yml code=0
+screenshot -> evidence/screenshots/f11-g5-teamB-r4.png code=0
+
+[ui-gate] f11-g5-teamB-r4: FAIL (1) — raw log: state/ui-gate-f11-g5-teamB-r4-raw.txt

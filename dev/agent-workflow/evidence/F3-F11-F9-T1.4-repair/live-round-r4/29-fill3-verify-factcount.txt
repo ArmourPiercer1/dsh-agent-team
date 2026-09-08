@@ -1,0 +1,9 @@
+﻿step=1 tok=dtest-fix-3-1 prompt=请只回复 OK（本轮禁止调用 team_report_pro
+step=2 tok=dtest-fix-3-2 prompt=请只回复 OK（本轮禁止调用 team_report_pro
+step=3 tok=dtest-fix-3-3 prompt=请只回复 OK（本轮禁止调用 team_report_pro
+step=4 tok=dtest-fix-3-4 prompt=请只回复 OK（本轮禁止调用 team_report_pro
+step=5 tok=dtest-fix-3-5 prompt=请只回复 OK（本轮禁止调用 team_report_pro
+W1-B turns: 15 last=15
+teamB ledger facts total: 61
+kinds: {"?":61}
+tail fact: {"sequence":91,"factType":"member-lifecycle-changed","operationId":null,"createdAt":"2026-09-08T09:38:31.475Z","payload":{"action":"follow-up","at":"2026-09-08T09:38:31.343Z","caller":{"instanceId":"inst-leader","kind":"instance","role":"leader"},"from":"RUNNING","instanceId":"inst-1e0gj1v1lbkc","re

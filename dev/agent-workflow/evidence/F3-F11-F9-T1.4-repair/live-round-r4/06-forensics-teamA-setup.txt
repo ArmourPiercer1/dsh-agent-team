@@ -1,0 +1,5 @@
+﻿team_session: {"gen":4,"bp":"dtest-bp@1","rootSessionId":"session-dtestmtsgjlo4a725"}
+members: [{"instanceId":"inst-1j499i010e86","label":"W1","templateId":"worker","childSessionId":"session-team-child-b50874b457eae7ab3fb00b18477f0a9b","lifecycle":"CREATED"},{"instanceId":"inst-042zjep11mrw","label":"W2","templateId":"collector","childSessionId":"session-team-child-d82573ece99b93d3a3dfef8763d98393","lifecycle":"CREATED"}]
+ledger facts total: 2
+seq=18 provision-member-instance rid= decision= kind= target= action= corr= reason= decider=null
+seq=19 provision-member-instance rid= decision= kind= target= action= corr= reason= decider=null

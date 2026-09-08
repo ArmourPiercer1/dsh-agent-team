@@ -1,0 +1,266 @@
+- generic [ref=e4]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - button "新建会话" [ref=e9] [cursor=pointer]:
+        - generic [ref=e17]:
+          - generic [ref=e18]: DSH 本地构建
+          - generic [ref=e19]: 0.1.2-rc.1-a66e470
+      - button "收起侧边栏" [ref=e20] [cursor=pointer]
+    - button "新建会话" [ref=e23] [cursor=pointer]:
+      - generic [ref=e26]: 新会话
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: 工作区
+        - generic [ref=e33]:
+          - button "搜索会话" [ref=e34] [cursor=pointer]
+          - textbox "搜索会话…"
+        - generic [ref=e38]:
+          - button "视图选项" [ref=e40] [cursor=pointer]
+          - button "添加工作区" [ref=e43] [cursor=pointer]
+      - tree "会话" [ref=e49]:
+        - treeitem "mock" [expanded] [ref=e106] [cursor=pointer]
+        - generic [ref=e117]:
+          - treeitem "未分组" [expanded] [ref=e184] [cursor=pointer]
+          - treeitem "请初始化团队：先用 team_list_te 4分钟" [selected] [ref=e180] [cursor=pointer]:
+            - generic [ref=e182]: 请初始化团队：先用 team_list_te
+            - generic [ref=e183]: 4分钟
+    - generic [ref=e51]:
+      - button "新建团队" [ref=e54] [cursor=pointer]
+      - button "设置" [ref=e62] [cursor=pointer]
+  - generic [ref=e188]:
+    - banner [ref=e190]:
+      - generic [ref=e191]:
+        - navigation "会话层级" [ref=e193]:
+          - button "请初始化团队：先用 team_list_te" [disabled] [ref=e195]
+        - button "Session 日志" [ref=e198] [cursor=pointer]
+      - tablist [ref=e202]:
+        - tab "对话" [ref=e203] [cursor=pointer]
+        - tab "轨迹" [ref=e204] [cursor=pointer]
+        - tab "团队" [selected] [ref=e205] [cursor=pointer]
+    - generic [ref=e207]:
+      - generic [ref=e412]:
+        - generic [ref=e413]:
+          - heading "时间线" [level=3] [ref=e414]
+          - paragraph [ref=e416]: 暂无委派记录
+        - generic [ref=e417]:
+          - heading "成员组" [level=3] [ref=e418]
+          - generic [ref=e419]:
+            - generic [ref=e420]:
+              - button "leader · 1 活跃" [ref=e421] [cursor=pointer]
+              - generic [ref=e423]:
+                - button "以 Team 模式打开 / 回到 Leader" [ref=e424] [cursor=pointer]
+                - button "以普通模式打开" [ref=e425] [cursor=pointer]
+              - button "运行中 暂无动作" [disabled] [ref=e428]:
+                - generic [ref=e439]: 运行中
+                - generic [ref=e440]: 暂无动作
+            - generic [ref=e441]:
+              - generic [ref=e442]:
+                - generic [ref=e443]: DTest Worker · 0 活跃
+                - button "创建成员实例" [ref=e444] [cursor=pointer]: +
+              - generic [ref=e446]:
+                - button "已创建 暂无动作" [ref=e447] [cursor=pointer]:
+                  - generic [ref=e450]: 已创建
+                  - generic [ref=e451]: 暂无动作
+                - generic [ref=e452]:
+                  - button "发送任务…" [ref=e453] [cursor=pointer]
+                  - button "发送跟进" [ref=e454] [cursor=pointer]
+                  - button "归档" [ref=e455] [cursor=pointer]
+                  - button "处置" [ref=e456] [cursor=pointer]
+            - generic [ref=e457]:
+              - generic [ref=e458]:
+                - generic [ref=e459]: DTest Collector · 0 活跃
+                - button "创建成员实例" [ref=e460] [cursor=pointer]: +
+              - generic [ref=e462]:
+                - button "已创建 暂无动作" [ref=e463] [cursor=pointer]:
+                  - generic [ref=e466]: 已创建
+                  - generic [ref=e467]: 暂无动作
+                - generic [ref=e468]:
+                  - button "发送任务…" [ref=e469] [cursor=pointer]
+                  - button "发送跟进" [ref=e470] [cursor=pointer]
+                  - button "归档" [ref=e471] [cursor=pointer]
+                  - button "处置" [ref=e472] [cursor=pointer]
+        - generic [ref=e473]:
+          - heading "治理" [level=3] [ref=e474]
+          - generic [ref=e475]:
+            - generic [ref=e476]:
+              - generic [ref=e477]:
+                - generic [ref=e478]: 兼容性
+                - generic [ref=e479]: ✓ 兼容
+              - generic [ref=e480]:
+                - text: 0 项警告 · 0 项致命 · 0 项已确认
+                - generic [ref=e481]: 代数 1
+                - generic [ref=e482]: 最后探测于 2026-09-08T04:31:33.981Z
+              - generic [ref=e483]:
+                - button "审查" [ref=e484] [cursor=pointer]
+                - button "重新检查" [ref=e485] [cursor=pointer]
+                - button "确认警告" [disabled] [ref=e486]
+              - paragraph [ref=e487]: 重新检查会生成新的兼容性代数；旧的确认不会自动覆盖新代数。
+            - generic [ref=e488]:
+              - generic [ref=e489]: 策略 [ default ]
+              - paragraph [ref=e490]: 策略控制团队当前的运行时治理范围，不代表任务进度。
+              - generic [ref=e491]:
+                - button "审查" [ref=e492] [cursor=pointer]
+                - button "提交" [disabled] [ref=e493]
+            - generic [ref=e494]:
+              - generic [ref=e495]: 生效配置
+              - generic [ref=e496]:
+                - generic [ref=e497]: W1
+                - generic [ref=e498]:
+                  - generic [ref=e499]:
+                    - generic [ref=e500]: model
+                    - generic [ref=e501]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=e502]: capability
+                    - generic [ref=e503]: Inherited
+                  - generic [ref=e504]:
+                    - generic [ref=e505]: workspace
+                    - generic [ref=e506]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=e507]: instance-creation
+                    - generic [ref=e508]: Inherited
+                  - generic [ref=e509]:
+                    - generic [ref=e510]: autonomy
+                    - generic [ref=e511]: —
+                    - generic [ref=e512]: autonomy-overlay
+                    - generic [ref=e513]: Inherited
+                - generic [ref=e515]:
+                  - combobox [ref=e516]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=e517]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=e518]
+                  - button "查看覆盖" [ref=e519] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=e520]
+                  - button "重置覆盖" [ref=e521] [cursor=pointer]
+              - generic [ref=e522]:
+                - generic [ref=e523]: W2
+                - generic [ref=e524]:
+                  - generic [ref=e525]:
+                    - generic [ref=e526]: model
+                    - generic [ref=e527]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=e528]: capability
+                    - generic [ref=e529]: Inherited
+                  - generic [ref=e530]:
+                    - generic [ref=e531]: workspace
+                    - generic [ref=e532]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=e533]: instance-creation
+                    - generic [ref=e534]: Inherited
+                  - generic [ref=e535]:
+                    - generic [ref=e536]: autonomy
+                    - generic [ref=e537]: —
+                    - generic [ref=e538]: autonomy-overlay
+                    - generic [ref=e539]: Inherited
+                - generic [ref=e541]:
+                  - combobox [ref=e542]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=e543]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=e544]
+                  - button "查看覆盖" [ref=e545] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=e546]
+                  - button "重置覆盖" [ref=e547] [cursor=pointer]
+              - generic [ref=e548]:
+                - generic [ref=e549]: leader
+                - generic [ref=e550]:
+                  - generic [ref=e551]:
+                    - generic [ref=e552]: model
+                    - generic [ref=e553]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=e554]: capability
+                    - generic [ref=e555]: Inherited
+                  - generic [ref=e556]:
+                    - generic [ref=e557]: workspace
+                    - generic [ref=e558]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=e559]: blueprint
+                    - generic [ref=e560]: Locked
+                  - generic [ref=e561]:
+                    - generic [ref=e562]: autonomy
+                    - generic [ref=e563]: —
+                    - generic [ref=e564]: autonomy-overlay
+                    - generic [ref=e565]: Inherited
+                - generic [ref=e567]:
+                  - combobox [ref=e568]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=e569]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=e570]
+                  - button "查看覆盖" [ref=e571] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=e572]
+                  - button "重置覆盖" [ref=e573] [cursor=pointer]
+        - generic [ref=e574]:
+          - heading "活动与进度" [level=3] [ref=e575]
+          - generic [ref=e576]: 暂无活动进度
+        - generic [ref=e578]:
+          - heading "团队事件" [level=3] [ref=e579]
+          - generic [ref=e580]:
+            - generic [ref=e581]:
+              - combobox [ref=e582] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "团队"
+                - option "成员"
+                - option "生命周期"
+                - option "消息"
+                - option "控制"
+                - option "策略"
+                - option "兼容"
+                - option "进度"
+              - combobox [ref=e583] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "W1"
+                - option "W2"
+                - option "leader"
+                - option "leader"
+                - option "DTest Worker"
+                - option "DTest Collector"
+            - generic [ref=e584]:
+              - 'button "15:55:07 成员创建 W1 {\"instanceId\":\"inst-0fi1an617bjs\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=e585] [cursor=pointer]':
+                - generic [ref=e596]: 15:55:07
+                - generic [ref=e597]: 成员创建
+                - generic [ref=e598]: W1
+                - 'generic "provision-member-instance · #1 · 2026-09-08T07:55:07.212Z {\"instanceId\":\"inst-0fi1an617bjs\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=e599]': "{\"instanceId\":\"inst-0fi1an617bjs\",\"label\":\"W1\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+              - 'button "15:55:07 成员创建 W2 {\"instanceId\":\"inst-1ds2q2n0nete\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=e600] [cursor=pointer]':
+                - generic [ref=e611]: 15:55:07
+                - generic [ref=e612]: 成员创建
+                - generic [ref=e613]: W2
+                - 'generic "provision-member-instance · #2 · 2026-09-08T07:55:07.778Z {\"instanceId\":\"inst-1ds2q2n0nete\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=e614]': "{\"instanceId\":\"inst-1ds2q2n0nete\",\"label\":\"W2\",\"rootSessionId\":\"session-dtestmts69xkr6b54\",\"templateId\":\"collector\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+      - generic [ref=e350]:
+        - region "团队" [ref=e352]:
+          - generic [ref=e353] [cursor=pointer]:
+            - button "团队 1 运行中" [ref=e354]:
+              - generic [ref=e355]: 团队
+              - generic [aria-hidden] [ref=e356]: ·
+              - generic [ref=e357]: 1 运行中
+            - button "展开团队概览" [ref=e358]
+        - generic [ref=e362]:
+          - generic [ref=e363]:
+            - generic [ref=e365]:
+              - textbox "发消息或做任务… / 调用指令 @ 文件或对话" [active] [ref=e366]
+              - generic [aria-hidden]: 发消息或做任务… / 调用指令 @ 文件或对话
+            - generic [ref=e367]:
+              - generic [ref=e368]:
+                - button "指令" [ref=e369] [cursor=pointer]
+                - button "访问模式，当前：工作区内修改" [ref=e374] [cursor=pointer]:
+                  - generic [ref=e382]: 工作区内修改
+              - generic [ref=e386]:
+                - button "选择模型，当前 qwen3.8-27b" [ref=e389] [cursor=pointer]:
+                  - generic [ref=e390]: qwen3.8-27b
+                - button "上下文已用 2%" [ref=e394] [cursor=pointer]
+                - button "发送消息" [disabled] [ref=e398]
+          - generic [ref=e401]: 1 轮 · 4 步| LLM 9.8秒 · 工具调用 2.5秒| 首 token 平均 0.7秒 · 140 tok/s| 缓存命中 51%| 输入 18.1K tok · 输出 994 tok
+  - generic [ref=e406]:
+    - generic [ref=e407]:
+      - generic: 详情
+      - button "关闭详情" [ref=e408] [cursor=pointer]
+    - generic [ref=e411]: 点击消息流中的工具行查看详情

@@ -1,0 +1,1 @@
+﻿seq=3972 step=1 name=team_request_control args={"rootSessionId":"session-dtestmtsgjlo4a725","requestToken":"dtest-v2-hard-req-2","kind":"leader-approval","targetInstanceId":"inst-1j499i010e86","actionName":"write","toolName":"write","summary":"写入 work/v2-hard.txt"}

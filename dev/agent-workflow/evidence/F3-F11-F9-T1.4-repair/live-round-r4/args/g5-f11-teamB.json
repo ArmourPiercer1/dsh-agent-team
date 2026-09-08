@@ -1,0 +1,29 @@
+{
+  "session": "mocktest",
+  "rootText": "请初始化团队：先用 team_create",
+  "teamTab": "团队",
+  "varsFile": "state/f11-g5-vars.json",
+  "asserts": [
+    {
+      "eval": "document.querySelectorAll('button[data-ledger-row]').length === {{total}}",
+      "expect": "truthy"
+    },
+    {
+      "eval": "document.querySelector('[data-ledger-remaining]') === null",
+      "expect": "truthy"
+    },
+    {
+      "eval": "document.querySelector('[data-ledger-load-earlier]') === null",
+      "expect": "truthy"
+    },
+    {
+      "eval": "(() => { const rows = [...document.querySelectorAll('button[data-ledger-row][data-ledger-fact]')]; const last = rows[rows.length - 1]; return last ? last.getAttribute('data-ledger-fact') === {{tailFact}} : false })()",
+      "expect": "truthy"
+    },
+    {
+      "eval": "(() => { const rows = [...document.querySelectorAll('button[data-ledger-row][data-ledger-fact]')]; const first = rows[0]; return first ? first.getAttribute('data-ledger-fact') === {{headFact}} : false })()",
+      "expect": "truthy"
+    }
+  ],
+  "snapshot": "f11-g5-teamB-r4"
+}

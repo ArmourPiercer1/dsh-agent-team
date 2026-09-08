@@ -1,0 +1,58 @@
+- generic [ref=e4]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - button "新建会话" [ref=e9] [cursor=pointer]:
+        - generic [ref=e17]:
+          - generic [ref=e18]: DSH 本地构建
+          - generic [ref=e19]: 0.1.2-rc.1-a66e470
+      - button "收起侧边栏" [ref=e20] [cursor=pointer]
+    - button "新建会话" [ref=e23] [cursor=pointer]:
+      - generic [ref=e26]: 新会话
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: 工作区
+        - generic [ref=e33]:
+          - button "搜索会话" [ref=e34] [cursor=pointer]
+          - textbox "搜索会话…"
+        - generic [ref=e38]:
+          - button "视图选项" [ref=e40] [cursor=pointer]
+          - button "添加工作区" [ref=e43] [cursor=pointer]
+      - tree "会话" [ref=e49]:
+        - generic [ref=e50]:
+          - treeitem "mock" [expanded] [ref=e52] [cursor=pointer]
+          - treeitem "新会话" [selected] [ref=e115] [cursor=pointer]
+        - treeitem "未分组" [ref=e119] [cursor=pointer]
+    - generic [ref=e58]:
+      - button "新建团队" [ref=e61] [cursor=pointer]
+      - button "设置" [ref=e69] [cursor=pointer]
+  - generic [ref=e84]:
+    - generic [ref=e87]:
+      - generic [ref=e92]: 探索未至之境
+      - generic [ref=e93]: 预览版
+    - button "选择工作区" [ref=e95] [cursor=pointer]:
+      - generic [ref=e98]: mock
+    - region "团队" [ref=e129]:
+      - generic [ref=e130] [cursor=pointer]:
+        - button "团队 1 运行中" [ref=e131]:
+          - generic [ref=e132]: 团队
+          - generic [aria-hidden] [ref=e133]: ·
+          - generic [ref=e134]: 1 运行中
+        - button "展开团队概览" [ref=e135]
+    - generic [ref=e103]:
+      - generic [ref=e105]:
+        - textbox "描述你想要构建的内容… / 调用指令 @ 文件或对话" [active] [ref=e138]
+        - generic [aria-hidden]: 描述你想要构建的内容… / 调用指令 @ 文件或对话
+      - generic [ref=e107]:
+        - generic [ref=e108]:
+          - button "指令" [ref=e139] [cursor=pointer]
+          - button "访问模式，当前：工作区内修改" [ref=e144] [cursor=pointer]:
+            - generic [ref=e152]: 工作区内修改
+        - generic [ref=e109]:
+          - button "选择模型，当前 qwen3.8-27b" [ref=e158] [cursor=pointer]:
+            - generic [ref=e159]: qwen3.8-27b
+          - button "发送消息" [disabled] [ref=e162]
+  - generic [ref=e166]:
+    - generic [ref=e167]:
+      - generic: 详情
+      - button "关闭详情" [ref=e168] [cursor=pointer]
+    - generic [ref=e171]: 点击消息流中的工具行查看详情

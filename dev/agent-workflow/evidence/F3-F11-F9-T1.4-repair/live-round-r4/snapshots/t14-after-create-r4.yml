@@ -1,0 +1,71 @@
+- generic [ref=f4e4]:
+  - generic [ref=f4e7]:
+    - generic [ref=f4e8]:
+      - button "新建会话" [ref=f4e9] [cursor=pointer]:
+        - generic [ref=f4e17]:
+          - generic [ref=f4e18]: DSH 本地构建
+          - generic [ref=f4e19]: 0.1.2-rc.1-a66e470
+      - button "收起侧边栏" [ref=f4e20] [cursor=pointer]
+    - button "新建会话" [ref=f4e23] [cursor=pointer]:
+      - generic [ref=f4e26]: 新会话
+    - generic [ref=f4e29]:
+      - generic [ref=f4e30]:
+        - generic [ref=f4e31]: 工作区
+        - generic [ref=f4e33]:
+          - button "搜索会话" [ref=f4e34] [cursor=pointer]
+          - textbox "搜索会话…"
+        - generic [ref=f4e38]:
+          - button "视图选项" [ref=f4e40] [cursor=pointer]
+          - button "添加工作区" [ref=f4e43] [cursor=pointer]
+      - tree "会话" [ref=f4e49]:
+        - generic [ref=f4e104]:
+          - treeitem "mock" [expanded] [ref=f4e106] [cursor=pointer]
+          - treeitem "新会话" [selected] [ref=f4e657] [cursor=pointer]
+        - generic [ref=f4e113]:
+          - treeitem "未分组" [expanded] [ref=f4e114] [cursor=pointer]
+          - treeitem "请依次调用 team_request_control 四 会话“请依次调用 team_request_control 四”的操作" [ref=f4e660] [cursor=pointer]:
+            - generic [ref=f4e124]: 请依次调用 team_request_control 四
+            - button "会话“请依次调用 team_request_control 四”的操作" [ref=f4e663]
+          - treeitem "请初始化团队：先用 team_list_te 3分钟" [ref=f4e668] [cursor=pointer]:
+            - generic [ref=f4e129]: 请初始化团队：先用 team_list_te
+            - generic [ref=f4e130]: 3分钟
+          - treeitem "请依次调用 team_request_control 四 42分钟" [ref=f4e669] [cursor=pointer]:
+            - generic [ref=f4e134]: 请依次调用 team_request_control 四
+            - generic [ref=f4e135]: 42分钟
+          - treeitem "请初始化团队：先用 team_list_te 1小时" [ref=f4e137] [cursor=pointer]:
+            - generic [ref=f4e139]: 请初始化团队：先用 team_list_te
+            - generic [ref=f4e140]: 1小时
+    - generic [ref=f4e51]:
+      - button "新建团队" [ref=f4e54] [cursor=pointer]
+      - button "设置" [ref=f4e62] [cursor=pointer]
+  - generic [ref=f4e676]:
+    - generic [ref=f4e679]:
+      - generic [ref=f4e684]: 探索未至之境
+      - generic [ref=f4e685]: 预览版
+    - button "选择工作区" [ref=f4e687] [cursor=pointer]:
+      - generic [ref=f4e691]: mock
+    - region "团队" [ref=f4e695]:
+      - generic [ref=f4e696] [cursor=pointer]:
+        - button "团队 1 运行中" [ref=f4e697]:
+          - generic [ref=f4e698]: 团队
+          - generic [aria-hidden] [ref=f4e699]: ·
+          - generic [ref=f4e700]: 1 运行中
+        - button "展开团队概览" [ref=f4e701]
+    - generic [ref=f4e706]:
+      - generic [ref=f4e708]:
+        - textbox "描述你想要构建的内容… / 调用指令 @ 文件或对话" [active] [ref=f4e709]
+        - generic [aria-hidden]: 描述你想要构建的内容… / 调用指令 @ 文件或对话
+      - generic [ref=f4e710]:
+        - generic [ref=f4e711]:
+          - button "指令" [ref=f4e712] [cursor=pointer]
+          - button "访问模式，当前：工作区内修改" [ref=f4e717] [cursor=pointer]:
+            - generic [ref=f4e725]: 工作区内修改
+        - generic [ref=f4e729]:
+          - button "选择模型，当前 qwen3.8-27b" [ref=f4e732] [cursor=pointer]:
+            - generic [ref=f4e733]: qwen3.8-27b
+          - button "发送消息" [disabled] [ref=f4e736]
+  - generic [ref=f4e740]:
+    - generic [ref=f4e741]:
+      - generic: 详情
+      - button "关闭详情" [ref=f4e742] [cursor=pointer]
+    - generic [ref=f4e745]: 点击消息流中的工具行查看详情

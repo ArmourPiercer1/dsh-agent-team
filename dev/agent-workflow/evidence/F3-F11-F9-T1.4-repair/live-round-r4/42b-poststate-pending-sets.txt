@@ -1,0 +1,42 @@
+﻿--- teamA leader-approval pending:
+[run-asset] node tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmtsgjlo4a725\", \"kind\": \"leader-approval\"}"
+[f9-check] 3 pending requests match — taking the first (sequence 21); the others stay pending:
+  - seq 22 requestId=ctrl-098ann60zyg9e70fcor3k1oe kind=leader-approval action=write
+  - seq 23 requestId=ctrl-1k5t7y61ezoedj1oofk4006e kind=leader-approval action=write
+PASS  pending detail fields (requestId ctrl-08yb1y7… kind=leader-approval)
+[f9-check] wrote D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\state\f9-pending.json (vars for the ui-gate.mjs F9 configs)
+
+[f9-check] 1 PASS, 0 FAIL — OK
+exit=0
+--- teamA user-approval pending:
+[run-asset] node tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmtsgjlo4a725\", \"kind\": \"user-approval\"}"
+node : [f9-check] no pending control request matches the filter ({"kind":"user-approval"}) — deliver the request prompt 
+(b4-requests.md / t41-deny-req.md) first, then re-run
+At line:1 char:647
++ ...  pending:'; node "$ev\tools\run-asset.mjs" tests\mock\scripts\f9-chec ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([f9-check] no p...st, then re-run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+exit=2
+--- legacy all pending:
+[run-asset] node tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmts69xkr6b54\"}"
+[f9-check] 3 pending requests match — taking the first (sequence 5); the others stay pending:
+  - seq 6 requestId=ctrl-0ppmycw17v2axd0ws2xbi03q kind=leader-approval action=write
+  - seq 14 requestId=ctrl-1eaer590x95ko00wdd0y71jw kind=leader-approval action=write
+PASS  pending detail fields (requestId ctrl-0eenv68… kind=leader-approval)
+[f9-check] wrote D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\state\f9-pending.json (vars for the ui-gate.mjs F9 configs)
+
+[f9-check] 1 PASS, 0 FAIL — OK
+exit=0
+--- teamB all pending:
+[run-asset] node tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-33d7038c-b841-49ec-9b3f-5a762b23f548\"}"
+node : [f9-check] no pending control request matches the filter ({}) — deliver the request prompt (b4-requests.md / t41-
+deny-req.md) first, then re-run
+At line:1 char:1060
++ ...  pending:'; node "$ev\tools\run-asset.mjs" tests\mock\scripts\f9-chec ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([f9-check] no p...st, then re-run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+exit=2

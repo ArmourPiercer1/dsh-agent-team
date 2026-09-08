@@ -1,0 +1,17 @@
+goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+---
+click root "请初始化团队" ref=f6e131 -> code=0
+---
+teamTab "团队" via role=tab eval -> "clicked"
+---
+PASS clickEval (() => { const b = document.querySelector('div[data-ledger-r… expect=truthy value="clicked"
+---
+PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=true
+---
+PASS eval (() => { const errs = [...document.querySelectorAll('span[da… expect=truthy value=true
+---
+PASS eval document.querySelector('div[data-ledger-resolve-bar][data-re… expect=truthy value=true
+---
+snapshot -> state/teamtab-f9-g4-policy.yml code=0
+---
+screenshot -> evidence/screenshots/f9-g4-policy.png code=0

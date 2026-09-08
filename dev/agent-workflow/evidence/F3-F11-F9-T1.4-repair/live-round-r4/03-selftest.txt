@@ -1,0 +1,25 @@
+﻿PASS  selftest version-gate v1 shape
+PASS  selftest version-gate v4 shape
+PASS  selftest version-gate v4 WRONG code detected
+PASS  selftest version-gate v1 non-echo detected
+PASS  selftest spoofed caller shape
+PASS  selftest spoofed caller accepted-detected
+PASS  selftest pending fields (good payload)
+PASS  selftest pending fields (broken payload detected)
+PASS  selftest split pending
+PASS  selftest split decided
+PASS  selftest decided allow + human decider
+PASS  selftest decided allow detects member decider
+PASS  selftest decided deny
+PASS  selftest decided missing entry createdAt detected
+PASS  selftest decided double-decision detected
+PASS  selftest consumed exactly-once
+PASS  selftest consumed expectAbsent (no consumption)
+PASS  selftest consumed expectAbsent detects consumption
+PASS  selftest consumed double detected
+PASS  selftest policy (deny + external-policy + human + no consumption)
+PASS  selftest policy detects consumption
+PASS  selftest policy detects allow value
+PASS  selftest control codes closed set (7)
+
+[f9-check] 23 PASS, 0 FAIL — OK

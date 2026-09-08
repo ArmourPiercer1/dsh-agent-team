@@ -1,0 +1,1 @@
+﻿name=team_request_control args={"rootSessionId":"session-dtestmtsgjlo4a725","requestToken":"dtest-v2-req-ua-2","kind":"user-approval","targetInstanceId":"inst-1j499i010e86","actionName":"write","summary":"写入 tests/mock-outside/probe/v2-probe-2.txt"}

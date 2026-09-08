@@ -1,0 +1,20 @@
+﻿team_session: {"gen":19,"bp":"dtest-bp@1","rootSessionId":"session-dtestmts69xkr6b54"}
+members: [{"instanceId":"inst-0fi1an617bjs","label":"W1","templateId":"worker","childSessionId":"session-team-child-f1898fca80a5114128eec10671624fd2","lifecycle":"SETTLED"},{"instanceId":"inst-1ds2q2n0nete","label":"W2","templateId":"collector","childSessionId":"session-team-child-a28fa0cc8bfcf80144c3a843c2d729ef","lifecycle":"CREATED"}]
+ledger facts total: 17
+seq=1 provision-member-instance rid= decision= kind= target= action= corr= reason= decider=null
+seq=2 provision-member-instance rid= decision= kind= target= action= corr= reason= decider=null
+seq=3 control-request-recorded rid=ctrl-1utbsww1kjuqwl08yzyyu0ma decision= kind=user-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-req-ua-1 reason= decider=null
+seq=4 control-request-recorded rid=ctrl-0f8mo951hnv44s1ytucq70l3 decision= kind=leader-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-req-la-1 reason= decider=null
+seq=5 control-request-recorded rid=ctrl-0eenv681ihtx7p002pwg20kt decision= kind=leader-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-req-la-2 reason= decider=null
+seq=6 control-request-recorded rid=ctrl-0ppmycw17v2axd0ws2xbi03q decision= kind=leader-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-req-self-1 reason= decider=null
+seq=7 control-decision-recorded rid=ctrl-1utbsww1kjuqwl08yzyyu0ma decision=allow kind= target= action= corr= reason= decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"}
+seq=8 team-work-admitted rid= decision= kind= target=inst-0fi1an617bjs action= corr= reason= decider=null
+seq=9 activity-interval-opened rid= decision= kind= target= action= corr=dtest-v2-ua-exec reason= decider=null
+seq=10 activity-interval-closed rid= decision= kind= target= action= corr=dtest-v2-ua-exec reason= decider=null
+seq=11 member-lifecycle-changed rid= decision= kind= target= action= corr= reason= decider=null
+seq=12 control-request-recorded rid=ctrl-1vnalzt1jpvxto08p0d9v0mk decision= kind=user-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-req-ua-2 reason= decider=null
+seq=13 control-decision-recorded rid=ctrl-1vnalzt1jpvxto08p0d9v0mk decision=deny kind= target= action= corr= reason= decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"}
+seq=14 control-request-recorded rid=ctrl-1eaer590x95ko00wdd0y71jw decision= kind=leader-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-hard-req-1 reason= decider=null
+seq=15 control-decision-recorded rid=ctrl-0f8mo951hnv44s1ytucq70l3 decision=allow kind= target= action= corr= reason= decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"}
+seq=16 control-request-recorded rid=ctrl-04ih1151nw6m9m0nagf8z10w decision= kind=leader-approval target=inst-0fi1an617bjs action=write corr=dtest-v2-hard-req-2 reason= decider=null
+seq=17 control-decision-recorded rid=ctrl-04ih1151nw6m9m0nagf8z10w decision=deny kind= target= action= corr= reason=external-policy decider={"humanId":"session-dtestmts69xkr6b54","kind":"human"}

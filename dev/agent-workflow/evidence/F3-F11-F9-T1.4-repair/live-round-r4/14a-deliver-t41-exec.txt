@@ -1,0 +1,4 @@
+﻿[deliver] session=session-dtestmtsgjlo4a725 file=tests\mock\scripts\prompts\t41-exec.md chars=268
+[deliver] prompt head: 请求 UA（tests/mock-outside/probe/v2-probe-1.txt）已由人类裁决 allow：请调用 team_follow_up 对 
+[deliver] status=200 ok=true
+[deliver] value={"accepted":true}

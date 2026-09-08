@@ -1,0 +1,4 @@
+﻿team_session: {"gen":3,"bp":"dtest-bp@1","rootSessionId":"session-33d7038c-b841-49ec-9b3f-5a762b23f548"}
+members: [{"instanceId":"inst-1e0gj1v1lbkc","label":"W1","templateId":"worker","childSessionId":"session-team-child-c532383bdf40a6e32c74c20ad35e6866","lifecycle":"CREATED"}]
+ledger facts total: 1
+seq=31 provision-member-instance rid= decision= kind= target= action= corr= reason= decider=null

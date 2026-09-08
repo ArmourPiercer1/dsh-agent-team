@@ -1,0 +1,19 @@
+goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+---
+click root "请初始化团队：先用 team_create" ref=f8e114 -> code=0
+---
+teamTab "团队" via role=tab eval -> "clicked"
+---
+PASS eval document.querySelectorAll('button[data-ledger-row]').length … expect=truthy value=true
+---
+PASS eval document.querySelector('[data-ledger-remaining]') === null… expect=truthy value=true
+---
+PASS eval document.querySelector('[data-ledger-load-earlier]') === nul… expect=truthy value=true
+---
+PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=true
+---
+PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=true
+---
+snapshot -> state/teamtab-f11-g5-teamB-r4.yml code=0
+---
+screenshot -> evidence/screenshots/f11-g5-teamB-r4.png code=0

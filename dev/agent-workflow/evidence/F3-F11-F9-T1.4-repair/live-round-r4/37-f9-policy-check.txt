@@ -1,0 +1,4 @@
+﻿[run-asset] node .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs "policy" "--request-id" "ctrl-0kftvcz0zi8w5w1k31au10eg" "--json" "{\"root\": \"session-dtestmtsgjlo4a725\"}"
+PASS  managed-policy (deny + reason external-policy + decider human + no consumption)
+
+[f9-check] 1 PASS, 0 FAIL — OK

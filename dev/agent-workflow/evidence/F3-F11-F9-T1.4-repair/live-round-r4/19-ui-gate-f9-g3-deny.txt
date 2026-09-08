@@ -1,0 +1,12 @@
+﻿[ui-gate] playwright-cli 0.1.19 (C:\nvm4w\nodejs\node_modules\@playwright\cli\playwright-cli.js)
+goto http://127.0.0.1:3181/?token=[redacted] -> code=0
+click root "请初始化团队" ref=f4e127 -> code=0
+teamTab "团队" via role=tab eval -> "clicked"
+PASS clickEval (() => { const b = document.querySelector('div[data-ledger-r… expect=truthy value="clicked"
+PASS eval document.querySelector('div[data-ledger-resolve-bar][data-re… expect=truthy value=true
+PASS eval (() => { const rows = [...document.querySelectorAll('button[… expect=truthy value=true
+PASS eval document.querySelectorAll('span[data-ledger-resolve-error]')… expect=truthy value=true
+snapshot -> state/teamtab-f9-g3-deny.yml code=0
+screenshot -> evidence/screenshots/f9-g3-deny.png code=0
+
+[ui-gate] f9-g3-deny: PASS — raw log: state/ui-gate-f9-g3-deny-raw.txt

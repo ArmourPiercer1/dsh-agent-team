@@ -1,0 +1,42 @@
+﻿== date == 2026-09-08 17:17:52 +08:00
+== node = v24.20.0
+port 3181 listening=False
+port 3491 listening=False
+port 3492 listening=False
+:3080 GET status=401 (GET-only probe)
+== main checkout HEAD == c0f91508ae331926d9520085463f483757f806c0 (int/repair-r1)
+== tracked changes == []
+== task branch tip == f1b1addbdedf34283223b1440d49beb748385c2a
+== diff main..task (tests/mock/scripts) files ==
+tests/mock/scripts/f9-check.mjs
+tests/mock/scripts/prompts/b6-req.md
+== test-use HEAD == a66e4702047846cdaa10c66c9d3df3951f5ea70d
+== test-use porcelain == []
+== client bundle bytes == 959026
+== playwright-cli node processes == 0
+== .playwright-cli tree ==
+  tests\mock\.playwright-cli\daemon
+  tests\mock\.playwright-cli\console-2026-09-07T14-46-00-573Z.log
+  tests\mock\.playwright-cli\console-2026-09-08T08-09-07-586Z.log
+  tests\mock\.playwright-cli\console-2026-09-08T08-16-11-986Z.log
+  tests\mock\.playwright-cli\page-2026-09-07T14-43-28-917Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-43-40-781Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-44-17-870Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-45-23-792Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-45-32-824Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-46-00-885Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-46-09-949Z.yml
+  tests\mock\.playwright-cli\page-2026-09-07T14-46-13-144Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T07-59-37-484Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T07-59-46-582Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T07-59-49-789Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-01-58-136Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-02-07-804Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-02-22-635Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-02-32-319Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-09-07-947Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-09-17-632Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-16-12-350Z.yml
+  tests\mock\.playwright-cli\page-2026-09-08T08-16-21-984Z.yml
+  tests\mock\.playwright-cli\daemon\a464ccf0618f34da
+  tests\mock\.playwright-cli\daemon\a464ccf0618f34da\mocktest.err

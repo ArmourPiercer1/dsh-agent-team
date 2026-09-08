@@ -1,0 +1,5 @@
+﻿[run-asset] node .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmtsgjlo4a725\", \"toolName\": \"write\", \"out\": \"tests/mock/state/f9-policy-pending.json\"}"
+PASS  pending detail fields (requestId ctrl-0kftvcz… kind=leader-approval)
+[f9-check] wrote tests/mock/state/f9-policy-pending.json (vars for the ui-gate.mjs F9 configs)
+
+[f9-check] 1 PASS, 0 FAIL — OK

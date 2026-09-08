@@ -1,0 +1,558 @@
+- generic [ref=f8e4]:
+  - generic [ref=f8e7]:
+    - generic [ref=f8e8]:
+      - button "新建会话" [ref=f8e9] [cursor=pointer]:
+        - generic [ref=f8e17]:
+          - generic [ref=f8e18]: DSH 本地构建
+          - generic [ref=f8e19]: 0.1.2-rc.1-a66e470
+      - button "收起侧边栏" [ref=f8e20] [cursor=pointer]
+    - button "新建会话" [ref=f8e23] [cursor=pointer]:
+      - generic [ref=f8e26]: 新会话
+    - generic [ref=f8e29]:
+      - generic [ref=f8e30]:
+        - generic [ref=f8e31]: 工作区
+        - generic [ref=f8e33]:
+          - button "搜索会话" [ref=f8e34] [cursor=pointer]
+          - textbox "搜索会话…"
+        - generic [ref=f8e38]:
+          - button "视图选项" [ref=f8e40] [cursor=pointer]
+          - button "添加工作区" [ref=f8e43] [cursor=pointer]
+      - tree "会话" [ref=f8e49]:
+        - generic [ref=f8e104]:
+          - treeitem "mock" [expanded] [ref=f8e106] [cursor=pointer]
+          - treeitem "请初始化团队：先用 team_create_ 会话“请初始化团队：先用 team_create_”的操作" [selected] [ref=f8e646] [cursor=pointer]:
+            - generic [ref=f8e116]: 请初始化团队：先用 team_create_
+            - button "会话“请初始化团队：先用 team_create_”的操作" [ref=f8e649]
+        - generic [ref=f8e118]:
+          - treeitem "未分组" [expanded] [ref=f8e119] [cursor=pointer]
+          - treeitem "请依次调用 team_request_control 四 4分钟" [ref=f8e127] [cursor=pointer]:
+            - generic [ref=f8e129]: 请依次调用 team_request_control 四
+            - generic [ref=f8e130]: 4分钟
+          - treeitem "[team-work requestToken=dtest-fix-1-1] 7分钟" [ref=f8e132] [cursor=pointer]:
+            - generic [ref=f8e134]: "[team-work requestToken=dtest-fix-1-1]"
+            - generic [ref=f8e135]: 7分钟
+          - treeitem "请初始化团队：先用 team_list_te 14分钟" [ref=f8e137] [cursor=pointer]:
+            - generic [ref=f8e139]: 请初始化团队：先用 team_list_te
+            - generic [ref=f8e140]: 14分钟
+          - treeitem "请依次调用 team_request_control 四 53分钟" [ref=f8e142] [cursor=pointer]:
+            - generic [ref=f8e144]: 请依次调用 team_request_control 四
+            - generic [ref=f8e145]: 53分钟
+          - treeitem "请初始化团队：先用 team_list_te 1小时" [ref=f8e147] [cursor=pointer]:
+            - generic [ref=f8e149]: 请初始化团队：先用 team_list_te
+            - generic [ref=f8e150]: 1小时
+    - generic [ref=f8e51]:
+      - button "新建团队" [ref=f8e54] [cursor=pointer]
+      - button "设置" [ref=f8e62] [cursor=pointer]
+  - generic [ref=f8e654]:
+    - banner [ref=f8e656]:
+      - generic [ref=f8e657]:
+        - navigation "会话层级" [ref=f8e659]:
+          - button "请初始化团队：先用 team_create_" [disabled] [ref=f8e661]
+        - button "Session 日志" [ref=f8e664] [cursor=pointer]
+      - tablist [ref=f8e668]:
+        - tab "对话" [ref=f8e669] [cursor=pointer]
+        - tab "轨迹" [ref=f8e670] [cursor=pointer]
+        - tab "团队" [selected] [ref=f8e671] [cursor=pointer]
+    - generic [ref=f8e673]:
+      - generic [ref=f8e677]:
+        - generic [ref=f8e678]:
+          - heading "时间线" [level=3] [ref=f8e679]
+          - generic [ref=f8e681]:
+            - generic [ref=f8e684]:
+              - generic [ref=f8e685]: 17:36:40
+              - generic [ref=f8e686]: 17:37:30
+              - generic [ref=f8e687]: 17:38:20
+            - generic [ref=f8e688]: W1
+            - generic "团队委派时间线：滚轮缩放，拖拽平移，方向键平移，按 0 复位" [ref=f8e692]:
+              - generic [ref=f8e694]:
+                - generic [aria-hidden] [ref=f8e695] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e696] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e697] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e698] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e699] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e700] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e701] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e702] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e703] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e704] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e705] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e706] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e707] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e708] [cursor=pointer]
+                - generic [aria-hidden] [ref=f8e709] [cursor=pointer]
+        - generic [ref=f8e710]:
+          - heading "成员组" [level=3] [ref=f8e711]
+          - generic [ref=f8e712]:
+            - generic [ref=f8e713]:
+              - button "leader · 1 活跃" [ref=f8e714] [cursor=pointer]
+              - generic [ref=f8e716]:
+                - button "以 Team 模式打开 / 回到 Leader" [ref=f8e717] [cursor=pointer]
+                - button "以普通模式打开" [ref=f8e718] [cursor=pointer]
+              - button "运行中 暂无动作" [disabled] [ref=f8e721]:
+                - generic [ref=f8e732]: 运行中
+                - generic [ref=f8e733]: 暂无动作
+            - generic [ref=f8e734]:
+              - generic [ref=f8e735]:
+                - generic [ref=f8e736]: DTest Worker · 0 活跃
+                - button "创建成员实例" [ref=f8e737] [cursor=pointer]: +
+              - generic [ref=f8e739]:
+                - button "已结算 暂无动作" [ref=f8e740] [cursor=pointer]:
+                  - generic [ref=f8e743]: 已结算
+                  - generic [ref=f8e744]: 暂无动作
+                - generic [ref=f8e745]:
+                  - button "发送消息…" [ref=f8e746] [cursor=pointer]
+                  - button "恢复…" [ref=f8e747] [cursor=pointer]
+                  - button "归档" [ref=f8e748] [cursor=pointer]
+                  - button "处置" [ref=f8e749] [cursor=pointer]
+            - generic [ref=f8e750]:
+              - generic [ref=f8e751]:
+                - generic [ref=f8e752]: DTest Collector · 0 活跃
+                - button "创建成员实例" [ref=f8e753] [cursor=pointer]: +
+              - generic [ref=f8e754]: 尚无实例
+        - generic [ref=f8e756]:
+          - heading "治理" [level=3] [ref=f8e757]
+          - generic [ref=f8e758]:
+            - generic [ref=f8e759]:
+              - generic [ref=f8e760]:
+                - generic [ref=f8e761]: 兼容性
+                - generic [ref=f8e762]: ✓ 兼容
+              - generic [ref=f8e763]:
+                - text: 0 项警告 · 0 项致命 · 0 项已确认
+                - generic [ref=f8e764]: 代数 1
+                - generic [ref=f8e765]: 最后探测于 2026-09-08T09:35:36.660Z
+              - generic [ref=f8e766]:
+                - button "审查" [ref=f8e767] [cursor=pointer]
+                - button "重新检查" [ref=f8e768] [cursor=pointer]
+                - button "确认警告" [disabled] [ref=f8e769]
+              - paragraph [ref=f8e770]: 重新检查会生成新的兼容性代数；旧的确认不会自动覆盖新代数。
+            - generic [ref=f8e771]:
+              - generic [ref=f8e772]: 策略 [ default ]
+              - paragraph [ref=f8e773]: 策略控制团队当前的运行时治理范围，不代表任务进度。
+              - generic [ref=f8e774]:
+                - button "审查" [ref=f8e775] [cursor=pointer]
+                - button "提交" [disabled] [ref=f8e776]
+            - generic [ref=f8e777]:
+              - generic [ref=f8e778]: 生效配置
+              - generic [ref=f8e779]:
+                - generic [ref=f8e780]: W1
+                - generic [ref=f8e781]:
+                  - generic [ref=f8e782]:
+                    - generic [ref=f8e783]: model
+                    - generic [ref=f8e784]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f8e785]: capability
+                    - generic [ref=f8e786]: Inherited
+                  - generic [ref=f8e787]:
+                    - generic [ref=f8e788]: workspace
+                    - generic [ref=f8e789]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f8e790]: instance-creation
+                    - generic [ref=f8e791]: Locked
+                  - generic [ref=f8e792]:
+                    - generic [ref=f8e793]: autonomy
+                    - generic [ref=f8e794]: —
+                    - generic [ref=f8e795]: autonomy-overlay
+                    - generic [ref=f8e796]: Inherited
+                - generic [ref=f8e798]:
+                  - combobox [ref=f8e799]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f8e800]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f8e801]
+                  - button "查看覆盖" [ref=f8e802] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f8e803]
+                  - button "重置覆盖" [ref=f8e804] [cursor=pointer]
+              - generic [ref=f8e805]:
+                - generic [ref=f8e806]: leader
+                - generic [ref=f8e807]:
+                  - generic [ref=f8e808]:
+                    - generic [ref=f8e809]: model
+                    - generic [ref=f8e810]: qiyuan-self/qwen3.8-27b
+                    - generic [ref=f8e811]: capability
+                    - generic [ref=f8e812]: Inherited
+                  - generic [ref=f8e813]:
+                    - generic [ref=f8e814]: workspace
+                    - generic [ref=f8e815]: D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock
+                    - generic [ref=f8e816]: blueprint
+                    - generic [ref=f8e817]: Locked
+                  - generic [ref=f8e818]:
+                    - generic [ref=f8e819]: autonomy
+                    - generic [ref=f8e820]: —
+                    - generic [ref=f8e821]: autonomy-overlay
+                    - generic [ref=f8e822]: Inherited
+                - generic [ref=f8e824]:
+                  - combobox [ref=f8e825]:
+                    - option "model" [selected]
+                    - option "tools"
+                    - option "permissions"
+                    - option "skills"
+                    - option "mcp"
+                  - combobox [ref=f8e826]:
+                    - option "允许" [selected]
+                    - option "拒绝"
+                  - textbox "条目" [ref=f8e827]
+                  - button "查看覆盖" [ref=f8e828] [cursor=pointer]
+                  - button "设置覆盖" [disabled] [ref=f8e829]
+                  - button "重置覆盖" [ref=f8e830] [cursor=pointer]
+        - generic [ref=f8e831]:
+          - heading "活动与进度" [level=3] [ref=f8e832]
+          - generic [ref=f8e833]: 暂无活动进度
+        - generic [ref=f8e835]:
+          - heading "团队事件" [level=3] [ref=f8e836]
+          - generic [ref=f8e837]:
+            - generic [ref=f8e838]:
+              - combobox [ref=f8e839] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "团队"
+                - option "成员"
+                - option "生命周期"
+                - option "消息"
+                - option "控制"
+                - option "策略"
+                - option "兼容"
+                - option "进度"
+              - combobox [ref=f8e840] [cursor=pointer]:
+                - option "全部" [selected]
+                - option "W1"
+                - option "leader"
+                - option "leader"
+                - option "DTest Worker"
+                - option "DTest Collector"
+            - generic [ref=f8e841]:
+              - 'button "17:35:37 成员创建 W1 {\"instanceId\":\"inst-1e0gj1v1lbkc\",\"label\":\"W1\",\"rootSessionId\":\"session-33d7038c-b841-49ec-9b3f-5a762b23f548\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f8e842] [cursor=pointer]':
+                - generic [ref=f8e853]: 17:35:37
+                - generic [ref=f8e854]: 成员创建
+                - generic [ref=f8e855]: W1
+                - 'generic "provision-member-instance · #31 · 2026-09-08T09:35:37.596Z {\"instanceId\":\"inst-1e0gj1v1lbkc\",\"label\":\"W1\",\"rootSessionId\":\"session-33d7038c-b841-49ec-9b3f-5a762b23f548\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}" [ref=f8e856]': "{\"instanceId\":\"inst-1e0gj1v1lbkc\",\"label\":\"W1\",\"rootSessionId\":\"session-33d7038c-b841-49ec-9b3f-5a762b23f548\",\"templateId\":\"worker\",\"workspace\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\tests\\\\mock\"}"
+              - 'button "17:36:39 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:39.319Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e857] [cursor=pointer]':
+                - generic [ref=f8e868]: 17:36:39
+                - generic [ref=f8e869]: 工作准入
+                - generic [ref=f8e870]: W1
+                - 'generic "team-work-admitted · #32 · 2026-09-08T09:36:39.388Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:39.319Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e871]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:39.319Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:36:39 活动开始 W1 work-unit" [ref=f8e872] [cursor=pointer]:
+                - generic [ref=f8e883]: 17:36:39
+                - generic [ref=f8e884]: 活动开始
+                - generic [ref=f8e885]: W1
+                - generic "dtest-fix-1-1 · work-unit" [ref=f8e886]: work-unit
+              - 'button "17:36:43 活动结束 W1 {\"correlation\":\"dtest-fix-1-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-1\",\"sequence\":2,\"subject\":\"work-unit\"}" [ref=f8e887] [cursor=pointer]':
+                - generic [ref=f8e890]: 17:36:43
+                - generic [ref=f8e891]: 活动结束
+                - generic [ref=f8e892]: W1
+                - 'generic "dtest-fix-1-1 · {\"correlation\":\"dtest-fix-1-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-1\",\"sequence\":2,\"subject\":\"work-unit\"}" [ref=f8e893]': "{\"correlation\":\"dtest-fix-1-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-1\",\"sequence\":2,\"subject\":\"work-unit\"}"
+              - 'button "17:36:43 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:43.707Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e894] [cursor=pointer]':
+                - generic [ref=f8e905]: 17:36:43
+                - generic [ref=f8e906]: 生命周期
+                - generic [ref=f8e907]: W1
+                - 'generic "member-lifecycle-changed · #35 · 2026-09-08T09:36:43.840Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:43.707Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e908]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:43.707Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:36:46 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:46.095Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e909] [cursor=pointer]':
+                - generic [ref=f8e920]: 17:36:46
+                - generic [ref=f8e921]: 工作准入
+                - generic [ref=f8e922]: W1
+                - 'generic "team-work-admitted · #36 · 2026-09-08T09:36:46.196Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:46.095Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e923]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:46.095Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:36:46 活动开始 W1 work-unit" [ref=f8e924] [cursor=pointer]:
+                - generic [ref=f8e935]: 17:36:46
+                - generic [ref=f8e936]: 活动开始
+                - generic [ref=f8e937]: W1
+                - generic "dtest-fix-1-2 · work-unit" [ref=f8e938]: work-unit
+              - 'button "17:36:47 活动结束 W1 {\"correlation\":\"dtest-fix-1-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-2\",\"sequence\":4,\"subject\":\"work-unit\"}" [ref=f8e939] [cursor=pointer]':
+                - generic [ref=f8e942]: 17:36:47
+                - generic [ref=f8e943]: 活动结束
+                - generic [ref=f8e944]: W1
+                - 'generic "dtest-fix-1-2 · {\"correlation\":\"dtest-fix-1-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-2\",\"sequence\":4,\"subject\":\"work-unit\"}" [ref=f8e945]': "{\"correlation\":\"dtest-fix-1-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-2\",\"sequence\":4,\"subject\":\"work-unit\"}"
+              - 'button "17:36:48 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:48.231Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e946] [cursor=pointer]':
+                - generic [ref=f8e957]: 17:36:48
+                - generic [ref=f8e958]: 生命周期
+                - generic [ref=f8e959]: W1
+                - 'generic "member-lifecycle-changed · #39 · 2026-09-08T09:36:48.349Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:48.231Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e960]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:48.231Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:36:50 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:50.340Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e961] [cursor=pointer]':
+                - generic [ref=f8e972]: 17:36:50
+                - generic [ref=f8e973]: 工作准入
+                - generic [ref=f8e974]: W1
+                - 'generic "team-work-admitted · #40 · 2026-09-08T09:36:50.421Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:50.340Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e975]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:50.340Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:36:50 活动开始 W1 work-unit" [ref=f8e976] [cursor=pointer]:
+                - generic [ref=f8e987]: 17:36:50
+                - generic [ref=f8e988]: 活动开始
+                - generic [ref=f8e989]: W1
+                - generic "dtest-fix-1-3 · work-unit" [ref=f8e990]: work-unit
+              - 'button "17:36:51 活动结束 W1 {\"correlation\":\"dtest-fix-1-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-3\",\"sequence\":6,\"subject\":\"work-unit\"}" [ref=f8e991] [cursor=pointer]':
+                - generic [ref=f8e994]: 17:36:51
+                - generic [ref=f8e995]: 活动结束
+                - generic [ref=f8e996]: W1
+                - 'generic "dtest-fix-1-3 · {\"correlation\":\"dtest-fix-1-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-3\",\"sequence\":6,\"subject\":\"work-unit\"}" [ref=f8e997]': "{\"correlation\":\"dtest-fix-1-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-3\",\"sequence\":6,\"subject\":\"work-unit\"}"
+              - 'button "17:36:52 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:52.441Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e998] [cursor=pointer]':
+                - generic [ref=f8e1009]: 17:36:52
+                - generic [ref=f8e1010]: 生命周期
+                - generic [ref=f8e1011]: W1
+                - 'generic "member-lifecycle-changed · #43 · 2026-09-08T09:36:52.498Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:52.441Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1012]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:52.441Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:36:54 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:54.887Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1013] [cursor=pointer]':
+                - generic [ref=f8e1024]: 17:36:54
+                - generic [ref=f8e1025]: 工作准入
+                - generic [ref=f8e1026]: W1
+                - 'generic "team-work-admitted · #44 · 2026-09-08T09:36:54.937Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:54.887Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1027]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:54.887Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:36:55 活动开始 W1 work-unit" [ref=f8e1028] [cursor=pointer]:
+                - generic [ref=f8e1039]: 17:36:55
+                - generic [ref=f8e1040]: 活动开始
+                - generic [ref=f8e1041]: W1
+                - generic "dtest-fix-1-4 · work-unit" [ref=f8e1042]: work-unit
+              - 'button "17:36:56 活动结束 W1 {\"correlation\":\"dtest-fix-1-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-4\",\"sequence\":8,\"subject\":\"work-unit\"}" [ref=f8e1043] [cursor=pointer]':
+                - generic [ref=f8e1046]: 17:36:56
+                - generic [ref=f8e1047]: 活动结束
+                - generic [ref=f8e1048]: W1
+                - 'generic "dtest-fix-1-4 · {\"correlation\":\"dtest-fix-1-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-4\",\"sequence\":8,\"subject\":\"work-unit\"}" [ref=f8e1049]': "{\"correlation\":\"dtest-fix-1-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-4\",\"sequence\":8,\"subject\":\"work-unit\"}"
+              - 'button "17:36:57 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:56.985Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1050] [cursor=pointer]':
+                - generic [ref=f8e1061]: 17:36:57
+                - generic [ref=f8e1062]: 生命周期
+                - generic [ref=f8e1063]: W1
+                - 'generic "member-lifecycle-changed · #47 · 2026-09-08T09:36:57.067Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:56.985Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1064]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:56.985Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:36:59 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:59.691Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1065] [cursor=pointer]':
+                - generic [ref=f8e1076]: 17:36:59
+                - generic [ref=f8e1077]: 工作准入
+                - generic [ref=f8e1078]: W1
+                - 'generic "team-work-admitted · #48 · 2026-09-08T09:36:59.776Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:59.691Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1079]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:36:59.691Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-1-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:36:59 活动开始 W1 work-unit" [ref=f8e1080] [cursor=pointer]:
+                - generic [ref=f8e1091]: 17:36:59
+                - generic [ref=f8e1092]: 活动开始
+                - generic [ref=f8e1093]: W1
+                - generic "dtest-fix-1-5 · work-unit" [ref=f8e1094]: work-unit
+              - 'button "17:37:01 活动结束 W1 {\"correlation\":\"dtest-fix-1-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-5\",\"sequence\":10,\"subject\":\"work-unit\"}" [ref=f8e1095] [cursor=pointer]':
+                - generic [ref=f8e1098]: 17:37:01
+                - generic [ref=f8e1099]: 活动结束
+                - generic [ref=f8e1100]: W1
+                - 'generic "dtest-fix-1-5 · {\"correlation\":\"dtest-fix-1-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-5\",\"sequence\":10,\"subject\":\"work-unit\"}" [ref=f8e1101]': "{\"correlation\":\"dtest-fix-1-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-1-5\",\"sequence\":10,\"subject\":\"work-unit\"}"
+              - 'button "17:37:01 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:01.898Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1102] [cursor=pointer]':
+                - generic [ref=f8e1113]: 17:37:01
+                - generic [ref=f8e1114]: 生命周期
+                - generic [ref=f8e1115]: W1
+                - 'generic "member-lifecycle-changed · #51 · 2026-09-08T09:37:01.966Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:01.898Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1116]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:01.898Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-1-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:37:28 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:28.888Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1117] [cursor=pointer]':
+                - generic [ref=f8e1128]: 17:37:28
+                - generic [ref=f8e1129]: 工作准入
+                - generic [ref=f8e1130]: W1
+                - 'generic "team-work-admitted · #52 · 2026-09-08T09:37:28.998Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:28.888Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1131]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:28.888Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:37:29 活动开始 W1 work-unit" [ref=f8e1132] [cursor=pointer]:
+                - generic [ref=f8e1143]: 17:37:29
+                - generic [ref=f8e1144]: 活动开始
+                - generic [ref=f8e1145]: W1
+                - generic "dtest-fix-2-1 · work-unit" [ref=f8e1146]: work-unit
+              - 'button "17:37:30 活动结束 W1 {\"correlation\":\"dtest-fix-2-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-1\",\"sequence\":12,\"subject\":\"work-unit\"}" [ref=f8e1147] [cursor=pointer]':
+                - generic [ref=f8e1150]: 17:37:30
+                - generic [ref=f8e1151]: 活动结束
+                - generic [ref=f8e1152]: W1
+                - 'generic "dtest-fix-2-1 · {\"correlation\":\"dtest-fix-2-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-1\",\"sequence\":12,\"subject\":\"work-unit\"}" [ref=f8e1153]': "{\"correlation\":\"dtest-fix-2-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-1\",\"sequence\":12,\"subject\":\"work-unit\"}"
+              - 'button "17:37:30 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:30.896Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1154] [cursor=pointer]':
+                - generic [ref=f8e1165]: 17:37:30
+                - generic [ref=f8e1166]: 生命周期
+                - generic [ref=f8e1167]: W1
+                - 'generic "member-lifecycle-changed · #55 · 2026-09-08T09:37:30.985Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:30.896Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1168]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:30.896Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:37:33 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:33.053Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1169] [cursor=pointer]':
+                - generic [ref=f8e1180]: 17:37:33
+                - generic [ref=f8e1181]: 工作准入
+                - generic [ref=f8e1182]: W1
+                - 'generic "team-work-admitted · #56 · 2026-09-08T09:37:33.140Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:33.053Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1183]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:33.053Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:37:33 活动开始 W1 work-unit" [ref=f8e1184] [cursor=pointer]:
+                - generic [ref=f8e1195]: 17:37:33
+                - generic [ref=f8e1196]: 活动开始
+                - generic [ref=f8e1197]: W1
+                - generic "dtest-fix-2-2 · work-unit" [ref=f8e1198]: work-unit
+              - 'button "17:37:34 活动结束 W1 {\"correlation\":\"dtest-fix-2-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-2\",\"sequence\":14,\"subject\":\"work-unit\"}" [ref=f8e1199] [cursor=pointer]':
+                - generic [ref=f8e1202]: 17:37:34
+                - generic [ref=f8e1203]: 活动结束
+                - generic [ref=f8e1204]: W1
+                - 'generic "dtest-fix-2-2 · {\"correlation\":\"dtest-fix-2-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-2\",\"sequence\":14,\"subject\":\"work-unit\"}" [ref=f8e1205]': "{\"correlation\":\"dtest-fix-2-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-2\",\"sequence\":14,\"subject\":\"work-unit\"}"
+              - 'button "17:37:34 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:34.859Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1206] [cursor=pointer]':
+                - generic [ref=f8e1217]: 17:37:34
+                - generic [ref=f8e1218]: 生命周期
+                - generic [ref=f8e1219]: W1
+                - 'generic "member-lifecycle-changed · #59 · 2026-09-08T09:37:34.942Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:34.859Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1220]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:34.859Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:37:38 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:38.392Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1221] [cursor=pointer]':
+                - generic [ref=f8e1232]: 17:37:38
+                - generic [ref=f8e1233]: 工作准入
+                - generic [ref=f8e1234]: W1
+                - 'generic "team-work-admitted · #60 · 2026-09-08T09:37:38.465Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:38.392Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1235]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:38.392Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:37:38 活动开始 W1 work-unit" [ref=f8e1236] [cursor=pointer]:
+                - generic [ref=f8e1247]: 17:37:38
+                - generic [ref=f8e1248]: 活动开始
+                - generic [ref=f8e1249]: W1
+                - generic "dtest-fix-2-3 · work-unit" [ref=f8e1250]: work-unit
+              - 'button "17:37:40 活动结束 W1 {\"correlation\":\"dtest-fix-2-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-3\",\"sequence\":16,\"subject\":\"work-unit\"}" [ref=f8e1251] [cursor=pointer]':
+                - generic [ref=f8e1254]: 17:37:40
+                - generic [ref=f8e1255]: 活动结束
+                - generic [ref=f8e1256]: W1
+                - 'generic "dtest-fix-2-3 · {\"correlation\":\"dtest-fix-2-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-3\",\"sequence\":16,\"subject\":\"work-unit\"}" [ref=f8e1257]': "{\"correlation\":\"dtest-fix-2-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-3\",\"sequence\":16,\"subject\":\"work-unit\"}"
+              - 'button "17:37:40 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:40.461Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1258] [cursor=pointer]':
+                - generic [ref=f8e1269]: 17:37:40
+                - generic [ref=f8e1270]: 生命周期
+                - generic [ref=f8e1271]: W1
+                - 'generic "member-lifecycle-changed · #63 · 2026-09-08T09:37:40.497Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:40.461Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1272]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:40.461Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:37:42 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:42.383Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1273] [cursor=pointer]':
+                - generic [ref=f8e1284]: 17:37:42
+                - generic [ref=f8e1285]: 工作准入
+                - generic [ref=f8e1286]: W1
+                - 'generic "team-work-admitted · #64 · 2026-09-08T09:37:42.510Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:42.383Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1287]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:42.383Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:37:42 活动开始 W1 work-unit" [ref=f8e1288] [cursor=pointer]:
+                - generic [ref=f8e1299]: 17:37:42
+                - generic [ref=f8e1300]: 活动开始
+                - generic [ref=f8e1301]: W1
+                - generic "dtest-fix-2-4 · work-unit" [ref=f8e1302]: work-unit
+              - 'button "17:37:43 活动结束 W1 {\"correlation\":\"dtest-fix-2-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-4\",\"sequence\":18,\"subject\":\"work-unit\"}" [ref=f8e1303] [cursor=pointer]':
+                - generic [ref=f8e1306]: 17:37:43
+                - generic [ref=f8e1307]: 活动结束
+                - generic [ref=f8e1308]: W1
+                - 'generic "dtest-fix-2-4 · {\"correlation\":\"dtest-fix-2-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-4\",\"sequence\":18,\"subject\":\"work-unit\"}" [ref=f8e1309]': "{\"correlation\":\"dtest-fix-2-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-4\",\"sequence\":18,\"subject\":\"work-unit\"}"
+              - 'button "17:37:44 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:44.385Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1310] [cursor=pointer]':
+                - generic [ref=f8e1321]: 17:37:44
+                - generic [ref=f8e1322]: 生命周期
+                - generic [ref=f8e1323]: W1
+                - 'generic "member-lifecycle-changed · #67 · 2026-09-08T09:37:44.474Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:44.385Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1324]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:44.385Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:37:46 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:46.474Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1325] [cursor=pointer]':
+                - generic [ref=f8e1336]: 17:37:46
+                - generic [ref=f8e1337]: 工作准入
+                - generic [ref=f8e1338]: W1
+                - 'generic "team-work-admitted · #68 · 2026-09-08T09:37:46.578Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:46.474Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1339]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:46.474Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-2-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:37:46 活动开始 W1 work-unit" [ref=f8e1340] [cursor=pointer]:
+                - generic [ref=f8e1351]: 17:37:46
+                - generic [ref=f8e1352]: 活动开始
+                - generic [ref=f8e1353]: W1
+                - generic "dtest-fix-2-5 · work-unit" [ref=f8e1354]: work-unit
+              - 'button "17:37:48 活动结束 W1 {\"correlation\":\"dtest-fix-2-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-5\",\"sequence\":20,\"subject\":\"work-unit\"}" [ref=f8e1355] [cursor=pointer]':
+                - generic [ref=f8e1358]: 17:37:48
+                - generic [ref=f8e1359]: 活动结束
+                - generic [ref=f8e1360]: W1
+                - 'generic "dtest-fix-2-5 · {\"correlation\":\"dtest-fix-2-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-5\",\"sequence\":20,\"subject\":\"work-unit\"}" [ref=f8e1361]': "{\"correlation\":\"dtest-fix-2-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-2-5\",\"sequence\":20,\"subject\":\"work-unit\"}"
+              - 'button "17:37:48 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:48.430Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1362] [cursor=pointer]':
+                - generic [ref=f8e1373]: 17:37:48
+                - generic [ref=f8e1374]: 生命周期
+                - generic [ref=f8e1375]: W1
+                - 'generic "member-lifecycle-changed · #71 · 2026-09-08T09:37:48.552Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:48.430Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1376]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:37:48.430Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-2-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:38:06 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:06.376Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1377] [cursor=pointer]':
+                - generic [ref=f8e1388]: 17:38:06
+                - generic [ref=f8e1389]: 工作准入
+                - generic [ref=f8e1390]: W1
+                - 'generic "team-work-admitted · #72 · 2026-09-08T09:38:06.500Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:06.376Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1391]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:06.376Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-1\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:38:06 活动开始 W1 work-unit" [ref=f8e1392] [cursor=pointer]:
+                - generic [ref=f8e1403]: 17:38:06
+                - generic [ref=f8e1404]: 活动开始
+                - generic [ref=f8e1405]: W1
+                - generic "dtest-fix-3-1 · work-unit" [ref=f8e1406]: work-unit
+              - 'button "17:38:08 活动结束 W1 {\"correlation\":\"dtest-fix-3-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-1\",\"sequence\":22,\"subject\":\"work-unit\"}" [ref=f8e1407] [cursor=pointer]':
+                - generic [ref=f8e1410]: 17:38:08
+                - generic [ref=f8e1411]: 活动结束
+                - generic [ref=f8e1412]: W1
+                - 'generic "dtest-fix-3-1 · {\"correlation\":\"dtest-fix-3-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-1\",\"sequence\":22,\"subject\":\"work-unit\"}" [ref=f8e1413]': "{\"correlation\":\"dtest-fix-3-1\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-1\",\"sequence\":22,\"subject\":\"work-unit\"}"
+              - 'button "17:38:08 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:08.566Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1414] [cursor=pointer]':
+                - generic [ref=f8e1425]: 17:38:08
+                - generic [ref=f8e1426]: 生命周期
+                - generic [ref=f8e1427]: W1
+                - 'generic "member-lifecycle-changed · #75 · 2026-09-08T09:38:08.664Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:08.566Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1428]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:08.566Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-1\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:38:11 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:11.424Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1429] [cursor=pointer]':
+                - generic [ref=f8e1440]: 17:38:11
+                - generic [ref=f8e1441]: 工作准入
+                - generic [ref=f8e1442]: W1
+                - 'generic "team-work-admitted · #76 · 2026-09-08T09:38:11.597Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:11.424Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1443]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:11.424Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-2\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:38:11 活动开始 W1 work-unit" [ref=f8e1444] [cursor=pointer]:
+                - generic [ref=f8e1455]: 17:38:11
+                - generic [ref=f8e1456]: 活动开始
+                - generic [ref=f8e1457]: W1
+                - generic "dtest-fix-3-2 · work-unit" [ref=f8e1458]: work-unit
+              - 'button "17:38:13 活动结束 W1 {\"correlation\":\"dtest-fix-3-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-2\",\"sequence\":24,\"subject\":\"work-unit\"}" [ref=f8e1459] [cursor=pointer]':
+                - generic [ref=f8e1462]: 17:38:13
+                - generic [ref=f8e1463]: 活动结束
+                - generic [ref=f8e1464]: W1
+                - 'generic "dtest-fix-3-2 · {\"correlation\":\"dtest-fix-3-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-2\",\"sequence\":24,\"subject\":\"work-unit\"}" [ref=f8e1465]': "{\"correlation\":\"dtest-fix-3-2\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-2\",\"sequence\":24,\"subject\":\"work-unit\"}"
+              - 'button "17:38:14 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:14.151Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1466] [cursor=pointer]':
+                - generic [ref=f8e1477]: 17:38:14
+                - generic [ref=f8e1478]: 生命周期
+                - generic [ref=f8e1479]: W1
+                - 'generic "member-lifecycle-changed · #79 · 2026-09-08T09:38:14.264Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:14.151Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1480]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:14.151Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-2\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:38:16 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:16.255Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1481] [cursor=pointer]':
+                - generic [ref=f8e1492]: 17:38:16
+                - generic [ref=f8e1493]: 工作准入
+                - generic [ref=f8e1494]: W1
+                - 'generic "team-work-admitted · #80 · 2026-09-08T09:38:16.386Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:16.255Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1495]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:16.255Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-3\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:38:16 活动开始 W1 work-unit" [ref=f8e1496] [cursor=pointer]:
+                - generic [ref=f8e1507]: 17:38:16
+                - generic [ref=f8e1508]: 活动开始
+                - generic [ref=f8e1509]: W1
+                - generic "dtest-fix-3-3 · work-unit" [ref=f8e1510]: work-unit
+              - 'button "17:38:19 活动结束 W1 {\"correlation\":\"dtest-fix-3-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-3\",\"sequence\":26,\"subject\":\"work-unit\"}" [ref=f8e1511] [cursor=pointer]':
+                - generic [ref=f8e1514]: 17:38:19
+                - generic [ref=f8e1515]: 活动结束
+                - generic [ref=f8e1516]: W1
+                - 'generic "dtest-fix-3-3 · {\"correlation\":\"dtest-fix-3-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-3\",\"sequence\":26,\"subject\":\"work-unit\"}" [ref=f8e1517]': "{\"correlation\":\"dtest-fix-3-3\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-3\",\"sequence\":26,\"subject\":\"work-unit\"}"
+              - 'button "17:38:20 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:20.210Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1518] [cursor=pointer]':
+                - generic [ref=f8e1529]: 17:38:20
+                - generic [ref=f8e1530]: 生命周期
+                - generic [ref=f8e1531]: W1
+                - 'generic "member-lifecycle-changed · #83 · 2026-09-08T09:38:20.297Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:20.210Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1532]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:20.210Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-3\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:38:22 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:22.029Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1533] [cursor=pointer]':
+                - generic [ref=f8e1544]: 17:38:22
+                - generic [ref=f8e1545]: 工作准入
+                - generic [ref=f8e1546]: W1
+                - 'generic "team-work-admitted · #84 · 2026-09-08T09:38:22.139Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:22.029Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1547]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:22.029Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-4\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:38:22 活动开始 W1 work-unit" [ref=f8e1548] [cursor=pointer]:
+                - generic [ref=f8e1559]: 17:38:22
+                - generic [ref=f8e1560]: 活动开始
+                - generic [ref=f8e1561]: W1
+                - generic "dtest-fix-3-4 · work-unit" [ref=f8e1562]: work-unit
+              - 'button "17:38:25 活动结束 W1 {\"correlation\":\"dtest-fix-3-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-4\",\"sequence\":28,\"subject\":\"work-unit\"}" [ref=f8e1563] [cursor=pointer]':
+                - generic [ref=f8e1566]: 17:38:25
+                - generic [ref=f8e1567]: 活动结束
+                - generic [ref=f8e1568]: W1
+                - 'generic "dtest-fix-3-4 · {\"correlation\":\"dtest-fix-3-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-4\",\"sequence\":28,\"subject\":\"work-unit\"}" [ref=f8e1569]': "{\"correlation\":\"dtest-fix-3-4\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-4\",\"sequence\":28,\"subject\":\"work-unit\"}"
+              - 'button "17:38:25 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:25.408Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1570] [cursor=pointer]':
+                - generic [ref=f8e1581]: 17:38:25
+                - generic [ref=f8e1582]: 生命周期
+                - generic [ref=f8e1583]: W1
+                - 'generic "member-lifecycle-changed · #87 · 2026-09-08T09:38:25.516Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:25.408Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1584]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:25.408Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-4\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+              - 'button "17:38:28 工作准入 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:28.017Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1585] [cursor=pointer]':
+                - generic [ref=f8e1596]: 17:38:28
+                - generic [ref=f8e1597]: 工作准入
+                - generic [ref=f8e1598]: W1
+                - 'generic "team-work-admitted · #88 · 2026-09-08T09:38:28.409Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:28.017Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}" [ref=f8e1599]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:28.017Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"childSessionId\":\"session-team-child-c532383bdf40a6e32c74c20ad35e6866\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"prompt\":\"请只回复 OK（本轮禁止调用 team_report_progress 工具）\",\"requestToken\":\"dtest-fix-3-5\",\"targetInstanceId\":\"inst-1e0gj1v1lbkc\"}"
+              - button "17:38:28 活动开始 W1 work-unit" [ref=f8e1600] [cursor=pointer]:
+                - generic [ref=f8e1611]: 17:38:28
+                - generic [ref=f8e1612]: 活动开始
+                - generic [ref=f8e1613]: W1
+                - generic "dtest-fix-3-5 · work-unit" [ref=f8e1614]: work-unit
+              - 'button "17:38:31 活动结束 W1 {\"correlation\":\"dtest-fix-3-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-5\",\"sequence\":30,\"subject\":\"work-unit\"}" [ref=f8e1615] [cursor=pointer]':
+                - generic [ref=f8e1618]: 17:38:31
+                - generic [ref=f8e1619]: 活动结束
+                - generic [ref=f8e1620]: W1
+                - 'generic "dtest-fix-3-5 · {\"correlation\":\"dtest-fix-3-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-5\",\"sequence\":30,\"subject\":\"work-unit\"}" [ref=f8e1621]': "{\"correlation\":\"dtest-fix-3-5\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"op\":\"interval-close\",\"progress\":\"completed\",\"reportedByInstanceId\":\"team-runtime\",\"requestToken\":\"dtest-fix-3-5\",\"sequence\":30,\"subject\":\"work-unit\"}"
+              - 'button "17:38:31 生命周期 W1 {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:31.343Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1622] [cursor=pointer]':
+                - generic [ref=f8e1633]: 17:38:31
+                - generic [ref=f8e1634]: 生命周期
+                - generic [ref=f8e1635]: W1
+                - 'generic "member-lifecycle-changed · #91 · 2026-09-08T09:38:31.475Z {\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:31.343Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}" [ref=f8e1636]': "{\"action\":\"follow-up\",\"at\":\"2026-09-08T09:38:31.343Z\",\"caller\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"from\":\"RUNNING\",\"instanceId\":\"inst-1e0gj1v1lbkc\",\"requestToken\":\"dtest-fix-3-5\",\"to\":\"SETTLED\",\"workOutcome\":\"settled\"}"
+      - generic [ref=f8e1640]:
+        - region "团队" [ref=f8e1642]:
+          - generic [ref=f8e1643] [cursor=pointer]:
+            - button "团队 1 运行中" [ref=f8e1644]:
+              - generic [ref=f8e1645]: 团队
+              - generic [aria-hidden] [ref=f8e1646]: ·
+              - generic [ref=f8e1647]: 1 运行中
+            - button "展开团队概览" [ref=f8e1648]
+        - generic [ref=f8e1652]:
+          - generic [ref=f8e1653]:
+            - generic [ref=f8e1655]:
+              - textbox "发消息或做任务… / 调用指令 @ 文件或对话" [active] [ref=f8e1656]
+              - generic [aria-hidden]: 发消息或做任务… / 调用指令 @ 文件或对话
+            - generic [ref=f8e1657]:
+              - generic [ref=f8e1658]:
+                - button "指令" [ref=f8e1659] [cursor=pointer]
+                - button "访问模式，当前：工作区内修改" [ref=f8e1664] [cursor=pointer]:
+                  - generic [ref=f8e1672]: 工作区内修改
+              - generic [ref=f8e1676]:
+                - button "选择模型，当前 qwen3.8-27b" [ref=f8e1679] [cursor=pointer]:
+                  - generic [ref=f8e1680]: qwen3.8-27b
+                - button "上下文已用 4%" [ref=f8e1684] [cursor=pointer]
+                - button "发送消息" [disabled] [ref=f8e1688]
+          - generic [ref=f8e1691]: 4 轮 · 21 步| LLM 1分6秒 · 工具调用 47.5秒| 首 token 平均 1.6秒 · 124 tok/s| 缓存命中 96%| 输入 164K tok · 输出 4K tok
+  - generic [ref=f8e1696]:
+    - generic [ref=f8e1697]:
+      - generic: 详情
+      - button "关闭详情" [ref=f8e1698] [cursor=pointer]
+    - generic [ref=f8e1701]: 点击消息流中的工具行查看详情

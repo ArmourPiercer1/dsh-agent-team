@@ -1,0 +1,10 @@
+﻿port 3181 free
+port 3491 free
+port 3492 free
+:3080 GET -> 401
+test-use HEAD: a66e4702047846cdaa10c66c9d3df3951f5ea70d
+test-use porcelain: ''
+main HEAD: int/repair-r1 @ c0f9150
+main tracked mods: Microsoft.PowerShell.Commands.GenericMeasureInfo.Count
+untracked: Microsoft.PowerShell.Commands.GenericMeasureInfo.Count
+tracked mods: 0; untracked: 17; playwright mocktest closed; residual pw processes: 0

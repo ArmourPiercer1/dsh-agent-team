@@ -1,0 +1,4 @@
+﻿[deliver] session=session-team-child-b50874b457eae7ab3fb00b18477f0a9b file=tests\mock\scripts\prompts\b4-requests.md chars=699
+[deliver] prompt head: 请依次调用 team_request_control 四次（每次一个独立请求，参数逐字；这四次都是"意图声明"，你不要真的执行任何文件写入，等裁决后再由后续指令
+[deliver] status=200 ok=true
+[deliver] value={"accepted":true}

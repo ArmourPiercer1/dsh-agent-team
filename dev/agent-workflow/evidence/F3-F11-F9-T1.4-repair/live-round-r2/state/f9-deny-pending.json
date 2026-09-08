@@ -1,0 +1,17 @@
+{
+  "root": "session-dtestmts69xkr6b54",
+  "requestId": "ctrl-1vnalzt1jpvxto08p0d9v0mk",
+  "kind": "user-approval",
+  "requester": {
+    "instanceId": "inst-0fi1an617bjs",
+    "kind": "instance",
+    "role": "member"
+  },
+  "targetInstanceId": "inst-0fi1an617bjs",
+  "actionName": "write",
+  "toolName": null,
+  "summary": "写入 tests/mock-outside/probe/v2-probe-2.txt",
+  "correlation": "dtest-v2-req-ua-2",
+  "sequence": 12,
+  "createdAt": "2026-09-08T08:08:34.548Z"
+}

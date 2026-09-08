@@ -1,0 +1,7 @@
+﻿turns seen: 1,2
+turn/end turn=1 reason=[object Object]
+turn/end turn=2 reason=[object Object]
+seq=3168 turn=2 step=1 name=write args={"file_path":"tests/mock-outside/probe/v2-probe-1.txt","content":"V2-UA-CONTENT"}
+seq=3248 turn=2 step=2 name=read args={"file_path":"tests/mock-outside/probe/v2-probe-1.txt"}
+seq=3344 turn=2 step=3 name=write args={"file_path":"tests/mock-outside/probe/v2-probe-1.txt","content":"V2-UA-CONTENT"}
+seq=3374 turn=2 step=4 name=read args={"file_path":"tests/mock-outside/probe/v2-probe-1.txt"}

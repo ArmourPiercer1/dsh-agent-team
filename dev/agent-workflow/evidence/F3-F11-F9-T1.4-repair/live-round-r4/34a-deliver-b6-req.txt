@@ -1,0 +1,4 @@
+﻿[deliver] session=session-team-child-b50874b457eae7ab3fb00b18477f0a9b file=.worktrees\repair-r1-g4\tests\mock\scripts\prompts\b6-req.md chars=181
+[deliver] prompt head: 请调用 team_request_control 一次：kind=leader-approval，action=write，toolName=write，目标说
+[deliver] status=200 ok=true
+[deliver] value={"accepted":true}

@@ -1,0 +1,9 @@
+﻿[run-asset] node .worktrees\repair-r1-g4\tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"root\": \"session-dtestmtsgjlo4a725\", \"toolName\": \"write\"}"
+node : [f9-check] no pending control request matches the filter ({"toolName":"write"}) — deliver the request prompt (b4-
+requests.md / b6-req.md) first, then re-run
+At line:1 char:505
++ ... g $false)); node dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\li ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([f9-check] no p...st, then re-run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

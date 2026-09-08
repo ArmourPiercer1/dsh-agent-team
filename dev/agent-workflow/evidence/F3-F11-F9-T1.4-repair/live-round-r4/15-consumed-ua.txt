@@ -1,0 +1,4 @@
+﻿[run-asset] node tests\mock\scripts\f9-check.mjs "consumed" "--request-id" "ctrl-153npqu1woai9n1p30nr41dv"
+FAIL  consumed exactly-once (requestId ctrl-153npqu…)  — expected exactly 1 control-allow-consumed fact for ctrl-153npqu1woai9n1p30nr41dv (exactly-once), got 0
+
+[f9-check] 0 PASS, 1 FAIL — F9 GATE FAIL

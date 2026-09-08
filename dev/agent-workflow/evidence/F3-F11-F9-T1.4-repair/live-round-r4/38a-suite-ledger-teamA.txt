@@ -1,0 +1,3 @@
+﻿[ledger-complete] root=session-dtestmtsgjlo4a72… pages=1 serverTotal=15 fetched=15 tail=93
+[ledger-complete] durable(domain): entries=15 tail=93
+[ledger-complete] PASS — server paging complete, matches durable ground truth

@@ -1,0 +1,4 @@
+﻿[deliver] session=session-33d7038c-b841-49ec-9b3f-5a762b23f548 file=dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\live-round-r4\prompts\tb-setup.md chars=137
+[deliver] prompt head: 请初始化团队：先用 team_create_member 创建一名成员 W1（templateId=worker），然后用 team_list_members 
+[deliver] status=200 ok=true
+[deliver] value={"accepted":true}

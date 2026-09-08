@@ -1,0 +1,4 @@
+﻿[deliver] session=session-team-child-b50874b457eae7ab3fb00b18477f0a9b file=tests\mock\scripts\prompts\t41-deny-req.md chars=267
+[deliver] prompt head: 请调用 team_request_control 一次（参数逐字；这是"意图声明"，你不要真的执行任何文件写入，等裁决后再由后续指令执行）：kind=user-
+[deliver] status=200 ok=true
+[deliver] value={"accepted":true}

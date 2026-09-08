@@ -1,0 +1,17 @@
+{
+  "root": "session-dtestmts69xkr6b54",
+  "requestId": "ctrl-0f8mo951hnv44s1ytucq70l3",
+  "kind": "leader-approval",
+  "requester": {
+    "instanceId": "inst-0fi1an617bjs",
+    "kind": "instance",
+    "role": "member"
+  },
+  "targetInstanceId": "inst-0fi1an617bjs",
+  "actionName": "write",
+  "toolName": null,
+  "summary": "写入 work/v2-l1.txt",
+  "correlation": "dtest-v2-req-la-1",
+  "sequence": 4,
+  "createdAt": "2026-09-08T08:00:43.226Z"
+}

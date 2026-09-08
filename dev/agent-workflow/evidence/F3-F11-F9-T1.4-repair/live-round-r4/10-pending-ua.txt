@@ -1,0 +1,5 @@
+﻿[run-asset] node tests\mock\scripts\f9-check.mjs "pending" "--json" "{\"kind\":\"user-approval\"}"
+PASS  pending detail fields (requestId ctrl-153npqu… kind=user-approval)
+[f9-check] wrote D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\state\f9-pending.json (vars for the ui-gate.mjs F9 configs)
+
+[f9-check] 1 PASS, 0 FAIL — OK

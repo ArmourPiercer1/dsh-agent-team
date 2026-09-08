@@ -1,0 +1,4 @@
+﻿[run-asset] node tests\mock\scripts\f9-check.mjs "decided" "--request-id" "ctrl-14to41v1wya3ym1pwzgu11d1" "--expect" "deny"
+PASS  decided deny (requestId ctrl-14to41v…)
+
+[f9-check] 1 PASS, 0 FAIL — OK
