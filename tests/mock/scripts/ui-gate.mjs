@@ -11,13 +11,26 @@
 //   "rootText": "请初始化团队",     // sidebar treeitem text (prefix match via find)
 //   "teamTab": "团队",             // tab label; clicked via exact role=tab match (find is
 //                                  // ambiguous — sidebar 新建团队 matches the substring too)
+//   "varsFile": "state/f9-pending.json",  // optional: JSON object produced by a companion
+//                                  // script (f9-check.mjs); its values are interpolated
+//                                  // into find/eval/clickEval strings as {{key}} before use
 //   "asserts": [
 //     { "find": "W1", "expect": "present" },
 //     { "find": "已归档", "expect": "absent" },
-//     { "eval": "document.querySelectorAll('[data-decision]').length > 0", "expect": "truthy" }
+//     { "eval": "document.querySelectorAll('[data-decision]').length > 0", "expect": "truthy" },
+//     { "clickEval": "(() => { const b = document.querySelector('button[data-x]'); if (!b) return 'false'; b.click(); return 'clicked' })()",
+//       "expect": "truthy", "settleMs": 6000 }
 //   ],
 //   "snapshot": "g1"              // -> state/teamtab-<snapshot>.yml + evidence/screenshots/<snapshot>.png
 // }
+//
+// clickEval (F9 repair-r1 assets): an in-page expression that performs a
+// deterministic DOM action by data-attribute selector (no text matching —
+// the zh button label 允许 collides with the decision badge label). The
+// gate PASSES when the returned value is not one of the falsy tokens
+// ('' / 'false' / '0' / 'null' / 'undefined') — return the literal string
+// 'false' when the action precondition is not met. Optional settleMs waits
+// afterwards (catch-up / re-render settle).
 //
 // Steps: goto (open on first fail) -> wait -> click root treeitem -> click
 // team tab -> wait -> run asserts -> snapshot + screenshot -> summary.
@@ -36,6 +49,23 @@ const state = readBootState()
 const url = cfg.url ?? state.url
 const loadWaitMs = cfg.loadWaitMs ?? 8_000
 const snapshot = cfg.snapshot ?? 'gate'
+
+// varsFile (optional): a JSON object produced by a companion script
+// (f9-check.mjs writes state/f9-pending.json / f9-deny-pending.json /
+// f9-policy-pending.json). Its values are interpolated into the
+// find/eval/clickEval strings as {{key}} before they reach the page —
+// this wires the DUREABLE scan output (the stable ctrl-* requestId) into
+// the Playwright asserts without any text matching.
+let vars = {}
+if (cfg.varsFile) {
+  const vp = join(MOCK_ROOT, cfg.varsFile)
+  if (!existsSync(vp)) {
+    console.error(`[ui-gate] varsFile missing: ${cfg.varsFile} (run the producing script first — f9-check.mjs pending)`);
+    process.exit(2)
+  }
+  vars = JSON.parse(readFileSync(vp, 'utf8'))
+}
+const interpolate = (s) => String(s).replace(/\{\{(\w+)\}\}/g, (_, k) => (k in vars ? String(vars[k]) : `{{${k}}}`))
 
 process.chdir(MOCK_ROOT) // relative snapshot/screenshot filenames resolve here
 
@@ -120,18 +150,34 @@ if (cfg.teamTab) {
 let fails = 0
 for (const a of cfg.asserts ?? []) {
   if (a.find !== undefined) {
-    const f = pw(['find', a.find], { raw: true })
+    const text = interpolate(a.find)
+    const f = pw(['find', text], { raw: true })
     const present = /ref=[A-Za-z0-9]+/.test(f.out)
     const ok = a.expect === 'absent' ? !present : present
     if (!ok) fails += 1
-    note(`${ok ? 'PASS' : 'FAIL'} find "${a.find}" expect=${a.expect} present=${present}`)
+    note(`${ok ? 'PASS' : 'FAIL'} find "${text}" expect=${a.expect} present=${present}`)
   } else if (a.eval !== undefined) {
-    const e = pw(['eval', a.eval], { raw: true })
+    const expr = interpolate(a.eval)
+    const e = pw(['eval', expr], { raw: true })
     const v = e.out.trim()
     const falsy = v === '' || v === 'false' || v === '0' || v === 'null' || v === 'undefined'
     const ok = a.expect === 'falsy' ? falsy : !falsy
     if (!ok) fails += 1
-    note(`${ok ? 'PASS' : 'FAIL'} eval ${a.eval.slice(0, 60)}… expect=${a.expect ?? 'truthy'} value=${v.slice(0, 80)}`)
+    note(`${ok ? 'PASS' : 'FAIL'} eval ${expr.slice(0, 60)}… expect=${a.expect ?? 'truthy'} value=${v.slice(0, 80)}`)
+  } else if (a.clickEval !== undefined) {
+    // Deterministic in-page DOM action (F9 repair-r1 assets). PASS = the
+    // expression's returned value is not a falsy token; the expression is
+    // responsible for returning 'false' when its precondition is unmet.
+    const expr = interpolate(a.clickEval)
+    const e = pw(['eval', expr], { raw: true })
+    const v = e.out.trim()
+    const falsy = v === '' || v === 'false' || v === '0' || v === 'null' || v === 'undefined'
+    const ok = a.expect === 'falsy' ? falsy : !falsy
+    if (!ok) fails += 1
+    note(`${ok ? 'PASS' : 'FAIL'} clickEval ${expr.slice(0, 60)}… expect=${a.expect ?? 'truthy'} value=${v.slice(0, 80)}`)
+    if (a.settleMs) await sleep(a.settleMs)
+  } else {
+    note(`WARN assert entry has none of find/eval/clickEval — skipped: ${JSON.stringify(a).slice(0, 120)}`)
   }
 }
 

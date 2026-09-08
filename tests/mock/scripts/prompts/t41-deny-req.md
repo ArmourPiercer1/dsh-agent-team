@@ -1,0 +1,1 @@
+请调用 team_request_control 一次（参数逐字；这是"意图声明"，你不要真的执行任何文件写入，等裁决后再由后续指令执行）：kind=user-approval，action=write，目标说明逐字为：写入 tests/mock-outside/probe/v2-probe-2.txt，requestToken 用 dtest-v2-req-ua-2。请求发出后，把 team_request_control 的返回 requestId/状态逐字报告。本轮禁止调用 team_report_progress 工具。

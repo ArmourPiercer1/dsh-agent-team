@@ -110,6 +110,7 @@ const MINI_STANDALONE = join(HERE, 'mini-standalone.mjs')
 // may move between baselines — e.g. 2026-09-07: baseline 76fda729 ->
 // stable@a66e4702, user-approved clean+rebuild). Read it live from git.
 function clientCommitHash() {
+  if (process.env.DSH_CLIENT_COMMIT_HASH) return process.env.DSH_CLIENT_COMMIT_HASH
   const res = spawnSync('git', ['-C', HOST_TREE, 'rev-parse', '--short=10', 'HEAD'], { encoding: 'utf8' })
   if (res.status === 0 && res.stdout.trim().length > 0) return res.stdout.trim()
   throw new Error(`cannot read host tree HEAD via git (status=${res.status} err=${String(res.stderr).slice(0, 200)})`)

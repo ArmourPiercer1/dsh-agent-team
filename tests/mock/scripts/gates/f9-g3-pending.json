@@ -1,0 +1,25 @@
+{
+  "session": "mocktest",
+  "rootText": "请初始化团队",
+  "teamTab": "团队",
+  "varsFile": "state/f9-pending.json",
+  "asserts": [
+    {
+      "eval": "document.querySelectorAll('div[data-ledger-resolve-bar][data-request-id]').length >= 1",
+      "expect": "truthy"
+    },
+    {
+      "eval": "document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"]') !== null",
+      "expect": "truthy"
+    },
+    {
+      "eval": "(() => { const bar = document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"]'); const r = bar ? bar.previousElementSibling : null; if (!r || r.getAttribute('data-ledger-kind') !== 'control-request') return 'false'; const g = (s) => r.querySelector(s); const time = g('span[data-ledger-time]'); const marker = g('span[data-ledger-marker]'); const actor = g('span[data-ledger-actor]'); const sum = g('span[data-ledger-summary]'); const status = g('span[data-ledger-state][data-pending=\"true\"]'); const title = sum ? (sum.getAttribute('title') || '') : ''; const markerOk = marker !== null && ['Control request', '控制请求'].includes(marker.textContent.trim()); const statusOk = status !== null && ['Pending decision', '等待裁决'].includes(status.textContent.trim()); return !!(time && time.textContent.trim() !== '' && markerOk && actor && actor.textContent.trim() !== '' && sum && sum.textContent.trim() !== '' && title.length > 0 && statusOk) })()",
+      "expect": "truthy"
+    },
+    {
+      "eval": "(() => { const bar = document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"]'); if (!bar) return 'false'; const allow = bar.querySelector('button[data-ledger-resolve-allow]'); const deny = bar.querySelector('button[data-ledger-resolve-deny]'); if (!allow || !deny) return 'false'; return !!(allow.textContent.trim() === 'Allow' || allow.textContent.trim() === '允许') && !allow.disabled && !!(deny.textContent.trim() === 'Deny' || deny.textContent.trim() === '拒绝') && !deny.disabled })()",
+      "expect": "truthy"
+    }
+  ],
+  "snapshot": "f9-g3-pending"
+}

@@ -1,0 +1,26 @@
+{
+  "session": "mocktest",
+  "rootText": "请初始化团队",
+  "teamTab": "团队",
+  "varsFile": "state/f9-deny-pending.json",
+  "asserts": [
+    {
+      "clickEval": "(() => { const b = document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"] button[data-ledger-resolve-deny]'); if (!b || b.disabled) return 'false'; b.click(); return 'clicked' })()",
+      "expect": "truthy",
+      "settleMs": 6000
+    },
+    {
+      "eval": "document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"]') === null",
+      "expect": "truthy"
+    },
+    {
+      "eval": "(() => { const rows = [...document.querySelectorAll('button[data-ledger-row][data-ledger-kind=\"control-decision\"]')]; return rows.some((r) => { const b = r.querySelector('span[data-ledger-state][data-decision=\"deny\"]'); return b !== null && (b.textContent.trim() === 'Denied' || b.textContent.trim() === '拒绝') }) })()",
+      "expect": "truthy"
+    },
+    {
+      "eval": "document.querySelectorAll('span[data-ledger-resolve-error]').length === 0",
+      "expect": "truthy"
+    }
+  ],
+  "snapshot": "f9-g3-deny"
+}

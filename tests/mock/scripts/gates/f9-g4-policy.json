@@ -1,0 +1,26 @@
+{
+  "session": "mocktest",
+  "rootText": "请初始化团队",
+  "teamTab": "团队",
+  "varsFile": "state/f9-policy-pending.json",
+  "asserts": [
+    {
+      "clickEval": "(() => { const b = document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"] button[data-ledger-resolve-allow]'); if (!b || b.disabled) return 'false'; b.click(); return 'clicked' })()",
+      "expect": "truthy",
+      "settleMs": 8000
+    },
+    {
+      "eval": "(() => { const rows = [...document.querySelectorAll('button[data-ledger-row][data-ledger-kind=\"control-decision\"]')]; return rows.some((r) => { const b = r.querySelector('span[data-ledger-state][data-decision=\"deny\"]'); const reason = r.querySelector('span[data-ledger-state-reason]'); return b !== null && (b.textContent.trim().startsWith('Denied') || b.textContent.trim().startsWith('拒绝')) && reason !== null && reason.textContent.trim() === 'external-policy' && reason.getAttribute('title') === 'external-policy' }) })()",
+      "expect": "truthy"
+    },
+    {
+      "eval": "(() => { const errs = [...document.querySelectorAll('span[data-ledger-resolve-error]')]; return errs.every((e) => e.getAttribute('data-resolve-error-code') === 'CONTROL_EXTERNAL_POLICY_DENIED') })()",
+      "expect": "truthy"
+    },
+    {
+      "eval": "document.querySelector('div[data-ledger-resolve-bar][data-request-id=\"{{requestId}}\"]') === null",
+      "expect": "truthy"
+    }
+  ],
+  "snapshot": "f9-g4-policy"
+}

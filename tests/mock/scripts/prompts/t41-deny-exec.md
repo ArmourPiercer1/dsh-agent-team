@@ -1,0 +1,1 @@
+请求 UA-2（tests/mock-outside/probe/v2-probe-2.txt）已被人类裁决 deny：请调用 team_follow_up 对 W1（requestToken 用 dtest-v2-ua-deny-exec），prompt 逐字为：你之前声明的 v2-probe-2.txt 写入请求已被拒绝（已裁决，不可重开），现在请仍尝试该写入一次，把工具返回的原始状态/错误逐字报告（若工具不可用或返回拒绝，原样记录，不得改用其他路径写入）。工具返回后，你只需把返回的状态字段逐字报告。
