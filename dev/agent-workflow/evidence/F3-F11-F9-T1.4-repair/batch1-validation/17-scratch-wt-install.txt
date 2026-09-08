@@ -1,0 +1,64 @@
+﻿cmd: pnpm install --ignore-scripts --store-dir D:\AgentDev\dsh-plugins\dsh-agent-team\.pnpm-store\v11
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\batch1-validation-20260908
+ps: 5.1.26100.9168
+started: 2026-09-08 13:04:45 +08:00
+---
+Scope: all 10 workspace projects
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +463
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 463, reused 127, downloaded 0, added 0
+Progress: resolved 463, reused 128, downloaded 0, added 0
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.3.4.      │
+   │     Changelog: https://pnpm.io/v/12.3.4      │
+   │   To update, run: corepack use pnpm@12.3.4   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 463, reused 463, downloaded 0, added 0
+Progress: resolved 463, reused 463, downloaded 0, added 1
+Progress: resolved 463, reused 463, downloaded 0, added 60
+Progress: resolved 463, reused 463, downloaded 0, added 61
+Progress: resolved 463, reused 463, downloaded 0, added 98
+Progress: resolved 463, reused 463, downloaded 0, added 99
+Progress: resolved 463, reused 463, downloaded 0, added 136
+Progress: resolved 463, reused 463, downloaded 0, added 137
+Progress: resolved 463, reused 463, downloaded 0, added 169
+Progress: resolved 463, reused 463, downloaded 0, added 170
+Progress: resolved 463, reused 463, downloaded 0, added 193
+Progress: resolved 463, reused 463, downloaded 0, added 194
+Progress: resolved 463, reused 463, downloaded 0, added 236
+Progress: resolved 463, reused 463, downloaded 0, added 237
+Progress: resolved 463, reused 463, downloaded 0, added 269
+Progress: resolved 463, reused 463, downloaded 0, added 270
+Progress: resolved 463, reused 463, downloaded 0, added 295
+Progress: resolved 463, reused 463, downloaded 0, added 296
+Progress: resolved 463, reused 463, downloaded 0, added 348
+Progress: resolved 463, reused 463, downloaded 0, added 349
+Progress: resolved 463, reused 463, downloaded 0, added 379
+Progress: resolved 463, reused 463, downloaded 0, added 380
+Progress: resolved 463, reused 463, downloaded 0, added 382
+Progress: resolved 463, reused 463, downloaded 0, added 383
+Progress: resolved 463, reused 463, downloaded 0, added 420
+Progress: resolved 463, reused 463, downloaded 0, added 421
+Progress: resolved 463, reused 463, downloaded 0, added 463, done
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 1m 0.5s using pnpm v11.7.0
+---
+exit: 0
+elapsed-seconds: 60.7
+finished: 2026-09-08 13:05:46 +08:00
+

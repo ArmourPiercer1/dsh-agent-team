@@ -1,0 +1,17 @@
+﻿cmd: node D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\f3\run-file.mjs packages/runtime/test/tcm-m3-root-initial-work.test.ts packages/runtime/test/tcm-m3-root-work-glue.test.ts packages/runtime/test/p8s7r1-initial-work.test.ts packages/runtime/test/tcm-g1-s6-integration.test.ts packages/runtime/test/f3a-lock-scope.test.ts packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+ps: 5.1.26100.9168
+started: 2026-09-08 13:01:27 +08:00
+---
+PASS packages\runtime\test\tcm-m3-root-initial-work.test.ts (18 tests)
+PASS packages\runtime\test\tcm-m3-root-work-glue.test.ts (9 tests)
+PASS packages\runtime\test\p8s7r1-initial-work.test.ts (9 tests)
+PASS packages\runtime\test\tcm-g1-s6-integration.test.ts (11 tests)
+PASS packages\runtime\test\f3a-lock-scope.test.ts (7 tests)
+PASS packages\runtime\test\f3b-root-initial-work-lock-scope.test.ts (12 tests)
+run-file: all named files pass
+---
+exit: 0
+elapsed-seconds: 1.1
+finished: 2026-09-08 13:01:28 +08:00
+

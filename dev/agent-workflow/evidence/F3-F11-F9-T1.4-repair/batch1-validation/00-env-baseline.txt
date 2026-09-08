@@ -1,0 +1,28 @@
+﻿date: 2026-09-08 13:00:58 +08:00
+node: v24.20.0
+node-source: C:\nvm4w\nodejs\node.exe
+branch: int/repair-r1
+head: c46d3853771f0310142da0b5e6601d5a7442f9c6
+head-subject: fix(F9): assert frozen external-policy UI
+--- git status --porcelain (BEFORE) ---
+ M tests/mock/hosts/boot1/dump-config-port3181.log
+ M tests/mock/hosts/boot1/dump-config.txt
+ M tests/mock/hosts/boot1/instance-port3181.log
+?? .g3r3-clientbundle.diff
+?? .playwright-cli/
+?? HANDOFF-remote-mount-405.md
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/batch1-validation/
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/playwright-r1/
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/playwright-workflow/
+?? dev/agent-workflow/evidence/playwright-acceptance/
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/B3/red-transcript-1.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G2/full-client-cleanworktree.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/focused-runtime.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/full-client.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/full-runtime.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/typecheck-runtime.txt
+?? docs/PLAYWRIGHT_ACCEPTANCE_PLAN.md
+?? docs/local-issues/
+?? tests/mock/.dsh-home-repair-r1/
+--- end ---
+

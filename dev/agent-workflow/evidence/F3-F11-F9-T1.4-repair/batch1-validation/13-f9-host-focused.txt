@@ -1,0 +1,13 @@
+﻿cmd: node D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\f3c\run-file.mjs packages/runtime/test/f9-s6-resolve-control.test.ts packages/runtime/test/f9-control-exactly-once.test.ts
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+ps: 5.1.26100.9168
+started: 2026-09-08 13:01:30 +08:00
+---
+PASS packages\runtime\test\f9-s6-resolve-control.test.ts (14 tests)
+PASS packages\runtime\test\f9-control-exactly-once.test.ts (8 tests)
+run-file: all named files pass
+---
+exit: 0
+elapsed-seconds: 0.4
+finished: 2026-09-08 13:01:30 +08:00
+

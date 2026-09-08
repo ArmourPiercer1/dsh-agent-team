@@ -1,0 +1,75 @@
+# Manual playwright-cli probes (playwright-workflow round)
+
+Purpose: characterize the live-UI blocker precisely. The persistent ui-gate
+harness (`node tests/mock/scripts/ui-gate.mjs <config>`) cannot spawn the CLI
+in this session (piped-stdio EPERM, see probe-sandbox-and-cli.txt), so the
+CLI was driven directly from pwsh (a sandbox-allowed spawn level) to
+determine how far the browser path gets. All commands below are the real
+CLI, real host (port 3181, boot of 2026-09-08T05:00Z), no results invented.
+
+## Step 1 — goto without an open session (exit 1, expected CLI behavior)
+    node <cliJs> -s mocktest goto http://127.0.0.1:3181/?token=<redacted>
+  -> "The browser 'mocktest' is not open, please run open first"   (exit 1)
+  (ui-gate.mjs handles this by falling back to `open`; reproduced here.)
+
+## Step 2 — open, default daemon dir (OUTSIDE the workspace) -> EPERM on file open
+    node <cliJs> -s mocktest open <url>        (cwd = tests/mock)
+  -> exit 1, node fatal:
+     Error: EPERM: operation not permitted,
+       open 'C:\Users\user\AppData\Local\ms-playwright\daemon\a464ccf0618f34da\mocktest.err'
+  Diagnosis: the session daemon dir resolves to %LOCALAPPDATA%\ms-playwright\daemon
+  (playwright-core lib/tools/cli-client/registry.js computeBaseDaemonDir),
+  i.e. OUTSIDE the session workspace -> the workspace-write file policy
+  rejects the daemon's log-file creation.
+
+## Step 3 — open, daemon dir redirected into the workspace (PWTEST_DAEMON_SESSION_DIR)
+    $env:PWTEST_DAEMON_SESSION_DIR = 'D:\AgentDev\dsh-plugins\dsh-agent-team\tests\mock\.playwright-daemon'
+    node <cliJs> -s mocktest open <url>
+  -> exit 1, node fatal (the file-write failure is gone; the SPAWN itself fails):
+     Error: spawn EPERM
+       at ChildProcess.spawn (node:internal/child_process:458:11)
+       at Session.startDaemon (…\cli-client\session.js:151:50)
+  Source evidence (session.js, startDaemon):
+      const child = spawn(process.execPath, [cliPath, sessionName, ...], {
+        detached: true,
+        stdio: ["ignore", "pipe", err],   // <- piped stdout, hard-coded
+        ...
+      });
+  Diagnosis: the daemon child is spawned with piped stdout, hard-coded in the
+  CLI package (C:\Users\user\AppData\Local\nvm\v24.20.0\node_modules\@playwright\cli —
+  global install, outside the workspace, not editable here). Any node process
+  in this session spawning a piped-stdio child fails EPERM (probe 1).
+
+## Step 4 — named-pipe IPC (independent, terminal blocker for any daemon path)
+  Client<->daemon IPC uses Windows named pipes:
+      coreBundle.js:L8397:  return `\\.\pipe\pw-${userNameHash}-${domain}-${name}${suffix}`;
+  Session sandbox boundary (this session, workspace-write): "programs cannot
+  open named pipes". Therefore even a daemon started externally (e.g. from
+  pwsh) could not be reached by the CLI client from a node process here.
+
+## Browser binaries
+  %LOCALAPPDATA%\ms-playwright: chromium-1228/1234/1243,
+  chromium_headless_shell-1228/1234/1243, firefox-1542, webkit-2358 (installed;
+  reading binaries from outside the workspace is permitted — the failures above
+  are writes/spawns/named-pipes, not missing browsers).
+
+## Conclusion
+  NO browser session can be started from within this delegated subagent
+  session (workspace-write, approval prompts disabled, no escalation path):
+    (a) ui-gate.mjs harness: piped spawn EPERM (probe 1);
+    (b) playwright-cli startDaemon: hard-coded piped-stdio spawn EPERM (step 3);
+    (c) playwright client<->daemon named-pipe IPC: not openable (step 4).
+  The Playwright CLI itself is installed and functional at --version level
+  (0.1.19). A live UI can only be rendered from a session with wider file
+  permissions (e.g. the main agent session or a user-run CLI), which is
+  exactly where the earlier V2 G1 ui-gate run happened
+  (tests/mock/.playwright-cli/ + root .playwright-cli/ artifacts dated 2026-09-06/07).
+
+  => No live UI observation was made in this round. Nothing below is a
+  browser-rendered result: all UI-layer conclusions derive from the host-side
+  contract checks (preflight, version-gate) and the durable world state.
+
+## Cleanup
+  tests/mock/.playwright-daemon (probe artifact, empty dirs) removed.
+  No daemon process was ever started (the spawn failed), so no browser
+  process cleanup was needed.

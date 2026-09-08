@@ -1,0 +1,8 @@
+﻿PASS  version-gate v1 -> method-version-unsupported
+PASS  version-gate v2 -> method-version-unsupported
+PASS  version-gate v3 -> method-version-unsupported
+PASS  version-gate v4 accepted (reaches the control port: CONTROL_REQUEST_NOT_FOUND)
+PASS  version-gate v4 spoofed caller field -> malformed-params unknown-field (before any derivation/port work)
+
+[f9-check] 5 PASS, 0 FAIL — OK
+

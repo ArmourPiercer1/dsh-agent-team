@@ -1,0 +1,9 @@
+﻿node.exe : [ui-gate] varsFile missing: state/f9-deny-pending.json (run the producing script first — f9-check.mjs pending
+)
+At line:12 char:10
++   $out = & node tests/mock/scripts/ui-gate.mjs $cfgs[$k] 2>&1 | Out-S ...
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([ui-gate] varsF...ck.mjs pending):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+

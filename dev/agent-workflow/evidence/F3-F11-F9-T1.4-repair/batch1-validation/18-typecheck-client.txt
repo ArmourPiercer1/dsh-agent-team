@@ -1,0 +1,9 @@
+﻿cmd: node node_modules/typescript/lib/tsc.js -p packages/client/tsconfig.json --noEmit
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+started: 2026-09-08 13:05:20 +08:00
+---
+---
+exit: 0
+elapsed-seconds: 21.5
+finished: 2026-09-08 13:05:41 +08:00
+

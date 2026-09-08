@@ -1,0 +1,41 @@
+﻿cmd: node D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\t14\run-file.mjs packages/runtime/test/t14h-probe-merge.test.ts packages/runtime/test/tcm-g1-s6-integration.test.ts packages/runtime/test/tcm-m1-s6-v2-routing.test.ts packages/runtime/test/tcm-m2-workspace-attach.test.ts packages/runtime/test/tcm-m3-root-initial-work.test.ts packages/runtime/test/p8s7r1-initial-work.test.ts packages/runtime/test/p8s7r1-create-params.test.ts packages/runtime/test/p8s6-pagination.test.ts packages/runtime/test/p8s6-principal.test.ts packages/runtime/test/p8s6-projection.test.ts packages/runtime/test/p8s6-push-reconnect.test.ts packages/runtime/test/p8s6-remote-commands.test.ts packages/runtime/test/t12h4-s6-fail-closed.test.ts packages/runtime/test/t12b4-principal-context.test.ts
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+ps: 5.1.26100.9168
+started: 2026-09-08 13:01:46 +08:00
+---
+PASS packages\runtime\test\t14h-probe-merge.test.ts (10 tests)
+PASS packages\runtime\test\tcm-g1-s6-integration.test.ts (11 tests)
+PASS packages\runtime\test\tcm-m1-s6-v2-routing.test.ts (5 tests)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plugin context (the web profile provides it through the workspace row — the team row hard-injects it)
+    at assertWorkspaceRegistryLike (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/workspace-attach.ts:65:11)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:752:7)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/tcm-m2-workspace-attach.test.ts:421:17
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolveByPath and list to be functions
+    at assertWorkspaceRegistryLike (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/workspace-attach.ts:75:11)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:752:7)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/tcm-m2-workspace-attach.test.ts:442:17
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\tcm-m2-workspace-attach.test.ts (14 tests)
+PASS packages\runtime\test\tcm-m3-root-initial-work.test.ts (18 tests)
+PASS packages\runtime\test\p8s7r1-initial-work.test.ts (9 tests)
+PASS packages\runtime\test\p8s7r1-create-params.test.ts (8 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-pagination.test.ts (9 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-principal.test.ts (20 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-projection.test.ts (14 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-push-reconnect.test.ts (5 tests)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+PASS packages\runtime\test\p8s6-remote-commands.test.ts (7 tests)
+PASS packages\runtime\test\t12h4-s6-fail-closed.test.ts (2 tests)
+PASS packages\runtime\test\t12b4-principal-context.test.ts (8 tests)
+run-file: all named files pass
+---
+exit: 0
+elapsed-seconds: 0.9
+finished: 2026-09-08 13:01:47 +08:00
+

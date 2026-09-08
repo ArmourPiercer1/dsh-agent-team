@@ -1,0 +1,51 @@
+# Pre-flight probes (playwright-workflow round, 2026-09-08)
+
+Node executable (from PATH): C:\nvm4w\nodejs\node.exe  (v24.20.0)
+
+## Probe 1 — node piped-stdio child spawn (the exact mechanism ui-gate.mjs uses)
+command: node -e "spawnSync(process.execPath, ['--version'], {encoding:'utf8', timeout:20000})"
+result:  status=null err=EPERM: spawnSync C:\nvm4w\nodejs\node.exe EPERM  out=undefined
+verdict: BLOCKED — any node process launched in this session cannot spawn a
+child with piped stdio (workspace-write sandbox; same EPERM boundary as
+TEST_METHODS.md §5). ui-gate.mjs's pw() helper uses spawnSync with encoded
+(piped) stdio, so every ui-gate config invocation exits 2 at the
+`playwright-cli --version` precheck with the r1 signature
+(`[ui-gate] playwright-cli failed to run: ` + empty stderr, exit 2 — see
+playwright-r1/ui-smoke.txt).
+
+## Probe 2 — Playwright CLI availability (pwsh-level spawn, sandbox-allowed)
+command: node C:\nvm4w\nodejs\node_modules\@playwright\cli\playwright-cli.js --version
+result:  0.1.19   exit=0
+verdict: Playwright CLI IS available and runnable at version 0.1.19. The
+blocker for the persistent ui-gate harness is the node->node piped spawn
+under this session's sandbox, not a missing CLI.
+
+## Credential check (value never printed)
+tests/mock/.dsh-home-repair-r1/.credentials.yaml present;
+QIYUAN_SELF_API_KEY ref present = False
+=> NO model key configured for the repair-r1 home: the host boots, but any
+model turn fails. No member can be created and no control request
+(user-approval) can be issued, because both require live model turns.
+This blocks the F9 G3 pending/allow/deny and G4 policy world states.
+
+## World state of tests/mock/.dsh-home-repair-r1 (read-only scan, pre-boot)
+team_domain.json tables:
+  schema_meta => 8 rows
+  team_sessions => 2 rows (session-dtestmts5d068d576 gen=2; session-dtestmts69xkr6b54 gen=2; bp dtest-bp@1)
+  member_instances => 2 rows (ONLY inst-leader for each root; no worker/collector members W1/W2)
+  session_bindings => 2 rows
+  overrides => 0 rows
+  compatibility => 2 rows
+  operations => 0 rows
+  ledger => 0 rows  => NO control-request-recorded / control-decision-recorded / control-allow-consumed facts
+workspace.json: single workspace, sessionIds = [session-dtestmts5d068d576]
+  => the directive root session-dtestmts69xkr6b54 is NOT bound to the workspace row
+     (matches r1 preflight detail "mockRow=sessions=1 rootBound=false")
+p6t6-directive.json (last boot of r1): boot=1 phase=create root=session-dtestmts69xkr6b54
+
+Consequence: `f9-check.mjs pending` has zero pending control requests to match
+=> expected exit 2 ("no pending control request matches the filter"). The four
+F9 ui-gate configs (f9-g3-pending/allow/deny, f9-g4-policy) additionally lack
+their varsFile (state/f9-pending.json / f9-deny-pending.json /
+f9-policy-pending.json) => ui-gate.mjs exits 2 at the varsFile precheck,
+before any browser work.

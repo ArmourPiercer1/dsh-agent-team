@@ -1,0 +1,67 @@
+﻿cmd: node D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\F3-F11-F9-T1.4-repair\t14\run-file.mjs packages/runtime/test/p8s5a-production-assembly.test.ts packages/runtime/test/p8s5a-host-loadability.test.ts packages/runtime/test/p8s3-work-chain.test.ts packages/runtime/test/p8s3-work-request.test.ts packages/runtime/test/p8s3b-result-effects.test.ts packages/runtime/test/p8s5b-operation-fencing.test.ts packages/runtime/test/p7t1-ack-fingerprint.test.ts packages/runtime/test/p7t1-cold-resume.test.ts packages/runtime/test/p7t1-inflight-drift.test.ts packages/runtime/test/p7t1-probe-generation.test.ts packages/runtime/test/f3a-lock-scope.test.ts packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts packages/runtime/test/f3c-messaging-sibling.test.ts packages/runtime/test/rmr-create-or-open-boot.test.ts packages/runtime/test/rmr-remote-mount-race.test.ts
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team
+ps: 5.1.26100.9168
+started: 2026-09-08 13:01:47 +08:00
+---
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:266:11)
+    at validateTeamPluginConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:273:97)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:728:29)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:697:16
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:685:13
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:735:13)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:724:16
+    at async file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:685:13
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+PASS packages\runtime\test\p8s5a-production-assembly.test.ts (7 tests)
+PASS packages\runtime\test\p8s5a-host-loadability.test.ts (3 tests)
+PASS packages\runtime\test\p8s3-work-chain.test.ts (12 tests)
+PASS packages\runtime\test\p8s3-work-request.test.ts (5 tests)
+PASS packages\runtime\test\p8s3b-result-effects.test.ts (16 tests)
+PASS packages\runtime\test\p8s5b-operation-fencing.test.ts (26 tests)
+PASS packages\runtime\test\p7t1-ack-fingerprint.test.ts (16 tests)
+PASS packages\runtime\test\p7t1-cold-resume.test.ts (12 tests)
+PASS packages\runtime\test\p7t1-inflight-drift.test.ts (14 tests)
+PASS packages\runtime\test\p7t1-probe-generation.test.ts (19 tests)
+PASS packages\runtime\test\f3a-lock-scope.test.ts (7 tests)
+PASS packages\runtime\test\f3b-root-initial-work-lock-scope.test.ts (12 tests)
+PASS packages\runtime\test\f3c-messaging-sibling.test.ts (2 tests)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 8 stamp row(s)); use openTeamDomain
+    at teamDomainError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/storage/repositories/team-domain.ts:176:13)
+    at async bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:813:14)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/root.ts:1768:15)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:922:19)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+PASS packages\runtime\test\rmr-create-or-open-boot.test.ts (6 tests)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 100ms — the connection service appeared after the mount step)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear within 200ms (headless host, or the web connection service was not provided in time)
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.handle to be a function
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative integer (milliseconds) when present
+    at fail (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:266:11)
+    at validateTeamPluginConfig (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:340:5)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:728:29)
+    at Module.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/host.ts:986:46)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/packages/runtime/test/rmr-remote-mount-race.test.ts:328:17
+PASS packages\runtime\test\rmr-remote-mount-race.test.ts (7 tests)
+run-file: all named files pass
+---
+exit: 0
+elapsed-seconds: 5.4
+finished: 2026-09-08 13:01:52 +08:00
+

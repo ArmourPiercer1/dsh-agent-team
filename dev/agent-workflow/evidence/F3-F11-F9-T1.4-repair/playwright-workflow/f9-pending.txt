@@ -1,0 +1,9 @@
+﻿node.exe : [f9-check] no pending control request matches the filter ({}) — deliver the request prompt (b4-requests.md / 
+t41-deny-req.md) first, then re-run
+At line:4 char:8
++ $out = & node tests/mock/scripts/f9-check.mjs pending 2>&1 | Out-Stri ...
++        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([f9-check] no p...st, then re-run:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+

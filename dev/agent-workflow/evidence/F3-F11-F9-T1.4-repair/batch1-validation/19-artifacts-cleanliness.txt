@@ -1,0 +1,85 @@
+﻿
+=== node scripts/check-artifacts-committed.mjs (verbatim attempt) ===
+node:internal/child_process:1160
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+System.Management.Automation.RemoteException
+<ref *1> Error: spawnSync git EPERM
+    at Object.spawnSync (node:internal/child_process:1160:20)
+    at spawnSync (node:child_process:928:24)
+    at execFileSync (node:child_process:971:15)
+    at git (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/scripts/check-artifacts-committed.mjs:45:10)
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/scripts/check-artifacts-committed.mjs:88:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawnSync git',
+  path: 'git',
+  spawnargs: [
+    'ls-files',
+    '--ignored',
+    '--exclude-standard',
+    '-o',
+    '--',
+    'packages/runtime/dist',
+    'packages/client/composition-shim'
+  ],
+  error: [Circular *1],
+  status: null,
+  signal: null,
+  output: null,
+  pid: 0,
+  stdout: undefined,
+  stderr: undefined
+}
+System.Management.Automation.RemoteException
+Node.js v24.20.0
+exit: 1
+
+=== three-way reproduction (pwsh-level) ===
+tracked (index): 1032
+produced on disk (minus ignored): 1032
+A tracked-but-absent: 0
+B produced-but-untracked: 0
+C content-drift: 0
+REPRO OK: committed install-surface artifacts match the on-disk state
+
+=== references/deepseek-harness-test-use status --porcelain (MUST BE EMPTY) ===
+exit: 0
+
+=== D:\deepseek-harness (stable deployment) status --porcelain (READ-ONLY status; no operation on :3080) ===
+exit: 0
+
+=== team worktree (int/repair-r1) status --short --branch ===
+## int/repair-r1
+ M tests/mock/hosts/boot1/dump-config-port3181.log
+ M tests/mock/hosts/boot1/dump-config.txt
+ M tests/mock/hosts/boot1/instance-port3181.log
+?? .g3r3-clientbundle.diff
+?? .playwright-cli/
+?? HANDOFF-remote-mount-405.md
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/batch1-validation/
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/playwright-r1/
+?? dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/playwright-workflow/
+?? dev/agent-workflow/evidence/playwright-acceptance/
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/B3/red-transcript-1.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G2/full-client-cleanworktree.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/focused-runtime.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/full-client.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/full-runtime.txt
+?? dev/agent-workflow/evidence/team-d1-d6-repair-v2/G3/typecheck-runtime.txt
+?? docs/PLAYWRIGHT_ACCEPTANCE_PLAN.md
+?? docs/local-issues/
+?? tests/mock/.dsh-home-repair-r1/
+?? tests/mock/.playwright-daemon/
+exit: 0
+
+=== team worktree git diff --check ===
+warning: in the working copy of 'tests/mock/hosts/boot1/dump-config-port3181.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/mock/hosts/boot1/dump-config.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/mock/hosts/boot1/instance-port3181.log', LF will be replaced by CRLF the next time Git touches it
+exit: 0
+finished: 2026-09-08 13:06:59 +08:00
+

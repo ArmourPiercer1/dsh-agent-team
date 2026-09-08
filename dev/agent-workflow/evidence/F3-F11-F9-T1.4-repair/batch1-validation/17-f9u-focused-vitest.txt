@@ -1,0 +1,23 @@
+﻿cmd: node --import ./.batch1-vitest-netuse-stub.mjs node_modules/vitest/vitest.mjs run --root packages/client test/f9u-control-surface-model.test.ts test/f9u-control-panel.client.spec.tsx test/f9-resolve-control-ui.client.spec.tsx test/f9u-control-surface-probe.client.spec.tsx
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\batch1-validation-20260908
+ps: 5.1.26100.9168
+started: 2026-09-08 13:06:08 +08:00
+---
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/batch1-validation-20260908/packages/client
+
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 4ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 84ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 139ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 439ms
+
+ Test Files  4 passed (4)
+      Tests  41 passed (41)
+   Start at  13:06:08
+   Duration  2.90s (transform 2.46s, setup 0ms, import 4.95s, tests 666ms, environment 1.83s)
+
+---
+exit: 0
+elapsed-seconds: 3.3
+finished: 2026-09-08 13:06:11 +08:00
+

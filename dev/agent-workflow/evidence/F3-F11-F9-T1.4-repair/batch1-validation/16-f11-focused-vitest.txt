@@ -1,0 +1,25 @@
+﻿cmd: node --import ./.batch1-vitest-netuse-stub.mjs node_modules/vitest/vitest.mjs run --root packages/client test/team-ledger-model.client.spec.ts test/ledger-adapter.test.ts test/team-ledger-store.test.ts test/team-ledger.client.spec.tsx
+cwd: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\batch1-validation-20260908
+ps: 5.1.26100.9168
+started: 2026-09-08 13:05:54 +08:00
+---
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/batch1-validation-20260908/packages/client
+
+ ✓ test/team-ledger-model.client.spec.ts (21 tests) 6ms
+ ✓ test/ledger-adapter.test.ts (27 tests) 7ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 5ms
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 1462ms
+     ✓ deepens the window on load-earlier clicks (local axis only)  659ms
+     ✓ resets the window and the filters on a NEW team only  371ms
+
+ Test Files  4 passed (4)
+      Tests  92 passed (92)
+   Start at  13:05:55
+   Duration  4.34s (transform 1.60s, setup 0ms, import 3.68s, tests 1.48s, environment 1.23s)
+
+---
+exit: 0
+elapsed-seconds: 4.8
+finished: 2026-09-08 13:05:59 +08:00
+
