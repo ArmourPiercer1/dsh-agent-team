@@ -25,6 +25,38 @@ import type {
 } from '../../../contracts/src/index.js'
 
 /**
+ * Capability policy entries on a BlueprintTemplate (T1 / 0.1.1-alpha.1).
+ * Each sub-field is an allow-list ({@link AllowEntry}) or a blanket deny
+ * ({@link DenyEntry}). The four domains are:
+ *
+ * - `teamTools` — team-tool names this template may use;
+ * - `builtinToolDeny` — built-in tool names this template must NOT use;
+ * - `skills` — skill ids this template may use;
+ * - `mcp` — MCP server names this template may use.
+ */
+export interface TemplateCapabilities {
+  /** Team-tool capability policy. */
+  readonly teamTools: AllowEntry | DenyEntry
+  /** Built-in tool names this template must NOT use. */
+  readonly builtinToolDeny: readonly string[]
+  /** Skill capability policy. */
+  readonly skills: AllowEntry | DenyEntry
+  /** MCP server capability policy. */
+  readonly mcp: AllowEntry | DenyEntry
+}
+
+/** An allow-list entry in a template capability policy. */
+export interface AllowEntry {
+  readonly kind: 'allow'
+  readonly items: readonly string[]
+}
+
+/** A blanket deny entry in a template capability policy. */
+export interface DenyEntry {
+  readonly kind: 'deny'
+}
+
+/**
  * The static definition of a template (shared by the Leader and the
  * Members; Architecture §6.1: the two share as many semantic fields as
  * possible). `persona` is required and non-empty: a template without a
@@ -43,6 +75,8 @@ export interface BlueprintTemplate {
   readonly modelPreference?: string
   /** Context policy token (invariant 29: frozen at instance creation). */
   readonly contextPolicy?: string
+  /** Per-template capability policy (absent = legacy mode, no restrictions). */
+  readonly capabilities?: TemplateCapabilities
 }
 
 /** The Blueprint's exactly-one complete Leader (Architecture §5.3). */

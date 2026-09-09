@@ -6,6 +6,8 @@
   },
   "include": [
     "src",
+    "blueprint/src",
+    "policy/src",
     "test",
     "vitest.config.ts"
   ]

@@ -81,6 +81,15 @@ export const BLUEPRINT_TEMPLATE_FIELDS: readonly string[] = [
   'persona',
   'modelPreference',
   'contextPolicy',
+  'capabilities',
+]
+
+/** The exact closed field set of a TemplateCapabilities block. */
+export const BLUEPRINT_CAPABILITIES_FIELDS: readonly string[] = [
+  'teamTools',
+  'builtinToolDeny',
+  'skills',
+  'mcp',
 ]
 
 /** The exact closed field set of a capability requirement. */
@@ -149,6 +158,9 @@ export const ENVELOPE_OPERATION_MAX_LENGTH = 128
 export const METADATA_KEY_MAX_LENGTH = 64
 /** Max length of a metadata value. */
 export const METADATA_VALUE_MAX_LENGTH = 4096
+
+/** Max length of one capability-item name (tool/skill/mcp). */
+export const CAPABILITY_ITEM_MAX_LENGTH = 128
 
 /** Capability requirement domain: lowercase slug (probeable domain name). */
 export const REQUIREMENT_DOMAIN_PATTERN = /^[a-z][a-z0-9-]{0,63}$/

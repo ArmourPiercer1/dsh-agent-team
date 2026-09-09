@@ -60,6 +60,7 @@ import type {
 } from '../../../contracts/src/index.js'
 
 import {
+  BLUEPRINT_CAPABILITIES_FIELDS,
   BLUEPRINT_DOCUMENT_SCHEMA_VERSION,
   BLUEPRINT_ENVELOPE_FIELDS,
   BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS,
@@ -70,6 +71,7 @@ import {
   BLUEPRINT_REQUIREMENT_FIELDS,
   BLUEPRINT_TEMPLATE_FIELDS,
   BLUEPRINT_TOP_LEVEL_FIELDS,
+  CAPABILITY_ITEM_MAX_LENGTH,
   CAPABILITY_POLICY_DECISIONS,
   CONTEXT_POLICY_MAX_LENGTH,
   DESCRIPTION_MAX_LENGTH,
@@ -95,6 +97,7 @@ import type {
   BlueprintTemplate,
   CapabilityPolicy,
   CapabilityRequirement,
+  DenyEntry,
   MemberEnvelopeEntry,
   MutationEnvelope,
   PolicyStateDefinition,
@@ -102,6 +105,7 @@ import type {
   QuotaSpec,
   TeamBlueprint,
   TeamBlueprintCore,
+  TemplateCapabilities,
 } from './types.js'
 
 /** Control characters forbidden in any string field (mirrors contracts). */
@@ -289,6 +293,12 @@ function validateTemplate(raw: unknown, path: string): BlueprintTemplate {
     maxLength: CONTEXT_POLICY_MAX_LENGTH,
   })
 
+  // Optional capabilities block (absent = legacy mode)
+  const capabilitiesRaw = takeRecord(record, 'capabilities', path)
+  const capabilities = capabilitiesRaw === undefined
+    ? undefined
+    : validateTemplateCapabilities(capabilitiesRaw, `${path}.capabilities`)
+
   return stripUndefined({
     templateId,
     displayName,
@@ -296,6 +306,7 @@ function validateTemplate(raw: unknown, path: string): BlueprintTemplate {
     persona,
     modelPreference,
     contextPolicy,
+    capabilities,
   })
 }
 
@@ -401,6 +412,100 @@ function validateQuota(raw: unknown, path: string): Quota {
     )
   }
   return stripUndefined({ maxInstances, maxConcurrent })
+}
+
+/**
+ * Validate one allow/deny entry (used by capabilities sub-fields
+ * `teamTools`, `skills`, `mcp`).
+ */
+function validateAllowDenyEntry(raw: unknown, path: string): DenyEntry | { kind: 'allow'; items: readonly string[] } {
+  const record = assertPlainRecord(raw, `${path} (allow/deny entry)`)
+
+  const kind = record['kind']
+  if (typeof kind !== 'string' || (kind !== 'allow' && kind !== 'deny')) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `allow/deny entry at ${path} must have kind 'allow' or 'deny', got ${JSON.stringify(kind)}`,
+      { path: `${path}.kind` },
+    )
+  }
+
+  if (kind === 'deny') {
+    const unknown = Object.keys(record).filter((k) => k !== 'kind')
+    if (unknown.length > 0) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `deny entry at ${path} must not have extra fields: ${unknown.join(', ')}`,
+        { path: `${path}`, extraFields: unknown },
+      )
+    }
+    return { kind: 'deny' }
+  }
+
+  // kind === 'allow' — items is required
+  const itemsRaw = requireField(record, 'items', path)
+  if (!Array.isArray(itemsRaw)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `allow entry at ${path} must have items array, got ${itemsRaw === null ? 'null' : typeof itemsRaw}`,
+      { path: `${path}.items` },
+    )
+  }
+  const items = itemsRaw.map((item, index) => {
+    if (typeof item !== 'string' || item.length === 0 || item.length > CAPABILITY_ITEM_MAX_LENGTH) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `allow entry at ${path}.items[${index}] must be a non-empty string (max ${CAPABILITY_ITEM_MAX_LENGTH}), got ${JSON.stringify(item)}`,
+        { path: `${path}.items[${index}]` },
+      )
+    }
+    return item
+  })
+  const extra = Object.keys(record).filter((k) => k !== 'kind' && k !== 'items')
+  if (extra.length > 0) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `allow entry at ${path} has unknown fields: ${extra.join(', ')}`,
+      { path, extraFields: extra },
+    )
+  }
+  return { kind: 'allow' as const, items }
+}
+
+/**
+ * Validate the optional `capabilities` block on a BlueprintTemplate.
+ * When absent → valid (legacy mode). When present → all 4 sub-fields
+ * are required.
+ */
+function validateTemplateCapabilities(raw: unknown, path: string): TemplateCapabilities {
+  const record = assertPlainRecord(raw, `${path} (capabilities)`)
+  assertNoUnknownFields(record, BLUEPRINT_CAPABILITIES_FIELDS, `${path} (capabilities)`)
+
+  const teamTools = validateAllowDenyEntry(requireField(record, 'teamTools', path), `${path}.teamTools`)
+  const skills = validateAllowDenyEntry(requireField(record, 'skills', path), `${path}.skills`)
+  const mcp = validateAllowDenyEntry(requireField(record, 'mcp', path), `${path}.mcp`)
+
+  // builtinToolDeny is a plain string[]
+  const builtinToolDenyRaw = requireField(record, 'builtinToolDeny', path)
+  if (!Array.isArray(builtinToolDenyRaw)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `capabilities at ${path}.builtinToolDeny must be an array, got ${builtinToolDenyRaw === null ? 'null' : typeof builtinToolDenyRaw}`,
+      { path: `${path}.builtinToolDeny` },
+    )
+  }
+  const builtinToolDeny = builtinToolDenyRaw.map((item, index) => {
+    if (typeof item !== 'string' || item.length === 0 || item.length > CAPABILITY_ITEM_MAX_LENGTH) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `capabilities at ${path}.builtinToolDeny[${index}] must be a non-empty string (max ${CAPABILITY_ITEM_MAX_LENGTH}), got ${JSON.stringify(item)}`,
+        { path: `${path}.builtinToolDeny[${index}]` },
+      )
+    }
+    return item
+  })
+
+  return { teamTools, builtinToolDeny, skills, mcp }
 }
 
 // ---------------------------------------------------------------------------
@@ -759,7 +864,25 @@ function toHashableTemplate(template: BlueprintTemplate): RemoteSafeRecord {
     persona: template.persona,
     modelPreference: template.modelPreference ?? null,
     contextPolicy: template.contextPolicy ?? null,
+    capabilities:
+      template.capabilities === undefined
+        ? null
+        : {
+            teamTools: toHashableAllowDeny(template.capabilities.teamTools),
+            builtinToolDeny: [...template.capabilities.builtinToolDeny],
+            skills: toHashableAllowDeny(template.capabilities.skills),
+            mcp: toHashableAllowDeny(template.capabilities.mcp),
+          },
   })
+}
+
+function toHashableAllowDeny(
+  entry: { kind: 'allow'; items: readonly string[] } | { kind: 'deny' },
+): RemoteSafeRecord {
+  if (entry.kind === 'deny') {
+    return { kind: 'deny' }
+  }
+  return { kind: 'allow', items: [...entry.items] }
 }
 
 function toHashableEnvelope(envelope: MutationEnvelope): RemoteSafeRecord {
