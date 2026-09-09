@@ -114,7 +114,11 @@
  */
 
 import { LEADER_INSTANCE_ID, parseInstanceId } from '../../contracts/src/index.js'
-import type { MemberInstanceRecordDto, RemoteSafeRecord } from '../../contracts/src/index.js'
+import type {
+  LeaderInstanceRecordDto,
+  MemberInstanceRecordDto,
+  RemoteSafeRecord,
+} from '../../contracts/src/index.js'
 import { WORK_ACCEPTING_STATES } from '../../domain/member/src/index.js'
 import type { LedgerEntry } from '../../storage/schema/index.js'
 import { withTeamLock } from '../action-router/index.js'
@@ -304,7 +308,8 @@ interface DeliveryPreparation {
   readonly recipientInstanceId: string
   readonly requestToken: string
   readonly plan: DeliveryPlan
-  readonly target: MemberInstanceRecordDto
+  readonly target: MemberInstanceRecordDto | LeaderInstanceRecordDto
+  readonly deliveredToSessionId: string
   readonly input: AttributedSessionInput
 }
 
@@ -402,7 +407,8 @@ export function createMessagingCoordinator(
         },
       )
     }
-    if (!LIVE_DELIVERY_LIFECYCLES.includes(target.lifecycle)) {
+    const isLeaderTarget = plan.deliveredToInstanceId === String(LEADER_INSTANCE_ID)
+    if (!isLeaderTarget && !LIVE_DELIVERY_LIFECYCLES.includes(target.lifecycle)) {
       fail(
         MESSAGING_ERROR_CODES.MESSAGING_TARGET_NOT_LIVE,
         `messaging: the delivery target '${plan.deliveredToInstanceId}' is ${target.lifecycle} — delivery is accepted only in CREATED/RUNNING/SETTLED; the intent fact remains (R2/R4)`,
@@ -410,7 +416,7 @@ export function createMessagingCoordinator(
           rootSessionId,
           instanceId: plan.deliveredToInstanceId,
           deliveryMode: plan.deliveryMode,
-          lifecycle: target.lifecycle,
+          ...(isLeaderTarget ? {} : { lifecycle: target.lifecycle }),
           requestToken,
           factSequence: intent.sequence,
           reason: 'delivery-target-not-live',
@@ -435,8 +441,9 @@ export function createMessagingCoordinator(
       recipientInstanceId,
       recipientRecord?.label,
     )
+    const deliveredToSessionId = isLeaderTarget ? rootSessionId : String(target.childSessionId)
     const input: AttributedSessionInput = {
-      sessionId: String(target.childSessionId),
+      sessionId: deliveredToSessionId,
       text: renderRelayText({
         fromRef,
         recipientRef,
@@ -454,7 +461,16 @@ export function createMessagingCoordinator(
       },
     }
 
-    return { intent, caller, recipientInstanceId, requestToken, plan, target, input }
+    return {
+      intent,
+      caller,
+      recipientInstanceId,
+      requestToken,
+      plan,
+      target,
+      deliveredToSessionId,
+      input,
+    }
   }
 
   /**
@@ -529,7 +545,7 @@ export function createMessagingCoordinator(
       recipientInstanceId,
       deliveryMode: plan.deliveryMode,
       deliveredToInstanceId: plan.deliveredToInstanceId,
-      deliveredToSessionId: String(target.childSessionId),
+      deliveredToSessionId: prep.deliveredToSessionId,
       at,
     }
     try {
@@ -560,7 +576,7 @@ export function createMessagingCoordinator(
       recipientInstanceId,
       deliveryMode: plan.deliveryMode,
       deliveredToInstanceId: plan.deliveredToInstanceId,
-      deliveredToSessionId: String(target.childSessionId),
+      deliveredToSessionId: prep.deliveredToSessionId,
       deliveredSequence,
     }
   }

@@ -40,6 +40,12 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import {
+  LEADER_INSTANCE_ID,
+  parseRootSessionId,
+  parseTemplateId,
+} from '../../contracts/src/index.js'
+import type { LeaderInstanceRecordInput } from '../../contracts/src/index.js'
 import type { LedgerEntry } from '../../storage/schema/index.js'
 import { TEAM_RUNTIME_ERROR_CODES } from '../admission/index.js'
 import { MESSAGING_ERROR_CODES } from '../messaging/index.js'
@@ -164,6 +170,43 @@ interface SendDeliveryState {
   readonly totalInputs: number
 }
 
+describe('production v2 LeaderInstance delivery target', () => {
+  it('delivers member → leader directly to the root session without child lifecycle fields', async () => {
+    const world = await createP6T3World('p6t3x-v2-leader', ['worker'])
+    try {
+      await world.domain.repositories.memberInstances.put({
+        rootSessionId: parseRootSessionId(P6T3_ROOT),
+        instanceId: LEADER_INSTANCE_ID,
+        templateId: parseTemplateId('leader'),
+        label: 'leader',
+        createdAt: P6T3_NOW,
+        activityVersion: 1,
+      } as LeaderInstanceRecordInput)
+      const port = new FakeSessionInputPort()
+      const coordinator = createP6T3Coordinator(world, port)
+
+      const outcome = await coordinator.sendTeamMessage(
+        makeSendRequest({
+          caller: memberCaller(P6T3_SEEDS.worker.instanceId),
+          recipientInstanceId: String(LEADER_INSTANCE_ID),
+          body: 'production-shape leader report',
+          requestToken: 'tok-p6t3-v2-leader',
+        }),
+      )
+
+      expect(outcome.deliveryMode).toBe('direct')
+      expect(outcome.deliveredToInstanceId).toBe(String(LEADER_INSTANCE_ID))
+      expect(outcome.deliveredToSessionId).toBe(P6T3_ROOT)
+      expect(port.inputsFor(P6T3_ROOT)).toHaveLength(1)
+      expect(port.inputsFor(P6T3_ROOT)[0]?.attribution.intendedForInstanceId).toBe(
+        String(LEADER_INSTANCE_ID),
+      )
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+})
+
 // ---------------------------------------------------------------------------
 // Setup — one world, all five seeds, the whole matrix executed in order.
 // Every probe is captured IMMEDIATELY after the action it documents.
@@ -236,7 +279,7 @@ let sd!: SendDeliveryState
       'team-message-delivered',
       (p) => p['requestToken'] === 'tok-p6t3-send-2',
     )[0]!
-    const m2lInput = port.inputsFor(leader.childSessionId)[0]!
+    const m2lInput = port.inputsFor(P6T3_ROOT)[0]!
     const m2l = {
       outcome: m2lOutcome,
       intent: m2lIntent,
@@ -520,7 +563,7 @@ describe('P6-T3 send/delivery (MUST-TEST: leader→member, member→leader, nega
     expect(o.deliveryMode).toBe('direct')
     expect(o.recipientInstanceId).toBe('inst-leader')
     expect(o.deliveredToInstanceId).toBe('inst-leader')
-    expect(o.deliveredToSessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+    expect(o.deliveredToSessionId).toBe(P6T3_ROOT)
 
     expect(sd.memberToLeader.intent.payload['caller']).toEqual({
       kind: 'instance',
@@ -533,7 +576,7 @@ describe('P6-T3 send/delivery (MUST-TEST: leader→member, member→leader, nega
     )
 
     const input = sd.memberToLeader.input
-    expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+    expect(input.sessionId).toBe(P6T3_ROOT)
     expect(input.attribution).toEqual({
       kind: 'team-relay',
       fromInstanceId: P6T3_SEEDS.worker.instanceId,

@@ -26,6 +26,7 @@ import {
 } from '../../contracts/src/index.js'
 import type {
   MemberInstanceRecordDto,
+  LeaderInstanceRecordInput,
   MemberInstanceRecordInput,
   MemberLifecycleState,
   RemoteSafeRecord,
@@ -53,7 +54,7 @@ export class MemberInstancesRepository extends BaseRepository {
    * @param input - the contracts v1 input (schemaVersion is stamped here).
    * @returns the frozen stamped record.
    */
-  async put(input: MemberInstanceRecordInput): Promise<MemberInstanceRecordDto> {
+  async put(input: MemberInstanceRecordInput | LeaderInstanceRecordInput): Promise<MemberInstanceRecordDto> {
     let record: MemberInstanceRecordDto
     try {
       assertNoLegacyFields(input as unknown as RemoteSafeRecord, 'MemberInstanceRecord')

@@ -428,7 +428,7 @@ describe('F3-C messaging coordinator private chain (INV-9.1, H2)', () => {
     // the outer port call, BEFORE the outer input (worker session) was
     // recorded.
     expect(t1.inputCount).toBe(2)
-    expect(t1.firstInputSession).toBe(P6T3_SEEDS.leader.childSessionId)
+    expect(t1.firstInputSession).toBe(P6T3_ROOT)
     expect(t1.secondInputSession).toBe(P6T3_SEEDS.worker.childSessionId)
 
     // Both inputs carry their ORIGINAL correlation (the nested one

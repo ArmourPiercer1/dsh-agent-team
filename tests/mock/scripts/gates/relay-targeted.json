@@ -1,0 +1,12 @@
+{
+  "session": "mocktest",
+  "rootGroup": "未分组",
+  "rootText": "请初始化团队",
+  "teamTab": "团队",
+  "asserts": [
+    { "find": "W1", "expect": "present" },
+    { "find": "时间线", "expect": "present" },
+    { "eval": "document.body.innerText.includes('团队')", "expect": "truthy" }
+  ],
+  "snapshot": "relay-targeted"
+}
