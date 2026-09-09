@@ -38,6 +38,11 @@ export type { GuardConsultDecision } from './guard.js'
 export { createTeamTools } from './tools.js'
 export type { TeamToolSet } from './tools.js'
 
+export { selectTeamTools } from './tool-selector.js'
+
+export { applyBuiltInToolDeny } from './builtin-deny.js'
+export type { ToolRestrictionDisposer } from './builtin-deny.js'
+
 export type {
   TeamToolDefinition,
   TeamToolExecContext,
