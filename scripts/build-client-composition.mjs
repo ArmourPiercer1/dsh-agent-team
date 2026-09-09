@@ -58,6 +58,10 @@ if (!pkgDir || !outDir) {
 }
 const PKG = resolve(pkgDir)
 const OUT = resolve(outDir)
+const packageVersion = JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).version
+if (typeof packageVersion !== 'string' || packageVersion.length === 0) {
+  die(`invalid package version in ${join(PKG, 'package.json')}`)
+}
 // --probe: emit the S8 debug variant (apply-time `remote` seam diagnostics +
 // window.__s8Probe hook). Harness-side only; the product bundle never carries it.
 const PROBE = process.argv.slice(2).includes('--probe')
@@ -577,7 +581,7 @@ writeFileSync(join(OUT, 'index.js'), nodeHalf)
 
 const shimPkg = {
   name: PLUGIN_ID,
-  version: '0.0.0',
+  version: packageVersion,
   private: true,
   type: 'module',
   description: 'S8 composition shim: dsh.client manifest + ./client export for the P9 client bundle (product package.json untouched per D-T9-11/T10 pin).',

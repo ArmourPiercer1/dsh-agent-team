@@ -2131,3 +2131,14 @@ E1_DONE_AT=2026-09-07T06:21:34.0449116+08:00
 - **Round 3 blocker confirmation**: a new workflow with three explicit qwen reviewers independently reconfirmed the same Gate-level `TEST_INFRA_BLOCKER`: no model credential in `tests/mock/.dsh-home-repair-r1`, Playwright daemon/browser cannot start under sandbox EPERM/named-pipe restrictions, and live G3/G4/UI/model rows therefore remain unexecutable. Deterministic candidate remains green, upstream remains pristine, and no push occurred. Per ROUTER_RULES §5.1, after three consecutive rounds with the same condition, the goal is blocked pending user-provided credentials and a Playwright-capable environment.
 - **Round 4 live acceptance resumed**: user supplied full-access and configured credentials in the existing repair DSH_HOME. A direct Playwright probe and a qwen workflow probe both established the earlier failure was sandbox-related; after full-access, the complete live matrix executed successfully against `tests/mock/.dsh-home-repair-r1` on `3181/3491/3492`. G3 pending/allow/deny, T1.4 UI create, F11 API+UI, and corrected G4 managed-policy all passed; the pre-declared G3 consumed/F10 semantic boundary remained documented. Consolidation was initially cancelled by the user, then resumed through workflow and completed in `live-round-r4/REPORT.md` with Gate-ready verdict. G4 recipe source fix and evidence integrated via `0ade66e` and `c0f9150`; no upstream/stable changes and no push yet. Next: append final record, run 3 fresh blind reviewers, then push only after PASS/投机通过.
 G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
+
+## Release 0.1.0-rc.1（2026-09-08）
+
+- **用户发布裁决**：当前代码已通过用户手动测试及 Playwright/live acceptance，可冻结为未来开发基线 `0.1.0-rc.1`；该裁决取代此前“必须再完成一轮三盲审才可首次发布”的待办，但不删除既有证据与风险记录。
+- **发布内容**：`int/repair-r1` 当前产品链，包含 Team D1–D6 repair v2、F3/F11/F9/T1.4 repair、live round r4 evidence 与 messaging relay to root leader 修复。
+- **已知边界**：G3 consumed/F10 资产预期边界继续作为已记录限制，不视为本 RC blocker；后续 alpha/RC 修复须保持 fail-loud 与零 core patch。
+- **版本标识**：根 package、9-package workspace 及 client composition shim 统一标记 `0.1.0-rc.1`。
+- **分支裁决**：首个正式 release 之前，`master` 用于下一 alpha 持续开发；`stable` 只跟踪经裁决发布的 RC 基线及经 Gate 验收的 RC 修复。未经 RC 裁决的 alpha 提交不得直接从 master 推进 stable。
+- **Git 计划**：发布提交后创建 annotated tag `0.1.0-rc.1`，创建 `stable` 指向同一发布提交；用户已明确授权本轮推送 release commit、stable 与 tag，禁止 force-push。
+- **清理记录**：恢复误删 active plans 与被 live 测试覆盖的 boot 日志；删除未跟踪 Playwright daemon 缓存、含凭据的 scratch DSH_HOME、临时 diff、重复/未归档测试输出。保留已提交的 authoritative evidence。
+- **红线**：`:3080` 与 `D:\deepseek-harness\` 零触碰；upstream test-use 不修改；CORE PATCH BUDGET = 0。

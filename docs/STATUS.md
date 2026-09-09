@@ -1,14 +1,16 @@
 # STATUS — Team vNext 当前状态总览
 
 > **性质**：living 快照文档，**不是权威源**。权威 = `dev/agent-workflow/graph.yaml`（编排状态唯一来源）+
-> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，最新至 R139）。
+> `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 `0.1.0-rc.1` 发布裁决）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-05（R140：用户实机测试轮 3 —— 新报告 **D-3「新建团队进入的不是 leader 会话、无 `team_*` 工具、侧栏无新行」**。三重证据根因：`team_domain.json` 四行分析（boot 行 `team-root` gen2+compat + 面板行 gen1 无 compat）+ 解码会话日志（**面板创建的根会话 `agentPreset: "standard"`**——TeamSession 绑定到了客户端原生预创建的 standard 会话，leader agent 从未创建；keep-createRootSession 变体 = agent-registry 碰撞死路）+ 部署配置核验正确。修复 `7e0c7d3`（29 文件 +806/−302，dsh-agent-team only）：客户端铸造根 id（无预创建）+ host `team.create` fail-closed 预检 + bind 后 `startRootAgent`（新类型化错误码 `TEAM_REMOTE_TEAM_CREATE_ROOT_START_UNAVAILABLE`/`_FAILED` 双清单直通）+ 客户端稳健打开 `openCreatedSession`（refresh 一次重试）+ 工作区选择器信息展示化。自测五门全绿（2459/2463，4 = 基线不变；bundle 849094 B 确定性）→ **已推送 origin**（master `48b5d7f → 5b0e59d` + int `e6f591e → 84212a2`，常设授权「自测完毕直接推送」）→ 待用户复测（**新建团队 → 预期直接进入 leader 会话 + `team_*` 工具**）→ 绿后三盲审（reviewer-7/8/9，含 D-3 创建路径面）找潜在问题）。
+> **最近更新**：2026-09-08。用户基于手动测试与 Playwright/live acceptance，裁决当前代码可冻结为未来基线 **`0.1.0-rc.1`**。F3/F11/F9/T1.4 repair 已完成确定性验证和 live matrix；已知的 G3 consumed/F10 边界保持为预声明限制，不作为本 RC 阻塞。发布分支策略同步冻结：首个正式 release 之前，`master` 用于后续 alpha 开发，`stable` 只跟踪经裁决的 RC 基线及 RC-qualified 修复。
 
 ## 1. 一句话现状
 
-**remote-mount-race 进行中（R135，2026-09-05）**：用户新机（origin master `05721fd` 预构建安装面）
+**`0.1.0-rc.1` 发布基线已冻结**：当前代码经过用户手动测试、Playwright 测试和 repair live acceptance，可作为后续开发的 RC 基线。`stable` 指向该 RC 线；`master` 从此承载下一 alpha（计划目标 `0.1.1-alpha.1`）。下方 remote-mount-race / D1–D6 / repair 内容保留为该 RC 的历史闭环证据。
+
+**remote-mount-race 历史闭环（R135 起）**：用户新机（origin master `05721fd` 预构建安装面）
 `dsh web` →「新建团队」→ `catalog.list` **HTTP 405**（Team UI 本体正常）。双根因在用户世界副本上
 确定性活证：(B) bundle 硬编码 `bootPhase: "create"`，已盖章 domain 每次重启抛 `TEAM_DOMAIN_EXISTS`
 且被 bootstrap `void ready.catch` 吞掉 → `/team-remote` 路由从未注册 → 静态 405（用户实际触发）；

@@ -10,7 +10,7 @@
  *
  * @module @dsh-agent-team/storage/repositories/member-instances
  */
-import type { MemberInstanceRecordDto, MemberInstanceRecordInput, MemberLifecycleState } from '../../contracts/src/index.js';
+import type { MemberInstanceRecordDto, LeaderInstanceRecordInput, MemberInstanceRecordInput, MemberLifecycleState } from '../../contracts/src/index.js';
 import type { StorageDomainHandle } from '../schema/index.js';
 import { BaseRepository } from './base.js';
 /**
@@ -29,7 +29,7 @@ export declare class MemberInstancesRepository extends BaseRepository {
      * @param input - the contracts v1 input (schemaVersion is stamped here).
      * @returns the frozen stamped record.
      */
-    put(input: MemberInstanceRecordInput): Promise<MemberInstanceRecordDto>;
+    put(input: MemberInstanceRecordInput | LeaderInstanceRecordInput): Promise<MemberInstanceRecordDto>;
     /**
      * Read one MemberInstance record by (root session id, instance id).
      * @returns the frozen record, or `undefined` when absent.

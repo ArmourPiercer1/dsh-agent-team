@@ -279,12 +279,13 @@ export function createMessagingCoordinator(options) {
                 reason: 'delivery-target-missing',
             });
         }
-        if (!LIVE_DELIVERY_LIFECYCLES.includes(target.lifecycle)) {
+        const isLeaderTarget = plan.deliveredToInstanceId === String(LEADER_INSTANCE_ID);
+        if (!isLeaderTarget && !LIVE_DELIVERY_LIFECYCLES.includes(target.lifecycle)) {
             fail(MESSAGING_ERROR_CODES.MESSAGING_TARGET_NOT_LIVE, `messaging: the delivery target '${plan.deliveredToInstanceId}' is ${target.lifecycle} — delivery is accepted only in CREATED/RUNNING/SETTLED; the intent fact remains (R2/R4)`, {
                 rootSessionId,
                 instanceId: plan.deliveredToInstanceId,
                 deliveryMode: plan.deliveryMode,
-                lifecycle: target.lifecycle,
+                ...(isLeaderTarget ? {} : { lifecycle: target.lifecycle }),
                 requestToken,
                 factSequence: intent.sequence,
                 reason: 'delivery-target-not-live',
@@ -301,8 +302,9 @@ export function createMessagingCoordinator(options) {
             ? `human:${caller.humanId}`
             : describeInstance(caller.instanceId, senderRecord?.label);
         const recipientRef = describeInstance(recipientInstanceId, recipientRecord?.label);
+        const deliveredToSessionId = isLeaderTarget ? rootSessionId : String(target.childSessionId);
         const input = {
-            sessionId: String(target.childSessionId),
+            sessionId: deliveredToSessionId,
             text: renderRelayText({
                 fromRef,
                 recipientRef,
@@ -319,7 +321,16 @@ export function createMessagingCoordinator(options) {
                 correlation: { requestToken, factSequence: intent.sequence },
             },
         };
-        return { intent, caller, recipientInstanceId, requestToken, plan, target, input };
+        return {
+            intent,
+            caller,
+            recipientInstanceId,
+            requestToken,
+            plan,
+            target,
+            deliveredToSessionId,
+            input,
+        };
     }
     /**
      * Delivery Phase B (NO chain held): the session input port call only.
@@ -385,7 +396,7 @@ export function createMessagingCoordinator(options) {
             recipientInstanceId,
             deliveryMode: plan.deliveryMode,
             deliveredToInstanceId: plan.deliveredToInstanceId,
-            deliveredToSessionId: String(target.childSessionId),
+            deliveredToSessionId: prep.deliveredToSessionId,
             at,
         };
         try {
@@ -412,7 +423,7 @@ export function createMessagingCoordinator(options) {
             recipientInstanceId,
             deliveryMode: plan.deliveryMode,
             deliveredToInstanceId: plan.deliveredToInstanceId,
-            deliveredToSessionId: String(target.childSessionId),
+            deliveredToSessionId: prep.deliveredToSessionId,
             deliveredSequence,
         };
     }

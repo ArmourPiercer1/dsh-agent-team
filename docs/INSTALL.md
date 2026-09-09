@@ -1,7 +1,7 @@
 # INSTALL — 在独立 DSH 实例上安装挂载 dsh-agent-team
 
-> **性质**：master 产品（R125 收口，2026-09-04）的安装指南。权威状态见 `docs/STATUS.md`；
-> 本文件是快照，与 graph.yaml + 日志冲突时以后者为准。
+> **性质**：`0.1.0-rc.1` stable 基线的安装指南。权威状态见 `docs/STATUS.md`；
+> 本文件是快照，与 graph.yaml + 日志冲突时以后者为准。开发预览可跟踪 `master`，RC 安装应固定到 `stable` 或明确的版本 tag。
 
 ## 1. 前提
 
@@ -25,8 +25,10 @@ machine-agnostic：host 行 `name: "dsh-agent-team/host"` 子路径包、client 
 `dsh.client`（platform web），DSH CLI 可一步安装并登记：
 
 ```bash
-pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team
+pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#0.1.0-rc.1
 ```
+
+如需跟踪最新 RC 修复，也可使用 `#stable`；不带 ref 时会安装 `master` 的 alpha 开发线。
 
 ### 为什么不需要 allowBuilds（本 commit 起）
 
@@ -68,7 +70,7 @@ bundle 行配置（last-write-wins，**不是字段级 merge**）——要覆盖
 ```bash
 git clone <repo-url> dsh-agent-team
 cd dsh-agent-team
-git checkout master
+git checkout 0.1.0-rc.1  # 或 git checkout stable 跟踪最新 RC
 pnpm install              # row-owned 运行时依赖已声明（packages/runtime：5 × @deepseek-ai/*@0.1.2-rc.1
                           # + zod 4.4.3，均已在 npm registry 发布、access:public）——新机器由 pnpm
                           # 直接安装，无需手工 link / junction（R125(1b)）

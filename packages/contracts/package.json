@@ -1,6 +1,6 @@
 {
   "name": "@dsh-agent-team/contracts",
-  "version": "0.0.0",
+  "version": "0.1.0-rc.1",
   "private": true,
   "description": "Frozen shared contracts v1 for DSH Agent Team vNext: IDs, DTOs, error codes, schema version. Pure, serializable, zero dependencies.",
   "type": "module",

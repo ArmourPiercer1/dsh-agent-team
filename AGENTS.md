@@ -36,7 +36,8 @@ upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Ar
 - 不得修改 upstream 源码；不得 import/使用 upstream 私有/内部 API；不得使用 patch-package / pnpm patch / postinstall 改写 upstream；不得 git apply Team patch 到 upstream/host 树；不得 vendored 修改过的 upstream 副本。
 - 不得把 legacy Team SessionEvent 词汇当 vNext 权威（vNext 无 Team SessionEvents；对象模型以 Architecture 文档为准：TeamBlueprint→TeamSession+TeamDomain→MemberInstance）。
 - 不得重写 legacy 历史；不得移动冻结分支 `feat/team-vnext-integration-20260829`。
-- 禁止 push（用户明确许可的一次性推送除外）；master 的 push 由主 Agent 在每个 Gate 通过后执行；gated 历史不得 force-push。
+- 禁止 push（用户明确许可的一次性推送除外）；master / stable 的 push 由主 Agent 在对应 Gate 或发布裁决通过后执行；gated 历史不得 force-push。
+- **首个正式 release 之前的分支策略**：`master` 是 alpha 开发线，承载下一 alpha 的持续集成；`stable` 只跟踪已经裁决发布的 RC 基线。RC 修复先在独立 task/int 分支完成并过 Gate，再合入 `stable`；不得把未经 RC 裁决的 master alpha 提交直接推进到 stable。首个正式 release 之后必须通过新的发布决策重新定义长期分支策略。
 - 影响面必须可逆：任何对运行实例、worktree、远端的操作在 evidence 中留痕。
 
 ## 状态与恢复

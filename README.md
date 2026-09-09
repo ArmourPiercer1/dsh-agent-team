@@ -51,10 +51,11 @@ gitignored) — this section is a pointer summary, not the authority:
   **Restore = ARCHIVED → SETTLED** — it restores durable availability only: it does not
   resume the Agent, start a turn, or call a model. New work re-enters RUNNING.
 
-## Status (2026-09-05)
+## Release status
 
-- **Product is now on `master`**: `int/P9-master-product-closure` fast-forwarded into
-  master (R125, 2026-09-05) — the full vNext product (P0–P9 + T12 vertical +
+- **Current RC baseline:** `0.1.0-rc.1`. This release freezes the manually tested and Playwright-validated Team vNext product as the baseline for future work.
+- **Pre-1.0 branch policy:** `master` carries ongoing alpha development; `stable` tracks only release-candidate baselines and RC-qualified fixes. Do not merge unqualified alpha work from `master` directly into `stable`.
+- **Product foundation:** the full vNext product (P0–P9 + T12 vertical +
   upstream-0.1.2-rc.1 compat + fresh-machine install chain, 1284 files / +85,679)
   landed on master. Before this merge, master carried the docs/evidence lineage
   while the product lived on the int/task branches; the gate for the closure
@@ -138,3 +139,4 @@ production-host vertical (real browser, port 3180).
   plan set (`docs/plans/paused/`, local, gitignored).
 - Current status, pending items and evidence pointers: **`docs/STATUS.md`** (snapshot;
   authority = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`).
+- Pre-release Git branch and RC promotion policy: **`docs/BRANCHING.md`**.

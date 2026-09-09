@@ -178,9 +178,14 @@ async function runEffect(ctx) {
         case ACTION_NAMES.FOLLOW_UP:
             return runWorkAdmission(ctx, 'follow-up');
         case ACTION_NAMES.SEND_MESSAGE: {
-            const target = requireLiveTarget(ctx);
             const recipientToken = String(ctx.request.payload?.['recipientInstanceId'] ?? '');
             const recipient = resolveInstanceToken(ctx.repositories, ctx.rootSessionId, ctx.blueprint, recipientToken, spec.name);
+            // The v2 LeaderInstance is the root session itself and intentionally
+            // has no ordinary member lifecycle. It is still a valid coordination
+            // target; ordinary members retain the normal work-accepting check.
+            const target = recipient.instanceId === LEADER_INSTANCE_ID
+                ? recipient
+                : requireLiveTarget(ctx);
             const sequence = await commitFact(ctx, FACT_COORDINATION, {
                 action: spec.name,
                 caller: callerRef(ctx.caller),
