@@ -59,3 +59,26 @@ export {
   type DurableMcpFacetArgs,
   type McpFacetView,
 } from './mcp-facet.js'
+
+// T3 — Team skill catalog + adapter (plan §8/§8.1): minimal in-memory
+// catalog, policy-driven skill registration with composite disposer.
+export {
+  InMemorySkillCatalog,
+  type TeamSkillCatalog,
+  type TeamSkillDefinition,
+} from './skill-catalog.js'
+
+export {
+  registerTeamSkills,
+  type SkillRegistrationDisposer,
+  type SkillAgentContext,
+} from './skill-adapter.js'
+
+// T3 — MCP adapter (plan §9): filter configured servers against policy
+// and mount allowed ones through the Agent plugin seam.
+export {
+  filterMcpServers,
+  mountAllowedMcpServers,
+  type McpMountDisposer,
+  type McpAgentContext,
+} from './mcp-adapter.js'
