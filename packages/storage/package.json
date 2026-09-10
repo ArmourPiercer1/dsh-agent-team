@@ -1,6 +1,6 @@
 {
   "name": "@dsh-agent-team/storage",
-  "version": "0.1.1-alpha.1",
+  "version": "0.1.1-alpha.2",
   "private": true,
   "description": "TeamDomain - the persistent control-plane authority for DSH Agent Team vNext (skeleton).",
   "type": "module",

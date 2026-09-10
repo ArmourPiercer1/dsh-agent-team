@@ -1,6 +1,6 @@
 {
   "name": "dsh-agent-team",
-  "version": "0.1.1-alpha.1",
+  "version": "0.1.1-alpha.2",
   "private": true,
   "description": "DSH Agent Team vNext plugin set — public-seam only, CORE PATCH BUDGET = 0.",
   "type": "module",
