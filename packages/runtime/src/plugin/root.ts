@@ -186,6 +186,7 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService } from '../../control/index.js'
+import type { ControlService } from '../../control/index.js'
 import { createMessagingCoordinator } from '../../messaging/index.js'
 import {
   createActivityLedger,
@@ -555,6 +556,18 @@ export interface TeamProductionRootParams {
    */
   readonly teamToolsRef: { current: TeamToolSet | undefined }
   /**
+   * The shared control-service reference (A6, alpha.2 plan §11): the glue's
+   * setup callback reads `controlServiceRef.current` at agent create/resume
+   * time — and ONLY for a bound template that declares
+   * `capabilities.permissions` (absent policy = the ref is never read, the
+   * alpha.1 / legacy path installs nothing). The root fills it during
+   * construction (immediately after the control service is built); the
+   * entry calls `boot()` only after. Mirrors the `teamToolsRef` precedent
+   * exactly (construction-time object, filled during root construction,
+   * read lazily when the setup runs).
+   */
+  readonly controlServiceRef: { current: ControlService | undefined }
+  /**
    * The frozen legacy reader's operational entry (A29) — the production
    * entry loads `inspectLegacyTeam` from the separately compiled legacy
    * dist and passes it here (the root never imports the legacy sources;
@@ -603,7 +616,18 @@ export interface TeamProductionRootParams {
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params: TeamProductionRootParams): TeamProductionRoot {
-  const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery, workspaceAttach } = params
+  const {
+    config,
+    domain,
+    storageSeam,
+    live,
+    now,
+    teamToolsRef,
+    controlServiceRef,
+    legacyInspect,
+    getSessionQuery,
+    workspaceAttach,
+  } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
 
@@ -939,6 +963,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     externalPolicyFacts,
     now,
   })
+  // A6 (alpha.2 plan §11): publish the fully-constructed control service to
+  // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
+  // pattern — filled during construction, the entry calls boot() only after,
+  // so every agentSetup sees a constructed service; a permissions template
+  // with an unfilled ref fails closed at setup time).
+  controlServiceRef.current = control
 
   // --- A24 the messaging coordinator ----------------------------------------------------------
   const messaging = createMessagingCoordinator({

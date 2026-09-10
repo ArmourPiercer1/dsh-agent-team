@@ -60,6 +60,7 @@ import type {
   ConnectionLike,
   RemoteRegistration,
 } from '../../../remote/src/handlers/register.js'
+import type { ControlService } from '../../control/index.js'
 import { resolveDurableMcpFacet } from '../../agent-setup/capability/index.js'
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js'
 import {
@@ -137,6 +138,19 @@ interface GlueModule {
      * `recursive-drain-unavailable` (documented in the glue).
      */
     readonly subagents?: unknown
+    /**
+     * A6 (alpha.2 plan §11, optional additive): the shared control-service
+     * reference (the teamToolsRef pattern — the entry creates the plain
+     * `{ current: undefined }` object, passes it to BOTH the glue and the
+     * root; the root fills `.current` during construction right after the
+     * durable ControlService is built). The glue reads it LAZILY inside
+     * agentSetup — and only for a bound template that declares
+     * `capabilities.permissions` (absent policy = the ref is never read,
+     * the alpha.1 / legacy path installs nothing; a present policy with an
+     * unfilled ref fails closed with the typed
+     * alpha2-permission-control-unavailable error).
+     */
+    readonly controlServiceRef?: { current: unknown }
     /**
      * D1 (v2, optional additive): the DSH `agentPresets` public service
      * surface — `mount(agentCtx, id?)` binds one agent scope to the ordinary
@@ -895,12 +909,20 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     )
   }
   const teamToolsRef: { current: TeamToolSet | undefined } = { current: undefined }
+  // A6 (alpha.2 plan §11): the shared control-service reference (the
+  // teamToolsRef pattern) — created here, passed to BOTH the glue (which
+  // reads it lazily in agentSetup) and the root (which fills it during
+  // construction right after the control service is built). The entry
+  // calls boot() only after the root construction, so every agentSetup
+  // sees a constructed control service.
+  const controlServiceRef: { current: ControlService | undefined } = { current: undefined }
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
     domain: domainFacade,
     config: resolvedRowConfig,
     teamToolsRef,
+    controlServiceRef,
     now: () => new Date().toISOString(),
     subagents: ctx.get('subagents'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
@@ -933,6 +955,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     live,
     now: () => new Date().toISOString(),
     teamToolsRef,
+    // A6 (alpha.2 plan §11): the shared control-service reference — the
+    // root fills `controlServiceRef.current` during construction (the same
+    // object the glue reads lazily in agentSetup).
+    controlServiceRef,
     legacyInspect,
     // P8-S7-R4 A28: the DSH public sessionQuery service, resolved lazily
     // at handoff use time (absent in this host entry → the handoff source

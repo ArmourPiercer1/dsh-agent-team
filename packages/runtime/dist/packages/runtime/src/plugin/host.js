@@ -692,12 +692,20 @@ export async function apply(ctx, config) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE, 'the glue module does not export createAgentBindings');
         }
         const teamToolsRef = { current: undefined };
+        // A6 (alpha.2 plan §11): the shared control-service reference (the
+        // teamToolsRef pattern) — created here, passed to BOTH the glue (which
+        // reads it lazily in agentSetup) and the root (which fills it during
+        // construction right after the control service is built). The entry
+        // calls boot() only after the root construction, so every agentSetup
+        // sees a constructed control service.
+        const controlServiceRef = { current: undefined };
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
             domain: domainFacade,
             config: resolvedRowConfig,
             teamToolsRef,
+            controlServiceRef,
             now: () => new Date().toISOString(),
             subagents: ctx.get('subagents'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
@@ -728,6 +736,10 @@ export async function apply(ctx, config) {
             live,
             now: () => new Date().toISOString(),
             teamToolsRef,
+            // A6 (alpha.2 plan §11): the shared control-service reference — the
+            // root fills `controlServiceRef.current` during construction (the same
+            // object the glue reads lazily in agentSetup).
+            controlServiceRef,
             legacyInspect,
             // P8-S7-R4 A28: the DSH public sessionQuery service, resolved lazily
             // at handoff use time (absent in this host entry → the handoff source

@@ -304,7 +304,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, legacyInspect, getSessionQuery, workspaceAttach } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -602,6 +602,12 @@ export function createTeamProductionRoot(params) {
         externalPolicyFacts,
         now,
     });
+    // A6 (alpha.2 plan §11): publish the fully-constructed control service to
+    // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
+    // pattern — filled during construction, the entry calls boot() only after,
+    // so every agentSetup sees a constructed service; a permissions template
+    // with an unfilled ref fails closed at setup time).
+    controlServiceRef.current = control;
     // --- A24 the messaging coordinator ----------------------------------------------------------
     const messaging = createMessagingCoordinator({
         teamRuntime: runtime,

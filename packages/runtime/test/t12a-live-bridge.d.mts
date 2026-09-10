@@ -71,6 +71,18 @@ export interface RegisteredSkillEntry {
   disposed: boolean
 }
 
+/**
+ * The fake upstream `fs` seam double (alpha.2 A6): deterministic, pure path
+ * resolution standing in for the public `ctx.fs.resolve` seam — the
+ * permission adapter's `resolveTarget` closure basis. Records every call
+ * so a test can assert the exact cwd the glue threaded at RESOLVE time.
+ */
+export interface FakeFsDouble {
+  /** Every recorded resolve call, in order ({ path, cwd? }). */
+  readonly calls: Array<{ readonly path: string; readonly cwd: string | undefined }>
+  resolve(path: string, opts?: { cwd?: string }): Promise<{ targetKey: string; displayPath: string }>
+}
+
 /** The agent-scoped ctx double (the service surface the live glue consumes). */
 export interface AgentCtxDouble {
   readonly listeners: AgentListenerEntry[]
@@ -88,6 +100,15 @@ export interface AgentCtxDouble {
   /** alpha.1: every skills register(def) entry recorded on THIS ctx
    *  (disposers flip `disposed`). */
   readonly registeredSkills: RegisteredSkillEntry[]
+  /** alpha.2 (A6): the fake upstream `fs` seam double — the permission
+   *  adapter's `resolveTarget` closure basis (absent from alpha.1 worlds'
+   *  reads: behavior-inert for them). */
+  readonly fs: FakeFsDouble
+  /** alpha.2 (A6): the agent back-reference (the `ctx.agent` DX accessor
+   *  basis for the glue's LAZY `session.header.cwd` read; the handle
+   *  factory sets it to the live agent, `undefined` before that — as on a
+   *  real context outside an initiator boundary). */
+  agent: LiveAgentHandle['agent'] | undefined
   on(event: string, listener: AgentListenerEntry['listener']): () => void
   /** alpha.1: the DSH service accessor (the 'skills' registration seam).
    *  register returns the SkillRegistrationDisposer OBJECT ({ dispose() }),
@@ -116,7 +137,12 @@ export interface AgentCtxDouble {
 /** One settled live-agent handle (the DSH handle seam the glue stores). */
 export interface LiveAgentHandle {
   readonly agent: {
-    readonly session: { readonly id: string }
+    /** alpha.2 (A6): the session header double (the lazy `cwd` read basis
+     *  of the permission adapter's resolveTarget closure, FACT 3b). The
+     *  `cwd` is MUTABLE on purpose (the bridge is a plain JS double; the
+     *  lazy-read test rewrites it between resolve calls to prove the glue
+     *  reads it at RESOLVE time, never captured at install). */
+    readonly session: { readonly id: string; header: { cwd?: string } }
     readonly ctx: AgentCtxDouble
     followup(message: unknown): void
     whenIdle(): Promise<void>
@@ -318,6 +344,12 @@ export interface LiveWorld {
   readonly sessionPersistence: SessionPersistenceDouble
   readonly domain: DomainDouble
   readonly teamToolsRef: { current: unknown }
+  /** alpha.2 (A6): the shared control-service reference (the teamToolsRef
+   *  pattern) — the SAME object the caller passed (or `undefined` when the
+   *  caller passed none: the glue dep then absent). A test fills
+   *  `.current` after construction and before boot to pin the glue's
+   *  LAZY read. */
+  readonly controlServiceRef: { current: unknown } | undefined
   readonly subagents: SubagentsDouble | undefined
   /** D1 v2: the agentPresets service double (absent = the host seam not wired: a
    *  member setup fails closed with the typed member-base-tools-unavailable). */
@@ -355,6 +387,11 @@ export interface LiveWorldOptions {
   readonly subagents?: SubagentsDouble
   /** D1 v2: the agentPresets service double (the member base-tool substrate). */
   readonly agentPresets?: AgentPresetsDouble
+  /** alpha.2 (A6): the caller-owned shared control-service reference
+   *  (the teamToolsRef pattern) — passed through to the glue verbatim and
+   *  returned on the world (see `LiveWorld.controlServiceRef`). Absent =
+   *  the glue dep not passed (alpha.1/legacy: never read). */
+  readonly controlServiceRef?: { current: unknown }
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */

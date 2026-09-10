@@ -491,16 +491,31 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     denylist vocabulary (the scan over them passes). Recorded on
     //     the A5 task branch; re-verified on int at the A5 integration.
     //
+    // (g) ONE A6 scannable file (this commit, the alpha.2 production
+    //     wiring task): packages/runtime/test/a6a-production-wiring.
+    //     test.ts (the A1–A5 composition spec over the REAL live glue +
+    //     the t12a bridge doubles: the install decision — absent
+    //     permissions = zero tools/pre-execute listeners (the legacy/
+    //     alpha.1 regression proof), present = exactly one per permitted
+    //     agent — the listener lifecycle (cold-resume reinstall, close
+    //     drain), the driven frozen A5 pipeline over the spy control
+    //     service + the fake fs seam, and the control-service ref
+    //     contract (lazy read, fail-closed typed error)). Zero denylist
+    //     vocabulary (the scan over it passes — the frozen quarantine
+    //     hit set is unchanged at fifteen occurrences). Recorded on the
+    //     A6 task branch; re-verified on int at the A6 integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 665 (642 + 10 + 1 + 7 + 1 + 2 + 2), and its file list names exactly
-    // the twenty-three files above (ten alpha.1 + one A1 + seven A2 +
-    // one A4 + two A3 + two A5; the committed scanner is byte-identical —
-    // no scanner change, DEC-1). The frozen quarantine hit set and all
-    // required P4 suite lists are untouched. Evidence:
-    // dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ + a4/ + a5/.
-    expect(scanResult.filesScanned).toBe(665)
-    expect(scanResult.files.length).toBe(665)
+    // 666 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1), and its file list names
+    // exactly the twenty-four files above (ten alpha.1 + one A1 + seven
+    // A2 + one A4 + two A3 + two A5 + one A6; the committed scanner is
+    // byte-identical — no scanner change, DEC-1). The frozen quarantine
+    // hit set and all required P4 suite lists are untouched. Evidence:
+    // dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ + a4/ + a5/
+    // + a6/.
+    expect(scanResult.filesScanned).toBe(666)
+    expect(scanResult.files.length).toBe(666)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

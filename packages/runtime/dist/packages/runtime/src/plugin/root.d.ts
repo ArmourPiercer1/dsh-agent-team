@@ -78,6 +78,7 @@
  * arrives exclusively through the injected live-agent glue bundle).
  * @module @dsh-agent-team/runtime/plugin/root
  */
+import type { ControlService } from '../../control/index.js';
 import type { HandoffOperationState } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { TeamToolSet } from '../../../tools/src/index.js';
@@ -165,6 +166,20 @@ export interface TeamProductionRootParams {
      */
     readonly teamToolsRef: {
         current: TeamToolSet | undefined;
+    };
+    /**
+     * The shared control-service reference (A6, alpha.2 plan §11): the glue's
+     * setup callback reads `controlServiceRef.current` at agent create/resume
+     * time — and ONLY for a bound template that declares
+     * `capabilities.permissions` (absent policy = the ref is never read, the
+     * alpha.1 / legacy path installs nothing). The root fills it during
+     * construction (immediately after the control service is built); the
+     * entry calls `boot()` only after. Mirrors the `teamToolsRef` precedent
+     * exactly (construction-time object, filled during root construction,
+     * read lazily when the setup runs).
+     */
+    readonly controlServiceRef: {
+        current: ControlService | undefined;
     };
     /**
      * The frozen legacy reader's operational entry (A29) — the production

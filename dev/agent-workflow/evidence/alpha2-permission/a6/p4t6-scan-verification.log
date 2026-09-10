@@ -1,0 +1,6 @@
+filesScanned: 666
+files.length: 666
+a6a in file list: true
+a6a denylist hits: 0
+summary: {"eventString":15,"payloadSymbol":0,"declarationMerge":0,"total":15}
+excludedSelfFiles: ["packages/testkit/fault-injection/session-event-scan.mjs","packages/testkit/test/p4t6-session-event-scan.test.ts"]

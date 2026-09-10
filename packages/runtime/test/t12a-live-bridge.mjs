@@ -26,7 +26,13 @@
  *   agents               create({sessionId, meta, setup}) / resume({resumeSessionId, setup})
  *                        -> { agent, dispose() }; the setup callback runs
  *                        with the agent-scoped ctx before the handle
- *                        settles (the real DSH semantics the glue relies on)
+ *                        settles (the real DSH semantics the glue relies on).
+ *                        alpha.2 (A6): the agent ctx double ALSO carries a
+ *                        fake upstream `fs` seam (ctx.fs.resolve — the
+ *                        permission adapter's resolveTarget basis) and an
+ *                        `agent` back-reference with `session.header.cwd`
+ *                        (the lazy FACT 3b cwd read basis) — behavior-inert
+ *                        for the alpha.1 worlds (they never read them).
  *   sessionPersistence   ensureMaterialized(session)
  *   domain               repositories.memberInstances.list / overrides.list
  *                        + the REAL durable-consumption resolvers from
@@ -96,6 +102,55 @@ export async function loadGlueModule() {
 }
 
 /**
+ * alpha.2 (A6): the fake upstream `fs` seam for the permission adapter's
+ * `resolveTarget` closure (`ctx.fs.resolve(path, { cwd })`). Deterministic
+ * and PURE (no fs access): an absolute path (POSIX `/` or Windows `\`)
+ * resolves as-is; a relative path joins onto the passed cwd (the FACT 3b
+ * lazy-read basis the glue threads from `agent.session.header.cwd`).
+ * `..` segments collapse deterministically (no fs). Every call is recorded
+ * (`calls: [{ path, cwd? }]`) so a test can assert the exact cwd the glue
+ * threaded at RESOLVE time. `targetKey` is a plain `file://`-prefixed
+ * string standing in for the branded FsTargetKey (the glue unbrands with
+ * String()).
+ * @returns {{calls: Array<{path: string, cwd: string | undefined}>, resolve: (path: string, opts?: {cwd?: string}) => Promise<{targetKey: string, displayPath: string}>}}
+ */
+function makeFakeFs() {
+  const calls = []
+  function normalize(cwd) {
+    return String(cwd).replace(/\\/g, '/').replace(/\/+$/, '')
+  }
+  function targetOf(path, cwd) {
+    const p = String(path).replace(/\\/g, '/')
+    let joined
+    if (p.startsWith('/')) {
+      joined = p
+    } else if (typeof cwd === 'string' && cwd !== '') {
+      joined = normalize(cwd) + '/' + p
+    } else {
+      joined = '/' + p
+    }
+    const out = []
+    for (const s of joined.split('/')) {
+      if (s === '' || s === '.') continue
+      if (s === '..') out.pop()
+      else out.push(s)
+    }
+    const key = '/' + out.join('/')
+    return { targetKey: `file://${key}`, displayPath: key }
+  }
+  return {
+    calls,
+    async resolve(path, opts = {}) {
+      calls.push({
+        path: String(path),
+        cwd: opts.cwd === undefined ? undefined : String(opts.cwd),
+      })
+      return targetOf(path, opts.cwd)
+    },
+  }
+}
+
+/**
  * One agent-scoped ctx double: records every `on(event, listener)`
  * registration (with a working disposer), every plugin() fiber (a thenable
  * that resolves immediately, with a recording .dispose()), the tools
@@ -103,6 +158,13 @@ export async function loadGlueModule() {
  * systemPrompt builtin double (agent-scoped sections that shadow
  * same-named globals; duplicate scoped names in one agent scope throw;
  * assemble() composes the prompt layer the assertions read).
+ *
+ * alpha.2 (A6): the double ALSO carries the fake upstream `fs` seam
+ * (`ctx.fs.resolve`) — the permission adapter's `resolveTarget` closure
+ * basis (absent from the alpha.1 worlds: they never read it, so the
+ * addition is behavior-inert for them) and the `agent` back-reference
+ * (set by createAgentsDouble's handle factory — the `ctx.agent` DX
+ * accessor basis the glue's lazy `session.header.cwd` read uses).
  *
  * @param {Array<{name: string, order: number, text: string}>} [globalSections]
  *   the world's global prompt layer (one shared array per world).
@@ -161,6 +223,9 @@ function makeAgentCtx(globalSections) {
         .sort((a, b) => a.order - b.order || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
     },
   }
+  // alpha.2 (A6): the fake upstream fs seam (the permission adapter's
+  // resolveTarget closure basis; see makeFakeFs).
+  const fs = makeFakeFs()
   return {
     listeners,
     registeredTools,
@@ -170,6 +235,12 @@ function makeAgentCtx(globalSections) {
     toolRestrictions,
     opLog,
     registeredSkills,
+    fs,
+    // alpha.2 (A6): the agent back-reference — the handle factory sets it
+    // to the live agent (the `ctx.agent` DX accessor basis; undefined
+    // between construction and the handle wiring, as on a real context
+    // outside an initiator boundary).
+    agent: undefined,
     on(event, listener) {
       const entry = { event, listener, active: true }
       listeners.push(entry)
@@ -281,10 +352,21 @@ export function createAgentsDouble(options = {}) {
     { name: 'deployment:persona', order: 0, text: '' },
   ]
 
-  async function makeHandle(sessionId, { setup }) {
+  async function makeHandle(sessionId, { setup, meta }) {
     const ctx = makeAgentCtx(globalSections)
+    // alpha.2 (A6): the session header double (the lazy `cwd` read basis of
+    // the permission adapter's resolveTarget closure, FACT 3b). CREATE
+    // carries the meta.cwd the glue requested (the production session
+    // header materializes from exactly that meta); RESUME has no meta —
+    // the durable-header analogue is a deterministic per-session fixture
+    // workspace (a test may still mutate `header.cwd` to pin the lazy
+    // read). Mutable on purpose (the bridge is a plain JS double; the
+    // lazy-read test rewrites it between resolve calls).
+    const createCwd = meta !== undefined && meta !== null && typeof meta.cwd === 'string' && meta.cwd !== ''
+      ? meta.cwd
+      : join(WORKTREE_ROOT, 'fixture-ws', sessionId)
     const agent = {
-      session: { id: sessionId },
+      session: { id: sessionId, header: { cwd: createCwd } },
       ctx,
       followup(message) {
         followups.push({ sessionId, message })
@@ -296,6 +378,7 @@ export function createAgentsDouble(options = {}) {
         cancels.push({ sessionId, args })
       },
     }
+    ctx.agent = agent
     const handle = {
       agent,
       dispose() {
@@ -504,6 +587,15 @@ export async function observeAssembly(agentCtx) {
  *   (D1 v2: the ordinary-preset base-tool substrate for member agents;
  *   absent = the production host seam not wired: a member setup fails
  *   closed with the typed member-base-tools-unavailable error)
+ * @param {object} [options.controlServiceRef] the shared control-service
+ *   reference (alpha.2 A6, the teamToolsRef pattern): the caller-owned
+ *   `{ current }` object the glue reads LAZILY in agentSetup for
+ *   `capabilities.permissions` templates. The world returns the SAME
+ *   object (world.controlServiceRef) so a test can fill `.current` after
+ *   construction and before boot to pin the lazy read. Absent = the glue
+ *   dep is not passed (alpha.1/legacy worlds never read it; a
+ *   permissions-carrying template then fails closed with the typed
+ *   alpha2-permission-control-unavailable error).
  * @returns {Promise<object>} the world (binding + records + doubles).
  */
 export async function createLiveWorld(options = {}) {
@@ -568,6 +660,13 @@ export async function createLiveWorld(options = {}) {
     ...options.configOverrides,
   }
   const teamToolsRef = { current: options.teamTools !== undefined ? options.teamTools : undefined }
+  // alpha.2 (A6): the shared control-service reference (the teamToolsRef
+  // pattern — the caller owns the object; the world returns the SAME
+  // object so a test can fill `.current` after construction and before
+  // boot to pin the glue's LAZY read). Absent = the glue dep is not
+  // passed at all (the legacy/alpha.1 worlds never read it).
+  const controlServiceRef =
+    options.controlServiceRef !== undefined ? options.controlServiceRef : undefined
   const now = () => '2026-08-31T00:00:00.000Z'
   const binding = glue.createAgentBindings({
     agents,
@@ -575,6 +674,7 @@ export async function createLiveWorld(options = {}) {
     domain,
     config,
     teamToolsRef,
+    controlServiceRef,
     now,
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
     ...(options.agentPresets !== undefined ? { agentPresets: options.agentPresets } : {}),
@@ -587,6 +687,7 @@ export async function createLiveWorld(options = {}) {
     sessionPersistence,
     domain,
     teamToolsRef,
+    controlServiceRef,
     subagents: options.subagents,
     agentPresets: options.agentPresets,
     records: {

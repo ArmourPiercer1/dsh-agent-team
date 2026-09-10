@@ -57,6 +57,28 @@
  *                        setup callback reads teamToolsRef.current when it
  *                        runs — never before (absent -> the registration
  *                        loop is skipped, as before)
+ *   controlServiceRef (OPTIONAL) - the plain { current: <ControlService |
+ *                        undefined> } object the production host fills
+ *                        right after the root assembly constructs the
+ *                        durable ControlService (the teamToolsRef pattern:
+ *                        construction-time object, filled during root
+ *                        construction, read LAZILY when the setup callback
+ *                        runs). alpha.2 (plan §11): for every bound
+ *                        template that declares `capabilities.permissions`,
+ *                        the setup reads controlServiceRef.current and
+ *                        installs the A5 tools/pre-execute enforcement
+ *                        listener (installParameterPermissionListener) on
+ *                        this agent's scope; the returned disposer rides
+ *                        the shared toolDisposers drain (row stop + agent
+ *                        disposal), so the listener's lifetime is exactly
+ *                        the agent lifecycle (cold resume reinstalls).
+ *                        ABSENT / UNFILLED at setup time on a
+ *                        permissions-carrying template -> the setup fails
+ *                        closed with the typed
+ *                        alpha2-permission-control-unavailable error (a
+ *                        permissions agent never runs unguarded).
+ *                        Templates WITHOUT a permissions policy never
+ *                        read the ref (alpha.1 / legacy: zero listeners).
  *   now                - parity field (the row's clock); unused by the ported
  *                        glue paths, which derive time from the services
  *   subagents (OPTIONAL) - the DSH subagents service (SubagentRuntime):
@@ -206,6 +228,14 @@ import {
   filterMcpServers,
   registerTeamSkills,
 } from '../../../agent-setup/capability/index.js'
+// alpha.2 (plan §10/§11): the A5 tools/pre-execute enforcement adapter —
+// the frozen A2/A3/A4 composition (canonicalize -> static decision ->
+// ask: request/wait/guard over the durable Control plane, fail-closed
+// zero-effect, never returns {kind:'ask'}) the glue installs per agent
+// lifecycle — and ONLY for a bound template that declares
+// `capabilities.permissions` (absent policy = no listener: the alpha.1 /
+// legacy path stays byte-for-byte unchanged).
+import { installParameterPermissionListener } from '../../../operation-permission/index.js'
 
 /**
  * The leader instance id (packages/contracts LEADER_INSTANCE_ID). The
@@ -410,7 +440,7 @@ export function createAgentBindings(deps) {
   // D1 (v2): agentPresets is OPTIONAL (the host serves it as a lazy accessor;
   // a test world may omit it) — the member bind paths fail closed with the
   // typed member-base-tools-unavailable when it is absent or unusable.
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef } = deps
   if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
   if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
   if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
@@ -790,7 +820,10 @@ export function createAgentBindings(deps) {
   }
 
   /**
-   * The static template capabilities of one session (alpha.1).
+   * Locate the bound blueprint template of one session (alpha.1 core,
+   * extracted verbatim for alpha.2, plan §11 — the permission install
+   * needs the TEMPLATE itself, not just the static-capabilities
+   * projection, to read `capabilities.permissions` off it).
    *
    * P0-1 (hardening §3): resolution FAILS CLOSED. A resolution failure
    * (blueprint unavailable, leader template missing, templateId missing,
@@ -808,11 +841,11 @@ export function createAgentBindings(deps) {
    * @param {string} [teamRootSid] - the owning team root (absent = the boot root).
    * @param {string} [bindPath] - the T1 bind path (fresh-member / cold-member
    *   / fresh-root / cold-root); gates the hint (P0-1 §3.4).
-   * @returns {object} a StaticTemplateCapabilities ({ mode: 'legacy' } or
-   *   { mode: 'selective', teamTools, builtinToolDeny, skills, mcp }).
+   * @returns {object} the bound blueprint template object (the deep-frozen
+   *   LeaderTemplate / MemberTemplate of the bound snapshot).
    * @throws {Error} 'capability-template-unresolved' on a resolution failure.
    */
-  function resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid, bindPath) {
+  function locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath) {
     const blueprint = getBoundBlueprint()
     // P0-1 (hardening §3): an unavailable blueprint is a RESOLUTION failure,
     // not a legacy template — fail closed (the legacy 0.1.0-rc.1 behavior is
@@ -837,7 +870,7 @@ export function createAgentBindings(deps) {
           ...(instanceId !== undefined ? { instanceId } : {}),
         })
       }
-      return staticCapabilitiesOf(blueprint, leader)
+      return leader
     }
     // A MEMBER resolves through its DURABLE row (the backend truth).
     const members = domain.repositories.memberInstances.list(teamRoot)
@@ -869,7 +902,22 @@ export function createAgentBindings(deps) {
         templateId,
       })
     }
-    return staticCapabilitiesOf(blueprint, template)
+    return template
+  }
+
+  /**
+   * The static template capabilities of one session (alpha.1) — the thin
+   * projection of {@link locateTemplate} through `staticCapabilitiesOf`.
+   * The projection deliberately does NOT surface `capabilities.permissions`
+   * (FACT 3a: alpha.1 pins its exact shape — t1/t2/t3); alpha.2 reads the
+   * permission policy directly off the located template in the shared
+   * setup (one locate, both projections).
+   */
+  function resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid, bindPath) {
+    return staticCapabilitiesOf(
+      getBoundBlueprint(),
+      locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath),
+    )
   }
 
   /**
@@ -921,7 +969,17 @@ export function createAgentBindings(deps) {
       // fresh-create hint) -> the bound blueprint's per-template declaration.
       // LEGACY mode (the 0.1.0-rc.1 behavior) for every facet below when the
       // template declares no capabilities.
-      const capabilities = resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
+      //
+      // alpha.2 (plan §11): ONE locate serves BOTH projections — the
+      // alpha.1 static-capabilities projection AND the alpha.2
+      // `capabilities.permissions` policy (the deep-frozen, A1-normalized
+      // TemplatePermissionPolicy, read directly off the bound template —
+      // FACT 3a: the projection deliberately does not carry it). ABSENT
+      // policy = no permission listener at all (the alpha.1 / legacy path,
+      // byte-for-byte unchanged — the absent-permissions test is the proof).
+      const boundTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
+      const capabilities = staticCapabilitiesOf(getBoundBlueprint(), boundTemplate)
+      const permissionPolicy = boundTemplate.capabilities?.permissions
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
@@ -1038,6 +1096,74 @@ export function createAgentBindings(deps) {
         await reconcileMcp(agentCtx, state, true)
       }
       applyBoundaryRecords(state, modelView, mcpView)
+      // alpha.2 (plan §11.3): the tools/pre-execute permission enforcement
+      // (the A5 frozen adapter over the A2/A3/A4 APIs) — installed LAST in
+      // the setup, on THIS agent's scope only. The adapter returns the
+      // `ctx.on` disposer verbatim; it rides the shared `toolDisposers`
+      // drain, so the listener's lifetime is EXACTLY the agent lifecycle:
+      // a cold resume re-runs this setup and reinstalls on the new ctx;
+      // close() / agent disposal drains it (the agent-scope unwind covers
+      // the rest). The pipeline is fail-closed zero-effect: the listener
+      // never returns {kind:'ask'} — every non-allow outcome returns
+      // BEFORE next() (the tool body never runs without a durable allow).
+      //
+      // ABSENT policy -> install NOTHING (zero `tools/pre-execute`
+      // listeners: the alpha.1 / legacy behavior).
+      //
+      // PRESENT policy with an ABSENT control service (the ref not yet
+      // filled at setup time) -> FAIL CLOSED: the typed rejection
+      // propagates out of the AgentSetup callback and rolls the
+      // unpublished agent back (the AgentSetup contract) — a permissions
+      // agent never runs unguarded.
+      if (permissionPolicy !== undefined) {
+        const controlService =
+          controlServiceRef !== undefined && controlServiceRef !== null ? controlServiceRef.current : undefined
+        if (
+          controlService === undefined ||
+          controlService === null ||
+          typeof controlService.requestControl !== 'function' ||
+          typeof controlService.awaitControlDecision !== 'function' ||
+          typeof controlService.guardOperation !== 'function'
+        ) {
+          throw permissionControlUnavailable(sessionId, instanceId)
+        }
+        const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
+        // The routing bit (plan §9.5): leader install -> ask routes to
+        // user-approval (human-only resolver closure); member ->
+        // leader-approval (leader-or-human closure). `instanceId` is the
+        // durable identity for BOTH roles (instanceIdForSession: the
+        // leader position resolves to LEADER_INSTANCE_ID, a member to its
+        // durable row) — so caller and targetInstanceId share it.
+        const isLeader = sessionId === teamRoot
+        // FACT 3b (settled 2026-09-11): the session cwd is read LAZILY at
+        // resolve time, off the agent's live session header (materialized
+        // by pre-execute time on every bind path — create: meta.cwd, cold
+        // resume: the durable header) — the SAME basis the upstream file
+        // tools use (exec.agent?.session.header.cwd), never captured at
+        // install. The closure serves BOTH the operation canonicalization
+        // and the rule canonicalization (A5 R1/R2 — one cwd basis).
+        const resolveTarget = async (path) => {
+          const cwd = agentCtx.agent?.session?.header?.cwd
+          const target = await agentCtx.fs.resolve(
+            path,
+            typeof cwd === 'string' && cwd !== '' ? { cwd } : {},
+          )
+          return { key: String(target.targetKey), display: String(target.displayPath) }
+        }
+        const disposePermission = installParameterPermissionListener(agentCtx, {
+          policy: permissionPolicy,
+          resolveTarget,
+          controlService,
+          rootSessionId: teamRoot,
+          caller: { kind: 'instance', instanceId },
+          targetInstanceId: instanceId,
+          isLeader,
+          onObserve: (row) => {
+            observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
+          },
+        })
+        toolDisposers.push(disposePermission)
+      }
     }
   }
 
@@ -1908,6 +2034,28 @@ export function createAgentBindings(deps) {
     if (details.instanceId !== undefined) error.instanceId = String(details.instanceId)
     if (details.templateId !== undefined) error.templateId = String(details.templateId)
     observations.push(`p6t6: capability-template-unresolved for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // alpha.2 (plan §11): the typed fail-closed error for a bound template
+  // that DECLARES `capabilities.permissions` while the control service ref
+  // is ABSENT or UNFILLED at setup time. The rejection propagates out of
+  // the AgentSetup callback and rolls the unpublished agent back (the
+  // AgentSetup contract) — a permissions agent never runs unguarded (a
+  // fail-open permission grant is the defect). Only the alpha.2
+  // permissions path can reach it: a template without a policy installs
+  // nothing and never reads the ref (alpha.1 / legacy stays unchanged).
+  function permissionControlUnavailable(sessionId, instanceId) {
+    const parts = [
+      'the controlServiceRef is absent from the glue deps or its .current is unfilled at setup time',
+    ]
+    if (instanceId !== undefined) parts.push(`instanceId=${instanceId}`)
+    const error = new Error(`agent-bindings: alpha.2 permission control service unavailable for '${sessionId}' (${parts.join(', ')}) (code: alpha2-permission-control-unavailable)`)
+    error.code = 'alpha2-permission-control-unavailable'
+    if (instanceId !== undefined) error.instanceId = String(instanceId)
+    observations.push(
+      `alpha2-perm: permission-control-unavailable for ${sessionId} (instanceId=${instanceId})`,
+    )
     return error
   }
 
