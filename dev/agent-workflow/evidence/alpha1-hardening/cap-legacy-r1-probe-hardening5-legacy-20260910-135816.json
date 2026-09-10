@@ -1,0 +1,22 @@
+{
+  "stamp": "hardening5-legacy-20260910-135816",
+  "purpose": "R1 legacy-regression selection-set probe (H9): the shipped default my-team-bp-1 (no capabilities field) delivers the legacy FULL team-tool catalog to the leader — no per-teammate capability selection",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-caplegacy-hardening5-legacy-20260910-135816",
+  "rootSessionId": "team-root",
+  "health": {
+    "rootSessionId": "team-root",
+    "liveSessions": ["team-root"],
+    "toolCount": 10
+  },
+  "catalog": "catalog.list carries the SHIPPED DEFAULT blueprint my-team-bp-1 (legacy default in force)",
+  "selectionSetProbe": {
+    "method": "POST /__p6t6/tool {name, as, args:{}, callId} — classification: ok:true -> registered; ToolNotFoundError -> not-registered; other -> tool/agent-level error (evidence of liveness, not of catalog absence)",
+    "results": [
+      { "name": "team_delegate", "as": "team-root", "cls": "registered" },
+      { "name": "team_send_message", "as": "team-root", "cls": "registered" },
+      { "name": "team_list_members", "as": "team-root", "cls": "registered" },
+      { "name": "team_delegate", "as": "session-capa-a", "cls": "tool-error (session not live in this world — canary probe only, not an R1 assertion)" }
+    ]
+  },
+  "verdict": "R1 legacy regression PASS — full-10-catalog leader selection set intact after the alpha.1 hardening; no capability wiring active (bundle-layer shipped default stands, no user-layer override)"
+}

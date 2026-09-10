@@ -1,0 +1,81 @@
+alpha.1 hardening — environment cleanliness (H11)
+=================================================
+
+test-use DSH source (references/deepseek-harness-test-use)
+----------------------------------------------------------
+  role:        pristine upstream (the only allowed runtime source)
+  HEAD:        a66e470204  release(dsh): 0.1.2-rc.1
+  git status:  CLEAN (porcelain: 0 lines, verified at the end of the task)
+  => PRISTINE (H11 PASS)
+
+  note: AGENTS.md snapshot names the 0.1.2-rc.1 baseline as 76fda72979 (R122);
+  the live checkout HEAD is a66e470204 ("release(dsh): 0.1.2-rc.1"). Both are
+  the 0.1.2-rc.1 release point; the checkout is unmodified (clean status).
+
+stable dev instance (:3080 + D:\deepseek-harness\)
+--------------------------------------------------
+  node processes matching *deepseek-harness*: NONE found (verified at the
+  end of the task)
+  => untouched (zero-touch honored)
+
+DSH_HOME (test worlds)
+----------------------
+  all created UNDER the workspace (references/) — gitignored; none committed:
+    .dsh-test-cap-hardening-20260910-195432     (first attempt, schema-rejected blueprint: deny+items)
+    .dsh-test-cap-hardening2-20260910-200008    (fixed deny schema; non-empty builtinToolDeny -> the
+                                                 fail-closed abort, recorded in setup-failure.json —
+                                                 now the H5 live fail-closed evidence)
+    .dsh-test-cap-hardening3-20260910-202447    (deny [] fix; stale saved kit: seedMembers [] ->
+                                                 leader-only boot — the 9/21 run that exposed the
+                                                 stale-file divergence; dump-config is the
+                                                 authoritative record of what booted)
+    .dsh-test-cap-hardening4-20260910-134616    (set up but NEVER booted — stale byproduct: the
+                                                 setup ran before the teamSkills/seedMembers kit
+                                                 edits; superseded by hardening5/6)
+    .dsh-test-cap-hardening5-20260910-135625    (seedMembers + teamSkills present; the 25/27 run —
+                                                 exposed the P2.3 skill source defect live)
+    .dsh-test-cap-hardening6-20260910-140608    (FINAL capability world: P2.3 fix installed from
+                                                 commit d55ddb2; create phase 27/27, then the
+                                                 world patch bootPhase flipped create->resume and
+                                                 the cold-resume phase 16/16)
+    .dsh-test-caplegacy-hardening5-legacy-20260910-135816
+                                                 (FINAL legacy world: shipped bundle-layer default
+                                                 my-team-bp-1, no user-layer override; CAPLEGACY-
+                                                 READY: toolCount=10, catalog carries my-team-bp-1,
+                                                 leader full selection set — the R1 regression leg)
+  => in-workspace (TEST_METHODS.md workspace-write constraint honored)
+
+  blueprint note: the live DSH host registers ZERO global (built-in) tools in
+  this test profile, so `tools.restrict()` rejects any non-empty deny
+  ("unknown global tool ... known global tools: (none)") — the hardening2
+  abort (setup-failure.json) is the live fail-closed proof. The live kit boots
+  with builtinToolDeny: [] for all templates (restrict seam not called),
+  isolating N1/N3/N4 on the live host. The built-in deny PATH (non-empty deny
+  -> restrict call, lift-once disposer, deny-before-team-tool ordering) is
+  covered at the t4a glue level (F1/F3) and the t2 unit level, matching the
+  alpha.1 live precedent (cap-live-summary.md, R-notes).
+
+  teamSkills note: the FINAL worlds carry row-config teamSkills
+  [alpha1-real-skill] (plan 8.4 real-skill requirement) and the proven two
+  seedMembers rows (create phase only; the resume phase re-binds from the
+  durable MemberInstance rows). The P2.3 fix (skill registration carries the
+  load-time source string) is part of the installed branch commit d55ddb2.
+
+ports
+-----
+  3180  live DSH host (the smoke host) — free at the end of the task
+  3493  in-process mock DeepSeek endpoint — free at the end of the task
+  3494  cap-mcp (the minimal MCP server) — free at the end of the task
+  :3080 stable GUI (untouched)
+
+scratch
+-------
+  all .tmp-* files removed from the worktree root and the evidence dir; the
+  focused-test runner moved into the evidence dir as run-focused-t3-t4a.mjs
+  (cwd-anchored, re-verified 38/38 from the worktree root).
+
+CORE PATCH BUDGET
+-----------------
+  upstream DSH source: UNMODIFIED (the hardening fixes are all in the
+  dsh-agent-team plugin — packages/* + the user-layer patch).
+  => CORE PATCH BUDGET = 0 (H10 PASS)

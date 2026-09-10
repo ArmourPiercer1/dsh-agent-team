@@ -1,0 +1,14 @@
+[2026-09-10T13:56:25.106Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening5-20260910-135625
+[2026-09-10T13:56:25.108Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/alpha1-hardening) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening5-20260910-135625\repo.git
+[2026-09-10T13:56:33.239Z] bare repo cloned
+[2026-09-10T13:56:33.240Z] SPEC = git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening5-20260910-135625/repo.git#task/alpha1-hardening
+[2026-09-10T13:56:33.240Z] installing plugin (task/alpha1-hardening) …
+[2026-09-10T13:56:53.827Z] install exit=0
+[2026-09-10T13:56:53.827Z] install SUCCEEDED
+[2026-09-10T13:56:53.827Z] PASS installed package dir exists
+[2026-09-10T13:56:53.828Z] PASS installed version is 0.1.1-alpha.1 — 0.1.1-alpha.1
+[2026-09-10T13:56:53.828Z] PASS installed root manifest declares dsh.bundle.patch
+[2026-09-10T13:56:53.830Z] PASS dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-10T13:56:53.831Z] capability user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening5-20260910-135625\profiles\web\cordis.patch.yml
+[2026-09-10T13:56:53.832Z] assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-assertions-hardening5-20260910-135625.json
+[2026-09-10T13:56:53.832Z] CAP-SETUP-OK

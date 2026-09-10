@@ -1,0 +1,52 @@
+[2026-09-10T14:07:19.360Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening6-20260910-140608
+[2026-09-10T14:07:19.361Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening6-20260910-140608\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T14:07:19.362Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-assertions-hardening6-20260910-140608.json (branch=task/alpha1-hardening)
+[2026-09-10T14:07:19.365Z] profile already initialized (cap-setup)
+[2026-09-10T14:07:19.365Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T14:07:19.377Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T14:07:19.378Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T14:07:21.209Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=XwJBGHoi902ZfSBjcPrESgNCyFTSCYltL20DbV_cZjA
+[2026-09-10T14:07:21.220Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 68012
+[2026-09-10T14:07:23.301Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"cap-root","liveSessions":["cap-root","session-capa-a","session-capb-b"],"toolCount":10}
+[2026-09-10T14:07:23.317Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T14:07:23.403Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\dump-config-cap-hardening6-20260910-140608.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T14:07:23.415Z] catalog.list with cookie: HTTP 200
+[2026-09-10T14:07:23.415Z] catalog.list carries the capability blueprint cap-bp-1 (user-layer override in force)
+[2026-09-10T14:07:23.416Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-state-hardening6-20260910-140608.json
+[2026-09-10T14:07:23.416Z] CAP-READY
+[2026-09-10T14:09:52.532Z] stop: instance pid 68012 signaled
+[2026-09-10T14:09:52.548Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T14:09:52.548Z] shutdown: instance child exit
+[2026-09-10T14:09:52.551Z] shutdown: ports free — 3180:true 3493:true 3494:true
+[2026-09-10T14:09:53.044Z] stop: ports free — 3180:true 3493:true 3494:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=XwJBGHoi902ZfSBjcPrESgNCyFTSCYltL20DbV_cZjA
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T14:09:53.047Z] CAP-STOPPED
+[2026-09-10T14:10:11.131Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening6-20260910-140608
+[2026-09-10T14:10:11.132Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening6-20260910-140608\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T14:10:11.132Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-assertions-hardening6-20260910-140608.json (branch=task/alpha1-hardening)
+[2026-09-10T14:10:11.136Z] profile already initialized (cap-setup)
+[2026-09-10T14:10:11.137Z] p6t6 directive written (boot=1 phase=resume rootSessionId=cap-root)
+[2026-09-10T14:10:11.149Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T14:10:11.150Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T14:10:12.944Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=g-5J_D9Yev21xc20IwMdRdRJqvjrLaM04HxPsMQ5eJ0
+[2026-09-10T14:10:13.093Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 60196
+[2026-09-10T14:10:14.116Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"cap-root","liveSessions":["cap-root","session-capa-a","session-capb-b"],"toolCount":10}
+[2026-09-10T14:10:14.131Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T14:10:14.247Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\dump-config-cap-hardening6-20260910-140608.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T14:10:14.270Z] catalog.list with cookie: HTTP 200
+[2026-09-10T14:10:14.270Z] catalog.list carries the capability blueprint cap-bp-1 (user-layer override in force)
+[2026-09-10T14:10:14.270Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-state-hardening6-20260910-140608.json
+[2026-09-10T14:10:14.270Z] CAP-READY
+[2026-09-10T14:11:00.463Z] stop: instance pid 60196 signaled
+[2026-09-10T14:11:00.479Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T14:11:00.479Z] shutdown: instance child exit
+[2026-09-10T14:11:00.481Z] shutdown: ports free — 3180:true 3493:true 3494:true
+[2026-09-10T14:11:00.983Z] stop: ports free — 3180:true 3493:true 3494:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=g-5J_D9Yev21xc20IwMdRdRJqvjrLaM04HxPsMQ5eJ0
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T14:11:00.987Z] CAP-STOPPED

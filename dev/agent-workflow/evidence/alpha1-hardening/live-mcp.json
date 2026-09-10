@@ -1,0 +1,165 @@
+{
+  "gate": "H7",
+  "title": "real MCP mount/filter live — durable-side AND fail-closed + template gate",
+  "provenance": {
+    "generatedAt": "2026-09-10T14:14:03.229Z",
+    "stamp": "hardening6-20260910-140608",
+    "world": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening6-20260910-140608",
+    "branch": "task/alpha1-hardening",
+    "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening6-20260910-140608/repo.git#task/alpha1-hardening",
+    "origin": "http://127.0.0.1:3180",
+    "bootStartedAt": "2026-09-10T14:10:14.270Z",
+    "bootStoppedAt": "2026-09-10T14:11:00.986Z",
+    "installedVersion": null
+  },
+  "server": {
+    "name": "cap-mcp",
+    "port": 3494,
+    "from": "cap-boot.mjs in-process MCP server (ping tool)"
+  },
+  "liveHost": {
+    "from": "cap-check.mjs N4 (before/after the durable override)",
+    "beforeOverride": {
+      "cap-root": {
+        "mounted": false,
+        "allowed": false,
+        "serverName": "cap-mcp",
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        }
+      },
+      "session-capa-a": {
+        "mounted": false,
+        "allowed": false,
+        "serverName": "cap-mcp",
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        }
+      },
+      "session-capb-b": {
+        "mounted": false,
+        "allowed": false,
+        "serverName": "cap-mcp",
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        }
+      }
+    },
+    "afterOverride": {
+      "cap-root": {
+        "mounted": false,
+        "allowed": true,
+        "serverName": "cap-mcp"
+      },
+      "session-capa-a": {
+        "mounted": false,
+        "allowed": true,
+        "serverName": "cap-mcp"
+      },
+      "session-capb-b": {
+        "mounted": false,
+        "allowed": true,
+        "serverName": "cap-mcp"
+      }
+    },
+    "overrideAdmission": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "value": {
+          "recordId": "cap-mcp-allow",
+          "kind": "human-override",
+          "scope": "team",
+          "values": {
+            "mcp": {
+              "kind": "allow",
+              "items": [
+                "cap-mcp"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-10T14:09:44.716Z",
+          "supersededRecordId": null
+        }
+      }
+    },
+    "checks": [
+      {
+        "id": "n4-before-cap-root-fail-closed",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":false,\"serverName\":\"cap-mcp\",\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"}}"
+      },
+      {
+        "id": "n4-before-session-capa-a-fail-closed",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":false,\"serverName\":\"cap-mcp\",\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"}}"
+      },
+      {
+        "id": "n4-before-session-capb-b-fail-closed",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":false,\"serverName\":\"cap-mcp\",\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"}}"
+      },
+      {
+        "id": "n4-after-cap-root-allowed-durable",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+      },
+      {
+        "id": "n4-after-cap-root-mounted-lazy",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+      },
+      {
+        "id": "n4-after-session-capa-a-allowed-durable",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+      },
+      {
+        "id": "n4-after-session-capa-a-mounted-lazy",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+      },
+      {
+        "id": "n4-after-session-capb-b-allowed-durable",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+      },
+      {
+        "id": "n4-after-session-capb-b-mounted-lazy",
+        "expected": false,
+        "actual": false,
+        "ok": true,
+        "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+      }
+    ]
+  },
+  "semantics": {
+    "from": "cap-live-summary.md verified against the harness plugin.mjs",
+    "allowed": "mcpView.allowed = the DURABLE-side consumption view (team scope); NOT the AND with the template entry",
+    "mounted": "mcpFiber !== undefined = the LAZY mount (false until a model turn activates the MCP; the fail-closed model cell fires no turn here)",
+    "templateGate": "the template per-member mcp entry (member A deny / member B allow) is enforced at the filterMcpServers (mount) level — proven at the t4a glue level on the real MCP fiber"
+  },
+  "verdict": {
+    "overall": "H7 PASS"
+  }
+}

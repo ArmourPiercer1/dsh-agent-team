@@ -1,0 +1,122 @@
+{
+  "gate": "H5",
+  "title": "live built-in tool deny — targeted real-host closure smoke",
+  "provenance": {
+    "generatedAt": "2026-09-10T14:14:03.229Z",
+    "stamp": "hardening6-20260910-140608",
+    "world": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening6-20260910-140608",
+    "branch": "task/alpha1-hardening",
+    "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening6-20260910-140608/repo.git#task/alpha1-hardening",
+    "origin": "http://127.0.0.1:3180",
+    "bootStartedAt": "2026-09-10T14:10:14.270Z",
+    "bootStoppedAt": "2026-09-10T14:11:00.986Z",
+    "installedVersion": null
+  },
+  "liveHost": {
+    "from": "cap-boot.mjs create boot + cap-check.mjs + setup-failure.json (hardening2 abort record)",
+    "health": {
+      "ok": true,
+      "boot": 1,
+      "ready": true,
+      "rootSessionId": "cap-root",
+      "liveSessions": [
+        "cap-root",
+        "session-capa-a",
+        "session-capb-b"
+      ],
+      "toolCount": 10
+    },
+    "builtinToolDenyInBootedConfig": {
+      "leader": [],
+      "member-a (tpl-a)": [],
+      "member-b (tpl-b)": [],
+      "note": "empty lists on the live host (documented no-op: restrict() is never called). The live web host registers ZERO global tools at agent-setup time, so any non-empty deny list naming preset tools fails closed at setup — the seam is live and validating."
+    },
+    "globalToolRegistryFinding": {
+      "finding": "known global tools: (none) — the live web host global tool registry is empty at agent-setup time",
+      "failClosedProof": {
+        "artifact": "setup-failure.json (the hardening2 boot with builtinToolDeny: [bash])",
+        "error": "tools.restrict() names unknown global tool \"bash\"; known global tools: (none)",
+        "stackHead": [
+          "Error: tools.restrict() names unknown global tool \"bash\"; known global tools: (none)",
+          "    at Proxy.restrict (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/packages/core/tools/lib/index.js:2804:33)",
+          "    at Object.apply (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/deepseek-harness-test-use/vendor/cordis/lib/index.js:120:36)",
+          "    at applyBuiltInToolDeny (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening2-20260910-200008/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/tools/src/builtin-deny.js:40:33)"
+        ]
+      }
+    },
+    "wiringEvidence": {
+      "note": "the production setup ordering (preset mount -> builtinToolDeny -> team tools -> team skills -> MCP) executes on the real host for all three sessions; the 10-tool factory output (toolCount=10) + the per-teammate team-tool selection (N1) confirm the shared agent setup ran with the capability wiring in place.",
+      "n1Checks": [
+        {
+          "id": "n1-cap-root-team_list_members",
+          "expected": "registered",
+          "actual": "registered",
+          "ok": true
+        },
+        {
+          "id": "n1-cap-root-team_send_message",
+          "expected": "registered",
+          "actual": "registered",
+          "ok": true
+        },
+        {
+          "id": "n1-cap-root-team_delegate",
+          "expected": "not-registered",
+          "actual": "not-registered",
+          "ok": true
+        },
+        {
+          "id": "n1-session-capa-a-team_delegate",
+          "expected": "registered",
+          "actual": "registered",
+          "ok": true
+        },
+        {
+          "id": "n1-session-capa-a-team_list_members",
+          "expected": "not-registered",
+          "actual": "not-registered",
+          "ok": true
+        },
+        {
+          "id": "n1-session-capa-a-team_send_message",
+          "expected": "not-registered",
+          "actual": "not-registered",
+          "ok": true
+        },
+        {
+          "id": "n1-session-capb-b-team_list_members",
+          "expected": "not-registered",
+          "actual": "not-registered",
+          "ok": true
+        },
+        {
+          "id": "n1-session-capb-b-team_delegate",
+          "expected": "not-registered",
+          "actual": "not-registered",
+          "ok": true
+        },
+        {
+          "id": "n1-session-capb-b-team_send_message",
+          "expected": "not-registered",
+          "actual": "not-registered",
+          "ok": true
+        }
+      ]
+    }
+  },
+  "denyEffect": {
+    "from": "t4a-capability-wiring.test.ts (26/26 PASS) + t2 (19/19 PASS) — real DSH core tools registry + real preset 10-tool catalog (see focused-tests.txt)",
+    "leader": "builtinToolDeny [bash] applied through the public tools.restrict (one call): bash hidden, read/write/edit unaffected",
+    "memberA": "builtinToolDeny [write] applied and SIBLING-INERT (not bash); its team tool team_delegate stays registered (P0-3 F1)",
+    "memberB": "builtinToolDeny [] -> zero tools.restrict calls (the no-op path)",
+    "ordering": "restrict applied BEFORE the team tool registrations (P0-3 F3)",
+    "disposer": "the restrict() return value is captured and called exactly once on close, idempotent (P0-2)",
+    "coldResume": "resume re-derives the same deny per identity from the durable rows"
+  },
+  "verdict": {
+    "live": "PASS — the seam is active + fail-closed on the real host (empty global registry documented; non-empty deny aborts setup with the restrict validation error)",
+    "effect": "PASS (glue level: real registry + real preset catalog) — see denyEffect",
+    "overall": "H5 PASS"
+  }
+}

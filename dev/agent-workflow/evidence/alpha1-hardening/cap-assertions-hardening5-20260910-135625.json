@@ -1,0 +1,23 @@
+{
+  "installed package dir exists": {
+    "ok": true,
+    "detail": null
+  },
+  "installed version is 0.1.1-alpha.1": {
+    "ok": true,
+    "detail": "0.1.1-alpha.1"
+  },
+  "installed root manifest declares dsh.bundle.patch": {
+    "ok": true,
+    "detail": null
+  },
+  "dsh.profile.bundles AUTO-contains the dsh-agent-team bundle": {
+    "ok": true,
+    "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+  },
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening5-20260910-135625/repo.git#task/alpha1-hardening",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening5-20260910-135625",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening5-20260910-135625\\profiles\\web\\node_modules\\dsh-agent-team",
+  "branch": "task/alpha1-hardening",
+  "installExit": 0
+}

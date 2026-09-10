@@ -1,0 +1,23 @@
+[2026-09-10T14:11:34.323Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-legacy-assertions-hardening5-legacy-20260910-135816.json (branch=task/alpha1-hardening)
+[2026-09-10T14:11:34.327Z] profile already initialized (cap-legacy-setup)
+[2026-09-10T14:11:34.327Z] p6t6 directive written (boot=1 phase=create rootSessionId=team-root)
+[2026-09-10T14:11:34.338Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T14:11:36.962Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=gHwXl1Fcry--gScyWJZv0yOHC3DFAjTnn4bERYbLcyo
+[2026-09-10T14:11:36.993Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 77932
+[2026-09-10T14:11:38.015Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"team-root","liveSessions":["team-root"],"toolCount":10}
+[2026-09-10T14:11:38.030Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T14:11:38.119Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\dump-config-caplegacy-hardening5-legacy-20260910-135816.txt; rows={"dsh-agent-team (host row, SHIPPED default)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T14:11:38.156Z] catalog.list with cookie: HTTP 200
+[2026-09-10T14:11:38.156Z] catalog.list carries the SHIPPED DEFAULT blueprint my-team-bp-1 (legacy default in force)
+[2026-09-10T14:11:38.157Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-legacy-state-hardening5-legacy-20260910-135816.json
+[2026-09-10T14:11:38.157Z] CAPLEGACY-READY
+[2026-09-10T14:12:37.370Z] stop: instance pid 77932 signaled
+[2026-09-10T14:12:37.386Z] instance child exited (code=1)
+[2026-09-10T14:12:37.386Z] shutdown: instance child exit
+[2026-09-10T14:12:37.388Z] shutdown: ports free — 3180:true 3493:true
+[2026-09-10T14:12:37.879Z] stop: ports free — 3180:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=gHwXl1Fcry--gScyWJZv0yOHC3DFAjTnn4bERYbLcyo
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T14:12:37.882Z] CAPLEGACY-STOPPED

@@ -1,0 +1,28 @@
+﻿alpha.1 hardening — typecheck evidence (final state, commit d55ddb2, 2026-09-10)
+Command: pnpm typecheck (worktree .worktrees/alpha1-hardening)
+node.exe : $ pnpm -r run typecheck
+At C:\nvm4w\nodejs\pnpm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm -r run typecheck:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+
+typecheck exit: 0

@@ -1,0 +1,9 @@
+[2026-09-10T11:57:04.206Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening-20260910-195432
+[2026-09-10T11:57:04.207Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening-20260910-195432\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T11:57:04.208Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-assertions-hardening-20260910-195432.json (branch=task/alpha1-hardening)
+[2026-09-10T11:57:04.211Z] profile already initialized (cap-setup)
+[2026-09-10T11:57:04.212Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T11:57:04.223Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T11:57:04.224Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T11:57:07.574Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=d9BCjqRnEo0gEoEDW8kgLD6LPnYHD_vxH55-HnvVSp0
+[2026-09-10T11:57:07.585Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 104664

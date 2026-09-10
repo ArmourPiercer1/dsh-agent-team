@@ -1,0 +1,95 @@
+{
+  "gate": "H6",
+  "title": "real Team skill live — per-member agent-scope visibility",
+  "provenance": {
+    "generatedAt": "2026-09-10T14:14:03.229Z",
+    "stamp": "hardening6-20260910-140608",
+    "world": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening6-20260910-140608",
+    "branch": "task/alpha1-hardening",
+    "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening6-20260910-140608/repo.git#task/alpha1-hardening",
+    "origin": "http://127.0.0.1:3180",
+    "bootStartedAt": "2026-09-10T14:10:14.270Z",
+    "bootStoppedAt": "2026-09-10T14:11:00.986Z",
+    "installedVersion": null
+  },
+  "catalog": {
+    "from": "row config teamSkills (the narrowest production input point; validated by host.ts validateTeamPluginConfig)",
+    "registered": [
+      "alpha1-real-skill"
+    ],
+    "notInCatalogControl": "skill \"base\" (allowed by leader + member A) is NOT in the catalog -> alpha1 skip observation (wiring-active proof)"
+  },
+  "liveHost": {
+    "from": "cap-check.mjs N3 + N3b (real skill loadability through the model-facing `skill` tool, dsh-tool-skill)",
+    "wiringActive": {
+      "check": {
+        "id": "n3-skills-wiring-active",
+        "label": "alpha1 skill-skip observations present (wiring active)",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "detail": "observations=[\"alpha1: team skill 'base' skipped (not-in-catalog)\",\"alpha1: team skill 'base' skipped (not-in-catalog)\"]"
+      },
+      "observations": [
+        "alpha1: team skill 'base' skipped (not-in-catalog)",
+        "alpha1: team skill 'base' skipped (not-in-catalog)"
+      ]
+    },
+    "realSkillPerMemberScope": {
+      "memberA": "visible",
+      "memberB": "not-visible",
+      "leader": "error-UNKNOWN_TOOL",
+      "control": "not-visible"
+    },
+    "checks": [
+      {
+        "id": "n3b-real-skill-member-a-visible",
+        "expected": "visible",
+        "actual": "visible",
+        "ok": true,
+        "detail": "{\"ok\":true,\"value\":{\"name\":\"alpha1-real-skill\",\"provider\":\"runtime\",\"content\":\"alpha1-real-skill: the hardening live-smoke team skill. It is allowed by member A only, so its loadability in exactly one member scope is the"
+      },
+      {
+        "id": "n3b-real-skill-member-b-invisible",
+        "expected": "not-visible",
+        "actual": "not-visible",
+        "ok": true,
+        "detail": "{\"ok\":false,\"error\":{\"message\":\"skill \\\"alpha1-real-skill\\\" is unknown or no longer available\"}}"
+      },
+      {
+        "id": "n3b-real-skill-leader-invisible",
+        "expected": true,
+        "actual": true,
+        "ok": true,
+        "detail": "{\"ok\":false,\"error\":{\"message\":\"unknown tool \\\"skill\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}}"
+      },
+      {
+        "id": "n3b-real-skill-control-unknown",
+        "expected": "not-visible",
+        "actual": "not-visible",
+        "ok": true,
+        "detail": "{\"ok\":false,\"error\":{\"message\":\"skill \\\"cap-unknown-skill\\\" is unknown or no longer available\"}}"
+      }
+    ]
+  },
+  "scopeSemantics": {
+    "from": "dsh-skill SkillRegistry: ctx.skills.register() files into the CALLING context scope layer; the view merges global + the viewing scope chain, so an agent-scope registration is invisible to other agents and to the global layer",
+    "expectation": "alpha1-real-skill loadable ONLY in member A scope (its skills allow-list names it); not loadable in member B (skills deny — the clean no-global-leak proof: the skill tool is present, the skill is absent), in the leader (the root mounts no preset substrate by design — D1 v2: the root keeps exactly its current tool table, so the `skill` tool itself is absent there), or under an unknown name (control)"
+  },
+  "p2_3Fix": {
+    "from": "live smoke finding, fixed in this task (P2.3)",
+    "defect": "the registry register() defaults invocation + provider but NOT source; a runtime-registered skill without a source string is storable yet unloadable (get() validateDefinition threw: loaded skill \"alpha1-real-skill\" source must be a string)",
+    "fix": "skill-adapter.ts now registers {...def, source: def.source ?? \"runtime\"}; t4a P2.3 F1 pins the load-time completeness (27/27)"
+  },
+  "coldResume": {
+    "from": "cap-resume-check.mjs N5 N3b (after the phase=resume re-boot of the same world)",
+    "note": "the resume path re-drives the shared setup and re-registers the row-config teamSkills from the same catalog in the same agent scopes (t4a asserts the same re-derivation at the glue level)"
+  },
+  "closeDispose": {
+    "from": "t4a-capability-wiring.test.ts close() block (real seam): the skill registration is disposed on agent close",
+    "note": "the live p6t6 harness exposes no member-close route, so the close-dispose leg is glue-level; the cold-resume RE-appearance is verified live (cold-resume.json)"
+  },
+  "verdict": {
+    "overall": "H6 PASS"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "stamp": "hardening3-20260910-202447",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening3-20260910-202447",
+  "workspaceDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening3-20260910-202447\\workspace-cap",
+  "port": 3180,
+  "mockPort": 3493,
+  "mcpPort": 3494,
+  "origin": "http://127.0.0.1:3180",
+  "token": "SDK0YphUSrHYLtIkxZ7v9u2wRwf-8mIJGT4PU9ihkpg",
+  "cookie": "dsh-auth-t1vK1KKWKrI7Bl290d49Ueb7GDBoHGt2VNu3alfmdbk=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MCIsImlzc3VlZEF0IjoxNzg5MDQzMjE4NzAwLCJleHBpcmVzQXQiOjE3OTE2MzUyMTg3MDB9.GfKwftL5t0Hsa5pcqtR1EkorXX9AIvqB3kyTcP1asTk",
+  "instancePid": 3404,
+  "bootJobPid": 115784,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha1-hardening\\dev\\agent-workflow\\evidence\\alpha1-hardening\\instances\\instance-port3180.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha1-hardening\\dev\\agent-workflow\\evidence\\alpha1-hardening\\dump-config-cap-hardening3-20260910-202447.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-cap-hardening3-20260910-202447\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-hardening3-20260910-202447/repo.git#task/alpha1-hardening",
+  "branch": "task/alpha1-hardening",
+  "startedAt": "2026-09-10T12:26:59.856Z",
+  "stoppedAt": "2026-09-10T13:46:06.220Z"
+}

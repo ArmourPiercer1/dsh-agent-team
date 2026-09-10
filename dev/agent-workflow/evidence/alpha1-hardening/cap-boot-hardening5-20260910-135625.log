@@ -1,0 +1,26 @@
+[2026-09-10T13:57:24.747Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening5-20260910-135625
+[2026-09-10T13:57:24.748Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-hardening5-20260910-135625\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T13:57:24.749Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-assertions-hardening5-20260910-135625.json (branch=task/alpha1-hardening)
+[2026-09-10T13:57:24.752Z] profile already initialized (cap-setup)
+[2026-09-10T13:57:24.753Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T13:57:24.764Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T13:57:24.766Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T13:57:26.836Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=Cedvb1Q8uMi66oHYdDdmT59slGide3mtG0W3snoGels
+[2026-09-10T13:57:26.845Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 74224
+[2026-09-10T13:57:29.925Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"cap-root","liveSessions":["cap-root","session-capa-a","session-capb-b"],"toolCount":10}
+[2026-09-10T13:57:29.929Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T13:57:30.017Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\dump-config-cap-hardening5-20260910-135625.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T13:57:30.045Z] catalog.list with cookie: HTTP 200
+[2026-09-10T13:57:30.045Z] catalog.list carries the capability blueprint cap-bp-1 (user-layer override in force)
+[2026-09-10T13:57:30.046Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\dev\agent-workflow\evidence\alpha1-hardening\cap-state-hardening5-20260910-135625.json
+[2026-09-10T13:57:30.046Z] CAP-READY
+[2026-09-10T14:05:11.931Z] stop: instance pid 74224 signaled
+[2026-09-10T14:05:11.951Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T14:05:11.951Z] shutdown: instance child exit
+[2026-09-10T14:05:11.955Z] shutdown: ports free — 3180:true 3493:true 3494:true
+[2026-09-10T14:05:12.439Z] stop: ports free — 3180:true 3493:true 3494:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=Cedvb1Q8uMi66oHYdDdmT59slGide3mtG0W3snoGels
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T14:05:12.442Z] CAP-STOPPED

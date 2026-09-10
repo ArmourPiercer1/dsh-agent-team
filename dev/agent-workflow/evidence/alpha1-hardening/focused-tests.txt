@@ -1,0 +1,42 @@
+# alpha.1 hardening — focused test evidence (H1-H4, P2.3)
+# Runner: plain-node vitest-equivalent (scripts/run-tests.mjs); the shim's matcher
+# surface is toBe/toEqual/toBeGreaterThan/toThrow, so the new tests use those forms.
+# All lines below re-verified on the FINAL code state (after the P2.3 skill
+# source fix, commit d55ddb2) on 2026-09-10.
+
+## T3+T4a — P0-1/P0-3/P2.3 glue + P2.1/P2.2 adapters (targeted runner)
+# .tmp-run-t3-t4a.mjs (skips the pre-existing d5-instance-contract abort)
+PASS packages/runtime/test/t3-skills-mcp-adapter.test.ts (11 tests)
+PASS packages/runtime/test/t4a-capability-wiring.test.ts (27 tests: 24 prior + F3 + F1 + P2.3 F1)
+
+targeted: 38 passed, 0 failed, 38 total
+RESULT: PASS targeted (0 failures)
+
+## T2 — P0-2 restrict disposer (tools package, 19 tests)
+PASS packages\tools\test\t2-tool-selector-deny.test.ts (19 tests)
+run-tests (plain-node vitest-equivalent): 52 passed, 2 failed, 54 total, 454 ms
+(the 2 failures are pre-existing p6t6-bypass-scan matcher gaps, present at base)
+
+## T1 — P1 allow([]) (domain package, t1-capability-schema 11d/11e)
+FAIL packages\domain\test\t1-capability-schema.test.ts (10/17 tests)
+run-tests (plain-node vitest-equivalent): 318 passed, 11 failed, 329 total, 286 ms
+
+## T1 clarification
+The t1-capability-schema.test.ts file reports 10/17 failures, but those are
+PRE-EXISTING (present at base 2536f32, unrelated to this change): tests 1,2,3,
+7,8,9,10,11,11b,11c fail on (a) strict-YAML fixture parsing, (b) a
+metadata:null contract assertion, and (c) the shim's narrow matcher surface
+(toBeDefined/toBeUndefined/toContain). The two NEW hardening tests —
+11d (allow([]) E1-E3) and 11e (mixed allow([])/deny) — PASS (no 11d/11e
+failure lines in any run). Verified by re-running domain tests and grepping
+for 11d/11e failure lines (none).
+
+## P2.3 (this segment's live-smoke finding)
+The live closure smoke (hardening5 world) loaded the real team skill
+alpha1-real-skill through the model-facing `skill` tool and found the
+registry's load-time validation rejected the runtime registration:
+"loaded skill alpha1-real-skill source must be a string" (register()
+defaults invocation + provider but not source). Fix: the skill adapter now
+registers {...def, source: def.source ?? 'runtime'}; t4a gained P2.3 F1
+(the registered team skill definitions carry the load-time source string —
+member A + leader 'runtime', member B none). 27/27 PASS.

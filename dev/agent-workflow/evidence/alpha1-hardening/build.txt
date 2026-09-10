@@ -1,0 +1,47 @@
+﻿alpha.1 hardening — build evidence (final state, commit d55ddb2, 2026-09-10)
+Commands: pnpm build ; pnpm build:composition (worktree .worktrees/alpha1-hardening)
+node.exe : $ pnpm -r run build
+At C:\nvm4w\nodejs\pnpm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm -r run build:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/remote build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/tools build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+
+node.exe : $ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/cli
+ent/composition-shim && node scripts/check-artifacts-committed.mjs
+At C:\nvm4w\nodejs\pnpm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node scripts/...s-committed.mjs:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 87 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\packages\client\composition-shim\client-bundle.js (959026 B)
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\packages\client\composition-shim\index.js (node half)
+build-client-composition: wrote D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha1-hardening\packages\client\composition-shim\package.json
+[check-artifacts-committed] OK: 1056 files; committed install-surface artifacts match the fresh build
+

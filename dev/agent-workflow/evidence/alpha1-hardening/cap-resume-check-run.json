@@ -1,0 +1,135 @@
+{
+  "at": "2026-09-10T14:10:49.823Z",
+  "origin": "http://127.0.0.1:3180",
+  "checks": [
+    {
+      "id": "health-ok",
+      "label": "p6t6 health ok (cold resume)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "status=200 body={\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"cap-root\",\"liveSessions\":[\"cap-root\",\"session-capa-a\",\"session-capb-b\"],\"toolCount\":10}"
+    },
+    {
+      "id": "health-live-3-sessions",
+      "label": "leader + 2 seeded members live after resume",
+      "expected": 3,
+      "actual": 3,
+      "ok": true,
+      "detail": "liveSessions=[\"cap-root\",\"session-capa-a\",\"session-capb-b\"]"
+    },
+    {
+      "id": "blueprint-persists",
+      "label": "cap-bp-1 still in the catalog after resume",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "catalog=[\"cap-bp-1\"]"
+    },
+    {
+      "id": "n5-n1-cap-root-team_list_members",
+      "label": "N5 N1 cap-root team_list_members (after resume)",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n1-cap-root-team_send_message",
+      "label": "N5 N1 cap-root team_send_message (after resume)",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n1-cap-root-team_delegate",
+      "label": "N5 N1 cap-root team_delegate (after resume)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n1-session-capa-a-team_delegate",
+      "label": "N5 N1 session-capa-a team_delegate (after resume)",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n1-session-capa-a-team_list_members",
+      "label": "N5 N1 session-capa-a team_list_members (after resume)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n1-session-capb-b-team_list_members",
+      "label": "N5 N1 session-capb-b team_list_members (after resume)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n1-session-capb-b-team_delegate",
+      "label": "N5 N1 session-capb-b team_delegate (after resume)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n5-n3b-real-skill-member-a-persists",
+      "label": "alpha1-real-skill still loadable in member A scope after resume",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"name\":\"alpha1-real-skill\",\"provider\":\"runtime\",\"content\":\"alpha1-real-skill: the hardening live-smoke team skill. It is allowed by member A only, so its loadability in exactly one member scope is the"
+    },
+    {
+      "id": "n5-n3b-real-skill-member-b-still-invisible",
+      "label": "alpha1-real-skill still NOT loadable in member B scope after resume",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"ok\":false,\"error\":{\"message\":\"skill \\\"alpha1-real-skill\\\" is unknown or no longer available\"}}"
+    },
+    {
+      "id": "n5-n4-cap-root-mcp-allowed",
+      "label": "N5 N4 cap-root MCP durable-allowed persists (after resume)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"mounted\":true,\"serverName\":\"cap-mcp\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"cap-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: ef"
+    },
+    {
+      "id": "n5-n4-session-capa-a-mcp-allowed",
+      "label": "N5 N4 session-capa-a MCP durable-allowed persists (after resume)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"serverName\":\"cap-mcp\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"cap-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: e"
+    },
+    {
+      "id": "n5-n4-session-capb-b-mcp-allowed",
+      "label": "N5 N4 session-capb-b MCP durable-allowed persists (after resume)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"mounted\":true,\"serverName\":\"cap-mcp\",\"allowed\":true,\"source\":{\"layer\":\"humanOverride\",\"origin\":\"human\",\"recordId\":\"cap-mcp-allow\"},\"unavailable\":false,\"pendingNextBoundary\":[],\"explanation\":\"mcp: ef"
+    },
+    {
+      "id": "n5-n4-override-record-persists",
+      "label": "cap-mcp-allow override record persists",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "overrides=[\"cap-mcp-allow\"]"
+    }
+  ],
+  "failures": []
+}
