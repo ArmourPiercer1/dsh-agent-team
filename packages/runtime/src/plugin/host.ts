@@ -152,19 +152,25 @@ interface GlueModule {
      */
     readonly controlServiceRef?: { current: unknown }
     /**
-     * D1 (v2, optional additive): the DSH `agentPresets` public service
+     * D1 (v2 → v3, optional additive): the DSH `agentPresets` public service
      * surface — `mount(agentCtx, id?)` binds one agent scope to the ordinary
-     * preset composition (the file/shell base-tool substrate). The
-     * production host passes a LAZY accessor that resolves the service per
-     * mount call (the sessionPersistence wrapper pattern — immune to row
-     * apply-order); a composition without the service fails closed with the
-     * typed TEAM_PLUGIN_SERVICE_MISSING at the first member setup, and a
-     * TEST world that passes no dep at all gets the glue's own typed
-     * fail-closed (`member-base-tools-unavailable`). Members only (v2 scope):
-     * the root/leader paths never mount.
+     * preset composition (the file/shell base-tool substrate) and
+     * `composedPreset(agentCtx)` probes whether the agent already joined a
+     * preset (the v3 already-joined guard for the production host-session
+     * root, composed by the web setup — the roster's mount is the one bind
+     * and refuses a second). The production host passes a LAZY accessor that
+     * resolves the service per call (the sessionPersistence wrapper pattern
+     * — immune to row apply-order); a composition without the service fails
+     * closed with the typed TEAM_PLUGIN_SERVICE_MISSING at the first setup
+     * mount, and a TEST world that passes no dep at all gets the glue's own
+     * typed fail-closed (`member-base-tools-unavailable`). Members (v2) AND
+     * root bind paths (v3: a plugin-created root otherwise has no base
+     * tools and the leader file lanes are unreachable); an already-joined
+     * agent keeps its existing composition (skip + observation).
      */
     readonly agentPresets?: {
       mount(agentCtx: unknown, presetId?: string): Promise<unknown>
+      composedPreset?(agentCtx: unknown): string | undefined
     }
     /**
      * alpha.2 (A6 live fix V1-1, optional additive): the per-agent `fs` seam
@@ -385,6 +391,18 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   ) {
     fail('memberPresetId must be a non-empty string when present (absent = the deployment default preset)')
   }
+  // D1 (v3): the ROOT (leader) preset id — the exact mirror of
+  // memberPresetId for the root bind paths (the plugin-created leader
+  // mounts its ordinary base tools the same way the members do; a
+  // plugin-created root otherwise has no base tools and the leader file
+  // lanes are unreachable — plan §13-L4 / §12.3). Absent = the deployment
+  // default preset; present = a non-empty string.
+  if (
+    c.rootPresetId !== undefined &&
+    (typeof c.rootPresetId !== 'string' || c.rootPresetId.length === 0)
+  ) {
+    fail('rootPresetId must be a non-empty string when present (absent = the deployment default preset)')
+  }
   // alpha.1 (plan §8.2): the Team-managed skill definitions are an
   // OPTIONAL additive field — absent (undefined) = the empty catalog (no
   // Team-managed skills materialize); when present every entry must be a
@@ -584,19 +602,23 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     },
   }
 
-  // D1 (v2): the lazy agentPresets accessor (served to the glue under its
-  // `agentPresets` deps key as `mount`): resolved per call so the first
-  // member setup — long after the stock host is fully up — observes a
-  // settled service, not a concurrent profile load (the web profile's
-  // `agent-presets` row provides the service on its own fiber). A
+  // D1 (v2 → v3): the lazy agentPresets accessor (served to the glue under
+  // its `agentPresets` deps key as `mount` + `composedPreset`): resolved per
+  // call so the first agent setup — long after the stock host is fully up —
+  // observes a settled service, not a concurrent profile load (the web
+  // profile's `agent-presets` row provides the service on its own fiber). A
   // composition WITHOUT the service fails closed with a stable code at the
-  // FIRST member mount instead of a TypeError — and, through the setup
-  // rejection, the unpublished member agent rolls back (the AgentSetup
-  // contract): a member must never silently run without its ordinary base
-  // tools (the D1 defect). Deliberately NOT in the hard `inject` array:
-  // parking this row on an optional service would break compositions that
-  // never create members; the lazy read + setup-time fail-closed is the
-  // additive pattern (cf. the pre-S5A sessionPersistence row).
+  // FIRST setup mount instead of a TypeError — and, through the setup
+  // rejection, the unpublished agent rolls back (the AgentSetup contract):
+  // an agent must never silently run without its ordinary base tools (the
+  // D1 defect, v2 members / v3 root). `composedPreset` is the v3
+  // already-joined probe: NON-THROWING (absent service or absent method →
+  // `undefined` = unjoined → the mount runs), so the glue's guard stays
+  // inert on a service-less composition. Deliberately NOT in the hard
+  // `inject` array: parking this row on an optional service would break
+  // compositions that never create agents; the lazy read + setup-time
+  // fail-closed is the additive pattern (cf. the pre-S5A sessionPersistence
+  // row).
   const agentPresets = {
     mount(agentCtx: unknown, presetId?: string): Promise<unknown> {
       const svc = ctx.get('agentPresets') as
@@ -606,10 +628,20 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       if (svc === undefined || svc === null || typeof svc.mount !== 'function') {
         throw new TeamPluginError(
           TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
-          'the "agentPresets" public service is absent (or lacks mount) — it is resolved lazily per call and must be up before a member agent setup mounts its ordinary preset',
+          'the "agentPresets" public service is absent (or lacks mount) — it is resolved lazily per call and must be up before an agent setup mounts its ordinary preset',
         )
       }
       return svc.mount(agentCtx, presetId)
+    },
+    composedPreset(agentCtx: unknown): string | undefined {
+      const svc = ctx.get('agentPresets') as
+        | { composedPreset?: (agentCtx: unknown) => string | undefined }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.composedPreset !== 'function') {
+        return undefined
+      }
+      return svc.composedPreset(agentCtx)
     },
   }
 

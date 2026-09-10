@@ -516,7 +516,8 @@ export function createSubagentsDouble(options = {}) {
 
 /**
  * The agentPresets service double (the DSH AgentPresets public service —
- * the ordinary-preset base-tool substrate for member agents, D1 v2):
+ * the ordinary-preset base-tool substrate for the team-CREATED agents,
+ * D1 v2 → v3: member agents (v2) AND the root agent (v3)):
  * records every `mount(agentCtx, presetId)` call (`presetId` undefined =
  * the deployment default the service resolves itself); a configurable
  * rejection (the real service rejects on an unknown preset id).
@@ -583,10 +584,14 @@ export async function observeAssembly(agentCtx) {
  * @param {object} [options.agents] extra agents-double options (whenIdleBehavior)
  * @param {object} [options.subagents] the subagents service double (absent = the
  *   production host seam not wired: drain is typed fail-closed)
- * @param {object} [options.agentPresets] the agentPresets service double
- *   (D1 v2: the ordinary-preset base-tool substrate for member agents;
- *   absent = the production host seam not wired: a member setup fails
- *   closed with the typed member-base-tools-unavailable error)
+ * @param {object|null} [options.agentPresets] the agentPresets service
+ *   double (D1 v2 → v3: the ordinary-preset base-tool substrate the
+ *   MEMBER agents (v2) AND the ROOT agent (v3) mount). UNDEFINED (the
+ *   default) = a RECORDING double the bridge supplies (the v3 root mount
+ *   runs in every world; the returned world.agentPresets is that double).
+ *   NULL = the glue dep is omitted entirely (the production host seam not
+ *   wired: the first setup fails closed with the typed
+ *   member-base-tools-unavailable error).
  * @param {object} [options.controlServiceRef] the shared control-service
  *   reference (alpha.2 A6, the teamToolsRef pattern): the caller-owned
  *   `{ current }` object the glue reads LAZILY in agentSetup for
@@ -667,6 +672,15 @@ export async function createLiveWorld(options = {}) {
   // passed at all (the legacy/alpha.1 worlds never read it).
   const controlServiceRef =
     options.controlServiceRef !== undefined ? options.controlServiceRef : undefined
+  // D1 (v3): the agentPresets service double — the ordinary-preset base-tool
+  // substrate the team-CREATED agents mount: the MEMBER agents (v2) AND the
+  // ROOT agent (v3). DEFAULT (options.agentPresets === undefined) = a
+  // RECORDING double: the v3 root mount runs in EVERY world, so a world
+  // without the service at all would fail closed at the root creation.
+  // options.agentPresets === null OMITS the glue dep entirely (the
+  // production host seam not wired — the typed fail-closed leg).
+  const agentPresetsDouble =
+    options.agentPresets === undefined ? createAgentPresetsDouble() : options.agentPresets
   const now = () => '2026-08-31T00:00:00.000Z'
   const binding = glue.createAgentBindings({
     agents,
@@ -677,7 +691,9 @@ export async function createLiveWorld(options = {}) {
     controlServiceRef,
     now,
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
-    ...(options.agentPresets !== undefined ? { agentPresets: options.agentPresets } : {}),
+    ...(agentPresetsDouble !== null && agentPresetsDouble !== undefined
+      ? { agentPresets: agentPresetsDouble }
+      : {}),
     // alpha.2 (A6, V1-1): the per-agent fs seam accessor — routes to each
     // agent ctx double's OWN fake fs (makeAgentCtx attaches makeFakeFs()),
     // so per-agent call-record assertions keep working (a6a's
@@ -698,7 +714,7 @@ export async function createLiveWorld(options = {}) {
     teamToolsRef,
     controlServiceRef,
     subagents: options.subagents,
-    agentPresets: options.agentPresets,
+    agentPresets: agentPresetsDouble,
     records: {
       creates: agents.creates,
       resumes: agents.resumes,

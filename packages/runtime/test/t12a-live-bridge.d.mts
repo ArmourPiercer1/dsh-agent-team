@@ -235,7 +235,7 @@ export interface SubagentsDouble {
   listDescendants(rootSessionId: string): Promise<readonly object[]>
 }
 
-/** One recorded agentPresets.mount call (D1 v2: the member base tools). */
+/** One recorded agentPresets.mount call (D1 v2 → v3: the member AND root base tools). */
 export interface RecordedPresetMount {
   readonly agentCtx: unknown
   /** The preset id passed through (undefined = the deployment default). */
@@ -250,7 +250,10 @@ export interface AgentPresetsDoubleOptions {
 }
 
 /** The agentPresets service double (the DSH AgentPresets public service — the
- *  ordinary-preset base-tool substrate for member agents, D1 v2). */
+ *  ordinary-preset base-tool substrate for the team-CREATED agents,
+ *  D1 v2 → v3: member agents (v2) AND the root agent (v3)). NO composedPreset
+ *  method on the double: the glue's v3 already-joined probe sees no method
+ *  → unjoined → the mount records as usual. */
 export interface AgentPresetsDouble {
   readonly mounts: RecordedPresetMount[]
   mount(agentCtx: unknown, presetId?: string): Promise<object>
@@ -351,9 +354,12 @@ export interface LiveWorld {
    *  LAZY read. */
   readonly controlServiceRef: { current: unknown } | undefined
   readonly subagents: SubagentsDouble | undefined
-  /** D1 v2: the agentPresets service double (absent = the host seam not wired: a
-   *  member setup fails closed with the typed member-base-tools-unavailable). */
-  readonly agentPresets: AgentPresetsDouble | undefined
+  /** D1 v3: the EFFECTIVE agentPresets service double — the caller's double
+   *  when passed, the bridge's default RECORDING double when omitted
+   *  (UNDEFINED), or NULL when the caller omitted the glue dep entirely
+   *  (the host seam not wired: the first setup fails closed with the typed
+   *  member-base-tools-unavailable). */
+  readonly agentPresets: AgentPresetsDouble | null
   readonly records: {
     readonly creates: RecordedCreate[]
     readonly resumes: RecordedResume[]
@@ -385,8 +391,12 @@ export interface LiveWorldOptions {
   readonly teamTools?: { readonly tools: readonly unknown[] }
   readonly agents?: AgentsDoubleOptions
   readonly subagents?: SubagentsDouble
-  /** D1 v2: the agentPresets service double (the member base-tool substrate). */
-  readonly agentPresets?: AgentPresetsDouble
+  /** D1 v2 → v3: the agentPresets service double (the ordinary-preset
+   *  base-tool substrate the MEMBER agents (v2) AND the ROOT agent (v3)
+   *  mount). UNDEFINED (the default) = the bridge supplies a RECORDING
+   *  double (the v3 root mount runs in every world). NULL = the glue dep
+   *  is omitted entirely (the typed fail-closed leg). */
+  readonly agentPresets?: AgentPresetsDouble | null
   /** alpha.2 (A6): the caller-owned shared control-service reference
    *  (the teamToolsRef pattern) — passed through to the glue verbatim and
    *  returned on the world (see `LiveWorld.controlServiceRef`). Absent =
@@ -430,7 +440,7 @@ export declare function createDomainDouble(params?: DomainDoubleParams): Promise
 /** Build the subagents service double. */
 export declare function createSubagentsDouble(options?: SubagentsDoubleOptions): SubagentsDouble
 
-/** Build the agentPresets service double (the ordinary-preset base-tool substrate, D1 v2). */
+/** Build the agentPresets service double (the ordinary-preset base-tool substrate, D1 v2 → v3). */
 export declare function createAgentPresetsDouble(options?: AgentPresetsDoubleOptions): AgentPresetsDouble
 
 /**

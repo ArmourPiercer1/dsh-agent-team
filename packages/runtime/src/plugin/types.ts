@@ -252,16 +252,35 @@ export interface TeamPluginConfig {
    * D1 (v2) — the AgentPreset id the MEMBER agents mount for their ordinary
    * base tools (the file/shell substrate) IN ADDITION to the ten team tools:
    * the public `agentPresets.mount(agentCtx, id?)` seam, called inside the
-   * shared agent setup on the member bind paths only (members-only v2 scope —
-   * the root/leader paths never mount). `undefined` (the default) means mount
-   * with the DEPLOYMENT DEFAULT preset — the glue passes NO id to the service,
-   * which resolves its own `defaultId` (the web bundle: `standard`). The
-   * service is an additive optional glue dep: a composition without it fails
-   * closed on the member path with the typed
-   * `member-base-tools-unavailable` (a member must never silently run without
-   * its base tools).
+   * shared agent setup on the member bind paths (fresh-member / cold-member).
+   * `undefined` (the default) means mount with the DEPLOYMENT DEFAULT preset
+   * — the glue passes NO id to the service, which resolves its own
+   * `defaultId` (the web bundle: `standard`). The service is an additive
+   * optional glue dep: a composition without it fails closed on the member
+   * path with the typed `member-base-tools-unavailable` (a member must never
+   * silently run without its base tools).
    */
   readonly memberPresetId?: string
+  /**
+   * D1 (v3) — the AgentPreset id the ROOT (leader) agent mounts for its
+   * ordinary base tools, the exact mirror of `memberPresetId` for the root
+   * bind paths (fresh-root / cold-root): a plugin-created root (team.create
+   * / the p6t6 worlds) otherwise carries ONLY the ten team tools and every
+   * leader file op dies with `unknown tool` — the leader file lanes of plan
+   * §12.1/§12.3 (allow read executes; ask write → user-approval) are
+   * unreachable (the V1 live matrix's verification finding, ruled a
+   * product fix citing D1 v2 + plan §13-L4/§12.3). An agent that ALREADY
+   * joined a preset (the production host-session root, composed by the web
+   * setup) keeps its existing composition: the guard probes the optional
+   * `agentPresets.composedPreset` and skips the mount with an observation
+   * (the roster's mount is the one bind and refuses a second).
+   * `undefined` (the default) = the DEPLOYMENT DEFAULT preset (the glue
+   * passes no id). A composition without the service fails closed on the
+   * root path with the typed `root-base-tools-unavailable` at the FIRST
+   * setup (zero partial state — no member is created before the root
+   * fails).
+   */
+  readonly rootPresetId?: string
   /**
    * T12-B1 — explicit TEST FIXTURE mode (plan §7-B1 "test fixture mode"):
    * when `true`, the `create` boot phase seeds the frozen deterministic

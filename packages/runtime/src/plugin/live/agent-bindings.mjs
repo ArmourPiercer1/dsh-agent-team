@@ -92,22 +92,34 @@
  *                        (additive; the glue reads deps.subagents
  *                        defensively).
  *   agentPresets (OPTIONAL) - the DSH agentPresets public service surface
- *                        { mount(agentCtx, id?) }: D1 (v2) - the ordinary
- *                        preset base-tool substrate (file/shell) the MEMBER
- *                        agents mount IN ADDITION to the ten team tools.
- *                        host.ts passes a LAZY accessor that resolves the
- *                        service per mount call (the sessionPersistence
- *                        wrapper pattern; a composition without the service
- *                        fails closed with the typed
+ *                        { mount(agentCtx, id?), composedPreset?(agentCtx)
+ *                        }: D1 (v2 -> v3) - the ordinary preset base-tool
+ *                        substrate (file/shell) the MEMBER agents (v2) AND
+ *                        the ROOT (leader) agents (v3) mount IN ADDITION to
+ *                        the ten team tools. host.ts passes a LAZY accessor
+ *                        that resolves the service per call (the
+ *                        sessionPersistence wrapper pattern; a composition
+ *                        without the service fails closed with the typed
  *                        TEAM_PLUGIN_SERVICE_MISSING). The shared agent
- *                        setup calls it on the MEMBER bind paths ONLY
- *                        (fresh-member / cold-member - v2 scope: the root
- *                        paths never mount); config.memberPresetId absent
- *                        (undefined) = mount with the deployment default
- *                        (the glue passes no id). ABSENT OR UNUSABLE on a
- *                        member path -> the setup fails closed with the
- *                        typed member-base-tools-unavailable error (a
- *                        member must never silently run without its base
+ *                        setup calls mount on the MEMBER bind paths
+ *                        (fresh-member / cold-member) AND the ROOT bind
+ *                        paths (fresh-root / cold-root - v3: a plugin-
+ *                        created root otherwise has no base tools and the
+ *                        leader file lanes are unreachable); an agent that
+ *                        ALREADY joined a preset (the production
+ *                        host-session root, composed by the web setup - the
+ *                        roster's mount is the one bind and refuses a
+ *                        second) is detected through the OPTIONAL
+ *                        composedPreset(agentCtx) probe and keeps its
+ *                        existing composition (observation, no mount).
+ *                        config.memberPresetId (members) /
+ *                        config.rootPresetId (root) absent (undefined) =
+ *                        mount with the deployment default (the glue
+ *                        passes no id). ABSENT OR UNUSABLE -> the setup
+ *                        fails closed with the typed
+ *                        member-base-tools-unavailable (member paths) or
+ *                        root-base-tools-unavailable (root paths) error -
+ *                        an agent must never silently run without its base
  *                        tools - the setup rejection rolls the unpublished
  *                        agent back, the AgentSetup contract).
  *
@@ -1022,33 +1034,73 @@ export function createAgentBindings(deps) {
       }
       consumptionState.set(sessionId, state)
       toolDisposers.push(installModelSelection(agentCtx, ref))
-      // D1 (v2): the member base tools — on the MEMBER bind paths only,
-      // mount the ordinary AgentPreset substrate (the file/shell base tools)
-      // on the member's agent scope, IN ADDITION to the ten team tools the
-      // loop below registers. The ordering mirrors the upstream
-      // session-controller composition (model selection, then the preset
-      // mount, then the Team's own registrations). v2 scope is members
-      // ONLY: the root (leader) bind paths never mount — the root keeps
-      // exactly today's tool table.
+      // D1 (v2 → v3): the ordinary base tools (the ordinary AgentPreset
+      // substrate — file/shell) mount on the MEMBER bind paths (v2:
+      // fresh-member / cold-member) AND the ROOT bind paths (v3:
+      // fresh-root / cold-root), on the agent scope, IN ADDITION to the
+      // ten team tools the loop below registers. The ordering mirrors the
+      // upstream session-controller composition (model selection, then the
+      // preset mount, then the Team's own registrations).
       //
-      // config.memberPresetId absent (undefined) = the deployment DEFAULT
-      // preset: the glue passes no id and the service resolves its own
-      // defaultId (the web bundle: standard) — the glue never invents an id.
+      // v3 rationale (the V1 live matrix, plan §12.1/§12.3): the leader's
+      // file lanes (allow read A executes; ask write C creates the
+      // user-approval request) need the base tools on the leader agent. A
+      // plugin-created root (team.create / the p6t6 worlds) otherwise
+      // carries ONLY the ten team tools and every leader file op dies with
+      // `unknown tool` — the user-approval lane is unreachable. The
+      // production bound root (the host session's agent) already joined its
+      // preset through the web setup: the already-joined guard below keeps
+      // it on that composition (the roster's mount is the ONE bind and
+      // refuses a second).
       //
-      // FAIL CLOSED: a member setup without the presets service (absent or
-      // unusable) must never silently deliver a base-tool-less member (the
-      // D1 defect). The typed rejection propagates out of the AgentSetup
-      // callback, which rolls the unpublished agent back (the AgentSetup
-      // contract) — the member never runs.
-      if (bindPath === 'fresh-member' || bindPath === 'cold-member') {
+      // config.rootPresetId / config.memberPresetId absent (undefined) =
+      // the deployment DEFAULT preset: the glue passes no id and the
+      // service resolves its own defaultId (the web bundle: standard)
+      // — the glue never invents an id.
+      //
+      // FAIL CLOSED: a setup without the presets service (absent or
+      // unusable) must never silently deliver a base-tool-less agent. The
+      // typed rejection propagates out of the AgentSetup callback, which
+      // rolls the unpublished agent back (the AgentSetup contract) — the
+      // agent never runs.
+      if (
+        bindPath === 'fresh-member' ||
+        bindPath === 'cold-member' ||
+        bindPath === 'fresh-root' ||
+        bindPath === 'cold-root'
+      ) {
+        const isRoot = bindPath === 'fresh-root' || bindPath === 'cold-root'
         const presets = agentPresets
         if (presets === undefined || presets === null || typeof presets.mount !== 'function') {
-          throw memberBaseToolsUnavailable(
-            sessionId,
-            'the agentPresets service is absent from the glue deps (or lacks a callable mount) — a member must never run without its ordinary base tools',
-          )
+          const reason =
+            'the agentPresets service is absent from the glue deps (or lacks a callable mount) — ' +
+            (isRoot
+              ? 'the leader (root) must never run without its ordinary base tools'
+              : 'a member must never run without its ordinary base tools')
+          throw isRoot
+            ? rootBaseToolsUnavailable(sessionId, reason)
+            : memberBaseToolsUnavailable(sessionId, reason)
         }
-        await presets.mount(agentCtx, config.memberPresetId)
+        // The already-joined guard (v3): an agent that already holds a
+        // preset composition keeps it — the roster's mount is the ONE bind
+        // and a second mount would throw (the production host-session root
+        // is composed by the web setup before the team row adopts it).
+        // The probe is OPTIONAL: a service without composedPreset reports
+        // unjoined (the mount runs; the t12a doubles take this path). A
+        // skip is an observation, never an error.
+        if (typeof presets.composedPreset === 'function' && presets.composedPreset(agentCtx) !== undefined) {
+          observations.push(
+            `d1v3: base-tool preset mount skipped for '${sessionId}' (${bindPath}) — the agent is already joined to a preset`,
+          )
+        } else {
+          // v3: the root mounts config.rootPresetId and the member mounts
+          // config.memberPresetId — each ABSENT (undefined) selects the
+          // deployment DEFAULT preset (the glue passes no id; the service
+          // resolves its own defaultId, the web bundle: standard). The
+          // glue never invents an id (the D1 v2 member semantics, extended
+          // to the root per the ruling citing D1 v2 + plan §13-L4/§12.3).
+          await presets.mount(agentCtx, isRoot ? config.rootPresetId : config.memberPresetId)
+        }
       }
       // P0-3 (hardening §5): the built-in tool deny blacklist — applied
       // BEFORE the Team tool scoped registrations (the frozen ordering:
@@ -2054,6 +2106,23 @@ export function createAgentBindings(deps) {
     const error = new Error(`agent-bindings: member base tools unavailable for '${sessionId}': ${reason} (code: member-base-tools-unavailable)`)
     error.code = 'member-base-tools-unavailable'
     observations.push(`p6t6: member-base-tools-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // D1 (v3): the typed fail-closed error for a ROOT (leader) setup that
+  // cannot mount its ordinary preset substrate (the agentPresets service
+  // absent or unusable). Carries code 'root-base-tools-unavailable'; the
+  // rejection propagates out of the AgentSetup callback, which rolls the
+  // unpublished agent back (the AgentSetup contract) — the leader never
+  // runs without its base tools (the D1 v3 extension: a plugin-created
+  // root otherwise has no base tools and the leader file lanes are
+  // unreachable — plan §13-L4 / §12.3; the ruling cites D1 v2 + plan
+  // L4/§12.3). Zero partial state: the boot rejection lands at the FIRST
+  // setup (the root), before any member is created.
+  function rootBaseToolsUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: root base tools unavailable for '${sessionId}': ${reason} (code: root-base-tools-unavailable)`)
+    error.code = 'root-base-tools-unavailable'
+    observations.push(`p6t6: root-base-tools-unavailable for ${sessionId}: ${reason}`)
     return error
   }
 
