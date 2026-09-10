@@ -1,6 +1,6 @@
 {
   "name": "@dsh-agent-team/legacy",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.1-alpha.1",
   "private": true,
   "description": "Reference-only empty slot: vNext never depends on legacy code (see README.md and docs/migration).",
   "type": "module",
