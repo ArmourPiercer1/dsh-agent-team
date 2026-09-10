@@ -19,6 +19,7 @@
     "member-residency",
     "messaging",
     "mutation",
+    "operation-permission",
     "projection",
     "root-binding",
     "policy-adapter.ts"
