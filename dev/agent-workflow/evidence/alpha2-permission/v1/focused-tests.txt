@@ -1,0 +1,75 @@
+# V1 (0.1.1-alpha.2 freeze) — Part 1: focused verification matrix on the int tree
+
+Worktree: `D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1` (branch `task/alpha2-v1-verification`)
+int tip at start: **802cea5** (task branch created from it; zero source edits — CORE PATCH BUDGET = 0)
+Runner: `node scripts/run-tests.mjs <pkg>` (plain-node shim, the repo's main runner) + the targeted
+runner `dev/agent-workflow/evidence/alpha2-permission/v1/run-focused-t3-t4a-f9-p6t4.mjs` for the
+runtime suites the main runner cannot reach (the main runner ABORTS at the pre-existing
+`d5-instance-contract` process crash → its f/p/t runtime suites never run in the main pass).
+
+Logs: this directory (`focused-*.log`), full output preserved.
+
+## 1. Alpha.2 target suites (the permission plane, A2–A6) — ALL PASS
+
+| suite | package | passed | failed | verdict |
+|---|---|---:|---:|---|
+| a2-canonical-operation (A2 fingerprint/canonicalization) | runtime | 30 | 0 | PASS |
+| a3-static-resolver (A3 deny>ask>allow>default) | runtime | 28 | 0 | PASS |
+| a4a-control-service (A4 exact-fingerprint scope + wait bridge) | runtime | 28 | 0 | PASS |
+| a5a-pre-execute-adapter (A5 enforcement adapter) | runtime | 39 | 0 | PASS |
+| a6a-production-wiring (A6 agentSetup wiring) | runtime | 37 | 0 | PASS |
+| **subtotal** | | **162** | **0** | |
+
+Targeted runner (t3/t4a/f9/p6t4 — the alpha.1 wiring + control-plane closure suites, all still green on alpha.2):
+
+| suite | passed | failed | verdict |
+|---|---:|---:|---|
+| t3-team-skills-mcp | 11 | 0 | PASS |
+| t4a-capability-wiring | 27 | 0 | PASS |
+| f9-control-exactly-once | 8 | 0 | PASS |
+| f9-s6-resolve-control | 14 | 0 | PASS |
+| p6t4-allow-once | 4 | 0 | PASS |
+| p6t4-deny | 3 | 0 | PASS |
+| p6t4-stale | 5 | 0 | PASS |
+| p6t4-negatives | 11 | 0 | PASS |
+| p6t4-restart | 3 | 0 | PASS |
+| **subtotal** | **86** | **0** | |
+
+## 2. Full-package passes (baseline = the int-tip documented set; no regressions)
+
+- **domain**: 372 passed, 11 failed — all 11 pre-existing ONLY (10× `t1-capability-schema` +
+  1× `t2-blueprint-hash`), identical to the documented int-tip set; none alpha.2-related.
+- **testkit**: 124 passed, 0 failed — includes `p4t6-session-event-scan` (10 tests PASS = the
+  SessionEvent scanner pin **666** verified on the alpha.2 tree).
+- **remote**: 188 passed, 5 failed — all 5 pre-existing (`d1-remote-v3` 5/33, shim-matcher
+  TypeErrors, documented at the int tip); `f9-remote-v4` (39 tests) PASS.
+- **runtime (main runner)**: the alpha.2 suites above PASS; the documented pre-existing
+  failures reproduce IDENTICALLY at the int tip (no new failures):
+  - d1-member-base-tools 3/6
+  - d1-s6-remote-v3 6/14
+  - d1-team-ownership-index 5/16
+  - d2-s6-ensure-root-live 5/10
+  - d3-member-identity-context 1/5
+  - d5-instance-contract 2/9 + process abort (shim-matcher TypeError — the crash that makes the
+    main runner abort before its f/p/t runtime suites; hence the targeted runner above)
+  All failures are the same shim-matcher TypeErrors documented since the RC1 era (plain-node
+  shim lacks the vitest matchers those legacy suites call); none touch the alpha.2 permission plane.
+
+**Baseline-vs-after**: every failing suite fails the SAME tests for the SAME pre-existing
+reason at the int tip; the alpha.2 change set (A2–A6, cherry-picked earlier) adds ZERO new
+failures across runtime/domain/remote/testkit/tools/storage/contracts/legacy/client.
+
+## 3. Gates
+
+- `pnpm typecheck` (`pnpm -r run typecheck`): all 10 packages Done, exit 0
+  (`focused-typecheck.log`).
+- `pnpm build` (`pnpm -r run build`): exit 0, all 9 package builds Done (`focused-build.log`).
+- `pnpm build:composition` (place-dist-glue + build-client-composition + check-artifacts-committed):
+  exit 0, committed dist matches the rebuilt artifacts (`focused-build-composition.log`).
+
+## 4. Verdict
+
+Part 1 PASS: the alpha.2 permission-plane suites are fully green (162 + 86 targeted),
+typecheck/build/composition gates green, and the only failures are the documented pre-existing
+int-tip set (shim-matcher TypeErrors + 11 domain schema/hash pins) — no regressions from the
+alpha.2 change set.

@@ -1,0 +1,11 @@
+[2026-09-10T20:15:00.628Z] mock: listening on 127.0.0.1:3493
+[2026-09-10T20:15:48.291Z] mock seq=1 identity=leader trigger=user → tool-call:a2L-readA:read
+[2026-09-10T20:15:48.292Z] mock: 1 tool-call reply: read
+[2026-09-10T20:15:48.293Z] mock seq=2 identity=unknown trigger=user → text-fallback
+[2026-09-10T20:15:48.293Z] mock: 2 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T20:15:48.461Z] mock seq=3 identity=leader trigger=tool:a2L-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a:  → tool-call:a2L-readB:read
+[2026-09-10T20:15:48.462Z] mock: 3 tool-call reply: read
+[2026-09-10T20:15:48.588Z] mock seq=4 identity=leader trigger=tool:a2L-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test- → tool-call:a2L-writeC1:write
+[2026-09-10T20:15:48.588Z] mock: 4 tool-call reply: write
+[2026-09-10T20:15:49.303Z] mock seq=5 identity=leader trigger=tool:a2L-writeC1 result=Error: cannot overwrite existing "D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711\workspace-a2perm\perm-c.txt" without reading i → tool-call:a2L-writeC2:write
+[2026-09-10T20:15:49.304Z] mock: 5 tool-call reply: write

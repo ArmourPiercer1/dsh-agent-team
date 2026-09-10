@@ -1,0 +1,28 @@
+[2026-09-10T21:50:04.552Z] PASS cold-health-ok — cold resume: p6t6 health ok
+[2026-09-10T21:50:04.552Z] PASS cold-toolcount-10 — cold resume: factory catalog toolCount = 10
+[2026-09-10T21:50:04.553Z] PASS cold-sessions-3 — cold resume: leader + 2 members re-bound live
+[2026-09-10T21:50:04.570Z] PASS cold-blueprint-persists — cold resume: teamSession still team.a2perm (adopted, not re-stamped)
+[2026-09-10T21:50:04.618Z] PASS cold-policy-allow-lane — cold resume: read perm-a (allow lane) passes with zero control requests
+[2026-09-10T21:50:04.618Z] FAIL cold-policy-allow-executed-success — cold resume: the allow-lane read EXECUTED (the /tool value carries the file content and NO denial — a canonicalization failure would return ok:false) (expected="success value with content" actual="object")
+[2026-09-10T21:50:04.618Z] PASS cold-policy-no-request-row — cold resume: the allow-lane read created NO new request row
+[2026-09-10T21:50:04.630Z] PASS cold-policy-deny-lane — cold resume: read perm-b (deny lane) statically denied (policy rebuilt)
+[2026-09-10T21:50:04.630Z] PASS cold-policy-deny-static-reason — cold resume: the deny is the STATIC POLICY reason (the deny rule) — NOT a canonicalization/resolver failure
+[2026-09-10T21:50:04.913Z] PASS cold-policy-rebuilt-ask-read — cold resume: read perm-c (no rule → default ask) created a NEW pending request after the restart (the policy rebuilt from the blueprint)
+[2026-09-10T21:50:04.913Z] PASS cold-policy-rebuilt-ask-read-kind — the cold-resume read ask is kind=user-approval (the leader resolver closure)
+[2026-09-10T21:50:05.270Z] FAIL cold-policy-rebuilt-read-executes — the cold-resume read allow EXECUTED (the /tool value carries the perm-c content — member-a-payload-1 from the live phase) (expected="success value with content" actual="object")
+[2026-09-10T21:50:05.270Z] PASS cold-pending-survives — the aborted N4 request survived the cold resume (still pending)
+[2026-09-10T21:50:05.270Z] PASS cold-no-decision-for-n4 — no decision was ever recorded for N4 (cancellation never decided)
+[2026-09-10T21:50:05.271Z] PASS cold-decisions-preserved — every consumed request still has its durable decision after the restart
+[2026-09-10T21:50:05.271Z] PASS cold-consumptions-preserved — the consumption ledger survived (>= 5 consumed allows: L-writeC1/L-writeC2/A-writeC1/N5/N6-fp1)
+[2026-09-10T21:50:05.271Z] PASS cold-n5-request-persists — the N5 request row persists after the restart
+[2026-09-10T21:50:05.288Z] PASS cold-double-consumption-still-blocked — re-executing N5 after the restart is still blocked allow-consumed
+[2026-09-10T21:50:05.288Z] PASS cold-perm-d-unchanged — perm-d.txt still a2-fp-one after the blocked re-execution
+[2026-09-10T21:50:05.585Z] PASS cold-policy-rebuilt-ask — cold resume: a new write perm-c (ask lane) created a NEW pending request (the policy rebuilt from the blueprint)
+[2026-09-10T21:50:05.585Z] PASS cold-policy-rebuilt-kind — the cold-resume ask is kind=user-approval (the leader resolver closure)
+[2026-09-10T21:50:05.590Z] PASS cold-policy-rebuilt-scope-exact — the cold-resume request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation a2-cr-writeC) — RAW ledger payload (the /state projection omits these fields)
+[2026-09-10T21:50:05.591Z] PASS cold-policy-rebuilt-fingerprint-bound — the cold-resume request carries its own EXACT operation fingerprint (payload top level, sha256:… — content a2-cold-c, bound to the rebuilt policy + this operation)
+[2026-09-10T21:50:05.958Z] PASS cold-policy-rebuilt-executes — the cold-resume allow executed (perm-c.txt = a2-cold-c)
+[2026-09-10T21:50:05.959Z] PASS cold-policy-rebuilt-consumed — the cold-resume allow was consumed exactly once
+[2026-09-10T21:50:05.972Z] PASS cold-no-drill-rerun — no new leader model requests after the cold re-boot (the drill did not re-run)
+[2026-09-10T21:50:05.973Z] cold battery complete: 24/26 checks passed
+[2026-09-10T21:50:05.973Z] verdict: COLD FAIL (24/26) → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\cold-resume-v16-20260711.json

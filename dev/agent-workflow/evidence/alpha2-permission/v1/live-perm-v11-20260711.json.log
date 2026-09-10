@@ -1,0 +1,20 @@
+[2026-09-10T19:41:41.131Z] PASS live-health-ok — p6t6 health ok
+[2026-09-10T19:41:41.131Z] PASS live-toolcount-10 — factory catalog toolCount = 10
+[2026-09-10T19:41:41.132Z] PASS live-sessions-3 — leader + 2 seeded members live
+[2026-09-10T19:41:41.141Z] PASS live-blueprint-team.a2perm — teamSession blueprintId = team.a2perm
+[2026-09-10T19:41:41.141Z] PASS live-contenthash-recorded — teamSession contentHash recorded (the A1-validated hash)
+[2026-09-10T19:41:41.142Z] PASS live-defaultworkspace — teamSession defaultWorkspace = the pre-created workspace
+[2026-09-10T19:41:41.142Z] PASS live-control-zero — zero control state at boot
+[2026-09-10T19:41:41.142Z] baseline files recorded (perm-a..e.txt)
+[2026-09-10T19:41:41.284Z] PASS live-probe-leader-list — leader team_list_members registered
+[2026-09-10T19:41:41.284Z] PASS live-probe-leader-delegate-absent — leader team_delegate NOT in the allow set (capability selection active)
+[2026-09-10T19:41:41.285Z] PASS live-probe-leader-resolve — leader team_resolve_control registered
+[2026-09-10T19:41:41.285Z] PASS live-probe-memberA-delegate — worker-a team_delegate registered
+[2026-09-10T19:41:41.285Z] PASS live-probe-memberA-resolve-absent — worker-a team_resolve_control NOT registered (member self-approval has no tool)
+[2026-09-10T19:41:41.286Z] PASS live-probe-memberB-request-absent — worker-b team_request_control NOT registered (allow set = team_send_message only)
+[2026-09-10T19:41:41.286Z] leader drill: team.admitInitialWork fired (v2, background)
+[2026-09-10T19:41:42.112Z] PASS live-L1-allow-lane-no-request — read perm-a (allow lane) executed with ZERO control requests
+[2026-09-10T19:41:42.115Z] FAIL live-L1-allow-executed-success — read perm-a EXECUTED: the tool result carries the file content and NO denial (a denied read would ALSO satisfy the zero-request check — the V1-1 gap) (expected="success result with content" actual="Error: unknown tool \"read\"")
+[2026-09-10T19:41:42.125Z] PASS live-L2-deny-lane-no-request — read perm-b (deny lane) denied with ZERO control requests
+[2026-09-10T19:41:42.126Z] PASS live-L2-deny-static-reason — read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure (that would be the fs seam broken, not the policy deciding)
+[2026-09-10T19:41:42.126Z] PASS live-L2-deny-file-unchanged — perm-b.txt unchanged after static deny

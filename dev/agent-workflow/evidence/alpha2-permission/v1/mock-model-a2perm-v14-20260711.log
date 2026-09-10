@@ -1,0 +1,174 @@
+[2026-09-10T21:00:14.300Z] mock: listening on 127.0.0.1:3493
+[2026-09-10T21:07:37.817Z] mock seq=1 identity=leader trigger=user → tool-call:a2L-readA:read
+[2026-09-10T21:07:37.818Z] mock: 1 tool-call reply: read
+[2026-09-10T21:07:37.818Z] mock seq=2 identity=unknown trigger=user → text-fallback
+[2026-09-10T21:07:37.819Z] mock: 2 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T21:07:37.947Z] mock seq=3 identity=leader trigger=tool:a2L-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2L-readB:read
+[2026-09-10T21:07:37.948Z] mock: 3 tool-call reply: read
+[2026-09-10T21:07:38.074Z] mock seq=4 identity=leader trigger=tool:a2L-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2L-readC:read
+[2026-09-10T21:07:38.075Z] mock: 4 tool-call reply: read
+[2026-09-10T21:07:38.713Z] mock seq=5 identity=leader trigger=tool:a2L-readC result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-c.txt</path>\n<type>file</type>\n<content>\n1: perm-c: initial sentinel.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2L-writeC1:write
+[2026-09-10T21:07:38.713Z] mock: 5 tool-call reply: write
+[2026-09-10T21:07:39.449Z] mock seq=6 identity=leader trigger=tool:a2L-writeC1 result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-c.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content> → tool-call:a2L-writeC2:write
+[2026-09-10T21:07:39.450Z] mock: 6 tool-call reply: write
+[2026-09-10T21:07:40.286Z] mock seq=7 identity=leader trigger=tool:a2L-writeC2 result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-c.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content> → text:LEADER-DONE
+[2026-09-10T21:07:40.287Z] mock: 7 text reply (11 chars): "LEADER-DONE"
+[2026-09-10T21:07:40.934Z] mock seq=8 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:07:40.934Z] mock: 8 tool-call reply: read
+[2026-09-10T21:07:40.935Z] mock seq=9 identity=unknown trigger=user → text-fallback
+[2026-09-10T21:07:40.936Z] mock: 9 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T21:07:41.098Z] mock seq=10 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:07:41.099Z] mock: 10 tool-call reply: read
+[2026-09-10T21:07:41.192Z] mock seq=11 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:07:41.192Z] mock: 11 tool-call reply: read
+[2026-09-10T21:11:07.832Z] mock: 12 GET /health -> 405
+[2026-09-10T21:14:06.873Z] mock seq=13 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:06.873Z] mock: 13 tool-call reply: write
+[2026-09-10T21:14:09.739Z] mock seq=14 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:09.740Z] mock: 14 tool-call reply: read
+[2026-09-10T21:14:12.318Z] mock seq=15 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:12.318Z] mock: 15 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:12.474Z] mock seq=16 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:12.475Z] mock: 16 tool-call reply: read
+[2026-09-10T21:14:12.595Z] mock seq=17 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:12.595Z] mock: 17 tool-call reply: read
+[2026-09-10T21:14:12.723Z] mock seq=18 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:12.723Z] mock: 18 tool-call reply: read
+[2026-09-10T21:14:12.802Z] mock seq=19 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:12.802Z] mock: 19 tool-call reply: write
+[2026-09-10T21:14:12.908Z] mock seq=20 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:12.909Z] mock: 20 tool-call reply: read
+[2026-09-10T21:14:13.004Z] mock seq=21 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:13.004Z] mock: 21 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:13.187Z] mock seq=22 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:13.188Z] mock: 22 tool-call reply: read
+[2026-09-10T21:14:13.344Z] mock seq=23 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:13.344Z] mock: 23 tool-call reply: read
+[2026-09-10T21:14:13.437Z] mock seq=24 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:13.437Z] mock: 24 tool-call reply: read
+[2026-09-10T21:14:13.580Z] mock seq=25 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:13.580Z] mock: 25 tool-call reply: write
+[2026-09-10T21:14:13.704Z] mock seq=26 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:13.705Z] mock: 26 tool-call reply: read
+[2026-09-10T21:14:13.828Z] mock seq=27 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:13.828Z] mock: 27 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:14.033Z] mock seq=28 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:14.034Z] mock: 28 tool-call reply: read
+[2026-09-10T21:14:14.221Z] mock seq=29 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:14.221Z] mock: 29 tool-call reply: read
+[2026-09-10T21:14:14.347Z] mock seq=30 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:14.348Z] mock: 30 tool-call reply: read
+[2026-09-10T21:14:14.457Z] mock seq=31 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:14.458Z] mock: 31 tool-call reply: write
+[2026-09-10T21:14:14.609Z] mock seq=32 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:14.610Z] mock: 32 tool-call reply: read
+[2026-09-10T21:14:14.737Z] mock seq=33 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:14.738Z] mock: 33 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:14.935Z] mock seq=34 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:14.936Z] mock: 34 tool-call reply: read
+[2026-09-10T21:14:15.092Z] mock seq=35 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:15.092Z] mock: 35 tool-call reply: read
+[2026-09-10T21:14:15.204Z] mock seq=36 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:15.205Z] mock: 36 tool-call reply: read
+[2026-09-10T21:14:15.375Z] mock seq=37 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:15.376Z] mock: 37 tool-call reply: write
+[2026-09-10T21:14:15.485Z] mock seq=38 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:15.486Z] mock: 38 tool-call reply: read
+[2026-09-10T21:14:15.624Z] mock seq=39 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:15.624Z] mock: 39 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:15.811Z] mock seq=40 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:15.812Z] mock: 40 tool-call reply: read
+[2026-09-10T21:14:15.999Z] mock seq=41 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:16.000Z] mock: 41 tool-call reply: read
+[2026-09-10T21:14:16.122Z] mock seq=42 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:16.122Z] mock: 42 tool-call reply: read
+[2026-09-10T21:14:16.310Z] mock seq=43 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:16.310Z] mock: 43 tool-call reply: write
+[2026-09-10T21:14:16.418Z] mock seq=44 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:16.418Z] mock: 44 tool-call reply: read
+[2026-09-10T21:14:16.557Z] mock seq=45 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:16.558Z] mock: 45 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:16.723Z] mock seq=46 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:16.724Z] mock: 46 tool-call reply: read
+[2026-09-10T21:14:16.868Z] mock seq=47 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:16.868Z] mock: 47 tool-call reply: read
+[2026-09-10T21:14:16.994Z] mock seq=48 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:16.995Z] mock: 48 tool-call reply: read
+[2026-09-10T21:14:17.119Z] mock seq=49 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:17.120Z] mock: 49 tool-call reply: write
+[2026-09-10T21:14:17.225Z] mock seq=50 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:17.225Z] mock: 50 tool-call reply: read
+[2026-09-10T21:14:17.326Z] mock seq=51 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:17.326Z] mock: 51 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:17.522Z] mock seq=52 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:17.522Z] mock: 52 tool-call reply: read
+[2026-09-10T21:14:17.712Z] mock seq=53 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:17.712Z] mock: 53 tool-call reply: read
+[2026-09-10T21:14:17.804Z] mock seq=54 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:17.804Z] mock: 54 tool-call reply: read
+[2026-09-10T21:14:17.882Z] mock seq=55 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:17.882Z] mock: 55 tool-call reply: write
+[2026-09-10T21:14:17.975Z] mock seq=56 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:17.975Z] mock: 56 tool-call reply: read
+[2026-09-10T21:14:18.087Z] mock seq=57 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:18.087Z] mock: 57 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:18.270Z] mock seq=58 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:18.271Z] mock: 58 tool-call reply: read
+[2026-09-10T21:14:18.412Z] mock seq=59 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:18.413Z] mock: 59 tool-call reply: read
+[2026-09-10T21:14:18.505Z] mock seq=60 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:18.505Z] mock: 60 tool-call reply: read
+[2026-09-10T21:14:18.599Z] mock seq=61 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:18.600Z] mock: 61 tool-call reply: write
+[2026-09-10T21:14:18.708Z] mock seq=62 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:18.708Z] mock: 62 tool-call reply: read
+[2026-09-10T21:14:18.880Z] mock seq=63 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:18.881Z] mock: 63 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:19.079Z] mock seq=64 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:19.080Z] mock: 64 tool-call reply: read
+[2026-09-10T21:14:19.236Z] mock seq=65 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:19.238Z] mock: 65 tool-call reply: read
+[2026-09-10T21:14:19.360Z] mock seq=66 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:19.361Z] mock: 66 tool-call reply: read
+[2026-09-10T21:14:19.516Z] mock seq=67 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:19.517Z] mock: 67 tool-call reply: write
+[2026-09-10T21:14:19.593Z] mock seq=68 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:19.594Z] mock: 68 tool-call reply: read
+[2026-09-10T21:14:19.813Z] mock seq=69 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:19.813Z] mock: 69 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:20.078Z] mock seq=70 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:20.079Z] mock: 70 tool-call reply: read
+[2026-09-10T21:14:20.251Z] mock seq=71 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:20.252Z] mock: 71 tool-call reply: read
+[2026-09-10T21:14:20.404Z] mock seq=72 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:20.405Z] mock: 72 tool-call reply: read
+[2026-09-10T21:14:20.546Z] mock seq=73 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:20.547Z] mock: 73 tool-call reply: write
+[2026-09-10T21:14:20.639Z] mock seq=74 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:20.639Z] mock: 74 tool-call reply: read
+[2026-09-10T21:14:20.718Z] mock seq=75 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:20.718Z] mock: 75 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:14:20.856Z] mock seq=76 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:14:20.858Z] mock: 76 tool-call reply: read
+[2026-09-10T21:14:21.002Z] mock seq=77 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:14:21.003Z] mock: 77 tool-call reply: read
+[2026-09-10T21:14:21.138Z] mock seq=78 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:14:21.138Z] mock: 78 tool-call reply: read
+[2026-09-10T21:14:21.265Z] mock seq=79 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:14:21.266Z] mock: 79 tool-call reply: write
+[2026-09-10T21:14:21.372Z] mock seq=80 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:14:21.372Z] mock: 80 tool-call reply: read
+[2026-09-10T21:14:21.466Z] mock seq=81 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:14:21.468Z] mock: 81 text reply (13 chars): "MEMBER-A-DONE"
+[2026-09-10T21:15:05.469Z] mock seq=82 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T21:15:05.469Z] mock: 82 tool-call reply: read
+[2026-09-10T21:15:05.600Z] mock seq=83 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T21:15:05.600Z] mock: 83 tool-call reply: read
+[2026-09-10T21:15:05.693Z] mock seq=84 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v14-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T21:15:05.694Z] mock: 84 tool-call reply: read
+[2026-09-10T21:15:05.818Z] mock seq=85 identity=worker-a trigger=tool:a2A-readC result=Error: the approval was denied → tool-call:a2A-writeC1:write
+[2026-09-10T21:15:05.818Z] mock: 85 tool-call reply: write
+[2026-09-10T21:15:05.942Z] mock seq=86 identity=worker-a trigger=tool:a2A-writeC1 result=Error: the approval was denied → tool-call:a2A-readD:read
+[2026-09-10T21:15:05.943Z] mock: 86 tool-call reply: read
+[2026-09-10T21:15:06.070Z] mock seq=87 identity=worker-a trigger=tool:a2A-readD result=Error: the approval was denied → text:MEMBER-A-DONE
+[2026-09-10T21:15:06.070Z] mock: 87 text reply (13 chars): "MEMBER-A-DONE"

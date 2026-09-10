@@ -1,0 +1,18 @@
+[2026-09-10T19:03:17.206Z] PASS live-health-ok — p6t6 health ok
+[2026-09-10T19:03:17.206Z] PASS live-toolcount-10 — factory catalog toolCount = 10
+[2026-09-10T19:03:17.207Z] PASS live-sessions-3 — leader + 2 seeded members live
+[2026-09-10T19:03:17.224Z] PASS live-blueprint-team.a2perm — teamSession blueprintId = team.a2perm
+[2026-09-10T19:03:17.224Z] PASS live-contenthash-recorded — teamSession contentHash recorded (the A1-validated hash)
+[2026-09-10T19:03:17.225Z] PASS live-defaultworkspace — teamSession defaultWorkspace = the pre-created workspace
+[2026-09-10T19:03:17.225Z] PASS live-control-zero — zero control state at boot
+[2026-09-10T19:03:17.225Z] baseline files recorded (perm-a..e.txt)
+[2026-09-10T19:03:17.356Z] PASS live-probe-leader-list — leader team_list_members registered
+[2026-09-10T19:03:17.357Z] PASS live-probe-leader-delegate-absent — leader team_delegate NOT in the allow set (capability selection active)
+[2026-09-10T19:03:17.357Z] PASS live-probe-leader-resolve — leader team_resolve_control registered
+[2026-09-10T19:03:17.357Z] PASS live-probe-memberA-delegate — worker-a team_delegate registered
+[2026-09-10T19:03:17.357Z] PASS live-probe-memberA-resolve-absent — worker-a team_resolve_control NOT registered (member self-approval has no tool)
+[2026-09-10T19:03:17.357Z] PASS live-probe-memberB-request-absent — worker-b team_request_control NOT registered (allow set = team_send_message only)
+[2026-09-10T19:03:17.357Z] leader drill: team.admitInitialWork fired (v2, background)
+[2026-09-10T19:03:18.174Z] PASS live-L1-allow-lane-no-request — read perm-a (allow lane) executed with ZERO control requests
+[2026-09-10T19:03:18.182Z] PASS live-L2-deny-lane-no-request — read perm-b (deny lane) denied with ZERO control requests
+[2026-09-10T19:03:18.183Z] PASS live-L2-deny-file-unchanged — perm-b.txt unchanged after static deny

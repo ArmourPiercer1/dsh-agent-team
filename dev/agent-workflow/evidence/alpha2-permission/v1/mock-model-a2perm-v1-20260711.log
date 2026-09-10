@@ -1,0 +1,13 @@
+[2026-09-10T19:01:05.453Z] mock: listening on 127.0.0.1:3493
+[2026-09-10T19:03:17.828Z] mock seq=1 identity=leader trigger=user → tool-call:a2L-readA:read
+[2026-09-10T19:03:17.830Z] mock: 1 tool-call reply: read
+[2026-09-10T19:03:17.831Z] mock seq=2 identity=unknown trigger=user → text-fallback
+[2026-09-10T19:03:17.832Z] mock: 2 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T19:03:17.963Z] mock seq=3 identity=leader trigger=tool:a2L-readA result=Error: permission denied: canonicalization failed for tool "read": resolver-threw (cannot get property "fs" without inject) → tool-call:a2L-readB:read
+[2026-09-10T19:03:17.963Z] mock: 3 tool-call reply: read
+[2026-09-10T19:03:18.042Z] mock seq=4 identity=leader trigger=tool:a2L-readB result=Error: permission denied: canonicalization failed for tool "read": resolver-threw (cannot get property "fs" without inject) → tool-call:a2L-writeC1:write
+[2026-09-10T19:03:18.042Z] mock: 4 tool-call reply: write
+[2026-09-10T19:03:18.165Z] mock seq=5 identity=leader trigger=tool:a2L-writeC1 result=Error: permission denied: canonicalization failed for tool "write": resolver-threw (cannot get property "fs" without inject) → tool-call:a2L-writeC2:write
+[2026-09-10T19:03:18.166Z] mock: 5 tool-call reply: write
+[2026-09-10T19:03:18.258Z] mock seq=6 identity=leader trigger=tool:a2L-writeC2 result=Error: permission denied: canonicalization failed for tool "write": resolver-threw (cannot get property "fs" without inject) → text:LEADER-DONE
+[2026-09-10T19:03:18.258Z] mock: 6 text reply (11 chars): "LEADER-DONE"

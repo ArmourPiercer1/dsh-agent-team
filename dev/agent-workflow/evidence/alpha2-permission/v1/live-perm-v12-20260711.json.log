@@ -1,0 +1,31 @@
+[2026-09-10T20:15:47.639Z] PASS live-health-ok — p6t6 health ok
+[2026-09-10T20:15:47.640Z] PASS live-toolcount-10 — factory catalog toolCount = 10
+[2026-09-10T20:15:47.640Z] PASS live-sessions-3 — leader + 2 seeded members live
+[2026-09-10T20:15:47.649Z] PASS live-blueprint-team.a2perm — teamSession blueprintId = team.a2perm
+[2026-09-10T20:15:47.649Z] PASS live-contenthash-recorded — teamSession contentHash recorded (the A1-validated hash)
+[2026-09-10T20:15:47.649Z] PASS live-defaultworkspace — teamSession defaultWorkspace = the pre-created workspace
+[2026-09-10T20:15:47.649Z] PASS live-control-zero — zero control state at boot
+[2026-09-10T20:15:47.649Z] baseline files recorded (perm-a..e.txt)
+[2026-09-10T20:15:47.807Z] PASS live-probe-leader-list — leader team_list_members registered
+[2026-09-10T20:15:47.808Z] PASS live-probe-leader-delegate-absent — leader team_delegate NOT in the allow set (capability selection active)
+[2026-09-10T20:15:47.808Z] PASS live-probe-leader-resolve — leader team_resolve_control registered
+[2026-09-10T20:15:47.808Z] PASS live-probe-memberA-delegate — worker-a team_delegate registered
+[2026-09-10T20:15:47.808Z] PASS live-probe-memberA-resolve-absent — worker-a team_resolve_control NOT registered (member self-approval has no tool)
+[2026-09-10T20:15:47.808Z] PASS live-probe-memberB-request-absent — worker-b team_request_control NOT registered (allow set = team_send_message only)
+[2026-09-10T20:15:47.809Z] leader drill: team.admitInitialWork fired (v2, background)
+[2026-09-10T20:15:48.749Z] FAIL live-L1-allow-lane-no-request — read perm-a (allow lane) executed with ZERO control requests (expected=0 actual=1)
+[2026-09-10T20:15:48.749Z] FAIL live-L1-allow-executed-success — read perm-a EXECUTED: the tool result carries the file content and NO denial (a denied read would ALSO satisfy the zero-request check — the V1-1 gap) (expected="success result with content" actual="<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v12-20260711\\workspace-a2perm\\perm-a.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-a: ")
+[2026-09-10T20:15:48.757Z] FAIL live-L2-deny-lane-no-request — read perm-b (deny lane) denied with ZERO control requests (expected=0 actual=1)
+[2026-09-10T20:15:48.758Z] PASS live-L2-deny-static-reason — read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure (that would be the fs seam broken, not the policy deciding)
+[2026-09-10T20:15:48.758Z] PASS live-L2-deny-file-unchanged — perm-b.txt unchanged after static deny
+[2026-09-10T20:15:48.777Z] PASS live-L3-ask-request-created — write perm-c (ask lane) created a durable control request
+[2026-09-10T20:15:48.778Z] PASS live-L3-kind-user-approval — leader ask routes to kind=user-approval (human-only resolver closure)
+[2026-09-10T20:15:48.778Z] PASS live-L3-target-leader — request targetInstanceId = the leader instance
+[2026-09-10T20:15:48.778Z] PASS live-L3-action-parameter-permission — request actionName = parameter-permission (the A5 closed action name)
+[2026-09-10T20:15:48.778Z] PASS live-L3-tool-write — request toolName = write
+[2026-09-10T20:15:48.778Z] FAIL live-L3-scope-exact — request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) (expected="exact scope fields" actual={"target":"inst-leader","corr":"a2L-writeC1"})
+[2026-09-10T20:15:48.778Z] FAIL live-L3-fingerprint-bound — request carries the EXACT operation fingerprint (the A4 allow binds to this exact operation, not the tool or the correlation) (expected="non-empty operationFingerprint" actual="undefined")
+[2026-09-10T20:15:48.778Z] PASS live-L3-no-execution-yet — perm-c.txt unchanged while the request is pending
+[2026-09-10T20:15:48.833Z] FAIL live-L4-leader-self-approval-negative — leader self-approval of its own user-approval request is NOT authorized (expected="typed resolver-not-authorized" actual="not-rejected")
+[2026-09-10T20:15:48.837Z] PASS live-L4-still-pending — request still pending after the failed self-approval
+[2026-09-10T20:15:49.017Z] PASS live-L5-human-allow — remote team.resolveControl (v4, human) allow succeeds

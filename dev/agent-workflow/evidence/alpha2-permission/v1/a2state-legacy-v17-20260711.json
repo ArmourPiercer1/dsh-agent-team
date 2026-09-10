@@ -1,0 +1,22 @@
+{
+  "world": "legacy",
+  "stamp": "v17-20260711",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permlegacy-v17-20260711",
+  "port": 3181,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3181",
+  "token": "jHtrZR8G-gwxQh87Fs0s0QonkKpmCX1f2Csp4kkh6o0",
+  "cookie": "dsh-auth-D1gu4AUZ6XwohD5r0eN4-fmFNLAOCeA62Dj465JieJs=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MSIsImlzc3VlZEF0IjoxNzg5MDc3ODYxNzAzLCJleHBpcmVzQXQiOjE3OTE2Njk4NjE3MDN9.qPJaAZP5USIEpkZxOrelYL1gxmH0__yEhiMgEs8NvxI",
+  "rootSessionId": "team-root",
+  "instancePid": 76756,
+  "bootJobPid": 79092,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-v1\\dev\\agent-workflow\\evidence\\alpha2-permission\\v1\\instances\\instance-port3181.log",
+  "mockLogPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-v1\\dev\\agent-workflow\\evidence\\alpha2-permission\\v1\\mock-model-legacy-v17-20260711.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-v1\\dev\\agent-workflow\\evidence\\alpha2-permission\\v1\\dump-config-legacy-v17-20260711.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permlegacy-v17-20260711\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2permlegacy-v17-20260711/repo.git#task/alpha2-v1-verification",
+  "branch": "task/alpha2-v1-verification",
+  "phase": "create",
+  "startedAt": "2026-09-10T22:04:22.847Z",
+  "stoppedAt": "2026-09-10T22:08:51.166Z"
+}

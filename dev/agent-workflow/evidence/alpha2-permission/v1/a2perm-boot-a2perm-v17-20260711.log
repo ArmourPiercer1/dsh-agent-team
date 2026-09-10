@@ -1,0 +1,53 @@
+[2026-09-10T21:52:36.791Z] world (a2perm): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v17-20260711
+[2026-09-10T21:52:36.792Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v17-20260711\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T21:52:36.792Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2perm-assertions-v17-20260711.json (branch=task/alpha2-v1-verification)
+[2026-09-10T21:52:36.795Z] profile already initialized (a2perm-setup)
+[2026-09-10T21:52:36.796Z] p6t6 directive written (boot=1 phase=create rootSessionId=a2root)
+[2026-09-10T21:52:36.807Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T21:52:39.678Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=kbC30YiWWiMHCnib1QrU1pUwZr2Pd_4Vo8mml5TEXLg
+[2026-09-10T21:52:39.687Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 106800
+[2026-09-10T21:52:41.738Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"a2root","liveSessions":["a2root","session-a2a-a","session-a2b-b"],"toolCount":10}
+[2026-09-10T21:52:41.739Z] live sessions = ["a2root","session-a2a-a","session-a2b-b"] (expected set)
+[2026-09-10T21:52:41.753Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T21:52:41.841Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\dump-config-a2perm-v17-20260711.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T21:52:41.855Z] catalog.list with cookie: HTTP 200
+[2026-09-10T21:52:41.855Z] catalog.list carries team.a2perm (user-layer override in force)
+[2026-09-10T21:52:41.856Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2state-a2perm-v17-20260711.json
+[2026-09-10T21:52:41.856Z] A2-READY
+[2026-09-10T21:59:28.808Z] stop: instance pid 106800 signaled
+[2026-09-10T21:59:28.825Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T21:59:28.825Z] shutdown: instance child exit
+[2026-09-10T21:59:28.827Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-10T21:59:29.323Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=kbC30YiWWiMHCnib1QrU1pUwZr2Pd_4Vo8mml5TEXLg
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T21:59:29.326Z] A2-STOPPED
+[2026-09-10T21:59:37.160Z] world (a2perm): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v17-20260711
+[2026-09-10T21:59:37.161Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v17-20260711\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T21:59:37.162Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2perm-assertions-v17-20260711.json (branch=task/alpha2-v1-verification)
+[2026-09-10T21:59:37.164Z] profile already initialized (a2perm-setup)
+[2026-09-10T21:59:37.165Z] user-layer patch rewritten: bootPhase "create" → "resume" (cold resume)
+[2026-09-10T21:59:37.165Z] p6t6 directive written (boot=1 phase=resume rootSessionId=a2root)
+[2026-09-10T21:59:37.177Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T21:59:39.001Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=2S7TskF-MVtS4Q1JHIGczWHrrQZYGOzmCQlBLE112yQ
+[2026-09-10T21:59:39.091Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 53672
+[2026-09-10T21:59:40.130Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"a2root","liveSessions":["a2root","session-a2a-a","session-a2b-b"],"toolCount":10}
+[2026-09-10T21:59:40.131Z] live sessions = ["a2root","session-a2a-a","session-a2b-b"] (expected set)
+[2026-09-10T21:59:40.150Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T21:59:40.264Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\dump-config-a2perm-v17-20260711.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T21:59:40.282Z] catalog.list with cookie: HTTP 200
+[2026-09-10T21:59:40.282Z] catalog.list carries team.a2perm (user-layer override in force)
+[2026-09-10T21:59:40.283Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2state-a2perm-v17-20260711.json
+[2026-09-10T21:59:40.283Z] A2-READY
+[2026-09-10T22:04:11.416Z] stop: instance pid 53672 signaled
+[2026-09-10T22:04:11.431Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T22:04:11.431Z] shutdown: instance child exit
+[2026-09-10T22:04:11.437Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-10T22:04:11.928Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=2S7TskF-MVtS4Q1JHIGczWHrrQZYGOzmCQlBLE112yQ
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T22:04:11.934Z] A2-STOPPED

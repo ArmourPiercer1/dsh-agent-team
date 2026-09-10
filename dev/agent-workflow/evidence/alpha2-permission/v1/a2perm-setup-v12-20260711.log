@@ -1,0 +1,26 @@
+[2026-09-10T20:13:02.784Z] a2perm world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711
+[2026-09-10T20:13:02.786Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/alpha2-v1-verification) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711\repo.git
+[2026-09-10T20:13:15.152Z] bare repo cloned
+[2026-09-10T20:13:15.152Z] installing plugin task/alpha2-v1-verification via git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2perm-v12-20260711/repo.git#task/alpha2-v1-verification …
+[2026-09-10T20:13:52.452Z] install exit=0
+[2026-09-10T20:13:52.452Z] install SUCCEEDED
+[2026-09-10T20:13:52.453Z] PASS a2perm: installed package dir exists
+[2026-09-10T20:13:52.453Z] PASS a2perm: installed version is 0.1.1-alpha.2 — 0.1.1-alpha.2
+[2026-09-10T20:13:52.454Z] PASS a2perm: installed root manifest declares dsh.bundle.patch
+[2026-09-10T20:13:52.456Z] PASS a2perm: dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-10T20:13:52.456Z] a2perm user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711\profiles\web\cordis.patch.yml
+[2026-09-10T20:13:52.458Z] a2perm workspace pre-created: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711\workspace-a2perm (perm-a..e.txt)
+[2026-09-10T20:13:52.458Z] a2perm assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2perm-assertions-v12-20260711.json
+[2026-09-10T20:13:52.458Z] a2legacy world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permlegacy-v12-20260711
+[2026-09-10T20:13:52.458Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/alpha2-v1-verification) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permlegacy-v12-20260711\repo.git
+[2026-09-10T20:14:09.073Z] bare repo cloned
+[2026-09-10T20:14:09.073Z] installing plugin task/alpha2-v1-verification via git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2permlegacy-v12-20260711/repo.git#task/alpha2-v1-verification …
+[2026-09-10T20:14:31.665Z] install exit=0
+[2026-09-10T20:14:31.666Z] install SUCCEEDED
+[2026-09-10T20:14:31.666Z] PASS a2legacy: installed package dir exists
+[2026-09-10T20:14:31.666Z] PASS a2legacy: installed version is 0.1.1-alpha.2 — 0.1.1-alpha.2
+[2026-09-10T20:14:31.666Z] PASS a2legacy: installed root manifest declares dsh.bundle.patch
+[2026-09-10T20:14:31.669Z] PASS a2legacy: dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-10T20:14:31.669Z] a2legacy user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permlegacy-v12-20260711\profiles\web\cordis.patch.yml
+[2026-09-10T20:14:31.670Z] a2legacy assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2legacy-assertions-v12-20260711.json
+[2026-09-10T20:14:31.670Z] A2PERM-SETUP-OK (a2perm=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v12-20260711; legacy=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permlegacy-v12-20260711)

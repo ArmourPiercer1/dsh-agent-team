@@ -1,0 +1,1855 @@
+{
+  "mode": "live",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711",
+  "branch": "task/alpha2-v1-verification",
+  "rootSessionId": "a2root",
+  "phase": "create",
+  "startedAt": "2026-09-10T21:43:33.116Z",
+  "baselineFiles": {
+    "perm-a.txt": "perm-a: allow-read target.\n",
+    "perm-b.txt": "perm-b: deny-read target.\n",
+    "perm-c.txt": "perm-c: initial sentinel.\n",
+    "perm-d.txt": "perm-d: default-ask target (no matching rule).\n",
+    "perm-e.txt": "perm-e: default-deny target (worker-b).\n"
+  },
+  "finalFiles": {
+    "perm-a.txt": "perm-a: allow-read target.\n",
+    "perm-b.txt": "perm-b: deny-read target.\n",
+    "perm-c.txt": "member-a-payload-1",
+    "perm-d.txt": "a2-fp-one",
+    "perm-e.txt": "perm-e: default-deny target (worker-b).\n"
+  },
+  "counts": {
+    "requests": 11,
+    "decisions": 10,
+    "consumptions": 9,
+    "mockLeaderLines": 6,
+    "mockWorkerALines": 6,
+    "mockWorkerBLines": 3
+  },
+  "blueprintContentHash": "sha256:924a60d6536883b66560e4d39aca14ca52805ba1f3d2b8639e3ba4c3d0d9f5d1",
+  "toolProbes": {
+    "a2root:team_list_members": "registered",
+    "a2root:team_delegate": "not-registered",
+    "a2root:team_request_control": "registered",
+    "a2root:team_resolve_control": "registered",
+    "session-a2a-a:team_delegate": "registered",
+    "session-a2a-a:team_request_control": "registered",
+    "session-a2a-a:team_resolve_control": "not-registered",
+    "session-a2b-b:team_send_message": "registered",
+    "session-a2b-b:team_request_control": "not-registered",
+    "session-a2b-b:team_resolve_control": "not-registered"
+  },
+  "leaderAdmit": {
+    "firedAt": "2026-09-10T21:43:33.295Z",
+    "latencyMs": 3380,
+    "httpStatus": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "chk-1a08d46a8afcb7f",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "mode": "fresh",
+            "rootSessionId": "a2root",
+            "requestToken": "a2-lead-1",
+            "payloadFingerprint": "sha256:89b5742492123e75cf430a98ab0bef4a95aaaf747e3705d000e4d157ac7d10f3",
+            "sequence": 1,
+            "terminalSequence": 11,
+            "delivered": true
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.admitInitialWork",
+            "endpoint": "team.admitInitialWork",
+            "contractVersion": 2,
+            "requestToken": "a2-lead-1",
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    }
+  },
+  "memberSelfApprovalProbe": {
+    "liveStatus": 200,
+    "liveOk": false,
+    "liveMessage": "unknown tool \"team_resolve_control\"",
+    "bootProbe": "not-registered"
+  },
+  "memberAResolveRoute": "tool",
+  "memberAWriteResolveRoute": "tool",
+  "memberAReadDResolveRoute": "tool",
+  "memberASend": {
+    "firedAt": "2026-09-10T21:43:36.675Z",
+    "latencyMs": 3426,
+    "httpStatus": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "chk-1a08d46b5e3c403c",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "a2root",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-a2pa",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-a2pa",
+              "deliveredToSessionId": "session-a2a-a",
+              "factSequence": 12,
+              "deliveredSequence": 22,
+              "requestToken": "a2-mA-1"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 1,
+            "requestToken": "a2-mA-1",
+            "projectionGeneration": null,
+            "effectSequence": 12
+          }
+        }
+      }
+    }
+  },
+  "memberBSend": {
+    "firedAt": "2026-09-10T21:43:40.119Z",
+    "latencyMs": 730,
+    "httpStatus": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "chk-1a08d46c357d4148",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "a2root",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-a2pb",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-a2pb",
+              "deliveredToSessionId": "session-a2b-b",
+              "factSequence": 23,
+              "deliveredSequence": 24,
+              "requestToken": "a2-mB-1"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 1,
+            "requestToken": "a2-mB-1",
+            "projectionGeneration": null,
+            "effectSequence": 23
+          }
+        }
+      }
+    }
+  },
+  "controlLedger": [
+    {
+      "schemaVersion": 1,
+      "sequence": 2,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2L-readC",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82",
+        "requestId": "ctrl-103rpkl148jsek18k61rb1k5",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:34.109Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 3,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (leader readC)",
+        "requestId": "ctrl-103rpkl148jsek18k61rb1k5",
+        "requestSequence": 2,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-readC",
+          "operationFingerprint": "sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:34.395Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 4,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:43:34.609Z",
+        "decisionSequence": 3,
+        "requestId": "ctrl-103rpkl148jsek18k61rb1k5",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-readC",
+          "operationFingerprint": "sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:34.609Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 5,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2L-writeC1",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:11e8beef29bc687926cf6a223c419051901e6a48adeb76f096f3abd7d102d604",
+        "requestId": "ctrl-1rfdtnn1qouah80beca0x183",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:34.861Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 6,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (leader writeC1)",
+        "requestId": "ctrl-1rfdtnn1qouah80beca0x183",
+        "requestSequence": 5,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC1",
+          "operationFingerprint": "sha256:11e8beef29bc687926cf6a223c419051901e6a48adeb76f096f3abd7d102d604",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:35.118Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 7,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:43:35.243Z",
+        "decisionSequence": 6,
+        "requestId": "ctrl-1rfdtnn1qouah80beca0x183",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC1",
+          "operationFingerprint": "sha256:11e8beef29bc687926cf6a223c419051901e6a48adeb76f096f3abd7d102d604",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:35.243Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 8,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2L-writeC2",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:ca3c798dbd13a309c353eea0d8ec71cb98eae7cc34d817d21b0aba034d6137ce",
+        "requestId": "ctrl-1jl6lfj0lvhixw0xxxug51pe",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:35.626Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 9,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (leader writeC2)",
+        "requestId": "ctrl-1jl6lfj0lvhixw0xxxug51pe",
+        "requestSequence": 8,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC2",
+          "operationFingerprint": "sha256:ca3c798dbd13a309c353eea0d8ec71cb98eae7cc34d817d21b0aba034d6137ce",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:35.876Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 10,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:43:36.033Z",
+        "decisionSequence": 9,
+        "requestId": "ctrl-1jl6lfj0lvhixw0xxxug51pe",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC2",
+          "operationFingerprint": "sha256:ca3c798dbd13a309c353eea0d8ec71cb98eae7cc34d817d21b0aba034d6137ce",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:36.033Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 13,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2A-readC",
+        "kind": "leader-approval",
+        "operationFingerprint": "sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82",
+        "requestId": "ctrl-0yfp86b1fe9rcm1lggb7x0mf",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-a2pa",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:37.479Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 14,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "decision": "allow",
+        "requestId": "ctrl-0yfp86b1fe9rcm1lggb7x0mf",
+        "requestSequence": 13,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readC",
+          "operationFingerprint": "sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:37.711Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 15,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:43:37.860Z",
+        "decisionSequence": 14,
+        "requestId": "ctrl-0yfp86b1fe9rcm1lggb7x0mf",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readC",
+          "operationFingerprint": "sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:37.860Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 16,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2A-writeC1",
+        "kind": "leader-approval",
+        "operationFingerprint": "sha256:eb39a5db39a378b2763ea1edcf08173fadf56958ea2c207ca1e8db00383d362e",
+        "requestId": "ctrl-0hj9h3s1t61pd308kqtga0z1",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-a2pa",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:38.145Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 17,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "decision": "allow",
+        "requestId": "ctrl-0hj9h3s1t61pd308kqtga0z1",
+        "requestSequence": 16,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-writeC1",
+          "operationFingerprint": "sha256:eb39a5db39a378b2763ea1edcf08173fadf56958ea2c207ca1e8db00383d362e",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:38.443Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 18,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:43:38.766Z",
+        "decisionSequence": 17,
+        "requestId": "ctrl-0hj9h3s1t61pd308kqtga0z1",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-writeC1",
+          "operationFingerprint": "sha256:eb39a5db39a378b2763ea1edcf08173fadf56958ea2c207ca1e8db00383d362e",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:38.766Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 19,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2A-readD",
+        "kind": "leader-approval",
+        "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+        "requestId": "ctrl-0tz9z0g0jhbs9516jbg6214e",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-a2pa",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:39.048Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 20,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "decision": "allow",
+        "requestId": "ctrl-0tz9z0g0jhbs9516jbg6214e",
+        "requestSequence": 19,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readD",
+          "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:39.471Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 21,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:43:39.668Z",
+        "decisionSequence": 20,
+        "requestId": "ctrl-0tz9z0g0jhbs9516jbg6214e",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readD",
+          "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:39.668Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 25,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-n4",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+        "requestId": "ctrl-0xfyzri1otwk9j17v89cw1vg",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:43:41.031Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 26,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-n0-readD",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+        "requestId": "ctrl-18p0yyf1aoiv4e0ktgmc51ar",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:41.109Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 27,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (N0 readD pre-read)",
+        "requestId": "ctrl-18p0yyf1aoiv4e0ktgmc51ar",
+        "requestSequence": 26,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-n0-readD",
+          "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:41.334Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 28,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:45:41.606Z",
+        "decisionSequence": 27,
+        "requestId": "ctrl-18p0yyf1aoiv4e0ktgmc51ar",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-n0-readD",
+          "operationFingerprint": "sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:41.606Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 29,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-dc",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:946314aa7a12cad250af56a26e004c9764c6282243834ab8b8b322994b7e4b8d",
+        "requestId": "ctrl-0hh404v1mhawug1g1pk1l16r",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:41.725Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 30,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (N5 first write)",
+        "requestId": "ctrl-0hh404v1mhawug1g1pk1l16r",
+        "requestSequence": 29,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-dc",
+          "operationFingerprint": "sha256:946314aa7a12cad250af56a26e004c9764c6282243834ab8b8b322994b7e4b8d",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:42.046Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 31,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:45:42.357Z",
+        "decisionSequence": 30,
+        "requestId": "ctrl-0hh404v1mhawug1g1pk1l16r",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-dc",
+          "operationFingerprint": "sha256:946314aa7a12cad250af56a26e004c9764c6282243834ab8b8b322994b7e4b8d",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:42.357Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 32,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-fp1",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:1847c45eeefd1e5367d3db412d8edb92c8933e8a926d85a23857ce87fb3c341a",
+        "requestId": "ctrl-0gsq9jy0st76ej01gebco0fb",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:42.629Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 33,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (N6 a2-fp1)",
+        "requestId": "ctrl-0gsq9jy0st76ej01gebco0fb",
+        "requestSequence": 32,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-fp1",
+          "operationFingerprint": "sha256:1847c45eeefd1e5367d3db412d8edb92c8933e8a926d85a23857ce87fb3c341a",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:42.889Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 34,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-10T21:45:43.007Z",
+        "decisionSequence": 33,
+        "requestId": "ctrl-0gsq9jy0st76ej01gebco0fb",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-fp1",
+          "operationFingerprint": "sha256:1847c45eeefd1e5367d3db412d8edb92c8933e8a926d85a23857ce87fb3c341a",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:43.007Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 35,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-fp2",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:3c3ecf15a2fac743c2b953b2f14871ad234ef9ce0ef6137fae1e012ae366e16c",
+        "requestId": "ctrl-0b5ej530kc79760kfwp5t0k6",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:43.283Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 36,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "deny",
+        "note": "V1 kit human deny (N6 a2-fp2)",
+        "requestId": "ctrl-0b5ej530kc79760kfwp5t0k6",
+        "requestSequence": 35,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-fp2",
+          "operationFingerprint": "sha256:3c3ecf15a2fac743c2b953b2f14871ad234ef9ce0ef6137fae1e012ae366e16c",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-10T21:45:43.646Z"
+    }
+  ],
+  "ledgerEntryCount": 36,
+  "finishedAt": "2026-09-10T21:45:43.911Z",
+  "verdict": {
+    "overall": "LIVE PASS",
+    "total": 115,
+    "passed": 115,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "live-health-ok",
+      "label": "p6t6 health ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"a2root\",\"liveSessions\":[\"a2root\",\"session-a2a-a\",\"session-a2b-b\"],\"toolCount\":10}"
+    },
+    {
+      "id": "live-toolcount-10",
+      "label": "factory catalog toolCount = 10",
+      "expected": 10,
+      "actual": 10,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-sessions-3",
+      "label": "leader + 2 seeded members live",
+      "expected": "[\"a2root\",\"session-a2a-a\",\"session-a2b-b\"]",
+      "actual": "[\"a2root\",\"session-a2a-a\",\"session-a2b-b\"]",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-blueprint-team.a2perm",
+      "label": "teamSession blueprintId = team.a2perm",
+      "expected": "team.a2perm",
+      "actual": "team.a2perm",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-contenthash-recorded",
+      "label": "teamSession contentHash recorded (the A1-validated hash)",
+      "expected": "non-empty string",
+      "actual": "sha256:924a60d6536883b66560e4d39aca14ca52805ba1f3d2b8639e3ba4c3d0d9f5d1",
+      "ok": true,
+      "detail": "contentHash=sha256:924a60d6536883b66560e4d39aca14ca52805ba1f3d2b8639e3ba4c3d0d9f5d1"
+    },
+    {
+      "id": "live-defaultworkspace",
+      "label": "teamSession defaultWorkspace = the pre-created workspace",
+      "expected": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm",
+      "actual": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-control-zero",
+      "label": "zero control state at boot",
+      "expected": {
+        "requests": 0,
+        "decisions": 0,
+        "consumptions": 0
+      },
+      "actual": {
+        "requests": 0,
+        "decisions": 0,
+        "consumptions": 0
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-probe-leader-list",
+      "label": "leader team_list_members registered",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-probe-leader-delegate-absent",
+      "label": "leader team_delegate NOT in the allow set (capability selection active)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-probe-leader-resolve",
+      "label": "leader team_resolve_control registered",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-probe-memberA-delegate",
+      "label": "worker-a team_delegate registered",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-probe-memberA-resolve-absent",
+      "label": "worker-a team_resolve_control NOT registered (member self-approval has no tool)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-probe-memberB-request-absent",
+      "label": "worker-b team_request_control NOT registered (allow set = team_send_message only)",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L1-allow-lane-no-request",
+      "label": "read perm-a (allow lane) created ZERO control requests for the read lanes (scoped: the chain may already hold the readC ask — a different operation — the v12 race)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "laneRequests=[] all=1"
+    },
+    {
+      "id": "live-L1-allow-executed-success",
+      "label": "read perm-a EXECUTED: the tool result carries the file content and NO denial (a denied read would ALSO satisfy the zero-request check — the V1-1 gap)",
+      "expected": "success result with content",
+      "actual": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-a: allow-read target.\\n\\n(End of file - total 1 lines)\\n</content>",
+      "ok": true,
+      "detail": "result=<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-a: allow-read target.\\n\\n(End of file - "
+    },
+    {
+      "id": "live-L2-deny-lane-no-request",
+      "label": "read perm-b (deny lane) created ZERO control requests for the read lanes (deny is static — no requestControl at all)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "laneRequests=[] all=1"
+    },
+    {
+      "id": "live-L2-deny-static-reason",
+      "label": "read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure (that would be the fs seam broken, not the policy deciding)",
+      "expected": "static policy denial",
+      "actual": "Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-b.txt",
+      "ok": true,
+      "detail": "result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\per"
+    },
+    {
+      "id": "live-L2-deny-file-unchanged",
+      "label": "perm-b.txt unchanged after static deny",
+      "expected": "perm-b: deny-read target.\n",
+      "actual": "perm-b: deny-read target.\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3a-ask-request-created",
+      "label": "read perm-c (no rule → default ask) created a durable control request",
+      "expected": "pending request a2L-readC",
+      "actual": "ctrl-103rpkl148jsek18k61rb1k5",
+      "ok": true,
+      "detail": "{\"requestId\":\"ctrl-103rpkl148jsek18k61rb1k5\",\"kind\":\"user-approval\",\"targetInstanceId\":\"inst-leader\",\"actionName\":\"parameter-permission\",\"toolName\":\"read\",\"correlation\":\"a2L-readC\",\"status\":\"pending\",\"createdAt\":\"2026-09-10T21:43:34.109Z\"}"
+    },
+    {
+      "id": "live-L3a-kind-user-approval",
+      "label": "leader ask routes to kind=user-approval (human-only resolver closure)",
+      "expected": "user-approval",
+      "actual": "user-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3a-target-leader",
+      "label": "request targetInstanceId = the leader instance",
+      "expected": "inst-leader",
+      "actual": "inst-leader",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3a-scope-exact",
+      "label": "request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) — RAW ledger payload (the /state projection omits these fields)",
+      "expected": "exact scope fields",
+      "actual": {
+        "root": "a2root",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "target": "inst-leader",
+        "corr": "a2L-readC"
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3a-fingerprint-bound",
+      "label": "request carries the EXACT operation fingerprint (payload top level, sha256:… — the A4 allow binds to this exact operation)",
+      "expected": "sha256 fingerprint",
+      "actual": "string",
+      "ok": true,
+      "detail": "fp=sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82"
+    },
+    {
+      "id": "live-L3a-no-execution-yet",
+      "label": "perm-c.txt unchanged while the read request is pending",
+      "expected": "perm-c: initial sentinel.\n",
+      "actual": "perm-c: initial sentinel.\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L4-leader-self-approval-negative",
+      "label": "leader self-approval of its own user-approval request is NOT authorized (typed CONTROL_RESOLVER_NOT_AUTHORIZED, role=leader, allowedRoles=[human])",
+      "expected": "typed resolver-not-authorized",
+      "actual": {
+        "ok": true,
+        "status": "rejected",
+        "code": "CONTROL_RESOLVER_NOT_AUTHORIZED",
+        "role": "leader",
+        "allowed": [
+          "human"
+        ]
+      },
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"rejected\",\"code\":\"CONTROL_RESOLVER_NOT_AUTHORIZED\",\"message\":\"ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])\",\"details\":{\"rootSessionId\":\"a2root\",\"requestId\":\"ctrl-103rpkl148jsek18k61rb1k5\",\"kind\":\"user-approval\",\"role\":\"lead"
+    },
+    {
+      "id": "live-L4-still-pending",
+      "label": "request still pending after the failed self-approval",
+      "expected": "pending",
+      "actual": "pending",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3a-human-allow",
+      "label": "remote team.resolveControl (v4, human) allow succeeds for the readC ask",
+      "expected": 200,
+      "actual": 200,
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"chk-1a08d46accdc1cb2\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-103rpkl148jsek18k61rb1k5\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"a2root\"},\"scope\":{\"rootSessionId\":\"a2root\",\"targetInstanceId\":\"inst-leader\",\"actionName\":\"para"
+    },
+    {
+      "id": "live-L3a-executed",
+      "label": "the readC EXECUTED after the human allow (the result carries the perm-c sentinel content — the await bridge woke the blocked tool call)",
+      "expected": "success result with content",
+      "actual": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-c: initial sentinel.\\n\\n(End of file - total 1 lines)\\n</content>",
+      "ok": true,
+      "detail": "result=<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-c: initial sentinel.\\n\\n(End of file - t"
+    },
+    {
+      "id": "live-L3a-file-unchanged",
+      "label": "perm-c.txt unchanged after the read (reads have zero write effect)",
+      "expected": "perm-c: initial sentinel.\n",
+      "actual": "perm-c: initial sentinel.\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3a-consumed",
+      "label": "the readC allow was consumed exactly once",
+      "expected": "consumption row for ctrl-103rpkl148jsek18k61rb1k5",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3-ask-request-created",
+      "label": "write perm-c (ask lane) created a durable control request",
+      "expected": "pending request a2L-writeC1",
+      "actual": "ctrl-1rfdtnn1qouah80beca0x183",
+      "ok": true,
+      "detail": "{\"requestId\":\"ctrl-1rfdtnn1qouah80beca0x183\",\"kind\":\"user-approval\",\"targetInstanceId\":\"inst-leader\",\"actionName\":\"parameter-permission\",\"toolName\":\"write\",\"correlation\":\"a2L-writeC1\",\"status\":\"pending\",\"createdAt\":\"2026-09-10T21:43:34.861Z\"}"
+    },
+    {
+      "id": "live-L3-kind-user-approval",
+      "label": "leader ask routes to kind=user-approval (human-only resolver closure)",
+      "expected": "user-approval",
+      "actual": "user-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3-target-leader",
+      "label": "request targetInstanceId = the leader instance",
+      "expected": "inst-leader",
+      "actual": "inst-leader",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3-action-parameter-permission",
+      "label": "request actionName = parameter-permission (the A5 closed action name)",
+      "expected": "parameter-permission",
+      "actual": "parameter-permission",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3-tool-write",
+      "label": "request toolName = write",
+      "expected": "write",
+      "actual": "write",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3-scope-exact",
+      "label": "request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) — RAW ledger payload",
+      "expected": "exact scope fields",
+      "actual": {
+        "root": "a2root",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "target": "inst-leader",
+        "corr": "a2L-writeC1"
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L3-fingerprint-bound",
+      "label": "request carries the EXACT operation fingerprint (payload top level, sha256:… — the A4 allow binds to this exact operation, not the tool or the correlation)",
+      "expected": "sha256 fingerprint",
+      "actual": "string",
+      "ok": true,
+      "detail": "fp=sha256:11e8beef29bc687926cf6a223c419051901e6a48adeb76f096f3abd7d102d604"
+    },
+    {
+      "id": "live-L3-no-execution-yet",
+      "label": "perm-c.txt unchanged while the request is pending",
+      "expected": "perm-c: initial sentinel.\n",
+      "actual": "perm-c: initial sentinel.\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L5-human-allow",
+      "label": "remote team.resolveControl (v4, human) allow succeeds",
+      "expected": 200,
+      "actual": 200,
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"chk-1a08d46af9ad57e4\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1rfdtnn1qouah80beca0x183\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"a2root\"},\"scope\":{\"rootSessionId\":\"a2root\",\"targetInstanceId\":\"inst-leader\",\"actionName\":\"para"
+    },
+    {
+      "id": "live-L5-executed",
+      "label": "perm-c.txt = leader-payload-1 after the allow (the write EXECUTED)",
+      "expected": "leader-payload-1",
+      "actual": "leader-payload-1",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L5-write-result-clean",
+      "label": "the writeC1 tool result carries NO error (the fs read-before-overwrite precondition was satisfied by readC — v12 seq=5 was `cannot overwrite existing … without reading it first`)",
+      "expected": "no error in result",
+      "actual": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\nUpdated file\\n</content>",
+      "ok": true,
+      "detail": "result=<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\nUpdated file\\n</content>"
+    },
+    {
+      "id": "live-L5-consumed",
+      "label": "the allow was consumed exactly once (control-allow-consumed)",
+      "expected": "consumption row for ctrl-1rfdtnn1qouah80beca0x183",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L6-re-ask",
+      "label": "second write perm-c (same lane, new call) re-asks (the previous allow was consumed)",
+      "expected": "pending request a2L-writeC2",
+      "actual": "ctrl-1jl6lfj0lvhixw0xxxug51pe",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L6-fingerprint-bound",
+      "label": "the re-ask request ALSO carries its own exact operation fingerprint — and it is DISTINCT from writeC1 (different content → different operation; a consumed allow never silently re-opens)",
+      "expected": "sha256 fingerprint, fp2 !== fp1",
+      "actual": {
+        "fp1": "sha256:11e8beef29bc68792…",
+        "fp2": "sha256:ca3c798dbd13a309c…"
+      },
+      "ok": true,
+      "detail": "fp1=sha256:11e8beef29bc687926cf6a223c419051901e6a48adeb76f096f3abd7d102d604 fp2=sha256:ca3c798dbd13a309c353eea0d8ec71cb98eae7cc34d817d21b0aba034d6137ce"
+    },
+    {
+      "id": "live-L6-executed",
+      "label": "perm-c.txt = leader-payload-2 after the second allow",
+      "expected": "leader-payload-2",
+      "actual": "leader-payload-2",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L6-consumed-2",
+      "label": "second allow consumed exactly once",
+      "expected": "consumption row for ctrl-1jl6lfj0lvhixw0xxxug51pe",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-L7-turn-settled",
+      "label": "leader drill turn settled (admitInitialWork returned ok)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"chk-1a08d46a8afcb7f\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"mode\":\"fresh\",\"rootSessionId\":\"a2root\",\"requestToken\":\"a2-lead-1\",\"payloadFingerprint\":\"sha256:89b5742492123e75cf430a98ab0bef4a95aaaf747e3705d000e4d157ac7d1"
+    },
+    {
+      "id": "live-L7-leader-done",
+      "label": "mock script reached LEADER-DONE",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M1-allow-lane",
+      "label": "worker-a read perm-a (allow lane) created ZERO control requests for the read lanes (scoped to the member read correlations — RAW ledger: the /state route blocks while this active member turn holds the work chain)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "laneCount=0 memberRequestsSoFar=0 before=0"
+    },
+    {
+      "id": "live-M1-allow-executed-success",
+      "label": "worker-a read perm-a EXECUTED: the tool result carries the file content and NO denial (the member allow lane — the V1-1 gap on the member side)",
+      "expected": "success result with content",
+      "actual": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-a: allow-read target.\\n\\n(End of file - total 1 lines)\\n</content>",
+      "ok": true,
+      "detail": "result=<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt</path>\\n<type>file</type>\\n<content>\\n1: perm-a: allow-read target.\\n\\n(End of file - "
+    },
+    {
+      "id": "live-M2-deny-lane",
+      "label": "worker-a read perm-b (deny lane) created ZERO control requests for the read lanes (deny is static — no requestControl at all; RAW ledger — /state blocks during the active member turn)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "laneCount=0 before=0"
+    },
+    {
+      "id": "live-M2-deny-static-reason",
+      "label": "worker-a read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure",
+      "expected": "static policy denial",
+      "actual": "Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-b.txt",
+      "ok": true,
+      "detail": "result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\per"
+    },
+    {
+      "id": "live-M3a-ask-request",
+      "label": "worker-a read perm-c (no rule → default ask) created a durable control request",
+      "expected": "pending request a2A-readC",
+      "actual": "ctrl-0yfp86b1fe9rcm1lggb7x0mf",
+      "ok": true,
+      "detail": "{\"requestId\":\"ctrl-0yfp86b1fe9rcm1lggb7x0mf\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-a2pa\",\"correlation\":\"a2A-readC\",\"createdAt\":\"2026-09-10T21:43:37.479Z\"}"
+    },
+    {
+      "id": "live-M3a-kind-leader-approval",
+      "label": "member ask routes to kind=leader-approval (leader-or-human resolver closure)",
+      "expected": "leader-approval",
+      "actual": "leader-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3a-target-member",
+      "label": "request targetInstanceId = inst-a2pa (the requesting member)",
+      "expected": "inst-a2pa",
+      "actual": "inst-a2pa",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3a-scope-exact",
+      "label": "request scope = the EXACT operation (root + member caller + member target + action + tool + correlation) — RAW ledger payload",
+      "expected": "exact scope fields",
+      "actual": {
+        "root": "a2root",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "target": "inst-a2pa",
+        "corr": "a2A-readC"
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3a-fingerprint-bound",
+      "label": "the member readC ask carries the EXACT operation fingerprint (the leader allow binds to this exact member operation)",
+      "expected": "sha256 fingerprint",
+      "actual": "string",
+      "ok": true,
+      "detail": "fp=sha256:481dc024c48e27f8b4c96bd9a74b9c27e3a09af68f52821114c4c14c83caef82"
+    },
+    {
+      "id": "live-M3a-no-execution-yet",
+      "label": "perm-c.txt unchanged while the member read request is pending",
+      "expected": "leader-payload-2",
+      "actual": "leader-payload-2",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M4-member-self-approval-negative",
+      "label": "worker-a cannot resolve (live /tool: unknown-tool rejection; boot probe: not-registered)",
+      "expected": "rejected (unknown tool) or boot-probe absent",
+      "actual": "live unknown-tool",
+      "ok": true,
+      "detail": "live=200 unknown tool \"team_resolve_control\" boot=not-registered"
+    },
+    {
+      "id": "live-M5-leader-resolves-member",
+      "label": "leader resolves the member's leader-approval request (route: tool — the leader IS a resolver for kind=leader-approval)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "route=tool {\"ok\":true,\"value\":{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0yfp86b1fe9rcm1lggb7x0mf\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"a2root\",\"targetInstanceId\":\"inst-a2pa\",\"actionName\":\"parameter-permission\",\"co"
+    },
+    {
+      "id": "live-M3a-executed",
+      "label": "the member readC EXECUTED after the leader allow (the result carries the current perm-c content — leader-payload-2, set by the leader drill)",
+      "expected": "success result with content",
+      "actual": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\n1: leader-payload-2\\n\\n(End of file - total 1 lines)\\n</content>",
+      "ok": true,
+      "detail": "result=<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\n1: leader-payload-2\\n\\n(End of file - total 1 li"
+    },
+    {
+      "id": "live-M3a-consumed",
+      "label": "the member readC allow was consumed exactly once (raw ledger control-allow-consumed)",
+      "expected": "consumption row for ctrl-0yfp86b1fe9rcm1lggb7x0mf",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3-ask-request",
+      "label": "worker-a write perm-c (ask lane) created a durable control request",
+      "expected": "pending request a2A-writeC1",
+      "actual": "ctrl-0hj9h3s1t61pd308kqtga0z1",
+      "ok": true,
+      "detail": "{\"requestId\":\"ctrl-0hj9h3s1t61pd308kqtga0z1\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-a2pa\",\"correlation\":\"a2A-writeC1\",\"createdAt\":\"2026-09-10T21:43:38.145Z\"}"
+    },
+    {
+      "id": "live-M3-kind-leader-approval",
+      "label": "member ask routes to kind=leader-approval (leader-or-human resolver closure)",
+      "expected": "leader-approval",
+      "actual": "leader-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3-target-member",
+      "label": "request targetInstanceId = inst-a2pa (the requesting member)",
+      "expected": "inst-a2pa",
+      "actual": "inst-a2pa",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3-scope-exact",
+      "label": "request scope = the EXACT operation (root + member caller + member target + action + tool + correlation) — RAW ledger payload",
+      "expected": "exact scope fields",
+      "actual": {
+        "root": "a2root",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "target": "inst-a2pa",
+        "corr": "a2A-writeC1"
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M3-fingerprint-bound",
+      "label": "request carries the EXACT operation fingerprint (the leader allow binds to this exact member operation)",
+      "expected": "sha256 fingerprint",
+      "actual": "string",
+      "ok": true,
+      "detail": "fp=sha256:eb39a5db39a378b2763ea1edcf08173fadf56958ea2c207ca1e8db00383d362e"
+    },
+    {
+      "id": "live-M3-no-execution-yet",
+      "label": "perm-c.txt unchanged while the member write request is pending",
+      "expected": "leader-payload-2",
+      "actual": "leader-payload-2",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M5b-leader-allows-write",
+      "label": "leader allows the member writeC1 (route: tool — leader-approval closure)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "route=tool {\"ok\":true,\"value\":{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0hj9h3s1t61pd308kqtga0z1\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"a2root\",\"targetInstanceId\":\"inst-a2pa\",\"actionName\":\"parameter-permission\",\"co"
+    },
+    {
+      "id": "live-M5-executed",
+      "label": "perm-c.txt = member-a-payload-1 after the leader allow",
+      "expected": "member-a-payload-1",
+      "actual": "member-a-payload-1",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M5-write-result-clean",
+      "label": "the member writeC1 tool result carries NO error (fs read-before-overwrite satisfied by the members own readC)",
+      "expected": "no error in result",
+      "actual": "<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\nUpdated file\\n</content>",
+      "ok": true,
+      "detail": "result=<path>D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-c.txt</path>\\n<type>file</type>\\n<content>\\nUpdated file\\n</content>"
+    },
+    {
+      "id": "live-M5-consumed",
+      "label": "the leader-allow was consumed exactly once (raw ledger control-allow-consumed)",
+      "expected": "consumption row for ctrl-0hj9h3s1t61pd308kqtga0z1",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M7-default-ask-created",
+      "label": "worker-a read perm-d (no rule match → default ask) created a durable request",
+      "expected": "pending request a2A-readD",
+      "actual": "ctrl-0tz9z0g0jhbs9516jbg6214e",
+      "ok": true,
+      "detail": "{\"requestId\":\"ctrl-0tz9z0g0jhbs9516jbg6214e\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-a2pa\",\"correlation\":\"a2A-readD\",\"createdAt\":\"2026-09-10T21:43:39.048Z\"}"
+    },
+    {
+      "id": "live-M7-kind-leader-approval",
+      "label": "the member default-ask routes to kind=leader-approval",
+      "expected": "leader-approval",
+      "actual": "leader-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M7-fingerprint-bound",
+      "label": "the default-ask request carries the EXACT operation fingerprint (the allow binds to this exact read operation)",
+      "expected": "sha256 fingerprint",
+      "actual": "string",
+      "ok": true,
+      "detail": "fp=sha256:a3b1a4aa47a5ec1a407f6bbd4062d963fb86a445b2fb5ca3dc40d8d23a059368"
+    },
+    {
+      "id": "live-M7-leader-allows",
+      "label": "leader allows the member default-ask (route: tool — leader-approval closure)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "route=tool {\"ok\":true,\"value\":{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0tz9z0g0jhbs9516jbg6214e\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"a2root\",\"targetInstanceId\":\""
+    },
+    {
+      "id": "live-M7-executed",
+      "label": "the read EXECUTED (the a2A-readD tool result carries the perm-d.txt content, not an error)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "mock log: the a2A-readD tool result content"
+    },
+    {
+      "id": "live-M7-consumed",
+      "label": "the default-ask allow was consumed exactly once (raw ledger control-allow-consumed)",
+      "expected": "consumption row for ctrl-0tz9z0g0jhbs9516jbg6214e",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-M6-turn-settled",
+      "label": "member-a drill turn settled (member.send returned ok)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"chk-1a08d46b5e3c403c\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"outcome\":{\"status\":\"delivered\",\"rootSessionId\":\"a2root\",\"action\":\"send-message\",\"callerRole\":\"human\",\"recipientInstanceId\":\"inst-a2pa\",\"deliveryMode\":\"dire"
+    },
+    {
+      "id": "live-M6-member-a-done",
+      "label": "mock script reached MEMBER-A-DONE",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-B1-zero-requests",
+      "label": "worker-b (default deny, empty lanes) turn created ZERO control requests (no ask lane exists — requester-scoped RAW ledger: the /state route blocks during the active member-b turn)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "before=0 after=0"
+    },
+    {
+      "id": "live-B1-zero-decisions",
+      "label": "worker-b turn created ZERO decisions (no request → no decision; requester-scoped RAW ledger)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "requests=0"
+    },
+    {
+      "id": "live-B1-file-unchanged",
+      "label": "perm-e.txt unchanged (both operations statically denied)",
+      "expected": "perm-e: default-deny target (worker-b).\n",
+      "actual": "perm-e: default-deny target (worker-b).\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-B1-deny-default-reason",
+      "label": "worker-b read perm-e denied by the DEFAULT (deny, empty lanes) — a static policy denial, NOT a canonicalization/resolver failure",
+      "expected": "static default denial",
+      "actual": "Error: permission denied by the static permission policy: the template's default (deny) denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-e.txt",
+      "ok": true,
+      "detail": "result=Error: permission denied by the static permission policy: the template's default (deny) denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\"
+    },
+    {
+      "id": "live-B1-write-deny-default-reason",
+      "label": "worker-b write perm-e ALSO denied by the DEFAULT (deny, empty lanes) — static policy, zero execution",
+      "expected": "static default denial",
+      "actual": "Error: permission denied by the static permission policy: the template's default (deny) denies write on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-e.txt",
+      "ok": true,
+      "detail": "result=Error: permission denied by the static permission policy: the template's default (deny) denies write on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm"
+    },
+    {
+      "id": "live-B2-turn-settled",
+      "label": "member-b drill turn settled (member.send returned ok)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"chk-1a08d46c357d4148\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"outcome\":{\"status\":\"delivered\",\"rootSessionId\":\"a2root\",\"action\":\"send-message\",\"callerRole\":\"human\",\"recipientInstanceId\":\"inst-a2pb\",\"deliveryMode\":\"dire"
+    },
+    {
+      "id": "live-B2-member-b-done",
+      "label": "mock script reached MEMBER-B-DONE",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N1-malformed-args-deny",
+      "label": "read with a non-string file_path is DENIED (fail-closed canonicalization)",
+      "expected": "denied",
+      "actual": "denied",
+      "ok": true,
+      "detail": "permission denied: canonicalization failed for tool \"read\": file-path-not-a-string"
+    },
+    {
+      "id": "live-N2-canonicalization-failure-deny",
+      "label": "read of a path THROUGH a regular file is DENIED (canonicalization failure — the resolver genuinely cannot canonicalize it; fail-closed, never next())",
+      "expected": "denied",
+      "actual": "denied",
+      "ok": true,
+      "detail": "permission denied: canonicalization failed for tool \"read\": resolver-threw (cannot resolve \"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt\\child.txt\": a parent path segment is not a directo"
+    },
+    {
+      "id": "live-N2-canonicalization-reason",
+      "label": "the N2 denial IS a canonicalization failure (the resolver-threw shape) — the inverse discriminator of the L2/M2/B1 static-policy legs (the fs seam itself is working: this is a genuinely unresolvable target)",
+      "expected": "canonicalization failed + resolver-threw",
+      "actual": "permission denied: canonicalization failed for tool \"read\": resolver-threw (cannot resolve \"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt\\child.txt\": a parent path segment is not a directory)",
+      "ok": true,
+      "detail": "permission denied: canonicalization failed for tool \"read\": resolver-threw (cannot resolve \"D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2perm-v16-20260711\\workspace-a2perm\\perm-a.txt\\child.txt\": a parent path segment is not a directo"
+    },
+    {
+      "id": "live-N1N2-no-requests",
+      "label": "N1/N2 denies created ZERO control requests (deny before requestControl)",
+      "expected": 6,
+      "actual": 6,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N3-passthrough",
+      "label": "team_list_members (unsupported class) passes through ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"message\":\"team-tools: required argument 'rootSessionId' is missing\",\"details\":{\"field\":\"rootSessionId\"}}}"
+    },
+    {
+      "id": "live-N3-zero-rows",
+      "label": "pass-through created ZERO control requests (count unchanged by the N3 call)",
+      "expected": 6,
+      "actual": 6,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N4-ask-created",
+      "label": "read perm-d (no matching rule → default ask) created a pending request",
+      "expected": "pending request a2-n4",
+      "actual": "ctrl-0xfyzri1otwk9j17v89cw1vg",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N4-no-execution-without-decision",
+      "label": "perm-d.txt unchanged while the ask is undecided (zero-effect)",
+      "expected": "perm-d: default-ask target (no matching rule).\n",
+      "actual": "perm-d: default-ask target (no matching rule).\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N4-residency-drop",
+      "label": "residency drop of the waiting leader succeeds",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"sessionId\":\"a2root\",\"dropped\":true}"
+    },
+    {
+      "id": "live-N4-abort-deny",
+      "label": "the aborted wait settles DENIED (CONTROL_WAIT_ABORTED → deny, no execution)",
+      "expected": "denied",
+      "actual": "denied",
+      "ok": true,
+      "detail": "the approval wait was cancelled"
+    },
+    {
+      "id": "live-N4-still-pending",
+      "label": "cancellation never decides: the request stays PENDING after the abort",
+      "expected": "pending",
+      "actual": "pending",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N4-file-unchanged",
+      "label": "perm-d.txt unchanged after the aborted ask",
+      "expected": "perm-d: default-ask target (no matching rule).\n",
+      "actual": "perm-d: default-ask target (no matching rule).\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N0-ask-created",
+      "label": "read perm-d (no rule → default ask) created a pending request on the direct /tool route",
+      "expected": "pending request a2-n0-readD",
+      "actual": "ctrl-18p0yyf1aoiv4e0ktgmc51ar",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N0-kind-user-approval",
+      "label": "the leader default-ask routes to kind=user-approval",
+      "expected": "user-approval",
+      "actual": "user-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N0-executed",
+      "label": "the N0 pre-read EXECUTED after the human allow (the /tool value carries the perm-d content in its structured lines)",
+      "expected": "success value with content",
+      "actual": "ok",
+      "ok": true,
+      "detail": "ok=true lines=[{\"number\":1,\"text\":\"perm-d: default-ask target (no matching rule).\"}]"
+    },
+    {
+      "id": "live-N5-first-executed",
+      "label": "N5 first write (allow + consume) executed",
+      "expected": "a2-dc-one",
+      "actual": "a2-dc-one",
+      "ok": true,
+      "detail": "tool={\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-a2perm-v16-20260711\\\\workspace-a2perm\\\\perm-d.txt\",\"opera"
+    },
+    {
+      "id": "live-N5-first-consumed",
+      "label": "N5 first allow consumed exactly once",
+      "expected": "consumption row",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N5-double-consumption-blocked",
+      "label": "re-executing the same operation (same callId) is blocked allow-consumed",
+      "expected": "denied (allow-consumed)",
+      "actual": "denied",
+      "ok": true,
+      "detail": "permission denied: the last-mile guard blocked the operation (allow-consumed)"
+    },
+    {
+      "id": "live-N5-still-one-consumption",
+      "label": "exactly ONE consumption row for the N5 request (no second reserve)",
+      "expected": 1,
+      "actual": 1,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N6-fp1-executed",
+      "label": "N6 a2-fp1 (allow + consume) executed",
+      "expected": "a2-fp-one",
+      "actual": "a2-fp-one",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N6-fingerprints-distinct",
+      "label": "a2-fp1 and a2-fp2 carry DISTINCT operation fingerprints",
+      "expected": "fp1 !== fp2",
+      "actual": {
+        "fp1": "sha256:1847c45eeefd1e536…",
+        "fp2": "sha256:3c3ecf15a2fac743c…"
+      },
+      "ok": true,
+      "detail": "fp1=sha256:1847c45eeefd1e5367d3db412d8edb92c8933e8a926d85a23857ce87fb3c341a fp2=sha256:3c3ecf15a2fac743c2b953b2f14871ad234ef9ce0ef6137fae1e012ae366e16c"
+    },
+    {
+      "id": "live-N6-old-allow-unusable",
+      "label": "the consumed a2-fp1 allow did NOT authorize the a2-fp2 operation (RAW ledger: still pending, file unchanged — the /state projection is blocked by the active turn)",
+      "expected": "pending + a2-fp-one",
+      "actual": {
+        "status": "pending",
+        "file": "a2-fp-one"
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-N6-fp2-denied",
+      "label": "a2-fp2 resolved deny → the operation is denied",
+      "expected": "denied",
+      "actual": "denied",
+      "ok": true,
+      "detail": "the approval was denied"
+    },
+    {
+      "id": "live-N6-file-unchanged",
+      "label": "perm-d.txt still a2-fp-one after the a2-fp2 deny",
+      "expected": "a2-fp-one",
+      "actual": "a2-fp-one",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-final-perm-a",
+      "label": "perm-a.txt untouched (read-only lanes)",
+      "expected": "perm-a: allow-read target.\n",
+      "actual": "perm-a: allow-read target.\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-final-perm-e",
+      "label": "perm-e.txt untouched (worker-b default deny)",
+      "expected": "perm-e: default-deny target (worker-b).\n",
+      "actual": "perm-e: default-deny target (worker-b).\n",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-final-perm-c",
+      "label": "perm-c.txt ends member-a-payload-1 (leader wrote twice, member-a overwrote last)",
+      "expected": "member-a-payload-1",
+      "actual": "member-a-payload-1",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "live-final-perm-d",
+      "label": "perm-d.txt ends a2-fp-one (N6 a2-fp1 allow executed; a2-fp2 denied)",
+      "expected": "a2-fp-one",
+      "actual": "a2-fp-one",
+      "ok": true,
+      "detail": null
+    }
+  ]
+}

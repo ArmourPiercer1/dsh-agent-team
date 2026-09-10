@@ -1,0 +1,13 @@
+[2026-09-10T19:38:24.412Z] mock: listening on 127.0.0.1:3493
+[2026-09-10T19:41:41.672Z] mock seq=1 identity=leader trigger=user → tool-call:a2L-readA:read
+[2026-09-10T19:41:41.673Z] mock: 1 tool-call reply: read
+[2026-09-10T19:41:41.674Z] mock seq=2 identity=unknown trigger=user → text-fallback
+[2026-09-10T19:41:41.674Z] mock: 2 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T19:41:41.825Z] mock seq=3 identity=leader trigger=tool:a2L-readA result=Error: unknown tool "read" → tool-call:a2L-readB:read
+[2026-09-10T19:41:41.826Z] mock: 3 tool-call reply: read
+[2026-09-10T19:41:41.918Z] mock seq=4 identity=leader trigger=tool:a2L-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test- → tool-call:a2L-writeC1:write
+[2026-09-10T19:41:41.920Z] mock: 4 tool-call reply: write
+[2026-09-10T19:41:42.012Z] mock seq=5 identity=leader trigger=tool:a2L-writeC1 result=Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary f → tool-call:a2L-writeC2:write
+[2026-09-10T19:41:42.013Z] mock: 5 tool-call reply: write
+[2026-09-10T19:41:42.105Z] mock seq=6 identity=leader trigger=tool:a2L-writeC2 result=Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary f → text:LEADER-DONE
+[2026-09-10T19:41:42.106Z] mock: 6 text reply (11 chars): "LEADER-DONE"

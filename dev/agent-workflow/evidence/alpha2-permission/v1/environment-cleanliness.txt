@@ -1,0 +1,35 @@
+# V1 环境清洁度（终态核验，2026-07-11 会话 / 日志戳 2026-09-10T22:xxZ）
+
+## 端口与进程
+| 项 | 状态 | 证据 |
+| --- | --- | --- |
+| :3080（pid 11652，Web GUI 实例） | ZERO-TOUCH（V1 全程未碰；未启替代服务器） | 无针对 :3080 / D:\deepseek-harness 的任何写操作记录 |
+| D:\deepseek-harness\（部署树） | ZERO-TOUCH | 同上 |
+| :3180 用户 tsx（pid 104004） | 未杀（进程存活） | 全程未对其发送信号 |
+| :3181 | v17 末次 stop（22:08:51.161）后释放 | `a2perm-boot-v17-20260711-legacy-console.log` 之前的 stop 日志：`stop: ports free — 3181:true 3493:true` / `A2-STOPPED` |
+| :3493 | 同上（mock 随 boot 进程退出释放） | 同上 |
+
+## git / 源树
+| 项 | 状态 | 证据 |
+| --- | --- | --- |
+| worktree `.worktrees/alpha2-v1`（branch task/alpha2-v1-verification） | 本最终提交后 porcelain 干净（无 untracked 残留） | 提交后 `git status --porcelain` 为空 |
+| test-use 树 `references/deepseek-harness-test-use` | HEAD = a66e470204（release(dsh): 0.1.2-rc.1），porcelain 0 行 → CORE PATCH BUDGET = 0 | 本会话核验（V1 全程未改动 upstream 源） |
+| 主仓库 `D:\AgentDev\dsh-plugins\dsh-agent-team` | 未触碰（HEAD 3aa6838 及其预存脏状态原样） | 所有 kit 命令均 workdir 化到 worktree/kit 目录 |
+| push | 无（分支仅本地） | 无 push 记录 |
+
+## 世界 home（保留在盘，可复核）
+- `references/.dsh-test-a2perm-v1-...`（v1 早期）、v11、v12、v13（脏诊断）、v14（脏诊断）、v15、v16、v17
+- `references/.dsh-test-a2permlegacy-v13/.../v17`（legacy 世界）
+- 全部位于主仓库 `references/`（工作区内），不占用 test-use 树
+
+## 临时文件
+- 3 个 dispatch 输入已删：`a2perm-blueprint.yml`、`v1-brief.md`、`v1-kit-plan.md`
+- 全部 `.tmp-*.mjs` 已删（28 个：17 早期 + 9 v14 诊断 + 2 v15 shape/clean 探针）
+- 证据目录 `dev/agent-workflow/evidence/alpha2-permission/v1/` 全量入库（kit 4 脚本 + run-v11-targeted.mjs + 各轮 console/evidence/mock/state/dump/sidecar + summary.md + 本文件）
+
+## 运行实例（v17 三腿终态）
+| 腿 | boot | 运行 | stop |
+| --- | --- | --- | --- |
+| a2perm create | 21:52:41 A2-READY | live 115/115（21:57:07–21:59:18） | 21:59:29 A2-STOPPED |
+| a2perm resume | 21:59:40 A2-READY | cold 26/26（22:03:55–22:03:56） | 22:04:11 A2-STOPPED |
+| legacy create | 22:04:22 A2-READY | legacy 12/12（22:08:35） | 22:08:51 A2-STOPPED |

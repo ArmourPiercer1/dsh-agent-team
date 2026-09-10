@@ -1,0 +1,55 @@
+[2026-09-10T21:07:37.213Z] PASS live-health-ok — p6t6 health ok
+[2026-09-10T21:07:37.214Z] PASS live-toolcount-10 — factory catalog toolCount = 10
+[2026-09-10T21:07:37.214Z] PASS live-sessions-3 — leader + 2 seeded members live
+[2026-09-10T21:07:37.223Z] PASS live-blueprint-team.a2perm — teamSession blueprintId = team.a2perm
+[2026-09-10T21:07:37.224Z] PASS live-contenthash-recorded — teamSession contentHash recorded (the A1-validated hash)
+[2026-09-10T21:07:37.224Z] PASS live-defaultworkspace — teamSession defaultWorkspace = the pre-created workspace
+[2026-09-10T21:07:37.224Z] PASS live-control-zero — zero control state at boot
+[2026-09-10T21:07:37.224Z] baseline files recorded (perm-a..e.txt)
+[2026-09-10T21:07:37.359Z] PASS live-probe-leader-list — leader team_list_members registered
+[2026-09-10T21:07:37.359Z] PASS live-probe-leader-delegate-absent — leader team_delegate NOT in the allow set (capability selection active)
+[2026-09-10T21:07:37.359Z] PASS live-probe-leader-resolve — leader team_resolve_control registered
+[2026-09-10T21:07:37.359Z] PASS live-probe-memberA-delegate — worker-a team_delegate registered
+[2026-09-10T21:07:37.359Z] PASS live-probe-memberA-resolve-absent — worker-a team_resolve_control NOT registered (member self-approval has no tool)
+[2026-09-10T21:07:37.359Z] PASS live-probe-memberB-request-absent — worker-b team_request_control NOT registered (allow set = team_send_message only)
+[2026-09-10T21:07:37.360Z] leader drill: team.admitInitialWork fired (v2, background)
+[2026-09-10T21:07:38.235Z] PASS live-L1-allow-lane-no-request — read perm-a (allow lane) created ZERO control requests for the read lanes (scoped: the chain may already hold the readC ask — a different operation — the v12 race)
+[2026-09-10T21:07:38.235Z] PASS live-L1-allow-executed-success — read perm-a EXECUTED: the tool result carries the file content and NO denial (a denied read would ALSO satisfy the zero-request check — the V1-1 gap)
+[2026-09-10T21:07:38.247Z] PASS live-L2-deny-lane-no-request — read perm-b (deny lane) created ZERO control requests for the read lanes (deny is static — no requestControl at all)
+[2026-09-10T21:07:38.247Z] PASS live-L2-deny-static-reason — read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure (that would be the fs seam broken, not the policy deciding)
+[2026-09-10T21:07:38.247Z] PASS live-L2-deny-file-unchanged — perm-b.txt unchanged after static deny
+[2026-09-10T21:07:38.268Z] PASS live-L3a-ask-request-created — read perm-c (no rule → default ask) created a durable control request
+[2026-09-10T21:07:38.269Z] PASS live-L3a-kind-user-approval — leader ask routes to kind=user-approval (human-only resolver closure)
+[2026-09-10T21:07:38.269Z] PASS live-L3a-target-leader — request targetInstanceId = the leader instance
+[2026-09-10T21:07:38.272Z] PASS live-L3a-scope-exact — request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) — RAW ledger payload (the /state projection omits these fields)
+[2026-09-10T21:07:38.273Z] PASS live-L3a-fingerprint-bound — request carries the EXACT operation fingerprint (payload top level, sha256:… — the A4 allow binds to this exact operation)
+[2026-09-10T21:07:38.273Z] PASS live-L3a-no-execution-yet — perm-c.txt unchanged while the read request is pending
+[2026-09-10T21:07:38.320Z] PASS live-L4-leader-self-approval-negative — leader self-approval of its own user-approval request is NOT authorized (typed CONTROL_RESOLVER_NOT_AUTHORIZED, role=leader, allowedRoles=[human])
+[2026-09-10T21:07:38.322Z] PASS live-L4-still-pending — request still pending after the failed self-approval
+[2026-09-10T21:07:38.482Z] PASS live-L3a-human-allow — remote team.resolveControl (v4, human) allow succeeds for the readC ask
+[2026-09-10T21:07:38.744Z] PASS live-L3a-executed — the readC EXECUTED after the human allow (the result carries the perm-c sentinel content — the await bridge woke the blocked tool call)
+[2026-09-10T21:07:38.745Z] PASS live-L3a-file-unchanged — perm-c.txt unchanged after the read (reads have zero write effect)
+[2026-09-10T21:07:38.869Z] PASS live-L3a-consumed — the readC allow was consumed exactly once
+[2026-09-10T21:07:38.886Z] PASS live-L3-ask-request-created — write perm-c (ask lane) created a durable control request
+[2026-09-10T21:07:38.887Z] PASS live-L3-kind-user-approval — leader ask routes to kind=user-approval (human-only resolver closure)
+[2026-09-10T21:07:38.887Z] PASS live-L3-target-leader — request targetInstanceId = the leader instance
+[2026-09-10T21:07:38.887Z] PASS live-L3-action-parameter-permission — request actionName = parameter-permission (the A5 closed action name)
+[2026-09-10T21:07:38.887Z] PASS live-L3-tool-write — request toolName = write
+[2026-09-10T21:07:38.903Z] PASS live-L3-scope-exact — request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) — RAW ledger payload
+[2026-09-10T21:07:38.903Z] PASS live-L3-fingerprint-bound — request carries the EXACT operation fingerprint (payload top level, sha256:… — the A4 allow binds to this exact operation, not the tool or the correlation)
+[2026-09-10T21:07:38.903Z] PASS live-L3-no-execution-yet — perm-c.txt unchanged while the request is pending
+[2026-09-10T21:07:39.053Z] PASS live-L5-human-allow — remote team.resolveControl (v4, human) allow succeeds
+[2026-09-10T21:07:39.639Z] PASS live-L5-executed — perm-c.txt = leader-payload-1 after the allow (the write EXECUTED)
+[2026-09-10T21:07:39.639Z] PASS live-L5-write-result-clean — the writeC1 tool result carries NO error (the fs read-before-overwrite precondition was satisfied by readC — v12 seq=5 was `cannot overwrite existing … without reading it first`)
+[2026-09-10T21:07:39.639Z] PASS live-L5-consumed — the allow was consumed exactly once (control-allow-consumed)
+[2026-09-10T21:07:39.648Z] PASS live-L6-re-ask — second write perm-c (same lane, new call) re-asks (the previous allow was consumed)
+[2026-09-10T21:07:39.664Z] PASS live-L6-fingerprint-bound — the re-ask request ALSO carries its own exact operation fingerprint — and it is DISTINCT from writeC1 (different content → different operation; a consumed allow never silently re-opens)
+[2026-09-10T21:07:40.416Z] PASS live-L6-executed — perm-c.txt = leader-payload-2 after the second allow
+[2026-09-10T21:07:40.417Z] PASS live-L6-consumed-2 — second allow consumed exactly once
+[2026-09-10T21:07:40.526Z] PASS live-L7-turn-settled — leader drill turn settled (admitInitialWork returned ok)
+[2026-09-10T21:07:40.528Z] PASS live-L7-leader-done — mock script reached LEADER-DONE
+[2026-09-10T21:07:40.529Z] member-a drill: member.send fired (v1, background)
+[2026-09-10T21:07:56.325Z] PASS live-M1-allow-lane — worker-a read perm-a (allow lane) created ZERO control requests for the read lanes (scoped: the chain may already hold the readC ask — a different operation)
+[2026-09-10T21:07:56.326Z] PASS live-M1-allow-executed-success — worker-a read perm-a EXECUTED: the tool result carries the file content and NO denial (the member allow lane — the V1-1 gap on the member side)
+[2026-09-10T21:08:11.335Z] PASS live-M2-deny-lane — worker-a read perm-b (deny lane) created ZERO control requests for the read lanes (deny is static — no requestControl at all)
+[2026-09-10T21:08:11.336Z] PASS live-M2-deny-static-reason — worker-a read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure

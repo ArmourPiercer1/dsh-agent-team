@@ -1,0 +1,23 @@
+[2026-09-10T20:41:31.600Z] mock: listening on 127.0.0.1:3493
+[2026-09-10T20:46:29.927Z] mock seq=1 identity=leader trigger=user → tool-call:a2L-readA:read
+[2026-09-10T20:46:29.928Z] mock: 1 tool-call reply: read
+[2026-09-10T20:46:29.929Z] mock seq=2 identity=unknown trigger=user → text-fallback
+[2026-09-10T20:46:29.930Z] mock: 2 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T20:46:30.109Z] mock seq=3 identity=leader trigger=tool:a2L-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2L-readB:read
+[2026-09-10T20:46:30.109Z] mock: 3 tool-call reply: read
+[2026-09-10T20:46:30.203Z] mock seq=4 identity=leader trigger=tool:a2L-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-b.txt → tool-call:a2L-readC:read
+[2026-09-10T20:46:30.204Z] mock: 4 tool-call reply: read
+[2026-09-10T20:46:30.874Z] mock seq=5 identity=leader trigger=tool:a2L-readC result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-c.txt</path>\n<type>file</type>\n<content>\n1: perm-c: initial sentinel.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2L-writeC1:write
+[2026-09-10T20:46:30.874Z] mock: 5 tool-call reply: write
+[2026-09-10T20:46:31.743Z] mock seq=6 identity=leader trigger=tool:a2L-writeC1 result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-c.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content> → tool-call:a2L-writeC2:write
+[2026-09-10T20:46:31.743Z] mock: 6 tool-call reply: write
+[2026-09-10T20:46:32.521Z] mock seq=7 identity=leader trigger=tool:a2L-writeC2 result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-c.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content> → text:LEADER-DONE
+[2026-09-10T20:46:32.521Z] mock: 7 text reply (11 chars): "LEADER-DONE"
+[2026-09-10T20:56:01.160Z] mock seq=8 identity=worker-a trigger=user → tool-call:a2A-readA:read
+[2026-09-10T20:56:01.161Z] mock: 8 tool-call reply: read
+[2026-09-10T20:56:01.163Z] mock seq=9 identity=unknown trigger=user → text-fallback
+[2026-09-10T20:56:01.163Z] mock: 9 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-10T20:56:01.321Z] mock seq=10 identity=worker-a trigger=tool:a2A-readA result=<path>D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-a.txt</path>\n<type>file</type>\n<content>\n1: perm-a: allow-read target.\n\n(End of file - total 1 lines)\n</content> → tool-call:a2A-readB:read
+[2026-09-10T20:56:01.321Z] mock: 10 tool-call reply: read
+[2026-09-10T20:56:01.409Z] mock seq=11 identity=worker-a trigger=tool:a2A-readB result=Error: permission denied by the static permission policy: the template's deny rule 0 denies read on D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v13-20260711\workspace-a2perm\perm-b.txt → tool-call:a2A-readC:read
+[2026-09-10T20:56:01.410Z] mock: 11 tool-call reply: read

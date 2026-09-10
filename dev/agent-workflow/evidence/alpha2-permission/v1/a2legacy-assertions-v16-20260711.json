@@ -1,0 +1,23 @@
+{
+  "installed package dir exists": {
+    "ok": true,
+    "detail": null
+  },
+  "installed version is 0.1.1-alpha.2": {
+    "ok": true,
+    "detail": "0.1.1-alpha.2"
+  },
+  "installed root manifest declares dsh.bundle.patch": {
+    "ok": true,
+    "detail": null
+  },
+  "dsh.profile.bundles AUTO-contains the dsh-agent-team bundle": {
+    "ok": true,
+    "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+  },
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2permlegacy-v16-20260711/repo.git#task/alpha2-v1-verification",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permlegacy-v16-20260711",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permlegacy-v16-20260711\\profiles\\web\\node_modules\\dsh-agent-team",
+  "branch": "task/alpha2-v1-verification",
+  "installExit": 0
+}

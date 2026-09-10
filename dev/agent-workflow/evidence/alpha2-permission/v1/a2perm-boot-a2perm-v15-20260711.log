@@ -1,0 +1,26 @@
+[2026-09-10T21:24:29.879Z] world (a2perm): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v15-20260711
+[2026-09-10T21:24:29.881Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2perm-v15-20260711\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T21:24:29.881Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2perm-assertions-v15-20260711.json (branch=task/alpha2-v1-verification)
+[2026-09-10T21:24:29.885Z] profile already initialized (a2perm-setup)
+[2026-09-10T21:24:29.885Z] p6t6 directive written (boot=1 phase=create rootSessionId=a2root)
+[2026-09-10T21:24:29.896Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T21:24:33.253Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=hULNRSU0SvguunXunR41f6j0qUq1y3nM3OqNhi56Eso
+[2026-09-10T21:24:33.276Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 50516
+[2026-09-10T21:24:35.327Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"a2root","liveSessions":["a2root","session-a2a-a","session-a2b-b"],"toolCount":10}
+[2026-09-10T21:24:35.328Z] live sessions = ["a2root","session-a2a-a","session-a2b-b"] (expected set)
+[2026-09-10T21:24:35.344Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T21:24:35.440Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\dump-config-a2perm-v15-20260711.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T21:24:35.463Z] catalog.list with cookie: HTTP 200
+[2026-09-10T21:24:35.463Z] catalog.list carries team.a2perm (user-layer override in force)
+[2026-09-10T21:24:35.463Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-v1\dev\agent-workflow\evidence\alpha2-permission\v1\a2state-a2perm-v15-20260711.json
+[2026-09-10T21:24:35.463Z] A2-READY
+[2026-09-10T21:36:23.938Z] stop: instance pid 50516 signaled
+[2026-09-10T21:36:23.954Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T21:36:23.955Z] shutdown: instance child exit
+[2026-09-10T21:36:23.957Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-10T21:36:24.454Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=hULNRSU0SvguunXunR41f6j0qUq1y3nM3OqNhi56Eso
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T21:36:24.458Z] A2-STOPPED
