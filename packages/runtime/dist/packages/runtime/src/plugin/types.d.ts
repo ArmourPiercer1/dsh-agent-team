@@ -89,6 +89,22 @@ export interface TeamPluginCapabilityFacetSources {
     readonly externalHard: readonly string[];
 }
 /**
+ * One Team-managed skill definition the row publishes to the
+ * TeamSkillCatalog (alpha.1, plan §8.2: the row config is the narrowest
+ * production input point for skill content — no persistent skill DB, no
+ * Remote CRUD). Plain lossless JSON.
+ */
+export interface TeamSkillDefinitionConfig {
+    /** The stable skill id (the key the catalog and the policy items use). */
+    readonly name: string;
+    /** One-line human description. */
+    readonly description: string;
+    /** The full skill content (the prompt/instructions payload). */
+    readonly content: string;
+    /** Optional provider hint (the package that contributes it). */
+    readonly provider?: string;
+}
+/**
  * The complete JSON-safe row `config:` of the production plugin.
  *
  * Every field is plain lossless JSON (the row `config` is the only input
@@ -207,6 +223,16 @@ export interface TeamPluginConfig {
      * and no fixture flag, so its create is the real one.
      */
     readonly fixtureWorld?: boolean;
+    /**
+     * alpha.1 (plan §8.2) — the Team-managed skill definitions the row
+     * publishes to the TeamSkillCatalog: the NARROWEST production input
+     * point (the row config itself — no persistent skill DB, no Remote
+     * CRUD, no marketplace). A Blueprint template's `capabilities.skills`
+     * allow-list selects which of these materialize per teammate (the
+     * agent-scoped registration); an absent list = the empty catalog (no
+     * Team-managed skills materialize, the legacy behavior).
+     */
+    readonly teamSkills?: readonly TeamSkillDefinitionConfig[];
 }
 /**
  * The stable plugin-level error codes (the `code` property of the thrown

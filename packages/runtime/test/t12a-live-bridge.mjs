@@ -113,6 +113,15 @@ function makeAgentCtx(globalSections) {
   const toolExecutions = []
   const plugins = []
   const scopedSections = []
+  // alpha.1: the agent-scoped restriction seam (tools.restrict({ deny })) —
+  // records every restriction call on THIS ctx (sibling-inert by
+  // construction: each ctx double is one agent scope); the scoped deny
+  // list is the union of all restrict calls (the public seam accumulates).
+  const toolRestrictions = []
+  // alpha.1: the skill registration seam (agent.ctx.get('skills').register)
+  // — records every scoped skill registration on THIS ctx with a working
+  // disposer (the agent-scope unwind removes them, as with tools).
+  const registeredSkills = []
   const systemPrompt = {
     globals: globalSections,
     section(spec) {
@@ -153,12 +162,34 @@ function makeAgentCtx(globalSections) {
     toolExecutions,
     plugins,
     systemPrompt,
+    toolRestrictions,
+    registeredSkills,
     on(event, listener) {
       const entry = { event, listener, active: true }
       listeners.push(entry)
       return () => {
         entry.active = false
       }
+    },
+    get(key) {
+      if (key === 'skills') {
+        return {
+          // The SkillRegistrationDisposer contract (T3 skill-adapter) is an
+          // OBJECT with a dispose() method — the adapter calls `d.dispose()`,
+          // so returning a bare function would throw (swallowed) and the
+          // registration would never be unwound.
+          register(def) {
+            const entry = { def, disposed: false }
+            registeredSkills.push(entry)
+            return {
+              dispose() {
+                entry.disposed = true
+              },
+            }
+          },
+        }
+      }
+      return undefined
     },
     plugin(pluginSpec, options) {
       const fiber = {
@@ -168,11 +199,18 @@ function makeAgentCtx(globalSections) {
         dispose() {
           this.disposed = true
         },
+        // `await fiber` (the glue's MCP-activation await) must settle exactly
+        // once. The settled value is a NON-thenable (`undefined`): resolving
+        // the adoption promise with `fiber` itself would re-enter this `then`
+        // forever (fiber IS a thenable — `Promise.resolve(fiber)` / the
+        // adoption's `resolve(fiber)` re-adopts it). The glue uses the `fiber`
+        // variable (not the resolved value) for `state.mcpFiber`, so settling
+        // to `undefined` is behavior-preserving.
         then(onfulfilled) {
-          return Promise.resolve(fiber).then(onfulfilled)
+          return Promise.resolve().then(() => (onfulfilled ? onfulfilled(undefined) : undefined))
         },
-        catch() {
-          return Promise.resolve(fiber)
+        catch(onrejected) {
+          return Promise.resolve().then(() => (onrejected ? onrejected(undefined) : undefined))
         },
       }
       plugins.push(fiber)
@@ -189,6 +227,12 @@ function makeAgentCtx(globalSections) {
       execute(call) {
         toolExecutions.push(call)
         return Promise.resolve({ ok: true, callId: call.callId })
+      },
+      // alpha.1: the public Agent-scoped restriction seam (tools.restrict).
+      // Records the deny list on THIS ctx only (sibling-inert); the scoped
+      // effective deny is the union of every call (the seam accumulates).
+      restrict(opts) {
+        toolRestrictions.push(opts)
       },
     },
   }

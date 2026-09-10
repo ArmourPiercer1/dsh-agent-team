@@ -194,7 +194,18 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // the blueprint parser (the domain facade) — the composition that puts the
 // blueprint persona onto the real DSH Agent at create/setup.
 import { parseBlueprint } from '../../../../domain/blueprint/src/index.js'
+import { staticCapabilitiesOf } from '../../../../domain/policy/src/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
+// alpha.1 (plan §10): the capability wiring adapters — the team tool
+// selector + built-in tool deny (T2) and the skill/MCP adapters + catalog
+// (T3) — consumed VERBATIM by the live setup (no re-implemented selector
+// or resolver in the glue; the static source is the T1 domain module).
+import { applyBuiltInToolDeny, selectTeamTools } from '../../../../tools/src/index.js'
+import {
+  InMemorySkillCatalog,
+  filterMcpServers,
+  registerTeamSkills,
+} from '../../../agent-setup/capability/index.js'
 
 /**
  * The leader instance id (packages/contracts LEADER_INSTANCE_ID). The
@@ -462,6 +473,14 @@ export function createAgentBindings(deps) {
   const personaPending = new Map()
   const liveAgentCtxs = new Map()
   let personaSlot
+  // alpha.1 (plan §8.2): the row's TeamSkillCatalog — the NARROWEST
+  // production input point (the row config's teamSkills list; absent =
+  // the empty catalog: no Team-managed skills materialize, the legacy
+  // behavior). Built once per binding (the list is a row constant; the
+  // catalog is immutable after construction — no CRUD, no persistence).
+  const teamSkillCatalog = new InMemorySkillCatalog(
+    Array.isArray(config.teamSkills) ? [...config.teamSkills] : [],
+  )
 
   // ── the durable-mutation consumption boundary (ported) ─────────────────
 
@@ -731,6 +750,77 @@ export function createAgentBindings(deps) {
     }
   }
 
+  // ── alpha.1 (plan §10): the static template capabilities ───────────────
+  //
+  // The BLUEPRINT is the row's single capability authority (the same
+  // document the persona slot composes from — config.blueprintSource,
+  // parsed once per binding and cached: parsing is pure, the document is
+  // a row constant). The MEMBER TEMPLATE is resolved from the durable
+  // backend truth — the committed MemberInstance row's templateId,
+  // re-read on EVERY setup (so both create and cold resume re-derive the
+  // capabilities from the durable identity, plan §10.9 — never from a
+  // process-local ephemeral selection); in the fresh-create window (the
+  // row commits AFTER the setup runs) the templateIdHint the child factory
+  // carries stands in (exactly the value the flow commits moments later —
+  // the same bridge the persona install uses). The LEADER resolves by
+  // position (the LeaderTemplate).
+  //
+  // A session the domain cannot resolve to a template (no row, no hint,
+  // or the row's templateId names no template of the bound blueprint)
+  // reads LEGACY mode: the 0.1.0-rc.1 behavior (no selective capability
+  // restriction — the legacy Blueprint does not regress).
+
+  /** @type {object|null} the row's bound blueprint (parsed once; null = no blueprintSource). */
+  let boundBlueprint = null
+  /**
+   * The row's bound blueprint, lazily parsed (an unparseable blueprint
+   * throws from the setup — the same fail-closed semantics the persona
+   * boundary already carries).
+   * @returns {object|null} the parsed TeamBlueprint, or null.
+   */
+  function getBoundBlueprint() {
+    const src = String(config.blueprintSource ?? '')
+    if (src === '') return null
+    if (boundBlueprint === null) boundBlueprint = parseBlueprint(src)
+    return boundBlueprint
+  }
+
+  /**
+   * The static template capabilities of one session (alpha.1).
+   * @param {string} sessionId - the session the agent embodies.
+   * @param {string} [instanceId] - the resolved instance id (leader or member).
+   * @param {string} [templateIdHint] - the fresh-create window hint.
+   * @param {string} [teamRootSid] - the owning team root (absent = the boot root).
+   * @returns {object} a StaticTemplateCapabilities ({ mode: 'legacy' } or
+   *   { mode: 'selective', teamTools, builtinToolDeny, skills, mcp }).
+   */
+  function resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid) {
+    const blueprint = getBoundBlueprint()
+    if (blueprint === null) return { mode: 'legacy' }
+    const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
+    if (sessionId === teamRoot) {
+      // The LEADER is the LeaderTemplate (Architecture §5.3/§6.1).
+      return staticCapabilitiesOf(blueprint, blueprint.leader)
+    }
+    // A MEMBER resolves through its DURABLE row (the backend truth).
+    const members = domain.repositories.memberInstances.list(teamRoot)
+    const row = members.find((member) => String(member.childSessionId) === sessionId)
+    let templateId
+    if (row !== undefined) {
+      templateId = String(row.templateId)
+    } else if (templateIdHint !== undefined && templateIdHint !== '') {
+      // The fresh-create window: the row commits AFTER this setup runs.
+      templateId = String(templateIdHint)
+    } else if (instanceId !== undefined) {
+      const byId = members.find((member) => String(member.instanceId) === instanceId)
+      if (byId !== undefined) templateId = String(byId.templateId)
+    }
+    if (templateId === undefined) return { mode: 'legacy' }
+    const template = blueprint.members.find((entry) => String(entry.templateId) === templateId)
+    if (template === undefined) return { mode: 'legacy' }
+    return staticCapabilitiesOf(blueprint, template)
+  }
+
   /**
    * The shared agent setup (create OR resume): resolve the durable model
    * selection + the mcp facet from the backend truth NOW, install the
@@ -775,6 +865,12 @@ export function createAgentBindings(deps) {
       // production-facing installs and the overlay slot resolve through it).
       liveAgentCtxs.set(sessionId, agentCtx)
       const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
+      // alpha.1 (plan §10): the static template capabilities of this
+      // session — the durable identity (row templateId / leader position /
+      // fresh-create hint) -> the bound blueprint's per-template declaration.
+      // LEGACY mode (the 0.1.0-rc.1 behavior) for every facet below when the
+      // template declares no capabilities.
+      const capabilities = resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid)
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
@@ -820,9 +916,38 @@ export function createAgentBindings(deps) {
       // registration loop is skipped, as before.
       const teamTools = teamToolsRef.current
       if (teamTools) {
-        for (const def of teamTools.tools) {
+        // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
+        // registers only the catalog tools the template's teamTools entry
+        // allows (allow(items) = name membership, catalog order, dedup;
+        // deny = zero team tools; unknown items never materialize).
+        // LEGACY mode = the full catalog (the 0.1.0-rc.1 behavior).
+        const catalog = Array.isArray(teamTools.tools) ? teamTools.tools : []
+        const selected =
+          capabilities.mode === 'selective' ? selectTeamTools(catalog, capabilities.teamTools) : [...catalog]
+        for (const def of selected) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
+      }
+      // alpha.1 (plan §10.6): the built-in tool deny blacklist — applied
+      // through the Agent-scoped tools.restrict({ deny }) public seam ONLY
+      // (sibling-inert: a sibling's base tools are untouched; the restrict
+      // is agent-scoped, so a cold resume re-applies it through this same
+      // setup on the resumed agent). SELECTIVE mode only (the field exists
+      // only there); an empty list is a no-op (zero restrict calls).
+      if (capabilities.mode === 'selective') {
+        const denyDisposer = applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)
+        toolDisposers.push(denyDisposer)
+        // alpha.1 (plan §10.7): the Team-managed skills — the catalog
+        // definitions the template's skills entry allows, registered in
+        // this agent's scope (allow(items) = catalog lookup; deny = none;
+        // unknown ids skip + diagnose, never crash the agent; no skills
+        // seam on the ctx = the no-op disposer, legacy behavior).
+        const skillDisposer = registerTeamSkills(agentCtx, teamSkillCatalog, capabilities.skills, {
+          onSkip: (skillId, reason) => {
+            observations.push(`alpha1: team skill '${skillId}' skipped (${reason})`)
+          },
+        })
+        toolDisposers.push(skillDisposer)
       }
       // T12-M2: the persona boundary — the blueprint persona enters the REAL
       // DSH Agent prompt here (the agent-scoped 'deployment:persona'
@@ -840,8 +965,17 @@ export function createAgentBindings(deps) {
       // The mcp facet's fail-closed baseline: no durable allow -> no mount.
       // At a fresh create no overrides exist yet (unspecified), so this is
       // the resume/restart path that re-applies the durable truth on boot.
-      if (mcpView !== null && mcpView.allowed) {
-        await reconcileMcp(agentCtx, state, mcpView.allowed)
+      // alpha.1 (plan §10.8): the template's static mcp entry ADDITIONALLY
+      // filters the configured server (selective mode: allow must name the
+      // configured server, deny = no mount — the T3 filter over the row's
+      // configured server set, no second MCP resolver). LEGACY mode = the
+      // durable decision alone (the 0.1.0-rc.1 behavior).
+      const mcpTemplateAllowed =
+        capabilities.mode !== 'selective' ||
+        (config.mcpServer !== null && filterMcpServers([config.mcpServer.name], capabilities.mcp).length > 0)
+      const mcpMountAllowed = mcpView !== null && mcpView.allowed && mcpTemplateAllowed
+      if (mcpMountAllowed) {
+        await reconcileMcp(agentCtx, state, true)
       }
       applyBoundaryRecords(state, modelView, mcpView)
     }
@@ -1171,7 +1305,15 @@ export function createAgentBindings(deps) {
     }
     const handle = liveAgents.get(sessionId)
     if (handle !== undefined && mcpView !== null) {
-      await reconcileMcp(handle.agent.ctx, state, mcpView.allowed)
+      // alpha.1 (plan §10.8): the request-boundary reconcile honors the
+      // template's static mcp entry too (re-read from the durable identity
+      // — the same decision the setup applied, so a durable tighten/deny
+      // AND a blueprint template mcp deny converge on the same no-mount).
+      const caps = resolveStaticCapabilities(sessionId, state.instanceId, undefined, teamRootSid)
+      const templateAllowed =
+        caps.mode !== 'selective' ||
+        (config.mcpServer !== null && filterMcpServers([config.mcpServer.name], caps.mcp).length > 0)
+      await reconcileMcp(handle.agent.ctx, state, mcpView.allowed && templateAllowed)
     }
     applyBoundaryRecords(state, modelView, mcpView)
     state.modelView = modelView
@@ -1922,8 +2064,17 @@ export function createAgentBindings(deps) {
         observations.push(`p6t6: close: agent dispose failed for '${sid}': ${error instanceof Error ? error.message : String(error)}`)
       }
     }
-    for (const dispose of toolDisposers.splice(0)) {
-      try { dispose() } catch { /* the scope unwind covers it */ }
+    // alpha.1: the capability disposers are OBJECTS with a dispose() method
+    // (SkillRegistrationDisposer / ToolRestrictionDisposer), while the model
+    // selection and team-tool registration disposers are plain functions.
+    // Invoke BOTH shapes: calling an object disposer as a function would throw
+    // and be silently swallowed, leaving the Team-managed skill registrations
+    // (and the deny scope) unwound-never on close.
+    for (const d of toolDisposers.splice(0)) {
+      try {
+        if (typeof d === 'function') d()
+        else if (d !== null && typeof d === 'object' && typeof d.dispose === 'function') d.dispose()
+      } catch { /* the scope unwind covers it */ }
     }
     // T12-M2: the persona scope — dispose every agent-scoped
     // 'deployment:persona' entry (exactly the scoped sections; the global

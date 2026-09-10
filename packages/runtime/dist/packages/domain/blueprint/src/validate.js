@@ -39,7 +39,7 @@
  */
 import { assertRemoteSafeJsonValue, deepFreeze, LEGACY_FORBIDDEN_FIELDS, parseBlueprintId, parseBlueprintRevision, parseTemplateId, teamContractError, toRemoteSafeDetail, } from '../../../contracts/src/index.js';
 import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/src/dto/common.js';
-import { BLUEPRINT_DOCUMENT_SCHEMA_VERSION, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
+import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_DOCUMENT_SCHEMA_VERSION, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
 /** Control characters forbidden in any string field (mirrors contracts). */
@@ -177,6 +177,11 @@ function validateTemplate(raw, path) {
         required: false,
         maxLength: CONTEXT_POLICY_MAX_LENGTH,
     });
+    // Optional capabilities block (absent = legacy mode)
+    const capabilitiesRaw = takeRecord(record, 'capabilities', path);
+    const capabilities = capabilitiesRaw === undefined
+        ? undefined
+        : validateTemplateCapabilities(capabilitiesRaw, `${path}.capabilities`);
     return stripUndefined({
         templateId,
         displayName,
@@ -184,6 +189,7 @@ function validateTemplate(raw, path) {
         persona,
         modelPreference,
         contextPolicy,
+        capabilities,
     });
 }
 /** Validate one capability requirement. */
@@ -250,6 +256,64 @@ function validateQuota(raw, path) {
         throw teamContractError('MALFORMED_DTO', `quota at ${path} is not legal: maxConcurrent (${maxConcurrent}) exceeds maxInstances (${maxInstances})`, { path, maxInstances, maxConcurrent });
     }
     return stripUndefined({ maxInstances, maxConcurrent });
+}
+/**
+ * Validate one allow/deny entry (used by capabilities sub-fields
+ * `teamTools`, `skills`, `mcp`).
+ */
+function validateAllowDenyEntry(raw, path) {
+    const record = assertPlainRecord(raw, `${path} (allow/deny entry)`);
+    const kind = record['kind'];
+    if (typeof kind !== 'string' || (kind !== 'allow' && kind !== 'deny')) {
+        throw teamContractError('MALFORMED_DTO', `allow/deny entry at ${path} must have kind 'allow' or 'deny', got ${JSON.stringify(kind)}`, { path: `${path}.kind` });
+    }
+    if (kind === 'deny') {
+        const unknown = Object.keys(record).filter((k) => k !== 'kind');
+        if (unknown.length > 0) {
+            throw teamContractError('MALFORMED_DTO', `deny entry at ${path} must not have extra fields: ${unknown.join(', ')}`, { path: `${path}`, extraFields: unknown });
+        }
+        return { kind: 'deny' };
+    }
+    // kind === 'allow' — items is required
+    const itemsRaw = requireField(record, 'items', path);
+    if (!Array.isArray(itemsRaw)) {
+        throw teamContractError('MALFORMED_DTO', `allow entry at ${path} must have items array, got ${itemsRaw === null ? 'null' : typeof itemsRaw}`, { path: `${path}.items` });
+    }
+    const items = itemsRaw.map((item, index) => {
+        if (typeof item !== 'string' || item.length === 0 || item.length > CAPABILITY_ITEM_MAX_LENGTH) {
+            throw teamContractError('MALFORMED_DTO', `allow entry at ${path}.items[${index}] must be a non-empty string (max ${CAPABILITY_ITEM_MAX_LENGTH}), got ${JSON.stringify(item)}`, { path: `${path}.items[${index}]` });
+        }
+        return item;
+    });
+    const extra = Object.keys(record).filter((k) => k !== 'kind' && k !== 'items');
+    if (extra.length > 0) {
+        throw teamContractError('MALFORMED_DTO', `allow entry at ${path} has unknown fields: ${extra.join(', ')}`, { path, extraFields: extra });
+    }
+    return { kind: 'allow', items };
+}
+/**
+ * Validate the optional `capabilities` block on a BlueprintTemplate.
+ * When absent → valid (legacy mode). When present → all 4 sub-fields
+ * are required.
+ */
+function validateTemplateCapabilities(raw, path) {
+    const record = assertPlainRecord(raw, `${path} (capabilities)`);
+    assertNoUnknownFields(record, BLUEPRINT_CAPABILITIES_FIELDS, `${path} (capabilities)`);
+    const teamTools = validateAllowDenyEntry(requireField(record, 'teamTools', path), `${path}.teamTools`);
+    const skills = validateAllowDenyEntry(requireField(record, 'skills', path), `${path}.skills`);
+    const mcp = validateAllowDenyEntry(requireField(record, 'mcp', path), `${path}.mcp`);
+    // builtinToolDeny is a plain string[]
+    const builtinToolDenyRaw = requireField(record, 'builtinToolDeny', path);
+    if (!Array.isArray(builtinToolDenyRaw)) {
+        throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny must be an array, got ${builtinToolDenyRaw === null ? 'null' : typeof builtinToolDenyRaw}`, { path: `${path}.builtinToolDeny` });
+    }
+    const builtinToolDeny = builtinToolDenyRaw.map((item, index) => {
+        if (typeof item !== 'string' || item.length === 0 || item.length > CAPABILITY_ITEM_MAX_LENGTH) {
+            throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be a non-empty string (max ${CAPABILITY_ITEM_MAX_LENGTH}), got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
+        }
+        return item;
+    });
+    return { teamTools, builtinToolDeny, skills, mcp };
 }
 // ---------------------------------------------------------------------------
 // the whole-document validator
@@ -514,7 +578,21 @@ function toHashableTemplate(template) {
         persona: template.persona,
         modelPreference: template.modelPreference ?? null,
         contextPolicy: template.contextPolicy ?? null,
+        capabilities: template.capabilities === undefined
+            ? null
+            : {
+                teamTools: toHashableAllowDeny(template.capabilities.teamTools),
+                builtinToolDeny: [...template.capabilities.builtinToolDeny],
+                skills: toHashableAllowDeny(template.capabilities.skills),
+                mcp: toHashableAllowDeny(template.capabilities.mcp),
+            },
     });
+}
+function toHashableAllowDeny(entry) {
+    if (entry.kind === 'deny') {
+        return { kind: 'deny' };
+    }
+    return { kind: 'allow', items: [...entry.items] };
 }
 function toHashableEnvelope(envelope) {
     return { allow: [...envelope.allow], deny: [...envelope.deny] };

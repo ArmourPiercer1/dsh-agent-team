@@ -30,4 +30,6 @@ export * from './errors.js';
 export { validatePolicyInput } from './validate.js';
 export type { ValidatedPolicyInput } from './validate.js';
 export { resolveEffectivePolicy } from './resolve.js';
+export { staticCapabilitiesOf, selectiveToTemplatePolicyValues } from './static-capability-source.js';
+export type { StaticTemplateCapabilities } from './static-capability-source.js';
 //# sourceMappingURL=index.d.ts.map

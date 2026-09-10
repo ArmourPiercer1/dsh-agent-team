@@ -80,7 +80,7 @@
  */
 import { createBlueprintCatalog, parseBlueprint, sha256Hex, } from '../../../domain/blueprint/src/index.js';
 import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/src/index.js';
-import { CAPABILITY_NAME_VALUES, } from '../../../domain/policy/src/index.js';
+import { CAPABILITY_NAME_VALUES, selectiveToTemplatePolicyValues, staticCapabilitiesOf, } from '../../../domain/policy/src/index.js';
 import { canonicalJsonStringify, createBlueprintSnapshotRef, LEADER_INSTANCE_ID, leaderMemberIdentityOf, parseBlueprintContentHash, parseBlueprintId, parseBlueprintRevision, parseRootSessionId, parseSessionId, } from '../../../contracts/src/index.js';
 import { REMOTE_METHOD_CATALOG, } from '../../../remote/src/contracts/catalog.js';
 import { createTeamDomainWritePort, bindFreshTeamRoot, rehydrateColdTeamRoot, } from '../../root-binding/index.js';
@@ -254,6 +254,43 @@ function sameSnapshotRef(a, b) {
  */
 function handoffContextText(context) {
     return `handoff-context ${context.contextToken}\n${canonicalJsonStringify(context)}`;
+}
+/**
+ * alpha.1 (plan §10.3) — resolve the bound-blueprint template of one
+ * member identity for the static template policy read:
+ *
+ * - the LEADER resolves by position (Architecture §5.3/§6.1: the
+ *   LeaderTemplate IS the leader's template — the durable v2 leader row
+ *   carries the same templateId, the position is the authority);
+ * - a MEMBER resolves through its DURABLE MemberInstance row's
+ *   `templateId` (the row is the backend truth — never a caller claim;
+ *   the row is re-read on every call, so a cold resume re-derives the
+ *   same template from the durable identity, plan §10.9).
+ *
+ * An absent row (an identity the domain has no record for) or a row
+ * whose templateId names no template of the bound blueprint resolves to
+ * `undefined` — the caller then reads the honest empty template policy
+ * (no template authority for that identity).
+ *
+ * @param blueprint - the bound Blueprint snapshot (the row's one
+ *   blueprint document).
+ * @param teamSessionId - the TeamSession the member belongs to (a branded
+ *   id upstream; this helper takes `string` — the repository `get` is
+ *   string-typed and the comparison is by exact value).
+ * @param instanceId - the member's stable instance id.
+ * @param memberInstances - the durable member-instance repository.
+ * @returns the template, or `undefined` (no template authority).
+ */
+function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances) {
+    if (instanceId === LEADER_INSTANCE_ID)
+        return blueprint.leader;
+    const row = memberInstances.get(teamSessionId, instanceId);
+    if (row === undefined || row === null)
+        return undefined;
+    const templateId = String(row.templateId ?? '');
+    if (templateId === '')
+        return undefined;
+    return blueprint.members.find((entry) => String(entry.templateId) === templateId);
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).
@@ -916,10 +953,24 @@ export function createTeamProductionRoot(params) {
             const values = capabilityValuesOf(blueprint.capabilityPolicy);
             return values === undefined ? {} : { values };
         },
-        // The bound blueprint snapshot carries no per-template capability
-        // policy values (the vNext blueprint template is persona +
-        // model/context policy tokens) — the honest empty template policy.
-        readTemplatePolicy: () => ({}),
+        // alpha.1 (plan §10.3): the bound blueprint snapshot + the DURABLE
+        // member-instance templateId -> the template's static TemplatePolicy
+        // (the production `readTemplatePolicy` is no longer the unconditional
+        // empty placeholder — DoD #3). A LEGACY template (no `capabilities`
+        // field) keeps the original honest-empty reader (never a synthesized
+        // empty TemplatePolicy — the resolver's fail-closed must stay
+        // untouched, plan §10.3), and an identity the domain cannot resolve
+        // to a row also reads empty (honest: no template authority there).
+        readTemplatePolicy: (teamSessionId, member) => {
+            const template = staticTemplateOf(blueprint, teamSessionId, member.instanceId, repos.memberInstances);
+            if (template === undefined)
+                return {};
+            const capabilities = staticCapabilitiesOf(blueprint, template);
+            if (capabilities.mode === 'legacy')
+                return {};
+            const values = selectiveToTemplatePolicyValues(capabilities);
+            return values === undefined ? {} : { values };
+        },
         readExternalFacts: () => config.externalPolicyFacts,
     };
     const defaultOverrideStore = {

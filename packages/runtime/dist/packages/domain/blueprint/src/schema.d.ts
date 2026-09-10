@@ -56,6 +56,8 @@ export declare const BLUEPRINT_TOP_LEVEL_FIELDS: readonly string[];
  * Architecture §6.1).
  */
 export declare const BLUEPRINT_TEMPLATE_FIELDS: readonly string[];
+/** The exact closed field set of a TemplateCapabilities block. */
+export declare const BLUEPRINT_CAPABILITIES_FIELDS: readonly string[];
 /** The exact closed field set of a capability requirement. */
 export declare const BLUEPRINT_REQUIREMENT_FIELDS: readonly string[];
 /** The exact closed field set of a mutation envelope. */
@@ -101,6 +103,8 @@ export declare const ENVELOPE_OPERATION_MAX_LENGTH = 128;
 export declare const METADATA_KEY_MAX_LENGTH = 64;
 /** Max length of a metadata value. */
 export declare const METADATA_VALUE_MAX_LENGTH = 4096;
+/** Max length of one capability-item name (tool/skill/mcp). */
+export declare const CAPABILITY_ITEM_MAX_LENGTH = 128;
 /** Capability requirement domain: lowercase slug (probeable domain name). */
 export declare const REQUIREMENT_DOMAIN_PATTERN: RegExp;
 /** Capability requirement name: lowercase slug with dots (e.g. `node.fs`). */

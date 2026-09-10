@@ -28,4 +28,11 @@ export { createCapabilityOverlaySlot, } from './slot.js';
 // governance overrides (backend truth) — fail-closed, restart-effective
 // (DevPlan P8-S §18.1/§18.2).
 export { MCP_FACET_WILDCARD, mcpFacetView, resolveDurableMcpFacet, } from './mcp-facet.js';
+// T3 — Team skill catalog + adapter (plan §8/§8.1): minimal in-memory
+// catalog, policy-driven skill registration with composite disposer.
+export { InMemorySkillCatalog, } from './skill-catalog.js';
+export { registerTeamSkills, } from './skill-adapter.js';
+// T3 — MCP adapter (plan §9): filter configured servers against policy
+// and mount allowed ones through the Agent plugin seam.
+export { filterMcpServers, mountAllowedMcpServers, } from './mcp-adapter.js';
 //# sourceMappingURL=index.js.map

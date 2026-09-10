@@ -219,6 +219,28 @@ export function validateTeamPluginConfig(raw) {
         (typeof c.memberPresetId !== 'string' || c.memberPresetId.length === 0)) {
         fail('memberPresetId must be a non-empty string when present (absent = the deployment default preset)');
     }
+    // alpha.1 (plan §8.2): the Team-managed skill definitions are an
+    // OPTIONAL additive field — absent (undefined) = the empty catalog (no
+    // Team-managed skills materialize); when present every entry must be a
+    // plain { name, description, content, provider? } record (the catalog
+    // deduplicates by name; an empty name would fail closed at the policy
+    // item matching — fail early at the composition boundary, loudly).
+    if (c.teamSkills !== undefined) {
+        if (!Array.isArray(c.teamSkills))
+            fail('teamSkills must be an array when present');
+        for (const skill of c.teamSkills) {
+            if (skill === null ||
+                typeof skill !== 'object' ||
+                Array.isArray(skill) ||
+                typeof skill.name !== 'string' ||
+                skill.name.length === 0 ||
+                typeof skill.description !== 'string' ||
+                typeof skill.content !== 'string' ||
+                (skill.provider !== undefined && typeof skill.provider !== 'string')) {
+                fail('every teamSkill needs name/content/description strings (name non-empty; provider an optional string)');
+            }
+        }
+    }
     return c;
 }
 /**

@@ -60,6 +60,17 @@ export interface AssembledPromptSection {
   readonly scope: 'global' | 'scoped'
 }
 
+/** One recorded tools.restrict({ deny }) call on the ctx double (alpha.1). */
+export interface ToolRestrictionEntry {
+  readonly deny: readonly string[]
+}
+
+/** One recorded skills register(def) entry on the ctx double (alpha.1). */
+export interface RegisteredSkillEntry {
+  readonly def: unknown
+  disposed: boolean
+}
+
 /** The agent-scoped ctx double (the service surface the live glue consumes). */
 export interface AgentCtxDouble {
   readonly listeners: AgentListenerEntry[]
@@ -67,11 +78,23 @@ export interface AgentCtxDouble {
   readonly plugins: unknown[]
   /** Every live tools.register(def) recorded, in order (disposers remove). */
   readonly registeredTools: unknown[]
+  /** alpha.1: every tools.restrict({ deny }) call recorded on THIS ctx
+   *  (sibling-inert; one entry per call, the seam accumulates). */
+  readonly toolRestrictions: ToolRestrictionEntry[]
+  /** alpha.1: every skills register(def) entry recorded on THIS ctx
+   *  (disposers flip `disposed`). */
+  readonly registeredSkills: RegisteredSkillEntry[]
   on(event: string, listener: AgentListenerEntry['listener']): () => void
+  /** alpha.1: the DSH service accessor (the 'skills' registration seam).
+   *  register returns the SkillRegistrationDisposer OBJECT ({ dispose() }),
+   *  matching the T3 skill-adapter contract. */
+  get(key: string): { register(def: unknown): { dispose(): void } } | undefined
   plugin(pluginSpec: unknown, options?: unknown): unknown
   readonly tools: {
     register(def: unknown): () => void
     execute(name: string, args: unknown, callId?: string): Promise<unknown>
+    /** alpha.1: the public Agent-scoped restriction seam. */
+    restrict(opts: { deny: string[] }): void
   }
   /** The DSH systemPrompt builtin double (T12-M2: the persona layer). */
   readonly systemPrompt: {
