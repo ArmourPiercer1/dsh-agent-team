@@ -26,6 +26,14 @@ export interface TeamSkillDefinition {
     content: string;
     /** Optional provider hint (e.g. the package that contributes it). */
     provider?: string;
+    /**
+     * Optional registry source bucket (the upstream skill-registry
+     * SkillSource vocabulary, e.g. 'runtime'). The registry's load-time
+     * validation requires a source string; the adapter defaults it to
+     * 'runtime' (team skills are runtime contributions from the row config)
+     * when a definition does not carry one.
+     */
+    source?: string;
 }
 /**
  * Read-only catalog of team skill definitions.

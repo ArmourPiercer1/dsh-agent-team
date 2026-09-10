@@ -201,6 +201,12 @@ function denyLists(ctx: AgentCtxDouble): string[][] {
 function skillNames(ctx: AgentCtxDouble): string[] {
   return ctx.registeredSkills.map((entry) => String((entry.def as { name?: string }).name ?? ''))
 }
+function skillSources(ctx: AgentCtxDouble): (string | undefined)[] {
+  return ctx.registeredSkills.map((entry) => {
+    const s = (entry.def as { source?: unknown }).source
+    return typeof s === 'string' ? s : undefined
+  })
+}
 function skillsAllDisposed(ctx: AgentCtxDouble): boolean {
   return ctx.registeredSkills.every((entry) => entry.disposed === true)
 }
@@ -495,6 +501,22 @@ describe('alpha.1 T4 — the production capability wiring on the REAL live glue'
       expect(cADeny).toEqual([['write']])
       // The team tool [team_delegate] is registered (the deny did not mask it).
       expect(cATools).toEqual(['team_delegate'])
+    })
+  })
+
+  describe('alpha.1 hardening — P2.3 (skill registration load-time completeness)', () => {
+    it('P2.3 F1: the registered team skill definitions carry the source string the registry load-time validation requires', () => {
+      // The registry's validateDefinition (get()) throws "loaded skill X
+      // source must be a string" for a runtime registration without `source`
+      // (register() defaults invocation + provider but not source). The live
+      // closure smoke hit exactly this: the skill registered in the member
+      // scope but was unloadable through the model-facing `skill` tool. The
+      // adapter defaults the source bucket to 'runtime' for row-config team
+      // skills (a catalog-provided source wins).
+      expect(skillSources(createA)).toEqual(['runtime'])
+      expect(skillSources(createLeader)).toEqual(['runtime'])
+      // Member B denies skills: nothing registered, no source to carry.
+      expect(skillSources(createB)).toEqual([])
     })
   })
 })

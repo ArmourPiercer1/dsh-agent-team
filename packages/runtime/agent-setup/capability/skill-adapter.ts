@@ -85,7 +85,14 @@ export function registerTeamSkills(
       continue
     }
     try {
-      const disposer = seam.register(def)
+      // P2.3 (hardening, found by the live closure smoke): the registry's
+      // load-time validation (validateDefinition) requires `source` to be a
+      // string — register() defaults invocation and provider but NOT source,
+      // so a def registered without one is storable yet unloadable (the live
+      // `skill` tool load failed with "loaded skill X source must be a
+      // string"). Team skills are runtime contributions from the row config
+      // -> the 'runtime' source bucket; a catalog-provided source wins.
+      const disposer = seam.register({ ...def, source: def.source ?? 'runtime' })
       disposers.push(disposer)
     } catch {
       // Registration failed for one skill: diagnose + skip and continue
