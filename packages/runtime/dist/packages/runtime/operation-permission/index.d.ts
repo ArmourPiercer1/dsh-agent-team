@@ -17,7 +17,11 @@
  *   ({@link READ_OFFSET_DEFAULT}, {@link READ_LIMIT_DEFAULT} — the
  *   documented effective-`read`-window decision;
  *   {@link LSP_OPERATION_VALUES} — the closed lsp operation enum;
- *   {@link BASH_TOOL_RESOURCE_KEY} — the bash tool-level resource).
+ *   {@link BASH_TOOL_RESOURCE_KEY} — the bash tool-level resource);
+ * - {@link resolveOperationPermission} — the A3 static resolver
+ *   (plan §8): (A1 policy, A2 CanonicalOperation, A5
+ *   CanonicalRules) → {@link PermissionDecision} (decision +
+ *   provenance) — pure, synchronous, zero I/O.
  *
  * What this module IS (and deliberately is NOT):
  *
@@ -29,9 +33,11 @@
  *   plan §7.6);
  * - it IS fail-closed: every canonicalization failure throws the typed
  *   error and must map to a `deny` — never a pass-through (plan §7.5);
- * - it is NOT the static resolver (A3: rule matching over
- *   `resource.key`), NOT the control scope (A4: exact allows over the
- *   `fingerprint`), and NOT the pre-execute listener (A5: the
+ * - it IS also the static resolver (A3, plan §8):
+ *   {@link resolveOperationPermission} matches A5-canonicalized policy
+ *   rules against `resource.key` — pure, synchronous, zero I/O;
+ * - it is NOT the control scope (A4: exact allows over the
+ *   `fingerprint`) and NOT the pre-execute listener (A5: the
  *   agent-scoped `tools/pre-execute` enforcement).
  *
  * @module @dsh-agent-team/runtime/operation-permission
@@ -42,4 +48,6 @@ export { PERMISSION_TOOL_VALUES, FILE_PERMISSION_TOOL_VALUES, } from './types.js
 export type { PermissionTool, FilePermissionTool, ToolLevelPermissionTool, CanonicalResource, CanonicalOperation, PathTargetResolver, PermissionToolClass, } from './types.js';
 export { READ_OFFSET_DEFAULT, READ_LIMIT_DEFAULT, LSP_OPERATION_VALUES, BASH_TOOL_RESOURCE_KEY, classifyPermissionTool, isPermissionToolName, canonicalizeOperation, } from './canonical-operation.js';
 export type { CanonicalizeOperationInput } from './canonical-operation.js';
+export { resolveOperationPermission, } from './permission-resolver.js';
+export type { CanonicalRule, CanonicalRules, PermissionDecision, PermissionLane, PermissionProvenance, } from './permission-resolver.js';
 //# sourceMappingURL=index.d.ts.map
