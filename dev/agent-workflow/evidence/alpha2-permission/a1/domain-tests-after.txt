@@ -1,0 +1,76 @@
+﻿PASS packages\domain\test\a1-permission-policy.test.ts (38 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+FAIL packages\domain\test\t1-capability-schema.test.ts (10/17 tests)
+     ✗ T1: Blueprint Capability Schema › 1. Legacy fixture parses without capabilities field
+       TeamContractError: $.metadata must be a plain object, got null
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at assertPlainRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/dto/common.ts:38:11)
+           at takeRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:217:10)
+     ✗ T1: Blueprint Capability Schema › 2. Leader with full capabilities parses and validates
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:959:15)
+     ✗ T1: Blueprint Capability Schema › 3. Members can have different capabilities
+       TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:959:15)
+     ✗ T1: Blueprint Capability Schema › 7. Changing capability fields changes the hash
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:959:15)
+     ✗ T1: Blueprint Capability Schema › 8. Static source returns selective mode for Leader with capabilities
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:959:15)
+     ✗ T1: Blueprint Capability Schema › 9. Static source returns selective mode for MemberTemplate with capabilities
+       TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:959:15)
+     ✗ T1: Blueprint Capability Schema › 10. Static source returns legacy mode when capabilities absent
+       TeamContractError: $.metadata must be a plain object, got null
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at assertPlainRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/dto/common.ts:38:11)
+           at takeRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:217:10)
+     ✗ T1: Blueprint Capability Schema › 11. Selective source maps to TemplatePolicy values correctly
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:959:15)
+     ✗ T1: Blueprint Capability Schema › 11b. Selective source maps deny entries to values correctly
+       TeamContractError: $.metadata must be a plain object, got null
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/errors.ts:112:10)
+           at assertPlainRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/contracts/src/dto/common.ts:38:11)
+           at takeRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/blueprint/src/validate.ts:217:10)
+     ✗ T1: Blueprint Capability Schema › 11c. Legacy source returns undefined values
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/test/t1-capability-schema.test.ts:393:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/test/t1-capability-schema.test.ts:390:3
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+FAIL packages\domain\test\t2-blueprint-hash.test.ts (1/15 tests)
+     ✗ t2 hash: hashable projection › projects absent optional singles as explicit null
+       Error: expectation failed: actual toEqual {"templateId":"leader","displayName":null,"description":null,"persona":"Lead.","modelPreference":null,"contextPolicy":null} — actual: {"templateId":"leader","displayName":null,"description":null,"persona":"Lead.","modelPreference":null,"contextPolicy":null,"capabilities":null}
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/scripts/test-vitest-shim.mjs:110:21)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-a1/packages/domain/test/t2-blueprint-hash.test.ts:116:29
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (57 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+
+run-tests (plain-node vitest-equivalent): 372 passed, 11 failed, 383 total, 316 ms
