@@ -67,8 +67,14 @@ export function registerTeamSkills(
     return { dispose: () => {} }
   }
 
+  // P2.2 (hardening §7.2): unified skill diagnostics — the stable reason
+  // vocabulary (not-in-catalog / skills-seam-missing / register-failed).
+  // Diagnostics only: they never change the fail-closed behavior (a missing
+  // seam or a failed registration is still a no-op for that skill, the agent
+  // never crashes).
   const seam = agentCtx.get('skills')
   if (!seam) {
+    diagnostics?.onSkip?.('(seam)', 'skills-seam-missing')
     return { dispose: () => {} }
   }
 
@@ -82,7 +88,9 @@ export function registerTeamSkills(
       const disposer = seam.register(def)
       disposers.push(disposer)
     } catch {
-      // Registration failed for one skill: skip and continue with others.
+      // Registration failed for one skill: diagnose + skip and continue
+      // with the others.
+      diagnostics?.onSkip?.(skillId, 'register-failed')
     }
   }
 

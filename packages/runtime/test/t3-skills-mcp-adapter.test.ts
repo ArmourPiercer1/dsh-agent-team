@@ -4,9 +4,12 @@
  * Validates the end-to-end behavior of:
  *
  * - Team skill registration: allow → registers found skills, deny → none,
- *   no sibling leak, dispose removes scoped registration.
- * - MCP server mounting: allow configured → mounts, deny → no mount,
- *   allow unconfigured → no mount, dispose removes scoped effect.
+ *   no sibling leak, dispose removes scoped registration; skill diagnostics
+ *   (not-in-catalog / skills-seam-missing / register-failed).
+ * - MCP server filtering (filterMcpServers): allow configured → included,
+ *   deny → empty, allow unconfigured → empty. (The dead
+ *   mountAllowedMcpServers mount helper was removed in the alpha.1
+ *   hardening P2.1 — the production mount is the live glue's reconcileMcp.)
  *
  * Test pattern of this repo: synchronous `it` bodies over captured values.
  */
@@ -14,10 +17,7 @@
 import { describe, expect, it } from 'vitest'
 import { InMemorySkillCatalog } from '../agent-setup/capability/skill-catalog.js'
 import { registerTeamSkills } from '../agent-setup/capability/skill-adapter.js'
-import {
-  filterMcpServers,
-  mountAllowedMcpServers,
-} from '../agent-setup/capability/mcp-adapter.js'
+import { filterMcpServers } from '../agent-setup/capability/mcp-adapter.js'
 
 // ---------------------------------------------------------------------------
 // Fake implementations for test isolation
@@ -53,37 +53,6 @@ function createFakeSkillAgentContext(seam: ReturnType<typeof createFakeSkillSeam
       if (key === 'skills') return seam
       return undefined
     },
-  }
-}
-
-interface McpMountEntry {
-  name: string
-  config: unknown
-  disposed: boolean
-}
-
-function createFakeMcpSeam() {
-  const mounted: McpMountEntry[] = []
-
-  return {
-    get mounted(): readonly McpMountEntry[] {
-      return mounted
-    },
-    plugin: (name: string, config: unknown) => {
-      const entry: McpMountEntry = { name, config, disposed: false }
-      mounted.push(entry)
-      return {
-        dispose: () => {
-          entry.disposed = true
-        },
-      }
-    },
-  }
-}
-
-function createFakeMcpAgentContext(seam: ReturnType<typeof createFakeMcpSeam>) {
-  return {
-    plugin: (name: string, config: unknown) => seam.plugin(name, config),
   }
 }
 
@@ -285,134 +254,6 @@ describe('T3 — MCP adapter', () => {
       const result = filterMcpServers(configured, policy)
 
       expect(result).toEqual(['server-alpha', 'server-gamma'])
-    })
-  })
-
-  describe('mountAllowedMcpServers', () => {
-    it('A: mounts allowed configured server', () => {
-      const seam = createFakeMcpSeam()
-      const agentCtx = createFakeMcpAgentContext(seam)
-      const allowed = ['server-alpha']
-      const mcpConfig = {
-        'server-alpha': { url: 'http://localhost:8100' },
-      }
-
-      const disposer = mountAllowedMcpServers(agentCtx, allowed, mcpConfig)
-
-      expect(seam.mounted.length).toBe(1)
-      expect(seam.mounted[0]!.name).toBe('server-alpha')
-      expect(seam.mounted[0]!.disposed).toBe(false)
-
-      disposer.dispose()
-      expect(seam.mounted[0]!.disposed).toBe(true)
-    })
-
-    it('B: deny → no mount', () => {
-      const seam = createFakeMcpSeam()
-      const agentCtx = createFakeMcpAgentContext(seam)
-
-      const disposer = mountAllowedMcpServers(agentCtx, [], {})
-
-      expect(seam.mounted.length).toBe(0)
-
-      disposer.dispose()
-    })
-
-    it('C: allow but not configured → no mount', () => {
-      const seam = createFakeMcpSeam()
-      const agentCtx = createFakeMcpAgentContext(seam)
-      const allowed = ['server-gamma']
-      const mcpConfig = {}
-
-      const disposer = mountAllowedMcpServers(agentCtx, allowed, mcpConfig)
-
-      expect(seam.mounted.length).toBe(0)
-
-      disposer.dispose()
-    })
-
-    it('Dispose A → MCP scoped effect gone, B unaffected', () => {
-      const seamA = createFakeMcpSeam()
-      const seamB = createFakeMcpSeam()
-      const agentCtxA = createFakeMcpAgentContext(seamA)
-      const agentCtxB = createFakeMcpAgentContext(seamB)
-
-      const config = {
-        'server-alpha': { url: 'http://localhost:8100' },
-        'server-beta': { url: 'http://localhost:8101' },
-      }
-
-      const disposerA = mountAllowedMcpServers(
-        agentCtxA,
-        ['server-alpha'],
-        config,
-      )
-      const disposerB = mountAllowedMcpServers(
-        agentCtxB,
-        ['server-beta'],
-        config,
-      )
-
-      expect(seamA.mounted.length).toBe(1)
-      expect(seamB.mounted.length).toBe(1)
-      expect(seamA.mounted[0]!.disposed).toBe(false)
-      expect(seamB.mounted[0]!.disposed).toBe(false)
-
-      // Dispose A only.
-      disposerA.dispose()
-      expect(seamA.mounted[0]!.disposed).toBe(true)
-      expect(seamB.mounted[0]!.disposed).toBe(false)
-
-      disposerB.dispose()
-    })
-
-    it('Multiple servers mounted and disposed', () => {
-      const seam = createFakeMcpSeam()
-      const agentCtx = createFakeMcpAgentContext(seam)
-      const config = {
-        'server-alpha': { url: 'http://localhost:8100' },
-        'server-beta': { url: 'http://localhost:8101' },
-      }
-
-      const disposer = mountAllowedMcpServers(
-        agentCtx,
-        ['server-alpha', 'server-beta'],
-        config,
-      )
-
-      expect(seam.mounted.length).toBe(2)
-      for (const m of seam.mounted) {
-        expect(m.disposed).toBe(false)
-      }
-
-      disposer.dispose()
-      for (const m of seam.mounted) {
-        expect(m.disposed).toBe(true)
-      }
-    })
-  })
-
-  describe('filterMcpServers + mountAllowedMcpServers integration', () => {
-    it('Full pipeline: configured → filter → mount → dispose', () => {
-      const configured = ['server-alpha', 'server-beta']
-      const policy = { kind: 'allow' as const, items: ['server-alpha'] }
-      const mcpConfig = {
-        'server-alpha': { url: 'http://localhost:8100' },
-        'server-beta': { url: 'http://localhost:8101' },
-      }
-
-      const allowed = filterMcpServers(configured, policy)
-      expect(allowed).toEqual(['server-alpha'])
-
-      const seam = createFakeMcpSeam()
-      const agentCtx = createFakeMcpAgentContext(seam)
-      const disposer = mountAllowedMcpServers(agentCtx, allowed, mcpConfig)
-
-      expect(seam.mounted.length).toBe(1)
-      expect(seam.mounted[0]!.name).toBe('server-alpha')
-
-      disposer.dispose()
-      expect(seam.mounted[0]!.disposed).toBe(true)
     })
   })
 })

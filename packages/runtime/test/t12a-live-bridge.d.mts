@@ -81,6 +81,10 @@ export interface AgentCtxDouble {
   /** alpha.1: every tools.restrict({ deny }) call recorded on THIS ctx
    *  (sibling-inert; one entry per call, the seam accumulates). */
   readonly toolRestrictions: ToolRestrictionEntry[]
+  /** P0-3 (hardening §5): the unified operation-order log — the SEQUENCE of
+   *  tools.register / tools.restrict calls on THIS ctx (verifies the frozen
+   *  setup ordering: builtin deny BEFORE the team tool registrations). */
+  readonly opLog: ReadonlyArray<{ op: 'register' | 'restrict'; toolName: string }>
   /** alpha.1: every skills register(def) entry recorded on THIS ctx
    *  (disposers flip `disposed`). */
   readonly registeredSkills: RegisteredSkillEntry[]
@@ -93,8 +97,10 @@ export interface AgentCtxDouble {
   readonly tools: {
     register(def: unknown): () => void
     execute(name: string, args: unknown, callId?: string): Promise<unknown>
-    /** alpha.1: the public Agent-scoped restriction seam. */
-    restrict(opts: { deny: string[] }): void
+    /** alpha.1: the public Agent-scoped restriction seam. P0-2 (hardening
+     *  §4): the real seam returns the exact disposer that lifts this
+     *  restriction (the adapter captures + invokes it on close). */
+    restrict(opts: { deny: string[] }): () => void
   }
   /** The DSH systemPrompt builtin double (T12-M2: the persona layer). */
   readonly systemPrompt: {

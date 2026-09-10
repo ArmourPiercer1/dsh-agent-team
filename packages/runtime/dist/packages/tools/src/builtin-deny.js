@@ -26,22 +26,25 @@
 export function applyBuiltInToolDeny(agentCtx, deniedNames) {
     // Deduplicate while preserving first-seen order
     const uniqueDenied = [...new Set(deniedNames)];
-    // Empty deny → no-op
+    // Empty deny → no-op (zero calls to restrict)
     if (uniqueDenied.length === 0) {
         return { dispose: () => { } };
     }
-    // Apply restriction through the public seam
-    agentCtx.tools.restrict({ deny: uniqueDenied });
-    // The disposer unwinds the scope when the agent closes.
-    // The restrict() seam is expected to be scoped to the agent lifetime;
-    // dispose() signals that scope is ending.
+    // P0-2 (hardening §4): the public seam is `restrict(filter): () => void` —
+    // the RETURNED function is the exact disposer that lifts this restriction.
+    // CAPTURE it (the previous adapter modeled the seam as returning void and
+    // returned a no-op disposer, so the restriction was never explicitly
+    // unwound). dispose() invokes the captured upstream disposer EXACTLY ONCE
+    // (idempotent); a double dispose is a no-op. If the live close already
+    // best-effort-catches disposer exceptions, the adapter does not re-swallow.
+    const lift = agentCtx.tools.restrict({ deny: uniqueDenied });
+    let disposed = false;
     return {
         dispose() {
-            // The restriction is agent-scoped: when the agent closes, the
-            // scope ends naturally. This disposer exists as a lifecycle hook
-            // for explicit cleanup when the host supports it.
-            // Per spec: does NOT modify global registry, re-register built-in
-            // tools, or access private registries.
+            if (disposed)
+                return;
+            disposed = true;
+            lift();
         },
     };
 }

@@ -464,4 +464,37 @@ describe('alpha.1 T4 — the production capability wiring on the REAL live glue'
       expect(closedAMcpDisposed).toBe(true)
     })
   })
+
+  describe('alpha.1 hardening — P0-3 (setup ordering) + P0-1 (fail-closed)', () => {
+    it('P0-3 F3: the builtin deny (restrict) is applied BEFORE the team tool registrations (register)', () => {
+      // The leader declares builtinToolDeny [bash] + teamTools allow
+      // [team_send_message, team_list_members]. The frozen ordering:
+      // builtin deny (restrict) BEFORE the team tool registrations (register)
+      // — the deny masks the preset-inherited base tools while the team tools
+      // (registered in the agent's own scope) remain visible.
+      const ops = createLeader.opLog
+      const restrictIdx = ops.findIndex((e) => e.op === 'restrict')
+      const registerIdx = ops.findIndex((e) => e.op === 'register')
+      // (plain-node shim matcher surface: toBe/toEqual/toBeGreaterThan/toThrow.)
+      expect(restrictIdx >= 0).toBe(true)
+      expect(registerIdx >= 0).toBe(true)
+      expect(restrictIdx < registerIdx).toBe(true)
+    })
+    it('P0-3 F1: member A denies [write] (a base tool) while its team tool [team_delegate] stays registered', () => {
+      // Member A's builtinToolDeny is [write] (a base/preset tool, NOT a team
+      // tool). The team tool [team_delegate] is registered in A's own scope
+      // (visible, not masked by the deny). The opLog: restrict(write) BEFORE
+      // register(team_delegate).
+      const ops = createA.opLog
+      const restrictIdx = ops.findIndex((e) => e.op === 'restrict')
+      const registerIdx = ops.findIndex((e) => e.op === 'register')
+      expect(restrictIdx >= 0).toBe(true)
+      expect(registerIdx >= 0).toBe(true)
+      expect(restrictIdx < registerIdx).toBe(true)
+      // The deny is [write] (a base tool), NOT the team tool.
+      expect(cADeny).toEqual([['write']])
+      // The team tool [team_delegate] is registered (the deny did not mask it).
+      expect(cATools).toEqual(['team_delegate'])
+    })
+  })
 })

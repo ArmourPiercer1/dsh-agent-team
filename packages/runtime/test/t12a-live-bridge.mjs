@@ -118,6 +118,11 @@ function makeAgentCtx(globalSections) {
   // construction: each ctx double is one agent scope); the scoped deny
   // list is the union of all restrict calls (the public seam accumulates).
   const toolRestrictions = []
+  // P0-3 (hardening §5): the unified operation-order log — records the
+  // SEQUENCE of tools.register / tools.restrict calls on THIS ctx so a test
+  // can verify the frozen setup ordering (builtin deny BEFORE the team tool
+  // registrations). Each entry is { op, toolName? }.
+  const opLog = []
   // alpha.1: the skill registration seam (agent.ctx.get('skills').register)
   // — records every scoped skill registration on THIS ctx with a working
   // disposer (the agent-scope unwind removes them, as with tools).
@@ -163,6 +168,7 @@ function makeAgentCtx(globalSections) {
     plugins,
     systemPrompt,
     toolRestrictions,
+    opLog,
     registeredSkills,
     on(event, listener) {
       const entry = { event, listener, active: true }
@@ -219,6 +225,7 @@ function makeAgentCtx(globalSections) {
     tools: {
       register(def) {
         registeredTools.push(def)
+        opLog.push({ op: 'register', toolName: String(def?.name ?? '') })
         return () => {
           const i = registeredTools.indexOf(def)
           if (i !== -1) registeredTools.splice(i, 1)
@@ -231,8 +238,14 @@ function makeAgentCtx(globalSections) {
       // alpha.1: the public Agent-scoped restriction seam (tools.restrict).
       // Records the deny list on THIS ctx only (sibling-inert); the scoped
       // effective deny is the union of every call (the seam accumulates).
+      // P0-2 (hardening §4): the real seam returns the exact disposer that
+      // lifts this restriction; the double returns a no-op disposer (the
+      // toolRestrictions union is the effective deny; the double does not
+      // model the lift) so the adapter's captured-disposer close path works.
       restrict(opts) {
         toolRestrictions.push(opts)
+        opLog.push({ op: 'restrict', toolName: (opts?.deny ?? []).join(',') })
+        return () => {}
       },
     },
   }

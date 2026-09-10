@@ -392,4 +392,45 @@ describe('T1: Blueprint Capability Schema', () => {
     const values = selectiveToTemplatePolicyValues(legacy)
     expect(values).toBeUndefined()
   })
+
+  // ——————————————————————————————————————————————————————————————
+  // 11d. P1 (hardening §6): allow([]) preserves the explicit policy value
+  // (E1-E3): an explicit empty allow is a DISTINCT policy value (deny
+  // everything), NOT "unspecified" — all three cells enter the values
+  // EXPLICITLY when selective.
+  // ——————————————————————————————————————————————————————————————
+  it('11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)', () => {
+    const caps: StaticTemplateCapabilities = {
+      mode: 'selective',
+      teamTools: { kind: 'allow', items: [] },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: [] },
+      mcp: { kind: 'allow', items: [] },
+    }
+    const values = selectiveToTemplatePolicyValues(caps)
+    // (plain-node shim matcher surface: toBe/toEqual/toBeGreaterThan/toThrow —
+    // `toBeDefined` is expressed as `!== undefined` + toBe(true).)
+    expect(values !== undefined).toBe(true)
+    // E1: teamTools allow[] → values.tools explicitly present
+    expect(values!['tools']).toEqual({ kind: 'allow', items: [] })
+    // E2: skills allow[] → values.skills explicitly present
+    expect(values!['skills']).toEqual({ kind: 'allow', items: [] })
+    // E3: mcp allow[] → values.mcp explicitly present
+    expect(values!['mcp']).toEqual({ kind: 'allow', items: [] })
+  })
+
+  it('11e. Selective source with mixed allow([])/deny preserves all cells (P1)', () => {
+    const caps: StaticTemplateCapabilities = {
+      mode: 'selective',
+      teamTools: { kind: 'allow', items: [] },
+      builtinToolDeny: [],
+      skills: { kind: 'deny' },
+      mcp: { kind: 'allow', items: ['mcp-a'] },
+    }
+    const values = selectiveToTemplatePolicyValues(caps)
+    expect(values !== undefined).toBe(true)
+    expect(values!['tools']).toEqual({ kind: 'allow', items: [] })
+    expect(values!['skills']).toEqual({ kind: 'deny' })
+    expect(values!['mcp']).toEqual({ kind: 'allow', items: ['mcp-a'] })
+  })
 })

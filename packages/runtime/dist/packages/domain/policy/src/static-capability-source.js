@@ -71,25 +71,18 @@ export function selectiveToTemplatePolicyValues(capabilities) {
     if (capabilities.mode === 'legacy') {
         return undefined;
     }
-    const values = {};
-    if (capabilities.teamTools.kind === 'allow' && capabilities.teamTools.items.length > 0) {
-        values[CAPABILITY_MAP.TEAM_TOOLS] = capabilities.teamTools;
-    }
-    else if (capabilities.teamTools.kind === 'deny') {
-        values[CAPABILITY_MAP.TEAM_TOOLS] = capabilities.teamTools;
-    }
-    if (capabilities.skills.kind === 'allow' && capabilities.skills.items.length > 0) {
-        values[CAPABILITY_MAP.SKILLS] = capabilities.skills;
-    }
-    else if (capabilities.skills.kind === 'deny') {
-        values[CAPABILITY_MAP.SKILLS] = capabilities.skills;
-    }
-    if (capabilities.mcp.kind === 'allow' && capabilities.mcp.items.length > 0) {
-        values[CAPABILITY_MAP.MCP] = capabilities.mcp;
-    }
-    else if (capabilities.mcp.kind === 'deny') {
-        values[CAPABILITY_MAP.MCP] = capabilities.mcp;
-    }
-    return Object.keys(values).length > 0 ? values : undefined;
+    // P1 (hardening §6): when the template capabilities are SELECTIVE, all
+    // three capability cells (teamTools / skills / mcp) enter
+    // TemplatePolicy.values EXPLICITLY — including `allow(items: [])`. An
+    // explicit empty allow is a DISTINCT policy value (deny everything), NOT
+    // "unspecified" — omitting it (the previous `items.length > 0` guard) let
+    // a lower-priority Blueprint / PolicyState win the precedence. Only a
+    // true legacy template (no capabilities field) returns undefined template
+    // authority.
+    return {
+        [CAPABILITY_MAP.TEAM_TOOLS]: capabilities.teamTools,
+        [CAPABILITY_MAP.SKILLS]: capabilities.skills,
+        [CAPABILITY_MAP.MCP]: capabilities.mcp,
+    };
 }
 //# sourceMappingURL=static-capability-source.js.map

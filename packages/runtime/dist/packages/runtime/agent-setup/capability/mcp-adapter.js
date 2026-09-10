@@ -1,13 +1,10 @@
 /**
- * MCP adapter — filter and mount MCP servers according to Team policy (T3 /
- * plan §9).
+ * MCP adapter — filter MCP servers according to Team policy (T3 / plan §9).
  *
- * Two functions:
+ * One function:
  *
  * - {@link filterMcpServers} — filter configured server names against the
- *   policy entry's allow-list or deny;
- * - {@link mountAllowedMcpServers} — mount the allowed servers through the
- *   Agent context's plugin seam, returning a composite disposer.
+ *   policy entry's allow-list or deny.
  *
  * Semantics:
  *
@@ -16,6 +13,13 @@
  * - `mcp deny` → empty (no mount);
  * - Unknown / unconfigured servers in the allow-list are silently ignored
  *   (they simply won't be in the configured set).
+ *
+ * The production mount path is the live glue's `reconcileMcp` (the real
+ * `agentCtx.plugin(mcpClient, config)` public seam). The former
+ * `mountAllowedMcpServers` helper — which faked an
+ * `agentCtx.plugin(serverName, config)` signature that is not a real public
+ * seam and was never on the production path — was removed in the alpha.1
+ * hardening (P2.1).
  *
  * Pure module: no I/O, no ambient state.
  * @module @dsh-agent-team/runtime/agent-setup/capability/mcp-adapter
@@ -44,47 +48,5 @@ export function filterMcpServers(configuredServers, policy) {
         }
     }
     return result;
-}
-/**
- * Mount the allowed MCP servers through the Agent's plugin seam.
- *
- * For each allowed server name, looks up its configuration in
- * `mcpConfig` (keyed by server name) and mounts it via
- * `agentCtx.plugin(serverName, config)`.
- *
- * @param agentCtx - the Agent context providing the plugin mounting seam.
- * @param allowedServers - the allowed server names (output of
- *   {@link filterMcpServers}).
- * @param mcpConfig - a record mapping server name → its mount configuration.
- * @returns a composite disposer that unmounts every server this call
- *   mounted. Idempotent.
- */
-export function mountAllowedMcpServers(agentCtx, allowedServers, mcpConfig) {
-    const disposers = [];
-    for (const serverName of allowedServers) {
-        const config = mcpConfig[serverName];
-        if (config === undefined) {
-            continue;
-        }
-        try {
-            const disposer = agentCtx.plugin(serverName, config);
-            disposers.push(disposer);
-        }
-        catch {
-            // Mount failed for one server: skip and continue.
-        }
-    }
-    return {
-        dispose() {
-            for (const d of disposers) {
-                try {
-                    d.dispose();
-                }
-                catch {
-                    // Dispose errors are non-fatal (best-effort cleanup).
-                }
-            }
-        },
-    };
 }
 //# sourceMappingURL=mcp-adapter.js.map

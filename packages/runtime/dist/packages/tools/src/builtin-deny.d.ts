@@ -30,7 +30,7 @@ export declare function applyBuiltInToolDeny(agentCtx: {
     tools: {
         restrict: (opts: {
             deny: string[];
-        }) => void;
+        }) => () => void;
     };
 }, deniedNames: readonly string[]): ToolRestrictionDisposer;
 //# sourceMappingURL=builtin-deny.d.ts.map

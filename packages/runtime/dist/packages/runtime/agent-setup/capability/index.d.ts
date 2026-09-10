@@ -26,5 +26,5 @@ export { createCapabilityOverlaySlot, type CapabilityOverlaySlot, type Capabilit
 export { MCP_FACET_WILDCARD, mcpFacetView, resolveDurableMcpFacet, type DurableMcpFacet, type DurableMcpFacetArgs, type McpFacetView, } from './mcp-facet.js';
 export { InMemorySkillCatalog, type TeamSkillCatalog, type TeamSkillDefinition, } from './skill-catalog.js';
 export { registerTeamSkills, type SkillRegistrationDisposer, type SkillAgentContext, } from './skill-adapter.js';
-export { filterMcpServers, mountAllowedMcpServers, type McpMountDisposer, type McpAgentContext, } from './mcp-adapter.js';
+export { filterMcpServers } from './mcp-adapter.js';
 //# sourceMappingURL=index.d.ts.map

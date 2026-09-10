@@ -32,7 +32,9 @@ export { MCP_FACET_WILDCARD, mcpFacetView, resolveDurableMcpFacet, } from './mcp
 // catalog, policy-driven skill registration with composite disposer.
 export { InMemorySkillCatalog, } from './skill-catalog.js';
 export { registerTeamSkills, } from './skill-adapter.js';
-// T3 — MCP adapter (plan §9): filter configured servers against policy
-// and mount allowed ones through the Agent plugin seam.
-export { filterMcpServers, mountAllowedMcpServers, } from './mcp-adapter.js';
+// T3 — MCP adapter (plan §9): filter configured servers against policy.
+// (The dead mountAllowedMcpServers helper + its interfaces were removed in
+// the alpha.1 hardening P2.1 — the production mount is the live glue's
+// reconcileMcp over the real agentCtx.plugin(mcpClient, config) seam.)
+export { filterMcpServers } from './mcp-adapter.js';
 //# sourceMappingURL=index.js.map

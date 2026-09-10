@@ -765,10 +765,14 @@ export function createAgentBindings(deps) {
   // the same bridge the persona install uses). The LEADER resolves by
   // position (the LeaderTemplate).
   //
-  // A session the domain cannot resolve to a template (no row, no hint,
-  // or the row's templateId names no template of the bound blueprint)
-  // reads LEGACY mode: the 0.1.0-rc.1 behavior (no selective capability
-  // restriction — the legacy Blueprint does not regress).
+  // P0-1 (hardening §3): a session the domain cannot RESOLVE to a template
+  // (blueprint unavailable, no row + no fresh-member hint, or the row's
+  // templateId names no template of the bound blueprint) FAILS CLOSED — the
+  // setup throws 'capability-template-unresolved' and the unpublished agent
+  // rolls back. Legacy mode is reserved for a SUCCESSFULLY located template
+  // whose `capabilities` field is absent (the 0.1.0-rc.1 behavior — the
+  // legacy Blueprint does not regress); an identity/template resolution
+  // failure must never degrade to the full legacy tool catalog (fail-open).
 
   /** @type {object|null} the row's bound blueprint (parsed once; null = no blueprintSource). */
   let boundBlueprint = null
@@ -787,20 +791,53 @@ export function createAgentBindings(deps) {
 
   /**
    * The static template capabilities of one session (alpha.1).
+   *
+   * P0-1 (hardening §3): resolution FAILS CLOSED. A resolution failure
+   * (blueprint unavailable, leader template missing, templateId missing,
+   * template not found) THROWS the typed 'capability-template-unresolved'
+   * error (the setup rejection rolls the unpublished agent back) — it never
+   * degrades to legacy. Legacy is reserved for a SUCCESSFUL template
+   * location whose `capabilities` field is absent (`staticCapabilitiesOf`
+   * returns { mode: 'legacy' } for that exact case). The `templateIdHint`
+   * bridges ONLY the fresh-create window (bindPath === 'fresh-member'); a
+   * cold resume / request boundary missing its durable row fails closed.
    * @param {string} sessionId - the session the agent embodies.
    * @param {string} [instanceId] - the resolved instance id (leader or member).
-   * @param {string} [templateIdHint] - the fresh-create window hint.
+   * @param {string} [templateIdHint] - the fresh-create window hint (used
+   *   ONLY when bindPath === 'fresh-member').
    * @param {string} [teamRootSid] - the owning team root (absent = the boot root).
+   * @param {string} [bindPath] - the T1 bind path (fresh-member / cold-member
+   *   / fresh-root / cold-root); gates the hint (P0-1 §3.4).
    * @returns {object} a StaticTemplateCapabilities ({ mode: 'legacy' } or
    *   { mode: 'selective', teamTools, builtinToolDeny, skills, mcp }).
+   * @throws {Error} 'capability-template-unresolved' on a resolution failure.
    */
-  function resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid) {
+  function resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid, bindPath) {
     const blueprint = getBoundBlueprint()
-    if (blueprint === null) return { mode: 'legacy' }
+    // P0-1 (hardening §3): an unavailable blueprint is a RESOLUTION failure,
+    // not a legacy template — fail closed (the legacy 0.1.0-rc.1 behavior is
+    // reserved for a SUCCESSFUL template location whose `capabilities` field
+    // is absent; an identity/template resolution failure must never degrade
+    // to the full legacy tool catalog).
+    if (blueprint === null) {
+      throw capabilityTemplateUnresolved(sessionId, {
+        reason: 'blueprint-unavailable',
+        ...(instanceId !== undefined ? { instanceId } : {}),
+      })
+    }
     const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
     if (sessionId === teamRoot) {
-      // The LEADER is the LeaderTemplate (Architecture §5.3/§6.1).
-      return staticCapabilitiesOf(blueprint, blueprint.leader)
+      // The LEADER is the LeaderTemplate (Architecture §5.3/§6.1). A valid
+      // blueprint always carries a leader template; a missing leader is a
+      // broken blueprint (fail closed, not legacy).
+      const leader = blueprint.leader
+      if (leader === undefined) {
+        throw capabilityTemplateUnresolved(sessionId, {
+          reason: 'template-not-found',
+          ...(instanceId !== undefined ? { instanceId } : {}),
+        })
+      }
+      return staticCapabilitiesOf(blueprint, leader)
     }
     // A MEMBER resolves through its DURABLE row (the backend truth).
     const members = domain.repositories.memberInstances.list(teamRoot)
@@ -808,16 +845,30 @@ export function createAgentBindings(deps) {
     let templateId
     if (row !== undefined) {
       templateId = String(row.templateId)
-    } else if (templateIdHint !== undefined && templateIdHint !== '') {
-      // The fresh-create window: the row commits AFTER this setup runs.
+    } else if (bindPath === 'fresh-member' && templateIdHint !== undefined && templateIdHint !== '') {
+      // The fresh-create window ONLY: the row commits AFTER this setup runs.
+      // P0-1 §3.4: the hint is NOT an authorization fallback for a cold
+      // resume or a request boundary — the durable identity must exist there
+      // (a cold-member / request-boundary missing its row fails closed).
       templateId = String(templateIdHint)
     } else if (instanceId !== undefined) {
       const byId = members.find((member) => String(member.instanceId) === instanceId)
       if (byId !== undefined) templateId = String(byId.templateId)
     }
-    if (templateId === undefined) return { mode: 'legacy' }
+    if (templateId === undefined) {
+      throw capabilityTemplateUnresolved(sessionId, {
+        reason: 'template-id-missing',
+        ...(instanceId !== undefined ? { instanceId } : {}),
+      })
+    }
     const template = blueprint.members.find((entry) => String(entry.templateId) === templateId)
-    if (template === undefined) return { mode: 'legacy' }
+    if (template === undefined) {
+      throw capabilityTemplateUnresolved(sessionId, {
+        reason: 'template-not-found',
+        ...(instanceId !== undefined ? { instanceId } : {}),
+        templateId,
+      })
+    }
     return staticCapabilitiesOf(blueprint, template)
   }
 
@@ -870,7 +921,7 @@ export function createAgentBindings(deps) {
       // fresh-create hint) -> the bound blueprint's per-template declaration.
       // LEGACY mode (the 0.1.0-rc.1 behavior) for every facet below when the
       // template declares no capabilities.
-      const capabilities = resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid)
+      const capabilities = resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
@@ -911,6 +962,23 @@ export function createAgentBindings(deps) {
         }
         await presets.mount(agentCtx, config.memberPresetId)
       }
+      // P0-3 (hardening §5): the built-in tool deny blacklist — applied
+      // BEFORE the Team tool scoped registrations (the frozen ordering:
+      // model selection -> agentPresets.mount -> builtinToolDeny -> Team
+      // tools -> Team skills -> MCP). tools.restrict() masks the tools the
+      // agent INHERITS from the parent/global scope (the preset base tools
+      // mounted above); tools the agent registers in its OWN scope (the
+      // team tools below) remain visible. So the deny masks the preset base
+      // tools while the team tools stay independently governed by the
+      // teamTools allowlist — the deny is NEVER a team-tool deny (it cannot
+      // hide a team tool). Sibling-inert (agent-scoped restrict); a cold
+      // resume re-applies it through this same setup. SELECTIVE mode only
+      // (the field exists only there); an empty list is a no-op (zero
+      // restrict calls).
+      if (capabilities.mode === 'selective') {
+        const denyDisposer = applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)
+        toolDisposers.push(denyDisposer)
+      }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
       // registration loop is skipped, as before.
@@ -928,20 +996,12 @@ export function createAgentBindings(deps) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
-      // alpha.1 (plan §10.6): the built-in tool deny blacklist — applied
-      // through the Agent-scoped tools.restrict({ deny }) public seam ONLY
-      // (sibling-inert: a sibling's base tools are untouched; the restrict
-      // is agent-scoped, so a cold resume re-applies it through this same
-      // setup on the resumed agent). SELECTIVE mode only (the field exists
-      // only there); an empty list is a no-op (zero restrict calls).
+      // alpha.1 (plan §10.7): the Team-managed skills — the catalog
+      // definitions the template's skills entry allows, registered in
+      // this agent's scope (allow(items) = catalog lookup; deny = none;
+      // unknown ids skip + diagnose, never crash the agent; no skills
+      // seam on the ctx = the no-op disposer, legacy behavior).
       if (capabilities.mode === 'selective') {
-        const denyDisposer = applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)
-        toolDisposers.push(denyDisposer)
-        // alpha.1 (plan §10.7): the Team-managed skills — the catalog
-        // definitions the template's skills entry allows, registered in
-        // this agent's scope (allow(items) = catalog lookup; deny = none;
-        // unknown ids skip + diagnose, never crash the agent; no skills
-        // seam on the ctx = the no-op disposer, legacy behavior).
         const skillDisposer = registerTeamSkills(agentCtx, teamSkillCatalog, capabilities.skills, {
           onSkip: (skillId, reason) => {
             observations.push(`alpha1: team skill '${skillId}' skipped (${reason})`)
@@ -1824,6 +1884,30 @@ export function createAgentBindings(deps) {
     const error = new Error(`agent-bindings: member base tools unavailable for '${sessionId}': ${reason} (code: member-base-tools-unavailable)`)
     error.code = 'member-base-tools-unavailable'
     observations.push(`p6t6: member-base-tools-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // P0-1 (hardening §3): the typed fail-closed error for a session whose
+  // capability template cannot be RESOLVED. A resolution failure (blueprint
+  // unavailable, member instance unresolved, templateId missing, template not
+  // found) must NEVER degrade to legacy — legacy is reserved for a SUCCESSFUL
+  // template location whose `capabilities` field is absent. The rejection
+  // propagates out of the AgentSetup callback, which rolls the unpublished
+  // agent back (the AgentSetup contract) — no live residency for an
+  // unresolvable template (a fail-open permission grant is the defect).
+  // Carries code 'capability-template-unresolved' + reason + the identity
+  // context (sessionId / instanceId? / templateId?).
+  function capabilityTemplateUnresolved(sessionId, details) {
+    const reason = String(details.reason)
+    const parts = [`reason=${reason}`]
+    if (details.instanceId !== undefined) parts.push(`instanceId=${details.instanceId}`)
+    if (details.templateId !== undefined) parts.push(`templateId=${details.templateId}`)
+    const error = new Error(`agent-bindings: capability template unresolved for '${sessionId}' (${parts.join(' ')}) (code: capability-template-unresolved)`)
+    error.code = 'capability-template-unresolved'
+    error.reason = reason
+    if (details.instanceId !== undefined) error.instanceId = String(details.instanceId)
+    if (details.templateId !== undefined) error.templateId = String(details.templateId)
+    observations.push(`p6t6: capability-template-unresolved for ${sessionId}: ${reason}`)
     return error
   }
 

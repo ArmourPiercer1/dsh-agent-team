@@ -68,16 +68,27 @@ const FULL_CATALOG: TeamToolDefinition[] = [
 ].map(fakeTeamTool)
 
 /**
- * Mock agent context that tracks restrict() calls.
- * Each instance is independent (sibling isolation).
+ * Mock agent context that tracks restrict() calls AND the lifted (disposer)
+ * invocations. Each instance is independent (sibling isolation).
+ *
+ * P0-2 (hardening §4): the real seam is `restrict(filter): () => void` — the
+ * returned function is the exact disposer that lifts the restriction. The
+ * mock returns a tracking disposer so the tests can verify the adapter
+ * CAPTURES and INVOKES it (B7-B10).
  */
 function makeMockAgentCtx() {
   const calls: Array<{ deny: string[] }> = []
+  let lifted = 0
   return {
     calls,
+    /** Number of times the upstream disposer was invoked. */
+    liftCount: () => lifted,
     tools: {
-      restrict(opts: { deny: string[] }) {
+      restrict(opts: { deny: string[] }): () => void {
         calls.push({ deny: [...opts.deny] })
+        return () => {
+          lifted += 1
+        }
       },
     },
   }
@@ -130,10 +141,18 @@ describe('T2 Case A: selective team allow + builtin deny', () => {
     expect(disposer).not.toBe(undefined)
   })
 
-  it('disposer is callable and a no-op', () => {
+  // P0-2 (hardening §4) B8 + B10: the adapter CAPTURES the upstream
+  // disposer returned by restrict() and INVOKES it exactly once on
+  // dispose(); a double dispose is a no-op (idempotent).
+  it('disposer invokes the captured upstream lift exactly once (B8/B10)', () => {
     const mock = makeMockAgentCtx()
     const disposer = applyBuiltInToolDeny(mock, ['bash', 'write'])
-    expect(() => disposer.dispose()).not.toThrow()
+    expect(mock.liftCount()).toBe(0)
+    disposer.dispose()
+    expect(mock.liftCount()).toBe(1)
+    // B10: double dispose → exactly one lift (idempotent)
+    disposer.dispose()
+    expect(mock.liftCount()).toBe(1)
   })
 })
 
@@ -178,11 +197,12 @@ describe('T2 Case C: team tools deny + empty builtin deny', () => {
     expect(selected).toEqual([])
   })
 
-  it('empty builtin deny is a no-op', () => {
+  it('empty builtin deny is a no-op (B7: no restrict call, no lift)', () => {
     const mock = makeMockAgentCtx()
     const disposer = applyBuiltInToolDeny(mock, [])
     expect(mock.calls.length).toBe(0)
-    expect(() => disposer.dispose()).not.toThrow()
+    disposer.dispose()
+    expect(mock.liftCount()).toBe(0)
   })
 
   it('base tools are unchanged when builtin deny is empty', () => {
