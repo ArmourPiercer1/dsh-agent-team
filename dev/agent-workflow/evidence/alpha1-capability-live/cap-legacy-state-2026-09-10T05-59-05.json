@@ -1,0 +1,19 @@
+{
+  "stamp": "2026-09-10T05-59-05",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-caplegacy-2026-09-10T05-59-05",
+  "workspaceDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-caplegacy-2026-09-10T05-59-05\\workspace-legacy",
+  "port": 3180,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3180",
+  "token": "dTHipLi2QylQHO9P8IIzD1eZDUKtyJpLZXeqp7BiGwU",
+  "cookie": "dsh-auth-t1vK1KKWKrI7Bl290d49Ueb7GDBoHGt2VNu3alfmdbk=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MCIsImlzc3VlZEF0IjoxNzg5MDIwMTc3NTQ1LCJleHBpcmVzQXQiOjE3OTE2MTIxNzc1NDV9.gi_4tsHGdoWjHifBsWczB9aoVkCfKVvyE01sMuZuox8",
+  "instancePid": 108904,
+  "bootJobPid": 66892,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\alpha1-capability-live\\instances-legacy\\instance-port3180.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\alpha1-capability-live\\dump-config-caplegacy-2026-09-10T05-59-05.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-caplegacy-2026-09-10T05-59-05\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-caplegacy-2026-09-10T05-59-05/repo.git#int/alpha1-capability-wiring",
+  "branch": "int/alpha1-capability-wiring",
+  "startedAt": "2026-09-10T06:02:58.690Z",
+  "stoppedAt": "2026-09-10T06:04:30.105Z"
+}

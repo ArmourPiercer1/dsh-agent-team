@@ -1,0 +1,7 @@
+[2026-09-10T05:20:08.279Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-15-19
+[2026-09-10T05:20:08.280Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-15-19\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:20:08.281Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-15-19.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:20:08.283Z] profile already initialized (cap-setup)
+[2026-09-10T05:20:08.284Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:20:08.294Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:20:08.295Z] cap-mcp up at 127.0.0.1:3494

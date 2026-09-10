@@ -1,0 +1,150 @@
+[2026-09-10T05:26:59.830Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:26:59.832Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:26:59.832Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:26:59.838Z] profile already initialized (cap-setup)
+[2026-09-10T05:26:59.838Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:26:59.855Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:26:59.858Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:27:15.308Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=lB0CLzamHRAVNFXIOlE6hygk7FOHJRJVVjSTJ344klU
+[2026-09-10T05:27:15.379Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 89184
+[2026-09-10T05:30:18.159Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:30:18.160Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:30:18.160Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:30:18.166Z] profile already initialized (cap-setup)
+[2026-09-10T05:30:18.167Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:30:18.183Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:30:18.184Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:30:21.270Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=6c72oOKDja-zSiWblerkdD2i4Kx_4syzmIcv86h3YxQ
+[2026-09-10T05:30:21.292Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 88612
+[2026-09-10T05:32:56.380Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:32:56.382Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:32:56.382Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:32:56.388Z] profile already initialized (cap-setup)
+[2026-09-10T05:32:56.388Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:32:56.403Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:32:56.404Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:32:59.535Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=1GyW-8uoa04Qx77fT-avhVlti4fbO8oyukWwDsyI7go
+[2026-09-10T05:32:59.553Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 116992
+[2026-09-10T05:37:07.788Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:37:07.790Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:37:07.791Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:37:07.797Z] profile already initialized (cap-setup)
+[2026-09-10T05:37:07.798Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:37:07.815Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:37:07.816Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:37:11.218Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=Pz105OzVA1guVsyf21vcshCQkxEdgJ-eLbSgPozmS8k
+[2026-09-10T05:37:11.236Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 115272
+[2026-09-10T05:37:14.762Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"cap-root","liveSessions":["cap-root","session-capa-a","session-capb-b"],"toolCount":10}
+[2026-09-10T05:37:14.768Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T05:37:14.960Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\dump-config-cap-2026-09-10T05-23-13.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T05:37:15.013Z] catalog.list with cookie: HTTP 200
+[2026-09-10T05:37:15.013Z] catalog.list carries the capability blueprint cap-bp-1 (user-layer override in force)
+[2026-09-10T05:37:15.014Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-state-2026-09-10T05-23-13.json
+[2026-09-10T05:37:15.014Z] CAP-READY
+[2026-09-10T05:46:16.296Z] stop: instance pid 115272 signaled
+[2026-09-10T05:46:16.311Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T05:46:16.311Z] shutdown: instance child exit
+[2026-09-10T05:46:16.314Z] shutdown: ports free — 3180:true 3493:true 3494:true
+[2026-09-10T05:46:16.804Z] stop: ports free — 3180:true 3493:true 3494:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=Pz105OzVA1guVsyf21vcshCQkxEdgJ-eLbSgPozmS8k
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T05:46:16.807Z] CAP-STOPPED
+[2026-09-10T05:46:47.778Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:46:47.780Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:46:47.780Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:46:47.784Z] profile already initialized (cap-setup)
+[2026-09-10T05:46:47.784Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:46:47.796Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:46:47.798Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:46:49.652Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=lns53tkBA6ihE-8SvP_V1-bSaK7pmEtZhijXi-Wv3pE
+[2026-09-10T05:46:49.661Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 116644
+[2026-09-10T05:48:08.663Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:48:08.664Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:48:08.664Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:48:08.667Z] profile already initialized (cap-setup)
+[2026-09-10T05:48:08.668Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:48:08.679Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:48:08.680Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:48:10.466Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=f0wJTpycSH7Alb0d51magkpFYA82oorCUnt7ndG_z6A
+[2026-09-10T05:48:10.475Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 83136
+[2026-09-10T05:49:00.933Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:49:00.934Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:49:00.934Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:49:00.939Z] profile already initialized (cap-setup)
+[2026-09-10T05:49:00.939Z] p6t6 directive written (boot=1 phase=create rootSessionId=cap-root)
+[2026-09-10T05:49:00.953Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:49:00.955Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:49:04.347Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=sYIR7MV9Gum_tgBabuLL3SHl3ZxQcJnjtQBCSz6ju5o
+[2026-09-10T05:49:04.384Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 73380
+[2026-09-10T05:49:13.655Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"cap-root","liveSessions":["cap-root","session-capa-a","session-capb-b"],"toolCount":10}
+[2026-09-10T05:49:13.658Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T05:49:13.791Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\dump-config-cap-2026-09-10T05-23-13.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T05:49:13.810Z] catalog.list with cookie: HTTP 200
+[2026-09-10T05:49:13.810Z] catalog.list carries the capability blueprint cap-bp-1 (user-layer override in force)
+[2026-09-10T05:49:13.811Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-state-2026-09-10T05-23-13.json
+[2026-09-10T05:49:13.811Z] CAP-READY
+[2026-09-10T05:50:29.865Z] stop: instance pid 73380 signaled
+[2026-09-10T05:50:29.884Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T05:50:29.884Z] shutdown: instance child exit
+[2026-09-10T05:50:29.888Z] shutdown: ports free — 3180:true 3493:true 3494:true
+[2026-09-10T05:50:30.372Z] stop: ports free — 3180:true 3493:true 3494:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=sYIR7MV9Gum_tgBabuLL3SHl3ZxQcJnjtQBCSz6ju5o
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T05:50:30.375Z] CAP-STOPPED
+[2026-09-10T05:50:47.376Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:50:47.377Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:50:47.378Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:50:47.381Z] profile already initialized (cap-setup)
+[2026-09-10T05:50:47.381Z] p6t6 directive written (boot=1 phase=open rootSessionId=cap-root)
+[2026-09-10T05:50:47.395Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:50:47.396Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:50:49.220Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=fGKJ9LReLG0eK94bDRExDnIdHK8AFtlqjx4q3kks9Po
+[2026-09-10T05:50:49.230Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 117084
+[2026-09-10T05:51:29.011Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:51:29.012Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:51:29.012Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:51:29.016Z] profile already initialized (cap-setup)
+[2026-09-10T05:51:29.017Z] p6t6 directive written (boot=1 phase=resume rootSessionId=cap-root)
+[2026-09-10T05:51:29.030Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:51:29.031Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:51:30.874Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=kp7KlWFiX9wp08mSoxyBFRRoTUXuqsUOZx8ylDigap8
+[2026-09-10T05:51:30.885Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 61560
+[2026-09-10T05:52:37.596Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:52:37.597Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:52:37.597Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:52:37.600Z] profile already initialized (cap-setup)
+[2026-09-10T05:52:37.601Z] p6t6 directive written (boot=1 phase=resume rootSessionId=cap-root)
+[2026-09-10T05:52:37.612Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:52:37.613Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:52:39.201Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=CuNA4jCrnk1GXJcKzT0Riq6nubG52V-2ppq2cq-_l_o
+[2026-09-10T05:52:39.213Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 113656
+[2026-09-10T05:53:20.730Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13
+[2026-09-10T05:53:20.732Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-23-13\profiles\web\node_modules\dsh-agent-team
+[2026-09-10T05:53:20.732Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-assertions-2026-09-10T05-23-13.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T05:53:20.736Z] profile already initialized (cap-setup)
+[2026-09-10T05:53:20.737Z] p6t6 directive written (boot=1 phase=resume rootSessionId=cap-root)
+[2026-09-10T05:53:20.748Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T05:53:20.749Z] cap-mcp up at 127.0.0.1:3494
+[2026-09-10T05:53:22.541Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=-i9wxzvtLJeRNukOYUA0l2Kiv9ZLaEO_UFBw6Leqc7M
+[2026-09-10T05:53:22.684Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 115012
+[2026-09-10T05:53:23.708Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"cap-root","liveSessions":["cap-root","session-capa-a","session-capb-b"],"toolCount":10}
+[2026-09-10T05:53:23.718Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T05:53:23.819Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\dump-config-cap-2026-09-10T05-23-13.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T05:53:23.845Z] catalog.list with cookie: HTTP 200
+[2026-09-10T05:53:23.845Z] catalog.list carries the capability blueprint cap-bp-1 (user-layer override in force)
+[2026-09-10T05:53:23.846Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-state-2026-09-10T05-23-13.json
+[2026-09-10T05:53:23.846Z] CAP-READY
+[2026-09-10T05:57:40.356Z] stop: instance pid 115012 signaled
+[2026-09-10T05:57:40.371Z] instance child exited (code=1) — boot job shutting down
+[2026-09-10T05:57:40.372Z] shutdown: instance child exit
+[2026-09-10T05:57:40.374Z] shutdown: ports free — 3180:true 3493:true 3494:true
+[2026-09-10T05:57:40.864Z] stop: ports free — 3180:true 3493:true 3494:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=-i9wxzvtLJeRNukOYUA0l2Kiv9ZLaEO_UFBw6Leqc7M
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T05:57:40.868Z] CAP-STOPPED

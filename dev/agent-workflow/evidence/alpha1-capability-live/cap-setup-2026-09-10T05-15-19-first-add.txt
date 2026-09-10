@@ -1,0 +1,19 @@
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.3.4.      │
+   │     Changelog: https://pnpm.io/v/12.3.4      │
+   │   To update, run: corepack use pnpm@12.3.4   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 0, reused 0, downloaded 1, added 0
+
+dependencies:
++ dsh-agent-team git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-cap-2026-09-10T05-15-19/repo.git#int/alpha1-capability-wiring
+
+Packages: +1
++
+Progress: resolved 1, reused 0, downloaded 1, added 1, done
+Done in 1m 49.3s using pnpm v11.7.0
+dsh: initialized profile web at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-cap-2026-09-10T05-15-19\profiles\web

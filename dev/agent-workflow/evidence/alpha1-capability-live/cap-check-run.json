@@ -1,0 +1,726 @@
+{
+  "at": "2026-09-10T05:49:28.539Z",
+  "origin": "http://127.0.0.1:3180",
+  "statePath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\dev\\agent-workflow\\evidence\\alpha1-capability-live\\cap-state-2026-09-10T05-23-13.json",
+  "health": {
+    "ok": true,
+    "boot": 1,
+    "ready": true,
+    "rootSessionId": "cap-root",
+    "liveSessions": [
+      "cap-root",
+      "session-capa-a",
+      "session-capb-b"
+    ],
+    "toolCount": 10
+  },
+  "n1_team_tools": {
+    "cap-root": {
+      "team_list_members": "registered",
+      "team_send_message": "registered",
+      "team_delegate": "not-registered"
+    },
+    "session-capa-a": {
+      "team_delegate": "registered",
+      "team_list_members": "not-registered",
+      "team_send_message": "not-registered"
+    },
+    "session-capb-b": {
+      "team_list_members": "not-registered",
+      "team_delegate": "not-registered",
+      "team_send_message": "not-registered"
+    }
+  },
+  "n4_mcp": {
+    "before": {
+      "cap-root": {
+        "mounted": false,
+        "allowed": false,
+        "serverName": "cap-mcp",
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        }
+      },
+      "session-capa-a": {
+        "mounted": false,
+        "allowed": false,
+        "serverName": "cap-mcp",
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        }
+      },
+      "session-capb-b": {
+        "mounted": false,
+        "allowed": false,
+        "serverName": "cap-mcp",
+        "deniedBy": {
+          "by": "team",
+          "reason": "unspecifiedFailClosed"
+        }
+      }
+    },
+    "after": {
+      "cap-root": {
+        "mounted": false,
+        "allowed": true,
+        "serverName": "cap-mcp"
+      },
+      "session-capa-a": {
+        "mounted": false,
+        "allowed": true,
+        "serverName": "cap-mcp"
+      },
+      "session-capb-b": {
+        "mounted": false,
+        "allowed": true,
+        "serverName": "cap-mcp"
+      }
+    },
+    "override": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "value": {
+          "recordId": "cap-mcp-allow",
+          "kind": "human-override",
+          "scope": "team",
+          "values": {
+            "mcp": {
+              "kind": "allow",
+              "items": [
+                "cap-mcp"
+              ]
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-10T05:49:28.701Z",
+          "supersededRecordId": null
+        }
+      }
+    }
+  },
+  "n3_skills": {
+    "observations": [
+      "alpha1: team skill 'base' skipped (not-in-catalog)",
+      "alpha1: team skill 'base' skipped (not-in-catalog)"
+    ],
+    "note": ""
+  },
+  "state_before": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "cap-root",
+    "teamSession": {
+      "rootSessionId": "cap-root",
+      "blueprintId": "cap-bp-1",
+      "revision": "1",
+      "contentHash": "sha256:07d00e038cb0dde29069a2b7252409dc4dc0c07d608a8d8f0965e72c2f6af998",
+      "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+      "createdAt": "1970-01-01T00:00:00.000Z",
+      "generation": 2
+    },
+    "members": [
+      {
+        "instanceId": "inst-capaa",
+        "templateId": "tpl-a",
+        "label": "member-a",
+        "childSessionId": "session-capa-a",
+        "lifecycle": "RUNNING",
+        "activityVersion": 1
+      },
+      {
+        "instanceId": "inst-capbb",
+        "templateId": "tpl-b",
+        "label": "member-b",
+        "childSessionId": "session-capb-b",
+        "lifecycle": "RUNNING",
+        "activityVersion": 1
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "cap-root",
+        "lifecycle": "RUNNING",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": []
+    },
+    "activity": [],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [],
+      "sessions": {
+        "cap-root": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "mounted": false,
+            "serverName": "cap-mcp",
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          }
+        },
+        "session-capa-a": {
+          "instanceId": "inst-capaa",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "mounted": false,
+            "serverName": "cap-mcp",
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          }
+        },
+        "session-capb-b": {
+          "instanceId": "inst-capbb",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "mounted": false,
+            "serverName": "cap-mcp",
+            "allowed": false,
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "mcp: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          }
+        }
+      }
+    },
+    "observations": [
+      "alpha1: team skill 'base' skipped (not-in-catalog)",
+      "alpha1: team skill 'base' skipped (not-in-catalog)"
+    ]
+  },
+  "state_after": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "cap-root",
+    "teamSession": {
+      "rootSessionId": "cap-root",
+      "blueprintId": "cap-bp-1",
+      "revision": "1",
+      "contentHash": "sha256:07d00e038cb0dde29069a2b7252409dc4dc0c07d608a8d8f0965e72c2f6af998",
+      "defaultWorkspace": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+      "createdAt": "1970-01-01T00:00:00.000Z",
+      "generation": 2
+    },
+    "members": [
+      {
+        "instanceId": "inst-capaa",
+        "templateId": "tpl-a",
+        "label": "member-a",
+        "childSessionId": "session-capa-a",
+        "lifecycle": "RUNNING",
+        "activityVersion": 1
+      },
+      {
+        "instanceId": "inst-capbb",
+        "templateId": "tpl-b",
+        "label": "member-b",
+        "childSessionId": "session-capb-b",
+        "lifecycle": "RUNNING",
+        "activityVersion": 1
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "cap-root",
+        "lifecycle": "RUNNING",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": []
+    },
+    "activity": [],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [
+        {
+          "recordId": "cap-mcp-allow",
+          "kind": "human-override",
+          "scope": "team",
+          "values": {
+            "mcp": {
+              "items": [
+                "cap-mcp"
+              ],
+              "kind": "allow"
+            }
+          },
+          "generation": 1,
+          "updatedAt": "2026-09-10T05:49:28.701Z"
+        }
+      ],
+      "sessions": {
+        "cap-root": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "mounted": false,
+            "serverName": "cap-mcp",
+            "allowed": true,
+            "source": {
+              "layer": "humanOverride",
+              "origin": "human",
+              "recordId": "cap-mcp-allow"
+            },
+            "unavailable": false,
+            "pendingNextBoundary": [
+              {
+                "recordId": "cap-mcp-allow",
+                "kind": "human-override",
+                "scope": "team",
+                "generation": 1,
+                "updatedAt": "2026-09-10T05:49:28.701Z",
+                "values": {
+                  "mcp": {
+                    "items": [
+                      "cap-mcp"
+                    ],
+                    "kind": "allow"
+                  }
+                }
+              }
+            ],
+            "explanation": "mcp: effective allow[cap-mcp]; team humanOverride(origin=human, cap-mcp-allow) allow[cap-mcp]; external exists=yes, hard=unspecified"
+          }
+        },
+        "session-capa-a": {
+          "instanceId": "inst-capaa",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "mounted": false,
+            "serverName": "cap-mcp",
+            "allowed": true,
+            "source": {
+              "layer": "humanOverride",
+              "origin": "human",
+              "recordId": "cap-mcp-allow"
+            },
+            "unavailable": false,
+            "pendingNextBoundary": [
+              {
+                "recordId": "cap-mcp-allow",
+                "kind": "human-override",
+                "scope": "team",
+                "generation": 1,
+                "updatedAt": "2026-09-10T05:49:28.701Z",
+                "values": {
+                  "mcp": {
+                    "items": [
+                      "cap-mcp"
+                    ],
+                    "kind": "allow"
+                  }
+                }
+              }
+            ],
+            "explanation": "mcp: effective allow[cap-mcp]; team humanOverride(origin=human, cap-mcp-allow) allow[cap-mcp]; external exists=yes, hard=unspecified"
+          }
+        },
+        "session-capb-b": {
+          "instanceId": "inst-capbb",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "deepseek-v4-flash"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "mounted": false,
+            "serverName": "cap-mcp",
+            "allowed": true,
+            "source": {
+              "layer": "humanOverride",
+              "origin": "human",
+              "recordId": "cap-mcp-allow"
+            },
+            "unavailable": false,
+            "pendingNextBoundary": [
+              {
+                "recordId": "cap-mcp-allow",
+                "kind": "human-override",
+                "scope": "team",
+                "generation": 1,
+                "updatedAt": "2026-09-10T05:49:28.701Z",
+                "values": {
+                  "mcp": {
+                    "items": [
+                      "cap-mcp"
+                    ],
+                    "kind": "allow"
+                  }
+                }
+              }
+            ],
+            "explanation": "mcp: effective allow[cap-mcp]; team humanOverride(origin=human, cap-mcp-allow) allow[cap-mcp]; external exists=yes, hard=unspecified"
+          }
+        }
+      }
+    },
+    "observations": [
+      "alpha1: team skill 'base' skipped (not-in-catalog)",
+      "alpha1: team skill 'base' skipped (not-in-catalog)"
+    ]
+  },
+  "checks": [
+    {
+      "id": "health-ok",
+      "label": "p6t6 health ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "status=200 body={\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"cap-root\",\"liveSessions\":[\"cap-root\",\"session-capa-a\",\"session-capb-b\"],\"toolCount\":10}"
+    },
+    {
+      "id": "health-toolcount-10",
+      "label": "full 10-tool factory output (the plugin-load signal)",
+      "expected": 10,
+      "actual": 10,
+      "ok": true,
+      "detail": "toolCount=10"
+    },
+    {
+      "id": "health-live-3-sessions",
+      "label": "leader + 2 seeded members live",
+      "expected": 3,
+      "actual": 3,
+      "ok": true,
+      "detail": "liveSessions=[\"cap-root\",\"session-capa-a\",\"session-capb-b\"]"
+    },
+    {
+      "id": "n1-cap-root-team_list_members",
+      "label": "N1 cap-root team_list_members",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-cap-root-team_send_message",
+      "label": "N1 cap-root team_send_message",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-cap-root-team_delegate",
+      "label": "N1 cap-root team_delegate",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-session-capa-a-team_delegate",
+      "label": "N1 session-capa-a team_delegate",
+      "expected": "registered",
+      "actual": "registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-session-capa-a-team_list_members",
+      "label": "N1 session-capa-a team_list_members",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-session-capa-a-team_send_message",
+      "label": "N1 session-capa-a team_send_message",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-session-capb-b-team_list_members",
+      "label": "N1 session-capb-b team_list_members",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-session-capb-b-team_delegate",
+      "label": "N1 session-capb-b team_delegate",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n1-session-capb-b-team_send_message",
+      "label": "N1 session-capb-b team_send_message",
+      "expected": "not-registered",
+      "actual": "not-registered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "n3-skills-wiring-active",
+      "label": "alpha1 skill-skip observations present (wiring active)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "observations=[\"alpha1: team skill 'base' skipped (not-in-catalog)\",\"alpha1: team skill 'base' skipped (not-in-catalog)\"]"
+    },
+    {
+      "id": "n4-before-cap-root-fail-closed",
+      "label": "N4 cap-root fail-closed before override",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":false,\"serverName\":\"cap-mcp\",\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"}}"
+    },
+    {
+      "id": "n4-before-session-capa-a-fail-closed",
+      "label": "N4 session-capa-a fail-closed before override",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":false,\"serverName\":\"cap-mcp\",\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"}}"
+    },
+    {
+      "id": "n4-before-session-capb-b-fail-closed",
+      "label": "N4 session-capb-b fail-closed before override",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":false,\"serverName\":\"cap-mcp\",\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"}}"
+    },
+    {
+      "id": "n4-override-admitted",
+      "label": "durable MCP-allow override admitted",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "status=200 body={\"ok\":true,\"value\":{\"recordId\":\"cap-mcp-allow\",\"kind\":\"human-override\",\"scope\":\"team\",\"values\":{\"mcp\":{\"kind\":\"allow\",\"items\":[\"cap-mcp\"]}},\"generation\":1,\"updatedAt\":\"2026-09-10T05:49:28.701Z\",\"supersededRecordId\":null}}"
+    },
+    {
+      "id": "n4-after-cap-root-allowed-durable",
+      "label": "N4 cap-root durable-allowed (team scope)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+    },
+    {
+      "id": "n4-after-cap-root-mounted-lazy",
+      "label": "N4 cap-root mounted (lazy, false until a turn)",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+    },
+    {
+      "id": "n4-after-session-capa-a-allowed-durable",
+      "label": "N4 session-capa-a durable-allowed (team scope)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+    },
+    {
+      "id": "n4-after-session-capa-a-mounted-lazy",
+      "label": "N4 session-capa-a mounted (lazy, false until a turn)",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+    },
+    {
+      "id": "n4-after-session-capb-b-allowed-durable",
+      "label": "N4 session-capb-b durable-allowed (team scope)",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+    },
+    {
+      "id": "n4-after-session-capb-b-mounted-lazy",
+      "label": "N4 session-capb-b mounted (lazy, false until a turn)",
+      "expected": false,
+      "actual": false,
+      "ok": true,
+      "detail": "{\"mounted\":false,\"allowed\":true,\"serverName\":\"cap-mcp\"}"
+    }
+  ],
+  "failures": []
+}

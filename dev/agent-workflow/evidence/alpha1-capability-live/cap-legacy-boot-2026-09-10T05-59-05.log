@@ -1,0 +1,30 @@
+[2026-09-10T06:01:52.743Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-legacy-assertions-2026-09-10T05-59-05.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T06:01:52.744Z] FAIL — legacy patch should NOT override dsh-agent-team: # cap-legacy user-layer patch (world 2026-09-10T05-59-05): R1 legacy regression.
+#
+# NO dsh-agent-team override — the BUNDLE layer shipped row (the
+# my-team-bp-1 inline blueprint, the legacy default with NO capabilities
+# field) stands. This world verifies the legacy full-10-catalog still
+# works (
+[2026-09-10T06:02:55.692Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-legacy-assertions-2026-09-10T05-59-05.json (branch=int/alpha1-capability-wiring)
+[2026-09-10T06:02:55.696Z] profile already initialized (cap-legacy-setup)
+[2026-09-10T06:02:55.696Z] p6t6 directive written (boot=1 phase=create rootSessionId=team-root)
+[2026-09-10T06:02:55.708Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-10T06:02:57.537Z] booted at http://127.0.0.1:3180; boot line: dsh web: http://127.0.0.1:3180/?token=dTHipLi2QylQHO9P8IIzD1eZDUKtyJpLZXeqp7BiGwU
+[2026-09-10T06:02:57.548Z] auth cookie exchanged (dsh-auth-t1v…); instance pid 108904
+[2026-09-10T06:02:58.569Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"team-root","liveSessions":["team-root"],"toolCount":10}
+[2026-09-10T06:02:58.584Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-10T06:02:58.672Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\dump-config-caplegacy-2026-09-10T05-59-05.txt; rows={"dsh-agent-team (host row, SHIPPED default)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-10T06:02:58.689Z] catalog.list with cookie: HTTP 200
+[2026-09-10T06:02:58.689Z] catalog.list carries the SHIPPED DEFAULT blueprint my-team-bp-1 (legacy default in force)
+[2026-09-10T06:02:58.690Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\dev\agent-workflow\evidence\alpha1-capability-live\cap-legacy-state-2026-09-10T05-59-05.json
+[2026-09-10T06:02:58.690Z] CAPLEGACY-READY
+[2026-09-10T06:04:29.593Z] stop: instance pid 108904 signaled
+[2026-09-10T06:04:29.607Z] instance child exited (code=1)
+[2026-09-10T06:04:29.607Z] shutdown: instance child exit
+[2026-09-10T06:04:29.610Z] shutdown: ports free — 3180:true 3493:true
+[2026-09-10T06:04:30.098Z] stop: ports free — 3180:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3180/?token=dTHipLi2QylQHO9P8IIzD1eZDUKtyJpLZXeqp7BiGwU
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-10T06:04:30.105Z] CAPLEGACY-STOPPED
