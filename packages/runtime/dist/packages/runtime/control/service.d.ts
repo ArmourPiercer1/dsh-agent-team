@@ -34,13 +34,21 @@
  *
  * Scope model (types.ts): an allow authorizes EXACTLY
  * `(rootSessionId, targetInstanceId, actionName, toolName?,
- * capabilityDomain?, correlation)` and is CONSUMED EXACTLY ONCE.
+ * capabilityDomain?, correlation, operationFingerprint?)` and is
+ * CONSUMED EXACTLY ONCE. The operation fingerprint is OPTIONAL (legacy
+ * rows never carry it); when present it binds the approval to the exact
+ * resource + payload impact identity and participates in the scope
+ * identity and the request idempotency key — it is NOT a correlation
+ * substitute (a new correlation under the same fingerprint is a new
+ * request; the same correlation under a different fingerprint is a
+ * different request and must never reuse the other's request/approval).
  *
  * Request idempotency: the scope key `(root, targetInstanceId, actionName,
- * toolName|absent, correlation)` identifies the logical request; a retried
- * request returns the EXISTING row (regardless of requester); a NEW
- * attempt after an allow was consumed (or after a deny) must carry a NEW
- * correlation and creates a NEW request (no reuse).
+ * toolName|absent, correlation, operationFingerprint|absent)` identifies
+ * the logical request; a retried request returns the EXISTING row
+ * (regardless of requester); a NEW attempt after an allow was consumed
+ * (or after a deny) must carry a NEW correlation and creates a NEW
+ * request (no reuse).
  *
  * Stale semantics (fail closed; the append-only ledger has no "mark"
  * primitive, so the decision row IS the mark):
@@ -87,6 +95,23 @@
  * throws are reserved for malformed guard input (CONTROL_GUARD_MALFORMED)
  * and an ambiguous durable state (CONTROL_GUARD_AMBIGUOUS: two distinct
  * unconsumed allows for one scope — the guard refuses to guess).
+ *
+ * The synchronous wait bridge (`awaitControlDecision`, alpha.2 §9.4):
+ * resolves when a durable ControlDecision for the requestId appears. The
+ * authority is ALWAYS the durable control rows — the waiter only solves
+ * LIVENESS: it adds no authority, writes no rows, and is never consulted
+ * by the guard or the resolvers. Minimal alpha.2 implementation: poll the
+ * durable control state at the injected `waitPollIntervalMs` cadence
+ * (documented choice: DEFAULT 250 ms — the low end of the plan's
+ * 250–500 ms band; the waiter is liveness-only and the durable read is a
+ * cheap in-process ledger scan, so the low end minimizes decision
+ * latency at negligible cost). Settles on: the decision appears
+ * (resolve with the durable record), the caller's AbortSignal aborts
+ * (typed CONTROL_WAIT_ABORTED), or the durable control plane closes —
+ * the storage layer's typed `NOT_OPEN` rejection on the waiter's durable
+ * read maps to typed CONTROL_WAIT_CLOSED. Timers and listeners are
+ * cleared on settle (no leak after the promise settles). No durable
+ * waiter scheduler, no cross-process continuation.
  *
  * Invariant 45: the in-process holds NO cached authority state — every
  * operation re-reads the durable repositories fresh (the service-owned

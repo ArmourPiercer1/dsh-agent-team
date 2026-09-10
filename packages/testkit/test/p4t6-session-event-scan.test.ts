@@ -49,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file (int integration)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file (int integration)', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -468,16 +468,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     over them passes — the frozen quarantine hit set is unchanged
     //     at fifteen occurrences).
     //
-    // Independently re-verified on the A2 worktree: the committed
-    // scanner's own run on the int tree reports filesScanned ==
-    // files.length == 660 (642 + 10 + 1 + 7), and its file list names
-    // exactly the eighteen files above (ten alpha.1 + one A1 + seven
-    // A2; the committed scanner is
-    // byte-identical — no scanner change, DEC-1). The frozen quarantine
-    // hit set and all required P4 suite lists are untouched. Evidence:
-    // dev/agent-workflow/evidence/alpha2-permission/a2/.
-    expect(scanResult.filesScanned).toBe(660)
-    expect(scanResult.files.length).toBe(660)
+    // (d) ONE A4 scannable file (merged on int after A2):
+    //     packages/runtime/test/a4a-control-exact-scope.test.ts (the
+    //     alpha.2 control exact-fingerprint scope + wait-bridge suite).
+    //     Zero denylist vocabulary (the scan over it passes). Recorded on
+    //     int at the A1+A2+A4 integration.
+    //
+    // Independently re-verified on the int tree at each integration: the
+    // committed scanner's own run reports filesScanned == files.length ==
+    // 661 (642 + 10 + 1 + 7 + 1), and its file list names exactly the
+    // nineteen files above (ten alpha.1 + one A1 + seven A2 + one A4; the
+    // committed scanner is byte-identical — no scanner change, DEC-1). The
+    // frozen quarantine hit set and all required P4 suite lists are
+    // untouched. Evidence:
+    // dev/agent-workflow/evidence/alpha2-permission/a2/ + a4/.
+    expect(scanResult.filesScanned).toBe(661)
+    expect(scanResult.files.length).toBe(661)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

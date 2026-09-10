@@ -5,7 +5,8 @@
  * The public surface of the module:
  * - `createControlService` — the durable control plane service over an
  *   open TeamDomain (requestControl / resolveControl / listControlState /
- *   guardOperation);
+ *   guardOperation / awaitControlDecision — the alpha.2 synchronous wait
+ *   bridge);
  * - the closed vocabulary (request kinds, decision values/reasons, guard
  *   block reasons, the control-service error codes) and the record types
  *   (ControlRequestRecord / ControlDecisionRecord / ControlConsumption-
@@ -45,6 +46,7 @@
  * const verdict = await controlService.guardOperation({
  *   rootSessionId, targetInstanceId, actionName,
  *   toolName, capabilityDomain?, correlation,
+ *   operationFingerprint?,
  * })
  * if (!verdict.allowed) { /* refuse, citing verdict.reason *\/ }
  * // else execute through the tool pipeline — exactly once
@@ -56,13 +58,35 @@
  * stable logical-operation token — the same token the requestControl
  * call carried — which is what ties the request, the decision and the
  * guarded execution to ONE logical operation (Architecture 18.2).
+ * `operationFingerprint` (alpha.2 exact-scope extension, OPTIONAL) is
+ * the resource + payload impact identity of the operation: ABSENT = the
+ * legacy scope identity (existing durable Control rows keep working
+ * unchanged); PRESENT = the approval is bound to the exact fingerprint
+ * (it participates in the scope's identity and in the request
+ * idempotency key, and it is strictly SEPARATE from `correlation` — the
+ * fingerprint is NOT a correlation substitute: the same write content
+ * under a NEW correlation starts a NEW independent approval, and the
+ * same correlation under a DIFFERENT fingerprint is a different
+ * request that must never reuse the other's approval).
  *
  * Exactly-once: an allow decision is CONSUMED by the guard's
  * check-and-reserve (durable `control-allow-consumed` fact, under the
  * per-team lock). A second attempt with the same scope (same
- * correlation) finds the consumed decision and is blocked
- * (`allow-consumed`); a new attempt must carry a NEW correlation and a
- * NEW control request.
+ * correlation, same fingerprint — including both absent) finds the
+ * consumed decision and is blocked (`allow-consumed`); a new attempt
+ * must carry a NEW correlation and a NEW control request.
+ *
+ * Synchronous wait bridge (alpha.2 §9.4): `controlService.
+ * awaitControlDecision({ rootSessionId, requestId, signal? })` resolves
+ * when a durable ControlDecision for the requestId appears — the
+ * authority is ALWAYS the durable control rows (the waiter only solves
+ * liveness; it writes nothing and is never consulted by the guard or
+ * the resolvers). The alpha.2 implementation polls the durable state at
+ * an injectable cadence (default 250 ms — `ControlServiceOptions.
+ * waitPollIntervalMs`), rejects with typed CONTROL_WAIT_ABORTED on
+ * signal abort and typed CONTROL_WAIT_CLOSED when the durable control
+ * plane closes while waiting. Cancellation never decides: the request
+ * stays durable and a later resolve is unaffected.
  *
  * @module @dsh-agent-team/runtime/control
  */
@@ -99,6 +123,7 @@ export type {
   ControlRequestRecord,
   ControlService,
   ControlServiceOptions,
+  ControlWaitSignal,
 } from './types.js'
 
 export { createControlService } from './service.js'

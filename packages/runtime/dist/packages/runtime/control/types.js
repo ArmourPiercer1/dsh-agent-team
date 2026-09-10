@@ -22,7 +22,8 @@
  * ```
  * ControlOperationScope =
  *   (rootSessionId, targetInstanceId, actionName,
- *    toolName?, capabilityDomain?, correlation)
+ *    toolName?, capabilityDomain?, correlation,
+ *    operationFingerprint?)
  * ```
  *
  * - `targetInstanceId` — the instance the operation is addressed to
@@ -39,14 +40,37 @@
  *   gated the request is the whole check);
  * - `correlation` — the caller's STABLE LOGICAL-OPERATION token (the
  *   requestToken): the identity that ties the request, the decision and
- *   the guarded tool call to ONE logical operation (Architecture 18.2).
+ *   the guarded tool call to ONE logical operation (Architecture 18.2);
+ * - `operationFingerprint` — OPTIONAL (alpha.2 exact-scope extension):
+ *   the resource + payload IMPACT identity of the operation (e.g. the
+ *   canonical target resource + content impact of a write). ABSENT = the
+ *   legacy scope identity (existing durable Control rows keep working
+ *   unchanged); PRESENT = the approval is bound to the exact fingerprint.
+ *   When present it participates in the scope's IDENTITY (the scope key
+ *   and the decision-scope snapshot) and in the REQUEST IDEMPOTENCY key:
+ *   two scopes identical except for the fingerprint are different scopes
+ *   and never share a request, a decision or an allow. It is strictly
+ *   SEPARATE from `correlation` (the logical invocation id, e.g. the tool
+ *   callId): the fingerprint is NOT a correlation substitute — the same
+ *   write content under a NEW correlation starts a NEW independent
+ *   approval, and the same correlation under a DIFFERENT fingerprint is
+ *   a different request (payload/resource mismatch is never reused).
  *
  * An allow decision is scoped to EXACTLY this tuple and is CONSUMED
  * EXACTLY ONCE by the last-mile guard (check-and-reserve under the
  * per-team lock): a second identical attempt — same tuple, same
- * correlation — finds the consumed decision and is BLOCKED; a new
- * attempt at the operation must create a NEW control request with a NEW
- * correlation (no reuse).
+ * correlation, same fingerprint — finds the consumed decision and is
+ * BLOCKED; a new attempt at the operation must create a NEW control
+ * request with a NEW correlation (no reuse).
+ *
+ * Synchronous wait bridge (alpha.2 §9.4): `ControlService.
+ * awaitControlDecision` is the minimal liveness bridge over the SAME
+ * durable rows — it polls the durable control state (the authority is
+ * ALWAYS the durable rows; the waiter adds no authority) until a
+ * decision for the requestId appears (resolve), the caller's signal
+ * aborts (typed CONTROL_WAIT_ABORTED) or the durable control plane is
+ * closed (typed CONTROL_WAIT_CLOSED). No durable waiter scheduler, no
+ * cross-process continuation.
  *
  * @module @dsh-agent-team/runtime/control/types
  */

@@ -9830,7 +9830,11 @@ var __dshFactory = (require) => {
 			 * response shape (D-4 discipline: the top-level fields are checked, the
 			 * nested `decider` / `scope` values pass through): the durable
 			 * ControlDecision record — `{ requestId, decision, decider, reason?,
-			 * note?, scope, requestSequence, decisionSequence, createdAt }`.
+			 * note?, scope, requestSequence, decisionSequence, createdAt }`. The
+			 * scope's OPTIONAL `operationFingerprint` (alpha.2 exact-scope
+			 * extension, A4) passes through too, validated only as "a non-empty
+			 * string when present" — the fingerprint itself is opaque to the
+			 * remote layer (its semantics live in the runtime control plane).
 			 */
 			function normalizeTeamResolveControlValue(raw) {
 			    if (!isPlainRecord(raw)) {
@@ -9852,6 +9856,17 @@ var __dshFactory = (require) => {
 			    const scope = raw['scope'];
 			    if (!isPlainRecord(scope)) {
 			        throw portContractError('teamResolveControl.decision.scope', 'must be an object');
+			    }
+			    // Alpha.2 exact-scope extension (A4): the scope is still pass-through
+			    // (D-4), but the OPTIONAL operation fingerprint is validated when
+			    // present — a fingerprint that is present but empty/non-string would
+			    // be a corrupted durable scope (fail closed at the wire boundary; the
+			    // runtime control service itself treats present-but-malformed
+			    // fingerprints as malformed input at its own boundaries).
+			    const scopeFingerprint = scope['operationFingerprint'];
+			    if (scopeFingerprint !== undefined &&
+			        (typeof scopeFingerprint !== 'string' || scopeFingerprint.length === 0)) {
+			        throw portContractError('teamResolveControl.decision.scope.operationFingerprint', 'must be a non-empty string when present');
 			    }
 			    for (const field of ['requestSequence', 'decisionSequence']) {
 			        const value = raw[field];

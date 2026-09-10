@@ -32,7 +32,9 @@
  * - resolve-time staleness (the target became terminal after the request
  *   was durable): CONTROL_REQUEST_STALE;
  * - external hard policy: CONTROL_EXTERNAL_POLICY_DENIED;
- * - last-mile guard: CONTROL_GUARD_MALFORMED, CONTROL_GUARD_AMBIGUOUS.
+ * - last-mile guard: CONTROL_GUARD_MALFORMED, CONTROL_GUARD_AMBIGUOUS;
+ * - synchronous wait bridge (alpha.2 §9.4): CONTROL_WAIT_ABORTED,
+ *   CONTROL_WAIT_CLOSED.
  *
  * @module @dsh-agent-team/runtime/control/errors
  */
@@ -91,6 +93,25 @@ export const CONTROL_ERROR_CODES = {
      * closed).
      */
     CONTROL_GUARD_AMBIGUOUS: 'CONTROL_GUARD_AMBIGUOUS',
+    /**
+     * The synchronous wait bridge (alpha.2 §9.4, `awaitControlDecision`)
+     * was cancelled by the caller's AbortSignal before any durable
+     * decision for the requestId appeared (liveness cancellation — zero
+     * durable side effects: the request stays pending and a later resolve
+     * is unaffected; the durable rows are the authority, not the waiter).
+     */
+    CONTROL_WAIT_ABORTED: 'CONTROL_WAIT_ABORTED',
+    /**
+     * The synchronous wait bridge (alpha.2 §9.4) observed the durable
+     * control plane CLOSING while it was waiting: the injected TeamDomain
+     * (the repositories' authority) is closed, detected as the storage
+     * layer's typed `NOT_OPEN` rejection on the waiter's durable read. The
+     * waiter can no longer observe the durable rows, so it fails closed
+     * with this typed error (the decision may still become durable — a
+     * re-opened service over the same store resolves it; the waiter itself
+     * never decides).
+     */
+    CONTROL_WAIT_CLOSED: 'CONTROL_WAIT_CLOSED',
 };
 /** Every control-service error code value, for membership checks. */
 export const CONTROL_ERROR_CODE_VALUES = Object.values(CONTROL_ERROR_CODES);

@@ -34,13 +34,21 @@
  *
  * Scope model (types.ts): an allow authorizes EXACTLY
  * `(rootSessionId, targetInstanceId, actionName, toolName?,
- * capabilityDomain?, correlation)` and is CONSUMED EXACTLY ONCE.
+ * capabilityDomain?, correlation, operationFingerprint?)` and is
+ * CONSUMED EXACTLY ONCE. The operation fingerprint is OPTIONAL (legacy
+ * rows never carry it); when present it binds the approval to the exact
+ * resource + payload impact identity and participates in the scope
+ * identity and the request idempotency key — it is NOT a correlation
+ * substitute (a new correlation under the same fingerprint is a new
+ * request; the same correlation under a different fingerprint is a
+ * different request and must never reuse the other's request/approval).
  *
  * Request idempotency: the scope key `(root, targetInstanceId, actionName,
- * toolName|absent, correlation)` identifies the logical request; a retried
- * request returns the EXISTING row (regardless of requester); a NEW
- * attempt after an allow was consumed (or after a deny) must carry a NEW
- * correlation and creates a NEW request (no reuse).
+ * toolName|absent, correlation, operationFingerprint|absent)` identifies
+ * the logical request; a retried request returns the EXISTING row
+ * (regardless of requester); a NEW attempt after an allow was consumed
+ * (or after a deny) must carry a NEW correlation and creates a NEW
+ * request (no reuse).
  *
  * Stale semantics (fail closed; the append-only ledger has no "mark"
  * primitive, so the decision row IS the mark):
@@ -88,6 +96,23 @@
  * and an ambiguous durable state (CONTROL_GUARD_AMBIGUOUS: two distinct
  * unconsumed allows for one scope — the guard refuses to guess).
  *
+ * The synchronous wait bridge (`awaitControlDecision`, alpha.2 §9.4):
+ * resolves when a durable ControlDecision for the requestId appears. The
+ * authority is ALWAYS the durable control rows — the waiter only solves
+ * LIVENESS: it adds no authority, writes no rows, and is never consulted
+ * by the guard or the resolvers. Minimal alpha.2 implementation: poll the
+ * durable control state at the injected `waitPollIntervalMs` cadence
+ * (documented choice: DEFAULT 250 ms — the low end of the plan's
+ * 250–500 ms band; the waiter is liveness-only and the durable read is a
+ * cheap in-process ledger scan, so the low end minimizes decision
+ * latency at negligible cost). Settles on: the decision appears
+ * (resolve with the durable record), the caller's AbortSignal aborts
+ * (typed CONTROL_WAIT_ABORTED), or the durable control plane closes —
+ * the storage layer's typed `NOT_OPEN` rejection on the waiter's durable
+ * read maps to typed CONTROL_WAIT_CLOSED. Timers and listeners are
+ * cleared on settle (no leak after the promise settles). No durable
+ * waiter scheduler, no cross-process continuation.
+ *
  * Invariant 45: the in-process holds NO cached authority state — every
  * operation re-reads the durable repositories fresh (the service-owned
  * `teamLocks` map is a concurrency chain, not authority).
@@ -123,6 +148,10 @@ import type {
 } from '../admission/index.js'
 import { withTeamLock } from '../action-router/index.js'
 import type { LedgerEntry } from '../../storage/schema/index.js'
+import {
+  TEAM_DOMAIN_ERROR_CODES,
+  isTeamDomainError,
+} from '../../storage/schema/index.js'
 import { deterministicToken } from '../../storage/provisioning/index.js'
 import {
   CONTROL_ERROR_CODES,
@@ -149,6 +178,7 @@ import type {
   ControlRequestRecord,
   ControlService,
   ControlServiceOptions,
+  ControlWaitSignal,
 } from './types.js'
 
 // --- closed fact vocabulary (kebab; p4t6-scanner safe by construction) -------------
@@ -180,6 +210,22 @@ const GUARD_LIVE_LIFECYCLES: readonly string[] = ['CREATED', 'RUNNING', 'SETTLED
 /** The terminal lifecycle (invariant 56: DISPOSED is terminal). */
 const TERMINAL_LIFECYCLE = 'DISPOSED'
 
+/** The wait-bridge default poll cadence (alpha.2 §9.4, documented choice:
+ *  250 ms — the low end of the plan's 250–500 ms band; the waiter is
+ *  liveness-only and the durable read is a cheap in-process ledger scan,
+ *  so the low end minimizes decision latency at negligible cost). */
+const DEFAULT_WAIT_POLL_INTERVAL_MS = 250
+
+/** The minimal platform-timer surface the wait bridge schedules on
+ *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
+ *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
+ *  functions are reached through one narrow structural cast of
+ *  `globalThis` — the module otherwise stays node-free. */
+const platformTimers = globalThis as unknown as {
+  setTimeout(callback: () => void, ms: number): unknown
+  clearTimeout(handle: unknown): void
+}
+
 // --- durable payload shapes (lossless JSON) ------------------------------------------
 
 /** The `control-request-recorded` payload. */
@@ -192,6 +238,9 @@ interface RequestPayload {
   readonly toolName?: string
   readonly capabilityDomain?: CapabilityName
   readonly correlation: string
+  /** Present only when the request carried an operation fingerprint
+   *  (alpha.2 exact-scope extension; legacy rows never carry it). */
+  readonly operationFingerprint?: string
   readonly summary?: string
 }
 
@@ -280,6 +329,13 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
   ) {
     return undefined
   }
+  const operationFingerprint = value['operationFingerprint']
+  if (
+    operationFingerprint !== undefined &&
+    (typeof operationFingerprint !== 'string' || operationFingerprint.length === 0)
+  ) {
+    return undefined
+  }
   return {
     rootSessionId,
     targetInstanceId,
@@ -289,6 +345,7 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
     ...(capabilityDomain !== undefined
       ? { capabilityDomain: capabilityDomain as CapabilityName }
       : {}),
+    ...(operationFingerprint !== undefined ? { operationFingerprint } : {}),
   }
 }
 
@@ -318,6 +375,13 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   }
   const summary = value['summary']
   if (summary !== undefined && typeof summary !== 'string') return undefined
+  const operationFingerprint = value['operationFingerprint']
+  if (
+    operationFingerprint !== undefined &&
+    (typeof operationFingerprint !== 'string' || operationFingerprint.length === 0)
+  ) {
+    return undefined
+  }
   return {
     requestId,
     kind: kind as ControlRequestKind,
@@ -329,6 +393,7 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
     ...(capabilityDomain !== undefined
       ? { capabilityDomain: capabilityDomain as CapabilityName }
       : {}),
+    ...(operationFingerprint !== undefined ? { operationFingerprint } : {}),
     ...(summary !== undefined ? { summary } : {}),
   }
 }
@@ -399,16 +464,34 @@ function isActionCaller(caller: unknown): caller is ActionCaller {
   return false
 }
 
-/** The stable logical-request key (the request idempotency identity;
- *  NUL-separated per the provisioning identity convention). */
+/** The stable logical-request key (the request idempotency identity AND
+ *  the scope's durable identity; NUL-separated per the provisioning
+ *  identity convention). The optional operation fingerprint, WHEN
+ *  PRESENT, participates in the key (alpha.2 exact-scope extension): two
+ *  requests identical except for the fingerprint are DIFFERENT logical
+ *  requests (different keys, different requestIds, no idempotency
+ *  collision — a payload/resource mismatch must never reuse another
+ *  operation's request or approval). When ABSENT the key carries an
+ *  empty fingerprint segment, which is distinct from any present
+ *  fingerprint; legacy rows (fingerprint absent) recompute the SAME key
+ *  they always had for their own retries, so old durable rows stay
+ *  idempotent under the extended key. */
 function scopeKey(
   rootSessionId: string,
   targetInstanceId: string,
   actionName: string,
   toolName: string | undefined,
   correlation: string,
+  operationFingerprint: string | undefined,
 ): string {
-  return [rootSessionId, targetInstanceId, actionName, toolName ?? '', correlation].join('\u0000')
+  return [
+    rootSessionId,
+    targetInstanceId,
+    actionName,
+    toolName ?? '',
+    correlation,
+    operationFingerprint ?? '',
+  ].join('\u0000')
 }
 
 /** The durable requestId derived from the scope key (stable across
@@ -428,6 +511,13 @@ function scopeSnapshotMatches(
   if (recorded.correlation !== guarded.correlation) return false
   if ((recorded.toolName ?? '') !== (guarded.toolName ?? '')) return false
   if ((recorded.capabilityDomain ?? '') !== (guarded.capabilityDomain ?? '')) return false
+  // Fingerprint comparison (alpha.2): both absent = the old behavior
+  // (equal, no check needed); present on exactly one side or different
+  // values = MISMATCH (a fingerprint-bound approval never matches a
+  // fingerprint-less or differently-fingerprinted attempt, and vice
+  // versa — the undefined !== 'x' inequality covers the present/absent
+  // case; both present and equal falls through).
+  if (recorded.operationFingerprint !== guarded.operationFingerprint) return false
   return true
 }
 
@@ -462,7 +552,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
 
   // --- small closed-code helpers -----------------------------------------------------
 
-  function malformed(stage: 'request' | 'resolve' | 'list', field: string, message: string): ControlError {
+  function malformed(stage: 'request' | 'resolve' | 'list' | 'wait', field: string, message: string): ControlError {
     return new ControlError(
       CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
       `ControlService: ${message} (field: '${field}')`,
@@ -563,6 +653,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.capabilityDomain !== undefined
         ? { capabilityDomain: payload.capabilityDomain }
         : {}),
+      ...(payload.operationFingerprint !== undefined
+        ? { operationFingerprint: payload.operationFingerprint }
+        : {}),
     }
   }
 
@@ -586,6 +679,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.toolName !== undefined ? { toolName: payload.toolName } : {}),
       ...(payload.capabilityDomain !== undefined
         ? { capabilityDomain: payload.capabilityDomain }
+        : {}),
+      ...(payload.operationFingerprint !== undefined
+        ? { operationFingerprint: payload.operationFingerprint }
         : {}),
       ...(payload.summary !== undefined ? { summary: payload.summary } : {}),
     }
@@ -655,6 +751,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(args.scope.capabilityDomain !== undefined
           ? { capabilityDomain: args.scope.capabilityDomain }
           : {}),
+        ...(args.scope.operationFingerprint !== undefined
+          ? { operationFingerprint: args.scope.operationFingerprint }
+          : {}),
       },
       requestSequence: args.requestSequence,
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
@@ -693,6 +792,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly toolName?: string
     readonly capabilityDomain?: CapabilityName
     readonly correlation: string
+    readonly operationFingerprint?: string
     readonly summary?: string
   }): Promise<ControlRequestRecord> {
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'request')
@@ -710,6 +810,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     }
     if (args.toolName !== undefined && (typeof args.toolName !== 'string' || args.toolName.length === 0)) {
       throw malformed('request', 'toolName', 'toolName must be a non-empty string when present')
+    }
+    if (
+      args.operationFingerprint !== undefined &&
+      (typeof args.operationFingerprint !== 'string' || args.operationFingerprint.length === 0)
+    ) {
+      throw malformed('request', 'operationFingerprint', 'operationFingerprint must be a non-empty string when present')
     }
     if (
       args.capabilityDomain !== undefined &&
@@ -759,6 +865,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         args.actionName,
         args.toolName,
         args.correlation,
+        args.operationFingerprint,
       )
       const existing = state.requests.find(
         (r) =>
@@ -768,6 +875,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             r.payload.actionName,
             r.payload.toolName,
             r.payload.correlation,
+            r.payload.operationFingerprint,
           ) === key,
       )
       if (existing !== undefined) {
@@ -788,6 +896,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
         ...(args.capabilityDomain !== undefined
           ? { capabilityDomain: args.capabilityDomain }
+          : {}),
+        ...(args.operationFingerprint !== undefined
+          ? { operationFingerprint: args.operationFingerprint }
           : {}),
         ...(args.summary !== undefined ? { summary: args.summary } : {}),
       }
@@ -813,6 +924,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
         ...(args.capabilityDomain !== undefined
           ? { capabilityDomain: args.capabilityDomain }
+          : {}),
+        ...(args.operationFingerprint !== undefined
+          ? { operationFingerprint: args.operationFingerprint }
           : {}),
         ...(args.summary !== undefined ? { summary: args.summary } : {}),
       }
@@ -1012,6 +1126,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     if (scope.capabilityDomain !== undefined && !CAPABILITY_NAME_VALUES.includes(scope.capabilityDomain)) {
       throw guardMalformed('capabilityDomain', `capabilityDomain outside the closed set: ${JSON.stringify(scope.capabilityDomain)}`)
     }
+    if (
+      scope.operationFingerprint !== undefined &&
+      (typeof scope.operationFingerprint !== 'string' || scope.operationFingerprint.length === 0)
+    ) {
+      throw guardMalformed('operationFingerprint', 'operationFingerprint must be a non-empty string when present')
+    }
 
     return withTeamLock(teamLocks, root, async () => {
       // (a) the team must still exist; (b) the target must be durably
@@ -1026,7 +1146,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.TARGET_STALE }
       }
       const state = loadControlState(root)
-      const key = scopeKey(root, target, scope.actionName, scope.toolName, scope.correlation)
+      const key = scopeKey(root, target, scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint)
       const matching = state.requests.filter((r) => {
         const rowKey = scopeKey(
           String(r.entry.rootSessionId),
@@ -1034,6 +1154,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           r.payload.actionName,
           r.payload.toolName,
           r.payload.correlation,
+          r.payload.operationFingerprint,
         )
         return rowKey === key
       })
@@ -1139,10 +1260,124 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     })
   }
 
+  // --- awaitControlDecision (the alpha.2 synchronous wait bridge) ----------------------
+
+  /**
+   * The SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4): resolves when a durable
+   * ControlDecision for the requestId appears. Authority is ALWAYS the
+   * durable control rows — the waiter only solves liveness (it adds no
+   * authority, writes no rows, and is never consulted by the guard or
+   * the resolvers). Minimal alpha.2 implementation: poll the durable
+   * control state at the injected `waitPollIntervalMs` cadence (default
+   * 250 ms — see DEFAULT_WAIT_POLL_INTERVAL_MS) until the decision
+   * appears (resolve), the caller's signal aborts (typed
+   * CONTROL_WAIT_ABORTED) or the durable control plane closes (the
+   * storage layer's typed `NOT_OPEN` rejection on the durable read maps
+   * to typed CONTROL_WAIT_CLOSED). Timers and listeners are cleared on
+   * settle (no leak after the promise settles). No durable waiter
+   * scheduler, no cross-process continuation.
+   */
+  async function awaitControlDecision(input: {
+    readonly rootSessionId: string
+    readonly requestId: string
+    readonly signal?: ControlWaitSignal
+  }): Promise<ControlDecisionRecord> {
+    const root = parseRoot(input.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'wait')
+    const requestId = input.requestId
+    if (typeof requestId !== 'string' || requestId.length === 0) {
+      throw malformed('wait', 'requestId', 'requestId must be a non-empty string')
+    }
+    const signal = input.signal
+    if (signal !== undefined && typeof signal.aborted !== 'boolean') {
+      throw malformed('wait', 'signal', 'signal must be an AbortSignal when present')
+    }
+    // Already aborted: reject immediately (zero side effects — the
+    // durable rows are untouched and a later resolve is unaffected).
+    if (signal !== undefined && signal.aborted) {
+      throw new ControlError(
+        CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
+        `ControlService: awaitControlDecision for request '${requestId}' was aborted before the wait began`,
+        { rootSessionId: root, requestId },
+      )
+    }
+    const rawPoll = options.waitPollIntervalMs
+    const pollMs =
+      typeof rawPoll === 'number' && Number.isFinite(rawPoll) && rawPoll > 0
+        ? rawPoll
+        : DEFAULT_WAIT_POLL_INTERVAL_MS
+
+    return new Promise<ControlDecisionRecord>((resolve, reject) => {
+      let timer: unknown
+      let settled = false
+      const cleanup = (): void => {
+        if (timer !== undefined) platformTimers.clearTimeout(timer)
+        if (signal !== undefined) signal.removeEventListener('abort', onAbort)
+      }
+      const settle = (outcome: () => void): void => {
+        if (settled) return
+        settled = true
+        cleanup()
+        outcome()
+      }
+      const onAbort = (): void => {
+        settle(() =>
+          reject(
+            new ControlError(
+              CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
+              `ControlService: awaitControlDecision for request '${requestId}' was aborted before a durable decision appeared (zero side effects — the request stays durable and undecided)`,
+              { rootSessionId: root, requestId },
+            ),
+          ),
+        )
+      }
+      if (signal !== undefined) {
+        signal.addEventListener('abort', onAbort, { once: true })
+      }
+      const poll = (): void => {
+        if (settled) return
+        try {
+          const state = loadControlState(root)
+          const decision = state.decisions.find((d) => d.payload.requestId === requestId)
+          if (decision !== undefined) {
+            settle(() => resolve(toDecisionRecord(decision.entry, decision.payload)))
+            return
+          }
+        } catch (error) {
+          // The durable control plane closed while waiting (the storage
+          // layer's typed closure signal): fail closed, typed.
+          if (isTeamDomainError(error) && error.code === TEAM_DOMAIN_ERROR_CODES.NOT_OPEN) {
+            settle(() =>
+              reject(
+                new ControlError(
+                  CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED,
+                  `ControlService: the durable control plane closed while waiting for a decision on request '${requestId}'`,
+                  { rootSessionId: root, requestId },
+                ),
+              ),
+            )
+            return
+          }
+          // Any other typed failure (e.g. TEAM_SESSION_NOT_FOUND for a
+          // vanished team session) surfaces unchanged.
+          settle(() => reject(error))
+          return
+        }
+        timer = platformTimers.setTimeout(() => {
+          timer = undefined
+          poll()
+        }, pollMs)
+      }
+      // The first poll runs synchronously: an already-durable decision
+      // resolves without ever scheduling a timer (fast path).
+      poll()
+    })
+  }
+
   return {
     requestControl,
     resolveControl,
     listControlState,
     guardOperation,
+    awaitControlDecision,
   }
 }

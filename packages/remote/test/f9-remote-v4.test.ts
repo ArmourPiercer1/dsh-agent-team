@@ -34,7 +34,16 @@
  *    `Error.code` (ENOENT) degrades to `internal-error` with no leak;
  *  - v1/v2/v3 wire behavior is PRESERVED (a v1 `team.getProjection`
  *    round-trips on the v1 envelope; the v2-only and v3-only methods
- *    still succeed on their own version).
+ *    still succeed on their own version);
+ *  - A4 (alpha.2 exact-scope extension): the decision record's scope is
+ *    pass-through (D-4) and its OPTIONAL `operationFingerprint` passes
+ *    through verbatim; a present-but-empty / non-string fingerprint in
+ *    the port-returned scope fails closed at the wire boundary (typed
+ *    port-contract internal-error) — the fingerprint semantics live in
+ *    the runtime control plane, the remote layer only guards the wire.
+ *    The wait-bridge codes (CONTROL_WAIT_ABORTED / CONTROL_WAIT_CLOSED)
+ *    are NOT reachable from `team.resolveControl` and stay out of the
+ *    closed backing set.
  *
  * Test pattern of this repo (the plain-node shim's `it` is synchronous):
  * every async scenario runs at MODULE level (top-level await) and
@@ -245,6 +254,51 @@ const RT = await (async () => {
   }))
   const v3ListRoots = await base.dispatch('team.listRoots', p8t3WireV3({}))
 
+  // (j) A4 (alpha.2 exact-scope): the decision record's OPTIONAL scope
+  // operationFingerprint — pass-through + wire-boundary validation.
+  const fpDecisionRecord = (fp: Record<string, unknown>) => ({
+    requestId: F9_REQUEST_ID,
+    decision: 'allow',
+    decider: { kind: 'human', humanId: P8T3_TEAM_SESSION_ID },
+    scope: { teamSessionId: P8T3_TEAM_SESSION_ID, ...fp },
+    requestSequence: 1,
+    decisionSequence: 2,
+    createdAt: '2026-08-29T00:00:09.000Z',
+  })
+  const fpDispatcher = makeDispatcher({
+    teamResolveControl: {
+      resolveControl() {
+        return fpDecisionRecord({ operationFingerprint: 'fp-a4-remote-0001' })
+      },
+    },
+  })
+  const fingerprintPassthrough = await fpDispatcher.dispatch(
+    'team.resolveControl',
+    p8t3WireV4(F9_VALID_PARAMS),
+  )
+  const fpEmptyDispatcher = makeDispatcher({
+    teamResolveControl: {
+      resolveControl() {
+        return fpDecisionRecord({ operationFingerprint: '' })
+      },
+    },
+  })
+  const fingerprintEmpty = await fpEmptyDispatcher.dispatch(
+    'team.resolveControl',
+    p8t3WireV4(F9_VALID_PARAMS),
+  )
+  const fpNonStringDispatcher = makeDispatcher({
+    teamResolveControl: {
+      resolveControl() {
+        return fpDecisionRecord({ operationFingerprint: 42 })
+      },
+    },
+  })
+  const fingerprintNonString = await fpNonStringDispatcher.dispatch(
+    'team.resolveControl',
+    p8t3WireV4(F9_VALID_PARAMS),
+  )
+
   return {
     baseCalls: base.ports.calls,
     backingFailureResponses,
@@ -274,6 +328,9 @@ const RT = await (async () => {
     v1Projection,
     v2AdmitOnV1,
     v3ListRoots,
+    fingerprintPassthrough,
+    fingerprintEmpty,
+    fingerprintNonString,
   }
 })()
 
@@ -539,6 +596,40 @@ describe('F9 (remote contract v4): backing error allow-list (invariant 4b)', () 
     expect(wire.includes('backing:')).toBe(false)
     const details = error.error.details as unknown as Record<string, unknown>
     expect(details['reason']).toBe('untyped-error')
+  })
+})
+
+describe('A4 (alpha.2 exact-scope): the decision scope fingerprint pass-through', () => {
+  it('a decision scope carrying operationFingerprint passes through verbatim (D-4 + A4 validation)', () => {
+    const success = expectSuccess(RT.fingerprintPassthrough)
+    expect(success.value.provenance.contractVersion).toBe(REMOTE_CONTRACT_VERSION_V4)
+    const decision = (success.value.data as unknown as Record<string, unknown>)['decision'] as unknown as Record<string, unknown>
+    // the frozen v4 shape is untouched
+    expect(decision['requestId']).toBe(F9_REQUEST_ID)
+    expect(decision['decision']).toBe('allow')
+    const scope = decision['scope'] as unknown as Record<string, unknown>
+    expect(scope['teamSessionId']).toBe(P8T3_TEAM_SESSION_ID)
+    // the fingerprint rides the scope to the client verbatim
+    expect(scope['operationFingerprint']).toBe('fp-a4-remote-0001')
+  })
+
+  it('a present-but-empty scope fingerprint fails closed at the wire boundary (port-contract)', () => {
+    const error = expectError(RT.fingerprintEmpty)
+    expect(error.error.code).toBe(REMOTE_CONTRACT_ERROR_CODES.INTERNAL_ERROR)
+    const details = error.error.details as unknown as Record<string, unknown>
+    expect(details['reason']).toBe('port-contract')
+    expect(details['field']).toBe('teamResolveControl.decision.scope.operationFingerprint')
+    expect(error.error.message).toBe(
+      "remote backing port returned a malformed value at 'teamResolveControl.decision.scope.operationFingerprint': must be a non-empty string when present",
+    )
+  })
+
+  it('a present-but-non-string scope fingerprint fails closed at the wire boundary (port-contract)', () => {
+    const error = expectError(RT.fingerprintNonString)
+    expect(error.error.code).toBe(REMOTE_CONTRACT_ERROR_CODES.INTERNAL_ERROR)
+    const details = error.error.details as unknown as Record<string, unknown>
+    expect(details['reason']).toBe('port-contract')
+    expect(details['field']).toBe('teamResolveControl.decision.scope.operationFingerprint')
   })
 })
 

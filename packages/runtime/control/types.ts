@@ -22,7 +22,8 @@
  * ```
  * ControlOperationScope =
  *   (rootSessionId, targetInstanceId, actionName,
- *    toolName?, capabilityDomain?, correlation)
+ *    toolName?, capabilityDomain?, correlation,
+ *    operationFingerprint?)
  * ```
  *
  * - `targetInstanceId` — the instance the operation is addressed to
@@ -39,14 +40,37 @@
  *   gated the request is the whole check);
  * - `correlation` — the caller's STABLE LOGICAL-OPERATION token (the
  *   requestToken): the identity that ties the request, the decision and
- *   the guarded tool call to ONE logical operation (Architecture 18.2).
+ *   the guarded tool call to ONE logical operation (Architecture 18.2);
+ * - `operationFingerprint` — OPTIONAL (alpha.2 exact-scope extension):
+ *   the resource + payload IMPACT identity of the operation (e.g. the
+ *   canonical target resource + content impact of a write). ABSENT = the
+ *   legacy scope identity (existing durable Control rows keep working
+ *   unchanged); PRESENT = the approval is bound to the exact fingerprint.
+ *   When present it participates in the scope's IDENTITY (the scope key
+ *   and the decision-scope snapshot) and in the REQUEST IDEMPOTENCY key:
+ *   two scopes identical except for the fingerprint are different scopes
+ *   and never share a request, a decision or an allow. It is strictly
+ *   SEPARATE from `correlation` (the logical invocation id, e.g. the tool
+ *   callId): the fingerprint is NOT a correlation substitute — the same
+ *   write content under a NEW correlation starts a NEW independent
+ *   approval, and the same correlation under a DIFFERENT fingerprint is
+ *   a different request (payload/resource mismatch is never reused).
  *
  * An allow decision is scoped to EXACTLY this tuple and is CONSUMED
  * EXACTLY ONCE by the last-mile guard (check-and-reserve under the
  * per-team lock): a second identical attempt — same tuple, same
- * correlation — finds the consumed decision and is BLOCKED; a new
- * attempt at the operation must create a NEW control request with a NEW
- * correlation (no reuse).
+ * correlation, same fingerprint — finds the consumed decision and is
+ * BLOCKED; a new attempt at the operation must create a NEW control
+ * request with a NEW correlation (no reuse).
+ *
+ * Synchronous wait bridge (alpha.2 §9.4): `ControlService.
+ * awaitControlDecision` is the minimal liveness bridge over the SAME
+ * durable rows — it polls the durable control state (the authority is
+ * ALWAYS the durable rows; the waiter adds no authority) until a
+ * decision for the requestId appears (resolve), the caller's signal
+ * aborts (typed CONTROL_WAIT_ABORTED) or the durable control plane is
+ * closed (typed CONTROL_WAIT_CLOSED). No durable waiter scheduler, no
+ * cross-process continuation.
  *
  * @module @dsh-agent-team/runtime/control/types
  */
@@ -165,6 +189,19 @@ export interface ControlOperationScope {
   readonly capabilityDomain?: CapabilityName
   /** The stable logical-operation token (request correlation). */
   readonly correlation: string
+  /**
+   * The resource + payload impact identity of the operation (alpha.2
+   * exact-scope extension). OPTIONAL for legacy compatibility: ABSENT =
+   * the old scope identity (existing durable Control rows keep working);
+   * PRESENT = the approval is bound to the exact fingerprint. When
+   * present it MUST be a non-empty string (a present-but-empty or
+   * non-string fingerprint is malformed input at the service boundary and
+   * a corrupted durable line is fail-closed ABSENT). When present it
+   * participates in the scope's identity (the scope key, the decision
+   * snapshot) and in the request idempotency key — see the module docs
+   * for the correlation-vs-fingerprint separation.
+   */
+  readonly operationFingerprint?: string
 }
 
 /**
@@ -204,6 +241,11 @@ export interface ControlRequestRecord {
   readonly capabilityDomain?: CapabilityName
   /** The stable logical-operation token (the request correlation). */
   readonly correlation: string
+  /** Present only when the request carried an operation fingerprint
+   *  (alpha.2 exact-scope extension; mirrors the durable payload field —
+   *  legacy rows never carry it, so it stays ABSENT, never an empty
+   *  string). */
+  readonly operationFingerprint?: string
   /** The requested operation summary (free text; NOT authority data). */
   readonly summary?: string
   /** The request's durable state, DERIVED at read time from the decision
@@ -315,6 +357,26 @@ export type ControlGuardVerdict =
 
 // --- service options ------------------------------------------------------------------
 
+// --- synchronous wait bridge (alpha.2 §9.4) ----------------------------------------------
+
+/**
+ * The minimal caller-cancellation surface the wait bridge consumes
+ * (alpha.2 §9.4, `awaitControlDecision`). Structurally satisfied by the
+ * platform's `AbortSignal` (Node/DOM): a real `AbortController`'s signal
+ * passes through unchanged. The module builds against `lib: ES2022`
+ * (the codebase carries no ambient DOM/Node globals in its build
+ * config — tsconfig.base.json), so the public signature names this
+ * minimal interface instead of the platform global.
+ */
+export interface ControlWaitSignal {
+  /** True once the caller has cancelled the wait. */
+  readonly aborted: boolean
+  /** Register the waiter's one-shot abort listener. */
+  addEventListener(type: 'abort', listener: () => void, options?: { readonly once?: boolean }): void
+  /** Remove the waiter's abort listener (the settle cleanup). */
+  removeEventListener(type: 'abort', listener: () => void): void
+}
+
 /**
  * The control service ports (injected, mock-first — the same port family
  * as the P6-T2 facade's `TeamRuntimeOptions`, minus the creation/lifecycle
@@ -332,6 +394,15 @@ export interface ControlServiceOptions {
   readonly externalPolicyFacts: () => Promise<import('../../domain/policy/src/index.js').ExternalPolicyFacts>
   /** The deterministic clock (ISO-8601) for durable row timestamps. */
   readonly now: () => string
+  /**
+   * The wait-bridge poll interval in milliseconds (alpha.2 §9.4,
+   * `awaitControlDecision`). The alpha.2 implementation polls the durable
+   * control state at this cadence (documented choice: DEFAULT = 250 ms —
+   * the low end of the plan's 250–500 ms band; liveness only, no
+   * authority). Injectable in tests (e.g. 5 ms); a non-finite or
+   * non-positive value falls back to the default. ABSENT = the default.
+   */
+  readonly waitPollIntervalMs?: number
 }
 
 /**
@@ -361,6 +432,7 @@ export interface ControlService {
     readonly toolName?: string
     readonly capabilityDomain?: CapabilityName
     readonly correlation: string
+    readonly operationFingerprint?: string
     readonly summary?: string
   }): Promise<ControlRequestRecord>
   /**
@@ -403,4 +475,32 @@ export interface ControlService {
    * @param scope - the exact operation scope (see the module docs).
    */
   guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict>
+  /**
+   * The SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4): resolves when a durable
+   * ControlDecision for the requestId appears. The authority is ALWAYS
+   * the durable control rows — the waiter only solves LIVENESS (it adds
+   * no authority, writes no rows, and is never consulted by the guard or
+   * the resolvers). Minimal alpha.2 implementation: polling the durable
+   * control state at the injected `waitPollIntervalMs` cadence (default
+   * 250 ms).
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.requestId - the durable control request id to wait for.
+   * @param input.signal - optional caller cancellation: an already-aborted
+   *   signal rejects immediately; a later abort rejects with
+   *   CONTROL_WAIT_ABORTED (typed; the durable rows are untouched either
+   *   way — cancellation never decides).
+   * @resolves the durable {@link ControlDecisionRecord} (fresh read).
+   * @throws CONTROL_REQUEST_MALFORMED for malformed ids (typed, zero
+   *   side effects); CONTROL_WAIT_ABORTED when the signal aborts;
+   *   CONTROL_WAIT_CLOSED when the durable control plane (the injected
+   *   TeamDomain) is closed while waiting (the storage layer's typed
+   *   `NOT_OPEN` closure signal, detected on the durable read); any other
+   *   typed storage failure (e.g. TEAM_SESSION_NOT_FOUND for a vanished
+   *   team session) surfaces unchanged.
+   */
+  awaitControlDecision(input: {
+    readonly rootSessionId: string
+    readonly requestId: string
+    readonly signal?: ControlWaitSignal
+  }): Promise<ControlDecisionRecord>
 }
