@@ -481,16 +481,26 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     28-test spec). Zero denylist vocabulary (the scan over them
     //     passes). Recorded on int at the A1+A2+A4+A3 integration.
     //
+    // (f) TWO A5 scannable files (this commit, the alpha.2 pre-execute
+    //     enforcement adapter task): packages/runtime/operation-
+    //     permission/pre-execute-adapter.ts (the tools/pre-execute
+    //     adapter source — the classify → canonicalize → static decision
+    //     → ask: request → wait → guard pipeline over the frozen A2/A3/
+    //     A4 APIs) + packages/runtime/test/a5a-pre-execute.test.ts (its
+    //     39-test spec over the real A4 durable control service). Zero
+    //     denylist vocabulary (the scan over them passes). Recorded on
+    //     the A5 task branch; re-verified on int at the A5 integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 663 (642 + 10 + 1 + 7 + 1 + 2), and its file list names exactly the
-    // twenty-one files above (ten alpha.1 + one A1 + seven A2 + one A4 +
-    // two A3; the committed scanner is byte-identical — no scanner change,
-    // DEC-1). The frozen quarantine hit set and all required P4 suite
-    // lists are untouched. Evidence:
-    // dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ + a4/.
-    expect(scanResult.filesScanned).toBe(663)
-    expect(scanResult.files.length).toBe(663)
+    // 665 (642 + 10 + 1 + 7 + 1 + 2 + 2), and its file list names exactly
+    // the twenty-three files above (ten alpha.1 + one A1 + seven A2 +
+    // one A4 + two A3 + two A5; the committed scanner is byte-identical —
+    // no scanner change, DEC-1). The frozen quarantine hit set and all
+    // required P4 suite lists are untouched. Evidence:
+    // dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ + a4/ + a5/.
+    expect(scanResult.filesScanned).toBe(665)
+    expect(scanResult.files.length).toBe(665)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

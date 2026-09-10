@@ -1,0 +1,474 @@
+/**
+ * A5 (alpha.2, plan §10) — the `tools/pre-execute` enforcement adapter.
+ *
+ * The agent-scoped listener that enforces the bound template's static
+ * parameter-aware permission policy SYNCHRONOUSLY through the durable
+ * Control plane (plan §10.1/§10.2 — the FROZEN pipeline):
+ *
+ * ```
+ * tools/pre-execute(exec)
+ *     ↓
+ * classifyPermissionTool(exec.name)          (A2)
+ *     ├ unsupported → await next()            (pass-through: zero control
+ *     │                                rows, zero interference, the
+ *     │                                resolver is NOT called)
+ *     └ file / tool-level
+ *         ↓
+ *     canonicalizeOperation(...)              (A2 — fail closed on any
+ *     ↓                                OperationPermissionError: deny,
+ *                                       never next())
+ *     resolveOperationPermission(...)         (A3 — pure static decision)
+ *     ├ allow → await next()
+ *     ├ deny  → return { kind: 'deny' }       (provenance in the reason)
+ *     └ ask
+ *         ↓
+ *     requestControl(...)                     (A4 — durable row; kind =
+ *         ↓                                isLeader ? 'user-approval'
+ *                                             : 'leader-approval')
+ *     awaitControlDecision(..., signal)       (A4 — the synchronous wait
+ *         ↓                                bridge; abort → typed
+ *                                             CONTROL_WAIT_ABORTED)
+ *     ├ decision deny/stale-denied → return { kind: 'deny' }
+ *     └ decision allow
+ *         ↓
+ *     guardOperation(exact scope + fingerprint)  (A4 — check-and-reserve
+ *         ↓                                exactly once)
+ *     ├ allowed → await next()
+ *     └ blocked → return { kind: 'deny' }     (no-request here is a
+ *                                             consistency anomaly — fail
+ *                                             closed, never proceed)
+ * ```
+ *
+ * What this module IS (and deliberately is NOT):
+ *
+ * - It IS the ONLY place the three frozen A2/A3/A4 APIs are composed into
+ *   one pre-execute gate: it re-implements none of their logic (no
+ *   canonicalization, no matching, no control-plane state — it calls the
+ *   frozen APIs and maps their typed outcomes onto PreToolDecisions);
+ * - it NEVER returns `{ kind: 'ask' }: the upstream pipeline routes a
+ *   final 'ask' gate to the native approval service, which the Team
+ *   permission plane does not use — the listener RESOLVES the ask
+ *   internally (request → wait → guard) and returns allow/deny itself
+ *   (plan §10.2; a returned 'ask' would be a second, parallel approval
+ *   path);
+ * - it is FAIL CLOSED (plan §7.5/§10.3): every non-allow outcome returns
+ *   before `next()` is awaited, so the tool body is NEVER invoked
+ *   (zero-effect invariant): unsupported pass-through, static deny,
+ *   canonicalization failure, request failure, wait abort, wait closed,
+ *   durable deny/stale-denied, guard block — all deny;
+ * - it is AGENT-SCOPED: `installParameterPermissionListener` registers
+ *   ONE listener on the ONE agent ctx it is given (the A6 glue installs
+ *   it per agent lifecycle — fresh root / fresh member / cold resume —
+ *   and drains the returned disposer on close, plan §11.2/§11.3);
+ *   the module holds NO module-level mutable state (each install owns its
+ *   own rule-canonicalization cache in a closure);
+ * - it is SEAM-INJECTED: the only upstream surface it touches at runtime
+ *   is the public `ctx.fs.resolve` seam, and only through the injected
+ *   {@link import('./types.js').PathTargetResolver} closure (the A6 glue
+ *   builds it over `ctx.fs.resolve(path, { cwd: sessionCwd })` with the
+ *   agent's per-session workspace cwd — the upstream file tools' own
+ *   resolution convention, `exec.agent.session.header.cwd`). This module
+ *   never imports an upstream `@deepseek-ai/*` package; the agent ctx and
+ *   the exec payload are typed by MINIMAL structural mirrors of the
+ *   upstream surface (the glue is plain `.mjs` and passes the real cordis
+ *   `Context`, whose `ctx.on` registration is an effect that returns the
+ *   disposer — this factory returns that disposer verbatim).
+ *
+ * Design rulings (documented per the A5 brief; the report cites them):
+ *
+ * R1 — SIGNAL THREADING: the resolver type takes `(path)` only, so the
+ *   per-call `exec.signal` is NOT threaded into the path resolution. The
+ *   glue's closure captures the session cwd at INSTALL time; a per-call
+ *   abort during a resolution is a documented residual (an aborted call
+ *   can finish a fast identity read before the abort is observed —
+ *   resolution is a cheap identity lookup with no side effects, and the
+ *   zero-effect invariant is unaffected: a deny still denies, and an
+ *   allow on an already-aborted call is aborted by the pipeline's own
+ *   pre-dispatch cancellation checks).
+ *
+ * R2 — RULE CANONICALIZATION: the policy's `exact` rules are canonicalized
+ *   LAZILY (per decision, once per distinct rule path, cached for the
+ *   scope's lifetime in an install-owned `Map`): the install is
+ *   synchronous (it returns the `ctx.on` disposer) and an install-time
+ *   async canonicalization would either delay the listener's activation
+ *   or require a fail-closed "rules not ready" window. Only SUCCESSFUL
+ *   resolutions are cached; a failed rule resolution is NOT cached (it is
+ *   retried on the next decision) and the rule is treated as
+ *   NON-MATCHING for that decision. That is fail-closed end-to-end: a
+ *   rule whose path the backend cannot resolve can only address a path
+ *   that is equally unresolvable for an OPERATION, and such an operation
+ *   fails ITS OWN canonicalization (the pipeline step before any rule is
+ *   consulted) before it could be authorized — while a rule addressing a
+ *   different, resolvable path has a different opaque key and cannot
+ *   match the operation. Exact rules whose `tool` differs from the
+ *   operation's tool (and every `bash` exact rule — inert by
+ *   construction, A3) are never canonicalized at all (they can never
+ *   match, so the resolver is never called for them). Rules are thus
+ *   canonicalized against the SAME cwd basis as operations: the SAME
+ *   injected resolver closure, bound to the SAME session cwd at install.
+ *
+ * R3 — PRE-ABORTED SIGNAL: checked cheaply at the TOP of the ask branch
+ *   (after the static decision is known to be 'ask', before
+ *   `requestControl`): an already-aborted call is DENIED WITHOUT CREATING
+ *   A REQUEST ROW (the documented preferred choice — no orphan pending
+ *   request for a call that will never execute). Static allow/deny are
+ *   unaffected by a pre-aborted signal: they never wait, and the
+ *   pipeline's own pre-dispatch cancellation checks guarantee the tool
+ *   body still never runs. An abort BETWEEN `requestControl` and the
+ *   wait (or mid-wait) settles typed `CONTROL_WAIT_ABORTED` from the
+ *   wait bridge → deny; in that window the durable request row stays
+ *   pending (acceptable alpha.2 behavior — cancellation never decides;
+ *   a later resolve is unaffected).
+ *
+ * R4 — WAIT POLL HINT: the A5 brief's optional `waitPollIntervalMsHint`
+ *   parameter is DROPPED: A4 already injects the poll cadence at
+ *   service-construction time (`ControlServiceOptions.waitPollIntervalMs`),
+ *   and the adapter receives the service fully constructed — the hint
+ *   would have been a redundant public tunable on a closed seam. Tests
+ *   construct their service with `waitPollIntervalMs: 10` directly.
+ *
+ * R5 — GUARD VERDICT MAPPING: the last-mile guard's `no-request` verdict
+ *   FAILS CLOSED here (deny with a diagnostic reason): in this pipeline
+ *   the adapter just created the request for the exact scope it is
+ *   guarding, so a `no-request` verdict is a consistency anomaly, never
+ *   an open autonomy path. This deliberately does NOT reuse the
+ *   team-tools SD-GUARD "no-request → proceeds" mapping
+ *   (`packages/tools/src/guard.ts` — the `team_request_control` tool
+ *   hosts both controlled and uncontrolled operations, where no-request
+ *   is the ordinary leader-autonomy fall-through; a different consumer).
+ *
+ * Diagnostics: when `onObserve` is provided, small structured rows are
+ *   emitted at five pipeline points (canonicalized operation, resolved
+ *   decision + provenance, request created, decision arrived, guard
+ *   verdict) — no file contents, no full argument payloads. An
+ *   `onObserve` that throws never affects the decision (diagnostics are
+ *   not authority).
+ *
+ * @module @dsh-agent-team/runtime/operation-permission/pre-execute-adapter
+ */
+import { canonicalizeOperation, classifyPermissionTool, } from './canonical-operation.js';
+import { isOperationPermissionError, } from './errors.js';
+import { resolveOperationPermission, } from './permission-resolver.js';
+import { CONTROL_ERROR_CODES, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
+/** The closed action name the adapter uses for its control scopes. */
+const ACTION_NAME = 'parameter-permission';
+// ---------------------------------------------------------------------------
+// The install factory.
+// ---------------------------------------------------------------------------
+/**
+ * Install the parameter-permission pre-execute listener on one agent ctx
+ * (plan §10.1: installed only for agents whose bound template declares
+ * `permissions` — the install decision itself is the A6 glue's; once
+ * installed, this listener covers exactly that agent's calls).
+ *
+ * @param agentCtx - the agent-scoped registration surface (the upstream
+ *   cordis agent `Context`).
+ * @param params - the frozen install parameters (policy, resolver,
+ *   control service, identities, routing, optional diagnostics).
+ * @returns the disposer (the `ctx.on` return) — the A6 glue stores it in
+ *   the agent lifecycle's disposer list so close/dispose removes the
+ *   listener and cold resume re-installs (plan §11.3).
+ */
+export function installParameterPermissionListener(agentCtx, params) {
+    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, } = params;
+    /** The request kind this install routes asks to (plan §9.5). */
+    const requestKind = isLeader
+        ? CONTROL_REQUEST_KINDS.USER_APPROVAL
+        : CONTROL_REQUEST_KINDS.LEADER_APPROVAL;
+    /**
+     * R2 — the install-owned rule-canonicalization cache (lazy; successful
+     * resolutions only — a failed rule resolution is retried on the next
+     * decision, never cached). Keyed by the raw (A1-trimmed) rule path.
+     */
+    const ruleKeyCache = new Map();
+    /**
+     * Emit one small diagnostics row (never throws into the pipeline —
+     * diagnostics are not authority).
+     */
+    const observe = (row) => {
+        if (params.onObserve === undefined)
+            return;
+        try {
+            params.onObserve(row);
+        }
+        catch {
+            // a throwing observation hook must never fail a permission decision
+        }
+    };
+    /**
+     * R2 — the canonical key of one `exact` rule path (cached), or
+     * `undefined` when the path cannot be canonicalized (the rule then
+     * does not match THIS decision — see the module doc for the
+     * fail-closed argument).
+     */
+    const canonicalRuleKey = async (path) => {
+        const cached = ruleKeyCache.get(path);
+        if (cached !== undefined)
+            return cached;
+        try {
+            const { key } = await resolveTarget(path);
+            ruleKeyCache.set(path, key);
+            return key;
+        }
+        catch {
+            return undefined;
+        }
+    };
+    /**
+     * R2 — map one raw A1 lane to A3 `CanonicalRule[]`: `any` rules pass
+     * through unchanged; `exact` rules are canonicalized against the SAME
+     * resolver (and thus the SAME cwd basis) as operations — only for
+     * rules that can match this operation (same tool; a `bash` exact rule
+     * is inert by construction and is never canonicalized); an
+     * unresolvable rule path yields no rule (R2 — the fail-closed
+     * argument is in the module docs).
+     */
+    const canonicalLane = async (rules, tool) => {
+        const out = [];
+        for (const rule of rules) {
+            if (rule.tool !== tool)
+                continue; // a different tool can never match
+            if (rule.resource.kind === 'any') {
+                out.push({ tool: rule.tool, resource: { kind: 'any' } });
+                continue;
+            }
+            if (tool === 'bash')
+                continue; // bash exact rules are inert (A3)
+            const key = await canonicalRuleKey(rule.resource.path);
+            if (key === undefined)
+                continue; // unresolvable rule path: no match (R2)
+            out.push({ tool: rule.tool, resource: { kind: 'exact', key } });
+        }
+        return out;
+    };
+    /**
+     * R2 — the policy lanes as A3 `CanonicalRules` for one operation tool
+     * (the three lanes mapped in parallel — lane membership and lane
+     * order are preserved exactly, plan §6.4/§8.3).
+     */
+    const canonicalRulesFor = async (tool) => {
+        const [allow, ask, deny] = await Promise.all([
+            canonicalLane(policy.allow, tool),
+            canonicalLane(policy.ask, tool),
+            canonicalLane(policy.deny, tool),
+        ]);
+        return { allow, ask, deny };
+    };
+    /**
+     * The frozen pipeline (plan §10.2) for one pre-execute payload.
+     * NEVER returns `ask`; NEVER awaits `next()` after a deny decision;
+     * every unexpected failure fails closed to a deny.
+     */
+    const enforce = async (exec, next) => {
+        const callId = typeof exec.callId === 'string' ? exec.callId : String(exec.callId);
+        const name = typeof exec.name === 'string' ? exec.name : String(exec.name);
+        const signal = exec.signal;
+        // (1) classify — unsupported tools pass through WITHOUT entering the
+        // parameter resolver (plan §7.5/§10.2): zero control rows, zero
+        // interference, the resolver is never called.
+        const toolClass = classifyPermissionTool(name);
+        if (toolClass.kind === 'unsupported') {
+            return await next();
+        }
+        // (2) canonicalize (A2 — fail closed: a canonicalization failure
+        // denies BEFORE any rule is consulted and BEFORE next() is ever
+        // awaited — plan §7.5/§10.3).
+        let operation;
+        try {
+            operation = await canonicalizeOperation({
+                name,
+                arguments: exec.arguments,
+                resolveTarget,
+            });
+        }
+        catch (error) {
+            const reason = isOperationPermissionError(error)
+                ? `permission denied: ${error.message}`
+                : `permission denied: canonicalization failed for tool "${name}" (unexpected canonicalizer failure: ${error instanceof Error ? error.message : String(error)})`;
+            observe({
+                stage: 'canonicalization-failed',
+                callId,
+                tool: name,
+                reason,
+            });
+            return { kind: 'deny', reason };
+        }
+        observe({
+            stage: 'canonicalized',
+            callId,
+            tool: operation.tool,
+            resourceKind: operation.resource.kind,
+            resourceDisplay: operation.resource.display,
+            fingerprint: operation.fingerprint,
+        });
+        // (3) resolve the static decision (A3 — pure, synchronous).
+        let decision;
+        try {
+            const canonicalRules = await canonicalRulesFor(operation.tool);
+            decision = resolveOperationPermission(policy, operation, canonicalRules);
+        }
+        catch (error) {
+            // A3 is pure and total over well-formed input; an unexpected throw
+            // is a programming fault — fail closed (plan §10.3: deny).
+            return {
+                kind: 'deny',
+                reason: `permission denied: the static permission resolution failed (unexpected resolver failure: ${error instanceof Error ? error.message : String(error)})`,
+            };
+        }
+        observe({
+            stage: 'decision',
+            callId,
+            decision: decision.decision,
+            provenance: {
+                source: decision.provenance.source,
+                effect: decision.provenance.effect,
+                ...(decision.provenance.lane !== undefined
+                    ? { lane: decision.provenance.lane }
+                    : {}),
+                ...(decision.provenance.ruleIndex !== undefined
+                    ? { ruleIndex: decision.provenance.ruleIndex }
+                    : {}),
+            },
+        });
+        if (decision.decision === 'allow') {
+            return await next();
+        }
+        if (decision.decision === 'deny') {
+            const provenance = decision.provenance.source === 'rule'
+                ? `the template's ${decision.provenance.lane} rule ${decision.provenance.ruleIndex}`
+                : `the template's default (${decision.provenance.effect})`;
+            return {
+                kind: 'deny',
+                reason: `permission denied by the static permission policy: ${provenance} denies ${operation.tool} on ${operation.resource.display}`,
+            };
+        }
+        // (4) ask — resolved internally (the listener never returns 'ask').
+        // R3 — a pre-aborted signal denies WITHOUT creating a request row.
+        if (signal.aborted) {
+            return {
+                kind: 'deny',
+                reason: 'the approval wait was cancelled (the call was already aborted)',
+            };
+        }
+        // (4a) request the durable control row (A4). A typed rejection
+        // (malformed, stale target, envelope) fails closed — never swallowed.
+        let record;
+        try {
+            record = await controlService.requestControl({
+                rootSessionId,
+                caller,
+                kind: requestKind,
+                targetInstanceId,
+                actionName: ACTION_NAME,
+                toolName: name,
+                correlation: callId,
+                operationFingerprint: operation.fingerprint,
+                summary: operation.resource.kind === 'tool'
+                    ? `${name} (tool-level)`
+                    : `${name} ${operation.resource.display}`,
+            });
+        }
+        catch (error) {
+            const reason = isControlError(error)
+                ? `permission request failed: ${error.message}`
+                : `permission request failed: ${error instanceof Error ? error.message : String(error)}`;
+            observe({ stage: 'request-failed', callId, reason });
+            return { kind: 'deny', reason };
+        }
+        observe({
+            stage: 'request-created',
+            callId,
+            requestId: record.requestId,
+            kind: record.kind,
+            correlation: callId,
+        });
+        // (4b) wait for the durable decision (A4 wait bridge — liveness only;
+        // the durable rows are the authority).
+        let decisionRecord;
+        try {
+            decisionRecord = await controlService.awaitControlDecision({
+                rootSessionId,
+                requestId: record.requestId,
+                signal,
+            });
+        }
+        catch (error) {
+            if (isControlError(error) && error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED) {
+                return { kind: 'deny', reason: 'the approval wait was cancelled' };
+            }
+            if (isControlError(error) && error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED) {
+                return { kind: 'deny', reason: `permission denied: ${error.message}` };
+            }
+            return {
+                kind: 'deny',
+                reason: `permission denied: the approval wait failed (unexpected wait failure: ${error instanceof Error ? error.message : String(error)})`,
+            };
+        }
+        observe({
+            stage: 'decision-arrived',
+            callId,
+            requestId: record.requestId,
+            decision: decisionRecord.decision,
+            ...(decisionRecord.reason !== undefined
+                ? { reason: decisionRecord.reason }
+                : {}),
+            decisionSequence: decisionRecord.decisionSequence,
+        });
+        // (4c) any non-allow durable decision denies (deny / stale-denied —
+        // a stale-denied request is closed and can never become an allow).
+        if (decisionRecord.decision !== 'allow') {
+            return { kind: 'deny', reason: 'the approval was denied' };
+        }
+        // (4d) the last-mile guard (A4 — check-and-reserve exactly once over
+        // the EXACT scope including the operation fingerprint).
+        let verdict;
+        try {
+            verdict = await controlService.guardOperation({
+                rootSessionId,
+                targetInstanceId,
+                actionName: ACTION_NAME,
+                toolName: name,
+                correlation: callId,
+                operationFingerprint: operation.fingerprint,
+            });
+        }
+        catch (error) {
+            return {
+                kind: 'deny',
+                reason: `permission denied: the last-mile guard failed (unexpected guard failure: ${error instanceof Error ? error.message : String(error)})`,
+            };
+        }
+        const guardReason = verdict.allowed === false ? verdict.reason : undefined;
+        observe({
+            stage: 'guard-verdict',
+            callId,
+            allowed: verdict.allowed,
+            ...(guardReason !== undefined ? { reason: guardReason } : {}),
+            ...(verdict.requestId !== undefined ? { requestId: verdict.requestId } : {}),
+            ...(verdict.decisionSequence !== undefined
+                ? { decisionSequence: verdict.decisionSequence }
+                : {}),
+        });
+        if (!verdict.allowed) {
+            // R5 — in THIS pipeline a no-request verdict is a consistency
+            // anomaly (the adapter just created the request for the exact
+            // scope it guards): fail closed with the diagnostic reason.
+            const reason = verdict.reason === 'no-request'
+                ? 'permission denied: the last-mile guard found no request (consistency anomaly — the request was just created)'
+                : `permission denied: the last-mile guard blocked the operation (${verdict.reason})`;
+            return { kind: 'deny', reason };
+        }
+        return await next();
+    };
+    const listener = (exec, next) => {
+        // A listener that REJECTS surfaces as a tool error result through
+        // the pipeline's own catch (prepareExecution) — but the pipeline
+        // contract is a decision, so the adapter maps every failure to a
+        // deny internally and only unexpected faults escape as a rejection
+        // (they still fail closed: the pipeline materializes an error
+        // result BEFORE dispatch, so the tool body never runs).
+        return enforce(exec, next);
+    };
+    return agentCtx.on('tools/pre-execute', listener);
+}
+//# sourceMappingURL=pre-execute-adapter.js.map
