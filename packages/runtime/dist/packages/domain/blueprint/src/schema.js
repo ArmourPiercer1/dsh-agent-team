@@ -85,6 +85,7 @@ export const BLUEPRINT_CAPABILITIES_FIELDS = [
     'builtinToolDeny',
     'skills',
     'mcp',
+    'permissions',
 ];
 /** The exact closed field set of a capability requirement. */
 export const BLUEPRINT_REQUIREMENT_FIELDS = ['domain', 'name', 'optional'];
@@ -119,6 +120,40 @@ export const BLUEPRINT_POLICY_REFERENCEABLE_FIELDS = [
 ];
 /** The only values a capability policy may map a domain to. */
 export const CAPABILITY_POLICY_DECISIONS = ['allow', 'deny'];
+/**
+ * The six tool names a permission rule may gate (alpha.2 plan §4/§6.2,
+ * closed vocabulary). `bash` allows tool-level ask/deny via
+ * `resource: { kind: 'any' }` only — no positive parameter-level allow.
+ */
+export const PERMISSION_TOOL_NAMES = [
+    'read',
+    'read_image',
+    'write',
+    'edit',
+    'lsp',
+    'bash',
+];
+/**
+ * The only fallback decisions a permission policy may declare
+ * (alpha.2 plan §6.3). `allow` is NOT a legal default: a default of
+ * `allow` would silently expand privilege, so it is rejected.
+ */
+export const PERMISSION_POLICY_DEFAULTS = ['ask', 'deny'];
+/**
+ * The closed resource kinds of a permission rule (alpha.2 plan §6.2).
+ * `subtree` is intentionally absent in A1 (not a release blocker).
+ */
+export const PERMISSION_RESOURCE_KINDS = ['exact', 'any'];
+/** The exact closed field set of a TemplatePermissionPolicy block. */
+export const PERMISSION_POLICY_FIELDS = ['default', 'allow', 'ask', 'deny'];
+/** The exact closed field set of one permission rule. */
+export const PERMISSION_RULE_FIELDS = ['tool', 'resource'];
+/**
+ * Max length of one `exact` permission path (structural bound, mirrors the
+ * contracts `WORKSPACE_PATH_MAX_LENGTH`; the path stays an opaque string —
+ * the A3 resolver canonicalizes it through the public filesystem seam).
+ */
+export const PERMISSION_PATH_MAX_LENGTH = 1024;
 /** Frontmatter delimiter line (borrowed from the legacy parser mechanism). */
 export const FRONTMATTER_DELIMITER = '---';
 /** Max length of a display name field. */

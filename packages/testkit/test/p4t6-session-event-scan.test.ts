@@ -49,7 +49,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and alpha.2 A1 (blueprint capabilities.permissions) records the ten missed alpha.1-hardening increments plus its own one permission-policy test file', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -408,6 +408,28 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // in-place edits + the .tsx spec, outside the scanner's
     // .ts/.mts/.mjs scope) are no count change. The new file carries
     // zero denylist vocabulary (the scan over it passes).
+    // Missed-increment record (+10, the pin was stale at the repair-r1
+    // commit — the same "record the missed pin" precedent as the
+    // P9-S8/TCM-D4 entries): the alpha.1 hardening commits (7570073
+    // P0-1/P0-3/P2.3/P1 capability wiring + T1 capability source) merged
+    // ten scannable files without recording the increment — domain
+    // policy/src/static-capability-source.ts, domain test
+    // t1-capability-schema.test.ts, runtime agent-setup/capability/
+    // mcp-adapter.ts + skill-adapter.ts + skill-catalog.ts, runtime test
+    // t3-skills-mcp-adapter.test.ts + t4a-capability-wiring.test.ts,
+    // tools/src/builtin-deny.ts + tool-selector.ts, and tools test
+    // t2-tool-selector-deny.test.ts. All ten carry zero denylist
+    // vocabulary (the scan over them passes — the frozen quarantine hit
+    // set is unchanged at fifteen occurrences).
+    // alpha.2 A1 (blueprint capabilities.permissions) pin (+1): this
+    // commit adds packages/domain/test/a1-permission-policy.test.ts (the
+    // permission-policy schema + hash + deterministic-normalization
+    // suite); the sibling changes (blueprint src/types, src/schema,
+    // src/validate, src/index, testdata/fixtures) are in-place edits (no
+    // count change); the rebuilt install-surface artifacts under
+    // packages/runtime/dist are outside the scanner's scope (the dist
+    // dirs are skipped); the new file carries zero denylist vocabulary
+    // (the scan over it passes). 642 + 10 + 1 = 653.
     // repair-r1 pin (630 + 12, the pin was stale at the D3 commit
     // 1386a9b — the same "record the missed pin" precedent as the
     // TCM-D4 stale-base entries): the F3/F11/F9/T1.4 repair round r1
@@ -429,8 +451,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // worktree (filesystem walk + git ls-files enumeration byte-identical
     // to the committed scanner's file list; evidence:
     // dev/agent-workflow/evidence/F3-F11-F9-T1.4-repair/p4t6-pin/).
-    expect(scanResult.filesScanned).toBe(642)
-    expect(scanResult.files.length).toBe(642)
+    expect(scanResult.filesScanned).toBe(653)
+    expect(scanResult.files.length).toBe(653)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

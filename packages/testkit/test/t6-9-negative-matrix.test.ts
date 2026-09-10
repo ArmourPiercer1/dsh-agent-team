@@ -467,8 +467,15 @@ describe('P3-T6 G3 negative matrix (cross-module)', () => {
     expect(isRemoteSafeJsonValue(new Date())).toBe(false)
   })
 
-  it('every blueprint negative fixture (31) fails with its typed code', () => {
-    expect(NEGATIVE_FIXTURES.length).toBe(31)
+  it('every blueprint negative fixture (47) fails with its typed code', () => {
+    // Count pin (31 -> 47): alpha.2 A1 (blueprint capabilities.permissions)
+    // added sixteen NEG_PERMISSION_* fixtures to the NEGATIVE_FIXTURES
+    // registry (default ask|deny / required lanes / closed fields on
+    // policy+rule+resource / closed tool + resource-kind vocabularies /
+    // exact.path rules / bare any). Same count-maintenance edit as the
+    // p4t6 scan pin; the fixture sources themselves live in
+    // packages/domain/blueprint/testdata/fixtures.ts.
+    expect(NEGATIVE_FIXTURES.length).toBe(47)
     const seenCodes = new Set<string>()
     for (const fixture of NEGATIVE_FIXTURES) {
       const error = expectCode(() => parseBlueprint(fixture.source), fixture.code, fixture.name)

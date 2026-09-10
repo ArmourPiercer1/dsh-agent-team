@@ -83,6 +83,12 @@ import {
   METADATA_VALUE_MAX_LENGTH,
   MODEL_PREFERENCE_MAX_LENGTH,
   PERSONA_MAX_LENGTH,
+  PERMISSION_PATH_MAX_LENGTH,
+  PERMISSION_POLICY_DEFAULTS,
+  PERMISSION_POLICY_FIELDS,
+  PERMISSION_RESOURCE_KINDS,
+  PERMISSION_RULE_FIELDS,
+  PERMISSION_TOOL_NAMES,
   POLICY_STATE_ID_MAX_LENGTH,
   POLICY_STATE_ID_PATTERN,
   REQUIREMENT_DOMAIN_MAX_LENGTH,
@@ -100,12 +106,15 @@ import type {
   DenyEntry,
   MemberEnvelopeEntry,
   MutationEnvelope,
+  PermissionResource,
+  PermissionRule,
   PolicyStateDefinition,
   Quota,
   QuotaSpec,
   TeamBlueprint,
   TeamBlueprintCore,
   TemplateCapabilities,
+  TemplatePermissionPolicy,
 } from './types.js'
 
 /** Control characters forbidden in any string field (mirrors contracts). */
@@ -474,8 +483,9 @@ function validateAllowDenyEntry(raw: unknown, path: string): DenyEntry | { kind:
 
 /**
  * Validate the optional `capabilities` block on a BlueprintTemplate.
- * When absent → valid (legacy mode). When present → all 4 sub-fields
- * are required.
+ * When absent → valid (legacy mode). When present → the four alpha.1
+ * sub-fields are required and the optional `permissions` block (A1) is
+ * validated as a closed TemplatePermissionPolicy.
  */
 function validateTemplateCapabilities(raw: unknown, path: string): TemplateCapabilities {
   const record = assertPlainRecord(raw, `${path} (capabilities)`)
@@ -505,7 +515,148 @@ function validateTemplateCapabilities(raw: unknown, path: string): TemplateCapab
     return item
   })
 
-  return { teamTools, builtinToolDeny, skills, mcp }
+  // Optional permission policy (alpha.2 A1; absent = no parameter-level
+  // permissions at all — legacy/alpha.1 behavior).
+  const permissionsRaw = takeRecord(record, 'permissions', path)
+  const permissions =
+    permissionsRaw === undefined
+      ? undefined
+      : validatePermissionPolicy(permissionsRaw, `${path}.permissions`)
+
+  return stripUndefined({ teamTools, builtinToolDeny, skills, mcp, permissions })
+}
+
+/**
+ * Validate the optional `capabilities.permissions` block into a
+ * `TemplatePermissionPolicy` (alpha.2 plan §6.3 — all constraints):
+ *
+ * - `default` is REQUIRED and must be `ask` or `deny` (`allow` rejected —
+ *   no silent privilege expansion);
+ * - `allow` / `ask` / `deny` are REQUIRED arrays (each may be empty);
+ * - every field set is CLOSED: unknown fields on the policy, on a rule,
+ *   or on a resource are rejected;
+ * - unsupported tools, non-closed resource kinds, and malformed `exact`
+ *   / `any` resources are rejected.
+ *
+ * Normalization is deterministic (see the type docs): each lane keeps
+ * declaration order, duplicates are preserved, no reordering — the lanes
+ * are fresh plain copies of the source arrays, so the same source always
+ * yields structurally identical output.
+ */
+function validatePermissionPolicy(raw: unknown, path: string): TemplatePermissionPolicy {
+  const record = assertPlainRecord(raw, `${path} (permission policy)`)
+  assertNoUnknownFields(record, PERMISSION_POLICY_FIELDS, `${path} (permission policy)`)
+
+  const defaultRaw = requireField(record, 'default', path)
+  if (typeof defaultRaw !== 'string' || !PERMISSION_POLICY_DEFAULTS.includes(defaultRaw)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission policy ${path}.default must be one of ${PERMISSION_POLICY_DEFAULTS.join(' | ')} (a default of 'allow' is rejected: no silent privilege expansion), got ${JSON.stringify(defaultRaw)}`,
+      { path: `${path}.default` },
+    )
+  }
+
+  const lane = (name: 'allow' | 'ask' | 'deny'): PermissionRule[] => {
+    const items = requireField(record, name, path)
+    if (!Array.isArray(items)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `permission policy ${path}.${name} must be an array (it may be empty), got ${items === null ? 'null' : typeof items}`,
+        { path: `${path}.${name}` },
+      )
+    }
+    // Declaration order is preserved; duplicate rules are legal.
+    return items.map((item, index) => validatePermissionRule(item, `${path}.${name}[${index}]`))
+  }
+
+  return {
+    default: defaultRaw as 'ask' | 'deny',
+    allow: lane('allow'),
+    ask: lane('ask'),
+    deny: lane('deny'),
+  }
+}
+
+/** Validate one permission rule (closed `tool` + `resource`). */
+function validatePermissionRule(raw: unknown, path: string): PermissionRule {
+  const record = assertPlainRecord(raw, `${path} (permission rule)`)
+  assertNoUnknownFields(record, PERMISSION_RULE_FIELDS, `${path} (permission rule)`)
+
+  const tool = requireField(record, 'tool', path)
+  if (typeof tool !== 'string' || !PERMISSION_TOOL_NAMES.includes(tool)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission rule ${path}.tool must be one of ${PERMISSION_TOOL_NAMES.join(' | ')}, got ${JSON.stringify(tool)}`,
+      { path: `${path}.tool` },
+    )
+  }
+
+  const resource = validatePermissionResource(requireField(record, 'resource', path), `${path}.resource`)
+  return { tool: tool as PermissionRule['tool'], resource }
+}
+
+/** Validate one permission resource (`exact` with a path, or bare `any`). */
+function validatePermissionResource(raw: unknown, path: string): PermissionResource {
+  const record = assertPlainRecord(raw, `${path} (permission resource)`)
+
+  const kind = requireField(record, 'kind', path)
+  if (typeof kind !== 'string' || !PERMISSION_RESOURCE_KINDS.includes(kind)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission resource ${path}.kind must be one of ${PERMISSION_RESOURCE_KINDS.join(' | ')}, got ${JSON.stringify(kind)}`,
+      { path: `${path}.kind` },
+    )
+  }
+
+  if (kind === 'any') {
+    // `any` is the whole tool: it must carry NO other field (not even a path).
+    const extra = Object.keys(record).filter((key) => key !== 'kind')
+    if (extra.length > 0) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `permission resource ${path} (kind 'any') must not carry any field other than 'kind': ${extra.sort().join(', ')}`,
+        { path, extraFields: extra },
+      )
+    }
+    return { kind: 'any' }
+  }
+
+  // kind === 'exact' — exactly the fields `kind` + `path`.
+  assertNoUnknownFields(record, ['kind', 'path'], `${path} (permission resource)`)
+  const pathValue = requireField(record, 'path', path)
+  if (typeof pathValue !== 'string') {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission resource ${path}.path must be a non-empty string, got ${pathValue === null ? 'null' : Array.isArray(pathValue) ? 'array' : typeof pathValue}`,
+      { path: `${path}.path` },
+    )
+  }
+  if (CONTROL_CHARS.test(pathValue)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission resource ${path}.path contains control characters`,
+      { path: `${path}.path` },
+    )
+  }
+  // Repo string-field normalization: trimmed, non-empty after trimming,
+  // structurally bounded. The trimmed value is the normalized path the
+  // A3 resolver matches against.
+  const normalized = pathValue.trim()
+  if (normalized.length === 0) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission resource ${path}.path must not be empty`,
+      { path: `${path}.path` },
+    )
+  }
+  if (normalized.length > PERMISSION_PATH_MAX_LENGTH) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission resource ${path}.path exceeds max length ${PERMISSION_PATH_MAX_LENGTH} (${normalized.length})`,
+      { path: `${path}.path`, maxLength: PERMISSION_PATH_MAX_LENGTH },
+    )
+  }
+  return { kind: 'exact', path: normalized }
 }
 
 // ---------------------------------------------------------------------------
@@ -865,15 +1016,48 @@ function toHashableTemplate(template: BlueprintTemplate): RemoteSafeRecord {
     modelPreference: template.modelPreference ?? null,
     contextPolicy: template.contextPolicy ?? null,
     capabilities:
-      template.capabilities === undefined
-        ? null
-        : {
-            teamTools: toHashableAllowDeny(template.capabilities.teamTools),
-            builtinToolDeny: [...template.capabilities.builtinToolDeny],
-            skills: toHashableAllowDeny(template.capabilities.skills),
-            mcp: toHashableAllowDeny(template.capabilities.mcp),
-          },
+      template.capabilities === undefined ? null : toHashableCapabilities(template.capabilities),
   })
+}
+
+/**
+ * The hashable projection of one capabilities block. The `permissions`
+ * key is present ONLY when the policy is present (absent → key omitted,
+ * so legacy/alpha.1 blueprints hash byte-identically to before A1), and
+ * the lane arrays project in declaration order (hash = content + rule
+ * order).
+ */
+function toHashableCapabilities(caps: TemplateCapabilities): RemoteSafeRecord {
+  const projection: RemoteSafeRecord = {
+    teamTools: toHashableAllowDeny(caps.teamTools),
+    builtinToolDeny: [...caps.builtinToolDeny],
+    skills: toHashableAllowDeny(caps.skills),
+    mcp: toHashableAllowDeny(caps.mcp),
+  }
+  // Added only when present: absent → the key is omitted, so legacy
+  // alpha.1 blueprints hash byte-identically to before A1. (The canonical
+  // JSON sort makes the insertion order of the other keys irrelevant.)
+  if (caps.permissions !== undefined) {
+    projection.permissions = toHashablePermissionPolicy(caps.permissions)
+  }
+  return projection
+}
+
+function toHashablePermissionPolicy(policy: TemplatePermissionPolicy): RemoteSafeRecord {
+  return {
+    default: policy.default,
+    allow: policy.allow.map(toHashablePermissionRule),
+    ask: policy.ask.map(toHashablePermissionRule),
+    deny: policy.deny.map(toHashablePermissionRule),
+  }
+}
+
+function toHashablePermissionRule(rule: PermissionRule): RemoteSafeRecord {
+  return {
+    tool: rule.tool,
+    resource:
+      rule.resource.kind === 'any' ? { kind: 'any' } : { kind: 'exact', path: rule.resource.path },
+  }
 }
 
 function toHashableAllowDeny(

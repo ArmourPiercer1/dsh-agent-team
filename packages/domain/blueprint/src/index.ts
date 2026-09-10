@@ -32,6 +32,12 @@ export {
   METADATA_VALUE_MAX_LENGTH,
   MODEL_PREFERENCE_MAX_LENGTH,
   PERSONA_MAX_LENGTH,
+  PERMISSION_PATH_MAX_LENGTH,
+  PERMISSION_POLICY_DEFAULTS,
+  PERMISSION_POLICY_FIELDS,
+  PERMISSION_RESOURCE_KINDS,
+  PERMISSION_RULE_FIELDS,
+  PERMISSION_TOOL_NAMES,
   POLICY_STATE_ID_MAX_LENGTH,
   POLICY_STATE_ID_PATTERN,
   REQUIREMENT_DOMAIN_MAX_LENGTH,
@@ -51,11 +57,15 @@ export type {
   MemberTemplate,
   MutationEnvelope,
   ParsedBlueprintDocument,
+  PermissionResource,
+  PermissionRule,
+  PermissionTool,
   PolicyStateDefinition,
   Quota,
   QuotaSpec,
   TeamBlueprint,
   TeamBlueprintCore,
+  TemplatePermissionPolicy,
 } from './types.js'
 
 export { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'

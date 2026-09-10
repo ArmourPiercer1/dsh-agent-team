@@ -821,6 +821,394 @@ export const NEG_NON_LOSSLESS_JSON_VALUE: NegativeFixture = {
   ].join('\n'),
 }
 
+// ---------------------------------------------------------------------------
+// alpha.2 A1 — permission policy fixtures
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a valid blueprint source whose leader `capabilities` carries the
+ * four alpha.1 sub-fields (all empty allows) plus — when given — a
+ * `permissions` block. `permissionLines` are the `permissions:` mapping
+ * lines already indented at the capabilities level; an empty array omits
+ * the block entirely (permissions absent = legacy behavior).
+ */
+function permissionBlueprintSource(permissionLines: string[]): string {
+  return [
+    '---',
+    'schemaVersion: 1',
+    'blueprintId: team.min',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: "Lead."',
+    '  capabilities:',
+    '    teamTools:',
+    '      kind: allow',
+    '      items: []',
+    '    builtinToolDeny: []',
+    '    skills:',
+    '      kind: allow',
+    '      items: []',
+    '    mcp:',
+    '      kind: allow',
+    '      items: []',
+    ...permissionLines,
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'metadata: {}',
+    '---',
+    '',
+  ].join('\n')
+}
+
+/** A full `permissions:` block (default: ask) with all three lanes. */
+const PERMISSION_LINES_ASK: string[] = [
+  '    permissions:',
+  '      default: ask',
+  '      allow:',
+  '        - tool: read',
+  '          resource:',
+  '            kind: exact',
+  '            path: "/data/notes.md"',
+  '        - tool: bash',
+  '          resource:',
+  '            kind: any',
+  '      ask:',
+  '        - tool: write',
+  '          resource:',
+  '            kind: exact',
+  '            path: "/data/notes.md"',
+  '      deny:',
+  '        - tool: lsp',
+  '          resource:',
+  '            kind: any',
+]
+
+/** Valid: a capabilities block with a `default: ask` permission policy. */
+export const PERMISSION_SOURCE_ASK = permissionBlueprintSource(PERMISSION_LINES_ASK)
+
+/** Valid: the same policy with `default: deny`. */
+export const PERMISSION_SOURCE_DENY = permissionBlueprintSource([
+  '    permissions:',
+  '      default: deny',
+  '      allow:',
+  '        - tool: read',
+  '          resource:',
+  '            kind: exact',
+  '            path: "/data/notes.md"',
+  '      ask: []',
+  '      deny: []',
+])
+
+/** Valid: capabilities present but `permissions` ABSENT (legacy). */
+export const PERMISSION_SOURCE_NO_POLICY = permissionBlueprintSource([])
+
+/**
+ * Valid: the `default: ask` policy written with shuffled object-key order
+ * (lane order `ask`/`deny`/`default`/`allow`, and `resource` before
+ * `tool` inside every rule). Same semantic content and same array order
+ * as `PERMISSION_SOURCE_ASK` → identical normalized policy + hash.
+ */
+export const PERMISSION_SOURCE_ASK_KEY_SHUFFLED = permissionBlueprintSource([
+  '    permissions:',
+  '      ask:',
+  '        - resource:',
+  '            kind: exact',
+  '            path: "/data/notes.md"',
+  '          tool: write',
+  '      deny:',
+  '        - resource:',
+  '            kind: any',
+  '          tool: lsp',
+  '      default: ask',
+  '      allow:',
+  '        - resource:',
+  '            kind: exact',
+  '            path: "/data/notes.md"',
+  '          tool: read',
+  '        - resource:',
+  '            kind: any',
+  '          tool: bash',
+])
+
+/**
+ * Valid: duplicate rules — the SAME rule twice in the `allow` lane and
+ * once more in the `ask` lane. Duplicates are legal; normalization keeps
+ * declaration order (no de-dup, no reordering).
+ */
+export const PERMISSION_SOURCE_DUPLICATES = permissionBlueprintSource([
+  '    permissions:',
+  '      default: ask',
+  '      allow:',
+  '        - tool: read',
+  '          resource:',
+  '            kind: exact',
+  '            path: "/a.txt"',
+  '        - tool: read',
+  '          resource:',
+  '            kind: exact',
+  '            path: "/a.txt"',
+  '      ask:',
+  '        - tool: read',
+  '          resource:',
+  '            kind: exact',
+  '            path: "/a.txt"',
+  '      deny: []',
+])
+
+/**
+ * Valid: the minimal shell permission (plan §4) — bash at tool level via
+ * the `any` resource, nothing else declared.
+ */
+export const PERMISSION_SOURCE_BASH_ANY = permissionBlueprintSource([
+  '    permissions:',
+  '      default: ask',
+  '      allow: []',
+  '      ask: []',
+  '      deny:',
+  '        - tool: bash',
+  '          resource:',
+  '            kind: any',
+])
+
+/** One `permissions:` block with a single violation (shared sub-fields valid). */
+function permissionNegativeSource(permissionLines: string[]): string {
+  return permissionBlueprintSource(permissionLines)
+}
+
+export const NEG_PERMISSION_DEFAULT_ALLOW: NegativeFixture = {
+  name: 'permission policy default is "allow" (rejected: no silent privilege expansion)',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: allow',
+    '      allow: []',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_DEFAULT_MISSING: NegativeFixture = {
+  name: 'permission policy is missing the required default',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      allow: []',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_DEFAULT_NOT_STRING: NegativeFixture = {
+  name: 'permission policy default is not a string',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: true',
+    '      allow: []',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_LANE_MISSING: NegativeFixture = {
+  name: 'permission policy is missing a required lane (allow)',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_LANE_NOT_ARRAY: NegativeFixture = {
+  name: 'permission policy lane is not an array',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow: "read"',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_POLICY_UNKNOWN_FIELD: NegativeFixture = {
+  name: 'unknown field on the permission policy',
+  code: 'MALFORMED_DTO',
+  unknownFields: ['allowAll'],
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow: []',
+    '      ask: []',
+    '      deny: []',
+    '      allowAll: true',
+  ]),
+}
+
+export const NEG_PERMISSION_RULE_UNKNOWN_FIELD: NegativeFixture = {
+  name: 'unknown field on a permission rule',
+  code: 'MALFORMED_DTO',
+  unknownFields: ['note'],
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '          resource:',
+    '            kind: exact',
+    '            path: "/a.txt"',
+    '          note: "why"',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_RULE_MISSING_TOOL: NegativeFixture = {
+  name: 'permission rule is missing the required tool',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - resource:',
+    '            kind: exact',
+    '            path: "/a.txt"',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_RULE_MISSING_RESOURCE: NegativeFixture = {
+  name: 'permission rule is missing the required resource',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_UNKNOWN_TOOL: NegativeFixture = {
+  name: 'permission rule names an unsupported tool',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: grep',
+    '          resource:',
+    '            kind: exact',
+    '            path: "/a.txt"',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_RESOURCE_UNKNOWN_KIND: NegativeFixture = {
+  name: 'permission resource kind is outside the closed vocabulary (subtree is not A1)',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '          resource:',
+    '            kind: subtree',
+    '            path: "/data"',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_EXACT_MISSING_PATH: NegativeFixture = {
+  name: 'exact permission resource is missing its path',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '          resource:',
+    '            kind: exact',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_EXACT_EMPTY_PATH: NegativeFixture = {
+  name: 'exact permission resource path is empty',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '          resource:',
+    '            kind: exact',
+    '            path: ""',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_EXACT_EXTRA_FIELD: NegativeFixture = {
+  name: 'exact permission resource carries a field other than kind + path',
+  code: 'MALFORMED_DTO',
+  unknownFields: ['glob'],
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '          resource:',
+    '            kind: exact',
+    '            path: "/a.txt"',
+    '            glob: true',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_ANY_WITH_PATH: NegativeFixture = {
+  name: 'any permission resource carries a path (any must be bare)',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: bash',
+    '          resource:',
+    '            kind: any',
+    '            path: "/bin"',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
+export const NEG_PERMISSION_ANY_EXTRA_FIELD: NegativeFixture = {
+  name: 'any permission resource carries another extra field (any must be bare)',
+  code: 'MALFORMED_DTO',
+  source: permissionNegativeSource([
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: bash',
+    '          resource:',
+    '            kind: any',
+    '            scope: all',
+    '      ask: []',
+    '      deny: []',
+  ]),
+}
+
 export const NEG_CONTENT_HASH_IN_SOURCE: NegativeFixture = {
   name: 'contentHash is derived, never a source field (unknown field)',
   code: 'MALFORMED_DTO',
@@ -932,6 +1320,22 @@ export const NEGATIVE_FIXTURES: readonly NegativeFixture[] = [
   NEG_QUOTA_NOT_POSITIVE,
   NEG_CAPABILITY_POLICY_BAD_DECISION,
   NEG_METADATA_NON_STRING_VALUE,
+  NEG_PERMISSION_DEFAULT_ALLOW,
+  NEG_PERMISSION_DEFAULT_MISSING,
+  NEG_PERMISSION_DEFAULT_NOT_STRING,
+  NEG_PERMISSION_LANE_MISSING,
+  NEG_PERMISSION_LANE_NOT_ARRAY,
+  NEG_PERMISSION_POLICY_UNKNOWN_FIELD,
+  NEG_PERMISSION_RULE_UNKNOWN_FIELD,
+  NEG_PERMISSION_RULE_MISSING_TOOL,
+  NEG_PERMISSION_RULE_MISSING_RESOURCE,
+  NEG_PERMISSION_UNKNOWN_TOOL,
+  NEG_PERMISSION_RESOURCE_UNKNOWN_KIND,
+  NEG_PERMISSION_EXACT_MISSING_PATH,
+  NEG_PERMISSION_EXACT_EMPTY_PATH,
+  NEG_PERMISSION_EXACT_EXTRA_FIELD,
+  NEG_PERMISSION_ANY_WITH_PATH,
+  NEG_PERMISSION_ANY_EXTRA_FIELD,
   NEG_NESTED_MEMBER_ID,
   NEG_NON_LOSSLESS_JSON_VALUE,
   NEG_CONTENT_HASH_IN_SOURCE,

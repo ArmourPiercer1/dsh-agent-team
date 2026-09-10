@@ -79,6 +79,33 @@ export declare const BLUEPRINT_QUOTA_FIELDS: readonly string[];
 export declare const BLUEPRINT_POLICY_REFERENCEABLE_FIELDS: readonly string[];
 /** The only values a capability policy may map a domain to. */
 export declare const CAPABILITY_POLICY_DECISIONS: readonly string[];
+/**
+ * The six tool names a permission rule may gate (alpha.2 plan §4/§6.2,
+ * closed vocabulary). `bash` allows tool-level ask/deny via
+ * `resource: { kind: 'any' }` only — no positive parameter-level allow.
+ */
+export declare const PERMISSION_TOOL_NAMES: readonly string[];
+/**
+ * The only fallback decisions a permission policy may declare
+ * (alpha.2 plan §6.3). `allow` is NOT a legal default: a default of
+ * `allow` would silently expand privilege, so it is rejected.
+ */
+export declare const PERMISSION_POLICY_DEFAULTS: readonly string[];
+/**
+ * The closed resource kinds of a permission rule (alpha.2 plan §6.2).
+ * `subtree` is intentionally absent in A1 (not a release blocker).
+ */
+export declare const PERMISSION_RESOURCE_KINDS: readonly string[];
+/** The exact closed field set of a TemplatePermissionPolicy block. */
+export declare const PERMISSION_POLICY_FIELDS: readonly string[];
+/** The exact closed field set of one permission rule. */
+export declare const PERMISSION_RULE_FIELDS: readonly string[];
+/**
+ * Max length of one `exact` permission path (structural bound, mirrors the
+ * contracts `WORKSPACE_PATH_MAX_LENGTH`; the path stays an opaque string —
+ * the A3 resolver canonicalizes it through the public filesystem seam).
+ */
+export declare const PERMISSION_PATH_MAX_LENGTH = 1024;
 /** Frontmatter delimiter line (borrowed from the legacy parser mechanism). */
 export declare const FRONTMATTER_DELIMITER = "---";
 /** Max length of a display name field. */
