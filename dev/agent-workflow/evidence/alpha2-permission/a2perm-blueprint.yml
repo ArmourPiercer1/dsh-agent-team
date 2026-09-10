@@ -1,0 +1,91 @@
+---
+schemaVersion: 1
+blueprintId: team.a2perm
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the alpha.2 permission test team."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_send_message
+        - team_list_members
+        - team_request_control
+        - team_resolve_control
+    builtinToolDeny: []
+    skills:
+      kind: deny
+    mcp:
+      kind: deny
+    permissions:
+      default: ask
+      allow:
+        - tool: read
+          resource:
+            kind: exact
+            path: ./perm-a.txt
+      ask:
+        - tool: write
+          resource:
+            kind: exact
+            path: ./perm-c.txt
+      deny:
+        - tool: read
+          resource:
+            kind: exact
+            path: ./perm-b.txt
+members:
+  - templateId: worker-a
+    persona: "You are member worker-a of the alpha.2 permission test team."
+    capabilities:
+      teamTools:
+        kind: allow
+        items:
+          - team_delegate
+          - team_send_message
+          - team_request_control
+      builtinToolDeny: []
+      skills:
+        kind: deny
+      mcp:
+        kind: deny
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: exact
+              path: ./perm-a.txt
+        ask:
+          - tool: write
+            resource:
+              kind: exact
+              path: ./perm-c.txt
+        deny:
+          - tool: read
+            resource:
+              kind: exact
+              path: ./perm-b.txt
+  - templateId: worker-b
+    persona: "You are member worker-b of the alpha.2 permission test team."
+    capabilities:
+      teamTools:
+        kind: allow
+        items:
+          - team_send_message
+      builtinToolDeny: []
+      skills:
+        kind: deny
+      mcp:
+        kind: deny
+      permissions:
+        default: deny
+        allow: []
+        ask: []
+        deny: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+---
