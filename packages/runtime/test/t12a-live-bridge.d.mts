@@ -392,6 +392,18 @@ export interface LiveWorldOptions {
    *  returned on the world (see `LiveWorld.controlServiceRef`). Absent =
    *  the glue dep not passed (alpha.1/legacy: never read). */
   readonly controlServiceRef?: { current: unknown }
+  /** alpha.2 (A6, V1-1): override the per-agent fs seam accessor
+   *  ((agentCtx) => { resolve(path, { cwd? }) }). Default: routes to each
+   *  agent ctx double's own fake fs (makeFakeFs on the double), so
+   *  per-agent call-record assertions keep working. The fail-closed legs:
+   *  pass an unusable accessor (a resolve-time rejection maps to the typed
+   *  canonicalization denial — never a pass-through) or `null` to OMIT the
+   *  dep entirely (the install-time typed setup rejection). */
+  readonly fsBackend?:
+    | ((agentCtx: unknown) => {
+        resolve(path: string, options?: { cwd?: string }): Promise<unknown>
+      })
+    | null
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */

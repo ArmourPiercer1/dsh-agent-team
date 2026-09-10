@@ -33,6 +33,17 @@
  *    template with an unfilled ref FAILS CLOSED with the typed
  *    `alpha2-permission-control-unavailable` error (setup rejection).
  *
+ * 5. THE FS SEAM CONTRACT (V1-1 — the live-matrix wiring fix): the
+ *    resolveTarget closure resolves file targets through the `fsBackend`
+ *    deps accessor (the host row's lazy strict `ctx.get('fs')` global-
+ *    store read; the property proxy `agentCtx.fs` is topology-sensitive
+ *    and can never resolve on the agent scope). A permissions template
+ *    with an UNUSABLE accessor FAILS CLOSED at RESOLVE time with the typed
+ *    canonicalization denial (never a pass-through, zero-effect), and with
+ *    the dep ABSENT it fails closed at SETUP time with the typed
+ *    `alpha2-permission-fs-unavailable` error (the control-unavailable
+ *    twin).
+ *
  * DESIGN RULINGS pinned here (see the A6 report for the full argument):
  *
  * - FACT 3a: `staticCapabilitiesOf` does NOT project `permissions`
@@ -624,6 +635,94 @@ const w6Observations = [...world6.binding.observations]
 await world6.binding.close()
 
 // ══════════════════════════════════════════════════════════════════════════
+// WORLD 7 — FAIL CLOSED (V1-1, resolve time): the fs seam is UNUSABLE at
+// RESOLVE time (the host accessor's failure mode — the `fs` public service
+// absent, the accessor throwing the typed service-missing error). Every
+// file-tool decision must deny at canonicalization: typed, never a
+// pass-through, zero-effect (next never awaited, no control row created).
+// An unsupported tool still passes through (classification precedes
+// canonicalization).
+// ══════════════════════════════════════════════════════════════════════════
+const spy7 = makeSpyControlService()
+const world7 = await createLiveWorld({
+  rootSessionId: ROOT,
+  teamTools: toolCatalog,
+  agentPresets: createAgentPresetsDouble(),
+  controlServiceRef: { current: spy7 },
+  fsBackend: () => {
+    const error = new Error(
+      'the "fs" public service is absent (or lacks resolve) — it is resolved lazily per call and must be up before parameter-permission canonicalization resolves a file target (fail-closed: a typed canonicalization denial, never a pass-through)',
+    )
+    ;(error as { code?: string }).code = 'team-plugin-service-missing'
+    throw error
+  },
+  members: [memberRowA, memberRowB],
+  configOverrides: {
+    bootPhase: 'create',
+    blueprintSource: PERMISSION_BLUEPRINT,
+    seedMembers: [
+      { instanceId: INST_A, templateId: 'tpl-a', label: 'Member A', childSessionId: CHILD_A },
+      { instanceId: INST_B, templateId: 'tpl-b', label: 'Member B', childSessionId: CHILD_B },
+    ],
+  },
+})
+await world7.binding.boot()
+const w7Leader = world7.agents.handles.get(ROOT)!.agent.ctx
+const w7A = world7.agents.handles.get(CHILD_A)!.agent.ctx
+const w7LeaderActive = activePreExecute(w7Leader)
+const w7AActive = activePreExecute(w7A)
+// F1: a LEADER file operation (read, the exact-allow path) — even the
+// allow lane dies at canonicalization (deny, zero next, zero control rows).
+const f1 = await drivePreExecute(w7Leader, 'a6a-f1', 'read', { file_path: '/data/notes.md' })
+// F2: a MEMBER file operation (write, relative path) — same typed denial.
+const f2 = await drivePreExecute(w7A, 'a6a-f2', 'write', { file_path: 'other.md', content: 'x' })
+// F3: an UNSUPPORTED tool (team_delegate) still passes through — the
+// classification step precedes canonicalization (zero interference).
+const f3 = await drivePreExecute(w7Leader, 'a6a-f3', 'team_delegate', { to: INST_A, prompt: 'hi' })
+const w7SpyRequests = [...spy7.requests]
+const w7Observations = [...world7.binding.observations]
+await world7.binding.close()
+
+// ══════════════════════════════════════════════════════════════════════════
+// WORLD 8 — FAIL CLOSED (V1-1, install time): the fsBackend dep ABSENT
+// from the glue deps (the bridge omits it) on a permissions-carrying
+// template → the setup rejects with the typed
+// alpha2-permission-fs-unavailable error (the control-unavailable twin:
+// a permissions agent never runs unguarded).
+// ══════════════════════════════════════════════════════════════════════════
+const ref8 = { current: makeSpyControlService() as unknown }
+const world8 = await createLiveWorld({
+  rootSessionId: ROOT,
+  teamTools: toolCatalog,
+  agentPresets: createAgentPresetsDouble(),
+  controlServiceRef: ref8,
+  fsBackend: null,
+  members: [memberRowA, memberRowB],
+  configOverrides: {
+    bootPhase: 'create',
+    blueprintSource: PERMISSION_BLUEPRINT,
+    seedMembers: [
+      { instanceId: INST_A, templateId: 'tpl-a', label: 'Member A', childSessionId: CHILD_A },
+      { instanceId: INST_B, templateId: 'tpl-b', label: 'Member B', childSessionId: CHILD_B },
+    ],
+  },
+})
+let fsMissingError: unknown
+try {
+  await world8.binding.boot()
+} catch (error) {
+  fsMissingError = error
+}
+const fsMissingCode =
+  fsMissingError instanceof Error && typeof (fsMissingError as { code?: unknown }).code === 'string'
+    ? String((fsMissingError as unknown as { code: string }).code)
+    : undefined
+const fsMissingMessage = fsMissingError instanceof Error ? (fsMissingError as Error).message : String(fsMissingError)
+const w8Creates = [...world8.agents.creates]
+const w8Observations = [...world8.binding.observations]
+await world8.binding.close()
+
+// ══════════════════════════════════════════════════════════════════════════
 // The assertions (synchronous `it` bodies over the captured state — the
 // plain-node shim constraint).
 // ══════════════════════════════════════════════════════════════════════════
@@ -830,5 +929,55 @@ describe('A6 alpha.2 production wiring — the control-service ref contract (the
   it('FAIL CLOSED: the boot stopped at the root setup — no member was created (setup rejection rolls the agent back)', () => {
     expect(w6Creates.length).toBe(1)
     expect(w6Creates[0]?.sessionId).toBe(ROOT)
+  })
+})
+
+describe('A6 alpha.2 production wiring — the fs seam contract (V1-1 live-matrix fix)', () => {
+  it('WORLD 7: the listeners are STILL INSTALLED when the fs service is absent (the seam is resolved lazily per call)', () => {
+    expect(w7LeaderActive).toBe(1)
+    expect(w7AActive).toBe(1)
+  })
+  it('F1: the leader file operation (the exact-allow path) denies at canonicalization — typed, not a pass-through', () => {
+    expect(f1.decision.kind).toBe('deny')
+    const reason = String(f1.decision.reason ?? '')
+    expect(reason.includes('canonicalization failed for tool "read"')).toBe(true)
+    expect(reason.includes('resolver-threw')).toBe(true)
+    // the resolver's rejection (the service-missing failure mode) is
+    // embedded verbatim by the A2 canonicalizer — the denial carries the
+    // reason, it is not a bare pass-through allow.
+    expect(reason.includes('the "fs" public service is absent')).toBe(true)
+  })
+  it('F1: zero-effect — next was NEVER awaited and NO control row was created', () => {
+    expect(f1.nextCalls).toBe(0)
+    expect(w7SpyRequests.length).toBe(0)
+  })
+  it('F2: the member file operation denies the SAME way (per-agent, not leader-only)', () => {
+    expect(f2.decision.kind).toBe('deny')
+    const reason = String(f2.decision.reason ?? '')
+    expect(reason.includes('canonicalization failed for tool "write"')).toBe(true)
+    expect(reason.includes('resolver-threw')).toBe(true)
+    expect(f2.nextCalls).toBe(0)
+  })
+  it('F3: the unsupported tool still passes through (classification precedes canonicalization — zero interference)', () => {
+    expect(f3.decision.kind).toBe('allow')
+    expect(f3.nextCalls).toBe(1)
+  })
+  it('F1: the canonicalization-failure landed as a structured observation (never silent)', () => {
+    const rows = permObservations(w7Observations).filter((row) => row.stage === 'canonicalization-failed')
+    expect(rows.some((row) => row.callId === 'a6a-f1' && row.tool === 'read')).toBe(true)
+  })
+  it('WORLD 8: the fsBackend dep ABSENT on a permissions template → boot rejects with the typed error', () => {
+    expect(fsMissingCode).toBe('alpha2-permission-fs-unavailable')
+  })
+  it('WORLD 8: the error names the session and the leader identity (diagnostic, not silent)', () => {
+    expect(fsMissingMessage.includes(ROOT)).toBe(true)
+    expect(fsMissingMessage.includes(LEADER_INST)).toBe(true)
+  })
+  it('WORLD 8: the observation recorded the typed failure (never silent)', () => {
+    expect(w8Observations.some((row) => row.includes('alpha2-perm: permission-fs-unavailable'))).toBe(true)
+  })
+  it('WORLD 8: the boot stopped at the root setup — no member was created (setup rejection rolls the agent back)', () => {
+    expect(w8Creates.length).toBe(1)
+    expect(w8Creates[0]?.sessionId).toBe(ROOT)
   })
 })

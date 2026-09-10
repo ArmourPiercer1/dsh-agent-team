@@ -111,6 +111,36 @@
  *                        tools - the setup rejection rolls the unpublished
  *                        agent back, the AgentSetup contract).
  *
+ *   fsBackend (OPTIONAL) - the per-agent DSH `fs` seam accessor
+ *                        (agentCtx) => { resolve(path, { cwd? }) }:
+ *                        alpha.2 (A6 live fix V1-1) - the public
+ *                        fs.resolve seam the permission adapter's
+ *                        resolveTarget closure canonicalizes file targets
+ *                        through (plan section 7.2 - the SAME seam the
+ *                        upstream file tools use; the upstream
+ *                        agent-instructions plugin uses the identical
+ *                        lazy ctx.get('fs') + session.header.cwd pattern).
+ *                        host.ts passes a closure that resolves the
+ *                        service LAZILY per call via the row's strict
+ *                        ctx.get('fs') (the global service store): the
+ *                        property proxy agentCtx.fs is topology-sensitive
+ *                        (the Cordis reflect walk) and the agent scope's
+ *                        fiber tree never passes through this row's
+ *                        fiber, so it can never resolve there (the V1
+ *                        live matrix's "cannot get property 'fs' without
+ *                        inject" - every file operation of a
+ *                        permissions-carrying agent died at
+ *                        canonicalization, even the allow lane). ABSENT
+ *                        on a permissions-carrying template -> the setup
+ *                        fails closed with the typed
+ *                        alpha2-permission-fs-unavailable error (a
+ *                        permissions agent never runs unguarded); a
+ *                        service ABSENT AT CALL TIME (the accessor
+ *                        throws TEAM_PLUGIN_SERVICE_MISSING) maps to the
+ *                        A2 adapter's typed canonicalization denial
+ *                        (fail-closed, never a pass-through). Templates
+ *                        WITHOUT a permissions policy never call it
+ *                        (alpha.1 / legacy: zero listeners).
  * Returned bindings (the harness observability surface first — the
  * production host exposes this WHOLE bundle as the teamRoot.live field):
  *   listLiveSessions()                  (sorted live session id strings)
@@ -440,7 +470,7 @@ export function createAgentBindings(deps) {
   // D1 (v2): agentPresets is OPTIONAL (the host serves it as a lazy accessor;
   // a test world may omit it) — the member bind paths fail closed with the
   // typed member-base-tools-unavailable when it is absent or unusable.
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend } = deps
   if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
   if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
   if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
@@ -1127,6 +1157,12 @@ export function createAgentBindings(deps) {
         ) {
           throw permissionControlUnavailable(sessionId, instanceId)
         }
+        // V1-1: the fs seam accessor (the resolveTarget closure's
+        // basis) must be available too - a permissions agent never
+        // runs unguarded (the controlService pattern).
+        if (typeof fsBackend !== 'function') {
+          throw permissionFsBackendUnavailable(sessionId, instanceId)
+        }
         const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
         // The routing bit (plan §9.5): leader install -> ask routes to
         // user-approval (human-only resolver closure); member ->
@@ -1144,7 +1180,15 @@ export function createAgentBindings(deps) {
         // and the rule canonicalization (A5 R1/R2 — one cwd basis).
         const resolveTarget = async (path) => {
           const cwd = agentCtx.agent?.session?.header?.cwd
-          const target = await agentCtx.fs.resolve(
+          // V1-1: the fs seam comes from the deps accessor (the host
+          // row's LAZY strict ctx.get('fs') global-store read) - the
+          // property proxy agentCtx.fs is topology-sensitive and can
+          // never resolve on the agent scope (the V1 live matrix's
+          // "cannot get property 'fs' without inject"). An absent
+          // dep/service rejects here and the A2 adapter maps it to the
+          // typed canonicalization denial (fail-closed, never
+          // pass-through).
+          const target = await fsBackend(agentCtx).resolve(
             path,
             typeof cwd === 'string' && cwd !== '' ? { cwd } : {},
           )
@@ -2045,6 +2089,20 @@ export function createAgentBindings(deps) {
   // fail-open permission grant is the defect). Only the alpha.2
   // permissions path can reach it: a template without a policy installs
   // nothing and never reads the ref (alpha.1 / legacy stays unchanged).
+  function permissionFsBackendUnavailable(sessionId, instanceId) {
+    const parts = [
+      'the fsBackend dep is absent from the glue deps (the fs seam accessor the resolveTarget closure needs)',
+    ]
+    if (instanceId !== undefined) parts.push(`instanceId=${instanceId}`)
+    const error = new Error(`agent-bindings: alpha.2 permission fs seam unavailable for '${sessionId}' (${parts.join(', ')}) (code: alpha2-permission-fs-unavailable)`)
+    error.code = 'alpha2-permission-fs-unavailable'
+    if (instanceId !== undefined) error.instanceId = String(instanceId)
+    observations.push(
+      `alpha2-perm: permission-fs-unavailable for ${sessionId} (instanceId=${instanceId})`,
+    )
+    return error
+  }
+
   function permissionControlUnavailable(sessionId, instanceId) {
     const parts = [
       'the controlServiceRef is absent from the glue deps or its .current is unfilled at setup time',

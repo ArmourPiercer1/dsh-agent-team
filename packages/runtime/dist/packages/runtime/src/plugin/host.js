@@ -420,6 +420,33 @@ export async function apply(ctx, config) {
             return svc.mount(agentCtx, presetId);
         },
     };
+    // alpha.2 (A6 live fix V1-1): the per-agent `fs` seam accessor (served to
+    // the glue under its `fsBackend` deps key): resolved per call via the
+    // row's STRICT `ctx.get('fs')` (the global service store — the host
+    // profile's fs backend row provides the service on its own fiber). The
+    // property proxy `agentCtx.fs` cannot serve the seam: the Cordis reflect
+    // walk is topology-sensitive and the agent scope's fiber tree (agent
+    // scope -> agent-loop factory runtime) never passes through THIS row's
+    // fiber, so a declared-inject `fs` here would still be unreachable from
+    // the agent ctx (the V1 live matrix's `cannot get property "fs" without
+    // inject` — every file operation of a permissions-carrying agent died at
+    // canonicalization, even the allow lane). A composition WITHOUT the
+    // service fails closed with a stable code at the first resolve instead of
+    // a TypeError — the A2 adapter maps the rejection to the typed
+    // canonicalization denial (fail-closed, never a pass-through). A
+    // permissions-free world never calls it (absent policy = nothing
+    // installed). Deliberately NOT in the hard `inject` array: parking this
+    // row on the fs backend would break compositions that host a team without
+    // file tools (they would run the alpha.1 surface); the lazy read is the
+    // additive pattern (cf. agentPresets above).
+    const fsBackend = () => {
+        const svc = ctx.get('fs');
+        if (svc === undefined || svc === null || typeof svc.resolve !== 'function') {
+            throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "fs" public service is absent (or lacks resolve) — it is resolved lazily per call and must be up before parameter-permission canonicalization resolves a file target (fail-closed: a typed canonicalization denial, never a pass-through)');
+        }
+        const resolve = svc.resolve;
+        return { resolve: (path, options) => resolve(path, options) };
+    };
     // The bootstrap (config validation, resolver hook arming, services,
     // seam, domain, glue, legacy reader, root construction, boot) runs as
     // the tracked `ready` promise; its results are captured here so the
@@ -713,6 +740,10 @@ export async function apply(ctx, config) {
             // service is absent). Additive optional dep: never in the hard inject
             // array (see the accessor's rationale).
             agentPresets,
+            // alpha.2 (A6 live fix V1-1): the LAZY per-agent fs seam accessor (the
+            // strict ctx.get('fs') global-store read — see the accessor's
+            // rationale). Additive optional dep: never in the hard inject array.
+            fsBackend,
         });
         // --- the frozen legacy reader (A29): layout-agnostic candidate search, --
         // --- production layout FIRST; the root never imports the legacy sources

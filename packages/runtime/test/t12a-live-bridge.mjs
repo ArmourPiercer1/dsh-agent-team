@@ -678,6 +678,15 @@ export async function createLiveWorld(options = {}) {
     now,
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
     ...(options.agentPresets !== undefined ? { agentPresets: options.agentPresets } : {}),
+    // alpha.2 (A6, V1-1): the per-agent fs seam accessor — routes to each
+    // agent ctx double's OWN fake fs (makeAgentCtx attaches makeFakeFs()),
+    // so per-agent call-record assertions keep working (a6a's
+    // memberCtx.fs.calls / leaderCtx.fs.calls). options.fsBackend overrides
+    // it (the resolve-time fail-closed leg); options.fsBackend = null OMITS
+    // the dep entirely (the install-time fail-closed leg).
+    ...(options.fsBackend === null
+      ? {}
+      : { fsBackend: options.fsBackend ?? ((agentCtx) => agentCtx.fs) }),
   })
   return {
     rootSessionId,

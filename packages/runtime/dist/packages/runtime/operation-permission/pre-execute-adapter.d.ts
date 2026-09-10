@@ -63,11 +63,14 @@
  *   the module holds NO module-level mutable state (each install owns its
  *   own rule-canonicalization cache in a closure);
  * - it is SEAM-INJECTED: the only upstream surface it touches at runtime
- *   is the public `ctx.fs.resolve` seam, and only through the injected
+ *   is the public `fs.resolve` seam, and only through the injected
  *   {@link import('./types.js').PathTargetResolver} closure (the A6 glue
- *   builds it over `ctx.fs.resolve(path, { cwd: sessionCwd })` with the
- *   agent's per-session workspace cwd — the upstream file tools' own
- *   resolution convention, `exec.agent.session.header.cwd`). This module
+ *   builds it over the `fsBackend` deps accessor — the host row's LAZY
+ *   strict `ctx.get('fs')` global-store read, V1-1: the property proxy
+ *   `agentCtx.fs` is topology-sensitive (the Cordis reflect walk) and can
+ *   never resolve on the agent scope — with the agent's per-session
+ *   workspace cwd, `exec.agent.session.header.cwd`, the upstream file
+ *   tools' own resolution convention). This module
  *   never imports an upstream `@deepseek-ai/*` package; the agent ctx and
  *   the exec payload are typed by MINIMAL structural mirrors of the
  *   upstream surface (the glue is plain `.mjs` and passes the real cordis
