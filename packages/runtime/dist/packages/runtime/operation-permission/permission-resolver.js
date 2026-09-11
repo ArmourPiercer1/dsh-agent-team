@@ -50,9 +50,12 @@
  *    reached, plan §7.5/§10.2).
  * 3. `canonicalRules` — the policy's rules with every `exact.path`
  *    ALREADY replaced by its canonical key. A5 performs this input
- *    normalization ONCE per agent scope, with the SAME injected
- *    resolver it uses for operations (bound to that agent's session
- *    cwd), and passes the result in:
+ *    normalization FRESH for EVERY permission decision (H4 — the P1-A
+ *    fix: there is no cache — install-lifetime or otherwise — so the
+ *    rules carry the same live identity the operation of the same
+ *    decision carries), with the SAME injected resolver it uses for
+ *    operations (bound to that agent's session cwd, read lazily at
+ *    resolve time), and passes the result in:
  *
  *    ```ts
  *    // A1 rule:  { tool, resource: { kind: 'exact', path } | { kind: 'any' } }
@@ -137,8 +140,9 @@
  *   before calling, and fails closed on canonicalization errors).
  * @param canonicalRules - the policy's rules with every `exact.path`
  *   replaced by its canonical key (A5 canonicalizes each exact rule
- *   ONCE with the same injected resolver it uses for operations;
- *   module header documents the full contract).
+ *   FRESH on every decision — no cache (H4) — with the same injected
+ *   resolver it uses for operations; the module header documents the
+ *   full contract).
  * @returns the decision + provenance: frozen priority
  *   `deny > ask > allow > policy.default`; rule provenance names the
  *   DECIDING lane and the first matching rule index in declaration

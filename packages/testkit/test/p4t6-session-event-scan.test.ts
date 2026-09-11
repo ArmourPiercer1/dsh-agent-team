@@ -556,18 +556,43 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     Recorded on the H3 task branch; re-verify on int at the
     //     alpha2-hardening integration.
     //
+    // (h4) ONE H4 scannable file (this commit, the alpha.2 hardening
+    //     follow-up P1-A task): packages/runtime/test/h4-rule-identity.
+    //     test.ts (the stale exact-rule canonical identity spec: a
+    //     mutable fake backend (the map mutation IS the symlink/junction
+    //     retarget) + the real A4 durable control service + one adapter
+    //     install — H4-A1 DENY retarget (RED pre-fix: the cached key
+    //     misses the retargeted identity and the decision downgrades to
+    //     ask + a request), H4-A2 ALLOW retarget / stale authority (RED
+    //     pre-fix: the cached key keeps authorizing the original
+    //     target), H4-A3 transient rule-resolution failure (the P1-3
+    //     fail-closed flip preserved; the failure is never remembered),
+    //     H4-DB operation/rule same-basis agreement (one injected
+    //     closure, identical keys on every decision)). Zero denylist
+    //     vocabulary (the scan over it passes — the frozen quarantine
+    //     hit set is unchanged at fifteen occurrences). The sibling
+    //     changes (pre-execute-adapter.ts — the install-lifetime
+    //     ruleKeyCache deleted, fresh-per-decision rule canonicalization
+    //     + resolver-result shape validation; permission-resolver.ts
+    //     input-contract docs; the a5a suite comment syncs) are in-place
+    //     edits on already-scanned files (no count change). Recorded on
+    //     the H4 task branch; re-verify on int at the
+    //     alpha2-hardening-followup integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 668 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1), and its file list
-    // names exactly the twenty-six files above (ten alpha.1 + one A1 +
-    // seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one H3;
-    // the committed scanner is byte-identical — no scanner change, DEC-1).
+    // 669 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 1), and its file
+    // list names exactly the twenty-seven files above (ten alpha.1 + one
+    // A1 + seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one
+    // H3 + one H4; the committed scanner is byte-identical — no scanner
+    // change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
-    // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/.
-    expect(scanResult.filesScanned).toBe(668)
-    expect(scanResult.files.length).toBe(668)
+    // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
+    // alpha2-hardening-followup/h4-rule-identity/.
+    expect(scanResult.filesScanned).toBe(669)
+    expect(scanResult.files.length).toBe(669)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
