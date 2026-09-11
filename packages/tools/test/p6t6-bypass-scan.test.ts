@@ -130,12 +130,22 @@ const EXPECTED_TOOL_NAMES = [
 ] // already in sorted order
 
 describe('P6-T6 tool set — the static bypass scan (brief §6b, G6 criterion 7)', () => {
-  it('the scan walks exactly the tool-layer source boundary (five .ts files)', () => {
-    expect(SCAN.files.length).toBe(5)
+  it('the scan walks exactly the tool-layer source boundary (seven .ts files)', () => {
+    // Gate supplement (issue #1, 2026-09-11): the pin was 5 files since
+    // P6-T6 — alpha.1 T2 (85a9036) added builtin-deny.ts + tool-selector.ts
+    // without updating it, so this test was RED on every tree since then
+    // (proven pre-existing at base 6a2f3e1 by the committed baseline
+    // evidence; the task commit that touched this file — the 10→11 tool
+    // count pin — repaired the stale boundary list). The SCAN RULES are
+    // unchanged: the two added files produce zero hits on the three
+    // boundary rules (the other nine tests in this file are green).
+    expect(SCAN.files.length).toBe(7)
     expect(SCAN.files).toEqual([
+      'packages/tools/src/builtin-deny.ts',
       'packages/tools/src/guard.ts',
       'packages/tools/src/index.ts',
       'packages/tools/src/tokens.ts',
+      'packages/tools/src/tool-selector.ts',
       'packages/tools/src/tools.ts',
       'packages/tools/src/types.ts',
     ])

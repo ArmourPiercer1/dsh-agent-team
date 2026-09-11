@@ -30,7 +30,7 @@
 
 ## 5. RED proof
 - old behavior: the sync delegate path holds the leader until the member turn completes (no model control during the member turn), and there is NO read action for admitted-but-unsettled work.
-- evidence: `red/red-probe.md` + `red/baseline-runtime-run.log` + `red/baseline-vitest-runtime.log` — the serial-blocking probe FAILED 3/3 on the UNMODIFIED tree (base 6a2f3e1): the in-flight read-back shape did not exist and the leader could not issue a second tool call before the first member settled. The probe turns green as the fix lands (the battery below).
+- evidence: `red/red-probe.md` + `red/baseline-runtime-run.log` + `red/baseline-vitest-runtime.log` — the serial-blocking probe ASSERTS the old serial-blocking behavior (PASS = the defect is proven): it ran **PASS 3/3 on the UNMODIFIED tree** (captured at the pre-rebase base master @ 27a6c36, verified byte-identical to 6a2f3e1 on every work-chain file): `leaderBlockedWhileAdeliveryInFlight = true`, `bDeliveryStart >= aCompleted`, and no in-flight read-back shape exists. As the fix lands, the same assertions fail on the repaired tree (serial no longer observable) and the GREEN battery below takes over.
 
 ## 6. GREEN concurrency proof
 LIVE host (R8, plan §29 — real DSH host :3182, real mock model :3495, 20 s member delay injected by the :3494 proxy for member identities only; world `references/.dsh-test-issue1-2026-09-11T20-52-32`, ephemeral, ports verified free after stop):
@@ -63,7 +63,7 @@ LIVE host (R8, plan §29 — real DSH host :3182, real mock model :3495, 20 s me
 - detached cleanup: `inFlightDetachedWork` drains on every settle (observed both then/catch); the drain is pinned in GREEN B-reject.
 
 ## 11. Regression gates
-- runtime: full parity 1544 passed / 10 failed vs baseline 1525 / 13 — the failing set is the KNOWN `p6t1-parallel` concurrent-load flake (+ the same pre-existing set as baseline; NO new deterministic failure). Isolated re-run of `p6t1-parallel.test.ts`: **9/9 green** (the load flake is environmental; the first isolated attempt hit the known fault-injection teardown ENOTEMPTY and was re-run clean).
+- runtime: full parity 1544 passed / 10 failed vs baseline 1525 passed / 8 failed (1533) — the failing set is the KNOWN `p6t1-parallel` concurrent-load flake (+ the same pre-existing set as baseline; NO new deterministic failure). Isolated re-run of `p6t1-parallel.test.ts`: **9/9 green** (the load flake is environmental; the first isolated attempt hit the known fault-injection teardown ENOTEMPTY and was re-run clean).
 - tools: full parity 72 passed / 2 failed = the SAME 2 pre-existing failures as the 6a2f3e1 baseline (64 / 2).
 - F3: INV-9.1 / lock-scope / overlap suites PASS (in the parity set).
 - v2 D2 sync result: PASS (the byte-identical default — CCR-1; no v2 expectation rewritten).
