@@ -138,6 +138,9 @@ export const CAPABILITY_POLICY_DECISIONS: readonly string[] = ['allow', 'deny']
  * The six tool names a permission rule may gate (alpha.2 plan §4/§6.2,
  * closed vocabulary). `bash` allows tool-level ask/deny via
  * `resource: { kind: 'any' }` only — no positive parameter-level allow.
+ * Enforced in validation: a `bash` rule in the `allow` lane is rejected,
+ * and an `exact` `bash` resource is rejected in every lane (the bash
+ * vocabulary is `any` in `ask`/`deny` only).
  */
 export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'read',

@@ -76,12 +76,17 @@ import {
 } from '../blueprint/testdata/fixtures.js'
 import { expectCode, expectErrorDetails, isDeepFrozen } from './t2-helpers.js'
 
-/** The expected normalized policy of `PERMISSION_SOURCE_ASK`. */
+/** The expected normalized policy of `PERMISSION_SOURCE_ASK`.
+ *
+ * NOTE (H2 ruling): the allow lane no longer carries the `bash` + `any`
+ * rule — the schema rejects a positive whole-tool bash grant (bash is
+ * legal only as `any` in the `ask`/`deny` lanes, and never `exact` in any
+ * lane).
+ */
 const EXPECTED_ASK_POLICY: TemplatePermissionPolicy = {
   default: 'ask',
   allow: [
     { tool: 'read', resource: { kind: 'exact', path: '/data/notes.md' } },
-    { tool: 'bash', resource: { kind: 'any' } },
   ],
   ask: [{ tool: 'write', resource: { kind: 'exact', path: '/data/notes.md' } }],
   deny: [{ tool: 'lsp', resource: { kind: 'any' } }],
@@ -403,6 +408,122 @@ describe('A1: validation rejections (closed schema, fail loudly)', () => {
   })
 })
 
+describe('A1: bash contract (H2 ruling — the schema is the enforcement point)', () => {
+  // The alpha.2 bash contract, enforced in validation (stable diagnostics —
+  // the messages below are pinned VERBATIM):
+  //
+  // - `bash` + `any` in the ALLOW lane → REJECTED (no positive whole-tool
+  //   grant for bash in alpha.2);
+  // - `bash` + `exact` in ANY lane → REJECTED (an exact key is a file key
+  //   and can never match the bash tool-level resource; alpha.2 has no
+  //   parameter-level shell matcher);
+  // - `bash` + `any` in the ASK / DENY lanes → LEGAL (the minimal shell
+  //   permission; the deny-lane parse is pinned by
+  //   PERMISSION_SOURCE_BASH_ANY above, the ask-lane parse below).
+
+  /** A blueprint carrying ONE bash rule (index 0) in the given lane. */
+  function bashContractSource(
+    lane: 'allow' | 'ask' | 'deny',
+    resource: { kind: 'exact'; path: string } | { kind: 'any' },
+  ): string {
+    const resourceLines =
+      resource.kind === 'any'
+        ? ['          resource:', '            kind: any']
+        : ['          resource:', '            kind: exact', `            path: "${resource.path}"`]
+    const laneOf = (name: 'allow' | 'ask' | 'deny'): string[] =>
+      name === lane
+        ? [`      ${name}:`, '        - tool: bash', ...resourceLines]
+        : [`      ${name}: []`]
+    return [
+      '---',
+      'schemaVersion: 1',
+      'blueprintId: team.min',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      '  capabilities:',
+      '    teamTools:',
+      '      kind: allow',
+      '      items: []',
+      '    builtinToolDeny: []',
+      '    skills:',
+      '      kind: allow',
+      '      items: []',
+      '    mcp:',
+      '      kind: allow',
+      '      items: []',
+      '    permissions:',
+      '      default: ask',
+      ...laneOf('allow'),
+      ...laneOf('ask'),
+      ...laneOf('deny'),
+      'members: []',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+  }
+
+  const EXACT_REJECTION =
+    "permission rule $.leader.capabilities.permissions.{lane}[0] (lane '{lane}') is rejected: " +
+    'the bash tool does not accept an \'exact\' resource in any lane — an exact key is a file key ' +
+    'and can never match the bash tool-level resource, and alpha.2 has no parameter-level shell ' +
+    'matcher (bash supports only the \'any\' resource, in the ask or deny lane)'
+
+  it('bash + any in the allow lane rejects (no positive whole-tool grant for bash)', () => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(bashContractSource('allow', { kind: 'any' })),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
+    )
+    expect(err.message).toBe(
+      "permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: " +
+        'alpha.2 grants no positive whole-tool permission for bash — the allow lane must not ' +
+        'carry a bash rule (no parameter-level allow for shell commands; use the ask or deny ' +
+        'lane for { tool: bash, resource: { kind: \'any\' } })',
+    )
+  })
+
+  it('bash + exact in the allow lane rejects (an exact key is a file key)', () => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(bashContractSource('allow', { kind: 'exact', path: '/bin' })),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
+    )
+    expect(err.message).toBe(EXACT_REJECTION.replaceAll('{lane}', 'allow'))
+  })
+
+  it('bash + exact in the ask lane rejects (every lane is closed for exact bash)', () => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(bashContractSource('ask', { kind: 'exact', path: '/bin' })),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.permissions.ask[0].resource.kind', lane: 'ask' },
+    )
+    expect(err.message).toBe(EXACT_REJECTION.replaceAll('{lane}', 'ask'))
+  })
+
+  it('bash + exact in the deny lane rejects (every lane is closed for exact bash)', () => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(bashContractSource('deny', { kind: 'exact', path: '/bin' })),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.permissions.deny[0].resource.kind', lane: 'deny' },
+    )
+    expect(err.message).toBe(EXACT_REJECTION.replaceAll('{lane}', 'deny'))
+  })
+
+  it('bash + any in the ask lane PARSES (ask/deny stay the legal bash lanes)', () => {
+    const policy = policyOf(bashContractSource('ask', { kind: 'any' }))
+    expect(policy.default).toBe('ask')
+    expect(policy.allow).toEqual([])
+    expect(policy.ask).toEqual([{ tool: 'bash', resource: { kind: 'any' } }])
+    expect(policy.deny).toEqual([])
+  })
+})
+
 describe('A1: content hash binds to the permissions policy', () => {
   it('changes when permissions are ADDED (legacy vs present)', () => {
     const legacy = parseBlueprint(PERMISSION_SOURCE_NO_POLICY)
@@ -455,9 +576,6 @@ describe('A1: content hash binds to the permissions policy', () => {
       '          resource:',
       '            kind: exact',
       '            path: "/data/notes.md"',
-      '        - tool: bash',
-      '          resource:',
-      '            kind: any',
       '      ask: []',
       '      deny:',
       '        - tool: write',

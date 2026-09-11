@@ -364,7 +364,8 @@ describe('a3 static resolver — canonical identity (key authority, display iner
 
 // ---------------------------------------------------------------------------
 // bash (RECORDED RULING, plan §4: no positive parameter-level allow for
-// bash — enforced by the matcher, not the schema)
+// bash — the A1 SCHEMA is the enforcement point (H2 ruling); the
+// matcher below stays total and lane-agnostic)
 // ---------------------------------------------------------------------------
 
 describe('a3 static resolver — bash (recorded ruling, plan §4)', () => {
@@ -380,7 +381,16 @@ describe('a3 static resolver — bash (recorded ruling, plan §4)', () => {
     expect(decision).toEqual(ruleDecision('deny', 0))
   })
 
-  it('bash op + bash any rule (allow lane) → allow (documented consequence: whole-tool allow for bash)', () => {
+  it('bash op + bash any rule (allow lane) → allow (MATCHER TOTALNESS pin — not a legal policy)', () => {
+    // Defensive totalness pin (H2 ruling): the A1 schema is the
+    // enforcement point of the bash contract — it REJECTS a bash rule
+    // in the allow lane (no positive whole-tool bash grant in alpha.2)
+    // and an `exact` bash resource in every lane, so a LEGAL policy can
+    // never hand the matcher an allow-lane bash rule. The matcher
+    // itself stays total and lane-agnostic: whatever ruleset it is
+    // handed (hand-crafted or legacy-shaped), an `any` rule in the
+    // allow lane still yields a whole-tool ALLOW. This pin guards that
+    // totality — the enforcement lives in the schema, not here.
     const rules: CanonicalRules = { allow: [anyRule('bash')], ask: [], deny: [] }
     const decision = resolveOperationPermission(policyFrom('deny', rules), bashOp(), rules)
     expect(decision).toEqual(ruleDecision('allow', 0))
@@ -393,9 +403,11 @@ describe('a3 static resolver — bash (recorded ruling, plan §4)', () => {
   })
 
   it('bash op vs an exact bash rule (a file key) → no match (inert by construction)', () => {
-    // An exact-path bash rule is accepted by the A1 schema but can never
-    // match the bash operation: an exact key is a file key and a file key
-    // can never equal the tool-level key.
+    // A hand-crafted exact bash rule can never match the bash
+    // operation: an exact key is a file key and a file key can never
+    // equal the tool-level key. (The A1 schema now REJECTS an `exact`
+    // bash resource in every lane, so a legal policy cannot carry one
+    // — the inertness is the matcher's structural defense in depth.)
     const rules: CanonicalRules = { allow: [exactRule('bash', KEY_A)], ask: [], deny: [] }
     const decision = resolveOperationPermission(policyFrom('deny', rules), bashOp(), rules)
     expect(decision).toEqual(defaultDecision('deny'))

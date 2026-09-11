@@ -119,6 +119,10 @@ const PERMISSION_BLUEPRINT = [
   '    mcp:',
   '      kind: allow',
   '      items: []',
+  // NOTE (H2 ruling): the former allow-lane `bash` + `any` rule was
+  // REMOVED — the schema rejects a positive whole-tool bash grant in
+  // the allow lane (bash is legal only as `any` in ask/deny — member A
+  // below keeps its legal deny-lane bash rule for M3).
   '    permissions:',
   '      default: ask',
   '      allow:',
@@ -126,9 +130,6 @@ const PERMISSION_BLUEPRINT = [
   '          resource:',
   '            kind: exact',
   '            path: "/data/notes.md"',
-  '        - tool: bash',
-  '          resource:',
-  '            kind: any',
   '      ask:',
   '        - tool: write',
   '          resource:',

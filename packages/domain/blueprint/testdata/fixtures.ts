@@ -863,7 +863,13 @@ function permissionBlueprintSource(permissionLines: string[]): string {
   ].join('\n')
 }
 
-/** A full `permissions:` block (default: ask) with all three lanes. */
+/** A full `permissions:` block (default: ask) with all three lanes.
+ *
+ * NOTE (H2 ruling): the former allow-lane `bash` + `any` rule was REMOVED —
+ * the schema now rejects a positive whole-tool grant for bash in the allow
+ * lane (bash is legal only as `any` in the `ask`/`deny` lanes, and never
+ * with an `exact` resource in any lane).
+ */
 const PERMISSION_LINES_ASK: string[] = [
   '    permissions:',
   '      default: ask',
@@ -872,9 +878,6 @@ const PERMISSION_LINES_ASK: string[] = [
   '          resource:',
   '            kind: exact',
   '            path: "/data/notes.md"',
-  '        - tool: bash',
-  '          resource:',
-  '            kind: any',
   '      ask:',
   '        - tool: write',
   '          resource:',
@@ -910,6 +913,9 @@ export const PERMISSION_SOURCE_NO_POLICY = permissionBlueprintSource([])
  * (lane order `ask`/`deny`/`default`/`allow`, and `resource` before
  * `tool` inside every rule). Same semantic content and same array order
  * as `PERMISSION_SOURCE_ASK` → identical normalized policy + hash.
+ * (H2 ruling: the former allow-lane `bash` + `any` rule was removed with
+ * the parent fixture — the allow lane no longer carries a positive
+ * whole-tool bash grant.)
  */
 export const PERMISSION_SOURCE_ASK_KEY_SHUFFLED = permissionBlueprintSource([
   '    permissions:',
@@ -928,9 +934,6 @@ export const PERMISSION_SOURCE_ASK_KEY_SHUFFLED = permissionBlueprintSource([
   '            kind: exact',
   '            path: "/data/notes.md"',
   '          tool: read',
-  '        - resource:',
-  '            kind: any',
-  '          tool: bash',
 ])
 
 /**
@@ -1177,6 +1180,10 @@ export const NEG_PERMISSION_EXACT_EXTRA_FIELD: NegativeFixture = {
   ]),
 }
 
+// NOTE (H2 ruling): these two fixtures use `read` (not `bash`) so they
+// keep violating EXACTLY one rule — a `bash` + `any` rule in the allow
+// lane would now ALSO trip the bash-contract ruling (no positive whole-
+// tool bash grant), making the fixture doubly invalid.
 export const NEG_PERMISSION_ANY_WITH_PATH: NegativeFixture = {
   name: 'any permission resource carries a path (any must be bare)',
   code: 'MALFORMED_DTO',
@@ -1184,7 +1191,7 @@ export const NEG_PERMISSION_ANY_WITH_PATH: NegativeFixture = {
     '    permissions:',
     '      default: ask',
     '      allow:',
-    '        - tool: bash',
+    '        - tool: read',
     '          resource:',
     '            kind: any',
     '            path: "/bin"',
@@ -1200,7 +1207,7 @@ export const NEG_PERMISSION_ANY_EXTRA_FIELD: NegativeFixture = {
     '    permissions:',
     '      default: ask',
     '      allow:',
-    '        - tool: bash',
+    '        - tool: read',
     '          resource:',
     '            kind: any',
     '            scope: all',
