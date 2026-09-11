@@ -180,6 +180,19 @@ export interface TeamPluginConfig {
   readonly rootSessionId: string
   /** The Team Blueprint source (the YAML document, parsed by the domain). */
   readonly blueprintSource: string
+  /**
+   * The directory of SAVED Blueprint sources (plan BP3, additive): the
+   * filesystem catalog the live authority scans on every request.
+   * Path semantics (documented, no row-location guessing): absolute →
+   * as-is; relative → against the host `process.cwd()`; ABSENT → the
+   * filesystem catalog is disabled (the behavior degrades to the legacy
+   * "inline bootstrap Blueprint only" — the hardening branch's live kits
+   * need no config change). `blueprintSource` stays REQUIRED: it is the
+   * bootstrap/compatibility anchor, no longer the user's daily authoring
+   * surface (new/edited Blueprints live in this directory, never in the
+   * host row).
+   */
+  readonly blueprintDir?: string
   /** The durable TeamSession `generation` (positive integer). */
   readonly generation: number
   /** The effective default workspace (TeamSession record field). */
@@ -364,12 +377,48 @@ export const TEAM_PLUGIN_ERROR_CODES = {
    */
   TEAM_PLUGIN_WORKSPACE_NOT_FOUND: 'TEAM_PLUGIN_WORKSPACE_NOT_FOUND',
   /**
-   * M2 — attaching an already-materialized session to a resolved
+    * M2 — attaching an already-materialized session to a resolved
    * workspace rejected (the upstream attach validation failed: cwd
    * mismatch, unknown session, missing or invalid header cwd, or a
    * storage fault on the registry write chain).
    */
   TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED: 'TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED',
+  /**
+   * BP3 (issue #2 blueprint-loading) — the configured `blueprintDir`
+   * exists but the directory scan failed with an I/O error other than
+   * ENOENT (EACCES/ENOTDIR/...): the saved-source catalog is fail-closed
+   * (a missing directory is the documented "disabled" state; a broken one
+   * is not silently disabled).
+   */
+  TEAM_BLUEPRINT_DIR_UNREADABLE: 'TEAM_BLUEPRINT_DIR_UNREADABLE',
+  /**
+   * BP3 — one saved source file could not be read (ENOENT/EACCES/EISDIR at
+   * read time: the file vanished between the scan and the read, or a
+   * directory carries a `.yaml` name).
+   */
+  TEAM_BLUEPRINT_FILE_UNREADABLE: 'TEAM_BLUEPRINT_FILE_UNREADABLE',
+  /**
+   * BP3 — two MUTABLE sources (saved files, or a saved file vs the inline
+   * bootstrap anchor) declare the same `(blueprintId, revision)` pair
+   * (plan §7.3: fail loud duplicate — a frozen registry row is NOT a
+   * duplicate: the registry wins over the disk).
+   */
+  TEAM_BLUEPRINT_REVISION_DUPLICATE: 'TEAM_BLUEPRINT_REVISION_DUPLICATE',
+  /**
+   * BP4 — the requested snapshot ref does not match the current content
+   * of the (frozen or mutable) source for that identity: the
+   * `ref.contentHash` disagrees with the freshly strong-parsed hash (the
+   * TOCTOU fence — the file changed between the earlier resolve and this
+   * access; the caller must re-resolve).
+   */
+  TEAM_BLUEPRINT_SNAPSHOT_MISMATCH: 'TEAM_BLUEPRINT_SNAPSHOT_MISMATCH',
+  /**
+   * BP4 — `freezeSnapshot` was asked to freeze an identity that is ALREADY
+   * frozen from different content (the registry row's contentHash differs
+   * from the requested one). A frozen revision is immutable: publish a NEW
+   * revision instead (plan §6.2 crash rule — the stored row stays).
+   */
+  TEAM_BLUEPRINT_REVISION_FROZEN: 'TEAM_BLUEPRINT_REVISION_FROZEN',
 } as const
 
 export type TeamPluginErrorCode = (typeof TEAM_PLUGIN_ERROR_CODES)[keyof typeof TEAM_PLUGIN_ERROR_CODES]

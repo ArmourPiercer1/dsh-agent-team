@@ -613,19 +613,52 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     re-verify on the merged tree after the hardening integration
     //     (plan §3.5).
     //
+    // (bp1-d) FOUR issue#2-blueprint-loading scannable files (this
+    //     commit, the filesystem source index + live authority + live
+    //     catalog facade, plan BP3/BP4):
+    //     packages/runtime/src/plugin/blueprint-source-index.ts (the
+    //     stateless blueprintDir scan — path semantics absolute /
+    //     relative-to-cwd / absent-disabled, the *.yaml|*.yml candidate
+    //     rule with *.draft.* excluded, rescan-per-request, the
+    //     identity-level inspection seam, the fail-closed I/O codes),
+    //     packages/runtime/src/plugin/blueprint-authority.ts (the live
+    //     authority over the frozen registry + saved sources + bootstrap
+    //     anchor — the registry-wins resolve precedence, the duplicate-
+    //     mutable loud refusal, the resolveSnapshot / freezeSnapshot
+    //     hash fences including the TOCTOU re-resolve),
+    //     packages/runtime/src/plugin/blueprint-live-catalog.ts (the
+    //     BlueprintCatalog interface implemented over live state — every
+    //     method call re-queries the authority, the static catalog's
+    //     closed not-found wording + revision order shared from the
+    //     domain exports) and
+    //     packages/runtime/test/bp1-blueprint-authority.test.ts (its
+    //     29-test spec: the W0 index worlds, the W1/W1B authority
+    //     unions + revision order, the W2 duplicate-mutable louds, the
+    //     W3/W3C freeze + TOCTOU + frozen-after-deletion worlds, the W4
+    //     logically-broken-vs-identity-broken split, the W5 facade
+    //     surface). Zero denylist vocabulary (the scan over them passes
+    //     — the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling edits (domain catalog.ts + index.ts
+    //     gaining the exported compareBlueprintRevisions / blueprintNotFound
+    //     helpers, node-min.d.ts + types.ts additive surfaces)
+    //     are in-place edits on already-scanned files (no count change).
+    //     Recorded on the blueprint-loading task branch; re-verify on
+    //     the merged tree after the hardening integration (plan §3.5).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 675 (672 + 3), and its file list names exactly the thirty-three
+    // 679 (675 + 4), and its file list names exactly the thirty-seven
     // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
-    // two A5 + one A6 + one H1 + one H3 + four bp1 + three bp1-c; the
+    // two A5 + one A6 + one H1 + one H3 + four bp1 + three bp1-c + four
+    // bp1-d; the
     // committed scanner is byte-identical — no scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-blueprint-loading/.
-    expect(scanResult.filesScanned).toBe(675)
-    expect(scanResult.files.length).toBe(675)
+    expect(scanResult.filesScanned).toBe(679)
+    expect(scanResult.files.length).toBe(679)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
