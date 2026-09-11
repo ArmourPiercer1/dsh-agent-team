@@ -632,6 +632,32 @@ export interface S6RootBindingPort {
 }
 
 /** The construction inputs of the S6 remote surfaces (all injected). */
+/**
+ * BP-G (issue #2 blueprint-loading, plan §12.2) — the in-process
+ * read-only boot readiness state of the team runtime: `starting` (the
+ * root is constructed and the remote route is mounted, the live boot has
+ * not settled yet), `ready` (the live boot settled), `failed` (the live
+ * boot rejected — the route STAYS registered; the state is terminal for
+ * this process's lifetime: no automatic retry, no re-boot).
+ */
+export type RemoteReadiness = 'starting' | 'ready' | 'failed'
+
+/**
+ * BP-G (issue #2 blueprint-loading, plan §12.2) — the methods the
+ * readiness gate does NOT refuse while the state is not `ready`: the
+ * read-only catalog queries. They depend only on the Blueprint source
+ * authority + the opened domain — never on the live boot outcome (the
+ * whole point of the mount-before-boot reorder is that a failed live
+ * boot leaves them servable — the 405 symptom the repair removes).
+ * Every other closed contract method is refused with the frozen
+ * `internal-error` failure envelope (no new wire code, no protocol
+ * bump, plan §12.3).
+ */
+export const REMOTE_READINESS_INDEPENDENT_METHODS: ReadonlySet<string> = new Set([
+  'catalog.list',
+  'catalog.get',
+])
+
 export interface S6RemoteOptions {
   /** The bound root session id (this host's boot root TeamSession). */
   readonly rootSessionId: string
@@ -828,6 +854,21 @@ export interface S6RemoteOptions {
   readonly listRoots?: () => Promise<readonly TeamRootWireRow[]>
   /** The deterministic clock (ISO-8601). */
   readonly now: () => string
+  /**
+   * BP-G (issue #2 blueprint-loading, plan §12.2, optional additive): the
+   * in-process read-only boot readiness getter. ABSENT (every pre-BP-G
+   * world — factory roots, test worlds): the mounted dispatcher runs
+   * unguarded (the legacy behavior, byte-for-byte). PRESENT: the mounted
+   * dispatcher gates every closed method EXCEPT
+   * REMOTE_READINESS_INDEPENDENT_METHODS (catalog.list / catalog.get) on
+   * the state — a non-`ready` state answers the frozen `internal-error`
+   * envelope (the route itself stays registered: the host mounts BEFORE
+   * it awaits the live boot, plan §12.1; unknown endpoints are NOT
+   * gated — they get the frozen UNKNOWN_METHOD either way, so the error
+   * vocabulary stays state-invariant). The getter reads the CURRENT
+   * state per call (the host's closure over its own state variable).
+   */
+  readonly readiness?: () => RemoteReadiness
 }
 
 // --- small local helpers ------------------------------------------------------------------
@@ -2996,11 +3037,50 @@ export function createS6RemoteRegistration(
   ports: S6RemotePorts,
   principal: ServerPrincipalDerivation,
   principalContext?: ServerPrincipalContext,
+  readiness?: () => RemoteReadiness,
 ): RemoteHandlerRegistration {
   const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext)
+  // BP-G (issue #2 blueprint-loading, plan §12.2): the readiness gate —
+  // ABSENT (the pre-BP-G worlds) = the legacy unguarded dispatcher,
+  // byte-for-byte. A non-`ready` state refuses EVERY closed method except
+  // the readiness-independent catalog reads (catalog.list / catalog.get —
+  // they depend only on the Blueprint source authority + the opened
+  // domain, never on the live boot outcome; the mount-before-boot
+  // reorder exists so a failed boot leaves them servable). The refusal
+  // is the frozen `internal-error` failure envelope (no new wire code,
+  // no protocol bump — plan §12.3); the promise never rejects
+  // (invariant 7 holds through the wrapper too). Unknown endpoints are
+  // NOT gated (the frozen UNKNOWN_METHOD applies either way — the error
+  // vocabulary stays state-invariant).
+  const mounted: RemoteDispatcher =
+    readiness === undefined
+      ? dispatcher
+      : (endpoint: string, payload: unknown): Promise<RemoteResponse> => {
+          if (
+            readiness() !== 'ready' &&
+            isRemoteMethod(endpoint) &&
+            !REMOTE_READINESS_INDEPENDENT_METHODS.has(endpoint)
+          ) {
+            const gateCtx: RemoteProvenanceContext = {
+              method: endpoint,
+              endpoint,
+              contractVersion: REMOTE_CONTRACT_VERSION,
+              requestToken: null,
+            }
+            return Promise.resolve(
+              buildRemoteError(
+                REMOTE_CONTRACT_ERROR_CODES.INTERNAL_ERROR,
+                `remote method '${endpoint}' is unavailable while the team runtime is not ready (state: ${readiness()}) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable`,
+                gateCtx,
+                { reason: 'runtime-not-ready' },
+              ),
+            )
+          }
+          return dispatcher(endpoint, payload)
+        }
   return (connection: ConnectionLike): RemoteRegistration => {
     const channel = REMOTE_RPC_CHANNEL
-    const handleResult = connection.rpc.handle(channel, dispatcher)
+    const handleResult = connection.rpc.handle(channel, mounted)
     if (typeof handleResult === 'function') {
       const disposeRegistration = handleResult as () => void
       let disposed = false
@@ -3195,7 +3275,7 @@ export function createS6RemoteSurfaces(options: S6RemoteOptions): S6RemoteSurfac
   const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext)
   const completion = createS6RemoteQueryCommandCompletion(ports, options, dispatcher)
   return {
-    registration: createS6RemoteRegistration(ports, options.principal, principalContext),
+    registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
     completion,
   }
 }

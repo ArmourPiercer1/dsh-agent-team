@@ -644,6 +644,20 @@ export interface TeamProductionRootParams {
    * parent) — no mint of its own.
    */
   readonly blueprintAuthority?: BlueprintAuthority
+  /**
+   * BP-G (issue #2 blueprint-loading, plan §12.2, optional additive) —
+   * the in-process read-only boot readiness getter the mounted remote
+   * dispatcher gates on. ABSENT (factory worlds, every pre-BP-G test
+   * world): the dispatcher runs unguarded (the legacy behavior,
+   * byte-for-byte). The production host entry ALWAYS passes one: its
+   * closure over the host's own `starting` / `ready` / `failed` state —
+   * the route mounts BEFORE the live boot is awaited (plan §12.1), so a
+   * failed boot leaves the route registered; the gate then refuses every
+   * closed method except the readiness-independent catalog reads with
+   * the frozen `internal-error` envelope (no new wire code, no protocol
+   * bump — plan §12.3).
+   */
+  readonly remoteReadiness?: () => import('./s6-remote.js').RemoteReadiness
 }
 
 /**
@@ -1697,6 +1711,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     legacyInspect,
     legacyHome: params.legacyHome,
     principal: seams.serverPrincipalDerivation.current(),
+    // BP-G (issue #2 blueprint-loading, plan §12.2): the host's in-process
+    // boot readiness — the mounted dispatcher gates the non-catalog
+    // methods on it (the mount happens BEFORE the live boot is awaited).
+    ...(params.remoteReadiness !== undefined
+      ? { readiness: params.remoteReadiness }
+      : {}),
     // T12-V16: remote member.send routes through the P6-T3 messaging
     // coordinator (facade admission + live delivery + confirmation),
     // closing the admission-only silence window pinned by run #13.

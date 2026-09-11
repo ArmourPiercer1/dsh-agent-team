@@ -700,6 +700,27 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // blueprint-loading task branch; re-verify on the merged tree after
     // the hardening integration (plan §3.5).
     //
+    //
+    // (bp1-g) ZERO new issue#2-blueprint-loading scannable files (this
+    // commit — the BP-G remote mount-before-boot + boot readiness, plan
+    // §12): the change is entirely in-place edits on already-scanned
+    // files — host.ts (the mount section moved BEFORE the awaited live
+    // boot [plan §12.1] + the in-process read-only readiness state
+    // starting|ready|failed settling around the boot [plan §12.2] + the
+    // remoteReadiness getter passed into the root), root.ts (the
+    // additive TeamProductionRootParams.remoteReadiness + the pass-
+    // through to createS6RemoteSurfaces), s6-remote.ts (the RemoteReadiness
+    // type + the REMOTE_READINESS_INDEPENDENT_METHODS set [catalog.list /
+    // catalog.get] + the optional readiness gate on the mounted
+    // dispatcher — a non-`ready` state refuses every other closed
+    // method with the frozen internal-error failure envelope: no new
+    // wire code, no protocol bump [plan §12.3]). No new .test.ts file
+    // (the RED-5 probes already committed in BP-A turn green by this
+    // change: bp1-red-probe 3/6 -> 6/6); the frozen quarantine hit set
+    // is unchanged at fifteen occurrences and the scan count stays 681.
+    // Recorded on the blueprint-loading task branch; re-verify on the
+    // merged tree after the hardening integration (plan §3.5).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
     // 681 (675 + 6), and its file list names exactly the thirty-nine

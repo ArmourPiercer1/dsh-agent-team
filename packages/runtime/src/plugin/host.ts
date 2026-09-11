@@ -1108,6 +1108,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // --- production run still fails closed on the same file.
   const legacyInspect = await loadLegacyInspect()
 
+  // --- BP-G (issue #2 blueprint-loading, plan §12.2): the in-process
+  // --- read-only boot readiness state — 'starting' from the mount step
+  // --- (BELOW, before the awaited live boot) until the boot settles:
+  // --- 'ready' on success, 'failed' on rejection (terminal: no automatic
+  // --- retry, no re-boot — the plan's crash semantics: a failed boot is
+  // --- a failed world; the route stays registered, the catalog reads
+  // --- stay servable, every other remote method fails closed).
+  let teamRuntimeReadiness: 'starting' | 'ready' | 'failed' = 'starting'
+
   // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
   const builtRoot: TeamProductionRoot = createTeamProductionRoot({
     config: resolvedRowConfig,
@@ -1137,12 +1146,19 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // M2 (plan §15.5): the narrow workspace attach closure over the
     // hard-injected public workspaceRegistry (see the check above).
     workspaceAttach,
+    // BP-G (issue #2 blueprint-loading, plan §12.2): the in-process boot
+    // readiness — the mounted remote dispatcher gates the non-catalog
+    // methods on it (the mount happens BEFORE the live boot is awaited).
+    remoteReadiness: () => teamRuntimeReadiness,
   })
   root = builtRoot
-  await builtRoot.boot()
 
-  // --- T12-M4: the production Remote mount (the Remote contract v1
-  // dispatcher onto the public connection seam, plan §20) --------------
+  // --- T12-M4 + BP-G (issue #2 blueprint-loading, plan §12.1): the
+  // production Remote mount — BEFORE the awaited live boot: the route
+  // registration needs the CONSTRUCTED root only, never a successful
+  // boot (a boot failure leaves the route registered — the 405 symptom
+  // removed; the readiness state gates the non-catalog methods in the
+  // meantime, plan §12.2/§12.3) ---------------------------------------
   //
   // The web profile provides the 'connection' public service (the client-connection row of the web-app bundle, on an independent fiber with no dependency edge to this row), so
   // the mount is the production default there. A headless host provides
@@ -1199,6 +1215,19 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     )
   } else {
     logRemoteMountOutcome(mountRemoteNow(builtRoot, connection, false), 0)
+  }
+  // BP-G (issue #2 blueprint-loading, plan §12.2): the awaited live boot
+  // — the readiness state settles around it ('ready' on success,
+  // 'failed' on rejection — terminal: no automatic retry, no re-boot);
+  // the rejection propagates UNCHANGED to the ready promise (the boot
+  // failure is still the world's failure — the repair isolates the
+  // route from it, never the world from it).
+  try {
+    await builtRoot.boot()
+    teamRuntimeReadiness = 'ready'
+  } catch (error) {
+    teamRuntimeReadiness = 'failed'
+    throw error
   }
   return builtRoot
   }
