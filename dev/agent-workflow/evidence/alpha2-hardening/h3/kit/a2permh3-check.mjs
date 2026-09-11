@@ -182,6 +182,11 @@ async function hostilePrepend(agent) {
 // H3 — the stable monotonic end-cap denial reason (BYTE-IDENTICAL to
 // packages/runtime/test/h1a-pre-execute-endcap.test.ts END_CAP_REASON; the
 // §21 criterion requires the exact reason, not a pattern).
+// TWO SURFACES, one reason:
+//  • the p6t6 /tool route JSON (error.message) carries the RAW reason
+//    (byte-equality asserted here against END_CAP_REASON — no prefix);
+//  • the MODEL-facing SSE tool result content carries 'Error: ' + reason
+//    (the harness error wrapper — the PTC legs assert via .includes).
 const END_CAP_REASON = 'permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)'
 const END_CAP_STAGE = 'end-cap-denial'
 // H3 — parse the /state observations readout (review §18): the rows are
@@ -309,6 +314,20 @@ function mockToolResult(identity, toolCallId) {
   if (line === undefined) return null
   const m = line.match(/ result=(.*) → /)
   return m ? m[1] : ''
+}
+/**
+ * H3 PTC (review §14 A10): the per-call tool-result content the H3 boot mock
+ * logged for EVERY tool result in a request — `mock saw-tool-result
+ * [identity] <tool_call_id> <content>` (the plain trigger= line records only
+ * the LAST sibling; for a bundled parallel-tool-call follow-up the earlier
+ * siblings are invisible there). Returns null when not logged yet.
+ */
+function mockSawToolResult(identity, toolCallId) {
+  const text = readFileSync(state.mockLogPath, 'utf8')
+  const marker = `mock saw-tool-result [${identity}] ${toolCallId} `
+  const line = text.split('\n').find((l) => l.includes(marker))
+  if (line === undefined) return null
+  return line.slice(line.indexOf(marker) + marker.length)
 }
 const pendingRequest = (st, correlation) =>
   (st?.control?.requests ?? []).find((r) => r.correlation === correlation) ?? null
@@ -1041,7 +1060,7 @@ async function liveMode() {
     'denied', h1.body?.ok === false ? 'denied' : 'not-denied',
     h1.body?.ok === false && h1Msg.includes(END_CAP_REASON), h1Msg.slice(0, 250))
   check('live-H3-1-exact-reason', 'the H3-1 denial reason is the EXACT stable end-cap reason (byte-identical to h1a END_CAP_REASON — §21 requires the exact reason)',
-    'Error: ' + END_CAP_REASON, h1Msg, h1Msg === 'Error: ' + END_CAP_REASON, h1Msg.slice(0, 250))
+    END_CAP_REASON, h1Msg, h1Msg === END_CAP_REASON, h1Msg.slice(0, 250))
   recordLeg({ id: 'H3-1', agent: 'a2root', op: 'read perm-a.txt', status: h1.status, ok: h1.body?.ok, message: h1Msg })
 
   // H3-2 — the DEFAULT-ASK op (read perm-d): without the hostile listener
@@ -1052,7 +1071,7 @@ async function liveMode() {
   const h2Msg = String(h2.body?.error?.message ?? '')
   check('live-H3-2-ask-op-denied', 'HOSTILE PREPEND: the leader read of perm-d.txt (DEFAULT-ASK lane — normally opens a control request) is end-cap-DENIED before any request',
     'denied', h2.body?.ok === false ? 'denied' : 'not-denied',
-    h2.body?.ok === false && h2Msg === 'Error: ' + END_CAP_REASON, h2Msg.slice(0, 250))
+    h2.body?.ok === false && h2Msg === END_CAP_REASON, h2Msg.slice(0, 250))
   recordLeg({ id: 'H3-2', agent: 'a2root', op: 'read perm-d.txt', status: h2.status, ok: h2.body?.ok, message: h2Msg })
 
   // H3-3 — the ASK-LANE write (perm-c, marker content): denied AND the file
@@ -1061,7 +1080,7 @@ async function liveMode() {
   const h3Msg = String(h3.body?.error?.message ?? '')
   check('live-H3-3-write-denied', 'HOSTILE PREPEND: the leader write of perm-c.txt (ASK lane, marker content) is end-cap-DENIED',
     'denied', h3.body?.ok === false ? 'denied' : 'not-denied',
-    h3.body?.ok === false && h3Msg === 'Error: ' + END_CAP_REASON, h3Msg.slice(0, 250))
+    h3.body?.ok === false && h3Msg === END_CAP_REASON, h3Msg.slice(0, 250))
   check('live-H3-3-file-unchanged', 'perm-c.txt is byte-UNCHANGED (still member-a-payload-1) — the hostile force-allow never dispatched the write body (pre-dispatch denial)',
     'member-a-payload-1', readWs('perm-c.txt'), readWs('perm-c.txt') === 'member-a-payload-1')
   recordLeg({ id: 'H3-3', agent: 'a2root', op: 'write perm-c.txt', status: h3.status, ok: h3.body?.ok, message: h3Msg, fileAfter: readWs('perm-c.txt') })
@@ -1073,7 +1092,7 @@ async function liveMode() {
   const h2c = await p6t6Tool('read', { file_path: 'perm-b.txt' }, 'a2root', 'h3-h2c')
   const h2cMsg = String(h2c.body?.error?.message ?? '')
   check('live-H3-2c-static-deny-lane', 'HOSTILE PREPEND: the leader read of perm-b.txt (STATIC-DENY lane — the V1 L2 leg pins its policy-deny reason without the hostile) is denied with the EXACT stable END-CAP reason (A2 — "deny by end-cap")',
-    'Error: ' + END_CAP_REASON, h2cMsg, h2c.body?.ok === false && h2cMsg === 'Error: ' + END_CAP_REASON, h2cMsg.slice(0, 250))
+    END_CAP_REASON, h2cMsg, h2c.body?.ok === false && h2cMsg === END_CAP_REASON, h2cMsg.slice(0, 250))
   recordLeg({ id: 'H3-2c', agent: 'a2root', op: 'read perm-b.txt', status: h2c.status, ok: h2c.body?.ok, message: h2cMsg })
 
   // H3-2d — A9: an UNSUPPORTED class (a team tool) under the hostile
@@ -1103,7 +1122,7 @@ async function liveMode() {
   const h4 = await p6t6Tool('read', { file_path: 'perm-e.txt' }, 'session-a2b-b', 'h3-h4')
   const h4Msg = String(h4.body?.error?.message ?? '')
   check('live-H3-4-endcap-not-policy', 'HOSTILE PREPEND on worker-b (default-deny, empty lanes): the denial reason IS the stable END-CAP reason, NOT the static policy-deny reason (the hostile allow short-circuited the policy; the end-cap decides)',
-    'Error: ' + END_CAP_REASON, h4Msg, h4Msg === 'Error: ' + END_CAP_REASON, h4Msg.slice(0, 250))
+    END_CAP_REASON, h4Msg, h4Msg === END_CAP_REASON, h4Msg.slice(0, 250))
   recordLeg({ id: 'H3-4', agent: 'session-a2b-b', op: 'read perm-e.txt', status: h4.status, ok: h4.body?.ok, message: h4Msg })
 
   // H3-5 — CROSS-AGENT NON-LEAK (live A9/A16): worker-a has NO hostile
@@ -1133,10 +1152,19 @@ async function liveMode() {
     body: 'H3-PTC-TRIGGER run the parallel read probe now.',
     requestToken: 'h3-ptc-1',
   }, 1)
-  await waitUntil(() => mockSawResult('worker-a', 'h3A-ptc1'), 90_000, 'PTC h3A-ptc1 result landed')
-  await waitUntil(() => mockSawResult('worker-a', 'h3A-ptc2'), 90_000, 'PTC h3A-ptc2 result landed')
-  const ptc1Result = mockToolResult('worker-a', 'h3A-ptc1') ?? ''
-  const ptc2Result = mockToolResult('worker-a', 'h3A-ptc2') ?? ''
+  // Both sibling results must be observable per call (the trigger= log line
+  // records only the LAST sibling of a bundled follow-up request — the
+  // per-call `mock saw-tool-result` lines record every sibling; the wait is
+  // order-agnostic).
+  await waitUntil(
+    () => mockSawToolResult('worker-a', 'h3A-ptc1') !== null && mockSawToolResult('worker-a', 'h3A-ptc2') !== null,
+    90_000,
+    'PTC both sibling results landed (h3A-ptc1 + h3A-ptc2)',
+  )
+  check('live-H3-6-ptc-shape', 'PTC shape is genuine: the mock issued BOTH managed read calls in ONE model response (a single-response parallel-tool-call — the live A10 shape)',
+    'both-in-one', mockSaw('tool-call:h3A-ptc1:read,h3A-ptc2:read'), mockSaw('tool-call:h3A-ptc1:read,h3A-ptc2:read'), 'mock log: the two-call response line')
+  const ptc1Result = mockSawToolResult('worker-a', 'h3A-ptc1') ?? mockToolResult('worker-a', 'h3A-ptc1') ?? ''
+  const ptc2Result = mockSawToolResult('worker-a', 'h3A-ptc2') ?? mockToolResult('worker-a', 'h3A-ptc2') ?? ''
   check('live-H3-6-ptc1-denied', 'PTC: the first parallel read (perm-a, allow lane) is end-cap-DENIED (the model-facing result carries the exact stable reason)',
     'denied', ptc1Result.includes(END_CAP_REASON) ? 'denied' : 'not-denied', ptc1Result.includes(END_CAP_REASON), ptc1Result.slice(0, 200))
   check('live-H3-6-ptc2-denied', 'PTC: the second parallel read (perm-b, STATIC-DENY lane) is end-cap-DENIED with the EXACT stable reason — NOT the static policy-deny reason (A10 strict: "nested PTC static deny + prepend allow → deny")',
@@ -1333,7 +1361,7 @@ async function coldMode() {
   const ch1 = await p6t6Tool('read', { file_path: 'perm-a.txt' }, 'a2root', 'a2-cr-h3readA')
   const ch1Msg = String(ch1.body?.error?.message ?? '')
   check('cold-H3-1-allow-op-denied', 'COLD hostile prepend: the cold-resumed leader read perm-a.txt (policy-ALLOWED — the V1 cold cA leg just executed it on the same ctx) is DENIED — the re-installed end-cap (cold bind path) decides (A12/A14)',
-    'Error: ' + END_CAP_REASON, ch1Msg, ch1.body?.ok === false && ch1Msg === 'Error: ' + END_CAP_REASON, ch1Msg.slice(0, 250))
+    END_CAP_REASON, ch1Msg, ch1.body?.ok === false && ch1Msg === END_CAP_REASON, ch1Msg.slice(0, 250))
   recordColdLeg({ id: 'hc-1', agent: 'a2root', op: 'read perm-a.txt', status: ch1.status, ok: ch1.body?.ok, message: ch1Msg })
 
   // hc-2 — the default-ask op (read perm-d): denied, ZERO new requests
@@ -1341,7 +1369,7 @@ async function coldMode() {
   const ch2 = await p6t6Tool('read', { file_path: 'perm-d.txt' }, 'a2root', 'a2-cr-h3readD')
   const ch2Msg = String(ch2.body?.error?.message ?? '')
   check('cold-H3-2-ask-op-denied', 'COLD hostile prepend: the cold-resumed leader read perm-d.txt (rebuilt policy DEFAULT-ASK lane) is end-cap-DENIED before any request',
-    'Error: ' + END_CAP_REASON, ch2Msg, ch2.body?.ok === false && ch2Msg === 'Error: ' + END_CAP_REASON, ch2Msg.slice(0, 250))
+    END_CAP_REASON, ch2Msg, ch2.body?.ok === false && ch2Msg === END_CAP_REASON, ch2Msg.slice(0, 250))
   recordColdLeg({ id: 'hc-2', agent: 'a2root', op: 'read perm-d.txt', status: ch2.status, ok: ch2.body?.ok, message: ch2Msg })
 
   // hc-2b — A12 STRICT: the cold-resume STATIC-DENY lane under the hostile
@@ -1351,7 +1379,7 @@ async function coldMode() {
   const ch2b = await p6t6Tool('read', { file_path: 'perm-b.txt' }, 'a2root', 'a2-cr-h3readB')
   const ch2bMsg = String(ch2b.body?.error?.message ?? '')
   check('cold-H3-2b-static-deny-lane', 'COLD hostile prepend: read perm-b.txt (the rebuilt static-DENY lane) is denied with the EXACT stable END-CAP reason (A12 — "cold-resume deny + prepend allow → deny")',
-    'Error: ' + END_CAP_REASON, ch2bMsg, ch2b.body?.ok === false && ch2bMsg === 'Error: ' + END_CAP_REASON, ch2bMsg.slice(0, 250))
+    END_CAP_REASON, ch2bMsg, ch2b.body?.ok === false && ch2bMsg === END_CAP_REASON, ch2bMsg.slice(0, 250))
   recordColdLeg({ id: 'hc-2b', agent: 'a2root', op: 'read perm-b.txt', status: ch2b.status, ok: ch2b.body?.ok, message: ch2bMsg })
 
   // hc-3 — review §18 COLD-world pin + the durable-plane invariant

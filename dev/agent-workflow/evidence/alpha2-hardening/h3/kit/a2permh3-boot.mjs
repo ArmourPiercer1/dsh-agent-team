@@ -97,7 +97,10 @@ const { startMockModel } = await import(
 const EV = dirname(fileURLToPath(import.meta.url))
 const REPO = MAIN_REPO
 const HOST_TREE = join(REPO, 'references', 'deepseek-harness-test-use')
-const P6T6_URL = pathToFileURL(join(REPO, 'packages', 'tools', 'harness', 'plugin.mjs')).href
+// The harness row loads the H3 WORKTREE's plugin.mjs (the hostile seam) —
+// NOT the main-repo copy. The setup patch and this check must agree on the
+// URL byte-for-byte (rowInDump is a substring match on the dump text).
+const P6T6_URL = pathToFileURL(join(H3_WORKTREE, 'packages', 'tools', 'harness', 'plugin.mjs')).href
 
 const WORLD = process.env.A2_WORLD === 'legacy' ? 'legacy' : 'a2perm'
 const WORLD_PREFIX = WORLD === 'legacy' ? '.dsh-test-a2permh3legacy-' : '.dsh-test-a2permh3-'
@@ -300,6 +303,19 @@ function makeDecide(mockLogPath) {
     // a pre-execute DENY (an error text).
     const resultContent = last?.role === 'tool' ? ` result=${String(last?.content ?? '').slice(0, 400).replace(/\n/g, '\\n')}` : ''
     appendFileSync(mockLogPath, `[${new Date().toISOString()}] mock seq=${seq} identity=${identity} trigger=${trigger}${resultContent} → ${action}\n`)
+    // H3 PTC observability (review §14 A10): the line above records only the
+    // LAST tool result of the request — for a parallel-tool-call response the
+    // host bundles the sibling results into one follow-up request, losing the
+    // earlier siblings from the log. These per-call lines give the check
+    // byte-level access to EVERY sibling result. The format intentionally
+    // carries no `identity=` / `trigger=` / `tool-call:` tokens, so no V1
+    // log matcher (mockSawStep / mockSawResult / mockLineCount) can match
+    // them.
+    for (const m of msgs) {
+      if (m && m.role === 'tool' && typeof m?.tool_call_id === 'string') {
+        appendFileSync(mockLogPath, `[${new Date().toISOString()}] mock saw-tool-result [${identity}] ${m.tool_call_id} ${String(m.content ?? '').slice(0, 400).replace(/\n/g, '\\n')}\n`)
+      }
+    }
     if (step !== undefined) return step
     return { kind: 'text', content: `${identity}-drill-fallback ok` }
   }
