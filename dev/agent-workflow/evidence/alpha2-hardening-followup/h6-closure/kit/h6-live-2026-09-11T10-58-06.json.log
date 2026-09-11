@@ -1,0 +1,161 @@
+[2026-09-11T11:01:32.152Z] PASS live-health-ok — p6t6 health ok
+[2026-09-11T11:01:32.152Z] PASS live-toolcount-10 — factory catalog toolCount = 10
+[2026-09-11T11:01:32.153Z] PASS live-sessions-3 — leader + 2 seeded members live
+[2026-09-11T11:01:32.161Z] PASS live-blueprint-team.a2perm — teamSession blueprintId = team.a2perm
+[2026-09-11T11:01:32.161Z] PASS live-contenthash-recorded — teamSession contentHash recorded (the A1-validated hash)
+[2026-09-11T11:01:32.161Z] PASS live-defaultworkspace — teamSession defaultWorkspace = the pre-created workspace
+[2026-09-11T11:01:32.161Z] PASS live-control-zero — zero control state at boot
+[2026-09-11T11:01:32.162Z] baseline files recorded (perm-a..e.txt)
+[2026-09-11T11:01:32.313Z] PASS live-probe-leader-list — leader team_list_members registered
+[2026-09-11T11:01:32.313Z] PASS live-probe-leader-delegate-absent — leader team_delegate NOT in the allow set (capability selection active)
+[2026-09-11T11:01:32.313Z] PASS live-probe-leader-resolve — leader team_resolve_control registered
+[2026-09-11T11:01:32.313Z] PASS live-probe-memberA-delegate — worker-a team_delegate registered
+[2026-09-11T11:01:32.313Z] PASS live-probe-memberA-resolve-absent — worker-a team_resolve_control NOT registered (member self-approval has no tool)
+[2026-09-11T11:01:32.313Z] PASS live-probe-memberB-request-absent — worker-b team_request_control NOT registered (allow set = team_send_message only)
+[2026-09-11T11:01:32.314Z] leader drill: team.admitInitialWork fired (v2, background)
+[2026-09-11T11:01:33.277Z] PASS live-L1-allow-lane-no-request — read perm-a (allow lane) created ZERO control requests for the read lanes (scoped: the chain may already hold the readC ask — a different operation — the v12 race)
+[2026-09-11T11:01:33.277Z] PASS live-L1-allow-executed-success — read perm-a EXECUTED: the tool result carries the file content and NO denial (a denied read would ALSO satisfy the zero-request check — the V1-1 gap)
+[2026-09-11T11:01:33.293Z] PASS live-L2-deny-lane-no-request — read perm-b (deny lane) created ZERO control requests for the read lanes (deny is static — no requestControl at all)
+[2026-09-11T11:01:33.294Z] PASS live-L2-deny-static-reason — read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure (that would be the fs seam broken, not the policy deciding)
+[2026-09-11T11:01:33.294Z] PASS live-L2-deny-file-unchanged — perm-b.txt unchanged after static deny
+[2026-09-11T11:01:33.314Z] PASS live-L3a-ask-request-created — read perm-c (no rule → default ask) created a durable control request
+[2026-09-11T11:01:33.314Z] PASS live-L3a-kind-user-approval — leader ask routes to kind=user-approval (human-only resolver closure)
+[2026-09-11T11:01:33.314Z] PASS live-L3a-target-leader — request targetInstanceId = the leader instance
+[2026-09-11T11:01:33.324Z] PASS live-L3a-scope-exact — request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) — RAW ledger payload (the /state projection omits these fields)
+[2026-09-11T11:01:33.324Z] PASS live-L3a-fingerprint-bound — request carries the EXACT operation fingerprint (payload top level, sha256:… — the A4 allow binds to this exact operation)
+[2026-09-11T11:01:33.325Z] PASS live-L3a-no-execution-yet — perm-c.txt unchanged while the read request is pending
+[2026-09-11T11:01:33.361Z] PASS live-L4-leader-self-approval-negative — leader self-approval of its own user-approval request is NOT authorized (typed CONTROL_RESOLVER_NOT_AUTHORIZED, role=leader, allowedRoles=[human])
+[2026-09-11T11:01:33.363Z] PASS live-L4-still-pending — request still pending after the failed self-approval
+[2026-09-11T11:01:33.506Z] PASS live-L3a-human-allow — remote team.resolveControl (v4, human) allow succeeds for the readC ask
+[2026-09-11T11:01:33.764Z] PASS live-L3a-executed — the readC EXECUTED after the human allow (the result carries the perm-c sentinel content — the await bridge woke the blocked tool call)
+[2026-09-11T11:01:33.764Z] PASS live-L3a-file-unchanged — perm-c.txt unchanged after the read (reads have zero write effect)
+[2026-09-11T11:01:33.884Z] PASS live-L3a-consumed — the readC allow was consumed exactly once
+[2026-09-11T11:01:33.895Z] PASS live-L3-ask-request-created — write perm-c (ask lane) created a durable control request
+[2026-09-11T11:01:33.895Z] PASS live-L3-kind-user-approval — leader ask routes to kind=user-approval (human-only resolver closure)
+[2026-09-11T11:01:33.895Z] PASS live-L3-target-leader — request targetInstanceId = the leader instance
+[2026-09-11T11:01:33.895Z] PASS live-L3-action-parameter-permission — request actionName = parameter-permission (the A5 closed action name)
+[2026-09-11T11:01:33.895Z] PASS live-L3-tool-write — request toolName = write
+[2026-09-11T11:01:33.905Z] PASS live-L3-scope-exact — request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation) — RAW ledger payload
+[2026-09-11T11:01:33.906Z] PASS live-L3-fingerprint-bound — request carries the EXACT operation fingerprint (payload top level, sha256:… — the A4 allow binds to this exact operation, not the tool or the correlation)
+[2026-09-11T11:01:33.906Z] PASS live-L3-no-execution-yet — perm-c.txt unchanged while the request is pending
+[2026-09-11T11:01:34.127Z] PASS live-L5-human-allow — remote team.resolveControl (v4, human) allow succeeds
+[2026-09-11T11:01:34.671Z] PASS live-L5-executed — perm-c.txt = leader-payload-1 after the allow (the write EXECUTED)
+[2026-09-11T11:01:34.671Z] PASS live-L5-write-result-clean — the writeC1 tool result carries NO error (the fs read-before-overwrite precondition was satisfied by readC — v12 seq=5 was `cannot overwrite existing … without reading it first`)
+[2026-09-11T11:01:34.672Z] PASS live-L5-consumed — the allow was consumed exactly once (control-allow-consumed)
+[2026-09-11T11:01:34.689Z] PASS live-L6-re-ask — second write perm-c (same lane, new call) re-asks (the previous allow was consumed)
+[2026-09-11T11:01:34.692Z] PASS live-L6-fingerprint-bound — the re-ask request ALSO carries its own exact operation fingerprint — and it is DISTINCT from writeC1 (different content → different operation; a consumed allow never silently re-opens)
+[2026-09-11T11:01:35.922Z] PASS live-L6-executed — perm-c.txt = leader-payload-2 after the second allow
+[2026-09-11T11:01:35.922Z] PASS live-L6-consumed-2 — second allow consumed exactly once
+[2026-09-11T11:01:35.939Z] PASS live-L7-turn-settled — leader drill turn settled (admitInitialWork returned ok)
+[2026-09-11T11:01:35.940Z] PASS live-L7-leader-done — mock script reached LEADER-DONE
+[2026-09-11T11:01:35.940Z] member-a drill: member.send fired (v1, background)
+[2026-09-11T11:01:36.512Z] PASS live-M1-allow-lane — worker-a read perm-a (allow lane) created ZERO control requests for the read lanes (scoped to the member read correlations — RAW ledger: the /state route blocks while this active member turn holds the work chain)
+[2026-09-11T11:01:36.512Z] PASS live-M1-allow-executed-success — worker-a read perm-a EXECUTED: the tool result carries the file content and NO denial (the member allow lane — the V1-1 gap on the member side)
+[2026-09-11T11:01:36.793Z] PASS live-M2-deny-lane — worker-a read perm-b (deny lane) created ZERO control requests for the read lanes (deny is static — no requestControl at all; RAW ledger — /state blocks during the active member turn)
+[2026-09-11T11:01:36.793Z] PASS live-M2-deny-static-reason — worker-a read perm-b denied by the STATIC POLICY (the deny rule) — NOT a canonicalization/resolver failure
+[2026-09-11T11:01:36.826Z] PASS live-M3a-ask-request — worker-a read perm-c (no rule → default ask) created a durable control request
+[2026-09-11T11:01:36.827Z] PASS live-M3a-kind-leader-approval — member ask routes to kind=leader-approval (leader-or-human resolver closure)
+[2026-09-11T11:01:36.827Z] PASS live-M3a-target-member — request targetInstanceId = inst-a2pa (the requesting member)
+[2026-09-11T11:01:36.838Z] PASS live-M3a-scope-exact — request scope = the EXACT operation (root + member caller + member target + action + tool + correlation) — RAW ledger payload
+[2026-09-11T11:01:36.838Z] PASS live-M3a-fingerprint-bound — the member readC ask carries the EXACT operation fingerprint (the leader allow binds to this exact member operation)
+[2026-09-11T11:01:36.838Z] PASS live-M3a-no-execution-yet — perm-c.txt unchanged while the member read request is pending
+[2026-09-11T11:01:36.853Z] PASS live-M4-member-self-approval-negative — worker-a cannot resolve (live /tool: unknown-tool rejection; boot probe: not-registered)
+[2026-09-11T11:01:37.009Z] PASS live-M5-leader-resolves-member — leader resolves the member's leader-approval request (route: tool — the leader IS a resolver for kind=leader-approval)
+[2026-09-11T11:01:37.277Z] PASS live-M3a-executed — the member readC EXECUTED after the leader allow (the result carries the current perm-c content — leader-payload-2, set by the leader drill)
+[2026-09-11T11:01:37.293Z] PASS live-M3a-consumed — the member readC allow was consumed exactly once (raw ledger control-allow-consumed)
+[2026-09-11T11:01:37.628Z] PASS live-M3-ask-request — worker-a write perm-c (ask lane) created a durable control request
+[2026-09-11T11:01:37.629Z] PASS live-M3-kind-leader-approval — member ask routes to kind=leader-approval (leader-or-human resolver closure)
+[2026-09-11T11:01:37.629Z] PASS live-M3-target-member — request targetInstanceId = inst-a2pa (the requesting member)
+[2026-09-11T11:01:37.638Z] PASS live-M3-scope-exact — request scope = the EXACT operation (root + member caller + member target + action + tool + correlation) — RAW ledger payload
+[2026-09-11T11:01:37.639Z] PASS live-M3-fingerprint-bound — request carries the EXACT operation fingerprint (the leader allow binds to this exact member operation)
+[2026-09-11T11:01:37.639Z] PASS live-M3-no-execution-yet — perm-c.txt unchanged while the member write request is pending
+[2026-09-11T11:01:37.796Z] PASS live-M5b-leader-allows-write — leader allows the member writeC1 (route: tool — leader-approval closure)
+[2026-09-11T11:01:38.328Z] PASS live-M5-executed — perm-c.txt = member-a-payload-1 after the leader allow
+[2026-09-11T11:01:38.328Z] PASS live-M5-write-result-clean — the member writeC1 tool result carries NO error (fs read-before-overwrite satisfied by the members own readC)
+[2026-09-11T11:01:38.343Z] PASS live-M5-consumed — the leader-allow was consumed exactly once (raw ledger control-allow-consumed)
+[2026-09-11T11:01:38.374Z] PASS live-M7-default-ask-created — worker-a read perm-d (no rule match → default ask) created a durable request
+[2026-09-11T11:01:38.374Z] PASS live-M7-kind-leader-approval — the member default-ask routes to kind=leader-approval
+[2026-09-11T11:01:38.390Z] PASS live-M7-fingerprint-bound — the default-ask request carries the EXACT operation fingerprint (the allow binds to this exact read operation)
+[2026-09-11T11:01:38.561Z] PASS live-M7-leader-allows — leader allows the member default-ask (route: tool — leader-approval closure)
+[2026-09-11T11:01:39.081Z] PASS live-M7-executed — the read EXECUTED (the a2A-readD tool result carries the perm-d.txt content, not an error)
+[2026-09-11T11:01:39.098Z] PASS live-M7-consumed — the default-ask allow was consumed exactly once (raw ledger control-allow-consumed)
+[2026-09-11T11:01:39.098Z] PASS live-M6-turn-settled — member-a drill turn settled (member.send returned ok)
+[2026-09-11T11:01:39.098Z] PASS live-M6-member-a-done — mock script reached MEMBER-A-DONE
+[2026-09-11T11:01:39.113Z] member-b drill: member.send fired (v1, background)
+[2026-09-11T11:01:39.914Z] PASS live-B1-zero-requests — worker-b (default deny, empty lanes) turn created ZERO control requests (no ask lane exists — requester-scoped RAW ledger: the /state route blocks during the active member-b turn)
+[2026-09-11T11:01:39.915Z] PASS live-B1-zero-decisions — worker-b turn created ZERO decisions (no request → no decision; requester-scoped RAW ledger)
+[2026-09-11T11:01:39.916Z] PASS live-B1-file-unchanged — perm-e.txt unchanged (both operations statically denied)
+[2026-09-11T11:01:39.917Z] PASS live-B1-deny-default-reason — worker-b read perm-e denied by the DEFAULT (deny, empty lanes) — a static policy denial, NOT a canonicalization/resolver failure
+[2026-09-11T11:01:39.917Z] PASS live-B1-write-deny-default-reason — worker-b write perm-e ALSO denied by the DEFAULT (deny, empty lanes) — static policy, zero execution
+[2026-09-11T11:01:39.918Z] PASS live-B2-turn-settled — member-b drill turn settled (member.send returned ok)
+[2026-09-11T11:01:39.918Z] PASS live-B2-member-b-done — mock script reached MEMBER-B-DONE
+[2026-09-11T11:01:39.941Z] PASS live-N1-malformed-args-deny — read with a non-string file_path is DENIED (fail-closed canonicalization)
+[2026-09-11T11:01:39.958Z] PASS live-N2-canonicalization-failure-deny — read of a path THROUGH a regular file is DENIED (canonicalization failure — the resolver genuinely cannot canonicalize it; fail-closed, never next())
+[2026-09-11T11:01:39.958Z] PASS live-N2-canonicalization-reason — the N2 denial IS a canonicalization failure (the resolver-threw shape) — the inverse discriminator of the L2/M2/B1 static-policy legs (the fs seam itself is working: this is a genuinely unresolvable target)
+[2026-09-11T11:01:39.973Z] PASS live-N1N2-no-requests — N1/N2 denies created ZERO control requests (deny before requestControl)
+[2026-09-11T11:01:40.006Z] PASS live-N3-passthrough — team_list_members (unsupported class) passes through ok
+[2026-09-11T11:01:40.006Z] PASS live-N3-zero-rows — pass-through created ZERO control requests (count unchanged by the N3 call)
+[2026-09-11T11:01:40.303Z] PASS live-N4-ask-created — read perm-d (no matching rule → default ask) created a pending request
+[2026-09-11T11:01:42.318Z] PASS live-N4-no-execution-without-decision — perm-d.txt unchanged while the ask is undecided (zero-effect)
+[2026-09-11T11:01:42.336Z] PASS live-N4-residency-drop — residency drop of the waiting leader succeeds
+[2026-09-11T11:03:40.025Z] PASS live-N4-abort-deny — the aborted wait settles DENIED (CONTROL_WAIT_ABORTED → deny, no execution)
+[2026-09-11T11:03:40.028Z] PASS live-N4-still-pending — cancellation never decides: the request stays PENDING after the abort
+[2026-09-11T11:03:40.028Z] PASS live-N4-file-unchanged — perm-d.txt unchanged after the aborted ask
+[2026-09-11T11:03:40.324Z] PASS live-N0-ask-created — read perm-d (no rule → default ask) created a pending request on the direct /tool route
+[2026-09-11T11:03:40.324Z] PASS live-N0-kind-user-approval — the leader default-ask routes to kind=user-approval
+[2026-09-11T11:03:40.691Z] PASS live-N0-executed — the N0 pre-read EXECUTED after the human allow (the /tool value carries the perm-d content in its structured lines)
+[2026-09-11T11:03:41.528Z] PASS live-N5-first-executed — N5 first write (allow + consume) executed
+[2026-09-11T11:03:41.528Z] PASS live-N5-first-consumed — N5 first allow consumed exactly once
+[2026-09-11T11:03:41.541Z] PASS live-N5-double-consumption-blocked — re-executing the same operation (same callId) is blocked allow-consumed
+[2026-09-11T11:03:41.561Z] PASS live-N5-still-one-consumption — exactly ONE consumption row for the N5 request (no second reserve)
+[2026-09-11T11:03:42.196Z] PASS live-N6-fp1-executed — N6 a2-fp1 (allow + consume) executed
+[2026-09-11T11:03:42.506Z] PASS live-N6-fingerprints-distinct — a2-fp1 and a2-fp2 carry DISTINCT operation fingerprints
+[2026-09-11T11:03:42.547Z] PASS live-N6-old-allow-unusable — the consumed a2-fp1 allow did NOT authorize the a2-fp2 operation (RAW ledger: still pending, file unchanged — the /state projection is blocked by the active turn)
+[2026-09-11T11:03:42.877Z] PASS live-N6-fp2-denied — a2-fp2 resolved deny → the operation is denied
+[2026-09-11T11:03:42.878Z] PASS live-N6-file-unchanged — perm-d.txt still a2-fp-one after the a2-fp2 deny
+[2026-09-11T11:03:42.878Z] PASS live-H6-L1-t0-topology — L1 T0 topology: the alias junction resolves into dirA (pre-retarget realpath recorded)
+[2026-09-11T11:03:42.910Z] PASS live-H6-L1-t0-static-deny — L1 T0: read alias/secret.txt (junction → dirA) is statically DENIED by the exact rule
+[2026-09-11T11:03:42.910Z] PASS live-H6-L1-t0-static-reason — L1 T0: the deny is the STATIC POLICY reason (the exact rule) — NOT canonicalization, NOT the end-cap, NOT an ask
+[2026-09-11T11:03:42.935Z] PASS live-H6-L1-t0-zero-requests — L1 T0: ZERO new control requests (the static deny short-circuits before the ask lane)
+[2026-09-11T11:03:42.938Z] PASS live-H6-L1-t0-body-untouched — L1 T0: the file body is UNTOUCHED (zero-effect — the deny is pre-dispatch)
+[2026-09-11T11:03:42.941Z] PASS live-H6-L1-retarget-flip — L1 retarget: the alias NOW resolves into dirB — the topology actually changed (the realpath flip dirA→dirB, recorded in the evidence)
+[2026-09-11T11:03:42.942Z] PASS live-H6-L1-retarget-dirA-intact — L1 retarget: dirA itself survived the junction unlink (the link-only removal)
+[2026-09-11T11:03:42.944Z] PASS live-H6-L1-t1-still-static-deny — L1 T1 (post-retarget): read alias/secret.txt (junction → dirB) is STILL statically DENIED — fresh per-decision rule canonicalization (pre-H4 this leg downgrades to the default ask)
+[2026-09-11T11:03:42.963Z] PASS live-H6-L1-t1-zero-requests — L1 T1: ZERO new control requests (NO downgrade to the ask lane — the discriminating H4 assertion)
+[2026-09-11T11:03:42.963Z] PASS live-H6-L1-t1-body-untouched — L1 T1: the (now dirB) file body is UNTOUCHED
+[2026-09-11T11:03:43.994Z] PASS live-H6-L2-three-requests — L2: all three bash calls (default-ask lane, no bash policy lane) created durable pending requests
+[2026-09-11T11:03:43.995Z] PASS live-H6-L2-fp-tool — L2: every request is a parameter-permission request for tool=bash (tool-level resource class)
+[2026-09-11T11:03:43.995Z] PASS live-H6-L2-fp-A-B-differ — L2 (i) vs (ii): the SAME command in dirA vs dirB ⇒ operationFingerprint DIFFERS (the workdir authority key is bound into the H5 projection)
+[2026-09-11T11:03:43.995Z] PASS live-H6-L2-rid-A-B-differ — L2 (i) vs (ii): requestId DIFFERS (different operations ⇒ different durable requests)
+[2026-09-11T11:03:43.995Z] PASS live-H6-L2-summary-distinguishable — L2 (i) vs (ii): the request summaries are distinguishable (the cwd tokens differ — presentation, never authority)
+[2026-09-11T11:03:43.995Z] PASS live-H6-L2-fp-A-C-same — L2 (i) vs (iii): the SAME authority args (workdir dirA) under a NEW callId/correlation ⇒ operationFingerprint SAME (the fingerprint binds the operation, not the correlation)
+[2026-09-11T11:03:43.995Z] PASS live-H6-L2-rid-A-C-new — L2 (i) vs (iii): requestId NEW (a different correlation is a NEW request — the (i) approval is never consumed by (iii) or (ii))
+[2026-09-11T11:03:44.621Z] PASS live-H6-L2-all-three-denied-settle — L2: all three resolved-deny → each /tool call settles denied (no bash executed)
+[2026-09-11T11:03:44.628Z] PASS live-H6-L2-zero-consumptions — L2: ZERO consumption rows for the three bash requests (deny never consumes; no approval ever crossed workdirs)
+[2026-09-11T11:03:44.629Z] PASS live-H6-L2-workspace-untouched — L2: dirA/dirB file states unchanged (no bash body ever ran)
+[2026-09-11T11:03:44.629Z] PASS live-final-perm-a — perm-a.txt untouched (read-only lanes)
+[2026-09-11T11:03:44.629Z] PASS live-final-perm-e — perm-e.txt untouched (worker-b default deny)
+[2026-09-11T11:03:44.629Z] PASS live-final-perm-c — perm-c.txt ends member-a-payload-1 (leader wrote twice, member-a overwrote last)
+[2026-09-11T11:03:44.629Z] PASS live-final-perm-d — perm-d.txt ends a2-fp-one (N6 a2-fp1 allow executed; a2-fp2 denied)
+[2026-09-11T11:03:44.674Z] PASS live-H3-0-gate-live — hostile-prepend answers 200 on the live leader (seam armed by the boot; the gate-OFF 503 negative is unit-pinned in h3-hostile-seam.test.ts)
+[2026-09-11T11:03:44.693Z] PASS live-H3-1-allow-op-denied — HOSTILE PREPEND: the leader read of perm-a.txt (a POLICY-ALLOWED op) is DENIED — the end-cap, not the policy, decides (review §21 core)
+[2026-09-11T11:03:44.694Z] PASS live-H3-1-exact-reason — the H3-1 denial reason is the EXACT stable end-cap reason (byte-identical to h1a END_CAP_REASON — §21 requires the exact reason)
+[2026-09-11T11:03:44.706Z] PASS live-H3-2-ask-op-denied — HOSTILE PREPEND: the leader read of perm-d.txt (DEFAULT-ASK lane — normally opens a control request) is end-cap-DENIED before any request
+[2026-09-11T11:03:44.722Z] PASS live-H3-3-write-denied — HOSTILE PREPEND: the leader write of perm-c.txt (ASK lane, marker content) is end-cap-DENIED
+[2026-09-11T11:03:44.722Z] PASS live-H3-3-file-unchanged — perm-c.txt is byte-UNCHANGED (still member-a-payload-1) — the hostile force-allow never dispatched the write body (pre-dispatch denial)
+[2026-09-11T11:03:44.737Z] PASS live-H3-2c-static-deny-lane — HOSTILE PREPEND: the leader read of perm-b.txt (STATIC-DENY lane — the V1 L2 leg pins its policy-deny reason without the hostile) is denied with the EXACT stable END-CAP reason (A2 — "deny by end-cap")
+[2026-09-11T11:03:44.752Z] PASS live-H3-2d-unsupported-passthrough — HOSTILE PREPEND: team_list_members (unsupported class) STILL passes through ok — the end-cap closed set is the six managed tools; the hostile listener cannot change pass-through (A9 live)
+[2026-09-11T11:03:44.771Z] PASS live-H3-2b-zero-requests — H3-1..H3-3 end-cap denials created ZERO control requests (the ask lane is never reached under the hostile prepend — A3 live)
+[2026-09-11T11:03:44.783Z] PASS live-H3-4-gate-live — hostile-prepend answers 200 on worker-b (default-deny agent)
+[2026-09-11T11:03:44.799Z] PASS live-H3-4-endcap-not-policy — HOSTILE PREPEND on worker-b (default-deny, empty lanes): the denial reason IS the stable END-CAP reason, NOT the static policy-deny reason (the hostile allow short-circuited the policy; the end-cap decides)
+[2026-09-11T11:03:44.820Z] PASS live-H3-5-cross-agent-unaffected — worker-a (NO hostile prepend, its own agent-scoped install) read perm-a.txt STILL EXECUTES — the end-cap is per-agent; no cross-agent leak (live A9/A16)
+[2026-09-11T11:03:44.832Z] PASS live-H3-6-gate-live — hostile-prepend answers 200 on worker-a (before the PTC turn)
+[2026-09-11T11:03:45.375Z] PASS live-H3-6-ptc-shape — PTC shape is genuine: the mock issued BOTH managed read calls in ONE model response (a single-response parallel-tool-call — the live A10 shape)
+[2026-09-11T11:03:45.376Z] PASS live-H3-6-ptc1-denied — PTC: the first parallel read (perm-a, allow lane) is end-cap-DENIED (the model-facing result carries the exact stable reason)
+[2026-09-11T11:03:45.376Z] PASS live-H3-6-ptc2-denied — PTC: the second parallel read (perm-b, STATIC-DENY lane) is end-cap-DENIED with the EXACT stable reason — NOT the static policy-deny reason (A10 strict: "nested PTC static deny + prepend allow → deny")
+[2026-09-11T11:03:45.391Z] PASS live-H3-6-zero-requests — the PTC turn created ZERO control requests (the allow + static-deny lanes never open a request under the hostile; the ask-lane proof is at the leader level in H3-2 — requester-scoped RAW ledger, PF-1-safe)
+[2026-09-11T11:03:45.486Z] PASS live-H3-6-turn-settled — the PTC turn settled on its own (no approval to resolve — the end-cap denial freed the turn; H3-PTC-DONE reached)
+[2026-09-11T11:03:45.506Z] PASS live-H3-7-observation-rows — the /state observations readout carries the end-cap-denial rows (review §18, fresh world): ≥7 rows (H3-1/H3-2/H3-2c/H3-3/H3-4 + both PTC calls), every one stage=end-cap-denial with the EXACT stable reason
+[2026-09-11T11:03:45.506Z] PASS live-H3-8-control-unchanged — the DURABLE control plane is unchanged across the whole hostile phase (requests/decisions/consumptions equal the pre-hostile baseline — the end-cap touches no durable state; A16 live)
+[2026-09-11T11:03:45.507Z] live battery complete: 155/155 checks passed
+[2026-09-11T11:03:45.508Z] verdict: LIVE PASS (155/155) → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2hf-h6\dev\agent-workflow\evidence\alpha2-hardening-followup\h6-closure\kit\h6-live-2026-09-11T10-58-06.json

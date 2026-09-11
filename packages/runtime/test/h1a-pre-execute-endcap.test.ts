@@ -71,6 +71,17 @@
  *                agent-scoped guard)
  *   A15          = P0-B (the ask lane is not hijackable — explicit leg)
  *   A16          an end-cap denial creates/resolves NO approval state
+ *   P0-K1 (H6)   the authorized BASH with the FULL H5 effect projection
+ *                (command + workdir + run_in_background + timeoutMs +
+ *                sandbox_permissions) on the ask lane, NO hostile: it
+ *                canonicalizes, ask-allow, EXECUTES exactly once,
+ *                request/decision/consumption exactly-once (the guard
+ *                abstains — no over-deny of the authorized bash path)
+ *   P0-K2 (H6)   the SAME bash call (full effect projection) under a
+ *                hostile prepend-allow is END-CAP DENIED with the exact
+ *                stable reason; the body never runs; ZERO control rows
+ *                (the ask lane is never reached — the H5 bash projection
+ *                change must not open a guard gap)
  *   S15-ext      composite disposer: dispose ⇒ listener AND guard removed
  *                (listener FIRST, guard LAST); a fresh install on the
  *                same double works independently
@@ -187,6 +198,7 @@ let readBodyCalls = 0
 let writeBodyCalls = 0
 let webfetchBodyCalls = 0
 let compositeBodyCalls = 0
+let bashBodyCalls = 0
 /** Per-agent read body-call counts (the A9 per-agent pin). */
 const readBodyAgentCalls = new Map<string, number>()
 
@@ -284,6 +296,11 @@ function registerManagedTools(ctx: Context): void {
   ctx.tools.register(
     makeTool('web_fetch', 'ran:web_fetch', () => {
       webfetchBodyCalls += 1
+    }),
+  )
+  ctx.tools.register(
+    makeTool('bash', 'ran:bash', () => {
+      bashBodyCalls += 1
     }),
   )
 }
@@ -522,6 +539,64 @@ const MAINR = await (async () => {
     const resultA9b = await drive(ctx, keyA9b, 'h1a-a9-b', 'read', { file_path: 'fileA.txt' })
     const rowsA9 = await rowCounts(control.service)
 
+    // ── P0-K (H6): the bash projection change must not open a guard gap ──
+    // The FULL H5 bash effect projection (command + workdir + detached +
+    // explicit timeout + requested sandbox mode) — the four effect fields
+    // fail-closed BEFORE the resolver call, then the normalized workdir
+    // ('dirA') resolves through the seam wrapper (one resolver
+    // consultation). K1 proves the authorized bash path still works
+    // (no over-deny); K2 proves the hostile force-allow still cannot
+    // authorize it (the ask lane is never reached under the hostile).
+    const P0K_ARGS: Record<string, unknown> = {
+      command: 'echo h1a-p0k',
+      description: 'h1a p0k probe',
+      workdir: 'dirA',
+      run_in_background: true,
+      timeoutMs: 5000,
+      sandbox_permissions: 'workspace-write',
+    }
+    // K1 — authorized: bash, full effect projection, ask lane, NO hostile.
+    const { scope: scopeK1, key: keyK1 } = await mintAgentScope(ctx, 'h1a-agent-k1')
+    const obsK1: Record<string, unknown>[] = []
+    installOnScope(scopeK1, control.service, ASK_POLICY, resolver, obsK1)
+    const bashBeforeK1 = bashBodyCalls
+    const pendingK1 = ctx.tools.execute({
+      signal: new AbortController().signal,
+      callId: ToolCallId('h1a-p0k1-bash'),
+      name: 'bash',
+      arguments: P0K_ARGS,
+      agent: keyK1,
+    })
+    const requestK1 = await waitForRequest(control.service, 'h1a-p0k1-bash')
+    await control.service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: requestK1.requestId,
+      decision: 'allow',
+    })
+    const resultK1 = await pendingK1
+    const bashDeltaK1 = bashBodyCalls - bashBeforeK1
+    const rowsK1 = await rowCounts(control.service)
+    const stateK1 = await control.service.listControlState(P6T4_ROOT)
+    // The fingerprint-discrimination reference: the SAME command in a
+    // DIFFERENT workdir must carry a DIFFERENT fingerprint (H5 B1 — the
+    // workdir authority key is bound into the projection).
+    const opK1OtherDir = await canonicalizeOperation({
+      name: 'bash',
+      arguments: { ...P0K_ARGS, workdir: 'dirB' },
+      resolveTarget: resolver.resolver,
+    })
+    // K2 — the discriminating leg: the SAME bash call (full effect
+    // projection) under a hostile prepend-allow.
+    const { scope: scopeK2, key: keyK2 } = await mintAgentScope(ctx, 'h1a-agent-k2')
+    const obsK2: Record<string, unknown>[] = []
+    installOnScope(scopeK2, control.service, ASK_POLICY, resolver, obsK2)
+    installHostileAllow(scopeK2)
+    const bashBeforeK2 = bashBodyCalls
+    const resultK2 = await drive(ctx, keyK2, 'h1a-p0k2-bash', 'bash', P0K_ARGS)
+    const bashDeltaK2 = bashBodyCalls - bashBeforeK2
+    const rowsK2 = await rowCounts(control.service)
+
     return {
       a: {
         isError: resultA.isError,
@@ -571,6 +646,24 @@ const MAINR = await (async () => {
         readBodyCalls: readDeltaI,
         rows: rowsI,
         observations: obsI,
+      },
+      k: {
+        k1IsError: resultK1.isError,
+        k1Text: textOf(resultK1),
+        k1BodyCalls: bashDeltaK1,
+        k1RequestToolName: requestK1.toolName ?? null,
+        k1Fingerprint: requestK1.operationFingerprint ?? null,
+        k1FingerprintOtherDir: opK1OtherDir.fingerprint,
+        k1Summary: requestK1.summary ?? null,
+        k1RequestId: requestK1.requestId,
+        k1Rows: rowsK1,
+        k1ConsumptionRequestIds: stateK1.consumptions.map((c) => c.requestId),
+        k1Observations: obsK1,
+        k2IsError: resultK2.isError,
+        k2Text: textOf(resultK2),
+        k2BodyCalls: bashDeltaK2,
+        k2Rows: rowsK2,
+        k2Observations: obsK2,
       },
       a9: {
         aIsError: resultA9a.isError,
@@ -1003,6 +1096,51 @@ describe('H1a A9: install-scoped marker + agent-scoped guard (two agents)', () =
   })
   it('ZERO control rows (A denied pre-dispatch; B statically allowed)', () => {
     expect(MAINR.a9.rows).toEqual({ requests: 0, decisions: 0, consumptions: 0 })
+  })
+})
+
+describe('H1a P0-K1 (H6): the authorized bash with the full H5 effect projection is not over-denied', () => {
+  it('EXECUTES exactly once after the durable leader allow (ask→allow chain intact for bash)', () => {
+    expect(MAINR.k.k1IsError).toBe(false)
+    expect(MAINR.k.k1Text).toBe('ran:bash')
+    expect(MAINR.k.k1BodyCalls).toBe(1)
+  })
+  it('request + decision + consumption rows exactly-once for the bash request', () => {
+    expect(MAINR.k.k1Rows).toEqual({ requests: 1, decisions: 1, consumptions: 1 })
+    expect(MAINR.k.k1ConsumptionRequestIds).toEqual([MAINR.k.k1RequestId])
+  })
+  it('the request carries the bash tool name + a sha256 fingerprint that BINDS the workdir (a different workdir ⇒ a different fingerprint)', () => {
+    expect(MAINR.k.k1RequestToolName).toBe('bash')
+    expect(typeof MAINR.k.k1Fingerprint).toBe('string')
+    expect(MAINR.k.k1Fingerprint?.startsWith('sha256:')).toBe(true)
+    expect(MAINR.k.k1Fingerprint).not.toBe(MAINR.k.k1FingerprintOtherDir)
+  })
+  it('the presentation summary carries the workdir display + the command preview', () => {
+    expect(typeof MAINR.k.k1Summary).toBe('string')
+    expect(MAINR.k.k1Summary?.includes('dirA')).toBe(true)
+    expect(MAINR.k.k1Summary?.includes('echo h1a-p0k')).toBe(true)
+  })
+  it('no end-cap diagnostics row (the guard abstained on the marked exec)', () => {
+    expect(endCapObservations(MAINR.k.k1Observations).length).toBe(0)
+  })
+})
+
+describe('H1a P0-K2 (H6): hostile prepend-allow + bash with workdir/effects ⇒ the end-cap still decides (no guard gap opened by the H5 projection)', () => {
+  it('is DENIED by the end-cap with the EXACT stable reason', () => {
+    expect(MAINR.k.k2IsError).toBe(true)
+    expect(MAINR.k.k2Text).toBe(`Error: ${END_CAP_REASON}`)
+  })
+  it('the bash body NEVER runs (the force-allow cannot authorize the managed bash call)', () => {
+    expect(MAINR.k.k2BodyCalls).toBe(0)
+  })
+  it('ZERO new control rows (the ask lane was never reached — no request, no decision, no consumption)', () => {
+    expect(MAINR.k.k2Rows).toEqual(MAINR.k.k1Rows)
+  })
+  it('exactly ONE end-cap diagnostics row carries the bash tool (the guard, not the policy, is the decider)', () => {
+    const rows = endCapObservations(MAINR.k.k2Observations)
+    expect(rows.length).toBe(1)
+    expect(rows[0]?.['reason']).toBe(END_CAP_REASON)
+    expect(rows[0]?.['tool']).toBe('bash')
   })
 })
 

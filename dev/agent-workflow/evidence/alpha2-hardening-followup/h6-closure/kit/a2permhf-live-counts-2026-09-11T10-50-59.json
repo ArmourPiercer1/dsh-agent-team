@@ -1,0 +1,20 @@
+{
+  "requests": 14,
+  "decisions": 13,
+  "consumptions": 9,
+  "mockLeaderLines": 6,
+  "mockWorkerALines": 6,
+  "mockWorkerBLines": 3,
+  "atLive": "2026-09-11T10:57:10.807Z",
+  "h6L1": {
+    "realT0": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permhf-2026-09-11T10-50-59\\workspace-a2perm\\dirA",
+    "realT1": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permhf-2026-09-11T10-50-59\\workspace-a2perm\\dirB"
+  },
+  "h6L2": {
+    "command": "echo a2hf-scope-probe",
+    "fpI": "sha256:84a9b3329153c5073cc02dd2fb3589478d6724aea5a61b6db15b24380ab69dbc",
+    "fpII": "sha256:a5507b4a0442756c95d6d64697a7809f7b6bcc6b1cd9851714e8d0626ef49907",
+    "fpIII": "sha256:84a9b3329153c5073cc02dd2fb3589478d6724aea5a61b6db15b24380ab69dbc",
+    "ridI": "ctrl-002c0jv11ejpz407onm3h1iz"
+  }
+}
