@@ -54,10 +54,12 @@
  * the catalog — it is listed by identity and fails only when RESOLVED);
  * a saved file whose IDENTITY itself is unusable (broken YAML, missing id)
  * carries no identity and is absent from the listing, like any
- * non-Blueprint file. Duplicate MUTABLE identities (two saved files, or a
- * saved file vs the bootstrap anchor) fail loud
- * `TEAM_BLUEPRINT_REVISION_DUPLICATE`; a frozen row shadowing a disk file
- * is NOT a duplicate (the registry wins).
+ * non-Blueprint file. SHADOW precedence (plan §7.3 registry-wins, extended
+ * to the pinned anchor — the RED-1 contract): a saved file carrying the
+ * same identity as a frozen registry row OR the bootstrap anchor is
+ * shadowed (listed once, under the shadowing source — a saved copy of the
+ * anchor is NOT a duplicate); only two plain SAVED sources with the same
+ * `(blueprintId, revision)` fail loud `TEAM_BLUEPRINT_REVISION_DUPLICATE`.
  *
  * Strong-parse failures propagate as the domain's `TeamContractError`
  * (annotated with the source name, the static catalog's established
@@ -140,8 +142,10 @@ export interface BlueprintAuthority {
   /**
    * The current union of identities (frozen registry rows + saved source
    * identities + the bootstrap anchor), sorted by blueprintId then the
-   * catalog revision order.
-   * @throws `TEAM_BLUEPRINT_REVISION_DUPLICATE` for two mutable sources
+   * catalog revision order. A saved file duplicating a frozen row or the
+   * bootstrap anchor is shadowed (listed under the shadowing source); two
+   * saved files with the same identity fail loud.
+   * @throws `TEAM_BLUEPRINT_REVISION_DUPLICATE` for two saved sources
    *   with the same `(blueprintId, revision)`; `TEAM_BLUEPRINT_DIR_UNREADABLE`
    *   when the configured directory scan fails.
    */
@@ -262,17 +266,21 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
       const key = identityKey(blueprintId, revision)
       const existing = map.get(key)
       if (existing !== undefined) {
-        if (existing.origin === 'frozen') continue // registry wins over the disk
+        // SHADOW, not a duplicate: the frozen registry row AND the pinned
+        // bootstrap anchor (the row's pinned source) both WIN over a disk
+        // file of the same identity (plan §7.3 registry-wins, extended to
+        // the anchor — the RED-1 contract: a saved copy of the anchor is
+        // listed once, under the anchor). Only two plain SAVED sources
+        // with the same identity are the loud duplicate.
+        if (existing.origin === 'frozen' || existing.origin === 'bootstrap') continue
         throw new TeamPluginError(
           'TEAM_BLUEPRINT_REVISION_DUPLICATE',
-          `two mutable Blueprint sources declare the same (blueprintId, revision): ${key} (existing ${
-            existing.origin === 'bootstrap' ? 'bootstrap anchor' : `saved source '${existing.sourceFile}'`
-          }, incoming saved source '${name}') — delete or re-revision one of them`,
+          `two mutable Blueprint sources declare the same (blueprintId, revision): ${key} (existing saved source '${existing.sourceFile}', incoming saved source '${name}') — delete or re-revision one of them`,
           {
             blueprintId,
             revision,
             reason: 'duplicate-mutable-source',
-            existing: existing.origin === 'bootstrap' ? 'bootstrap' : existing.sourceFile,
+            existing: existing.sourceFile,
             incoming: name,
           },
         )

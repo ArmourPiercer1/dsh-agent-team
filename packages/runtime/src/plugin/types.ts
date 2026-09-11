@@ -398,10 +398,12 @@ export const TEAM_PLUGIN_ERROR_CODES = {
    */
   TEAM_BLUEPRINT_FILE_UNREADABLE: 'TEAM_BLUEPRINT_FILE_UNREADABLE',
   /**
-   * BP3 — two MUTABLE sources (saved files, or a saved file vs the inline
-   * bootstrap anchor) declare the same `(blueprintId, revision)` pair
-   * (plan §7.3: fail loud duplicate — a frozen registry row is NOT a
-   * duplicate: the registry wins over the disk).
+   * BP3 — two SAVED sources (two files in the blueprintDir) declare the
+   * same `(blueprintId, revision)` pair (plan §7.3: fail loud duplicate).
+   * SHADOW, not duplicate: a frozen registry row or the pinned bootstrap
+   * anchor carrying the same identity WINS over the disk file (the
+   * registry-wins rule extended to the row's pinned source — the RED-1
+   * contract).
    */
   TEAM_BLUEPRINT_REVISION_DUPLICATE: 'TEAM_BLUEPRINT_REVISION_DUPLICATE',
   /**

@@ -71,6 +71,9 @@ import {
 import type { TeamDomain } from '../../../storage/repositories/index.js'
 import type { StorageDomainSeam } from '../../../storage/schema/index.js'
 import type { LegacyInspectFn } from './legacy-surface.js'
+import { createBlueprintAuthority } from './blueprint-authority.js'
+import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
+import { createBlueprintSourceIndex } from './blueprint-source-index.js'
 import { createTeamProductionRoot } from './root.js'
 import {
   TEAM_PLUGIN_ERROR_CODES,
@@ -314,6 +317,11 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (c.bootPhase !== 'create' && c.bootPhase !== 'resume' && c.bootPhase !== 'create-or-open') fail('bootPhase must be "create", "resume" or "create-or-open"')
   if (typeof c.rootSessionId !== 'string' || c.rootSessionId.length === 0) fail('rootSessionId must be a non-empty string')
   if (typeof c.blueprintSource !== 'string' || c.blueprintSource.length === 0) fail('blueprintSource must be a non-empty string')
+  // BP3 (issue #2 blueprint-loading, plan §7.1): the optional saved-source
+  // directory. Absent = the filesystem catalog is disabled (the legacy
+  // inline-bootstrap-only behavior); present = a non-empty path string
+  // (absolute, or relative to the host process.cwd()).
+  if (c.blueprintDir !== undefined && (typeof c.blueprintDir !== 'string' || c.blueprintDir.length === 0)) fail('blueprintDir must be a non-empty string when present')
   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
   if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
@@ -1037,6 +1045,25 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // --- production run still fails closed on the same file.
   const legacyInspect = await loadLegacyInspect()
 
+  // --- BP3/BP4 (issue #2 blueprint-loading, plan §7/§8): the live blueprint
+  // --- authority. The production host is the SOLE authority-builder: the
+  // --- stateless saved-source index over `config.blueprintDir` (absent =
+  // --- the filesystem catalog disabled — the legacy inline-bootstrap-only
+  // --- behavior), the live authority over the FROZEN registry rows + the
+  // --- saved sources + the row anchor (the one strong parse), and the
+  // --- live catalog facade the root consumes. Factory worlds (no host
+  // --- entry) pass neither and keep the legacy static single-blueprint
+  // --- catalog + the no-freeze behavior (the root's optional params).
+  const blueprintSourceIndex = createBlueprintSourceIndex({
+    blueprintDir: resolvedRowConfig.blueprintDir,
+  })
+  const blueprintAuthority = createBlueprintAuthority({
+    bootstrapSource: resolvedRowConfig.blueprintSource,
+    sourceIndex: blueprintSourceIndex,
+    registry: domain.repositories.blueprintRegistry,
+  })
+  const liveBlueprintCatalog = createLiveBlueprintCatalog(blueprintAuthority)
+
   // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
   const builtRoot: TeamProductionRoot = createTeamProductionRoot({
     config: resolvedRowConfig,
@@ -1050,6 +1077,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // object the glue reads lazily in agentSetup).
     controlServiceRef,
     legacyInspect,
+    // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
+    // saved sources + the frozen registry + this row's anchor (the legacy
+    // static catalog is only the factory-world fallback in the root).
+    blueprintCatalog: liveBlueprintCatalog,
+    // BP6 (issue #2 blueprint-loading, plan §10): the freeze barrier —
+    // every fresh TeamSession mint of this root freezes its snapshot first
+    // (the real create boot + team.create v1/v2 through the bindFresh
+    // wrapper, the handoff target pre-put, the fixture boot seed).
+    blueprintAuthority,
     // P8-S7-R4 A28: the DSH public sessionQuery service, resolved lazily
     // at handoff use time (absent in this host entry → the handoff source
     // surface fails closed exactly as the S5A boot world does).

@@ -645,20 +645,45 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     Recorded on the blueprint-loading task branch; re-verify on
     //     the merged tree after the hardening integration (plan §3.5).
     //
+    // (bp1-e) ONE issue#2-blueprint-loading scannable file (this commit,
+    //     the BP6 freeze-barrier invariant spec, plan §10):
+    //     packages/runtime/test/bp1-freeze-barrier.test.ts (the
+    //     fresh-TeamSession invariant — a production fresh TeamSession
+    //     commit ⇒ the registry carries the same (id, revision,
+    //     contentHash) record — pinned over the two production mint
+    //     paths the host drives: the real create boot [the shared
+    //     bindFresh wrapper choke point] and the fixture boot seed
+    //     [writer-audit category 3's explicit registry seeding]; the
+    //     stored row's source text is the row anchor — the saved copy of
+    //     the anchor identity under blueprintDir is shadowed, never a
+    //     second row). Zero denylist vocabulary (the scan over it passes
+    //     — the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling edits (root.ts the optional
+    //     blueprintCatalog?/blueprintAuthority? params + the freeze
+    //     barrier in the bindFresh wrapper + the handoff pre-put freeze +
+    //     the fixture boot seeding, host.ts the sole authority-builder
+    //     wiring + the blueprintDir config validation,
+    //     blueprint-authority.ts the shadow-precedence correction [a
+    //     saved file carrying the anchor's identity is shadowed, not a
+    //     duplicate — the RED-1 contract], types.ts the code-doc update)
+    //     are in-place edits on already-scanned files (no count change).
+    //     Recorded on the blueprint-loading task branch; re-verify on
+    //     the merged tree after the hardening integration (plan §3.5).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 679 (675 + 4), and its file list names exactly the thirty-seven
+    // 680 (675 + 5), and its file list names exactly the thirty-eight
     // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
     // two A5 + one A6 + one H1 + one H3 + four bp1 + three bp1-c + four
-    // bp1-d; the
+    // bp1-d + one bp1-e; the
     // committed scanner is byte-identical — no scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-blueprint-loading/.
-    expect(scanResult.filesScanned).toBe(679)
-    expect(scanResult.files.length).toBe(679)
+    expect(scanResult.filesScanned).toBe(680)
+    expect(scanResult.files.length).toBe(680)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

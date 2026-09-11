@@ -13,9 +13,11 @@
  *     saved source is still LISTED (its identity is readable) and fails
  *     only when RESOLVED; a source with a broken IDENTITY (bad YAML)
  *     carries no identity and is absent from the listing;
- *   - duplicate MUTABLE identities fail loud (two saved files, or a saved
- *     file vs the bootstrap anchor); a frozen registry row shadowing a
- *     disk file is NOT a duplicate (the registry wins);
+ *   - shadow precedence (plan §7.3 registry-wins, extended to the pinned
+ *     anchor — the RED-1 contract): a saved file carrying the identity of
+ *     a frozen registry row OR the bootstrap anchor is shadowed (listed
+ *     once, under the shadowing source); only two saved files with the
+ *     same identity fail loud TEAM_BLUEPRINT_REVISION_DUPLICATE;
  *   - resolve precedence: registry → parse the stored source text → the
  *     hash must match the row (integrity); else the current mutable
  *     source, strong-parsed fresh on demand;
@@ -289,7 +291,7 @@ describe('bp1 authority: duplicate mutable identities (plan §7.3)', () => {
     expect(detail?.incoming).toBe('dupe-b.yaml')
   })
 
-  it('a saved file duplicating the bootstrap anchor: fail loud too', () => {
+  it('a saved file carrying the ANCHOR identity is shadowed by the anchor (RED-1 contract, not a duplicate)', () => {
     const W2B = makeDir('w2b')
     writeSource(W2B, 'anchor-copy.yaml', W1_BOOTSTRAP)
     const w2b = createBlueprintAuthority({
@@ -297,9 +299,13 @@ describe('bp1 authority: duplicate mutable identities (plan §7.3)', () => {
       sourceIndex: createBlueprintSourceIndex({ blueprintDir: W2B }),
       registry: new MemRegistry(),
     })
-    const err = capture(() => w2b.listIdentities())
-    expect(isTeamPluginError(err) && err.code).toBe('TEAM_BLUEPRINT_REVISION_DUPLICATE')
-    expect((err as { detail?: Record<string, unknown> }).detail?.existing).toBe('bootstrap')
+    const ids = w2b.listIdentities()
+    const anchorIds = ids.filter((i) => i.blueprintId === 'bp1.anchor')
+    expect(anchorIds.length).toBe(1)
+    expect(anchorIds[0]?.origin).toBe('bootstrap')
+    expect(ids.some((i) => i.sourceFile === 'anchor-copy.yaml')).toBe(false) // shadowed, not a second identity
+    // the pinned anchor's content wins over the disk copy
+    expect(w2b.resolve('bp1.anchor', '1').contentHash).toBe(w1AnchorRef.contentHash)
   })
 })
 
