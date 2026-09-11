@@ -53,6 +53,14 @@
  *  S15 disposer: the install returns the ctx.on disposer; it removes
  *      the listener (trigger after dispose finds none); a second
  *      install on the same double works independently
+ *  DR-A..D deny-rule canonicalization failure (H2 P1-3, option A):
+ *      a same-tool exact DENY rule that fails to canonicalize → the
+ *      operation is DENIED before the A3 resolver (fail-closed; the
+ *      stable reason names the failed path(s); the failure is not
+ *      cached — the next decision retries and re-binds the rule);
+ *      a failed ALLOW rule → no match (ask/default); a failed ASK
+ *      rule → the default (deny) — ONLY the deny lane flips (R2
+ *      lane asymmetry)
  *
  * Design rulings under test (the adapter module doc R1–R5): R3 is
  * pinned by S14; R5's no-request consistency anomaly is pinned by the
@@ -1211,5 +1219,247 @@ describe('A5a S14: pre-aborted signal — deny WITHOUT creating a request row (R
   })
   it('NO request row was created for the pre-aborted call (the no-row preference)', () => {
     expect(reqCorrelation(S3.s14.state, 'a5a-s14-read')).toBe(false)
+  })
+})
+
+// ===========================================================================
+// DR-A..DR-D — P1-3 (H2, option A): the exact DENY lane flips on
+// canonicalization failure — a same-tool exact deny rule that fails to
+// canonicalize DENIES the operation BEFORE the A3 resolver is called
+// (a failed static deny must never downgrade to ask/default); the
+// allow/ask lanes keep the non-match-on-failure semantics (the R2 lane
+// asymmetry).
+// ===========================================================================
+
+/** The DR policy base: default ask, no allow/ask rules. */
+const DR_POLICY: TemplatePermissionPolicy = {
+  default: 'ask',
+  allow: [],
+  ask: [],
+  deny: [{ tool: 'read', resource: { kind: 'exact', path: 'locked.txt' } }],
+}
+
+const DR = await (async () => {
+  // World DR-A (mutable backend): the deny rule path 'locked.txt' fails
+  // to resolve at first, then RECOVERS (the failure is not cached — the
+  // rule is retried on the next decision). Default = ask: without P1-3,
+  // a read of a resolvable path would be ASKED (the escalation P1-3
+  // closes).
+  let failLocked = true
+  const envA = await createEnv('a5a-dr-a', {
+    policy: DR_POLICY,
+    isLeader: false,
+    failFor: (path) => path === 'locked.txt' && failLocked,
+  })
+  // World DR-B: a FAILED ALLOW rule (read 'allowed.txt' unresolvable),
+  // default ask — the failed allow must not match (no escalation: the
+  // operation is simply asked, exactly as with no allow rule).
+  const envB = await createEnv('a5a-dr-b', {
+    policy: {
+      default: 'ask',
+      allow: [{ tool: 'read', resource: { kind: 'exact', path: 'allowed.txt' } }],
+      ask: [],
+      deny: [],
+    },
+    isLeader: false,
+    failFor: (path) => path === 'allowed.txt',
+  })
+  // World DR-C: a FAILED ASK rule (read 'asked.txt' unresolvable),
+  // default DENY — the failed ask falls to the default, which is deny
+  // (more restrictive; not an escalation).
+  const envC = await createEnv('a5a-dr-c', {
+    policy: {
+      default: 'deny',
+      allow: [],
+      ask: [{ tool: 'read', resource: { kind: 'exact', path: 'asked.txt' } }],
+      deny: [],
+    },
+    isLeader: false,
+    failFor: (path) => path === 'asked.txt',
+  })
+  // World DR-D: MIXED failed lanes — allow ('allowed.txt'), ask
+  // ('asked.txt') AND deny ('locked.txt') all fail to canonicalize;
+  // only the deny lane flips (the reason names the deny path(s), never
+  // the allow/ask paths).
+  const envD = await createEnv('a5a-dr-d', {
+    policy: {
+      default: 'ask',
+      allow: [{ tool: 'read', resource: { kind: 'exact', path: 'allowed.txt' } }],
+      ask: [{ tool: 'read', resource: { kind: 'exact', path: 'asked.txt' } }],
+      deny: [{ tool: 'read', resource: { kind: 'exact', path: 'locked.txt' } }],
+    },
+    isLeader: false,
+    failFor: (path) =>
+      path === 'allowed.txt' || path === 'asked.txt' || path === 'locked.txt',
+  })
+  try {
+    // DR-A (1) — read of a RESOLVABLE path + same-tool exact deny rule
+    // that fails to canonicalize → deny BEFORE the resolver.
+    const nextA1 = makeNext()
+    const dA1 = await envA.ctx.trigger(
+      makeExec({ name: 'read', arguments: { file_path: 'open.txt' }, callId: 'a5a-dr-a1' }),
+      nextA1.fn,
+    )
+    const stateA1 = await envA.service.listControlState(P6T4_ROOT)
+
+    // The backend recovers (the failure was NOT cached).
+    failLocked = false
+
+    // DR-A (2) — the NEXT decision re-canonicalizes the deny rule (now
+    // successful, cached): the rule's key (locked.txt) does not match
+    // the operation (open.txt) → the operation proceeds to the default
+    // ask → request → allow → executes.
+    const nextA2 = makeNext()
+    const a2Promise = envA.ctx.trigger(
+      makeExec({ name: 'read', arguments: { file_path: 'open.txt' }, callId: 'a5a-dr-a2' }),
+      nextA2.fn,
+    )
+    const a2Request = await waitForRequest(envA.service, 'a5a-dr-a2')
+    await envA.service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: a2Request.requestId,
+      decision: 'allow',
+    })
+    const dA2 = await a2Promise
+
+    // DR-B — the failed ALLOW rule is a non-match: default ask →
+    // request → allow → executes (the failure is not escalated and not
+    // reported — no deny-canonicalization-failure row).
+    const nextB = makeNext()
+    const bPromise = envB.ctx.trigger(
+      makeExec({
+        name: 'read',
+        arguments: { file_path: 'open.txt' },
+        callId: 'a5a-dr-b',
+      }),
+      nextB.fn,
+    )
+    const bRequest = await waitForRequest(envB.service, 'a5a-dr-b')
+    await envB.service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: bRequest.requestId,
+      decision: 'allow',
+    })
+    const dB = await bPromise
+
+    // DR-C — the failed ASK rule falls to the default (deny) → static
+    // deny, zero execution, no request (no escalation).
+    const nextC = makeNext()
+    const dC = await envC.ctx.trigger(
+      makeExec({ name: 'read', arguments: { file_path: 'open.txt' }, callId: 'a5a-dr-c' }),
+      nextC.fn,
+    )
+    const stateC = await envC.service.listControlState(P6T4_ROOT)
+
+    // DR-D — mixed failed lanes: only the deny lane flips → fail-closed
+    // deny naming the deny path.
+    const nextD = makeNext()
+    const dD = await envD.ctx.trigger(
+      makeExec({ name: 'read', arguments: { file_path: 'open.txt' }, callId: 'a5a-dr-d' }),
+      nextD.fn,
+    )
+    const stateD = await envD.service.listControlState(P6T4_ROOT)
+
+    return {
+      decisionA1: dA1,
+      nextA1Calls: nextA1.calls(),
+      stateA1,
+      observationsA: [...envA.observations],
+      decisionA2: dA2,
+      nextA2Calls: nextA2.calls(),
+      requestA2: a2Request,
+      decisionB: dB,
+      nextBCalls: nextB.calls(),
+      requestB: bRequest,
+      observationsB: [...envB.observations],
+      decisionC: dC,
+      nextCCalls: nextC.calls(),
+      stateC,
+      observationsC: [...envC.observations],
+      decisionD: dD,
+      nextDCalls: nextD.calls(),
+      stateD,
+      observationsD: [...envD.observations],
+    }
+  } finally {
+    await destroyP6T1World(envA.world)
+    await destroyP6T1World(envB.world)
+    await destroyP6T1World(envC.world)
+    await destroyP6T1World(envD.world)
+  }
+})()
+
+describe('A5a DR-A: a same-tool exact DENY rule that fails to canonicalize → deny BEFORE the resolver (P1-3, option A)', () => {
+  it('the operation is denied with the stable reason naming the failed path — zero execution, zero control rows', () => {
+    expect(DR.decisionA1['kind']).toBe('deny')
+    const reason = (DR.decisionA1 as { kind: 'deny'; reason: string }).reason
+    expect(reason.includes('a static deny rule could not be canonicalized')).toBe(true)
+    expect(reason.includes('locked.txt')).toBe(true)
+    expect(DR.nextA1Calls).toBe(0)
+    expect(reqCorrelation(DR.stateA1, 'a5a-dr-a1')).toBe(false)
+  })
+  it('an onObserve row is emitted (stage deny-canonicalization-failure, tool + the failed paths)', () => {
+    const rows = DR.observationsA.filter(
+      (o) => o['stage'] === 'deny-canonicalization-failure',
+    )
+    expect(rows.length).toBe(1)
+    expect(rows[0]?.['callId']).toBe('a5a-dr-a1')
+    expect(rows[0]?.['tool']).toBe('read')
+    expect(rows[0]?.['paths']).toEqual(['locked.txt'])
+  })
+  it('the failure is NOT cached: after the backend recovers, the rule re-canonicalizes and the operation proceeds to the default ask (request → allow → executes)', () => {
+    expect(DR.decisionA2).toEqual({ kind: 'allow' })
+    expect(DR.nextA2Calls).toBe(1)
+    expect(DR.requestA2.kind).toBe(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+  })
+})
+
+describe('A5a DR-B: a failed ALLOW rule → no match (no escalation; the allow/ask lanes keep non-match-on-failure)', () => {
+  it('the operation is simply asked (default) and executes after the approval — no deny-canonicalization-failure row', () => {
+    expect(DR.decisionB).toEqual({ kind: 'allow' })
+    expect(DR.nextBCalls).toBe(1)
+    expect(DR.requestB.kind).toBe(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    const rows = DR.observationsB.filter(
+      (o) => o['stage'] === 'deny-canonicalization-failure',
+    )
+    expect(rows.length).toBe(0)
+  })
+})
+
+describe('A5a DR-C: a failed ASK rule → falls to the default (deny) — static deny, no escalation', () => {
+  it('the operation is statically denied by the DEFAULT (not the fail-closed reason), zero execution, no request row', () => {
+    expect(DR.decisionC['kind']).toBe('deny')
+    const reason = (DR.decisionC as { kind: 'deny'; reason: string }).reason
+    expect(reason.includes('default')).toBe(true)
+    expect(reason.includes('could not be canonicalized')).toBe(false)
+    expect(DR.nextCCalls).toBe(0)
+    expect(reqCorrelation(DR.stateC, 'a5a-dr-c')).toBe(false)
+  })
+  it('no deny-canonicalization-failure row (the ask lane is not reported)', () => {
+    const rows = DR.observationsC.filter(
+      (o) => o['stage'] === 'deny-canonicalization-failure',
+    )
+    expect(rows.length).toBe(0)
+  })
+})
+
+describe('A5a DR-D: mixed failed lanes → ONLY the deny lane flips; the reason names the exact deny path', () => {
+  it('the operation is fail-closed denied naming the DENY path (locked.txt) — never the allow/ask paths', () => {
+    expect(DR.decisionD['kind']).toBe('deny')
+    const reason = (DR.decisionD as { kind: 'deny'; reason: string }).reason
+    expect(reason.includes('locked.txt')).toBe(true)
+    expect(reason.includes('allowed.txt')).toBe(false)
+    expect(reason.includes('asked.txt')).toBe(false)
+    expect(DR.nextDCalls).toBe(0)
+    expect(reqCorrelation(DR.stateD, 'a5a-dr-d')).toBe(false)
+  })
+  it('the observe row names exactly the deny-lane failed path(s)', () => {
+    const rows = DR.observationsD.filter(
+      (o) => o['stage'] === 'deny-canonicalization-failure',
+    )
+    expect(rows.length).toBe(1)
+    expect(rows[0]?.['paths']).toEqual(['locked.txt'])
   })
 })
