@@ -52,7 +52,6 @@ import {
   parseBlueprintRegistryRecord,
   serializeBlueprintRegistryRecord,
 } from '../schema/index.js'
-import type { BlueprintRegistryRecord } from '../schema/index.js'
 import { createTeamDomain } from '../repositories/index.js'
 import { InMemoryStorageSeam, asTeamDomainError, capture, detail } from './p4-helpers.js'
 

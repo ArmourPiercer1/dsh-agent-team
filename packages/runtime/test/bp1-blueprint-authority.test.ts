@@ -41,7 +41,7 @@
  * @module @dsh-agent-team/runtime/test/bp1-blueprint-authority
  */
 import { describe, expect, it } from 'vitest'
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 
 import {
