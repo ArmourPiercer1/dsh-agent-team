@@ -23,8 +23,9 @@
  * ```
  *
  * **The stage is DERIVED from durable TeamDomain state — there is no
- * separate stage row.** TeamDomain v1 has exactly eight stores (frozen,
- * P4-T1) and none of them is a "provisioning stage" store; the stage is a
+ * separate stage row.** TeamDomain v2 has exactly nine stores (frozen,
+ * P4-T1, extended by the v2 `blueprint_registry` store) and none of
+ * them is a "provisioning stage" store; the stage is a
  * pure function of (operation row, MemberInstanceRecord, SessionBinding,
  * ledger fact). That is what makes the machine a DURABLE PROTOCOL ADAPTER:
  * a crash at any point leaves durable state, and re-deriving the stage from

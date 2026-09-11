@@ -41,7 +41,15 @@
  *                        blueprintSource (T12-M2: the Team Blueprint document —
  *                        the closed-v1 frontmatter source whose leader/member
  *                        persona fields the persona resolver composes onto the
- *                        real DSH Agent prompt; the glue parses it lazily),
+ *                        real DSH Agent prompt; the glue parses it lazily.
+  *                        BP-F (issue #2 blueprint-loading, plan §11.2):
+  *                        DOWNGRADED to the row's bootstrap/compatibility
+  *                        anchor — the fallback bound blueprint when no
+  *                        per-root resolver is injected (the factory-world /
+  *                        pre-repair behavior). The production host ALWAYS
+  *                        injects the per-root resolver below, so the
+  *                        dynamic Team authority is the owning TeamSession's
+  *                        bound snapshot, NEVER this row-global document),
  *                        mcpServer {name, port} | null (null = no MCP server
  *                        configured — T12-H1), staticModel, deniedSelection,
  *                        externalPolicyFacts {hard, capabilityExists} (T12-B3:
@@ -79,7 +87,23 @@
  *                        permissions agent never runs unguarded).
  *                        Templates WITHOUT a permissions policy never
  *                        read the ref (alpha.1 / legacy: zero listeners).
- *   now                - parity field (the row's clock); unused by the ported
+ *   *   resolveBoundBlueprint (OPTIONAL) - BP-F (issue #2 blueprint-loading,
+  *                        plan §11.1): the narrow per-Team resolver the
+  *                        production host injects —
+  *                        (teamRootSid) => the parsed TeamBlueprint bound to
+  *                        that team root. Production chain (host): the
+  *                        durable TeamSession row's bound snapshot ref ->
+  *                        the live BlueprintAuthority.resolveSnapshot (the
+  *                        frozen registry row's source text is replayed;
+  *                        the hash equality is verified; a mutable source
+  *                        is re-parsed fresh). SYNC contract, throws typed
+  *                        on a broken chain (the setup rejection rolls the
+  *                        unpublished agent back — fail closed, as every
+  *                        other resolution failure here). ABSENT -> the
+  *                        legacy row-global anchor resolution (the
+  *                        factory-world fallback; the production host
+  *                        always passes one).
+  *   now                - parity field (the row's clock); unused by the ported
  *                        glue paths, which derive time from the services
  *   subagents (OPTIONAL) - the DSH subagents service (SubagentRuntime):
  *                        { drainContinuableDescendants, listDescendants }.
@@ -482,7 +506,7 @@ export function createAgentBindings(deps) {
   // D1 (v2): agentPresets is OPTIONAL (the host serves it as a lazy accessor;
   // a test world may omit it) — the member bind paths fail closed with the
   // typed member-base-tools-unavailable when it is absent or unusable.
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint } = deps
   if (agents === undefined) throw new Error('agent-bindings: deps.agents is required')
   if (sessionPersistence === undefined) throw new Error('agent-bindings: deps.sessionPersistence is required')
   if (config === undefined || config === null) throw new Error('agent-bindings: deps.config is required')
@@ -824,10 +848,13 @@ export function createAgentBindings(deps) {
 
   // ── alpha.1 (plan §10): the static template capabilities ───────────────
   //
-  // The BLUEPRINT is the row's single capability authority (the same
-  // document the persona slot composes from — config.blueprintSource,
-  // parsed once per binding and cached: parsing is pure, the document is
-  // a row constant). The MEMBER TEMPLATE is resolved from the durable
+  // The BOUND BLUEPRINT is each team root's capability authority (the same
+  // document the persona slot composes from — the owning TeamSession's
+  // bound snapshot, resolved once per root and cached: parsing is pure, a
+  // bound snapshot is stable for the root's lifetime — a FROZEN
+  // revision is immutable by construction, and a mutable snapshot was
+  // frozen at its TeamSession's mint through the BP6 barrier. The
+  // MEMBER TEMPLATE is resolved from the durable
   // backend truth — the committed MemberInstance row's templateId,
   // re-read on EVERY setup (so both create and cold resume re-derive the
   // capabilities from the durable identity, plan §10.9 — never from a
@@ -846,19 +873,46 @@ export function createAgentBindings(deps) {
   // legacy Blueprint does not regress); an identity/template resolution
   // failure must never degrade to the full legacy tool catalog (fail-open).
 
-  /** @type {object|null} the row's bound blueprint (parsed once; null = no blueprintSource). */
-  let boundBlueprint = null
   /**
-   * The row's bound blueprint, lazily parsed (an unparseable blueprint
-   * throws from the setup — the same fail-closed semantics the persona
-   * boundary already carries).
-   * @returns {object|null} the parsed TeamBlueprint, or null.
+   * BP-F (issue #2 blueprint-loading, plan §11.2): the per-TEAM-ROOT bound
+   * blueprint cache (the row-global single parse is the defect this repair
+   * removes — one row carries MANY team roots, each bound to its OWN
+   * snapshot). Keyed by the owning team root session id; each root's
+   * document is resolved ONCE per binding and cached (parsing is pure; a
+   * bound snapshot is stable for its root's lifetime — see the
+   * block comment above).
+   * @type {Map<string, object|null>}
    */
-  function getBoundBlueprint() {
-    const src = String(config.blueprintSource ?? '')
-    if (src === '') return null
-    if (boundBlueprint === null) boundBlueprint = parseBlueprint(src)
-    return boundBlueprint
+  const boundBlueprintByRoot = new Map()
+  /**
+   * The bound blueprint of ONE team root (BP-F, plan §11.2):
+   *  - an INJECTED `resolveBoundBlueprint` resolver (the production host,
+   *    plan §11.1) decides the root's bound snapshot — the durable
+   *    TeamSession row's ref through the live authority (frozen registry
+   *    replay / fresh mutable parse, hash equality verified); a resolver
+   *    failure THROWS (the setup rejection rolls the unpublished agent
+   *    back — the same fail-closed semantics the row-global parse had for
+   *    an unparseable anchor);
+   *  - ABSENT resolver -> the LEGACY row-global anchor
+   *    (config.blueprintSource, parsed once per root as before — the
+   *    factory-world / pre-repair fallback; empty source -> null, exactly
+   *    the pre-repair null contract).
+   * @param {string} [teamRootSid] - the owning team root (absent = the boot root).
+   * @returns {object|null} the parsed TeamBlueprint of the root's bound snapshot, or null.
+   */
+  function getBoundBlueprint(teamRootSid) {
+    const root = teamRootSid !== undefined ? String(teamRootSid) : rootSid
+    const cached = boundBlueprintByRoot.get(root)
+    if (cached !== undefined) return cached
+    let blueprint
+    if (typeof resolveBoundBlueprint === 'function') {
+      blueprint = resolveBoundBlueprint(root)
+    } else {
+      const src = String(config.blueprintSource ?? '')
+      blueprint = src === '' ? null : parseBlueprint(src)
+    }
+    boundBlueprintByRoot.set(root, blueprint)
+    return blueprint
   }
 
   /**
@@ -888,7 +942,11 @@ export function createAgentBindings(deps) {
    * @throws {Error} 'capability-template-unresolved' on a resolution failure.
    */
   function locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath) {
-    const blueprint = getBoundBlueprint()
+    // BP-F (issue #2 blueprint-loading, plan §11.2): the owning team root
+    // is determined FIRST, then that TeamSession's bound blueprint is
+    // resolved (the row-global anchor is only the no-resolver fallback).
+    const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
+    const blueprint = getBoundBlueprint(teamRoot)
     // P0-1 (hardening §3): an unavailable blueprint is a RESOLUTION failure,
     // not a legacy template — fail closed (the legacy 0.1.0-rc.1 behavior is
     // reserved for a SUCCESSFUL template location whose `capabilities` field
@@ -900,7 +958,6 @@ export function createAgentBindings(deps) {
         ...(instanceId !== undefined ? { instanceId } : {}),
       })
     }
-    const teamRoot = teamRootSid !== undefined ? String(teamRootSid) : rootSid
     if (sessionId === teamRoot) {
       // The LEADER is the LeaderTemplate (Architecture §5.3/§6.1). A valid
       // blueprint always carries a leader template; a missing leader is a
@@ -956,8 +1013,12 @@ export function createAgentBindings(deps) {
    * setup (one locate, both projections).
    */
   function resolveStaticCapabilities(sessionId, instanceId, templateIdHint, teamRootSid, bindPath) {
+    // BP-F (issue #2 blueprint-loading, plan §11.2): the static-capabilities
+    // projection rides the SAME per-root bound blueprint locateTemplate just
+    // resolved (the per-root cache returns the identical parsed snapshot).
+    const blueprint = getBoundBlueprint(teamRootSid !== undefined ? String(teamRootSid) : rootSid)
     return staticCapabilitiesOf(
-      getBoundBlueprint(),
+      blueprint,
       locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath),
     )
   }
@@ -1020,7 +1081,11 @@ export function createAgentBindings(deps) {
       // policy = no permission listener at all (the alpha.1 / legacy path,
       // byte-for-byte unchanged — the absent-permissions test is the proof).
       const boundTemplate = locateTemplate(sessionId, instanceId, templateIdHint, teamRootSid, bindPath)
-      const capabilities = staticCapabilitiesOf(getBoundBlueprint(), boundTemplate)
+      // BP-F (issue #2 blueprint-loading, plan §11.2): the projection uses
+      // the SAME per-root bound snapshot locateTemplate just resolved (the
+      // per-root cache returns the identical parsed object — one bound
+      // snapshot per AgentSetup).
+      const capabilities = staticCapabilitiesOf(getBoundBlueprint(teamRootSid), boundTemplate)
       const permissionPolicy = boundTemplate.capabilities?.permissions
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
@@ -1352,8 +1417,9 @@ export function createAgentBindings(deps) {
 
   /**
    * The lazy persona overlay slot — built once, on first use, over the
-   * config.blueprintSource document (parsed through the domain blueprint
-   * facade) and the preset substrate fact. Its apply() IS the reused persona
+   * per-root bound-blueprint resolution (BP-F, issue #2 blueprint-loading,
+   * plan §11.2: the persona source reads the OWNING team root's
+   * bound blueprint per call) and the preset substrate fact. Its apply() IS the reused persona
    * resolver: it evaluates the requirement against the substrate (complete ->
    * FATAL TeamPersonaOverlayError BEFORE any install), composes the scoped
    * identity from the blueprint persona fields (member: the template persona
@@ -1362,7 +1428,6 @@ export function createAgentBindings(deps) {
    */
   function getPersonaSlot() {
     if (personaSlot !== undefined) return personaSlot
-    const blueprint = parseBlueprint(String(config.blueprintSource ?? ''))
     const substrate = personaSubstrate()
     personaSlot = createPersonaOverlaySlot({
       presetSeam: {
@@ -1371,9 +1436,27 @@ export function createAgentBindings(deps) {
         getSubstrate: () => ({ presetId: substrate.presetId, personaKind: substrate.personaKind }),
       },
       personaSource: {
-        getLeaderPersona: () => String(blueprint.leader.persona ?? ''),
-        getMemberPersona: (_rootSessionId, templateId) => {
-          const member = blueprint.members.find((entry) => entry.templateId === String(templateId))
+        // BP-F (issue #2 blueprint-loading, plan §11.2): the persona source
+        // resolves the OWNING team root's bound blueprint per call (the
+        // adapter passes the target's rootSessionId for BOTH kinds) — a
+        // root's persona is never the row-global anchor's once the
+        // production host injects the per-root resolver. A root with NO
+        // bound blueprint fails closed (loud error — installPersonaForSetup
+        // already skips the empty-anchor world, so a null here means a
+        // broken chain, never a persona-less agent).
+        getLeaderPersona: (rootSessionId) => {
+          const bp = getBoundBlueprint(String(rootSessionId))
+          if (bp === null) {
+            throw new Error(`agent-bindings: persona overlay: team root '${rootSessionId}' has no bound blueprint (fail closed)`)
+          }
+          return String(bp.leader.persona ?? '')
+        },
+        getMemberPersona: (rootSessionId, templateId) => {
+          const bp = getBoundBlueprint(String(rootSessionId))
+          if (bp === null) {
+            throw new Error(`agent-bindings: persona overlay: team root '${rootSessionId}' has no bound blueprint (fail closed)`)
+          }
+          const member = bp.members.find((entry) => entry.templateId === String(templateId))
           if (member === undefined) {
             throw new Error(`agent-bindings: persona overlay: template '${templateId}' is not a member template of the team blueprint`)
           }

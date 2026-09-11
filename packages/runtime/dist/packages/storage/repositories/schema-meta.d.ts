@@ -2,9 +2,9 @@
  * SchemaMetaRepository — the `schema_meta` store (L2 of the version
  * policy): one stamp row per store, stamped at `createTeamDomain` time.
  *
- * The store is effectively append-only in v1: `createTeamDomain` stamps
- * all eight stores; `openTeamDomain` reads the stamps back and verifies
- * them; re-stamping a present store is rejected (no migration in v1).
+ * The store is append-only: `createTeamDomain` stamps all nine stores;
+ * `openTeamDomain` reads the stamps back and verifies them; re-stamping a
+ * present store is rejected (no built-in migration — a loud mismatch).
  *
  * @module @dsh-agent-team/storage/repositories/schema-meta
  */
@@ -31,7 +31,7 @@ export declare class SchemaMetaRepository extends BaseRepository {
      * Stamp one store at the current schema version (single-write durable).
      * Idempotent when the identical stamp bytes are already stored; a
      * different existing stamp is rejected (`stamp-already-exists`).
-     * @param store - the store to stamp (must be one of the eight).
+     * @param store - the store to stamp (must be one of the nine).
      * @param stampedAt - the stamp time, ISO-8601.
      * @throws `RECORD_INVALID` (problem `unknown-store` /
      *   `stamp-already-exists`) or seam failures via `normalizeSeamError`.

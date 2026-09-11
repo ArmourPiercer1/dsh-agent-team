@@ -2,7 +2,7 @@
  * The storage repositories of the TeamDomain sidecar.
  *
  * One facade (`createTeamDomain` / `openTeamDomain` over the injected
- * storage seam) plus the eight store repositories:
+ * storage seam) plus the nine store repositories:
  *
  * - `base` — the shared seam boundary (string rows, canonical bytes,
  *   typed seam/validation normalization);
@@ -16,7 +16,10 @@
  * - `compatibility` — compatibility states, keyed by root session id;
  * - `operations` — the operation journal (append-only);
  * - `ledger` — the fact ledger with atomic sequence allocation
- *   (append-only, gap-diagnosable).
+ *   (append-only, gap-diagnosable);
+ * - `blueprint-registry` — the immutable registry of frozen Blueprint
+ *   snapshot identities (v2; read + freeze-only, never last-write-wins);
+ * - `team-domain` — the create/open/create-or-open facade.
  *
  * No module in this package imports any host backend: repositories take
  * the `StorageDomainHandle` as an injected parameter, and tests exercise
@@ -33,5 +36,6 @@ export * from './overrides.js';
 export * from './compatibility.js';
 export * from './operations.js';
 export * from './ledger.js';
+export * from './blueprint-registry.js';
 export * from './team-domain.js';
 //# sourceMappingURL=index.js.map

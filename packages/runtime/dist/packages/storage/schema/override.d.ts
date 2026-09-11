@@ -65,7 +65,7 @@ export declare const GOVERNANCE_OVERRIDE_FIELDS: readonly string[];
  * The `overrides` store record: one durable governance override.
  */
 export interface GovernanceOverrideRecord {
-    /** Record shape version; v1 records carry `1`. */
+    /** The TeamDomain schema version that shaped the row (L3; v2 rows carry `2`). */
     readonly schemaVersion: number;
     /** Autonomy overlay (agent) vs human override. */
     readonly kind: GovernanceOverrideKind;
