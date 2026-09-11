@@ -72,10 +72,19 @@
  *     coordinates fully determine the operation). Missing/non-positive-
  *     integer coordinates and unknown operations fail closed (the tool
  *     would reject them).
- * - `bash`          `{ tool }` — tool-level (plan §7.3/§7.4: the command
- *     string is deliberately NOT in the projection; a single command
- *     cannot reliably express the real resource/effect, so the authority
- *     identity is the tool itself).
+ * - `bash`          `{ tool, commandHash }` — the RESOURCE stays
+ *     tool-level (plan §4/§7.1: `{ kind: 'tool', key: 'bash' }` — the
+ *     resolver is never called), but the FINGERPRINT Binds the command
+ *     (H2 P1-2 ruling, plan §7.4 "covering every security-relevant
+ *     field"): `commandHash` = `'sha256:' + hex(sha256(command))` over
+ *     the RAW command string — NO shell parsing, no normalization (the
+ *     command is the security-relevant field for bash, so a durable
+ *     approval is verifiable as "which shell payload was approved";
+ *     before H2 the command was deliberately excluded and EVERY bash
+ *     command shared one constant fingerprint — P1-2). A
+ *     missing/non-string/whitespace-only command fails closed with the
+ *     closed `bash-command-*` reasons (the upstream `tool-bash`
+ *     `validateBashArgs` rejects all three before executing).
  *
  * Windows emphasis (plan §7.6): separator normalization, case semantics,
  * relative-vs-absolute, `..` traversal, and symlink/junction identity are
@@ -293,6 +302,32 @@ function extractEditFields(tool: string, args: Record<string, unknown>): {
   return { oldString, newString, replaceAll: replaceAll ?? false }
 }
 
+/**
+ * The `bash` command (H2 P1-2: the command IS the security-relevant field
+ * for bash). Mirrors the upstream `tool-bash` `validateBashArgs` BEFORE
+ * executing: a missing, non-string, or whitespace-only command is
+ * rejected by the tool itself, so such a call has no well-formed
+ * projection and fails closed. The returned value is the RAW command
+ * string — NO shell parsing, no normalization (the fingerprint hashes it
+ * verbatim; the adapter's display preview is separate and never
+ * authoritative).
+ */
+function extractBashCommand(tool: string, args: Record<string, unknown>): string {
+  const value = args['command']
+  if (value === undefined) {
+    throw canonicalizationFailed(tool, 'bash-command-missing')
+  }
+  if (typeof value !== 'string') {
+    throw canonicalizationFailed(tool, 'bash-command-not-a-string', {
+      valueType: toRemoteSafeDetail(typeof value),
+    })
+  }
+  if (value.trim().length === 0) {
+    throw canonicalizationFailed(tool, 'bash-command-empty')
+  }
+  return value
+}
+
 /** The `lsp` operation + raw one-based coordinates (the tool's validation, mirrored). */
 function extractLspFields(tool: string, args: Record<string, unknown>): {
   operation: string
@@ -373,13 +408,21 @@ export async function canonicalizeOperation(
     })
   }
 
-  // Tool-level (bash): the resource is the tool itself; the arguments
-  // (the command string) are deliberately excluded from the identity.
+  // Tool-level (bash): the RESOURCE is the tool itself (plan §4/§7.1 —
+  // stays tool-level; no file key, the resolver is never called), but
+  // the FINGERPRINT BINDS the command (H2 P1-2 ruling): the command IS
+  // the security-relevant field for bash, so the projection carries its
+  // hash (the write `contentHash` pattern) — a durable approval is
+  // verifiable as "which shell payload was approved". NO shell parsing:
+  // the raw string, hashed verbatim (the adapter's display preview is
+  // separate and never authoritative).
   if (class_.kind === 'tool-level') {
+    const args = asArgumentRecord('bash', rawArguments, 'bash-command-missing')
+    const command = extractBashCommand('bash', args)
     return {
       tool: 'bash',
       resource: { kind: 'tool', key: BASH_TOOL_RESOURCE_KEY, display: BASH_TOOL_RESOURCE_KEY },
-      fingerprint: buildFingerprint({ tool: 'bash' }),
+      fingerprint: buildFingerprint({ tool: 'bash', commandHash: hashString(command) }),
     }
   }
 

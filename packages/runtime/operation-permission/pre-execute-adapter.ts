@@ -414,6 +414,45 @@ const ACTION_NAME = 'parameter-permission'
 export const END_CAP_DENIAL_REASON =
   'permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)'
 
+/**
+ * The bounded length of the tool-level (bash) command preview in the
+ * control request summary (H2 P1-2).
+ */
+const BASH_COMMAND_PREVIEW_MAX = 120
+
+/**
+ * H2 P1-2 — the bounded NON-authority command preview of the tool-level
+ * (bash) control request summary: the first 120 characters of the raw
+ * command string, whitespace flattened to single spaces, `...` appended
+ * when truncated.
+ *
+ * Display text ONLY (the durable `summary` field is "free text; NOT
+ * authority data"): it NEVER enters the fingerprint, the control scope,
+ * or any hash — the fingerprint carries the command HASH (A2), and the
+ * preview is derived from the same raw string purely for human
+ * readability (which shell payload is this request about?). The function
+ * is total (never throws): malformed/absent arguments cannot reach it on
+ * the frozen pipeline (canonicalization already failed closed), but the
+ * defensive fallbacks keep it total for any caller.
+ */
+function commandPreview(rawArguments: unknown): string {
+  if (typeof rawArguments !== 'object' || rawArguments === null || Array.isArray(rawArguments)) {
+    return '(no arguments)'
+  }
+  const command = (rawArguments as Record<string, unknown>)['command']
+  if (typeof command !== 'string') {
+    return '(no command)'
+  }
+  const flattened = command.replace(/\s+/g, ' ').trim()
+  if (flattened.length === 0) {
+    return '(empty command)'
+  }
+  if (flattened.length > BASH_COMMAND_PREVIEW_MAX) {
+    return flattened.slice(0, BASH_COMMAND_PREVIEW_MAX) + '...'
+  }
+  return flattened
+}
+
 // ---------------------------------------------------------------------------
 // The install factory.
 // ---------------------------------------------------------------------------
@@ -699,9 +738,14 @@ export function installParameterPermissionListener(
         toolName: name,
         correlation: callId,
         operationFingerprint: operation.fingerprint,
+        // H2 P1-2: the tool-level (bash) summary carries a bounded
+        // NON-authority command preview (first 120 chars, whitespace
+        // flattened, `...` when truncated) — display text only, never
+        // part of the fingerprint/scope/hash (those carry the command
+        // HASH from A2).
         summary:
           operation.resource.kind === 'tool'
-            ? `${name} (tool-level)`
+            ? `${name} ${commandPreview(exec.arguments)}`
             : `${name} ${operation.resource.display}`,
       })
     } catch (error: unknown) {

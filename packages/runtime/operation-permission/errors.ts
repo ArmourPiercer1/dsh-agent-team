@@ -53,10 +53,15 @@ export const OPERATION_PERMISSION_ERROR_CODE_VALUES: readonly string[] =
  * Argument-shape reasons: a supported tool's arguments are malformed in
  * a way the tool itself would reject BEFORE executing (mirroring the
  * upstream tools' own validation — `parseReadArgs` / `parseWriteArgs` /
- * `parseEditArgs` / `parseLspArgs`), so the call has no well-formed
- * "effective" projection and must not be authorized:
+ * `parseEditArgs` / `parseLspArgs` / `tool-bash` `validateBashArgs`), so
+ * the call has no well-formed "effective" projection and must not be
+ * authorized:
  * - file_path / write content / edit strings: missing, non-string, or
  *   (where the tool rejects it) empty / equal;
+ * - bash command: missing, non-string, or whitespace-only (the upstream
+ *   `tool-bash` rejects all three before execution — H2 P1-2: the
+ *   command is the security-relevant field for bash, so a call without
+ *   a well-formed command cannot be authorized);
  * - read offset/limit: present but not a positive integer;
  * - lsp operation/line/character: unknown operation, or a coordinate
  *   that is not a positive one-based integer.
@@ -94,6 +99,9 @@ export type CanonicalizationFailureReason =
   | 'lsp-operation-unknown'
   | 'lsp-line-invalid'
   | 'lsp-character-invalid'
+  | 'bash-command-missing'
+  | 'bash-command-not-a-string'
+  | 'bash-command-empty'
   | 'resolver-threw'
   | 'resolver-key-empty'
   | 'resolver-result-malformed'
@@ -118,6 +126,9 @@ export const CANONICALIZATION_FAILURE_REASONS: readonly CanonicalizationFailureR
   'lsp-operation-unknown',
   'lsp-line-invalid',
   'lsp-character-invalid',
+  'bash-command-missing',
+  'bash-command-not-a-string',
+  'bash-command-empty',
   'resolver-threw',
   'resolver-key-empty',
   'resolver-result-malformed',

@@ -37,10 +37,13 @@
  *      rejection, the durable request STAYS pending (alpha.2)
  *  S11 unsupported tool pass-through: 'web_fetch' → next called, zero
  *      control rows, the fake resolver NOT called
- *  S12 bash tool-level: ask lane [bash any] → ask → allow → executes
- *      (the request carries the CONSTANT bash fingerprint — the same
- *      fingerprint for different command strings); bash with NO rule +
- *      default deny → static deny, zero execution, no request
+ *  S12 bash tool-level (H2 P1-2): ask lane [bash any] → ask → allow →
+ *      executes; the request carries the command-BINDING fingerprint
+ *      (same command → same fingerprint, different command → different
+ *      fingerprint, pinned against A2) + the bounded non-authority
+ *      command preview in the summary; the command-A approvals cannot
+ *      authorize a different command B; bash with NO rule + default
+ *      deny → static deny, zero execution, no request
  *  S13 canonicalization failure: the resolver throws for a path → deny
  *      (typed closed reason 'resolver-threw'), next never, no request;
  *      malformed arguments (write without file_path) → deny
@@ -815,7 +818,18 @@ const S12A = await (async () => {
   const env = await createEnv('a5a-w5', { policy: policyAsk, isLeader: false })
   let envB: Env | undefined
   try {
-    // bash with the any-ask rule → ask → leader allow → executes.
+    // bash with the any-ask rule → ask → leader allow → executes. The
+    // request carries the COMMAND-BINDING fingerprint (H2 P1-2: the
+    // command is the security-relevant field, hashed — pinned against
+    // A2 directly) and the bounded non-authority command preview in the
+    // summary (first 120 chars, whitespace-flattened — display only).
+    const fingerprintEchoHello = (
+      await canonicalizeOperation({
+        name: 'bash',
+        arguments: { command: 'echo hello' },
+        resolveTarget: env.resolver.resolver,
+      })
+    ).fingerprint
     const nextA = makeNext()
     const aPromise = env.ctx.trigger(
       makeExec({ name: 'bash', arguments: { command: 'echo hello' }, callId: 'a5a-s12-bash-a' }),
@@ -830,10 +844,28 @@ const S12A = await (async () => {
     })
     const aDecision = await aPromise
 
-    // The bash fingerprint is CONSTANT: a different command string (new
-    // callId) canonicalizes to the SAME fingerprint (pinned against A2
-    // directly) and the new request carries it.
-    const bashFingerprintA2 = (
+    // The SAME command string (new callId) → the SAME fingerprint
+    // (allow-once: the old decision is consumed, a NEW request is
+    // created with the same command fingerprint and needs its own
+    // approval).
+    const nextA2 = makeNext()
+    const a2Promise = env.ctx.trigger(
+      makeExec({ name: 'bash', arguments: { command: 'echo hello' }, callId: 'a5a-s12-bash-a2' }),
+      nextA2.fn,
+    )
+    const a2Request = await waitForRequest(env.service, 'a5a-s12-bash-a2')
+    await env.service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: a2Request.requestId,
+      decision: 'allow',
+    })
+    const a2Decision = await a2Promise
+
+    // A DIFFERENT command string (new callId) → a DIFFERENT fingerprint
+    // (pinned against A2 directly): the approval for command A cannot
+    // authorize command B.
+    const fingerprintLsLa = (
       await canonicalizeOperation({
         name: 'bash',
         arguments: { command: 'ls -la' },
@@ -874,10 +906,14 @@ const S12A = await (async () => {
       requestA: aRequest,
       decisionA: aDecision,
       nextACalls: nextA.calls(),
+      requestA2: a2Request,
+      decisionA2: a2Decision,
+      nextA2Calls: nextA2.calls(),
       requestB: bRequest,
       decisionB: bDecision,
       nextBCalls: nextB.calls(),
-      bashFingerprintA2,
+      fingerprintEchoHello,
+      fingerprintLsLa,
       decisionC: cDecision,
       nextCCalls: nextC.calls(),
       stateC: cState,
@@ -1125,19 +1161,35 @@ describe('A5a S10: cancellation — abort mid-wait settles deny, the request sta
   })
 })
 
-describe('A5a S12: bash tool-level — any-rule ask → allow executes; no rule + default deny → static deny', () => {
-  it('bash with the any-ask rule creates a leader-approval request carrying the CONSTANT bash fingerprint', () => {
+describe('A5a S12: bash tool-level (H2 P1-2) — the fingerprint BINDS the command', () => {
+  it('bash with the any-ask rule creates a leader-approval request carrying the command-BINDING fingerprint + the bounded command preview in the summary', () => {
     expect(S12A.requestA.kind).toBe(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
     expect(S12A.requestA.toolName).toBe('bash')
-    expect(S12A.requestA.operationFingerprint).toBe(S12A.bashFingerprintA2)
+    // The fingerprint matches A2's canonicalization of the SAME raw
+    // command string (the command is the security-relevant field).
+    expect(S12A.requestA.operationFingerprint).toBe(S12A.fingerprintEchoHello)
+    // The summary carries the bounded non-authority command preview
+    // (first 120 chars, whitespace-flattened — display text only; the
+    // fingerprint, not the preview, is authority).
+    expect(S12A.requestA.summary).toBe('bash echo hello')
   })
-  it('bash allow → executes (next once); a different command string (new callId) carries the SAME constant fingerprint', () => {
+  it('bash allow → executes (next once)', () => {
     expect(S12A.decisionA).toEqual({ kind: 'allow' })
     expect(S12A.nextACalls).toBe(1)
-    expect(S12A.requestB.requestId).not.toBe(S12A.requestA.requestId)
-    expect(S12A.requestB.operationFingerprint).toBe(S12A.bashFingerprintA2)
   })
-  it('the second bash request resolved deny → zero execution for it', () => {
+  it('the SAME command string (new callId) → the SAME fingerprint, and a NEW request needing its own approval (allow-once)', () => {
+    expect(S12A.requestA2.requestId).not.toBe(S12A.requestA.requestId)
+    expect(S12A.requestA2.operationFingerprint).toBe(S12A.requestA.operationFingerprint)
+    expect(S12A.decisionA2).toEqual({ kind: 'allow' })
+    expect(S12A.nextA2Calls).toBe(1)
+  })
+  it('a DIFFERENT command string (new callId) → a DIFFERENT fingerprint: the command-A approvals cannot authorize command B', () => {
+    expect(S12A.requestB.requestId).not.toBe(S12A.requestA.requestId)
+    expect(S12A.requestB.operationFingerprint).toBe(S12A.fingerprintLsLa)
+    expect(S12A.requestB.operationFingerprint).not.toBe(S12A.requestA.operationFingerprint)
+    expect(S12A.requestB.summary).toBe('bash ls -la')
+  })
+  it('the command-B request resolved deny → zero execution for it', () => {
     expect(S12A.decisionB['kind']).toBe('deny')
     expect(S12A.nextBCalls).toBe(0)
   })

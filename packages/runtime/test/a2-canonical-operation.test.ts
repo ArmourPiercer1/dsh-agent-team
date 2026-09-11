@@ -16,8 +16,12 @@
  * - malformed path → fail closed (typed error, closed reason, never a
  *   pass-through; the resolver is the only I/O and is NOT called when
  *   the arguments already fail closed);
- * - bash → tool-level resource (resolver never called; command excluded
- *   from the identity);
+ * - bash → tool-level resource (resolver never called); the FINGERPRINT
+ *   BINDS the command (H2 P1-2: the command is the security-relevant
+ *   field, hashed — different command → different fingerprint, same
+ *   command → same fingerprint, raw command never persisted); a
+ *   missing/non-string/whitespace-only command fails closed (closed
+ *   `bash-command-*` reasons);
  * - unsupported tool → classification (the class the A5 adapter uses to
  *   `next()` WITHOUT entering the resolver) + typed failure if
  *   canonicalized anyway;
@@ -203,9 +207,12 @@ const C = {
   lspCharChange: await op('lsp', { operation: 'goToDefinition', file_path: './a/b', line: 10, character: 5 }),
   lspOperationChange: await op('lsp', { operation: 'hover', file_path: './a/b', line: 10, character: 4 }),
   lspAgain: await op('lsp', { operation: 'goToDefinition', file_path: './a/b', line: 10, character: 4 }),
-  // bash (plan §7.6 case 8): tool-level, command excluded.
+  // bash (plan §7.6 case 8): tool-level resource; the FINGERPRINT BINDS
+  // the command (H2 P1-2 — the command is the security-relevant field,
+  // hashed; no shell parsing; the resolver is never called).
   bashOne: await op('bash', { command: 'ls -la' }),
   bashTwo: await op('bash', { command: 'dir /s' }),
+  bashSameCommand: await op('bash', { command: 'ls -la' }),
   // Fail-closed (plan §7.6 case 7 + §7.5): malformed path + seam violations.
   failPathMissing: await failOp('read', {}),
   failPathNonString: await failOp('read', { file_path: 42 }),
@@ -242,6 +249,14 @@ const C = {
     new_string: 'y',
     replace_all: 'yes',
   }),
+  // bash argument validation (H2 P1-2: the command is the security-
+  // relevant field — the upstream tool-bash rejects all three before
+  // executing, so a bash call without a well-formed command fails
+  // closed with zero backend round-trips).
+  failBashCommandMissing: await failOp('bash', {}),
+  failBashCommandNonString: await failOp('bash', { command: 42 }),
+  failBashCommandWhitespace: await failOp('bash', { command: '   \t\n  ' }),
+  failBashArgsNotObject: await failOp('bash', ['not', 'an', 'object']),
   // lsp argument validation.
   failLspOperationMissing: await failOp('lsp', { file_path: './a/b', line: 1, character: 1 }),
   failLspOperationUnknown: await failOp('lsp', {
@@ -296,6 +311,7 @@ const FINGERPRINT_SHAPE_OK = [
   C.lspOperationChange.fingerprint,
   C.bashOne.fingerprint,
   C.bashTwo.fingerprint,
+  C.bashSameCommand.fingerprint,
 ].every((fingerprint) =>
   fingerprint.startsWith('sha256:')
   && fingerprint.length === 7 + 64
@@ -317,6 +333,8 @@ await failOp('read', { file_path: '   ' }, failResolver)
 await failOp('write', { file_path: './a/b' }, failResolver)
 await failOp('edit', { file_path: './a/b', old_string: '', new_string: 'y' }, failResolver)
 await failOp('lsp', { file_path: './a/b', line: 1, character: 1 }, failResolver)
+await failOp('bash', {}, failResolver)
+await failOp('bash', { command: 42 }, failResolver)
 
 // The real fs-local backend cases (plan §7.6 — the upstream resolve()
 // contract; degrades to `{ available: false, reason }` without the
@@ -436,11 +454,22 @@ describe('a2 fingerprint (plan §7.3/§7.4)', () => {
     expect(C.lspOperationChange.fingerprint).not.toBe(C.lspBase.fingerprint)
   })
 
-  it('bash: tool-level resource (kind/key/display = bash), command excluded, resolver never called', () => {
+  it('bash: tool-level resource (kind/key/display = bash), the FINGERPRINT BINDS the command (H2 P1-2), resolver never called', () => {
     expect(BASH_TOOL_RESOURCE_KEY).toBe('bash')
     expect(C.bashOne.tool).toBe('bash')
+    // The RESOURCE stays tool-level (the resolver is never called; the
+    // resource identity is the tool itself, plan §4/§7.1).
     expect(C.bashOne.resource).toEqual({ kind: 'tool', key: 'bash', display: 'bash' })
-    expect(C.bashOne.fingerprint).toBe(C.bashTwo.fingerprint)
+    // The FINGERPRINT BINDS the command (H2 P1-2): a different command
+    // string → a different fingerprint (the constant-fingerprint P1-2 is
+    // closed); the SAME command string → the same fingerprint
+    // (deterministic).
+    expect(C.bashOne.fingerprint).not.toBe(C.bashTwo.fingerprint)
+    expect(C.bashSameCommand.fingerprint).toBe(C.bashOne.fingerprint)
+    // The raw command is never persisted: the projection carries the
+    // command HASH (the write contentHash pattern) — the fingerprint
+    // is a digest, not the payload.
+    expect(C.bashOne.fingerprint.includes('ls -la')).toBe(false)
     expect(bashResolverCalls.length).toBe(0)
   })
 
@@ -497,6 +526,13 @@ describe('a2 fail-closed (plan §7.5)', () => {
     expectTypedFailure(C.failEditOldEmpty, 'edit-old-string-empty')
     expectTypedFailure(C.failEditOldEqualsNew, 'edit-old-equals-new')
     expectTypedFailure(C.failEditReplaceAll, 'edit-replace-all-not-boolean')
+  })
+
+  it('bash: missing/non-string/whitespace-only command → typed failure (H2 P1-2 — the tool would reject it)', () => {
+    expectTypedFailure(C.failBashCommandMissing, 'bash-command-missing')
+    expectTypedFailure(C.failBashCommandNonString, 'bash-command-not-a-string')
+    expectTypedFailure(C.failBashCommandWhitespace, 'bash-command-empty')
+    expectTypedFailure(C.failBashArgsNotObject, 'bash-command-missing')
   })
 
   it('lsp: unknown operation / invalid coordinates → typed failure', () => {
