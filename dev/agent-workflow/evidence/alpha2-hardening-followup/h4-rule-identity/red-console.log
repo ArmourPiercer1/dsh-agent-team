@@ -1,0 +1,77 @@
+﻿==== H4 RED console — packages/runtime/test/h4-rule-identity.test.ts
+==== run on the UNFIXED tree (before any cache-removal fix commit)
+==== captured at: 2026-09-11 17:41:02 +08:00
+==== branch: task/alpha2hf-h4-rule-identity @ 6a2f3e1 (base master 6a2f3e1 — alpha.2 H1–H3 integrated)
+==== command: pnpm --filter @dsh-agent-team/runtime exec vitest run test/h4-rule-identity.test.ts
+==== expected per the H4 brief: H4-A1 phase 2 + H4-A2 phase 2 FAILING (RED —
+==== the stale install-lifetime rule key misses the retargeted identity);
+==== H4-A1/A2 phase 1 + H4-A3 (3) + H4-DB (3) passing.
+==== actual: 2 failed | 8 passed (10) — exactly the mandated RED set.
+====
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h4/packages/runtime
+
+ ❯ test/h4-rule-identity.test.ts (10 tests | 2 failed) 7ms
+     ✓ phase 1 (T0): static DENY — the deny rule and the operation share the identity; zero execution, zero control rows 1ms
+     × phase 2 (after the retarget): static DENY again — the rule fresh-resolves to the NEW identity; ZERO requests (RED pre-fix: the pinned key misses, the decision downgrades to ask and a request is raised) 3ms
+     ✓ phase 1 (T0): ALLOW — the allow rule and the operation share the identity; executes via next, zero control rows 0ms
+     × phase 2 (after the retarget): reading the ORIGINAL target is DENIED by the default — the allow rule now resolves to the NEW identity (RED pre-fix: the pinned key still matches → stale ALLOW executes) 1ms
+     ✓ phase 1 (the rule path unresolvable): the P1-3 fail-closed DENY before the A3 resolver — the stable reason names the failed path; zero execution, zero control rows 0ms
+     ✓ phase 1: an onObserve row was emitted (stage deny-canonicalization-failure, tool + the failed paths) 0ms
+     ✓ phase 2 (the backend recovers): the rule FRESH re-resolves (the failure is not remembered — no cache) ⇒ static DENY by the now-matching rule, zero requests 0ms
+     ✓ decision 1: exactly two resolver calls (the operation, then the exact rule) — both alias.txt, both KEY_A; the decision is ALLOW (executes, zero requests) 0ms
+     ✓ decision 2 (fresh callId): identical keys on EVERY decision — every recorded key (operation or rule) is KEY_A and every call is alias.txt (no drift between the two resolution paths) 0ms
+     ✓ zero control rows for either decision (static allow) 0ms
+node.exe : 
+At C:\nvm4w\nodejs\pnpm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/h4-rule-identity.test.ts > H4-A1: DENY retarget — a stale exact DENY must not stop matching (P1-A) > phase 
+2 (after the retarget): static DENY again — the rule fresh-resolves to the NEW identity; ZERO requests (RED pre-fix: th
+e pinned key misses, the decision downgrades to ask and a request is raised)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/h4-rule-identity.test.ts:642:60
+    640|     expect(A1.d2.kind).toBe('deny')
+    641|     const r2 = denyReason(A1.d2)
+    642|     expect(r2 !== undefined && r2.includes('deny rule 0')).toBe(true)
+       |                                                            ^
+    643|     expect(r2 !== undefined && r2.includes('alias.txt')).toBe(true)
+    644|     expect(A1.next2Calls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/h4-rule-identity.test.ts > H4-A2: ALLOW retarget — stale authority must not outlive the retarget (P1-A) > p
+hase 2 (after the retarget): reading the ORIGINAL target is DENIED by the default — the allow rule now resolves to the 
+NEW identity (RED pre-fix: the pinned key still matches → stale ALLOW executes)
+AssertionError: expected 'allow' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "allow"
+
+ ❯ test/h4-rule-identity.test.ts:658:24
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 passed (10)
+   Start at  17:40:43
+   Duration  698ms (transform 393ms, setup 0ms, import 586ms, tests 7ms, environment 0ms)
+
+undefined
+D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2hf-h4\packages\runtime:
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command failed with exit code 1: vitest run test/h4-rule-identity.test.ts
+
