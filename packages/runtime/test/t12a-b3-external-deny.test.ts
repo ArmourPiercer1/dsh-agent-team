@@ -45,7 +45,9 @@ const ALLOWED_ITEM = 'prov-t12a/model-b3'
 
 function humanAllow(recordId: string, items: string[]): GovernanceOverrideRecord {
   return parseGovernanceOverride({
-    schemaVersion: 1,
+    // v2 committed world (blueprint-loading repair): GovernanceOverride
+    // rows validate against the v2 TeamDomain schema version.
+    schemaVersion: 2,
     kind: 'human-override',
     recordId,
     scope: 'team',

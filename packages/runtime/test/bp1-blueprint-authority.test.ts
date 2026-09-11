@@ -40,7 +40,7 @@
  *
  * @module @dsh-agent-team/runtime/test/bp1-blueprint-authority
  */
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 
@@ -504,4 +504,11 @@ describe('bp1 live catalog facade: the domain interface over live state (plan §
 })
 
 // --- scratch cleanup ---------------------------------------------------------------
-rmSync(scratchRoot, { recursive: true, force: true })
+// afterAll (not a module-scope statement): real vitest evaluates the whole
+// module — top-level fixture setup included — BEFORE the deferred it()
+// bodies run, so a module-scope rmSync would delete every world's files
+// before the first test executes (the plain-node shim, which runs it()
+// bodies inline at registration time, masked this).
+afterAll(() => {
+  rmSync(scratchRoot, { recursive: true, force: true })
+})

@@ -170,7 +170,9 @@ const memberRowB = { childSessionId: CHILD_B, instanceId: INST_B, templateId: 't
 // would not mount. With it, the durable side allows and the TEMPLATE's mcp
 // entry is what differentiates the three identities.
 const mcpAllow: GovernanceOverrideRecord = parseGovernanceOverride({
-  schemaVersion: 1,
+  // v2 committed world (blueprint-loading repair): GovernanceOverride
+  // rows validate against the v2 TeamDomain schema version.
+  schemaVersion: 2,
   kind: 'human-override',
   recordId: 't4a-mcp-allow',
   scope: 'team',
@@ -324,7 +326,9 @@ const LEGACY_ROOT = 'session-t4a-legacy-root'
 // allow for the legacy root — the durable facet is resolved under the boot
 // root, LEGACY_ROOT, so the override must be rooted there).
 const legacyMcpAllow: GovernanceOverrideRecord = parseGovernanceOverride({
-  schemaVersion: 1,
+  // v2 committed world (blueprint-loading repair): GovernanceOverride
+  // rows validate against the v2 TeamDomain schema version.
+  schemaVersion: 2,
   kind: 'human-override',
   recordId: 't4a-legacy-mcp-allow',
   scope: 'team',

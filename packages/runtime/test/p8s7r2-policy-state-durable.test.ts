@@ -561,10 +561,12 @@ describe('R2-1 the production PolicyState lane is durable (BQ-10, C07/H01/H02/H0
     expect(r21.transitionRequestedAtStep).toBe(0)
     expect(r21.transitionEffectiveFromStep).toBe(1)
     // The reopened storage store carries EXACTLY ONE durable fact row,
-    // stamped with this root, the lane's fact type, the v1 domain schema.
+    // stamped with this root, the lane's fact type, the v2 domain schema
+    // (the v2 committed world of the blueprint-loading repair stamps
+    // durable rows with the world schemaVersion — no v1->v2 migration).
     expect(r21.durableRowCount).toBe(1)
     expect(r21.durableRowFactType).toBe('policy-state-transitioned')
-    expect(r21.durableRowSchemaVersion).toBe(1)
+    expect(r21.durableRowSchemaVersion).toBe(2)
     expect(r21.durableRowRootSessionId).toBe(ROOT_SID)
     expect(r21.durableRowCreatedAtIsString).toBe(true)
     // The payload mirrors the admitted transition record verbatim.
