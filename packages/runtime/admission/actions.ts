@@ -31,8 +31,8 @@
  */
 
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from './errors.js'
-import { CALLER_ROLES } from './types.js'
-import type { CallerRole, TeamRuntimeActionRequest } from './types.js'
+import { CALLER_ROLES, WORK_EXECUTION_MODES } from './types.js'
+import type { CallerRole, TeamRuntimeActionRequest, WorkExecutionMode } from './types.js'
 
 /** The closed action names. */
 export const ACTION_NAMES = {
@@ -42,6 +42,10 @@ export const ACTION_NAMES = {
   LIST_TEMPLATES: 'list-templates',
   /** Inspect one instance's effective capability policy (read). */
   INSPECT_CONFIG: 'inspect-config',
+  /** Read the durable state of admitted work units by requestToken
+   *  (issue #1 / CCR-3; the async admission receipt's terminal read-back
+   *  — a read: open to every live caller, no envelope op). */
+  WORK_STATUS: 'work-status',
   /** Admit NEW WORK on an existing instance; the SAME child session is
    *  kept (invariant 24); CREATED/SETTLED targets transition to RUNNING
    *  (invariant 55). */
@@ -150,6 +154,7 @@ export const ACTION_SPECS: readonly ActionSpec[] = [
   { name: ACTION_NAMES.LIST_MEMBERS, category: ACTION_CATEGORIES.READ, instanceTargeted: false },
   { name: ACTION_NAMES.LIST_TEMPLATES, category: ACTION_CATEGORIES.READ, instanceTargeted: false },
   { name: ACTION_NAMES.INSPECT_CONFIG, category: ACTION_CATEGORIES.READ, instanceTargeted: true },
+  { name: ACTION_NAMES.WORK_STATUS, category: ACTION_CATEGORIES.READ, instanceTargeted: false },
   {
     name: ACTION_NAMES.FOLLOW_UP,
     category: ACTION_CATEGORIES.WORK,
@@ -288,6 +293,23 @@ export function validateActionRequest(request: TeamRuntimeActionRequest): Action
   } else if (request.targetInstanceId !== undefined) {
     fail('action: a team-scoped action does not accept a targetInstanceId', { action: spec.name })
   }
+  // issue #1 / CCR-2: `execution` is a WORK-action field only — the closed
+  // set, rejected on every other action (the default sync path never sees
+  // it — CCR-1).
+  const execution = request.execution
+  if (execution !== undefined) {
+    if (spec.name !== ACTION_NAMES.FOLLOW_UP && spec.name !== ACTION_NAMES.DELEGATE) {
+      fail('action: execution is only accepted by the work actions (delegate / follow-up)', {
+        action: spec.name,
+      })
+    }
+    if (typeof execution !== 'string' || !(WORK_EXECUTION_MODES as readonly string[]).includes(execution)) {
+      fail('action: execution must be one of sync | async', {
+        action: spec.name,
+        execution: String(execution),
+      })
+    }
+  }
   const hasTemplate = request.delegationTemplateId !== undefined
   const hasInstance = request.delegationInstanceId !== undefined
   if (spec.name === ACTION_NAMES.CREATE_MEMBER) {
@@ -363,6 +385,35 @@ export function validateActionRequest(request: TeamRuntimeActionRequest): Action
     if (typeof decision !== 'string' || !(CONTROL_DECISION_VALUES as readonly string[]).includes(decision)) {
       fail('resolve-control: payload.decision must be one of approved | denied', { action: spec.name })
     }
+  } else if (spec.name === ACTION_NAMES.WORK_STATUS) {
+    // issue #1 / CCR-3: the closed read contract — a non-empty string
+    // array of requestTokens (1..64).
+    const raw = request.payload?.['requestTokens']
+    const tokens: string[] = []
+    if (Array.isArray(raw)) {
+      for (const token of raw) {
+        if (typeof token !== 'string' || token.length === 0) {
+          fail('work-status: payload.requestTokens entries must be non-empty strings', { action: spec.name })
+        }
+        tokens.push(token)
+      }
+    }
+    if (tokens.length === 0 || tokens.length > 64) {
+      fail('work-status: payload.requestTokens (a non-empty string array of at most 64 tokens) is required', {
+        action: spec.name,
+      })
+    }
   }
   return spec
+}
+
+/**
+ * Resolve the execution mode of one work-action request (issue #1 /
+ * CCR-1 + CCR-2): an ABSENT `execution` (or an explicit `'sync'`)
+ * resolves to the alpha.2 blocking default — the frozen contract's
+ * unchanged path. Pure; only meaningful for the work actions (the
+ * validator rejects `execution` everywhere else).
+ */
+export function workExecutionModeOf(request: TeamRuntimeActionRequest): WorkExecutionMode {
+  return request.execution === 'async' ? 'async' : 'sync'
 }

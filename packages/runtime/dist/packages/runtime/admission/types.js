@@ -36,6 +36,25 @@ export const CALLER_ROLES = {
 };
 /** Every caller role value, for membership checks. */
 export const CALLER_ROLE_VALUES = Object.values(CALLER_ROLES);
+// --- actions ---------------------------------------------------------------------
+/**
+ * The execution modes of WORK actions (issue #1; frozen-contract
+ * addendum CCR-1/CCR-2): the closed set.
+ *
+ * - `sync` — the alpha.2 default (CCR-1: an ABSENT `execution` resolves
+ *   to this; `performAction` blocks through the full work chain and the
+ *   effect carries the `memberResult`);
+ * - `async` — CCR-2: once the Phase A durable admission is committed,
+ *   Phase B/C detach into the Team runtime (CCR-4: the caller's signal is
+ *   honored through the admission only) and `performAction` returns the
+ *   durable admission receipt (`workStatus: 'admitted'`); the terminal
+ *   state is read back through the `work-status` action / `team_collect`
+ *   tool (CCR-3).
+ *
+ * Accepted ONLY on the work actions (`delegate` / `follow-up`); rejected
+ * on every other action (REQUEST_MALFORMED — CCR-2's closed scope).
+ */
+export const WORK_EXECUTION_MODES = ['sync', 'async'];
 // --- member work result (v2 D2; FROZEN by task C1) ---------------------------------
 /**
  * The closed status vocabulary of the minimal member result (frozen, v2

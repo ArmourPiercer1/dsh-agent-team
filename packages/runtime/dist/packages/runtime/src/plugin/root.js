@@ -1259,7 +1259,7 @@ export function createTeamProductionRoot(params) {
     seams.remoteHandlerRegistration.install(remoteSurfaces.registration);
     // --- A04 the intent surface (the remote method catalog) --------------------------------------------
     const intent = { catalog: REMOTE_METHOD_CATALOG };
-    // --- the ten Team tools (the glue registers them on the agent setup) ------------------------------
+    // --- the eleven Team tools (the glue registers them on the agent setup) -------------------------------------
     const tools = createTeamTools({
         teamRuntime: runtime,
         controlService: control,

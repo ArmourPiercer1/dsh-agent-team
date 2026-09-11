@@ -1,0 +1,23 @@
+[2026-09-11T09:26:46.856Z] FAIL — world already exists (refusing to clobber): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41
+[2026-09-11T09:27:12.081Z] r8 world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41
+[2026-09-11T09:27:12.083Z] install source (task worktree, branch task/issue1-async-delegation tip): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async
+[2026-09-11T09:27:12.083Z] expected installed version: 0.1.1-alpha.2 (from the task worktree root package.json)
+[2026-09-11T09:27:12.083Z] copy already present (R8_SKIP_COPY=1) — pwsh orchestrator performed the robocopy
+[2026-09-11T09:27:12.083Z] installing plugin task/issue1-async-delegation (worktree tip) via file:../repo-copy …
+[2026-09-11T09:27:12.565Z] install exit=1
+[2026-09-11T09:27:12.565Z] FAIL — install FAILED:
+(stdio inherit — transcript in the calling job console; exit=1)
+[2026-09-11T12:38:48.396Z] r8 world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41
+[2026-09-11T12:38:48.397Z] install source (task worktree, branch task/issue1-async-delegation tip): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async
+[2026-09-11T12:38:48.397Z] expected installed version: 0.1.1-alpha.2 (from the task worktree root package.json)
+[2026-09-11T12:38:48.398Z] copy already present (R8_SKIP_COPY=1) — pwsh orchestrator performed the robocopy
+[2026-09-11T12:38:48.398Z] installing plugin task/issue1-async-delegation (worktree tip) via file:D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-issue1-2026-09-11T17-26-41/repo-copy …
+[2026-09-11T12:39:02.976Z] install exit=0
+[2026-09-11T12:39:02.976Z] install SUCCEEDED
+[2026-09-11T12:39:02.976Z] PASS r8: installed package dir exists
+[2026-09-11T12:39:02.977Z] PASS r8: installed version is 0.1.1-alpha.2 — 0.1.1-alpha.2
+[2026-09-11T12:39:02.977Z] PASS r8: installed root manifest declares dsh.bundle.patch
+[2026-09-11T12:39:02.980Z] PASS r8: dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-11T12:39:02.982Z] r8 user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41\profiles\web\cordis.patch.yml
+[2026-09-11T12:39:02.982Z] r8 assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async\dev\agent-workflow\evidence\issue1-async-delegation\live\kit\r8-assertions-2026-09-11T17-26-41.json
+[2026-09-11T12:39:02.983Z] R8-SETUP-OK (home=D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41)

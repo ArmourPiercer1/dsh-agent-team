@@ -24,6 +24,20 @@
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
  * |                       | the service's resolver role closure is the   |
  * |                       | authority; a member is never a resolver)     |
+ * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
+ * |                       | durable state read of admitted work units by |
+ * |                       | request token — a read: unguarded, zero      |
+ * |                       | writes, zero delivery)                       |
+ *
+ * Async work execution (issue #1 / CCR-2): `team_delegate` and
+ * `team_follow_up` accept an optional `async: true` argument — the call
+ * returns once the Phase A durable admission is committed (the response
+ * effect carries `workStatus: 'admitted'`, `settled: false`, NO result)
+ * and the work unit runs detached in the Team runtime (its caller signal
+ * no longer cancels it — CCR-4). The terminal state is read back through
+ * `team_collect` (the durable member result survives a restart — CCR-5).
+ * Omitted / `false` is the default: the synchronous alpha.2 behavior,
+ * unchanged (CCR-1).
  *
  * The guarded work operations consult the last-mile guard IMMEDIATELY
  * before execution (see guard.ts, SD-GUARD); a blocked verdict returns the
@@ -71,6 +85,7 @@ import {
 import {
   TEAM_TOOL_BAD_ARGUMENTS,
   TEAM_TOOL_CALLER_UNRESOLVED,
+  TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH,
   TeamToolArgsError,
 } from './tokens.js'
 import { INSTANCE_ID_PATTERN } from '../../contracts/src/index.js'
@@ -119,6 +134,17 @@ const REQUEST_TOKEN_ARG = {
   type: 'string',
   description:
     'A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one.',
+}
+const ASYNC_ARG = {
+  type: 'boolean',
+  description:
+    'Optional (default false): run the work unit ASYNCHRONOUSLY — the call returns as soon as the durable admission is committed (the response effect carries workStatus "admitted", settled false, and NO member result); the terminal result is then read back with team_collect. Omit or false for the default synchronous behavior (the call blocks until the work unit settles and the response carries the member result).',
+}
+const REQUEST_TOKENS_ARG = {
+  type: 'array',
+  items: { type: 'string' },
+  description:
+    'The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each).',
 }
 const TARGET_INSTANCE_ARG = {
   type: 'string',
@@ -388,7 +414,7 @@ function makeDefinition(
   }
 }
 
-// --- the ten closed tools -------------------------------------------------------------
+// --- the eleven closed tools --------------------------------------------------------------
 
 function listMembersSpec(): ToolSpec {
   return {
@@ -505,7 +531,7 @@ function delegateSpec(): ToolSpec {
   return {
     name: 'team_delegate',
     description:
-      'Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId.',
+      'Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Synchronous by default: the call returns when the work unit has settled (the member result is in the response). Pass async: true to admit the work durably and return immediately (the response carries the admission receipt — workStatus "admitted", settled false, no result); read the terminal result back with team_collect (the same request token).',
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
@@ -536,6 +562,7 @@ function delegateSpec(): ToolSpec {
         type: 'string',
         description: 'Optional explicit context attached to the work unit and delivered with the prompt.',
       },
+      async: ASYNC_ARG,
     },
     required: ['rootSessionId', 'requestToken', 'label', 'prompt'],
     async run(ctx, args) {
@@ -566,6 +593,7 @@ function delegateSpec(): ToolSpec {
         ATTACHED_CONTEXT_MAX_LENGTH,
       )
       if (attachedContext !== undefined) payload.attachedContext = attachedContext
+      const asyncExecution = args['async'] === true
       const request: TeamRuntimeActionRequest = {
         rootSessionId: ctx.rootSessionId,
         action: ACTION_NAMES.DELEGATE,
@@ -574,6 +602,10 @@ function delegateSpec(): ToolSpec {
         payload,
         ...(templateId !== undefined ? { delegationTemplateId: templateId } : {}),
         ...(instanceId !== undefined ? { delegationInstanceId: instanceId } : {}),
+        // issue #1 / CCR-2: the closed execution-mode field (absent = the
+        // default sync — CCR-1; never set to 'sync' explicitly from the
+        // tool layer).
+        ...(asyncExecution ? { execution: 'async' as const } : {}),
       }
       const execute = async (): Promise<TeamToolsResult> =>
         toExecutedResult(await performRuntimeAction(ctx, request))
@@ -592,7 +624,7 @@ function followUpSpec(): ToolSpec {
   return {
     name: 'team_follow_up',
     description:
-      'Admit a follow-up work unit on an EXISTING member instance (persistent delegation: the same bound child session is kept).',
+      'Admit a follow-up work unit on an EXISTING member instance (persistent delegation: the same bound child session is kept). Synchronous by default: the call returns when the work unit has settled (the member result is in the response). Pass async: true to admit the work durably and return immediately (the response carries the admission receipt — workStatus "admitted", settled false, no result); read the terminal result back with team_collect (the same request token).',
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
@@ -610,6 +642,7 @@ function followUpSpec(): ToolSpec {
         type: 'string',
         description: 'Optional explicit context attached to the work unit and delivered with the prompt.',
       },
+      async: ASYNC_ARG,
     },
     required: ['rootSessionId', 'requestToken', 'targetInstanceId', 'prompt'],
     async run(ctx, args) {
@@ -624,6 +657,7 @@ function followUpSpec(): ToolSpec {
         ATTACHED_CONTEXT_MAX_LENGTH,
       )
       if (attachedContext !== undefined) payload.attachedContext = attachedContext
+      const asyncExecution = args['async'] === true
       return executeGuarded(ctx, targetInstanceId, ACTION_NAMES.FOLLOW_UP, async () =>
         toExecutedResult(
           await performRuntimeAction(ctx, {
@@ -633,9 +667,57 @@ function followUpSpec(): ToolSpec {
             targetInstanceId,
             requestToken: ctx.requestToken,
             payload,
+            // issue #1 / CCR-2: the closed execution-mode field (absent =
+            // the default sync — CCR-1).
+            ...(asyncExecution ? { execution: 'async' as const } : {}),
           }),
         ),
       )
+    },
+  }
+}
+
+function collectSpec(): ToolSpec {
+  return {
+    name: 'team_collect',
+    description:
+      'Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.',
+    properties: {
+      rootSessionId: ROOT_SESSION_ID_ARG,
+      requestToken: REQUEST_TOKEN_ARG,
+      requestTokens: REQUEST_TOKENS_ARG,
+    },
+    required: ['rootSessionId', 'requestToken', 'requestTokens'],
+    async run(ctx, args) {
+      const raw = args['requestTokens']
+      if (!Array.isArray(raw) || raw.length === 0 || raw.length > 64) {
+        throw new TeamToolArgsError(
+          'team-tools: argument \'requestTokens\' must be a non-empty array of at most 64 work request tokens',
+        )
+      }
+      const requestTokens: string[] = []
+      for (const token of raw) {
+        if (typeof token !== 'string' || token.length === 0) {
+          throw new TeamToolArgsError(
+            "team-tools: argument 'requestTokens' entries must be non-empty strings",
+          )
+        }
+        if (token.length > TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH) {
+          throw new TeamToolArgsError(
+            `team-tools: argument 'requestTokens' entries exceed ${TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH} characters`,
+            { length: token.length },
+          )
+        }
+        requestTokens.push(token)
+      }
+      const outcome = await performRuntimeAction(ctx, {
+        rootSessionId: ctx.rootSessionId,
+        action: ACTION_NAMES.WORK_STATUS,
+        caller: ctx.caller,
+        requestToken: ctx.requestToken,
+        payload: { requestTokens },
+      })
+      return toExecutedResult(outcome)
     },
   }
 }
@@ -891,7 +973,7 @@ function resolveControlSpec(): ToolSpec {
 
 /** The registered team tool set. */
 export interface TeamToolSet {
-  /** The ten closed tool definitions (registration order). */
+  /** The eleven closed tool definitions (registration order). */
   readonly tools: readonly TeamToolDefinition[]
 }
 
@@ -900,7 +982,7 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the ten tool definitions, ready for the host's public tool
+ * @returns the eleven tool definitions, ready for the host's public tool
  *   registration (each returns a disposer on register; the caller owns
  *   the effect lifetime).
  */
@@ -912,6 +994,7 @@ export function createTeamTools(options: TeamToolsOptions): TeamToolSet {
     createMemberSpec(),
     delegateSpec(),
     followUpSpec(),
+    collectSpec(),
     sendMessageSpec(),
     reportProgressSpec(),
     requestControlSpec(),

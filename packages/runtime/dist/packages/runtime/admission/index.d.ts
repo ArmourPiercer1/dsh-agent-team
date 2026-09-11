@@ -38,9 +38,9 @@
  */
 export { TEAM_RUNTIME_ERROR_CODES, TEAM_RUNTIME_ERROR_CODE_VALUES, TeamRuntimeError, isTeamRuntimeError, } from './errors.js';
 export type { TeamRuntimeErrorCode } from './errors.js';
-export { CALLER_ROLES, CALLER_ROLE_VALUES, WORK_DELIVERY_STATUSES, effectivePolicyView, memberSummary, } from './types.js';
-export type { ActionCaller, CallerRole, LifecycleCommitPort, RuntimeActionEffect, TeamRuntime, TeamRuntimeActionOutcome, TeamRuntimeActionRequest, TeamRuntimeOptions, WorkActivityPort, WorkDeliveryPort, WorkDeliveryResult, WorkDeliveryStatus, } from './types.js';
-export { ACTION_NAMES, ACTION_NAME_VALUES, ACTION_CATEGORIES, RUNTIME_OPS, PROGRESS_VALUES, CONTROL_DECISION_VALUES, ACTION_SPECS, actionSpecOf, validateActionRequest, } from './actions.js';
+export { CALLER_ROLES, CALLER_ROLE_VALUES, WORK_DELIVERY_STATUSES, WORK_EXECUTION_MODES, effectivePolicyView, memberSummary, } from './types.js';
+export type { ActionCaller, CallerRole, LifecycleCommitPort, RuntimeActionEffect, TeamRuntime, TeamRuntimeActionOutcome, TeamRuntimeActionRequest, TeamRuntimeOptions, WorkActivityPort, WorkDeliveryPort, WorkDeliveryResult, WorkDeliveryStatus, WorkExecutionMode, WorkStatusEntry, } from './types.js';
+export { ACTION_NAMES, ACTION_NAME_VALUES, ACTION_CATEGORIES, RUNTIME_OPS, PROGRESS_VALUES, CONTROL_DECISION_VALUES, ACTION_SPECS, actionSpecOf, validateActionRequest, workExecutionModeOf, } from './actions.js';
 export type { ActionCategory, ActionName, ActionSpec, ControlDecision, ProgressValue, RuntimeOp, } from './actions.js';
 export { checkCallerRoleAuthority, resolveCaller, resolveInstanceToken, resolveTeamAndTarget, } from './resolve.js';
 export type { ResolvedCaller, ResolvedTeamTarget } from './resolve.js';

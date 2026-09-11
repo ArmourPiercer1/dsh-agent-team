@@ -105,6 +105,19 @@
  * The control-plane `settled` stays SEPARATE: it never implies
  * `memberResult.status === 'succeeded'`.
  *
+ * SETTLEMENT-FACT PERSISTENCE (issue #1 / CCR-5): the settlement fact
+ * (`member-lifecycle-changed`, `to: 'SETTLED'`) carries the durable
+ * `memberResult` whenever the settlement call holds one — the full/resume
+ * settlement persists the port's normalized result, and the crash-window
+ * repair of the SAME settlement persists it too. The fail-closed
+ * delivery-failure settlement carries NONE (no member result exists — the
+ * fault description is the record). This is what makes the CCR-3
+ * `work-status` read-back durable across a restart: the terminal result
+ * survives without any live handle, and `scanWorkStatus` serves it
+ * verbatim (a pre-addendum settlement fact without a persisted result
+ * degrades to `unavailable` + the diagnostic code, never a business
+ * status).
+ *
  * TCM-M3 boundary: facts carrying `targetKind: 'root'` (the creation-time
  * Root initial work — the Root strategy's durable side, see
  * `root-initial-work.ts`) are SKIPPED by this scan: a member chain never
@@ -134,11 +147,13 @@ import {
 } from '../../domain/lifecycle/src/index.js'
 import type { LifecycleOperation } from '../../domain/lifecycle/src/index.js'
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/errors.js'
+import { WORK_DELIVERY_STATUSES } from '../admission/types.js'
 import type {
   LifecycleCommitPort,
   WorkActivityPort,
   WorkDeliveryPort,
   WorkDeliveryResult,
+  WorkStatusEntry,
 } from '../admission/types.js'
 import type { ResolvedCaller } from '../admission/resolve.js'
 import { isActivityError } from '../activity/errors.js'
@@ -627,7 +642,7 @@ export async function settleWorkLocked(
   delivered: WorkDeliveryResult,
 ): Promise<WorkChainResult> {
   await closeIntervalTolerated(deps)
-  const settle = await settleAdmittedWork(deps)
+  const settle = await settleAdmittedWork(deps, { memberResult: delivered })
   return {
     mode: admitted.mode,
     instanceId: deps.instanceId,
@@ -803,12 +818,19 @@ async function failClosedSettle(deps: WorkChainDeps, original: unknown): Promise
  *   where the port is present by the chain's precondition).
  * @param options - `failClosed: true` marks a fail-closed settlement
  *   (the fact carries `workOutcome: 'delivery-failed'` + the fault);
- *   `failure` is the fault being recorded.
+ *   `failure` is the fault being recorded; `memberResult` (issue #1 /
+ *   CCR-5) is the durable member result persisted INTO the settlement
+ *   fact (the full/resume settlement and the crash-window repair of the
+ *   same carry it; the fail-closed path carries none — no result exists).
  * @returns the settlement outcome.
  */
 export async function settleAdmittedWork(
   deps: WorkChainDeps,
-  options: { readonly failClosed?: boolean; readonly failure?: unknown } = {},
+  options: {
+    readonly failClosed?: boolean
+    readonly failure?: unknown
+    readonly memberResult?: WorkDeliveryResult
+  } = {},
 ): Promise<SettleOutcome> {
   const { repositories, rootSessionId, instanceId } = deps
   const fresh = repositories.memberInstances.get(rootSessionId, instanceId)
@@ -832,7 +854,7 @@ export async function settleAdmittedWork(
         FACT_LIFECYCLE_CHANGED,
         // The original transition was RUNNING -> SETTLED (the state half
         // committed before the crash) — the repaired fact records that.
-        settleFactPayload(deps, 'RUNNING', workOutcome, options.failure),
+        settleFactPayload(deps, 'RUNNING', workOutcome, options.failure, options.memberResult),
       )
       return { committed: false, to: 'SETTLED', sequence }
     }
@@ -853,7 +875,7 @@ export async function settleAdmittedWork(
     rootSessionId,
     deps.now,
     FACT_LIFECYCLE_CHANGED,
-    settleFactPayload(deps, fresh.lifecycle, workOutcome, options.failure),
+    settleFactPayload(deps, fresh.lifecycle, workOutcome, options.failure, options.memberResult),
   )
   return { committed: true, to: next.lifecycle, sequence }
 }
@@ -864,6 +886,7 @@ function settleFactPayload(
   from: MemberInstanceRecordDto['lifecycle'],
   workOutcome: 'settled' | 'delivery-failed',
   failure: unknown,
+  memberResult?: WorkDeliveryResult,
 ): Record<string, unknown> {
   return {
     action: deps.action,
@@ -873,7 +896,137 @@ function settleFactPayload(
     to: 'SETTLED',
     workOutcome,
     ...(failure !== undefined ? { failure: describeFailure(failure) } : {}),
+    // issue #1 / CCR-5: the durable member result (lossless JSON) — the
+    // work-status read-back serves it verbatim across a restart.
+    ...(memberResult !== undefined ? { memberResult } : {}),
     requestToken: deps.requestToken,
     at: deps.now(),
   }
+}
+
+/**
+ * The closed diagnostic codes of the CCR-3 `work-status` read (issue #1)
+ * — the `unavailable` entries WITHOUT a persisted memberResult:
+ *
+ * - `WORK_TOKEN_UNKNOWN`: no work-unit fact for the token in this root
+ *   (never admitted, or a Root initial-work fact the member scanner
+ *   intentionally skips — TCM-M3);
+ * - `WORK_RESULT_NOT_PERSISTED`: the unit durably settled but the
+ *   settlement fact predates the CCR-5 addendum (no persisted
+ *   memberResult — the pre-fix history; the control-plane outcome stays
+ *   visible through `workOutcome`);
+ * - `WORK_DELIVERY_FAILED`: the unit settled fail-closed
+ *   (`workOutcome: 'delivery-failed'`) — a delivery fault, never a
+ *   business result.
+ */
+export const WORK_STATUS_CODES = {
+  TOKEN_UNKNOWN: 'WORK_TOKEN_UNKNOWN',
+  RESULT_NOT_PERSISTED: 'WORK_RESULT_NOT_PERSISTED',
+  DELIVERY_FAILED: 'WORK_DELIVERY_FAILED',
+} as const
+
+/**
+ * The CCR-3 work-status read (issue #1): the durable state of the given
+ * requestTokens in this root, in INPUT ORDER (duplicates collapsed to the
+ * first occurrence).
+ *
+ * A pure read: it walks the ledger (one per-root pass per token, through
+ * {@link scanWorkUnitFacts} — the ledger is small at team scale) and
+ * writes nothing, delivers nothing, and touches no live object. The
+ * terminal business statuses (`succeeded` / `failed` / `unavailable`)
+ * are served ONLY from the CCR-5 persisted `memberResult` of the
+ * settlement fact — `settled: true` alone is never mapped to a business
+ * status (the v2 D2/C1 rule, unchanged).
+ */
+export function scanWorkStatus(
+  repositories: TeamDomainRepositories,
+  rootSessionId: string,
+  requestTokens: readonly string[],
+): WorkStatusEntry[] {
+  const seen = new Set<string>()
+  const entries: WorkStatusEntry[] = []
+  for (const requestToken of requestTokens) {
+    if (seen.has(requestToken)) continue
+    seen.add(requestToken)
+    entries.push(scanWorkStatusToken(repositories, rootSessionId, requestToken))
+  }
+  return entries
+}
+
+/** One token's entry (see {@link scanWorkStatus} for the contract). */
+function scanWorkStatusToken(
+  repositories: TeamDomainRepositories,
+  rootSessionId: string,
+  requestToken: string,
+): WorkStatusEntry {
+  const facts = scanWorkUnitFacts(repositories, rootSessionId, requestToken)
+  const admitted = facts.admitted
+  const settled = facts.settled
+  if (admitted === undefined && settled === undefined) {
+    return {
+      requestToken,
+      status: 'unavailable',
+      error: {
+        code: WORK_STATUS_CODES.TOKEN_UNKNOWN,
+        message: `no work-unit facts for token '${requestToken}' in this root (never admitted, or a Root initial-work fact this read does not own)`,
+      },
+    }
+  }
+  const instanceId =
+    (admitted?.payload['targetInstanceId'] as string | undefined) ??
+    (settled?.payload['instanceId'] as string | undefined)
+  if (settled === undefined) {
+    // Admitted only: the async continuation is in flight (or crashed
+    // before settlement — a same-token re-delegate RESUMES the unit;
+    // the retry protocol, module docs).
+    return {
+      requestToken,
+      status: 'running',
+      ...(instanceId !== undefined ? { instanceId } : {}),
+      admittedSequence: admitted?.sequence,
+      resumePossible: true,
+    }
+  }
+  const persisted = settled.payload['memberResult']
+  if (isPersistedMemberResult(persisted)) {
+    return {
+      requestToken,
+      status: persisted.status,
+      ...(instanceId !== undefined ? { instanceId } : {}),
+      ...(admitted !== undefined ? { admittedSequence: admitted.sequence } : {}),
+      settledSequence: settled.sequence,
+      memberResult: persisted,
+    }
+  }
+  const workOutcome = settled.payload['workOutcome'] === 'delivery-failed' ? 'delivery-failed' : 'settled'
+  const code =
+    workOutcome === 'delivery-failed' ? WORK_STATUS_CODES.DELIVERY_FAILED : WORK_STATUS_CODES.RESULT_NOT_PERSISTED
+  return {
+    requestToken,
+    status: 'unavailable',
+    ...(instanceId !== undefined ? { instanceId } : {}),
+    ...(admitted !== undefined ? { admittedSequence: admitted.sequence } : {}),
+    settledSequence: settled.sequence,
+    workOutcome,
+    error: {
+      code,
+      message:
+        workOutcome === 'delivery-failed'
+          ? 'the work unit settled fail-closed (delivery fault); no member result was persisted'
+          : 'the work unit durably settled but its settlement fact carries no persisted memberResult (pre-CCR-5 history)',
+    },
+  }
+}
+
+/**
+ * The persisted memberResult guard (issue #1 / CCR-5): the lossless JSON
+ * read back from the durable fact must be the closed WorkDeliveryResult
+ * shape (requestToken + a closed status) before it is served verbatim.
+ */
+function isPersistedMemberResult(value: unknown): value is WorkDeliveryResult {
+  if (value === null || typeof value !== 'object') return false
+  const candidate = value as Record<string, unknown>
+  if (typeof candidate['requestToken'] !== 'string') return false
+  if (typeof candidate['status'] !== 'string') return false
+  return (WORK_DELIVERY_STATUSES as readonly string[]).includes(candidate['status'])
 }

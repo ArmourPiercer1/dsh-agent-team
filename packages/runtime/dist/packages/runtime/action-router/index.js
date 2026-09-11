@@ -19,6 +19,6 @@
  */
 export { createTeamRuntime } from './router.js';
 export { executeEffect, isWorkChainStage, withTeamLock, commitDurableFact } from './effects.js';
-export { admitWorkLocked, completeWorkChainAfterAdmission, deliverWork, executeWorkChain, scanWorkUnitFacts, settleAdmittedWork, settleWorkLocked, WORK_ACTIVITY_SUBJECT, } from './work-execution.js';
+export { admitWorkLocked, completeWorkChainAfterAdmission, deliverWork, executeWorkChain, scanWorkStatus, scanWorkUnitFacts, settleAdmittedWork, settleWorkLocked, WORK_ACTIVITY_SUBJECT, WORK_STATUS_CODES, } from './work-execution.js';
 export { createAdmitRootInitialWork, computeRootWorkPayloadFingerprint, executeRootInitialWorkLocked, scanRootInitialWorkFacts, FACT_ROOT_WORK_DELIVERED, FACT_WORK_ADMITTED as FACT_ROOT_WORK_ADMITTED, ROOT_TARGET_KIND, } from './root-initial-work.js';
 //# sourceMappingURL=index.js.map

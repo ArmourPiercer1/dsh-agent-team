@@ -2,7 +2,7 @@
  * d1-member-base-tools.test.ts — D1 (v2 → v3): the team-CREATED agents —
  * the MEMBER agents (v2) AND the ROOT (leader) agent (v3) — get the
  * ordinary base tools (the ordinary AgentPreset substrate — file/shell)
- * IN ADDITION to the ten team_* tools.
+ * IN ADDITION to the eleven team_* tools.
  *
  * Defect (v2, docs/local-issues/team-member-missing-base-tools.md): the
  * member setup registered only the Team tools; every `read`/`exec`/`pwd`
@@ -10,7 +10,7 @@
  * basic work.
  * Extension (v3 — the V1 live-matrix verification finding, ruled a
  * product fix citing D1 v2 + plan §13-L4/§12.3): a plugin-CREATED root
- * (team.create / the p6t6 worlds) likewise carried ONLY the ten team
+ * (team.create / the p6t6 worlds) likewise carried ONLY the eleven team
  * tools — the leader's file lanes (allow read executes; ask write →
  * user-approval) were unreachable and every leader file op died with
  * `unknown tool`.
@@ -25,7 +25,7 @@
  * tools).
  *
  * Contract (asserted at the REAL glue boundary through the t12a-live-
- * bridge doubles — the real agent-bindings.mjs — with the REAL ten-tool
+ * bridge doubles — the real agent-bindings.mjs — with the REAL eleven-tool
  * createTeamTools stack over the P6-T2 durable world):
  *   D1-1 create (fresh-root + fresh-member): agentPresets.mount is called
  *        EXACTLY TWICE — once for the root's agent ctx with the configured
@@ -47,7 +47,7 @@
  *        the FIRST setup — the root path — with the typed error (code
  *        root-base-tools-unavailable) and ZERO partial state (no live
  *        residency; the member is never even created);
- *   D1-6 the ten team_* tools are STILL registered on the member row AND
+ *   D1-6 the eleven team_* tools are STILL registered on the member row AND
  *        the root row (the doubles' mount registers no tools — no
  *        regression; the preset substrate is a tool-table ADDITION);
  *   D1-7 the already-joined guard: an agent that already holds a preset
@@ -69,7 +69,7 @@ import {
 import { destroyP6T1World } from './p6t1-helpers.js'
 import { createP6T6World } from '../../tools/test/p6t6-helpers.js'
 
-/** The frozen ten-tool team vocabulary (the closed set — name drift fails). */
+/** The frozen eleven-tool team vocabulary (the closed set — name drift fails). */
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -77,6 +77,7 @@ const EXPECTED_TOOL_NAMES = [
   'team_create_member',
   'team_delegate',
   'team_follow_up',
+  'team_collect',
   'team_send_message',
   'team_report_progress',
   'team_request_control',
@@ -91,7 +92,7 @@ function names(ctx: AgentCtxDouble): string[] {
   return ctx.registeredTools.map((def) => String((def as { name?: string }).name ?? ''))
 }
 
-// The REAL ten-tool stack (createTeamTools over the P6-T2 durable world) —
+// The REAL eleven-tool stack (createTeamTools over the P6-T2 durable world) —
 // the same factory the production root fills teamToolsRef.current with.
 const p6t6 = await createP6T6World('d1-member-base-tools')
 
@@ -340,7 +341,7 @@ describe('D1 (v2 → v3) agent base tools: the ordinary preset mounts on member 
     expect(String(error.message).includes(MEMBER_BASE_TOOLS_UNAVAILABLE)).toBe(false)
   })
 
-  it('D1-6 the ten team_* tools are still registered on the member AND root rows (no regression; the mount adds no tools)', () => {
+  it('D1-6 the eleven team_* tools are still registered on the member AND root rows (no regression; the mount adds no tools)', () => {
     // The member row carries the full real stack — every lifecycle.
     expect(memberToolsA).toEqual(EXPECTED_TOOL_NAMES)
     expect(memberToolsC1).toEqual(EXPECTED_TOOL_NAMES)

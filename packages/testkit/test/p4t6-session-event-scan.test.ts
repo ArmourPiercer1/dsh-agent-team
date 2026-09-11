@@ -613,21 +613,52 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     count change). Recorded on the H5 task branch; re-verify on
     //     int at the alpha2-hardening-followup integration.
     //
+    // (issue#1) THREE issue #1 scannable files (this commit, the issue #1
+    //     async delegation repair task — recorded on the task branch as
+    //     668 + 3 = 671 on base 6a2f3e1; the H4/H5 follow-up (two
+    //     scannable files, above) merged to master since the task branch
+    //     base, so on int this lands as 670 + 3 = 673):
+    //     packages/runtime/test/issue1-serial-blocking.test.ts (the RED
+    //     characterization of the pre-fix sync-blocking behavior),
+    //     packages/runtime/test/issue1-async-delegation.test.ts (the R1-R7
+    //     acceptance battery: the async admission receipt without
+    //     settlement, the detached continuation with no caller signal, the
+    //     durable settlement fact persisting memberResult, the work-status
+    //     read action entry shapes (admitted/running/succeeded/failed/
+    //     unavailable-unknown), the WORK_REPLAYED replay and the admitted-
+    //     only resume, the byte-identical sync default, and the cross-
+    //     member concurrency overlap proof) and
+    //     packages/tools/test/issue1-collect-tools.test.ts (the
+    //     team_collect tool layer: the optional async flag on delegate and
+    //     follow-up, the collect requestToken array validation, the
+    //     read-only scan, the duplicate folding in input order, the
+    //     unknown-token shape, and the explicit async:false override). All
+    //     three carry zero denylist vocabulary (the scan over them passes
+    //     — the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling changes (the admission
+    //     types/actions/index, the action-router work-execution/effects/
+    //     router/index, the root.ts tool-count comment, tools/src/tools.ts,
+    //     the five ten-tool registration pin specs, and the p6t6-bypass-
+    //     scan eleven-tool update) are in-place edits on already-scanned
+    //     files (no count change). Recorded on the task branch; re-verify
+    //     on int at the issue1-async-delegation integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 670 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 1 + 1), and its file
-    // list names exactly the twenty-eight files above (ten alpha.1 + one
-    // A1 + seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one
-    // H3 + one H4 + one H5; the committed scanner is byte-identical — no
-    // scanner change, DEC-1).
+    // 673 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 1 + 1 + 3), and its
+    // file list names exactly the thirty-one files above (ten alpha.1 +
+    // one A1 + seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 +
+    // one H3 + one H4 + one H5 + three issue #1 test files; the committed
+    // scanner is byte-identical — no scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-hardening-followup/h4-rule-identity/ + alpha2-hardening-
-    // followup/h5-bash-effect/.
-    expect(scanResult.filesScanned).toBe(670)
-    expect(scanResult.files.length).toBe(670)
+    // followup/h5-bash-effect/ + dev/agent-workflow/evidence/issue1-async-
+    // delegation/.
+    expect(scanResult.filesScanned).toBe(673)
+    expect(scanResult.files.length).toBe(673)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

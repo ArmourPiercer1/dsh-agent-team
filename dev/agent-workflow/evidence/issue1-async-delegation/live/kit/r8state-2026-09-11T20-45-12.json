@@ -1,0 +1,23 @@
+{
+  "stamp": "2026-09-11T20-45-12",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-issue1-2026-09-11T20-45-12",
+  "port": 3182,
+  "proxyPort": 3494,
+  "mockPort": 3495,
+  "origin": "http://127.0.0.1:3182",
+  "token": "uIhE4P2uxxi6jWDveI9D5A7ztAP8tAl_hCDN41IwDJI",
+  "cookie": "dsh-auth-9o_WOrrppnUpd3HWtOxmaPKuTZhCz4zO81hoZobwGQ8=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MiIsImlzc3VlZEF0IjoxNzg5MTMwNzQ4NDY0LCJleHBpcmVzQXQiOjE3OTE3MjI3NDg0NjR9.cTqixxj3gbYh1f2Y_wZ2oKyHgHxxskLGeNXKLt2-B5U",
+  "rootSessionId": "issue1-root",
+  "memberDelayMs": 20000,
+  "instancePid": 78988,
+  "bootJobPid": 103104,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\instances\\instance-port3182.log",
+  "mockLogPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\mock-model-2026-09-11T20-45-12.log",
+  "proxyLogPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\mock-proxy-2026-09-11T20-45-12.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\dump-config-2026-09-11T20-45-12.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-issue1-2026-09-11T20-45-12\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "file:D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-issue1-2026-09-11T20-45-12/repo-copy",
+  "branch": "task/issue1-async-delegation",
+  "startedAt": "2026-09-11T12:45:50.656Z",
+  "stoppedAt": "2026-09-11T12:51:43.278Z"
+}

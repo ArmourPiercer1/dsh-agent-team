@@ -16,11 +16,11 @@
  * contract, so its team_* calls died at the closed argument validation.
  *
  * Contract (asserted at the REAL glue boundary through the t12a-live-bridge
- * doubles — the real agent-bindings.mjs — with the REAL ten-tool
+ * doubles — the real agent-bindings.mjs — with the REAL eleven-tool
  * createTeamTools stack over the P6-T2 durable world, wired with the glue's
  * OWN resolveCaller exactly as the production root wires it (root.ts A04)):
  *   D4-1 create setup: the boot root, the seeded boot-root member, AND the
- *        second root N all receive exactly the ten team tools — the same
+ *        second root N all receive exactly the eleven team tools — the same
  *        def objects from the real stack, in stack order;
  *   D4-2 resolveCaller: N resolves to ITS OWN leader (inst-leader — N is a
  *        team root of this row's domain via its durable TeamSession row),
@@ -47,7 +47,7 @@
  *        the boot-root member (the boot-root behavior is unchanged —
  *        resolved under the boot root);
  *   D4-6 the COLD RESUME (host-restart window: dropResidency + durable
- *        session + the first chat on N) re-registers the ten tools on the
+ *        session + the first chat on N) re-registers the eleven tools on the
  *        resumed N through the agents.resume setup under its OWN root and
  *        keeps the context block; the followup lands on N;
  *   D4-7 close disposes every registration (HMR safety).
@@ -76,7 +76,7 @@ import {
   parseRootSessionId,
 } from '../../contracts/src/index.js'
 
-/** The frozen ten-tool team vocabulary (the closed set — name drift fails). */
+/** The frozen eleven-tool team vocabulary (the closed set — name drift fails). */
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -84,6 +84,7 @@ const EXPECTED_TOOL_NAMES = [
   'team_create_member',
   'team_delegate',
   'team_follow_up',
+  'team_collect',
   'team_send_message',
   'team_report_progress',
   'team_request_control',
@@ -171,7 +172,7 @@ const world = await createLiveWorld({
   rootSessionId: BOOT,
   // D1 (v2): the member base-tool substrate (the member bind paths fail
   // closed without it — this world drives the boot root's seeded worker;
-  // the D4 assertions about the ten team tools are unchanged: the mount
+  // the D4 assertions about the eleven team tools are unchanged: the mount
   // composes IN ADDITION to the team registration, it never replaces it).
   agentPresets: createAgentPresetsDouble(),
   members: [{ childSessionId: WORKER.childSessionId, instanceId: WORKER.instanceId, templateId: WORKER.templateId }],
@@ -186,7 +187,7 @@ const world = await createLiveWorld({
   },
 })
 
-// The production wiring (root.ts A04): the REAL ten-tool stack over the
+// The production wiring (root.ts A04): the REAL eleven-tool stack over the
 // P6-T2 runtime + satellites, with the GLUE's OWN resolveCaller as the
 // caller port — filled into teamToolsRef BEFORE boot, so the shared setup
 // registers it on every agent ctx.
@@ -307,7 +308,7 @@ const nToolsAfterClose = nCtxAfterResume === undefined ? [] : names(nCtxAfterRes
 await destroyP6T1World(p6t6.world)
 
 describe('TCM-D4 the second root in a boot-root world (the freshly created team)', () => {
-  it('D4-1 create/resume setup registers exactly the ten team tools on boot root, boot-root member, and second root N', () => {
+  it('D4-1 create/resume setup registers exactly the eleven team tools on boot root, boot-root member, and second root N', () => {
     // The real factory emits the frozen vocabulary (guards the stack input).
     expect(toolStack.tools.map((tool) => tool.name)).toEqual(EXPECTED_TOOL_NAMES)
     // The boot root (leader) carries the full stack — the same def objects,
@@ -415,7 +416,7 @@ describe('TCM-D4 the second root in a boot-root world (the freshly created team)
     expect(followupText(2, followupsAfterBoundaries)).toBe('[team-work requestToken=tok-d4-wd] do the delegated work')
   })
 
-  it('D4-6 the cold resume re-registers the ten tools on N under its own root and keeps the context block', () => {
+  it('D4-6 the cold resume re-registers the eleven tools on N under its own root and keeps the context block', () => {
     // The resident handle was dropped (the durable session stays on disk).
     expect(droppedN).toEqual({ dropped: true })
     // The first chat after the restart cold-resumes N through
