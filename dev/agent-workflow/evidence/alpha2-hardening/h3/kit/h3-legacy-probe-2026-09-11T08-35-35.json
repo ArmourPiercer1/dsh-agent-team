@@ -1,0 +1,141 @@
+{
+  "stamp": "2026-09-11T08-35-35",
+  "purpose": "R1 legacy-regression probe on the 0.1.1-alpha.2 build: the shipped default my-team-bp-1 (NO capabilities field) delivers the legacy FULL team-tool catalog to the leader with ZERO permission listeners — no capability wiring, no control-plane involvement",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3legacy-2026-09-11T08-35-35",
+  "branch": "task/alpha2-h3-closure",
+  "rootSessionId": "team-root",
+  "startedAt": "2026-09-11T08:43:11.227Z",
+  "selectionSet": {
+    "team_list_members": "registered",
+    "team_list_templates": "registered",
+    "team_inspect_config": "registered",
+    "team_create_member": "registered",
+    "team_delegate": "registered",
+    "team_follow_up": "registered",
+    "team_send_message": "registered",
+    "team_report_progress": "registered",
+    "team_request_control": "registered",
+    "team_resolve_control": "registered"
+  },
+  "finishedAt": "2026-09-11T08:43:11.616Z",
+  "verdict": {
+    "overall": "R1 LEGACY PASS",
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "legacy-health-ok",
+      "label": "p6t6 health ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"team-root\",\"liveSessions\":[\"team-root\"],\"toolCount\":10}"
+    },
+    {
+      "id": "legacy-toolcount-10",
+      "label": "factory catalog toolCount = 10",
+      "expected": 10,
+      "actual": 10,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "legacy-leader-only",
+      "label": "shipped row seeds no members (leader-only live sessions)",
+      "expected": "[\"team-root\"]",
+      "actual": "[\"team-root\"]",
+      "ok": true,
+      "detail": "[\"team-root\"]"
+    },
+    {
+      "id": "legacy-blueprint-shipped",
+      "label": "teamSession blueprintId = my-team-bp-1 (the BUNDLE layer shipped default stands)",
+      "expected": "my-team-bp-1",
+      "actual": "my-team-bp-1",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "legacy-control-zero-at-boot",
+      "label": "zero control state at boot (nothing has asked yet)",
+      "expected": {
+        "requests": 0,
+        "decisions": 0,
+        "consumptions": 0
+      },
+      "actual": {
+        "requests": 0,
+        "decisions": 0,
+        "consumptions": 0
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "legacy-catalog-shipped",
+      "label": "catalog.list carries my-team-bp-1",
+      "expected": "my-team-bp-1 present",
+      "actual": true,
+      "ok": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"leg-1a08fa2921ce9ce6\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"my-team-bp-1\",\"revisions\":[1]}]},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"catalog.list\",\"endpoint\":\"catalog.list\",\"contractVersion\":1,\"requestToken\":null,\"projectionGener"
+    },
+    {
+      "id": "legacy-full-10-catalog",
+      "label": "ALL TEN team tools registered on the legacy leader (no capability selection)",
+      "expected": "0 missing",
+      "actual": "0 missing: -",
+      "ok": true,
+      "detail": "{\"team_list_members\":\"registered\",\"team_list_templates\":\"registered\",\"team_inspect_config\":\"registered\",\"team_create_member\":\"registered\",\"team_delegate\":\"registered\",\"team_follow_up\":\"registered\",\"team_send_message\":\"registered\",\"team_report_progress\":\"registered\",\"team_request_control\":\"registered\",\"team_resolve_control\":\"registered\"}"
+    },
+    {
+      "id": "legacy-defaultworkspace-known",
+      "label": "teamSession defaultWorkspace is known (the probe file target)",
+      "expected": "non-empty",
+      "actual": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use",
+      "ok": true,
+      "detail": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\deepseek-harness-test-use"
+    },
+    {
+      "id": "legacy-write-executes",
+      "label": "legacy leader write executes (no permission listener vetoes it)",
+      "expected": "ok",
+      "actual": "ok",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\deepseek-harness-test-use\\\\a2-legacy-probe.txt\",\"operation\":\"create\",\"before\":null,\"after\":\"legacy-zero-listener-ok\"}}"
+    },
+    {
+      "id": "legacy-write-file-on-disk",
+      "label": "the written file exists on disk with the payload",
+      "expected": "legacy-zero-listener-ok",
+      "actual": "legacy-zero-listener-ok",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "legacy-read-executes",
+      "label": "legacy leader read executes (no permission listener vetoes it)",
+      "expected": "ok",
+      "actual": "ok",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\deepseek-harness-test-use\\\\a2-legacy-probe.txt\",\"offset\":1,\"lines\":[{\"number\":1,\"text\":\"legacy-zero-listener-ok\"}],\"totalLines\":1}}"
+    },
+    {
+      "id": "legacy-zero-control-rows",
+      "label": "ZERO control rows after the live write+read (the alpha.2 permission plane is absent for the legacy blueprint)",
+      "expected": {
+        "requests": 0,
+        "decisions": 0,
+        "consumptions": 0
+      },
+      "actual": {
+        "requests": 0,
+        "decisions": 0,
+        "consumptions": 0
+      },
+      "ok": true,
+      "detail": "{\"requests\":[],\"decisions\":[],\"consumptions\":[]}"
+    }
+  ]
+}

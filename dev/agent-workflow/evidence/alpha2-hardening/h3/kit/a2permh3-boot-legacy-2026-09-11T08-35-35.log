@@ -1,0 +1,26 @@
+[2026-09-11T08:42:18.759Z] world (legacy): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permh3legacy-2026-09-11T08-35-35
+[2026-09-11T08:42:18.761Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permh3legacy-2026-09-11T08-35-35\profiles\web\node_modules\dsh-agent-team
+[2026-09-11T08:42:18.761Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-h3\dev\agent-workflow\evidence\alpha2-hardening\h3\kit\a2permh3legacy-assertions-2026-09-11T08-35-35.json (branch=task/alpha2-h3-closure)
+[2026-09-11T08:42:18.764Z] profile already initialized (a2perm-setup)
+[2026-09-11T08:42:18.764Z] p6t6 directive written (boot=1 phase=create rootSessionId=team-root)
+[2026-09-11T08:42:18.776Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process); DSH_HARDENING_PROBE=1 (hostile seam armed)
+[2026-09-11T08:42:20.863Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=_Bga-sHGDK2Fy_BP5RYtB4tgduAIwZJ4vXR8qqT2YL8
+[2026-09-11T08:42:20.873Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 72052
+[2026-09-11T08:42:21.907Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"team-root","liveSessions":["team-root"],"toolCount":10}
+[2026-09-11T08:42:21.907Z] live sessions = ["team-root"] (expected set)
+[2026-09-11T08:42:21.922Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-11T08:42:22.012Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-h3\dev\agent-workflow\evidence\alpha2-hardening\h3\kit\dump-config-legacy-2026-09-11T08-35-35.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-11T08:42:22.034Z] catalog.list with cookie: HTTP 200
+[2026-09-11T08:42:22.034Z] catalog.list carries my-team-bp-1 (shipped row in force)
+[2026-09-11T08:42:22.034Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-h3\dev\agent-workflow\evidence\alpha2-hardening\h3\kit\a2stateh3-legacy-2026-09-11T08-35-35.json
+[2026-09-11T08:42:22.035Z] A2-READY
+[2026-09-11T08:43:28.962Z] stop: instance pid 72052 signaled
+[2026-09-11T08:43:28.979Z] instance child exited (code=1) — boot job shutting down
+[2026-09-11T08:43:28.993Z] shutdown: instance child exit
+[2026-09-11T08:43:28.998Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-11T08:43:29.508Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=_Bga-sHGDK2Fy_BP5RYtB4tgduAIwZJ4vXR8qqT2YL8
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-11T08:43:29.511Z] A2-STOPPED

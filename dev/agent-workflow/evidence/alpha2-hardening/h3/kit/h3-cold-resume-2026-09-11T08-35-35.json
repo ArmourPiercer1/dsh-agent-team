@@ -1,0 +1,1195 @@
+{
+  "mode": "cold",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35",
+  "branch": "task/alpha2-h3-closure",
+  "rootSessionId": "a2root",
+  "phase": "resume",
+  "startedAt": "2026-09-11T08:42:02.599Z",
+  "baselineFiles": null,
+  "finalFiles": null,
+  "counts": {
+    "leaderLines": 6,
+    "requests": 11,
+    "decisions": 10,
+    "consumptions": 11
+  },
+  "controlLedger": [
+    {
+      "schemaVersion": 1,
+      "sequence": 2,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2L-readC",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+        "requestId": "ctrl-091jyzt1mtqai80ow8y7n1tu",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:47.508Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 3,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (leader readC)",
+        "requestId": "ctrl-091jyzt1mtqai80ow8y7n1tu",
+        "requestSequence": 2,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-readC",
+          "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:47.794Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 4,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:37:47.941Z",
+        "decisionSequence": 3,
+        "requestId": "ctrl-091jyzt1mtqai80ow8y7n1tu",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-readC",
+          "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:47.941Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 5,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2L-writeC1",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:64222f1a082f103312738edb1808d894074b7cee8a4cbdf401b522dea31729f8",
+        "requestId": "ctrl-1xxk0g205mp51x184koz00fj",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:48.197Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 6,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (leader writeC1)",
+        "requestId": "ctrl-1xxk0g205mp51x184koz00fj",
+        "requestSequence": 5,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC1",
+          "operationFingerprint": "sha256:64222f1a082f103312738edb1808d894074b7cee8a4cbdf401b522dea31729f8",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:48.509Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 7,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:37:48.662Z",
+        "decisionSequence": 6,
+        "requestId": "ctrl-1xxk0g205mp51x184koz00fj",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC1",
+          "operationFingerprint": "sha256:64222f1a082f103312738edb1808d894074b7cee8a4cbdf401b522dea31729f8",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:48.662Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 8,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2L-writeC2",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:fc90f3ddf680b180cc38cfcf8ef0ca235af0c7d1f70c2e2381cf2aa7d949f9b6",
+        "requestId": "ctrl-0a5k75j0z9f4pw1ox87nt0qz",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:49.008Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 9,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (leader writeC2)",
+        "requestId": "ctrl-0a5k75j0z9f4pw1ox87nt0qz",
+        "requestSequence": 8,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC2",
+          "operationFingerprint": "sha256:fc90f3ddf680b180cc38cfcf8ef0ca235af0c7d1f70c2e2381cf2aa7d949f9b6",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:49.263Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 10,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:37:49.405Z",
+        "decisionSequence": 9,
+        "requestId": "ctrl-0a5k75j0z9f4pw1ox87nt0qz",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2L-writeC2",
+          "operationFingerprint": "sha256:fc90f3ddf680b180cc38cfcf8ef0ca235af0c7d1f70c2e2381cf2aa7d949f9b6",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:49.405Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 13,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2A-readC",
+        "kind": "leader-approval",
+        "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+        "requestId": "ctrl-0jtnfrb09x0eya016qrvl1nz",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-a2pa",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:50.694Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 14,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "decision": "allow",
+        "requestId": "ctrl-0jtnfrb09x0eya016qrvl1nz",
+        "requestSequence": 13,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readC",
+          "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:50.953Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 15,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:37:51.098Z",
+        "decisionSequence": 14,
+        "requestId": "ctrl-0jtnfrb09x0eya016qrvl1nz",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readC",
+          "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:51.098Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 16,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2A-writeC1",
+        "kind": "leader-approval",
+        "operationFingerprint": "sha256:f7680ca7d3c23273ca005e506c56413fa63fd75213ef8a8d2f77b8883b45ef04",
+        "requestId": "ctrl-1ol8bsx0zrnbk61cc6z8r168",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-a2pa",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:51.399Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 17,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "decision": "allow",
+        "requestId": "ctrl-1ol8bsx0zrnbk61cc6z8r168",
+        "requestSequence": 16,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-writeC1",
+          "operationFingerprint": "sha256:f7680ca7d3c23273ca005e506c56413fa63fd75213ef8a8d2f77b8883b45ef04",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:51.664Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 18,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:37:51.808Z",
+        "decisionSequence": 17,
+        "requestId": "ctrl-1ol8bsx0zrnbk61cc6z8r168",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-writeC1",
+          "operationFingerprint": "sha256:f7680ca7d3c23273ca005e506c56413fa63fd75213ef8a8d2f77b8883b45ef04",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:51.808Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 19,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2A-readD",
+        "kind": "leader-approval",
+        "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+        "requestId": "ctrl-130tdkx1forf701gvffpf1sw",
+        "requester": {
+          "instanceId": "inst-a2pa",
+          "kind": "instance",
+          "role": "member"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-a2pa",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:52.152Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 20,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "decision": "allow",
+        "requestId": "ctrl-130tdkx1forf701gvffpf1sw",
+        "requestSequence": 19,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readD",
+          "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:52.430Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 21,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:37:52.579Z",
+        "decisionSequence": 20,
+        "requestId": "ctrl-130tdkx1forf701gvffpf1sw",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2A-readD",
+          "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-a2pa",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:52.579Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 25,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-n4",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+        "requestId": "ctrl-0llp5hz0fh92pe0je4rtt15j",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:37:54.064Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 26,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-n0-readD",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+        "requestId": "ctrl-19xlx3m0yu90uv12sttoo1qa",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:53.877Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 27,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (N0 readD pre-read)",
+        "requestId": "ctrl-19xlx3m0yu90uv12sttoo1qa",
+        "requestSequence": 26,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-n0-readD",
+          "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:54.143Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 28,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:39:54.388Z",
+        "decisionSequence": 27,
+        "requestId": "ctrl-19xlx3m0yu90uv12sttoo1qa",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-n0-readD",
+          "operationFingerprint": "sha256:c5a98dde78967f22a55cc238c09315f2bb4d2c3e824c9e29a013885c7d56dcb9",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:54.388Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 29,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-dc",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:9c871136a7d1af48ee27c3f714623954c0af9ba0c8e82eccba7d818cddb9401e",
+        "requestId": "ctrl-1x7gq5s09sdnbv0hpsw2u1uj",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:54.578Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 30,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (N5 first write)",
+        "requestId": "ctrl-1x7gq5s09sdnbv0hpsw2u1uj",
+        "requestSequence": 29,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-dc",
+          "operationFingerprint": "sha256:9c871136a7d1af48ee27c3f714623954c0af9ba0c8e82eccba7d818cddb9401e",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:54.744Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 31,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:39:54.977Z",
+        "decisionSequence": 30,
+        "requestId": "ctrl-1x7gq5s09sdnbv0hpsw2u1uj",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-dc",
+          "operationFingerprint": "sha256:9c871136a7d1af48ee27c3f714623954c0af9ba0c8e82eccba7d818cddb9401e",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:54.977Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 32,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-fp1",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:62e9413f011c693bb3e7a678503818c4485124095524f2886d424f924926a518",
+        "requestId": "ctrl-0ze5iqc13sz5mh045k6zu1ez",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:55.230Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 33,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (N6 a2-fp1)",
+        "requestId": "ctrl-0ze5iqc13sz5mh045k6zu1ez",
+        "requestSequence": 32,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-fp1",
+          "operationFingerprint": "sha256:62e9413f011c693bb3e7a678503818c4485124095524f2886d424f924926a518",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:55.533Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 34,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:39:55.918Z",
+        "decisionSequence": 33,
+        "requestId": "ctrl-0ze5iqc13sz5mh045k6zu1ez",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-fp1",
+          "operationFingerprint": "sha256:62e9413f011c693bb3e7a678503818c4485124095524f2886d424f924926a518",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:55.918Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 35,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-fp2",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:54ef3a91f5ad335bac527e74a8c07a9aeb32cbec85bdf056452854a7cd7cc720",
+        "requestId": "ctrl-1nnl25g1dxh0gl0erdhom092",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-d.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:56.190Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 36,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "deny",
+        "note": "V1 kit human deny (N6 a2-fp2)",
+        "requestId": "ctrl-1nnl25g1dxh0gl0erdhom092",
+        "requestSequence": 35,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-fp2",
+          "operationFingerprint": "sha256:54ef3a91f5ad335bac527e74a8c07a9aeb32cbec85bdf056452854a7cd7cc720",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:39:56.543Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 39,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-cr-readC",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+        "requestId": "ctrl-1t6j4870k42u2e1ebqxi90v2",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "read D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "read"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:42:02.759Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 40,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (cold resume readC)",
+        "requestId": "ctrl-1t6j4870k42u2e1ebqxi90v2",
+        "requestSequence": 39,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-cr-readC",
+          "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:42:03.044Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 41,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:42:03.391Z",
+        "decisionSequence": 40,
+        "requestId": "ctrl-1t6j4870k42u2e1ebqxi90v2",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-cr-readC",
+          "operationFingerprint": "sha256:3408c9e999ebe923b72adfd7fcbb50dd62c6b6d71d01c3913d0b3d136c2b2abb",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "read"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:42:03.391Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 42,
+      "rootSessionId": "a2root",
+      "factType": "control-request-recorded",
+      "payload": {
+        "actionName": "parameter-permission",
+        "correlation": "a2-cr-writeC",
+        "kind": "user-approval",
+        "operationFingerprint": "sha256:c2720f060491aa9511592e205ecb450831eea59c41dfc8d629459fab785ce555",
+        "requestId": "ctrl-1eveavn1ix3in60fkdcjx1pz",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "summary": "write D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-c.txt",
+        "targetInstanceId": "inst-leader",
+        "toolName": "write"
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:42:03.581Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 43,
+      "rootSessionId": "a2root",
+      "factType": "control-decision-recorded",
+      "payload": {
+        "decider": {
+          "humanId": "a2root",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "V1 kit human allow (cold resume re-ask)",
+        "requestId": "ctrl-1eveavn1ix3in60fkdcjx1pz",
+        "requestSequence": 42,
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-cr-writeC",
+          "operationFingerprint": "sha256:c2720f060491aa9511592e205ecb450831eea59c41dfc8d629459fab785ce555",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:42:03.878Z"
+    },
+    {
+      "schemaVersion": 1,
+      "sequence": 44,
+      "rootSessionId": "a2root",
+      "factType": "control-allow-consumed",
+      "payload": {
+        "consumedAt": "2026-09-11T08:42:04.002Z",
+        "decisionSequence": 43,
+        "requestId": "ctrl-1eveavn1ix3in60fkdcjx1pz",
+        "scope": {
+          "actionName": "parameter-permission",
+          "correlation": "a2-cr-writeC",
+          "operationFingerprint": "sha256:c2720f060491aa9511592e205ecb450831eea59c41dfc8d629459fab785ce555",
+          "rootSessionId": "a2root",
+          "targetInstanceId": "inst-leader",
+          "toolName": "write"
+        }
+      },
+      "operationId": null,
+      "createdAt": "2026-09-11T08:42:04.002Z"
+    }
+  ],
+  "ledgerEntryCount": 44,
+  "h3HostileCold": {
+    "before": {
+      "requests": 13,
+      "decisions": 12,
+      "consumptions": 11
+    },
+    "legs": [
+      {
+        "id": "hc-0",
+        "agent": "a2root",
+        "status": 200,
+        "body": {
+          "agent": "a2root",
+          "prepended": true,
+          "note": "TEST-ONLY hostile tools/pre-execute prepend-allow installed (alpha.2 hardening closure, review §21; removal candidate before RC)"
+        }
+      },
+      {
+        "id": "hc-1",
+        "agent": "a2root",
+        "op": "read perm-a.txt",
+        "status": 200,
+        "ok": false,
+        "message": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+      },
+      {
+        "id": "hc-2",
+        "agent": "a2root",
+        "op": "read perm-d.txt",
+        "status": 200,
+        "ok": false,
+        "message": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+      },
+      {
+        "id": "hc-2b",
+        "agent": "a2root",
+        "op": "read perm-b.txt",
+        "status": 200,
+        "ok": false,
+        "message": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+      }
+    ],
+    "observations": [
+      {
+        "stage": "end-cap-denial",
+        "tool": "read",
+        "reason": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+      },
+      {
+        "stage": "end-cap-denial",
+        "tool": "read",
+        "reason": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+      },
+      {
+        "stage": "end-cap-denial",
+        "tool": "read",
+        "reason": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+      }
+    ]
+  },
+  "finishedAt": "2026-09-11T08:42:04.274Z",
+  "verdict": {
+    "overall": "COLD PASS",
+    "total": 32,
+    "passed": 32,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "cold-health-ok",
+      "label": "cold resume: p6t6 health ok",
+      "expected": true,
+      "actual": true,
+      "ok": true,
+      "detail": "{\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"a2root\",\"liveSessions\":[\"a2root\",\"session-a2a-a\",\"session-a2b-b\"],\"toolCount\":10}"
+    },
+    {
+      "id": "cold-toolcount-10",
+      "label": "cold resume: factory catalog toolCount = 10",
+      "expected": 10,
+      "actual": 10,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-sessions-3",
+      "label": "cold resume: leader + 2 members re-bound live",
+      "expected": "[\"a2root\",\"session-a2a-a\",\"session-a2b-b\"]",
+      "actual": "[\"a2root\",\"session-a2a-a\",\"session-a2b-b\"]",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-blueprint-persists",
+      "label": "cold resume: teamSession still team.a2perm (adopted, not re-stamped)",
+      "expected": "team.a2perm",
+      "actual": "team.a2perm",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-allow-lane",
+      "label": "cold resume: read perm-a (allow lane) passes with zero control requests",
+      "expected": "allowed, no request",
+      "actual": "allowed",
+      "ok": true,
+      "detail": "{\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-a2permh3-2026-09-11T08-35-35\\\\workspace-a2perm\\\\perm-a.txt\",\"offset\":1,\"lines\":[{\"number\":1,\"text\":\"perm-a:"
+    },
+    {
+      "id": "cold-policy-allow-executed-success",
+      "label": "cold resume: the allow-lane read EXECUTED (the /tool value carries the file content and NO denial — a canonicalization failure would return ok:false)",
+      "expected": "success value with content",
+      "actual": "ok",
+      "ok": true,
+      "detail": "ok=true lines=[{\"number\":1,\"text\":\"perm-a: allow-read target.\"}]"
+    },
+    {
+      "id": "cold-policy-no-request-row",
+      "label": "cold resume: the allow-lane read created NO new request row",
+      "expected": 11,
+      "actual": 11,
+      "ok": true,
+      "detail": "before=11 after=11"
+    },
+    {
+      "id": "cold-policy-deny-lane",
+      "label": "cold resume: read perm-b (deny lane) statically denied (policy rebuilt)",
+      "expected": "denied",
+      "actual": "denied",
+      "ok": true,
+      "detail": "permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-b.txt"
+    },
+    {
+      "id": "cold-policy-deny-static-reason",
+      "label": "cold resume: the deny is the STATIC POLICY reason (the deny rule) — NOT a canonicalization/resolver failure",
+      "expected": "static policy denial",
+      "actual": "permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-b.txt",
+      "ok": true,
+      "detail": "permission denied by the static permission policy: the template's deny rule 0 denies read on D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3-2026-09-11T08-35-35\\workspace-a2perm\\perm-b.txt"
+    },
+    {
+      "id": "cold-policy-rebuilt-ask-read",
+      "label": "cold resume: read perm-c (no rule → default ask) created a NEW pending request after the restart (the policy rebuilt from the blueprint)",
+      "expected": "pending request a2-cr-readC",
+      "actual": "ctrl-1t6j4870k42u2e1ebqxi90v2",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-rebuilt-ask-read-kind",
+      "label": "the cold-resume read ask is kind=user-approval (the leader resolver closure)",
+      "expected": "user-approval",
+      "actual": "user-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-rebuilt-read-executes",
+      "label": "the cold-resume read allow EXECUTED (the /tool value carries the perm-c content — member-a-payload-1 from the live phase)",
+      "expected": "success value with content",
+      "actual": "ok",
+      "ok": true,
+      "detail": "ok=true lines=[{\"number\":1,\"text\":\"member-a-payload-1\"}]"
+    },
+    {
+      "id": "cold-pending-survives",
+      "label": "the aborted N4 request survived the cold resume (still pending)",
+      "expected": "pending",
+      "actual": "pending",
+      "ok": true,
+      "detail": "{\"requestId\":\"ctrl-0llp5hz0fh92pe0je4rtt15j\",\"kind\":\"user-approval\",\"targetInstanceId\":\"inst-leader\",\"actionName\":\"parameter-permission\",\"toolName\":\"read\",\"correlation\":\"a2-n4\",\"status\":\"pending\",\"createdAt\":\"2026-09-11T08:37:54.064Z\"}"
+    },
+    {
+      "id": "cold-no-decision-for-n4",
+      "label": "no decision was ever recorded for N4 (cancellation never decided)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-decisions-preserved",
+      "label": "every consumed request still has its durable decision after the restart",
+      "expected": "all 9 consumed requests decided",
+      "actual": 9,
+      "ok": true,
+      "detail": "consumed=9 decided=9"
+    },
+    {
+      "id": "cold-consumptions-preserved",
+      "label": "the consumption ledger survived (>= 5 consumed allows: L-writeC1/L-writeC2/A-writeC1/N5/N6-fp1)",
+      "expected": ">= 5",
+      "actual": 9,
+      "ok": true,
+      "detail": "consumptions=9"
+    },
+    {
+      "id": "cold-n5-request-persists",
+      "label": "the N5 request row persists after the restart",
+      "expected": "present",
+      "actual": "ctrl-1x7gq5s09sdnbv0hpsw2u1uj",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-double-consumption-still-blocked",
+      "label": "re-executing N5 after the restart is still blocked allow-consumed",
+      "expected": "denied (allow-consumed)",
+      "actual": "denied",
+      "ok": true,
+      "detail": "permission denied: the last-mile guard blocked the operation (allow-consumed)"
+    },
+    {
+      "id": "cold-perm-d-unchanged",
+      "label": "perm-d.txt still a2-fp-one after the blocked re-execution",
+      "expected": "a2-fp-one",
+      "actual": "a2-fp-one",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-rebuilt-ask",
+      "label": "cold resume: a new write perm-c (ask lane) created a NEW pending request (the policy rebuilt from the blueprint)",
+      "expected": "pending request a2-cr-writeC",
+      "actual": "ctrl-1eveavn1ix3in60fkdcjx1pz",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-rebuilt-kind",
+      "label": "the cold-resume ask is kind=user-approval (the leader resolver closure)",
+      "expected": "user-approval",
+      "actual": "user-approval",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-rebuilt-scope-exact",
+      "label": "the cold-resume request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation a2-cr-writeC) — RAW ledger payload (the /state projection omits these fields)",
+      "expected": "exact scope fields",
+      "actual": {
+        "root": "a2root",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "target": "inst-leader",
+        "corr": "a2-cr-writeC"
+      },
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-policy-rebuilt-fingerprint-bound",
+      "label": "the cold-resume request carries its own EXACT operation fingerprint (payload top level, sha256:… — content a2-cold-c, bound to the rebuilt policy + this operation)",
+      "expected": "sha256 fingerprint",
+      "actual": "string",
+      "ok": true,
+      "detail": "fp=sha256:c2720f060491aa9511592e205ecb450831eea59c41dfc8d629459fab785ce555"
+    },
+    {
+      "id": "cold-policy-rebuilt-executes",
+      "label": "the cold-resume allow executed (perm-c.txt = a2-cold-c)",
+      "expected": "a2-cold-c",
+      "actual": "a2-cold-c",
+      "ok": true,
+      "detail": "tool={\"ok\":true,\"value\":{\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-a2permh3-2026-09-11T08-35-35\\\\workspace-a2perm\\\\perm-c.tx"
+    },
+    {
+      "id": "cold-policy-rebuilt-consumed",
+      "label": "the cold-resume allow was consumed exactly once",
+      "expected": "consumption row for ctrl-1eveavn1ix3in60fkdcjx1pz",
+      "actual": "consumed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "cold-no-drill-rerun",
+      "label": "no new leader model requests after the cold re-boot (the drill did not re-run)",
+      "expected": 6,
+      "actual": 6,
+      "ok": true,
+      "detail": "before=6 after=6"
+    },
+    {
+      "id": "cold-H3-0-gate-live",
+      "label": "COLD hostile-prepend answers 200 on the cold-resumed leader (ensureLiveAgent → the cold-root re-install ctx)",
+      "expected": 200,
+      "actual": 200,
+      "ok": true,
+      "detail": "{\"agent\":\"a2root\",\"prepended\":true,\"note\":\"TEST-ONLY hostile tools/pre-execute prepend-allow installed (alpha.2 hardening closure, review §21; removal candidate before RC)\"}"
+    },
+    {
+      "id": "cold-H3-1-allow-op-denied",
+      "label": "COLD hostile prepend: the cold-resumed leader read perm-a.txt (policy-ALLOWED — the V1 cold cA leg just executed it on the same ctx) is DENIED — the re-installed end-cap (cold bind path) decides (A12/A14)",
+      "expected": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)",
+      "actual": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)",
+      "ok": true,
+      "detail": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+    },
+    {
+      "id": "cold-H3-2-ask-op-denied",
+      "label": "COLD hostile prepend: the cold-resumed leader read perm-d.txt (rebuilt policy DEFAULT-ASK lane) is end-cap-DENIED before any request",
+      "expected": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)",
+      "actual": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)",
+      "ok": true,
+      "detail": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+    },
+    {
+      "id": "cold-H3-2b-static-deny-lane",
+      "label": "COLD hostile prepend: read perm-b.txt (the rebuilt static-DENY lane) is denied with the EXACT stable END-CAP reason (A12 — \"cold-resume deny + prepend allow → deny\")",
+      "expected": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)",
+      "actual": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)",
+      "ok": true,
+      "detail": "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)"
+    },
+    {
+      "id": "cold-H3-3-observation-rows",
+      "label": "review §18 (cold world): the /state observations readout carries the end-cap-denial rows with the EXACT stable reason (the cold re-install observes too)",
+      "expected": ">=2 exact",
+      "actual": 3,
+      "ok": true,
+      "detail": "[{\"stage\":\"end-cap-denial\",\"tool\":\"read\",\"reason\":\"permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)\"},{\"stage\":\"end-cap-denial\",\"tool\":\"read\",\"reason\":\"permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)\"},{\"stage\":\"end-cap-denial\",\"tool\":\"read\",\"reason\":\"permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)\"}]"
+    },
+    {
+      "id": "cold-H3-3-control-unchanged",
+      "label": "the DURABLE control plane is unchanged across the cold hostile group (requests/decisions/consumptions equal the pre-group baseline)",
+      "expected": "13/12/11",
+      "actual": "13/12/11",
+      "ok": true,
+      "detail": null
+    }
+  ]
+}

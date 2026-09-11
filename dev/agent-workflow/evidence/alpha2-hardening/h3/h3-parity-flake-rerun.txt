@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-h3/packages/runtime
+
+ ✓ test/p6t1-parallel.test.ts (9 tests) 3ms
+ ✓ test/rmr-remote-mount-race.test.ts (7 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  16:36:44
+   Duration  2.06s (transform 1.06s, setup 0ms, import 2.47s, tests 7ms, environment 0ms)
+

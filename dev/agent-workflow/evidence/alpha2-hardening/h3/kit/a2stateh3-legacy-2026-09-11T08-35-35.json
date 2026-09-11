@@ -1,0 +1,22 @@
+{
+  "world": "legacy",
+  "stamp": "2026-09-11T08-35-35",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3legacy-2026-09-11T08-35-35",
+  "port": 3181,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3181",
+  "token": "_Bga-sHGDK2Fy_BP5RYtB4tgduAIwZJ4vXR8qqT2YL8",
+  "cookie": "dsh-auth-D1gu4AUZ6XwohD5r0eN4-fmFNLAOCeA62Dj465JieJs=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MSIsImlzc3VlZEF0IjoxNzg5MTE2MTQwODY5LCJleHBpcmVzQXQiOjE3OTE3MDgxNDA4Njl9.Y5y5PtnQBLZrLvaBhP9gj-LYCKpDD-HMnuB-zbewv9s",
+  "rootSessionId": "team-root",
+  "instancePid": 72052,
+  "bootJobPid": 80436,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-h3\\dev\\agent-workflow\\evidence\\alpha2-hardening\\h3\\kit\\instances\\instance-port3181.log",
+  "mockLogPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-h3\\dev\\agent-workflow\\evidence\\alpha2-hardening\\h3\\kit\\mock-model-legacy-2026-09-11T08-35-35.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-h3\\dev\\agent-workflow\\evidence\\alpha2-hardening\\h3\\kit\\dump-config-legacy-2026-09-11T08-35-35.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permh3legacy-2026-09-11T08-35-35\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2permh3legacy-2026-09-11T08-35-35/repo.git#task/alpha2-h3-closure",
+  "branch": "task/alpha2-h3-closure",
+  "phase": "create",
+  "startedAt": "2026-09-11T08:42:22.034Z",
+  "stoppedAt": "2026-09-11T08:43:29.510Z"
+}

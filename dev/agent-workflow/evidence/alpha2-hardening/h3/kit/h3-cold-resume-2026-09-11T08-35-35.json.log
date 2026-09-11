@@ -1,0 +1,34 @@
+[2026-09-11T08:42:02.624Z] PASS cold-health-ok — cold resume: p6t6 health ok
+[2026-09-11T08:42:02.625Z] PASS cold-toolcount-10 — cold resume: factory catalog toolCount = 10
+[2026-09-11T08:42:02.625Z] PASS cold-sessions-3 — cold resume: leader + 2 members re-bound live
+[2026-09-11T08:42:02.639Z] PASS cold-blueprint-persists — cold resume: teamSession still team.a2perm (adopted, not re-stamped)
+[2026-09-11T08:42:02.687Z] PASS cold-policy-allow-lane — cold resume: read perm-a (allow lane) passes with zero control requests
+[2026-09-11T08:42:02.687Z] PASS cold-policy-allow-executed-success — cold resume: the allow-lane read EXECUTED (the /tool value carries the file content and NO denial — a canonicalization failure would return ok:false)
+[2026-09-11T08:42:02.688Z] PASS cold-policy-no-request-row — cold resume: the allow-lane read created NO new request row
+[2026-09-11T08:42:02.695Z] PASS cold-policy-deny-lane — cold resume: read perm-b (deny lane) statically denied (policy rebuilt)
+[2026-09-11T08:42:02.696Z] PASS cold-policy-deny-static-reason — cold resume: the deny is the STATIC POLICY reason (the deny rule) — NOT a canonicalization/resolver failure
+[2026-09-11T08:42:02.994Z] PASS cold-policy-rebuilt-ask-read — cold resume: read perm-c (no rule → default ask) created a NEW pending request after the restart (the policy rebuilt from the blueprint)
+[2026-09-11T08:42:02.994Z] PASS cold-policy-rebuilt-ask-read-kind — the cold-resume read ask is kind=user-approval (the leader resolver closure)
+[2026-09-11T08:42:03.489Z] PASS cold-policy-rebuilt-read-executes — the cold-resume read allow EXECUTED (the /tool value carries the perm-c content — member-a-payload-1 from the live phase)
+[2026-09-11T08:42:03.490Z] PASS cold-pending-survives — the aborted N4 request survived the cold resume (still pending)
+[2026-09-11T08:42:03.490Z] PASS cold-no-decision-for-n4 — no decision was ever recorded for N4 (cancellation never decided)
+[2026-09-11T08:42:03.490Z] PASS cold-decisions-preserved — every consumed request still has its durable decision after the restart
+[2026-09-11T08:42:03.490Z] PASS cold-consumptions-preserved — the consumption ledger survived (>= 5 consumed allows: L-writeC1/L-writeC2/A-writeC1/N5/N6-fp1)
+[2026-09-11T08:42:03.490Z] PASS cold-n5-request-persists — the N5 request row persists after the restart
+[2026-09-11T08:42:03.511Z] PASS cold-double-consumption-still-blocked — re-executing N5 after the restart is still blocked allow-consumed
+[2026-09-11T08:42:03.511Z] PASS cold-perm-d-unchanged — perm-d.txt still a2-fp-one after the blocked re-execution
+[2026-09-11T08:42:03.805Z] PASS cold-policy-rebuilt-ask — cold resume: a new write perm-c (ask lane) created a NEW pending request (the policy rebuilt from the blueprint)
+[2026-09-11T08:42:03.805Z] PASS cold-policy-rebuilt-kind — the cold-resume ask is kind=user-approval (the leader resolver closure)
+[2026-09-11T08:42:03.820Z] PASS cold-policy-rebuilt-scope-exact — the cold-resume request scope = the EXACT operation (root + leader caller + leader target + action + tool + correlation a2-cr-writeC) — RAW ledger payload (the /state projection omits these fields)
+[2026-09-11T08:42:03.821Z] PASS cold-policy-rebuilt-fingerprint-bound — the cold-resume request carries its own EXACT operation fingerprint (payload top level, sha256:… — content a2-cold-c, bound to the rebuilt policy + this operation)
+[2026-09-11T08:42:04.181Z] PASS cold-policy-rebuilt-executes — the cold-resume allow executed (perm-c.txt = a2-cold-c)
+[2026-09-11T08:42:04.181Z] PASS cold-policy-rebuilt-consumed — the cold-resume allow was consumed exactly once
+[2026-09-11T08:42:04.195Z] PASS cold-no-drill-rerun — no new leader model requests after the cold re-boot (the drill did not re-run)
+[2026-09-11T08:42:04.223Z] PASS cold-H3-0-gate-live — COLD hostile-prepend answers 200 on the cold-resumed leader (ensureLiveAgent → the cold-root re-install ctx)
+[2026-09-11T08:42:04.240Z] PASS cold-H3-1-allow-op-denied — COLD hostile prepend: the cold-resumed leader read perm-a.txt (policy-ALLOWED — the V1 cold cA leg just executed it on the same ctx) is DENIED — the re-installed end-cap (cold bind path) decides (A12/A14)
+[2026-09-11T08:42:04.254Z] PASS cold-H3-2-ask-op-denied — COLD hostile prepend: the cold-resumed leader read perm-d.txt (rebuilt policy DEFAULT-ASK lane) is end-cap-DENIED before any request
+[2026-09-11T08:42:04.270Z] PASS cold-H3-2b-static-deny-lane — COLD hostile prepend: read perm-b.txt (the rebuilt static-DENY lane) is denied with the EXACT stable END-CAP reason (A12 — "cold-resume deny + prepend allow → deny")
+[2026-09-11T08:42:04.273Z] PASS cold-H3-3-observation-rows — review §18 (cold world): the /state observations readout carries the end-cap-denial rows with the EXACT stable reason (the cold re-install observes too)
+[2026-09-11T08:42:04.274Z] PASS cold-H3-3-control-unchanged — the DURABLE control plane is unchanged across the cold hostile group (requests/decisions/consumptions equal the pre-group baseline)
+[2026-09-11T08:42:04.274Z] cold battery complete: 32/32 checks passed
+[2026-09-11T08:42:04.274Z] verdict: COLD PASS (32/32) → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-h3\dev\agent-workflow\evidence\alpha2-hardening\h3\kit\h3-cold-resume-2026-09-11T08-35-35.json

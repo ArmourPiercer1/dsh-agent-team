@@ -1,0 +1,9 @@
+{
+  "requests": 11,
+  "decisions": 10,
+  "consumptions": 9,
+  "mockLeaderLines": 6,
+  "mockWorkerALines": 6,
+  "mockWorkerBLines": 3,
+  "atLive": "2026-09-11T08:25:33.752Z"
+}

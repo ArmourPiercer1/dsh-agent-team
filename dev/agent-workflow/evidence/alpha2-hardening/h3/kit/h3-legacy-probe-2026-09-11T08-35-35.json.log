@@ -1,0 +1,13 @@
+[2026-09-11T08:43:11.251Z] PASS legacy-health-ok — p6t6 health ok
+[2026-09-11T08:43:11.252Z] PASS legacy-toolcount-10 — factory catalog toolCount = 10
+[2026-09-11T08:43:11.252Z] PASS legacy-leader-only — shipped row seeds no members (leader-only live sessions)
+[2026-09-11T08:43:11.260Z] PASS legacy-blueprint-shipped — teamSession blueprintId = my-team-bp-1 (the BUNDLE layer shipped default stands)
+[2026-09-11T08:43:11.260Z] PASS legacy-control-zero-at-boot — zero control state at boot (nothing has asked yet)
+[2026-09-11T08:43:11.269Z] PASS legacy-catalog-shipped — catalog.list carries my-team-bp-1
+[2026-09-11T08:43:11.429Z] PASS legacy-full-10-catalog — ALL TEN team tools registered on the legacy leader (no capability selection)
+[2026-09-11T08:43:11.429Z] PASS legacy-defaultworkspace-known — teamSession defaultWorkspace is known (the probe file target)
+[2026-09-11T08:43:11.530Z] PASS legacy-write-executes — legacy leader write executes (no permission listener vetoes it)
+[2026-09-11T08:43:11.532Z] PASS legacy-write-file-on-disk — the written file exists on disk with the payload
+[2026-09-11T08:43:11.605Z] PASS legacy-read-executes — legacy leader read executes (no permission listener vetoes it)
+[2026-09-11T08:43:11.616Z] PASS legacy-zero-control-rows — ZERO control rows after the live write+read (the alpha.2 permission plane is absent for the legacy blueprint)
+[2026-09-11T08:43:11.616Z] verdict: R1 LEGACY PASS (12/12) → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-h3\dev\agent-workflow\evidence\alpha2-hardening\h3\kit\h3-legacy-probe-2026-09-11T08-35-35.json
