@@ -1,0 +1,345 @@
+==== H5 RED console — packages/runtime/test/h5-bash-effects.test.ts
+==== run on the UNFIXED tree (before any bash-effect projection fix commit)
+==== captured at: 2026-09-11 18:01:45 +08:00
+==== branch: task/alpha2hf-h5-bash-effect @ 0d01ed3 (base = int tip 0d01ed3, which
+==== already contains the H4 cache-deletion fix — alpha.2 H1–H4 integrated)
+==== command: pnpm --filter @dsh-agent-team/runtime exec vitest run test/h5-bash-effects.test.ts
+==== expected per the H5 brief: H5-B1 (workdir A/B), H5-B3 (background), H5-B4
+==== (timeout), H5-B5 (sandbox mode), H5-B8 (six malformed effect-field legs + the
+==== zero-total-requests leg), and H5-S1 (summary tokens) RED on the command-only
+==== projection; H5-B2 (fingerprint half), H5-B6, H5-B7, H5-C1 (same-fingerprint /
+==== new-request halves), H5-C2 (op1 + not-consumed halves), and H5-S1 (preview-cap
+==== half) GREEN guards.
+==== documented RED halves on the brief's "green-or-documented" legs (the halves
+==== that pin the NEW projection semantics are RED pre-fix BY DESIGN):
+====   - H5-B2 key half — "both operations resolve through the seam to KEY_A":
+====     pre-fix the resolver is NEVER called for bash (call log empty);
+====   - H5-C1 workdir-key-in-fingerprint half — the request fingerprint equals
+====     the /A-workdir canonical fingerprint and differs from the /B one:
+====     pre-fix the command-only fingerprint is workdir-blind;
+====   - H5-C2 scope-exactness halves — op2 (workdir /B, same correlation) raises
+====     a NEW request with a DIFFERENT fingerprint and executes under its own
+====     approval: pre-fix the consumed /A request is returned idempotently (no
+====     new request) and op2 is blocked by the last-mile guard (allow-consumed).
+==== actual: 16 failed | 9 passed (25) — exactly the mandated RED set; no RED leg
+==== failed to go red, no unexpected failure.
+====
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h5/packages/runtime
+
+ ❯ test/h5-bash-effects.test.ts (25 tests | 16 failed) 12ms
+     × the same command with workdir /A vs /B ⇒ DIFFERENT fingerprints (RED pre-fix: the command-only projection is identical) 4ms
+     ✓ workdir omitted vs explicit /A ⇒ SAME fingerprint (GREEN on both trees — trivially pre-fix; the ruling post-fix) 0ms
+     × both operations resolve through the seam to KEY_A (RED pre-fix: the resolver is never called for bash; post-fix the omitted call resolves "." and the explicit call "/A", both to KEY_A) 2ms
+     × omitted/false vs true ⇒ DIFFERENT fingerprints (RED pre-fix) 0ms
+     × omitted vs 10000 ⇒ DIFFERENT (RED pre-fix); 10000 vs 20000 ⇒ DIFFERENT (RED pre-fix) 0ms
+     × absent vs workspace-write ⇒ DIFFERENT (RED pre-fix); workspace-write vs danger-full-access ⇒ DIFFERENT (RED pre-fix) 0ms
+     ✓ description A vs B ⇒ SAME fingerprint (GREEN guard) 0ms
+     ✓ justification A vs B (same sandbox_permissions) ⇒ SAME fingerprint (GREEN guard) 0ms
+     ✓ echo x vs echo␣␣x (raw differs) ⇒ DIFFERENT fingerprints (GREEN guard) 0ms
+     × H5-B8(a) workdir: 42 ⇒ fail-closed DENY with the closed reason bash-workdir-not-a-string, ZERO durable request, ZERO body, the canonicalization-failed observation row 0ms
+     × H5-B8(b) run_in_background: "yes" ⇒ fail-closed DENY with the closed reason bash-run-in-background-not-boolean, ZERO durable request, ZERO body, the canonicalization-failed observation row 0ms
+     × H5-B8(c) timeoutMs: -1 ⇒ fail-closed DENY with the closed reason bash-timeout-ms-invalid, ZERO durable request, ZERO body, the canonicalization-failed observation row 0ms
+     × H5-B8(d) timeoutMs: "10000" ⇒ fail-closed DENY with the closed reason bash-timeout-ms-invalid, ZERO durable request, ZERO body, the canonicalization-failed observation row 0ms
+     × H5-B8(e) timeoutMs: Infinity ⇒ fail-closed DENY with the closed reason bash-timeout-ms-invalid, ZERO durable request, ZERO body, the canonicalization-failed observation row 0ms
+     × H5-B8(f) sandbox_permissions: 42 ⇒ fail-closed DENY with the closed reason bash-sandbox-permissions-not-a-string, ZERO durable request, ZERO body, the canonicalization-failed observation row 0ms
+     × ZERO requests in the whole B8 env post-fix (RED pre-fix: one request per leg — six total) 0ms
+     ✓ both calls execute under their own approvals (next once each) 0ms
+     ✓ the requests are DISTINCT (new correlation ⇒ new request) but carry the SAME fingerprint 0ms
+     × the fingerprint carries the workdir key: it equals the /A-workdir canonical fingerprint and DIFFERS from the /B one (RED pre-fix: the command-only fingerprint is workdir-blind) 0ms
+     ✓ op1 (workdir /A) executes exactly once under its approval 0ms
+     × op2 (workdir /B, same correlation) raises a NEW request with a DIFFERENT fingerprint (RED pre-fix: the consumed /A request is returned idempotently — no new request) 0ms
+     × op2 executes only under its OWN approval (RED pre-fix: blocked allow-consumed, zero execution) 1ms
+     ✓ the /A approval was consumed exactly once (by op1): a direct guard consult of the /A scope is blocked (GREEN guard — op2 never executed under the /A approval) 0ms
+     × the request summary for workdir sub + background + timeout 5000 is exactly `bash [cwd=/A/sub] [background] [timeout=5000ms] echo hello world` (RED pre-fix: the tokens are absent) 1ms
+     ✓ 120-char shared prefix + different tails ⇒ IDENTICAL summaries but DIFFERENT fingerprints (the preview is display-only; the commandHash is the authority — GREEN guard) 0ms
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 9 passed (25)
+   Start at  18:01:30
+   Duration  1.83s (transform 389ms, setup 0ms, import 1.69s, tests 12ms, environment 0ms)
+
+undefined
+D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2hf-h5\packages\runtime:
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command failed with exit code 1: vitest run test/h5-bash-effects.test.ts
+[stderr]
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B1: workdir A vs B — the fingerprint binds WHERE the shell runs > the same command with workdir /A vs /B ⇒ DIFFERENT fingerprints (RED pre-fix: the command-only projection is identical)
+AssertionError: expected 'sha256:9aeb7c73b05083baa4cb0c4078f634…' not to be 'sha256:9aeb7c73b05083baa4cb0c4078f634…' // Object.is equality
+ ❯ test/h5-bash-effects.test.ts:875:32
+    873| describe('H5-B1: workdir A vs B — the fingerprint binds WHERE the shel…
+    874|   it('the same command with workdir /A vs /B ⇒ DIFFERENT fingerprints …
+    875|     expect(FP.b1.workdirA).not.toBe(FP.b1.workdirB)
+       |                                ^
+    876|   })
+    877| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B2: omitted ≡ explicit session-cwd workdir (the effective-canonical ruling) > both operations resolve through the seam to KEY_A (RED pre-fix: the resolver is never called for bash; post-fix the omitted call resolves "." and the explicit call "/A", both to KEY_A)
+AssertionError: expected [] to deeply equal [ '.', '/A' ]
+
+- Expected
++ Received
+
+- [
+-   ".",
+-   "/A",
+- ]
++ []
+
+ ❯ test/h5-bash-effects.test.ts:884:25
+    882|   })
+    883|   it('both operations resolve through the seam to KEY_A (RED pre-fix: …
+    884|     expect(FP.b2.calls).toEqual(['.', '/A'])
+       |                         ^
+    885|     expect(FP.b2.keys).toEqual([KEY_A, KEY_A])
+    886|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B3: run_in_background — detached job vs foreground > omitted/false vs true ⇒ DIFFERENT fingerprints (RED pre-fix)
+AssertionError: expected 'sha256:06b343f6dd548cc7e6c55cb813d3bf…' not to be 'sha256:06b343f6dd548cc7e6c55cb813d3bf…' // Object.is equality
+ ❯ test/h5-bash-effects.test.ts:892:31
+    890|   it('omitted/false vs true ⇒ DIFFERENT fingerprints (RED pre-fix)', (…
+    891|     expect(FP.b3.omitted).toBe(FP.b3.explicitFalse)
+    892|     expect(FP.b3.omitted).not.toBe(FP.b3.explicitTrue)
+       |                               ^
+    893|   })
+    894| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B4: timeoutMs — the EXPLICIT value only > omitted vs 10000 ⇒ DIFFERENT (RED pre-fix); 10000 vs 20000 ⇒ DIFFERENT (RED pre-fix)
+AssertionError: expected 'sha256:bcf53d62a518232ca213257a5ee25a…' not to be 'sha256:bcf53d62a518232ca213257a5ee25a…' // Object.is equality
+ ❯ test/h5-bash-effects.test.ts:898:31
+    896| describe('H5-B4: timeoutMs — the EXPLICIT value only', () => {
+    897|   it('omitted vs 10000 ⇒ DIFFERENT (RED pre-fix); 10000 vs 20000 ⇒ D…
+    898|     expect(FP.b4.omitted).not.toBe(FP.b4.ten)
+       |                               ^
+    899|     expect(FP.b4.ten).not.toBe(FP.b4.twenty)
+    900|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B5: sandbox_permissions — the requested mode binds > absent vs workspace-write ⇒ DIFFERENT (RED pre-fix); workspace-write vs danger-full-access ⇒ DIFFERENT (RED pre-fix)
+AssertionError: expected 'sha256:3e50ffcebf1c715d2852350ae8a22a…' not to be 'sha256:3e50ffcebf1c715d2852350ae8a22a…' // Object.is equality
+ ❯ test/h5-bash-effects.test.ts:905:30
+    903| describe('H5-B5: sandbox_permissions — the requested mode binds', () =…
+    904|   it('absent vs workspace-write ⇒ DIFFERENT (RED pre-fix); workspace-…
+    905|     expect(FP.b5.absent).not.toBe(FP.b5.workspaceWrite)
+       |                              ^
+    906|     expect(FP.b5.workspaceWrite).not.toBe(FP.b5.dangerFullAccess)
+    907|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > H5-B8(a) workdir: 42 ⇒ fail-closed DENY with the closed reason bash-workdir-not-a-string, ZERO durable request, ZERO body, the canonicalization-failed observation row
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ assertLeg test/h5-bash-effects.test.ts:932:53
+    930|     expect(r.decision['kind']).toBe('deny')
+    931|     const dr = denyReason(r.decision)
+    932|     expect(dr !== undefined && dr.includes(reason)).toBe(true)
+       |                                                     ^
+    933|     expect(r.nextCalls).toBe(0)
+    934|     expect(r.requestsForCall).toBe(0)
+ ❯ test/h5-bash-effects.test.ts:940:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > H5-B8(b) run_in_background: "yes" ⇒ fail-closed DENY with the closed reason bash-run-in-background-not-boolean, ZERO durable request, ZERO body, the canonicalization-failed observation row
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ assertLeg test/h5-bash-effects.test.ts:932:53
+    930|     expect(r.decision['kind']).toBe('deny')
+    931|     const dr = denyReason(r.decision)
+    932|     expect(dr !== undefined && dr.includes(reason)).toBe(true)
+       |                                                     ^
+    933|     expect(r.nextCalls).toBe(0)
+    934|     expect(r.requestsForCall).toBe(0)
+ ❯ test/h5-bash-effects.test.ts:943:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > H5-B8(c) timeoutMs: -1 ⇒ fail-closed DENY with the closed reason bash-timeout-ms-invalid, ZERO durable request, ZERO body, the canonicalization-failed observation row
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ assertLeg test/h5-bash-effects.test.ts:932:53
+    930|     expect(r.decision['kind']).toBe('deny')
+    931|     const dr = denyReason(r.decision)
+    932|     expect(dr !== undefined && dr.includes(reason)).toBe(true)
+       |                                                     ^
+    933|     expect(r.nextCalls).toBe(0)
+    934|     expect(r.requestsForCall).toBe(0)
+ ❯ test/h5-bash-effects.test.ts:946:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > H5-B8(d) timeoutMs: "10000" ⇒ fail-closed DENY with the closed reason bash-timeout-ms-invalid, ZERO durable request, ZERO body, the canonicalization-failed observation row
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ assertLeg test/h5-bash-effects.test.ts:932:53
+    930|     expect(r.decision['kind']).toBe('deny')
+    931|     const dr = denyReason(r.decision)
+    932|     expect(dr !== undefined && dr.includes(reason)).toBe(true)
+       |                                                     ^
+    933|     expect(r.nextCalls).toBe(0)
+    934|     expect(r.requestsForCall).toBe(0)
+ ❯ test/h5-bash-effects.test.ts:949:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > H5-B8(e) timeoutMs: Infinity ⇒ fail-closed DENY with the closed reason bash-timeout-ms-invalid, ZERO durable request, ZERO body, the canonicalization-failed observation row
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ assertLeg test/h5-bash-effects.test.ts:932:53
+    930|     expect(r.decision['kind']).toBe('deny')
+    931|     const dr = denyReason(r.decision)
+    932|     expect(dr !== undefined && dr.includes(reason)).toBe(true)
+       |                                                     ^
+    933|     expect(r.nextCalls).toBe(0)
+    934|     expect(r.requestsForCall).toBe(0)
+ ❯ test/h5-bash-effects.test.ts:952:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > H5-B8(f) sandbox_permissions: 42 ⇒ fail-closed DENY with the closed reason bash-sandbox-permissions-not-a-string, ZERO durable request, ZERO body, the canonicalization-failed observation row
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ assertLeg test/h5-bash-effects.test.ts:932:53
+    930|     expect(r.decision['kind']).toBe('deny')
+    931|     const dr = denyReason(r.decision)
+    932|     expect(dr !== undefined && dr.includes(reason)).toBe(true)
+       |                                                     ^
+    933|     expect(r.nextCalls).toBe(0)
+    934|     expect(r.requestsForCall).toBe(0)
+ ❯ test/h5-bash-effects.test.ts:955:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-B8: malformed effect fields fail closed (RED pre-fix: silently ignored, the ask lane mints a request) > ZERO requests in the whole B8 env post-fix (RED pre-fix: one request per leg — six total)
+AssertionError: expected 6 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 6
+
+ ❯ test/h5-bash-effects.test.ts:958:30
+    956|   })
+    957|   it('ZERO requests in the whole B8 env post-fix (RED pre-fix: one re…
+    958|     expect(B8.totalRequests).toBe(0)
+       |                              ^
+    959|   })
+    960| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-C1: same authority args + new callId ⇒ SAME fingerprint, NEW request > the fingerprint carries the workdir key: it equals the /A-workdir canonical fingerprint and DIFFERS from the /B one (RED pre-fix: the command-only fingerprint is workdir-blind)
+AssertionError: expected 'sha256:9aeb7c73b05083baa4cb0c4078f634…' not to be 'sha256:9aeb7c73b05083baa4cb0c4078f634…' // Object.is equality
+ ❯ test/h5-bash-effects.test.ts:975:35
+    973|   it('the fingerprint carries the workdir key: it equals the /A-workdi…
+    974|     expect(C1.r1.fingerprint).toBe(C1.fpA)
+    975|     expect(C1.r1.fingerprint).not.toBe(C1.fpB)
+       |                                   ^
+    976|   })
+    977| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-C2: the /A approval is not consumed by the /B operation (scope exactness) > op2 (workdir /B, same correlation) raises a NEW request with a DIFFERENT fingerprint (RED pre-fix: the consumed /A request is returned idempotently — no new request)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/h5-bash-effects.test.ts:985:33
+    983|   })
+    984|   it('op2 (workdir /B, same correlation) raises a NEW request with a …
+    985|     expect(C2.r2 !== undefined).toBe(true)
+       |                                 ^
+    986|     const r2 = C2.r2 as { requestId: string; fingerprint: string }
+    987|     expect(r2.requestId).not.toBe(C2.r1.requestId)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-C2: the /A approval is not consumed by the /B operation (scope exactness) > op2 executes only under its OWN approval (RED pre-fix: blocked allow-consumed, zero execution)
+AssertionError: expected { kind: 'deny', …(1) } to deeply equal { kind: 'allow' }
+
+- Expected
++ Received
+
+  {
+-   "kind": "allow",
++   "kind": "deny",
++   "reason": "permission denied: the last-mile guard blocked the operation (allow-consumed)",
+  }
+
+ ❯ test/h5-bash-effects.test.ts:992:19
+    990|   })
+    991|   it('op2 executes only under its OWN approval (RED pre-fix: blocked …
+    992|     expect(C2.d2).toEqual({ kind: 'allow' })
+       |                   ^
+    993|     expect(C2.next2Calls).toBe(1)
+    994|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  test/h5-bash-effects.test.ts > H5-S1: the bash summary carries the effect tokens (RED pre-fix) and the preview is never the authority > the request summary for workdir sub + background + timeout 5000 is exactly `bash [cwd=/A/sub] [background] [timeout=5000ms] echo hello world` (RED pre-fix: the tokens are absent)
+AssertionError: expected 'bash echo hello world' to be 'bash [cwd=/A/sub] [background] [timeo…' // Object.is equality
+
+Expected: "bash [cwd=/A/sub] [background] [timeout=5000ms] echo hello world"
+Received: "bash echo hello world"
+
+ ❯ test/h5-bash-effects.test.ts:1003:28
+   1001| describe('H5-S1: the bash summary carries the effect tokens (RED pre-…
+   1002|   it('the request summary for workdir sub + background + timeout 500…
+   1003|     expect(S1.mainSummary).toBe('bash [cwd=/A/sub] [background] [timeo…
+       |                            ^
+   1004|     expect(S1.dMain).toEqual({ kind: 'allow' })
+   1005|     expect(S1.nextMainCalls).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
