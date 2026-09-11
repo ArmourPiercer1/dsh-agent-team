@@ -26,8 +26,17 @@
  *   enforcement adapter (plan §10): the agent-scoped
  *   `tools/pre-execute` waterfall listener that composes the A2/A3/A4
  *   frozen APIs into the synchronous fail-closed pipeline (classify →
- *   canonicalize → static decision → ask: request → wait → guard) and
- *   returns the `ctx.on` disposer.
+ *   canonicalize → static decision → ask: request → wait → guard);
+ *   since H1 (the P0 fix) the install ALSO registers the monotonic
+ *   END-CAP GUARD on the same agent ctx through the public
+ *   `tools.guard` seam (the hostile-waterfall bypass is closed: a
+ *   supported permission tool whose exec object the install never
+ *   authorized is denied at the guard stage with the stable
+ *   {@link END_CAP_DENIAL_REASON}, body never runs, zero control rows)
+ *   and returns ONE composite disposer (listener first, guard last).
+ *   The install is fail-closed: a ctx without the `tools.guard` seam
+ *   rejects with the typed {@link PermissionGuardUnavailableError}
+ *   (`alpha2-permission-guard-unavailable`) before any registration.
  *
  * What this module IS (and deliberately is NOT):
  *
@@ -55,14 +64,18 @@ export {
   OPERATION_PERMISSION_ERROR_CODES,
   OPERATION_PERMISSION_ERROR_CODE_VALUES,
   CANONICALIZATION_FAILURE_REASONS,
+  PRE_EXECUTE_INSTALL_ERROR_CODES,
   OperationPermissionError,
   isOperationPermissionError,
+  PermissionGuardUnavailableError,
+  isPermissionGuardUnavailableError,
   canonicalizationFailed,
   toCanonicalizationDetail,
 } from './errors.js'
 export type {
   OperationPermissionErrorCode,
   CanonicalizationFailureReason,
+  PreExecuteInstallErrorCode,
 } from './errors.js'
 
 export {
@@ -102,10 +115,12 @@ export type {
 } from './permission-resolver.js'
 
 export {
+  END_CAP_DENIAL_REASON,
   installParameterPermissionListener,
 } from './pre-execute-adapter.js'
 export type {
   AgentPreExecuteCtx,
+  GuardExecLike,
   InstallParameterPermissionListenerParams,
   PreExecuteExec,
   PreToolDecisionLike,

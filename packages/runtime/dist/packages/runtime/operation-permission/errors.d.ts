@@ -100,4 +100,42 @@ export declare function canonicalizationFailed(tool: string, reason: Canonicaliz
  * @returns a lossless-JSON representation (never throws).
  */
 export declare function toCanonicalizationDetail(value: unknown): RemoteSafeJsonValue;
+/**
+ * The closed install-time error codes of the A5 pre-execute adapter.
+ *
+ * These mirror the A6 glue's kebab-case `alpha2-permission-*` install
+ * failure codes (V1-1 `alpha2-permission-fs-unavailable`,
+ * `alpha2-permission-control-unavailable`): the same shape — a plain
+ * `Error` with a stable `.code` and a message carrying the code — so
+ * the glue's existing install-failure handling (rejection out of
+ * AgentSetup → rollback of the unpublished agent) applies unchanged: a
+ * permissions agent never runs unguarded.
+ */
+export declare const PRE_EXECUTE_INSTALL_ERROR_CODES: {
+    /**
+     * The agent ctx is missing the `tools.guard` seam (a broken host, or
+     * an upstream without the monotonic guard stage): the end-cap guard
+     * cannot be registered. Installing the waterfall listener WITHOUT the
+     * guard would leave the parameter permission pipeline bypassable by a
+     * hostile `tools/pre-execute` listener, so the install FAILS CLOSED
+     * before ANY registration (zero partial state).
+     */
+    readonly ALPHA2_PERMISSION_GUARD_UNAVAILABLE: "alpha2-permission-guard-unavailable";
+};
+/** One of the closed A5 install-time error codes. */
+export type PreExecuteInstallErrorCode = (typeof PRE_EXECUTE_INSTALL_ERROR_CODES)[keyof typeof PRE_EXECUTE_INSTALL_ERROR_CODES];
+/**
+ * One rejection of the A5 install factory: the agent ctx lacks the
+ * `tools.guard` seam the monotonic end-cap guard requires (H1, the P0
+ * fix). Thrown synchronously at install, BEFORE the `tools/pre-execute`
+ * listener is registered (zero partial state — nothing to dispose).
+ * Branch on {@link code}, never the message.
+ */
+export declare class PermissionGuardUnavailableError extends Error {
+    /** The stable closed error code (branch on this, never the message). */
+    readonly code: PreExecuteInstallErrorCode;
+    constructor(message: string);
+}
+/** Type guard: is `value` a {@link PermissionGuardUnavailableError}? */
+export declare function isPermissionGuardUnavailableError(value: unknown): value is PermissionGuardUnavailableError;
 //# sourceMappingURL=errors.d.ts.map

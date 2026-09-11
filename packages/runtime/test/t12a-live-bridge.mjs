@@ -166,6 +166,12 @@ function makeFakeFs() {
  * (set by createAgentsDouble's handle factory — the `ctx.agent` DX
  * accessor basis the glue's lazy `session.header.cwd` read uses).
  *
+ * H1 (alpha.2 hardening, P0): the double ALSO carries the `tools.guard`
+ * seam (the monotonic end-cap guard registration) — the permission
+ * adapter's install is fail-closed on its absence
+ * (`alpha2-permission-guard-unavailable`), so every permission world's
+ * ctx double must record the guard with a working disposer.
+ *
  * @param {Array<{name: string, order: number, text: string}>} [globalSections]
  *   the world's global prompt layer (one shared array per world).
  */
@@ -180,6 +186,11 @@ function makeAgentCtx(globalSections) {
   // construction: each ctx double is one agent scope); the scoped deny
   // list is the union of all restrict calls (the public seam accumulates).
   const toolRestrictions = []
+  // H1 (alpha.2 hardening, P0): the monotonic end-cap guard seam
+  // (tools.guard) — records every guard registration on THIS ctx with a
+  // working disposer (the adapter's composite disposer removes the
+  // listener FIRST and the guard LAST).
+  const toolGuards = []
   // P0-3 (hardening §5): the unified operation-order log — records the
   // SEQUENCE of tools.register / tools.restrict calls on THIS ctx so a test
   // can verify the frozen setup ordering (builtin deny BEFORE the team tool
@@ -233,6 +244,7 @@ function makeAgentCtx(globalSections) {
     plugins,
     systemPrompt,
     toolRestrictions,
+    toolGuards,
     opLog,
     registeredSkills,
     fs,
@@ -317,6 +329,24 @@ function makeAgentCtx(globalSections) {
         toolRestrictions.push(opts)
         opLog.push({ op: 'restrict', toolName: (opts?.deny ?? []).join(',') })
         return () => {}
+      },
+      // H1 (alpha.2 hardening, P0): the monotonic end-cap guard seam —
+      // the real upstream `tools.guard` registers an agent-scoped
+      // monotonic veto after the extensible tools/pre-execute waterfall
+      // and returns the exact disposer; the double records the guard
+      // function on THIS ctx (sibling-inert) with the same disposer
+      // semantics (the adapter's composite disposer rides the SAME
+      // toolDisposers slot as the listener — one entry removes both).
+      guard(fn) {
+        if (typeof fn !== 'function') {
+          throw new TypeError('tools.guard: guard (function) is required')
+        }
+        const entry = { fn, active: true }
+        toolGuards.push(entry)
+        opLog.push({ op: 'guard' })
+        return () => {
+          entry.active = false
+        }
       },
     },
   }

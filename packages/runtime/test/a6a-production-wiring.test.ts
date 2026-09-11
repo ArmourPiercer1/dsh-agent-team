@@ -338,6 +338,12 @@ function activePreExecute(ctx: AgentCtxDouble): number {
 function totalPreExecute(ctx: AgentCtxDouble): number {
   return ctx.listeners.filter((l) => l.event === 'tools/pre-execute').length
 }
+/** H1 (alpha.2 hardening, P0): the ACTIVE end-cap guards on one ctx
+ *  (the `tools.guard` registrations the install makes alongside the
+ *  waterfall listener — the composite disposer removes both on close). */
+function activeEndCapGuards(ctx: AgentCtxDouble): number {
+  return ctx.toolGuards.filter((g) => g.active).length
+}
 function toolNames(ctx: AgentCtxDouble): string[] {
   return ctx.registeredTools.map((def) => String((def as { name?: string }).name ?? ''))
 }
@@ -417,10 +423,19 @@ const w1BActive = activePreExecute(w1B)
 const w1LeaderTotal = totalPreExecute(w1Leader)
 const w1ATotal = totalPreExecute(w1A)
 const w1BTotal = totalPreExecute(w1B)
+// H1: the end-cap guard registrations (one per permission install,
+// alongside the listener; member B — no policy — gets neither).
+const w1LeaderGuards = activeEndCapGuards(w1Leader)
+const w1AGuards = activeEndCapGuards(w1A)
+const w1BGuards = activeEndCapGuards(w1B)
 await world1.binding.close()
 const w1LeaderActiveAfterClose = activePreExecute(w1Leader)
 const w1AActiveAfterClose = activePreExecute(w1A)
 const w1BActiveAfterClose = activePreExecute(w1B)
+// H1: the composite disposer removed BOTH (listener first, guard last).
+const w1LeaderGuardsAfterClose = activeEndCapGuards(w1Leader)
+const w1AGuardsAfterClose = activeEndCapGuards(w1A)
+const w1BGuardsAfterClose = activeEndCapGuards(w1B)
 
 // ══════════════════════════════════════════════════════════════════════════
 // WORLD 2 — the ALPHA.1 regression: capabilities present on all three
@@ -740,6 +755,13 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
     expect(w1BActive).toBe(0)
     expect(w1BTotal).toBe(0)
   })
+  it('H1: the leader AND member A each register EXACTLY ONE active end-cap guard (the install requires the tools.guard seam)', () => {
+    expect(w1LeaderGuards).toBe(1)
+    expect(w1AGuards).toBe(1)
+  })
+  it('H1: member B (permissions ABSENT) registers ZERO end-cap guards (no policy → no install at all)', () => {
+    expect(w1BGuards).toBe(0)
+  })
   it('alpha.1 world: capabilities present, permissions absent, no ref — ZERO listeners on all three agents', () => {
     expect(w2LeaderListeners).toBe(0)
     expect(w2AListeners).toBe(0)
@@ -773,6 +795,11 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
   it('close(): the member A listener is DRAINED', () => {
     expect(w1AActiveAfterClose).toBe(0)
     expect(w1ATotal).toBe(1)
+  })
+  it('H1: close() DRAINS the end-cap guards too (the composite disposer removed listener first, guard last)', () => {
+    expect(w1LeaderGuardsAfterClose).toBe(0)
+    expect(w1AGuardsAfterClose).toBe(0)
+    expect(w1BGuardsAfterClose).toBe(0)
   })
   it('close(): member B is untouched (it never had a listener)', () => {
     expect(w1BActiveAfterClose).toBe(0)

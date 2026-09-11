@@ -125,26 +125,44 @@ type PreExecuteListener = (
   next: () => Promise<PreToolDecisionLike>,
 ) => Promise<PreToolDecisionLike>
 
+/**
+ * The minimal structural mirror of the guard the end-cap registers
+ * (H1): only the exec field the adapter's guard reads.
+ */
+type GuardFn = (exec: { readonly name: string }) => string | undefined
+
 interface FakeAgentCtx {
   readonly on: (event: string, listener: PreExecuteListener) => () => void
+  /** The agent-scoped tool surface (H1): records the end-cap guard. */
+  readonly tools: {
+    guard(guard: GuardFn): () => void
+  }
   trigger: (
     exec: PreExecuteExec,
     next: () => Promise<PreToolDecisionLike>,
   ) => Promise<PreToolDecisionLike>
   listenerCount: () => number
+  /** Every guard ever registered (including disposed ones). */
+  guardCount: () => number
+  /** Guards registered and NOT yet disposed. */
+  activeGuardCount: () => number
+  /** Disposal order of the composite disposer (`'listener'`/`'guard'`). */
+  readonly disposeLog: string[]
   readonly events: string[]
   /** The disposer returned by the most recent `on` call (identity checks). */
   lastDisposer: (() => void) | undefined
 }
 
 /**
- * Build the fake agent ctx: `on` records the listener (and returns a
- * tracked disposer — the identity the S15 disposer assertions check),
- * `trigger` drives the recorded listener with one exec + next.
+ * Build the fake agent ctx: `on` records the listener, `tools.guard`
+ * records the end-cap guard (H1 — the install requires this seam),
+ * and `trigger` drives the recorded listener with one exec + next.
  */
 function makeFakeAgentCtx(): FakeAgentCtx {
   const listeners: PreExecuteListener[] = []
+  const guards: Array<{ fn: GuardFn; disposed: boolean }> = []
   const events: string[] = []
+  const disposeLog: string[] = []
   const state = { lastDisposer: undefined as (() => void) | undefined }
   const on = (event: string, listener: PreExecuteListener): (() => void) => {
     events.push(event)
@@ -152,9 +170,18 @@ function makeFakeAgentCtx(): FakeAgentCtx {
     const disposer = (): void => {
       const index = listeners.indexOf(listener)
       if (index >= 0) listeners.splice(index, 1)
+      disposeLog.push('listener')
     }
     state.lastDisposer = disposer
     return disposer
+  }
+  const guard = (fn: GuardFn): (() => void) => {
+    const entry = { fn, disposed: false }
+    guards.push(entry)
+    return (): void => {
+      entry.disposed = true
+      disposeLog.push('guard')
+    }
   }
   const trigger = async (
     exec: PreExecuteExec,
@@ -166,8 +193,12 @@ function makeFakeAgentCtx(): FakeAgentCtx {
   }
   return {
     on,
+    tools: { guard },
     trigger,
     listenerCount: () => listeners.length,
+    guardCount: () => guards.length,
+    activeGuardCount: () => guards.filter((g) => !g.disposed).length,
+    disposeLog,
     events,
     get lastDisposer(): (() => void) | undefined {
       return state.lastDisposer
@@ -378,10 +409,11 @@ const S1R = await (async () => {
     )
     const callsAfterS13b = envF.resolver.calls.length
 
-    // S15 — the disposer (a fresh fake ctx on the same world): install →
-    // trigger works → dispose → trigger finds no listener → a second
-    // install on the SAME double works independently. The install must
-    // return the ctx.on disposer VERBATIM (identity check).
+    // S15 — the COMPOSITE disposer (a fresh fake ctx on the same world,
+    // H1): install → registers the listener AND the end-cap guard (one
+    // each) → trigger works → dispose → BOTH removed (listener FIRST,
+    // guard LAST — the guard is the monotonic last line of defense) → a
+    // second install on the SAME double works independently.
     const ctx2 = makeFakeAgentCtx()
     const firstDisposer = installParameterPermissionListener(ctx2, {
       policy: W1_POLICY,
@@ -392,7 +424,7 @@ const S1R = await (async () => {
       targetInstanceId: WORKER_ID,
       isLeader: false,
     })
-    const disposerIsCtxOnReturn = firstDisposer === ctx2.lastDisposer
+    const guardsAfterInstall = ctx2.guardCount()
     const nextFirst = makeNext()
     const firstDecision = await ctx2.trigger(
       makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'a5a-s15-first' }),
@@ -401,6 +433,8 @@ const S1R = await (async () => {
     const countBeforeDispose = ctx2.listenerCount()
     firstDisposer()
     const countAfterDispose = ctx2.listenerCount()
+    const activeGuardsAfterDispose = ctx2.activeGuardCount()
+    const disposeOrder = [...ctx2.disposeLog]
     let afterDisposeError: string | undefined
     try {
       const nextGone = makeNext()
@@ -422,6 +456,8 @@ const S1R = await (async () => {
       isLeader: false,
     })
     const countAfterSecondInstall = ctx2.listenerCount()
+    const guardsAfterSecondInstall = ctx2.guardCount()
+    const activeGuardsAfterSecondInstall = ctx2.activeGuardCount()
     const nextSecond = makeNext()
     const secondInstallDecision = await ctx2.trigger(
       makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'a5a-s15-second' }),
@@ -448,12 +484,16 @@ const S1R = await (async () => {
       stateW1: state,
       stateW1f: stateF,
       s15: {
-        disposerIsCtxOnReturn,
+        guardsAfterInstall,
         firstDecision,
         countBeforeDispose,
         countAfterDispose,
+        activeGuardsAfterDispose,
+        disposeOrder,
         afterDisposeError,
         countAfterSecondInstall,
+        guardsAfterSecondInstall,
+        activeGuardsAfterSecondInstall,
         secondInstallDecision,
         secondInstallNextCalls,
       },
@@ -916,21 +956,27 @@ describe('A5a S13: canonicalization failure — deny, next never, no request', (
   })
 })
 
-describe('A5a S15: the disposer (the ctx.on return) removes the listener; re-install works', () => {
-  it('the install returns the ctx.on disposer VERBATIM (identity)', () => {
-    expect(S1R.s15.disposerIsCtxOnReturn).toBe(true)
-  })
-  it('the first install registers exactly one listener and serves a call', () => {
+describe('A5a S15: the composite disposer removes listener AND end-cap guard; re-install works', () => {
+  it('the install registers exactly one listener AND exactly one end-cap guard', () => {
     expect(S1R.s15.countBeforeDispose).toBe(1)
+    expect(S1R.s15.guardsAfterInstall).toBe(1)
+  })
+  it('the first install serves a call (static allow → next once)', () => {
     expect(S1R.s15.firstDecision).toEqual({ kind: 'allow' })
   })
-  it('disposing removes the listener (count 0) and a trigger finds no listener', () => {
+  it('disposing removes BOTH (listener 0, guard 0 active) — listener FIRST, guard LAST', () => {
     expect(S1R.s15.countAfterDispose).toBe(0)
+    expect(S1R.s15.activeGuardsAfterDispose).toBe(0)
+    expect(S1R.s15.disposeOrder).toEqual(['listener', 'guard'])
+  })
+  it('after dispose, a trigger finds no listener', () => {
     expect(S1R.s15.afterDisposeError !== undefined).toBe(true)
     expect((S1R.s15.afterDisposeError ?? '').includes('no listener registered')).toBe(true)
   })
-  it('a second install on the SAME double works independently (exactly one listener, next once)', () => {
+  it('a second install on the SAME double works independently (one fresh listener + guard, next once)', () => {
     expect(S1R.s15.countAfterSecondInstall).toBe(1)
+    expect(S1R.s15.guardsAfterSecondInstall).toBe(2)
+    expect(S1R.s15.activeGuardsAfterSecondInstall).toBe(1)
     expect(S1R.s15.secondInstallDecision).toEqual({ kind: 'allow' })
     expect(S1R.s15.secondInstallNextCalls).toBe(1)
   })

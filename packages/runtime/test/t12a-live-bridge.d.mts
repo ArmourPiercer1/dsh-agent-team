@@ -65,6 +65,18 @@ export interface ToolRestrictionEntry {
   readonly deny: readonly string[]
 }
 
+/**
+ * One recorded tools.guard registration on the ctx double
+ * (H1 / alpha.2 hardening, P0): the monotonic end-cap guard seam the
+ * permission adapter's install requires (fail-closed on absence —
+ * `alpha2-permission-guard-unavailable`). The composite disposer removes
+ * the listener FIRST and the guard LAST (disposers flip `active`).
+ */
+export interface ToolGuardEntry {
+  readonly fn: (exec: { readonly name: string }) => string | undefined
+  active: boolean
+}
+
 /** One recorded skills register(def) entry on the ctx double (alpha.1). */
 export interface RegisteredSkillEntry {
   readonly def: unknown
@@ -93,10 +105,14 @@ export interface AgentCtxDouble {
   /** alpha.1: every tools.restrict({ deny }) call recorded on THIS ctx
    *  (sibling-inert; one entry per call, the seam accumulates). */
   readonly toolRestrictions: ToolRestrictionEntry[]
+  /** H1 (alpha.2 hardening, P0): every tools.guard registration recorded
+   *  on THIS ctx (the monotonic end-cap seam; disposers flip `active`). */
+  readonly toolGuards: ToolGuardEntry[]
   /** P0-3 (hardening §5): the unified operation-order log — the SEQUENCE of
-   *  tools.register / tools.restrict calls on THIS ctx (verifies the frozen
-   *  setup ordering: builtin deny BEFORE the team tool registrations). */
-  readonly opLog: ReadonlyArray<{ op: 'register' | 'restrict'; toolName: string }>
+   *  tools.register / tools.restrict / tools.guard calls on THIS ctx
+   *  (verifies the frozen setup ordering: builtin deny BEFORE the team tool
+   *  registrations). */
+  readonly opLog: ReadonlyArray<{ op: 'register' | 'restrict' | 'guard'; toolName?: string }>
   /** alpha.1: every skills register(def) entry recorded on THIS ctx
    *  (disposers flip `disposed`). */
   readonly registeredSkills: RegisteredSkillEntry[]
@@ -122,6 +138,14 @@ export interface AgentCtxDouble {
      *  §4): the real seam returns the exact disposer that lifts this
      *  restriction (the adapter captures + invokes it on close). */
     restrict(opts: { deny: string[] }): () => void
+    /** H1 (alpha.2 hardening, P0): the monotonic end-cap guard seam —
+     *  the real upstream `tools.guard` registers an agent-scoped
+     *  monotonic veto AFTER the extensible tools/pre-execute waterfall
+     *  (a guard has no allow result) and returns the exact disposer.
+     *  The permission adapter's install REQUIRES this seam (fail-closed
+     *  on absence) and returns a composite disposer (listener first,
+     *  guard last) that the glue rides its single toolDisposers slot. */
+    guard(guard: (exec: { readonly name: string }) => string | undefined): () => void
   }
   /** The DSH systemPrompt builtin double (T12-M2: the persona layer). */
   readonly systemPrompt: {

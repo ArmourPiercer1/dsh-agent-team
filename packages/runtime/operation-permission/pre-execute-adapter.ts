@@ -37,6 +37,28 @@
  *     └ blocked → return { kind: 'deny' }     (no-request here is a
  *                                             consistency anomaly — fail
  *                                             closed, never proceed)
+ *
+ * The listener is NOT the whole gate. The install ALSO registers a
+ * MONOTONIC END-CAP GUARD on the SAME agent ctx through the public
+ * `tools.guard` seam (H1 — the P0 fix; see R6):
+ *
+ * ```
+ * [extensible tools/pre-execute waterfall — ANY listener in the chain
+ *  may short-circuit it without reaching the Team listener]
+ *     ↓  (one exec object flows waterfall → guard stage, upstream
+ *        prepareExecution: the SAME object both stages see)
+ * end-cap guard (this install, agent-scoped, monotonic — a guard has
+ *     no allow result; listener ordering cannot turn a denial back
+ *     into permission)
+ *     ├ unsupported tool name            → abstain (undefined)
+ *     ├ exec object marked by THIS install (static allow / resolved
+ *     │  ask-allow — marked on the exec OBJECT, never on the token:
+ *     │  the token is a symbol, not WeakSet-able)
+ *     │                                → abstain (undefined)
+ *     └ supported + UNMARKED (a hostile waterfall listener settled the
+ *        decision without reaching the frozen pipeline)
+ *                                   → DENY (the stable
+ *                                     END_CAP_DENIAL_REASON)
  * ```
  *
  * What this module IS (and deliberately is NOT):
@@ -74,8 +96,11 @@
  *   never imports an upstream `@deepseek-ai/*` package; the agent ctx and
  *   the exec payload are typed by MINIMAL structural mirrors of the
  *   upstream surface (the glue is plain `.mjs` and passes the real cordis
- *   `Context`, whose `ctx.on` registration is an effect that returns the
- *   disposer — this factory returns that disposer verbatim).
+ *   `Context`, whose `ctx.on` registration and `ctx.tools.guard`
+ *   registration are both effects that return disposers — this factory
+ *   returns ONE composite disposer: the listener is removed FIRST and
+ *   the end-cap guard LAST, so the pair is torn down as a unit and the
+ *   guard never outlives its listener).
  *
  * Design rulings (documented per the A5 brief; the report cites them):
  *
@@ -140,12 +165,58 @@
  *   hosts both controlled and uncontrolled operations, where no-request
  *   is the ordinary leader-autonomy fall-through; a different consumer).
  *
+ * R6 — MONOTONIC END-CAP (H1 — the P0 fix): the upstream
+ *   `tools/pre-execute` gate is an EXTENSIBLE waterfall — ANY listener
+ *   in the chain (any plugin / preset / hook) may return a decision
+ *   WITHOUT calling `next()`, short-circuiting the rest of the chain
+ *   (the cordis waterfall semantics: the first returning listener
+ *   settles the decision; a `prepend`-registered listener runs
+ *   outermost and first). A hostile
+ *   `ctx.on('tools/pre-execute', () => allow, { prepend: true })` on
+ *   the agent ctx therefore settles the pre-dispatch decision BEFORE
+ *   this listener ever runs — the whole frozen pipeline (static deny,
+ *   canonicalization, the durable control plane) is bypassed and the
+ *   tool body executes without any Team permission (the P0). The fix
+ *   is the monotonic END-CAP GUARD registered on the SAME agent ctx
+ *   through the public `tools.guard` seam (upstream `ToolGuard` — "a
+ *   monotonic guard after the extensible tools/pre-execute waterfall;
+ *   guards have no allow result, listener ordering cannot turn a
+ *   denial back into permission"; the guard stage runs AFTER the
+ *   waterfall and denies by returning a reason string, which the
+ *   pipeline materializes as an `Error: <reason>` result BEFORE the
+ *   body dispatches). Authorization is an INSTALL-SCOPED `WeakSet` over
+ *   the exec OBJECT: the listener marks the exec exactly at the two
+ *   final-allow points (static allow; resolved ask-allow) and NEVER on
+ *   any deny/abort/failure path; the same exec object flows the
+ *   waterfall and the guard stage (upstream `prepareExecution` holds
+ *   one exec per execution), so object identity IS the identity.
+ *   Marking the exec object (not the token) is forced: the upstream
+ *   `ToolExecutionToken` is a symbol (not WeakSet-able). Consequences,
+ *   all pinned by the h1a suite: (a) a supported permission tool whose
+ *   exec is UNMARKED at the guard stage is DENIED with the stable
+ *   {@link END_CAP_DENIAL_REASON} — zero control rows, body never runs;
+ *   (b) a NESTED dispatch (a composite body calling `ctx.tools.execute`
+ *   with `parent: exec.token`) creates a FRESH exec object — unmarked —
+ *   so the nested call of a permission tool is end-cap denied in its
+ *   own right (the nested dispatch is the upstream's own escape hatch,
+ *   not a Team authorization path); (c) UNSUPPORTED tool names abstain
+ *   (the guard never over-denies beyond the six permission tools);
+ *   (d) the guard is AGENT-SCOPED (an upstream agent-ctx guard applies
+ *   only to that agent) and INSTALL-SCOPED (fresh WeakSet per install)
+ *   — two installs on two agents are independent; (e) the install is
+ *   FAIL-CLOSED: an agent ctx WITHOUT the `tools.guard` seam rejects
+ *   the install with the typed
+ *   {@link PermissionGuardUnavailableError}
+ *   (`alpha2-permission-guard-unavailable`) BEFORE any registration —
+ *   zero partial state; a permissions agent never runs unguarded.
+ *
  * Diagnostics: when `onObserve` is provided, small structured rows are
- *   emitted at five pipeline points (canonicalized operation, resolved
+ *   emitted at the pipeline points (canonicalized operation, resolved
  *   decision + provenance, request created, decision arrived, guard
- *   verdict) — no file contents, no full argument payloads. An
- *   `onObserve` that throws never affects the decision (diagnostics are
- *   not authority).
+ *   verdict, and — R6 — the end-cap guard's denial, stage
+ *   `end-cap-denial` with the tool name and the stable reason) — no
+ *   file contents, no full argument payloads. An `onObserve` that
+ *   throws never affects the decision (diagnostics are not authority).
  *
  * @module @dsh-agent-team/runtime/operation-permission/pre-execute-adapter
  */
@@ -159,6 +230,8 @@ import type {
   PathTargetResolver,
 } from './types.js'
 import {
+  PRE_EXECUTE_INSTALL_ERROR_CODES,
+  PermissionGuardUnavailableError,
   isOperationPermissionError,
 } from './errors.js'
 import {
@@ -219,6 +292,20 @@ export interface PreExecuteExec {
 }
 
 /**
+ * The minimal structural mirror of the exec payload the monotonic guard
+ * stage receives (R6 / H1): ONLY the field the end-cap guard reads —
+ * the tool name. The upstream `ToolExecution` satisfies it
+ * structurally, and the guard stage receives the SAME exec object the
+ * waterfall received (upstream `prepareExecution` holds one exec per
+ * execution and passes it to both stages — object identity is the
+ * identity the authorization `WeakSet` keys on).
+ */
+export interface GuardExecLike {
+  /** The tool name (`exec.name`). */
+  readonly name: string
+}
+
+/**
  * The minimal structural mirror of the agent-scoped registration surface
  * (the upstream cordis `Context.on` for the agent-scoped
  * `tools/pre-execute` waterfall): registering a listener is an effect —
@@ -241,6 +328,20 @@ export interface AgentPreExecuteCtx {
       next: () => Promise<PreToolDecisionLike>,
     ) => Promise<PreToolDecisionLike>,
   ): () => void
+  /**
+   * The agent-scoped tool-registry surface (R6 / H1): `guard`
+   * registers a MONOTONIC tool guard on this agent — it runs AFTER the
+   * extensible `tools/pre-execute` waterfall (the end-cap stage; the
+   * upstream `ToolGuard` has no allow result, and listener ordering
+   * cannot turn its denial back into permission) and applies only to
+   * this agent. The end-cap guard REQUIRES this seam: an install
+   * against a ctx without it fails closed
+   * (`alpha2-permission-guard-unavailable`) BEFORE any registration
+   * (zero partial state).
+   */
+  readonly tools: {
+    guard(guard: (exec: GuardExecLike) => string | undefined): () => void
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -301,6 +402,18 @@ export interface InstallParameterPermissionListenerParams {
 /** The closed action name the adapter uses for its control scopes. */
 const ACTION_NAME = 'parameter-permission'
 
+/**
+ * R6 / H1 — the STABLE end-cap denial reason (model-visible: the
+ * pipeline materializes it as `Error: <this text>` before the body
+ * dispatches). Emitted when a SUPPORTED permission tool's exec object
+ * reached the guard stage UNMARKED — its pre-dispatch decision was
+ * settled by the extensible `tools/pre-execute` chain without reaching
+ * this install's frozen pipeline. The h1a suite pins this text
+ * verbatim (the test mirrors the constant — a change must move both).
+ */
+export const END_CAP_DENIAL_REASON =
+  'permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)'
+
 // ---------------------------------------------------------------------------
 // The install factory.
 // ---------------------------------------------------------------------------
@@ -312,17 +425,44 @@ const ACTION_NAME = 'parameter-permission'
  * installed, this listener covers exactly that agent's calls).
  *
  * @param agentCtx - the agent-scoped registration surface (the upstream
- *   cordis agent `Context`).
+ *   cordis agent `Context` — its `ctx.tools.guard` seam is REQUIRED; a
+ *   ctx without it rejects the install, R6).
  * @param params - the frozen install parameters (policy, resolver,
  *   control service, identities, routing, optional diagnostics).
- * @returns the disposer (the `ctx.on` return) — the A6 glue stores it in
- *   the agent lifecycle's disposer list so close/dispose removes the
- *   listener and cold resume re-installs (plan §11.3).
+ * @throws {@link PermissionGuardUnavailableError} when the agent ctx
+ *   lacks the `tools.guard` seam — thrown BEFORE any registration
+ *   (zero partial state; R6).
+ * @returns ONE composite disposer — the A6 glue stores it in the agent
+ *   lifecycle's disposer list so close/dispose removes the listener and
+ *   the end-cap guard (listener FIRST, guard LAST) and cold resume
+ *   re-installs (plan §11.3).
  */
 export function installParameterPermissionListener(
   agentCtx: AgentPreExecuteCtx,
   params: InstallParameterPermissionListenerParams,
 ): () => void {
+  // R6 / H1 — FAIL CLOSED AT INSTALL (checked BEFORE any registration —
+  // zero partial state: if this throws, nothing was registered and
+  // nothing needs disposing). The end-cap guard requires the agent
+  // ctx's public `tools.guard` seam; a ctx without it (a broken host,
+  // or an upstream without the monotonic guard stage) CANNOT be
+  // installed — the waterfall listener alone is bypassable by a hostile
+  // `tools/pre-execute` listener, and a permissions agent must never
+  // run unguarded. The typed error mirrors the A6 glue's V1-1
+  // `alpha2-permission-fs-unavailable` install failure.
+  {
+    // The mirror types `tools` as present (the real ctx always has it);
+    // the runtime check below is the defense against a broken host.
+    const guardSeam: unknown = (agentCtx as { tools?: { guard?: unknown } }).tools?.guard
+    if (typeof guardSeam !== 'function') {
+      throw new PermissionGuardUnavailableError(
+        `the agent ctx is missing the tools.guard seam required by the monotonic end-cap guard ` +
+        `(code: ${PRE_EXECUTE_INSTALL_ERROR_CODES.ALPHA2_PERMISSION_GUARD_UNAVAILABLE}) — ` +
+        'refusing to install the parameter permission listener without it',
+      )
+    }
+  }
+
   const {
     policy,
     resolveTarget,
@@ -344,6 +484,21 @@ export function installParameterPermissionListener(
    * decision, never cached). Keyed by the raw (A1-trimmed) rule path.
    */
   const ruleKeyCache = new Map<string, string>()
+
+  /**
+   * R6 / H1 — the INSTALL-SCOPED authorization set: the exec OBJECTS
+   * this install authorized (marked exactly at the two final-allow
+   * points — static allow and resolved ask-allow — and NEVER on any
+   * deny/abort/failure path). The end-cap guard abstains on members and
+   * denies every supported exec object that is not one. Object identity
+   * is the identity: upstream `prepareExecution` holds one exec per
+   * execution and the SAME object flows waterfall → guard stage; a
+   * nested dispatch creates a FRESH exec object (unmarked, in its own
+   * right). A `WeakSet` (never a `Set`): the exec objects are pipeline
+   * transients and must not be retained; the token is a symbol (not
+   * WeakSet-able), which is why the marker lives on the object.
+   */
+  const authorizedExecutions = new WeakSet<object>()
 
   /**
    * Emit one small diagnostics row (never throws into the pipeline —
@@ -504,6 +659,11 @@ export function installParameterPermissionListener(
     })
 
     if (decision.decision === 'allow') {
+      // R6 / H1 — mark THIS exec object as authorized by this install
+      // (the same object the pipeline then flows to the end-cap guard
+      // stage). Marking happens ONLY on final-allow paths — never on
+      // any deny/abort/failure path.
+      authorizedExecutions.add(exec)
       return await next()
     }
     if (decision.decision === 'deny') {
@@ -643,6 +803,9 @@ export function installParameterPermissionListener(
           : `permission denied: the last-mile guard blocked the operation (${verdict.reason})`
       return { kind: 'deny', reason }
     }
+    // R6 / H1 — the resolved ask-allow is the second (and final)
+    // authorization point; mark before next().
+    authorizedExecutions.add(exec)
     return await next()
   }
 
@@ -659,5 +822,42 @@ export function installParameterPermissionListener(
     return enforce(exec, next)
   }
 
-  return agentCtx.on('tools/pre-execute', listener)
+  /**
+   * R6 / H1 — the monotonic end-cap guard (see R6 for the full ruling).
+   * Registered on the SAME agent ctx; runs AFTER the extensible
+   * `tools/pre-execute` waterfall, on the SAME exec object. Synchronous
+   * and NEVER throws (a guard fault must not break dispatch — and the
+   * guard can only deny, so it can never over-allow):
+   * - unsupported tool name → `undefined` (abstain — no over-deny
+   *   beyond the six permission tools);
+   * - an exec object marked by THIS install → `undefined` (authorized:
+   *   static allow or resolved ask-allow);
+   * - supported + unmarked → the stable denial reason (the hostile
+   *   waterfall short-circuit case — the P0): the pipeline
+   *   materializes `Error: <reason>` BEFORE the body dispatches, and
+   *   zero control rows are created, resolved, or consumed (the
+   *   frozen pipeline never ran). One diagnostics row (stage
+   *   `end-cap-denial`) — `observe()` already swallows a throwing hook.
+   */
+  const endCapGuard = (exec: GuardExecLike): string | undefined => {
+    const name = typeof exec.name === 'string' ? exec.name : String(exec.name)
+    const toolClass = classifyPermissionTool(name)
+    if (toolClass.kind === 'unsupported') return undefined // abstain
+    if (authorizedExecutions.has(exec)) return undefined // authorized by THIS install
+    observe({ stage: 'end-cap-denial', tool: name, reason: END_CAP_DENIAL_REASON })
+    return END_CAP_DENIAL_REASON
+  }
+
+  // R6 / H1 — the composite disposer: listener FIRST, guard LAST. The
+  // guard is the monotonic last line of defense; tearing the pair down
+  // as a unit (and re-installing fresh on cold resume) keeps the
+  // agent-scoped registrations symmetric — the A6 glue stores this
+  // single disposer in the agent lifecycle's `toolDisposers` slot
+  // (plan §11.3) and cold resume calls the install again.
+  const disposeListener = agentCtx.on('tools/pre-execute', listener)
+  const disposeGuard = agentCtx.tools.guard(endCapGuard)
+  return () => {
+    disposeListener()
+    disposeGuard()
+  }
 }
