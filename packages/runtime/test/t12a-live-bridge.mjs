@@ -44,6 +44,10 @@
 import { existsSync, lstatSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+// BP-F (issue #2 blueprint-loading, plan §11.1): the bridge's default
+// per-Team resolver strong-parses the world's blueprint sources (the
+// domain facade — the runner's .js -> .ts sibling hook applies).
+import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
 /** The worktree root (test -> runtime -> packages -> root). */
@@ -631,6 +635,19 @@ export async function observeAssembly(agentCtx) {
  *   dep is not passed (alpha.1/legacy worlds never read it; a
  *   permissions-carrying template then fails closed with the typed
  *   alpha2-permission-control-unavailable error).
+ * @param {Array<{blueprintId: string, revision: string, source: string}>}
+ *   [options.blueprintSources] BP-F (issue #2 blueprint-loading, plan
+ *   §11.1): the world's blueprint store — the saved-source stand-in the
+ *   DEFAULT per-root resolver strong-parses (a TeamSession row's bound
+ *   snapshot ref must name an entry here; the parse's contentHash is
+ *   verified against the ref — strict, like the host resolver). Absent =
+ *   an empty store (a row bound to a non-anchor snapshot fails closed).
+ * @param {(teamRootSid: string) => object} [options.resolveBoundBlueprint]
+ *   BP-F: an OVERRIDE per-root bound-blueprint resolver passed straight
+ *   through to the glue (e.g. a production-shaped live-authority
+ *   resolver). Absent = the bridge's default strict map resolver over
+ *   `options.blueprintSources` + the row-anchor fallback (a row without a
+ *   bound snapshot ref resolves the row anchor, exactly like the host).
  * @returns {Promise<object>} the world (binding + records + doubles).
  */
 export async function createLiveWorld(options = {}) {
@@ -733,6 +750,45 @@ export async function createLiveWorld(options = {}) {
     ...(options.fsBackend === null
       ? {}
       : { fsBackend: options.fsBackend ?? ((agentCtx) => agentCtx.fs) }),
+    // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
+    // blueprint resolver — the bridge plays the HOST stand-in, so it
+    // ALWAYS injects one (the production host does too): a caller may
+    // override with options.resolveBoundBlueprint (a production-shaped
+    // authority resolver); the default is a strict map resolver over
+    // options.blueprintSources — the row's bound snapshot ref must name a
+    // store entry, and the parse's contentHash is verified against the
+    // ref (hash equality, the plan §11.1 chain). A row WITHOUT a bound
+    // snapshot ref (a pre-repair row) falls back to the row anchor,
+    // exactly like the host resolver.
+    resolveBoundBlueprint:
+      options.resolveBoundBlueprint ??
+      ((teamRootSid) => {
+        const row = domain.repositories.teamSessions.get(String(teamRootSid))
+        if (row === undefined) {
+          throw new Error(
+            `t12a bridge: resolveBoundBlueprint('${teamRootSid}'): the domain carries no durable TeamSession row for this root (strict, like the host resolver)`,
+          )
+        }
+        const ref = row.blueprint
+        if (ref === undefined) {
+          return parseBlueprint(String(config.blueprintSource ?? ''))
+        }
+        const entry = (options.blueprintSources ?? []).find(
+          (e) => e.blueprintId === ref.blueprintId && e.revision === ref.revision,
+        )
+        if (entry === undefined) {
+          throw new Error(
+            `t12a bridge: resolveBoundBlueprint('${teamRootSid}'): no blueprint source for the bound snapshot ${ref.blueprintId}@${ref.revision} (pass options.blueprintSources)`,
+          )
+        }
+        const parsed = parseBlueprint(entry.source)
+        if (parsed.contentHash !== ref.contentHash) {
+          throw new Error(
+            `t12a bridge: resolveBoundBlueprint('${teamRootSid}'): hash mismatch — the bound snapshot ref carries ${ref.contentHash} but the source parses to ${parsed.contentHash} (strict, like the host resolver)`,
+          )
+        }
+        return parsed
+      }),
   })
   return {
     rootSessionId,

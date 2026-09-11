@@ -84,7 +84,12 @@ import {
   parseBlueprint,
   sha256Hex,
 } from '../../../domain/blueprint/src/index.js'
-import type { BlueprintTemplate, TeamBlueprint } from '../../../domain/blueprint/src/index.js'
+import type {
+  BlueprintCatalog,
+  BlueprintTemplate,
+  TeamBlueprint,
+} from '../../../domain/blueprint/src/index.js'
+import type { BlueprintAuthority } from './blueprint-authority.js'
 import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/src/index.js'
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import {
@@ -602,6 +607,57 @@ export interface TeamProductionRootParams {
    * service is absent or malformed).
    */
   readonly workspaceAttach?: WorkspaceAttachPort
+  /**
+   * BP5 (issue #2 blueprint-loading, plan §9) — the LIVE BlueprintCatalog
+   * over the row's saved sources + the frozen registry + this row's anchor.
+   * OPTIONAL at the factory level: absent → the legacy STATIC single-
+   * blueprint catalog (`createBlueprintCatalog([blueprint])`), so the
+   * factory-world tests and the pre-repair kits keep their behavior. The
+   * production host entry ALWAYS passes one (it builds the live catalog
+   * over the `config.blueprintDir` index + the domain registry); when
+   * present, every catalog consumer of this root (the root/member
+   * binding ports, the cold resolve, the S6 remote surfaces, the exposed
+   * `root.catalog`) sees the live state.
+   */
+  readonly blueprintCatalog?: BlueprintCatalog
+  /**
+   * BP6 (issue #2 blueprint-loading, plan §10) — the live
+   * BlueprintAuthority (the freeze port). OPTIONAL at the factory level:
+   * absent → the fresh-root paths keep the legacy no-freeze behavior
+   * (factory worlds, pre-repair kits). The production host entry ALWAYS
+   * passes one; when present, every fresh TeamSession mint of this root
+   * goes through the freeze barrier (the plan's write order — all pure
+   * preflights, then the registry freeze, then the durable put):
+   *
+   *   - the real create boot + `team.create` v1/v2 — the shared
+   *     `rootBinding.bindFresh` wrapper (the single choke point);
+   *   - the handoff target — the pre-put freeze in `createHandoffTeam`
+   *     (the handoff mints its TeamSession record directly, then reuses
+   *     the same bindFresh wrapper, which re-runs the freeze idempotently);
+   *   - the fixture boot seed — the explicit registry seeding of the row
+   *     anchor before its durable put (the writer-audit category 3: a
+   *     fixture world with an injected authority keeps the invariant).
+   *
+   * The fork-reconciliation child (category 2) inherits the PARENT's exact
+   * snapshot ref (invariant 10), so its registry row already exists
+   * through the parent's freeze (or the boot seeding for a boot-world
+   * parent) — no mint of its own.
+   */
+  readonly blueprintAuthority?: BlueprintAuthority
+  /**
+   * BP-G (issue #2 blueprint-loading, plan §12.2, optional additive) —
+   * the in-process read-only boot readiness getter the mounted remote
+   * dispatcher gates on. ABSENT (factory worlds, every pre-BP-G test
+   * world): the dispatcher runs unguarded (the legacy behavior,
+   * byte-for-byte). The production host entry ALWAYS passes one: its
+   * closure over the host's own `starting` / `ready` / `failed` state —
+   * the route mounts BEFORE the live boot is awaited (plan §12.1), so a
+   * failed boot leaves the route registered; the gate then refuses every
+   * closed method except the readiness-independent catalog reads with
+   * the frozen `internal-error` envelope (no new wire code, no protocol
+   * bump — plan §12.3).
+   */
+  readonly remoteReadiness?: () => import('./s6-remote.js').RemoteReadiness
 }
 
 /**
@@ -627,6 +683,8 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     legacyInspect,
     getSessionQuery,
     workspaceAttach,
+    blueprintCatalog,
+    blueprintAuthority,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -637,8 +695,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const memberWritePort = createMemberDomainWritePort(repos)
 
   // --- A03 blueprint + catalog ---------------------------------------------------------
+  // BP5 (issue #2 blueprint-loading, plan §9): the bootstrap anchor stays
+  // the strong-parsed row source (the host/compatibility wiring keeps
+  // using it); the CATALOG is the injected live one when provided, else
+  // the legacy static single-blueprint catalog (the factory-world
+  // fallback — every consumer below derives from this single variable).
   const blueprint: TeamBlueprint = parseBlueprint(config.blueprintSource)
-  const catalog = createBlueprintCatalog([blueprint])
+  const catalog: BlueprintCatalog = blueprintCatalog ?? createBlueprintCatalog([blueprint])
 
   // --- A03b the bound blueprint snapshot ref (T12-B1/B6) --------------------------------
   // Every fresh-root binding of THIS row binds the same immutable identity:
@@ -786,8 +849,21 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
   }
   const rootBinding = {
-    bindFresh: (input: FreshRootBindingInput): Promise<RootBindingResult> =>
-      bindFreshTeamRoot(rootBindingPorts, input),
+    bindFresh: (input: FreshRootBindingInput): Promise<RootBindingResult> => {
+      // BP6 (issue #2 blueprint-loading, plan §10): the freeze barrier at
+      // the SINGLE choke point every fresh TeamSession mint of this root
+      // shares (the real create boot, team.create v1/v2, the shared
+      // create-and-start primitive). The registry freeze runs BEFORE the
+      // durable write (the plan's write order); the barrier is idempotent
+      // (a same-hash re-freeze is a no-op). Factory worlds without an
+      // injected authority keep the legacy no-freeze behavior.
+      if (blueprintAuthority === undefined) {
+        return bindFreshTeamRoot(rootBindingPorts, input)
+      }
+      return blueprintAuthority
+        .freezeSnapshot(input.blueprint)
+        .then(() => bindFreshTeamRoot(rootBindingPorts, input))
+    },
     rehydrateCold: (input: ColdRootBindingInput): Promise<RootBindingResult> =>
       rehydrateColdTeamRoot(rootBindingPorts, input),
   }
@@ -1238,6 +1314,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     if (context !== undefined) {
       requireHandoffAgentPorts()
     }
+    // BP6 (issue #2 blueprint-loading, plan §10): the pre-freeze BEFORE
+    // the pre-put — the handoff mints its TeamSession record DIRECTLY
+    // (the pre-put below), so the barrier lands here, not only in the
+    // bindFresh wrapper the shared primitive reuses (which re-runs the
+    // freeze idempotently — same hash, no second row).
+    if (blueprintAuthority !== undefined) {
+      await blueprintAuthority.freezeSnapshot(snapshot)
+    }
     const existing = repos.teamSessions.get(minted)
     if (existing === undefined) {
       await repos.teamSessions.put({
@@ -1627,6 +1711,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     legacyInspect,
     legacyHome: params.legacyHome,
     principal: seams.serverPrincipalDerivation.current(),
+    // BP-G (issue #2 blueprint-loading, plan §12.2): the host's in-process
+    // boot readiness — the mounted dispatcher gates the non-catalog
+    // methods on it (the mount happens BEFORE the live boot is awaited).
+    ...(params.remoteReadiness !== undefined
+      ? { readiness: params.remoteReadiness }
+      : {}),
     // T12-V16: remote member.send routes through the P6-T3 messaging
     // coordinator (facade admission + live delivery + confirmation),
     // closing the admission-only silence window pinned by run #13.
@@ -1737,6 +1827,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     const sessionBindings = repos.sessionBindings
     const memberInstances = repos.memberInstances
     if (teamSessions.get(rootSid) === undefined) {
+      // BP6 writer audit (issue #2 blueprint-loading, plan §10,
+      // category 3): the fixture boot seed explicitly seeds the registry
+      // for the row anchor BEFORE its durable TeamSession put, so a
+      // fixture world with an injected authority keeps the fresh-
+      // TeamSession invariant (a fork child of a boot-world parent then
+      // inherits an already-frozen snapshot). Factory worlds without an
+      // authority skip the seeding (the legacy behavior).
+      if (blueprintAuthority !== undefined) {
+        await blueprintAuthority.freezeSnapshot(boundSnapshot)
+      }
       const input = {
         rootSessionId: rootSid,
         blueprint: createBlueprintSnapshotRef({

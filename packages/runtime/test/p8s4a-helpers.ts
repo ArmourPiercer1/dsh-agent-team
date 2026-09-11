@@ -161,7 +161,7 @@ export async function plantStaleRow(
   options: PlantStaleRowOptions,
 ): Promise<CompatibilityStateRecord> {
   return world.domain.repositories.compatibility.put({
-    schemaVersion: 1,
+    schemaVersion: 2,
     rootSessionId: P6T1_FIXTURE.rootSessionId,
     status: options.status,
     fingerprint: options.fingerprint,

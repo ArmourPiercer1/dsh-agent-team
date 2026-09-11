@@ -71,6 +71,13 @@ import {
 import type { TeamDomain } from '../../../storage/repositories/index.js'
 import type { StorageDomainSeam } from '../../../storage/schema/index.js'
 import type { LegacyInspectFn } from './legacy-surface.js'
+import { createBlueprintAuthority } from './blueprint-authority.js'
+import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
+import { createBlueprintSourceIndex } from './blueprint-source-index.js'
+
+import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
+import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
+
 import { createTeamProductionRoot } from './root.js'
 import {
   TEAM_PLUGIN_ERROR_CODES,
@@ -192,6 +199,21 @@ interface GlueModule {
     readonly fsBackend?: (agentCtx: unknown) => {
       resolve(path: string, options?: { cwd?: string }): Promise<unknown>
     }
+    /**
+     * BP-F (issue #2 blueprint-loading, plan §11.1, optional additive):
+     * the narrow per-Team bound-blueprint resolver —
+     * (teamRootSid) => the parsed TeamBlueprint bound to that team root.
+     * The production host builds it over the opened domain + the live
+     * authority (the durable TeamSession row's bound snapshot ref ->
+     * resolveSnapshot; the hash equality is verified; a frozen revision
+     * replays the registry row's stored source text). The glue consumes it
+     * as the DYNAMIC Team authority for persona / static capabilities /
+     * permissions of every agent setup under that root — the row-global
+     * `config.blueprintSource` is only the no-resolver fallback (factory
+     * worlds). Absent → the glue's legacy row-global anchor resolution
+     * (pre-repair behavior, byte-for-byte).
+     */
+    readonly resolveBoundBlueprint?: (teamRootSid: string) => unknown
   }): TeamAgentBindings
 }
 
@@ -314,6 +336,11 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (c.bootPhase !== 'create' && c.bootPhase !== 'resume' && c.bootPhase !== 'create-or-open') fail('bootPhase must be "create", "resume" or "create-or-open"')
   if (typeof c.rootSessionId !== 'string' || c.rootSessionId.length === 0) fail('rootSessionId must be a non-empty string')
   if (typeof c.blueprintSource !== 'string' || c.blueprintSource.length === 0) fail('blueprintSource must be a non-empty string')
+  // BP3 (issue #2 blueprint-loading, plan §7.1): the optional saved-source
+  // directory. Absent = the filesystem catalog is disabled (the legacy
+  // inline-bootstrap-only behavior); present = a non-empty path string
+  // (absolute, or relative to the host process.cwd()).
+  if (c.blueprintDir !== undefined && (typeof c.blueprintDir !== 'string' || c.blueprintDir.length === 0)) fail('blueprintDir must be a non-empty string when present')
   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
   if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
@@ -1002,6 +1029,45 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // calls boot() only after the root construction, so every agentSetup
   // sees a constructed control service.
   const controlServiceRef: { current: ControlService | undefined } = { current: undefined }
+  // --- BP3/BP4 (issue #2 blueprint-loading, plan §7/§8): the live blueprint
+  // --- authority. The production host is the SOLE authority-builder: the
+  // --- stateless saved-source index over `config.blueprintDir` (absent =
+  // --- the filesystem catalog disabled — the legacy inline-bootstrap-only
+  // --- behavior), the live authority over the FROZEN registry rows + the
+  // --- saved sources + the row anchor (the one strong parse), and the
+  // --- live catalog facade the root consumes. Factory worlds (no host
+  // --- entry) pass neither and keep the legacy static single-blueprint
+  // --- catalog + the no-freeze behavior (the root's optional params).
+  const blueprintSourceIndex = createBlueprintSourceIndex({
+    blueprintDir: resolvedRowConfig.blueprintDir,
+  })
+  const blueprintAuthority = createBlueprintAuthority({
+    bootstrapSource: resolvedRowConfig.blueprintSource,
+    sourceIndex: blueprintSourceIndex,
+    registry: domain.repositories.blueprintRegistry,
+  })
+  const liveBlueprintCatalog = createLiveBlueprintCatalog(blueprintAuthority)
+  // --- BP-F (issue #2 blueprint-loading, plan §11.1): the narrow per-Team
+  // --- resolver the live glue consumes — the durable TeamSession row's
+  // --- bound snapshot ref -> the live authority's resolveSnapshot (the
+  // --- hash equality is verified; a frozen revision replays the registry
+  // --- row's stored source text, a mutable snapshot re-parses the current
+  // --- source). Rows without a snapshot ref (pre-repair legacy rows) fall
+  // --- back to the row anchor; a MISSING row is a programming error the
+  // --- glue must never reach (fail closed: the setup rejection rolls the
+  // --- unpublished agent back).
+  const resolveBoundBlueprint = (teamRootSid: string): TeamBlueprint => {
+    const row = domain.repositories.teamSessions.get(teamRootSid)
+    if (row === undefined) {
+      throw new Error(`resolveBoundBlueprint(${String(teamRootSid)}): the domain carries no durable TeamSession row for this root — the glue must never set up an agent for a root without a row`)
+    }
+    const ref = row.blueprint
+    if (ref === undefined) {
+      return parseBlueprint(resolvedRowConfig.blueprintSource)
+    }
+    return blueprintAuthority.resolveSnapshot(ref)
+  }
+
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -1010,6 +1076,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     teamToolsRef,
     controlServiceRef,
     now: () => new Date().toISOString(),
+    // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
+    // blueprint resolver (the row's bound snapshot through the live
+    // authority — the glue's dynamic Team authority, never the
+    // row-global anchor).
+    resolveBoundBlueprint,
     subagents: ctx.get('subagents'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
     // wrapper pattern — resolved per member mount, fail-closed when the
@@ -1037,6 +1108,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // --- production run still fails closed on the same file.
   const legacyInspect = await loadLegacyInspect()
 
+  // --- BP-G (issue #2 blueprint-loading, plan §12.2): the in-process
+  // --- read-only boot readiness state — 'starting' from the mount step
+  // --- (BELOW, before the awaited live boot) until the boot settles:
+  // --- 'ready' on success, 'failed' on rejection (terminal: no automatic
+  // --- retry, no re-boot — the plan's crash semantics: a failed boot is
+  // --- a failed world; the route stays registered, the catalog reads
+  // --- stay servable, every other remote method fails closed).
+  let teamRuntimeReadiness: 'starting' | 'ready' | 'failed' = 'starting'
+
   // --- the production root (the SINGLE assembly point, A01–A29 + seams) -----
   const builtRoot: TeamProductionRoot = createTeamProductionRoot({
     config: resolvedRowConfig,
@@ -1050,6 +1130,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // object the glue reads lazily in agentSetup).
     controlServiceRef,
     legacyInspect,
+    // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
+    // saved sources + the frozen registry + this row's anchor (the legacy
+    // static catalog is only the factory-world fallback in the root).
+    blueprintCatalog: liveBlueprintCatalog,
+    // BP6 (issue #2 blueprint-loading, plan §10): the freeze barrier —
+    // every fresh TeamSession mint of this root freezes its snapshot first
+    // (the real create boot + team.create v1/v2 through the bindFresh
+    // wrapper, the handoff target pre-put, the fixture boot seed).
+    blueprintAuthority,
     // P8-S7-R4 A28: the DSH public sessionQuery service, resolved lazily
     // at handoff use time (absent in this host entry → the handoff source
     // surface fails closed exactly as the S5A boot world does).
@@ -1057,12 +1146,19 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // M2 (plan §15.5): the narrow workspace attach closure over the
     // hard-injected public workspaceRegistry (see the check above).
     workspaceAttach,
+    // BP-G (issue #2 blueprint-loading, plan §12.2): the in-process boot
+    // readiness — the mounted remote dispatcher gates the non-catalog
+    // methods on it (the mount happens BEFORE the live boot is awaited).
+    remoteReadiness: () => teamRuntimeReadiness,
   })
   root = builtRoot
-  await builtRoot.boot()
 
-  // --- T12-M4: the production Remote mount (the Remote contract v1
-  // dispatcher onto the public connection seam, plan §20) --------------
+  // --- T12-M4 + BP-G (issue #2 blueprint-loading, plan §12.1): the
+  // production Remote mount — BEFORE the awaited live boot: the route
+  // registration needs the CONSTRUCTED root only, never a successful
+  // boot (a boot failure leaves the route registered — the 405 symptom
+  // removed; the readiness state gates the non-catalog methods in the
+  // meantime, plan §12.2/§12.3) ---------------------------------------
   //
   // The web profile provides the 'connection' public service (the client-connection row of the web-app bundle, on an independent fiber with no dependency edge to this row), so
   // the mount is the production default there. A headless host provides
@@ -1119,6 +1215,19 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     )
   } else {
     logRemoteMountOutcome(mountRemoteNow(builtRoot, connection, false), 0)
+  }
+  // BP-G (issue #2 blueprint-loading, plan §12.2): the awaited live boot
+  // — the readiness state settles around it ('ready' on success,
+  // 'failed' on rejection — terminal: no automatic retry, no re-boot);
+  // the rejection propagates UNCHANGED to the ready promise (the boot
+  // failure is still the world's failure — the repair isolates the
+  // route from it, never the world from it).
+  try {
+    await builtRoot.boot()
+    teamRuntimeReadiness = 'ready'
+  } catch (error) {
+    teamRuntimeReadiness = 'failed'
+    throw error
   }
   return builtRoot
   }

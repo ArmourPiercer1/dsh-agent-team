@@ -1,0 +1,387 @@
+﻿PASS packages\client\test\client-architecture-negatives.test.ts (9 tests)
+PASS packages\client\test\client-plugin-mount.test.ts (33 tests)
+PASS packages\client\test\client.test.ts (2 tests)
+FAIL packages\client\test\d1-team-remote-v3.test.ts (5/8 tests)
+     ✗ D1 (client transport): teamListRootsV3 › the success envelope resolves intact (the { roots: [...] } data + provenance contractVersion 3)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:212:22
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:210:3
+     ✗ D1 (client transport): teamListRootsV3 › the fail-closed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE typed error resolves intact (never exception-ified)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:234:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:232:3
+     ✗ D1 (client transport): teamEnsureRootLiveV3 › the D1 reserved TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED typed error resolves intact (the method is inert until D2 — no client-side error)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:255:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:253:3
+     ✗ D1 (client transport): the rejection kind is unchanged › a carrier rejection still maps to the frozen PushTransportLossError (the v3 wrappers add no new rejection kind)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:276:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:274:3
+     ✗ D1 (client transport): the version stamping discipline is unchanged › each wrapper stamps exactly its own contract version (v1 generic, v2 create/admit, v3 the two D1 methods)
+       TypeError: expect.objectContaining is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:286:14
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d1-team-remote-v3.test.ts:282:3
+FAIL packages\client\test\d2-open-team-mode.test.ts (3/6 tests)
+     ✗ D2 (client mount): the ensure-failure gate (never a silent open) › a typed ensure failure: the session is NOT opened, the error is surfaced, the mode state reads null
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d2-open-team-mode.test.ts:394:30
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d2-open-team-mode.test.ts:388:3
+     ✗ D2 (client mount): the per-root client-local open-mode state › after a completed openTeamMode the root reads team; an unopened root reads null
+       TypeError: expect(...).toBeNull is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d2-open-team-mode.test.ts:403:41
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d2-open-team-mode.test.ts:401:3
+     ✗ D2 (client mount): the per-root client-local open-mode state › a session switch away from the root resets the team mark
+       TypeError: expect(...).toBeNull is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d2-open-team-mode.test.ts:407:43
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d2-open-team-mode.test.ts:406:3
+FAIL packages\client\test\d3-open-ordinary-mode.test.ts (2/11 tests)
+     ✗ D3 (client mount): the session-switch reset (the D2 reset effect covers the ordinary mark too) › after an ordinary open the root reads ordinary; a switch away drops the ordinary mark
+       TypeError: expect(...).toBeNull is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d3-open-ordinary-mode.test.ts:478:43
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d3-open-ordinary-mode.test.ts:476:3
+     ✗ D3 (client mount): the failed ordinary switch (open first, mark after) › an unknown session id: the seam throw propagates, no open happens, and the prior team mark is left intact (a failed switch is no switch)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d3-open-ordinary-mode.test.ts:485:42
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/d3-open-ordinary-mode.test.ts:483:3
+FAIL packages\client\test\f9-remote-client-v4.test.ts (1/5 tests)
+     ✗ F9 — teamResolveControlV4 (the v4-only human control surface) › spreads the closed v4 params verbatim — an omitted note stays absent (no caller / role / actor field ever)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/f9-remote-client-v4.test.ts:200:36
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/f9-remote-client-v4.test.ts:187:3
+FAIL packages\client\test\f9u-control-surface-model.test.ts (2/11 tests)
+     ✗ F9U — the closed human resolver-role map (supplement 3) › mirrors the FROZEN closed role set exactly (the three closed kinds, no more, no less)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/f9u-control-surface-model.test.ts:51:25
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/f9u-control-surface-model.test.ts:42:3
+     ✗ F9U — the closed human resolver-role map (supplement 3) › reads the requested authority as the closed role set (and ABSENT for unknown kinds)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/f9u-control-surface-model.test.ts:80:27
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/client/test/f9u-control-surface-model.test.ts:77:3
+PASS packages\client\test\ledger-adapter.test.ts (27 tests)
+PASS packages\client\test\projection-adapter.test.ts (16 tests)
+PASS packages\client\test\team-command-flow.test.ts (6 tests)
+PASS packages\client\test\team-create-flow.test.ts (10 tests)
+PASS packages\client\test\team-governance.test.ts (43 tests)
+PASS packages\client\test\team-handoff.test.ts (23 tests)
+PASS packages\client\test\team-intent-model.test.ts (22 tests)
+PASS packages\client\test\team-ledger-store.test.ts (24 tests)
+PASS packages\client\test\team-legacy.test.ts (12 tests)
+PASS packages\client\test\team-member-commands.test.ts (11 tests)
+PASS packages\client\test\team-members-model.test.ts (5 tests)
+PASS packages\client\test\team-projection-store.test.ts (14 tests)
+PASS packages\client\test\team-remote-categories.test.ts (5 tests)
+PASS packages\client\test\team-remote-client.test.ts (15 tests)
+PASS packages\client\test\team-session-resolution.test.ts (9 tests)
+PASS packages\contracts\test\contracts.test.ts (2 tests)
+PASS packages\contracts\test\errors.test.ts (7 tests)
+PASS packages\contracts\test\identity.test.ts (12 tests)
+PASS packages\contracts\test\ids.test.ts (18 tests)
+PASS packages\contracts\test\leader-instance-record.test.ts (13 tests)
+PASS packages\contracts\test\negative.test.ts (21 tests)
+PASS packages\contracts\test\p8t1-projection-generation.test.ts (8 tests)
+PASS packages\contracts\test\p8t1-projection-negative.test.ts (23 tests)
+PASS packages\contracts\test\p8t1-projection-overlay.test.ts (8 tests)
+PASS packages\contracts\test\p8t1-projection-serialization.test.ts (11 tests)
+PASS packages\contracts\test\remote-safe.test.ts (10 tests)
+PASS packages\contracts\test\serialization.test.ts (16 tests)
+PASS packages\contracts\test\types.test.ts (1 tests)
+PASS packages\domain\test\a1-permission-policy.test.ts (43 tests)
+PASS packages\domain\test\bp1-blueprint-inspector.test.ts (19 tests)
+PASS packages\domain\test\domain.test.ts (2 tests)
+FAIL packages\domain\test\t1-capability-schema.test.ts (10/17 tests)
+     ✗ T1: Blueprint Capability Schema › 1. Legacy fixture parses without capabilities field
+       TeamContractError: $.metadata must be a plain object, got null
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at assertPlainRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/dto/common.ts:38:11)
+           at takeRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:217:10)
+     ✗ T1: Blueprint Capability Schema › 2. Leader with full capabilities parses and validates
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:992:15)
+     ✗ T1: Blueprint Capability Schema › 3. Members can have different capabilities
+       TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:992:15)
+     ✗ T1: Blueprint Capability Schema › 7. Changing capability fields changes the hash
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:992:15)
+     ✗ T1: Blueprint Capability Schema › 8. Static source returns selective mode for Leader with capabilities
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:992:15)
+     ✗ T1: Blueprint Capability Schema › 9. Static source returns selective mode for MemberTemplate with capabilities
+       TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:992:15)
+     ✗ T1: Blueprint Capability Schema › 10. Static source returns legacy mode when capabilities absent
+       TeamContractError: $.metadata must be a plain object, got null
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at assertPlainRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/dto/common.ts:38:11)
+           at takeRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:217:10)
+     ✗ T1: Blueprint Capability Schema › 11. Selective source maps to TemplatePolicy values correctly
+       TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at decodeYamlFrontmatter (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/parse.ts:127:13)
+           at parseBlueprint (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:992:15)
+     ✗ T1: Blueprint Capability Schema › 11b. Selective source maps deny entries to values correctly
+       TeamContractError: $.metadata must be a plain object, got null
+           at teamContractError (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/errors.ts:112:10)
+           at assertPlainRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/contracts/src/dto/common.ts:38:11)
+           at takeRecord (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/blueprint/src/validate.ts:217:10)
+     ✗ T1: Blueprint Capability Schema › 11c. Legacy source returns undefined values
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/test/t1-capability-schema.test.ts:393:20
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/test/t1-capability-schema.test.ts:390:3
+PASS packages\domain\test\t2-blueprint-catalog.test.ts (15 tests)
+FAIL packages\domain\test\t2-blueprint-hash.test.ts (1/15 tests)
+     ✗ t2 hash: hashable projection › projects absent optional singles as explicit null
+       Error: expectation failed: actual toEqual {"templateId":"leader","displayName":null,"description":null,"persona":"Lead.","modelPreference":null,"contextPolicy":null} — actual: {"templateId":"leader","displayName":null,"description":null,"persona":"Lead.","modelPreference":null,"contextPolicy":null,"capabilities":null}
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:110:21)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/domain/test/t2-blueprint-hash.test.ts:116:29
+PASS packages\domain\test\t2-blueprint-immutability.test.ts (10 tests)
+PASS packages\domain\test\t2-blueprint-parse.test.ts (13 tests)
+PASS packages\domain\test\t2-blueprint-revision.test.ts (8 tests)
+PASS packages\domain\test\t2-blueprint-validation.test.ts (57 tests)
+PASS packages\domain\test\t3-lifecycle-property.test.ts (4 tests)
+PASS packages\domain\test\t3-lifecycle-transitions.test.ts (14 tests)
+PASS packages\domain\test\t3-member-context-policy.test.ts (17 tests)
+PASS packages\domain\test\t3-member-lifecycle.test.ts (7 tests)
+PASS packages\domain\test\t3-member-n-instances.test.ts (14 tests)
+PASS packages\domain\test\t3-member-workspace.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-explain.test.ts (15 tests)
+PASS packages\domain\test\t4-policy-matrix.test.ts (14 tests)
+PASS packages\domain\test\t4-policy-negative.test.ts (34 tests)
+PASS packages\domain\test\t5-compatibility-bridge.test.ts (75 tests)
+PASS packages\legacy\test\p7t6-teammates-adapter.test.ts (20 tests)
+PASS packages\legacy\test\p7t7-integrated-drift-ack.test.ts (8 tests)
+PASS packages\legacy\test\p7t7-integrated-fork-handoff.test.ts (15 tests)
+PASS packages\legacy\test\p7t7-integrated-lifecycle-restore.test.ts (9 tests)
+PASS packages\legacy\test\p7t7-integrated-override-admission.test.ts (7 tests)
+PASS packages\legacy\test\p7t7-legacy-read.test.ts (28 tests)
+PASS packages\legacy\test\p7t7-mutation-reject.test.ts (11 tests)
+FAIL packages\remote\test\d1-remote-v3.test.ts (5/33 tests)
+     ✗ D1 (remote contract v3): team.listRoots › a v3 request with the empty closed params succeeds: data is { roots: [...] } from the port
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:302:30
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:300:3
+     ✗ D1 (remote contract v3): team.listRoots › the success provenance echoes contractVersion 3 (the request version)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:310:36
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:309:3
+     ✗ D1 (remote contract v3): team.ensureRootLive › a v3 request forwards teamSessionId verbatim to the port and echoes the closed success shape
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:331:27
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:329:3
+     ✗ D1 (remote contract v3): backing error allow-list (invariant 4b) › every D1-emitted + D2-reserved v3 wire code + the three index integrity codes passes through with code + message
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:402:22
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:399:3
+     ✗ D1 (remote contract v3): v1/v2 wire behavior is preserved › a v1 team.getProjection still round-trips on the v1 envelope
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:421:32
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/remote/test/d1-remote-v3.test.ts:418:3
+PASS packages\remote\test\f9-remote-v4.test.ts (39 tests)
+PASS packages\remote\test\p8t3-admission.test.ts (6 tests)
+PASS packages\remote\test\p8t3-invalid-ids.test.ts (9 tests)
+PASS packages\remote\test\p8t3-negative.test.ts (7 tests)
+PASS packages\remote\test\p8t3-round-trip.test.ts (14 tests)
+PASS packages\remote\test\p8t3-version.test.ts (16 tests)
+PASS packages\remote\test\p8t4-engine.test.ts (23 tests)
+PASS packages\remote\test\p8t4-negative.test.ts (7 tests)
+PASS packages\remote\test\p8t4-sync.test.ts (11 tests)
+PASS packages\remote\test\remote.test.ts (2 tests)
+PASS packages\remote\test\tcm-m1-remote-v2.test.ts (26 tests)
+PASS packages\runtime\test\a2-canonical-operation.test.ts (31 tests)
+PASS packages\runtime\test\a3-permission-resolver.test.ts (28 tests)
+PASS packages\runtime\test\a4a-control-exact-scope.test.ts (28 tests)
+PASS packages\runtime\test\a5a-pre-execute.test.ts (50 tests)
+PASS packages\runtime\test\a6a-production-wiring.test.ts (52 tests)
+FAIL packages\runtime\test\bp1-red-glue-probe.test.ts (2/2 tests)
+     ✗ BP1 RED-4: per-Team Blueprint authority (the row-global split) › a member under Team B resolves the persona from B bound snapshot, never the row anchor
+       Error: expectation failed: actual toBe true — actual: false
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-glue-probe.test.ts:116:62
+     ✗ BP1 RED-4: per-Team Blueprint authority (the row-global split) › characterization: the defect is the row anchor leaking into Team B (current behavior, inverted after BP-F)
+       Error: expectation failed: actual toBe false — actual: true
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-glue-probe.test.ts:123:60
+node : [dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+At line:1 char:129
++ ... t.UTF8Encoding]::new($false); node scripts/run-tests.mjs 2>&1 | Out-F ...
++                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([dsh-agent-team...(headless host):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-bp1rednofit" found no durable TeamSessi
+on record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/src/plu
+gin/root.ts:1854:15)
+    at bootstrap (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/src/plugi
+n/host.ts:1062:19)
+FAIL packages\runtime\test\bp1-red-probe.test.ts (5/6 tests)
+     ✗ BP1 RED probes: the blueprint-loading defect surface (plan §4) › RED-1 the root catalog is DYNAMIC: the saved source B under blueprintDir is listed without a row-config change
+       Error: expectation failed: actual toEqual ["BP1-RED-A","BP1-RED-B"] — actual: ["BP1-RED-A"]
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:110:21)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-probe.test.ts:304:42
+     ✗ BP1 RED probes: the blueprint-loading defect surface (plan §4) › RED-2 a saved source added AFTER boot is visible on the next catalog query (no HMR, scan-on-demand)
+       Error: expectation failed: actual toEqual ["BP1-RED-A","BP1-RED-B","BP1-RED-C"] — actual: ["BP1-RED-A"]
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:110:21)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-probe.test.ts:311:41
+     ✗ BP1 RED probes: the blueprint-loading defect surface (plan §4) › RED-5a the /team-remote route is registered BEFORE boot() settles (a boot failure no longer leaves the route missing)
+       Error: expectation failed: actual toBe "/team-remote" — actual: null
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-probe.test.ts:326:36
+     ✗ BP1 RED probes: the blueprint-loading defect surface (plan §4) › RED-5b catalog.list stays SERVABLE in the failed state (it depends only on the source authority + the opened domain)
+       Error: expectation failed: actual toBe true — actual: false
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-probe.test.ts:334:34
+     ✗ BP1 RED probes: the blueprint-loading defect surface (plan §4) › RED-5c a NON-catalog method fails closed in the failed state (no partial readiness)
+       Error: expectation failed: actual toBe true — actual: false
+           at record (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:109:18)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/bp1-red-probe.test.ts:348:37
+PASS packages\runtime\test\d1-member-base-tools.test.ts (7 tests)
+FAIL packages\runtime\test\d1-s6-remote-v3.test.ts (6/14 tests)
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › an ABSENT listRoots option → typed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (diagnostic in the message)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:283:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:279:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › the D1 index integrity failure propagates UNMAPPED (code + message + cause identity, invariant 4b)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:289:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:286:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › the storage typed error (RECORD_INVALID) propagates UNMAPPED (invariant 4b)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:307:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:304:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › an untyped throw is re-wrapped as TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (message preserved)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:313:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:310:3
+     ✗ D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior) › a FOREIGN root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE any ensure work (the bound-root guard runs first)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:325:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:318:3
+     ✗ D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior) › the bound root with an ABSENT ensureRootLive port fails closed typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE — NEVER a silent success (D2 replaced the D1 reservation error)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:337:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-s6-remote-v3.test.ts:329:3
+FAIL packages\runtime\test\d1-team-ownership-index.test.ts (5/16 tests)
+     ✗ D1 (ownership index): the full two-root world › root A carries the exact durable identity (blueprint A@17, workspace, generation 1)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:418:17
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:416:3
+     ✗ D1 (ownership index): the full two-root world › root B carries its durable identity and EXCLUDES the legacy v1 leader row (memberCount 1)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:428:17
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:426:3
+     ✗ D1 (ownership index): the full two-root world › attribution carries the per-session kind where bound, and ABSENT kind where the child is unbound (non-failure)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:450:39
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:446:3
+     ✗ D1 (ownership index): the closed v3 wire row (toTeamRootWireRow) › the wire row is exactly { rootSessionId, blueprintId, revision, defaultWorkspace?, createdAt, generation, memberCount } — no attribution
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:483:19
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:462:3
+     ✗ D1 (ownership index): corrupt rows propagate the storage typed error as-is › an undecodable team_sessions row → the storage layer RECORD_INVALID (not re-coded, not swallowed)
+       TypeError: expect(...).toBeInstanceOf is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:559:19
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d1-team-ownership-index.test.ts:556:3
+FAIL packages\runtime\test\d2-s6-ensure-root-live.test.ts (5/10 tests)
+     ✗ D2 (S6 host handler): the bound-root guard (TEAM-SCOPED, fail-closed) › a FOREIGN/unknown root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE the port runs
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:259:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:256:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › an ABSENT ensureRootLive option → typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE (fail closed, the D-3 discipline mirrored)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:277:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:269:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › the registry collision rejection (already live OUTSIDE the Team glue) → TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM (never a silent adoption)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:287:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:280:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:295:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:291:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message preserved for diagnosis)
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:303:38
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d2-s6-ensure-root-live.test.ts:299:3
+FAIL packages\runtime\test\d3-member-identity-context.test.ts (1/5 tests)
+     ✗ D3 the member identity context block (Team D1-D6 repair v2, B2) › D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+       TypeError: expect(...).toContain is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d3-member-identity-context.test.ts:445:50
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d3-member-identity-context.test.ts:423:3
+FAIL packages\runtime\test\d5-instance-contract.test.ts (2/9 tests)
+     ✗ D5 activation instance contract › a caller-controlled instanceId never reaches the constructed create-member request (does not take effect)
+       Error: async it() is not supported by the plain-node shim; the skeleton tests are synchronous
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:71:19)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d5-instance-contract.test.ts:68:3
+           at describe (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:59:5)
+     ✗ D5 activation instance contract › the reserved inst-leader id is never allocated across the swept key space
+       TypeError: expect(...).toHaveLength is not a function
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d5-instance-contract.test.ts:164:23
+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d5-instance-contract.t
+est.ts:109
+    expect(captured).toHaveLength(1)
+                     ^
+
+TypeError: expect(...).toHaveLength is not a function
+    at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d5-instance-con
+tract.test.ts:109:22
+
+Node.js v24.20.0
+           at it (file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/scripts/test-vitest-shim.mjs:69:15)
+           at file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/issue2-blueprint/packages/runtime/test/d5-instance-contract.test.ts:139:3

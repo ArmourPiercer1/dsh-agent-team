@@ -65,7 +65,7 @@ export const LEDGER_ENTRY_FIELDS: readonly string[] = [
  * allocated sequence (0 before the first allocation).
  */
 export interface LedgerSequenceCounter {
-  /** Record shape version; v1 rows carry `1`. */
+  /** The TeamDomain schema version that shaped the row (L3; v2 rows carry `2`). */
   readonly schemaVersion: number
   /** Always the frozen counter discriminator. */
   readonly kind: typeof LEDGER_SEQUENCE_COUNTER_KIND
@@ -78,7 +78,7 @@ export interface LedgerSequenceCounter {
  * `String(sequence)`).
  */
 export interface LedgerEntry {
-  /** Record shape version; v1 entries carry `1`. */
+  /** The TeamDomain schema version that shaped the row (L3; v2 rows carry `2`). */
   readonly schemaVersion: number
   /** The strictly increasing sequence number (row key). */
   readonly sequence: number

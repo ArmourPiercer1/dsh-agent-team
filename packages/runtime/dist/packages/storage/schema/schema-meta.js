@@ -2,16 +2,16 @@
  * SchemaMetaStamp — the per-store schema stamp row of the `schema_meta`
  * store (L2 of the TeamDomain version policy).
  *
- * `createTeamDomain` writes one stamp row per store (eight single-write
+ * `createTeamDomain` writes one stamp row per store (nine single-write
  * durable writes); `openTeamDomain` reads them back and verifies that all
- * eight stores are present and stamped at the supported version, failing
+ * nine stores are present and stamped at the supported version, failing
  * loudly with the exact store, expected version, and found value
  * (Development Plan §17.5 G4: "schema version mismatch fails loudly").
  *
  * The stamp is a storage-level record (no contracts DTO exists for it):
- * the field set is closed and strict, `schemaVersion` is the stamp record
- * shape version (v1), and `version` is the schema version stamped for the
- * store's records (v1 for all eight stores).
+ * the field set is closed and strict, `schemaVersion` is stamped to the
+ * domain schema version (v2), and `version` is the schema version
+ * stamped for the store's records (v2 for all nine stores).
  *
  * Pure module: no I/O.
  * @module @dsh-agent-team/storage/schema/schema-meta
@@ -29,7 +29,7 @@ export const SCHEMA_META_STAMP_FIELDS = [
     'stampedAt',
 ];
 /**
- * Build a fresh stamp for one store at the current v1 version.
+ * Build a fresh stamp for one store at the current v2 version.
  * @param store - the store to stamp.
  * @param stampedAt - stamp creation time, ISO-8601.
  * @returns the frozen stamp.

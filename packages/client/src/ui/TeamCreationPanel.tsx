@@ -361,20 +361,35 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
     return () => { live = false }
   }, [handoffFace, handoffSource, handoffEnabled])
 
-  // The catalog load (mount once): the rows, then one `catalog.get` per
-  // row's latest revision for the picker display names (fail-safe per row:
-  // a detail failure degrades that option to the blueprint id, never the
-  // whole list).
-  useEffect(() => {
-    let live = true
+  // The catalog load — re-entrant (BP9, issue #2 blueprint-loading,
+  // plan §13): the mount-once effect and the MANUAL "Refresh blueprints"
+  // button ([data-intent-refresh-catalog]) share ONE generation-guarded
+  // loader. No polling, no subscription — a second load happens only
+  // when the user clicks (the no-HMR authoring loop: save/edit a saved
+  // source file, click Refresh, the new source state is immediate). The
+  // generation counter drops stale settlements (a slow first load can
+  // never clobber a refresh the user already triggered), a refresh
+  // rebuilds the per-row details from scratch, and a refresh whose new
+  // catalog no longer carries the current selection resets it
+  // explicitly (loud — never a stale draft pointing at a disappeared
+  // blueprint).
+  const catalogSeq = useRef(0)
+  const onDraftChangeRef = useRef(onDraftChange)
+  useEffect(() => { onDraftChangeRef.current = onDraftChange }, [onDraftChange])
+
+  const reloadCatalog = (): void => {
+    const seq = ++catalogSeq.current
+    // A refresh rebuilds the per-row details from scratch (plan §13).
+    setCatalogDetails({})
     void listCatalog().then(async response => {
+      if (catalogSeq.current !== seq) return
       if (!response.ok) {
-        if (live) setCatalog({ ok: false, message: remoteFailureMessage(response) })
+        setCatalog({ ok: false, message: remoteFailureMessage(response) })
         return
       }
       const parsed = parseCatalogList(response.value.data)
       if (!parsed.ok) {
-        if (live) setCatalog({ ok: false, message: parsed.message })
+        setCatalog({ ok: false, message: parsed.message })
         return
       }
       const rows = parsed.rows
@@ -390,16 +405,37 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
           // Per-row fail-safe: the option falls back to the blueprint id.
         }
       }))
-      if (live) {
-        setCatalogDetails(details)
-        setCatalog(parsed)
+      // Generation guard AGAIN after the detail fan-out (a refresh the
+      // user triggered while this detail pass was in flight wins).
+      if (catalogSeq.current !== seq) return
+      setCatalogDetails(details)
+      setCatalog(parsed)
+      // Plan §13: a refresh whose new catalog no longer carries the
+      // current selection resets it explicitly (the selection belongs to
+      // the previous catalog state — never silently retained).
+      const current = draftRef.current
+      if (
+        current.blueprintId !== null &&
+        !rows.some(row => row.blueprintId === current.blueprintId)
+      ) {
+        onDraftChangeRef.current({ ...current, blueprintId: null, revision: null, ack: false })
       }
     }).catch(error => {
-      if (live) setCatalog({ ok: false, message: throwableMessage(error) })
+      if (catalogSeq.current !== seq) return
+      setCatalog({ ok: false, message: throwableMessage(error) })
     })
-    return () => { live = false }
+  }
+
+  useEffect(() => {
+    reloadCatalog()
+    return () => {
+      // Unmount: bump the generation so any in-flight settlement is
+      // dropped by the guard (the mount load's cleanup, subsumed by the
+      // generation counter).
+      catalogSeq.current++
+    }
     // The injected face is built once per mount (T9 wiring); the load is
-    // deliberately mount-scoped.
+    // deliberately mount-scoped — the refresh is the manual button.
   }, [])
 
   // The preset rows (mount once): after they land, preselect the §7.2
@@ -780,6 +816,25 @@ export function TeamCreationPanel(props: TeamCreationPanelProps): React.JSX.Elem
           })}
         </select>
       </label>
+
+      {/* BP9 (issue #2 blueprint-loading, plan §13) — the MANUAL catalog
+          refresh (the recovery path after a failed first load, and the
+          no-HMR authoring loop after saving/editing a saved source).
+          Visible once the first load has settled (success or failure);
+          never during the initial in-flight load (no accidental
+          double-request). */}
+      {catalog !== undefined && (
+        <div className={styles.catalogActions}>
+          <button
+            type="button"
+            className={styles.secondary}
+            data-intent-refresh-catalog
+            onClick={reloadCatalog}
+          >
+            {t('intent.blueprint.refresh')}
+          </button>
+        </div>
+      )}
 
       {catalog !== undefined && !catalog.ok && (
         <div className={styles.error} data-intent-error data-intent-catalog-error>

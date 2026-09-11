@@ -770,7 +770,7 @@ export async function commitDurableFact(repositories, rootSessionId, now, factTy
         throw durableFailure('sequence allocation', error, { factType });
     }
     const entry = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         sequence,
         rootSessionId,
         factType,

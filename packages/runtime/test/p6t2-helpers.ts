@@ -241,7 +241,7 @@ export async function putDurableCompatibilityState(
   status: CompatibilityStatus,
 ) {
   return world.domain.repositories.compatibility.put({
-    schemaVersion: 1,
+    schemaVersion: 2,
     rootSessionId: P6T1_FIXTURE.rootSessionId,
     status,
     fingerprint: 'fp-p6t2-durable',

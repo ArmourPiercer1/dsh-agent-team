@@ -59,7 +59,7 @@ export interface OperationIntent {
  * (keyed by operation id).
  */
 export interface OperationRecord {
-    /** Record shape version; v1 records carry `1`. */
+    /** The TeamDomain schema version that shaped the row (L3; v2 rows carry `2`). */
     readonly schemaVersion: number;
     /** The operation id (row key), `/^op-[a-z0-9]{1,32}$/`. */
     readonly operationId: string;

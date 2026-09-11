@@ -1,5 +1,5 @@
 /**
- * BaseRepository — the shared seam boundary of the eight TeamDomain store
+ * BaseRepository — the shared seam boundary of the nine TeamDomain store
  * repositories.
  *
  * Every repository over one `team_domain` table inherits the same seam

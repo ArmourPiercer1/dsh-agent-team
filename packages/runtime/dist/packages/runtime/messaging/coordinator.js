@@ -401,7 +401,7 @@ export function createMessagingCoordinator(options) {
         };
         try {
             await repositories.ledger.put({
-                schemaVersion: 1,
+                schemaVersion: 2,
                 sequence: deliveredSequence,
                 rootSessionId,
                 factType: MESSAGING_FACT_DELIVERED,

@@ -68,7 +68,7 @@ export interface CompatibilityAcknowledgement {
  * one TeamSession (keyed by root session id).
  */
 export interface CompatibilityStateRecord {
-    /** Record shape version; v1 records carry `1`. */
+    /** The TeamDomain schema version that shaped the row (L3; v2 rows carry `2`). */
     readonly schemaVersion: number;
     /** The TeamSession (root session id) this state belongs to. */
     readonly rootSessionId: RootSessionId;

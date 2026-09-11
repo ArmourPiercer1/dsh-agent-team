@@ -417,7 +417,7 @@ export function humanOverrideTeam(rootSessionId: string, recordId = 'ov-team-1')
     kind: 'human-override',
     recordId,
     rootSessionId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     scope: 'team',
     updatedAt: P4_FIXTURE.createdAt,
     values: { autonomy: 'guarded' },
@@ -438,7 +438,7 @@ export function autonomyOverlayInstance(
     origin,
     recordId,
     rootSessionId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     scope: 'instance',
     updatedAt: P4_FIXTURE.createdAt,
     values: { autonomy: 'full' },
@@ -457,7 +457,7 @@ export function compatibilityState(
     generation: 1,
     outcomes: { 'req.autonomy-boundary': 'PASS' },
     rootSessionId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: options.status ?? 'OPEN',
   }
 }
@@ -487,7 +487,7 @@ export function operationRecord(
     intent: { payload: { note: 'fixture' }, type: 'create-member-instance' },
     operationId,
     phase: options.phase ?? 'PREPARED',
-    schemaVersion: 1,
+    schemaVersion: 2,
     updatedAt: P4_FIXTURE.createdAt,
   }
   if (options.childSessionId !== undefined) record['childSessionId'] = options.childSessionId
@@ -506,7 +506,7 @@ export function ledgerEntryRecord(
     factType: options.factType ?? 'member-created',
     payload: options.payload ?? { note: 'fixture' },
     rootSessionId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     sequence,
   }
   if (options.operationId !== undefined) record['operationId'] = options.operationId
@@ -916,7 +916,7 @@ export const P4_LIVE_IMPORT_MARKERS: readonly P4LiveImportMarker[] = [
 /** The frozen legacy Team SessionEvent names (detection vocabulary, imported — never re-typed). */
 export const P4_LEGACY_EVENT_NAMES: readonly string[] = [...LEGACY_TEAM_SESSION_EVENT_NAMES]
 
-/** The eight store names, re-exported for test convenience (canonical order). */
+/** The nine store names, re-exported for test convenience (canonical order). */
 export const P4_STORES: readonly TeamDomainStore[] = [...TEAM_DOMAIN_STORES]
 
 /**
