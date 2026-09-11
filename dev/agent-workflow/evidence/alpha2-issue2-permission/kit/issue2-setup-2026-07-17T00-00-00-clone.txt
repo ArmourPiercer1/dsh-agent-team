@@ -1,0 +1,6 @@
+Cloning into bare repository 'D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\repo.git'...
+      0 [main] sh (101804) C:\Program Files\Git\usr\bin\sh.exe: *** fatal error - couldn't create signal pipe, Win32 error 5
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.

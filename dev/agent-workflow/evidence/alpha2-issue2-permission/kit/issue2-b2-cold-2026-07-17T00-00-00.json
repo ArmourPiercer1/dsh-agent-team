@@ -1,0 +1,178 @@
+{
+  "mode": "cold",
+  "stamp": "2026-07-17T00-00-00",
+  "world": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-07-17T00-00-00",
+  "results": [
+    {
+      "label": "pre-zero-requests",
+      "description": "the control ledger holds ZERO requests before the battery",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "[]",
+      "blocking": true
+    },
+    {
+      "label": "surf-expert",
+      "description": "expert: the model-facing surface was captured (27 tools)",
+      "expected": "non-empty tool list",
+      "actual": 27,
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_send_message\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_",
+      "blocking": true
+    },
+    {
+      "label": "surf-researcher",
+      "description": "researcher: the model-facing surface was captured (26 tools)",
+      "expected": "non-empty tool list",
+      "actual": 26,
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_send_message\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\"",
+      "blocking": true
+    },
+    {
+      "label": "L2-expert-surface-pwsh",
+      "description": "expert (deny []) — pwsh PRESENT on the model surface",
+      "expected": "pwsh ∈ surface",
+      "actual": true,
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"pwsh\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_send_message\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_",
+      "blocking": true
+    },
+    {
+      "label": "L3-researcher-surface-pwsh-absent",
+      "description": "researcher (deny [pwsh]) — pwsh ABSENT from the model surface",
+      "expected": "pwsh ∉ surface",
+      "actual": false,
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"team_send_message\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\"",
+      "blocking": true
+    },
+    {
+      "label": "L3b-researcher-precision",
+      "description": "researcher surface = expert surface minus exactly {pwsh} (the deny drops nothing else)",
+      "expected": [
+        "pwsh"
+      ],
+      "actual": [
+        "pwsh"
+      ],
+      "ok": true,
+      "detail": "[\"pwsh\"]",
+      "blocking": true
+    },
+    {
+      "label": "L3c-researcher-team-tools",
+      "description": "researcher — the team tools are PRESENT (the deny is a builtin mask, never a team-tool deny)",
+      "expected": "team_send_message ∈ surface",
+      "actual": true,
+      "ok": true,
+      "detail": "[\"team_send_message\"]",
+      "blocking": true
+    },
+    {
+      "label": "L4a-dispatch-expert-reaches-executor",
+      "description": "expert direct dispatch pwsh — PASSES tool resolution + permission facet and reaches the executor (not an unknown-tool rejection, not a policy denial)",
+      "expected": "reached executor (executed, or executor-ACL artifact under the sandboxed test host)",
+      "actual": {
+        "status": 200,
+        "ok": false,
+        "msg": "SetNamedSecurityInfoW failed (Win32 5): grantWrite(D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-0"
+      },
+      "ok": true,
+      "detail": "ms=26 value=null",
+      "blocking": true
+    },
+    {
+      "label": "L4b-dispatch-expert-pwsh-executes",
+      "description": "expert direct dispatch pwsh — (full execution; the marker passes when the host is unsandboxed) the output carries the marker",
+      "expected": "ok + ISSUE2-EXPERT-PWSH-OK",
+      "actual": {
+        "ok": false,
+        "environmentalAclArtifact": true
+      },
+      "ok": false,
+      "detail": "ok=false value=null (under the sandboxed test host the executor's own ACL setup fails — the product layers are proven by L4a and the parity L4c; an unsandboxed host/CI passes this)",
+      "blocking": false
+    },
+    {
+      "label": "L4c-leader-parity",
+      "description": "leader (deny []) direct dispatch pwsh — same executor outcome as the expert (parity: the artifact, if any, is environmental)",
+      "expected": "same outcome class as expert",
+      "actual": {
+        "expertOk": false,
+        "leaderOk": false
+      },
+      "ok": true,
+      "detail": "expert=SetNamedSecurityInfoW failed (Win32 5): grantWrite(D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-0 | leader=SetNamedSecurityInfoW failed (Win32 5): grantWrite(D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-0",
+      "blocking": true
+    },
+    {
+      "label": "L4d-dispatch-expert-read-executes",
+      "description": "expert direct dispatch read — EXECUTES and returns the file content (positive execution proof: the expert retains a fully working tool, the deny is scoped to pwsh only)",
+      "expected": "ok + expert sentinel",
+      "actual": {
+        "status": 200,
+        "ok": true
+      },
+      "ok": true,
+      "detail": "ms=18 {\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-i2-2026-07-17T00-00-00\\\\workspace-issue2\\\\issue2-a.txt\",\"offset\":1,\"lines\":[{\"number\":1,\"text\":\"issue2: expert sentinel.\"}],\"t",
+      "blocking": true
+    },
+    {
+      "label": "L5-dispatch-researcher-pwsh-rejected",
+      "description": "researcher direct dispatch pwsh — REJECTED as an unknown tool (200 + ok:false + /unknown/)",
+      "expected": "unknown-tool rejection",
+      "actual": {
+        "status": 200,
+        "ok": false
+      },
+      "ok": true,
+      "detail": "ms=2 msg=unknown tool \"pwsh\"",
+      "blocking": true
+    },
+    {
+      "label": "L5b-dispatch-researcher-no-effect",
+      "description": "researcher — the side-effecting command left NO file behind (zero effect)",
+      "expected": "issue2-r.txt absent",
+      "actual": true,
+      "ok": true,
+      "detail": "absent",
+      "blocking": true
+    },
+    {
+      "label": "L6-dispatch-researcher-read-executes",
+      "description": "researcher direct dispatch read — EXECUTES (precision at the dispatch level)",
+      "expected": "ok + file content",
+      "actual": {
+        "status": 200,
+        "ok": true
+      },
+      "ok": true,
+      "detail": "ms=10 {\"path\":\"D:\\\\AgentDev\\\\dsh-plugins\\\\dsh-agent-team\\\\references\\\\.dsh-test-i2-2026-07-17T00-00-00\\\\workspace-issue2\\\\issue2-b.txt\",\"offset\":1,\"lines\":[{\"number\":1,\"text\":\"issue2: researcher sentinel.\"}",
+      "blocking": true
+    },
+    {
+      "label": "L7-zero-requests",
+      "description": "the whole battery created ZERO durable control requests (no permission facet in the world)",
+      "expected": 0,
+      "actual": 0,
+      "ok": true,
+      "detail": "[]",
+      "blocking": true
+    },
+    {
+      "label": "L8-join-evidence",
+      "description": "the instance log carries NO \"published without joining an agent preset\" warning for the three agents (join proof)",
+      "expected": "zero warnings",
+      "actual": 0,
+      "ok": true,
+      "detail": "[]",
+      "blocking": true
+    }
+  ],
+  "failed": 0,
+  "environmental": 1,
+  "passed": 15,
+  "at": "2026-09-11T13:19:25.171Z"
+}

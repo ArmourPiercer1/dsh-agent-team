@@ -1,0 +1,12 @@
+# I2-P1 cross-platform fixture preset (plan §10.2): the preset contributes
+# `fixture-shell` (the deny subject) plus `fixture-base` (the precision
+# control — the deny must drop ONLY fixture-shell).
+- id: fixture-shell
+  name: ../../plugins/i2-contribute.js
+  config:
+    tag: standard
+    tools:
+      - name: fixture-shell
+        description: fixture shell tool (the deny subject)
+      - name: fixture-base
+        description: fixture base tool (must survive the deny)

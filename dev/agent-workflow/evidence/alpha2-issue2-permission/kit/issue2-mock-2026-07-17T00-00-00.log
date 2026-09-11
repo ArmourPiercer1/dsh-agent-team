@@ -1,0 +1,30 @@
+[2026-09-11T13:06:37.836Z] mock: listening on 127.0.0.1:3493
+[2026-09-11T13:06:59.051Z] MOCK seq=1 identity=leader tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","pwsh","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_list_members","team_request_control","team_resolve_control","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:06:59.052Z] mock: 1 text reply (17 chars): "leader-i2-turn-ok"
+[2026-09-11T13:06:59.053Z] MOCK seq=2 identity=unknown tools=[]
+[2026-09-11T13:06:59.054Z] mock: 2 text reply (18 chars): "unknown-i2-turn-ok"
+[2026-09-11T13:06:59.817Z] MOCK seq=3 identity=expert tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","pwsh","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:06:59.817Z] mock: 3 text reply (17 chars): "expert-i2-turn-ok"
+[2026-09-11T13:06:59.818Z] MOCK seq=4 identity=unknown tools=[]
+[2026-09-11T13:06:59.818Z] mock: 4 text reply (18 chars): "unknown-i2-turn-ok"
+[2026-09-11T13:07:00.429Z] MOCK seq=5 identity=researcher tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:07:00.430Z] mock: 5 text reply (21 chars): "researcher-i2-turn-ok"
+[2026-09-11T13:07:00.437Z] MOCK seq=6 identity=unknown tools=[]
+[2026-09-11T13:07:00.437Z] mock: 6 text reply (18 chars): "unknown-i2-turn-ok"
+[2026-09-11T13:11:52.387Z] MOCK seq=7 identity=expert tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","pwsh","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:11:52.388Z] mock: 7 text reply (17 chars): "expert-i2-turn-ok"
+[2026-09-11T13:11:52.837Z] MOCK seq=8 identity=researcher tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:11:52.838Z] mock: 8 text reply (21 chars): "researcher-i2-turn-ok"
+[2026-09-11T13:13:11.907Z] MOCK seq=9 identity=expert tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","pwsh","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:13:11.907Z] mock: 9 text reply (17 chars): "expert-i2-turn-ok"
+[2026-09-11T13:13:12.390Z] MOCK seq=10 identity=researcher tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:13:12.391Z] mock: 10 text reply (21 chars): "researcher-i2-turn-ok"
+[2026-09-11T13:16:57.335Z] MOCK seq=11 identity=expert tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","pwsh","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:16:57.335Z] mock: 11 text reply (17 chars): "expert-i2-turn-ok"
+[2026-09-11T13:16:57.809Z] MOCK seq=12 identity=researcher tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:16:57.809Z] mock: 12 text reply (21 chars): "researcher-i2-turn-ok"
+[2026-09-11T13:17:14.514Z] mock: listening on 127.0.0.1:3493
+[2026-09-11T13:19:24.317Z] MOCK seq=1 identity=expert tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","pwsh","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:19:24.319Z] mock: 1 text reply (17 chars): "expert-i2-turn-ok"
+[2026-09-11T13:19:24.871Z] MOCK seq=2 identity=researcher tools=["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","ralph","read","read_image","send_message","skill","subagent","subagent_fork","team_send_message","todo_write","update_goal","web_fetch","web_search","workflow","write"]
+[2026-09-11T13:19:24.872Z] mock: 2 text reply (21 chars): "researcher-i2-turn-ok"

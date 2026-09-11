@@ -556,18 +556,49 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     Recorded on the H3 task branch; re-verify on int at the
     //     alpha2-hardening integration.
     //
+    // (i2) THREE I2 scannable files (this commit, the alpha.2 issue #2
+    //     permission-repair line B — the I2-P1/I2-P2/I2-P4 permanent
+    //     tests): packages/runtime/test/issue2-real-preset-restriction.
+    //     test.ts (the REAL-SEAM preset-mount + builtinToolDeny
+    //     regression over the real upstream composition — the fixture
+    //     preset roster + real Loader, the real ToolRuntime surface, the
+    //     real adapter: the fresh/cold member + root lifecycle (plan
+    //     §14), the sibling inertness, the fail-closed unrestrictable
+    //     deny (plan §11), the already-joined adopted root (plan §12),
+    //     and the registry-level dispatch mask),
+    //     packages/runtime/test/issue2-capability-permission-precedence.
+    //     test.ts (the capability > operation-permission precedence
+    //     lanes P4-A..P4-D over the real pipeline + real control world,
+    //     with the two recorded pipeline-order deviations pinned), and
+    //     packages/tools/test/issue2-builtin-deny-focused.test.ts (the
+    //     adapter contract: the no-op empty deny, the dedupe, the exact
+    //     disposer, the idempotent dispose, the fail-closed propagation,
+    //     and the no-silent-continuation pin). Zero denylist vocabulary
+    //     (the scan over them passes — the frozen quarantine hit set is
+    //     unchanged at fifteen occurrences). The sibling changes (the
+    //     issue2 fixture preset/plugin under
+    //     packages/runtime/test/issue2-fixtures — .js/.yml, not
+    //     scannable .ts — the runtime devDependencies + pnpm-lock for
+    //     the real composition, and the live-world kit + evidence under
+    //     dev/agent-workflow — outside packages/**) carry no count
+    //     change. Recorded on the issue #2 line-B branch
+    //     (fix/alpha2-issue2-permission); re-verify with the scanner's
+    //     truth at the post-line-A rebase (plan §23.2).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 668 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1), and its file list
-    // names exactly the twenty-six files above (ten alpha.1 + one A1 +
-    // seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one H3;
-    // the committed scanner is byte-identical — no scanner change, DEC-1).
+    // 671 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 3), and its file
+    // list names exactly the twenty-nine files above (ten alpha.1 + one
+    // A1 + seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one
+    // H3 + three I2; the committed scanner is byte-identical — no
+    // scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
-    // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/.
-    expect(scanResult.filesScanned).toBe(668)
-    expect(scanResult.files.length).toBe(668)
+    // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
+    // alpha2-issue2-permission/.
+    expect(scanResult.filesScanned).toBe(671)
+    expect(scanResult.files.length).toBe(671)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -1,0 +1,43 @@
+[2026-09-11T12:57:32.228Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00
+[2026-09-11T12:57:32.230Z] main repo: D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-11T12:57:32.230Z] worktree:  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission
+[2026-09-11T12:57:32.230Z] host tree: D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-11T12:57:32.264Z] branch fix/alpha2-issue2-permission tip = 6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925
+[2026-09-11T12:57:32.285Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\repo.git (file-fd stdio)
+[2026-09-11T12:57:32.684Z] FAIL — git clone --bare failed: exit=128 err= tail=Cloning into bare repository 'D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\repo.git'...
+      0 [main] sh (101804) C:\Program Files\Git\usr\bin\sh.exe: *** fatal error - couldn't create signal pipe, Win32 error 5
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+[2026-09-11T13:04:49.589Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00
+[2026-09-11T13:04:49.591Z] main repo: D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-11T13:04:49.591Z] worktree:  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission
+[2026-09-11T13:04:49.591Z] host tree: D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-11T13:04:49.628Z] branch fix/alpha2-issue2-permission tip = 6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925
+[2026-09-11T13:04:49.664Z] bare repo already present (git-clone-free hand-assembled copy of the main .git — the sandbox named-pipe boundary blocks git clone's MSYS sh signal pipe): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\repo.git
+[2026-09-11T13:04:49.664Z] install already present at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\node_modules\dsh-agent-team (skipping the pnpm install step)
+[2026-09-11T13:04:49.665Z] PASS issue2: installed package dir exists
+[2026-09-11T13:04:49.665Z] PASS issue2: installed version is 0.1.1-alpha.2 — 0.1.1-alpha.2
+[2026-09-11T13:04:49.665Z] PASS issue2: installed root manifest declares dsh.bundle.patch
+[2026-09-11T13:04:49.666Z] PASS issue2: dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-11T13:04:49.666Z] user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\cordis.patch.yml
+[2026-09-11T13:04:49.667Z] issue2 workspace pre-created: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\workspace-issue2 (issue2-a.txt, issue2-b.txt)
+[2026-09-11T13:04:49.667Z] PASS issue2: installed dist glue mirror exists
+[2026-09-11T13:04:58.451Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00
+[2026-09-11T13:04:58.452Z] main repo: D:\AgentDev\dsh-plugins\dsh-agent-team
+[2026-09-11T13:04:58.453Z] worktree:  D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission
+[2026-09-11T13:04:58.453Z] host tree: D:\AgentDev\dsh-plugins\dsh-agent-team\references\deepseek-harness-test-use
+[2026-09-11T13:04:58.484Z] branch fix/alpha2-issue2-permission tip = 6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925
+[2026-09-11T13:04:58.514Z] bare repo already present (git-clone-free hand-assembled copy of the main .git — the sandbox named-pipe boundary blocks git clone's MSYS sh signal pipe): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\repo.git
+[2026-09-11T13:04:58.515Z] install already present at D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\node_modules\dsh-agent-team (skipping the pnpm install step)
+[2026-09-11T13:04:58.515Z] PASS issue2: installed package dir exists
+[2026-09-11T13:04:58.515Z] PASS issue2: installed version is 0.1.1-alpha.2 — 0.1.1-alpha.2
+[2026-09-11T13:04:58.515Z] PASS issue2: installed root manifest declares dsh.bundle.patch
+[2026-09-11T13:04:58.516Z] PASS issue2: dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-11T13:04:58.516Z] user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\cordis.patch.yml
+[2026-09-11T13:04:58.516Z] issue2 workspace pre-created: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\workspace-issue2 (issue2-a.txt, issue2-b.txt)
+[2026-09-11T13:04:58.517Z] PASS issue2: installed dist glue mirror exists
+[2026-09-11T13:04:58.518Z] issue2 assertions → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\issue2-assertions-2026-07-17T00-00-00.json
+[2026-09-11T13:04:58.518Z] I2-SETUP-OK (stamp=2026-07-17T00-00-00)

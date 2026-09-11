@@ -1,0 +1,55 @@
+[2026-09-11T13:06:37.820Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00
+[2026-09-11T13:06:37.822Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\node_modules\dsh-agent-team
+[2026-09-11T13:06:37.822Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\issue2-assertions-2026-07-17T00-00-00.json (branch=fix/alpha2-issue2-permission tip=6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925)
+[2026-09-11T13:06:37.825Z] p6t6 directive written (boot=1 phase=create rootSessionId=i2root)
+[2026-09-11T13:06:37.836Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-11T13:06:37.837Z] profile already initialized (issue2-setup)
+[2026-09-11T13:06:39.690Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=ruUPC4T7Ws9m6HC7wJO7u1AZ4i9KeknTKPxwRrDwj0U
+[2026-09-11T13:06:39.707Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 55240
+[2026-09-11T13:06:41.752Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"i2root","liveSessions":["i2root","session-i2e","session-i2r"],"toolCount":10}
+[2026-09-11T13:06:41.752Z] live sessions = ["i2root","session-i2e","session-i2r"] (expected set)
+[2026-09-11T13:06:41.768Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-11T13:06:41.873Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\dump-config-issue2-2026-07-17T00-00-00-create.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-11T13:06:41.890Z] catalog.list carries team.issue2 (user-layer override in force)
+[2026-09-11T13:06:41.891Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\issue2state-2026-07-17T00-00-00.json
+[2026-09-11T13:06:41.891Z] I2-READY
+[2026-09-11T13:17:03.435Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00
+[2026-09-11T13:17:03.436Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\node_modules\dsh-agent-team
+[2026-09-11T13:17:03.437Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\issue2-assertions-2026-07-17T00-00-00.json (branch=fix/alpha2-issue2-permission tip=6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925)
+[2026-09-11T13:17:03.438Z] FAIL — port 3181 is in use
+[2026-09-11T13:17:09.395Z] stop: instance pid 55240 signaled
+[2026-09-11T13:17:09.413Z] instance child exited (code=1) — boot job shutting down
+[2026-09-11T13:17:09.413Z] shutdown: instance child exit
+[2026-09-11T13:17:09.415Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-11T13:17:09.912Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=ruUPC4T7Ws9m6HC7wJO7u1AZ4i9KeknTKPxwRrDwj0U
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-11T13:17:09.913Z] I2-STOPPED
+[2026-09-11T13:17:14.499Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00
+[2026-09-11T13:17:14.500Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-i2-2026-07-17T00-00-00\profiles\web\node_modules\dsh-agent-team
+[2026-09-11T13:17:14.501Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\issue2-assertions-2026-07-17T00-00-00.json (branch=fix/alpha2-issue2-permission tip=6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925)
+[2026-09-11T13:17:14.503Z] user-layer patch rewritten: bootPhase "create" → "resume" (cold resume)
+[2026-09-11T13:17:14.504Z] p6t6 directive written (boot=1 phase=resume rootSessionId=i2root)
+[2026-09-11T13:17:14.515Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process)
+[2026-09-11T13:17:14.515Z] profile already initialized (issue2-setup)
+[2026-09-11T13:17:16.351Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=lMHihvAvHNYsI4KhObn2XZfEuOw6Sq1nxHoG4xMBNRQ
+[2026-09-11T13:17:16.510Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 74956
+[2026-09-11T13:17:17.553Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"i2root","liveSessions":["i2root","session-i2e","session-i2r"],"toolCount":10}
+[2026-09-11T13:17:17.554Z] live sessions = ["i2root","session-i2e","session-i2r"] (expected set)
+[2026-09-11T13:17:17.567Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-11T13:17:17.662Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\dump-config-issue2-2026-07-17T00-00-00-resume.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-11T13:17:17.687Z] catalog.list carries team.issue2 (user-layer override in force)
+[2026-09-11T13:17:17.688Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2-issue2-permission\dev\agent-workflow\evidence\alpha2-issue2-permission\kit\issue2state-2026-07-17T00-00-00.json
+[2026-09-11T13:17:17.689Z] I2-READY
+[2026-09-11T13:19:38.823Z] stop: instance pid 74956 signaled
+[2026-09-11T13:19:38.839Z] instance child exited (code=1) — boot job shutting down
+[2026-09-11T13:19:38.839Z] shutdown: instance child exit
+[2026-09-11T13:19:38.841Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-11T13:19:39.336Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=lMHihvAvHNYsI4KhObn2XZfEuOw6Sq1nxHoG4xMBNRQ
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-11T13:19:39.336Z] I2-STOPPED

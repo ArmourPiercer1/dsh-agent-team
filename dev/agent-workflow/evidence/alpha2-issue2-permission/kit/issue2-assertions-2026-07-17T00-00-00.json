@@ -1,0 +1,38 @@
+{
+  "installed package dir exists": {
+    "ok": true,
+    "detail": null
+  },
+  "installed version is 0.1.1-alpha.2": {
+    "ok": true,
+    "detail": "0.1.1-alpha.2"
+  },
+  "installed root manifest declares dsh.bundle.patch": {
+    "ok": true,
+    "detail": null
+  },
+  "dsh.profile.bundles AUTO-contains the dsh-agent-team bundle": {
+    "ok": true,
+    "detail": "[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+  },
+  "installed dist glue mirror exists": {
+    "ok": true,
+    "detail": null
+  },
+  "artifactIdentity": {
+    "branch": "fix/alpha2-issue2-permission",
+    "branchTip": "6a2f3e1e906479ce8d0b07f9bcc6fef4e737f925",
+    "installSpec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-i2-2026-07-17T00-00-00/repo.git#fix/alpha2-issue2-permission",
+    "installedGlueSha256": "d3e8fed93a394b1d01be2661354df5178c71dd56db36c871690836491038b419",
+    "sourceGlueSha256": "82f6f1e7494b15020cfe5b1ce73939192ada86baacc5065fe53f9e0075078f1a",
+    "installedGluePath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-07-17T00-00-00\\profiles\\web\\node_modules\\dsh-agent-team\\packages\\runtime\\dist\\packages\\runtime\\src\\plugin\\live\\agent-bindings.mjs",
+    "testUseClientCommitLabel": "a66e470204",
+    "p6t6Url": "file:///D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-issue2-permission/packages/tools/harness/plugin.mjs",
+    "worktree": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2-issue2-permission"
+  },
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-i2-2026-07-17T00-00-00/repo.git#fix/alpha2-issue2-permission",
+  "worldHome": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-07-17T00-00-00",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-i2-2026-07-17T00-00-00\\profiles\\web\\node_modules\\dsh-agent-team",
+  "branch": "fix/alpha2-issue2-permission",
+  "installExit": 0
+}
