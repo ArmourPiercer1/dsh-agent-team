@@ -1,0 +1,73 @@
+BP1 live smoke — ephemeral DSH instance (reduced BL-L matrix)
+==============================================================
+Date: 2026-09-11 (UTC 14:37)
+Instance: references/deepseek-harness-test-use (pristine upstream @ a66e470204,
+          byte-clean before AND after — git status --porcelain empty)
+Entry:    node apps/cli/lib/bin.js web --port 3181 --no-open (port 3180 was
+          occupied by a pre-existing test instance — 3181 fallback, the
+          recorded plan allowance; the 3080/stable instance untouched)
+DSH_HOME: references/.dsh-test-bp1 (EPHEMERAL, created for this smoke,
+          DELETED after; the designated references/.dsh-test untouched)
+Plugin:   the WORKTREE's rebuilt dist (fix/alpha2-blueprint-loading @ gate
+          artifacts) mounted ONLY through the public profile-patch seam
+          (profiles/web/cordis.patch.yml — no upstream modification):
+            host:   .worktrees/issue2-blueprint/packages/runtime/dist/.../host.js
+            glue:   .../live/agent-bindings.mjs
+            seam:   .../root-binding/harness/seam.mjs
+            client: packages/client/composition-shim/index.js
+Row:      rootSessionId=session-bp1livesmoke, bootPhase=create-or-open,
+          fresh medium, blueprintSource = the bp1-live-anchor v1 doc,
+          blueprintDir = references/.dsh-test-bp1-bpfix (EPHEMERAL:
+          bp1-live-a.yaml [a valid saved source, id BP1-LIVE-A] +
+          bp1-live-b.draft.yaml [a draft — index-ignored by design]),
+          staticModel qiyuan-self/qwen3.8-27b (the sanctioned test route),
+          environmentFacts tool/web+skill/base+persona/standard.
+
+VERIFIED (live):
+  1. host boot: `dsh web: http://127.0.0.1:3181/?token=...` — plugin tree
+     loaded; GET / without token -> 401 (the boot-token auth gate active).
+  2. NO `bootstrap FAILED` log line — the facade ready promise RESOLVED
+     end to end on a fresh medium (create-or-open minted the world).
+  3. BP-G (the 405 fix, live): `[dsh-agent-team] remote mount: MOUNTED
+     channel=/team-remote` — the /team-remote route is REGISTERED on the
+     live connection (pre-fix: a rejected/absent boot left the route
+     unregistered and the frontend static handler answered 405).
+  4. L3 row-stamp coupling (live, durable): storages/team_domain.json —
+     ALL NINE stores (schema_meta, team_sessions, member_instances,
+     session_bindings, overrides, compatibility, operations, ledger,
+     blueprint_registry) carry the v2 stamp:
+       {"schemaVersion":2,"stampedAt":"2026-09-11T14:37:32-33Z","store":...,
+        "version":2}
+  5. BP-E freeze barrier (live, durable): the blueprint_registry holds the
+     frozen ANCHOR row `bp1-live-anchor@1`:
+       contentHash: sha256:bbcbc857fac54a3968b339e7cd3e8b4dcb955a3f08199be7d9879f0956d5a746
+       frozenAt:    2026-09-11T14:37:33.569Z
+       source:      the full anchor document (the registry frozen copy —
+                    the AUTHORITY a bound Team resolves, never the file)
+  6. BP-C v2 TeamSession row (live, durable): session-bp1livesmoke carries
+     the per-session snapshot ref { blueprintId: bp1-live-anchor,
+     revision: "1", contentHash: sha256:bbcbc857... } — the hash EQUALS
+     the registry row's hash (the bound Team resolves the frozen row).
+  7. BP-F glue wiring (live): the real DSH root agent was started through
+     the worktree's agent-bindings.mjs — sessions/.../session-bp1livesmoke/
+     session.jsonl.zstd exists under the minted root (the per-root
+     resolveBoundBlueprint path ran during the live agent setup).
+
+NOT exercised live (recorded, covered in-process):
+  - catalog.list over the live WIRE (the WebSocket RPC framing is not
+    speakable from outside without the DSH client bundle, which cannot be
+    built in this sandbox — the documented apps/web build limitation).
+    The catalog path is covered by bp1-red-probe 6/6 (catalog.list
+    servable in the failed-boot state), bp1-dual-team-gate 8/8 (the real
+    authority + live catalog resolve path, cold resume) and the in-process
+    live-bridge worlds; the saved-source index (blueprintDir scan, the
+    draft-ignore rule) is covered by the bp1-blueprint-authority +
+    bp1-blueprint-inspector specs.
+  - The BL-L dual-team A/B live wire + the panel Refresh UI (needs the
+    built GUI bundle) — deferred to the review round / integration tail.
+
+Cleanup: the instance job was killed; references/.dsh-test-bp1 +
+references/.dsh-test-bp1-bpfix DELETED after capture; the test-use
+checkout re-verified byte-clean; the designated references/.dsh-test
+(profiles/web/cordis.patch.yml still carries the pre-existing PW2 mount)
+untouched.
