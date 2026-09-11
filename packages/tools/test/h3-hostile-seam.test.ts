@@ -36,6 +36,7 @@ import { join } from 'node:path'
 import { Readable } from 'node:stream'
 
 // The seam under test (a plain .mjs harness row — no TS, no loader):
+// @ts-expect-error TS7016 — the harness row is an untyped plain .mjs loaded at runtime by the cordis row loader; no declaration file exists (and one would be a NEW scannable file — DEC-1 pin).
 const plugin = await import('../harness/plugin.mjs')
 
 // ── fakes ─────────────────────────────────────────────────────────────────
