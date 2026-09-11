@@ -670,20 +670,50 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     Recorded on the blueprint-loading task branch; re-verify on
     //     the merged tree after the hardening integration (plan §3.5).
     //
+    //
+    // (bp1-f) ONE issue#2-blueprint-loading scannable file (this commit,
+    // the BP-F per-Team Blueprint authority isolation in the live glue,
+    // plan §11): packages/runtime/test/bp1-dual-team-gate.test.ts (the
+    // §11.3 architecture gate: the REAL glue wired with a host-shaped
+    // per-root resolver — the durable TeamSession row's bound snapshot
+    // ref -> the live authority -> the FROZEN registry row (the real
+    // TeamDomain blueprint_registry over a FileStorageSeam) -> the hash
+    // equality — with two team roots sharing one glue instance and
+    // deliberately different leader persona / member persona / teamTools
+    // allowlist / builtinToolDeny / permissions rules; the A-only-A /
+    // B-only-B assertions + the cold resume of a FRESH glue instance
+    // after the saved sources are deleted [the frozen registry row
+    // replays — the DoD "frozen source deletion never breaks the old
+    // Team's resolve / cold resume"]). Zero denylist vocabulary (the
+    // scan over it passes — the frozen quarantine hit set is unchanged
+    // at fifteen occurrences). The sibling edits (agent-bindings.mjs the
+    // per-root boundBlueprintByRoot cache + the resolveBoundBlueprint
+    // dep + the root-aware persona callbacks + the locateTemplate /
+    // resolveStaticCapabilities / agentSetup call sites, host.ts the
+    // authority-builder move above the glue + the host-shaped resolver
+    // closure + the GlueModule dep type, the t12a bridge .mjs/.d.mts the
+    // host stand-in resolver injection + the blueprintSources /
+    // resolveBoundBlueprint world options, bp1-red-glue-probe.test.ts
+    // the REAL Team B source + the real contentHash + the world store
+    // option [the RED-4 probe turns GREEN]) are in-place edits on
+    // already-scanned files (no count change). Recorded on the
+    // blueprint-loading task branch; re-verify on the merged tree after
+    // the hardening integration (plan §3.5).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 680 (675 + 5), and its file list names exactly the thirty-eight
+    // 681 (675 + 6), and its file list names exactly the thirty-nine
     // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
     // two A5 + one A6 + one H1 + one H3 + four bp1 + three bp1-c + four
-    // bp1-d + one bp1-e; the
+    // bp1-d + one bp1-e + one bp1-f; the
     // committed scanner is byte-identical — no scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-blueprint-loading/.
-    expect(scanResult.filesScanned).toBe(680)
-    expect(scanResult.files.length).toBe(680)
+    expect(scanResult.filesScanned).toBe(681)
+    expect(scanResult.files.length).toBe(681)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

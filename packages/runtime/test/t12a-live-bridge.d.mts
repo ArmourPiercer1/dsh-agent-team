@@ -438,6 +438,21 @@ export interface LiveWorldOptions {
         resolve(path: string, options?: { cwd?: string }): Promise<unknown>
       })
     | null
+  /** BP-F (issue #2 blueprint-loading, plan §11.1): the world's blueprint
+   *  store (the saved-source stand-in the DEFAULT per-root bound-blueprint
+   *  resolver strong-parses; the parse's contentHash is verified against
+   *  the row's bound snapshot ref — strict, like the host resolver). */
+  readonly blueprintSources?: Array<{
+    readonly blueprintId: string
+    readonly revision: string
+    readonly source: string
+  }>
+  /** BP-F (issue #2 blueprint-loading, plan §11.1): an OVERRIDE per-root
+   *  bound-blueprint resolver passed straight through to the glue (e.g. a
+   *  production-shaped live-authority resolver). Absent = the bridge's
+   *  default strict map resolver over `blueprintSources` + the row-anchor
+   *  fallback (exactly like the host resolver). */
+  readonly resolveBoundBlueprint?: (teamRootSid: string) => object
 }
 
 /** The worktree root (the bridge lives at packages/runtime/test). */

@@ -29,6 +29,7 @@
  * @module @dsh-agent-team/runtime/test/bp1-red-glue-probe
  */
 import { describe, expect, it } from 'vitest'
+import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import type { AgentCtxDouble, AssembledPromptSection } from './t12a-live-bridge.mjs'
 import { createLiveWorld } from './t12a-live-bridge.mjs'
 
@@ -49,6 +50,35 @@ const ROW_WORKER_PERSONA = 'You are member tpl-t12a of the t12a test team.'
  * (plan §11.2 — the bound snapshot, never the row anchor).
  */
 const BP1_B_WORKER_PERSONA = 'You are member tpl-t12a of the BP1-B team.'
+
+/**
+ * Team B's bound snapshot document (the world's blueprint store entry,
+ * plan §11.1: the row's bound snapshot ref resolves through the saved
+ * source, hash equality verified). A valid closed-v1 document carrying
+ * the SAME member template id (`tpl-t12a`) with the deliberately
+ * different persona — the DESIRED source for a Team B member.
+ */
+const BP1_B_SOURCE = [
+  '---',
+  'schemaVersion: 1',
+  'blueprintId: BP1-B',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+  '  persona: "You are the leader of the BP1-B team."',
+  'members:',
+  '  - templateId: tpl-t12a',
+  '    persona: "You are member tpl-t12a of the BP1-B team."',
+  'requirements: []',
+  'memberEnvelopes: []',
+  'policyStates: []',
+  'metadata: {}',
+  '---',
+  '',
+].join('\n')
+
+/** The bound snapshot ref's contentHash (the real parse hash — the bridge's default resolver verifies it). */
+const BP1_B_REF_HASH = parseBlueprint(BP1_B_SOURCE).contentHash
 
 // The multi-root world: the boot root A (row anchor) + Team B bound to a
 // different snapshot. The domain double carries both durable TeamSession
@@ -72,10 +102,14 @@ const world = await createLiveWorld({
       blueprint: {
         blueprintId: 'BP1-B',
         revision: '1',
-        contentHash: `sha256:${'ab'.repeat(32)}`,
+        contentHash: BP1_B_REF_HASH,
       },
     },
   ],
+  // BP-F: the world's blueprint store (the bridge's default per-root
+  // resolver strong-parses Team B's bound snapshot from here — hash
+  // equality verified against the row's ref).
+  blueprintSources: [{ blueprintId: 'BP1-B', revision: '1', source: BP1_B_SOURCE }],
   configOverrides: { mcpServer: null, seedMembers: [] },
 })
 
