@@ -537,17 +537,37 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     occurrences). Recorded on the H2 task branch; re-verify on
     //     int at the alpha2-hardening integration.
     //
+    // (h3) ONE H3 scannable file (this commit, the alpha.2 hardening
+    //     closure task): packages/tools/test/h3-hostile-seam.test.ts
+    //     (the DSH_HARDENING_PROBE-gated TEST-ONLY hostile-prepend seam
+    //     spec — the gate on/off legs, the route registration + label,
+    //     the 405/400 validation shapes, the prepend-allow call shape
+    //     (event + { prepend: true } + the force-allow fn), per-agent
+    //     scoping, the idempotent-per-agent replace, the unknown-session
+    //     failure, and the row-stop backstop drain — over the plain-
+    //     node fake ctx/webServer/teamRoot doubles; the security
+    //     property itself is pinned by h1a (unit) + the H3 live kit
+    //     battery). Zero denylist vocabulary (the scan over it passes —
+    //     the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling changes (the hostile seam route in
+    //     packages/tools/harness/plugin.mjs, the a6a §16 extension, the
+    //     H3 kit scripts under dev/agent-workflow — outside packages/**)
+    //     are in-place edits on already-scanned files (no count change).
+    //     Recorded on the H3 task branch; re-verify on int at the
+    //     alpha2-hardening integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 667 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1), and its file list names
-    // exactly the twenty-five files above (ten alpha.1 + one A1 + seven
-    // A2 + one A4 + two A3 + two A5 + one A6 + one H1; the committed
-    // scanner is byte-identical — no scanner change, DEC-1). The frozen
-    // quarantine hit set and all required P4 suite lists are untouched.
+    // 668 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1), and its file list
+    // names exactly the twenty-six files above (ten alpha.1 + one A1 +
+    // seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one H3;
+    // the committed scanner is byte-identical — no scanner change, DEC-1).
+    // The frozen quarantine hit set and all required P4 suite lists are
+    // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
-    // a4/ + a5/ + a6/ + alpha2-hardening/h1/.
-    expect(scanResult.filesScanned).toBe(667)
-    expect(scanResult.files.length).toBe(667)
+    // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/.
+    expect(scanResult.filesScanned).toBe(668)
+    expect(scanResult.files.length).toBe(668)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

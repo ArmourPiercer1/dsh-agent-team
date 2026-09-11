@@ -464,6 +464,13 @@ const w2B = world2.agents.handles.get(CHILD_B)!.agent.ctx
 const w2LeaderListeners = activePreExecute(w2Leader)
 const w2AListeners = activePreExecute(w2A)
 const w2BListeners = activePreExecute(w2B)
+// H3 (alpha.2 hardening closure, plan §16 leg): the alpha.1 regression is
+// a ZERO-INSTALL decision — no `capabilities.permissions` means no
+// waterfall listener AND no end-cap guard (the guard is installed only
+// alongside its listener, never on its own).
+const w2LeaderGuards = activeEndCapGuards(w2Leader)
+const w2AGuards = activeEndCapGuards(w2A)
+const w2BGuards = activeEndCapGuards(w2B)
 const w2LeaderTools = toolNames(w2Leader)
 const w2ATools = toolNames(w2A)
 const w2ADeny = denyLists(w2A)
@@ -501,6 +508,15 @@ const w3AActive = activePreExecute(w3A)
 const w3BActive = activePreExecute(w3B)
 const w3LeaderIsFreshCtx = w3Leader !== w1Leader
 const w3AIsFreshCtx = w3A !== w1A
+// H3 (alpha.2 hardening closure, plan §16 leg): the cold-resume re-install
+// re-derives the end-cap guards on the FRESH agent ctxs (leader=1,
+// member A=1; member B — no policy — gets neither). These guards on the
+// fresh ctxs are what enforce the §21 criterion AFTER a restart: the
+// hostile force-allow is dead on arrival because the fresh ctx's guard
+// has never seen a final-allow mark.
+const w3LeaderGuards = activeEndCapGuards(w3Leader)
+const w3AGuards = activeEndCapGuards(w3A)
+const w3BGuards = activeEndCapGuards(w3B)
 await world3.binding.close()
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -768,6 +784,11 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
     expect(w2AListeners).toBe(0)
     expect(w2BListeners).toBe(0)
   })
+  it('H3 §16: the alpha.1 zero-install world has ZERO end-cap guards too (the guard ships only alongside its listener — no orphan monotonic guards on a no-policy install)', () => {
+    expect(w2LeaderGuards).toBe(0)
+    expect(w2AGuards).toBe(0)
+    expect(w2BGuards).toBe(0)
+  })
   it('alpha.1 world: the leader capability wiring is UNCHANGED (team-tools selection intact)', () => {
     expect(w2LeaderTools).toEqual(['team_send_message', 'team_list_members'])
   })
@@ -784,6 +805,11 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
   })
   it('cold resume: member B (no policy) still gets ZERO listeners', () => {
     expect(w3BActive).toBe(0)
+  })
+  it('H3 §16: the cold-resume re-install re-derives the end-cap guards on the FRESH ctxs (leader=1, member A=1, member B=0 — the §21 decider survives the restart)', () => {
+    expect(w3LeaderGuards).toBe(1)
+    expect(w3AGuards).toBe(1)
+    expect(w3BGuards).toBe(0)
   })
   it('cold resume: the resume ctxs are FRESH doubles (not the create-phase ctxs)', () => {
     expect(w3LeaderIsFreshCtx).toBe(true)
