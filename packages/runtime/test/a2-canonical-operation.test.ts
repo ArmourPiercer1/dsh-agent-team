@@ -16,12 +16,19 @@
  * - malformed path → fail closed (typed error, closed reason, never a
  *   pass-through; the resolver is the only I/O and is NOT called when
  *   the arguments already fail closed);
- * - bash → tool-level resource (resolver never called); the FINGERPRINT
- *   BINDS the command (H2 P1-2: the command is the security-relevant
- *   field, hashed — different command → different fingerprint, same
- *   command → same fingerprint, raw command never persisted); a
+ * - bash → tool-level resource (the resolver is consulted EXACTLY ONCE
+ *   — for the workdir authority key, `args.workdir ?? '.'`; H5 P1-B);
+ *   the FINGERPRINT BINDS the command AND the execution effect (H2
+ *   P1-2 + H5: commandHash over the RAW command — different command →
+ *   different fingerprint, same command → same fingerprint, raw command
+ *   never persisted — plus the workdir KEY, runInBackground, explicit
+ *   timeoutMs, requested sandboxPermissions; omitted ≡ explicit
+ *   session-cwd workdir — both resolve to the seam's cwd basis); a
  *   missing/non-string/whitespace-only command fails closed (closed
- *   `bash-command-*` reasons);
+ *   `bash-command-*` reasons) and a malformed effect field fails closed
+ *   BEFORE the resolver call (closed `bash-workdir-not-a-string` /
+ *   `bash-run-in-background-not-boolean` / `bash-timeout-ms-invalid` /
+ *   `bash-sandbox-permissions-not-a-string` reasons);
  * - unsupported tool → classification (the class the A5 adapter uses to
  *   `next()` WITHOUT entering the resolver) + typed failure if
  *   canonicalized anyway;
@@ -209,10 +216,33 @@ const C = {
   lspAgain: await op('lsp', { operation: 'goToDefinition', file_path: './a/b', line: 10, character: 4 }),
   // bash (plan §7.6 case 8): tool-level resource; the FINGERPRINT BINDS
   // the command (H2 P1-2 — the command is the security-relevant field,
-  // hashed; no shell parsing; the resolver is never called).
+  // hashed; no shell parsing) AND the execution effect (H5 P1-B —
+  // workdir key via the seam over `args.workdir ?? '.'`, runInBackground
+  // ?? false, explicit timeoutMs ?? null, requested sandboxPermissions
+  // ?? null; description/justification excluded).
   bashOne: await op('bash', { command: 'ls -la' }),
   bashTwo: await op('bash', { command: 'dir /s' }),
   bashSameCommand: await op('bash', { command: 'ls -la' }),
+  // H5 — the workdir authority key (the seam's cwd basis IS the fake
+  // session cwd `/workspace`: omitted ≡ explicit '.' ≡ explicit
+  // `/workspace`; a relative workdir is a distinct identity).
+  bashWorkdirDot: await op('bash', { command: 'ls -la', workdir: '.' }),
+  bashWorkdirExplicitCwd: await op('bash', { command: 'ls -la', workdir: '/workspace' }),
+  bashWorkdirOther: await op('bash', { command: 'ls -la', workdir: 'sub' }),
+  bashWorkdirEmptyString: await op('bash', { command: 'ls -la', workdir: '   ' }),
+  // H5 — the effect fields (each changes the fingerprint; the EXPLICIT
+  // values only).
+  bashEffectBackground: await op('bash', { command: 'ls -la', run_in_background: true }),
+  bashEffectTimeout: await op('bash', { command: 'ls -la', timeoutMs: 5000 }),
+  bashEffectSandbox: await op('bash', {
+    command: 'ls -la',
+    sandbox_permissions: 'workspace-write',
+    justification: 'the display-only justification is excluded from the projection',
+  }),
+  // H5 — the excluded fields (description/justification never enter the
+  // projection).
+  bashDescA: await op('bash', { command: 'ls -la', description: 'explain A' }),
+  bashDescB: await op('bash', { command: 'ls -la', description: 'explain B' }),
   // Fail-closed (plan §7.6 case 7 + §7.5): malformed path + seam violations.
   failPathMissing: await failOp('read', {}),
   failPathNonString: await failOp('read', { file_path: 42 }),
@@ -257,6 +287,15 @@ const C = {
   failBashCommandNonString: await failOp('bash', { command: 42 }),
   failBashCommandWhitespace: await failOp('bash', { command: '   \t\n  ' }),
   failBashArgsNotObject: await failOp('bash', ['not', 'an', 'object']),
+  // H5 — the effect fields fail closed BEFORE the resolver call (the
+  // upstream materialization feeds them to the pre-execute waterfall
+  // unvalidated — `validateBashArgs` runs inside `execute`).
+  failBashWorkdirNonString: await failOp('bash', { command: 'ls', workdir: 42 }),
+  failBashRunInBackgroundNonBoolean: await failOp('bash', { command: 'ls', run_in_background: 'yes' }),
+  failBashTimeoutNegative: await failOp('bash', { command: 'ls', timeoutMs: -1 }),
+  failBashTimeoutString: await failOp('bash', { command: 'ls', timeoutMs: '10000' }),
+  failBashTimeoutInfinity: await failOp('bash', { command: 'ls', timeoutMs: Infinity }),
+  failBashSandboxNonString: await failOp('bash', { command: 'ls', sandbox_permissions: 42 }),
   // lsp argument validation.
   failLspOperationMissing: await failOp('lsp', { file_path: './a/b', line: 1, character: 1 }),
   failLspOperationUnknown: await failOp('lsp', {
@@ -312,13 +351,24 @@ const FINGERPRINT_SHAPE_OK = [
   C.bashOne.fingerprint,
   C.bashTwo.fingerprint,
   C.bashSameCommand.fingerprint,
+  C.bashWorkdirDot.fingerprint,
+  C.bashWorkdirExplicitCwd.fingerprint,
+  C.bashWorkdirOther.fingerprint,
+  C.bashWorkdirEmptyString.fingerprint,
+  C.bashEffectBackground.fingerprint,
+  C.bashEffectTimeout.fingerprint,
+  C.bashEffectSandbox.fingerprint,
+  C.bashDescA.fingerprint,
+  C.bashDescB.fingerprint,
 ].every((fingerprint) =>
   fingerprint.startsWith('sha256:')
   && fingerprint.length === 7 + 64
   && /^[0-9a-f]{64}$/.test(fingerprint.slice(7)),
 )
 
-// The bash/unsupported cases must not have entered the resolver.
+// bash enters the resolver EXACTLY ONCE (H5 — for the workdir authority
+// key: the omitted workdir normalizes to '.'); the unsupported case must
+// not have entered the resolver at all.
 const bashResolverCalls: string[] = []
 await op('bash', { command: 'ls' }, fakeResolver({ calls: bashResolverCalls }))
 const unsupportedResolverCalls: string[] = []
@@ -335,6 +385,12 @@ await failOp('edit', { file_path: './a/b', old_string: '', new_string: 'y' }, fa
 await failOp('lsp', { file_path: './a/b', line: 1, character: 1 }, failResolver)
 await failOp('bash', {}, failResolver)
 await failOp('bash', { command: 42 }, failResolver)
+// H5 — the malformed EFFECT shapes fail closed before the resolver call
+// too (zero backend round-trips).
+await failOp('bash', { command: 'ls', workdir: 42 }, failResolver)
+await failOp('bash', { command: 'ls', run_in_background: 'yes' }, failResolver)
+await failOp('bash', { command: 'ls', timeoutMs: -1 }, failResolver)
+await failOp('bash', { command: 'ls', sandbox_permissions: 42 }, failResolver)
 
 // The real fs-local backend cases (plan §7.6 — the upstream resolve()
 // contract; degrades to `{ available: false, reason }` without the
@@ -454,11 +510,12 @@ describe('a2 fingerprint (plan §7.3/§7.4)', () => {
     expect(C.lspOperationChange.fingerprint).not.toBe(C.lspBase.fingerprint)
   })
 
-  it('bash: tool-level resource (kind/key/display = bash), the FINGERPRINT BINDS the command (H2 P1-2), resolver never called', () => {
+  it('bash: tool-level resource (kind/key/display = bash); the FINGERPRINT BINDS the command (H2 P1-2) AND the execution effect (H5 P1-B); the resolver is consulted exactly once — for the workdir key', () => {
     expect(BASH_TOOL_RESOURCE_KEY).toBe('bash')
     expect(C.bashOne.tool).toBe('bash')
-    // The RESOURCE stays tool-level (the resolver is never called; the
-    // resource identity is the tool itself, plan §4/§7.1).
+    // The RESOURCE stays tool-level (the resource identity is the tool
+    // itself, plan §4/§7.1/§3.2) — the workdir key enters the
+    // FINGERPRINT, not the resource.
     expect(C.bashOne.resource).toEqual({ kind: 'tool', key: 'bash', display: 'bash' })
     // The FINGERPRINT BINDS the command (H2 P1-2): a different command
     // string → a different fingerprint (the constant-fingerprint P1-2 is
@@ -470,7 +527,29 @@ describe('a2 fingerprint (plan §7.3/§7.4)', () => {
     // command HASH (the write contentHash pattern) — the fingerprint
     // is a digest, not the payload.
     expect(C.bashOne.fingerprint.includes('ls -la')).toBe(false)
-    expect(bashResolverCalls.length).toBe(0)
+    // H5 — the workdir authority key: the resolver is consulted EXACTLY
+    // ONCE, over the normalized input (the omitted workdir ⇒ '.').
+    expect(bashResolverCalls).toEqual(['.'])
+    // The effective-canonical ruling: omitted ≡ explicit '.' ≡ explicit
+    // session-cwd ≡ empty-string workdir (all resolve to the seam's
+    // cwd basis — the same key, the same fingerprint).
+    expect(C.bashWorkdirDot.fingerprint).toBe(C.bashOne.fingerprint)
+    expect(C.bashWorkdirExplicitCwd.fingerprint).toBe(C.bashOne.fingerprint)
+    expect(C.bashWorkdirEmptyString.fingerprint).toBe(C.bashOne.fingerprint)
+    // A different effective workdir → a different fingerprint.
+    expect(C.bashWorkdirOther.fingerprint).not.toBe(C.bashOne.fingerprint)
+    // The workdir DISPLAY is presentation-only (the approval summary's
+    // cwd= token) — it never enters the fingerprint (the projection
+    // carries the opaque KEY).
+    expect(C.bashOne.workdirDisplay).toBe('display:/workspace')
+    expect(C.bashWorkdirOther.workdirDisplay).toBe('display:/workspace/sub')
+    expect(C.bashWorkdirOther.fingerprint.includes('display:')).toBe(false)
+    // H5 — each effect field changes the fingerprint (explicit values
+    // only); description/justification are EXCLUDED (same fingerprint).
+    expect(C.bashEffectBackground.fingerprint).not.toBe(C.bashOne.fingerprint)
+    expect(C.bashEffectTimeout.fingerprint).not.toBe(C.bashOne.fingerprint)
+    expect(C.bashEffectSandbox.fingerprint).not.toBe(C.bashOne.fingerprint)
+    expect(C.bashDescA.fingerprint).toBe(C.bashDescB.fingerprint)
   })
 
   it('projection carries no display string (the fingerprint is display-independent by construction)', () => {
@@ -528,11 +607,17 @@ describe('a2 fail-closed (plan §7.5)', () => {
     expectTypedFailure(C.failEditReplaceAll, 'edit-replace-all-not-boolean')
   })
 
-  it('bash: missing/non-string/whitespace-only command → typed failure (H2 P1-2 — the tool would reject it)', () => {
+  it('bash: missing/non-string/whitespace-only command → typed failure (H2 P1-2 — the tool would reject it); malformed effect field → typed failure BEFORE the resolver call (H5 P1-B — the upstream feeds the effect fields to the waterfall unvalidated)', () => {
     expectTypedFailure(C.failBashCommandMissing, 'bash-command-missing')
     expectTypedFailure(C.failBashCommandNonString, 'bash-command-not-a-string')
     expectTypedFailure(C.failBashCommandWhitespace, 'bash-command-empty')
     expectTypedFailure(C.failBashArgsNotObject, 'bash-command-missing')
+    expectTypedFailure(C.failBashWorkdirNonString, 'bash-workdir-not-a-string')
+    expectTypedFailure(C.failBashRunInBackgroundNonBoolean, 'bash-run-in-background-not-boolean')
+    expectTypedFailure(C.failBashTimeoutNegative, 'bash-timeout-ms-invalid')
+    expectTypedFailure(C.failBashTimeoutString, 'bash-timeout-ms-invalid')
+    expectTypedFailure(C.failBashTimeoutInfinity, 'bash-timeout-ms-invalid')
+    expectTypedFailure(C.failBashSandboxNonString, 'bash-sandbox-permissions-not-a-string')
   })
 
   it('lsp: unknown operation / invalid coordinates → typed failure', () => {

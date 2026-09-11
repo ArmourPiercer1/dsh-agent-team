@@ -689,6 +689,9 @@ const C2 = await (async () => {
     )
     const r1 = await waitForRequestOrUndefined(env.service, (r) => r.correlation === 'h5-c2')
     if (r1 === undefined) throw new Error('h5-c2: request 1 never appeared')
+    if (r1.operationFingerprint === undefined) {
+      throw new Error('h5-c2: request 1 has no operationFingerprint')
+    }
     const fA: string = r1.operationFingerprint
     await env.service.resolveControl({
       rootSessionId: P6T4_ROOT,
@@ -752,7 +755,7 @@ const C2 = await (async () => {
       next2Calls: next2.calls(),
       r2: r2 === undefined ? undefined : { requestId: r2.requestId, fingerprint: r2.operationFingerprint },
       guardAAllowed: guardA.allowed,
-      guardAReason: guardA.reason,
+      guardAReason: guardA.allowed ? undefined : guardA.reason,
       requests: state.requests.map((r) => ({
         correlation: r.correlation,
         requestId: r.requestId,

@@ -579,20 +579,55 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     the H4 task branch; re-verify on int at the
     //     alpha2-hardening-followup integration.
     //
+    // (h5) ONE H5 scannable file (this commit, the alpha.2 hardening
+    //     follow-up P1-B task): packages/runtime/test/h5-bash-effects.
+    //     test.ts (the bash execution-effect fingerprint spec: the H5
+    //     fake resolver over the session-cwd-/A model ('.' -> KEY_A,
+    //     '/A' -> KEY_A, 'sub' -> KEY_A_SUB, '/B' -> KEY_B) + the real
+    //     A4 durable control service + one adapter install — H5-B1
+    //     workdir A/B (RED pre-fix), H5-B2 omitted == explicit
+    //     session-cwd (the effective-canonical ruling), H5-B3
+    //     background, H5-B4 timeoutMs, H5-B5 sandbox mode (the pinned
+    //     upstream dsh-sandbox ESCALATION_TARGETS), H5-B6 excluded
+    //     description/justification, H5-B7 raw command binding (H2),
+    //     H5-B8 the six malformed effect-field fail-closed legs
+    //     (workdir: 42 / run_in_background: 'yes' / timeoutMs: -1,
+    //     '10000', Infinity / sandbox_permissions: 42 — the reachability
+    //     proof: the upstream materialization is lossless-JSON-only and
+    //     the pre-execute waterfall precedes validateBashArgs), H5-C1
+    //     same authority args + new callId (same fingerprint, new
+    //     request), H5-C2 the /A approval is not consumed by the /B
+    //     operation (scope exactness), H5-S1 the summary effect tokens
+    //     + the 120-char preview-cap non-authority leg). Zero denylist
+    //     vocabulary (the scan over it passes — the frozen quarantine
+    //     hit set is unchanged at fifteen occurrences). The sibling
+    //     changes (canonical-operation.ts — the bash projection extended
+    //     to { tool, commandHash, workdir, runInBackground, timeoutMs,
+    //     sandboxPermissions } + the new extractBashEffects; errors.ts —
+    //     the four new closed bash-workdir-not-a-string / bash-run-in-
+    //     background-not-boolean / bash-timeout-ms-invalid / bash-
+    //     sandbox-permissions-not-a-string reasons; types.ts — the
+    //     CanonicalOperation.workdirDisplay presentation field; pre-
+    //     execute-adapter.ts — the summary effect tokens; the a2 bash
+    //     leg updates) are in-place edits on already-scanned files (no
+    //     count change). Recorded on the H5 task branch; re-verify on
+    //     int at the alpha2-hardening-followup integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 669 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 1), and its file
-    // list names exactly the twenty-seven files above (ten alpha.1 + one
+    // 670 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 1 + 1), and its file
+    // list names exactly the twenty-eight files above (ten alpha.1 + one
     // A1 + seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one
-    // H3 + one H4; the committed scanner is byte-identical — no scanner
-    // change, DEC-1).
+    // H3 + one H4 + one H5; the committed scanner is byte-identical — no
+    // scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
-    // alpha2-hardening-followup/h4-rule-identity/.
-    expect(scanResult.filesScanned).toBe(669)
-    expect(scanResult.files.length).toBe(669)
+    // alpha2-hardening-followup/h4-rule-identity/ + alpha2-hardening-
+    // followup/h5-bash-effect/.
+    expect(scanResult.filesScanned).toBe(670)
+    expect(scanResult.files.length).toBe(670)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -1,0 +1,76 @@
+﻿==== H5 GREEN console — packages/runtime/test/h5-bash-effects.test.ts + focused suites + p4t6 pin
+==== run on the FIXED tree (the bash projection binds the execution effect — { tool, commandHash, workdir, runInBackground, timeoutMs, sandboxPermissions } — the resolver is consulted EXACTLY ONCE for the workdir authority key; the resource stays tool-level; four new closed fail-closed reasons for malformed effect fields; the summary carries the bounded non-authority effect tokens)
+==== captured at: 2026-09-11 18:15:54 +08:00
+==== branch: task/alpha2hf-h5-bash-effect @ 52c9709 (commit (a) — the RED probes; the fix uncommitted at capture — committed as (b) in the task branch)
+==== expected per the H5 brief: h5 25/25 + all focused suites green + p4t6 pin 670 (669 + one H5 scannable file, DEC-1 (h5)).
+==== actual: [1/4] 254/254 (7 focused runtime suites — h5 25 + a2 31 + a3 28 + a4a 28 + a5a 50 + a6a 52 + h1a 40) · [2/4] 43/43 (a1 domain) · [3/4] 10/10 (h3 tools) · [4/4] 10/10 (p4t6 @ 670) — ALL GREEN.
+====
+
+############ [1/4] focused runtime suites — ALL GREEN (254/254) ############
+command: pnpm --filter @dsh-agent-team/runtime exec vitest run test/h5-bash-effects.test.ts test/a2-canonical-operation.test.ts test/a3-permission-resolver.test.ts test/a4a-control-exact-scope.test.ts test/a5a-pre-execute.test.ts test/a6a-production-wiring.test.ts test/h1a-pre-execute-endcap.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h5/packages/runtime
+
+ ✓ test/a3-permission-resolver.test.ts (28 tests) 7ms
+ ✓ test/a2-canonical-operation.test.ts (31 tests) 5ms
+ ✓ test/a6a-production-wiring.test.ts (52 tests) 6ms
+ ✓ test/h1a-pre-execute-endcap.test.ts (40 tests) 4ms
+ ✓ test/a4a-control-exact-scope.test.ts (28 tests) 4ms
+ ✓ test/a5a-pre-execute.test.ts (50 tests) 6ms
+ ✓ test/h5-bash-effects.test.ts (25 tests) 4ms
+
+ Test Files  7 passed (7)
+      Tests  254 passed (254)
+   Start at  18:15:29
+   Duration  6.59s (transform 2.89s, setup 0ms, import 11.05s, tests 38ms, environment 0ms)
+
+
+############ [2/4] a1 permission policy (domain package) — ALL GREEN (43/43) ############
+command: pnpm --filter @dsh-agent-team/domain exec vitest run test/a1-permission-policy.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h5/packages/domain
+
+ ✓ test/a1-permission-policy.test.ts (43 tests) 39ms
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Start at  18:15:37
+   Duration  314ms (transform 121ms, setup 0ms, import 173ms, tests 39ms, environment 0ms)
+
+
+############ [3/4] h3 hostile seam (tools package) — ALL GREEN (10/10) ############
+command: pnpm --filter @dsh-agent-team/tools exec vitest run test/h3-hostile-seam.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h5/packages/tools
+
+ ✓ test/h3-hostile-seam.test.ts (10 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  18:15:38
+   Duration  328ms (transform 164ms, setup 0ms, import 226ms, tests 3ms, environment 0ms)
+
+
+############ [4/4] p4t6 frozen Team SessionEvent denylist scan (testkit) — ALL GREEN (10/10 @ pin 670) ############
+command: pnpm --filter @dsh-agent-team/testkit exec vitest run test/p4t6-session-event-scan.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h5/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  18:15:39
+   Duration  284ms (transform 28ms, setup 0ms, import 176ms, tests 5ms, environment 0ms)
+
+
+############ gates (recorded separately) ############
+pnpm --filter @dsh-agent-team/runtime run typecheck -> exit 0 (0 errors)
+pnpm --filter @dsh-agent-team/runtime run build    -> exit 0
+pnpm -r run build                                   -> exit 0 (all 9 packages — client dist materialized for the composition build)
+pnpm run build:composition                          -> [check-artifacts-committed] OK: 1080 files (after staging the 14 rebuilt operation-permission dist artifacts; the LF-pinned dist glue re-polluted by place-dist-glue restored to the committed form; staged blobs verified pure LF: 21/21 with zero CR bytes)
+git -C references/deepseek-harness-test-use status --porcelain -> EMPTY @ a66e470204 (CORE PATCH BUDGET 0)

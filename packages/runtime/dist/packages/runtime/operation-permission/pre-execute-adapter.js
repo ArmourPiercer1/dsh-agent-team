@@ -327,6 +327,53 @@ function commandPreview(rawArguments) {
     }
     return flattened;
 }
+/**
+ * H5 P1-B — the bounded NON-authority bash effect tokens of the control
+ * request summary: `bash [cwd=<workdirDisplay>] [background]
+ * [sandbox=<mode>] [timeout=<n>ms] <command preview>`. All four bracketed
+ * tokens are conditional (only when present/non-default: `cwd=` is
+ * ALWAYS shown for bash — the workdir is always effective; `background`
+ * when `run_in_background` is true; `sandbox=<mode>` when the requested
+ * mode is non-null; `timeout=<n>ms` when the explicit timeout is
+ * non-null).
+ *
+ * Display text ONLY (the durable `summary` field is "free text; NOT
+ * authority data"): the tokens NEVER enter the fingerprint, the control
+ * scope, or any hash — the fingerprint carries the CANONICAL effect
+ * values (the workdir KEY, the boolean, the explicit number, the
+ * requested mode string — A2/H5). The `cwd=` value is the RESOLVED
+ * display (the operation's presentation field — the opaque key is what
+ * binds); the other three are re-read from the SAME deep-frozen argument
+ * record the canonicalizer consumed (canonicalization already failed
+ * closed on malformed shapes — `workdir` is a string, `run_in_background`
+ * a boolean, `timeoutMs` a finite number > 0, `sandbox_permissions` a
+ * string — so the re-read only mirrors well-formed values; the function
+ * stays total: any unexpected shape contributes no token).
+ */
+function bashEffectTokens(operation, rawArguments) {
+    const parts = [];
+    if (operation.workdirDisplay !== undefined) {
+        parts.push(`cwd=${operation.workdirDisplay}`);
+    }
+    if (typeof rawArguments === 'object' && rawArguments !== null && !Array.isArray(rawArguments)) {
+        const args = rawArguments;
+        if (args['run_in_background'] === true) {
+            parts.push('background');
+        }
+        const sandbox = args['sandbox_permissions'];
+        if (typeof sandbox === 'string') {
+            parts.push(`sandbox=${sandbox}`);
+        }
+        const timeout = args['timeoutMs'];
+        if (typeof timeout === 'number' && Number.isFinite(timeout) && timeout > 0) {
+            parts.push(`timeout=${timeout}ms`);
+        }
+    }
+    if (parts.length === 0) {
+        return '';
+    }
+    return parts.map((part) => `[${part}]`).join(' ');
+}
 // ---------------------------------------------------------------------------
 // The install factory.
 // ---------------------------------------------------------------------------
@@ -647,13 +694,19 @@ export function installParameterPermissionListener(agentCtx, params) {
                 toolName: name,
                 correlation: callId,
                 operationFingerprint: operation.fingerprint,
-                // H2 P1-2: the tool-level (bash) summary carries a bounded
-                // NON-authority command preview (first 120 chars, whitespace
-                // flattened, `...` when truncated) — display text only, never
-                // part of the fingerprint/scope/hash (those carry the command
-                // HASH from A2).
+                // H2 P1-2 + H5 P1-B: the tool-level (bash) summary carries the
+                // bounded NON-authority effect tokens
+                // (`[cwd=<resolved display>]` always — the workdir is always
+                // effective; `[background]`; `[sandbox=<mode>]`;
+                // `[timeout=<n>ms]`) and the bounded command preview (first 120
+                // chars, whitespace flattened, `...` when truncated) — display
+                // text only, never part of the fingerprint/scope/hash (those
+                // carry the canonical effect values + the command HASH from
+                // A2/H5).
                 summary: operation.resource.kind === 'tool'
-                    ? `${name} ${commandPreview(exec.arguments)}`
+                    ? [name, bashEffectTokens(operation, exec.arguments), commandPreview(exec.arguments)]
+                        .filter((part) => part.length > 0)
+                        .join(' ')
                     : `${name} ${operation.resource.display}`,
             });
         }

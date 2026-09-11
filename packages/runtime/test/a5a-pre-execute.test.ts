@@ -1177,10 +1177,13 @@ describe('A5a S12: bash tool-level (H2 P1-2) — the fingerprint BINDS the comma
     // The fingerprint matches A2's canonicalization of the SAME raw
     // command string (the command is the security-relevant field).
     expect(S12A.requestA.operationFingerprint).toBe(S12A.fingerprintEchoHello)
-    // The summary carries the bounded non-authority command preview
-    // (first 120 chars, whitespace-flattened — display text only; the
-    // fingerprint, not the preview, is authority).
-    expect(S12A.requestA.summary).toBe('bash echo hello')
+    // The summary carries the bounded non-authority H5 effect tokens
+    // (`[cwd=<resolved workdir display>]` — always, the workdir is always
+    // effective; `[background]`/`[sandbox=<mode>]`/`[timeout=<n>ms]`
+    // when present) and the bounded command preview (first 120 chars,
+    // whitespace-flattened — display text only; the fingerprint, not
+    // the summary, is authority — H5 P1-B).
+    expect(S12A.requestA.summary).toBe('bash [cwd=.] echo hello')
   })
   it('bash allow → executes (next once)', () => {
     expect(S12A.decisionA).toEqual({ kind: 'allow' })
@@ -1196,7 +1199,7 @@ describe('A5a S12: bash tool-level (H2 P1-2) — the fingerprint BINDS the comma
     expect(S12A.requestB.requestId).not.toBe(S12A.requestA.requestId)
     expect(S12A.requestB.operationFingerprint).toBe(S12A.fingerprintLsLa)
     expect(S12A.requestB.operationFingerprint).not.toBe(S12A.requestA.operationFingerprint)
-    expect(S12A.requestB.summary).toBe('bash ls -la')
+    expect(S12A.requestB.summary).toBe('bash [cwd=.] ls -la')
   })
   it('the command-B request resolved deny → zero execution for it', () => {
     expect(S12A.decisionB['kind']).toBe('deny')

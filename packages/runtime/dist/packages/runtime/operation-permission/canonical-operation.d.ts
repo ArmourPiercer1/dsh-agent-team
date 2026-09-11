@@ -72,19 +72,56 @@
  *     coordinates fully determine the operation). Missing/non-positive-
  *     integer coordinates and unknown operations fail closed (the tool
  *     would reject them).
- * - `bash`          `{ tool, commandHash }` — the RESOURCE stays
- *     tool-level (plan §4/§7.1: `{ kind: 'tool', key: 'bash' }` — the
- *     resolver is never called), but the FINGERPRINT Binds the command
- *     (H2 P1-2 ruling, plan §7.4 "covering every security-relevant
- *     field"): `commandHash` = `'sha256:' + hex(sha256(command))` over
- *     the RAW command string — NO shell parsing, no normalization (the
- *     command is the security-relevant field for bash, so a durable
- *     approval is verifiable as "which shell payload was approved";
- *     before H2 the command was deliberately excluded and EVERY bash
- *     command shared one constant fingerprint — P1-2). A
- *     missing/non-string/whitespace-only command fails closed with the
- *     closed `bash-command-*` reasons (the upstream `tool-bash`
- *     `validateBashArgs` rejects all three before executing).
+ * - `bash`          `{ tool, commandHash, workdir, runInBackground,
+ *     timeoutMs, sandboxPermissions }` — the RESOURCE stays tool-level
+ *     (plan §4/§7.1: `{ kind: 'tool', key: 'bash' }`), but the
+ *     FINGERPRINT binds the command AND the execution effect (H2 P1-2 +
+ *     H5 P1-B rulings, plan §7.4 "covering every security-relevant
+ *     field"):
+ *     - `commandHash` = `'sha256:' + hex(sha256(command))` over the RAW
+ *       command string — NO shell parsing, no normalization (the command
+ *       is the security-relevant field for bash, so a durable approval
+ *       is verifiable as "which shell payload was approved"; before H2
+ *       the command was deliberately excluded and EVERY bash command
+ *       shared one constant fingerprint — P1-2);
+ *     - `workdir` = the CANONICAL KEY of `args.workdir ?? '.'` from the
+ *       injected resolver (H5 — the resolver is consulted EXACTLY ONCE
+ *       — for the workdir authority key; the resource stays tool-level,
+ *       plan §3.2). The input is normalized with the tool's own
+ *       defaulting: omitted ⇒ `'.'` (the session cwd), an
+ *       empty/whitespace-only string ⇒ `'.'` (upstream
+ *       `resolvePath(cwd, '')` = cwd — an empty-string workdir is
+ *       EFFECTIVELY the session cwd), a non-string ⇒ fail closed
+ *       (`bash-workdir-not-a-string`). The seam's cwd basis IS the
+ *       session cwd (lazily read per call), so omitted ≡ explicit
+ *       session-cwd and symlinked workdirs bind their REAL identity
+ *       (the backend's realpath — the ideal property: same effective
+ *       workdir ⇒ same key ⇒ same fingerprint);
+ *     - `runInBackground` = `args.run_in_background ?? false` (detached
+ *       `jobs.start` job vs foreground `ctx.shell.run` — a different
+ *       execution effect; present-but-non-boolean fails closed:
+ *       `bash-run-in-background-not-boolean`);
+ *     - `timeoutMs` = `args.timeoutMs ?? null` — the EXPLICIT value
+ *       only (NEVER a deployment default or the executor cap, plan
+ *       §4.4); present-but-not-(finite number > 0) fails closed
+ *       (`bash-timeout-ms-invalid` — mirrors the upstream
+ *       `validateBashArgs` check);
+ *     - `sandboxPermissions` = `args.sandbox_permissions ?? null` — the
+ *       requested mode string only (present-but-non-string fails closed:
+ *       `bash-sandbox-permissions-not-a-string`); mode LEGALITY is the
+ *       upstream authority at execution — the Team layer does not mint
+ *       authority for a value upstream would reject (such a call never
+ *       executes), and the `justification` pairing stays upstream's.
+ *     `description`/`justification` are EXCLUDED from the projection
+ *     (display/explanation metadata — the upstream's validation domain,
+ *     plan §4.2/§4.5). A missing/non-string/whitespace-only command
+ *     fails closed with the closed `bash-command-*` reasons (the
+ *     upstream `tool-bash` `validateBashArgs` rejects all three before
+ *     executing). WHY the effect-field validation is required (not
+ *     defense-in-depth): the upstream materialization is lossless-JSON-
+ *     only and the `tools/pre-execute` waterfall runs BEFORE any
+ *     parameter-schema validation (`validateBashArgs` runs INSIDE
+ *     `execute`) — malformed effect-field types DO reach this module.
  *
  * Windows emphasis (plan §7.6): separator normalization, case semantics,
  * relative-vs-absolute, `..` traversal, and symlink/junction identity are
@@ -125,8 +162,10 @@ export interface CanonicalizeOperationInput {
     /**
      * The injected path-resolution seam (plan §7.2) — the A5 adapter's
      * wrapper over `ctx.fs.resolve(path, { cwd: sessionCwd, signal })`.
-     * Only consulted for the file tools (never for `bash`, never for an
-     * unsupported tool).
+     * Consulted for the file tools' primary resource, and — H5 — for the
+     * `bash` workdir authority key (EXACTLY ONCE per bash operation, over
+     * `args.workdir ?? '.'`; the resource stays tool-level, plan §3.2).
+     * Never consulted for an unsupported tool.
      */
     readonly resolveTarget: PathTargetResolver;
 }
