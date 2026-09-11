@@ -1,0 +1,22 @@
+{
+  "world": "a2perm",
+  "stamp": "2026-09-11T10-50-59",
+  "home": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permhf-2026-09-11T10-50-59",
+  "port": 3181,
+  "mockPort": 3493,
+  "origin": "http://127.0.0.1:3181",
+  "token": "sL8qInRlBqLr1gAGuoSrDvcKQOFd21Kqmpbrh0iw7Ow",
+  "cookie": "dsh-auth-D1gu4AUZ6XwohD5r0eN4-fmFNLAOCeA62Dj465JieJs=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4MSIsImlzc3VlZEF0IjoxNzg5MTIzODgzNTcyLCJleHBpcmVzQXQiOjE3OTE3MTU4ODM1NzJ9.9n0VoCK8yGX6WY-QL-N_FjNU6sIKWZGyf1Gmg1w-ow8",
+  "rootSessionId": "a2root",
+  "instancePid": 114532,
+  "bootJobPid": 71720,
+  "logPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2hf-h6\\dev\\agent-workflow\\evidence\\alpha2-hardening-followup\\h6-closure\\kit\\instances\\instance-port3181.log",
+  "mockLogPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2hf-h6\\dev\\agent-workflow\\evidence\\alpha2-hardening-followup\\h6-closure\\kit\\mock-model-a2perm-2026-09-11T10-50-59.log",
+  "dumpPath": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\alpha2hf-h6\\dev\\agent-workflow\\evidence\\alpha2-hardening-followup\\h6-closure\\kit\\dump-config-a2perm-2026-09-11T10-50-59.txt",
+  "installDir": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\references\\.dsh-test-a2permhf-2026-09-11T10-50-59\\profiles\\web\\node_modules\\dsh-agent-team",
+  "spec": "git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2permhf-2026-09-11T10-50-59/repo.git#task/alpha2hf-h6-closure",
+  "branch": "task/alpha2hf-h6-closure",
+  "phase": "create",
+  "startedAt": "2026-09-11T10:51:25.745Z",
+  "stoppedAt": "2026-09-11T10:57:52.451Z"
+}

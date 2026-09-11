@@ -57,7 +57,8 @@
  *      a same-tool exact DENY rule that fails to canonicalize → the
  *      operation is DENIED before the A3 resolver (fail-closed; the
  *      stable reason names the failed path(s); the failure is not
- *      cached — the next decision retries and re-binds the rule);
+ *      remembered — there is no cache (H4) — the next decision retries
+ *      and re-binds the rule);
  *      a failed ALLOW rule → no match (ask/default); a failed ASK
  *      rule → the default (deny) — ONLY the deny lane flips (R2
  *      lane asymmetry)
@@ -376,7 +377,7 @@ const S1R = await (async () => {
     // S1 — allow executes: read fileA matches the exact allow rule (the
     // rule path 'fileA.txt' canonicalizes to the SAME key as the op
     // path './fileA.txt' — different spellings, one identity: the
-    // rule-canonicalization cache (R2) is exercised here).
+    // rule canonicalization (R2 — FRESH per decision, H4) is exercised here).
     const next1 = makeNext()
     const d1 = await env.ctx.trigger(
       makeExec({ name: 'read', arguments: { file_path: './fileA.txt' }, callId: 'a5a-s1-read' }),
@@ -1176,10 +1177,13 @@ describe('A5a S12: bash tool-level (H2 P1-2) — the fingerprint BINDS the comma
     // The fingerprint matches A2's canonicalization of the SAME raw
     // command string (the command is the security-relevant field).
     expect(S12A.requestA.operationFingerprint).toBe(S12A.fingerprintEchoHello)
-    // The summary carries the bounded non-authority command preview
-    // (first 120 chars, whitespace-flattened — display text only; the
-    // fingerprint, not the preview, is authority).
-    expect(S12A.requestA.summary).toBe('bash echo hello')
+    // The summary carries the bounded non-authority H5 effect tokens
+    // (`[cwd=<resolved workdir display>]` — always, the workdir is always
+    // effective; `[background]`/`[sandbox=<mode>]`/`[timeout=<n>ms]`
+    // when present) and the bounded command preview (first 120 chars,
+    // whitespace-flattened — display text only; the fingerprint, not
+    // the summary, is authority — H5 P1-B).
+    expect(S12A.requestA.summary).toBe('bash [cwd=.] echo hello')
   })
   it('bash allow → executes (next once)', () => {
     expect(S12A.decisionA).toEqual({ kind: 'allow' })
@@ -1195,7 +1199,7 @@ describe('A5a S12: bash tool-level (H2 P1-2) — the fingerprint BINDS the comma
     expect(S12A.requestB.requestId).not.toBe(S12A.requestA.requestId)
     expect(S12A.requestB.operationFingerprint).toBe(S12A.fingerprintLsLa)
     expect(S12A.requestB.operationFingerprint).not.toBe(S12A.requestA.operationFingerprint)
-    expect(S12A.requestB.summary).toBe('bash ls -la')
+    expect(S12A.requestB.summary).toBe('bash [cwd=.] ls -la')
   })
   it('the command-B request resolved deny → zero execution for it', () => {
     expect(S12A.decisionB['kind']).toBe('deny')
@@ -1241,10 +1245,10 @@ const DR_POLICY: TemplatePermissionPolicy = {
 
 const DR = await (async () => {
   // World DR-A (mutable backend): the deny rule path 'locked.txt' fails
-  // to resolve at first, then RECOVERS (the failure is not cached — the
-  // rule is retried on the next decision). Default = ask: without P1-3,
-  // a read of a resolvable path would be ASKED (the escalation P1-3
-  // closes).
+  // to resolve at first, then RECOVERS (the failure is not remembered —
+  // there is no cache (H4) — the rule is retried on the next decision).
+  // Default = ask: without P1-3, a read of a resolvable path would be
+  // ASKED (the escalation P1-3 closes).
   let failLocked = true
   const envA = await createEnv('a5a-dr-a', {
     policy: DR_POLICY,
@@ -1302,11 +1306,12 @@ const DR = await (async () => {
     )
     const stateA1 = await envA.service.listControlState(P6T4_ROOT)
 
-    // The backend recovers (the failure was NOT cached).
+    // The backend recovers (the failure was NOT remembered — no cache, H4).
     failLocked = false
 
     // DR-A (2) — the NEXT decision re-canonicalizes the deny rule (now
-    // successful, cached): the rule's key (locked.txt) does not match
+    // successful — resolved FRESH per decision; there is no cache (H4)):
+    // the rule's key (locked.txt) does not match
     // the operation (open.txt) → the operation proceeds to the default
     // ask → request → allow → executes.
     const nextA2 = makeNext()
@@ -1409,7 +1414,7 @@ describe('A5a DR-A: a same-tool exact DENY rule that fails to canonicalize → d
     expect(rows[0]?.['tool']).toBe('read')
     expect(rows[0]?.['paths']).toEqual(['locked.txt'])
   })
-  it('the failure is NOT cached: after the backend recovers, the rule re-canonicalizes and the operation proceeds to the default ask (request → allow → executes)', () => {
+  it('the failure is NOT remembered (no cache, H4): after the backend recovers, the rule re-canonicalizes fresh and the operation proceeds to the default ask (request → allow → executes)', () => {
     expect(DR.decisionA2).toEqual({ kind: 'allow' })
     expect(DR.nextA2Calls).toBe(1)
     expect(DR.requestA2.kind).toBe(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)

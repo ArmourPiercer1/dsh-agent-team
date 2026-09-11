@@ -29,7 +29,7 @@
  *                               request-control / resolve-control)
  * Provider-routed creations carry their OWN provider ledger facts.
  */
-import type { CallerRole, TeamRuntimeActionRequest } from './types.js';
+import type { CallerRole, TeamRuntimeActionRequest, WorkExecutionMode } from './types.js';
 /** The closed action names. */
 export declare const ACTION_NAMES: {
     /** List the team's member instances (read, team-scoped). */
@@ -38,6 +38,10 @@ export declare const ACTION_NAMES: {
     readonly LIST_TEMPLATES: "list-templates";
     /** Inspect one instance's effective capability policy (read). */
     readonly INSPECT_CONFIG: "inspect-config";
+    /** Read the durable state of admitted work units by requestToken
+     *  (issue #1 / CCR-3; the async admission receipt's terminal read-back
+     *  — a read: open to every live caller, no envelope op). */
+    readonly WORK_STATUS: "work-status";
     /** Admit NEW WORK on an existing instance; the SAME child session is
      *  kept (invariant 24); CREATED/SETTLED targets transition to RUNNING
      *  (invariant 55). */
@@ -147,4 +151,12 @@ export declare function actionSpecOf(name: string): ActionSpec | undefined;
  * @returns the resolved action spec (name guaranteed closed).
  */
 export declare function validateActionRequest(request: TeamRuntimeActionRequest): ActionSpec;
+/**
+ * Resolve the execution mode of one work-action request (issue #1 /
+ * CCR-1 + CCR-2): an ABSENT `execution` (or an explicit `'sync'`)
+ * resolves to the alpha.2 blocking default — the frozen contract's
+ * unchanged path. Pure; only meaningful for the work actions (the
+ * validator rejects `execution` everywhere else).
+ */
+export declare function workExecutionModeOf(request: TeamRuntimeActionRequest): WorkExecutionMode;
 //# sourceMappingURL=actions.d.ts.map

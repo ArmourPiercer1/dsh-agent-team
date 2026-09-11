@@ -53,6 +53,15 @@ import type { TeamRuntime, TeamRuntimeOptions } from '../admission/index.js';
  * @returns the facade (the per-team effect lock map is the installed
  *   shared coordinator chain when `options.teamLocks` is given, otherwise
  *   owned by the returned closure — one map per runtime instance).
+ *
+ *   issue #1 / CCR-2: the returned facade additionally exposes
+ *   `inFlightDetachedWork` — the READONLY set of this runtime's async
+ *   detached continuations (in-flight Phase B/C of `execution: 'async'`
+ *   work admissions). It is NOT part of the frozen `TeamRuntime`
+ *   interface (the interface stays CCR-1 stable for fakes): it exists
+ *   for test observability and a future shutdown drain.
  */
-export declare function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime;
+export declare function createTeamRuntime(options: TeamRuntimeOptions): TeamRuntime & {
+    readonly inFlightDetachedWork: ReadonlySet<Promise<unknown>>;
+};
 //# sourceMappingURL=router.d.ts.map

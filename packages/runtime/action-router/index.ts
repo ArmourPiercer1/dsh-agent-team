@@ -26,10 +26,12 @@ export {
   completeWorkChainAfterAdmission,
   deliverWork,
   executeWorkChain,
+  scanWorkStatus,
   scanWorkUnitFacts,
   settleAdmittedWork,
   settleWorkLocked,
   WORK_ACTIVITY_SUBJECT,
+  WORK_STATUS_CODES,
 } from './work-execution.js'
 export type {
   WorkChainDeps,

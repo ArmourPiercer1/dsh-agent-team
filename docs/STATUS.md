@@ -4,11 +4,12 @@
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 `0.1.0-rc.1` 发布裁决）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-08。用户基于手动测试与 Playwright/live acceptance，裁决当前代码可冻结为未来基线 **`0.1.0-rc.1`**。F3/F11/F9/T1.4 repair 已完成确定性验证和 live matrix；已知的 G3 consumed/F10 边界保持为预声明限制，不作为本 RC 阻塞。发布分支策略同步冻结：首个正式 release 之前，`master` 用于后续 alpha 开发，`stable` 只跟踪经裁决的 RC 基线及 RC-qualified 修复。
+> **最近更新**：2026-09-11。issue #1 异步委托修复完成并集成至本地 master：R8 live acceptance 17/17（§29 硬条件 + §18 冻结结论 A）、三盲审 [补充内容, 通过, 通过] + 补充落地重验、int（p4t6 pin 673 union）重验全绿、master FF 0804b95 → 2c67a31。**NO push** — 本地 master 领先 origin/master (6a2f3e1) 10 个提交（6 wave + 3 issue#1 + 1 bookkeeping），等待用户明确推送授权。权威状态见 graph.yaml `issue1_async_delegation` 块 + SESSION_ROUTER_LOG 末尾。
+> **上次更新**：2026-09-08。用户基于手动测试与 Playwright/live acceptance，裁决当前代码可冻结为未来基线 **`0.1.0-rc.1`**。F3/F11/F9/T1.4 repair 已完成确定性验证和 live matrix；已知的 G3 consumed/F10 边界保持为预声明限制，不作为本 RC 阻塞。发布分支策略同步冻结：首个正式 release 之前，`master` 用于后续 alpha 开发，`stable` 只跟踪经裁决的 RC 基线及 RC-qualified 修复。
 
 ## 1. 一句话现状
 
-**`0.1.0-rc.1` 发布基线已冻结**：当前代码经过用户手动测试、Playwright 测试和 repair live acceptance，可作为后续开发的 RC 基线。`stable` 指向该 RC 线；`master` 从此承载下一 alpha（计划目标 `0.1.1-alpha.1`）。下方 remote-mount-race / D1–D6 / repair 内容保留为该 RC 的历史闭环证据。
+**当前（2026-09-11）**：alpha.2 加固（H1–H3 安全闭环 + H4–H6 followup）与 issue #1 异步委托修复（async admission receipt + 持久 memberResult + team_collect 纯读，共 11 工具）均已集成至本地 master；R8 live 验收 17/17 + §18 冻结结论 A + 三盲审通过（补充内容落地重验后）。`stable` 仍指向 `0.1.0-rc.1` 线；master 领先 origin/master (6a2f3e1) 10 个提交 — **push 待用户明确授权**。下方 remote-mount-race / D1–D6 / repair / RC 内容保留为历史闭环证据。
 
 **remote-mount-race 历史闭环（R135 起）**：用户新机（origin master `05721fd` 预构建安装面）
 `dsh web` →「新建团队」→ `catalog.list` **HTTP 405**（Team UI 本体正常）。双根因在用户世界副本上

@@ -82,8 +82,12 @@
  *   ONE listener on the ONE agent ctx it is given (the A6 glue installs
  *   it per agent lifecycle — fresh root / fresh member / cold resume —
  *   and drains the returned disposer on close, plan §11.2/§11.3);
- *   the module holds NO module-level mutable state (each install owns its
- *   own rule-canonicalization cache in a closure);
+ *   the module holds NO module-level mutable state AT ALL (H4 — the
+ *   P1-A fix: the install owns no rule-canonicalization cache either —
+ *   every decision fresh-resolves the rules through the same live
+ *   resolver / session-cwd basis as the operation, so cold resume is
+ *   trivially consistent: nothing is stored, so nothing stale survives
+ *   a restart);
  * - it is SEAM-INJECTED: the only upstream surface it touches at runtime
  *   is the public `fs.resolve` seam, and only through the injected
  *   {@link import('./types.js').PathTargetResolver} closure (the A6 glue
@@ -106,7 +110,8 @@
  *
  * R1 — SIGNAL THREADING: the resolver type takes `(path)` only, so the
  *   per-call `exec.signal` is NOT threaded into the path resolution. The
- *   glue's closure captures the session cwd at INSTALL time; a per-call
+ *   glue's closure reads the session cwd LAZILY at resolve time (FACT
+ *   3b — the live session header, never captured at install); a per-call
  *   abort during a resolution is a documented residual (an aborted call
  *   can finish a fast identity read before the abort is observed —
  *   resolution is a cheap identity lookup with no side effects, and the
@@ -115,14 +120,28 @@
  *   pre-dispatch cancellation checks).
  *
  * R2 — RULE CANONICALIZATION: the policy's `exact` rules are canonicalized
- *   LAZILY (per decision, once per distinct rule path, cached for the
- *   scope's lifetime in an install-owned `Map`): the install is
+ *   FRESH on every permission decision (H4 — the P1-A fix: there is NO
+ *   cache — install-lifetime or otherwise — and no invalidation, no TTL,
+ *   no watcher): the same-tool exact rules are canonicalized FRESH for
+ *   each permission decision, against the same live resolver / session-
+ *   cwd basis as the operation, so the rule and the operation of one
+ *   decision always carry identities from the same point in time. Why
+ *   fresh: the operation is canonicalized fresh on every decision (plan
+ *   §10.2 — A2 has no cache), and a rule key pinned at an EARLIER
+ *   decision goes stale the moment the filesystem identity of the rule
+ *   path changes (a symlink/junction retarget moves the upstream
+ *   targetKey) — a stale DENY stops matching (an escalation: the
+ *   decision downgrades to the default, where an approval can then
+ *   authorize what the policy statically forbade) and a stale ALLOW
+ *   keeps authorizing a resource the rule path no longer denotes. The
+ *   cost is one resolver call per same-tool exact rule per decision —
+ *   the same lazy fs seam the operation already uses. The install is
  *   synchronous (it returns the `ctx.on` disposer) and an install-time
  *   async canonicalization would either delay the listener's activation
- *   or require a fail-closed "rules not ready" window. Only SUCCESSFUL
- *   resolutions are cached; a failed rule resolution is NOT cached (it is
- *   retried on the next decision) and the rule is treated as
- *   NON-MATCHING for that decision. That is fail-closed end-to-end: a
+ *   or require a fail-closed "rules not ready" window. A FAILED rule
+ *   resolution is never remembered (there is no cache — success or
+ *   failure — so the next decision retries it) and the rule is treated
+ *   as NON-MATCHING for that decision. That is fail-closed end-to-end: a
  *   rule whose path the backend cannot resolve can only address a path
  *   that is equally unresolvable for an OPERATION, and such an operation
  *   fails ITS OWN canonicalization (the pipeline step before any rule is
@@ -133,7 +152,15 @@
  *   construction, A3) are never canonicalized at all (they can never
  *   match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
- *   injected resolver closure, bound to the SAME session cwd at install.
+ *   injected resolver closure, which reads the agent's live session cwd
+ *   LAZILY at resolve time (FACT 3b — never captured at install). The
+ *   resolver result is validated BEFORE use (H4): a non-plain result, a
+ *   non-string key, an empty key, or the glue's
+ *   `String(target.targetKey)` sentinel — a missing upstream targetKey
+ *   surfaces as the string 'undefined', which is NOT a key — is a
+ *   failure, never a key (a silent 'undefined' key could match a rule
+ *   whose targetKey was literally that string — authority minted from a
+ *   seam violation).
  *   P1-3 (H2, option A) — LANE ASYMMETRY on rule canonicalization
  *   failure: the "both resolve or both fail" argument above does not
  *   hold in general — the operation and the rule are SEPARATE
@@ -156,8 +183,8 @@
  *   pipeline DENIES the operation BEFORE the A3 resolver is called
  *   (a stable reason naming the failed path(s) + an `onObserve` row,
  *   stage `deny-canonicalization-failure`). The allow/ask lanes KEEP
- *   the non-match-on-failure semantics above (rule skipped, not
- *   cached, retried on the next decision).
+ *   the non-match-on-failure semantics above (rule skipped, never
+ *   remembered — there is no cache (H4) — retried on the next decision).
  *
  * R3 — PRE-ABORTED SIGNAL: checked cheaply at the TOP of the ask branch
  *   (after the static decision is known to be 'ask', before
@@ -304,8 +331,8 @@ export type PreToolDecisionLike =
  * (`callId` — the correlation token), the tool name, the losslessly
  * parsed deep-frozen arguments, and the caller cancellation signal
  * (structurally a `ControlWaitSignal` — a real `AbortSignal` satisfies
- * it). `exec.agent` is NOT read: the session cwd is captured by the
- * injected resolver closure at install (R1).
+ * it). `exec.agent` is NOT read: the session cwd is read lazily at
+ * resolve time by the injected resolver closure (R1, FACT 3b).
  */
 export interface PreExecuteExec {
   /** The stable logical invocation id (the control request correlation). */
@@ -391,9 +418,10 @@ export interface InstallParameterPermissionListenerParams {
   /**
    * The injected path-resolution seam (A2): the A6 glue's closure over
    * the upstream public `ctx.fs.resolve(path, { cwd: sessionCwd })`,
-   * bound to THIS agent's session workspace cwd and unbranding the
-   * `FsTarget.targetKey`. Used for BOTH operations and rules (R1/R2 —
-   * the same cwd basis).
+   * reading THIS agent's session workspace cwd LAZILY at resolve time
+   * (FACT 3b) and unbranding the `FsTarget.targetKey`. Used for BOTH
+   * operations and rules (R1/R2 — the same cwd basis), FRESH on every
+   * decision for both (H4 — no cache).
    */
   readonly resolveTarget: PathTargetResolver
   /** The durable control plane service (A4 — fully constructed). */
@@ -480,6 +508,54 @@ function commandPreview(rawArguments: unknown): string {
   return flattened
 }
 
+/**
+ * H5 P1-B — the bounded NON-authority bash effect tokens of the control
+ * request summary: `bash [cwd=<workdirDisplay>] [background]
+ * [sandbox=<mode>] [timeout=<n>ms] <command preview>`. All four bracketed
+ * tokens are conditional (only when present/non-default: `cwd=` is
+ * ALWAYS shown for bash — the workdir is always effective; `background`
+ * when `run_in_background` is true; `sandbox=<mode>` when the requested
+ * mode is non-null; `timeout=<n>ms` when the explicit timeout is
+ * non-null).
+ *
+ * Display text ONLY (the durable `summary` field is "free text; NOT
+ * authority data"): the tokens NEVER enter the fingerprint, the control
+ * scope, or any hash — the fingerprint carries the CANONICAL effect
+ * values (the workdir KEY, the boolean, the explicit number, the
+ * requested mode string — A2/H5). The `cwd=` value is the RESOLVED
+ * display (the operation's presentation field — the opaque key is what
+ * binds); the other three are re-read from the SAME deep-frozen argument
+ * record the canonicalizer consumed (canonicalization already failed
+ * closed on malformed shapes — `workdir` is a string, `run_in_background`
+ * a boolean, `timeoutMs` a finite number > 0, `sandbox_permissions` a
+ * string — so the re-read only mirrors well-formed values; the function
+ * stays total: any unexpected shape contributes no token).
+ */
+function bashEffectTokens(operation: CanonicalOperation, rawArguments: unknown): string {
+  const parts: string[] = []
+  if (operation.workdirDisplay !== undefined) {
+    parts.push(`cwd=${operation.workdirDisplay}`)
+  }
+  if (typeof rawArguments === 'object' && rawArguments !== null && !Array.isArray(rawArguments)) {
+    const args = rawArguments as Record<string, unknown>
+    if (args['run_in_background'] === true) {
+      parts.push('background')
+    }
+    const sandbox = args['sandbox_permissions']
+    if (typeof sandbox === 'string') {
+      parts.push(`sandbox=${sandbox}`)
+    }
+    const timeout = args['timeoutMs']
+    if (typeof timeout === 'number' && Number.isFinite(timeout) && timeout > 0) {
+      parts.push(`timeout=${timeout}ms`)
+    }
+  }
+  if (parts.length === 0) {
+    return ''
+  }
+  return parts.map((part) => `[${part}]`).join(' ')
+}
+
 // ---------------------------------------------------------------------------
 // The install factory.
 // ---------------------------------------------------------------------------
@@ -545,13 +621,6 @@ export function installParameterPermissionListener(
     : CONTROL_REQUEST_KINDS.LEADER_APPROVAL
 
   /**
-   * R2 — the install-owned rule-canonicalization cache (lazy; successful
-   * resolutions only — a failed rule resolution is retried on the next
-   * decision, never cached). Keyed by the raw (A1-trimmed) rule path.
-   */
-  const ruleKeyCache = new Map<string, string>()
-
-  /**
    * R6 / H1 — the INSTALL-SCOPED authorization set: the exec OBJECTS
    * this install authorized (marked exactly at the two final-allow
    * points — static allow and resolved ask-allow — and NEVER on any
@@ -580,22 +649,43 @@ export function installParameterPermissionListener(
   }
 
   /**
-   * R2 — the canonical key of one `exact` rule path (cached), or
+   * R2 — the canonical key of one `exact` rule path, resolved FRESH on
+   * EVERY call (H4 — the P1-A fix: there is NO cache, install-lifetime
+   * or otherwise, and nothing is remembered — a failed resolution is
+   * retried on the next decision exactly like a successful one), or
    * `undefined` when the path cannot be canonicalized (the rule then
    * does not match THIS decision for the allow/ask lanes — see the
    * module doc for the fail-closed argument; a DENY-lane failure is
-   * reported by `canonicalLane` — P1-3).
+   * reported by `canonicalLane` — P1-3). Fresh-per-decision keeps the
+   * rule on the SAME live identity the operation of this decision
+   * carries (same resolver seam, same lazy session-cwd basis): a
+   * symlink/junction retarget between decisions moves BOTH keys, so
+   * the match follows the filesystem, never a stale snapshot.
    */
   const canonicalRuleKey = async (path: string): Promise<string | undefined> => {
-    const cached = ruleKeyCache.get(path)
-    if (cached !== undefined) return cached
+    let result: unknown
     try {
-      const { key } = await resolveTarget(path)
-      ruleKeyCache.set(path, key)
-      return key
+      result = await resolveTarget(path)
     } catch {
       return undefined
     }
+    // Result-shape validation BEFORE use (the same fail-closed checks
+    // canonicalizeOperation/resolveResource applies on the operation
+    // path, plan §7.5): a non-plain result, a non-string key, or an
+    // empty key is a malformed seam result — never a key. The glue
+    // wraps the upstream targetKey with String(...), so a missing
+    // targetKey surfaces as the string 'undefined' — pinned as a
+    // failure here too (a silent 'undefined' key could match a rule
+    // whose targetKey was literally that string: authority minted from
+    // a seam violation).
+    if (typeof result !== 'object' || result === null || Array.isArray(result)) {
+      return undefined
+    }
+    const { key } = result as { key?: unknown }
+    if (typeof key !== 'string' || key === '' || key === 'undefined') {
+      return undefined
+    }
+    return key
   }
 
   /**
@@ -628,7 +718,8 @@ export function installParameterPermissionListener(
       const key = await canonicalRuleKey(rule.resource.path)
       if (key === undefined) {
         // R2 — unresolvable rule path: no match (the rule is skipped; the
-        // cache stays empty so the NEXT decision retries the resolution).
+        // failure is never remembered — there is no cache (H4) — so the
+        // NEXT decision retries the resolution).
         // P1-3 (H2, option A) — the deny lane FLIPS: a same-tool exact
         // DENY rule that failed to canonicalize is reported (the raw
         // trimmed path — A1 normalization already trimmed it) instead of
@@ -822,14 +913,20 @@ export function installParameterPermissionListener(
         toolName: name,
         correlation: callId,
         operationFingerprint: operation.fingerprint,
-        // H2 P1-2: the tool-level (bash) summary carries a bounded
-        // NON-authority command preview (first 120 chars, whitespace
-        // flattened, `...` when truncated) — display text only, never
-        // part of the fingerprint/scope/hash (those carry the command
-        // HASH from A2).
+        // H2 P1-2 + H5 P1-B: the tool-level (bash) summary carries the
+        // bounded NON-authority effect tokens
+        // (`[cwd=<resolved display>]` always — the workdir is always
+        // effective; `[background]`; `[sandbox=<mode>]`;
+        // `[timeout=<n>ms]`) and the bounded command preview (first 120
+        // chars, whitespace flattened, `...` when truncated) — display
+        // text only, never part of the fingerprint/scope/hash (those
+        // carry the canonical effect values + the command HASH from
+        // A2/H5).
         summary:
           operation.resource.kind === 'tool'
-            ? `${name} ${commandPreview(exec.arguments)}`
+            ? [name, bashEffectTokens(operation, exec.arguments), commandPreview(exec.arguments)]
+                .filter((part) => part.length > 0)
+                .join(' ')
             : `${name} ${operation.resource.display}`,
       })
     } catch (error: unknown) {

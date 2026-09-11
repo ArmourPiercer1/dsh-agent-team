@@ -1,0 +1,174 @@
+{
+  "stamp": "2026-09-11T20-52-32",
+  "verdict": "R8-PASS",
+  "plan": {
+    "hard": "t_B_admitted < t_A_done (R1-4)",
+    "overlap": "A/B execution intervals overlap (R1-5)",
+    "leaderControl": "the leader regains model control before the first teammate finishes and issues the second tool call (R1-4/R1-6/R1-7)"
+  },
+  "timing": {
+    "tDelAReceipt": 1789131345658,
+    "tDelBReceipt": 1789131346294,
+    "tCollect1": 1789131346503,
+    "tMaStart": 1789131345716,
+    "tMaDone": 1789131365728,
+    "tMbStart": 1789131346404,
+    "tMbDone": 1789131366416,
+    "leaderDoneAt": 1789131346678,
+    "tokA": "r8L-delA",
+    "tokB": "r8L-delB"
+  },
+  "s18": {
+    "conclusion": "upstream-queues-correctly",
+    "detail": {
+      "frozen": "同一 member 可接受多个 async work，但实际 turn 串行排队。",
+      "evidence": "both concurrent async follow-ups on inst-r8a admitted; both settled succeeded with distinct per-turn memberResults; fu2 turn start >= fu1 turn model-response flush (serialized)."
+    }
+  },
+  "checks": [
+    {
+      "id": "R0-1-health",
+      "desc": "row health ok with toolCount 11 (the eleven-tool catalog incl. team_collect)",
+      "expect": "ok + toolCount 11",
+      "actual": "ok=true toolCount=11",
+      "pass": true,
+      "detail": "{\"ok\":true,\"boot\":1,\"ready\":true,\"rootSessionId\":\"issue1-root\",\"liveSessions\":[\"issue1-root\",\"session-r8a-a\",\"session-r8b-b\"],\"toolCount\":11}"
+    },
+    {
+      "id": "R0-2-live-sessions",
+      "desc": "the expected three live sessions",
+      "expect": "[\"issue1-root\",\"session-r8a-a\",\"session-r8b-b\"]",
+      "actual": "[\"issue1-root\",\"session-r8a-a\",\"session-r8b-b\"]",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R1-1-turn-settled",
+      "desc": "leader drill turn settled (admitInitialWork returned ok)",
+      "expect": "ok=true",
+      "actual": "{\"ok\":true,\"value\":{\"data\":{\"mode\":\"fresh\",\"rootSessionId\":\"issue1-root\",\"requestToken\":\"r8-lead-1\",\"payloadFingerprint\":\"sha256:f88bfb59dfea6c58e2fb1ebb380daf46e8092a87525ca442d79438fe12b00917\",\"sequ",
+      "pass": true,
+      "detail": "{\"type\":\"server-response\",\"rpcId\":\"r8c-1a09089cb1546904\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"mode\":\"fresh\",\"rootSessionId\":\"issue1-root\",\"requestToken\":\"r8-lead-1\",\"payloadFingerprint\":\"sha256:f88bfb59dfea6c58e2fb1ebb380daf46e8092a87525ca442d79438f"
+    },
+    {
+      "id": "R1-2-receipt-shapes",
+      "desc": "both async admission receipts: work-admitted, settled=false, workStatus=admitted, NO memberResult",
+      "expect": "kind=work-admitted settled=false workStatus=admitted",
+      "actual": "A={\"kind\":\"work-admitted\",\"instanceId\":\"inst-r8a\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":2,\"settled\":false,\"workStatus\":\"admitted\"} B={\"kind\":\"work-admitted\",\"instanceId\":\"inst-r8b\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"}",
+      "pass": true,
+      "detail": "tokA=r8L-delA tokB=r8L-delB"
+    },
+    {
+      "id": "R1-3-collect-in-flight",
+      "desc": "the in-flight collect: BOTH works report status=running (resumePossible=true) — neither settled yet",
+      "expect": "both entries running",
+      "actual": "A={\"requestToken\":\"r8L-delA\",\"status\":\"running\",\"instanceId\":\"inst-r8a\",\"admittedSequence\":2,\"resumePossible\":true} B={\"requestToken\":\"r8L-delB\",\"status\":\"running\",\"instanceId\":\"inst-r8b\",\"admittedSequence\":4,\"resumePossible\":true}",
+      "pass": true,
+      "detail": "entries=2"
+    },
+    {
+      "id": "R1-6-chain-order",
+      "desc": "chain order: delA receipt < delB receipt < collect1 (the leader serially issued the tools inside ONE model turn)",
+      "expect": "tDelAReceipt < tDelBReceipt < tCollect1",
+      "actual": "1789131345658 < 1789131346294 < 1789131346503",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R2-1-terminal-succeeded",
+      "desc": "terminal collect: BOTH works status=succeeded with the durable memberResult (CCR-5)",
+      "expect": "both succeeded + memberResult",
+      "actual": "A={\"requestToken\":\"r8L-delA\",\"status\":\"succeeded\",\"instanceId\":\"inst-r8a\",\"admittedSequence\":2,\"settledSequence\":8,\"memberResult\":{\"body\":\"MEMBER-A-DONE-TURN1\",\"requestToken\":\"r8L-delA\",\"status\":\"succee B={\"requestToken\":\"r8L-delB\",\"status\":\"succeeded\",\"instanceId\":\"inst-r8b\",\"admittedSequence\":4,\"settledSequence\":10,\"memberResult\":{\"body\":\"MEMBER-B-DONE-TURN1\",\"requestToken\":\"r8L-delB\",\"status\":\"succe",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R2-2-memberresult-verbatim",
+      "desc": "memberResult bodies verbatim: MEMBER-A-DONE-TURN1 / MEMBER-B-DONE-TURN1, per-token requestToken",
+      "expect": "bodies match the per-turn marker text",
+      "actual": "A.body=\"MEMBER-A-DONE-TURN1\" B.body=\"MEMBER-B-DONE-TURN1\"",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R2-3-idempotent-durable-read",
+      "desc": "a SECOND collect of the same tokens serves the SAME terminal entries (durable, read-only, no re-execution)",
+      "expect": "entries deep-equal",
+      "actual": "second=[{\"requestToken\":\"r8L-delA\",\"status\":\"succeeded\",\"instanceId\":\"inst-r8a\",\"admittedSequence\":2,\"settledSequence\":8,\"memberResult\":{\"body\":\"MEMBER-A-DONE-TURN1\",\"requestToken\":\"r8L-delA\",\"status\":\"succe",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R1-4-hard-tB-before-Adone",
+      "desc": "HARD (plan §29): t_B_admitted < t_A_done — the leader issued delegate B (second tool call, model control regained) before member A finished",
+      "expect": "t_delB_issued < t_ma_done",
+      "actual": "1789131345658 < 1789131365728 = true",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R1-5-overlap",
+      "desc": "A/B execution intervals overlap: member B's work turn started before member A's finished",
+      "expect": "t_mb_start < t_ma_done",
+      "actual": "1789131346404 < 1789131365728 = true",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R1-7-delB-receipt-before-Adone",
+      "desc": "delegate B was ADMITTED (receipt returned) while A was still in flight",
+      "expect": "t_delB_receipt < t_ma_done",
+      "actual": "1789131346294 < 1789131365728 = true",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R3-0-both-admitted",
+      "desc": "§18 probe: BOTH concurrent follow-ups on the same member were ADMITTED (async receipts)",
+      "expect": "both ok with work-admitted receipts",
+      "actual": "fu1Tok=r8-fu1 fu2Tok=r8-fu2 fu1Effect={\"kind\":\"work-admitted\",\"instanceId\":\"inst-r8a\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":11,\"settled\":false,\"workStatu",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R3-1-both-settle",
+      "desc": "§18 probe: BOTH same-member follow-ups settled (status=succeeded, durable memberResult)",
+      "expect": "both succeeded + memberResult",
+      "actual": "fu1={\"requestToken\":\"r8-fu1\",\"status\":\"succeeded\",\"instanceId\":\"inst-r8a\",\"admittedSequence\":11,\"settledSequence\":16,\"memberResult\":{\"body\":\"MEMBER-A-DONE-TURN2\",\"r fu2={\"requestToken\":\"r8-fu2\",\"status\":\"succeeded\",\"instanceId\":\"inst-r8a\",\"admittedSequence\":13,\"settledSequence\":18,\"memberResult\":{\"body\":\"MEMBER-A-DONE-TURN3\",\"r",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R3-2-serialized-turns",
+      "desc": "§18 probe: the same-session turns SERIALIZED — fu2's turn started only after fu1's model response flushed",
+      "expect": "fu2.received >= fu1.flushed",
+      "actual": "1789131388050 >= 1789131387877 = true",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R3-3-distinct-results",
+      "desc": "§18 probe: the two follow-up results are DISTINCT per-turn markers (no result interleave / mis-association)",
+      "expect": "bodies distinct + each a per-turn marker",
+      "actual": "b1=\"MEMBER-A-DONE-TURN2\" b2=\"MEMBER-A-DONE-TURN3\"",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "id": "R3-4-conclusion",
+      "desc": "§18 frozen conclusion reached (A upstream-queues-correctly or B rejected-with-typed-error; C interleave-risk = FAIL)",
+      "expect": "A or B",
+      "actual": "upstream-queues-correctly",
+      "pass": true,
+      "detail": "{\"frozen\":\"同一 member 可接受多个 async work，但实际 turn 串行排队。\",\"evidence\":\"both concurrent async follow-ups on inst-r8a admitted; both settled succeeded with distinct per-turn memberResults; fu2 turn start >= fu1 turn model-response flush (serialized).\"}"
+    }
+  ],
+  "evidence": {
+    "mockLog": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\mock-model-2026-09-11T20-52-32.log",
+    "proxyLog": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\mock-proxy-2026-09-11T20-52-32.log",
+    "instanceLog": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\instances\\instance-port3182.log",
+    "dumpConfig": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\dump-config-2026-09-11T20-52-32.txt",
+    "catalog": "D:\\AgentDev\\dsh-plugins\\dsh-agent-team\\.worktrees\\issue1-async\\dev\\agent-workflow\\evidence\\issue1-async-delegation\\live\\kit\\catalog-list-2026-09-11T20-52-32.json"
+  },
+  "completedAt": "2026-09-11T12:56:49.214Z"
+}

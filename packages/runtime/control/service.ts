@@ -760,7 +760,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.note !== undefined ? { note: args.note } : {}),
     }
     const sequence = await putEntry({
-      schemaVersion: 1,
+      schemaVersion: 2,
       sequence: await allocateSequence(),
       rootSessionId: args.scope.rootSessionId,
       factType: FACT_DECISION,
@@ -903,7 +903,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(args.summary !== undefined ? { summary: args.summary } : {}),
       }
       const sequence = await putEntry({
-        schemaVersion: 1,
+        schemaVersion: 2,
         sequence: await allocateSequence(),
         rootSessionId: root,
         factType: FACT_REQUEST,
@@ -1238,7 +1238,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         }
         const { request, decision } = winner
         await putEntry({
-          schemaVersion: 1,
+          schemaVersion: 2,
           sequence: await allocateSequence(),
           rootSessionId: root,
           factType: FACT_CONSUMPTION,

@@ -71,12 +71,12 @@ const reopen2 = await capture(() => openTeamDomain(seamPartial))
 
 describe('p4-07 durability and crash semantics', () => {
   it('every applied write is single-write durable (logged, committed, matching the stored row)', () => {
-    expect(stampEvidence.length).toBe(8)
+    expect(stampEvidence.length).toBe(9)
     for (const evidence of stampEvidence) {
       expect(typeof evidence.raw).toBe('string')
       expect(evidence.committed).toBe(String(evidence.raw))
     }
-    expect(new Set(stampEvidence.map((e) => e.committed)).size).toBe(8)
+    expect(new Set(stampEvidence.map((e) => e.committed)).size).toBe(9)
   })
 
   it('a crashed write is rejected, not applied, and not recorded', () => {

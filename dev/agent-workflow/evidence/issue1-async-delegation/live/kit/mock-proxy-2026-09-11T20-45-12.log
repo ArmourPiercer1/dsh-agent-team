@@ -1,0 +1,11 @@
+[2026-09-11T12:49:03.361Z] proxy identity=leader delay=0ms received=1789130943351 upstreamDone=1789130943361 headersSent=1789130943361 flushed=1789130943361 upstreamStatus=200
+[2026-09-11T12:49:03.362Z] proxy identity=other delay=0ms received=1789130943353 upstreamDone=1789130943362 headersSent=1789130943362 flushed=1789130943362 upstreamStatus=200
+[2026-09-11T12:49:03.925Z] proxy identity=leader delay=0ms received=1789130943888 upstreamDone=1789130943925 headersSent=1789130943925 flushed=1789130943925 upstreamStatus=200
+[2026-09-11T12:49:03.999Z] proxy identity=other delay=0ms received=1789130943997 upstreamDone=1789130943998 headersSent=1789130943998 flushed=1789130943999 upstreamStatus=200
+[2026-09-11T12:49:04.543Z] proxy identity=leader delay=0ms received=1789130944540 upstreamDone=1789130944543 headersSent=1789130944543 flushed=1789130944543 upstreamStatus=200
+[2026-09-11T12:49:04.588Z] proxy identity=other delay=0ms received=1789130944584 upstreamDone=1789130944588 headersSent=1789130944588 flushed=1789130944588 upstreamStatus=200
+[2026-09-11T12:49:04.716Z] proxy identity=leader delay=0ms received=1789130944714 upstreamDone=1789130944716 headersSent=1789130944716 flushed=1789130944716 upstreamStatus=200
+[2026-09-11T12:49:23.997Z] proxy identity=worker-a delay=20000ms received=1789130943982 upstreamDone=1789130943985 headersSent=1789130943985 flushed=1789130963997 upstreamStatus=200
+[2026-09-11T12:49:24.596Z] proxy identity=worker-b delay=20000ms received=1789130944583 upstreamDone=1789130944588 headersSent=1789130944588 flushed=1789130964596 upstreamStatus=200
+[2026-09-11T12:49:46.066Z] proxy identity=worker-a delay=20000ms received=1789130966055 upstreamDone=1789130966058 headersSent=1789130966058 flushed=1789130986066 upstreamStatus=200
+[2026-09-11T12:50:06.274Z] proxy identity=worker-a delay=20000ms received=1789130986240 upstreamDone=1789130986257 headersSent=1789130986257 flushed=1789131006274 upstreamStatus=200

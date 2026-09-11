@@ -1,0 +1,13 @@
+[2026-09-11T10:50:23.506Z] a2perm world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-23
+[2026-09-11T10:50:23.507Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/alpha2hf-h6-closure) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-23\repo.git
+[2026-09-11T10:50:23.879Z] bare repo cloned
+[2026-09-11T10:50:23.880Z] installing plugin task/alpha2hf-h6-closure via git+file:///D:/AgentDev/dsh-plugins/dsh-agent-team/references/.dsh-test-a2permhf-2026-09-11T10-50-23/repo.git#task/alpha2hf-h6-closure …
+[2026-09-11T10:50:40.634Z] install exit=0
+[2026-09-11T10:50:40.634Z] install SUCCEEDED
+[2026-09-11T10:50:40.634Z] PASS a2perm: installed package dir exists
+[2026-09-11T10:50:40.635Z] PASS a2perm: installed version is 0.1.1-alpha.2 — 0.1.1-alpha.2
+[2026-09-11T10:50:40.635Z] PASS a2perm: installed root manifest declares dsh.bundle.patch
+[2026-09-11T10:50:40.638Z] PASS a2perm: dsh.profile.bundles AUTO-contains the dsh-agent-team bundle — ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]
+[2026-09-11T10:50:40.638Z] a2perm user-layer patch written to D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-23\profiles\web\cordis.patch.yml
+[2026-09-11T10:50:40.642Z] a2perm workspace pre-created: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-23\workspace-a2perm (perm-a..e.txt)
+[2026-09-11T10:50:40.642Z] H6 L1 topology: dirA/secret.txt=A-payload, dirB/secret.txt=B-payload, alias junction → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-23\workspace-a2perm\dirA

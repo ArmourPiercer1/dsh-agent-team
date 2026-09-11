@@ -10,14 +10,14 @@
  * create-or-open entry must:
  *
  *   1. FRESH   — a never-stamped medium is initialized with the full
- *                eight-store stamp, so FIRST-EVER production boots work
+ *                nine-store stamp, so FIRST-EVER production boots work
  *                under `resume` (pre-fix `resume` called openTeamDomain,
  *                which throws SCHEMA_STAMP_MISSING on a fresh medium —
  *                first-ever boots would have broken);
  *   2. ADOPT   — an existing stamped domain is adopted WITHOUT re-stamping
  *                (stampedAt values preserved — adopt, never touch), so
  *                RETURNING production hosts work under `resume`;
- *   3. PARTIAL — a crash between the eight stamp writes leaves a partial
+ *   3. PARTIAL — a crash between the nine stamp writes leaves a partial
  *                domain diagnosed EXACTLY as openTeamDomain diagnoses it
  *                (SCHEMA_STAMP_MISSING, the exact first missing store in
  *                canonical order) — adopt-or-initialize never papers over
@@ -74,17 +74,19 @@ const partialAdopt = await capture(() => createOrOpenTeamDomain(seamPartial))
 const partialStrictOpen = await capture(() => openTeamDomain(seamPartial))
 
 // --- scenario 4: L1 version mismatch ----------------------------------------
+// version 3: a FUTURE version the v2 domain does not support (a v1-medium
+// under a v2 open is rejected by the identical seam check — plan BP2).
 const seamL1 = new InMemoryStorageSeam()
-seamL1.seedDomainVersion(TEAM_DOMAIN_NAME, 2, [...P4_STORES])
+seamL1.seedDomainVersion(TEAM_DOMAIN_NAME, 3, [...P4_STORES])
 const l1Adopt = await capture(() => createOrOpenTeamDomain(seamL1))
 
 // --- scenario 5: non-seam argument -------------------------------------------
 const notASeam = await capture(() => createOrOpenTeamDomain({} as never))
 
 describe('rmr createOrOpenTeamDomain (adopt-or-initialize, root cause B)', () => {
-  it('initializes a fresh medium with the full eight-store stamp (first-ever boot)', () => {
+  it('initializes a fresh medium with the full nine-store stamp (first-ever boot)', () => {
     expect(freshDomain.name).toBe(TEAM_DOMAIN_NAME)
-    expect(freshStamps.size).toBe(8)
+    expect(freshStamps.size).toBe(9)
     for (const store of P4_STORES) {
       expect(freshStamps.get(store) !== undefined).toBe(true)
     }
@@ -92,13 +94,13 @@ describe('rmr createOrOpenTeamDomain (adopt-or-initialize, root cause B)', () =>
     // (the create-equivalent, not a half-world)
     expect(freshReopen.ok).toBe(true)
     if (freshReopen.ok && freshReopen.value !== undefined) {
-      expect(freshReopen.value.repositories.schemaMeta.listStamps().size).toBe(8)
+      expect(freshReopen.value.repositories.schemaMeta.listStamps().size).toBe(9)
     }
   })
 
   it('adopts an existing stamped domain WITHOUT re-stamping (returning home)', () => {
     expect(adopted.name).toBe(TEAM_DOMAIN_NAME)
-    expect(adoptedStamps.size).toBe(8)
+    expect(adoptedStamps.size).toBe(9)
     // adopt, never touch: every stampedAt value survived byte-for-byte
     for (const [store, stamp] of originalStamps) {
       const adoptedStamp = adoptedStamps.get(store)
@@ -116,7 +118,7 @@ describe('rmr createOrOpenTeamDomain (adopt-or-initialize, root cause B)', () =>
     expect(partialAdopt.ok).toBe(false)
     const partialAdoptError = asTeamDomainError(partialAdopt.error)
     expect(partialAdoptError.code).toBe('SCHEMA_STAMP_MISSING')
-    // the exact first missing store in canonical order (6th of 8)
+    // the exact first missing store in canonical order (6th of 9)
     expect(detail(partialAdoptError, 'store')).toBe(P4_STORES[5])
     expect(detail(partialAdoptError, 'found')).toBe(null)
     // the strict open entry gives the identical diagnosis

@@ -15,7 +15,7 @@
  *      the whole-tree scanner).
  *
  * On top of the source scan, the model-facing surface is pinned at
- * CONSTRUCTION time: `createTeamTools` must expose exactly the ten
+ * CONSTRUCTION time: `createTeamTools` must expose exactly the eleven
  * sanctioned tools, each requiring `rootSessionId` + `requestToken` and
  * closing `additionalProperties` (SD-TOKEN: the correlation token is
  * model/driver-supplied on every call).
@@ -113,9 +113,10 @@ const NEGATIVE_SAMPLE = [
 ].join('\n')
 const NEGATIVE_HITS = matchBypassRulesInText(NEGATIVE_SAMPLE)
 
-// --- the ten sanctioned model-facing tool names (registration order) ----
+// --- the eleven sanctioned model-facing tool names (registration order) --
 
 const EXPECTED_TOOL_NAMES = [
+  'team_collect',
   'team_create_member',
   'team_delegate',
   'team_follow_up',
@@ -129,12 +130,22 @@ const EXPECTED_TOOL_NAMES = [
 ] // already in sorted order
 
 describe('P6-T6 tool set — the static bypass scan (brief §6b, G6 criterion 7)', () => {
-  it('the scan walks exactly the tool-layer source boundary (five .ts files)', () => {
-    expect(SCAN.files.length).toBe(5)
+  it('the scan walks exactly the tool-layer source boundary (seven .ts files)', () => {
+    // Gate supplement (issue #1, 2026-09-11): the pin was 5 files since
+    // P6-T6 — alpha.1 T2 (85a9036) added builtin-deny.ts + tool-selector.ts
+    // without updating it, so this test was RED on every tree since then
+    // (proven pre-existing at base 6a2f3e1 by the committed baseline
+    // evidence; the task commit that touched this file — the 10→11 tool
+    // count pin — repaired the stale boundary list). The SCAN RULES are
+    // unchanged: the two added files produce zero hits on the three
+    // boundary rules (the other nine tests in this file are green).
+    expect(SCAN.files.length).toBe(7)
     expect(SCAN.files).toEqual([
+      'packages/tools/src/builtin-deny.ts',
       'packages/tools/src/guard.ts',
       'packages/tools/src/index.ts',
       'packages/tools/src/tokens.ts',
+      'packages/tools/src/tool-selector.ts',
       'packages/tools/src/tools.ts',
       'packages/tools/src/types.ts',
     ])
@@ -205,8 +216,8 @@ describe('P6-T6 tool set — the static bypass scan (brief §6b, G6 criterion 7)
     expect(NEGATIVE_HITS.length).toBe(0)
   })
 
-  it('the model-facing surface is EXACTLY the ten sanctioned tools (SD-CREATE/SD-GUARD scope)', () => {
-    expect(TOOL_SET.length).toBe(10)
+  it('the model-facing surface is EXACTLY the eleven sanctioned tools (SD-CREATE/SD-GUARD scope)', () => {
+    expect(TOOL_SET.length).toBe(11)
     const names = TOOL_SET.map((tool) => tool.name).slice()
     names.sort()
     expect(names).toEqual(EXPECTED_TOOL_NAMES)

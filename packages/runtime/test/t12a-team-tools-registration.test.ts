@@ -1,7 +1,7 @@
 /**
  * t12a-team-tools-registration.test.ts — D-2: the team tool registration
  * boundary on the REAL agent ctx (the glue's agent-setup loop), driven with
- * the REAL ten-tool stack.
+ * the REAL eleven-tool stack.
  *
  * Field context (2026-09-05, user test round 2 on the real machine): the
  * user reported the leader "cannot see the team tools". Session-log evidence
@@ -11,16 +11,16 @@
  * agent. The real gap the incident exposed: no test ever drove the glue's
  * registration loop with a FILLED teamToolsRef (every T12A bridge world
  * left teamToolsRef.current undefined — the skip path only), and P8-S5A's
- * "10 tools" assertion covers the root-surface stack, not the agent-context
+ * "11 tools" assertion covers the root-surface stack, not the agent-context
  * registration the model's tool list is built from.
  *
  * Contract (asserted at the REAL glue boundary through the t12a-live-bridge
  * doubles — the real agent-bindings.mjs, the real createTeamTools stack
  * over the P6-T2 world):
  *   D2-1 create phase: the root (leader) AND the seeded member agent ctxs
- *        receive EXACTLY the ten team tool definitions — the same objects
+ *        receive EXACTLY the eleven team tool definitions — the same objects
  *        from the real stack, in stack order;
- *   D2-2 resume phase: a cold-root RESTART re-registers the ten tools on
+ *   D2-2 resume phase: a cold-root RESTART re-registers the eleven tools on
  *        the resumed leader (agents.resume with the shared setup — the
  *        user's exact restart scenario; the tools re-land on every boot);
  *   D2-3 close: binding.close() disposes EVERY registration (HMR safety —
@@ -45,7 +45,7 @@ import {
 import { destroyP6T1World } from './p6t1-helpers.js'
 import { createP6T6World } from '../../tools/test/p6t6-helpers.js'
 
-/** The frozen ten-tool team vocabulary (the closed set — name drift fails). */
+/** The frozen eleven-tool team vocabulary (the closed set — name drift fails). */
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -53,6 +53,7 @@ const EXPECTED_TOOL_NAMES = [
   'team_create_member',
   'team_delegate',
   'team_follow_up',
+  'team_collect',
   'team_send_message',
   'team_report_progress',
   'team_request_control',
@@ -63,7 +64,7 @@ function names(ctx: AgentCtxDouble): string[] {
   return ctx.registeredTools.map((def) => String((def as { name?: string }).name ?? ''))
 }
 
-// The REAL ten-tool stack (createTeamTools over the P6-T2 durable world) —
+// The REAL eleven-tool stack (createTeamTools over the P6-T2 durable world) —
 // the same factory the production root fills teamToolsRef.current with.
 const p6t6 = await createP6T6World('t12a-team-tools-reg')
 
@@ -116,7 +117,7 @@ const rootToolsAfterCloseB = names(rootCtxB)
 await destroyP6T1World(p6t6.world)
 
 describe('D-2 the team tools registered on the leader (and member) agent ctx', () => {
-  it('D2-1 create phase: root + seeded member receive exactly the ten real team tools (same objects, stack order)', () => {
+  it('D2-1 create phase: root + seeded member receive exactly the eleven real team tools (same objects, stack order)', () => {
     // The real factory emits the frozen vocabulary (guards the stack input).
     expect(p6t6.tools.map((tool) => tool.name)).toEqual(EXPECTED_TOOL_NAMES)
     // The leader's ctx carries the full stack — the same def objects.
@@ -131,7 +132,7 @@ describe('D-2 the team tools registered on the leader (and member) agent ctx', (
     expect(worldA.records.creates.every((create) => create.setupProvided)).toBe(true)
   })
 
-  it('D2-2 resume phase: a cold-root restart re-registers the ten tools on the resumed leader', () => {
+  it('D2-2 resume phase: a cold-root restart re-registers the eleven tools on the resumed leader', () => {
     expect(rootToolsAfterResume).toEqual(EXPECTED_TOOL_NAMES)
     // A restart resumes the root (never re-creates it) — with the setup.
     expect(worldB.records.creates.length).toBe(0)

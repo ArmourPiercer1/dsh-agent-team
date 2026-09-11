@@ -1,0 +1,51 @@
+﻿==== H4 GREEN console — packages/runtime/test/h4-rule-identity.test.ts + focused suites + p4t6 pin
+==== run on the FIXED tree (install-lifetime ruleKeyCache DELETED; every decision fresh-resolves all same-tool exact rules through the same resolver / session-cwd basis as the operation)
+==== captured at: 2026-09-11 17:51:59 +08:00
+==== branch: task/alpha2hf-h4-rule-identity @ 309d998 (commit (a) — the RED probes; the fix uncommitted at capture — committed as (b) in the task branch)
+==== expected per the H4 brief: h4 10/10 + all focused suites green + p4t6 pin 669 (668 + one H4 scannable file, DEC-1 (h4)).
+==== actual: [1/3] 239/239 (7 focused runtime suites) · [2/3] 43/43 (a1 domain) · [3/3] 10/10 (p4t6 @ 669) — ALL GREEN.
+====
+############ [1/3] focused runtime suites — ALL GREEN (239/239) ############
+command: pnpm --filter @dsh-agent-team/runtime exec vitest run test/h4-rule-identity.test.ts test/a2-canonical-operation.test.ts test/a3-permission-resolver.test.ts test/a4a-control-exact-scope.test.ts test/a5a-pre-execute.test.ts test/a6a-production-wiring.test.ts test/h1a-pre-execute-endcap.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h4/packages/runtime
+
+ ✓ test/a3-permission-resolver.test.ts (28 tests) 5ms
+ ✓ test/a2-canonical-operation.test.ts (31 tests) 5ms
+ ✓ test/a6a-production-wiring.test.ts (52 tests) 8ms
+ ✓ test/h1a-pre-execute-endcap.test.ts (40 tests) 4ms
+ ✓ test/a4a-control-exact-scope.test.ts (28 tests) 4ms
+ ✓ test/a5a-pre-execute.test.ts (50 tests) 5ms
+ ✓ test/h4-rule-identity.test.ts (10 tests) 3ms
+
+ Test Files  7 passed (7)
+      Tests  239 passed (239)
+   Start at  17:46:36
+   Duration  1.72s (transform 2.81s, setup 0ms, import 5.97s, tests 35ms, environment 0ms)
+
+############ [2/3] a1 permission policy (domain package) — ALL GREEN (43/43) ############
+command: pnpm --filter @dsh-agent-team/domain exec vitest run test/a1-permission-policy.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h4/packages/domain
+
+ ✓ test/a1-permission-policy.test.ts (43 tests) 41ms
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Start at  17:46:43
+   Duration  315ms (transform 119ms, setup 0ms, import 172ms, tests 41ms, environment 0ms)
+
+############ [3/3] p4t6 DEC-1 scanner pin — 669 (668 + one H4 scannable file) — 10/10 ############
+command: pnpm --filter @dsh-agent-team/testkit exec vitest run test/p4t6-session-event-scan.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h4/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  17:51:10
+   Duration  281ms (transform 25ms, setup 0ms, import 172ms, tests 4ms, environment 0ms)

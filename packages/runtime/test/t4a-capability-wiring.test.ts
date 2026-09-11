@@ -47,7 +47,7 @@
  * Legacy regression (plan §10.3 — the legacy Blueprint does not regress):
  *   - a world whose blueprint has NO `capabilities` (the bridge default)
  *     keeps the 0.1.0-rc.1 behavior EXACTLY: the leader receives the full
- *     ten-tool catalog, no built-in deny, no Team skills, and the MCP mount
+ *     eleven-tool catalog, no built-in deny, no Team skills, and the MCP mount
  *     follows the durable decision alone (the human-override allow -> mount).
  *
  * Sibling isolation: every agent ctx is a separate scope; one member's
@@ -73,7 +73,7 @@ import {
 import { destroyP6T1World } from './p6t1-helpers.js'
 import { createP6T6World } from '../../tools/test/p6t6-helpers.js'
 
-// ── the frozen ten-tool team vocabulary (guards the catalog input) ─────────
+// ── the frozen eleven-tool team vocabulary (guards the catalog input) ─────────
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -81,6 +81,7 @@ const EXPECTED_TOOL_NAMES = [
   'team_create_member',
   'team_delegate',
   'team_follow_up',
+  'team_collect',
   'team_send_message',
   'team_report_progress',
   'team_request_control',
@@ -169,7 +170,9 @@ const memberRowB = { childSessionId: CHILD_B, instanceId: INST_B, templateId: 't
 // would not mount. With it, the durable side allows and the TEMPLATE's mcp
 // entry is what differentiates the three identities.
 const mcpAllow: GovernanceOverrideRecord = parseGovernanceOverride({
-  schemaVersion: 1,
+  // v2 committed world (blueprint-loading repair): GovernanceOverride
+  // rows validate against the v2 TeamDomain schema version.
+  schemaVersion: 2,
   kind: 'human-override',
   recordId: 't4a-mcp-allow',
   scope: 'team',
@@ -187,7 +190,7 @@ const teamSkills = [
   { name: 'a-skill', description: 'Member A skill', content: 'Member A skill content' },
 ]
 
-// ── the REAL ten-tool stack (the same factory the production root fills ────
+// ── the REAL eleven-tool stack (the same factory the production root fills ────
 // teamToolsRef.current with) — shared by every world of this file.
 const p6t6 = await createP6T6World('t4a-capability-wiring')
 
@@ -317,13 +320,15 @@ const rBMcp = mcpMounts(resumeB)
 
 // ── world 3: the LEGACY regression (the bridge default blueprint — NO ─────
 // `capabilities` field on any template -> legacy mode: the 0.1.0-rc.1
-// behavior, the full ten-tool catalog, no deny, no skills, MCP = durable).
+// behavior, the full eleven-tool catalog, no deny, no skills, MCP = durable).
 const LEGACY_ROOT = 'session-t4a-legacy-root'
 // A legacy-rooted durable mcp allow (so the durable decision is genuinely
 // allow for the legacy root — the durable facet is resolved under the boot
 // root, LEGACY_ROOT, so the override must be rooted there).
 const legacyMcpAllow: GovernanceOverrideRecord = parseGovernanceOverride({
-  schemaVersion: 1,
+  // v2 committed world (blueprint-loading repair): GovernanceOverride
+  // rows validate against the v2 TeamDomain schema version.
+  schemaVersion: 2,
   kind: 'human-override',
   recordId: 't4a-legacy-mcp-allow',
   scope: 'team',
@@ -445,7 +450,7 @@ describe('alpha.1 T4 — the production capability wiring on the REAL live glue'
   })
 
   describe('the legacy Blueprint (no `capabilities`) does not regress (0.1.0-rc.1 behavior)', () => {
-    it('the leader receives the FULL ten-tool catalog (no selection)', () => {
+    it('the leader receives the FULL eleven-tool catalog (no selection)', () => {
       expect(legacyTools).toEqual(EXPECTED_TOOL_NAMES)
     })
     it('no builtin tool deny (legacy: the restrict seam is never called)', () => {

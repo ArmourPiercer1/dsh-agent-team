@@ -53,7 +53,9 @@ function override(
   kind: 'autonomy-overlay' | 'human-override' = 'autonomy-overlay',
 ): GovernanceOverrideRecord {
   const base: Record<string, unknown> = {
-    schemaVersion: 1,
+    // v2 committed world (blueprint-loading repair): GovernanceOverride
+    // rows validate against the v2 TeamDomain schema version.
+    schemaVersion: 2,
     kind,
     recordId,
     scope: 'team',

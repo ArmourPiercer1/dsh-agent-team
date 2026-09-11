@@ -35,7 +35,7 @@
  *
  *   T1.1 — A01–A29 all assembled and reachable through the `teamRoot`
  *          facade + the full root surface; the tool stack is filled
- *          (10 tools); the create-phase boot seeds the durable world
+ *          (11 tools); the create-phase boot seeds the durable world
  *          (team root row + binding + the two RUNNING/av1 seed members);
  *          boot is memoized;
  *   T1.2 — the four S6 install seams (A30/A31/A32/A34) fail closed with
@@ -789,7 +789,7 @@ const t17 = await (async (): Promise<T17State> => {
 // --- the assertions (synchronous `it` bodies over the captured state) -------------------
 
 describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)', () => {
-  it('T1.1 create phase: A01-A29 assembled + reachable, 10 tools, seeded world', () => {
+  it('T1.1 create phase: A01-A29 assembled + reachable, 11 tools, seeded world', () => {
     // The entry identity (named-export Cordis protocol).
     expect(t11.hostName).toBe('dsh-agent-team')
     expect(t11.applyType).toBe('function')
@@ -856,8 +856,8 @@ describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)'
     expect(t11.liveIsStub).toBe(true)
     expect(t11.bootCount).toBe(1)
 
-    // The tool stack is filled (ten team tools).
-    expect(t11.toolsCount).toBe(10)
+    // The tool stack is filled (eleven team tools).
+    expect(t11.toolsCount).toBe(11)
 
     // The create-phase boot seeded the durable world (real storage).
     expect(t11.rootRecordPresent).toBe(true)

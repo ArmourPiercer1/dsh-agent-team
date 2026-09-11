@@ -556,6 +556,278 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     Recorded on the H3 task branch; re-verify on int at the
     //     alpha2-hardening integration.
     //
+    // (h4) ONE H4 scannable file (this commit, the alpha.2 hardening
+    //     follow-up P1-A task): packages/runtime/test/h4-rule-identity.
+    //     test.ts (the stale exact-rule canonical identity spec: a
+    //     mutable fake backend (the map mutation IS the symlink/junction
+    //     retarget) + the real A4 durable control service + one adapter
+    //     install — H4-A1 DENY retarget (RED pre-fix: the cached key
+    //     misses the retargeted identity and the decision downgrades to
+    //     ask + a request), H4-A2 ALLOW retarget / stale authority (RED
+    //     pre-fix: the cached key keeps authorizing the original
+    //     target), H4-A3 transient rule-resolution failure (the P1-3
+    //     fail-closed flip preserved; the failure is never remembered),
+    //     H4-DB operation/rule same-basis agreement (one injected
+    //     closure, identical keys on every decision)). Zero denylist
+    //     vocabulary (the scan over it passes — the frozen quarantine
+    //     hit set is unchanged at fifteen occurrences). The sibling
+    //     changes (pre-execute-adapter.ts — the install-lifetime
+    //     ruleKeyCache deleted, fresh-per-decision rule canonicalization
+    //     + resolver-result shape validation; permission-resolver.ts
+    //     input-contract docs; the a5a suite comment syncs) are in-place
+    //     edits on already-scanned files (no count change). Recorded on
+    //     the H4 task branch; re-verify on int at the
+    //     alpha2-hardening-followup integration.
+    //
+    // (h5) ONE H5 scannable file (this commit, the alpha.2 hardening
+    //     follow-up P1-B task): packages/runtime/test/h5-bash-effects.
+    //     test.ts (the bash execution-effect fingerprint spec: the H5
+    //     fake resolver over the session-cwd-/A model ('.' -> KEY_A,
+    //     '/A' -> KEY_A, 'sub' -> KEY_A_SUB, '/B' -> KEY_B) + the real
+    //     A4 durable control service + one adapter install — H5-B1
+    //     workdir A/B (RED pre-fix), H5-B2 omitted == explicit
+    //     session-cwd (the effective-canonical ruling), H5-B3
+    //     background, H5-B4 timeoutMs, H5-B5 sandbox mode (the pinned
+    //     upstream dsh-sandbox ESCALATION_TARGETS), H5-B6 excluded
+    //     description/justification, H5-B7 raw command binding (H2),
+    //     H5-B8 the six malformed effect-field fail-closed legs
+    //     (workdir: 42 / run_in_background: 'yes' / timeoutMs: -1,
+    //     '10000', Infinity / sandbox_permissions: 42 — the reachability
+    //     proof: the upstream materialization is lossless-JSON-only and
+    //     the pre-execute waterfall precedes validateBashArgs), H5-C1
+    //     same authority args + new callId (same fingerprint, new
+    //     request), H5-C2 the /A approval is not consumed by the /B
+    //     operation (scope exactness), H5-S1 the summary effect tokens
+    //     + the 120-char preview-cap non-authority leg). Zero denylist
+    //     vocabulary (the scan over it passes — the frozen quarantine
+    //     hit set is unchanged at fifteen occurrences). The sibling
+    //     changes (canonical-operation.ts — the bash projection extended
+    //     to { tool, commandHash, workdir, runInBackground, timeoutMs,
+    //     sandboxPermissions } + the new extractBashEffects; errors.ts —
+    //     the four new closed bash-workdir-not-a-string / bash-run-in-
+    //     background-not-boolean / bash-timeout-ms-invalid / bash-
+    //     sandbox-permissions-not-a-string reasons; types.ts — the
+    //     CanonicalOperation.workdirDisplay presentation field; pre-
+    //     execute-adapter.ts — the summary effect tokens; the a2 bash
+    //     leg updates) are in-place edits on already-scanned files (no
+    //     count change). Recorded on the H5 task branch; re-verify on
+    //     int at the alpha2-hardening-followup integration.
+    //
+    // (issue#1) THREE issue #1 scannable files (this commit, the issue #1
+    //     async delegation repair task — recorded on the task branch as
+    //     668 + 3 = 671 on base 6a2f3e1; the H4/H5 follow-up (two
+    //     scannable files, above) merged to master since the task branch
+    //     base, so on int this lands as 670 + 3 = 673):
+    //     packages/runtime/test/issue1-serial-blocking.test.ts (the RED
+    //     characterization of the pre-fix sync-blocking behavior),
+    //     packages/runtime/test/issue1-async-delegation.test.ts (the R1-R7
+    //     acceptance battery: the async admission receipt without
+    //     settlement, the detached continuation with no caller signal, the
+    //     durable settlement fact persisting memberResult, the work-status
+    //     read action entry shapes (admitted/running/succeeded/failed/
+    //     unavailable-unknown), the WORK_REPLAYED replay and the admitted-
+    //     only resume, the byte-identical sync default, and the cross-
+    //     member concurrency overlap proof) and
+    //     packages/tools/test/issue1-collect-tools.test.ts (the
+    //     team_collect tool layer: the optional async flag on delegate and
+    //     follow-up, the collect requestToken array validation, the
+    //     read-only scan, the duplicate folding in input order, the
+    //     unknown-token shape, and the explicit async:false override). All
+    //     three carry zero denylist vocabulary (the scan over them passes
+    //     — the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling changes (the admission
+    //     types/actions/index, the action-router work-execution/effects/
+    //     router/index, the root.ts tool-count comment, tools/src/tools.ts,
+    //     the five ten-tool registration pin specs, and the p6t6-bypass-
+    //     scan eleven-tool update) are in-place edits on already-scanned
+    //     files (no count change). Recorded on the task branch; re-verify
+    //     on int at the issue1-async-delegation integration.
+    //
+    // (bp1) FOUR issue#2-blueprint-loading scannable files (this commit,
+    //     the parallel-repair branch fix/alpha2-blueprint-loading @ 6a2f3e1
+    //     base): packages/domain/blueprint/src/inspect.ts (the BP1
+    //     identity-level source inspector — the weaker sibling of the
+    //     strong parseBlueprint pipeline that a directory scan uses to
+    //     list saved sources without strong-parsing each of them),
+    //     packages/domain/test/bp1-blueprint-inspector.test.ts (its spec:
+    //     the structural stage reusing the strong parser's own
+    //     splitFrontmatter/decodeYamlFrontmatter, the identity field
+    //     checks, and the identity/strong split),
+    //     packages/runtime/test/bp1-red-probe.test.ts (the BP0
+    //     RED-1/RED-2/RED-5 host-level characterization probes: the
+    //     static single catalog, the no-HMR second Blueprint, and the
+    //     boot-failure -> route-missing defect over the plain-object
+    //     host seam + connection sink), and
+    //     packages/runtime/test/bp1-red-glue-probe.test.ts (the BP0 RED-4
+    //     per-Team authority split probe over the t12a live bridge).
+    //     Zero denylist vocabulary (the scan over them passes — the
+    //     frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling client probe
+    //     (packages/client/test/team-creation-panel-refresh.client.spec.
+    //     tsx — the RED-3 manual-refresh spec) is a .tsx, outside the
+    //     frozen scanner's extension set (no count change, the P9-T1
+    //     precedent). Recorded on the blueprint-loading task branch;
+    //     re-verify on the merged tree after the hardening integration
+    //     (plan §3.5: the merged-tree truth, never an arithmetic sum). On
+    //     this master merge — after the (h4), (h5) and (issue#1)
+    //     integrations above — the fourteen files of this branch land as
+    //     673 + 14 = 687, the scanner truth on the merged tree (verified
+    //     at the merge integration, not an arithmetic sum).
+    //
+    // (bp1-c) THREE issue#2-blueprint-loading scannable files (this
+    //     commit, the TeamDomain v2 bump + blueprint_registry store,
+    //     plan BP2): packages/storage/schema/blueprint-registry.ts (the
+    //     registry row record module — the closed field set, the
+    //     create/parse over the contracts id grammar, the L3 row-stamp
+    //     discipline (v2 rows carry `2`), the canonical serialize/
+    //     deserialize, and the blueprintId@revision row key agreeing
+    //     with the contracts snapshot display key),
+    //     packages/storage/repositories/blueprint-registry.ts (the
+    //     append-only BlueprintRegistryRepository — get/list/freeze
+    //     only, never last-write-wins: absent append, same-hash
+    //     idempotent, different-hash loud RECORD_DUPLICATE
+    //     blueprint-revision-frozen with both hashes, write-time re-read
+    //     refusal), and packages/storage/test/bp1-blueprint-registry.
+    //     test.ts (its spec: the append / idempotency / conflict
+    //     surface, the key agreement, the malformed-row loud reads, the
+    //     no-write-surface check). Zero denylist vocabulary (the scan
+    //     over them passes — the frozen quarantine hit set is unchanged
+    //     at fifteen occurrences). The sibling v2 edits (stores.ts,
+    //     team-domain.ts, the index exports, the affected p4-01 / p4-06
+    //     / p4-07 / rmr-create-or-open specs, the p4-t5 testkit specs,
+    //     the committed-world fixture restamp — including its new
+    //     untracked blueprint_registry.json table file, which lives
+    //     under packages/testkit/fault-injection/fixtures, outside the
+    //     scanner's packages/** source globs — and the in-place doc
+    //     edits) are in-place edits on already-scanned files (no count
+    //     change). Recorded on the blueprint-loading task branch;
+    //     re-verify on the merged tree after the hardening integration
+    //     (plan §3.5).
+    //
+    // (bp1-d) FOUR issue#2-blueprint-loading scannable files (this
+    //     commit, the filesystem source index + live authority + live
+    //     catalog facade, plan BP3/BP4):
+    //     packages/runtime/src/plugin/blueprint-source-index.ts (the
+    //     stateless blueprintDir scan — path semantics absolute /
+    //     relative-to-cwd / absent-disabled, the *.yaml|*.yml candidate
+    //     rule with *.draft.* excluded, rescan-per-request, the
+    //     identity-level inspection seam, the fail-closed I/O codes),
+    //     packages/runtime/src/plugin/blueprint-authority.ts (the live
+    //     authority over the frozen registry + saved sources + bootstrap
+    //     anchor — the registry-wins resolve precedence, the duplicate-
+    //     mutable loud refusal, the resolveSnapshot / freezeSnapshot
+    //     hash fences including the TOCTOU re-resolve),
+    //     packages/runtime/src/plugin/blueprint-live-catalog.ts (the
+    //     BlueprintCatalog interface implemented over live state — every
+    //     method call re-queries the authority, the static catalog's
+    //     closed not-found wording + revision order shared from the
+    //     domain exports) and
+    //     packages/runtime/test/bp1-blueprint-authority.test.ts (its
+    //     29-test spec: the W0 index worlds, the W1/W1B authority
+    //     unions + revision order, the W2 duplicate-mutable louds, the
+    //     W3/W3C freeze + TOCTOU + frozen-after-deletion worlds, the W4
+    //     logically-broken-vs-identity-broken split, the W5 facade
+    //     surface). Zero denylist vocabulary (the scan over them passes
+    //     — the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling edits (domain catalog.ts + index.ts
+    //     gaining the exported compareBlueprintRevisions / blueprintNotFound
+    //     helpers, node-min.d.ts + types.ts additive surfaces)
+    //     are in-place edits on already-scanned files (no count change).
+    //     Recorded on the blueprint-loading task branch; re-verify on
+    //     the merged tree after the hardening integration (plan §3.5).
+    //
+    // (bp1-e) ONE issue#2-blueprint-loading scannable file (this commit,
+    //     the BP6 freeze-barrier invariant spec, plan §10):
+    //     packages/runtime/test/bp1-freeze-barrier.test.ts (the
+    //     fresh-TeamSession invariant — a production fresh TeamSession
+    //     commit ⇒ the registry carries the same (id, revision,
+    //     contentHash) record — pinned over the two production mint
+    //     paths the host drives: the real create boot [the shared
+    //     bindFresh wrapper choke point] and the fixture boot seed
+    //     [writer-audit category 3's explicit registry seeding]; the
+    //     stored row's source text is the row anchor — the saved copy of
+    //     the anchor identity under blueprintDir is shadowed, never a
+    //     second row). Zero denylist vocabulary (the scan over it passes
+    //     — the frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). The sibling edits (root.ts the optional
+    //     blueprintCatalog?/blueprintAuthority? params + the freeze
+    //     barrier in the bindFresh wrapper + the handoff pre-put freeze +
+    //     the fixture boot seeding, host.ts the sole authority-builder
+    //     wiring + the blueprintDir config validation,
+    //     blueprint-authority.ts the shadow-precedence correction [a
+    //     saved file carrying the anchor's identity is shadowed, not a
+    //     duplicate — the RED-1 contract], types.ts the code-doc update)
+    //     are in-place edits on already-scanned files (no count change).
+    //     Recorded on the blueprint-loading task branch; re-verify on
+    //     the merged tree after the hardening integration (plan §3.5).
+    //
+    //
+    // (bp1-f) ONE issue#2-blueprint-loading scannable file (this commit,
+    // the BP-F per-Team Blueprint authority isolation in the live glue,
+    // plan §11): packages/runtime/test/bp1-dual-team-gate.test.ts (the
+    // §11.3 architecture gate: the REAL glue wired with a host-shaped
+    // per-root resolver — the durable TeamSession row's bound snapshot
+    // ref -> the live authority -> the FROZEN registry row (the real
+    // TeamDomain blueprint_registry over a FileStorageSeam) -> the hash
+    // equality — with two team roots sharing one glue instance and
+    // deliberately different leader persona / member persona / teamTools
+    // allowlist / builtinToolDeny / permissions rules; the A-only-A /
+    // B-only-B assertions + the cold resume of a FRESH glue instance
+    // after the saved sources are deleted [the frozen registry row
+    // replays — the DoD "frozen source deletion never breaks the old
+    // Team's resolve / cold resume"]). Zero denylist vocabulary (the
+    // scan over it passes — the frozen quarantine hit set is unchanged
+    // at fifteen occurrences). The sibling edits (agent-bindings.mjs the
+    // per-root boundBlueprintByRoot cache + the resolveBoundBlueprint
+    // dep + the root-aware persona callbacks + the locateTemplate /
+    // resolveStaticCapabilities / agentSetup call sites, host.ts the
+    // authority-builder move above the glue + the host-shaped resolver
+    // closure + the GlueModule dep type, the t12a bridge .mjs/.d.mts the
+    // host stand-in resolver injection + the blueprintSources /
+    // resolveBoundBlueprint world options, bp1-red-glue-probe.test.ts
+    // the REAL Team B source + the real contentHash + the world store
+    // option [the RED-4 probe turns GREEN]) are in-place edits on
+    // already-scanned files (no count change). Recorded on the
+    // blueprint-loading task branch; re-verify on the merged tree after
+    // the hardening integration (plan §3.5).
+    //
+    //
+    // (bp1-g) ZERO new issue#2-blueprint-loading scannable files (this
+    // commit — the BP-G remote mount-before-boot + boot readiness, plan
+    // §12): the change is entirely in-place edits on already-scanned
+    // files — host.ts (the mount section moved BEFORE the awaited live
+    // boot [plan §12.1] + the in-process read-only readiness state
+    // starting|ready|failed settling around the boot [plan §12.2] + the
+    // remoteReadiness getter passed into the root), root.ts (the
+    // additive TeamProductionRootParams.remoteReadiness + the pass-
+    // through to createS6RemoteSurfaces), s6-remote.ts (the RemoteReadiness
+    // type + the REMOTE_READINESS_INDEPENDENT_METHODS set [catalog.list /
+    // catalog.get] + the optional readiness gate on the mounted
+    // dispatcher — a non-`ready` state refuses every other closed
+    // method with the frozen internal-error failure envelope: no new
+    // wire code, no protocol bump [plan §12.3]). No new .test.ts file
+    // (the RED-5 probes already committed in BP-A turn green by this
+    // change: bp1-red-probe 3/6 -> 6/6); the frozen quarantine hit set
+    // is unchanged at fifteen occurrences and the scan count stays 681.
+    // Recorded on the blueprint-loading task branch; re-verify on the
+    // merged tree after the hardening integration (plan §3.5).
+    //
+    //
+    // (bp1-h) ONE new issue#2-blueprint-loading scannable file (this
+    // commit — the BP-H client manual refresh + the BP10 local authoring
+    // helper, plan §13/§14): packages/testkit/test/bp1h-blueprint-authoring.
+    // test.ts (the 8-test sync-shim spec over the helper's exported
+    // stage/validate-save semantics + the plan's conditional frozen
+    // registry-probe guard). The rest of BP-H is OUTSIDE the scan:
+    // scripts/blueprint-authoring.mjs + .d.mts (scripts/** is not
+    // scanned), the TeamCreationPanel.tsx / locales.ts / module.css
+    // refresh surface (.tsx/.css excluded; locales.ts already scanned —
+    // in-place edit), the client .client.spec.tsx RED-3 probe (committed
+    // in BP-A, .tsx excluded), and docs/blueprint-authoring.md (docs/**
+    // is not under packages/**). +1 -> 682. Recorded on the
+    // blueprint-loading task branch; re-verify on the merged tree after
+    // the hardening integration (plan §3.5).
+    //
     // (i2) THREE I2 scannable files (this commit, the alpha.2 issue #2
     //     permission-repair line B — the I2-P1/I2-P2/I2-P4 permanent
     //     tests): packages/runtime/test/issue2-real-preset-restriction.
@@ -585,20 +857,26 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     (fix/alpha2-issue2-permission); re-verify with the scanner's
     //     truth at the post-line-A rebase (plan §23.2).
     //
-    // Independently re-verified on the int tree at each integration: the
-    // committed scanner's own run reports filesScanned == files.length ==
-    // 671 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 + 3), and its file
-    // list names exactly the twenty-nine files above (ten alpha.1 + one
-    // A1 + seven A2 + one A4 + two A3 + two A5 + one A6 + one H1 + one
-    // H3 + three I2; the committed scanner is byte-identical — no
-    // scanner change, DEC-1).
+    // Independently re-verified on the merged master tree at this
+    // integration: the committed scanner's own run reports filesScanned
+    // == files.length == 690 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1 + 1 +
+    // 1 + 1 + 3 + 14 + 3), and its file list names exactly the forty-eight
+    // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
+    // two A5 + one A6 + one H1 + one H3 + one H4 + one H5 + three issue
+    // #1 + fourteen issue#2-blueprint-loading [four bp1 + three bp1-c +
+    // four bp1-d + one bp1-e + one bp1-f + one bp1-h] + three issue #2
+    // permission-repair [two runtime + one tools]; the committed scanner
+    // is byte-identical — no scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
+    // alpha2-hardening-followup/h4-rule-identity/ + alpha2-hardening-
+    // followup/h5-bash-effect/ + dev/agent-workflow/evidence/issue1-async-
+    // delegation/ + dev/agent-workflow/evidence/alpha2-blueprint-loading/ +
     // alpha2-issue2-permission/.
-    expect(scanResult.filesScanned).toBe(671)
-    expect(scanResult.files.length).toBe(671)
+    expect(scanResult.filesScanned).toBe(690)
+    expect(scanResult.files.length).toBe(690)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -1,0 +1,26 @@
+[2026-09-11T10:51:20.706Z] world (a2perm): D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-59
+[2026-09-11T10:51:20.707Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-a2permhf-2026-09-11T10-50-59\profiles\web\node_modules\dsh-agent-team
+[2026-09-11T10:51:20.708Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2hf-h6\dev\agent-workflow\evidence\alpha2-hardening-followup\h6-closure\kit\a2permhf-assertions-2026-09-11T10-50-59.json (branch=task/alpha2hf-h6-closure)
+[2026-09-11T10:51:20.710Z] profile already initialized (a2perm-setup)
+[2026-09-11T10:51:20.711Z] p6t6 directive written (boot=1 phase=create rootSessionId=a2root)
+[2026-09-11T10:51:20.730Z] mock DeepSeek endpoint up at 127.0.0.1:3493 (in-process); DSH_HARDENING_PROBE=1 (hostile seam armed)
+[2026-09-11T10:51:23.566Z] booted at http://127.0.0.1:3181; boot line: dsh web: http://127.0.0.1:3181/?token=sL8qInRlBqLr1gAGuoSrDvcKQOFd21Kqmpbrh0iw7Ow
+[2026-09-11T10:51:23.576Z] auth cookie exchanged (dsh-auth-D1g…); instance pid 114532
+[2026-09-11T10:51:25.627Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"a2root","liveSessions":["a2root","session-a2a-a","session-a2b-b"],"toolCount":10}
+[2026-09-11T10:51:25.627Z] live sessions = ["a2root","session-a2a-a","session-a2b-b"] (expected set)
+[2026-09-11T10:51:25.643Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-11T10:51:25.731Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2hf-h6\dev\agent-workflow\evidence\alpha2-hardening-followup\h6-closure\kit\dump-config-a2perm-2026-09-11T10-50-59.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-11T10:51:25.745Z] catalog.list with cookie: HTTP 200
+[2026-09-11T10:51:25.745Z] catalog.list carries team.a2perm (user-layer override in force)
+[2026-09-11T10:51:25.746Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\alpha2hf-h6\dev\agent-workflow\evidence\alpha2-hardening-followup\h6-closure\kit\a2statehf-a2perm-2026-09-11T10-50-59.json
+[2026-09-11T10:51:25.746Z] A2-READY
+[2026-09-11T10:57:51.931Z] stop: instance pid 114532 signaled
+[2026-09-11T10:57:51.948Z] instance child exited (code=1) — boot job shutting down
+[2026-09-11T10:57:51.948Z] shutdown: instance child exit
+[2026-09-11T10:57:51.950Z] shutdown: ports free — 3181:true 3493:true
+[2026-09-11T10:57:52.449Z] stop: ports free — 3181:true 3493:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3181/?token=sL8qInRlBqLr1gAGuoSrDvcKQOFd21Kqmpbrh0iw7Ow
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-11T10:57:52.451Z] A2-STOPPED

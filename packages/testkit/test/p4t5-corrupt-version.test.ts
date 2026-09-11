@@ -5,11 +5,11 @@
  * snapshot: it is COPIED into a fresh scratch dir, corrupted, then reopened
  * by a brand-new stack — the process-restart model) unless noted:
  *
- * - **(a) version tamper fails LOUDLY, never migrates** (SUPPORTED = [1],
+ * - **(a) version tamper fails LOUDLY, never migrates** (SUPPORTED = [2],
  *   no built-in migration):
- *   - (a1) a tampered `schema_meta` stamp (store `ledger`, version 1→2) →
+ *   - (a1) a tampered `schema_meta` stamp (store `ledger`, version 2→3) →
  *     `SCHEMA_STAMP_MISMATCH` naming the exact store, expected and found;
- *   - (a2) a tampered domain meta stamp (L1, version 1→2) → the seam's
+ *   - (a2) a tampered domain meta stamp (L1, version 2→3) → the seam's
  *     `version-mismatch` mapped by the facade to `SCHEMA_VERSION_MISMATCH`;
  * - **(b) corrupted record bodies produce TYPED errors, never silent**:
  *   - (b1) a truncated `member_instances.json` → the medium is
@@ -170,7 +170,7 @@ try {
   const table: Record<string, unknown> = JSON.parse(readText(path))
   const row = table['ledger']
   if (typeof row !== 'string') throw new Error('a1: expected the ledger stamp row to be a string')
-  const tampered = row.replace(',"version":1}', ',"version":2}')
+  const tampered = row.replace(',"version":2}', ',"version":3}')
   if (tampered === row) throw new Error('a1: tamper anchor not found in the ledger stamp row')
   table['ledger'] = tampered
   writeText(path, JSON.stringify(table))
@@ -185,7 +185,7 @@ try {
 const a2Dir = copyFixtureIntoScratch('committed-world', 'p4t5c-a2')
 let a2: OpenAttempt | undefined
 try {
-  writeText(durableMetaPath(a2Dir), '{"version":2}')
+  writeText(durableMetaPath(a2Dir), '{"version":3}')
   const attempt = await capture(() => reopenRealm(a2Dir))
   a2 = attempt.ok ? { ok: true, errorCode: undefined, details: undefined } : { ok: false, errorCode: codeOf(attempt.error), details: detailOf(attempt.error) }
 } finally {
@@ -369,21 +369,21 @@ it('(S0) the restarted committed world takes a 0-write no-op recover with the sa
   expect(s0?.recoverSequence).toBe(1)
 })
 
-it('(a1) a tampered schema_meta stamp (ledger version 1→2) fails the reopen LOUDLY with SCHEMA_STAMP_MISMATCH naming the exact store (no built-in migration)', () => {
+it('(a1) a tampered schema_meta stamp (ledger version 2→3) fails the reopen LOUDLY with SCHEMA_STAMP_MISMATCH naming the exact store (no built-in migration)', () => {
   expect(a1).not.toBe(undefined)
   expect(a1?.ok).toBe(false)
   expect(a1?.errorCode).toBe('SCHEMA_STAMP_MISMATCH')
   expect(a1?.details?.['store']).toBe('ledger')
-  expect(a1?.details?.['expected']).toBe(1)
-  expect(a1?.details?.['found']).toBe(2)
+  expect(a1?.details?.['expected']).toBe(2)
+  expect(a1?.details?.['found']).toBe(3)
 })
 
-it('(a2) a tampered domain meta stamp (L1 version 1→2) fails the reopen LOUDLY with SCHEMA_VERSION_MISMATCH (the seam version-mismatch is mapped, never migrated)', () => {
+it('(a2) a tampered domain meta stamp (L1 version 2→3) fails the reopen LOUDLY with SCHEMA_VERSION_MISMATCH (the seam version-mismatch is mapped, never migrated)', () => {
   expect(a2).not.toBe(undefined)
   expect(a2?.ok).toBe(false)
   expect(a2?.errorCode).toBe('SCHEMA_VERSION_MISMATCH')
-  expect(a2?.details?.['expected']).toBe(1)
-  expect(a2?.details?.['found']).toBe(2)
+  expect(a2?.details?.['expected']).toBe(2)
+  expect(a2?.details?.['found']).toBe(3)
   expect(a2?.details?.['seamCode']).toBe('version-mismatch')
 })
 

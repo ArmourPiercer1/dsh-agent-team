@@ -420,7 +420,7 @@ const c3 = await (async () => {
     const ledger = root.domain.repositories.ledger
     const boundSeedSequence = await ledger.allocateSequence()
     await ledger.put({
-      schemaVersion: 1,
+      schemaVersion: 2,
       sequence: boundSeedSequence,
       rootSessionId: ROOT_SID,
       factType: 'team-work-admitted',
@@ -429,7 +429,7 @@ const c3 = await (async () => {
     })
     const ownedSeedSequence = await ledger.allocateSequence()
     await ledger.put({
-      schemaVersion: 1,
+      schemaVersion: 2,
       sequence: ownedSeedSequence,
       rootSessionId: NEW_ROOT,
       factType: 'team-work-admitted',

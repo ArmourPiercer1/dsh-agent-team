@@ -72,12 +72,50 @@ export const TEAM_PLUGIN_ERROR_CODES = {
      */
     TEAM_PLUGIN_WORKSPACE_NOT_FOUND: 'TEAM_PLUGIN_WORKSPACE_NOT_FOUND',
     /**
-     * M2 — attaching an already-materialized session to a resolved
+      * M2 — attaching an already-materialized session to a resolved
      * workspace rejected (the upstream attach validation failed: cwd
      * mismatch, unknown session, missing or invalid header cwd, or a
      * storage fault on the registry write chain).
      */
     TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED: 'TEAM_PLUGIN_WORKSPACE_ATTACH_FAILED',
+    /**
+     * BP3 (issue #2 blueprint-loading) — the configured `blueprintDir`
+     * exists but the directory scan failed with an I/O error other than
+     * ENOENT (EACCES/ENOTDIR/...): the saved-source catalog is fail-closed
+     * (a missing directory is the documented "disabled" state; a broken one
+     * is not silently disabled).
+     */
+    TEAM_BLUEPRINT_DIR_UNREADABLE: 'TEAM_BLUEPRINT_DIR_UNREADABLE',
+    /**
+     * BP3 — one saved source file could not be read (ENOENT/EACCES/EISDIR at
+     * read time: the file vanished between the scan and the read, or a
+     * directory carries a `.yaml` name).
+     */
+    TEAM_BLUEPRINT_FILE_UNREADABLE: 'TEAM_BLUEPRINT_FILE_UNREADABLE',
+    /**
+     * BP3 — two SAVED sources (two files in the blueprintDir) declare the
+     * same `(blueprintId, revision)` pair (plan §7.3: fail loud duplicate).
+     * SHADOW, not duplicate: a frozen registry row or the pinned bootstrap
+     * anchor carrying the same identity WINS over the disk file (the
+     * registry-wins rule extended to the row's pinned source — the RED-1
+     * contract).
+     */
+    TEAM_BLUEPRINT_REVISION_DUPLICATE: 'TEAM_BLUEPRINT_REVISION_DUPLICATE',
+    /**
+     * BP4 — the requested snapshot ref does not match the current content
+     * of the (frozen or mutable) source for that identity: the
+     * `ref.contentHash` disagrees with the freshly strong-parsed hash (the
+     * TOCTOU fence — the file changed between the earlier resolve and this
+     * access; the caller must re-resolve).
+     */
+    TEAM_BLUEPRINT_SNAPSHOT_MISMATCH: 'TEAM_BLUEPRINT_SNAPSHOT_MISMATCH',
+    /**
+     * BP4 — `freezeSnapshot` was asked to freeze an identity that is ALREADY
+     * frozen from different content (the registry row's contentHash differs
+     * from the requested one). A frozen revision is immutable: publish a NEW
+     * revision instead (plan §6.2 crash rule — the stored row stays).
+     */
+    TEAM_BLUEPRINT_REVISION_FROZEN: 'TEAM_BLUEPRINT_REVISION_FROZEN',
 };
 /** The plugin-level error carrier (stable `code` + message + detail). */
 export class TeamPluginError extends Error {

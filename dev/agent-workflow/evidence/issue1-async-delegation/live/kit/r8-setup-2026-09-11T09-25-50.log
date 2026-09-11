@@ -1,0 +1,4 @@
+[2026-09-11T09:25:50.857Z] r8 world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T09-25-50
+[2026-09-11T09:25:50.858Z] install source (task worktree, branch task/issue1-async-delegation tip): D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async
+[2026-09-11T09:25:50.858Z] expected installed version: 0.1.1-alpha.2 (from the task worktree root package.json)
+[2026-09-11T09:25:50.860Z] FAIL — robocopy failed (status=null): undefined

@@ -1,0 +1,26 @@
+[2026-09-11T12:52:39.426Z] mock: listening on 127.0.0.1:3495
+[2026-09-11T12:55:45.119Z] mock seq=1 identity=unknown trigger=user → text-fallback
+[2026-09-11T12:55:45.120Z] mock: 1 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-11T12:55:45.136Z] mock seq=2 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:55:45.139Z] mock: 2 tool-call reply: team_delegate
+[2026-09-11T12:55:45.623Z] r8 receipt-delA={"status":"executed","action":"delegate","rootSessionId":"issue1-root","callerRole":"leader","effect":{"kind":"work-admitted","instanceId":"inst-r8a","fromLifecycle":"RUNNING","lifecycleCommitted":false,"sequence":2,"settled":false,"workStatus":"admitted"},"requestToken":"r8L-delA"}
+[2026-09-11T12:55:45.658Z] mock seq=3 identity=leader trigger=tool:r8L-delA → tool-call:r8L-delB:team_delegate
+[2026-09-11T12:55:45.659Z] mock: 3 tool-call reply: team_delegate
+[2026-09-11T12:55:45.717Z] mock seq=4 identity=worker-a trigger=user → text:MEMBER-A-DONE-TURN1
+[2026-09-11T12:55:45.717Z] mock: 4 text reply (19 chars): "MEMBER-A-DONE-TURN1"
+[2026-09-11T12:55:45.718Z] mock seq=5 identity=unknown trigger=user → text-fallback
+[2026-09-11T12:55:45.718Z] mock: 5 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-11T12:55:46.294Z] r8 receipt-delB={"status":"executed","action":"delegate","rootSessionId":"issue1-root","callerRole":"leader","effect":{"kind":"work-admitted","instanceId":"inst-r8b","fromLifecycle":"RUNNING","lifecycleCommitted":false,"sequence":4,"settled":false,"workStatus":"admitted"},"requestToken":"r8L-delB"}
+[2026-09-11T12:55:46.294Z] mock seq=6 identity=leader trigger=tool:r8L-delB → tool-call:r8L-col1:team_collect
+[2026-09-11T12:55:46.294Z] mock: 6 tool-call reply: team_collect
+[2026-09-11T12:55:46.405Z] mock seq=7 identity=worker-b trigger=user → text:MEMBER-B-DONE-TURN1
+[2026-09-11T12:55:46.406Z] mock: 7 text reply (19 chars): "MEMBER-B-DONE-TURN1"
+[2026-09-11T12:55:46.406Z] mock seq=8 identity=unknown trigger=user → text-fallback
+[2026-09-11T12:55:46.406Z] mock: 8 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-11T12:55:46.503Z] r8 collect1-result={"status":"executed","action":"work-status","rootSessionId":"issue1-root","callerRole":"leader","effect":{"kind":"work-status","entries":[{"requestToken":"r8L-delA","status":"running","instanceId":"inst-r8a","admittedSequence":2,"resumePossible":true},{"requestToken":"r8L-delB","status":"running","instanceId":"inst-r8b","admittedSequence":4,"resumePossible":true}]},"requestToken":"r8L-col1"}
+[2026-09-11T12:55:46.503Z] mock seq=9 identity=leader trigger=tool:r8L-col1 → text:LEADER-DONE
+[2026-09-11T12:55:46.503Z] mock: 9 text reply (11 chars): "LEADER-DONE"
+[2026-09-11T12:56:07.868Z] mock seq=10 identity=worker-a trigger=user → text:MEMBER-A-DONE-TURN2
+[2026-09-11T12:56:07.868Z] mock: 10 text reply (19 chars): "MEMBER-A-DONE-TURN2"
+[2026-09-11T12:56:28.065Z] mock seq=11 identity=worker-a trigger=user → text:MEMBER-A-DONE-TURN3
+[2026-09-11T12:56:28.066Z] mock: 11 text reply (19 chars): "MEMBER-A-DONE-TURN3"

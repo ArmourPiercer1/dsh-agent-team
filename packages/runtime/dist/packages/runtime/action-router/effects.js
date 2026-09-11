@@ -61,7 +61,7 @@ import { archiveMember, disposeMember, restoreMember } from '../lifecycle/index.
 import { isLifecycleRuntimeError } from '../lifecycle/errors.js';
 import { effectivePolicyView, memberSummary } from '../admission/types.js';
 import { ACTION_NAMES } from '../admission/actions.js';
-import { admitWorkLocked, completeWorkChainAfterAdmission, } from './work-execution.js';
+import { admitWorkLocked, completeWorkChainAfterAdmission, scanWorkStatus, } from './work-execution.js';
 /** The durable fact families (see admission/actions.ts for the contract). */
 const FACT_WORK_ADMITTED = 'team-work-admitted';
 const FACT_LIFECYCLE_CHANGED = 'member-lifecycle-changed';
@@ -174,6 +174,16 @@ async function runEffect(ctx) {
                 kind: 'config-inspected',
                 effective: effectivePolicyView(effectivePolicyValues(policy), CAPABILITY_NAME_VALUES),
             };
+        }
+        case ACTION_NAMES.WORK_STATUS: {
+            // issue #1 / CCR-3: the durable work-status read — READ category,
+            // so executeEffect runs it lock-free (a pure ledger read: no
+            // writes, no delivery, no live object).
+            const tokens = ctx.request.payload?.['requestTokens'];
+            if (!Array.isArray(tokens)) {
+                internalInvariant('work-status requires the validated requestTokens string array');
+            }
+            return { kind: 'work-status', entries: scanWorkStatus(ctx.repositories, ctx.rootSessionId, tokens) };
         }
         case ACTION_NAMES.FOLLOW_UP:
             return runWorkAdmission(ctx, 'follow-up');
@@ -362,17 +372,36 @@ async function stageWorkChainOn(ctx, fresh, actionLabel, chain) {
     if (phaseA.kind === 'replay') {
         return mapWorkChainEffect(phaseA.result);
     }
+    // issue #1 / CCR-2: the staged chain carries the durable admission
+    // RECEIPT (the async performAction returns it once Phase A committed —
+    // CCR-3's terminal state is read back through work-status); the sync
+    // path still completes the chain here and returns the terminal effect
+    // (CCR-1: unchanged).
+    const receipt = {
+        kind: 'work-admitted',
+        instanceId: fresh.instanceId,
+        fromLifecycle: phaseA.fromLifecycle,
+        lifecycleCommitted: phaseA.lifecycleCommitted,
+        sequence: phaseA.sequence,
+        settled: false,
+        workStatus: 'admitted',
+    };
     return {
-        complete: async () => {
-            const result = await completeWorkChainAfterAdmission(deps, phaseA);
-            return mapWorkChainEffect(result);
-        },
+        receipt,
+        complete: (completionSignal) => completeWorkChainAfterAdmission(completionDeps(deps, completionSignal), phaseA).then(mapWorkChainEffect),
     };
 }
 /**
  * The WorkChainDeps of one staged chain (the ports + identity + the
  * model-visible content + the shared chain map for Phase C re-acquisition
  * — INV-9.1).
+ *
+ * issue #1 / CCR-4: the caller's signal is NOT baked into these deps —
+ * it rides the stage's `complete(completionSignal)` argument: the sync
+ * path passes `request.signal` (honored through the live delivery — the
+ * alpha.2 behavior), the async detach passes nothing (no caller signal
+ * survives the ownership transfer). Phase A is unaffected: it already
+ * ran under the caller's acquisition, which carries the request signal.
  */
 function workChainDeps(ctx, instanceId, actionLabel, chain) {
     return {
@@ -389,13 +418,17 @@ function workChainDeps(ctx, instanceId, actionLabel, chain) {
         prompt: String(ctx.request.payload?.['prompt'] ?? ''),
         ...(optionalStringField(ctx.request.payload, 'attachedContext')),
         ...(optionalStringField(ctx.request.payload, 'taskSummary')),
-        // v2 D2 (task C2, frozen C1 decision): propagate the caller's
-        // transient cancellation into the delivery (the delegate-create path
-        // already did; the follow-up path dropped it — an abort mid-
-        // follow-up-delivery was not honored until the next boundary).
-        ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
         teamLocks: ctx.teamLocks,
     };
+}
+/**
+ * issue #1 / CCR-4: the continuation deps of one staged chain — the base
+ * deps (signal-less) plus the completion signal when the sync path carries
+ * one (the async detach keeps the signal-less deps: the detached
+ * continuation has no caller signal).
+ */
+function completionDeps(deps, completionSignal) {
+    return completionSignal === undefined ? deps : { ...deps, signal: completionSignal };
 }
 /** Map one chain outcome to the closed `work-admitted` effect (v2 D2
  *  carriers unchanged). */
@@ -573,19 +606,27 @@ async function runDelegate(ctx) {
                 ...(phaseA.result.memberResult !== undefined ? { memberResult: phaseA.result.memberResult } : {}),
             };
         }
+        // issue #1 / CCR-2: the create form stages the SAME way — the async
+        // receipt reports the durable admission on the newly activated
+        // instance; the sync path completes and returns the terminal effect
+        // (CCR-1: unchanged).
+        const receipt = {
+            ...activated,
+            workSequence: phaseA.sequence,
+            workSettled: false,
+            workStatus: 'admitted',
+        };
         return {
-            complete: async () => {
-                const work = await completeWorkChainAfterAdmission(deps, phaseA);
-                return {
-                    ...activated,
-                    workSequence: work.sequence,
-                    workSettled: work.settled,
-                    // v2 D2 (task C2): the delegate-create's chain result rides the same
-                    // carriers as the follow-up path (the Leader sees the member's
-                    // business outcome on the creation effect itself).
-                    ...(work.memberResult !== undefined ? { memberResult: work.memberResult } : {}),
-                };
-            },
+            receipt,
+            complete: (completionSignal) => completeWorkChainAfterAdmission(completionDeps(deps, completionSignal), phaseA).then((work) => ({
+                ...activated,
+                workSequence: work.sequence,
+                workSettled: work.settled,
+                // v2 D2 (task C2): the delegate-create's chain result rides the same
+                // carriers as the follow-up path (the Leader sees the member's
+                // business outcome on the creation effect itself).
+                ...(work.memberResult !== undefined ? { memberResult: work.memberResult } : {}),
+            })),
         };
     }
     // continued: the provider did NO durable write; the router admits the
@@ -729,7 +770,7 @@ export async function commitDurableFact(repositories, rootSessionId, now, factTy
         throw durableFailure('sequence allocation', error, { factType });
     }
     const entry = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         sequence,
         rootSessionId,
         factType,

@@ -141,6 +141,21 @@ export const S6_REMOTE_ERROR_CODES = {
      *  (never a default decision, never a no-op). */
     TEAM_RESOLVE_CONTROL_UNAVAILABLE: 'TEAM_REMOTE_TEAM_RESOLVE_CONTROL_UNAVAILABLE',
 };
+/**
+ * BP-G (issue #2 blueprint-loading, plan §12.2) — the methods the
+ * readiness gate does NOT refuse while the state is not `ready`: the
+ * read-only catalog queries. They depend only on the Blueprint source
+ * authority + the opened domain — never on the live boot outcome (the
+ * whole point of the mount-before-boot reorder is that a failed live
+ * boot leaves them servable — the 405 symptom the repair removes).
+ * Every other closed contract method is refused with the frozen
+ * `internal-error` failure envelope (no new wire code, no protocol
+ * bump, plan §12.3).
+ */
+export const REMOTE_READINESS_INDEPENDENT_METHODS = new Set([
+    'catalog.list',
+    'catalog.get',
+]);
 // --- small local helpers ------------------------------------------------------------------
 /** True for a plain (non-array, non-null) object. */
 function isPlainRecord(value) {
@@ -1906,11 +1921,39 @@ export function createS6RemoteDispatcher(ports, principal, principalContext) {
  *   transport (T12-B4; defaults to the connection-gate basis).
  * @returns the `RemoteHandlerRegistration` the A31 seam installs.
  */
-export function createS6RemoteRegistration(ports, principal, principalContext) {
+export function createS6RemoteRegistration(ports, principal, principalContext, readiness) {
     const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext);
+    // BP-G (issue #2 blueprint-loading, plan §12.2): the readiness gate —
+    // ABSENT (the pre-BP-G worlds) = the legacy unguarded dispatcher,
+    // byte-for-byte. A non-`ready` state refuses EVERY closed method except
+    // the readiness-independent catalog reads (catalog.list / catalog.get —
+    // they depend only on the Blueprint source authority + the opened
+    // domain, never on the live boot outcome; the mount-before-boot
+    // reorder exists so a failed boot leaves them servable). The refusal
+    // is the frozen `internal-error` failure envelope (no new wire code,
+    // no protocol bump — plan §12.3); the promise never rejects
+    // (invariant 7 holds through the wrapper too). Unknown endpoints are
+    // NOT gated (the frozen UNKNOWN_METHOD applies either way — the error
+    // vocabulary stays state-invariant).
+    const mounted = readiness === undefined
+        ? dispatcher
+        : (endpoint, payload) => {
+            if (readiness() !== 'ready' &&
+                isRemoteMethod(endpoint) &&
+                !REMOTE_READINESS_INDEPENDENT_METHODS.has(endpoint)) {
+                const gateCtx = {
+                    method: endpoint,
+                    endpoint,
+                    contractVersion: REMOTE_CONTRACT_VERSION,
+                    requestToken: null,
+                };
+                return Promise.resolve(buildRemoteError(REMOTE_CONTRACT_ERROR_CODES.INTERNAL_ERROR, `remote method '${endpoint}' is unavailable while the team runtime is not ready (state: ${readiness()}) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable`, gateCtx, { reason: 'runtime-not-ready' }));
+            }
+            return dispatcher(endpoint, payload);
+        };
     return (connection) => {
         const channel = REMOTE_RPC_CHANNEL;
-        const handleResult = connection.rpc.handle(channel, dispatcher);
+        const handleResult = connection.rpc.handle(channel, mounted);
         if (typeof handleResult === 'function') {
             const disposeRegistration = handleResult;
             let disposed = false;
@@ -2057,7 +2100,7 @@ export function createS6RemoteSurfaces(options) {
     const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext);
     const completion = createS6RemoteQueryCommandCompletion(ports, options, dispatcher);
     return {
-        registration: createS6RemoteRegistration(ports, options.principal, principalContext),
+        registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
         completion,
     };
 }

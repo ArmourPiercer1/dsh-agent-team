@@ -37,8 +37,8 @@
  * `action-router/effects.ts`).
  */
 export { TEAM_RUNTIME_ERROR_CODES, TEAM_RUNTIME_ERROR_CODE_VALUES, TeamRuntimeError, isTeamRuntimeError, } from './errors.js';
-export { CALLER_ROLES, CALLER_ROLE_VALUES, WORK_DELIVERY_STATUSES, effectivePolicyView, memberSummary, } from './types.js';
-export { ACTION_NAMES, ACTION_NAME_VALUES, ACTION_CATEGORIES, RUNTIME_OPS, PROGRESS_VALUES, CONTROL_DECISION_VALUES, ACTION_SPECS, actionSpecOf, validateActionRequest, } from './actions.js';
+export { CALLER_ROLES, CALLER_ROLE_VALUES, WORK_DELIVERY_STATUSES, WORK_EXECUTION_MODES, effectivePolicyView, memberSummary, } from './types.js';
+export { ACTION_NAMES, ACTION_NAME_VALUES, ACTION_CATEGORIES, RUNTIME_OPS, PROGRESS_VALUES, CONTROL_DECISION_VALUES, ACTION_SPECS, actionSpecOf, validateActionRequest, workExecutionModeOf, } from './actions.js';
 export { checkCallerRoleAuthority, resolveCaller, resolveInstanceToken, resolveTeamAndTarget, } from './resolve.js';
 export { ALL_MUTATION_OPS, callerEnvelope, enforceEnvelope, overlayEnvelopeOf, } from './envelope.js';
 export { enforceCompatibilityGate, enforceWorkAcceptingState, isNewWorkAdmission, mapActivationError, } from './gate.js';

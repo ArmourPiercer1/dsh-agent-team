@@ -93,6 +93,7 @@ import { ACTION_NAMES } from '../admission/actions.js'
 import {
   admitWorkLocked,
   completeWorkChainAfterAdmission,
+  scanWorkStatus,
 } from './work-execution.js'
 import type {
   WorkChainDeps,
@@ -155,7 +156,30 @@ export interface EffectContext {
  * complete inside the acquisition.
  */
 export interface WorkChainStage {
-  readonly complete: () => Promise<RuntimeActionEffect>
+  /**
+   * issue #1 / CCR-2: the durable admission RECEIPT — the lossless JSON
+   * effect the async `performAction` returns once Phase A has committed
+   * (`workStatus: 'admitted'`, `settled: false`, NO memberResult — the
+   * terminal state is read back through `work-status` / `team_collect`,
+   * CCR-3). The sync path (the default — CCR-1) never surfaces the
+   * receipt: it completes the chain and returns the terminal effect.
+   */
+  readonly receipt: RuntimeActionEffect
+  /**
+   * Run Phase B (delivery — NO shared lock) + Phase C (settlement —
+   * re-acquires the SAME chain WITHOUT the completion signal, N6) OUTSIDE
+   * the caller's acquisition. A delivery fault settles fail-closed FIRST,
+   * then throws WORK_DELIVERY_FAILED (N3: throw-after-settle).
+   *
+   * issue #1 / CCR-4: `completionSignal` is the caller's transient
+   * cancellation. ABSENT (the async detach) — the continuation runs
+   * WITHOUT any caller signal: ownership of the work unit transferred to
+   * the Team runtime at the admission commit, and a caller-side abort can
+   * no longer cancel the detached delivery. PRESENT (the sync path) — the
+   * request signal is honored through Phase A (the caller's acquisition)
+   * and the live delivery: the alpha.2 behavior, byte-identical (CCR-1).
+   */
+  readonly complete: (completionSignal?: unknown) => Promise<RuntimeActionEffect>
 }
 
 /** The type guard for a staged work-chain effect (plain data effects are
@@ -281,6 +305,16 @@ async function runEffect(ctx: EffectContext): Promise<RuntimeActionEffect | Work
         kind: 'config-inspected',
         effective: effectivePolicyView(effectivePolicyValues(policy), CAPABILITY_NAME_VALUES),
       }
+    }
+    case ACTION_NAMES.WORK_STATUS: {
+      // issue #1 / CCR-3: the durable work-status read — READ category,
+      // so executeEffect runs it lock-free (a pure ledger read: no
+      // writes, no delivery, no live object).
+      const tokens = ctx.request.payload?.['requestTokens']
+      if (!Array.isArray(tokens)) {
+        internalInvariant('work-status requires the validated requestTokens string array')
+      }
+      return { kind: 'work-status', entries: scanWorkStatus(ctx.repositories, ctx.rootSessionId, tokens) }
     }
     case ACTION_NAMES.FOLLOW_UP:
       return runWorkAdmission(ctx, 'follow-up')
@@ -516,11 +550,24 @@ async function stageWorkChainOn(
   if (phaseA.kind === 'replay') {
     return mapWorkChainEffect(phaseA.result)
   }
+  // issue #1 / CCR-2: the staged chain carries the durable admission
+  // RECEIPT (the async performAction returns it once Phase A committed —
+  // CCR-3's terminal state is read back through work-status); the sync
+  // path still completes the chain here and returns the terminal effect
+  // (CCR-1: unchanged).
+  const receipt: RuntimeActionEffect = {
+    kind: 'work-admitted',
+    instanceId: fresh.instanceId,
+    fromLifecycle: phaseA.fromLifecycle,
+    lifecycleCommitted: phaseA.lifecycleCommitted,
+    sequence: phaseA.sequence,
+    settled: false,
+    workStatus: 'admitted',
+  }
   return {
-    complete: async () => {
-      const result = await completeWorkChainAfterAdmission(deps, phaseA)
-      return mapWorkChainEffect(result)
-    },
+    receipt,
+    complete: (completionSignal?: unknown) =>
+      completeWorkChainAfterAdmission(completionDeps(deps, completionSignal), phaseA).then(mapWorkChainEffect),
   }
 }
 
@@ -528,6 +575,13 @@ async function stageWorkChainOn(
  * The WorkChainDeps of one staged chain (the ports + identity + the
  * model-visible content + the shared chain map for Phase C re-acquisition
  * — INV-9.1).
+ *
+ * issue #1 / CCR-4: the caller's signal is NOT baked into these deps —
+ * it rides the stage's `complete(completionSignal)` argument: the sync
+ * path passes `request.signal` (honored through the live delivery — the
+ * alpha.2 behavior), the async detach passes nothing (no caller signal
+ * survives the ownership transfer). Phase A is unaffected: it already
+ * ran under the caller's acquisition, which carries the request signal.
  */
 function workChainDeps(
   ctx: EffectContext,
@@ -553,13 +607,18 @@ function workChainDeps(
     prompt: String(ctx.request.payload?.['prompt'] ?? ''),
     ...(optionalStringField(ctx.request.payload, 'attachedContext')),
     ...(optionalStringField(ctx.request.payload, 'taskSummary')),
-    // v2 D2 (task C2, frozen C1 decision): propagate the caller's
-    // transient cancellation into the delivery (the delegate-create path
-    // already did; the follow-up path dropped it — an abort mid-
-    // follow-up-delivery was not honored until the next boundary).
-    ...(ctx.request.signal !== undefined ? { signal: ctx.request.signal } : {}),
     teamLocks: ctx.teamLocks,
   }
+}
+
+/**
+ * issue #1 / CCR-4: the continuation deps of one staged chain — the base
+ * deps (signal-less) plus the completion signal when the sync path carries
+ * one (the async detach keeps the signal-less deps: the detached
+ * continuation has no caller signal).
+ */
+function completionDeps(deps: WorkChainDeps, completionSignal: unknown): WorkChainDeps {
+  return completionSignal === undefined ? deps : { ...deps, signal: completionSignal }
 }
 
 /** Map one chain outcome to the closed `work-admitted` effect (v2 D2
@@ -743,10 +802,20 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | Wo
         ...(phaseA.result.memberResult !== undefined ? { memberResult: phaseA.result.memberResult } : {}),
       }
     }
+    // issue #1 / CCR-2: the create form stages the SAME way — the async
+    // receipt reports the durable admission on the newly activated
+    // instance; the sync path completes and returns the terminal effect
+    // (CCR-1: unchanged).
+    const receipt: RuntimeActionEffect = {
+      ...activated,
+      workSequence: phaseA.sequence,
+      workSettled: false,
+      workStatus: 'admitted',
+    }
     return {
-      complete: async () => {
-        const work = await completeWorkChainAfterAdmission(deps, phaseA)
-        return {
+      receipt,
+      complete: (completionSignal?: unknown) =>
+        completeWorkChainAfterAdmission(completionDeps(deps, completionSignal), phaseA).then((work) => ({
           ...activated,
           workSequence: work.sequence,
           workSettled: work.settled,
@@ -754,8 +823,7 @@ async function runDelegate(ctx: EffectContext): Promise<RuntimeActionEffect | Wo
           // carriers as the follow-up path (the Leader sees the member's
           // business outcome on the creation effect itself).
           ...(work.memberResult !== undefined ? { memberResult: work.memberResult } : {}),
-        }
-      },
+        })),
     }
   }
   // continued: the provider did NO durable write; the router admits the
@@ -928,7 +996,7 @@ export async function commitDurableFact(
     throw durableFailure('sequence allocation', error, { factType })
   }
   const entry = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sequence,
     rootSessionId,
     factType,

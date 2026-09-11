@@ -49,6 +49,7 @@ export {
   CALLER_ROLES,
   CALLER_ROLE_VALUES,
   WORK_DELIVERY_STATUSES,
+  WORK_EXECUTION_MODES,
   effectivePolicyView,
   memberSummary,
 } from './types.js'
@@ -65,6 +66,8 @@ export type {
   WorkDeliveryPort,
   WorkDeliveryResult,
   WorkDeliveryStatus,
+  WorkExecutionMode,
+  WorkStatusEntry,
 } from './types.js'
 
 export {
@@ -77,6 +80,7 @@ export {
   ACTION_SPECS,
   actionSpecOf,
   validateActionRequest,
+  workExecutionModeOf,
 } from './actions.js'
 export type {
   ActionCategory,

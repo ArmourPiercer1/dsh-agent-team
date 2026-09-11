@@ -241,7 +241,7 @@ async function applyWorld(world: TestWorld, config: Record<string, any>) {
 async function seedFact(repos: Record<string, any>, index: number): Promise<number> {
   const sequence = await repos.ledger.allocateSequence()
   await repos.ledger.put({
-    schemaVersion: 1,
+    schemaVersion: 2,
     sequence,
     rootSessionId: ROOT_SID,
     factType: 'team-coordination-recorded',

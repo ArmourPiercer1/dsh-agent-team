@@ -1,0 +1,10 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h6/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  19:12:44
+   Duration  285ms (transform 26ms, setup 0ms, import 174ms, tests 4ms, environment 0ms)
+

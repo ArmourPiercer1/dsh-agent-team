@@ -225,8 +225,8 @@ export function destroyScratch(dir: string): void {
   destroyDir(dir)
 }
 
-/** The eight `schema_meta` stamp writes `createTeamDomain` performs. */
-export const STAMP_WRITE_COUNT = 8
+/** The nine `schema_meta` stamp writes `createTeamDomain` performs (v2). */
+export const STAMP_WRITE_COUNT = 9
 
 /**
  * Arm a crash AFTER exactly `base + offset` total seam writes: the first

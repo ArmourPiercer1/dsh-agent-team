@@ -103,6 +103,7 @@ export type TeamKey =
   | 'intent.blueprint.placeholder'
   | 'intent.blueprint.loading'
   | 'intent.blueprint.error'
+  | 'intent.blueprint.refresh'
   | 'intent.blueprint.empty'
   | 'intent.revision'
   | 'intent.workspace'
@@ -342,6 +343,7 @@ export const zh: Record<TeamKey, string> = {
   'intent.blueprint.placeholder': '选择蓝图…',
   'intent.blueprint.loading': '正在加载蓝图目录…',
   'intent.blueprint.error': '蓝图目录加载失败：{message}',
+  'intent.blueprint.refresh': '刷新蓝图目录',
   'intent.blueprint.empty': '没有可用蓝图',
   'intent.revision': '修订',
   'intent.workspace': '默认工作区',
@@ -581,6 +583,7 @@ export const en: Record<TeamKey, string> = {
   'intent.blueprint.placeholder': 'Select a blueprint…',
   'intent.blueprint.loading': 'Loading the blueprint catalog…',
   'intent.blueprint.error': 'Failed to load the blueprint catalog: {message}',
+  'intent.blueprint.refresh': 'Refresh blueprints',
   'intent.blueprint.empty': 'No blueprints available',
   'intent.revision': 'Revision',
   'intent.workspace': 'Default workspace',

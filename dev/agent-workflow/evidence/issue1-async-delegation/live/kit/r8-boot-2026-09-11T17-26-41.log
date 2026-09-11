@@ -1,0 +1,28 @@
+[2026-09-11T12:39:10.777Z] world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41
+[2026-09-11T12:39:10.779Z] install dir: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T17-26-41\profiles\web\node_modules\dsh-agent-team
+[2026-09-11T12:39:10.779Z] setup: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async\dev\agent-workflow\evidence\issue1-async-delegation\live\kit\r8-assertions-2026-09-11T17-26-41.json (branch=task/issue1-async-delegation expectedVersion=0.1.1-alpha.2)
+[2026-09-11T12:39:10.783Z] profile already initialized (r8-setup)
+[2026-09-11T12:39:10.783Z] p6t6 directive written (boot=1 phase=create rootSessionId=issue1-root)
+[2026-09-11T12:39:10.796Z] real mock up at 127.0.0.1:3495
+[2026-09-11T12:39:10.798Z] mock proxy up at 127.0.0.1:3494 (member delay 20000ms) → real mock 3495
+[2026-09-11T12:39:10.798Z] DEEPSEEK_BASE_URL → proxy 3494 (the host child inherits this env)
+[2026-09-11T12:39:17.920Z] booted at http://127.0.0.1:3182; boot line: dsh web: http://127.0.0.1:3182/?token=RruNrPiMk8MouTgClX--YBqWhDkXxuH2hpx0kcd8GIE
+[2026-09-11T12:39:17.956Z] auth cookie exchanged (dsh-auth-9o_…); instance pid 75696
+[2026-09-11T12:39:21.059Z] row ready — health={"ok":true,"boot":1,"ready":true,"rootSessionId":"issue1-root","liveSessions":["issue1-root","session-r8a-a","session-r8b-b"],"toolCount":11}
+[2026-09-11T12:39:21.059Z] live sessions = ["issue1-root","session-r8a-a","session-r8b-b"] (expected set)
+[2026-09-11T12:39:21.064Z] 401 gate: unauthenticated catalog.list → HTTP 401
+[2026-09-11T12:39:21.166Z] dump-config → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async\dev\agent-workflow\evidence\issue1-async-delegation\live\kit\dump-config-2026-09-11T17-26-41.txt; rows={"dsh-agent-team (host row)":true,"dsh-agent-team-client (client row)":true,"p6t6-team-tools (harness row, file URL)":true}
+[2026-09-11T12:39:21.208Z] catalog.list with cookie: HTTP 200
+[2026-09-11T12:39:21.209Z] catalog.list carries team.issue1 (user-layer override in force)
+[2026-09-11T12:39:21.209Z] state.json → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async\dev\agent-workflow\evidence\issue1-async-delegation\live\kit\r8state-2026-09-11T17-26-41.json
+[2026-09-11T12:39:21.209Z] R8-READY
+[2026-09-11T12:44:16.641Z] instance child exited (code=1) — boot job shutting down
+[2026-09-11T12:44:16.627Z] stop: instance pid 75696 signaled
+[2026-09-11T12:44:18.169Z] shutdown: instance child exit
+[2026-09-11T12:44:18.173Z] stop: ports free — 3182:true 3494:true 3495:true
+stop: instance log tail:
+dsh web: http://127.0.0.1:3182/?token=RruNrPiMk8MouTgClX--YBqWhDkXxuH2hpx0kcd8GIE
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[2026-09-11T12:44:18.174Z] R8-STOPPED
+[2026-09-11T12:44:18.174Z] shutdown: ports free — 3182:true 3494:true 3495:true

@@ -56,6 +56,26 @@ export type ActionCaller = {
     readonly instanceId: string;
 };
 /**
+ * The execution modes of WORK actions (issue #1; frozen-contract
+ * addendum CCR-1/CCR-2): the closed set.
+ *
+ * - `sync` — the alpha.2 default (CCR-1: an ABSENT `execution` resolves
+ *   to this; `performAction` blocks through the full work chain and the
+ *   effect carries the `memberResult`);
+ * - `async` — CCR-2: once the Phase A durable admission is committed,
+ *   Phase B/C detach into the Team runtime (CCR-4: the caller's signal is
+ *   honored through the admission only) and `performAction` returns the
+ *   durable admission receipt (`workStatus: 'admitted'`); the terminal
+ *   state is read back through the `work-status` action / `team_collect`
+ *   tool (CCR-3).
+ *
+ * Accepted ONLY on the work actions (`delegate` / `follow-up`); rejected
+ * on every other action (REQUEST_MALFORMED — CCR-2's closed scope).
+ */
+export declare const WORK_EXECUTION_MODES: readonly ["sync", "async"];
+/** One of the closed work-execution modes. */
+export type WorkExecutionMode = (typeof WORK_EXECUTION_MODES)[number];
+/**
  * One action request to the facade.
  *
  * Addressing is instance-first (invariant 18/19): `targetInstanceId` is the
@@ -100,6 +120,23 @@ export interface TeamRuntimeActionRequest {
      * (with the standard envelope fields).
      */
     readonly payload?: Record<string, unknown>;
+    /**
+     * The execution mode of a WORK action (`delegate` / `follow-up` only —
+     * rejected on every other action; issue #1 / CCR-1 + CCR-2):
+     *
+     * - ABSENT or `'sync'` (the default — CCR-1): the alpha.2 semantics —
+     *   `performAction` waits for the full work chain (admission → delivery →
+     *   settlement) and the tool result carries the `memberResult`;
+     * - `'async'` (CCR-2): once the Phase A durable admission is committed,
+     *   Phase B/C runs as a DETACHED background continuation (ownership
+     *   transfers to the Team runtime — CCR-4: the caller's AbortSignal is
+     *   honored through admission but no longer cancels the detached work)
+     *   and `performAction` returns the durable admission receipt
+     *   (`workStatus: 'admitted'`, `settled: false`, NO memberResult — the
+     *   terminal result is read back through the `work-status` action /
+     *   `team_collect` tool, CCR-3).
+     */
+    readonly execution?: WorkExecutionMode;
     /** Transient caller cancellation; never serialized or persisted. */
     readonly signal?: unknown;
 }
@@ -130,6 +167,15 @@ export type RuntimeActionEffect =
     readonly lifecycleCommitted: boolean;
     /** The durable fact sequence of the admission (always written). */
     readonly sequence: number;
+    /**
+     * issue #1 / CCR-2: present ONLY on the async admission RECEIPT —
+     * the Phase A durable admission is committed, Phase B/C still run
+     * detached in the Team runtime; the terminal state is read back
+     * through `work-status` / `team_collect` (CCR-3). Absent on every
+     * other work-admitted effect (sync / replay / P6-T2 evidence keep
+     * their exact shape — CCR-1).
+     */
+    readonly workStatus?: 'admitted';
     /** P8-S3 work chain: true when this token was already durably
      *  admitted AND durably settled by an earlier attempt — the call is a
      *  replay (zero writes, zero delivery; the at-least-once delivery
@@ -182,11 +228,29 @@ export type RuntimeActionEffect =
     /** P8-S3 work chain: true when the work unit reached the durable
      *  SETTLED state during this execution. */
     readonly workSettled?: boolean;
+    /**
+     * issue #1 / CCR-2: present ONLY on the async admission RECEIPT of
+     * the delegate-create form — the Phase A durable admission on the
+     * newly activated instance is committed, the work chain (Phase B/C)
+     * still runs detached; the terminal state is read back through
+     * `work-status` / `team_collect` (CCR-3). Absent on every other
+     * member-activated effect (CCR-1).
+     */
+    readonly workStatus?: 'admitted';
     /** v2 D2 (frozen by C1): the minimal member result of the delegate
      *  create's work chain (the delegate-create runs the same chain as
      *  the follow-up — the same carriers, same semantics; `workSettled`
      *  above stays control-plane). */
     readonly memberResult?: WorkDeliveryResult;
+}
+/**
+ * The work-status view (issue #1 / CCR-3: the `work-status` read action
+ * — the durable state of admitted work units by requestToken; the async
+ * continuation's terminal result read-back, served losslessly).
+ */
+ | {
+    readonly kind: 'work-status';
+    readonly entries: readonly WorkStatusEntry[];
 }
 /** The per-capability effective policy view (inspect-config). */
  | {
@@ -316,6 +380,53 @@ export interface WorkDeliveryResult {
     readonly body?: string;
     /** The stable failure/unavailability code + user-visible message
      *  (present for `failed`/`unavailable`). */
+    readonly error?: {
+        readonly code: string;
+        readonly message: string;
+    };
+}
+/**
+ * One token's work-unit state as read from the durable facts (issue #1 /
+ * CCR-3 — the `work-status` read action's entry; lossless JSON).
+ *
+ * The closed status set:
+ *
+ * - `running`: the admission fact exists and no settlement fact yet — the
+ *   async continuation is in flight (or crashed before settlement: a
+ *   same-token re-delegate RESUMES the unit instead of admitting a second
+ *   one, `resumePossible: true`);
+ * - `succeeded` / `failed` / `unavailable`: the unit is durably settled
+ *   AND the settlement fact carries the persisted `memberResult`
+ *   (CCR-5) — the status is the persisted `memberResult.status` verbatim
+ *   (the control-plane settlement is NEVER mapped to a business status);
+ * - `unavailable` WITHOUT a persisted memberResult (a settlement fact that
+ *   predates the CCR-5 addendum): `error.code` carries the diagnostic
+ *   (`WORK_RESULT_NOT_PERSISTED` / `WORK_DELIVERY_FAILED`) and
+ *   `workOutcome` the durable control-plane outcome.
+ */
+export interface WorkStatusEntry {
+    /** The queried requestToken, echoed. */
+    readonly requestToken: string;
+    /** The closed status (see above). */
+    readonly status: 'running' | WorkDeliveryStatus;
+    /** The instance the work unit runs on (from the durable facts). */
+    readonly instanceId?: string;
+    /** The durable sequence of the admission fact. */
+    readonly admittedSequence?: number;
+    /** The durable sequence of the settlement fact. */
+    readonly settledSequence?: number;
+    /** The persisted member result (only when the settlement fact carries
+     *  the CCR-5 `memberResult` — served verbatim). */
+    readonly memberResult?: WorkDeliveryResult;
+    /** The durable work outcome of the settlement fact — present when the
+     *  fact exists but carries no persisted memberResult (the diagnostic
+     *  path keeps the control-plane outcome visible). */
+    readonly workOutcome?: 'settled' | 'delivery-failed';
+    /** True while `running`: a same-token re-delegate resumes the unit. */
+    readonly resumePossible?: boolean;
+    /** The stable diagnostic code + message (`unavailable` entries without
+     *  a persisted memberResult: `WORK_TOKEN_UNKNOWN` /
+     *  `WORK_RESULT_NOT_PERSISTED` / `WORK_DELIVERY_FAILED`). */
     readonly error?: {
         readonly code: string;
         readonly message: string;

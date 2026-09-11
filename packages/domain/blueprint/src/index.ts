@@ -69,10 +69,18 @@ export type {
 } from './types.js'
 
 export { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
+export { inspectBlueprintSource } from './inspect.js'
+export type {
+  BlueprintInspectionDiagnostic,
+  BlueprintInspectionResult,
+  BlueprintSourceIdentity,
+} from './inspect.js'
 export { deriveContentHash, sha256Hex } from './hash.js'
 export { parseBlueprint, toHashableBlueprint, validateBlueprintDocument } from './validate.js'
 export { blueprintSnapshotKeyOf, toBlueprintSnapshotRef } from './snapshot.js'
 export {
+  blueprintNotFound,
+  compareBlueprintRevisions,
   createBlueprintCatalog,
   createBlueprintCatalogFromSource,
 } from './catalog.js'

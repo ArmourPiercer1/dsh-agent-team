@@ -24,6 +24,20 @@
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
  * |                       | the service's resolver role closure is the   |
  * |                       | authority; a member is never a resolver)     |
+ * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
+ * |                       | durable state read of admitted work units by |
+ * |                       | request token — a read: unguarded, zero      |
+ * |                       | writes, zero delivery)                       |
+ *
+ * Async work execution (issue #1 / CCR-2): `team_delegate` and
+ * `team_follow_up` accept an optional `async: true` argument — the call
+ * returns once the Phase A durable admission is committed (the response
+ * effect carries `workStatus: 'admitted'`, `settled: false`, NO result)
+ * and the work unit runs detached in the Team runtime (its caller signal
+ * no longer cancels it — CCR-4). The terminal state is read back through
+ * `team_collect` (the durable member result survives a restart — CCR-5).
+ * Omitted / `false` is the default: the synchronous alpha.2 behavior,
+ * unchanged (CCR-1).
  *
  * The guarded work operations consult the last-mile guard IMMEDIATELY
  * before execution (see guard.ts, SD-GUARD); a blocked verdict returns the
@@ -46,7 +60,7 @@
 import type { TeamToolDefinition, TeamToolsOptions } from './types.js';
 /** The registered team tool set. */
 export interface TeamToolSet {
-    /** The ten closed tool definitions (registration order). */
+    /** The eleven closed tool definitions (registration order). */
     readonly tools: readonly TeamToolDefinition[];
 }
 /**
@@ -54,7 +68,7 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the ten tool definitions, ready for the host's public tool
+ * @returns the eleven tool definitions, ready for the host's public tool
  *   registration (each returns a disposer on register; the caller owns
  *   the effect lifetime).
  */

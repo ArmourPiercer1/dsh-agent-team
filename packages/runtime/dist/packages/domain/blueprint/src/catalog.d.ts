@@ -46,6 +46,25 @@ export interface BlueprintCatalog {
     snapshotOf(blueprintId: string, revision: string): BlueprintSnapshotRef;
 }
 /**
+ * The catalog revision order: digit revisions numerically ascending
+ * (compared by length, then lexicographically — exact for arbitrary-length
+ * digit strings, no `Number` precision loss), then non-digit revisions
+ * lexicographically ascending.
+ *
+ * Exported (issue #2 blueprint-loading, plan BP4): the runtime's live
+ * catalog authority must order the SAME union of frozen + saved + bootstrap
+ * identities under this exact rule (one source of truth for the "latest"
+ * semantics — no re-implementation drift).
+ */
+export declare function compareBlueprintRevisions(a: string, b: string): number;
+/**
+ * The catalog not-found failure: `MALFORMED_DTO` with
+ * `reason: blueprint-not-found` (the closed wording every catalog surface
+ * shares — exported for the runtime live facade, plan BP4).
+ * @param blueprintId - the missing id.
+ */
+export declare function blueprintNotFound(blueprintId: string): never;
+/**
  * Build a read-only catalog from already-parsed blueprints.
  * @throws `MALFORMED_DTO` (`reason: duplicate-blueprint-revision`) when the
  *   same `(blueprintId, revision)` pair appears twice.

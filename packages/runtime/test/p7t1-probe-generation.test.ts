@@ -138,7 +138,9 @@ describe('P7-T1 S1: first probe establishes generation 1', () => {
     expect(s1.recordedAt).toBe('2026-08-30T09:00:00.000Z')
   })
   it('durably records the §14.3 E record (all fields, one row per team)', () => {
-    expect(s1.recordSchemaVersion).toBe(1)
+    // v2 committed world (blueprint-loading repair, line C): the durable row
+    // is stamped with the world's schemaVersion — v2, no v1->v2 migration.
+    expect(s1.recordSchemaVersion).toBe(2)
     expect(s1.recordRootSessionId).toBe(ROOT)
     expect(s1.recordStatus).toBe('OPEN')
     expect(s1.recordFingerprint).toBe(s1.fingerprint)

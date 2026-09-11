@@ -3,7 +3,7 @@
  * P4-T1).
  *
  * `createTeamDomain` opens the domain through the seam and stamps all
- * eight stores (eight single-write durable writes; a crash between stamps
+ * nine stores (nine single-write durable writes; a crash between stamps
  * leaves a partial domain that `openTeamDomain` diagnoses precisely). It
  * is the STRICT fresh-world entry: an already-stamped domain is a
  * `TEAM_DOMAIN_EXISTS` failure (the harness/test-world boot semantics — a
@@ -13,7 +13,7 @@
  * L2 per-store stamps here, L3 record `schemaVersion` at every read).
  * `createOrOpenTeamDomain` is the RESTART-SAFE production entry (the
  * shipped bundle row's `bootPhase: "create-or-open"`): adopt an existing stamped
- * domain, or initialize a fresh medium with the full eight-store stamp
+ * domain, or initialize a fresh medium with the full nine-store stamp
  * when `schema_meta` is empty; a PARTIAL create is diagnosed exactly as
  * `openTeamDomain` diagnoses it (never papered over).
  *
@@ -27,6 +27,7 @@
  * @module @dsh-agent-team/storage/repositories/team-domain
  */
 import type { StorageDomainSeam } from '../schema/index.js';
+import { BlueprintRegistryRepository } from './blueprint-registry.js';
 import { CompatibilityRepository } from './compatibility.js';
 import { LedgerRepository } from './ledger.js';
 import { MemberInstancesRepository } from './member-instances.js';
@@ -35,7 +36,7 @@ import { OverridesRepository } from './overrides.js';
 import { SchemaMetaRepository } from './schema-meta.js';
 import { SessionBindingsRepository } from './session-bindings.js';
 import { TeamSessionsRepository } from './team-sessions.js';
-/** The eight store repositories of an open TeamDomain. */
+/** The nine store repositories of an open TeamDomain. */
 export interface TeamDomainRepositories {
     /** Per-store schema stamps (L2). */
     readonly schemaMeta: SchemaMetaRepository;
@@ -53,6 +54,8 @@ export interface TeamDomainRepositories {
     readonly operations: OperationsRepository;
     /** The durable fact ledger. */
     readonly ledger: LedgerRepository;
+    /** The durable immutable registry of frozen Blueprint snapshots (v2). */
+    readonly blueprintRegistry: BlueprintRegistryRepository;
 }
 /**
  * One open TeamDomain: the durable sidecar of the Team control-plane.
@@ -60,15 +63,15 @@ export interface TeamDomainRepositories {
 export interface TeamDomain {
     /** The durable domain name (`team_domain`). */
     readonly name: string;
-    /** The eight store repositories. */
+    /** The nine store repositories. */
     readonly repositories: TeamDomainRepositories;
     /** Close the domain (idempotent; the state persists on the medium). */
     close(): Promise<void>;
 }
 /**
- * Create the TeamDomain: open `team_domain` and stamp all eight stores.
+ * Create the TeamDomain: open `team_domain` and stamp all nine stores.
  *
- * The eight stamp writes are sequential single-write durable writes; a
+ * The nine stamp writes are sequential single-write durable writes; a
  * crash between them leaves a partial domain (openable, but diagnosed by
  * `openTeamDomain` as `SCHEMA_STAMP_MISSING` for the exact first missing
  * store in canonical order).
@@ -83,7 +86,7 @@ export interface TeamDomain {
 export declare function createTeamDomain(seam: StorageDomainSeam): Promise<TeamDomain>;
 /**
  * Open an existing TeamDomain: open `team_domain` and verify the layered
- * version policy (L1 at the seam open, L2 here — all eight stamps present
+ * version policy (L1 at the seam open, L2 here — all nine stamps present
  * and at a supported version, in canonical store order).
  *
  * @param seam - the storage seam (injected).
@@ -99,7 +102,7 @@ export declare function openTeamDomain(seam: StorageDomainSeam): Promise<TeamDom
  * restart-safe production entry point (remote-mount-race fix, root cause
  * B): the shipped bundle row boots with `bootPhase: "create-or-open"`, and a
  * production host must be bootable from BOTH a fresh medium (first ever
- * boot: `schema_meta` empty → initialize with the full eight-store stamp,
+ * boot: `schema_meta` empty → initialize with the full nine-store stamp,
  * exactly what `createTeamDomain` writes) and a returning home (a prior
  * boot stamped the domain → adopt it, exactly what `openTeamDomain`
  * verifies). The pre-fix bundle shipped `bootPhase: "create"`, whose
@@ -107,7 +110,7 @@ export declare function openTeamDomain(seam: StorageDomainSeam): Promise<TeamDom
  * row bootstrap (zero terminal signal — the user-world 405).
  *
  * Adopt-or-initialize is "complete or diagnose", never "repair": a
- * PARTIAL create (a crash between the eight stamp writes) fails with the
+ * PARTIAL create (a crash between the nine stamp writes) fails with the
  * same precise `SCHEMA_STAMP_MISSING` diagnosis `openTeamDomain` gives
  * (the exact first missing store in canonical order).
  *

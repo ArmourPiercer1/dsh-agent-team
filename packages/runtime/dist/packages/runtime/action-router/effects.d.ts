@@ -107,7 +107,30 @@ export interface EffectContext {
  * complete inside the acquisition.
  */
 export interface WorkChainStage {
-    readonly complete: () => Promise<RuntimeActionEffect>;
+    /**
+     * issue #1 / CCR-2: the durable admission RECEIPT — the lossless JSON
+     * effect the async `performAction` returns once Phase A has committed
+     * (`workStatus: 'admitted'`, `settled: false`, NO memberResult — the
+     * terminal state is read back through `work-status` / `team_collect`,
+     * CCR-3). The sync path (the default — CCR-1) never surfaces the
+     * receipt: it completes the chain and returns the terminal effect.
+     */
+    readonly receipt: RuntimeActionEffect;
+    /**
+     * Run Phase B (delivery — NO shared lock) + Phase C (settlement —
+     * re-acquires the SAME chain WITHOUT the completion signal, N6) OUTSIDE
+     * the caller's acquisition. A delivery fault settles fail-closed FIRST,
+     * then throws WORK_DELIVERY_FAILED (N3: throw-after-settle).
+     *
+     * issue #1 / CCR-4: `completionSignal` is the caller's transient
+     * cancellation. ABSENT (the async detach) — the continuation runs
+     * WITHOUT any caller signal: ownership of the work unit transferred to
+     * the Team runtime at the admission commit, and a caller-side abort can
+     * no longer cancel the detached delivery. PRESENT (the sync path) — the
+     * request signal is honored through Phase A (the caller's acquisition)
+     * and the live delivery: the alpha.2 behavior, byte-identical (CCR-1).
+     */
+    readonly complete: (completionSignal?: unknown) => Promise<RuntimeActionEffect>;
 }
 /** The type guard for a staged work-chain effect (plain data effects are
  *  closed JSON records — they never carry a `complete` function). */

@@ -54,7 +54,9 @@ function override(
 ): GovernanceOverrideRecord {
   const kind = extra?.kind ?? 'autonomy-overlay'
   const base: Record<string, unknown> = {
-    schemaVersion: 1,
+    // v2 committed world (blueprint-loading repair): GovernanceOverride
+    // rows validate against the v2 TeamDomain schema version.
+    schemaVersion: 2,
     kind,
     recordId,
     scope: extra?.scope ?? 'team',

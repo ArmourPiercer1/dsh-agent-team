@@ -93,7 +93,7 @@ describe('p4-06 operations + ledger stores', () => {
   it('a PREPARED operation round-trips at the operationId key', () => {
     expect(roundTrip.operationId).toBe('op-rt')
     expect(roundTrip.phase).toBe('PREPARED')
-    expect(roundTrip.schemaVersion).toBe(1)
+    expect(roundTrip.schemaVersion).toBe(2)
     expect(ops.get('op-rt')).toEqual(roundTrip)
     expect(seam.rawRows(TEAM_DOMAIN_NAME, 'operations').get('op-rt')).toBe(serializeOperationRecord(roundTrip))
   })

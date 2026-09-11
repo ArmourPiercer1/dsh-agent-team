@@ -456,6 +456,27 @@ export interface S6RootBindingPort {
     rehydrateCold(input: ColdRootBindingInput): Promise<RootBindingResult>;
 }
 /** The construction inputs of the S6 remote surfaces (all injected). */
+/**
+ * BP-G (issue #2 blueprint-loading, plan §12.2) — the in-process
+ * read-only boot readiness state of the team runtime: `starting` (the
+ * root is constructed and the remote route is mounted, the live boot has
+ * not settled yet), `ready` (the live boot settled), `failed` (the live
+ * boot rejected — the route STAYS registered; the state is terminal for
+ * this process's lifetime: no automatic retry, no re-boot).
+ */
+export type RemoteReadiness = 'starting' | 'ready' | 'failed';
+/**
+ * BP-G (issue #2 blueprint-loading, plan §12.2) — the methods the
+ * readiness gate does NOT refuse while the state is not `ready`: the
+ * read-only catalog queries. They depend only on the Blueprint source
+ * authority + the opened domain — never on the live boot outcome (the
+ * whole point of the mount-before-boot reorder is that a failed live
+ * boot leaves them servable — the 405 symptom the repair removes).
+ * Every other closed contract method is refused with the frozen
+ * `internal-error` failure envelope (no new wire code, no protocol
+ * bump, plan §12.3).
+ */
+export declare const REMOTE_READINESS_INDEPENDENT_METHODS: ReadonlySet<string>;
 export interface S6RemoteOptions {
     /** The bound root session id (this host's boot root TeamSession). */
     readonly rootSessionId: string;
@@ -649,6 +670,21 @@ export interface S6RemoteOptions {
     readonly listRoots?: () => Promise<readonly TeamRootWireRow[]>;
     /** The deterministic clock (ISO-8601). */
     readonly now: () => string;
+    /**
+     * BP-G (issue #2 blueprint-loading, plan §12.2, optional additive): the
+     * in-process read-only boot readiness getter. ABSENT (every pre-BP-G
+     * world — factory roots, test worlds): the mounted dispatcher runs
+     * unguarded (the legacy behavior, byte-for-byte). PRESENT: the mounted
+     * dispatcher gates every closed method EXCEPT
+     * REMOTE_READINESS_INDEPENDENT_METHODS (catalog.list / catalog.get) on
+     * the state — a non-`ready` state answers the frozen `internal-error`
+     * envelope (the route itself stays registered: the host mounts BEFORE
+     * it awaits the live boot, plan §12.1; unknown endpoints are NOT
+     * gated — they get the frozen UNKNOWN_METHOD either way, so the error
+     * vocabulary stays state-invariant). The getter reads the CURRENT
+     * state per call (the host's closure over its own state variable).
+     */
+    readonly readiness?: () => RemoteReadiness;
 }
 /**
  * T1.4-B (U5/T1-B strict, CF2 entry 2) — the strict probe/gate fact
@@ -738,7 +774,7 @@ export declare function createS6RemoteDispatcher(ports: S6RemotePorts, principal
  *   transport (T12-B4; defaults to the connection-gate basis).
  * @returns the `RemoteHandlerRegistration` the A31 seam installs.
  */
-export declare function createS6RemoteRegistration(ports: S6RemotePorts, principal: ServerPrincipalDerivation, principalContext?: ServerPrincipalContext): RemoteHandlerRegistration;
+export declare function createS6RemoteRegistration(ports: S6RemotePorts, principal: ServerPrincipalDerivation, principalContext?: ServerPrincipalContext, readiness?: () => RemoteReadiness): RemoteHandlerRegistration;
 /**
  * The A34 remote query/command completion (the plan §20.5/§20.6 gate).
  *

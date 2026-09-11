@@ -246,7 +246,7 @@ for (const id of ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'] a
     const pre = EXPECTED_PRE[id]
     const rows = expectedRows(spec.offset)
 
-    // -- the fresh realm: exactly the eight schema_meta stamp writes
+    // -- the fresh realm: exactly the nine schema_meta stamp writes
     // plus the one seeded team_sessions row (G8-S1)
     expect(d.base).toBe(STAMP_WRITE_COUNT + 1)
 

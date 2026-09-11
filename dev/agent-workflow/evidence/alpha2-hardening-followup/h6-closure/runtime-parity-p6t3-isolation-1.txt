@@ -1,0 +1,10 @@
+﻿
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2hf-h6/packages/runtime
+
+ ✓ test/p6t3-send-delivery.test.ts (9 tests) 23ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  19:05:06
+   Duration  648ms (transform 366ms, setup 0ms, import 519ms, tests 23ms, environment 0ms)
+

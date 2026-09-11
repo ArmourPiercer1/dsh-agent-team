@@ -82,6 +82,16 @@ export interface CanonicalOperation {
     readonly tool: PermissionTool;
     readonly resource: CanonicalResource;
     readonly fingerprint: string;
+    /**
+     * H5 — bash ONLY: the resolved workdir target's `display` string
+     * (the approval summary's `cwd=` token). Presentation-only — NEVER
+     * part of the fingerprint/scope/authority: the fingerprint carries
+     * the opaque workdir KEY, and the display exists solely for the
+     * summary. Undefined for the file tools (and for any bash operation
+     * whose workdir could not be resolved — those fail closed and never
+     * produce an operation).
+     */
+    readonly workdirDisplay?: string;
 }
 /**
  * The injected path-resolution seam (plan §7.2): the module never reads

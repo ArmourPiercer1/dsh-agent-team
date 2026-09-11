@@ -1,0 +1,15 @@
+[2026-09-11T12:39:10.796Z] mock: listening on 127.0.0.1:3495
+[2026-09-11T12:41:26.467Z] mock seq=1 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:41:26.468Z] mock: 1 tool-call reply: team_delegate
+[2026-09-11T12:41:26.468Z] mock seq=2 identity=unknown trigger=user → text-fallback
+[2026-09-11T12:41:26.469Z] mock: 2 text reply (25 chars): "unknown-drill-fallback ok"
+[2026-09-11T12:41:27.037Z] mock seq=3 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:41:27.037Z] mock: 3 tool-call reply: team_delegate
+[2026-09-11T12:41:28.146Z] mock seq=4 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:41:28.146Z] mock: 4 tool-call reply: team_delegate
+[2026-09-11T12:41:30.271Z] mock seq=5 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:41:30.271Z] mock: 5 tool-call reply: team_delegate
+[2026-09-11T12:41:34.051Z] mock seq=6 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:41:34.051Z] mock: 6 tool-call reply: team_delegate
+[2026-09-11T12:41:41.651Z] mock seq=7 identity=leader trigger=user → tool-call:r8L-delA:team_delegate
+[2026-09-11T12:41:41.651Z] mock: 7 tool-call reply: team_delegate

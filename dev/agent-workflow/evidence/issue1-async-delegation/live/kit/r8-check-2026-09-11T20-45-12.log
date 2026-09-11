@@ -1,0 +1,27 @@
+[2026-09-11T12:49:02.788Z] check started (stamp=2026-09-11T20-45-12 origin=http://127.0.0.1:3182 root=issue1-root)
+[2026-09-11T12:49:02.814Z] PASS R0-1-health: row health ok with toolCount 11 (the eleven-tool catalog incl. team_collect) — {"ok":true,"boot":1,"ready":true,"rootSessionId":"issue1-root","liveSessions":["issue1-root","session-r8a-a","session-r8b-b"],"toolCount":11}
+[2026-09-11T12:49:02.815Z] PASS R0-2-live-sessions: the expected three live sessions
+[2026-09-11T12:49:02.816Z] phase 1: team.admitInitialWork fired (v2, background)
+[2026-09-11T12:49:04.841Z] phase 1: mock script reached LEADER-DONE at 2026-09-11T12:49:04.841Z
+[2026-09-11T12:49:04.979Z] PASS R1-1-turn-settled: leader drill turn settled (admitInitialWork returned ok) — {"type":"server-response","rpcId":"r8c-1a09083a95f3b357","result":{"ok":true,"value":{"data":{"mode":"fresh","rootSessionId":"issue1-root","requestToken":"r8-lead-1","payloadFingerprint":"sha256:f88bfb59dfea6c58e2fb1ebb380daf46e8092a87525ca442d79438f
+[2026-09-11T12:49:04.980Z] PASS R1-2-receipt-shapes: both async admission receipts: work-admitted, settled=false, workStatus=admitted, NO memberResult — tokA=r8L-delA tokB=r8L-delB
+[2026-09-11T12:49:04.980Z] PASS R1-3-collect-in-flight: the in-flight collect: BOTH works report status=running (resumePossible=true) — neither settled yet — entries=2
+[2026-09-11T12:49:04.983Z] TIMING t_delA_receipt=1789130943923 t_delB_issued(=t_delA_receipt line)≈1789130943923 t_delB_receipt=1789130944542 t_collect1=1789130944715
+[2026-09-11T12:49:04.983Z] TIMING t_ma_start=null t_ma_done=null t_mb_start=null t_mb_done=null
+[2026-09-11T12:49:04.983Z] FAIL R1-4-hard-tB-before-Adone: HARD (plan §29): t_B_admitted < t_A_done — the leader issued delegate B (second tool call, model control regained) before member A finished
+[2026-09-11T12:49:04.983Z] FAIL R1-5-overlap: A/B execution intervals overlap: member B's work turn started before member A's finished
+[2026-09-11T12:49:04.984Z] PASS R1-6-chain-order: chain order: delA receipt < delB receipt < collect1 (the leader serially issued the tools inside ONE model turn)
+[2026-09-11T12:49:04.984Z] FAIL R1-7-delB-receipt-before-Adone: delegate B was ADMITTED (receipt returned) while A was still in flight
+[2026-09-11T12:49:25.587Z] PASS R2-1-terminal-succeeded: terminal collect: BOTH works status=succeeded with the durable memberResult (CCR-5)
+[2026-09-11T12:49:25.588Z] PASS R2-2-memberresult-verbatim: memberResult bodies verbatim: MEMBER-A-DONE-TURN1 / MEMBER-B-DONE-TURN1, per-token requestToken
+[2026-09-11T12:49:25.597Z] PASS R2-3-idempotent-durable-read: a SECOND collect of the same tokens serves the SAME terminal entries (durable, read-only, no re-execution)
+[2026-09-11T12:49:25.598Z] phase 3: §18 same-member probe — two CONCURRENT async team_follow_up on inst-r8a
+[2026-09-11T12:49:26.211Z] phase 3: fu1 ok=true fu2 ok=true
+[2026-09-11T12:49:26.211Z] PASS R3-0-both-admitted: §18 probe: BOTH concurrent follow-ups on the same member were ADMITTED (async receipts)
+[2026-09-11T12:50:07.367Z] PASS R3-1-both-settle: §18 probe: BOTH same-member follow-ups settled (status=succeeded, durable memberResult)
+[2026-09-11T12:50:07.369Z] phase 3: serialization fu1Ev={"received":1789130966055,"flushed":1789130986066} fu2Ev={"received":1789130986240,"flushed":1789131006274} serialized=true
+[2026-09-11T12:50:07.369Z] PASS R3-2-serialized-turns: §18 probe: the same-session turns SERIALIZED — fu2's turn started only after fu1's model response flushed
+[2026-09-11T12:50:07.369Z] PASS R3-3-distinct-results: §18 probe: the two follow-up results are DISTINCT per-turn markers (no result interleave / mis-association)
+[2026-09-11T12:50:07.369Z] PASS R3-4-conclusion: §18 frozen conclusion reached (A upstream-queues-correctly or B rejected-with-typed-error; C interleave-risk = FAIL) — {"frozen":"同一 member 可接受多个 async work，但实际 turn 串行排队。","evidence":"both concurrent async follow-ups on inst-r8a admitted; both settled succeeded with distinct per-turn memberResults; fu2 turn start >= fu1 turn model-response flush (serialized)."}
+[2026-09-11T12:50:07.370Z] check JSON → D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async\dev\agent-workflow\evidence\issue1-async-delegation\live\kit\r8-check-2026-09-11T20-45-12.json
+[2026-09-11T12:50:07.370Z] R8-FAIL — 14/17 checks passed; §18 conclusion: upstream-queues-correctly

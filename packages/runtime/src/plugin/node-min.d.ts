@@ -31,6 +31,62 @@ declare module 'fs' {
    * @returns true when the path exists.
    */
   export function existsSync(path: string): boolean
+
+  /** One directory entry (the subset of `fs.Dirent` the source index uses). */
+  export interface DirentLike {
+    /** The entry name (not a path). */
+    readonly name: string
+    /** True for a regular file. */
+    isFile(): boolean
+  }
+
+  /**
+   * Synchronous directory listing with entry types. Node builtin
+   * `fs.readdirSync` (the blueprint source index, plan BP3: one rescan per
+   * request over the saved `*.yaml` / `*.yml` sources).
+   * @param path - the directory to list.
+   * @param options - `{ withFileTypes: true }` (the only overload used).
+   * @throws the Node ENOENT / EACCES / ENOTDIR error objects (the caller
+   *   classifies them).
+   */
+  export function readdirSync(path: string, options: { withFileTypes: true }): DirentLike[]
+
+  /**
+   * Synchronous UTF-8 file read. Node builtin `fs.readFileSync` (the
+   * blueprint source index, plan BP3: the current mutable source text,
+   * read fresh on every resolve/freeze).
+   * @param path - the file to read.
+   * @param encoding - `'utf8'` (the only encoding used).
+   * @returns the file content as text.
+   * @throws the Node ENOENT / EACCES / EISDIR error objects (the caller
+   *   classifies them).
+   */
+  export function readFileSync(path: string, encoding: string): string
+
+  /**
+   * Synchronous recursive mkdir. Node builtin `fs.mkdirSync` (the
+   * blueprint-authority spec builds its scratch blueprint dirs).
+   * @param path - the directory to create.
+   * @param options - `{ recursive: true }` (the only overload used).
+   */
+  export function mkdirSync(path: string, options: { recursive: boolean }): void
+
+  /**
+   * Synchronous file write (UTF-8 when the data is a string). Node builtin
+   * `fs.writeFileSync` (the blueprint-authority spec seeds its saved
+   * sources).
+   * @param path - the file to write.
+   * @param data - the content to write.
+   */
+  export function writeFileSync(path: string, data: string): void
+
+  /**
+   * Synchronous recursive rm. Node builtin `fs.rmSync` (the
+   * blueprint-authority spec destroys its scratch dirs).
+   * @param path - the path to remove.
+   * @param options - `{ recursive, force }` (the only overload used).
+   */
+  export function rmSync(path: string, options: { recursive: boolean; force: boolean }): void
 }
 
 declare module 'url' {

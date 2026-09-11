@@ -26,8 +26,13 @@ const DIGIT_REVISION = /^\d+$/;
  * (compared by length, then lexicographically — exact for arbitrary-length
  * digit strings, no `Number` precision loss), then non-digit revisions
  * lexicographically ascending.
+ *
+ * Exported (issue #2 blueprint-loading, plan BP4): the runtime's live
+ * catalog authority must order the SAME union of frozen + saved + bootstrap
+ * identities under this exact rule (one source of truth for the "latest"
+ * semantics — no re-implementation drift).
  */
-function compareRevisions(a, b) {
+export function compareBlueprintRevisions(a, b) {
     const aNumeric = DIGIT_REVISION.test(a);
     const bNumeric = DIGIT_REVISION.test(b);
     if (aNumeric && bNumeric) {
@@ -41,8 +46,20 @@ function compareRevisions(a, b) {
         return 1;
     return a < b ? -1 : a > b ? 1 : 0;
 }
-function notFound(blueprintId) {
+function compareRevisions(a, b) {
+    return compareBlueprintRevisions(a, b);
+}
+/**
+ * The catalog not-found failure: `MALFORMED_DTO` with
+ * `reason: blueprint-not-found` (the closed wording every catalog surface
+ * shares — exported for the runtime live facade, plan BP4).
+ * @param blueprintId - the missing id.
+ */
+export function blueprintNotFound(blueprintId) {
     throw teamContractError('MALFORMED_DTO', `blueprint not found in catalog: ${blueprintId}`, { blueprintId, reason: 'blueprint-not-found' });
+}
+function notFound(blueprintId) {
+    return blueprintNotFound(blueprintId);
 }
 function buildCatalog(entries) {
     const byId = new Map();

@@ -82,8 +82,12 @@
  *   ONE listener on the ONE agent ctx it is given (the A6 glue installs
  *   it per agent lifecycle — fresh root / fresh member / cold resume —
  *   and drains the returned disposer on close, plan §11.2/§11.3);
- *   the module holds NO module-level mutable state (each install owns its
- *   own rule-canonicalization cache in a closure);
+ *   the module holds NO module-level mutable state AT ALL (H4 — the
+ *   P1-A fix: the install owns no rule-canonicalization cache either —
+ *   every decision fresh-resolves the rules through the same live
+ *   resolver / session-cwd basis as the operation, so cold resume is
+ *   trivially consistent: nothing is stored, so nothing stale survives
+ *   a restart);
  * - it is SEAM-INJECTED: the only upstream surface it touches at runtime
  *   is the public `fs.resolve` seam, and only through the injected
  *   {@link import('./types.js').PathTargetResolver} closure (the A6 glue
@@ -106,7 +110,8 @@
  *
  * R1 — SIGNAL THREADING: the resolver type takes `(path)` only, so the
  *   per-call `exec.signal` is NOT threaded into the path resolution. The
- *   glue's closure captures the session cwd at INSTALL time; a per-call
+ *   glue's closure reads the session cwd LAZILY at resolve time (FACT
+ *   3b — the live session header, never captured at install); a per-call
  *   abort during a resolution is a documented residual (an aborted call
  *   can finish a fast identity read before the abort is observed —
  *   resolution is a cheap identity lookup with no side effects, and the
@@ -115,14 +120,28 @@
  *   pre-dispatch cancellation checks).
  *
  * R2 — RULE CANONICALIZATION: the policy's `exact` rules are canonicalized
- *   LAZILY (per decision, once per distinct rule path, cached for the
- *   scope's lifetime in an install-owned `Map`): the install is
+ *   FRESH on every permission decision (H4 — the P1-A fix: there is NO
+ *   cache — install-lifetime or otherwise — and no invalidation, no TTL,
+ *   no watcher): the same-tool exact rules are canonicalized FRESH for
+ *   each permission decision, against the same live resolver / session-
+ *   cwd basis as the operation, so the rule and the operation of one
+ *   decision always carry identities from the same point in time. Why
+ *   fresh: the operation is canonicalized fresh on every decision (plan
+ *   §10.2 — A2 has no cache), and a rule key pinned at an EARLIER
+ *   decision goes stale the moment the filesystem identity of the rule
+ *   path changes (a symlink/junction retarget moves the upstream
+ *   targetKey) — a stale DENY stops matching (an escalation: the
+ *   decision downgrades to the default, where an approval can then
+ *   authorize what the policy statically forbade) and a stale ALLOW
+ *   keeps authorizing a resource the rule path no longer denotes. The
+ *   cost is one resolver call per same-tool exact rule per decision —
+ *   the same lazy fs seam the operation already uses. The install is
  *   synchronous (it returns the `ctx.on` disposer) and an install-time
  *   async canonicalization would either delay the listener's activation
- *   or require a fail-closed "rules not ready" window. Only SUCCESSFUL
- *   resolutions are cached; a failed rule resolution is NOT cached (it is
- *   retried on the next decision) and the rule is treated as
- *   NON-MATCHING for that decision. That is fail-closed end-to-end: a
+ *   or require a fail-closed "rules not ready" window. A FAILED rule
+ *   resolution is never remembered (there is no cache — success or
+ *   failure — so the next decision retries it) and the rule is treated
+ *   as NON-MATCHING for that decision. That is fail-closed end-to-end: a
  *   rule whose path the backend cannot resolve can only address a path
  *   that is equally unresolvable for an OPERATION, and such an operation
  *   fails ITS OWN canonicalization (the pipeline step before any rule is
@@ -133,7 +152,15 @@
  *   construction, A3) are never canonicalized at all (they can never
  *   match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
- *   injected resolver closure, bound to the SAME session cwd at install.
+ *   injected resolver closure, which reads the agent's live session cwd
+ *   LAZILY at resolve time (FACT 3b — never captured at install). The
+ *   resolver result is validated BEFORE use (H4): a non-plain result, a
+ *   non-string key, an empty key, or the glue's
+ *   `String(target.targetKey)` sentinel — a missing upstream targetKey
+ *   surfaces as the string 'undefined', which is NOT a key — is a
+ *   failure, never a key (a silent 'undefined' key could match a rule
+ *   whose targetKey was literally that string — authority minted from a
+ *   seam violation).
  *   P1-3 (H2, option A) — LANE ASYMMETRY on rule canonicalization
  *   failure: the "both resolve or both fail" argument above does not
  *   hold in general — the operation and the rule are SEPARATE
@@ -156,8 +183,8 @@
  *   pipeline DENIES the operation BEFORE the A3 resolver is called
  *   (a stable reason naming the failed path(s) + an `onObserve` row,
  *   stage `deny-canonicalization-failure`). The allow/ask lanes KEEP
- *   the non-match-on-failure semantics above (rule skipped, not
- *   cached, retried on the next decision).
+ *   the non-match-on-failure semantics above (rule skipped, never
+ *   remembered — there is no cache (H4) — retried on the next decision).
  *
  * R3 — PRE-ABORTED SIGNAL: checked cheaply at the TOP of the ask branch
  *   (after the static decision is known to be 'ask', before
@@ -271,8 +298,8 @@ export type PreToolDecisionLike = {
  * (`callId` — the correlation token), the tool name, the losslessly
  * parsed deep-frozen arguments, and the caller cancellation signal
  * (structurally a `ControlWaitSignal` — a real `AbortSignal` satisfies
- * it). `exec.agent` is NOT read: the session cwd is captured by the
- * injected resolver closure at install (R1).
+ * it). `exec.agent` is NOT read: the session cwd is read lazily at
+ * resolve time by the injected resolver closure (R1, FACT 3b).
  */
 export interface PreExecuteExec {
     /** The stable logical invocation id (the control request correlation). */
@@ -345,9 +372,10 @@ export interface InstallParameterPermissionListenerParams {
     /**
      * The injected path-resolution seam (A2): the A6 glue's closure over
      * the upstream public `ctx.fs.resolve(path, { cwd: sessionCwd })`,
-     * bound to THIS agent's session workspace cwd and unbranding the
-     * `FsTarget.targetKey`. Used for BOTH operations and rules (R1/R2 —
-     * the same cwd basis).
+     * reading THIS agent's session workspace cwd LAZILY at resolve time
+     * (FACT 3b) and unbranding the `FsTarget.targetKey`. Used for BOTH
+     * operations and rules (R1/R2 — the same cwd basis), FRESH on every
+     * decision for both (H4 — no cache).
      */
     readonly resolveTarget: PathTargetResolver;
     /** The durable control plane service (A4 — fully constructed). */

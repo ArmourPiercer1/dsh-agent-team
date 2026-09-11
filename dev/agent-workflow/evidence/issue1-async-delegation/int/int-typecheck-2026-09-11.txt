@@ -1,0 +1,9 @@
+[contracts] exit=0
+[domain] exit=0
+[storage] exit=0
+[runtime] exit=0
+[tools] exit=0
+[remote] exit=0
+[client] exit=0
+[legacy] exit=1 : error TS5058: The specified path does not exist: 'tsconfig.json'.
+[testkit] exit=0

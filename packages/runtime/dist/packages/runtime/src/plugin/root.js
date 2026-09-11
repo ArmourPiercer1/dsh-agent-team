@@ -304,7 +304,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -312,8 +312,13 @@ export function createTeamProductionRoot(params) {
     const rootWritePort = createTeamDomainWritePort(repos);
     const memberWritePort = createMemberDomainWritePort(repos);
     // --- A03 blueprint + catalog ---------------------------------------------------------
+    // BP5 (issue #2 blueprint-loading, plan §9): the bootstrap anchor stays
+    // the strong-parsed row source (the host/compatibility wiring keeps
+    // using it); the CATALOG is the injected live one when provided, else
+    // the legacy static single-blueprint catalog (the factory-world
+    // fallback — every consumer below derives from this single variable).
     const blueprint = parseBlueprint(config.blueprintSource);
-    const catalog = createBlueprintCatalog([blueprint]);
+    const catalog = blueprintCatalog ?? createBlueprintCatalog([blueprint]);
     // --- A03b the bound blueprint snapshot ref (T12-B1/B6) --------------------------------
     // Every fresh-root binding of THIS row binds the same immutable identity:
     // the real create boot (T12-B1) and the handoff target creation (T12-B6)
@@ -444,7 +449,21 @@ export function createTeamProductionRoot(params) {
         now,
     };
     const rootBinding = {
-        bindFresh: (input) => bindFreshTeamRoot(rootBindingPorts, input),
+        bindFresh: (input) => {
+            // BP6 (issue #2 blueprint-loading, plan §10): the freeze barrier at
+            // the SINGLE choke point every fresh TeamSession mint of this root
+            // shares (the real create boot, team.create v1/v2, the shared
+            // create-and-start primitive). The registry freeze runs BEFORE the
+            // durable write (the plan's write order); the barrier is idempotent
+            // (a same-hash re-freeze is a no-op). Factory worlds without an
+            // injected authority keep the legacy no-freeze behavior.
+            if (blueprintAuthority === undefined) {
+                return bindFreshTeamRoot(rootBindingPorts, input);
+            }
+            return blueprintAuthority
+                .freezeSnapshot(input.blueprint)
+                .then(() => bindFreshTeamRoot(rootBindingPorts, input));
+        },
         rehydrateCold: (input) => rehydrateColdTeamRoot(rootBindingPorts, input),
     };
     // --- A08 + A09 member residency (fresh + cold) ------------------------------------------
@@ -844,6 +863,14 @@ export function createTeamProductionRoot(params) {
         if (context !== undefined) {
             requireHandoffAgentPorts();
         }
+        // BP6 (issue #2 blueprint-loading, plan §10): the pre-freeze BEFORE
+        // the pre-put — the handoff mints its TeamSession record DIRECTLY
+        // (the pre-put below), so the barrier lands here, not only in the
+        // bindFresh wrapper the shared primitive reuses (which re-runs the
+        // freeze idempotently — same hash, no second row).
+        if (blueprintAuthority !== undefined) {
+            await blueprintAuthority.freezeSnapshot(snapshot);
+        }
         const existing = repos.teamSessions.get(minted);
         if (existing === undefined) {
             await repos.teamSessions.put({
@@ -1186,6 +1213,12 @@ export function createTeamProductionRoot(params) {
         legacyInspect,
         legacyHome: params.legacyHome,
         principal: seams.serverPrincipalDerivation.current(),
+        // BP-G (issue #2 blueprint-loading, plan §12.2): the host's in-process
+        // boot readiness — the mounted dispatcher gates the non-catalog
+        // methods on it (the mount happens BEFORE the live boot is awaited).
+        ...(params.remoteReadiness !== undefined
+            ? { readiness: params.remoteReadiness }
+            : {}),
         // T12-V16: remote member.send routes through the P6-T3 messaging
         // coordinator (facade admission + live delivery + confirmation),
         // closing the admission-only silence window pinned by run #13.
@@ -1259,7 +1292,7 @@ export function createTeamProductionRoot(params) {
     seams.remoteHandlerRegistration.install(remoteSurfaces.registration);
     // --- A04 the intent surface (the remote method catalog) --------------------------------------------
     const intent = { catalog: REMOTE_METHOD_CATALOG };
-    // --- the ten Team tools (the glue registers them on the agent setup) ------------------------------
+    // --- the eleven Team tools (the glue registers them on the agent setup) -------------------------------------
     const tools = createTeamTools({
         teamRuntime: runtime,
         controlService: control,
@@ -1292,6 +1325,16 @@ export function createTeamProductionRoot(params) {
         const sessionBindings = repos.sessionBindings;
         const memberInstances = repos.memberInstances;
         if (teamSessions.get(rootSid) === undefined) {
+            // BP6 writer audit (issue #2 blueprint-loading, plan §10,
+            // category 3): the fixture boot seed explicitly seeds the registry
+            // for the row anchor BEFORE its durable TeamSession put, so a
+            // fixture world with an injected authority keeps the fresh-
+            // TeamSession invariant (a fork child of a boot-world parent then
+            // inherits an already-frozen snapshot). Factory worlds without an
+            // authority skip the seeding (the legacy behavior).
+            if (blueprintAuthority !== undefined) {
+                await blueprintAuthority.freezeSnapshot(boundSnapshot);
+            }
             const input = {
                 rootSessionId: rootSid,
                 blueprint: createBlueprintSnapshotRef({

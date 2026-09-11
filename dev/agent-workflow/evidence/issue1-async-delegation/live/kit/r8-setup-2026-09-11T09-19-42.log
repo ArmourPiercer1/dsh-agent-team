@@ -1,0 +1,5 @@
+[2026-09-11T09:19:42.329Z] r8 world: D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T09-19-42
+[2026-09-11T09:19:42.330Z] p6t6 harness row source: D:\AgentDev\dsh-plugins\dsh-agent-team\.worktrees\issue1-async\packages\tools\harness\plugin.mjs
+[2026-09-11T09:19:42.331Z] expected installed version: 0.1.1-alpha.2 (from the task worktree root package.json)
+[2026-09-11T09:19:42.331Z] bare repo: cloning D:\AgentDev\dsh-plugins\dsh-agent-team (branch task/issue1-async-delegation) → D:\AgentDev\dsh-plugins\dsh-agent-team\references\.dsh-test-issue1-2026-09-11T09-19-42\repo.git
+[2026-09-11T09:19:42.333Z] FAIL — git clone --bare failed: undefined

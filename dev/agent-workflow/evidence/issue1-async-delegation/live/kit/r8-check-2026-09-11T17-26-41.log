@@ -1,0 +1,4 @@
+[2026-09-11T12:41:25.960Z] check started (stamp=2026-09-11T17-26-41 origin=http://127.0.0.1:3182 root=issue1-root)
+[2026-09-11T12:41:25.987Z] PASS R0-1-health: row health ok with toolCount 11 (the eleven-tool catalog incl. team_collect) — {"ok":true,"boot":1,"ready":true,"rootSessionId":"issue1-root","liveSessions":["issue1-root","session-r8a-a","session-r8b-b"],"toolCount":11}
+[2026-09-11T12:41:25.987Z] PASS R0-2-live-sessions: the expected three live sessions
+[2026-09-11T12:41:25.988Z] phase 1: team.admitInitialWork fired (v2, background)

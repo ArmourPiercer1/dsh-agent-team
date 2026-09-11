@@ -43,7 +43,7 @@
  *      (settlement — re-acquired WITHOUT the request signal) run outside
  *      it. See `work-execution.ts` for the topology.
  */
-import { checkCallerRoleAuthority, callerEnvelope, enforceCompatibilityGate, enforceEnvelope, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, } from '../admission/index.js';
+import { checkCallerRoleAuthority, callerEnvelope, enforceCompatibilityGate, enforceEnvelope, isNewWorkAdmission, resolveCaller, resolveTeamAndTarget, validateActionRequest, workExecutionModeOf, } from '../admission/index.js';
 import { executeEffect, executeEffectLocked, isWorkChainStage, withTeamLock, asAbortLike } from './effects.js';
 /**
  * Create the TeamRuntime over the injected ports.
@@ -54,6 +54,13 @@ import { executeEffect, executeEffectLocked, isWorkChainStage, withTeamLock, asA
  * @returns the facade (the per-team effect lock map is the installed
  *   shared coordinator chain when `options.teamLocks` is given, otherwise
  *   owned by the returned closure — one map per runtime instance).
+ *
+ *   issue #1 / CCR-2: the returned facade additionally exposes
+ *   `inFlightDetachedWork` — the READONLY set of this runtime's async
+ *   detached continuations (in-flight Phase B/C of `execution: 'async'`
+ *   work admissions). It is NOT part of the frozen `TeamRuntime`
+ *   interface (the interface stays CCR-1 stable for fakes): it exists
+ *   for test observability and a future shutdown drain.
  */
 export function createTeamRuntime(options) {
     // P8-S5B (CR-8): the per-team chain is the SHARED coordinator map when
@@ -62,6 +69,10 @@ export function createTeamRuntime(options) {
     // team); otherwise a private map (the P6-T2 default, unchanged).
     const teamLocks = options.teamLocks ?? new Map();
     const repositories = options.teamDomain.repositories;
+    // issue #1 / CCR-2: the async detached continuations of THIS runtime
+    // (one entry per in-flight Phase B/C of an `execution: 'async'` work
+    // admission; removed on settlement or fail-closed throw).
+    const inFlightDetachedWork = new Set();
     async function performAction(request) {
         // Step 1 — validate the request shape (closed action vocabulary).
         const spec = validateActionRequest(request);
@@ -121,7 +132,37 @@ export function createTeamRuntime(options) {
         // — N6/H4: a request aborted during delivery still gets its
         // fail-closed settlement committed) outside it. Every other effect
         // (and the P6-T2 evidence wiring) is plain data — no staging.
-        const effect = isWorkChainStage(staged) ? await staged.complete() : staged;
+        //
+        // issue #1 / CCR-2 + CCR-4: the async execution mode DETACHES the
+        // continuation — `performAction` returns the durable admission
+        // receipt (CCR-3's terminal state is read back through
+        // `work-status` / `team_collect`), and Phase B/C runs in the
+        // background WITHOUT the caller's signal (the ownership transferred
+        // at the admission commit). The detached continuation owns its
+        // fail-closed settlement (committed inside `complete` before any
+        // throw); its throw is OBSERVED here and never rethrown (no caller
+        // awaits it — the unhandled-rejection must not escape). The sync
+        // path (the default — CCR-1) completes the chain inline with the
+        // request signal, byte-identical to the alpha.2 behavior.
+        let effect;
+        if (isWorkChainStage(staged)) {
+            if (workExecutionModeOf(request) === 'async') {
+                const task = staged.complete(undefined);
+                inFlightDetachedWork.add(task);
+                void task.then(() => {
+                    inFlightDetachedWork.delete(task);
+                }, () => {
+                    inFlightDetachedWork.delete(task);
+                });
+                effect = staged.receipt;
+            }
+            else {
+                effect = await staged.complete(request.signal);
+            }
+        }
+        else {
+            effect = staged;
+        }
         return {
             status: 'executed',
             action: spec.name,
@@ -134,6 +175,6 @@ export function createTeamRuntime(options) {
             requestToken: request.requestToken,
         };
     }
-    return { performAction };
+    return { performAction, inFlightDetachedWork };
 }
 //# sourceMappingURL=router.js.map
