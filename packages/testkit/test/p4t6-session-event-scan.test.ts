@@ -556,13 +556,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     Recorded on the H3 task branch; re-verify on int at the
     //     alpha2-hardening integration.
     //
-    // (bp1) TWO issue#2-blueprint-loading scannable files (this commit,
+    // (bp1) FOUR issue#2-blueprint-loading scannable files (this commit,
     //     the parallel-repair branch fix/alpha2-blueprint-loading @ 6a2f3e1
-    //     base): packages/runtime/test/bp1-red-probe.test.ts (the BP0
+    //     base): packages/domain/blueprint/src/inspect.ts (the BP1
+    //     identity-level source inspector — the weaker sibling of the
+    //     strong parseBlueprint pipeline that a directory scan uses to
+    //     list saved sources without strong-parsing each of them),
+    //     packages/domain/test/bp1-blueprint-inspector.test.ts (its spec:
+    //     the structural stage reusing the strong parser's own
+    //     splitFrontmatter/decodeYamlFrontmatter, the identity field
+    //     checks, and the identity/strong split),
+    //     packages/runtime/test/bp1-red-probe.test.ts (the BP0
     //     RED-1/RED-2/RED-5 host-level characterization probes: the
     //     static single catalog, the no-HMR second Blueprint, and the
     //     boot-failure -> route-missing defect over the plain-object
-    //     host seam + connection sink) and
+    //     host seam + connection sink), and
     //     packages/runtime/test/bp1-red-glue-probe.test.ts (the BP0 RED-4
     //     per-Team authority split probe over the t12a live bridge).
     //     Zero denylist vocabulary (the scan over them passes — the
@@ -577,16 +585,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 670 (668 + 2), and its file list names exactly the twenty-eight
-    // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
-    // two A5 + one A6 + one H1 + one H3 + two bp1; the committed scanner
-    // is byte-identical — no scanner change, DEC-1). The frozen quarantine
+    // 672 (668 + 4), and its file list names exactly the thirty files
+    // above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 + two A5 +
+    // one A6 + one H1 + one H3 + four bp1; the committed scanner is
+    // byte-identical — no scanner change, DEC-1). The frozen quarantine
     // hit set and all required P4 suite lists are untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-blueprint-loading/.
-    expect(scanResult.filesScanned).toBe(670)
-    expect(scanResult.files.length).toBe(670)
+    expect(scanResult.filesScanned).toBe(672)
+    expect(scanResult.files.length).toBe(672)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
