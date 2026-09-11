@@ -721,20 +721,36 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // Recorded on the blueprint-loading task branch; re-verify on the
     // merged tree after the hardening integration (plan §3.5).
     //
+    //
+    // (bp1-h) ONE new issue#2-blueprint-loading scannable file (this
+    // commit — the BP-H client manual refresh + the BP10 local authoring
+    // helper, plan §13/§14): packages/testkit/test/bp1h-blueprint-authoring.
+    // test.ts (the 8-test sync-shim spec over the helper's exported
+    // stage/validate-save semantics + the plan's conditional frozen
+    // registry-probe guard). The rest of BP-H is OUTSIDE the scan:
+    // scripts/blueprint-authoring.mjs + .d.mts (scripts/** is not
+    // scanned), the TeamCreationPanel.tsx / locales.ts / module.css
+    // refresh surface (.tsx/.css excluded; locales.ts already scanned —
+    // in-place edit), the client .client.spec.tsx RED-3 probe (committed
+    // in BP-A, .tsx excluded), and docs/blueprint-authoring.md (docs/**
+    // is not under packages/**). +1 -> 682. Recorded on the
+    // blueprint-loading task branch; re-verify on the merged tree after
+    // the hardening integration (plan §3.5).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 681 (675 + 6), and its file list names exactly the thirty-nine
+    // 682 (675 + 7), and its file list names exactly the forty
     // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
     // two A5 + one A6 + one H1 + one H3 + four bp1 + three bp1-c + four
-    // bp1-d + one bp1-e + one bp1-f; the
+    // bp1-d + one bp1-e + one bp1-f + one bp1-h; the
     // committed scanner is byte-identical — no scanner change, DEC-1).
     // The frozen quarantine hit set and all required P4 suite lists are
     // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-blueprint-loading/.
-    expect(scanResult.filesScanned).toBe(681)
-    expect(scanResult.files.length).toBe(681)
+    expect(scanResult.filesScanned).toBe(682)
+    expect(scanResult.files.length).toBe(682)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

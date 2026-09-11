@@ -217,6 +217,14 @@
   font: var(--dsw-font-xxxs-11);
 }
 
+/* BP9 (issue #2 blueprint-loading, plan §13) — the manual catalog
+   refresh button row (below the blueprint picker, once the first load
+   has settled). */
+.catalogActions {
+  display: flex;
+  margin: 6px 0 8px;
+}
+
 .actions {
   display: flex;
   gap: 8px;
