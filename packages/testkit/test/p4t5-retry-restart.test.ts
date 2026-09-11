@@ -11,7 +11,7 @@
  *   durable files): the read-back is 0 writes and `recover` is a 0-write
  *   no-op with the same ledger sequence;
  * - **pristine-domain restart**: a realm dropped right after the schema
- *   stamping (eight stamps + the seeded team_sessions row) restarts to
+ *   stamping (nine stamps + the seeded team_sessions row) restarts to
  *   stage `NONE` with the typed `member-not-provisioned` diagnostic (no
  *   orphan, no provisioning state durable yet) and a `recover` commits it
  *   with exactly 9 seam writes;
@@ -396,7 +396,7 @@ it('committed-world restart: recover is a 0-write no-op with the SAME ledger seq
 
 it('pristine-domain restart: process death before ANY provisioning write leaves a stamped domain (the seeded team row is the only durable row) that restarts to NONE + member-not-provisioned (no orphan, no provisioning state)', () => {
   expect(pristine).not.toBe(undefined)
-  expect(pristineBase).toBe(STAMP_WRITE_COUNT + 1) // createFileRealm stamped the eight stores plus the seeded team_sessions row (G8-S1)
+  expect(pristineBase).toBe(STAMP_WRITE_COUNT + 1) // createFileRealm stamped the nine stores plus the seeded team_sessions row (G8-S1)
   expect(pristine?.openOk).toBe(true)
   expect(pristine?.base).toBe(0) // the restarted seam counts no writes (fresh stack)
   expect(pristine?.stage).toBe(PROVISIONING_STAGES.NONE)
@@ -443,6 +443,6 @@ it('second restart: BOTH members survive (2 committed members, 0 orphans, both s
   expect(second?.secondBetaCommitted).toBe(true)
 })
 
-it('the fresh realm always starts at exactly the eight schema_meta stamp writes', () => {
-  expect(STAMP_WRITE_COUNT).toBe(8)
+it('the fresh realm always starts at exactly the nine schema_meta stamp writes', () => {
+  expect(STAMP_WRITE_COUNT).toBe(9)
 })

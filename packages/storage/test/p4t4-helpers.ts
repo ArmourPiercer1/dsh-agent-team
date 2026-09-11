@@ -138,7 +138,7 @@ export async function driveToState(world: P4t4World, state: P4t4State, request: 
       if (operation === undefined) throw new Error('p4t4-helpers: S4 requires the operation row to exist')
       const sequence = await world.domain.repositories.ledger.allocateSequence()
       await world.domain.repositories.ledger.put({
-        schemaVersion: 1,
+        schemaVersion: 2,
         sequence,
         rootSessionId: String(world.coordinator.rootSessionId),
         factType: PROVISION_INTENT_TYPE,
@@ -164,7 +164,7 @@ export function operationIdFor(world: P4t4World, request: ProvisionRequest): str
  * `base + offset` writes succeed, every later write rejects with
  * `FakeCrashError` (STICKY — call `seam.clearCrash()` before the re-drive).
  * `base` is the `seam.writeCount` snapshot taken after world creation
- * (the eight schema_meta stamp writes).
+ * (the nine schema_meta stamp writes).
  */
 export function armCrashAt(seam: InMemoryStorageSeam, base: number, offset: number): void {
   seam.setCrashAfterWrites(base + offset)

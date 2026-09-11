@@ -396,7 +396,7 @@ export async function writeRawControlFact(
   const repositories = world.domain.repositories
   const sequence = await repositories.ledger.allocateSequence()
   await repositories.ledger.put({
-    schemaVersion: 1,
+    schemaVersion: 2,
     sequence,
     rootSessionId: P6T4_ROOT,
     factType,

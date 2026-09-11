@@ -457,7 +457,7 @@ export function putP6T3Overlay(
   } = {},
 ): Promise<GovernanceOverrideRecord> {
   return world.domain.repositories.overrides.put({
-    schemaVersion: 1,
+    schemaVersion: 2,
     kind: 'autonomy-overlay',
     recordId,
     scope: 'instance',

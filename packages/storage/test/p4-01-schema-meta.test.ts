@@ -1,11 +1,18 @@
 /**
  * p4-01 — schema_meta store + create/open lifecycle + layered version policy.
  *
- * Proves the L2/L3 policy surfaces: create stamps all eight stores with
- * canonical bytes; open verifies the seam (L1) and the per-store stamps
- * (L2) and fails loudly with the exact store/version on mismatch; a crash
- * between stamp writes leaves a partial domain whose diagnosis is stable
- * across re-opens (roll-forward, never rollback).
+ * Proves the L2/L3 policy surfaces: create stamps all nine stores (schema
+ * version 2) with canonical bytes; open verifies the seam (L1) and the
+ * per-store stamps (L2) and fails loudly with the exact store/version on
+ * mismatch; a crash between stamp writes leaves a partial domain whose
+ * diagnosis is stable across re-opens (roll-forward, never rollback).
+ *
+ * Note (issue #2 blueprint-loading plan BP2): the domain moved v1 → v2
+ * (the ninth store `blueprint_registry` was appended in canonical
+ * order); the L1/L2 mismatch worlds below seed versions the v2 domain
+ * does NOT support (3 = a future version), and the v1-medium-under-v2
+ * open is itself the loud `SCHEMA_VERSION_MISMATCH` by design (no
+ * migration, ever).
  *
  * @module @dsh-agent-team/storage/test/p4-01-schema-meta
  */
@@ -34,14 +41,24 @@ const reopenedStoreSizes: Array<[string, number]> = [
   ['compatibility', reopened.repositories.compatibility.size],
   ['operations', reopened.repositories.operations.size],
   ['ledger', reopened.repositories.ledger.size],
+  ['blueprintRegistry', reopened.repositories.blueprintRegistry.size],
 ]
 await reopened.close()
 
 const createAgain = await capture(() => createTeamDomain(seam))
 
 const seamL1 = new InMemoryStorageSeam()
-seamL1.seedDomainVersion(TEAM_DOMAIN_NAME, 2, [...P4_STORES])
+// version 3: a FUTURE version the v2 domain does not support (the v1→v2
+// loud mismatch is the SAME seam path: a persisted-at-1 domain under a
+// v2 open is rejected by the identical version check, plan BP2).
+seamL1.seedDomainVersion(TEAM_DOMAIN_NAME, 3, [...P4_STORES])
 const l1Mismatch = await capture(() => openTeamDomain(seamL1))
+
+// plan BP2: a v1 MEDIUM under a v2 open — the loud mismatch by design
+// (no v1→v2 migration, ever; the world is simply not openable).
+const seamV1 = new InMemoryStorageSeam()
+seamV1.seedDomainVersion(TEAM_DOMAIN_NAME, 1, [...P4_STORES])
+const v1Mismatch = await capture(() => openTeamDomain(seamV1))
 
 const emptyOpen = await capture(() => openTeamDomain(new InMemoryStorageSeam()))
 
@@ -55,11 +72,11 @@ const partialOpen2 = await capture(() => openTeamDomain(seamPartial))
 const seamTamper = new InMemoryStorageSeam()
 const tamperDomain = await createTeamDomain(seamTamper)
 await tamperDomain.close()
-// A hand-built canonical stamp row with store version 2 (schemaVersion stays
-// at the supported 1, so the failure is exactly the L2 version check).
+// A hand-built canonical stamp row with store version 3 (schemaVersion stays
+// at the supported 2, so the failure is exactly the L2 version check).
 seamTamper
   .rawRows(TEAM_DOMAIN_NAME, 'schema_meta')
-  .set('operations', '{"schemaVersion":1,"stampedAt":"2026-08-29T12:00:00.000Z","store":"operations","version":2}')
+  .set('operations', '{"schemaVersion":2,"stampedAt":"2026-08-29T12:00:00.000Z","store":"operations","version":3}')
 const tamperOpen = await capture(() => openTeamDomain(seamTamper))
 
 const seamCorrupt = new InMemoryStorageSeam()
@@ -69,36 +86,45 @@ seamCorrupt.rawRows(TEAM_DOMAIN_NAME, 'schema_meta').set('team_sessions', 42)
 const corruptOpen = await capture(() => openTeamDomain(seamCorrupt))
 
 describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
-  it('create stamps all eight stores at schema version 1 with canonical bytes', () => {
+  it('create stamps all nine stores at schema version 2 with canonical bytes', () => {
     expect(domain.name).toBe(TEAM_DOMAIN_NAME)
-    expect(stamps.size).toBe(8)
+    expect(stamps.size).toBe(9)
     for (const store of P4_STORES) {
       const stamp = stamps.get(store)
       expect(stamp === undefined).toBe(false)
       const raw = rawStamps.get(store)
       expect(typeof raw).toBe('string')
       expect(raw).toBe(serializeSchemaMetaStamp(stamp!))
-      expect(stamp!.schemaVersion).toBe(1)
-      expect(stamp!.version).toBe(1)
+      expect(stamp!.schemaVersion).toBe(2)
+      expect(stamp!.version).toBe(2)
       expect(stamp!.store).toBe(store)
     }
   })
 
-  it('openTeamDomain re-opens a closed domain and hands out all eight repositories', () => {
+  it('openTeamDomain re-opens a closed domain and hands out all nine repositories', () => {
     expect(reopenedName).toBe(TEAM_DOMAIN_NAME)
-    expect(reopenedStampCount).toBe(8)
-    expect(reopenedStoreSizes.length).toBe(7)
+    expect(reopenedStampCount).toBe(9)
+    expect(reopenedStoreSizes.length).toBe(8)
     for (const [, size] of reopenedStoreSizes) {
       expect(size).toBe(0)
     }
   })
 
-  it('L1: a domain persisted at version 2 is rejected at open with SCHEMA_VERSION_MISMATCH', () => {
+  it('L1: a domain persisted at version 3 is rejected at open with SCHEMA_VERSION_MISMATCH', () => {
     expect(l1Mismatch.ok).toBe(false)
     const error = asTeamDomainError(l1Mismatch.error)
     expect(error.code).toBe('SCHEMA_VERSION_MISMATCH')
-    expect(detail(error, 'expected')).toBe(1)
-    expect(detail(error, 'found')).toBe(2)
+    expect(detail(error, 'expected')).toBe(2)
+    expect(detail(error, 'found')).toBe(3)
+    expect(detail(error, 'seamCode')).toBe('version-mismatch')
+  })
+
+  it('L1 (plan BP2): a v1 MEDIUM under a v2 open is rejected loud (no migration, ever)', () => {
+    expect(v1Mismatch.ok).toBe(false)
+    const error = asTeamDomainError(v1Mismatch.error)
+    expect(error.code).toBe('SCHEMA_VERSION_MISMATCH')
+    expect(detail(error, 'expected')).toBe(2)
+    expect(detail(error, 'found')).toBe(1)
     expect(detail(error, 'seamCode')).toBe('version-mismatch')
   })
 
@@ -107,7 +133,7 @@ describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
     const error = asTeamDomainError(createAgain.error)
     expect(error.code).toBe('TEAM_DOMAIN_EXISTS')
     expect(detail(error, 'store')).toBe('schema_meta')
-    expect(detail(error, 'size')).toBe(8)
+    expect(detail(error, 'size')).toBe(9)
   })
 
   it('openTeamDomain on an empty seam raises SCHEMA_STAMP_MISSING for the first store', () => {
@@ -115,7 +141,7 @@ describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
     const error = asTeamDomainError(emptyOpen.error)
     expect(error.code).toBe('SCHEMA_STAMP_MISSING')
     expect(detail(error, 'store')).toBe('schema_meta')
-    expect(detail(error, 'expected')).toBe(1)
+    expect(detail(error, 'expected')).toBe(2)
     expect(detail(error, 'found')).toBe(null)
   })
 
@@ -139,8 +165,8 @@ describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
     const error = asTeamDomainError(tamperOpen.error)
     expect(error.code).toBe('SCHEMA_STAMP_MISMATCH')
     expect(detail(error, 'store')).toBe('operations')
-    expect(detail(error, 'expected')).toBe(1)
-    expect(detail(error, 'found')).toBe(2)
+    expect(detail(error, 'expected')).toBe(2)
+    expect(detail(error, 'found')).toBe(3)
   })
 
   it('a non-string stamp row is rejected with RECORD_INVALID row-not-a-string', () => {
@@ -154,15 +180,15 @@ describe('p4-01 schema_meta / create-open lifecycle / version policy', () => {
 
   it('parseSchemaMetaStamp rejects unknown and missing fields', () => {
     expect(() =>
-      parseSchemaMetaStamp({ schemaVersion: 1, store: 'ledger', stampedAt: '2026-08-29T12:00:00Z', version: 1, extra: 1 }),
+      parseSchemaMetaStamp({ schemaVersion: 2, store: 'ledger', stampedAt: '2026-08-29T12:00:00Z', version: 2, extra: 1 }),
     ).toThrow()
-    expect(() => parseSchemaMetaStamp({ store: 'ledger', stampedAt: '2026-08-29T12:00:00Z', version: 1 })).toThrow()
+    expect(() => parseSchemaMetaStamp({ store: 'ledger', stampedAt: '2026-08-29T12:00:00Z', version: 2 })).toThrow()
   })
 
   it('the version policy accepts only the supported version and fails loudly otherwise', () => {
-    expect(assertSupportedTeamDomainSchemaVersion(1, 'ledger')).toBe(1)
-    expect(() => assertSupportedTeamDomainSchemaVersion(2, 'ledger')).toThrow()
-    expect(isSupportedTeamDomainSchemaVersion(1)).toBe(true)
-    expect(isSupportedTeamDomainSchemaVersion(2)).toBe(false)
+    expect(assertSupportedTeamDomainSchemaVersion(2, 'ledger')).toBe(2)
+    expect(() => assertSupportedTeamDomainSchemaVersion(1, 'ledger')).toThrow()
+    expect(isSupportedTeamDomainSchemaVersion(2)).toBe(true)
+    expect(isSupportedTeamDomainSchemaVersion(1)).toBe(false)
   })
 })

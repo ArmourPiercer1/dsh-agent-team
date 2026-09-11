@@ -695,7 +695,7 @@ let c1s4: C1S4Case
     const token = 'tok-p8s3-resume'
     const admittedSequence = await world.domain.repositories.ledger.allocateSequence()
     await world.domain.repositories.ledger.put({
-      schemaVersion: 1,
+      schemaVersion: 2,
       sequence: admittedSequence,
       rootSessionId: P6T2_ROOT,
       factType: 'team-work-admitted',
@@ -953,7 +953,7 @@ let c1s4: C1S4Case
     const token = 'tok-c1-s4'
     const admittedSequence = await world.domain.repositories.ledger.allocateSequence()
     await world.domain.repositories.ledger.put({
-      schemaVersion: 1,
+      schemaVersion: 2,
       sequence: admittedSequence,
       rootSessionId: P6T2_ROOT,
       factType: 'team-work-admitted',

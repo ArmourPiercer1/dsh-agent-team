@@ -583,18 +583,49 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     re-verify on the merged tree after the hardening integration
     //     (plan §3.5: the merged-tree truth, never an arithmetic sum).
     //
+    // (bp1-c) THREE issue#2-blueprint-loading scannable files (this
+    //     commit, the TeamDomain v2 bump + blueprint_registry store,
+    //     plan BP2): packages/storage/schema/blueprint-registry.ts (the
+    //     registry row record module — the closed field set, the
+    //     create/parse over the contracts id grammar, the L3 row-stamp
+    //     discipline (v2 rows carry `2`), the canonical serialize/
+    //     deserialize, and the blueprintId@revision row key agreeing
+    //     with the contracts snapshot display key),
+    //     packages/storage/repositories/blueprint-registry.ts (the
+    //     append-only BlueprintRegistryRepository — get/list/freeze
+    //     only, never last-write-wins: absent append, same-hash
+    //     idempotent, different-hash loud RECORD_DUPLICATE
+    //     blueprint-revision-frozen with both hashes, write-time re-read
+    //     refusal), and packages/storage/test/bp1-blueprint-registry.
+    //     test.ts (its spec: the append / idempotency / conflict
+    //     surface, the key agreement, the malformed-row loud reads, the
+    //     no-write-surface check). Zero denylist vocabulary (the scan
+    //     over them passes — the frozen quarantine hit set is unchanged
+    //     at fifteen occurrences). The sibling v2 edits (stores.ts,
+    //     team-domain.ts, the index exports, the affected p4-01 / p4-06
+    //     / p4-07 / rmr-create-or-open specs, the p4-t5 testkit specs,
+    //     the committed-world fixture restamp — including its new
+    //     untracked blueprint_registry.json table file, which lives
+    //     under packages/testkit/fault-injection/fixtures, outside the
+    //     scanner's packages/** source globs — and the in-place doc
+    //     edits) are in-place edits on already-scanned files (no count
+    //     change). Recorded on the blueprint-loading task branch;
+    //     re-verify on the merged tree after the hardening integration
+    //     (plan §3.5).
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
-    // 672 (668 + 4), and its file list names exactly the thirty files
-    // above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 + two A5 +
-    // one A6 + one H1 + one H3 + four bp1; the committed scanner is
-    // byte-identical — no scanner change, DEC-1). The frozen quarantine
-    // hit set and all required P4 suite lists are untouched.
+    // 675 (672 + 3), and its file list names exactly the thirty-three
+    // files above (ten alpha.1 + one A1 + seven A2 + one A4 + two A3 +
+    // two A5 + one A6 + one H1 + one H3 + four bp1 + three bp1-c; the
+    // committed scanner is byte-identical — no scanner change, DEC-1).
+    // The frozen quarantine hit set and all required P4 suite lists are
+    // untouched.
     // Evidence: dev/agent-workflow/evidence/alpha2-permission/a2/ + a3/ +
     // a4/ + a5/ + a6/ + alpha2-hardening/h1/ + alpha2-hardening/h3/ +
     // alpha2-blueprint-loading/.
-    expect(scanResult.filesScanned).toBe(672)
-    expect(scanResult.files.length).toBe(672)
+    expect(scanResult.filesScanned).toBe(675)
+    expect(scanResult.files.length).toBe(675)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

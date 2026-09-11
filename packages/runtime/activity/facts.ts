@@ -181,7 +181,7 @@ export function buildActivityEntry(input: ActivityFactBuildInput): LedgerEntry {
   if (input.note !== undefined) payload['note'] = input.note
   if (input.closeNote !== undefined) payload['closeNote'] = input.closeNote
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sequence: input.globalSequence,
     rootSessionId: input.rootSessionId,
     factType: OP_TO_FACT_TYPE[input.op],
