@@ -1,0 +1,50 @@
+﻿==== H1 GREEN console — the end-cap fix verified on the REAL upstream composition
+==== captured at: 2026-09-11 14:22:45 +08:00 (post-fix tree; the RED console predates the fix commit)
+==== branch: task/alpha2-h1-p0-endcap @ 27a6c36 (fix uncommitted at capture — committed as (b) in the task branch)
+
+############ [1/3] h1a-pre-execute-endcap.test.ts — ALL GREEN (40/40) ############
+command: pnpm --filter @dsh-agent-team/runtime exec vitest run test/h1a-pre-execute-endcap.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-h1/packages/runtime
+
+ ✓ test/h1a-pre-execute-endcap.test.ts (40 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  40 passed (40)
+   Start at  14:15:57
+   Duration  748ms (transform 402ms, setup 0ms, import 644ms, tests 4ms, environment 0ms)
+
+
+############ [2/3] a5a + a6a — updated suites ALL GREEN (90/90) ############
+command: pnpm --filter @dsh-agent-team/runtime exec vitest run test/a5a-pre-execute.test.ts test/a6a-production-wiring.test.ts
+
+
+ RUN  v4.1.11 D:/AgentDev/dsh-plugins/dsh-agent-team/.worktrees/alpha2-h1/packages/runtime
+
+ ✓ test/a6a-production-wiring.test.ts (50 tests) 7ms
+ ✓ test/a5a-pre-execute.test.ts (40 tests) 5ms
+
+ Test Files  2 passed (2)
+      Tests  90 passed (90)
+   Start at  14:16:03
+   Duration  907ms (transform 645ms, setup 0ms, import 1.37s, tests 12ms, environment 0ms)
+
+
+############ [3/3] full runtime suite — parity with the pre-fix baseline ############
+command: pnpm --filter @dsh-agent-team/runtime exec vitest run
+Test Files   Test Files  6 failed | 141 passed (147)
+Tests  8 failed | 1512 passed (1520)
+failing files (identical set to the pre-fix baseline — see summary.md gate table):
+  FAIL  test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4
+  FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → ME
+  FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PE
+  FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overl
+  FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority bea
+  FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay tex
+  FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED inten
+  FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the fir
+  FAIL  test/p8s3b-result-effects.test.ts
+  FAIL  test/t12a-b2-child-identity.test.ts
+  FAIL  test/t12a-glue-handoff-ports.test.ts
+  FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without
