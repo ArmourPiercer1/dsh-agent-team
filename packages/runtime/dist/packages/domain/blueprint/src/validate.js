@@ -352,7 +352,7 @@ function validatePermissionPolicy(raw, path) {
             throw teamContractError('MALFORMED_DTO', `permission policy ${path}.${name} must be an array (it may be empty), got ${items === null ? 'null' : typeof items}`, { path: `${path}.${name}` });
         }
         // Declaration order is preserved; duplicate rules are legal.
-        return items.map((item, index) => validatePermissionRule(item, `${path}.${name}[${index}]`));
+        return items.map((item, index) => validatePermissionRule(item, `${path}.${name}[${index}]`, name));
     };
     return {
         default: defaultRaw,
@@ -361,8 +361,24 @@ function validatePermissionPolicy(raw, path) {
         deny: lane('deny'),
     };
 }
-/** Validate one permission rule (closed `tool` + `resource`). */
-function validatePermissionRule(raw, path) {
+/**
+ * Validate one permission rule (closed `tool` + `resource`) in the lane it
+ * sits in. After the closed-vocabulary checks, the alpha.2 bash contract is
+ * enforced HERE (the schema is the enforcement point — H2 ruling):
+ *
+ * - `bash` + `exact` is rejected in EVERY lane: an `exact` key is a file
+ *   key and can never match the bash tool-level resource, and alpha.2 has
+ *   no parameter-level shell matcher — such a rule would be structurally
+ *   inert, so it is rejected instead of silently parsed;
+ * - `bash` + `any` is rejected in the ALLOW lane: alpha.2 grants no
+ *   positive whole-tool permission for bash (no parameter-level allow for
+ *   shell commands). `bash` + `any` in the `ask` / `deny` lanes stays
+ *   legal (the minimal shell permission).
+ *
+ * Both diagnostics are STABLE text (deterministic; no randoms) — tests pin
+ * the message verbatim.
+ */
+function validatePermissionRule(raw, path, lane) {
     const record = assertPlainRecord(raw, `${path} (permission rule)`);
     assertNoUnknownFields(record, PERMISSION_RULE_FIELDS, `${path} (permission rule)`);
     const tool = requireField(record, 'tool', path);
@@ -370,6 +386,12 @@ function validatePermissionRule(raw, path) {
         throw teamContractError('MALFORMED_DTO', `permission rule ${path}.tool must be one of ${PERMISSION_TOOL_NAMES.join(' | ')}, got ${JSON.stringify(tool)}`, { path: `${path}.tool` });
     }
     const resource = validatePermissionResource(requireField(record, 'resource', path), `${path}.resource`);
+    if (tool === 'bash' && resource.kind === 'exact') {
+        throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane '${lane}') is rejected: the bash tool does not accept an 'exact' resource in any lane — an exact key is a file key and can never match the bash tool-level resource, and alpha.2 has no parameter-level shell matcher (bash supports only the 'any' resource, in the ask or deny lane)`, { path: `${path}.resource.kind`, lane });
+    }
+    if (tool === 'bash' && resource.kind === 'any' && lane === 'allow') {
+        throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } })`, { path: `${path}.resource.kind`, lane });
+    }
     return { tool: tool, resource };
 }
 /** Validate one permission resource (`exact` with a path, or bare `any`). */

@@ -134,6 +134,30 @@
  *   match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
  *   injected resolver closure, bound to the SAME session cwd at install.
+ *   P1-3 (H2, option A) — LANE ASYMMETRY on rule canonicalization
+ *   failure: the "both resolve or both fail" argument above does not
+ *   hold in general — the operation and the rule are SEPARATE
+ *   resolver calls at different times over a mutable filesystem (a
+ *   transient IO error, a mount/symlink change, or a session-cwd
+ *   rewrite between the rule's resolution and the operation's can
+ *   make one resolve and the other fail, or vice versa). The
+ *   per-lane consequences of a FAILED rule are therefore NOT
+ *   symmetric: a failed ALLOW rule = no positive grant (the operation
+ *   is never elevated — at worst it is asked about); a failed ASK
+ *   rule = falls to the default, which is ask (the same outcome) or
+ *   deny (more restrictive) — not an escalation; a failed DENY rule
+ *   = the static deny downgrades to ask/default and an approval may
+ *   then authorize what the policy statically forbade — an
+ *   escalation. Only the deny lane needs the fail-closed flip, and
+ *   ONLY it gets it: a same-tool exact DENY rule that fails to
+ *   canonicalize is reported by `canonicalLane` (per-lane
+ *   `failedExact` — the raw trimmed paths) through
+ *   `canonicalRulesFor.denyCanonicalizationFailure`, and the
+ *   pipeline DENIES the operation BEFORE the A3 resolver is called
+ *   (a stable reason naming the failed path(s) + an `onObserve` row,
+ *   stage `deny-canonicalization-failure`). The allow/ask lanes KEEP
+ *   the non-match-on-failure semantics above (rule skipped, not
+ *   cached, retried on the next decision).
  *
  * R3 — PRE-ABORTED SIGNAL: checked cheaply at the TOP of the ask branch
  *   (after the static decision is known to be 'ask', before
@@ -214,7 +238,10 @@
  *   emitted at the pipeline points (canonicalized operation, resolved
  *   decision + provenance, request created, decision arrived, guard
  *   verdict, and — R6 — the end-cap guard's denial, stage
- *   `end-cap-denial` with the tool name and the stable reason) — no
+ *   `end-cap-denial` with the tool name and the stable reason,
+ *   and — P1-3 — the deny-rule canonicalization failure, stage
+ *   `deny-canonicalization-failure` with the tool and the failed
+ *   path(s)) — no
  *   file contents, no full argument payloads. An `onObserve` that
  *   throws never affects the decision (diagnostics are not authority).
  *
@@ -236,6 +263,43 @@ const ACTION_NAME = 'parameter-permission';
  * verbatim (the test mirrors the constant — a change must move both).
  */
 export const END_CAP_DENIAL_REASON = 'permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)';
+/**
+ * The bounded length of the tool-level (bash) command preview in the
+ * control request summary (H2 P1-2).
+ */
+const BASH_COMMAND_PREVIEW_MAX = 120;
+/**
+ * H2 P1-2 — the bounded NON-authority command preview of the tool-level
+ * (bash) control request summary: the first 120 characters of the raw
+ * command string, whitespace flattened to single spaces, `...` appended
+ * when truncated.
+ *
+ * Display text ONLY (the durable `summary` field is "free text; NOT
+ * authority data"): it NEVER enters the fingerprint, the control scope,
+ * or any hash — the fingerprint carries the command HASH (A2), and the
+ * preview is derived from the same raw string purely for human
+ * readability (which shell payload is this request about?). The function
+ * is total (never throws): malformed/absent arguments cannot reach it on
+ * the frozen pipeline (canonicalization already failed closed), but the
+ * defensive fallbacks keep it total for any caller.
+ */
+function commandPreview(rawArguments) {
+    if (typeof rawArguments !== 'object' || rawArguments === null || Array.isArray(rawArguments)) {
+        return '(no arguments)';
+    }
+    const command = rawArguments['command'];
+    if (typeof command !== 'string') {
+        return '(no command)';
+    }
+    const flattened = command.replace(/\s+/g, ' ').trim();
+    if (flattened.length === 0) {
+        return '(empty command)';
+    }
+    if (flattened.length > BASH_COMMAND_PREVIEW_MAX) {
+        return flattened.slice(0, BASH_COMMAND_PREVIEW_MAX) + '...';
+    }
+    return flattened;
+}
 // ---------------------------------------------------------------------------
 // The install factory.
 // ---------------------------------------------------------------------------
@@ -320,8 +384,9 @@ export function installParameterPermissionListener(agentCtx, params) {
     /**
      * R2 — the canonical key of one `exact` rule path (cached), or
      * `undefined` when the path cannot be canonicalized (the rule then
-     * does not match THIS decision — see the module doc for the
-     * fail-closed argument).
+     * does not match THIS decision for the allow/ask lanes — see the
+     * module doc for the fail-closed argument; a DENY-lane failure is
+     * reported by `canonicalLane` — P1-3).
      */
     const canonicalRuleKey = async (path) => {
         const cached = ruleKeyCache.get(path);
@@ -343,10 +408,15 @@ export function installParameterPermissionListener(agentCtx, params) {
      * rules that can match this operation (same tool; a `bash` exact rule
      * is inert by construction and is never canonicalized); an
      * unresolvable rule path yields no rule (R2 — the fail-closed
-     * argument is in the module docs).
+     * argument is in the module docs). P1-3 (H2, option A): for the
+     * DENY lane, the unresolvable same-tool exact paths are ALSO
+     * reported via the result's `failedExact` (the raw trimmed paths —
+     * A1 already trims exact paths); the allow/ask lanes report nothing
+     * (they keep the non-match-on-failure semantics).
      */
-    const canonicalLane = async (rules, tool) => {
+    const canonicalLane = async (laneName, rules, tool) => {
         const out = [];
+        let failedExact;
         for (const rule of rules) {
             if (rule.tool !== tool)
                 continue; // a different tool can never match
@@ -357,24 +427,50 @@ export function installParameterPermissionListener(agentCtx, params) {
             if (tool === 'bash')
                 continue; // bash exact rules are inert (A3)
             const key = await canonicalRuleKey(rule.resource.path);
-            if (key === undefined)
-                continue; // unresolvable rule path: no match (R2)
+            if (key === undefined) {
+                // R2 — unresolvable rule path: no match (the rule is skipped; the
+                // cache stays empty so the NEXT decision retries the resolution).
+                // P1-3 (H2, option A) — the deny lane FLIPS: a same-tool exact
+                // DENY rule that failed to canonicalize is reported (the raw
+                // trimmed path — A1 normalization already trimmed it) instead of
+                // being silently dropped: a failed static deny must never
+                // downgrade to ask/default. The allow/ask lanes keep the
+                // non-match-on-failure semantics (the R2 module doc states the
+                // lane asymmetry).
+                if (laneName === 'deny') {
+                    failedExact =
+                        failedExact === undefined ? [rule.resource.path] : [...failedExact, rule.resource.path];
+                }
+                continue;
+            }
             out.push({ tool: rule.tool, resource: { kind: 'exact', key } });
         }
-        return out;
+        return { rules: out, ...(failedExact !== undefined ? { failedExact } : {}) };
     };
     /**
      * R2 — the policy lanes as A3 `CanonicalRules` for one operation tool
      * (the three lanes mapped in parallel — lane membership and lane
-     * order are preserved exactly, plan §6.4/§8.3).
+     * order are preserved exactly, plan §6.4/§8.3). P1-3 (H2, option
+     * A): the result also carries `denyCanonicalizationFailure` (the raw
+     * trimmed paths of the same-tool exact DENY rules that failed to
+     * canonicalize) — set from the deny lane only; enforce denies
+     * BEFORE the A3 resolver is called when it is present.
      */
     const canonicalRulesFor = async (tool) => {
         const [allow, ask, deny] = await Promise.all([
-            canonicalLane(policy.allow, tool),
-            canonicalLane(policy.ask, tool),
-            canonicalLane(policy.deny, tool),
+            canonicalLane('allow', policy.allow, tool),
+            canonicalLane('ask', policy.ask, tool),
+            canonicalLane('deny', policy.deny, tool),
         ]);
-        return { allow, ask, deny };
+        // P1-3 (H2, option A): surface the DENY lane's canonicalization
+        // failures (the raw trimmed paths of same-tool exact deny rules that
+        // failed to canonicalize) so enforce can deny BEFORE the A3 resolver
+        // is called. The allow/ask lanes report no such flag (their failures
+        // keep the non-match-on-failure semantics).
+        return {
+            rules: { allow: allow.rules, ask: ask.rules, deny: deny.rules },
+            ...(deny.failedExact !== undefined ? { denyCanonicalizationFailure: deny.failedExact } : {}),
+        };
     };
     /**
      * The frozen pipeline (plan §10.2) for one pre-execute payload.
@@ -424,9 +520,28 @@ export function installParameterPermissionListener(agentCtx, params) {
             fingerprint: operation.fingerprint,
         });
         // (3) resolve the static decision (A3 — pure, synchronous).
+        // P1-3 (H2, option A) — BEFORE the A3 resolver is called: a
+        // same-tool exact DENY rule that failed to canonicalize DENIES the
+        // operation (fail-closed): a failed static deny must never downgrade
+        // to ask/default — an approval could then authorize what the policy
+        // statically forbade. (A failed ALLOW rule = no positive grant; a
+        // failed ASK rule falls to the default, which is ask (the same
+        // outcome) or deny (more restrictive) — neither is an escalation;
+        // only the deny lane flips. The R2 module doc states the asymmetry.)
         let decision;
         try {
-            const canonicalRules = await canonicalRulesFor(operation.tool);
+            const { rules: canonicalRules, denyCanonicalizationFailure } = await canonicalRulesFor(operation.tool);
+            if (denyCanonicalizationFailure !== undefined) {
+                const reason = `permission denied: a static deny rule could not be canonicalized ` +
+                    `(${denyCanonicalizationFailure.join(', ')}) — the rule cannot be dropped (fail-closed)`;
+                observe({
+                    stage: 'deny-canonicalization-failure',
+                    callId,
+                    tool: operation.tool,
+                    paths: [...denyCanonicalizationFailure],
+                });
+                return { kind: 'deny', reason };
+            }
             decision = resolveOperationPermission(policy, operation, canonicalRules);
         }
         catch (error) {
@@ -490,8 +605,13 @@ export function installParameterPermissionListener(agentCtx, params) {
                 toolName: name,
                 correlation: callId,
                 operationFingerprint: operation.fingerprint,
+                // H2 P1-2: the tool-level (bash) summary carries a bounded
+                // NON-authority command preview (first 120 chars, whitespace
+                // flattened, `...` when truncated) — display text only, never
+                // part of the fingerprint/scope/hash (those carry the command
+                // HASH from A2).
                 summary: operation.resource.kind === 'tool'
-                    ? `${name} (tool-level)`
+                    ? `${name} ${commandPreview(exec.arguments)}`
                     : `${name} ${operation.resource.display}`,
             });
         }

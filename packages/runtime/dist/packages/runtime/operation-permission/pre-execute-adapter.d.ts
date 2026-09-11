@@ -134,6 +134,30 @@
  *   match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
  *   injected resolver closure, bound to the SAME session cwd at install.
+ *   P1-3 (H2, option A) — LANE ASYMMETRY on rule canonicalization
+ *   failure: the "both resolve or both fail" argument above does not
+ *   hold in general — the operation and the rule are SEPARATE
+ *   resolver calls at different times over a mutable filesystem (a
+ *   transient IO error, a mount/symlink change, or a session-cwd
+ *   rewrite between the rule's resolution and the operation's can
+ *   make one resolve and the other fail, or vice versa). The
+ *   per-lane consequences of a FAILED rule are therefore NOT
+ *   symmetric: a failed ALLOW rule = no positive grant (the operation
+ *   is never elevated — at worst it is asked about); a failed ASK
+ *   rule = falls to the default, which is ask (the same outcome) or
+ *   deny (more restrictive) — not an escalation; a failed DENY rule
+ *   = the static deny downgrades to ask/default and an approval may
+ *   then authorize what the policy statically forbade — an
+ *   escalation. Only the deny lane needs the fail-closed flip, and
+ *   ONLY it gets it: a same-tool exact DENY rule that fails to
+ *   canonicalize is reported by `canonicalLane` (per-lane
+ *   `failedExact` — the raw trimmed paths) through
+ *   `canonicalRulesFor.denyCanonicalizationFailure`, and the
+ *   pipeline DENIES the operation BEFORE the A3 resolver is called
+ *   (a stable reason naming the failed path(s) + an `onObserve` row,
+ *   stage `deny-canonicalization-failure`). The allow/ask lanes KEEP
+ *   the non-match-on-failure semantics above (rule skipped, not
+ *   cached, retried on the next decision).
  *
  * R3 — PRE-ABORTED SIGNAL: checked cheaply at the TOP of the ask branch
  *   (after the static decision is known to be 'ask', before
@@ -214,7 +238,10 @@
  *   emitted at the pipeline points (canonicalized operation, resolved
  *   decision + provenance, request created, decision arrived, guard
  *   verdict, and — R6 — the end-cap guard's denial, stage
- *   `end-cap-denial` with the tool name and the stable reason) — no
+ *   `end-cap-denial` with the tool name and the stable reason,
+ *   and — P1-3 — the deny-rule canonicalization failure, stage
+ *   `deny-canonicalization-failure` with the tool and the failed
+ *   path(s)) — no
  *   file contents, no full argument payloads. An `onObserve` that
  *   throws never affects the decision (diagnostics are not authority).
  *

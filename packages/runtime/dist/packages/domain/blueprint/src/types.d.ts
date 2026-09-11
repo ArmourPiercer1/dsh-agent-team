@@ -20,9 +20,12 @@ import type { BlueprintContentHash, BlueprintId, BlueprintRevision, TemplateId }
 /**
  * The six tools whose individual calls a static permission policy may gate
  * (alpha.2 plan §4). The file tools (`read`, `read_image`, `write`, `edit`,
- * `lsp`) address their target file as the primary resource; `bash` only
- * supports tool-level `ask`/`deny` via the `any` resource (no parameter-
- * level allow for shell commands in alpha.2).
+ * `lsp`) address their target file as the primary resource. `bash`
+ * supports ONLY tool-level `ask`/`deny` via the `any` resource — and the
+ * schema ENFORCES it (the validation rejects a `bash` rule in the `allow`
+ * lane entirely, and an `exact` `bash` resource in every lane: no positive
+ * whole-tool grant and no parameter-level allow for shell commands in
+ * alpha.2).
  */
 export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash';
 /**

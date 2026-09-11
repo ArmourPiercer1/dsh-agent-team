@@ -74,7 +74,7 @@
  *   resource identity).
  *
  * bash (RECORDED RULING — plan §4, "no positive parameter-level allow
- * for bash", enforced by the matcher, not the schema):
+ * for bash" — the A1 SCHEMA is the enforcement point, H2 ruling):
  *
  * - a bash OPERATION has `resource.kind 'tool'` and
  *   `resource.key === BASH_TOOL_RESOURCE_KEY` (A2, plan §7.1);
@@ -85,12 +85,20 @@
  *   key, so exact-path bash rules are INERT BY CONSTRUCTION — even if
  *   some backend ever emitted a file key string-equal to
  *   `BASH_TOOL_RESOURCE_KEY`, the file-scoped match rule keeps the
- *   operation out of the lane;
- * - a bash rule matches in ANY lane (allow/ask/deny); the frozen
- *   priority below decides the outcome. An allow-lane `any` bash rule
- *   therefore yields a whole-tool ALLOW for bash (A1's schema accepts
- *   `bash` in the allow lane; this is the documented consequence — no
- *   bash-specific special case exists beyond exact-never-matches);
+ *   operation out of the lane. (The A1 schema additionally REJECTS an
+ *   `exact` bash resource in every lane, so such a rule cannot even
+ *   enter a legal policy; the inertness is the matcher's structural
+ *   defense in depth, not the schema's job.)
+ * - the matcher is TOTAL over whatever ruleset it is handed: a bash
+ *   `any` rule it receives matches the bash operation in WHICHEVER
+ *   lane it sits in, and the frozen priority below decides the
+ *   outcome. A LEGAL policy can only carry a bash `any` rule in the
+ *   ask or deny lane — the A1 schema rejects a bash rule in the allow
+ *   lane entirely (no positive whole-tool bash grant in alpha.2). The
+ *   matcher itself is UNCHANGED and keeps no lane special case: it
+ *   still answers an allow-lane `any` bash rule with a whole-tool
+ *   ALLOW if one is ever handed to it (hand-crafted or legacy-shaped
+ *   input) — the a3 suite pins this totalness defensively;
  * - a file rule (read/write/edit/lsp/read_image) NEVER matches a bash
  *   operation and vice-versa (the tool names differ, and the matcher
  *   checks the tool first).

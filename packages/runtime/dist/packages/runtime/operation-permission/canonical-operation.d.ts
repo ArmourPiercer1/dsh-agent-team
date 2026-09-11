@@ -72,10 +72,19 @@
  *     coordinates fully determine the operation). Missing/non-positive-
  *     integer coordinates and unknown operations fail closed (the tool
  *     would reject them).
- * - `bash`          `{ tool }` — tool-level (plan §7.3/§7.4: the command
- *     string is deliberately NOT in the projection; a single command
- *     cannot reliably express the real resource/effect, so the authority
- *     identity is the tool itself).
+ * - `bash`          `{ tool, commandHash }` — the RESOURCE stays
+ *     tool-level (plan §4/§7.1: `{ kind: 'tool', key: 'bash' }` — the
+ *     resolver is never called), but the FINGERPRINT Binds the command
+ *     (H2 P1-2 ruling, plan §7.4 "covering every security-relevant
+ *     field"): `commandHash` = `'sha256:' + hex(sha256(command))` over
+ *     the RAW command string — NO shell parsing, no normalization (the
+ *     command is the security-relevant field for bash, so a durable
+ *     approval is verifiable as "which shell payload was approved";
+ *     before H2 the command was deliberately excluded and EVERY bash
+ *     command shared one constant fingerprint — P1-2). A
+ *     missing/non-string/whitespace-only command fails closed with the
+ *     closed `bash-command-*` reasons (the upstream `tool-bash`
+ *     `validateBashArgs` rejects all three before executing).
  *
  * Windows emphasis (plan §7.6): separator normalization, case semantics,
  * relative-vs-absolute, `..` traversal, and symlink/junction identity are

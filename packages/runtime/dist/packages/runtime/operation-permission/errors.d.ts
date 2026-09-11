@@ -45,10 +45,15 @@ export declare const OPERATION_PERMISSION_ERROR_CODE_VALUES: readonly string[];
  * Argument-shape reasons: a supported tool's arguments are malformed in
  * a way the tool itself would reject BEFORE executing (mirroring the
  * upstream tools' own validation — `parseReadArgs` / `parseWriteArgs` /
- * `parseEditArgs` / `parseLspArgs`), so the call has no well-formed
- * "effective" projection and must not be authorized:
+ * `parseEditArgs` / `parseLspArgs` / `tool-bash` `validateBashArgs`), so
+ * the call has no well-formed "effective" projection and must not be
+ * authorized:
  * - file_path / write content / edit strings: missing, non-string, or
  *   (where the tool rejects it) empty / equal;
+ * - bash command: missing, non-string, or whitespace-only (the upstream
+ *   `tool-bash` rejects all three before execution — H2 P1-2: the
+ *   command is the security-relevant field for bash, so a call without
+ *   a well-formed command cannot be authorized);
  * - read offset/limit: present but not a positive integer;
  * - lsp operation/line/character: unknown operation, or a coordinate
  *   that is not a positive one-based integer.
@@ -67,7 +72,7 @@ export declare const OPERATION_PERMISSION_ERROR_CODE_VALUES: readonly string[];
  * classification; canonicalization of an unsupported tool is a failure,
  * never a pass-through).
  */
-export type CanonicalizationFailureReason = 'tool-unsupported' | 'file-path-missing' | 'file-path-not-a-string' | 'file-path-empty' | 'read-offset-invalid' | 'read-limit-invalid' | 'write-content-missing' | 'write-content-not-a-string' | 'edit-old-string-missing' | 'edit-new-string-missing' | 'edit-string-not-a-string' | 'edit-old-string-empty' | 'edit-old-equals-new' | 'edit-replace-all-not-boolean' | 'lsp-operation-missing' | 'lsp-operation-unknown' | 'lsp-line-invalid' | 'lsp-character-invalid' | 'resolver-threw' | 'resolver-key-empty' | 'resolver-result-malformed';
+export type CanonicalizationFailureReason = 'tool-unsupported' | 'file-path-missing' | 'file-path-not-a-string' | 'file-path-empty' | 'read-offset-invalid' | 'read-limit-invalid' | 'write-content-missing' | 'write-content-not-a-string' | 'edit-old-string-missing' | 'edit-new-string-missing' | 'edit-string-not-a-string' | 'edit-old-string-empty' | 'edit-old-equals-new' | 'edit-replace-all-not-boolean' | 'lsp-operation-missing' | 'lsp-operation-unknown' | 'lsp-line-invalid' | 'lsp-character-invalid' | 'bash-command-missing' | 'bash-command-not-a-string' | 'bash-command-empty' | 'resolver-threw' | 'resolver-key-empty' | 'resolver-result-malformed';
 /** The closed canonicalization-failure reason values, for membership checks. */
 export declare const CANONICALIZATION_FAILURE_REASONS: readonly CanonicalizationFailureReason[];
 /**

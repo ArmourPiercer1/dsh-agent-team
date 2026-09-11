@@ -1,0 +1,41 @@
+# H2 alpha.2 hardening P1 — green console (worktree .worktrees/alpha2-h2, branch task/alpha2-h2-p1-contracts)
+# base e352cae (int tip after H1); commits: (a) 15172be, (b) 3ca9615, (c) 2247736, (d) = this evidence commit
+# generated 2026-09-11 14:53:56
+
+## [1] focused runtime, post (c) P1-3 (a2+a3+a4a+a5a+a6a+h1a), 14:50:08
+ Test Files  6 passed (6)
+      Tests  227 passed (227)
+ (a3 28, a2 31, a4a 28, a5a 50, a6a 50, h1a 40)
+
+## [2] FULL domain suite, 14:50:41 (gate: 378 passed | 10 failed — the same 10 pre-existing failures)
+ ❯ test/t2-blueprint-hash.test.ts (15 tests | 1 failed) 41ms
+ ❯ test/t1-capability-schema.test.ts (17 tests | 9 failed) 43ms
+ Test Files  2 failed | 17 passed (19)
+      Tests  10 failed | 378 passed (388)
+
+## [3] FULL runtime suite, 14:50:46 (gate: parity with H1 — same 6 failing files / 8 failing tests, no new failures;
+      passed = 1512 + 11 new tests (a2 +1, a5a +10) = 1523)
+ ❯ test/p8s3b-result-effects.test.ts (0 test)
+ ❯ test/p6t3-mediation.test.ts (7 tests | 5 failed) 14ms
+ ❯ test/d3-member-identity-context.test.ts (5 tests | 1 failed) 12ms
+ ❯ test/p6t3-restart.test.ts (5 tests | 2 failed) 13ms
+ ❯ test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ test/t12a-b2-child-identity.test.ts (0 test)
+ Test Files  6 failed | 141 passed (147)
+      Tests  8 failed | 1523 passed (1531)
+
+## [4] testkit suite, 14:50:41 (gate: 124/0 at pin 667; (h2) DEC-1 entry appended, value unchanged — in-place edits only)
+ Test Files  15 passed (15)
+      Tests  124 passed (124)
+
+## [5] pnpm -r run typecheck — 9/9 packages Done (0 errors)
+## [6] pnpm run build — 9/9 packages Done (tsc build; 25 install-surface dist files rebuilt; pure LF verified: zero CR bytes in all changed dist files)
+## [7] pnpm run build:composition — exit 0:
+ [check-artifacts-committed] OK: 1080 files; committed install-surface artifacts match the fresh build
+
+## [8] references/ pristine (main worktree): deepseek-harness-test-use @ a66e470204, porcelain 0; deepseek-harness (fork) porcelain 0
+
+## [9] note: per-commit focused re-runs were additionally green throughout —
+ post-(a): domain a1 43/43, domain full 378/10 (same 10), focused runtime 216/216 (a3 28 + a2 30 + a4a 28 + h1a 40 + a6a 50 + a5a 40);
+ post-(b): focused 219/219 (a2 31, a5a 42); post-(c): focused 227/227 (a5a 50 = [1]).
+ Raw full-suite consoles (domain, runtime) were captured at run time; the [2]/[3] sections above are their key lines.

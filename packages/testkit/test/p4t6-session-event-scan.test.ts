@@ -521,6 +521,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     //     the H1 task branch; re-verify on int at the alpha2-hardening
     //     integration.
     //
+    // (h2) IN-PLACE EDITS ONLY, no scannable file added (this commit,
+    //     the alpha.2 hardening P1 vertical — three P1 findings): the
+    //     P1-1 bash contract ruling (domain validate.ts + the a1
+    //     fixtures/suite + the a3 recorded-ruling doc + the a6a policy
+    //     fixture), the P1-2 bash command-binding fingerprint (A2
+    //     canonical-operation.ts + the closed bash-command-* reasons in
+    //     errors.ts + the a2/a5a suite updates) and the P1-3 deny-rule
+    //     fail-closed flip (pre-execute-adapter.ts + the a5a
+    //     DR-A..DR-D legs) are all in-place edits on already-scanned
+    //     files, so the scanned count is UNCHANGED at 667 (642 + 10 +
+    //     1 + 7 + 1 + 2 + 2 + 1 + 1 — no new file). Zero denylist
+    //     vocabulary (the scan over the touched files passes — the
+    //     frozen quarantine hit set is unchanged at fifteen
+    //     occurrences). Recorded on the H2 task branch; re-verify on
+    //     int at the alpha2-hardening integration.
+    //
     // Independently re-verified on the int tree at each integration: the
     // committed scanner's own run reports filesScanned == files.length ==
     // 667 (642 + 10 + 1 + 7 + 1 + 2 + 2 + 1 + 1), and its file list names
