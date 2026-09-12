@@ -100,7 +100,11 @@ export declare const PERMISSION_TOOL_NAMES: readonly string[];
 export declare const PERMISSION_POLICY_DEFAULTS: readonly string[];
 /**
  * The closed resource kinds of a permission rule (alpha.2 plan §6.2).
- * `subtree` is intentionally absent in A1 (not a release blocker).
+ * `subtree` (A2C-7, plan §9): one workspace path that matches the path
+ * ITSELF and every canonical descendant — the containment judgment is
+ * the pinned public `FileSystem.contains` seam's (NEVER a string
+ * authority over opaque keys); the shell class (bash/pwsh) does not
+ * accept a subtree resource in any lane (the A2C-1 shell contract).
  */
 export declare const PERMISSION_RESOURCE_KINDS: readonly string[];
 /** The exact closed field set of a TemplatePermissionPolicy block. */

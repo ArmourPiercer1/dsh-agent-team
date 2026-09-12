@@ -390,6 +390,22 @@ export interface InstallParameterPermissionListenerParams {
      * decision for both (H4 — no cache).
      */
     readonly resolveTarget: PathTargetResolver;
+    /**
+     * A2C-7 (alpha.2 plan §9) — the containment authority seam: the
+     * pinned upstream PUBLIC `FileSystem.contains(parent, child)` over
+     * OPAQUE `FsTarget`s of the SAME provider (both handles produced by
+     * `resolveTarget`'s live fs service — the glue passes the same
+     * lazy `ctx.get('fs')` basis). The ONLY legal containment predicate
+     * (plan §9.4: never `startsWith`, never targetKey parsing, never
+     * consumer-side `node:path`). Optional — when absent, a `subtree`
+     * rule's containment is UNDETERMINABLE (deny lane: fail-closed deny,
+     * the rule cannot be dropped; allow/ask lanes: non-match — the P1-3
+     * lane asymmetry). Pre-A2C-7 installers (no subtree rules in their
+     * policies) are unaffected: the optionality is backward-compatible.
+     * Synchronous (`boolean`, the pinned seam) or a thenable (a future
+     * async backend) — both are awaited internally.
+     */
+    readonly containsTargets?: (parent: unknown, child: unknown) => boolean | Promise<boolean>;
     /** The durable control plane service (A4 — fully constructed). */
     readonly controlService: ControlService;
     /** The team root session id (the TeamSession, invariant 9). */

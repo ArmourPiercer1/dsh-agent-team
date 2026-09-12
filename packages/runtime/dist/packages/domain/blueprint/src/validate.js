@@ -399,6 +399,15 @@ function validatePermissionRule(raw, path, lane) {
     if (isShellTool && resource.kind === 'exact') {
         throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept an 'exact' resource in any lane — an exact key is a file key and can never match the ${tool} tool-level resource, and alpha.2 has no parameter-level shell matcher (${tool} supports only the 'any' resource, in the ask or deny lane)`, { path: `${path}.resource.kind`, lane });
     }
+    // A2C-7 (alpha.2 plan §9): the shell class does not accept a `subtree`
+    // resource in any lane — a subtree root is a FILE target (its
+    // containment is judged by the pinned `FileSystem.contains` seam over
+    // file identities) and can never match the tool-level shell resource;
+    // the shell keeps only the whole-tool 'any' resource (ask/deny; bash
+    // none in the allow lane — the A2C-1 contract, unchanged).
+    if (isShellTool && resource.kind === 'subtree') {
+        throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept a 'subtree' resource in any lane — a subtree root is a file target and can never match the ${tool} tool-level resource; the shell class keeps only the 'any' resource (ask or deny lane; ${tool === 'bash' ? 'bash accepts no positive whole-tool allow' : 'see the allow-lane contract for bash'})`, { path: `${path}.resource.kind`, lane });
+    }
     if (isShellTool && resource.kind === 'any' && lane === 'allow') {
         throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for ${tool} — the allow lane must not carry a ${tool} rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: ${tool}, resource: { kind: 'any' } })`, { path: `${path}.resource.kind`, lane });
     }
@@ -419,7 +428,12 @@ function validatePermissionResource(raw, path) {
         }
         return { kind: 'any' };
     }
-    // kind === 'exact' — exactly the fields `kind` + `path`.
+    // kind === 'exact' | 'subtree' (A2C-7) — exactly the fields `kind` +
+    // `path`, and the SAME path constraints (string, no control characters,
+    // trimmed non-empty, structurally bounded). The subtree kind matches
+    // the path itself and every canonical descendant (the containment
+    // judgment is the pinned public `FileSystem.contains` seam's — the
+    // A5 adapter, never this layer).
     assertNoUnknownFields(record, ['kind', 'path'], `${path} (permission resource)`);
     const pathValue = requireField(record, 'path', path);
     if (typeof pathValue !== 'string') {
@@ -438,7 +452,9 @@ function validatePermissionResource(raw, path) {
     if (normalized.length > PERMISSION_PATH_MAX_LENGTH) {
         throw teamContractError('MALFORMED_DTO', `permission resource ${path}.path exceeds max length ${PERMISSION_PATH_MAX_LENGTH} (${normalized.length})`, { path: `${path}.path`, maxLength: PERMISSION_PATH_MAX_LENGTH });
     }
-    return { kind: 'exact', path: normalized };
+    return kind === 'subtree'
+        ? { kind: 'subtree', path: normalized }
+        : { kind: 'exact', path: normalized };
 }
 // ---------------------------------------------------------------------------
 // the whole-document validator
@@ -739,7 +755,9 @@ function toHashablePermissionPolicy(policy) {
 function toHashablePermissionRule(rule) {
     return {
         tool: rule.tool,
-        resource: rule.resource.kind === 'any' ? { kind: 'any' } : { kind: 'exact', path: rule.resource.path },
+        resource: rule.resource.kind === 'any'
+            ? { kind: 'any' }
+            : { kind: rule.resource.kind, path: rule.resource.path },
     };
 }
 function toHashableAllowDeny(entry) {

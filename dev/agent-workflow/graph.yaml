@@ -373,17 +373,18 @@ alpha2_capability_completion:
     A2C-4: { state: MERGED-INT, wave: W1, merge: "e2e0163", pr: "8", branch: "task/a2c-4-external-hard-last-mile", worktree: ".worktrees/a2c-4", pr: null, note: "GREEN source complete (control 3 + adapter static-allow hunk); test file expanding (1064+ lines, G1-G9); expected scanner delta +1; consultGuard second-caller covered by in-guard recheck (no tools/ change)" }
     A2C-2: { state: MERGED-INT, wave: W2, subagent: "ea079e0c", merge: "see int log (incl. merge-block repair c0bb109)", pr: "11", branch: "task/a2c-2-permission-coverage-gate", worktree: ".worktrees/a2c-2" }
     A2C-5: { state: MERGED-INT, wave: W2, subagent: "469eceb0", merge: "see int log", pr: "10", branch: "task/a2c-5-read-fingerprint", worktree: ".worktrees/a2c-5", pr: null }
-    A2C-7: { state: IN-FLIGHT, wave: W3, subagent: "3caf0f71", branch: "task/a2c-7-subtree-matcher", worktree: ".worktrees/a2c-7", pr: null }
+    A2C-7: { state: MERGED-INT, wave: W3, subagent: "3caf0f71", pr: "12", branch: "task/a2c-7-subtree-matcher", worktree: ".worktrees/a2c-7", pr: null }
     A2C-3: { state: PENDING, wave: W4, branch: "task/a2c-3-inspect-operation-permission", worktree: ".worktrees/a2c-3", pr: null }
   waves:
     INT_W1: FROZEN (tip = this freeze commit; A2C-1 @ 23a4d9f + A2C-4 @ e2e0163; pin 692; full suite 20=baseline exact)
     INT_W2: FROZEN (tip = this freeze commit; A2C-5 @ b06a132 + A2C-2 @ A2C-2 merge incl. repair c0bb109; pin 695; full suite 20=baseline exact [3397]; union 200/200)
-    INT_W3: null
+    INT_W3: FROZEN (tip = this freeze commit; A2C-7 @ 831fedb+58f9994; pin 696; full suite 20=baseline exact [3433]; union 241/241)
     INT_W4: null
   prs:
     "7": { head: "docs/alpha2-capability-completion-review", base: master, state: MERGED }
     "8": { head: "task/a2c-4-external-hard-last-mile", base: int/alpha2-capability-completion, state: MERGED, merged: "2026-09-12T16:04:48Z" }
     "9": { head: "task/a2c-1-pwsh-permission", base: int/alpha2-capability-completion, state: MERGED, merged: "2026-09-12T17:40:01Z" }
     "10": { head: "task/a2c-5-read-fingerprint", base: int/alpha2-capability-completion, state: MERGED, merged: "2026-09-12T17:56:41Z" }
-    "11": { head: "task/a2c-2-permission-coverage-gate", base: int/alpha2-capability-completion, state: MERGED-LOCAL }
+    "11": { head: "task/a2c-2-permission-coverage-gate", base: int/alpha2-capability-completion, state: MERGED }
+    "12": { head: "task/a2c-7-subtree-matcher", base: int/alpha2-capability-completion, state: MERGED-LOCAL }
   red_lines: "CORE PATCH BUDGET = 0 (test-use pristine @ a66e470204 verified pre-dispatch; references/ untouched); :3080 zero-touch; test ports 3180 family only; DSH_HOME in-workspace tests/homes/; zero force-push; push only per user-authorized PR workflow (D-1); single-writer files per plan §2.3 (graph/log/p4t6 pin/package.json versions/dist artifacts/pnpm-lock — main-agent only)"

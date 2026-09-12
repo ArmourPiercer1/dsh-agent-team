@@ -38,15 +38,22 @@ export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 
  *
  * - `exact` — one exact workspace path (non-empty string; the A3 resolver
  *   compares it against the canonical operation resource);
+ * - `subtree` — one workspace path that matches the path ITSELF and every
+ *   canonical descendant (A2C-7, plan §9): same path constraints as
+ *   `exact`; the containment judgment is the pinned public
+ *   `FileSystem.contains` seam's (the A5 adapter calls it on targets of
+ *   the SAME provider — never a string authority over opaque keys);
+ *   the shell class (bash/pwsh) does not accept a subtree resource in
+ *   any lane (the A2C-1 shell contract — the shell keeps only the
+ *   whole-tool `any` resource in ask/deny);
  * - `any` — the whole tool, carrying no resource identity (the minimal
  *   shell permission: `{ tool: bash, resource: { kind: 'any' } }`).
- *
- * `subtree` is deliberately NOT part of the A1 vocabulary (plan §6.2: not a
- * release blocker; added only if a public filesystem seam can judge the
- * descendant relation strictly).
  */
 export type PermissionResource = {
     readonly kind: 'exact';
+    readonly path: string;
+} | {
+    readonly kind: 'subtree';
     readonly path: string;
 } | {
     readonly kind: 'any';

@@ -34,10 +34,15 @@
  * - NOT the control scope (A4: exact allows over the `fingerprint`) and
  *   NOT the pre-execute listener (A5: the agent-scoped
  *   `tools/pre-execute` enforcement);
- * - NOT a `subtree` matcher in alpha.2: the plan cut rule (plan §8.2 —
- *   only `exact` and `any` exist in the A1 vocabulary) makes it out of
- *   scope; no `startsWith`, no path parsing, no case folding — string
- *   equality on opaque keys only.
+ * - the `subtree` kind (A2C-7, plan §9): the rule carries the root's
+ *   canonical key (`rootKey` — PROVENANCE/DEBUG only) and the
+ *   OPERATION-RELATIVE containment boolean `containsOperation`, computed
+ *   by the A5 adapter with the ONLY legal authority: the pinned public
+ *   `FileSystem.contains(rootTarget, operationTarget)` over targets of
+ *   the SAME provider (plan §9.4). The matcher consumes the boolean and
+ *   NEVER compares `rootKey` against anything (no `startsWith`, no key
+ *   equality, no path parsing, no case folding — the containment
+ *   judgment is the seam's, fresh per decision (H4));
  *
  * Input contract (who canonicalizes what, and when):
  *
@@ -132,8 +137,13 @@ export type PermissionLane = 'allow' | 'ask' | 'deny';
 /**
  * One policy rule AFTER A5's input normalization (module header): the
  * A1 rule's `exact.path` has been replaced by its canonical key (the
- * same resolver the operation went through); `any` rules pass through
- * unchanged. A3 compares `key` — it never sees a raw path.
+ * same resolver the operation went through); the A2C-7 `subtree` rule's
+ * path has been canonicalized to its root key AND its containment
+ * relation to THIS operation has been computed by the A5 seam (the
+ * public `FileSystem.contains` — the only legal authority); `any` rules
+ * pass through unchanged. A3 compares the exact key / consumes the
+ * subtree boolean — it never sees a raw path and never infers
+ * containment from `rootKey`.
  */
 export type CanonicalRule = {
     /** The tool this rule gates (closed A1 vocabulary). */
@@ -142,6 +152,18 @@ export type CanonicalRule = {
     readonly resource: {
         readonly kind: 'exact';
         readonly key: string;
+    } | {
+        /** A2C-7 (plan §9) — the subtree root's canonical key.
+         *  PROVENANCE/DEBUG equality only: the matcher NEVER compares
+         *  it (containment is `containsOperation`, computed by the
+         *  A5 seam over the public `FileSystem.contains`). */
+        readonly kind: 'subtree';
+        readonly rootKey: string;
+        /** The OPERATION-RELATIVE containment verdict for THIS decision
+         *  (root == operation target OR the operation is a canonical
+         *  descendant — the pinned `FileSystem.contains` semantics,
+         *  same provider, fresh per decision (H4)). */
+        readonly containsOperation: boolean;
     } | {
         readonly kind: 'any';
     };

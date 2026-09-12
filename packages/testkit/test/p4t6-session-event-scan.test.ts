@@ -921,8 +921,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // by the main agent. Zero denylist vocabulary in both new files.
     // Evidence:
     // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-2/.
-    expect(scanResult.filesScanned).toBe(695)
-    expect(scanResult.files.length).toBe(695)
+    // alpha.2 capability-completion A2C-7 (merged into
+    // int/alpha2-capability-completion, PR #12): +1 = 696 — one new
+    // file, packages/runtime/test/a2c7-subtree-matcher.test.ts (the
+    // 16-group §9.9 subtree matrix + R1/R2 + the REAL pinned
+    // LocalFileSystem contains section). All other A2C-7 changes are
+    // in-place edits (domain schema/types/validate, A3 resolver, A5
+    // adapter, host/glue, a1 test). Scanner unchanged; DEC-1 union at
+    // the integration tip by the main agent. Zero denylist vocabulary
+    // in the new file. Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-7/.
+    expect(scanResult.filesScanned).toBe(696)
+    expect(scanResult.files.length).toBe(696)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

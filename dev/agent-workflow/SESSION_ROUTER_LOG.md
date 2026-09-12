@@ -2772,3 +2772,24 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **RED 纯净形式**（track 树本净，先测试后源码；stash no-op 已文档化，pop 验证）：
   16 failed | 15 passed — 16 失败全为 subtree 判别探针 pre-fix 事实（schema 拒 subtree 等）。
 - GREEN 实现 + 门禁组进行中。
+
+### A2C-7 合并执行（W3 唯一任务）+ INT_W3 冻结
+
+- **FINAL 报告接收**（3caf0f71，GREEN）：2 commits（831fedb src+tests 11 文件 +5222/−68
+  实际 +2222/−68 / 58f9994 证据）；新文件 1（a2c7 1769 行 31 测试）；scanner delta +1
+  （695→696 实测精确）；A1 kinds += subtree（shell 全 lane 拒绝，A2C-1 文本 byte-identical）；
+  A5 decision-local opaque map（H4 fresh，retarget 跟随 G10 real）；fs.contains 唯一
+  authority；A3 pure 专项 PASS（恰 2 import 均 type-only）；failure lanes deny=FAIL
+  CLOSED / allow-ask=non-match（P1-3 residual 文档化）。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine ✓；worktree 归位 ✓（D1：派发时
+  我的 cd 链错误致嵌套 → 代理 git worktree move 纠正）；diff 严格限于 §14 授权文件集 ✓。
+- **主代理 re-gate（独立 @ 58f9994）**：聚焦 11 文件 315/315（**a6a/bp1 显式列** —
+  A2C-2 SOP 教训执行）+ h4 族 10/10；全量 11=基线10+p4t6（3433=3397+36）；node 链
+  12=base；typecheck×2/build/zero-core 全绿。
+- **PR #12** 创建 → 本地 merge（零冲突，16 文件）→ bookkeeping：pin 695→696（10/10 真值）
+  + dist 重建 + smoke PASS + 联合套件 9 文件 **241/241**。
+- **全量 bookkeeping 运行出现 11 文件/23 测试** → 逐文件提取：第 11 文件 = **p6t1-parallel
+  （2 测试）** = 文档化 load flake → **isolation 9/9 PASS** 裁决（非回归；test 数 2/3
+  逐 run 变化 = flake 特征，与既有裁决记录一致）。
+- **INT_W3 冻结**（本 commit）：A2C-7 入 int。W4 = A2C-3（base INT_W3，client 面，
+  TCM-M4 待裁决失败不得扩大）。
