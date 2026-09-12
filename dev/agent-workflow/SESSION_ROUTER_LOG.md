@@ -2544,3 +2544,17 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   ③ 三个里程碑 send_message 进度 ping（文件完成 / RED 取证 / gates+commit）；
   ④ 9 源文件视为已验证完成，禁重构。
 - **A2C-4** 不受影响，健康推进（测试 1074 行）。
+
+### 目标轮次预算交接（R141 续，goal round 37/40 时点）
+
+- **当前运行中**：A2C-4 子代理 `7f76dfaf`（测试 1075 行 + RED 日志已落盘；GREEN 运行/gates/commit
+  待完成）；A2C-1 接管子代理 `6eb01116`（早期阶段：必读 + install 完成；测试文件/RED/gates/commit 待做）。
+  原 A2C-1 `dd9e18c4` 已停车（ready，勿复用）。
+- **恢复即做**：检查两 worktree 的 commit 状态；任一任务 commit 完成 → 按
+  `evidence/alpha2-capability-completion/merge-sop.md` 执行该任务合并序列
+  （§13 PR 描述 → push → re-gate → 同步 merge → int bookkeeping[p4t6 pin 690+Σdelta / dist 重建 /
+  check:artifacts / smoke:composition] → 冻结 INT_Wn）；两任务齐备 → 派发 W2
+  （`briefs/a2c-2-brief.md` + `a2c-5-brief.md`，base = INT_W1，先填 TO-FILL-AT-DISPATCH 事实节，
+  worktree `.worktrees/a2c-2`/`.worktrees/a2c-5` 未建——`git worktree add -b <branch> int/...`）。
+- **远端现状**：origin/master = 1e05d24（PR #7 已合）；origin/int = 本分支 tip（持续推送）；
+  无 open PR（任务 PR 待各任务 commit 后创建）。
