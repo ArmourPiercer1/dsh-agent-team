@@ -376,12 +376,12 @@ alpha2_capability_completion:
     A2C-7: { state: PENDING, wave: W3, branch: "task/a2c-7-subtree-matcher", worktree: ".worktrees/a2c-7", pr: null }
     A2C-3: { state: PENDING, wave: W4, branch: "task/a2c-3-inspect-operation-permission", worktree: ".worktrees/a2c-3", pr: null }
   waves:
-    INT_W1: null
+    INT_W1: FROZEN (tip = this freeze commit; A2C-1 @ 23a4d9f + A2C-4 @ e2e0163; pin 692; full suite 20=baseline exact)
     INT_W2: null
     INT_W3: null
     INT_W4: null
   prs:
     "7": { head: "docs/alpha2-capability-completion-review", base: master, state: MERGED }
     "8": { head: "task/a2c-4-external-hard-last-mile", base: int/alpha2-capability-completion, state: MERGED, merged: "2026-09-12T16:04:48Z" }
-    "9": { head: "task/a2c-1-pwsh-permission", base: int/alpha2-capability-completion, state: MERGED-LOCAL }
+    "9": { head: "task/a2c-1-pwsh-permission", base: int/alpha2-capability-completion, state: MERGED, merged: "2026-09-12T17:40:01Z" }
   red_lines: "CORE PATCH BUDGET = 0 (test-use pristine @ a66e470204 verified pre-dispatch; references/ untouched); :3080 zero-touch; test ports 3180 family only; DSH_HOME in-workspace tests/homes/; zero force-push; push only per user-authorized PR workflow (D-1); single-writer files per plan §2.3 (graph/log/p4t6 pin/package.json versions/dist artifacts/pnpm-lock — main-agent only)"

@@ -2633,3 +2633,20 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   operation-permission → 7 工具词汇）；check:artifacts / smoke / 全量套件交叉冒烟（预期
   20 = 基线精确）/ node 链 / 联合套件 a2c1+a2c4+a5a+a6a（A2C-4 open-risk ③）=
   int-bookkeeping-a2c1.log。
+
+### INT_W1 冻结
+
+- A2C-4 @ e2e0163（PR #8, 16:04:48Z）+ A2C-1 @ 23a4d9f（PR #9, 17:40:01Z）双双合入 int；
+  零冲突；语义并集核验通过（adapter 双 hunk 共存、control intact）。
+- **INT_W1 bookkeeping 验证全绿**（int-bookkeeping-a2c1.log）：
+  - p4t6 pin 692 真值（10/10）
+  - 全量根套件 **20 failed | 3349 passed (3369 = 3330+28+11) = 基线精确匹配**（10 文件；
+    p4t6 过；本轮无 flake）
+  - node 链 FAIL 集 = 基线 10 文件
+  - **联合套件 a2c1+a2c4+a5a+a6a = 141/141**（A2C-4 open-risk ③ 关闭：两任务 adapter hunk
+    交互无回归）
+  - build:composition / check:artifacts OK（1104 文件，install-surface = 7 工具词汇 dist）
+  - smoke:composition PASS
+- p4t6 pin 历史: 690 (base) → 691 (A2C-4) → **692 (A2C-1)**。
+- **W2 派发基线 = INT_W1 tip**（本冻结提交）；worktrees `.worktrees/a2c-2` + `.worktrees/a2c-5`
+  待建；简报 TO-FILL-AT-DISPATCH 事实节待以 INT_W1 实际树填充。
