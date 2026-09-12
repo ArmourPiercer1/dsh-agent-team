@@ -5,8 +5,9 @@
  * The public surface of the module:
  * - `createControlService` — the durable control plane service over an
  *   open TeamDomain (requestControl / resolveControl / listControlState /
- *   guardOperation / awaitControlDecision — the alpha.2 synchronous wait
- *   bridge);
+ *   guardOperation / checkExternalOperation — the A2C-4 shared read-only
+ *   external hard last-mile recheck / awaitControlDecision — the alpha.2
+ *   synchronous wait bridge);
  * - the closed vocabulary (request kinds, decision values/reasons, guard
  *   block reasons, the control-service error codes) and the record types
  *   (ControlRequestRecord / ControlDecisionRecord / ControlConsumption-
@@ -93,6 +94,6 @@
 export { CONTROL_ERROR_CODES, CONTROL_ERROR_CODE_VALUES, ControlError, isControlError, } from './errors.js';
 export type { ControlErrorCode } from './errors.js';
 export { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_REASONS, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_GUARD_BLOCK_REASON_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KIND_VALUES, CONTROL_REQUEST_KINDS, CONTROL_RESOLVER_ROLES, } from './types.js';
-export type { ControlCallerRef, ControlConsumptionRecord, ControlDecisionRecord, ControlDecisionReason, ControlDecisionValue, ControlGuardBlockReason, ControlGuardVerdict, ControlOperationScope, ControlRequestKind, ControlRequestRecord, ControlService, ControlServiceOptions, ControlWaitSignal, } from './types.js';
+export type { ControlCallerRef, ControlConsumptionRecord, ControlDecisionRecord, ControlDecisionReason, ControlDecisionValue, ControlExternalVerdict, ControlGuardBlockReason, ControlGuardVerdict, ControlOperationScope, ControlRequestKind, ControlRequestRecord, ControlService, ControlServiceOptions, ControlWaitSignal, } from './types.js';
 export { createControlService } from './service.js';
 //# sourceMappingURL=index.d.ts.map

@@ -172,6 +172,12 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
      *  (ARCHIVED — admission is closed, invariant 52), or the team session
      *  record is gone (the operation cannot execute on it). */
     TARGET_STALE: 'target-stale',
+    /** The live external hard policy recheck (A2C-4 last-mile, plan §6.3)
+     *  refused the operation AFTER the durable allow was found: the host
+     *  policy tightened between the decision and the final guard. The
+     *  consumption fact is NOT written (the one-shot allow is not burned —
+     *  "prefer zero allow consumption", invariant 34). */
+    EXTERNAL_POLICY: 'external-policy',
 };
 /** Every guard block reason value, for membership checks. */
 export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLOCK_REASONS);

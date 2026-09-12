@@ -875,8 +875,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // followup/h5-bash-effect/ + dev/agent-workflow/evidence/issue1-async-
     // delegation/ + dev/agent-workflow/evidence/alpha2-blueprint-loading/ +
     // alpha2-issue2-permission/.
-    expect(scanResult.filesScanned).toBe(690)
-    expect(scanResult.files.length).toBe(690)
+    // alpha.2 capability-completion A2C-4 (merged into
+    // int/alpha2-capability-completion @ e2e0163, PR #8): +1 = 691 —
+    // one new file, packages/runtime/test/a2c4-external-lastmile.test.ts
+    // (the R1/R2 RED-probe retention + G1–G9 §6.5 matrix for the
+    // external hard last-mile recheck). Zero other scannable additions
+    // (the a6a spy completion is an in-place edit of an existing file;
+    // the control/ + pre-execute-adapter sources are in-place edits).
+    // Scanner unchanged; DEC-1 union applied at the integration tip by
+    // the main agent. Zero denylist vocabulary in the new file (the
+    // frozen quarantine hit set stays at fifteen occurrences).
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-4/.
+    expect(scanResult.filesScanned).toBe(691)
+    expect(scanResult.files.length).toBe(691)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

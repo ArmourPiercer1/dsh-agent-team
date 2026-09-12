@@ -18,7 +18,10 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
- *     ├ allow → await next()
+ *     ├ allow → checkExternalOperation(live)  (A2C-4 — the external hard
+ *         │     last-mile recheck; fail closed)
+ *         │   ├ allowed → await next()
+ *         │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
  *     ├ deny  → return { kind: 'deny' }       (provenance in the reason)
  *     └ ask
  *         ↓
@@ -32,7 +35,12 @@
  *     └ decision allow
  *         ↓
  *     guardOperation(exact scope + fingerprint)  (A4 — check-and-reserve
- *         ↓                                exactly once)
+ *         ↓                                exactly once; the live
+ *                                             external hard recheck A2C-4
+ *                                             runs INSIDE the guard,
+ *                                             before the consumption
+ *                                             write — a tightened cell
+ *                                             blocks WITHOUT consuming)
  *     ├ allowed → await next()
  *     └ blocked → return { kind: 'deny' }     (no-request here is a
  *                                             consistency anomaly — fail
@@ -76,8 +84,11 @@
  * - it is FAIL CLOSED (plan §7.5/§10.3): every non-allow outcome returns
  *   before `next()` is awaited, so the tool body is NEVER invoked
  *   (zero-effect invariant): unsupported pass-through, static deny,
- *   canonicalization failure, request failure, wait abort, wait closed,
- *   durable deny/stale-denied, guard block — all deny;
+ *   the static-path external recheck deny (A2C-4 — the exec is never
+ *   marked, the end-cap stays armed), canonicalization failure, request
+ *   failure, wait abort, wait closed, durable deny/stale-denied, guard
+ *   block (including the guard's external-policy block — zero allow
+ *   consumption) — all deny;
  * - it is AGENT-SCOPED: `installParameterPermissionListener` registers
  *   ONE listener on the ONE agent ctx it is given (the A6 glue installs
  *   it per agent lifecycle — fresh root / fresh member / cold resume —

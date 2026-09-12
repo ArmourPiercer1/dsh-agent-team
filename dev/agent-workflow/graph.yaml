@@ -370,7 +370,7 @@ alpha2_capability_completion:
   review_doc: { path: "docs/alpha2-capability-completion-code-review.md", pr: 7, head: "docs/alpha2-capability-completion-review", merged: "2026-09-12T15:28Z (merge commit 1e05d24)" }
   tasks:
     A2C-1: { state: TAKEOVER-DISPATCHED, wave: W1, subagent: "6eb01116", branch: "task/a2c-1-pwsh-permission", worktree: ".worktrees/a2c-1", pr: null, note: "GREEN source edits (9 files) verified by main-agent pre-review; test file + stash-RED + gates + live proof pending (single mega-turn in progress since ~R22; contingency takeover brief committed — trigger if no test file on disk by R25 check)" }
-    A2C-4: { state: IN-FLIGHT-FINAL-PHASE, wave: W1, branch: "task/a2c-4-external-hard-last-mile", worktree: ".worktrees/a2c-4", pr: null, note: "GREEN source complete (control 3 + adapter static-allow hunk); test file expanding (1064+ lines, G1-G9); expected scanner delta +1; consultGuard second-caller covered by in-guard recheck (no tools/ change)" }
+    A2C-4: { state: MERGED-INT, wave: W1, merge: "e2e0163", pr: "8", branch: "task/a2c-4-external-hard-last-mile", worktree: ".worktrees/a2c-4", pr: null, note: "GREEN source complete (control 3 + adapter static-allow hunk); test file expanding (1064+ lines, G1-G9); expected scanner delta +1; consultGuard second-caller covered by in-guard recheck (no tools/ change)" }
     A2C-2: { state: PENDING, wave: W2, branch: "task/a2c-2-permission-coverage-gate", worktree: ".worktrees/a2c-2", pr: null }
     A2C-5: { state: PENDING, wave: W2, branch: "task/a2c-5-read-fingerprint", worktree: ".worktrees/a2c-5", pr: null }
     A2C-7: { state: PENDING, wave: W3, branch: "task/a2c-7-subtree-matcher", worktree: ".worktrees/a2c-7", pr: null }

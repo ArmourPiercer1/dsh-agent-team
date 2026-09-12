@@ -1,0 +1,42 @@
+=== B1 p4t6 (pin 691 truth check) ===
+ ✓ packages/domain/test/t4-policy-matrix.test.ts (14 tests) 41ms
+ ✓ packages/domain/test/t4-policy-negative.test.ts (34 tests) 46ms
+ ✓ packages/remote/test/p8t3-negative.test.ts (7 tests) 30ms
+     ✓ 4. Malformed allow entry rejects (missing items) 1ms
+     ✓ 4b. Malformed allow entry rejects (items not string[]) 1ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 1ms
+=== B2 build ===
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+=== B3 build:composition ===
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+=== B4 check:artifacts ===
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+=== B5 smoke:composition ===
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS composition-smoke
+=== B6 full root suite (cross-smoke) ===
+   Start at  16:02:31
+   Duration  6.45s (transform 37.70s, setup 0ms, import 112.65s, tests 2.82s, environment 27ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+=== B7 run-tests.mjs (domain runtime tools testkit) ===
+13
+FAIL packages/domain/test/t1-capability-schema.test.ts (10/17 tests)
+FAIL packages/domain/test/t2-blueprint-hash.test.ts (1/15 tests)
+FAIL packages/runtime/test/a5a-pre-execute.test.ts
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+=== BOOKKEEPING DONE ===

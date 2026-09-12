@@ -18,7 +18,10 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
- *     ├ allow → await next()
+ *     ├ allow → checkExternalOperation(live)  (A2C-4 — the external hard
+ *         │     last-mile recheck; fail closed)
+ *         │   ├ allowed → await next()
+ *         │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
  *     ├ deny  → return { kind: 'deny' }       (provenance in the reason)
  *     └ ask
  *         ↓
@@ -32,7 +35,12 @@
  *     └ decision allow
  *         ↓
  *     guardOperation(exact scope + fingerprint)  (A4 — check-and-reserve
- *         ↓                                exactly once)
+ *         ↓                                exactly once; the live
+ *                                             external hard recheck A2C-4
+ *                                             runs INSIDE the guard,
+ *                                             before the consumption
+ *                                             write — a tightened cell
+ *                                             blocks WITHOUT consuming)
  *     ├ allowed → await next()
  *     └ blocked → return { kind: 'deny' }     (no-request here is a
  *                                             consistency anomaly — fail
@@ -76,8 +84,11 @@
  * - it is FAIL CLOSED (plan §7.5/§10.3): every non-allow outcome returns
  *   before `next()` is awaited, so the tool body is NEVER invoked
  *   (zero-effect invariant): unsupported pass-through, static deny,
- *   canonicalization failure, request failure, wait abort, wait closed,
- *   durable deny/stale-denied, guard block — all deny;
+ *   the static-path external recheck deny (A2C-4 — the exec is never
+ *   marked, the end-cap stays armed), canonicalization failure, request
+ *   failure, wait abort, wait closed, durable deny/stale-denied, guard
+ *   block (including the guard's external-policy block — zero allow
+ *   consumption) — all deny;
  * - it is AGENT-SCOPED: `installParameterPermissionListener` registers
  *   ONE listener on the ONE agent ctx it is given (the A6 glue installs
  *   it per agent lifecycle — fresh root / fresh member / cold resume —
@@ -657,6 +668,39 @@ export function installParameterPermissionListener(agentCtx, params) {
             },
         });
         if (decision.decision === 'allow') {
+            // A2C-4 (alpha.2 plan §6.3) — the live external hard LAST-MILE
+            // recheck of the static-allow path: the static decision resolved
+            // against the TEAM policy only; before the exec object is marked
+            // authorized (and the tool body dispatched) the operation must
+            // pass the CURRENT external hard policy through the shared
+            // read-only ControlService check (the same hard-cell semantics
+            // the resolve-time probe uses — invariant 34: no Team decision,
+            // human included, bypasses it). This static path carries no
+            // control request — this probe is its only external gate. A deny
+            // here is zero-effect: the exec is NOT marked (the monotonic
+            // end-cap stays armed against it), next() is never awaited (the
+            // tool body never runs), and no durable control row is written or
+            // consumed. A failing check fails closed (plan §10.3).
+            let external;
+            try {
+                external = await controlService.checkExternalOperation({
+                    capabilityDomain: 'tools',
+                    toolName: name,
+                });
+            }
+            catch (error) {
+                return {
+                    kind: 'deny',
+                    reason: `permission denied: the external policy recheck failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)})`,
+                };
+            }
+            if (external.allowed === false) {
+                observe({ stage: 'external-recheck-denied', callId, tool: name });
+                return {
+                    kind: 'deny',
+                    reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
+                };
+            }
             // R6 / H1 — mark THIS exec object as authorized by this install
             // (the same object the pipeline then flows to the end-cap guard
             // stage). Marking happens ONLY on final-allow paths — never on

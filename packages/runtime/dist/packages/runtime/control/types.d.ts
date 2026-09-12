@@ -303,6 +303,12 @@ export declare const CONTROL_GUARD_BLOCK_REASONS: {
      *  (ARCHIVED — admission is closed, invariant 52), or the team session
      *  record is gone (the operation cannot execute on it). */
     readonly TARGET_STALE: "target-stale";
+    /** The live external hard policy recheck (A2C-4 last-mile, plan §6.3)
+     *  refused the operation AFTER the durable allow was found: the host
+     *  policy tightened between the decision and the final guard. The
+     *  consumption fact is NOT written (the one-shot allow is not burned —
+     *  "prefer zero allow consumption", invariant 34). */
+    readonly EXTERNAL_POLICY: "external-policy";
 };
 /** One of the closed guard block reasons. */
 export type ControlGuardBlockReason = (typeof CONTROL_GUARD_BLOCK_REASONS)[keyof typeof CONTROL_GUARD_BLOCK_REASONS];
@@ -322,6 +328,28 @@ export type ControlGuardVerdict = {
     readonly reason: ControlGuardBlockReason;
     readonly requestId?: string;
     readonly decisionSequence?: number;
+};
+/**
+ * The verdict of the SHARED READ-ONLY external hard check (A2C-4, alpha.2
+ * plan §6.3 — the external last-mile recheck seam).
+ *
+ * This is the control plane's single external-ceiling evaluator surface:
+ * the resolve-time probe, this method, and the guard's internal recheck
+ * all share the SAME hard-cell semantics over the LIVE
+ * `externalPolicyFacts` port (an ABSENT cell = no host restriction; a
+ * hard `deny` refuses; a hard allow-list must NAME the operation's tool;
+ * an explicit `capabilityExists: false` refuses). It is READ-ONLY — it
+ * writes no durable row — and FAILS CLOSED: any failure reading or
+ * interpreting the facts is a deny verdict, never a throw and never an
+ * allow (invariant 34: no Team decision, human included, bypasses the
+ * external hard policy).
+ */
+export type ControlExternalVerdict = {
+    readonly allowed: true;
+} | {
+    readonly allowed: false;
+    /** The fail-closed diagnostic (free text; NOT authority data). */
+    readonly reason: string;
 };
 /**
  * The minimal caller-cancellation surface the wait bridge consumes
@@ -371,7 +399,9 @@ export interface ControlServiceOptions {
 }
 /**
  * The durable control plane service (P6-T4 acceptance object):
- * requestControl / resolveControl / listControlState / guardOperation.
+ * requestControl / resolveControl / listControlState / guardOperation /
+ * checkExternalOperation (the A2C-4 shared read-only external recheck) /
+ * awaitControlDecision.
  *
  * Invariant: the service NEVER executes tool operations — the decision
  * only authorizes; execution stays in the DSH tool pipeline (the guard is
@@ -432,13 +462,45 @@ export interface ControlService {
      * the tool registration BEFORE the DSH tool pipeline executes the
      * operation — the characterized `pre-execute` / TOOL_GUARD seam,
      * DevPlan 15). Verifies a durable allow decision exists for the EXACT
-     * scope and is unconsumed; on success it durably CONSUMES the allow
+     * scope and is unconsumed, then re-probes the LIVE external hard
+     * policy (A2C-4 last-mile, plan §6.3 — `checkExternalOperation`, the
+     * shared read-only check); on success it durably CONSUMES the allow
      * (check-and-reserve under the per-team lock) and returns allowed:true.
-     * The guard never executes the operation itself and never throws for a
-     * policy outcome (it returns a block verdict).
+     * A tightened external cell blocks with `external-policy` BEFORE the
+     * consumption write — the one-shot allow is NOT consumed (zero effect,
+     * "prefer zero allow consumption"; invariant 34). The guard never
+     * executes the operation itself and never throws for a policy outcome
+     * (it returns a block verdict).
      * @param scope - the exact operation scope (see the module docs).
      */
     guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict>;
+    /**
+     * The SHARED READ-ONLY external hard check (A2C-4 last-mile recheck,
+     * alpha.2 plan §6.3). Probes the LIVE `externalPolicyFacts` port and
+     * applies the SAME hard-cell semantics the resolve-time probe uses
+     * (this is the control plane's single external-ceiling evaluator —
+     * the adapter's static-allow recheck and the guard's internal
+     * recheck both call THIS method; there is no second hard-policy
+     * evaluator).
+     *
+     * Domain derivation (identical to the resolve-time probe): the
+     * explicit `capabilityDomain` when present, else `tools` when a
+     * `toolName` is named, else NO cell — an operation that names no
+     * capability domain is not probed (the Team-owned admission that
+     * gated it is the whole check).
+     *
+     * READ-ONLY: no durable row is written, regardless of the verdict.
+     * FAILS CLOSED and NEVER throws: a thrown or malformed facts probe is
+     * a deny verdict (invariant 34).
+     * @param input.capabilityDomain - the explicit capability domain
+     *   (closed set) when the operation carries one.
+     * @param input.toolName - the operation's tool name when it is a
+     *   tool-pipeline operation (the allow-list cell must NAME it).
+     */
+    checkExternalOperation(input: {
+        readonly capabilityDomain?: CapabilityName;
+        readonly toolName?: string;
+    }): Promise<ControlExternalVerdict>;
     /**
      * The SYNCHRONOUS WAIT BRIDGE (alpha.2 §9.4): resolves when a durable
      * ControlDecision for the requestId appears. The authority is ALWAYS

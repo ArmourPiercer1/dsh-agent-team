@@ -75,6 +75,20 @@
  * stale-denied — the external probe is moot for an operation that can
  * never execute).
  *
+ * A2C-4 last-mile recheck (alpha.2 plan §6.3): the SAME hard-cell
+ * semantics are re-probed LIVE at the FINAL dispatch points, through one
+ * SHARED READ-ONLY evaluator (`checkExternalOperation` — built over the
+ * same `externalPolicyFacts` port and `hardCellAllows`; there is no
+ * second hard-policy implementation): (a) the pre-execute adapter's
+ * static-allow path consults it BEFORE marking the exec authorized (the
+ * static path carries no control request — this is its only external
+ * gate); (b) `guardOperation` consults it AFTER the exact-scope match and
+ * BEFORE the consumption write — a cell that tightened after the decision
+ * blocks with verdict reason `external-policy` and does NOT write the
+ * consumption fact (the one-shot allow is not burned: "prefer zero allow
+ * consumption"). Both probes fail closed (a thrown/malformed facts probe
+ * is a deny) and are read-only (no durable row either way).
+ *
  * Resolver authority (invariant 37 / Architecture 25.1): the closed
  * resolver role set per kind (CONTROL_RESOLVER_ROLES) is checked BEFORE
  * the envelope — a MEMBER is never a resolver for any kind, even when
@@ -125,7 +139,8 @@ import type { ControlService, ControlServiceOptions } from './types.js';
  *
  * @param options - the injected ports (see {@link ControlServiceOptions}).
  * @returns the ControlService (requestControl / resolveControl /
- *   listControlState / guardOperation).
+ *   listControlState / guardOperation / checkExternalOperation /
+ *   awaitControlDecision).
  */
 export declare function createControlService(options: ControlServiceOptions): ControlService;
 //# sourceMappingURL=service.d.ts.map

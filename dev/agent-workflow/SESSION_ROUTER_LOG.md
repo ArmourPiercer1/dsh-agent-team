@@ -2558,3 +2558,22 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   worktree `.worktrees/a2c-2`/`.worktrees/a2c-5` 未建——`git worktree add -b <branch> int/...`）。
 - **远端现状**：origin/master = 1e05d24（PR #7 已合）；origin/int = 本分支 tip（持续推送）；
   无 open PR（任务 PR 待各任务 commit 后创建）。
+
+### A2C-4 合并执行（W1 第一任务）
+
+- **DONE 报告接收**（子代理 7f76dfaf）：2 commits（b4ab104 src+tests 6 文件 / df77a18 证据 15 文件）；
+  新文件 1（a2c4-external-lastmile.test.ts，11 测试 = R1/R2 保留探针 + G1–G9）；scanner delta = +1
+  （690→691）；零消费语义行为证明（收紧窗口 consumptions=0、放宽后恰一次、G7 人类 allow 不胜
+  external hard、G3 探针抛错 fail-closed 零行、G8 只读不抛）；H1/H4/H5 零回归（a6a 52/52、
+  a5a 50/50、a4a 28/28）；偏差 D-1（a6a spy 补全，缺省 allowed:true = absent-cell）/ D-2
+  （重检在 guardOperation 内部）/ D-3（verify-zero-core --host 调用）全部有据。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine（porcelain 0 @ a66e470204）✓；
+  RED 2/2 pre-fix 失败 ✓；diff 审查 ✓（adapter 重检 @ L884 位于授权 mark 之前，try/catch
+  fail-closed，零副作用；a6a double D-1 补全正确）。
+- **主代理 re-gate（独立复跑 @ df77a18）**：全量根套件 **21 failed = 基线 20 + p4t6 预期 1**
+  （失败文件集 = 基线 10 文件 + p4t6，精确匹配）；plain-node runtime 链 FAIL 集与 99bc790
+  逐字节一致；typecheck/build exit 0；verify-zero-core 0 findings。
+- **PR #8** 创建（§13 格式，base int）→ 本地 `merge --no-ff` → **int = e2e0163**。
+- **int bookkeeping**：p4t6 pin 690→691（双断言 + 账本条目）；dist 重建 / check:artifacts /
+  smoke:composition / 全量套件交叉冒烟 = int-bookkeeping-a2c4.log（后台）。
+- **INT_W1 未冻结**（A2C-1 接管代理 6eb01116 仍在运行）。
