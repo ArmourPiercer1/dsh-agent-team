@@ -1,0 +1,318 @@
+# A2C-3 RED run (pre-fix tree) — 2026-09-12T19:09:54Z
+
+BASE_SHA: 4cf23ec372e86f72c34099f63f38e3defe4a8915
+worktree: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3    4cf23ec [task/a2c-3-inspect-operation-permission]
+branch: task/a2c-3-inspect-operation-permission
+git status (porcelain): only the untracked RED probe test file
+?? dev/agent-workflow/evidence/alpha2-capability-completion/a2c-3/
+?? packages/runtime/test/a2c3-inspect-operation-permission.test.ts
+
+command: npx vitest run packages/runtime/test/a2c3-inspect-operation-permission.test.ts
+
+RED protocol note: 'git stash push' ran with zero tracked source edits (GREEN implementation not yet written) -> 'No local changes to save'; the untracked test file stays; the run below is therefore ON the pre-fix base tree. 'git stash pop' is a no-op (nothing stashed); working tree verified restored (porcelain identical, single untracked test file).
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3
+
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (11 tests | 8 failed) 10ms
+     × R1: the config-inspected payload carries the independent operationPermissions field 4ms
+     × R2: the semantic split is real — the bound policy, not the generic cell, is exposed 2ms
+     × T1: member static policy — exact/any/subtree rules round-trip losslessly (declaration order) 1ms
+     × T2: leader static policy — the reserved leader id maps to the bound LeaderTemplate 0ms
+     × T3: permissions absent — the scout template (no capabilities) yields exactly mode absent 0ms
+     × T4: managedTools is the FINAL closed tool vocabulary (includes pwsh) 0ms
+     × T5: resourceKinds is the FINAL closed resource vocabulary (includes subtree) 0ms
+     × T6: returned rule order is deterministic — the re-drive is byte-equal (declaration order pinned) 0ms
+     ✓ T7: inspect is a pure read — zero durable writes (seam log + every repository unchanged) 0ms
+     ✓ T8: remote round-trip stays lossless — the static payload (new field included) passes the wire unchanged 0ms
+     ✓ T9: old effective consumers unregressed — the five-cell generic view is byte-identical to the pre-fix producer 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > R1: the config-inspected payload carries the independent operationPermissions field
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:442:48
+    440|       const effect = inspectLike(outcome)
+    441|       expect(effect.kind).toBe('config-inspected')
+    442|       expect('operationPermissions' in effect).toBe(true)
+       |                                                ^
+    443|     }
+    444|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > R2: the semantic split is real — the bound policy, not the generic cell, is exposed
+AssertionError: expected undefined to deeply equal { Object (mode, default, ...) }
+
+- Expected:
+{
+  "allow": [
+    {
+      "resource": {
+        "kind": "exact",
+        "path": "notes/a.md",
+      },
+      "tool": "read",
+    },
+    {
+      "resource": {
+        "kind": "exact",
+        "path": "notes/b.md",
+      },
+      "tool": "write",
+    },
+  ],
+  "ask": [
+    {
+      "resource": {
+        "kind": "subtree",
+        "path": "src",
+      },
+      "tool": "edit",
+    },
+    {
+      "resource": {
+        "kind": "any",
+      },
+      "tool": "read_image",
+    },
+  ],
+  "default": "ask",
+  "deny": [
+    {
+      "resource": {
+        "kind": "exact",
+        "path": "notes/secret.md",
+      },
+      "tool": "lsp",
+    },
+  ],
+  "managedTools": [
+    "read",
+    "read_image",
+    "write",
+    "edit",
+    "lsp",
+    "bash",
+    "pwsh",
+  ],
+  "mode": "static",
+  "resourceKinds": [
+    "exact",
+    "subtree",
+    "any",
+  ],
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:456:41
+    454|     // The BOUND static policy is what the field exposes — mode static,
+    455|     // the rules as stored, the FINAL vocabularies.
+    456|     expect(worker.operationPermissions).toEqual(A2C3_WORKER_STATIC_VIE…
+       |                                         ^
+    457|   })
+    458|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > T1: member static policy — exact/any/subtree rules round-trip losslessly (declaration order)
+AssertionError: expected undefined to deeply equal { Object (mode, default, ...) }
+
+- Expected:
+{
+  "allow": [
+    {
+      "resource": {
+        "kind": "exact",
+        "path": "notes/a.md",
+      },
+      "tool": "read",
+    },
+    {
+      "resource": {
+        "kind": "exact",
+        "path": "notes/b.md",
+      },
+      "tool": "write",
+    },
+  ],
+  "ask": [
+    {
+      "resource": {
+        "kind": "subtree",
+        "path": "src",
+      },
+      "tool": "edit",
+    },
+    {
+      "resource": {
+        "kind": "any",
+      },
+      "tool": "read_image",
+    },
+  ],
+  "default": "ask",
+  "deny": [
+    {
+      "resource": {
+        "kind": "exact",
+        "path": "notes/secret.md",
+      },
+      "tool": "lsp",
+    },
+  ],
+  "managedTools": [
+    "read",
+    "read_image",
+    "write",
+    "edit",
+    "lsp",
+    "bash",
+    "pwsh",
+  ],
+  "mode": "static",
+  "resourceKinds": [
+    "exact",
+    "subtree",
+    "any",
+  ],
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:461:41
+    459|   it('T1: member static policy — exact/any/subtree rules round-trip lo…
+    460|     const worker = inspectLike(A2C3.inspectWorker)
+    461|     expect(worker.operationPermissions).toEqual(A2C3_WORKER_STATIC_VIE…
+       |                                         ^
+    462|     // The three FINAL resource kinds are all present, in their stored
+    463|     // shapes (exact carries its path; subtree carries its path; any is
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > T2: leader static policy — the reserved leader id maps to the bound LeaderTemplate
+AssertionError: expected undefined to deeply equal { mode: 'static', …(6) }
+
+- Expected:
+{
+  "allow": [],
+  "ask": [
+    {
+      "resource": {
+        "kind": "any",
+      },
+      "tool": "pwsh",
+    },
+  ],
+  "default": "deny",
+  "deny": [
+    {
+      "resource": {
+        "kind": "any",
+      },
+      "tool": "bash",
+    },
+  ],
+  "managedTools": [
+    "read",
+    "read_image",
+    "write",
+    "edit",
+    "lsp",
+    "bash",
+    "pwsh",
+  ],
+  "mode": "static",
+  "resourceKinds": [
+    "exact",
+    "subtree",
+    "any",
+  ],
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:476:41
+    474|   it('T2: leader static policy — the reserved leader id maps to the bo…
+    475|     const leader = inspectLike(A2C3.inspectLeader)
+    476|     expect(leader.operationPermissions).toEqual(A2C3_LEADER_STATIC_VIE…
+       |                                         ^
+    477|   })
+    478|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > T3: permissions absent — the scout template (no capabilities) yields exactly mode absent
+AssertionError: expected undefined to deeply equal { mode: 'absent' }
+
+- Expected:
+{
+  "mode": "absent",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:481:40
+    479|   it('T3: permissions absent — the scout template (no capabilities) yi…
+    480|     const scout = inspectLike(A2C3.inspectScout)
+    481|     expect(scout.operationPermissions).toEqual({ mode: 'absent' })
+       |                                        ^
+    482|   })
+    483|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > T4: managedTools is the FINAL closed tool vocabulary (includes pwsh)
+TypeError: Cannot read properties of undefined (reading 'managedTools')
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:487:28
+    485|     for (const outcome of [A2C3.inspectWorker, A2C3.inspectLeader]) {
+    486|       const view = inspectLike(outcome).operationPermissions as Record…
+    487|       const managedTools = view['managedTools'] as string[]
+       |                            ^
+    488|       expect(managedTools).toEqual([...PERMISSION_TOOL_NAMES])
+    489|       expect(managedTools.includes('pwsh')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > T5: resourceKinds is the FINAL closed resource vocabulary (includes subtree)
+TypeError: Cannot read properties of undefined (reading 'resourceKinds')
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:497:29
+    495|     for (const outcome of [A2C3.inspectWorker, A2C3.inspectLeader]) {
+    496|       const view = inspectLike(outcome).operationPermissions as Record…
+    497|       const resourceKinds = view['resourceKinds'] as string[]
+       |                             ^
+    498|       expect(resourceKinds).toEqual([...PERMISSION_RESOURCE_KINDS])
+    499|       expect(resourceKinds.includes('subtree')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts > A2C-3: team_inspect_config exposes the real operation permission (plan §10) > T6: returned rule order is deterministic — the re-drive is byte-equal (declaration order pinned)
+TypeError: Cannot read properties of undefined (reading 'allow')
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:511:19
+    509|     // read_image(any); deny lsp(exact secret).
+    510|     const view = first.operationPermissions as Record<string, unknown>
+    511|     const allow = view['allow'] as { tool: string }[]
+       |                   ^
+    512|     const ask = view['ask'] as { tool: string }[]
+    513|     expect(allow.map((rule) => rule.tool)).toEqual(['read', 'write'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 3 passed (11)
+   Start at  19:09:54
+   Duration  684ms (transform 441ms, setup 0ms, import 591ms, tests 10ms, environment 0ms)
+

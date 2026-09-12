@@ -1,0 +1,179 @@
+# A2C-3 gate BASELINE check: node scripts/run-tests.mjs runtime tools on PRE-FIX tree (tracked src stashed) — 2026-09-12T19:16:04Z
+?? .tmp-t12a-b2-home/
+?? dev/agent-workflow/evidence/alpha2-capability-completion/a2c-3/
+?? packages/runtime/test/a2c3-inspect-operation-permission.test.ts
+PASS packages/runtime/test/a2-canonical-operation.test.ts (31 tests)
+PASS packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests)
+PASS packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests)
+FAIL packages/runtime/test/a2c3-inspect-operation-permission.test.ts (8/11 tests)
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › R1: the config-inspected payload carries the independent operationPermissions field
+       Error: expectation failed: actual toBe true — actual: false
+           at record (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toBe (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:109:18)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:442:48
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › R2: the semantic split is real — the bound policy, not the generic cell, is exposed
+       Error: expectation failed: actual toEqual {"mode":"static","default":"ask","allow":[{"tool":"read","resource":{"kind":"exact","path":"notes/a.md"}},{"tool":"write","resource":{"kind":"exact","path":"notes/b.md"}}],"ask":[{"tool":"edit","resource":{"kind":"subtree","path":"src"}},{"tool":"read_image","resource":{"kind":"any"}}],"deny":[{"tool":"lsp","resource":{"kind":"exact","path":"notes/secret.md"}}],"managedTools":["read","read_image","write","edit","lsp","bash","pwsh"],"resourceKinds":["exact","subtree","any"]} — actual: undefined
+           at record (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:110:21)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:456:41
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › T1: member static policy — exact/any/subtree rules round-trip losslessly (declaration order)
+       Error: expectation failed: actual toEqual {"mode":"static","default":"ask","allow":[{"tool":"read","resource":{"kind":"exact","path":"notes/a.md"}},{"tool":"write","resource":{"kind":"exact","path":"notes/b.md"}}],"ask":[{"tool":"edit","resource":{"kind":"subtree","path":"src"}},{"tool":"read_image","resource":{"kind":"any"}}],"deny":[{"tool":"lsp","resource":{"kind":"exact","path":"notes/secret.md"}}],"managedTools":["read","read_image","write","edit","lsp","bash","pwsh"],"resourceKinds":["exact","subtree","any"]} — actual: undefined
+           at record (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:110:21)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:461:41
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › T2: leader static policy — the reserved leader id maps to the bound LeaderTemplate
+       Error: expectation failed: actual toEqual {"mode":"static","default":"deny","allow":[],"ask":[{"tool":"pwsh","resource":{"kind":"any"}}],"deny":[{"tool":"bash","resource":{"kind":"any"}}],"managedTools":["read","read_image","write","edit","lsp","bash","pwsh"],"resourceKinds":["exact","subtree","any"]} — actual: undefined
+           at record (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:110:21)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:476:41
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › T3: permissions absent — the scout template (no capabilities) yields exactly mode absent
+       Error: expectation failed: actual toEqual {"mode":"absent"} — actual: undefined
+           at record (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:96:20)
+           at Object.toEqual (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:110:21)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:481:40
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › T4: managedTools is the FINAL closed tool vocabulary (includes pwsh)
+       TypeError: Cannot read properties of undefined (reading 'managedTools')
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:487:32
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:484:3
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › T5: resourceKinds is the FINAL closed resource vocabulary (includes subtree)
+       TypeError: Cannot read properties of undefined (reading 'resourceKinds')
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:497:33
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:494:3
+     ✗ A2C-3: team_inspect_config exposes the real operation permission (plan §10) › T6: returned rule order is deterministic — the re-drive is byte-equal (declaration order pinned)
+       TypeError: Cannot read properties of undefined (reading 'allow')
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:511:23
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/a2c3-inspect-operation-permission.test.ts:503:3
+PASS packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests)
+PASS packages/runtime/test/a2c5-read-fingerprint.test.ts (10 tests)
+PASS packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests)
+PASS packages/runtime/test/a3-permission-resolver.test.ts (28 tests)
+PASS packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests)
+PASS packages/runtime/test/a5a-pre-execute.test.ts (50 tests)
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+     import/evaluation error: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/tests/paths.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/t12a-live-bridge.mjs
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+     import/evaluation error: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/bp1-blueprint-authority.test.ts:43
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+     import/evaluation error: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/tests/paths.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/t12a-live-bridge.mjs
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+PASS packages/runtime/test/bp1-freeze-barrier.test.ts (3 tests)
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+     import/evaluation error: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/tests/paths.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/t12a-live-bridge.mjs
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-bp1rednofit" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/src/plugin/host.ts:1250:21)
+PASS packages/runtime/test/bp1-red-probe.test.ts (6 tests)
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+     import/evaluation error: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/tests/paths.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/t12a-live-bridge.mjs
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › an ABSENT listRoots option → typed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (diagnostic in the message)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:283:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:279:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › the D1 index integrity failure propagates UNMAPPED (code + message + cause identity, invariant 4b)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:289:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:286:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › the storage typed error (RECORD_INVALID) propagates UNMAPPED (invariant 4b)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:307:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:304:3
+     ✗ D1 (S6 host wiring): team.listRoots fail-closed (never a silent empty list) › an untyped throw is re-wrapped as TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE (message preserved)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:313:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:310:3
+     ✗ D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior) › a FOREIGN root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE any ensure work (the bound-root guard runs first)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:325:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:318:3
+     ✗ D1 (S6 host wiring): team.ensureRootLive (v3-only; the D2 handler pins the full behavior) › the bound root with an ABSENT ensureRootLive port fails closed typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE — NEVER a silent success (D2 replaced the D1 reservation error)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:337:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-s6-remote-v3.test.ts:329:3
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+     ✗ D1 (ownership index): the full two-root world › root A carries the exact durable identity (blueprint A@17, workspace, generation 1)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:418:17
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:416:3
+     ✗ D1 (ownership index): the full two-root world › root B carries its durable identity and EXCLUDES the legacy v1 leader row (memberCount 1)
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:428:17
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:426:3
+     ✗ D1 (ownership index): the full two-root world › attribution carries the per-session kind where bound, and ABSENT kind where the child is unbound (non-failure)
+       TypeError: expect(...).toBeUndefined is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:450:39
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:446:3
+     ✗ D1 (ownership index): the closed v3 wire row (toTeamRootWireRow) › the wire row is exactly { rootSessionId, blueprintId, revision, defaultWorkspace?, createdAt, generation, memberCount } — no attribution
+       TypeError: expect(...).toBeDefined is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:483:19
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:462:3
+     ✗ D1 (ownership index): corrupt rows propagate the storage typed error as-is › an undecodable team_sessions row → the storage layer RECORD_INVALID (not re-coded, not swallowed)
+       TypeError: expect(...).toBeInstanceOf is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:559:19
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d1-team-ownership-index.test.ts:556:3
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+     ✗ D2 (S6 host handler): the bound-root guard (TEAM-SCOPED, fail-closed) › a FOREIGN/unknown root fails closed TEAM_REMOTE_FOREIGN_TEAM BEFORE the port runs
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:259:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:256:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › an ABSENT ensureRootLive option → typed TEAM_REMOTE_TEAM_ROOT_LIVE_PORT_UNAVAILABLE (fail closed, the D-3 discipline mirrored)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:277:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:269:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › the registry collision rejection (already live OUTSIDE the Team glue) → TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM (never a silent adoption)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:287:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:280:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › the glue no-durable-artifact rejection → TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:295:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:291:3
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message preserved for diagnosis)
+       TypeError: expect(...).toContain is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:303:38
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d2-s6-ensure-root-live.test.ts:299:3
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+     import/evaluation error: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/tests/paths.mjs' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/t12a-live-bridge.mjs
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+     ✗ D5 activation instance contract › a caller-controlled instanceId never reaches the constructed create-member request (does not take effect)
+       Error: async it() is not supported by the plain-node shim; the skeleton tests are synchronous
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:71:19)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d5-instance-contract.test.ts:68:3
+           at describe (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:59:5)
+     ✗ D5 activation instance contract › the reserved inst-leader id is never allocated across the swept key space
+       TypeError: expect(...).toHaveLength is not a function
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d5-instance-contract.test.ts:164:23
+           at it (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/scripts/test-vitest-shim.mjs:69:15)
+           at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d5-instance-contract.test.ts:139:3
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d5-instance-contract.test.ts:109
+    expect(captured).toHaveLength(1)
+                     ^
+
+TypeError: expect(...).toHaveLength is not a function
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/runtime/test/d5-instance-contract.test.ts:109:22
+
+Node.js v24.21.0
+runner-exit: 1
