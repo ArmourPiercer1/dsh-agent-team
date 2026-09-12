@@ -16,7 +16,7 @@
 - 主仓库：`/home/user/dsh-plugins/dsh-agent-team`（只读参考；**不要**在主 worktree 做任何写操作）
 - 你的 worktree：`/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-1`
 - 你的分支：`task/a2c-1-pwsh-permission`（已建好，base = 派发时的 int tip，见下方 BASE_SHA）
-- BASE_SHA：`<由主 Agent 派发时填入>`
+- BASE_SHA：`ac6b6624d7bce9b183dd42fc413ed253fdc97e97`（int tip = round-start bookkeeping）
 - 环境：Linux x86_64，node v24.21.0 / pnpm 11.7.0 / git 2.53；real vitest 可运行（本环境 spawn 不受限）。
   **pwsh 二进制未安装**（live proof 等效方案见 §5.4）。
 - 首次进入：`pnpm install --frozen-lockfile --ignore-scripts`（共享 .pnpm-store，秒级）。
