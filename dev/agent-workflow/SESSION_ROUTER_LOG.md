@@ -2577,3 +2577,24 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **int bookkeeping**：p4t6 pin 690→691（双断言 + 账本条目）；dist 重建 / check:artifacts /
   smoke:composition / 全量套件交叉冒烟 = int-bookkeeping-a2c4.log（后台）。
 - **INT_W1 未冻结**（A2C-1 接管代理 6eb01116 仍在运行）。
+
+### A2C-4 int bookkeeping 完成 + 瞬态 flake 裁决
+
+- **bookkeeping commit f3df652**：p4t6 pin 690→691（DEC-1 联合，+1 = a2c4 测试文件）+ dist 重建
+  （control + operation-permission 16 文件）+ graph/log。
+- **V 轮验证全绿**：build:composition PASS（check-artifacts-committed OK 1104 文件）· check:artifacts
+  PASS · p4t6 vitest 10/10 PASS（pin 691 真值）· smoke:composition PASS · node 链 FAIL 集（新世界）
+  与 99bc790 基线一致（a5a 50/50 PASS）。
+- **全量根套件 4 次运行**：2 次 = **20 failed = 基线精确匹配**（10 文件；full-vitest-int-rerun-*.log）；
+  1 次 = 21（+p6t1-parallel）；1 次 = 22（+p4t6 +p6t1-parallel）。
+- **flake 裁决（记录在案，非阻塞）**：
+  - `p6t1-parallel`：4 次全量 2 次失败 / 孤立 9/9 PASS / p6t1 族 3×92 PASS / 最近 2 次全量 PASS。
+    机制 = 全并行负载下的时序敏感 flake（p6t1 世界激活路径）；A2C-4 不触碰该路径
+    （activation/storage 层；p6t1 世界不安装 permission listener）。→ 既有负载相关 flake 类。
+  - `p4t6`：3 次全量 1 次失败 / 孤立 10/10 PASS / 直接扫描器运行 2× = **691 稳定**（含 t12a
+    泄漏状态；泄漏目录无 scannable 文件）。→ 281 文件并行负载下 scanner walk 竞争，pin 真值无误。
+  - 闭包 gate 的 failure-set-diff 纪律须将两个 flake 列为"负载相关瞬态"（复跑裁决），
+    不计入 A2C 回归。
+- **B7 a5a node 链失败（早前）裁决**：世界状态依赖（`team_domain already exists`）——vitest 轮
+  留下/清理 .tmp-fault 世界与 node 轮交叉；新世界下 a5a PASS。scratchDir 文档要求测试 finally
+  清理；跨 runner 交错为既有卫生缺口（非 A2C-4 引入）。
