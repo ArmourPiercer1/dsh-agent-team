@@ -1,0 +1,101 @@
+# A2C-3 gate: cd packages/client && pnpm test — 2026-09-12T19:15:37Z
+$ vitest run
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-3/packages/client
+
+ ✓ test/ledger-adapter.test.ts (27 tests) 13ms
+ ✓ test/team-ledger-model.client.spec.ts (21 tests) 11ms
+ ✓ test/projection-adapter.test.ts (16 tests) 9ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 10ms
+ ✓ test/team-intent-model.test.ts (22 tests) 12ms
+ ✓ test/team-create-flow.test.ts (10 tests) 8ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 7ms
+ ✓ test/team-handoff.test.ts (23 tests) 6ms
+ ✓ test/team-members-model.client.spec.ts (10 tests) 5ms
+ ✓ test/team-remote-client.test.ts (15 tests) 6ms
+ ✓ test/team-projection-store.test.ts (14 tests) 7ms
+ ✓ test/d1-team-remote-v3.test.ts (8 tests) 6ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 10ms
+ ✓ test/team-command-flow.test.ts (6 tests) 6ms
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 7ms
+ ✓ test/d2-open-team-mode.test.ts (6 tests) 3ms
+ ✓ test/d3-open-ordinary-mode.test.ts (11 tests) 4ms
+ ✓ test/client-plugin-mount.test.ts (33 tests) 5ms
+ ✓ test/team-legacy.test.ts (12 tests) 6ms
+ ✓ test/f9-remote-client-v4.test.ts (5 tests) 3ms
+ ✓ test/team-remote-categories.test.ts (5 tests) 5ms
+ ✓ test/team-governance.test.ts (43 tests) 24ms
+ ✓ test/team-member-commands.test.ts (11 tests) 6ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 7ms
+ ✓ test/team-members-model.test.ts (5 tests) 6ms
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 6ms
+ ✓ test/client.test.ts (2 tests) 4ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 61ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 107ms
+ ✓ test/team-creation-panel-refresh.client.spec.tsx (1 test) 137ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 146ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 199ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 103ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 123ms
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 203ms
+ ✓ test/team-view.client.spec.tsx (13 tests) 216ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/team-roots-zero-state.client.spec.tsx (8 tests) 256ms
+ ✓ test/d2-team-mode-entry.client.spec.tsx (7 tests) 258ms
+ ✓ test/d3-ordinary-mode-entry.client.spec.tsx (11 tests) 270ms
+ ✓ test/team-members-actions.client.spec.tsx (16 tests) 495ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 381ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/new-team-entry.client.spec.tsx (8 tests) 705ms
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 759ms
+     ✓ deepens the window on load-earlier clicks (local axis only)  308ms
+ ✓ test/team-creation-handoff.client.spec.tsx (15 tests) 1169ms
+ ✓ test/team-governance.client.spec.tsx (24 tests) 964ms
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 1 failed) 1391ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 81ms
+     ✓ shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 55ms
+     ✓ selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 116ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 56ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 58ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 57ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 54ms
+     ✓ switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 105ms
+     × create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6) 61ms
+     ✓ empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open) 106ms
+     ✓ an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt) 55ms
+     ✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 105ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 105ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 156ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 55ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 4ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 52ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 54ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 55ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 1980ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6)
+AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
+ ❯ test/team-creation-panel.client.spec.tsx:453:23
+    451|     })
+    452|     expect(openCreatedSession).toHaveBeenCalledWith(createParams.rootS…
+    453|     expect(admitMock).toHaveBeenCalledTimes(0)
+       |                       ^
+    454|     await vi.waitFor(() => {
+    455|       expect(admitMock).toHaveBeenCalledTimes(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 46 passed (47)
+      Tests  1 failed | 640 passed (641)
+   Start at  19:15:38
+   Duration  5.32s (transform 22.51s, setup 0ms, import 45.27s, tests 10.12s, environment 18.25s)
+
+[ELIFECYCLE] Test failed. See above for more details.
+exit: 1

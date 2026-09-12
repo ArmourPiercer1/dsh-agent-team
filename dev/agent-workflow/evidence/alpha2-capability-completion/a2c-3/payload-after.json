@@ -1,0 +1,475 @@
+{
+  "generatedAt": "2026-09-12T19:17:29.716Z",
+  "heads": {
+    "note": "git HEAD of the tree this ran on (see the sibling log header)"
+  },
+  "payloads": {
+    "worker": {
+      "status": "executed",
+      "action": "inspect-config",
+      "callerRole": "leader",
+      "targetInstanceId": "inst-p6t2seedw01",
+      "effect": {
+        "kind": "config-inspected",
+        "effective": {
+          "model": {
+            "kind": "deny"
+          },
+          "tools": {
+            "kind": "deny"
+          },
+          "permissions": {
+            "kind": "allow",
+            "items": [
+              "legacy-generic-permission-item"
+            ]
+          },
+          "skills": {
+            "kind": "deny"
+          },
+          "mcp": {
+            "kind": "deny"
+          }
+        },
+        "operationPermissions": {
+          "mode": "static",
+          "default": "ask",
+          "allow": [
+            {
+              "tool": "read",
+              "resource": {
+                "kind": "exact",
+                "path": "notes/a.md"
+              }
+            },
+            {
+              "tool": "write",
+              "resource": {
+                "kind": "exact",
+                "path": "notes/b.md"
+              }
+            }
+          ],
+          "ask": [
+            {
+              "tool": "edit",
+              "resource": {
+                "kind": "subtree",
+                "path": "src"
+              }
+            },
+            {
+              "tool": "read_image",
+              "resource": {
+                "kind": "any"
+              }
+            }
+          ],
+          "deny": [
+            {
+              "tool": "lsp",
+              "resource": {
+                "kind": "exact",
+                "path": "notes/secret.md"
+              }
+            }
+          ],
+          "managedTools": [
+            "read",
+            "read_image",
+            "write",
+            "edit",
+            "lsp",
+            "bash",
+            "pwsh"
+          ],
+          "resourceKinds": [
+            "exact",
+            "subtree",
+            "any"
+          ]
+        }
+      }
+    },
+    "workerAgain": {
+      "status": "executed",
+      "action": "inspect-config",
+      "callerRole": "leader",
+      "targetInstanceId": "inst-p6t2seedw01",
+      "effect": {
+        "kind": "config-inspected",
+        "effective": {
+          "model": {
+            "kind": "deny"
+          },
+          "tools": {
+            "kind": "deny"
+          },
+          "permissions": {
+            "kind": "allow",
+            "items": [
+              "legacy-generic-permission-item"
+            ]
+          },
+          "skills": {
+            "kind": "deny"
+          },
+          "mcp": {
+            "kind": "deny"
+          }
+        },
+        "operationPermissions": {
+          "mode": "static",
+          "default": "ask",
+          "allow": [
+            {
+              "tool": "read",
+              "resource": {
+                "kind": "exact",
+                "path": "notes/a.md"
+              }
+            },
+            {
+              "tool": "write",
+              "resource": {
+                "kind": "exact",
+                "path": "notes/b.md"
+              }
+            }
+          ],
+          "ask": [
+            {
+              "tool": "edit",
+              "resource": {
+                "kind": "subtree",
+                "path": "src"
+              }
+            },
+            {
+              "tool": "read_image",
+              "resource": {
+                "kind": "any"
+              }
+            }
+          ],
+          "deny": [
+            {
+              "tool": "lsp",
+              "resource": {
+                "kind": "exact",
+                "path": "notes/secret.md"
+              }
+            }
+          ],
+          "managedTools": [
+            "read",
+            "read_image",
+            "write",
+            "edit",
+            "lsp",
+            "bash",
+            "pwsh"
+          ],
+          "resourceKinds": [
+            "exact",
+            "subtree",
+            "any"
+          ]
+        }
+      }
+    },
+    "leader": {
+      "status": "executed",
+      "action": "inspect-config",
+      "callerRole": "leader",
+      "targetInstanceId": "inst-leader",
+      "effect": {
+        "kind": "config-inspected",
+        "effective": {
+          "model": {
+            "kind": "deny"
+          },
+          "tools": {
+            "kind": "deny"
+          },
+          "permissions": {
+            "kind": "allow",
+            "items": [
+              "legacy-generic-permission-item"
+            ]
+          },
+          "skills": {
+            "kind": "deny"
+          },
+          "mcp": {
+            "kind": "deny"
+          }
+        },
+        "operationPermissions": {
+          "mode": "static",
+          "default": "deny",
+          "allow": [],
+          "ask": [
+            {
+              "tool": "pwsh",
+              "resource": {
+                "kind": "any"
+              }
+            }
+          ],
+          "deny": [
+            {
+              "tool": "bash",
+              "resource": {
+                "kind": "any"
+              }
+            }
+          ],
+          "managedTools": [
+            "read",
+            "read_image",
+            "write",
+            "edit",
+            "lsp",
+            "bash",
+            "pwsh"
+          ],
+          "resourceKinds": [
+            "exact",
+            "subtree",
+            "any"
+          ]
+        }
+      }
+    },
+    "scout": {
+      "status": "executed",
+      "action": "inspect-config",
+      "callerRole": "leader",
+      "targetInstanceId": "inst-p6t2seeds01",
+      "effect": {
+        "kind": "config-inspected",
+        "effective": {
+          "model": {
+            "kind": "deny"
+          },
+          "tools": {
+            "kind": "deny"
+          },
+          "permissions": {
+            "kind": "allow",
+            "items": [
+              "legacy-generic-permission-item"
+            ]
+          },
+          "skills": {
+            "kind": "deny"
+          },
+          "mcp": {
+            "kind": "deny"
+          }
+        },
+        "operationPermissions": {
+          "mode": "absent"
+        }
+      }
+    }
+  },
+  "deterministicOrder": {
+    "note": "worker vs workerAgain — same target driven twice, effects must be byte-equal",
+    "byteEqual": true
+  },
+  "pureRead": {
+    "note": "seam write log + every repository listing before vs after the four drives",
+    "writeCountBefore": 15,
+    "writeCountAfter": 15,
+    "writeLogBefore": [
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "schema_meta",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "team_sessions",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "member_instances",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "session_bindings",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "overrides",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "compatibility",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "operations",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "ledger",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "blueprint_registry",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "team_sessions",
+        "key": "session-root-p6t1",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "session_bindings",
+        "key": "session-root-p6t1",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "member_instances",
+        "key": "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-root-p6t1\"}",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "member_instances",
+        "key": "{\"instanceId\":\"inst-p6t2seedw01\",\"rootSessionId\":\"session-root-p6t1\"}",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "member_instances",
+        "key": "{\"instanceId\":\"inst-p6t2seeds01\",\"rootSessionId\":\"session-root-p6t1\"}",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "overrides",
+        "key": "{\"kind\":\"human-override\",\"recordId\":\"ovr-a2c3-generic-cell\",\"rootSessionId\":\"session-root-p6t1\",\"scope\":\"team\"}",
+        "op": "put"
+      }
+    ],
+    "writeLogAfter": [
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "schema_meta",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "team_sessions",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "member_instances",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "session_bindings",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "overrides",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "compatibility",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "operations",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "ledger",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "schema_meta",
+        "key": "blueprint_registry",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "team_sessions",
+        "key": "session-root-p6t1",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "session_bindings",
+        "key": "session-root-p6t1",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "member_instances",
+        "key": "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-root-p6t1\"}",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "member_instances",
+        "key": "{\"instanceId\":\"inst-p6t2seedw01\",\"rootSessionId\":\"session-root-p6t1\"}",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "member_instances",
+        "key": "{\"instanceId\":\"inst-p6t2seeds01\",\"rootSessionId\":\"session-root-p6t1\"}",
+        "op": "put"
+      },
+      {
+        "domain": "team_domain",
+        "table": "overrides",
+        "key": "{\"kind\":\"human-override\",\"recordId\":\"ovr-a2c3-generic-cell\",\"rootSessionId\":\"session-root-p6t1\",\"scope\":\"team\"}",
+        "op": "put"
+      }
+    ],
+    "memberInstancesEqual": true,
+    "overridesEqual": true,
+    "ledgerEqual": true,
+    "operationsEqual": true
+  }
+}

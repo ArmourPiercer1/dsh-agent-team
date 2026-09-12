@@ -1,0 +1,6 @@
+# pre-fix payload dump (tracked src stashed; untracked test file + driver present) — 2026-09-12T19:17:32Z
+HEAD: 4cf23ec372e86f72c34099f63f38e3defe4a8915
+?? dev/agent-workflow/evidence/alpha2-capability-completion/a2c-3/
+?? packages/runtime/test/a2c3-inspect-operation-permission.test.ts
+wrote dev/agent-workflow/evidence/alpha2-capability-completion/a2c-3/payload-before.json
+driver-exit: 0
