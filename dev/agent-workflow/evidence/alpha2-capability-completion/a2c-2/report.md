@@ -165,3 +165,97 @@ blocks under strict mode until reviewed).
    intermittently on the SAME tree) is pre-existing (it failed on the
    base in the comparison run); flagged for the integration tip —
    not introduced, not fixed here.
+
+---
+
+# Addendum — the merge-block repair (t12a-live-bridge double, commit 3)
+
+## The regression (as reported by the main agent's re-gate)
+
+`a6a-production-wiring.test.ts` FATALed at file level ("no tests") in
+vitest on this branch: the A6 blueprint declares `capabilities.
+permissions` (leader + tpl-a), so the gate ran on the bridge world —
+but the `t12a-live-bridge.mjs` recording double carried neither the
+`tools.schemas` seam (new with this task) nor a scope tag on the setup
+ctx (the double was a plain object), so the gate's fail-closed surface
+read threw `alpha2-permission-coverage-surface-unavailable`. The
+node-chain "base-IDENTICAL" check masked it: a6a is a node-chain
+baseline-FAIL file (shim-runner gaps), so the load break was invisible
+there. While fixing, a SECOND file with the same root cause was found
+and fixed: `bp1-dual-team-gate.test.ts` (also a permissions world; it
+failed one step further — the scope-tag leg, not the schemas leg).
+
+## The fix (the established double-extension pattern)
+
+The product grew two public-seam requirements; the double records
+them — exactly as alpha.1 added `tools.restrict` and H1 added
+`tools.guard` to this same double (NO production-code change, NO gate
+relaxation, NO test-only escape):
+
+1. `tools.schemas(scope?)` on the double — one entry per tool
+   registered through the double's own `tools.register` (the current
+   set; the register disposer's unwind removes it) minus the
+   accumulated `tools.restrict({ deny })` union; deterministic
+   `{ name, description }` sorted by name. The double has ONE flat
+   layer, so the deny mask applies to the whole list — the documented
+   flat approximation of the real inherited-layer mask (no repo world
+   observes the divergence: the preset double mount registers no base
+   tools, and no repo deny list names a team tool).
+2. `makeHandle` mints each agent's scope through the PUBLIC
+   `createScope(ctx, agent)` (@deepseek-ai/dsh-scope — the same
+   package/seam the glue already imports for scopeOf) BEFORE the setup
+   callback runs, with the double's `plugin()` fibers carrying a
+   `.ctx` carrier (symbol-preserving `extend` — the scope tag is a
+   symbol, which is why a first `Object.entries`-based attempt left
+   the ctx untagged). This mirrors the real Agent's constructor
+   (`this.scope = createScope(loopCtx, this); this.ctx =
+   this.scope.ctx.extend({ agent: this })`).
+
+RULING (recorded): the scope's backing plugin (dsh-scope's private
+no-op FUNCTION) is NOT recorded in the double's `plugins` array —
+scope plumbing is not a world mount. The discriminator (function spec
+= scope plumbing; non-function spec + options = the MCP client = a
+recorded world mount) keeps H1-3's `plugins.length === 0` zero-mount
+pin and t4a's mcpMounts/mcpAllDisposed semantics intact. Documented
+inline in the bridge.
+
+## RULING — a6a's outcome (the main agent's option 1, verified)
+
+With the double exposing the final surface, the a6a strict surface is
+EXACTLY the Team tools the production wiring registers (the preset
+double's mount registers no base tools; the double worlds carry no MCP
+fiber): leader = [team_list_members, team_send_message], tpl-a =
+[team_delegate] — every name classified OTHER_MANAGED_TEAM_TOOL via
+the `selectedTeamToolNames` fact (the `teamTools` capability + the Team
+runtime ARE the authority owner). The gate PASSES; a6a's 52 existing
+expectations run exactly as before (52/52). NO blueprint change was
+needed or made: the a6a surface contains zero KNOWN_SENSITIVE /
+UNKNOWN_UNMANAGED tools, so there is nothing to `builtinToolDeny` —
+inventing deny entries would have been fabricating configuration.
+(bp1-dual-team-gate: the same outcome — its permissions-world surface
+is team-owned; 8/8.)
+
+## Re-gate results (full table in gates.md §re-gate)
+
+- a6a SOLO: 52/52 PASS (was the merge-block FATAL)
+- a2c2 + a6a pair: 70/70 PASS
+- bp1-dual-team-gate: 8/8 PASS (the second repair)
+- the main agent's R1 focused set (8 files): 246/246 PASS
+  (194 + a6a's 52 — the recomputed count)
+- extended focused set (9 files): 251/251 PASS
+- FULL ROOT vitest: `11 failed | 272 passed (283)` files /
+  `21 failed | 3366 passed (3387)` tests = the 10 baseline files +
+  p4t6 (the pin 692 vs 694) and NOTHING else (exact list in
+  `fullroot-regate.log`)
+- node chain: per-file + per-test IDENTICAL to the pre-fix branch run
+  (the 18 baseline ✗, the d5 crash at the same point)
+- typecheck clean; `pnpm build` exit 0 (dist reverted); zero-core 0
+  findings
+
+## Commit list (updated)
+
+| SHA | Subject |
+| --- | --- |
+| `8bf703d` | A2C-2: the Permission Coverage Gate — six-class authority-owner classification + strict setup gate (plan §7) |
+| (evidence) | A2C-2: evidence — RED/GREEN logs, seam recon, SAFE_UNMANAGED registry, gates, report |
+| (this commit) | A2C-2: t12a-live-bridge double gains the tools.schemas seam (a6a production-wiring fix) |
