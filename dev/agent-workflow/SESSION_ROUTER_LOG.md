@@ -2612,3 +2612,24 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - stash pop 精确恢复（9 M + 未跟踪测试 + 证据目录；stash 空）。**注**：接管代理对
   `canonical-operation.ts` 做了一处 reason-string 修复（在 9 文件集内，合并时 diff 核实范围）。
 - 下一步：GREEN 运行 → gates → 适配 live proof → commit → 里程碑 c。
+
+### A2C-1 合并执行（W1 第二任务）
+
+- **FINAL 报告接收**（接管子代理 6eb01116，DONE）：2 commits（e5d1e00 src 8 文件含 4 行
+  reason-string 参数化 / 59df831 测试 2016 行 28 测试 + a1&a3 pin 6→7 + 54 证据）；新文件 1；
+  scanner delta +1（690→691 分支视角；集成 tip 联合 = 692）；**live proof 5/5 legs 42/42
+  断言**（:3183 真实实例；L3 allow_once = 1 决策 + 恰好 1 消费 + 工具体 exit 127 区分成立；
+  DSH_HOME 保留+注册；环境偏差 DSH_PERMISSION_MODE 旋钮已记录）。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine ✓；diff 审查 ✓（reason-string =
+  `<tool>-command-*` 每工具镜像，bash byte-identical；adapter = 纯参数化 + import，无结构漂移；
+  a3 pin 为首次 GREEN 发现的遗漏 pin — 在 A2C-1 边界内）。
+- **主代理 re-gate（独立 @ 59df831）**：聚焦 6 文件 229/229；全量 21 = 基线 20 + p4t6 1
+  （3358 = 3330+28 ✓）；node 链 FAIL 集 = 基线 10 文件（a2c1 28 PASS）；typecheck/build/
+  zero-core 全绿（0 findings）。
+- **PR #9** 创建（§13 格式）→ 本地 `merge --no-ff` → **int = 23a4d9f，零冲突**；语义并集核验
+  ✓（adapter: checkExternalOperation ×2 + SHELL_PERMISSION_TOOL_VALUES ×2 共存；control
+  service intact ×6；双方文档注释并存）。
+- **INT_W1 bookkeeping**（后台）：p4t6 pin 691→692；dist 重建（domain/blueprint +
+  operation-permission → 7 工具词汇）；check:artifacts / smoke / 全量套件交叉冒烟（预期
+  20 = 基线精确）/ node 链 / 联合套件 a2c1+a2c4+a5a+a6a（A2C-4 open-risk ③）=
+  int-bookkeeping-a2c1.log。

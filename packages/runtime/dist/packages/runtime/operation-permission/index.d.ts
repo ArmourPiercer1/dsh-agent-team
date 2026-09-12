@@ -61,9 +61,9 @@
  */
 export { OPERATION_PERMISSION_ERROR_CODES, OPERATION_PERMISSION_ERROR_CODE_VALUES, CANONICALIZATION_FAILURE_REASONS, PRE_EXECUTE_INSTALL_ERROR_CODES, OperationPermissionError, isOperationPermissionError, PermissionGuardUnavailableError, isPermissionGuardUnavailableError, canonicalizationFailed, toCanonicalizationDetail, } from './errors.js';
 export type { OperationPermissionErrorCode, CanonicalizationFailureReason, PreExecuteInstallErrorCode, } from './errors.js';
-export { PERMISSION_TOOL_VALUES, FILE_PERMISSION_TOOL_VALUES, } from './types.js';
+export { PERMISSION_TOOL_VALUES, FILE_PERMISSION_TOOL_VALUES, SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 export type { PermissionTool, FilePermissionTool, ToolLevelPermissionTool, CanonicalResource, CanonicalOperation, PathTargetResolver, PermissionToolClass, } from './types.js';
-export { READ_OFFSET_DEFAULT, READ_LIMIT_DEFAULT, LSP_OPERATION_VALUES, BASH_TOOL_RESOURCE_KEY, classifyPermissionTool, isPermissionToolName, canonicalizeOperation, } from './canonical-operation.js';
+export { READ_OFFSET_DEFAULT, READ_LIMIT_DEFAULT, LSP_OPERATION_VALUES, BASH_TOOL_RESOURCE_KEY, SHELL_TOOL_RESOURCE_KEYS, classifyPermissionTool, isPermissionToolName, canonicalizeOperation, canonicalizeShellOperation, } from './canonical-operation.js';
 export type { CanonicalizeOperationInput } from './canonical-operation.js';
 export { resolveOperationPermission, } from './permission-resolver.js';
 export type { CanonicalRule, CanonicalRules, PermissionDecision, PermissionLane, PermissionProvenance, } from './permission-resolver.js';

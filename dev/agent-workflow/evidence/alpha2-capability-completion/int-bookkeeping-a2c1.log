@@ -1,0 +1,31 @@
+=== W1-B1 p4t6 (pin 692 truth) ===
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 3ms
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+=== W1-B2 build ===
+packages/client build: Done
+=== W1-B3 build:composition ===
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/types.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+=== W1-B4 smoke:composition ===
+PASS composition-smoke
+=== W1-B5 full root suite (expect 20 = baseline exact) ===
+      Tests  20 failed | 3349 passed (3369)
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-int/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+ Test Files  10 failed | 272 passed (282)
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+=== W1-B6 node chain (runtime) ===
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+=== W1-B7 union suites (a2c1+a2c4+a5a+a6a together) ===
+ Test Files  4 passed (4)
+      Tests  141 passed (141)
+=== INT_W1 BOOKKEEPING DONE ===

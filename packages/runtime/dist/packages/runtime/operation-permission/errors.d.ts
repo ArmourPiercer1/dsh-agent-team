@@ -45,30 +45,39 @@ export declare const OPERATION_PERMISSION_ERROR_CODE_VALUES: readonly string[];
  * Argument-shape reasons: a supported tool's arguments are malformed in
  * a way the tool itself would reject BEFORE executing (mirroring the
  * upstream tools' own validation — `parseReadArgs` / `parseWriteArgs` /
- * `parseEditArgs` / `parseLspArgs` / `tool-bash` `validateBashArgs`), so
- * the call has no well-formed "effective" projection and must not be
- * authorized:
+ * `parseEditArgs` / `parseLspArgs` / the shell class `validateBashArgs`
+ * / `validatePwshArgs`), so the call has no well-formed "effective"
+ * projection and must not be authorized:
  * - file_path / write content / edit strings: missing, non-string, or
  *   (where the tool rejects it) empty / equal;
- * - bash command: missing, non-string, or whitespace-only (the upstream
- *   `tool-bash` rejects all three before execution — H2 P1-2: the
- *   command is the security-relevant field for bash, so a call without
- *   a well-formed command cannot be authorized);
- * - bash effect fields (H5 P1-B: the execution effect of `bash -c X`
- *   — WHERE it runs, foreground vs detached, the explicit timeout, and
- *   the requested sandbox mode — are security-relevant too, and the
- *   upstream materialization feeds them to the pre-execute waterfall
- *   UNVALIDATED — `validateBashArgs` runs inside `execute`, after the
- *   gate — so a malformed effect shape has no well-formed "effective"
- *   projection and fails closed BEFORE the resolver call):
- *   - `bash-workdir-not-a-string` — `workdir` present and not a string
- *     (omitted / empty-string is LEGITIMATE — normalized to the session
- *     cwd, the tool's own defaulting);
- *   - `bash-run-in-background-not-boolean` — `run_in_background`
+ * - shell-class command (`bash` / `pwsh`): missing, non-string, or
+ *   whitespace-only (each upstream shell tool rejects all three before
+ *   execution — H2 P1-2: the command is the security-relevant field for
+ *   the shell class, so a call without a well-formed command cannot be
+ *   authorized; A2C-1 mirrors the per-tool reasons: `bash-command-*`
+ *   over `tool-bash` `validateBashArgs`, `pwsh-command-*` over
+ *   `tool-pwsh` `validatePwshArgs`);
+ * - shell-class effect fields (H5 P1-B, A2C-1: the execution effect of a
+ *   shell call — WHERE it runs, foreground vs detached, the explicit
+ *   timeout, and the requested sandbox mode — are security-relevant too,
+ *   and the upstream materialization feeds them to the pre-execute
+ *   waterfall UNVALIDATED — `validateBashArgs` / `validatePwshArgs` run
+ *   inside `execute`, after the gate — so a malformed effect shape has
+ *   no well-formed "effective" projection and fails closed BEFORE the
+ *   resolver call; the reasons are per-tool-mirrored, one family per
+ *   upstream shell tool):
+ *   - `bash-workdir-not-a-string` / `pwsh-workdir-not-a-string` —
+ *     `workdir` present and not a string (omitted / empty-string is
+ *     LEGITIMATE — normalized to the session cwd, the tool's own
+ *     defaulting);
+ *   - `bash-run-in-background-not-boolean` /
+ *     `pwsh-run-in-background-not-boolean` — `run_in_background`
  *     present and not a boolean;
- *   - `bash-timeout-ms-invalid` — `timeoutMs` present and not a finite
- *     number > 0 (mirrors the upstream `validateBashArgs` check);
- *   - `bash-sandbox-permissions-not-a-string` — `sandbox_permissions`
+ *   - `bash-timeout-ms-invalid` / `pwsh-timeout-ms-invalid` —
+ *     `timeoutMs` present and not a finite number > 0 (mirrors the
+ *     upstream `validateBashArgs` / `validatePwshArgs` check);
+ *   - `bash-sandbox-permissions-not-a-string` /
+ *     `pwsh-sandbox-permissions-not-a-string` — `sandbox_permissions`
  *     present and not a string (any string — including `''` — is its
  *     own value: mode LEGALITY is the upstream authority at execution,
  *     and the escalation pairing with `justification` stays upstream's);
@@ -90,7 +99,7 @@ export declare const OPERATION_PERMISSION_ERROR_CODE_VALUES: readonly string[];
  * classification; canonicalization of an unsupported tool is a failure,
  * never a pass-through).
  */
-export type CanonicalizationFailureReason = 'tool-unsupported' | 'file-path-missing' | 'file-path-not-a-string' | 'file-path-empty' | 'read-offset-invalid' | 'read-limit-invalid' | 'write-content-missing' | 'write-content-not-a-string' | 'edit-old-string-missing' | 'edit-new-string-missing' | 'edit-string-not-a-string' | 'edit-old-string-empty' | 'edit-old-equals-new' | 'edit-replace-all-not-boolean' | 'lsp-operation-missing' | 'lsp-operation-unknown' | 'lsp-line-invalid' | 'lsp-character-invalid' | 'bash-command-missing' | 'bash-command-not-a-string' | 'bash-command-empty' | 'bash-workdir-not-a-string' | 'bash-run-in-background-not-boolean' | 'bash-timeout-ms-invalid' | 'bash-sandbox-permissions-not-a-string' | 'resolver-threw' | 'resolver-key-empty' | 'resolver-result-malformed';
+export type CanonicalizationFailureReason = 'tool-unsupported' | 'file-path-missing' | 'file-path-not-a-string' | 'file-path-empty' | 'read-offset-invalid' | 'read-limit-invalid' | 'write-content-missing' | 'write-content-not-a-string' | 'edit-old-string-missing' | 'edit-new-string-missing' | 'edit-string-not-a-string' | 'edit-old-string-empty' | 'edit-old-equals-new' | 'edit-replace-all-not-boolean' | 'lsp-operation-missing' | 'lsp-operation-unknown' | 'lsp-line-invalid' | 'lsp-character-invalid' | 'bash-command-missing' | 'bash-command-not-a-string' | 'bash-command-empty' | 'bash-workdir-not-a-string' | 'bash-run-in-background-not-boolean' | 'bash-timeout-ms-invalid' | 'bash-sandbox-permissions-not-a-string' | 'pwsh-command-missing' | 'pwsh-command-not-a-string' | 'pwsh-command-empty' | 'pwsh-workdir-not-a-string' | 'pwsh-run-in-background-not-boolean' | 'pwsh-timeout-ms-invalid' | 'pwsh-sandbox-permissions-not-a-string' | 'resolver-threw' | 'resolver-key-empty' | 'resolver-result-malformed';
 /** The closed canonicalization-failure reason values, for membership checks. */
 export declare const CANONICALIZATION_FAILURE_REASONS: readonly CanonicalizationFailureReason[];
 /**

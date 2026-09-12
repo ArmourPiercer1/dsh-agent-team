@@ -22,6 +22,7 @@ export const PERMISSION_TOOL_VALUES = [
     'edit',
     'lsp',
     'bash',
+    'pwsh',
 ];
 /** Every {@link FilePermissionTool} value, for membership checks. */
 export const FILE_PERMISSION_TOOL_VALUES = [
@@ -30,5 +31,15 @@ export const FILE_PERMISSION_TOOL_VALUES = [
     'write',
     'edit',
     'lsp',
+];
+/**
+ * Every {@link ToolLevelPermissionTool} value (the closed shell class —
+ * A2C-1). The single source of the shell-class membership checks:
+ * classification, the inert-exact-rule skip, and the end-cap supported-
+ * tool set all derive from this list, so the class cannot drift.
+ */
+export const SHELL_PERMISSION_TOOL_VALUES = [
+    'bash',
+    'pwsh',
 ];
 //# sourceMappingURL=types.js.map

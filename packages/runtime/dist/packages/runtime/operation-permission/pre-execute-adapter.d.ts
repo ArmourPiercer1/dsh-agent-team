@@ -159,9 +159,9 @@
  *   consulted) before it could be authorized — while a rule addressing a
  *   different, resolvable path has a different opaque key and cannot
  *   match the operation. Exact rules whose `tool` differs from the
- *   operation's tool (and every `bash` exact rule — inert by
- *   construction, A3) are never canonicalized at all (they can never
- *   match, so the resolver is never called for them). Rules are thus
+ *   operation's tool (and every shell-class exact rule — `bash` /
+ *   `pwsh`, inert by construction, A3) are never canonicalized at all
+ *   (they can never match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
  *   injected resolver closure, which reads the agent's live session cwd
  *   LAZILY at resolve time (FACT 3b — never captured at install). The
@@ -262,7 +262,8 @@
  *   so the nested call of a permission tool is end-cap denied in its
  *   own right (the nested dispatch is the upstream's own escape hatch,
  *   not a Team authorization path); (c) UNSUPPORTED tool names abstain
- *   (the guard never over-denies beyond the six permission tools);
+ *   (the guard never over-denies beyond the seven permission tools —
+ *   the A1 tools + the A2C-1 shell class `bash`/`pwsh`);
  *   (d) the guard is AGENT-SCOPED (an upstream agent-ctx guard applies
  *   only to that agent) and INSTALL-SCOPED (fresh WeakSet per install)
  *   — two installs on two agents are independent; (e) the install is

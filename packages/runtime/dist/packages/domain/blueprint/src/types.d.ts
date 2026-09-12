@@ -18,16 +18,21 @@
  */
 import type { BlueprintContentHash, BlueprintId, BlueprintRevision, TemplateId } from '../../../contracts/src/index.js';
 /**
- * The six tools whose individual calls a static permission policy may gate
- * (alpha.2 plan §4). The file tools (`read`, `read_image`, `write`, `edit`,
- * `lsp`) address their target file as the primary resource. `bash`
- * supports ONLY tool-level `ask`/`deny` via the `any` resource — and the
- * schema ENFORCES it (the validation rejects a `bash` rule in the `allow`
- * lane entirely, and an `exact` `bash` resource in every lane: no positive
- * whole-tool grant and no parameter-level allow for shell commands in
- * alpha.2).
+ * The seven tools whose individual calls a static permission policy may
+ * gate (alpha.2 plan §4 + A2C-1). The file tools (`read`, `read_image`,
+ * `write`, `edit`, `lsp`) address their target file as the primary
+ * resource. The shell class (`bash`, `pwsh` — the pinned-upstream
+ * standard preset exposes `bash` on POSIX and `pwsh` on Windows, with
+ * isomorphic execution arguments) supports ONLY tool-level `ask`/`deny`
+ * via the `any` resource — and the schema ENFORCES it (the validation
+ * rejects a shell-class rule in the `allow` lane entirely, and an
+ * `exact` shell-class resource in every lane: no positive whole-tool
+ * grant and no parameter-level allow for shell commands in alpha.2).
+ * The two shell tools are DISTINCT permission tools (`bash authority !=
+ * pwsh authority`): a rule or an approval for one never gates or
+ * authorizes the other.
  */
-export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash';
+export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh';
 /**
  * The resource a permission rule addresses (alpha.2 plan §6.2):
  *

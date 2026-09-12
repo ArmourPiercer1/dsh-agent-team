@@ -159,9 +159,9 @@
  *   consulted) before it could be authorized — while a rule addressing a
  *   different, resolvable path has a different opaque key and cannot
  *   match the operation. Exact rules whose `tool` differs from the
- *   operation's tool (and every `bash` exact rule — inert by
- *   construction, A3) are never canonicalized at all (they can never
- *   match, so the resolver is never called for them). Rules are thus
+ *   operation's tool (and every shell-class exact rule — `bash` /
+ *   `pwsh`, inert by construction, A3) are never canonicalized at all
+ *   (they can never match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
  *   injected resolver closure, which reads the agent's live session cwd
  *   LAZILY at resolve time (FACT 3b — never captured at install). The
@@ -262,7 +262,8 @@
  *   so the nested call of a permission tool is end-cap denied in its
  *   own right (the nested dispatch is the upstream's own escape hatch,
  *   not a Team authorization path); (c) UNSUPPORTED tool names abstain
- *   (the guard never over-denies beyond the six permission tools);
+ *   (the guard never over-denies beyond the seven permission tools —
+ *   the A1 tools + the A2C-1 shell class `bash`/`pwsh`);
  *   (d) the guard is AGENT-SCOPED (an upstream agent-ctx guard applies
  *   only to that agent) and INSTALL-SCOPED (fresh WeakSet per install)
  *   — two installs on two agents are independent; (e) the install is
@@ -286,6 +287,7 @@
  * @module @dsh-agent-team/runtime/operation-permission/pre-execute-adapter
  */
 import { canonicalizeOperation, classifyPermissionTool, } from './canonical-operation.js';
+import { SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 import { PRE_EXECUTE_INSTALL_ERROR_CODES, PermissionGuardUnavailableError, isOperationPermissionError, } from './errors.js';
 import { resolveOperationPermission, } from './permission-resolver.js';
 import { CONTROL_ERROR_CODES, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
@@ -302,15 +304,15 @@ const ACTION_NAME = 'parameter-permission';
  */
 export const END_CAP_DENIAL_REASON = 'permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached — monotonic end-cap)';
 /**
- * The bounded length of the tool-level (bash) command preview in the
- * control request summary (H2 P1-2).
+ * The bounded length of the tool-level (shell class — `bash` / `pwsh`)
+ * command preview in the control request summary (H2 P1-2; A2C-1).
  */
-const BASH_COMMAND_PREVIEW_MAX = 120;
+const SHELL_COMMAND_PREVIEW_MAX = 120;
 /**
  * H2 P1-2 — the bounded NON-authority command preview of the tool-level
- * (bash) control request summary: the first 120 characters of the raw
- * command string, whitespace flattened to single spaces, `...` appended
- * when truncated.
+ * (shell class) control request summary: the first 120 characters of the
+ * raw command string, whitespace flattened to single spaces, `...`
+ * appended when truncated.
  *
  * Display text ONLY (the durable `summary` field is "free text; NOT
  * authority data"): it NEVER enters the fingerprint, the control scope,
@@ -333,20 +335,20 @@ function commandPreview(rawArguments) {
     if (flattened.length === 0) {
         return '(empty command)';
     }
-    if (flattened.length > BASH_COMMAND_PREVIEW_MAX) {
-        return flattened.slice(0, BASH_COMMAND_PREVIEW_MAX) + '...';
+    if (flattened.length > SHELL_COMMAND_PREVIEW_MAX) {
+        return flattened.slice(0, SHELL_COMMAND_PREVIEW_MAX) + '...';
     }
     return flattened;
 }
 /**
- * H5 P1-B — the bounded NON-authority bash effect tokens of the control
- * request summary: `bash [cwd=<workdirDisplay>] [background]
- * [sandbox=<mode>] [timeout=<n>ms] <command preview>`. All four bracketed
- * tokens are conditional (only when present/non-default: `cwd=` is
- * ALWAYS shown for bash — the workdir is always effective; `background`
- * when `run_in_background` is true; `sandbox=<mode>` when the requested
- * mode is non-null; `timeout=<n>ms` when the explicit timeout is
- * non-null).
+ * H5 P1-B (A2C-1: the shell class) — the bounded NON-authority shell
+ * effect tokens of the control request summary: `<tool> [cwd=<workdirDisplay>]
+ * [background] [sandbox=<mode>] [timeout=<n>ms] <command preview>`. All
+ * four bracketed tokens are conditional (only when present/non-default:
+ * `cwd=` is ALWAYS shown for the shell class — the workdir is always
+ * effective; `background` when `run_in_background` is true;
+ * `sandbox=<mode>` when the requested mode is non-null; `timeout=<n>ms`
+ * when the explicit timeout is non-null).
  *
  * Display text ONLY (the durable `summary` field is "free text; NOT
  * authority data"): the tokens NEVER enter the fingerprint, the control
@@ -361,7 +363,7 @@ function commandPreview(rawArguments) {
  * string — so the re-read only mirrors well-formed values; the function
  * stays total: any unexpected shape contributes no token).
  */
-function bashEffectTokens(operation, rawArguments) {
+function shellEffectTokens(operation, rawArguments) {
     const parts = [];
     if (operation.workdirDisplay !== undefined) {
         parts.push(`cwd=${operation.workdirDisplay}`);
@@ -523,8 +525,14 @@ export function installParameterPermissionListener(agentCtx, params) {
                 out.push({ tool: rule.tool, resource: { kind: 'any' } });
                 continue;
             }
-            if (tool === 'bash')
-                continue; // bash exact rules are inert (A3)
+            // A2C-1 — shell-class exact rules (`bash` / `pwsh`) are inert by
+            // construction (the tool-level resource key can never equal a file
+            // key — A3) and are never canonicalized (the matcher's structural
+            // defense in depth; the A1 schema additionally rejects an exact
+            // shell-class resource in every lane, so a legal policy cannot
+            // carry one).
+            if (SHELL_PERMISSION_TOOL_VALUES.includes(tool))
+                continue;
             const key = await canonicalRuleKey(rule.resource.path);
             if (key === undefined) {
                 // R2 — unresolvable rule path: no match (the rule is skipped; the
@@ -738,17 +746,17 @@ export function installParameterPermissionListener(agentCtx, params) {
                 toolName: name,
                 correlation: callId,
                 operationFingerprint: operation.fingerprint,
-                // H2 P1-2 + H5 P1-B: the tool-level (bash) summary carries the
-                // bounded NON-authority effect tokens
-                // (`[cwd=<resolved display>]` always — the workdir is always
-                // effective; `[background]`; `[sandbox=<mode>]`;
+                // H2 P1-2 + H5 P1-B (A2C-1: the shell class): the tool-level
+                // (bash/pwsh) summary carries the bounded NON-authority effect
+                // tokens (`[cwd=<resolved display>]` always — the workdir is
+                // always effective; `[background]`; `[sandbox=<mode>]`;
                 // `[timeout=<n>ms]`) and the bounded command preview (first 120
                 // chars, whitespace flattened, `...` when truncated) — display
                 // text only, never part of the fingerprint/scope/hash (those
                 // carry the canonical effect values + the command HASH from
                 // A2/H5).
                 summary: operation.resource.kind === 'tool'
-                    ? [name, bashEffectTokens(operation, exec.arguments), commandPreview(exec.arguments)]
+                    ? [name, shellEffectTokens(operation, exec.arguments), commandPreview(exec.arguments)]
                         .filter((part) => part.length > 0)
                         .join(' ')
                     : `${name} ${operation.resource.display}`,
@@ -865,7 +873,7 @@ export function installParameterPermissionListener(agentCtx, params) {
      * and NEVER throws (a guard fault must not break dispatch — and the
      * guard can only deny, so it can never over-allow):
      * - unsupported tool name → `undefined` (abstain — no over-deny
-     *   beyond the six permission tools);
+     *   beyond the seven permission tools, A2C-1);
      * - an exec object marked by THIS install → `undefined` (authorized:
      *   static allow or resolved ask-allow);
      * - supported + unmarked → the stable denial reason (the hostile

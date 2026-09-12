@@ -887,8 +887,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // frozen quarantine hit set stays at fifteen occurrences).
     // Evidence:
     // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-4/.
-    expect(scanResult.filesScanned).toBe(691)
-    expect(scanResult.files.length).toBe(691)
+    // alpha.2 capability-completion A2C-1 (merged into
+    // int/alpha2-capability-completion @ 23a4d9f, PR #9): +1 = 692 —
+    // one new file, packages/runtime/test/a2c1-pwsh-permission.test.ts
+    // (the P1–P4 RED-probe retention + 24 GREEN acceptance/fingerprint/
+    // real-pipeline tests for the shell-class pwsh parameter permission).
+    // The a1/a3 vocabulary pin updates (6→7 tool names) are in-place
+    // edits of existing files (no count change). Scanner unchanged;
+    // DEC-1 union applied at the integration tip by the main agent.
+    // Zero denylist vocabulary in the new file (the frozen quarantine
+    // hit set stays at fifteen occurrences).
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/.
+    expect(scanResult.filesScanned).toBe(692)
+    expect(scanResult.files.length).toBe(692)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
