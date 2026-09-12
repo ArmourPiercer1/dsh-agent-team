@@ -1,0 +1,732 @@
+# A2C-7 RED run — pre-fix tree (base e95a57e; git status: clean, only untracked a2c7 test + evidence)
+# 2026-09-12T18:41:22Z
+# protocol note: git stash push was a documented NO-OP at RED time (no tracked source edits existed
+# yet — the RED tree is exactly the base); the untracked test file stayed in place.
+# command: npx vitest run packages/runtime/test/a2c7-subtree-matcher.test.ts
+#
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-7
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests | 17 failed) 18ms
+     × R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 5ms
+     ✓ R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 0ms
+     × read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 0ms
+     × bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 1ms
+     × the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 3ms
+     × the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 0ms
+     × containsOperation=true matches; false never matches; rootKey is NEVER consulted 1ms
+     × the tool must match; file-class operations only; deny > ask > allow with RULE provenance 1ms
+     ✓ exact and any are unchanged at A3 0ms
+     ✓ the root itself matches (directory root and file root) 0ms
+     × a child and a deep descendant match (the subtree the exact lane could not express) 1ms
+     ✓ a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+     ✓ the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+     ✓ any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     × deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 0ms
+     ✓ deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 1ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     ✓ allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+     ✓ ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+     ✓ allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+     × the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+     ✓ the real backend section ran (the prebuilt pinned lib is present on this host) 0ms
+     × G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     × G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     × G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+     ✓ G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     × G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     × G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     ✓ G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap)
+AssertionError: expected 'MALFORMED_DTO' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"MALFORMED_DTO"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1319:20
+    1317|     const r = SCHEMA.readSubtreeAllow
+    1318|     // Post-fix: accepted, normalized to the subtree resource shape.
+    1319|     expect(r.code).toBeUndefined()
+       |                    ^
+    1320|     expect(r.policy).toEqual({
+    1321|       default: 'deny',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow)
+AssertionError: expected 'MALFORMED_DTO' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"MALFORMED_DTO"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1347:40
+    1345| describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file…
+    1346|   it('read + subtree is accepted in ask and deny lanes (and all five f…
+    1347|     expect(SCHEMA.readSubtreeAsk.code).toBeUndefined()
+       |                                        ^
+    1348|     expect(SCHEMA.readSubtreeAsk.policy?.ask).toEqual([
+    1349|       { tool: 'read', resource: { kind: 'subtree', path: 'src' } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed)
+AssertionError: permission resource $.leader.capabilities.permissions.allow[0].resource.kind must be one of exact | any, got "subtree": expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1370:69
+    1368|         const r = SCHEMA[`${tool}Subtree${lane}`]
+    1369|         expect(r.code, `${tool} ${lane}`).toBe('MALFORMED_DTO')
+    1370|         expect(hasFrag(r.message, `'subtree' resource`), r.message).to…
+       |                                                                     ^
+    1371|       }
+    1372|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane)
+AssertionError: permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } }): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1405:83
+    1403|     )
+    1404|     expect(bashAnyAllow.code).toBe('MALFORMED_DTO')
+    1405|     expect(hasFrag(bashAnyAllow.message, `'any' resource`), bashAnyAll…
+       |                                                                                   ^
+    1406|   })
+    1407|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject
+AssertionError: expected 'MALFORMED_DTO' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"MALFORMED_DTO"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1409:37
+    1407|
+    1408|   it('the exact path constraints ride on subtree: trim-normalized, emp…
+    1409|     expect(SCHEMA.subtreeTrim.code).toBeUndefined()
+       |                                     ^
+    1410|     expect(SCHEMA.subtreeTrim.policy?.allow).toEqual([
+    1411|       { tool: 'read', resource: { kind: 'subtree', path: 'src' } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > containsOperation=true matches; false never matches; rootKey is NEVER consulted
+AssertionError: expected { decision: 'deny', …(4) } to deeply equal { decision: 'allow', …(4) }
+
+- Expected
++ Received
+
+  {
+-   "decision": "allow",
+-   "effect": "allow",
+-   "lane": "allow",
+-   "ruleIndex": 0,
+-   "source": "rule",
++   "decision": "deny",
++   "effect": "deny",
++   "lane": undefined,
++   "ruleIndex": undefined,
++   "source": "default",
+  }
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1434:29
+    1432| describe('A2C-7 G13/A3 — the PURE resolver: the containment boolean is…
+    1433|   it('containsOperation=true matches; false never matches; rootKey is …
+    1434|     expect(A3.containsTrue).toEqual({ decision: 'allow', source: 'rule…
+       |                             ^
+    1435|     expect(A3.containsFalse).toEqual({ decision: 'deny', source: 'defa…
+    1436|     // rootKey 'k_A' vs operation key 'k_B' — still matches (A3 never
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > the tool must match; file-class operations only; deny > ask > allow with RULE provenance
+AssertionError: expected { decision: 'ask', …(4) } to deeply equal { decision: 'deny', …(4) }
+
+- Expected
++ Received
+
+  {
+-   "decision": "deny",
+-   "effect": "deny",
+-   "lane": "deny",
+-   "ruleIndex": 0,
+-   "source": "rule",
++   "decision": "ask",
++   "effect": "ask",
++   "lane": undefined,
++   "ruleIndex": undefined,
++   "source": "default",
+  }
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1444:33
+    1442|     expect(A3.toolMismatch).toEqual({ decision: 'deny', source: 'defau…
+    1443|     expect(A3.shellOperationNoMatch).toEqual({ decision: 'deny', sourc…
+    1444|     expect(A3.priorityDenyWins).toEqual({ decision: 'deny', source: 'r…
+       |                                 ^
+    1445|   })
+    1446|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a child and a deep descendant match (the subtree the exact lane could not express)
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1465:40
+    1463|
+    1464|   it('a child and a deep descendant match (the subtree the exact lane …
+    1465|     expect(FLOWS.g2Child.decisionKind).toBe('allow')
+       |                                        ^
+    1466|     expect(FLOWS.g2Child.nextCalls).toBe(1)
+    1467|     expect(FLOWS.g2Child.request).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1509:122
+    1507|   it('deny > ask > allow: a subtree rule in ALL three lanes — the deny…
+    1508|     expect(FLOWS.g13DenyWins.decisionKind).toBe('deny')
+    1509|     expect(hasFrag(FLOWS.g13DenyWins.decisionReason, 'the template\'s …
+       |                                                                                                                          ^
+    1510|     expect(FLOWS.g13DenyWins.request).toBeUndefined()
+    1511|     expect(FLOWS.g13DenyWins.nextCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1532:88
+    1530|     const f = FLOWS.g15DenyUndeterminable
+    1531|     expect(f.decisionKind).toBe('deny')
+    1532|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+       |                                                                                        ^
+    1533|     expect(f.request).toBeUndefined()
+    1534|     expect(f.nextCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1547:88
+    1545|     const f = FLOWS.g15DenyContainsFault
+    1546|     expect(f.decisionKind).toBe('deny')
+    1547|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+       |                                                                                        ^
+    1548|     expect(f.request).toBeUndefined()
+    1549|     expect(f.nextCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1588:47
+    1586| describe('A2C-7 G16 — cold resume (dispose + fresh install; no stale c…
+    1587|   it('the fresh install follows the CURRENT topology: the stale target…
+    1588|     expect(FLOWS.g16T0ViaTarget.decisionKind).toBe('allow')
+       |                                               ^
+    1589|     expect(FLOWS.g16T0ViaTarget.request).toBeUndefined()
+    1590|     const stale = FLOWS.g16StaleTargetNoMatch
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1613:86
+    1611|     const child = FLOWS2(REAL).g5ChildDenied
+    1612|     expect(child.decisionKind).toBe('deny')
+    1613|     expect(hasFrag(child.decisionReason, 'the template\'s deny rule 0 …
+       |                                                                                      ^
+    1614|     expect(child.request).toBeUndefined()
+    1615|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1619:43
+    1617|   it('G6 relative/absolute aliases: one canonical identity — cross-spe…
+    1618|     const f = FLOWS2(REAL)
+    1619|     expect(f.g6RelRuleAbsOp.decisionKind).toBe('allow')
+       |                                           ^
+    1620|     expect(f.g6RelRuleAbsOp.request).toBeUndefined()
+    1621|     expect(f.g6AbsRuleRelOp.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1629:51
+    1627|     expect(c.sameIdentity).toBe(true)
+    1628|     expect(c.containsDirect).toBe(true)
+    1629|     expect(FLOWS2(REAL).g7Traversal.decisionKind).toBe('allow')
+       |                                                   ^
+    1630|     expect(FLOWS2(REAL).g7Traversal.request).toBeUndefined()
+    1631|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling)
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1646:44
+    1644|     expect(c.sameIdentity).toBe(true)
+    1645|     const f = FLOWS2(REAL)
+    1646|     expect(f.g9ViaTargetPath.decisionKind).toBe('allow')
+       |                                            ^
+    1647|     expect(f.g9ViaTargetPath.request).toBeUndefined()
+    1648|     expect(f.g9ViaAliasPath.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze)
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1654:47
+    1652|   it('G10 junction retarget — the H4 fresh-decision proof: one install…
+    1653|     const f = FLOWS2(REAL)
+    1654|     expect(f.g10T0TargetMatches.decisionKind).toBe('allow')
+       |                                               ^
+    1655|     const oldTarget = f.g10T1OldTargetNoMatch
+    1656|     expect(oldTarget.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed | 14 passed (31)
+   Start at  18:41:23
+   Duration  9.77s (transform 442ms, setup 0ms, import 9.65s, tests 18ms, environment 0ms)
+
+#
+# --- recapture 2026-09-12T18:42:04Z ---
+# the first capture had ONE failure caused by a bug in the TEST FILE itself (a wrong message
+# fragment for the A2C-1 any-allow pin; the tree was not at fault). The fragment was corrected
+# to the verbatim A2C-1 text (grants no positive whole-tool permission for bash); this recapture
+# is the authoritative RED evidence. Same tree (base e95a57e, clean), same command.
+#
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-7
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests | 16 failed) 19ms
+     × R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 6ms
+     ✓ R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 0ms
+     × read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 1ms
+     × bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 1ms
+     ✓ the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 2ms
+     × the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 0ms
+     × containsOperation=true matches; false never matches; rootKey is NEVER consulted 2ms
+     × the tool must match; file-class operations only; deny > ask > allow with RULE provenance 1ms
+     ✓ exact and any are unchanged at A3 0ms
+     ✓ the root itself matches (directory root and file root) 0ms
+     × a child and a deep descendant match (the subtree the exact lane could not express) 1ms
+     ✓ a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+     ✓ the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+     ✓ any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     × deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 0ms
+     ✓ deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     ✓ allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+     ✓ ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+     ✓ allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+     × the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+     ✓ the real backend section ran (the prebuilt pinned lib is present on this host) 0ms
+     × G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     × G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     × G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 1ms
+     ✓ G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     × G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     × G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     ✓ G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap)
+AssertionError: expected 'MALFORMED_DTO' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"MALFORMED_DTO"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1319:20
+    1317|     const r = SCHEMA.readSubtreeAllow
+    1318|     // Post-fix: accepted, normalized to the subtree resource shape.
+    1319|     expect(r.code).toBeUndefined()
+       |                    ^
+    1320|     expect(r.policy).toEqual({
+    1321|       default: 'deny',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow)
+AssertionError: expected 'MALFORMED_DTO' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"MALFORMED_DTO"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1347:40
+    1345| describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file…
+    1346|   it('read + subtree is accepted in ask and deny lanes (and all five f…
+    1347|     expect(SCHEMA.readSubtreeAsk.code).toBeUndefined()
+       |                                        ^
+    1348|     expect(SCHEMA.readSubtreeAsk.policy?.ask).toEqual([
+    1349|       { tool: 'read', resource: { kind: 'subtree', path: 'src' } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed)
+AssertionError: permission resource $.leader.capabilities.permissions.allow[0].resource.kind must be one of exact | any, got "subtree": expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1370:69
+    1368|         const r = SCHEMA[`${tool}Subtree${lane}`]
+    1369|         expect(r.code, `${tool} ${lane}`).toBe('MALFORMED_DTO')
+    1370|         expect(hasFrag(r.message, `'subtree' resource`), r.message).to…
+       |                                                                     ^
+    1371|       }
+    1372|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject
+AssertionError: expected 'MALFORMED_DTO' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"MALFORMED_DTO"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1409:37
+    1407|
+    1408|   it('the exact path constraints ride on subtree: trim-normalized, emp…
+    1409|     expect(SCHEMA.subtreeTrim.code).toBeUndefined()
+       |                                     ^
+    1410|     expect(SCHEMA.subtreeTrim.policy?.allow).toEqual([
+    1411|       { tool: 'read', resource: { kind: 'subtree', path: 'src' } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > containsOperation=true matches; false never matches; rootKey is NEVER consulted
+AssertionError: expected { decision: 'deny', …(4) } to deeply equal { decision: 'allow', …(4) }
+
+- Expected
++ Received
+
+  {
+-   "decision": "allow",
+-   "effect": "allow",
+-   "lane": "allow",
+-   "ruleIndex": 0,
+-   "source": "rule",
++   "decision": "deny",
++   "effect": "deny",
++   "lane": undefined,
++   "ruleIndex": undefined,
++   "source": "default",
+  }
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1434:29
+    1432| describe('A2C-7 G13/A3 — the PURE resolver: the containment boolean is…
+    1433|   it('containsOperation=true matches; false never matches; rootKey is …
+    1434|     expect(A3.containsTrue).toEqual({ decision: 'allow', source: 'rule…
+       |                             ^
+    1435|     expect(A3.containsFalse).toEqual({ decision: 'deny', source: 'defa…
+    1436|     // rootKey 'k_A' vs operation key 'k_B' — still matches (A3 never
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > the tool must match; file-class operations only; deny > ask > allow with RULE provenance
+AssertionError: expected { decision: 'ask', …(4) } to deeply equal { decision: 'deny', …(4) }
+
+- Expected
++ Received
+
+  {
+-   "decision": "deny",
+-   "effect": "deny",
+-   "lane": "deny",
+-   "ruleIndex": 0,
+-   "source": "rule",
++   "decision": "ask",
++   "effect": "ask",
++   "lane": undefined,
++   "ruleIndex": undefined,
++   "source": "default",
+  }
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1444:33
+    1442|     expect(A3.toolMismatch).toEqual({ decision: 'deny', source: 'defau…
+    1443|     expect(A3.shellOperationNoMatch).toEqual({ decision: 'deny', sourc…
+    1444|     expect(A3.priorityDenyWins).toEqual({ decision: 'deny', source: 'r…
+       |                                 ^
+    1445|   })
+    1446|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a child and a deep descendant match (the subtree the exact lane could not express)
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1465:40
+    1463|
+    1464|   it('a child and a deep descendant match (the subtree the exact lane …
+    1465|     expect(FLOWS.g2Child.decisionKind).toBe('allow')
+       |                                        ^
+    1466|     expect(FLOWS.g2Child.nextCalls).toBe(1)
+    1467|     expect(FLOWS.g2Child.request).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1509:122
+    1507|   it('deny > ask > allow: a subtree rule in ALL three lanes — the deny…
+    1508|     expect(FLOWS.g13DenyWins.decisionKind).toBe('deny')
+    1509|     expect(hasFrag(FLOWS.g13DenyWins.decisionReason, 'the template\'s …
+       |                                                                                                                          ^
+    1510|     expect(FLOWS.g13DenyWins.request).toBeUndefined()
+    1511|     expect(FLOWS.g13DenyWins.nextCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1532:88
+    1530|     const f = FLOWS.g15DenyUndeterminable
+    1531|     expect(f.decisionKind).toBe('deny')
+    1532|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+       |                                                                                        ^
+    1533|     expect(f.request).toBeUndefined()
+    1534|     expect(f.nextCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1547:88
+    1545|     const f = FLOWS.g15DenyContainsFault
+    1546|     expect(f.decisionKind).toBe('deny')
+    1547|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+       |                                                                                        ^
+    1548|     expect(f.request).toBeUndefined()
+    1549|     expect(f.nextCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1588:47
+    1586| describe('A2C-7 G16 — cold resume (dispose + fresh install; no stale c…
+    1587|   it('the fresh install follows the CURRENT topology: the stale target…
+    1588|     expect(FLOWS.g16T0ViaTarget.decisionKind).toBe('allow')
+       |                                               ^
+    1589|     expect(FLOWS.g16T0ViaTarget.request).toBeUndefined()
+    1590|     const stale = FLOWS.g16StaleTargetNoMatch
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1613:86
+    1611|     const child = FLOWS2(REAL).g5ChildDenied
+    1612|     expect(child.decisionKind).toBe('deny')
+    1613|     expect(hasFrag(child.decisionReason, 'the template\'s deny rule 0 …
+       |                                                                                      ^
+    1614|     expect(child.request).toBeUndefined()
+    1615|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1619:43
+    1617|   it('G6 relative/absolute aliases: one canonical identity — cross-spe…
+    1618|     const f = FLOWS2(REAL)
+    1619|     expect(f.g6RelRuleAbsOp.decisionKind).toBe('allow')
+       |                                           ^
+    1620|     expect(f.g6RelRuleAbsOp.request).toBeUndefined()
+    1621|     expect(f.g6AbsRuleRelOp.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1629:51
+    1627|     expect(c.sameIdentity).toBe(true)
+    1628|     expect(c.containsDirect).toBe(true)
+    1629|     expect(FLOWS2(REAL).g7Traversal.decisionKind).toBe('allow')
+       |                                                   ^
+    1630|     expect(FLOWS2(REAL).g7Traversal.request).toBeUndefined()
+    1631|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling)
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1646:44
+    1644|     expect(c.sameIdentity).toBe(true)
+    1645|     const f = FLOWS2(REAL)
+    1646|     expect(f.g9ViaTargetPath.decisionKind).toBe('allow')
+       |                                            ^
+    1647|     expect(f.g9ViaTargetPath.request).toBeUndefined()
+    1648|     expect(f.g9ViaAliasPath.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze)
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1654:47
+    1652|   it('G10 junction retarget — the H4 fresh-decision proof: one install…
+    1653|     const f = FLOWS2(REAL)
+    1654|     expect(f.g10T0TargetMatches.decisionKind).toBe('allow')
+       |                                               ^
+    1655|     const oldTarget = f.g10T1OldTargetNoMatch
+    1656|     expect(oldTarget.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 15 passed (31)
+   Start at  18:42:04
+   Duration  9.80s (transform 435ms, setup 0ms, import 9.69s, tests 19ms, environment 0ms)
+
