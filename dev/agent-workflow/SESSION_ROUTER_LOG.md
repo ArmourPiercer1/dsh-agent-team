@@ -2841,3 +2841,18 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **INT_W4 冻结**（本 commit）：全部 6 任务（A2C-1/2/3/4/5/7）已入 int。**收束阶段开始**：
   closure gates（plan §18）→ closure-report（§19 十二节）→ §16 矩阵 → §20 DoD →
   唯一 int→master 总 PR 供用户 merge。
+
+### 收束阶段完成（全部 6 任务 + closure gates + closure-report + 总 PR）
+
+- **closure gates（§18，fresh install @ 收束 tip，`closure-gates.log`）**：
+  - C1 聚焦安全套件 18 文件 / **465 测试全 PASS**（A1–A6 + H1a + H3 + H4 + H5 + issue2×2 + A2C 全 6 族）
+  - C2 root vitest **10 files / 20 tests = baseline 精确**（3444）→ 逐文件 diff 表 1:1（closure-report §1）
+  - C3 node 链 per-package = pre-existing 集合（runtime 10 / domain 2 / tools 2 / storage 0 / testkit 0）
+  - C4 client = **恰好 TCM-M4**（640/641，未修）
+  - C5 typecheck 8/9 = 0（legacy = build-only 包，build 覆盖）
+  - C6 build + build:composition + check:artifacts **OK 1108**
+  - C7 p4t6 聚合 pin **10/10 @ 697**（fresh install 真值）
+  - C8 verify-zero-core **0 findings** + upstream porcelain 0 @ a66e470204
+- **closure-report.md**（§19 十二节 + 附录 A DoD 30/30 核验）完成。
+- **Alpha.3 readiness verdict = GO**（前置：TCM-M4 裁决 / Windows worker 复跑 / A2C-6 设计评审 — 均非阻塞）。
+- **最终动作**：唯一 int→master 总 PR 开放（其他 PR 全部已合并）——供用户 merge；主 Agent 不 merge master。

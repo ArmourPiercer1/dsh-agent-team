@@ -1,0 +1,39 @@
+########## C1: FOCUSED SECURITY SUITES (18.1) ##########
+ Test Files  18 passed (18)
+      Tests  465 passed (465)
+########## C2: FULL ROOT VITEST (18.2 parity) ##########
+ Test Files  10 failed | 276 passed (286)
+      Tests  20 failed | 3424 passed (3444)
+########## C3: NODE CHAIN PARITY (18.2) ##########
+--- node chain: runtime ---
+FAIL files: 10
+--- node chain: domain ---
+FAIL files: 2
+--- node chain: tools ---
+FAIL files: 2
+--- node chain: storage ---
+FAIL files: 0
+--- node chain: testkit ---
+FAIL files: 0
+########## C4: CLIENT (TCM-M4 only expected) ##########
+ Test Files  1 failed | 46 passed (47)
+      Tests  1 failed | 640 passed (641)
+########## C5: TYPECHECK ALL (18.3) ##########
+contracts: 0
+domain: 0
+storage: 0
+runtime: 0
+tools: 0
+remote: 0
+client: 0
+legacy: CHECK
+testkit: 0
+########## C6: BUILD + COMPOSITION + ARTIFACTS (18.3) ##########
+packages/client build: Done
+[check-artifacts-committed] OK: 1108 files; committed install-surface artifacts match the fresh build
+[check-artifacts-committed] OK: 1108 files; committed install-surface artifacts match the fresh build
+########## C7: AGGREGATE SCANNER/PIN (18.3) ##########
+########## C8: REPO INTEGRITY (18.4) ##########
+upstream porcelain: 0
+upstream HEAD: a66e470204
+########## CLOSURE GATES DONE ##########
