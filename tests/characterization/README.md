@@ -18,10 +18,14 @@ node tests/characterization/run.mjs
 
 Requires: Node `^22.19 || >=24` (authored and verified on v24.20.0), a
 pristine checkout of upstream at
-`<team-repo>/references/deepseek-harness-test-use` with `pnpm install
+`<team-repo>/tests/deepseek-harness-test-use` (canonical location since
+test-infra-standardization 2026-09-12; see tests/paths.mjs) with `pnpm install
 --ignore-scripts` applied, and a built runtime closure (TEST_METHODS.md §2:
-`DSH_CLIENT_COMMIT_HASH=cd5ef814 ESBUILD_WORKER_THREADS=1 node
-scripts/build.ts` inside that tree).
+`DSH_CLIENT_COMMIT_HASH=<pin> ESBUILD_WORKER_THREADS=1 node
+scripts/build.ts` inside that tree). The committed `fixtures/host-version.json`
+is pinned to `cd5ef814` (P2 era — the same pin the CI job checks out); the
+fixture check deliberately fails against any other pin, and a pin move is a
+deliberate `--fixture-write` re-capture.
 
 Exit codes: `0` = all sections green, `1` = at least one failure, `2` =
 usage or internal error. A full local run takes ~25 s and leaves the upstream
@@ -100,8 +104,8 @@ CLI flags > `CH_*` environment variables > defaults:
 
 | Flag | Env | Default | Meaning |
 |---|---|---|---|
-| `--host-tree <dir>` | `CH_HOST_TREE` | `<team-root>/references/deepseek-harness-test-use` | pinned pristine upstream tree |
-| `--dsh-home <dir>` | `CH_DSH_HOME` | `<team-root>/references/.dsh-test-p2t1` | dedicated test DSH_HOME (never the shared `.dsh-test`) |
+| `--host-tree <dir>` | `CH_HOST_TREE` | `<team-root>/tests/deepseek-harness-test-use` | pinned pristine upstream tree |
+| `--dsh-home <dir>` | `CH_DSH_HOME` | `<team-root>/tests/homes/.dsh-test-p2t1` | dedicated test DSH_HOME (never the shared `.dsh-test`) |
 | `--port <n>` | `CH_PORT` | `3281` | primary instance port |
 | `--backup-port <n>` | `CH_BACKUP_PORT` | `3291` | used if the primary is busy (3080/3180-range is forbidden) |
 | `--report-dir <dir>` | `CH_REPORT_DIR` | `<harness>/.run-logs` | evidence output: `run-log.txt`, `summary.json`, `logs/…` |
@@ -124,11 +128,12 @@ centrally in `resolveConfig`).
 
 Defaults assume the canonical team-repo layout. The harness walks up from
 `tests/characterization/` (at most three levels) to the first ancestor that
-contains `references/deepseek-harness-test-use`. In the canonical single
+contains `tests/deepseek-harness-test-use`. In the canonical single
 checkout that is the repo root; when the harness runs from a task worktree
 (`.worktrees/<task>/tests/characterization/`) the walk lands on the **main
-repo root**, where `references/` actually lives (`references/` and
-`.worktrees/` are gitignored, so worktrees never contain them).
+repo root**, where the gitignored `tests/deepseek-harness-test-use` actually
+lives (`tests/deepseek-harness-test-use/` and `tests/homes/` are gitignored,
+so worktrees never contain them).
 
 ## Spawn mechanism (why the harness spawns the way it does)
 
@@ -153,11 +158,11 @@ environment; the denial is specific to *node* children with piped stdio.)
 ## Test instance / DSH_HOME policy
 
 - The instance runs against the pinned tree with a **dedicated** DSH_HOME
-  `references/.dsh-test-p2t1` (P2-T1's own home). The G1 baseline's shared
-  `references/.dsh-test` is **never touched**, and the stable development
-  instance (`:3080`, `D:\deepseek-harness\`) is never affected.
-- `references/` is gitignored, so the DSH_HOME and the junction farm do not
-  dirty any tracked tree.
+  `tests/homes/.dsh-test-p2t1` (P2-T1's own home). The shared
+  `tests/homes/.dsh-test` is **never touched**, and the stable development
+  instance (`:3080`) is never affected.
+- `tests/deepseek-harness-test-use/` and `tests/homes/` are gitignored, so
+  the DSH_HOME and the junction farm do not dirty any tracked tree.
 - After every green run the DSH_HOME is retained (not deleted) and its
   composition layer holds the **good probe row** — the same final state the
   G1 baseline established — so the next run starts from a known mount state.
