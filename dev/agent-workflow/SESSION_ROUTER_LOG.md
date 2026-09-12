@@ -2487,3 +2487,9 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **验证（全绿，细节见 evidence）**：node --check 16/16；`pnpm install --ignore-scripts --store-dir .pnpm-store` OK；typecheck exit 0（8 packages）；build 0/9；check:artifacts OK 1104；**p4t6 10/10 @ pin 690 未动**（`tests/` 新文件不被 frozen scanner 扫描，既有文件就地编辑不移动 pin）；p8t3 7/7 + p8t4 7/7；client 套件 **46/47 文件 / 640/641 测试**；**新鲜世界 3180 启动冒烟全链**（test-use install 38.7s → build → 启动行 → `GET /` 401 → token→Set-Cookie→200 前端 → 干净停止；:3080 401 前后未受影响；test-use 前后 porcelain 0 + HEAD a66e470204；临时世界 `tests/homes/smoke-20260912T11-59-54Z` 依 §7 保留为证据并登记）。
 - **预先存在失败（裁决请求，非本任务引入，单独任务修复）**：`packages/client/test/team-creation-panel.client.spec.tsx` → `create happy path (TCM M4 two-stage v2)`，L453 `expect(admitMock).toHaveBeenCalledTimes(0)` 得 1。证据链（evidence §4）：spec+实现均为 HEAD 未改动文件；`runTeamCreateFlow` L131 open → L157 admit 同微任务级联零 macrotask 间隔 → 该断言在任何调度器下不可成立（本机 3/3 确定性失败）；`4c67da9`（TCM-M4）commit Gates 节明示该 jsdom spec 在其环境**只 typecheck 未执行**（"run on the real machine; the sandbox blocks the vitest spawn"）；对照实验：HEAD 版 vitest.config 收集 0 测试。修复选项：spec 顺序断言放宽至冻结 §4.3 契约，或实现 open→admit 间显式让出 —— 二选一待用户裁决。
 - **FF + 推送状态**：master FF `a99c213` -> 任务分支 tip（3 提交：3b56ec5 + 5cb57e9 + 本 bookkeeping）。origin/master 仍 `a99c213`。**NO push —— 待用户明确授权**（仓库红线）。
+
+### test-infra-standardization — 推送（2026-09-12）
+
+- **用户指令**：「请你执行推送」— 仓库红线例外条款（用户明确许可的一次性推送）生效，范围 = 本地 master 的 test-infra-standardization 3 提交 + 本 bookkeeping。
+- **Push**：`git push origin master` — origin/master `a99c213 ->` 本地 tip（4 提交：`3b56ec5` layout+code+evidence + `5cb57e9` docs + `b617eec` bookkeeping + 本 bookkeeping）。零 force-push；`git ls-remote origin refs/heads/master` 核验与本地 tip 一致；推送后 origin/master == 本地 master（0 ahead）。
+- **推送后红线复核**：references/ 冻结 fork 未触碰（本操作为纯远端 refs 更新，本地树零变更）；test-use checkout 与 :3080 与本操作无关、未涉及。
