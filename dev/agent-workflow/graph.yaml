@@ -382,4 +382,5 @@ alpha2_capability_completion:
     INT_W4: null
   prs:
     "7": { head: "docs/alpha2-capability-completion-review", base: master, state: MERGED }
+    "8": { head: "task/a2c-4-external-hard-last-mile", base: int/alpha2-capability-completion, state: MERGED, merged: "2026-09-12T16:04:48Z" }
   red_lines: "CORE PATCH BUDGET = 0 (test-use pristine @ a66e470204 verified pre-dispatch; references/ untouched); :3080 zero-touch; test ports 3180 family only; DSH_HOME in-workspace tests/homes/; zero force-push; push only per user-authorized PR workflow (D-1); single-writer files per plan §2.3 (graph/log/p4t6 pin/package.json versions/dist artifacts/pnpm-lock — main-agent only)"
