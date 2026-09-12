@@ -1,0 +1,24 @@
+=== A2C-5 FOCUSED GATE — vitest (GREEN tree) ===
+date: 2026-09-12T17:52:29Z  tree: b96faf3 + uncommitted A2C-5 edits
+command: npx vitest run <a2c5, a2, a3, a4a, a5a, a2c1, a2c4, h1a, h4, h5>
+=====================================================================
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5
+
+ ✓ packages/runtime/test/a3-permission-resolver.test.ts (28 tests) 9ms
+ ✓ packages/runtime/test/a2-canonical-operation.test.ts (31 tests) 6ms
+ ✓ packages/runtime/test/a2c5-read-fingerprint.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests) 3ms
+ ✓ packages/runtime/test/h1a-pre-execute-endcap.test.ts (49 tests) 5ms
+ ✓ packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests) 5ms
+ ✓ packages/runtime/test/a5a-pre-execute.test.ts (50 tests) 6ms
+ ✓ packages/runtime/test/h4-rule-identity.test.ts (10 tests) 3ms
+ ✓ packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests) 6ms
+ ✓ packages/runtime/test/h5-bash-effects.test.ts (25 tests) 5ms
+
+ Test Files  10 passed (10)
+      Tests  270 passed (270)
+   Start at  17:52:30
+   Duration  2.74s (transform 4.68s, setup 0ms, import 11.27s, tests 53ms, environment 1ms)
+
+exit: 0
