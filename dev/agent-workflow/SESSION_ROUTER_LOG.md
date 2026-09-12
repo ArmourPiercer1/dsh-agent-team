@@ -2711,3 +2711,21 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - stash pop 精确恢复（3 tracked 修改：errors.ts / index.ts / agent-bindings.mjs + 3 未跟踪：
   permission-coverage.ts 新 evaluator / 测试 / 证据目录；stash 空）。
 - 实现已就位（新 evaluator 模块 + setup error 面 + agent-bindings 安装点）；GREEN 填充中。
+
+### A2C-2 合并阻塞 → 回派修复（主代理 re-gate 发现）
+
+- **发现**：主代理独立 re-gate（.worktrees/a2c-2）——全量根 vitest **13 failed files**（基线 10
+  + p4t6 + **a6a** + 1 未解释）；a6a vitest SOLO = 文件级失败 "no tests"。A2C-5 分支（int 现态）
+  a6a vitest 为绿（INT_W1 union 182/182 含 a6a）→ A2C-2 分支新回归。
+- **根因**（已定位）：a6a 世界声明 capabilities.permissions（A6 蓝图 leader+tpl-a）→ 新 gate
+  正确运行；但 `t12a-live-bridge.mjs` 的 recording-double ctx `tools` 对象（L313+）无 `schemas`
+  seam（double 建于 A2C-2 之前；register/restrict/guard/on 皆有）→ gate fail-closed 正确 FATAL
+  （`alpha2-permission-coverage-surface-unavailable`）→ a6a 文件加载失败。
+- **代理门禁盲区**：其 focused 列表未含 a6a；node 链 "base-IDENTICAL" 检查掩盖之（a6a 本就是
+  node 链基线 FAIL 文件，加载级破坏不可见）。**教训入 SOP：改 agent-bindings 的任务，focused
+  清单必须显式包含全部 live-bridge 消费者（a6a 首列）**。
+- **修复指令已回派**（send_message → ea079e0c）：按 H1/alpha.1 既有模式给 double 加 `tools.schemas`
+  （镜像真实语义：本 double register 序列推导 + 尊重本 double 记录的 restrict({deny})）；a6a 结果
+  二选一如实处理（surface 全 owned → 原断言过；surface 含 sensitive → blueprint 加 builtinToolDeny
+  成为 coherent alpha.2 配置 + 可选 typed-FATAL 腿）；重跑门禁（a6a solo/pair/focused/全量根逐文件/
+  node 链/typecheck/build/zero-core）；第 3 commit；milestone c ping 带全量 failed-file 清单。
