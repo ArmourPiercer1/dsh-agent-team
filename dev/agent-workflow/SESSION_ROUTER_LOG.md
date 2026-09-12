@@ -2668,3 +2668,15 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   A2C-2 动 agent-bindings+新 evaluator，A2C-5 动 canonical-operation read 区）。
 - 两代理均带：RED-first stash 协议、增量写文件协议（骨架→2-4 次 edit）、三里程碑 ping、
   全门禁清单、单写禁令、no-push。
+
+### A2C-5 进展（W2，里程碑 a+b）
+
+- 测试文件完成：`a2c5-read-fingerprint.test.ts` 395 行 / 10 测试（T1/T6/T7 RED 探针 +
+  T2–T5/T8–T10 不变量腿），增量写入（骨架+driver → RED → matrix）。
+- **RED @ b96faf3 纯净形式**：track 树本净（先测试后源码）→ 无 stash 需要（stash list 空，
+  状态平凡恢复）；文件干净加载；3 探针精确按契约 pre-fix 失败：T1（omitted == explicit-2000，
+  同 digest sha256:841a4401…）/ T6/T7（跨身份 guard 尝试消费 one-shot allow：双向 allowed=true）；
+  7 不变量腿 pre-fix 通过。
+- **recon 裁决**（pinned a66e470204 `parseReadArgs`）：offset omitted→1（固定，保持）；
+  limit omitted→deployment readLimit（默认 2000，可配置）→ limit 取 null 身份。
+- 下一步：GREEN 实现 → gates → commit → 里程碑 c。
