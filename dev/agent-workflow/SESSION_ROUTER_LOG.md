@@ -2793,3 +2793,17 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   逐 run 变化 = flake 特征，与既有裁决记录一致）。
 - **INT_W3 冻结**（本 commit）：A2C-7 入 int。W4 = A2C-3（base INT_W3，client 面，
   TCM-M4 待裁决失败不得扩大）。
+
+### W4 派发（A2C-3，solo wave，base = INT_W3 @ 4cf23ec）— 最后一波
+
+- **W4 简报事实节已填**（4cf23ec）：payload 类型 @ admission/types.ts:264（独立字段
+  `operationPermissions`，`effective` 零破坏）；INSPECT_CONFIG 链 @ effects.ts:288-307；
+  **数据源 = `ctx.blueprint: TeamBlueprint` @ effects.ts:119**（bound 快照 → 目标条目 →
+  capabilities.permissions；禁 observation/free-text 重建）；最终词集常量 @
+  schema.ts:149（7 名含 pwsh）/ :174（['exact','subtree','any']）；round-trip 族 =
+  p8t3-round-trip.test.ts（主挂点）+ 4 同族；TCM-M4 client 基线（:453，裁决待用户，
+  不得顺手修）；baseline 20/10 文件不变。
+- **worktree**：`.worktrees/a2c-3`（task/a2c-3-inspect-operation-permission）@ 4cf23ec
+  （绝对路径创建 + worktree list 核验无嵌套 — A2C-7 D1 教训执行）。
+- **子代理**：A2C-3 = `55cf475a`。完成后：合并 → INT_W4 → **收束阶段**（closure gates
+  plan §18 + closure-report §19 + §16 矩阵 + §20 DoD + 唯一 int→master 总 PR 供用户 merge）。
