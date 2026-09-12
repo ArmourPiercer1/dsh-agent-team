@@ -22,6 +22,7 @@
  * - durable writes go ONLY through the injected TeamDomain repositories
  *   (invariant 41).
  */
+import { PERMISSION_RESOURCE_KINDS, PERMISSION_TOOL_NAMES, } from '../../domain/blueprint/src/index.js';
 // --- caller roles ----------------------------------------------------------------
 /** The closed caller roles the facade resolves from the TeamDomain. */
 export const CALLER_ROLES = {
@@ -100,6 +101,57 @@ export function memberSummary(member) {
         label: member.label,
         ...(member.lifecycle !== undefined ? { lifecycle: member.lifecycle } : {}),
         ...(member.childSessionId !== undefined ? { childSessionId: member.childSessionId } : {}),
+    };
+}
+// --- A2C-3 (plan §10): the real operation-permission view ------------------------
+/**
+ * One rule of a stored static permission policy, served as a lossless-JSON
+ * view in its stored shape (A2C-3, plan §10.2).
+ */
+function operationPermissionRuleView(rule) {
+    const resource = rule.resource;
+    if (resource.kind === 'any') {
+        return { tool: rule.tool, resource: { kind: 'any' } };
+    }
+    if (resource.kind === 'subtree') {
+        return { tool: rule.tool, resource: { kind: 'subtree', path: resource.path } };
+    }
+    return { tool: rule.tool, resource: { kind: 'exact', path: resource.path } };
+}
+/**
+ * The lossless-JSON view of the BOUND template's static parameter-aware
+ * operation permission policy (A2C-3, plan §10.2/§10.3) — the ACTUAL
+ * alpha.2 operation-permission authority
+ * (`boundTemplate.capabilities.permissions` → TemplatePermissionPolicy →
+ * pre-execute adapter), independent from the legacy generic
+ * `effective.permissions` cell.
+ *
+ * Deterministic: the lanes are served in the policy's STORED (declaration)
+ * order — the A1 normalization pin — never re-sorted, duplicates
+ * preserved. `managedTools` / `resourceKinds` are the FINAL closed
+ * vocabularies from the domain blueprint constants
+ * (`PERMISSION_TOOL_NAMES` / `PERMISSION_RESOURCE_KINDS`), so the view
+ * cannot drift from the enforced vocabulary. alpha.2 has no dynamic
+ * permission mutation: the static policy IS the current operation policy
+ * (no alpha.3 grants/overlays are invented).
+ *
+ * @param template - the bound blueprint template entry of the inspected
+ *   target (LeaderTemplate or MemberTemplate; the capabilities block is
+ *   optional — absent = legacy mode, `mode: 'absent'`).
+ */
+export function operationPermissionView(template) {
+    const permissions = template.capabilities?.permissions;
+    if (permissions === undefined) {
+        return { mode: 'absent' };
+    }
+    return {
+        mode: 'static',
+        default: permissions.default,
+        allow: permissions.allow.map(operationPermissionRuleView),
+        ask: permissions.ask.map(operationPermissionRuleView),
+        deny: permissions.deny.map(operationPermissionRuleView),
+        managedTools: [...PERMISSION_TOOL_NAMES],
+        resourceKinds: [...PERMISSION_RESOURCE_KINDS],
     };
 }
 //# sourceMappingURL=types.js.map

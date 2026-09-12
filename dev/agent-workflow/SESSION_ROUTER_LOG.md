@@ -2820,3 +2820,24 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - fixture 注记：team-scoped human-override 将 legacy permission 名授予 GENERIC cell
   （invariant 34 路径）→ R2 的 generic-vs-bound 分裂非平凡。
 - GREEN 进行中。
+
+### A2C-3 合并执行（W4 唯一任务）+ INT_W4 冻结 + 全部任务收束
+
+- **FINAL 报告接收**（55cf475a，GREEN）：2 commits（5607f9f src / 1256354 测试+证据）；
+  新文件 1（a2c3 558 行 11 测试）；scanner delta +1（696→697 实测精确）；payload =
+  {kind, effective（byte-identical）, operationPermissions（REQUIRED 独立字段）}；
+  static/absent 形态；数据源 = ctx.blueprint（bound 快照）；leader 经保留 id / member 经
+  templateId / dangling → fail-closed；零 alpha.3 伪造；pure read（writeCount 15→15 +
+  listings deep-equal）。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine ✓；diff 严格限于 §14 边界 4 文件 ✓。
+- **主代理 re-gate（独立 @ 1256354）**：聚焦 7 文件 164/164；全量 11=基线10+p4t6
+  （3444=3433+11；首次 run 12 文件 = p6t1-parallel flake 3 测试 → isolation 9/9 裁决）；
+  node 链 10=基线 + a2c3 11/11 PASS（d5 中止 = pre-existing shim gap，base 同现）；
+  **client = 恰好 TCM-M4**（640/641，未修，裁决待用户）；typecheck×5 全 0；build 0；
+  zero-core 0 findings。
+- **PR #13** 创建 → 本地 merge（零冲突，17 文件）→ bookkeeping：pin 696→697（10/10
+  真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3444）+ 联合套件（6 A2C +
+  a6a + a2 + h4）9 文件 202/202。
+- **INT_W4 冻结**（本 commit）：全部 6 任务（A2C-1/2/3/4/5/7）已入 int。**收束阶段开始**：
+  closure gates（plan §18）→ closure-report（§19 十二节）→ §16 矩阵 → §20 DoD →
+  唯一 int→master 总 PR 供用户 merge。
