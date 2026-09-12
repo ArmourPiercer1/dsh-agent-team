@@ -15,7 +15,7 @@
 ## 1. 工作区
 
 - 你的 worktree：`/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-7`；分支 `task/a2c-7-subtree-matcher`（派发时已建）。
-- BASE_SHA：`<派发时填>`（= INT_W2）
+- BASE_SHA：`4c4273f`（= INT_W2 冻结 tip，2026-09-12）
 - 环境：Linux x86_64，node v24.21.0 / pnpm 11.7.0；real vitest 可运行。symlink 可用（junction 为 Windows 概念，Linux 等效 = symlink；§9.9 "junction retarget" 用 symlink 别名 retarget 实现等效证明，Windows 语义差异记录为 deviation）。首次 `pnpm install --frozen-lockfile --ignore-scripts`。
 
 ## 2. 任务契约（计划 §9，摘要 + 权威指向计划原文）
@@ -84,7 +84,60 @@ shell subtree schema rejects / canonicalization failure lanes / cold resume
 - A5 现有 `resolveTarget` 注入模式在 INT_W2 的位置（subtree batch 的挂载点）；
 - pinned fs backend 的 testkit 构造方式（哪个 export 可造真实 provider 实例）；
 - INT_W2 上 baseline 失败集是否有变化。
-<TO-FILL-AT-DISPATCH>
+
+**已核实（@ INT_W2 = 4c4273f，2026-09-12）**：
+1. **resource kinds 词集**：`packages/domain/blueprint/src/schema.ts:170`
+   `PERMISSION_RESOURCE_KINDS: readonly string[] = ['exact', 'any']`（A2C-1 后行号 165→170；
+   你的任务 = 扩为 `['exact', 'subtree', 'any']` 并配套 validate 语法面）。
+   既有 shell 拒绝逻辑在 `packages/domain/blueprint/src/validate.ts:624-631`：shell tool +
+   `kind === 'exact'` → 拒绝（"only the 'any' resource, in the ask or deny lane"）；
+   `kind === 'any'` + `lane === 'allow'` → 拒绝。你的 subtree 语法面必须与之一致：
+   `read/read_image/write/edit/lsp` 三 lane 接受 subtree；`bash/pwsh` subtree = schema 拒绝
+   （A2C-1 的 7 名词集，shell class = {bash, pwsh}）。
+2. **canonical-operation.ts @ INT_W2 形态**（A2C-1 shell 区 + A2C-5 read 区落地后）：
+   `resolveTarget` 注入类型 @L241（`readonly resolveTarget: PathTargetResolver`）；
+   `READ_OFFSET_DEFAULT` @L191 / `effectiveReadWindow` @L333（A2C-5：omitted limit = null
+   身份——**不得回退**）；`canonicalize` 入口 @L618（解构 resolveTarget）；shell 分派
+   @L657 → `canonicalizeShellOperation`（export @L743，A2C-1 落地——**不得回退**）；
+   read 投影 `effectiveReadWindow` 消费 @L670；`resolveResource(tool, filePath, resolveTarget)`
+   @L712（fs 工具的 target 解析点——subtree 的 operation target 也出自这里）。
+   **你的改动不应需要动 canonical-operation 的投影内容**（subtree 是 rule 侧 matcher 扩展，
+   operation 侧投影不变）；若 recon 证明需要（记录裁决）。
+3. **permission-resolver.ts @ INT_W2**：L14 自证 pure（"resource.key strings exactly …
+   and never resolves paths"）；exact/any 语义文档 @L61-84。**保持 pure：零 fs/DSH import**
+   （门禁特别核验项）。你的 CanonicalRule 扩展形态 = 计划 §9.5（`{kind:'subtree';
+   rootKey; containsOperation: boolean}`）——A5 传入 pre-computed 布尔，resolver 只做
+   纯 matcher。
+4. **A5 挂载点（subtree decision-local batch）**：`pre-execute-adapter.ts` ——
+   `resolveTarget` 构造自 `fsBackend` deps accessor（L103-105 文档 + L435-441 类型
+   `readonly resolveTarget: PathTargetResolver`，L625 传入，L683 使用，L819 传入）。
+   你的 batch 挂载在每次 permission decision 的 rule canonicalization 阶段：同一 live
+   `fs.resolve()` basis 解析 subtree root（与 operation 同 basis）、decision-local
+   opaque map（key → FsTarget）、对 operation target 调 `fs.contains(rootTarget, opTarget)`、
+   决策结束即丢弃。fsBackend accessor 同时给你 `fs` provider 句柄（recon 确认 accessor
+   暴露面——若只暴露 `resolve` 不暴露 provider/contains，记录 seam 缺口并走 public
+   seam 可达路径）。
+5. **pinned fs backend 真实构造**（`tests/deepseek-harness-test-use` @ a66e470204，
+   本仓测试**首次**用真实 fs backend——无既有 testkit 先例，你 recon 后记录）：
+   - 抽象契约：`packages/fs/fs/src/index.ts:157` `abstract contains(parent: FsTarget,
+     child: FsTarget): boolean`（"Test canonical containment without exposing or parsing
+     backend target keys. Both targets must come from this provider. @returns true when
+     child is parent or a descendant"）；
+   - 真实实现：`packages/fs/fs-local/src/index.ts:64` `export class LocalFileSystem
+     extends FileSystem`（default export @L269）；`constructor(ctx: Context, config:
+     Config)`，`Config = { cwd?: string（默认 process.cwd()；relative 解析基准，非
+     containment 边界）; diffBasisMaxBytes?: number }`（L41-48）；
+   - `override contains` @L125：`relative(processPath(parent), processPath(child))` →
+     `'' | (!startsWith('..') && !isAbsolute)`——canonical relative 语义，prefix trap
+     （/src vs /src2 → `'../src2'`）天然正确；
+   - `Context` 构造方式由你 recon（core ctx 的最小构造；记录在 evidence seam-recon）。
+   你的 real-contains 测试必须走 `LocalFileSystem`（或同等真实 provider）+ 真实
+   `fs.resolve()` 铸造两个 FsTarget → 真调 `contains()`——禁 fake startsWith double
+   （negative fixture 除外，须明确标注）。
+6. **baseline 失败集 @ INT_W2**：无变化 = baseline.md 的 10 文件 / 20 测试（A2C-5 与 A2C-2
+   的 int bookkeeping 各验一次，均 20 = 基线精确；3397 = 3330+28+11+10+18；p4t6 pin 695 已过）。
+   你的 RED/GREEN 中失败集不得超出此 10 文件集（p4t6 若因你新增 scannable 文件而 delta
+   失败 = 预期，报告 expected scanner delta，不改 pin）。
 
 **已核实（@ 1e05d24，行号可能漂移）**：`schema.ts:165` `PERMISSION_RESOURCE_KINDS = ['exact','any']`；
 `packages/fs/fs/src/index.ts:157` `abstract contains(parent, child)`；`canonical-operation.ts:188-194` 现有 `resolveTarget` 注入模式；
