@@ -2650,3 +2650,21 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - p4t6 pin 历史: 690 (base) → 691 (A2C-4) → **692 (A2C-1)**。
 - **W2 派发基线 = INT_W1 tip**（本冻结提交）；worktrees `.worktrees/a2c-2` + `.worktrees/a2c-5`
   待建；简报 TO-FILL-AT-DISPATCH 事实节待以 INT_W1 实际树填充。
+
+### W2 派发（A2C-2 + A2C-5，base = INT_W1 @ b96faf3）
+
+- **W2 简报事实节已填**（b96faf3）：
+  - A2C-2: managed 词集 7 名 @ schema.ts:149-157；gate 插入点 = agent-bindings.mjs L1245
+    （MCP reconcile 块结束）→ L1265（`if (permissionPolicy !== undefined)`）之间，gate 自身
+    条件化于 permissionPolicy 存在；surface seam = `agentCtx.tools.schemas(scope?)`
+    （upstream L1225，agent-scoped，model-facing ToolSchema[]）；MCP ownership 用
+    schemas() 前后 delta 证明；SAFE_UNMANAGED 起步 0 条（逐条 source-review file:line）。
+  - A2C-5: read 投影 @ canonical-operation.ts L174-175（READ_OFFSET_DEFAULT=1 /
+    READ_LIMIT_DEFAULT=2000）、effectiveReadWindow @ L309-326、消费点 @ L640；
+    fingerprint 链文件清单；offset 语义待代理 recon 裁决。
+- **worktrees**：`.worktrees/a2c-2`（task/a2c-2-permission-coverage-gate）+
+  `.worktrees/a2c-5`（task/a2c-5-read-fingerprint），均 @ b96faf3。
+- **子代理**：A2C-2 = `ea079e0c`，A2C-5 = `469eceb0`（并行；边界已在简报+派发中双向声明：
+  A2C-2 动 agent-bindings+新 evaluator，A2C-5 动 canonical-operation read 区）。
+- 两代理均带：RED-first stash 协议、增量写文件协议（骨架→2-4 次 edit）、三里程碑 ping、
+  全门禁清单、单写禁令、no-push。
