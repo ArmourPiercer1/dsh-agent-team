@@ -2807,3 +2807,16 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   （绝对路径创建 + worktree list 核验无嵌套 — A2C-7 D1 教训执行）。
 - **子代理**：A2C-3 = `55cf475a`。完成后：合并 → INT_W4 → **收束阶段**（closure gates
   plan §18 + closure-report §19 + §16 矩阵 + §20 DoD + 唯一 int→master 总 PR 供用户 merge）。
+
+### A2C-3 进展（W4，里程碑 b）
+
+- 测试文件 `a2c3-inspect-operation-permission.test.ts`（RED 时 293 行，final ~520）11 测试：
+  R1/R2 探针 + 9 §10.5 腿（member exact/any/subtree、leader、absent、pwsh、subtree-kind、
+  determinism、pure-read、remote round-trip、effective-unregressed）。
+- **RED @ base 4cf23ec 纯净形式**（RED 时零 tracked 编辑 — run 即 pre-fix 树；pop no-op，
+  porcelain 验证）：文件加载（world 构建/blueprint 解析/4 inspects + remote drive 运行）；
+  8 failed / 3 passed — 失败 = R1、R2、T1–T6（operationPermissions 字段 pre-fix 缺席）；
+  T7/T8/T9 不变量双腿通过。
+- fixture 注记：team-scoped human-override 将 legacy permission 名授予 GENERIC cell
+  （invariant 34 路径）→ R2 的 generic-vs-bound 分裂非平凡。
+- GREEN 进行中。
