@@ -439,6 +439,22 @@ export interface InstallParameterPermissionListenerParams {
    * decision for both (H4 — no cache).
    */
   readonly resolveTarget: PathTargetResolver
+  /**
+   * A2C-7 (alpha.2 plan §9) — the containment authority seam: the
+   * pinned upstream PUBLIC `FileSystem.contains(parent, child)` over
+   * OPAQUE `FsTarget`s of the SAME provider (both handles produced by
+   * `resolveTarget`'s live fs service — the glue passes the same
+   * lazy `ctx.get('fs')` basis). The ONLY legal containment predicate
+   * (plan §9.4: never `startsWith`, never targetKey parsing, never
+   * consumer-side `node:path`). Optional — when absent, a `subtree`
+   * rule's containment is UNDETERMINABLE (deny lane: fail-closed deny,
+   * the rule cannot be dropped; allow/ask lanes: non-match — the P1-3
+   * lane asymmetry). Pre-A2C-7 installers (no subtree rules in their
+   * policies) are unaffected: the optionality is backward-compatible.
+   * Synchronous (`boolean`, the pinned seam) or a thenable (a future
+   * async backend) — both are awaited internally.
+   */
+  readonly containsTargets?: (parent: unknown, child: unknown) => boolean | Promise<boolean>
   /** The durable control plane service (A4 — fully constructed). */
   readonly controlService: ControlService
   /** The team root session id (the TeamSession, invariant 9). */
@@ -664,23 +680,56 @@ export function installParameterPermissionListener(
   }
 
   /**
-   * R2 — the canonical key of one `exact` rule path, resolved FRESH on
-   * EVERY call (H4 — the P1-A fix: there is NO cache, install-lifetime
-   * or otherwise, and nothing is remembered — a failed resolution is
-   * retried on the next decision exactly like a successful one), or
-   * `undefined` when the path cannot be canonicalized (the rule then
-   * does not match THIS decision for the allow/ask lanes — see the
+   * A2C-7 (plan §9) — the per-decision resolution batch: wraps the
+   * injected resolver so every resolution ALSO registers its OPAQUE
+   * handle (the upstream `FsTarget` of the SAME live provider) under
+   * the validated key in THIS decision's map (created in `enforce`,
+   * dropped at decision end — there is NO cache, install-lifetime or
+   * otherwise, H4). The result passes through UNMODIFIED (the handle is
+   * an additive runtime-only field the A2 canonicalizer ignores — it
+   * destructures only `key`/`display`), and a malformed result
+   * (non-plain / empty / `'undefined'`-sentinel key, or a missing
+   * handle) registers nothing — the containment for that key is then
+   * undeterminable, per lane (the P1-3 asymmetry below).
+   */
+  const resolveTracked = async (
+    path: string,
+    targetHandles: Map<string, unknown>,
+  ): Promise<{ key: string; display: string; handle?: unknown }> => {
+    const result = await resolveTarget(path)
+    if (result !== null && typeof result === 'object' && !Array.isArray(result)) {
+      const { key, handle } = result as { key?: unknown; handle?: unknown }
+      if (typeof key === 'string' && key !== '' && key !== 'undefined' && handle !== undefined) {
+        targetHandles.set(key, handle)
+      }
+    }
+    return result
+  }
+
+  /**
+   * R2 — the canonical key of one `exact`/`subtree` rule path, resolved
+   * FRESH on EVERY call (H4 — the P1-A fix: there is NO cache,
+   * install-lifetime or otherwise, and nothing is remembered — a failed
+   * resolution is retried on the next decision exactly like a successful
+   * one), or `undefined` when the path cannot be canonicalized (the rule
+   * then does not match THIS decision for the allow/ask lanes — see the
    * module doc for the fail-closed argument; a DENY-lane failure is
    * reported by `canonicalLane` — P1-3). Fresh-per-decision keeps the
    * rule on the SAME live identity the operation of this decision
    * carries (same resolver seam, same lazy session-cwd basis): a
    * symlink/junction retarget between decisions moves BOTH keys, so
    * the match follows the filesystem, never a stale snapshot.
+   * (A2C-7: the resolution also registers the rule root's opaque
+   * handle in the decision batch — the `subtree` branch below needs
+   * the root target to call the containment seam.)
    */
-  const canonicalRuleKey = async (path: string): Promise<string | undefined> => {
+  const canonicalRuleKey = async (
+    path: string,
+    targetHandles: Map<string, unknown>,
+  ): Promise<string | undefined> => {
     let result: unknown
     try {
-      result = await resolveTarget(path)
+      result = await resolveTracked(path, targetHandles)
     } catch {
       return undefined
     }
@@ -704,25 +753,58 @@ export function installParameterPermissionListener(
   }
 
   /**
+   * A2C-7 (plan §9) — one failed rule canonicalization in the DENY lane
+   * (the P1-3 reporting unit): the raw trimmed path (A1 already trims
+   * rule paths), the rule kind, and the machine-readable cause
+   * (`root-not-canonicalizable` = the root path could not be resolved
+   * / the seam result was malformed; `containment-undeterminable` =
+   * the root resolved but the containment verdict could not be
+   * established — no opaque handle on either side, no
+   * `containsTargets` seam, or the seam itself faulted). The
+   * allow/ask lanes report NOTHING (they keep the non-match-on-failure
+   * semantics — a failed rule is simply a non-match, never a deny).
+   */
+  interface RuleCanonicalizationFailure {
+    readonly path: string
+    readonly kind: 'exact' | 'subtree'
+    readonly cause: 'root-not-canonicalizable' | 'containment-undeterminable'
+  }
+
+  /**
    * R2 — map one raw A1 lane to A3 `CanonicalRule[]`: `any` rules pass
    * through unchanged; `exact` rules are canonicalized against the SAME
    * resolver (and thus the SAME cwd basis) as operations — only for
    * rules that can match this operation (same tool; a `bash` exact rule
    * is inert by construction and is never canonicalized); an
    * unresolvable rule path yields no rule (R2 — the fail-closed
-   * argument is in the module docs). P1-3 (H2, option A): for the
-   * DENY lane, the unresolvable same-tool exact paths are ALSO
-   * reported via the result's `failedExact` (the raw trimmed paths —
-   * A1 already trims exact paths); the allow/ask lanes report nothing
-   * (they keep the non-match-on-failure semantics).
+   * argument is in the module docs). A2C-7 (plan §9): `subtree` rules
+   * are canonicalized the same way (the root path FRESH on every
+   * decision — H4, no install-time freeze: a retargeted alias follows
+   * its new target on the next decision), and their match is the
+   * OPERATION-RELATIVE containment boolean from the ONLY legal
+   * authority — the pinned public `FileSystem.contains(rootTarget,
+   * operationTarget)` over the per-decision handles of the SAME
+   * provider (never `startsWith` / never key parsing, plan §9.4); an
+   * undeterminable containment yields no match (allow/ask) or a
+   * reported failure (deny — the rule cannot be dropped, fail-closed).
+   * P1-3 (H2, option A): for the DENY lane, the failed same-tool rule
+   * paths are ALSO reported via the result's `failures` (the raw
+   * trimmed paths + cause); the allow/ask lanes report nothing (they
+   * keep the non-match-on-failure semantics).
    */
   const canonicalLane = async (
     laneName: 'allow' | 'ask' | 'deny',
     rules: TemplatePermissionPolicy['allow'],
     tool: string,
-  ): Promise<{ rules: CanonicalRule[]; failedExact?: readonly string[] }> => {
+    operation: CanonicalOperation,
+    targetHandles: Map<string, unknown>,
+    containsTargets: ((parent: unknown, child: unknown) => boolean | Promise<boolean>) | undefined,
+  ): Promise<{ rules: CanonicalRule[]; failures?: readonly RuleCanonicalizationFailure[] }> => {
     const out: CanonicalRule[] = []
-    let failedExact: string[] | undefined
+    let failures: RuleCanonicalizationFailure[] | undefined
+    const reportFailure = (failure: RuleCanonicalizationFailure): void => {
+      failures = failures === undefined ? [failure] : [...failures, failure]
+    }
     for (const rule of rules) {
       if (rule.tool !== tool) continue // a different tool can never match
       if (rule.resource.kind === 'any') {
@@ -734,56 +816,112 @@ export function installParameterPermissionListener(
       // key — A3) and are never canonicalized (the matcher's structural
       // defense in depth; the A1 schema additionally rejects an exact
       // shell-class resource in every lane, so a legal policy cannot
-      // carry one).
+      // carry one). A2C-7 — the shell class likewise carries no
+      // `subtree` rule (the schema rejects it in every lane — the
+      // branch below is unreachable for a legal policy; the skip is the
+      // matcher's structural defense in depth, same as for exact).
       if ((SHELL_PERMISSION_TOOL_VALUES as readonly string[]).includes(tool)) continue
-      const key = await canonicalRuleKey(rule.resource.path)
+      const key = await canonicalRuleKey(rule.resource.path, targetHandles)
       if (key === undefined) {
         // R2 — unresolvable rule path: no match (the rule is skipped; the
         // failure is never remembered — there is no cache (H4) — so the
         // NEXT decision retries the resolution).
-        // P1-3 (H2, option A) — the deny lane FLIPS: a same-tool exact
-        // DENY rule that failed to canonicalize is reported (the raw
-        // trimmed path — A1 normalization already trimmed it) instead of
-        // being silently dropped: a failed static deny must never
-        // downgrade to ask/default. The allow/ask lanes keep the
-        // non-match-on-failure semantics (the R2 module doc states the
-        // lane asymmetry).
+        // P1-3 (H2, option A) — the deny lane FLIPS: a same-tool DENY
+        // rule that failed to canonicalize is reported (the raw trimmed
+        // path — A1 normalization already trimmed it) instead of being
+        // silently dropped: a failed static deny must never downgrade to
+        // ask/default. The allow/ask lanes keep the non-match-on-failure
+        // semantics (the R2 module doc states the lane asymmetry).
         if (laneName === 'deny') {
-          failedExact =
-            failedExact === undefined ? [rule.resource.path] : [...failedExact, rule.resource.path]
+          reportFailure({ path: rule.resource.path, kind: 'exact', cause: 'root-not-canonicalizable' })
         }
+        continue
+      }
+      if (rule.resource.kind === 'subtree') {
+        // A2C-7 (plan §9.4/§9.5) — the containment verdict comes ONLY
+        // from the public `FileSystem.contains` seam (same provider —
+        // both handles came from this decision's resolution batch).
+        // `rootKey` is provenance only: it is never compared against
+        // the operation key and can never infer containment.
+        const rootHandle = targetHandles.get(key)
+        const operationHandle =
+          operation.resource.kind === 'file' ? targetHandles.get(operation.resource.key) : undefined
+        if (rootHandle === undefined || operationHandle === undefined || containsTargets === undefined) {
+          // Containment UNDETERMINABLE (no opaque handle on either side
+          // — the pre-A2C-7 seam shape — or no containment seam at all).
+          // Lane asymmetry (plan §9.8, the P1-3 pin): the DENY lane
+          // fails CLOSED (the rule cannot be dropped — a failed static
+          // deny must never downgrade); the allow/ask lanes keep
+          // non-match-on-failure (no positive grant minted from a
+          // failure — the outcome falls to the priority/default).
+          if (laneName === 'deny') {
+            reportFailure({ path: rule.resource.path, kind: 'subtree', cause: 'containment-undeterminable' })
+          }
+          continue
+        }
+        let containsOperation: boolean
+        try {
+          // The pinned seam is synchronous; a thenable (a future async
+          // backend) is awaited — both are accepted by the contract.
+          const verdict = await Promise.resolve(containsTargets(rootHandle, operationHandle))
+          containsOperation = verdict === true
+        } catch {
+          // The seam itself faulted — containment undeterminable: the
+          // same lane asymmetry as the missing-handle case above.
+          if (laneName === 'deny') {
+            reportFailure({ path: rule.resource.path, kind: 'subtree', cause: 'containment-undeterminable' })
+          }
+          continue
+        }
+        out.push({ tool: rule.tool, resource: { kind: 'subtree', rootKey: key, containsOperation } })
         continue
       }
       out.push({ tool: rule.tool, resource: { kind: 'exact', key } })
     }
-    return { rules: out, ...(failedExact !== undefined ? { failedExact } : {}) }
+    return { rules: out, ...(failures !== undefined ? { failures } : {}) }
   }
 
   /**
    * R2 — the policy lanes as A3 `CanonicalRules` for one operation tool
    * (the three lanes mapped in parallel — lane membership and lane
-   * order are preserved exactly, plan §6.4/§8.3). P1-3 (H2, option
-   * A): the result also carries `denyCanonicalizationFailure` (the raw
-   * trimmed paths of the same-tool exact DENY rules that failed to
-   * canonicalize) — set from the deny lane only; enforce denies
-   * BEFORE the A3 resolver is called when it is present.
+   * order are preserved exactly, plan §6.4/§8.3). P1-3 (H2, option A):
+   * the result also carries `denyCanonicalizationFailure` (the raw
+   * trimmed paths of the same-tool DENY rules that failed to
+   * canonicalize — exact AND, A2C-7, subtree) — set from the deny lane
+   * only; enforce denies BEFORE the A3 resolver is called when it is
+   * present. A2C-7: `denyCanonicalizationCauses` carries the per-path
+   * failure causes (the additive observe provenance — the frozen reason
+   * text is unchanged).
    */
   const canonicalRulesFor = async (
     tool: string,
-  ): Promise<{ rules: CanonicalRules; denyCanonicalizationFailure?: readonly string[] }> => {
+    operation: CanonicalOperation,
+    targetHandles: Map<string, unknown>,
+    containsTargets: ((parent: unknown, child: unknown) => boolean | Promise<boolean>) | undefined,
+  ): Promise<{
+    rules: CanonicalRules
+    denyCanonicalizationFailure?: readonly string[]
+    denyCanonicalizationCauses?: readonly RuleCanonicalizationFailure[]
+  }> => {
     const [allow, ask, deny] = await Promise.all([
-      canonicalLane('allow', policy.allow, tool),
-      canonicalLane('ask', policy.ask, tool),
-      canonicalLane('deny', policy.deny, tool),
+      canonicalLane('allow', policy.allow, tool, operation, targetHandles, containsTargets),
+      canonicalLane('ask', policy.ask, tool, operation, targetHandles, containsTargets),
+      canonicalLane('deny', policy.deny, tool, operation, targetHandles, containsTargets),
     ])
     // P1-3 (H2, option A): surface the DENY lane's canonicalization
-    // failures (the raw trimmed paths of same-tool exact deny rules that
+    // failures (the raw trimmed paths of same-tool deny rules that
     // failed to canonicalize) so enforce can deny BEFORE the A3 resolver
     // is called. The allow/ask lanes report no such flag (their failures
     // keep the non-match-on-failure semantics).
+    const denyFailures = deny.failures
     return {
       rules: { allow: allow.rules, ask: ask.rules, deny: deny.rules },
-      ...(deny.failedExact !== undefined ? { denyCanonicalizationFailure: deny.failedExact } : {}),
+      ...(denyFailures !== undefined
+        ? {
+            denyCanonicalizationFailure: denyFailures.map((failure) => failure.path),
+            denyCanonicalizationCauses: denyFailures,
+          }
+        : {}),
     }
   }
 
@@ -811,12 +949,20 @@ export function installParameterPermissionListener(
     // (2) canonicalize (A2 — fail closed: a canonicalization failure
     // denies BEFORE any rule is consulted and BEFORE next() is ever
     // awaited — plan §7.5/§10.3).
+    // A2C-7 (plan §9) — the per-decision opaque-handle batch: the
+    // tracked resolver wrapper registers every resolved key → opaque
+    // FsTarget handle for THIS decision only (dropped at decision end —
+    // there is NO cache, install-lifetime or otherwise — H4: the next
+    // decision starts a fresh batch, so a retargeted alias follows its
+    // new target). The A2 canonicalizer sees the same results (the
+    // handle is an additive runtime-only field it ignores).
+    const targetHandles = new Map<string, unknown>()
     let operation: CanonicalOperation
     try {
       operation = await canonicalizeOperation({
         name,
         arguments: exec.arguments,
-        resolveTarget,
+        resolveTarget: (path: string) => resolveTracked(path, targetHandles),
       })
     } catch (error: unknown) {
       const reason = isOperationPermissionError(error)
@@ -852,9 +998,13 @@ export function installParameterPermissionListener(
     // only the deny lane flips. The R2 module doc states the asymmetry.)
     let decision: PermissionDecision
     try {
-      const { rules: canonicalRules, denyCanonicalizationFailure } =
-        await canonicalRulesFor(operation.tool)
+      const { rules: canonicalRules, denyCanonicalizationFailure, denyCanonicalizationCauses } =
+        await canonicalRulesFor(operation.tool, operation, targetHandles, params.containsTargets)
       if (denyCanonicalizationFailure !== undefined) {
+        // The frozen P1-3 reason text (h4/a5a pin the prefix via
+        // .includes — it survives A2C-7 verbatim; the subtree paths ride
+        // the same text; the per-path causes are additive on the
+        // observe row only).
         const reason =
           `permission denied: a static deny rule could not be canonicalized ` +
           `(${denyCanonicalizationFailure.join(', ')}) — the rule cannot be dropped (fail-closed)`
@@ -863,6 +1013,17 @@ export function installParameterPermissionListener(
           callId,
           tool: operation.tool,
           paths: [...denyCanonicalizationFailure],
+          ...(denyCanonicalizationCauses !== undefined
+            ? {
+                // A2C-7 — the additive per-path provenance (the frozen
+                // `paths` field above is unchanged).
+                causes: denyCanonicalizationCauses.map((failure) => ({
+                  path: failure.path,
+                  kind: failure.kind,
+                  cause: failure.cause,
+                })),
+              }
+            : {}),
         })
         return { kind: 'deny', reason }
       }

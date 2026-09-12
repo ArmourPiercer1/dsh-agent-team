@@ -148,7 +148,7 @@
  *                        agent back, the AgentSetup contract).
  *
  *   fsBackend (OPTIONAL) - the per-agent DSH `fs` seam accessor
- *                        (agentCtx) => { resolve(path, { cwd? }) }:
+ *                        (agentCtx) => { resolve(path, { cwd? }), contains? }:
  *                        alpha.2 (A6 live fix V1-1) - the public
  *                        fs.resolve seam the permission adapter's
  *                        resolveTarget closure canonicalizes file targets
@@ -156,6 +156,11 @@
  *                        upstream file tools use; the upstream
  *                        agent-instructions plugin uses the identical
  *                        lazy ctx.get('fs') + session.header.cwd pattern).
+ *                        A2C-7 (plan section 9): the same accessor also
+ *                        exposes the pinned public `FileSystem.contains`
+ *                        containment seam (the ONLY legal authority for
+ *                        the `subtree` permission kind - the containsTargets
+ *                        closure below passes it to the adapter).
  *                        host.ts passes a closure that resolves the
  *                        service LAZILY per call via the row's strict
  *                        ctx.get('fs') (the global service store): the
@@ -1385,11 +1390,36 @@ export function createAgentBindings(deps) {
             path,
             typeof cwd === 'string' && cwd !== '' ? { cwd } : {},
           )
-          return { key: String(target.targetKey), display: String(target.displayPath) }
+          // A2C-7 (plan §9): the OPAQUE FsTarget handle rides the
+          // resolver result as an additive runtime-only field (the A2
+          // canonicalizer ignores it - it reads only key/display); the
+          // A5 adapter uses it exclusively as the argument to the
+          // pinned `FileSystem.contains` containment seam (both
+          // handles from the SAME live provider - never a string
+          // authority over the unbranded keys).
+          return { key: String(target.targetKey), display: String(target.displayPath), handle: target }
+        }
+        // A2C-7 (plan §9): the containment authority closure - the
+        // pinned public `FileSystem.contains` over the SAME lazy
+        // ctx.get('fs') basis as resolveTarget (per call, never
+        // captured). The adapter awaits the result (synchronous on the
+        // pinned upstream `FileSystem`; a thenable is tolerated) and
+        // treats a fault as containment-undeterminable (fail-closed
+        // semantics per lane).
+        const containsTargets = (parent, child) => {
+          const backend = fsBackend(agentCtx)
+          if (typeof backend.contains !== 'function') {
+            // A provider without the public containment seam: the
+            // subtree containment is undeterminable (the adapter fails
+            // closed on the deny lane; allow/ask keep non-match).
+            throw new Error('the fs provider does not expose a public contains() seam (alpha.2 subtree containment undeterminable)')
+          }
+          return backend.contains(parent, child)
         }
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
+          containsTargets,
           controlService,
           rootSessionId: teamRoot,
           caller: { kind: 'instance', instanceId },

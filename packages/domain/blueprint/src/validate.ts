@@ -628,6 +628,19 @@ function validatePermissionRule(raw: unknown, path: string, lane: 'allow' | 'ask
       { path: `${path}.resource.kind`, lane },
     )
   }
+  // A2C-7 (alpha.2 plan §9): the shell class does not accept a `subtree`
+  // resource in any lane — a subtree root is a FILE target (its
+  // containment is judged by the pinned `FileSystem.contains` seam over
+  // file identities) and can never match the tool-level shell resource;
+  // the shell keeps only the whole-tool 'any' resource (ask/deny; bash
+  // none in the allow lane — the A2C-1 contract, unchanged).
+  if (isShellTool && resource.kind === 'subtree') {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept a 'subtree' resource in any lane — a subtree root is a file target and can never match the ${tool} tool-level resource; the shell class keeps only the 'any' resource (ask or deny lane; ${tool === 'bash' ? 'bash accepts no positive whole-tool allow' : 'see the allow-lane contract for bash'})`,
+      { path: `${path}.resource.kind`, lane },
+    )
+  }
   if (isShellTool && resource.kind === 'any' && lane === 'allow') {
     throw teamContractError(
       'MALFORMED_DTO',
@@ -664,7 +677,12 @@ function validatePermissionResource(raw: unknown, path: string): PermissionResou
     return { kind: 'any' }
   }
 
-  // kind === 'exact' — exactly the fields `kind` + `path`.
+  // kind === 'exact' | 'subtree' (A2C-7) — exactly the fields `kind` +
+  // `path`, and the SAME path constraints (string, no control characters,
+  // trimmed non-empty, structurally bounded). The subtree kind matches
+  // the path itself and every canonical descendant (the containment
+  // judgment is the pinned public `FileSystem.contains` seam's — the
+  // A5 adapter, never this layer).
   assertNoUnknownFields(record, ['kind', 'path'], `${path} (permission resource)`)
   const pathValue = requireField(record, 'path', path)
   if (typeof pathValue !== 'string') {
@@ -699,7 +717,9 @@ function validatePermissionResource(raw: unknown, path: string): PermissionResou
       { path: `${path}.path`, maxLength: PERMISSION_PATH_MAX_LENGTH },
     )
   }
-  return { kind: 'exact', path: normalized }
+  return kind === 'subtree'
+    ? { kind: 'subtree' as const, path: normalized }
+    : { kind: 'exact' as const, path: normalized }
 }
 
 // ---------------------------------------------------------------------------
@@ -1099,7 +1119,9 @@ function toHashablePermissionRule(rule: PermissionRule): RemoteSafeRecord {
   return {
     tool: rule.tool,
     resource:
-      rule.resource.kind === 'any' ? { kind: 'any' } : { kind: 'exact', path: rule.resource.path },
+      rule.resource.kind === 'any'
+        ? { kind: 'any' }
+        : { kind: rule.resource.kind, path: rule.resource.path },
   }
 }
 

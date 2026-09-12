@@ -167,14 +167,28 @@ export interface CanonicalOperation {
  * - a REJECTION (any thrown error, including the backend's typed
  *   filesystem errors) means the resource cannot be resolved.
  *
+ * A2C-7 (plan §9): the result MAY additionally carry `handle` — the
+ * OPAQUE resolved-target object (the upstream `FsTarget`) of the SAME
+ * live provider that produced the key. It is a RUNTIME-ONLY seam field:
+ * the A2 canonicalizer ignores it (it destructures only `key`/`display`),
+ * and the A5 adapter uses it exclusively as the argument to the pinned
+ * `FileSystem.contains(parent, child)` containment seam (both handles
+ * from the same provider — the only legal containment authority; the
+ * module never inspects, parses, or string-compares a handle). An
+ * implementation that does not expose a handle (the pre-A2C-7 seam
+ * shape) simply omits the field; a `subtree` rule's containment is then
+ * undeterminable (deny lane: fail-closed; allow/ask: non-match — the
+ * P1-3 lane asymmetry).
+ *
  * @param path - the tool's raw `file_path` argument (unmodified — the
  *   backend owns all path interpretation, including relative resolution
  *   against the bound cwd).
- * @returns the opaque key + the display path of the resolved target.
+ * @returns the opaque key + the display path of the resolved target
+ *   (+ the optional opaque handle, A2C-7).
  */
 export type PathTargetResolver = (
   path: string,
-) => Promise<{ readonly key: string; readonly display: string }>
+) => Promise<{ readonly key: string; readonly display: string; readonly handle?: unknown }>
 
 /**
  * The closed classification of a tool NAME against the permission

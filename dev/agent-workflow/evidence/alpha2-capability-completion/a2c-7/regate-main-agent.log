@@ -1,0 +1,19 @@
+=== R1 focused (a2c7+a2c2+a2c5+a2c1+a2c4+a5a+a6a+bp1+a3+a2+h4+a1-domain) ===
+ Test Files  11 passed (11)
+      Tests  315 passed (315)
+=== R2 h4 family ===
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+=== R3 full root (expect 11 files, 21 tests, total 3433) ===
+ Test Files  11 failed | 274 passed (285)
+      Tests  21 failed | 3412 passed (3433)
+=== R4 node chain ===
+12
+=== R5 typecheck ===
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+=== R6 build ===
+packages/client build: Done
+=== R7 zero-core ===
+RESULT: PASS verify-zero-core (0 findings)
+=== REGATE A2C-7 DONE ===
