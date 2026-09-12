@@ -2521,3 +2521,12 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   已核验源状态清单）；触发条件 = A2C-1 测试文件在 R25 检查时仍未落盘 → interrupt + 重派窄域子代理。
 - **远端**：origin/int/alpha2-capability-completion 持续同步；master = 1e05d24 未动；无 open PR
   （任务 PR 将在各任务 commit 后创建）。
+
+### A2C-1 宽限裁决（R25 检查点）
+
+- R25 检查：A2C-1 测试文件仍未落盘（预设触发条件字面成立）；但 list_agents 状态 = **running**
+  （turn 活跃执行中，非 idle/停滞）。其最后自报计划 = 单 mega-turn（写 1000+ 行测试文件 →
+  stash → RED → pop），大文件 LLM 构成为长操作。
+- **裁决（偏离 R24 预设，记录在案）**：中断活跃 turn 将丢失 in-flight 草稿且新代理须重新构成
+  （成本 ≥ 等待）。宽限延长恰好一轮：R26 检查仍无文件 → interrupt + 按 takeover brief 重派
+  窄域子代理（不再延长）。A2C-4 同期健康推进（测试 1074 行）。
