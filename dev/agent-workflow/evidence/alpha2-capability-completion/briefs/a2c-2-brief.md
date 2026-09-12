@@ -15,7 +15,7 @@
 ## 1. 工作区
 
 - 你的 worktree：`/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-2`；分支 `task/a2c-2-permission-coverage-gate`（派发时已建）。
-- BASE_SHA：`<派发时填>`（= INT_W1）
+- BASE_SHA：`9c9a9ff`（= INT_W1 冻结 tip，2026-09-12）
 - 环境：Linux x86_64，node v24.21.0 / pnpm 11.7.0；real vitest 可运行。首次 `pnpm install --frozen-lockfile --ignore-scripts`。
 
 ## 2. 任务契约（计划 §7，摘要 + 权威指向计划原文）
@@ -79,7 +79,45 @@ lifecycle（fresh root / fresh member / cold root / cold member 同一 coverage 
 - `agent-bindings.mjs` setup 时序的实际插入点（MCP reconcile 之后、permission listener install 之前的精确位置）；
 - `ctx.tools.schemas(scope)` 在 setup 上下文的可达性 recon 结果；
 - INT_W1 上 baseline 失败集是否有变化。
-<TO-FILL-AT-DISPATCH>
+
+**已核实（@ INT_W1 = 9c9a9ff，2026-09-12）**：
+1. **`PERMISSION_TOOL_NAMES`**（最终 managed shell 词集，A2C-1 落地后）：
+   `packages/domain/blueprint/src/schema.ts:149-157` =
+   `['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']`（7 名；
+   经 `index.ts:40` 导出，`validate.ts:609` 消费）。你的 `MANAGED_OPERATION_PERMISSION`
+   类 evaluator 应以此为 managed 词集来源（public import，勿复制字面量）。
+2. **setup 时序插入点**（`packages/runtime/src/plugin/live/agent-bindings.mjs`）：
+   - L1172 注释声明 setup 序列：`model selection -> agentPresets.mount -> builtinToolDeny -> Team ...`
+   - L1184: `applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)`（capability 层先移除）
+   - L1201: `agentCtx.tools.register(def)`（Team tool registration 发生区）
+   - **L1242-1245: `if (mcpMountAllowed) { await reconcileMcp(agentCtx, state, true) }`**（MCP reconcile）
+   - L1247-1264: 大注释块（alpha.2 plan §11.3 permission enforcement installed LAST）
+   - **L1265: `if (permissionPolicy !== undefined) {`** — permission listener 安装块起点
+     （内含 controlService/fsBackend fail-closed 检查，L1314 `installParameterPermissionListener` 调用）
+   - **你的 Coverage Gate 插入点 = L1245（MCP reconcile 块结束）之后、L1265 的
+     `if (permissionPolicy !== undefined)` 之前**——且 gate 本身必须条件化于
+     `permissionPolicy !== undefined`（strict mode 仅当 Template 声明
+     capabilities.permissions；§1.2 legacy 零变化）。此时点看到的 surface =
+     preset mount + builtinToolDeny 后 + Team tools 已注册 + MCP 已 reconcile
+     = FINAL effective tool surface（gate 契约 §7.2 满足）。
+3. **`ctx.tools.schemas(scope)` seam recon**：
+   - upstream pinned（`tests/deepseek-harness-test-use` @ a66e470204）
+     `packages/core/tools/src/index.ts:1219-1225`:
+     `schemas(scope?: ScopeKey): ToolSchema[]` — "Project visible definitions onto the
+     allowlisted model-facing schema fields, excluding execution and presentation callbacks.
+     @param scope - the viewing scope (the agent); omitted = the global view. @returns one
+     deep-cloned schema per visible tool."（agent-scoped、尊重 restrict、返回 model-facing
+     schema 数组 = 每个可见工具一条 deep clone）
+   - setup 上下文可达性：`agentCtx.tools` 在 agent-bindings.mjs 已被消费（L1201
+     `agentCtx.tools.register(def)`）——同一对象上的 `.schemas` 即 public seam。
+     你在 L1245 之后调用 `agentCtx.tools.schemas(agentScope)`（scope = 当前 agent 的
+     scope key；从 setup 作用域的 agent 身份获取，参照 L1201 附近的 scope 取值方式）
+     即得 FINAL surface 的工具名清单。ToolSchema 的 `name` 字段 = 工具名。
+4. **baseline 失败集 @ INT_W1**：无变化 = baseline.md 的 10 文件 / 20 测试
+   （INT_W1 bookkeeping 全量运行实测 20 failed | 3349 passed (3369 = 3330+28+11)，
+   逐文件 1:1 映射 baseline.md；p4t6 pin 692 已过）。你的 RED/GREEN 运行中失败集
+   不得超出此 10 文件集（p4t6 若因你新增 scannable 文件而 delta 失败 = 预期，
+   报告 expected scanner delta，不改 pin）。
 
 ## 4. Single-writer 禁令（违反 = 返工）
 

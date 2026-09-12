@@ -14,7 +14,7 @@
 ## 1. 工作区
 
 - 你的 worktree：`/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5`；分支 `task/a2c-5-read-fingerprint`（派发时已建）。
-- BASE_SHA：`<派发时填>`（= INT_W1）
+- BASE_SHA：`9c9a9ff`（= INT_W1 冻结 tip，2026-09-12）
 - 环境：Linux x86_64，node v24.21.0 / pnpm 11.7.0；real vitest 可运行。首次 `pnpm install --frozen-lockfile --ignore-scripts`。
 
 ## 2. 任务契约（计划 §8，摘要 + 权威指向计划原文）
@@ -56,9 +56,31 @@ H1/H4/H5 permission hardening 全部不回归。
 - `READ_LIMIT_DEFAULT` / `READ_OFFSET_DEFAULT` 常量现状与消费点；
 - fingerprint 铸造链（operation.fingerprint → control row → guard exact-scope）涉及文件；
 - INT_W1 上 baseline 失败集是否有变化。
-<TO-FILL-AT-DISPATCH>
 
-**已核实（@ 1e05d24，行号可能因 A2C-1 漂移）**：`canonical-operation.ts:159` `READ_LIMIT_DEFAULT = 2000`；
+**已核实（@ INT_W1 = 9c9a9ff，A2C-1 shell 区改动后行号漂移已重定位）**：
+- `canonical-operation.ts:174` `READ_OFFSET_DEFAULT = 1`；`:175` `READ_LIMIT_DEFAULT = 2000`
+  （导出常量，原 1e05d24 @ :159 漂移后位置）；
+- `:309-326` `effectiveReadWindow(tool, args)` — 现行为 = `offset ?? READ_OFFSET_DEFAULT`、
+  `limit ?? READ_LIMIT_DEFAULT`——**omitted limit 当前被铸造为 `limit: 2000`**，即
+  `read(file)` 与 `read(file, limit=2000)` 得到同一 CanonicalOperation 投影 → 你的任务
+  = 让 omitted 保留 null 身份（`read(file) != read(file, limit=2000)`），offset 语义
+  不变（offset omitted 仍 = 1 起点，除非你的 recon 证明上游 read 工具 offset 语义
+  另有定义——计划 §8 授权 recon 裁决）；
+- 消费点 = `:640` `const window = effectiveReadWindow(tool, args)`（read 投影铸造处）；
+- 模块头注释（~L44-54 区）自证 residual gap——A2C-1 后注释区可能有增补（shell 类文档），
+  你以盘上实际文本为准；
+- fingerprint 铸造链涉及文件（operation.fingerprint → control row → guard exact-scope）：
+  `packages/runtime/operation-permission/canonical-operation.ts`（铸造）/
+  `pre-execute-adapter.ts`（fingerprint 入请求）/ `control/service.ts` + `control/types.ts`
+  （durable row + guardOperation exact-scope）/ `permission-resolver.ts`（static 消费）/
+  `types.ts` + `index.ts`（契约面）。**你的改动集中在 canonical-operation.ts read 投影/
+  fingerprint 区 + 相关测试**（§8 边界）；control/resolver/adapter 结构勿动；
+- **baseline 失败集 @ INT_W1**：无变化 = baseline.md 的 10 文件 / 20 测试（INT_W1
+  bookkeeping 全量实测 20 failed | 3349 passed (3369)，逐文件 1:1 映射；p4t6 pin 692 已过）。
+  你的 RED/GREEN 中失败集不得超出此 10 文件集（p4t6 若因你新增 scannable 文件而 delta
+  失败 = 预期，报告 expected scanner delta，不改 pin）。
+
+**已核实（@ 1e05d24，行号可能因 A2C-1 漂移 — 以上 INT_W1 重定位为准）**：`canonical-operation.ts:159` `READ_LIMIT_DEFAULT = 2000`；
 `:276-291` `effectiveReadWindow`（`limit ?? READ_LIMIT_DEFAULT`）；模块头注释 L44-54 自证 residual；
 `resolveTarget` 注入模式（L188-194）。
 
