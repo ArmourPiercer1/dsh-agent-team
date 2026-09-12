@@ -62,8 +62,8 @@ const PROBE_SOURCE_EXTS = new Set(['.js', '.mjs', '.cjs'])
 
 function usage() {
   console.error('usage: node tests/characterization/run.mjs [options]')
-  console.error('  --host-tree <dir>      pinned upstream tree (default: <team>/references/deepseek-harness-test-use)')
-  console.error('  --dsh-home <dir>       dedicated DSH_HOME (default: <team>/references/.dsh-test-p2t1)')
+  console.error('  --host-tree <dir>      pinned upstream tree (default: <team>/tests/deepseek-harness-test-use)')
+  console.error('  --dsh-home <dir>       dedicated DSH_HOME (default: <team>/tests/homes/.dsh-test-p2t1)')
   console.error('  --port <n>             primary port (default 3281)')
   console.error('  --backup-port <n>      fallback port (default 3291)')
   console.error('  --report-dir <dir>     evidence directory for logs + summary.json')

@@ -18,8 +18,8 @@
  *
  * THE REAL SCENARIO (plan §12 D4, steps 1-8) — executed on the shared
  * TEST_METHODS test host:
- *   source: references/deepseek-harness-test-use (pristine @ 76fda729)
- *   home:   references/.dsh-test (SHARED test home — the same durable home
+ *   source: tests/deepseek-harness-test-use (pristine @ a66e4702)
+ *   home:   tests/homes/.dsh-test (SHARED test home — the same durable home
  *           across stop + restart; pre-existing roots are NOT destroyed and
  *           are asserted as part of the multi-root enumeration)
  *   port:   3180 (both boots, serial; the port is verified free between and
@@ -45,7 +45,7 @@
  *                cwd == defaultWorkspace).
  *   S3 (step 3)  clean stop of the test host (managed instance stop) +
  *                port 3180 verified free.
- *   S4 (step 4)  RESTART with the SAME references/.dsh-test DSH_HOME (same
+ *   S4 (step 4)  RESTART with the SAME tests/homes/.dsh-test DSH_HOME (same
  *                port): row phase create-or-open now resolves to 'resume'
  *                (the durable ROOT_A identity loads, never re-minted); the
  *                row's own resume boot re-activates ROOT_A live (row
@@ -108,11 +108,12 @@
  * Usage:
  *   node packages/tools/harness/d4-restart-reopen.mjs --report-dir <dir>
  *
- * Layout (resolved by walking up from this file):
- *   REPO_ROOT  - the ancestor containing references/deepseek-harness-test-use
- *   HOST_TREE  - REPO_ROOT/references/deepseek-harness-test-use (pristine
+ * Layout (resolved by walking up from this file; canonical paths in
+ * tests/paths.mjs):
+ *   REPO_ROOT  - the ancestor containing tests/deepseek-harness-test-use
+ *   HOST_TREE  - REPO_ROOT/tests/deepseek-harness-test-use (pristine
  *                upstream test-use tree; git state asserted before AND after)
- *   DSH_HOME   - REPO_ROOT/references/.dsh-test (the SHARED test home;
+ *   DSH_HOME   - REPO_ROOT/tests/homes/.dsh-test (the SHARED test home;
  *                workspace-internal, gitignored; pre-existing durable rows
  *                are preserved, never destroyed)
  *   PORT       - 3180 (fixed; the stable instance owns 3080 and is only
@@ -135,6 +136,13 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
+import {
+  CLIENT_COMMIT_HASH,
+  TEST_USE_BASELINE_SHA,
+  findTestRepoRoot,
+  homeDir,
+  TEST_USE_REL,
+} from '../../../tests/paths.mjs'
 import { DshInstance, ensureProfile } from '../../../tests/characterization/lib/instance.mjs'
 import { logTail, spawnToLog, walk, waitForPortFree } from '../../../tests/characterization/lib/util.mjs'
 import { captureGitState } from '../../../tests/characterization/lib/tree-clean.mjs'
@@ -145,28 +153,17 @@ import { startMockModel } from './mock-deepseek.mjs'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..')
 
-/** Walk up from the worktree to the ancestor containing references/. */
-function findRepoRoot(start) {
-  let dir = start
-  for (;;) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) throw new Error(`no ancestor of ${start} contains references/deepseek-harness-test-use`)
-    dir = parent
-  }
-}
-
-const REPO_ROOT = findRepoRoot(WORKTREE_ROOT)
-const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+const REPO_ROOT = findTestRepoRoot(WORKTREE_ROOT)
+if (REPO_ROOT === null) throw new Error('no ancestor contains tests/deepseek-harness-test-use')
+const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
 
 const argv = process.argv.slice(2)
 const reportDirArg = argv.find((a, i) => argv[i - 1] === '--report-dir')
 if (reportDirArg === undefined) throw new Error('usage: node d4-restart-reopen.mjs --report-dir <dir>')
 const REPORT_DIR = resolve(reportDirArg)
 
-const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
-const EXPECTED_HOST_SHA = '76fda729799fe9b3848dbe2c211d4b231032b81e'
+const EXPECTED_HOST_SHA = TEST_USE_BASELINE_SHA
 
 const PRODUCTION_ROW_NAME = pathToFileURL(
   join(WORKTREE_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'host.js'),
@@ -180,7 +177,7 @@ const SEAM_URL = pathToFileURL(
 ).href
 
 const PORT = 3180
-const DSH_HOME = join(REPO_ROOT, 'references', '.dsh-test')
+const DSH_HOME = homeDir(REPO_ROOT, '.dsh-test')
 // The shared home's workspace registry holds exactly ONE registered
 // workspace: the repo root itself (the legacy rows of this same home used
 // it as defaultWorkspace). The v2 remote team.create validates the
@@ -894,7 +891,7 @@ async function main() {
   mkdirSync(join(REPORT_DIR, 'git'), { recursive: true })
   const preGit = await captureGitState(HOST_TREE, join(REPORT_DIR, 'git'))
   s0.evidence.testUsePre = { head: preGit.head, statusEmpty: preGit.statusEmpty, diffEmpty: preGit.diffEmpty, errors: preGit.errors }
-  s0.check('test-use HEAD == 76fda729 (the pinned audit baseline)', preGit.head === EXPECTED_HOST_SHA, `head=${preGit.head}`)
+  s0.check('test-use HEAD == a66e4702 (the pinned audit baseline)', preGit.head === EXPECTED_HOST_SHA, `head=${preGit.head}`)
   s0.check('test-use git status --porcelain empty (pre)', preGit.statusEmpty, `status=${JSON.stringify(preGit.status.slice(0, 300))}`)
   const stablePre = await fetchJson(STABLE_URL, undefined, 10_000).catch((e) => ({ status: null, body: String(e) }))
   s0.evidence.stablePre = { url: STABLE_URL, httpStatus: stablePre.status }
@@ -1035,7 +1032,7 @@ async function main() {
     log(`S3: pass=${scenarioResults.S3.pass}`)
 
     // ── S4: restart with the SAME shared DSH_HOME (step 4) ─────────────────
-    const s4 = makeScenarioCtx('S4 (step 4): RESTART on the same references/.dsh-test (create-or-open now resolves to resume; the row re-activates its config root ROOT_A only; ROOT_B stays cold) and the D1 index rebuilds byte-identically')
+    const s4 = makeScenarioCtx('S4 (step 4): RESTART on the same tests/homes/.dsh-test (create-or-open now resolves to resume; the row re-activates its config root ROOT_A only; ROOT_B stays cold) and the D1 index rebuilds byte-identically')
     remoteCallLedger.length = 0
     inst2 = await bootInstance({ label: 'BOOT2', boot: 2, bootPhase: 'create-or-open', directivePhase: 'resume' })
     s4.evidence.boot2 = {
@@ -1199,7 +1196,7 @@ async function main() {
       return await captureGitState(HOST_TREE, join(REPORT_DIR, 'git-post'))
     })()
     cleanup.evidence.testUsePost = { head: postGit.head, statusEmpty: postGit.statusEmpty, diffEmpty: postGit.diffEmpty, errors: postGit.errors }
-    cleanup.check('test-use HEAD still 76fda729 (post)', postGit.head === EXPECTED_HOST_SHA, `head=${postGit.head}`)
+    cleanup.check('test-use HEAD still a66e4702 (post)', postGit.head === EXPECTED_HOST_SHA, `head=${postGit.head}`)
     cleanup.check('test-use git status --porcelain still empty (post — the tree was only read/booted, never written)', postGit.statusEmpty, `status=${JSON.stringify(postGit.status.slice(0, 300))}`)
     cleanup.check('test-use git diff still empty (post)', postGit.diffEmpty, `diff=${JSON.stringify(postGit.diff.slice(0, 300))}`)
     writeFileSync(join(REPORT_DIR, 'mock-capture.json'), JSON.stringify({ port: mock.port, requestCount: mock.requests.length, requests: mock.requests }, null, 2))

@@ -5,7 +5,27 @@ import { fileURLToPath } from 'node:url'
 import { configDefaults, defineConfig } from 'vitest/config'
 
 const req = createRequire(import.meta.url)
-const referencesRoot = fileURLToPath(new URL('../../../../references/deepseek-harness-test-use/', import.meta.url))
+
+/**
+ * The pristine upstream test-use checkout (tests/deepseek-harness-test-use —
+ * canonical location per tests/paths.mjs). Resolved by walking up from this
+ * config file until the marker is found, so it works both from the main
+ * checkout (<repo>/packages/client) and from task worktrees
+ * (<repo>/.worktrees/<task>/packages/client). The pre-standardization
+ * four-levels-up assumption only worked from worktrees and silently
+ * degraded to an empty srcMap from the main tree.
+ */
+const referencesRoot = (() => {
+  let dir = fileURLToPath(new URL('.', import.meta.url))
+  for (let i = 0; i < 6; i += 1) {
+    const candidate = join(dir, 'tests', 'deepseek-harness-test-use')
+    if (existsSync(candidate)) return candidate
+    const parent = join(dir, '..')
+    if (parent === dir) break
+    dir = parent
+  }
+  return join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'tests', 'deepseek-harness-test-use')
+})()
 
 /**
  * Build the package-name → src-directory map for every workspace package
@@ -66,11 +86,9 @@ const srcMap = buildSrcMap()
  * named-export detection both resolve it (verified: the namespace exposes
  * useSyncExternalStoreWithSelector).
  */
-const uesWithSelector = fileURLToPath(
-  new URL(
-    '../../../../references/deepseek-harness-test-use/packages/client/ui-renderer/node_modules/use-sync-external-store/shim/with-selector.js',
-    import.meta.url,
-  ),
+const uesWithSelector = join(
+  referencesRoot,
+  'packages/client/ui-renderer/node_modules/use-sync-external-store/shim/with-selector.js',
 )
 
 /**

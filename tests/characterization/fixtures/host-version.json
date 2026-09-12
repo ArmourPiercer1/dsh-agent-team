@@ -1,7 +1,7 @@
 {
   "schema": "p2t1-host-version/1",
   "upstreamSha": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
-  "tree": "references/deepseek-harness-test-use (pristine upstream checkout)",
+  "tree": "tests/deepseek-harness-test-use (pristine upstream checkout)",
   "note": "Fingerprint of the upstream public exports surface at the pinned commit. Regenerate only on a deliberate pin move: node tests/characterization/run.mjs --fixture-write",
   "packageCount": 272,
   "packages": {

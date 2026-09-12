@@ -3,6 +3,15 @@ docs/plans
 .worktrees/
 .pnpm-store/
 
+# test infrastructure (test-infra-standardization, 2026-09-12):
+# pristine upstream DSH checkout used as the test runtime (its own git repo;
+# never committed — see docs/TEST_METHODS.md). The frozen legacy reference
+# stays under references/ (read-only).
+tests/deepseek-harness-test-use/
+# per-world DSH_HOME dirs (world state, launch tokens — never committed;
+# naming + cleanup protocol in docs/TEST_METHODS.md §7)
+tests/homes/
+
 # build & tooling (P1-T4 skeleton)
 node_modules/
 dist/

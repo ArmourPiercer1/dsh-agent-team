@@ -30,9 +30,9 @@ export const harnessRoot = resolve(here, '..')
  * Resolve the run configuration: CLI flags > CH_* env > defaults.
  * Defaults assume the canonical team-repo layout (this harness lives at
  * <team-repo>/tests/characterization/ and the pinned tree at
- * <team-repo>/references/deepseek-harness-test-use with the dedicated
- * DSH_HOME at <team-repo>/references/.dsh-test-p2t1 — P2-T1's own home; the
- * shared .dsh-test of the G1 baseline is never touched).
+ * <team-repo>/tests/deepseek-harness-test-use with the dedicated
+ * DSH_HOME at <team-repo>/tests/homes/.dsh-test-p2t1 — P2-T1's own home;
+ * the shared tests/homes/.dsh-test is never touched).
  */
 export function resolveConfig(argv) {
   const args = parseArgs(argv)
@@ -49,8 +49,8 @@ export function resolveConfig(argv) {
     // reads them from the invoked root. Observed 20260830 in the P2-T6
     // main-agent rerun (9 failures); resolve() here makes every consumer
     // agree on one location.
-    hostTree: resolve(args['host-tree'] ?? process.env.CH_HOST_TREE ?? join(teamRoot, 'references', 'deepseek-harness-test-use')),
-    dshHome: resolve(args['dsh-home'] ?? process.env.CH_DSH_HOME ?? join(teamRoot, 'references', '.dsh-test-p2t1')),
+    hostTree: resolve(args['host-tree'] ?? process.env.CH_HOST_TREE ?? join(teamRoot, 'tests', 'deepseek-harness-test-use')),
+    dshHome: resolve(args['dsh-home'] ?? process.env.CH_DSH_HOME ?? join(teamRoot, 'tests', 'homes', '.dsh-test-p2t1')),
     port: Number(args.port ?? process.env.CH_PORT ?? 3281),
     backupPort: Number(args['backup-port'] ?? process.env.CH_BACKUP_PORT ?? 3291),
     reportDir: reportDirArg === null ? null : resolve(reportDirArg),
@@ -64,19 +64,20 @@ export function resolveConfig(argv) {
 /**
  * The team root the defaults point at: the nearest ancestor of the harness
  * (walking up at most three levels) that contains the pinned upstream tree
- * under references/. In the canonical single-checkout layout that is
- * <repo-root>; when the harness is run from a task worktree
+ * at tests/deepseek-harness-test-use. In the canonical single-checkout
+ * layout that is <repo-root>; when the harness is run from a task worktree
  * (<repo-root>/.worktrees/<task>) it is the main repo root — where the
- * gitignored references/ lives. Explicit --host-tree/--dsh-home (or CH_*
- * env) always win.
+ * gitignored tests/deepseek-harness-test-use lives. Explicit
+ * --host-tree/--dsh-home (or CH_* env) always win.
  */
 function findTeamRoot() {
-  let dir = resolve(harnessRoot, '..', '..')
+  const start = resolve(harnessRoot, '..', '..')
+  let dir = start
   for (let i = 0; i < 3; i += 1) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
+    if (existsSync(join(dir, 'tests', 'deepseek-harness-test-use'))) return dir
     dir = resolve(dir, '..')
   }
-  return resolve(harnessRoot, '..', '..')
+  return start
 }
 
 function parseArgs(argv) {

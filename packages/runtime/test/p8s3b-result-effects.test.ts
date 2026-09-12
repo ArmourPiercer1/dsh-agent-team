@@ -64,7 +64,7 @@
  * sessionPersistence / domain) with ONE addition this file needs: the
  * handle's `session` double exposes `ownEvents()` returning the scripted
  * session-log events — the exact public read seam A4 identified
- * (references/deepseek-harness-test-use @ 76fda729:
+ * (tests/deepseek-harness-test-use @ a66e4702:
  * `packages/core/session/src/index.ts:615`). The shared bridge file is
  * NOT modified: this file imports its exported `loadGlueModule` and
  * `createDomainDouble` and carries its own scripted agents double.

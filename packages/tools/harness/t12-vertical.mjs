@@ -86,10 +86,10 @@
  *
  * Fresh worlds (fail CLOSED if the home exists non-empty; re-runs require
  * deleting the home dirs first):
- *   A  references/.dsh-test-t12-a  port 3181 (fresh #1 create) / 3182 (resume)
- *   B  references/.dsh-test-t12-b  port 3183 (fresh #2 create; instance stays
+ *   A  tests/homes/.dsh-test-t12-a  port 3181 (fresh #1 create) / 3182 (resume)
+ *   B  tests/homes/.dsh-test-t12-b  port 3183 (fresh #2 create; instance stays
  *      alive as the handoff second-source team)
- *   C  references/.dsh-test-t12-c  port 3184 (handoff first-source team create)
+ *   C  tests/homes/.dsh-test-t12-c  port 3184 (handoff first-source team create)
  * Mock model endpoint: 127.0.0.1:3496 (one per runner invocation, shared).
  * Mini MCP server:     127.0.0.1:3492 (world A row config only).
  *
@@ -119,6 +119,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
 import {
+  CLIENT_COMMIT_HASH,
+  findTestRepoRoot,
+  homeDir,
+  TEST_USE_REL,
+} from '../../../tests/paths.mjs'
+import {
   DshInstance,
   ensureProfile,
 } from '../../../tests/characterization/lib/instance.mjs'
@@ -139,23 +145,12 @@ import { startMockModel } from './mock-deepseek.mjs'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..')
 
-/** Walk up from the worktree to the ancestor holding the test-use tree. */
-function findRepoRoot(start) {
-  let dir = start
-  for (;;) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) throw new Error(`no ancestor of ${start} contains references/deepseek-harness-test-use`)
-    dir = parent
-  }
-}
-
-const REPO_ROOT = findRepoRoot(WORKTREE_ROOT)
-const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+const REPO_ROOT = findTestRepoRoot(WORKTREE_ROOT)
+if (REPO_ROOT === null) throw new Error('no ancestor contains tests/deepseek-harness-test-use')
+const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
 const EVIDENCE_DIR = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'T12')
 const INSTANCES_DIR = join(EVIDENCE_DIR, 'instances')
 
-const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -175,9 +170,9 @@ const PORT_A2 = 3182
 const PORT_B = 3183
 const PORT_C = 3184
 
-const HOME_A = join(REPO_ROOT, 'references', '.dsh-test-t12-a')
-const HOME_B = join(REPO_ROOT, 'references', '.dsh-test-t12-b')
-const HOME_C = join(REPO_ROOT, 'references', '.dsh-test-t12-c')
+const HOME_A = homeDir(REPO_ROOT, '.dsh-test-t12-a')
+const HOME_B = homeDir(REPO_ROOT, '.dsh-test-t12-b')
+const HOME_C = homeDir(REPO_ROOT, '.dsh-test-t12-c')
 
 const ROOT_A = `session-t12v-a-root-${NONCE}`
 const ROOT_B = `session-t12v-b-root-${NONCE}`

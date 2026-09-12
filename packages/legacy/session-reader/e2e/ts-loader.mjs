@@ -19,7 +19,7 @@
  * (context.parentURL) lives under THIS repository's `packages/` directory
  * (computed from this file's own location:
  * <worktree>/packages/legacy/session-reader/e2e). Host-tree imports
- * (references/deepseek-harness-test-use) are never touched, so the hook
+ * (tests/deepseek-harness-test-use) are never touched, so the hook
  * cannot perturb the host's own resolution.
  *
  * Plain .mjs; runs in the hook worker thread (no main-thread assumptions).

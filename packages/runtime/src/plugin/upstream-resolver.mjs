@@ -42,8 +42,9 @@
  *      and the fallback could re-parent into a different DSH version
  *      than the install was pinned against (drift). Normal-first
  *      resolution makes the dead candidate harmless.
- *   2. the references/deepseek-harness-test-use checkout two levels above
- *      this file's worktree (the test DSH source, TEST_METHODS.md);
+ *   2. the tests/deepseek-harness-test-use checkout two levels above
+ *      this file's worktree (the test DSH source, TEST_METHODS.md;
+ *      canonical location since test-infra-standardization 2026-09-12);
  *   3. the same checkout under the MAIN repository (the worktree's parent).
  *      NOTE (task/plugin-bundle-form): the resolver-file candidates were
  *      ORIGINALLY dead — four dirname()s from
@@ -52,10 +53,12 @@
  *      verticals ran on plain passthrough). The count is fixed here (five
  *      dirname()s) because the fallback IS the documented rescue path for
  *      a scope without the pinned dependencies; after the fix it is
- *      discoverable ONLY on this machine's test world (references/ is
- *      gitignored, so a user's clone/git-install profile never exposes a
- *      candidate), which is exactly the no-drift property the normal-first
- *      order relies on.
+ *      discoverable ONLY on this machine's test world (the test-use
+ *      checkout is gitignored, so a user's clone/git-install profile never
+ *      exposes a candidate), which is exactly the no-drift property the
+ *      normal-first order relies on. The legacy
+ *      references/deepseek-harness-test-use layout stays a fallback
+ *      candidate for machines that predate the 2026-09-12 move.
  *
  * @module @dsh-agent-team/runtime/plugin/upstream-resolver
  */
@@ -80,9 +83,13 @@ function candidatesFromResolverFile() {
   // and land on the repo root (worktree or main checkout).
   const worktree = dirname(dirname(dirname(dirname(dirname(RESOLVER_FILE)))))
   const mainRepo = dirname(dirname(worktree))
-  return [worktree, mainRepo].map((base) =>
+  // Canonical test layout first (tests/deepseek-harness-test-use —
+  // tests/paths.mjs, test-infra-standardization 2026-09-12); the legacy
+  // references/ layout stays as a fallback for pre-move machines.
+  return [worktree, mainRepo].flatMap((base) => [
+    join(base, 'tests', 'deepseek-harness-test-use'),
     join(base, 'references', 'deepseek-harness-test-use'),
-  )
+  ])
 }
 
 let cachedCheckout = null

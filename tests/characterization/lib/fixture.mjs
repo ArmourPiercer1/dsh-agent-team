@@ -34,7 +34,7 @@ export function buildFixture({ upstreamSha, hostTree }) {
   return {
     schema: FIXTURE_SCHEMA,
     upstreamSha,
-    tree: 'references/deepseek-harness-test-use (pristine upstream checkout)',
+    tree: 'tests/deepseek-harness-test-use (pristine upstream checkout)',
     note:
       'Fingerprint of the upstream public exports surface at the pinned commit. ' +
       'Regenerate only on a deliberate pin move: node tests/characterization/run.mjs --fixture-write',

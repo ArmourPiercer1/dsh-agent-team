@@ -13,11 +13,12 @@
  *     --report-dir dev/agent-workflow/evidence/P5-T5/harness-output \
  *     [--scenarios S1,S3,S4,S2] [--port 3180]
  *
- * Layout (resolved by walking up from this file):
- *   REPO_ROOT  — the ancestor containing references/deepseek-harness-test-use
- *   HOST_TREE  — REPO_ROOT/references/deepseek-harness-test-use (pristine
+ * Layout (resolved by walking up from this file; canonical paths in
+ * tests/paths.mjs):
+ *   REPO_ROOT  — the ancestor containing tests/deepseek-harness-test-use
+ *   HOST_TREE  — REPO_ROOT/tests/deepseek-harness-test-use (pristine
  *                upstream test-use tree; git-clean asserted before AND after)
- *   DSH_HOME   — REPO_ROOT/references/.dsh-test-p5t5 (FRESH per run: removed
+ *   DSH_HOME   — REPO_ROOT/tests/homes/.dsh-test-p5t5 (FRESH per run: removed
  *                and recreated; gitignored; workspace-internal)
  *
  * Boot 1 (port, default 3180): S1 -> S3 -> S4 (S3/S4 run after S1 so the
@@ -56,6 +57,12 @@ import {
   ensureProbeResolution,
 } from '../../../../tests/characterization/lib/instance.mjs'
 import {
+  CLIENT_COMMIT_HASH,
+  findTestRepoRoot,
+  TEST_HOME_ROOT_REL,
+  TEST_USE_REL,
+} from '../../../../tests/paths.mjs'
+import {
   portInUse,
   spawnToLog,
   waitForLogLine,
@@ -66,7 +73,6 @@ import { closeMiniServer, startMiniMcpServer } from './mini-mcp.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
-const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -103,17 +109,6 @@ function parseArgs(argv) {
 }
 
 // ── path discovery ──────────────────────────────────────────────────────────
-
-function findRepoRoot(start) {
-  let dir = start
-  for (let i = 0; i < 8; i += 1) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) return null
-    dir = parent
-  }
-  return null
-}
 
 function findZodDir(hostTree) {
   const pnpmDir = join(hostTree, 'node_modules', '.pnpm')
@@ -156,10 +151,10 @@ async function main() {
     appendFileSync(runLogPath, `${stamped}\n`)
   }
 
-  const REPO_ROOT = findRepoRoot(HERE)
-  if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
-  const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
-  const DSH_HOME = join(REPO_ROOT, 'references', '.dsh-test-p5t5')
+  const REPO_ROOT = findTestRepoRoot(HERE)
+  if (REPO_ROOT === null) throw new Error('cannot locate repo root (tests/deepseek-harness-test-use marker)')
+  const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
+  const DSH_HOME = join(REPO_ROOT, TEST_HOME_ROOT_REL, '.dsh-test-p5t5')
   const boot1Port = args.port
   const boot2Port = args.port + 1
 

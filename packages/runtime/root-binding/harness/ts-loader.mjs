@@ -18,7 +18,7 @@
  * Gating: the rewrite applies ONLY when the importing file (context.parentURL)
  * lives under THIS repository's `packages/` directory (computed from this
  * file's own location: <worktree>/packages/runtime/root-binding/harness).
- * Host-tree imports (references/deepseek-harness-test-use) are never
+ * Host-tree imports (tests/deepseek-harness-test-use) are never
  * touched, so the hook cannot perturb the host's own resolution.
  *
  * Plain .mjs; runs in the hook worker thread (no main-thread assumptions).

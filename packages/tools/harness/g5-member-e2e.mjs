@@ -21,8 +21,8 @@
  *
  * SCENARIO (plan 15.1 D1 row + the D2/D3 live checks) — executed on the
  * shared TEST_METHODS test host:
- *   source: references/deepseek-harness-test-use (pristine @ 76fda729)
- *   home:   references/.dsh-test (SHARED test home; pre-existing roots
+ *   source: tests/deepseek-harness-test-use (pristine @ a66e4702)
+ *   home:   tests/homes/.dsh-test (SHARED test home; pre-existing roots
  *           are NOT destroyed and are enumerated as part of S1)
  *   port:   3180 (one boot; the port is verified free before — polling
  *           up to 20 min when busy, a never-free port is DEFERRED — and
@@ -112,7 +112,7 @@
  *
  * HARD BOUNDARIES: no product code changes (this runner + the evidence
  * dir only); the stable :3080 instance and D:\deepseek-harness are never
- * touched (read-only probe only); references/deepseek-harness-test-use
+ * touched (read-only probe only); tests/deepseek-harness-test-use
  * stays pristine (verified before AND after); no host process is left
  * behind; the shared home accumulates this run's nonce roots like every
  * previous run (never destroyed).
@@ -138,6 +138,13 @@ import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
+import {
+  CLIENT_COMMIT_HASH,
+  TEST_USE_BASELINE_SHA,
+  findTestRepoRoot,
+  homeDir,
+  TEST_USE_REL,
+} from '../../../tests/paths.mjs'
 import { DshInstance, ensureProfile } from '../../../tests/characterization/lib/instance.mjs'
 import {
   logTail,
@@ -153,28 +160,17 @@ import { startMockModel } from './mock-deepseek.mjs'
 const HERE = import.meta.dirname
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..')
 
-/** Walk up from the worktree to the ancestor containing references/. */
-function findRepoRoot(start) {
-  let dir = start
-  for (;;) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) throw new Error(`no ancestor of ${start} contains references/deepseek-harness-test-use`)
-    dir = parent
-  }
-}
-
-const REPO_ROOT = findRepoRoot(WORKTREE_ROOT)
-const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+const REPO_ROOT = findTestRepoRoot(WORKTREE_ROOT)
+if (REPO_ROOT === null) throw new Error('no ancestor contains tests/deepseek-harness-test-use')
+const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
 
 const argv = process.argv.slice(2)
 const reportDirArg = argv.find((a, i) => argv[i - 1] === '--report-dir')
 if (reportDirArg === undefined) throw new Error('usage: node g5-member-e2e.mjs --report-dir <dir>')
 const REPORT_DIR = resolve(reportDirArg)
 
-const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
-const EXPECTED_HOST_SHA = '76fda729799fe9b3848dbe2c211d4b231032b81e'
+const EXPECTED_HOST_SHA = TEST_USE_BASELINE_SHA
 
 const PRODUCTION_ROW_ID = 'dsh-agent-team'
 const PRODUCTION_ROW_NAME = pathToFileURL(
@@ -190,7 +186,7 @@ const SEAM_URL = pathToFileURL(
 ).href
 
 const PORT = 3180
-const DSH_HOME = join(REPO_ROOT, 'references', '.dsh-test')
+const DSH_HOME = homeDir(REPO_ROOT, '.dsh-test')
 // The shared home's workspace registry holds exactly ONE registered
 // workspace: the repo root itself. The v2 remote team.create validates the
 // workspace parameter against the registry, so the scenario's team works
@@ -1254,7 +1250,7 @@ async function main() {
   mkdirSync(join(REPORT_DIR, 'git'), { recursive: true })
   const preGit = await captureGitState(HOST_TREE, join(REPORT_DIR, 'git'))
   s0.evidence.testUsePre = { head: preGit.head, statusEmpty: preGit.statusEmpty, diffEmpty: preGit.diffEmpty, errors: preGit.errors }
-  s0.check('test-use HEAD == 76fda729 (the pinned audit baseline)', preGit.head === EXPECTED_HOST_SHA, `head=${preGit.head}`)
+  s0.check('test-use HEAD == a66e4702 (the pinned audit baseline)', preGit.head === EXPECTED_HOST_SHA, `head=${preGit.head}`)
   s0.check('test-use git status --porcelain empty (pre)', preGit.statusEmpty, `status=${JSON.stringify(preGit.status.slice(0, 300))}`)
   const stablePre = await fetchJson(STABLE_URL, undefined, 10_000).catch((e) => ({ status: null, body: String(e) }))
   s0.evidence.stablePre = { url: STABLE_URL, httpStatus: stablePre.status }
@@ -1693,7 +1689,7 @@ async function main() {
       pass: allPass,
       boundary: {
         stableInstance: 'read-only GET probe on :3080 pre + post only; no operation was ever sent to the stable instance or D:\\deepseek-harness',
-        testUse: 'references/deepseek-harness-test-use verified pristine before and after (porcelain empty + HEAD pinned at 76fda729)',
+        testUse: 'tests/deepseek-harness-test-use verified pristine before and after (porcelain empty + HEAD pinned at a66e4702)',
         sharedHome: 'pre-existing roots preserved (nonce-unique roots accumulate, as in every previous run); the deployment default model moved by the S7 selectModel side effect and was RESTORED to qiyuan-self/qwen3.8-27b (recorded in S7 evidence)',
         process: 'the host process is stopped; port 3180 verified free after stop',
         publicSeamsUsed: [

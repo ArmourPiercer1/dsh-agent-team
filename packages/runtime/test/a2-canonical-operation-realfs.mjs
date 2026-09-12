@@ -2,7 +2,7 @@
  * a2-canonical-operation-realfs.mjs — A2 canonicalization-contract cases
  * over the REAL upstream filesystem backend: the prebuilt
  * `@deepseek-ai/dsh-fs-local` of the pristine test-use checkout
- * (references/deepseek-harness-test-use per docs/TEST_METHODS.md — the
+ * (tests/deepseek-harness-test-use per docs/TEST_METHODS.md — the
  * same prebuilt-lib import mechanism as `t12a-live-bridge.mjs`: the lib
  * is imported by absolute path, and its transitive imports resolve from
  * the test-use checkout's own pnpm layout).
@@ -18,7 +18,7 @@
  * absolute display path }`; the same file yields the same targetKey.
  *
  * Self-contained + never-throwing: this module walks up to the repo root
- * (the references/deepseek-harness-test-use marker), imports the
+ * (the tests/deepseek-harness-test-use marker), imports the
  * prebuilt lib, constructs `LocalFileSystem` with a minimal Cordis
  * reflect double (the `Service` base constructor only needs
  * `ctx.reflect.provide`), and runs the cases in a temp dir under
@@ -48,13 +48,20 @@ const WORKTREE_ROOT = resolve(TEST_DIR, '..', '..', '..')
 /** The repository root (the worktree lives under <repo>/.worktrees/). */
 const REPO_ROOT = resolve(WORKTREE_ROOT, '..', '..')
 
-/** Walk up from the worktree root to the references/deepseek-harness-test-use marker. */
+/** Walk up from the worktree root to the test-use marker (canonical
+ * tests/deepseek-harness-test-use first; the legacy references/ layout
+ * stays as a fallback for pre-move machines). */
 function findTestUse() {
   let dir = REPO_ROOT
   for (let depth = 0; depth < 4; depth += 1) {
-    const candidate = join(dir, 'references', 'deepseek-harness-test-use')
-    if (existsSync(join(candidate, 'packages', 'fs', 'fs-local', 'lib', 'index.js'))) {
-      return candidate
+    for (const rel of [
+      join('tests', 'deepseek-harness-test-use'),
+      join('references', 'deepseek-harness-test-use'),
+    ]) {
+      const candidate = join(dir, rel)
+      if (existsSync(join(candidate, 'packages', 'fs', 'fs-local', 'lib', 'index.js'))) {
+        return candidate
+      }
     }
     dir = resolve(dir, '..')
   }
@@ -74,7 +81,7 @@ export async function runRealBackendCases() {
   try {
     const testUse = findTestUse()
     if (testUse === null) {
-      return { available: false, reason: 'references/deepseek-harness-test-use prebuilt fs-local lib not found' }
+      return { available: false, reason: 'test-use prebuilt fs-local lib not found (tests/deepseek-harness-test-use or legacy references/ layout)' }
     }
     const libUrl = pathToFileURL(
       join(testUse, 'packages', 'fs', 'fs-local', 'lib', 'index.js'),

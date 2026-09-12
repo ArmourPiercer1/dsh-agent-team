@@ -6,7 +6,7 @@
  *
  * Same boot chain as the v2 Playwright acceptance (pw-boot.mjs):
  * DshInstance over the pristine upstream tree
- * references/deepseek-harness-test-use, public profile-patch seam,
+ * tests/deepseek-harness-test-use, public profile-patch seam,
  * production dist host row, p6t6 observability row, junction bridges —
  * plus TWO mini-MCP servers (repo harness, streamable-http, one `ping`
  * tool each):
@@ -18,7 +18,7 @@
  *     every session, supervisor auto-reconnect)
  *
  * Dedicated fresh DSH_HOME: tests/mock/.dsh-home (profile tree copied
- * from the proven references/.dsh-test profile on first run; sessions/
+ * from the proven tests/homes/.dsh-test profile on first run; sessions/
  * storages/ created fresh by the host). .credentials.yaml is NOT
  * copied — the user configures the mock-test API key; the ref is read
  * into the spawn env only, never printed. Absent key = the host boots,
@@ -71,8 +71,8 @@ import { closeMiniServer, startMiniMcpServer } from '../../../packages/runtime/r
 const HERE = dirname(fileURLToPath(import.meta.url))
 const MOCK_ROOT = resolve(HERE, '..')
 const REPO_ROOT = resolve(HERE, '..', '..', '..')
-const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
-const SRC_HOME = join(REPO_ROOT, 'references', '.dsh-test')
+const HOST_TREE = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
+const SRC_HOME = join(REPO_ROOT, 'tests', 'homes', '.dsh-test')
 const DSH_HOME = process.env.MOCK_DSH_HOME
   ? resolve(process.env.MOCK_DSH_HOME)
   : join(MOCK_ROOT, '.dsh-home')

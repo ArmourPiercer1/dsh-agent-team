@@ -29,18 +29,19 @@
  *     [--port 3181] \
  *     [--dsh-home .dsh-test-p8s3] \
   *     [--dsh-home-e .dsh-test-p8s3-e] \
- *     [--lock-file references/.dsh-test-p8s3.lock]
+ *     [--lock-file tests/homes/.dsh-test-p8s3.lock]
  *
-  * Layout (resolved by walking up from this file):
-  *   REPO_ROOT  - the ancestor containing references/deepseek-harness-test-use
-  *   HOST_TREE  - REPO_ROOT/references/deepseek-harness-test-use (pristine
+  * Layout (resolved by walking up from this file; canonical paths in
+  * tests/paths.mjs):
+  *   REPO_ROOT  - the ancestor containing tests/deepseek-harness-test-use
+  *   HOST_TREE  - REPO_ROOT/tests/deepseek-harness-test-use (pristine
   *                upstream test-use tree; git-clean asserted before AND after)
-  *   DSH_HOME   - REPO_ROOT/references/<--dsh-home> (default .dsh-test-p8s3);
+  *   DSH_HOME   - REPO_ROOT/tests/homes/<--dsh-home> (default .dsh-test-p8s3);
   *                the W world's home; must be FRESH (missing or empty) or the
   *                run aborts fail-closed; gitignored; workspace-internal
-  *   DSH_HOME_E - REPO_ROOT/references/<--dsh-home-e> (default
+  *   DSH_HOME_E - REPO_ROOT/tests/homes/<--dsh-home-e> (default
   *                .dsh-test-p8s3-e); the E world's home; same freshness rule
-  *   LOCK       - REPO_ROOT/<--lock-file> (default references/.dsh-test-p8s3.lock);
+  *   LOCK       - REPO_ROOT/<--lock-file> (default tests/homes/.dsh-test-p8s3.lock);
   *                acquired only when free (exclusive create), released only
   *                when the marker still names this runStamp.
  *
@@ -99,6 +100,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 
 import {
+  CLIENT_COMMIT_HASH,
+  findTestRepoRoot,
+  TEST_HOME_ROOT_REL,
+  TEST_USE_REL,
+} from '../../../tests/paths.mjs'
+import {
   DshInstance,
   ensureProfile,
   ensureProbeResolution,
@@ -114,7 +121,6 @@ import { closeMiniServer, startMiniMcpServer } from '../../runtime/root-binding/
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..')
-const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -532,7 +538,7 @@ function parseArgs(argv) {
     port: 3181,
     dshHome: '.dsh-test-p8s3',
     dshHomeE: null,
-    lockFile: 'references/.dsh-test-p8s3.lock',
+    lockFile: 'tests/homes/.dsh-test-p8s3.lock',
     mcpPorts: '3491,3492,3493,3494,3495',
   }
   for (let i = 0; i < argv.length; i += 1) {
@@ -561,10 +567,10 @@ function parseArgs(argv) {
   args.mcpPorts = mcpPorts
   if (args.dshHomeE === null) args.dshHomeE = `${args.dshHome}-e`
   if (typeof args.dshHome !== 'string' || args.dshHome.length === 0 || args.dshHome.includes('..') || args.dshHome.includes('/') || args.dshHome.includes('\\')) {
-    throw new Error(`invalid --dsh-home (a bare basename under references/): ${args.dshHome}`)
+    throw new Error(`invalid --dsh-home (a bare basename under tests/homes/): ${args.dshHome}`)
   }
   if (typeof args.dshHomeE !== 'string' || args.dshHomeE.length === 0 || args.dshHomeE.includes('..') || args.dshHomeE.includes('/') || args.dshHomeE.includes('\\')) {
-    throw new Error(`invalid --dsh-home-e (a bare basename under references/): ${args.dshHomeE}`)
+    throw new Error(`invalid --dsh-home-e (a bare basename under tests/homes/): ${args.dshHomeE}`)
   }
   if (args.dshHomeE === args.dshHome) {
     throw new Error('--dsh-home-e must differ from --dsh-home (two separate team lifetimes)')
@@ -584,17 +590,6 @@ function parseArgs(argv) {
 }
 
 // 鈹€鈹€ path discovery 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-
-/** Walk up from `start` until the references/deepseek-harness-test-use marker. */
-function findRepoRoot(start) {
-  let dir = start
-  for (;;) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) return null
-    dir = parent
-  }
-}
 
 /** Locate a zod dir inside the host tree's pnpm store. */
 function findZodDir(hostTree) {
@@ -638,11 +633,11 @@ async function main() {
     appendFileSync(runLogPath, `${stamped}\n`)
   }
 
-  const REPO_ROOT = findRepoRoot(HERE)
-  if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
-  const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
-  const DSH_HOME = join(REPO_ROOT, 'references', args.dshHome)
-  const DSH_HOME_E = join(REPO_ROOT, 'references', args.dshHomeE)
+  const REPO_ROOT = findTestRepoRoot(HERE)
+  if (REPO_ROOT === null) throw new Error('cannot locate repo root (tests/deepseek-harness-test-use marker)')
+  const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
+  const DSH_HOME = join(REPO_ROOT, TEST_HOME_ROOT_REL, args.dshHome)
+  const DSH_HOME_E = join(REPO_ROOT, TEST_HOME_ROOT_REL, args.dshHomeE)
   const LOCK_PATH = resolve(REPO_ROOT, args.lockFile)
   const portA = args.port
   const portB = args.port + 1

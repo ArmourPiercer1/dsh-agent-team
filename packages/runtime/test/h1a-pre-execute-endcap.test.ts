@@ -98,7 +98,7 @@
  * mount works — no double stands in for the waterfall).
  *
  * Upstream facts pinned here (verified against
- * references/deepseek-harness-test-use @ a66e470204,
+ * tests/deepseek-harness-test-use @ a66e470204,
  * packages/core/tools/src/index.ts):
  * - L144: 'tools/pre-execute' is a waterfall — a listener MAY return a
  *   decision WITHOUT calling next() (short-circuit);

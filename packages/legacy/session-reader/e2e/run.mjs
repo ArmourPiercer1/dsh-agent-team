@@ -2,7 +2,7 @@
  * run.mjs — the P7-T7 real-instance E2E driver (SEC8).
  *
  * Boots a REAL DSH web instance from the pristine test-use tree
- * (`references/deepseek-harness-test-use`, pin 76fda72979) with a fresh
+ * (`tests/deepseek-harness-test-use`, pin a66e470204) with a fresh
  * workspace-internal DSH_HOME, mounts the single harness row
  * (`p7t7-legacy-session-reader`) through the public cordis.patch.yml
  * profile seam, and drives the three reader scenarios end to end:
@@ -45,6 +45,12 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync, appendFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import {
+  CLIENT_COMMIT_HASH,
+  findTestRepoRoot,
+  homeDir,
+  TEST_USE_REL,
+} from '../../../../tests/paths.mjs'
 import { DshInstance, ensureProfile } from '../../../../tests/characterization/lib/instance.mjs'
 import {
   portInUse,
@@ -56,7 +62,6 @@ import { captureGitState } from '../../../../tests/characterization/lib/tree-cle
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
-const CLIENT_COMMIT_HASH = '76fda72979'
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -87,18 +92,6 @@ function parseArgs(argv) {
     throw new Error(`invalid --port: ${args.port}`)
   }
   return args
-}
-
-/** Walk up from `start` (<= 8 levels) to the repo root (the marker check). */
-function findRepoRoot(start) {
-  let dir = start
-  for (let i = 0; i < 8; i += 1) {
-    if (existsSync(join(dir, 'references', 'deepseek-harness-test-use'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  return null
 }
 
 /** Best-effort probe of the stable dev instance (must remain untouched). */
@@ -234,10 +227,10 @@ function resetToNativeFixture(dshHome) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
-  const REPO_ROOT = findRepoRoot(WORKTREE_ROOT)
-  if (REPO_ROOT === null) throw new Error('cannot locate repo root (references/deepseek-harness-test-use marker)')
-  const HOST_TREE = join(REPO_ROOT, 'references', 'deepseek-harness-test-use')
-  const DSH_HOME = join(REPO_ROOT, 'references', '.dsh-test-p7t7')
+  const REPO_ROOT = findTestRepoRoot(WORKTREE_ROOT)
+  if (REPO_ROOT === null) throw new Error('cannot locate repo root (tests/deepseek-harness-test-use marker)')
+  const HOST_TREE = join(REPO_ROOT, TEST_USE_REL)
+  const DSH_HOME = homeDir(REPO_ROOT, '.dsh-test-p7t7')
   const reportDir = resolve(WORKTREE_ROOT, args.reportDir)
   const logsDir = join(reportDir, 'logs')
   mkdirSync(reportDir, { recursive: true })

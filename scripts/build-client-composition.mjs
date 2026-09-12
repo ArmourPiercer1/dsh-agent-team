@@ -23,7 +23,7 @@
  *   - output: <out-dir>/client-bundle.js — a single file in the
  *             window.__ModuleLoader__.load({ id, factory(require) }) format
  *             (the exact shape of the upstream tsdown client bundles, e.g.
- *             references/deepseek-harness-test-use/packages/client/
+ *             tests/deepseek-harness-test-use/packages/client/
  *             ui-conversation/lib/client.js @ cd5ef814: `require(spec)`
  *             returns the module-table NAMESPACE directly — no .default
  *             hop — and the factory returns module.exports, which the

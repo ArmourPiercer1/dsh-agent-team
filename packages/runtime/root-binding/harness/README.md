@@ -48,7 +48,7 @@ node packages/runtime/root-binding/harness/run.mjs \
 
 ## Pristine / safety self-checks (recorded in `summary.json`)
 
-- test-use tree (`references/deepseek-harness-test-use`) `git status` clean
+- test-use tree (`tests/deepseek-harness-test-use`) `git status` clean
   **before** the run, after the build chain (if it ran), and **after** the run;
 - stable instance `:3080` reachability recorded before and after (GET only,
   3 s timeout — the stable instance is never touched);

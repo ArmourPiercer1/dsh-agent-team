@@ -10,7 +10,9 @@
  *   R1  no `node:`-prefixed import specifier (no builtins in `.ts` source
  *       — ruling R24; only `.mjs` scanner files may import builtins)
  *   R2  no upstream / private specifier: no specifier containing
- *       `deepseek-harness-test-use`, starting with `references/`, or
+ *       `deepseek-harness-test-use` (covers the canonical
+ *       tests/deepseek-harness-test-use location as well as the legacy
+ *       references/ layout), starting with `references/`, or
  *       starting with `@deepseek-ai/`
  *   R3  no word-bounded `SessionController` token (no mirror of the
  *       upstream session controller for Team state)

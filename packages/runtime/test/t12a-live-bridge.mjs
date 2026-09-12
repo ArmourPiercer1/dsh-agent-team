@@ -12,7 +12,7 @@
  * Self-provisioning: importing this module idempotently creates
  * `node_modules/@deepseek-ai/{dsh-agent,dsh-session,dsh-llm,dsh-mcp-client}`
  * junction links in the worktree, pointing at the prebuilt DSH test-use
- * workspace packages (references/deepseek-harness-test-use — the pristine
+ * workspace packages (tests/deepseek-harness-test-use — the pristine
  * upstream test instance per docs/TEST_METHODS.md). `node_modules/` is
  * gitignored: this is local environment provisioning, NOT a repository
  * change. Transitive imports inside those packages resolve from the DSH
@@ -48,6 +48,7 @@ import { fileURLToPath } from 'node:url'
 // per-Team resolver strong-parses the world's blueprint sources (the
 // domain facade — the runner's .js -> .ts sibling hook applies).
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
+import { TEST_USE_REL } from '../../tests/paths.mjs'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
 /** The worktree root (test -> runtime -> packages -> root). */
@@ -55,7 +56,7 @@ export const WORKTREE_ROOT = resolve(TEST_DIR, '..', '..', '..')
 /** The repository root (the worktree lives under <repo>/.worktrees/). */
 const REPO_ROOT = resolve(WORKTREE_ROOT, '..', '..')
 /** The pristine upstream DSH test-use checkout (docs/TEST_METHODS.md). */
-const DSH_TEST_USE = resolve(REPO_ROOT, 'references', 'deepseek-harness-test-use')
+const DSH_TEST_USE = resolve(REPO_ROOT, TEST_USE_REL)
 
 /** The four top-level @deepseek-ai/* specifiers of the real glue. */
 const GLUE_PACKAGE_LINKS = [
