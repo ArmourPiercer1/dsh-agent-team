@@ -2530,3 +2530,17 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **裁决（偏离 R24 预设，记录在案）**：中断活跃 turn 将丢失 in-flight 草稿且新代理须重新构成
   （成本 ≥ 等待）。宽限延长恰好一轮：R26 检查仍无文件 → interrupt + 按 takeover brief 重派
   窄域子代理（不再延长）。A2C-4 同期健康推进（测试 1074 行）。
+
+### A2C-1 接管执行（R26 硬触发）
+
+- **R26 检查**：测试文件仍未落盘（4 轮零制品：无文件、无进程、无 commit）。中断原代理
+  （dd9e18c4）——其 closing message 证实死于一次未完成的超大单生成
+  （"All patterns verified. Now writing the full test file:"）。
+- **中断后核验**：9 源文件完好、stash 列表空、无半成品测试文件、无 a2c1/pwsh 残留。
+- **重派**：新窄域子代理 **6eb01116**（takeover），同 worktree `.worktrees/a2c-1`，
+  简报 = `briefs/a2c-1-takeover-brief.md` + 原 a2c-1-brief 契约；关键修正：
+  ① 测试文件**增量写入**（先 ~150 行骨架 → 3–4 次 edit 填充，禁止单次巨型生成）；
+  ② 结构样板 = 兄弟任务 `a2c4-external-lastmile.test.ts`（RED/GREEN 分段 + runner 约束已验证）；
+  ③ 三个里程碑 send_message 进度 ping（文件完成 / RED 取证 / gates+commit）；
+  ④ 9 源文件视为已验证完成，禁重构。
+- **A2C-4** 不受影响，健康推进（测试 1074 行）。
