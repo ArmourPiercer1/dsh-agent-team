@@ -44,16 +44,25 @@
  * `canonicalJsonStringify`):
  *
  * - `read`          `{ tool, resourceKey, offset, limit }`
- *     EFFECTIVE values (the tool's own defaulting, `parseReadArgs`):
- *     `offset ?? 1` (one-based) and `limit ?? 2000`. The fixed default
- *     2000 is the upstream `tool-fs` `readLimit` config default
- *     (`READ_LIMIT` in `packages/fs/tool-fs/src/read.ts`) — DECISION
- *     (plan §7.3 "document which"): the fingerprint uses the DEFAULT
- *     deployment constant, NOT the live deployment cap, so omitted-limit
- *     calls canonicalize identically across deployments; a deployment
- *     with a non-default `readLimit` may see one documented fingerprint
- *     residual (an omitted-limit read equals an explicit
- *     `limit: 2000` read in its projection — see the module report).
+ *     A2C-5 (alpha.2 plan §8) — CONSERVATIVE window identity:
+ *     `offset` = the tool's own defaulting (`parseReadArgs`): omitted
+ *     → 1 (one-based; the pinned-upstream fixed default — recon
+ *     confirmed on `a66e470204`), explicit N → N; `limit` = the
+ *     EXPLICIT value only: omitted → **null** (the caller gave no
+ *     limit — the projection carries the ABSENCE, never a substituted
+ *     number), explicit N → N. Pre-A2C-5 the omission was canonicalized
+ *     to the deployment constant 2000, so `read(file)` and
+ *     `read(file, limit: 2000)` minted ONE fingerprint and a durable
+ *     one-shot allow for one identity silently covered the other
+ *     (the §8.1 pseudo-equivalence — the fingerprint's effect-identity
+ *     was wrong for any deployment whose live `readLimit` cap is not
+ *     2000). Post-A2C-5 the two calls mint DISTINCT fingerprints; even
+ *     a deployment that happens to default to 2000 only loses a
+ *     conservative reuse, never gains an authorization (plan §8.2).
+ *     The upstream `readLimit` config default (2000 — `READ_LIMIT` in
+ *     pinned `tool-fs` `read.ts`, configurable per deployment) is NOT
+ *     read here: the fingerprint must stay deployment-independent
+ *     (no live cap dependency, plan §8.3).
  *     A present-but-invalid offset/limit (not a positive integer — the
  *     tool would reject it) fails closed: there is no effective window.
  * - `read_image`    `{ tool, resourceKey }`
@@ -150,11 +159,19 @@ import { sha256Hex } from '../../domain/blueprint/src/index.js';
 import { canonicalizationFailed } from './errors.js';
 import { FILE_PERMISSION_TOOL_VALUES, PERMISSION_TOOL_VALUES, SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 /**
- * The EFFECTIVE `read` window defaults (the tool's own defaulting —
- * `parseReadArgs`): `offset` one-based, default 1; `limit` default 2000
- * = the upstream `tool-fs` `readLimit` config default (`READ_LIMIT`),
- * used as a FIXED constant (documented decision, module header — the
- * fingerprint must not depend on the live deployment cap).
+ * The `read` window identity constants (A2C-5, plan §8.2):
+ * - `READ_OFFSET_DEFAULT = 1` — the pinned-upstream FIXED one-based
+ *   default (`parseReadArgs`: `offset === undefined ? 1`); an omitted
+ *   offset canonicalizes to 1 (the tool's own effective window start);
+ * - `READ_LIMIT_DEFAULT = 2000` — the upstream `tool-fs` `readLimit`
+ *   CONFIG DEFAULT (`READ_LIMIT` in pinned `tool-fs` `read.ts`,
+ *   configurable per deployment). Since A2C-5 it is DOCUMENTATION ONLY
+ *   for this module: an omitted `limit` canonicalizes to the null
+ *   identity (the caller gave no limit — see the module header's read
+ *   projection entry), and this constant is never substituted into the
+ *   projection (the fingerprint must not depend on a deployment
+ *   constant or a live cap, plan §8.2/§8.3). It stays exported (the
+ *   A2 public surface + the a2 suite reference the upstream default).
  */
 export const READ_OFFSET_DEFAULT = 1;
 export const READ_LIMIT_DEFAULT = 2000;
@@ -255,9 +272,16 @@ function isPositiveInteger(value) {
     return typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 1;
 }
 /**
- * The `read` effective window (module header: the tool's own defaulting;
- * a present-but-invalid value fails closed — the tool would reject it,
- * so there is no effective window to authorize).
+ * The `read` window identity (A2C-5, plan §8.2 — the module header's
+ * conservative identity): `offset` = the tool's own FIXED defaulting
+ * (omitted → 1, one-based — the pinned-upstream `parseReadArgs`
+ * default, unchanged by A2C-5); `limit` = the EXPLICIT value only —
+ * omitted → **null** (the caller gave no limit: the projection carries
+ * the ABSENCE, never a substituted deployment constant — this is what
+ * makes `read(file)` and `read(file, limit: 2000)` distinct
+ * identities), explicit N → N. A present-but-invalid value fails
+ * closed — the tool would reject it, so there is no effective window
+ * to authorize (the mirrored validation is unchanged).
  */
 function effectiveReadWindow(tool, args) {
     const offset = args['offset'];
@@ -274,7 +298,10 @@ function effectiveReadWindow(tool, args) {
     }
     return {
         offset: offset ?? READ_OFFSET_DEFAULT,
-        limit: limit ?? READ_LIMIT_DEFAULT,
+        // A2C-5 (plan §8.2): the omission is an IDENTITY — null, not the
+        // deployment constant (pre-A2C-5: `limit ?? READ_LIMIT_DEFAULT`,
+        // the documented pseudo-equivalence residual, now removed).
+        limit: limit ?? null,
     };
 }
 /** The `write` content (required string; an EMPTY string is legitimate). */

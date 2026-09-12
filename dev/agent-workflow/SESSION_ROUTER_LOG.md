@@ -2680,3 +2680,22 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **recon 裁决**（pinned a66e470204 `parseReadArgs`）：offset omitted→1（固定，保持）；
   limit omitted→deployment readLimit（默认 2000，可配置）→ limit 取 null 身份。
 - 下一步：GREEN 实现 → gates → commit → 里程碑 c。
+
+### A2C-5 合并执行（W2 第一任务）
+
+- **FINAL 报告接收**（子代理 469eceb0，DONE）：2 commits（26e3543 src+tests / 4622a1b 证据）；
+  新文件 1（a2c5 395 行 10 测试）；scanner delta +1（692→693）；修复 = `effectiveReadWindow`
+  `limit: limit ?? null`（omitted = null 身份；显式 N byte-stable；offset 不变 — recon @
+  pinned parseReadArgs 裁决：offset 固定 1，limit = deployment 可配置 readLimit → 不读入
+  指纹 §8.3）；READ_LIMIT_DEFAULT 保留导出（A2 面）不再代入；消费者零结构变更；旧 in-flight
+  pending-ask 行部署后自然 fail-closed（计划接受）。
+- **主代理前置核验**：单写零接触 ✓（代理 forbidden-path 审计 + 主代理 diff 双确认）；
+  upstream pristine ✓；功能 hunk 精确 = `limit: limit ?? null` + 文档重写，严格限于 read
+  投影区 ✓。
+- **主代理 re-gate（独立 @ 4622a1b）**：聚焦 7 文件 186/186；全量 21 = 基线 20 + p4t6 1
+  （3379 = 3330+28+11+10 ✓）；node 链 = 基线 10 文件（a2c5 10 PASS）；typecheck/build/
+  zero-core 全绿。
+- **PR #10** 创建 → 本地 merge（零冲突，17 文件）→ int bookkeeping：pin 692→693（10/10
+  真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3379）+ 联合套件 6 文件 182/182
+  （int-bookkeeping-a2c5.log）。
+- **INT_W2 未冻结**（A2C-2 子代理 ea079e0c 仍在运行）。

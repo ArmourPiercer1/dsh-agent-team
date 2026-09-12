@@ -899,8 +899,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // hit set stays at fifteen occurrences).
     // Evidence:
     // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/.
-    expect(scanResult.filesScanned).toBe(692)
-    expect(scanResult.files.length).toBe(692)
+    // alpha.2 capability-completion A2C-5 (merged into
+    // int/alpha2-capability-completion, PR #10): +1 = 693 — one new
+    // file, packages/runtime/test/a2c5-read-fingerprint.test.ts (the
+    // T1/T6/T7 RED-probe retention + §8.4 identity matrix for the
+    // omitted-limit null identity). The a2 suite update + the
+    // canonical-operation read-region change are in-place edits (no
+    // count change). Scanner unchanged; DEC-1 union at the integration
+    // tip by the main agent. Zero denylist vocabulary in the new file
+    // (the frozen quarantine hit set stays at fifteen occurrences).
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-5/.
+    expect(scanResult.filesScanned).toBe(693)
+    expect(scanResult.files.length).toBe(693)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

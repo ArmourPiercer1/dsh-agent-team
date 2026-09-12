@@ -1,0 +1,16 @@
+=== B1 p4t6 (pin 693 truth) ===
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 3ms
+      Tests  10 passed (10)
+=== B2 build ===
+packages/client build: Done
+=== B3 build:composition ===
+[ELIFECYCLE] Command failed with exit code 1.
+=== B4 smoke ===
+PASS composition-smoke
+=== B5 full root (expect 20 = baseline exact) ===
+ Test Files  10 failed | 273 passed (283)
+      Tests  20 failed | 3359 passed (3379)
+=== B6 union suites (a2c5+a2c4+a2c1+a5a+a6a+a2) ===
+ Test Files  6 passed (6)
+      Tests  182 passed (182)
+=== A2C-5 BOOKKEEPING DONE ===
