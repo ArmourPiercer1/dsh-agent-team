@@ -1,0 +1,19 @@
+=== D1 full root with per-file ===
+ Test Files  13 failed | 270 passed (283)
+      Tests  21 failed | 3306 passed (3327)
+=== D2 a2c2 + a6a focused pair ===
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  18 passed (18)
+   Start at  18:11:41
+   Duration  694ms (transform 784ms, setup 0ms, import 622ms, tests 5ms, environment 0ms)
+
+=== D3 a2c2 solo ===
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+=== D4 a6a solo ===
+ Test Files  1 failed (1)
+      Tests  no tests
+=== DIAG DONE ===

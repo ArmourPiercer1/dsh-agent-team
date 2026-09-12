@@ -33,6 +33,22 @@
  *                        `agent` back-reference with `session.header.cwd`
  *                        (the lazy FACT 3b cwd read basis) — behavior-inert
  *                        for the alpha.1 worlds (they never read them).
+ *                        A2C-2 (alpha.2, plan §7): the handle factory MINTS
+ *                        each agent's scope exactly as the real Agent's
+ *                        constructor does (`createScope(loopCtx, this)` —
+ *                        the public @deepseek-ai/dsh-scope seam), so the
+ *                        setup callback's agent ctx ALWAYS carries the
+ *                        scope tag (`scopeOf` !== undefined) — the
+ *                        Permission Coverage Gate's fail-closed surface
+ *                        read (`tools.schemas(scopeOf(agentCtx))`)
+ *                        requires it. The scope's backing plugin rides
+ *                        ctx.plugin unrecorded (scope plumbing, not a
+ *                        world mount — the `plugins` array still counts
+ *                        world mounts only, as every assertion assumes).
+ *                        The double's tools object carries the public
+ *                        `schemas(scope?)` surface seam (registered tools
+ *                        minus the accumulated restrict deny — see the
+ *                        seam's inline comment).
  *   sessionPersistence   ensureMaterialized(session)
  *   domain               repositories.memberInstances.list / overrides.list
  *                        + the REAL durable-consumption resolvers from
@@ -49,6 +65,12 @@ import { fileURLToPath } from 'node:url'
 // domain facade — the runner's .js -> .ts sibling hook applies).
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import { TEST_USE_REL } from '../../tests/paths.mjs'
+// A2C-2 (alpha.2, plan §7): the public scope-mint seam — makeHandle mints
+// each handle's agent scope exactly as the real Agent's constructor does
+// (the Permission Coverage Gate's fail-closed surface read requires the
+// scope tag on the setup ctx). Same package the glue already imports
+// (scopeOf) — a public root export, an established seam in this repo.
+import { createScope } from '@deepseek-ai/dsh-scope'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
 /** The worktree root (test -> runtime -> packages -> root). */
@@ -177,6 +199,15 @@ function makeFakeFs() {
  * (`alpha2-permission-guard-unavailable`), so every permission world's
  * ctx double must record the guard with a working disposer.
  *
+ * A2C-2 (alpha.2, plan §7): the double ALSO carries the `tools.schemas`
+ * seam (the public model-facing surface enumeration) — the Permission
+ * Coverage Gate's fail-closed surface read
+ * (`alpha2-permission-coverage-surface-unavailable`) requires it. The
+ * double's flat-layer semantics: one entry per tool registered through
+ * the double's own `tools.register`, minus the accumulated
+ * `tools.restrict({ deny })` union (see the seam's inline comment for
+ * the flat approximation of the real inherited-layer mask).
+ *
  * @param {Array<{name: string, order: number, text: string}>} [globalSections]
  *   the world's global prompt layer (one shared array per world).
  */
@@ -286,10 +317,37 @@ function makeAgentCtx(globalSections) {
       return undefined
     },
     plugin(pluginSpec, options) {
+      // A2C-2 (alpha.2, plan §7): the dsh-scope package's `createScope`
+      // mints a scope through this seam with its PRIVATE no-op FUNCTION
+      // backing plugin and reads the fiber's `.ctx` carrier (the double
+      // stands in for cordis's `fiber.ctx.extend` — prototype
+      // inheritance, mirroring cordis's extend()). A function-spec call
+      // is scope plumbing, NOT a world mount: it is NOT recorded in
+      // `plugins` (every assertion on that array targets world mounts —
+      // the mini-MCP fibers — e.g. H1-3's zero-mount pin and t4a's
+      // mcpMounts / mcpAllDisposed). The world's own plugin calls
+      // (non-function specs: the MCP client with its options) record
+      // exactly as before.
+      const isScopePlumbing = typeof pluginSpec === 'function'
       const fiber = {
         pluginSpec,
         options,
         disposed: false,
+        // A2C-2: the scope carrier — `createScope` does
+        // `fiber.ctx.extend({ [kScope]: key })`; the tag lands on the
+        // extended object and `scopeOf(agentCtx)` walks THIS prototype
+        // chain to read it (carrier -> this ctx -> ...).
+        ctx: Object.assign(Object.create(this), {
+          extend(props) {
+            const child = Object.create(this)
+            // Reflect.ownKeys (NOT Object.entries): cordis's extend carries
+            // symbol-keyed own properties too — the dsh-scope tag itself is
+            // a symbol ([kScope]), and dropping it would leave the scoped
+            // ctx untagged (scopeOf === undefined).
+            for (const k of Reflect.ownKeys(props)) child[k] = props[k]
+            return child
+          },
+        }),
         dispose() {
           this.disposed = true
         },
@@ -307,7 +365,7 @@ function makeAgentCtx(globalSections) {
           return Promise.resolve().then(() => (onrejected ? onrejected(undefined) : undefined))
         },
       }
-      plugins.push(fiber)
+      if (!isScopePlumbing) plugins.push(fiber)
       return fiber
     },
     tools: {
@@ -352,6 +410,47 @@ function makeAgentCtx(globalSections) {
         return () => {
           entry.active = false
         }
+      },
+      // A2C-2 (alpha.2, plan §7): the public model-facing surface seam
+      // (`tools.schemas(scope)`) — the Permission Coverage Gate
+      // (agent-bindings.mjs) enumerates the FINAL surface through it.
+      // Established double-extension pattern (alpha.1 added restrict,
+      // H1 added guard): the product grew a public seam, the double
+      // records it. Flat-double semantics: one entry per tool registered
+      // through THIS double's `tools.register` (the CURRENT set — the
+      // register disposer's unwind removes it, as on a real scope
+      // unwind) minus every name denied by any `tools.restrict({ deny })`
+      // recorded on THIS ctx (the public seam accumulates). The real
+      // seam's agent-scoped view is `inherited (restricted) + own`;
+      // the double has ONE flat layer, so the deny mask applies to the
+      // whole list — the flat approximation of the real inherited-layer
+      // mask. No repo world observes the divergence: the double worlds'
+      // preset double mount registers no base/preset tools (the double's
+      // own registrations are the scope-own team tools, which the real
+      // seam exempts from restrict, and no repo deny list names a team
+      // tool). The `scope` argument is accepted for signature fidelity
+      // (the double is one scope). Deterministic: sorted by name, stable
+      // `{ name, description }` shape (the gate consumes names; the real
+      // upstream returns ToolSchema[] deep clones — description mirrors
+      // the registered def's or '').
+      schemas() {
+        const denied = new Set()
+        for (const opts of toolRestrictions) {
+          for (const name of opts?.deny ?? []) denied.add(String(name))
+        }
+        return registeredTools
+          .filter(
+            (def) =>
+              def !== null &&
+              typeof def === 'object' &&
+              typeof def.name === 'string' &&
+              !denied.has(def.name),
+          )
+          .map((def) => ({
+            name: def.name,
+            description: typeof def.description === 'string' ? def.description : '',
+          }))
+          .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
       },
     },
   }
@@ -402,7 +501,10 @@ export function createAgentsDouble(options = {}) {
       : join(WORKTREE_ROOT, 'fixture-ws', sessionId)
     const agent = {
       session: { id: sessionId, header: { cwd: createCwd } },
-      ctx,
+      // A2C-2: assigned AFTER the scope mint below (the real Agent's
+      // constructor order: `this.scope = createScope(loopCtx, this);
+      // this.ctx = this.scope.ctx.extend({ agent: this })`).
+      ctx: undefined,
       followup(message) {
         followups.push({ sessionId, message })
       },
@@ -413,6 +515,19 @@ export function createAgentsDouble(options = {}) {
         cancels.push({ sessionId, args })
       },
     }
+    // A2C-2 (alpha.2, plan §7): mint the agent's SCOPE before the setup
+    // callback runs — the real Agent mints it in its constructor, so the
+    // setup callback's agent ctx ALWAYS carries the scope tag. The
+    // Permission Coverage Gate's surface read
+    // (`tools.schemas(scopeOf(agentCtx))`) is fail-closed on an untagged
+    // ctx (alpha2-permission-coverage-surface-unavailable), and a
+    // faithful double must not FATAL a world the real harness would never
+    // FATAL. The scope's backing plugin (the private no-op in dsh-scope)
+    // rides the ctx.plugin seam above — unrecorded (scope plumbing, not a
+    // world mount). `createScope(ctx, agent)` mirrors the real scope key
+    // (the Agent itself is the opaque routing key).
+    const scope = createScope(ctx, agent)
+    agent.ctx = scope.ctx
     ctx.agent = agent
     const handle = {
       agent,
@@ -423,7 +538,7 @@ export function createAgentsDouble(options = {}) {
       },
     }
     handles.set(sessionId, handle)
-    if (setup !== undefined) await setup(ctx)
+    if (setup !== undefined) await setup(agent.ctx)
     return handle
   }
 

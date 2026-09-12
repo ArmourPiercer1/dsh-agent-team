@@ -1,0 +1,20 @@
+# A2C-2 RE-GATE (main-agent merge-block repair) — full root vitest
+# command: pnpm test (full root, vitest) on task/a2c-2-permission-coverage-gate (worktree .worktrees/a2c-2)
+# date: 2026-09-12
+
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed) 26ms
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (15 tests | 1 failed) 36ms
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts (20 tests | 1 failed) 40ms
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 10ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 14ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 7ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests | 1 failed) 8ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 19ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ Test Files  11 failed | 272 passed (283)
+      Tests  21 failed | 3366 passed (3387)
