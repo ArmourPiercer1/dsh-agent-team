@@ -1,0 +1,36 @@
+=== G1 focused vitest ===
+      Tests  21 failed | 3320 passed (3341)
+   Start at  15:59:32
+   Duration  6.39s (transform 37.11s, setup 0ms, import 114.88s, tests 2.78s, environment 26ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+=== G2 plain-node runtime chain ===
+PASS packages/runtime/test/a2-canonical-operation.test.ts (31 tests)
+PASS packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests)
+PASS packages/runtime/test/a3-permission-resolver.test.ts (28 tests)
+PASS packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests)
+PASS packages/runtime/test/a5a-pre-execute.test.ts (50 tests)
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+PASS packages/runtime/test/bp1-freeze-barrier.test.ts (3 tests)
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-bp1rednofit" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+PASS packages/runtime/test/bp1-red-probe.test.ts (6 tests)
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+     ✗ D2 (S6 host handler): the typed failure vocabulary (A3 Q2) › every other glue failure → TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED (the message preserved for diagnosis)
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+=== G3 typecheck ===
+$ tsc -p tsconfig.json
+=== G4 build ===
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+=== G5 verify-zero-core ===
+INFO third-party patched dependency "node-pty" at /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/pnpm-workspace.yaml [patchedDependencies] (upstream's own dependency patching; not a Team rewrite)
+INFO third-party patch file /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/patches/node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+RESULT: PASS verify-zero-core (0 findings)
+=== REGATE DONE ===

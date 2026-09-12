@@ -284,8 +284,15 @@ interface SpyControlService {
   readonly requests: SpyRequestArgs[]
   readonly waits: Array<{ rootSessionId: string; requestId: string }>
   readonly guards: SpyGuardScope[]
+  readonly checks: Array<{ capabilityDomain?: string; toolName?: string }>
   nextDecision: { decision: 'allow' | 'deny'; reason?: string }
   nextGuard: { allowed: boolean; reason?: string }
+  /** A2C-4: the shared read-only external hard check the static-allow
+   *  path runs before the authorized-execution mark. The default is
+   *  ALLOWED — the live-bridge host's external policy is the absent-cell
+   *  "no host restriction" facts, so the production service would return
+   *  `{ allowed: true }` for every operation in this world. */
+  nextCheck: { allowed: boolean; reason?: string }
   requestControl(args: SpyRequestArgs): Promise<{ requestId: string; kind: string }>
   awaitControlDecision(input: {
     rootSessionId: string
@@ -296,6 +303,10 @@ interface SpyControlService {
     reason?: string
     requestId: string
     decisionSequence: number
+  }>
+  checkExternalOperation(input: { capabilityDomain?: string; toolName?: string }): Promise<{
+    allowed: boolean
+    reason?: string
   }>
   /** The durable request id the spy created for one correlation (the
    *  requestControl RETURN value — not part of the request args). */
@@ -308,8 +319,10 @@ function makeSpyControlService(): SpyControlService {
     requests: [],
     waits: [],
     guards: [],
+    checks: [],
     nextDecision: { decision: 'allow' },
     nextGuard: { allowed: true },
+    nextCheck: { allowed: true },
     async requestControl(args) {
       service.requests.push(args)
       seq += 1
@@ -324,6 +337,13 @@ function makeSpyControlService(): SpyControlService {
     async guardOperation(scope) {
       service.guards.push({ ...scope })
       return { allowed: service.nextGuard.allowed, requestId: `a6a-req-${seq}`, decisionSequence: 1 }
+    },
+    async checkExternalOperation(input) {
+      service.checks.push({ ...input })
+      return {
+        allowed: service.nextCheck.allowed,
+        ...(service.nextCheck.reason !== undefined ? { reason: service.nextCheck.reason } : {}),
+      }
     },
     requestIdFor(correlation) {
       return requestIdsByCorrelation.get(correlation)

@@ -1,0 +1,257 @@
+{
+  "tool": "verify-zero-core",
+  "host": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "plugins": [
+    "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4"
+  ],
+  "hostPackages": 274,
+  "findings": [
+    {
+      "code": "private-subpath",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/tests/characterization/probes/storage-fork-descendants/plugins/negative-fixtures/private-import-host.js:13",
+      "detail": "import \"@deepseek-ai/dsh-subagent/lib/continuation.js\": subpath \"/lib/continuation.js\" not in exports surface of host package \"@deepseek-ai/dsh-subagent\" (public: ., ./internal, ./invariant, ./client, ./typert, ./remote, ./src/*, ./package.json)"
+    },
+    {
+      "code": "private-subpath",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/tests/characterization/probes/smoke/plugins/negative-fixtures/bad-host.js:22",
+      "detail": "import \"@deepseek-ai/dsh-util-crypto/internal/random\": subpath \"/internal/random\" not in exports surface of host package \"@deepseek-ai/dsh-util-crypto\" (public: ., ./src/*, ./package.json)"
+    },
+    {
+      "code": "private-subpath",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/plugin-bundle-form/pbf-scope-probe.mjs:48",
+      "detail": "import \"@deepseek-ai/dsh-session/definitely-not-a-real-subpath\": subpath \"/definitely-not-a-real-subpath\" not in exports surface of host package \"@deepseek-ai/dsh-session\" (public: ., ./invariant, ./types, ./chunk-rows, ./src/*, ./package.json, ./surface)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9-master-closure/s8-boot-r125.mjs:64",
+      "detail": "import \"../../../../../../.worktrees/RC1/tests/characterization/lib/instance.mjs\" escapes plugin root /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4 (resolves to /home/user/dsh-plugins/dsh-agent-team/.worktrees/RC1/tests/characterization/lib/instance.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9-master-closure/s8-boot-r125.mjs:70",
+      "detail": "import \"../../../../../../.worktrees/RC1/tests/characterization/lib/util.mjs\" escapes plugin root /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4 (resolves to /home/user/dsh-plugins/dsh-agent-team/.worktrees/RC1/tests/characterization/lib/util.mjs)"
+    },
+    {
+      "code": "private-relative-escape",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9-master-closure/s8-boot-r125.mjs:71",
+      "detail": "import \"../../../../../../.worktrees/RC1/packages/tools/harness/mock-deepseek.mjs\" escapes plugin root /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4 (resolves to /home/user/dsh-plugins/dsh-agent-team/.worktrees/RC1/packages/tools/harness/mock-deepseek.mjs)"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/review-scratch/TeamMarker.tsx:24",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/review-scratch/TeamMarker.tsx:25",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/review-scratch/team-marker-definition.ts:23",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/review-scratch/team-marker-definition.ts:28",
+      "detail": "import \"@deepseek-ai/dsh-team\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/review-scratch/team-marker-jump.ts:25",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/client-bundle.client.spec.ts:17",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/client-bundle.client.spec.ts:53",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-dock-model.client.spec.ts:9",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-dock.client.spec.tsx:11",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-feed-model.client.spec.ts:15",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-feed.client.spec.tsx:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-marker-definition.client.spec.ts:12",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-marker-definition.client.spec.ts:16",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-marker-definition.client.spec.ts:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-marker-definition.client.spec.ts:19",
+      "detail": "import \"@deepseek-ai/dsh-team\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-marker.client.spec.tsx:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-members-model.client.spec.ts:9",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-members.client.spec.tsx:13",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-plugin.client.spec.tsx:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-tasks.client.spec.tsx:12",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-timeline-model.client.spec.ts:9",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-timeline.client.spec.tsx:12",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-view.client.spec.tsx:14",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/tests/team-view.client.spec.tsx:15",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamDock.tsx:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamDock.tsx:19",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamFeed.tsx:30",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamMarker.tsx:24",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamMarker.tsx:25",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamMembers.tsx:17",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamTasks.tsx:12",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamTimeline.tsx:16",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamView.tsx:17",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/TeamView.tsx:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/index.ts:18",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/index.ts:21",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-dock-model.ts:10",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-feed-model.ts:31",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-marker-definition.ts:23",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-marker-definition.ts:28",
+      "detail": "import \"@deepseek-ai/dsh-team\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-marker-jump.ts:25",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-members-model.ts:17",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    },
+    {
+      "code": "unresolved-upstream-scope",
+      "where": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4/dev/agent-workflow/evidence/P9/legacy-506191b/packages/client/ui-team/src/client/team-timeline-model.ts:12",
+      "detail": "import \"@deepseek-ai/dsh-client-runtime/client\" names no host-tree package"
+    }
+  ],
+  "infoCount": 2,
+  "pass": false
+}
