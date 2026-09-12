@@ -9,8 +9,10 @@
  * - different file → different key;
  * - write same file ± content → same / different fingerprint;
  * - edit old/new change → fingerprint changes (also replace_all);
- * - read offset/limit change → fingerprint changes (also the
- *   effective-defaults decision: omitted == explicit 1/2000);
+ * - read offset/limit change → fingerprint changes (A2C-5: the
+ *   omitted `limit` is a DISTINCT identity from an explicit `limit: 2000`
+ *   — the conservative identity of plan §8.2; the omitted `offset` still
+ *   defaults to 1, the pinned-upstream fixed default);
  * - display changes do NOT affect authority (same key, different
  *   display → same fingerprint);
  * - malformed path → fail closed (typed error, closed reason, never a
@@ -179,9 +181,11 @@ const C = {
   readDisplayB: await op('read', { file_path: './a/b' }, fakeResolver({ displaySuffix: ':other-backend' })),
   // Fingerprint determinism (plan §7.6 case 10): the SAME input twice.
   readAgain: await op('read', { file_path: './a/b' }),
-  // read effective window (the documented effective-defaults decision).
+  // read window identity (A2C-5, plan §8.2: omitted limit → null
+  // identity; omitted offset → the tool's fixed default 1).
   readDefaults: await op('read', { file_path: './a/b' }),
   readExplicitDefaults: await op('read', { file_path: './a/b', offset: 1, limit: 2000 }),
+  readExplicitOffset1: await op('read', { file_path: './a/b', offset: 1 }),
   readOffset2: await op('read', { file_path: './a/b', offset: 2 }),
   readLimit100: await op('read', { file_path: './a/b', limit: 100 }),
   // read_image (no window fields at all).
@@ -475,10 +479,17 @@ describe('a2 fingerprint (plan §7.3/§7.4)', () => {
     expect(FINGERPRINT_SHAPE_OK).toBe(true)
   })
 
-  it('read: offset/limit change → fingerprint change; omitted == explicit 1/2000 (documented decision)', () => {
+  it('read: offset/limit change → fingerprint change; omitted limit is a DISTINCT identity from explicit 2000 (A2C-5, plan §8.2)', () => {
     expect(READ_OFFSET_DEFAULT).toBe(1)
     expect(READ_LIMIT_DEFAULT).toBe(2000)
-    expect(C.readDefaults.fingerprint).toBe(C.readExplicitDefaults.fingerprint)
+    // A2C-5: the omitted `limit` canonicalizes to the null identity —
+    // it is NO LONGER pseudo-equivalent to an explicit `limit: 2000`
+    // (the pre-A2C-5 effective-defaults residual, removed by plan §8).
+    expect(C.readDefaults.fingerprint).not.toBe(C.readExplicitDefaults.fingerprint)
+    // The omitted `offset` still defaults to 1 (the pinned-upstream
+    // fixed one-based default — the recon-confirmed unchanged semantic):
+    // omitted offset + omitted limit ≡ explicit offset 1 + omitted limit.
+    expect(C.readExplicitOffset1.fingerprint).toBe(C.readDefaults.fingerprint)
     expect(C.readOffset2.fingerprint).not.toBe(C.readDefaults.fingerprint)
     expect(C.readLimit100.fingerprint).not.toBe(C.readDefaults.fingerprint)
   })

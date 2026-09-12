@@ -1,0 +1,1046 @@
+=== A2C-5 GATE — root vitest full suite (baseline comparison) ===
+date: 2026-09-12T17:52:39Z
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5
+
+ ❯ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests | 1 failed) 7ms
+     × coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration) 5ms
+     ✓ exclusion contract: exactly the two self-referential files are excluded, in sorted order 0ms
+     ✓ zero denylist violations outside the frozen quarantine set (no files skipped) 0ms
+     ✓ zero legacy payload symbols anywhere in the tree 0ms
+     ✓ zero legacy declaration-merging patterns anywhere in the tree 0ms
+     ✓ quarantine hits pinned exactly: fifteen event-string occurrences, the recorded adjudication 0ms
+     ✓ positive control: a legacy declaration-merge sample is detected (events + payload symbols + one file-level merge) 0ms
+     ✓ positive control: an emitter sample is detected (event strings + payload symbols, no merge) 0ms
+     ✓ negative control: near-miss tokens produce zero hits (exact/word precision) 0ms
+     ✓ suite citation: all eight required P4 evidence suites are present in the scanned tree 0ms
+ ✓ packages/remote/test/tcm-m1-remote-v2.test.ts (26 tests) 6ms
+ ✓ packages/client/test/team-ledger-store.test.ts (24 tests) 6ms
+ ✓ packages/remote/test/p8t4-sync.test.ts (11 tests) 4ms
+ ✓ packages/client/test/client-plugin-mount.test.ts (33 tests) 6ms
+ ✓ packages/remote/test/f9-remote-v4.test.ts (31 tests) 6ms
+ ✓ packages/testkit/test/t6-4-policy-precedence.test.ts (11 tests) 49ms
+ ✓ packages/testkit/test/p4t5-corrupt-version.test.ts (10 tests) 7ms
+ ✓ packages/storage/test/p4t4-one-committed-invariant.test.ts (21 tests) 11ms
+ ✓ packages/testkit/test/p4t5-retry-restart.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/p5t6-fresh-member.test.ts (24 tests) 8ms
+ ✓ packages/runtime/test/p7t2-escalation.test.ts (22 tests) 5ms
+ ✓ packages/domain/test/t4-policy-negative.test.ts (34 tests) 55ms
+ ✓ packages/runtime/test/f9-s6-resolve-control.test.ts (14 tests) 5ms
+ ✓ packages/runtime/test/a3-permission-resolver.test.ts (28 tests) 11ms
+ ✓ packages/runtime/test/p6t1-explicit.test.ts (26 tests) 9ms
+ ✓ packages/runtime/test/a2-canonical-operation.test.ts (31 tests) 12ms
+ ✓ packages/runtime/test/p6t2-actions.test.ts (30 tests) 8ms
+ ✓ packages/runtime/test/a2c5-read-fingerprint.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/tcm-m3-root-initial-work.test.ts (18 tests) 10ms
+ ✓ packages/runtime/test/a6a-production-wiring.test.ts (52 tests) 20ms
+ ✓ packages/runtime/test/h1a-pre-execute-endcap.test.ts (49 tests) 14ms
+ ✓ packages/runtime/test/p6t4-negatives.test.ts (11 tests) 18ms
+ ✓ packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests) 8ms
+ ✓ packages/runtime/test/issue1-async-delegation.test.ts (18 tests) 9ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 26ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 3ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 1ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 1ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 15ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+ ✓ packages/runtime/test/f3a-lock-scope.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/p8s2-leader-contract.test.ts (12 tests) 9ms
+ ✓ packages/runtime/test/p6t3-send-delivery.test.ts (9 tests) 22ms
+ ✓ packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests) 14ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts (12 tests) 13ms
+ ✓ packages/runtime/test/tcm-g1-s6-integration.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p8s7r1-initial-work.test.ts (9 tests) 7ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ✓ packages/runtime/test/h4-rule-identity.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/a5a-pre-execute.test.ts (50 tests) 10ms
+ ✓ packages/client/test/ledger-adapter.test.ts (27 tests) 9ms
+ ✓ packages/client/test/team-projection-store.test.ts (14 tests) 5ms
+ ✓ packages/domain/test/t4-policy-explain.test.ts (15 tests) 13ms
+ ✓ packages/domain/test/a1-permission-policy.test.ts (43 tests) 85ms
+ ✓ packages/runtime/test/issue2-capability-permission-precedence.test.ts (12 tests) 5ms
+ ✓ packages/runtime/test/bp1-blueprint-authority.test.ts (29 tests) 57ms
+ ✓ packages/runtime/test/p5t6-cold-member.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/d1-team-ownership-index.test.ts (16 tests) 7ms
+ ✓ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/p8s7r2-disposed-history.test.ts (10 tests) 11ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts (20 tests | 1 failed) 54ms
+     ✓ imports the valid fixture directory into a complete vNext TeamBlueprint 18ms
+     ✓ re-importing identical entries yields the same contentHash (deterministic snapshot) 7ms
+     ✓ duplicate legacy id: last file wins, with a warning 1ms
+     ✓ multiple leaders: the last discovered leader survives, with a warning 1ms
+     ✓ rejects an invalid legacy role with MALFORMED_DTO (invalid-role) 1ms
+     ✓ rejects a directory with no leader role (no-leader) 0ms
+     ✓ rejects a file without a frontmatter delimiter (frontmatter-missing) 0ms
+     ✓ rejects unclosed frontmatter (frontmatter-unclosed) 0ms
+     ✓ rejects non-mapping frontmatter (frontmatter-not-mapping) 0ms
+     ✓ rejects invalid YAML (yaml-invalid) 1ms
+     ✓ rejects an unsupported schemaVersion (schema-version) 0ms
+     ✓ rejects an empty persona body (empty-persona, vNext hardening) 0ms
+     ✓ rejects a legacy id that is not a vNext template slug (INVALID_TEMPLATE_ID) 1ms
+     ✓ rejects an empty entry list (no-entries) 0ms
+     ✓ re-importing changed entries yields a new contentHash; the first snapshot is unchanged 4ms
+     ✓ fs-level: mutating the directory after import leaves the snapshot intact 3ms
+     × adapter sources carry no runtime authority vocabulary (source scan) 9ms
+     ✓ the shipped core exports only the one-time import function (surface scan) 1ms
+     ✓ importing never observes or mutates existing team state 2ms
+     ✓ the produced blueprint is plain, deeply-frozen data (no host references) 2ms
+stderr | packages/runtime/test/p8s6-projection.test.ts > p8s6-projection teardown > the C2 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-projection.test.ts (14 tests) 12ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/domain/test/t4-policy-matrix.test.ts (14 tests) 67ms
+ ✓ packages/testkit/test/t6-9-negative-matrix.test.ts (12 tests) 79ms
+stderr | packages/runtime/test/p8s6-principal.test.ts > p8s6-principal teardown > the C3 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 9ms
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts > p8s7r2-policy-state-durable teardown > the R2-1 worlds are disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p6t1-recovery.test.ts (15 tests) 7ms
+ ✓ packages/runtime/test/p8s7r2-policy-state-durable.test.ts (8 tests) 6ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/client/test/d3-open-ordinary-mode.test.ts (11 tests) 6ms
+ ✓ packages/runtime/test/p6t1-checks.test.ts (27 tests) 27ms
+ ✓ packages/runtime/test/p7t5-failure-before-root-create.test.ts (11 tests) 8ms
+ ✓ packages/runtime/test/t14h-probe-merge.test.ts (10 tests) 9ms
+ ✓ packages/remote/test/d1-remote-v3.test.ts (24 tests) 11ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:329:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:336:97)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:879:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1235:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/p8s5a-production-assembly.test.ts:697:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/p8s5a-production-assembly.test.ts:685:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:886:13)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1235:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/p8s5a-production-assembly.test.ts:724:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/p8s5a-production-assembly.test.ts:685:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts > R2-3 (P8-S7-R2): BQ-11 the model state view > R23.16: every world root closed cleanly and the scratch dirs are destroyed (reversible)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed) 58ms
+     × 1. Legacy fixture parses without capabilities field 15ms
+     × 2. Leader with full capabilities parses and validates 4ms
+     × 3. Members can have different capabilities 3ms
+     ✓ 4. Malformed allow entry rejects (missing items) 2ms
+     ✓ 4b. Malformed allow entry rejects (items not string[]) 7ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 3ms
+     ✓ 6a. Unknown capability sub-field rejects 2ms
+     ✓ 6b. Unknown template field rejects 2ms
+     × 7. Changing capability fields changes the hash 3ms
+     × 8. Static source returns selective mode for Leader with capabilities 3ms
+     × 9. Static source returns selective mode for MemberTemplate with capabilities 3ms
+     × 10. Static source returns legacy mode when capabilities absent 2ms
+     × 11. Selective source maps to TemplatePolicy values correctly 2ms
+     × 11b. Selective source maps deny entries to values correctly 2ms
+     ✓ 11c. Legacy source returns undefined values 0ms
+     ✓ 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3) 1ms
+     ✓ 11e. Selective source with mixed allow([])/deny preserves all cells (P1) 1ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts > p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-08, projection v2) > the R2-2 worlds are disposed (close + stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-model-state.test.ts (16 tests) 17ms
+ ✓ packages/runtime/test/p8s7r2-effective-config.test.ts (19 tests) 9ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8s5a-production-assembly.test.ts (7 tests) 7ms
+ ✓ packages/client/test/team-remote-client.test.ts (15 tests) 8ms
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plugin context (the web profile provides it through the workspace row — the team row hard-injects it)
+    at assertWorkspaceRegistryLike (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/workspace-attach.ts:65:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:903:7)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1235:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/tcm-m2-workspace-attach.test.ts:421:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+ ✓ packages/runtime/test/t12b6-handoff-agent-start.test.ts (7 tests) 7ms
+ ✓ packages/legacy/test/p7t7-legacy-read.test.ts (28 tests) 8ms
+ ✓ packages/runtime/test/tcm-d4-root-context.test.ts (7 tests) 4ms
+ ✓ packages/remote/test/p8t3-round-trip.test.ts (14 tests) 6ms
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 10ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 1ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 1ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 0ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 7ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 0ms
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolveByPath and list to be functions
+    at assertWorkspaceRegistryLike (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/workspace-attach.ts:75:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:903:7)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1235:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/tcm-m2-workspace-attach.test.ts:442:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (27 tests) 7ms
+ ✓ packages/runtime/test/p7t2-policy-state.test.ts (11 tests) 6ms
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/client/test/team-governance.test.ts (43 tests) 14ms
+ ✓ packages/runtime/test/p5t4-intersection.test.ts (15 tests) 17ms
+ ✓ packages/runtime/test/tcm-m2-workspace-attach.test.ts (14 tests) 5ms
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts > p8s6-remote-commands teardown > the C4 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+stderr | packages/runtime/test/p8s6-pagination.test.ts > p8s6-pagination teardown > the C6 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p7t2-future-boundary.test.ts (16 tests) 7ms
+ ✓ packages/runtime/test/p8s6-remote-commands.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/p8s6-pagination.test.ts (9 tests) 9ms
+ ✓ packages/runtime/test/p8s7r4-handoff-wiring.test.ts (8 tests) 5ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: schema_meta stamp for store 'schema_meta' is missing (partial create or corruption)
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/storage/schema/errors.ts:98:10)
+    at openTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/storage/repositories/team-domain.ts:219:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:967:14)
+
+ ✓ packages/runtime/test/g8s1-generation-stamp.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/f3c-messaging-sibling.test.ts (2 tests) 6ms
+ ✓ packages/runtime/test/p6t1-delegate.test.ts (15 tests) 8ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-t12b2foreign" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1226:21)
+
+ ✓ packages/client/test/projection-adapter.test.ts (16 tests) 7ms
+ ✓ packages/runtime/test/p7t1-ack-fingerprint.test.ts (16 tests) 7ms
+ ✓ packages/runtime/test/t12b2-resume-separation.test.ts (5 tests) 7ms
+ ✓ packages/runtime/test/p5t6-evict-readmit.test.ts (7 tests) 6ms
+ ✓ packages/storage/test/p4t2-conflicts.test.ts (25 tests) 6ms
+ ✓ packages/remote/test/p8t4-engine.test.ts (23 tests) 11ms
+ ✓ packages/runtime/test/issue2-real-preset-restriction.test.ts (13 tests) 6ms
+ ✓ packages/runtime/test/p8s4b-override-admission.test.ts (28 tests) 8ms
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 42ms
+ ✓ packages/tools/test/issue1-collect-tools.test.ts (10 tests) 6ms
+ ✓ packages/tools/test/p6t6-guard.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/bp1-dual-team-gate.test.ts (8 tests) 6ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 16ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 7ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 1ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 2ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 1ms
+ ✓ packages/testkit/test/p4t5-crash-matrix.test.ts (13 tests) 13ms
+ ✓ packages/runtime/test/p8s4a-entrypoints.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p7t4-root-fork.test.ts (17 tests) 6ms
+ ✓ packages/client/test/d2-open-team-mode.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/p6t5-progress.test.ts (13 tests) 7ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 10ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 3ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 4ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 0ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ✓ packages/runtime/test/p5t5-fresh-root.test.ts (9 tests) 7ms
+ ✓ packages/runtime/test/p7t1-probe-generation.test.ts (19 tests) 9ms
+ ✓ packages/runtime/test/d1-member-base-tools.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/f9-control-exactly-once.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/d1-s6-remote-v3.test.ts (14 tests) 5ms
+ ✓ packages/storage/test/p4t4-orphan-detect.test.ts (21 tests) 8ms
+ ✓ packages/testkit/test/t6-5-compat-complete-true.test.ts (6 tests) 15ms
+ ✓ packages/storage/test/p4t2-crash-recovery.test.ts (19 tests) 9ms
+ ✓ packages/testkit/test/t6-10-composition-pipeline.test.ts (5 tests) 12ms
+ ✓ packages/runtime/test/p8s7r4-fork-describe.test.ts (10 tests) 6ms
+ ✓ packages/domain/test/t3-member-n-instances.test.ts (14 tests) 19ms
+ ✓ packages/runtime/test/p7t2-creation-fields.test.ts (9 tests) 6ms
+ ✓ packages/legacy/test/p7t7-integrated-fork-handoff.test.ts (15 tests) 8ms
+ ✓ packages/domain/test/t3-member-context-policy.test.ts (17 tests) 11ms
+ ✓ packages/runtime/test/p7t1-inflight-drift.test.ts (14 tests) 7ms
+ ✓ packages/client/test/team-intent-model.test.ts (22 tests) 10ms
+ ✓ packages/domain/test/t3-lifecycle-transitions.test.ts (14 tests) 16ms
+ ✓ packages/runtime/test/d2-s6-ensure-root-live.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/p7t2-override-precedence.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/p6t4-external-policy.test.ts (6 tests) 5ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 100ms — the connection service appeared after the mount step)
+
+ ✓ packages/runtime/test/p7t3-archive-running.test.ts (7 tests) 6ms
+ ✓ packages/storage/test/p4t3-reconciler.test.ts (17 tests) 8ms
+ ✓ packages/runtime/test/p5t5-cold-root.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests) 14ms
+stderr | packages/runtime/test/p8s6-push-reconnect.test.ts > p8s6-push-reconnect teardown > the C5 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/h5-bash-effects.test.ts (25 tests) 10ms
+ ✓ packages/runtime/test/p8s6-push-reconnect.test.ts (5 tests) 7ms
+ ✓ packages/runtime/test/p6t4-stale.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/p7t5-snapshot-once.test.ts (7 tests) 5ms
+ ✓ packages/client/test/team-create-flow.test.ts (10 tests) 7ms
+ ✓ packages/runtime/test/p5t1-double-bind.test.ts (8 tests) 12ms
+ ✓ packages/storage/test/p4t4-per-stage-retry.test.ts (20 tests) 13ms
+ ✓ packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts (4 tests) 5ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+ ✓ packages/runtime/test/p5t1-fresh-cold-paths.test.ts (8 tests) 10ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 9 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/storage/repositories/team-domain.ts:180:13)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:964:14)
+
+ ✓ packages/remote/test/p8t3-version.test.ts (16 tests) 5ms
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ✓ packages/client/test/d1-team-remote-v3.test.ts (8 tests) 5ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear within 200ms (headless host, or the web connection service was not provided in time)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1226:21)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/storage/test/bp1-blueprint-registry.test.ts (12 tests) 7ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1212:11)
+
+ ✓ packages/runtime/test/p7t1-cold-resume.test.ts (12 tests) 7ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:780:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1217:27)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 9 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/storage/repositories/team-domain.ts:180:13)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:964:14)
+
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/rmr-create-or-open-boot.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/t12m4-remote-mount.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p5t3-future-boundary.test.ts (9 tests) 12ms
+ ✓ packages/runtime/test/t12b1-real-create.test.ts (4 tests) 6ms
+ ✓ packages/storage/test/p8s3-member-cas.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p6t5-authority.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/p8s7r1-create-params.test.ts (8 tests) 9ms
+ ✓ packages/runtime/test/p6t2-authority.test.ts (10 tests) 7ms
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-bp1rednofit" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1226:21)
+
+ ✓ packages/runtime/test/p6t5-intervals.test.ts (9 tests) 7ms
+ ✓ packages/domain/test/t3-member-workspace.test.ts (14 tests) 11ms
+ ✓ packages/runtime/test/bp1-red-probe.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/p5t1-overlay-slots.test.ts (8 tests) 12ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.handle to be a function
+
+ ✓ packages/domain/test/t3-member-lifecycle.test.ts (7 tests) 10ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p6t2-addressing.test.ts (13 tests) 7ms
+ ✓ packages/runtime/test/p7t4-repeat-reconcile.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/p6t5-projection.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/p7t3-dispose-race.test.ts (6 tests) 6ms
+ ✓ packages/tools/test/t2-tool-selector-deny.test.ts (19 tests) 5ms
+ ✓ packages/runtime/test/p8s7r4-bc22-idempotency.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/p7t2-provenance.test.ts (12 tests) 7ms
+ ✓ packages/contracts/test/leader-instance-record.test.ts (13 tests) 6ms
+ ✓ packages/contracts/test/p8t1-projection-negative.test.ts (23 tests) 12ms
+ ✓ packages/storage/test/g8s1-stamp-advance.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/p7t3-restore-no-agent.test.ts (6 tests) 7ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts (8 tests) 5ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/tcm-m1-s6-v2-routing.test.ts (5 tests) 5ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative integer (milliseconds) when present
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:329:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:408:5)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:879:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1235:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/rmr-remote-mount-race.test.ts:328:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+ ✓ packages/runtime/test/rmr-remote-mount-race.test.ts (7 tests) 6ms
+ ✓ packages/client/test/team-command-flow.test.ts (6 tests) 5ms
+ ✓ packages/client/test/team-handoff.test.ts (23 tests) 9ms
+ ✓ packages/storage/test/p4t4-adapter.test.ts (12 tests) 8ms
+ ✓ packages/runtime/test/p8s4a-chain.test.ts (11 tests) 4ms
+ ✓ packages/testkit/test/t6-7-fresh-per-delegation.test.ts (6 tests) 20ms
+ ✓ packages/storage/test/p4t3-binding-service.test.ts (17 tests) 7ms
+ ✓ packages/remote/test/p8t3-admission.test.ts (6 tests) 6ms
+ ✓ packages/domain/test/bp1-blueprint-inspector.test.ts (19 tests) 31ms
+ ✓ packages/contracts/test/negative.test.ts (21 tests) 12ms
+ ✓ packages/testkit/test/t6-8-serialization-roundtrip.test.ts (9 tests) 21ms
+ ✓ packages/client/test/client-architecture-negatives.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p6t4-allow-once.test.ts (4 tests) 5ms
+ ✓ packages/runtime/test/p7t4-crash-sidecar.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p6t2-quota.test.ts (6 tests) 3ms
+ ✓ packages/runtime/test/tcm-m3-root-work-glue.test.ts (9 tests) 6ms
+ ✓ packages/client/test/team-remote-categories.test.ts (5 tests) 5ms
+ ✓ packages/client/test/f9-remote-client-v4.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/t3-skills-mcp-adapter.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p8s7r4-handoff-surface.test.ts (7 tests) 5ms
+ ✓ packages/storage/test/p4-06-journal.test.ts (13 tests) 6ms
+ ✓ packages/runtime/test/p5t1-binder-core.test.ts (15 tests) 13ms
+ ✓ packages/runtime/test/p7t3-lifecycle-fact.test.ts (7 tests) 6ms
+ ✓ packages/contracts/test/serialization.test.ts (16 tests) 13ms
+ ✓ packages/storage/test/p4-01-schema-meta.test.ts (11 tests) 9ms
+ ✓ packages/runtime/test/p6t5-restart.test.ts (6 tests) 7ms
+ ✓ packages/runtime/test/p5t5-admission.test.ts (5 tests) 6ms
+ ✓ packages/tools/test/p6t6-bypass-scan.test.ts (10 tests) 9ms
+ ✓ packages/runtime/test/t12b4-principal-context.test.ts (8 tests) 5ms
+ ✓ packages/legacy/test/p7t7-integrated-override-admission.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/p8s4b-cell-provenance.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/p8s7r2-residency-resuming.test.ts (7 tests) 7ms
+ ✓ packages/testkit/test/t6-3-lifecycle-matrix.test.ts (8 tests) 13ms
+ ✓ packages/client/test/team-legacy.test.ts (12 tests) 8ms
+ ✓ packages/tools/test/issue2-builtin-deny-focused.test.ts (8 tests) 5ms
+ ✓ packages/legacy/test/p7t7-mutation-reject.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p5t3-restart.test.ts (3 tests) 7ms
+ ✓ packages/client/test/team-session-resolution.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p8t2-cold.test.ts (7 tests) 5ms
+ ✓ packages/client/test/team-member-commands.test.ts (11 tests) 8ms
+ ✓ packages/runtime/test/p8s4b-model-consumption.test.ts (11 tests) 6ms
+ ✓ packages/runtime/test/d5-instance-contract.test.ts (9 tests) 25ms
+stderr | packages/runtime/test/bp1-freeze-barrier.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8t2-negative.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/p8t2-overlay.test.ts (7 tests) 6ms
+ ✓ packages/legacy/test/p7t7-integrated-lifecycle-restore.test.ts (9 tests) 6ms
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 1 failed) 9ms
+     ✓ two activated results with distinct instance ids and child Sessions 2ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 4ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+stderr | packages/runtime/test/bp1-freeze-barrier.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/domain/test/t3-lifecycle-property.test.ts (4 tests) 331ms
+ ✓ packages/runtime/test/bp1-freeze-barrier.test.ts (3 tests) 5ms
+ ✓ packages/storage/test/p4t3-fork-reconciliation.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/p7t4-ordinary-fork.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (11 tests) 5ms
+ ✓ packages/runtime/test/p7t4-member-fork.test.ts (6 tests) 4ms
+ ✓ packages/testkit/test/bp1h-blueprint-authoring.test.ts (8 tests) 28ms
+ ✓ packages/runtime/test/p6t4-restart.test.ts (3 tests) 4ms
+ ✓ packages/domain/test/t2-blueprint-parse.test.ts (13 tests) 35ms
+ ✓ packages/legacy/test/p7t7-integrated-drift-ack.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/p5t2-persona-complete-fatal.test.ts (3 tests) 11ms
+ ✓ packages/storage/test/p4t2-journal.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/p5t2-persona-compatible.test.ts (3 tests) 11ms
+ ✓ packages/runtime/test/p5t2-persona-cold-bind.test.ts (3 tests) 6ms
+ ✓ packages/storage/test/p4-05-governance.test.ts (11 tests) 8ms
+ ✓ packages/contracts/test/ids.test.ts (18 tests) 9ms
+ ✓ packages/runtime/test/p7t3-descendant-drain.test.ts (5 tests) 6ms
+ ✓ packages/testkit/test/t6-6-snapshot-immutability.test.ts (8 tests) 39ms
+ ✓ packages/runtime/test/p7t5-target-inspect.test.ts (6 tests) 4ms
+ ✓ packages/client/test/f9u-control-surface-model.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p6t4-deny.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/p8t2-fifty.test.ts (6 tests) 5ms
+ ✓ packages/storage/test/rmr-create-or-open.test.ts (5 tests) 3ms
+ ✓ packages/contracts/test/p8t1-projection-serialization.test.ts (11 tests) 18ms
+ ✓ packages/runtime/test/p7t5-source-mutate.test.ts (4 tests) 4ms
+ ✓ packages/remote/test/p8t3-invalid-ids.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p7t5-no-creation-scan.test.ts (5 tests) 5ms
+ ✓ packages/client/test/team-members-model.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/p5t4-cold-resume.test.ts (1 test) 7ms
+ ✓ packages/remote/test/p8t4-negative.test.ts (7 tests) 28ms
+ ✓ packages/runtime/test/issue1-serial-blocking.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/p8t2-terminal.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/p5t1-ordinary-noop.test.ts (5 tests) 16ms
+ ✓ packages/testkit/test/t6-2-template-n-instances.test.ts (8 tests) 75ms
+ ✓ packages/remote/test/p8t3-negative.test.ts (7 tests) 58ms
+ ✓ packages/domain/test/t2-blueprint-catalog.test.ts (15 tests) 17ms
+ ✓ packages/storage/test/p4-03-member-instances.test.ts (9 tests) 5ms
+ ✓ packages/contracts/test/identity.test.ts (12 tests) 9ms
+ ✓ packages/storage/test/p4-07-durability-crash.test.ts (6 tests) 6ms
+ ✓ packages/contracts/test/remote-safe.test.ts (10 tests) 8ms
+ ✓ packages/testkit/test/t6-1-no-agent-dependency.test.ts (6 tests) 12ms
+ ✓ packages/domain/test/t2-blueprint-validation.test.ts (57 tests) 53ms
+ ✓ packages/storage/test/p4-02-team-sessions.test.ts (9 tests) 7ms
+ ✓ packages/storage/test/p4-04-session-bindings.test.ts (8 tests) 6ms
+ ✓ packages/contracts/test/p8t1-projection-overlay.test.ts (8 tests) 15ms
+ ✓ packages/contracts/test/types.test.ts (1 test) 2ms
+ ✓ packages/runtime/test/p5t2-persona-no-persona.test.ts (3 tests) 9ms
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (15 tests | 1 failed) 59ms
+     ✓ matches the NIST vector for "abc" 2ms
+     ✓ matches the NIST vector for the empty string 0ms
+     ✓ matches the NIST vector for the 448-bit message 0ms
+     ✓ hashes multi-byte UTF-8 deterministically 1ms
+     ✓ is independent of key order (canonical JSON binding) 1ms
+     ✓ changes when any value changes 0ms
+     ✓ returns a sha256-prefixed 64-hex string 0ms
+     ✓ is deterministic across parses 14ms
+     ✓ is independent of YAML key order 9ms
+     ✓ changes when semantic content changes 8ms
+     ✓ changes across revisions of the same id 2ms
+     ✓ changes across ids with identical content 3ms
+     ✓ binds exactly to the canonical hashable projection 4ms
+     × projects absent optional singles as explicit null 9ms
+     ✓ preserves present optional values (including nested quota nulls) 3ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts (5 tests) 4ms
+ ✓ packages/contracts/test/errors.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/t12h4-s6-fail-closed.test.ts (2 tests) 4ms
+ ✓ packages/contracts/test/p8t1-projection-generation.test.ts (8 tests) 9ms
+ ✓ packages/storage/test/storage.test.ts (2 tests) 3ms
+ ✓ packages/storage/test/p4-08-independence-negative.test.ts (6 tests) 4ms
+ ✓ packages/contracts/test/contracts.test.ts (2 tests) 3ms
+ ✓ packages/domain/test/t2-blueprint-revision.test.ts (8 tests) 16ms
+ ✓ packages/client/test/client.test.ts (2 tests) 4ms
+ ✓ packages/domain/test/t2-blueprint-immutability.test.ts (10 tests) 17ms
+ ✓ packages/testkit/test/testkit.test.ts (2 tests) 2ms
+ ✓ packages/runtime/test/bp1-red-glue-probe.test.ts (2 tests) 2ms
+ ✓ packages/tools/test/h3-hostile-seam.test.ts (10 tests) 4ms
+ ✓ packages/domain/test/domain.test.ts (2 tests) 3ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests) 3ms
+ ✓ packages/remote/test/remote.test.ts (2 tests) 2ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts (3 tests) 5ms
+ ✓ packages/domain/test/t5-compatibility-bridge.test.ts (75 tests) 32ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts (5 tests) 2ms
+ ✓ packages/runtime/test/pbf-default-artifact-urls.test.ts (9 tests) 6ms
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ✓ packages/runtime/test/p8s5a-host-loadability.test.ts (3 tests) 3ms
+stderr | packages/runtime/test/runtime.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:329:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:335:64)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:879:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/src/plugin/host.ts:1235:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/runtime/test/runtime.test.ts:28:20
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+ ✓ packages/tools/test/tools.test.ts (2 tests) 2ms
+ ✓ packages/runtime/test/runtime.test.ts (3 tests) 2ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (4 tests) 2ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts (5 tests) 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: root base tools unavailable for 'session-p8s3b-g1': the agentPresets service is absent from the glue deps (or lacks a callable mount) — the leader (root) must never run without its ordinary base tools (code: root-base-tools-unavailable)
+ ❯ rootBaseToolsUnavailable packages/runtime/src/plugin/live/agent-bindings.mjs:2206:19
+    2204|   // setup (the root), before any member is created.
+    2205|   function rootBaseToolsUnavailable(sessionId, reason) {
+    2206|     const error = new Error(`agent-bindings: root base tools unavailab…
+       |                   ^
+    2207|     error.code = 'root-base-tools-unavailable'
+    2208|     observations.push(`p6t6: root-base-tools-unavailable for ${session…
+ ❯ Object.setup packages/runtime/src/plugin/live/agent-bindings.mjs:1146:15
+ ❯ Object.create packages/runtime/test/p8s3b-result-effects.test.ts:345:46
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2042:29
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:602:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ ❯ capabilityTemplateUnresolved packages/runtime/src/plugin/live/agent-bindings.mjs:2227:19
+    2225|     if (details.instanceId !== undefined) parts.push(`instanceId=${det…
+    2226|     if (details.templateId !== undefined) parts.push(`templateId=${det…
+    2227|     const error = new Error(`agent-bindings: capability template unres…
+       |                   ^
+    2228|     error.code = 'capability-template-unresolved'
+    2229|     error.reason = reason
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:991:13
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1083:29
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:426:36
+ ❯ Object.resume packages/runtime/test/t12a-live-bridge.mjs:446:14
+ ❯ Object.createChildSession packages/runtime/src/plugin/live/agent-bindings.mjs:1718:37
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:90:39
+ ❯ withDshHome packages/runtime/test/t12a-live-bridge.mjs:828:18
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:88:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  packages/runtime/test/t12a-glue-handoff-ports.test.ts [ packages/runtime/test/t12a-glue-handoff-ports.test.ts ]
+TeamContractError: blueprint document must start with a --- frontmatter delimiter line
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ splitFrontmatter packages/domain/blueprint/src/parse.ts:77:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1001:15
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:775:18
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:909:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:949:23
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1083:29
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:426:36
+ ❯ Object.create packages/runtime/test/t12a-live-bridge.mjs:441:14
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2042:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 1. Legacy fixture parses without capabilities field
+TeamContractError: $.metadata must be a plain object, got null
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertPlainRecord packages/contracts/src/dto/common.ts:38:11
+ ❯ takeRecord packages/domain/blueprint/src/validate.ts:217:10
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:940:23
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1003:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:152:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 2. Leader with full capabilities parses and validates
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1002:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:163:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 3. Members can have different capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1002:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:181:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1002:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:257:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 8. Static source returns selective mode for Leader with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1002:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:313:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 9. Static source returns selective mode for MemberTemplate with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1002:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:329:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 10. Static source returns legacy mode when capabilities absent
+TeamContractError: $.metadata must be a plain object, got null
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertPlainRecord packages/contracts/src/dto/common.ts:38:11
+ ❯ takeRecord packages/domain/blueprint/src/validate.ts:217:10
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:940:23
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1003:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:349:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1002:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:359:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11b. Selective source maps deny entries to values correctly
+TeamContractError: $.metadata must be a plain object, got null
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertPlainRecord packages/contracts/src/dto/common.ts:38:11
+ ❯ takeRecord packages/domain/blueprint/src/validate.ts:217:10
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:940:23
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1003:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:376:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null
+AssertionError: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(5) }
+
+- Expected
++ Received
+
+@@ -1,6 +1,7 @@
+  {
++   "capabilities": null,
+    "contextPolicy": null,
+    "description": null,
+    "displayName": null,
+    "modelPreference": null,
+    "persona": "Lead.",
+
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts:116:29
+    114|     expect(hashable.quotas).toBe(null)
+    115|     expect(hashable.capabilityPolicy).toBe(null)
+    116|     expect(hashable.leader).toEqual({
+       |                             ^
+    117|       templateId: 'leader',
+    118|       displayName: null,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: no runtime authority (negative) > adapter sources carry no runtime authority vocabulary (source scan)
+AssertionError: expected [ …(3) ] to deeply equal [ 'teammates-adapter-fs.d.mts', …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "teammates-adapter-fs.d.mts",
+-   "teammates-adapter-fs.mjs",
+-   "teammates-adapter.ts",
++   "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/legacy/teammates-adapter-fs.d.mts",
++   "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/legacy/teammates-adapter-fs.mjs",
++   "/home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5/packages/legacy/teammates-adapter.ts",
+  ]
+
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:435:19
+    433|     expect(sources.length).toBe(3)
+    434|     const names = sources.map((s) => s.path.split('\\').pop()).sort()
+    435|     expect(names).toEqual(['teammates-adapter-fs.d.mts', 'teammates-ad…
+       |                   ^
+    436|
+    437|     // Vocabulary that would mean the adapter reached into a live team:
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  packages/testkit/test/p4t6-session-event-scan.test.ts > p4t6 frozen Team SessionEvent denylist scan > coverage: all nine package dirs discovered, nine carry source, 537 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration)
+AssertionError: expected 693 to be 692 // Object.is equality
+
+- Expected
++ Received
+
+- 692
++ 693
+
+ ❯ packages/testkit/test/p4t6-session-event-scan.test.ts:902:37
+    900|     // Evidence:
+    901|     // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/.
+    902|     expect(scanResult.filesScanned).toBe(692)
+       |                                     ^
+    903|     expect(scanResult.files.length).toBe(692)
+    904|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:445:50
+    443|     // no block with the foreign root is ever installed.
+    444|     expect(foreignSetupError instanceof Error).toBe(true)
+    445|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    446|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    447|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:193:31
+    191| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    192|   it('five activated results, five COMMITTED operations, five members,…
+    193|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    194|     expect(p2?.results.length).toBe(5)
+    195|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:358:11
+    356| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    357|   if (!isMessagingError(error)) {
+    358|     throw new Error(
+       |           ^
+    359|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    360|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:891:46
+    889|       expect(delivered.deliveryMode).toBe('direct')
+    890|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    891|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    892|     }
+    893|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯
+
+
+ Test Files  12 failed | 271 passed (283)
+      Tests  22 failed | 3357 passed (3379)
+   Start at  17:52:39
+   Duration  5.74s (transform 40.08s, setup 0ms, import 126.75s, tests 3.33s, environment 27ms)
+
+exit: 1
