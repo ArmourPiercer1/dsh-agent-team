@@ -1,0 +1,2 @@
+dsh web: http://127.0.0.1:3183/?token=1xnYDfntpTVXFSL5hdfD5ksSb5zRwqm1m2olxkxKQQc
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 135ms — the connection service appeared after the mount step)

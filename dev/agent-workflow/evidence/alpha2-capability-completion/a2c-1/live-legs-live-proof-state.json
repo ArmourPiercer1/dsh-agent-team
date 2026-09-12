@@ -1,0 +1,9 @@
+{
+  "stamp": "20260912T162326Z",
+  "nonce": "a2c1e8af09ed",
+  "home": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z",
+  "webPort": 3183,
+  "mockPort": 3497,
+  "legs": {},
+  "boots": []
+}

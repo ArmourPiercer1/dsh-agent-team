@@ -1,0 +1,12 @@
+ M packages/domain/blueprint/src/schema.ts
+ M packages/domain/blueprint/src/types.ts
+ M packages/domain/blueprint/src/validate.ts
+ M packages/domain/test/a1-permission-policy.test.ts
+ M packages/runtime/operation-permission/canonical-operation.ts
+ M packages/runtime/operation-permission/errors.ts
+ M packages/runtime/operation-permission/index.ts
+ M packages/runtime/operation-permission/pre-execute-adapter.ts
+ M packages/runtime/operation-permission/types.ts
+?? .tmp-t12a-b2-home/
+?? dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/
+?? packages/runtime/test/a2c1-pwsh-permission.test.ts
