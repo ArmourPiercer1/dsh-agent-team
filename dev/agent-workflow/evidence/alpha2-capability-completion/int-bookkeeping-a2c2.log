@@ -1,0 +1,13 @@
+=== B1 p4t6 (pin 695 truth) ===
+      Tests  10 passed (10)
+=== B2 build ===
+packages/client build: Done
+=== B3 smoke ===
+PASS composition-smoke
+=== B4 full root (expect 20 = baseline exact, total 3397) ===
+ Test Files  10 failed | 274 passed (284)
+      Tests  20 failed | 3377 passed (3397)
+=== B5 union suites (a2c2+a2c5+a2c4+a2c1+a5a+a6a+a2) ===
+ Test Files  7 passed (7)
+      Tests  200 passed (200)
+=== A2C-2 BOOKKEEPING DONE ===

@@ -170,4 +170,69 @@ export declare class PermissionGuardUnavailableError extends Error {
 }
 /** Type guard: is `value` a {@link PermissionGuardUnavailableError}? */
 export declare function isPermissionGuardUnavailableError(value: unknown): value is PermissionGuardUnavailableError;
+/** The closed Permission Coverage Gate error codes (A2C-2, plan §7.4). */
+export declare const PERMISSION_COVERAGE_ERROR_CODES: {
+    /**
+     * The final surface of a strict agent carries a tool with no reviewed
+     * authority owner (a KNOWN_SENSITIVE_UNMANAGED or an UNKNOWN_UNMANAGED
+     * entry in `detail.unmanagedTools`). The setup FAILS LOUDLY — NO
+     * auto-hide (the gate never `restrict()`s a discovered tool) and NO
+     * acknowledgement escape hatch (plan §7.5 / §7.3-F).
+     */
+    readonly ALPHA2_PERMISSION_COVERAGE_UNMANAGED: "alpha2-permission-coverage-unmanaged-tools";
+};
+/** One of the closed Permission Coverage Gate error codes. */
+export type PermissionCoverageErrorCode = (typeof PERMISSION_COVERAGE_ERROR_CODES)[keyof typeof PERMISSION_COVERAGE_ERROR_CODES];
+/**
+ * The closed unmanaged classifications the detail carries (the FATAL
+ * subset of the six-class verdict — the MANAGED / SAFE classes never
+ * appear in an unmanaged entry).
+ */
+export type PermissionCoverageUnmanagedClassification = 'known-sensitive-unmanaged' | 'unknown-unmanaged';
+/** One FATAL unmanaged entry (the plan §7.4 shape). */
+export interface PermissionCoverageUnmanagedToolEntry {
+    /** The final-surface tool name. */
+    readonly name: string;
+    /** The closed FATAL class of the tool. */
+    readonly classification: PermissionCoverageUnmanagedClassification;
+    /** The stable deterministic reason (per sensitive category / the
+     *  unknown-semantics reason). */
+    readonly reason: string;
+    /** The stable deterministic remediation. */
+    readonly remediation: string;
+}
+/**
+ * The deterministic detail of one coverage-gate failure (plan §7.4):
+ * `instanceId` + `presetId` + `unmanagedTools` (sorted by name).
+ * Lossless-JSON (no live objects).
+ */
+export interface PermissionCoverageErrorDetail {
+    /** The bound instance id the failing setup was for. */
+    readonly instanceId: string;
+    /** The composed preset identity, or `null` when the surface's preset
+     *  cannot be determined (explicit, never omitted). */
+    readonly presetId: string | null;
+    /** The FATAL entries, sorted by tool name. */
+    readonly unmanagedTools: readonly PermissionCoverageUnmanagedToolEntry[];
+}
+/**
+ * One rejection of a strict setup by the Permission Coverage Gate
+ * (A2C-2, plan §7.4): the final model-facing surface carries an
+ * unmanaged (known-sensitive or unknown) tool. Thrown at the verified
+ * insertion point (after the MCP reconcile, before the
+ * parameter-permission listener — plan §7.2); the rejection propagates
+ * out of the AgentSetup callback and rolls the unpublished agent back
+ * (the AgentSetup contract) — the strict agent never runs on a surface
+ * the gate did not verify. Branch on {@link code} + {@link detail},
+ * never the message.
+ */
+export declare class PermissionCoverageUnmanagedError extends Error {
+    /** The stable closed error code (branch on this, never the message). */
+    readonly code: PermissionCoverageErrorCode;
+    /** The deterministic failure detail (plan §7.4). */
+    readonly detail: PermissionCoverageErrorDetail;
+    constructor(detail: PermissionCoverageErrorDetail);
+}
+/** Type guard: is `value` a {@link PermissionCoverageUnmanagedError}? */
+export declare function isPermissionCoverageUnmanagedError(value: unknown): value is PermissionCoverageUnmanagedError;
 //# sourceMappingURL=errors.d.ts.map

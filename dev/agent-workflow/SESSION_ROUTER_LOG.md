@@ -2729,3 +2729,20 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   二选一如实处理（surface 全 owned → 原断言过；surface 含 sensitive → blueprint 加 builtinToolDeny
   成为 coherent alpha.2 配置 + 可选 typed-FATAL 腿）；重跑门禁（a6a solo/pair/focused/全量根逐文件/
   node 链/typecheck/build/zero-core）；第 3 commit；milestone c ping 带全量 failed-file 清单。
+
+### A2C-2 合并执行（W2 第二任务）+ INT_W2 冻结
+
+- **合并阻塞修复接收**（c0bb109，纯测试文件）：double 加 `tools.schemas`（register 序列 −
+  restrict deny，确定性）+ `makeHandle` 经 public `createScope` 铸 scope；第二受害文件
+  bp1 一并修复；a6a 裁决 = option 1（strict surface = 恰好所注册 Team tools，零伪造
+  builtinToolDeny，52/52 原断言）；scope backing plugin 不计入 `plugins`（H1-3 pin + t4a
+  保持绿）。
+- **主代理 re-gate 2（独立 @ c0bb109）**：a6a solo 52/52 · bp1 solo 8/8 · 5 文件 159/159 ·
+  全量根 **11 = 基线 10 + p4t6，无其他**（21 = 20+1；3387 = 3369+18）· node 链 10 = 基线 ·
+  zero-core 0 · c0bb109 diff 纯测试（bridge .mjs/.d.mts + 证据）✓
+- **PR #11** 创建 → 本地 merge（零冲突，17 文件，与 A2C-5 文件集不相交）→ int bookkeeping：
+  pin 693→695（10/10 真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3397 =
+  3369+10+18）+ 联合套件 7 文件 200/200（int-bookkeeping-a2c2.log）。
+- **INT_W2 冻结**（本 commit）：A2C-2 + A2C-5 全数入 int。W3 = A2C-7（base INT_W2）。
+- SOP 更新（教训）：改 agent-bindings 的任务，focused 门禁必须显式包含全部 live-bridge
+  消费者（a6a/bp1 首列）；node 链 "base-IDENTICAL" 不能替代 vitest 侧文件级检查。

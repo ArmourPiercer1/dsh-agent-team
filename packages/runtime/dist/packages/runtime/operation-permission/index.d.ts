@@ -36,7 +36,20 @@
  *   and returns ONE composite disposer (listener first, guard last).
  *   The install is fail-closed: a ctx without the `tools.guard` seam
  *   rejects with the typed {@link PermissionGuardUnavailableError}
- *   (`alpha2-permission-guard-unavailable`) before any registration.
+ *   (`alpha2-permission-guard-unavailable`) before any registration;
+ * - the A2C-2 Permission Coverage Gate evaluator (plan §7):
+ *   {@link evaluatePermissionCoverage} / {@link
+ *   classifyPermissionCoverageTool} — the closed six-class
+ *   authority-owner classification of the FINAL model-facing tool
+ *   surface (ownership, not declaration — invariant §1.1), with the
+ *   closed SAFE_UNMANAGED / KNOWN_SENSITIVE_UNMANAGED registries, the
+ *   proven MCP-mount delta ({@link mcpIntroducedToolNames}), the
+ *   strict-mode condition ({@link permissionCoverageGateEnabled} — the
+ *   gate is ABSENT without `capabilities.permissions`, invariant §1.2)
+ *   and the deterministic typed error detail builder
+ *   ({@link buildPermissionCoverageErrorDetail} +
+ *   {@link PermissionCoverageUnmanagedError},
+ *   `alpha2-permission-coverage-unmanaged-tools`);
  *
  * What this module IS (and deliberately is NOT):
  *
@@ -69,4 +82,8 @@ export { resolveOperationPermission, } from './permission-resolver.js';
 export type { CanonicalRule, CanonicalRules, PermissionDecision, PermissionLane, PermissionProvenance, } from './permission-resolver.js';
 export { END_CAP_DENIAL_REASON, installParameterPermissionListener, } from './pre-execute-adapter.js';
 export type { AgentPreExecuteCtx, GuardExecLike, InstallParameterPermissionListenerParams, PreExecuteExec, PreToolDecisionLike, } from './pre-execute-adapter.js';
+export { PERMISSION_COVERAGE_CLASSIFICATIONS, SAFE_UNMANAGED_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_PREFIXES, SENSITIVE_REMEDIATION, UNKNOWN_REMEDIATION, UNKNOWN_REASON, classifyPermissionCoverageTool, evaluatePermissionCoverage, mcpIntroducedToolNames, permissionCoverageGateEnabled, buildPermissionCoverageErrorDetail, } from './permission-coverage.js';
+export type { PermissionCoverageClassification, PermissionCoverageFacts, ClassifiedTool, UnmanagedToolEntry, PermissionCoverageVerdict, } from './permission-coverage.js';
+export { PERMISSION_COVERAGE_ERROR_CODES, PermissionCoverageUnmanagedError, isPermissionCoverageUnmanagedError, } from './errors.js';
+export type { PermissionCoverageErrorCode, PermissionCoverageUnmanagedClassification, PermissionCoverageUnmanagedToolEntry, PermissionCoverageErrorDetail, } from './errors.js';
 //# sourceMappingURL=index.d.ts.map

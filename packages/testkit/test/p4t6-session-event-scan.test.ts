@@ -910,8 +910,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (the frozen quarantine hit set stays at fifteen occurrences).
     // Evidence:
     // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-5/.
-    expect(scanResult.filesScanned).toBe(693)
-    expect(scanResult.files.length).toBe(693)
+    // alpha.2 capability-completion A2C-2 (merged into
+    // int/alpha2-capability-completion, PR #11): +2 = 695 — two new
+    // files, packages/runtime/test/a2c2-permission-coverage.test.ts
+    // (the S0 §7.6 probes + six-class matrix + FATAL/typed-error legs
+    // + real-seam legs) and the in-place t12a-live-bridge double
+    // extension (the tools.schemas seam + createScope scope minting —
+    // the merge-block repair for the a6a/bp1 production-wiring
+    // worlds). Scanner unchanged; DEC-1 union at the integration tip
+    // by the main agent. Zero denylist vocabulary in both new files.
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-2/.
+    expect(scanResult.filesScanned).toBe(695)
+    expect(scanResult.files.length).toBe(695)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
