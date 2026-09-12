@@ -9,8 +9,10 @@
  *   canonical key of the target file from the INJECTED
  *   {@link PathTargetResolver} (the A5 adapter wraps the upstream public
  *   `ctx.fs.resolve(path, { cwd: sessionCwd, signal })` seam, plan §7.2);
- *   for `bash`, the tool itself (`{ kind: 'tool', key: 'bash' }` —
- *   tool-level only, plan §4);
+ *   for the shell class (`bash` / `pwsh` — A2C-1), the tool itself
+ *   (`{ kind: 'tool', key: <exact tool name> }` — tool-level only,
+ *   plan §4/§5.2: `resource.kind = 'tool'`, `resource.key = exact tool
+ *   name`, so `bash authority != pwsh authority`);
  * - the FINGERPRINT — `'sha256:' + sha256(canonicalJson(securityProjection))`
  *   over the per-tool security projection (plan §7.3/§7.4): deterministic,
  *   covering every security-relevant field, no timestamp, no random id,
@@ -72,56 +74,68 @@
  *     coordinates fully determine the operation). Missing/non-positive-
  *     integer coordinates and unknown operations fail closed (the tool
  *     would reject them).
- * - `bash`          `{ tool, commandHash, workdir, runInBackground,
+ * - the shell class — `bash` / `pwsh` (A2C-1: the pinned-upstream
+ *   standard preset exposes `bash` on POSIX and `pwsh` on Windows, and
+ *   `tool-pwsh`'s execution arguments are isomorphic to `tool-bash`'s,
+ *   so BOTH canonicalize through the SAME
+ *   {@link canonicalizeShellOperation} — the authority core carries ONE
+ *   shell-class logic, never two drifting copies, plan §5.5)
+ *   `{ tool, commandHash, workdir, runInBackground,
  *     timeoutMs, sandboxPermissions }` — the RESOURCE stays tool-level
- *     (plan §4/§7.1: `{ kind: 'tool', key: 'bash' }`), but the
- *     FINGERPRINT binds the command AND the execution effect (H2 P1-2 +
- *     H5 P1-B rulings, plan §7.4 "covering every security-relevant
- *     field"):
- *     - `commandHash` = `'sha256:' + hex(sha256(command))` over the RAW
- *       command string — NO shell parsing, no normalization (the command
- *       is the security-relevant field for bash, so a durable approval
- *       is verifiable as "which shell payload was approved"; before H2
- *       the command was deliberately excluded and EVERY bash command
- *       shared one constant fingerprint — P1-2);
- *     - `workdir` = the CANONICAL KEY of `args.workdir ?? '.'` from the
- *       injected resolver (H5 — the resolver is consulted EXACTLY ONCE
- *       — for the workdir authority key; the resource stays tool-level,
- *       plan §3.2). The input is normalized with the tool's own
- *       defaulting: omitted ⇒ `'.'` (the session cwd), an
- *       empty/whitespace-only string ⇒ `'.'` (upstream
- *       `resolvePath(cwd, '')` = cwd — an empty-string workdir is
- *       EFFECTIVELY the session cwd), a non-string ⇒ fail closed
- *       (`bash-workdir-not-a-string`). The seam's cwd basis IS the
- *       session cwd (lazily read per call), so omitted ≡ explicit
- *       session-cwd and symlinked workdirs bind their REAL identity
- *       (the backend's realpath — the ideal property: same effective
- *       workdir ⇒ same key ⇒ same fingerprint);
- *     - `runInBackground` = `args.run_in_background ?? false` (detached
- *       `jobs.start` job vs foreground `ctx.shell.run` — a different
- *       execution effect; present-but-non-boolean fails closed:
- *       `bash-run-in-background-not-boolean`);
- *     - `timeoutMs` = `args.timeoutMs ?? null` — the EXPLICIT value
- *       only (NEVER a deployment default or the executor cap, plan
- *       §4.4); present-but-not-(finite number > 0) fails closed
- *       (`bash-timeout-ms-invalid` — mirrors the upstream
- *       `validateBashArgs` check);
- *     - `sandboxPermissions` = `args.sandbox_permissions ?? null` — the
- *       requested mode string only (present-but-non-string fails closed:
- *       `bash-sandbox-permissions-not-a-string`); mode LEGALITY is the
- *       upstream authority at execution — the Team layer does not mint
- *       authority for a value upstream would reject (such a call never
- *       executes), and the `justification` pairing stays upstream's.
- *     `description`/`justification` are EXCLUDED from the projection
- *     (display/explanation metadata — the upstream's validation domain,
- *     plan §4.2/§4.5). A missing/non-string/whitespace-only command
- *     fails closed with the closed `bash-command-*` reasons (the
- *     upstream `tool-bash` `validateBashArgs` rejects all three before
- *     executing). WHY the effect-field validation is required (not
- *     defense-in-depth): the upstream materialization is lossless-JSON-
- *     only and the `tools/pre-execute` waterfall runs BEFORE any
- *     parameter-schema validation (`validateBashArgs` runs INSIDE
- *     `execute`) — malformed effect-field types DO reach this module.
+ *   (plan §4/§5.2/§7.1: `{ kind: 'tool', key: <tool name> }` — the
+ *   EXACT tool name, so the same command canonicalizes to DIFFERENT
+ *   fingerprints for `bash` and `pwsh`: `bash authority != pwsh
+ *   authority`), but the FINGERPRINT binds the command AND the
+ *   execution effect (H2 P1-2 + H5 P1-B rulings, plan §7.4 "covering
+ *   every security-relevant field"):
+ *   - `tool` = the exact tool name (`'bash'` or `'pwsh'`) — the
+ *     authority separator between the two shell tools;
+ *   - `commandHash` = `'sha256:' + hex(sha256(command))` over the RAW
+ *     command string — NO shell parsing, no normalization (the command
+ *     is the security-relevant field for the shell class, so a durable
+ *     approval is verifiable as "which shell payload was approved";
+ *     before H2 the command was deliberately excluded and EVERY shell
+ *     command shared one constant fingerprint — P1-2);
+ *   - `workdir` = the CANONICAL KEY of `args.workdir ?? '.'` from the
+ *     injected resolver (H5 — the resolver is consulted EXACTLY ONCE
+ *     — for the workdir authority key; the resource stays tool-level,
+ *     plan §3.2). The input is normalized with the tool's own
+ *     defaulting: omitted ⇒ `'.'` (the session cwd), an
+ *     empty/whitespace-only string ⇒ `'.'` (upstream
+ *     `resolvePath(cwd, '')` = cwd — an empty-string workdir is
+ *     EFFECTIVELY the session cwd), a non-string ⇒ fail closed
+ *     (`<tool>-workdir-not-a-string`). The seam's cwd basis IS the
+ *     session cwd (lazily read per call), so omitted ≡ explicit
+ *     session-cwd and symlinked workdirs bind their REAL identity
+ *     (the backend's realpath — the ideal property: same effective
+ *     workdir ⇒ same key ⇒ same fingerprint);
+ *   - `runInBackground` = `args.run_in_background ?? false` (detached
+ *     `jobs.start` job vs foreground `ctx.shell.run` — a different
+ *     execution effect; present-but-non-boolean fails closed:
+ *     `<tool>-run-in-background-not-boolean`);
+ *   - `timeoutMs` = `args.timeoutMs ?? null` — the EXPLICIT value
+ *     only (NEVER a deployment default or the executor cap, plan
+ *     §4.4); present-but-not-(finite number > 0) fails closed
+ *     (`<tool>-timeout-ms-invalid` — mirrors the upstream
+ *     `validateBashArgs` / `validatePwshArgs` check);
+ *   - `sandboxPermissions` = `args.sandbox_permissions ?? null` — the
+ *     requested mode string only (present-but-non-string fails closed:
+ *     `<tool>-sandbox-permissions-not-a-string`); mode LEGALITY is the
+ *     upstream authority at execution — the Team layer does not mint
+ *     authority for a value upstream would reject (such a call never
+ *     executes), and the `justification` pairing stays upstream's.
+ *   `description`/`justification` are EXCLUDED from the projection
+ *   (display/explanation metadata — the upstream's validation domain,
+ *   plan §4.2/§4.5). A missing/non-string/whitespace-only command
+ *   fails closed with the closed `<tool>-command-*` reasons (the
+ *   upstream `tool-bash` `validateBashArgs` and `tool-pwsh`
+ *   `validatePwshArgs` reject all three before executing — the reasons
+ *   are per-tool-mirrored: `bash-*` / `pwsh-*`). WHY the effect-field
+ *   validation is required (not defense-in-depth): the upstream
+ *   materialization is lossless-JSON-only and the `tools/pre-execute`
+ *   waterfall runs BEFORE any parameter-schema validation (the
+ *   validators run INSIDE `execute`) — malformed effect-field types DO
+ *   reach this module.
  *
  * Windows emphasis (plan §7.6): separator normalization, case semantics,
  * relative-vs-absolute, `..` traversal, and symlink/junction identity are
@@ -139,6 +153,7 @@ import type { CanonicalizationFailureReason } from './errors.js'
 import {
   FILE_PERMISSION_TOOL_VALUES,
   PERMISSION_TOOL_VALUES,
+  SHELL_PERMISSION_TOOL_VALUES,
 } from './types.js'
 import type {
   CanonicalOperation,
@@ -146,6 +161,7 @@ import type {
   PermissionTool,
   PermissionToolClass,
   PathTargetResolver,
+  ToolLevelPermissionTool,
 } from './types.js'
 
 /**
@@ -172,6 +188,20 @@ export const LSP_OPERATION_VALUES: readonly string[] = [
 
 /** The fixed `bash` tool-level resource key/display (plan §4/§7.1). */
 export const BASH_TOOL_RESOURCE_KEY = 'bash'
+
+/**
+ * A2C-1 — the closed shell-class tool-level resource keys
+ * (`plan §5.2: resource.kind = 'tool'`, `resource.key = exact tool
+ * name`): `{ bash: 'bash', pwsh: 'pwsh' }`. The tool name IS the
+ * authority key, so `bash authority != pwsh authority` holds by
+ * construction (two different keys, two different fingerprint
+ * projections). Derived from the single
+ * {@link SHELL_PERMISSION_TOOL_VALUES} list so the class cannot drift.
+ */
+export const SHELL_TOOL_RESOURCE_KEYS: Readonly<Record<ToolLevelPermissionTool, string>> = {
+  bash: 'bash',
+  pwsh: 'pwsh',
+}
 
 /** One canonicalization input: the pre-execute tool call + the injected seam. */
 export interface CanonicalizeOperationInput {
@@ -206,13 +236,16 @@ export interface CanonicalizeOperationInput {
  *
  * @param name - the tool name from the pre-execute payload.
  * @returns the closed three-way class (file / tool-level / unsupported).
+ *   The tool-level class is the shell class (A2C-1: `bash` / `pwsh` —
+ *   the single {@link SHELL_PERMISSION_TOOL_VALUES} membership is the
+ *   only classification site for it).
  */
 export function classifyPermissionTool(name: string): PermissionToolClass {
   if ((FILE_PERMISSION_TOOL_VALUES as readonly string[]).includes(name)) {
     return { kind: 'file', tool: name as FilePermissionTool }
   }
-  if (name === 'bash') {
-    return { kind: 'tool-level', tool: 'bash' }
+  if ((SHELL_PERMISSION_TOOL_VALUES as readonly string[]).includes(name)) {
+    return { kind: 'tool-level', tool: name as ToolLevelPermissionTool }
   }
   return { kind: 'unsupported' }
 }
@@ -221,7 +254,7 @@ export function classifyPermissionTool(name: string): PermissionToolClass {
  * Whether the tool name is inside the closed permission vocabulary
  * (either class). Convenience predicate over {@link classifyPermissionTool}.
  * @param name - the tool name.
- * @returns true for the six closed permission tools, false otherwise.
+ * @returns true for the seven closed permission tools, false otherwise.
  */
 export function isPermissionToolName(name: string): boolean {
   return (PERMISSION_TOOL_VALUES as readonly string[]).includes(name)
@@ -342,49 +375,60 @@ function extractEditFields(tool: string, args: Record<string, unknown>): {
 }
 
 /**
- * The `bash` command (H2 P1-2: the command IS the security-relevant field
- * for bash). Mirrors the upstream `tool-bash` `validateBashArgs` BEFORE
- * executing: a missing, non-string, or whitespace-only command is
- * rejected by the tool itself, so such a call has no well-formed
- * projection and fails closed. The returned value is the RAW command
- * string — NO shell parsing, no normalization (the fingerprint hashes it
- * verbatim; the adapter's display preview is separate and never
- * authoritative).
+ * The shell-class command (H2 P1-2: the command IS the security-
+ * relevant field for the shell class; A2C-1: `bash` and `pwsh` are
+ * isomorphic and share this extraction). Mirrors the upstream shell
+ * tools' own validation BEFORE executing (`tool-bash`
+ * `validateBashArgs` / `tool-pwsh` `validatePwshArgs`): a missing,
+ * non-string, or whitespace-only command is rejected by the tool
+ * itself, so such a call has no well-formed projection and fails
+ * closed. The returned value is the RAW command string — NO shell
+ * parsing, no normalization (the fingerprint hashes it verbatim; the
+ * adapter's display preview is separate and never authoritative).
+ *
+ * The closed reasons are per-tool-mirrored (`<tool>-command-*` —
+ * `bash-*` / `pwsh-*`), so the diagnostic names the upstream tool whose
+ * validation was mirrored.
  */
-function extractBashCommand(tool: string, args: Record<string, unknown>): string {
+function extractShellCommand(tool: ToolLevelPermissionTool, args: Record<string, unknown>): string {
   const value = args['command']
   if (value === undefined) {
-    throw canonicalizationFailed(tool, 'bash-command-missing')
+    throw canonicalizationFailed(tool, `${tool}-command-missing`)
   }
   if (typeof value !== 'string') {
-    throw canonicalizationFailed(tool, 'bash-command-not-a-string', {
+    throw canonicalizationFailed(tool, `${tool}-command-not-a-string`, {
       valueType: toRemoteSafeDetail(typeof value),
     })
   }
   if (value.trim().length === 0) {
-    throw canonicalizationFailed(tool, 'bash-command-empty')
+    throw canonicalizationFailed(tool, `${tool}-command-empty`)
   }
   return value
 }
 
 /**
- * The `bash` execution-effect fields (H5 P1-B: `bash -c X` has four more
- * security-relevant fields beyond the command — WHERE the shell runs
- * (`workdir`), detached vs foreground (`run_in_background`), the explicit
- * timeout (`timeoutMs`), and the requested sandbox mode
- * (`sandbox_permissions`)). A durable approval for `bash -c X in /A` must
- * not authorize `bash -c X in /B`, nor a background start, nor a
- * different timeout, nor a sandbox escalation.
+ * The shell-class execution-effect fields (H5 P1-B: a shell `-c X` call
+ * has four more security-relevant fields beyond the command — WHERE the
+ * shell runs (`workdir`), detached vs foreground (`run_in_background`),
+ * the explicit timeout (`timeoutMs`), and the requested sandbox mode
+ * (`sandbox_permissions`)). A durable approval for `bash -c X in /A`
+ * must not authorize `bash -c X in /B`, nor a background start, nor a
+ * different timeout, nor a sandbox escalation — and A2C-1 extends the
+ * SAME binding to `pwsh` (the upstream `tool-pwsh` effects are
+ * isomorphic: the same four fields, the same per-field validation in
+ * `validatePwshArgs` / the background gate / `resolveWorkdir`): ONE
+ * extraction for the shell class, per-tool-mirrored closed reasons
+ * (`<tool>-...`).
  *
  * WHY this validation is REQUIRED (not defense-in-depth): the upstream
  * materialization of arguments is lossless-JSON-only and the
  * `tools/pre-execute` waterfall (where this module runs) precedes ANY
- * parameter-schema validation — the tool's own `validateBashArgs` runs
- * INSIDE `execute` (tool-bash L330 @ a66e470204), reached only via
- * dispatch. Malformed effect-field types DO reach this module, so every
- * malformed shape fails closed HERE — BEFORE the resolver call (zero
- * backend round-trips, the established module pattern — see
- * `extractBashCommand` and the file tools' pre-resolver validation).
+ * parameter-schema validation — the tool's own `validateBashArgs` /
+ * `validatePwshArgs` runs INSIDE `execute`, reached only via dispatch.
+ * Malformed effect-field types DO reach this module, so every malformed
+ * shape fails closed HERE — BEFORE the resolver call (zero backend
+ * round-trips, the established module pattern — see
+ * `extractShellCommand` and the file tools' pre-resolver validation).
  *
  * The workdir INPUT is normalized with the tool's own defaulting (the
  * established module pattern for the read/edit fields): omitted ⇒ `'.'`
@@ -404,8 +448,8 @@ function extractBashCommand(tool: string, args: Record<string, unknown>): string
  * upstream's validation domain (including the `sandbox_permissions` ⇔
  * `justification` escalation pairing).
  */
-function extractBashEffects(
-  tool: string,
+function extractShellEffects(
+  tool: ToolLevelPermissionTool,
   args: Record<string, unknown>,
 ): {
   workdirInput: string
@@ -422,7 +466,7 @@ function extractBashEffects(
   } else if (typeof workdir === 'string') {
     workdirInput = workdir.trim().length === 0 ? '.' : workdir
   } else {
-    throw canonicalizationFailed(tool, 'bash-workdir-not-a-string', {
+    throw canonicalizationFailed(tool, `${tool}-workdir-not-a-string`, {
       valueType: toRemoteSafeDetail(typeof workdir),
     })
   }
@@ -432,7 +476,7 @@ function extractBashEffects(
   // not a boolean ⇒ fail closed (the tool would reject it).
   const runInBackground = args['run_in_background']
   if (runInBackground !== undefined && typeof runInBackground !== 'boolean') {
-    throw canonicalizationFailed(tool, 'bash-run-in-background-not-boolean', {
+    throw canonicalizationFailed(tool, `${tool}-run-in-background-not-boolean`, {
       value: toRemoteSafeDetail(runInBackground),
     })
   }
@@ -446,7 +490,7 @@ function extractBashEffects(
     timeoutMs !== undefined &&
     !(typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0)
   ) {
-    throw canonicalizationFailed(tool, 'bash-timeout-ms-invalid', {
+    throw canonicalizationFailed(tool, `${tool}-timeout-ms-invalid`, {
       value: toRemoteSafeDetail(timeoutMs),
     })
   }
@@ -457,7 +501,7 @@ function extractBashEffects(
   // anything that will never execute).
   const sandboxPermissions = args['sandbox_permissions']
   if (sandboxPermissions !== undefined && typeof sandboxPermissions !== 'string') {
-    throw canonicalizationFailed(tool, 'bash-sandbox-permissions-not-a-string', {
+    throw canonicalizationFailed(tool, `${tool}-sandbox-permissions-not-a-string`, {
       valueType: toRemoteSafeDetail(typeof sandboxPermissions),
     })
   }
@@ -550,16 +594,20 @@ export async function canonicalizeOperation(
     })
   }
 
-  // Tool-level (bash): the RESOURCE is the tool itself (plan §4/§7.1 —
-  // stays tool-level; no file key), and the FINGERPRINT Binds the
-  // command AND the execution effect (H2 P1-2 + H5 P1-B rulings): the
-  // command IS the security-relevant field for bash, so the projection
-  // carries its hash (the write `contentHash` pattern) — a durable
-  // approval is verifiable as "which shell payload was approved"; H5
-  // extends the binding to the four effect fields (workdir / detached /
-  // explicit timeout / requested sandbox mode). NO shell parsing: the
-  // raw command, hashed verbatim (the adapter's display preview is
-  // separate and never authoritative).
+  // Tool-level (the shell class — A2C-1: `bash` / `pwsh`): the RESOURCE
+  // is the tool itself (plan §4/§5.2/§7.1 — stays tool-level, with the
+  // EXACT tool name as key: `bash authority != pwsh authority`), and
+  // the FINGERPRINT Binds the command AND the execution effect (H2 P1-2
+  // + H5 P1-B rulings): the command IS the security-relevant field for
+  // the shell class, so the projection carries its hash (the write
+  // `contentHash` pattern) — a durable approval is verifiable as "which
+  // shell payload was approved"; H5 extends the binding to the four
+  // effect fields (workdir / detached / explicit timeout / requested
+  // sandbox mode). NO shell parsing: the raw command, hashed verbatim
+  // (the adapter's display preview is separate and never
+  // authoritative). The projection's `tool` field carries the exact
+  // tool name, so the same command + effects canonicalize to DIFFERENT
+  // fingerprints for `bash` and `pwsh`.
   //
   // The resolver is consulted EXACTLY ONCE — for the workdir authority
   // key (the resource stays tool-level; plan §3.2): the effect fields
@@ -571,27 +619,12 @@ export async function canonicalizeOperation(
   // makes omitted-workdir ('.') ≡ explicit-workdir-equal-to-session-cwd
   // (plan B2) hold naturally, and symlinked/junctioned workdirs bind
   // their REAL identity.
+  //
+  // A2C-1 — the shell class has ONE canonicalizer
+  // ({@link canonicalizeShellOperation}): the authority core must never
+  // carry two drifting bash/pwsh logics (plan §5.5).
   if (class_.kind === 'tool-level') {
-    const args = asArgumentRecord('bash', rawArguments, 'bash-command-missing')
-    const command = extractBashCommand('bash', args)
-    const effects = extractBashEffects('bash', args)
-    const workdirTarget = await resolveResource('bash', effects.workdirInput, resolveTarget)
-    return {
-      tool: 'bash',
-      resource: { kind: 'tool', key: BASH_TOOL_RESOURCE_KEY, display: BASH_TOOL_RESOURCE_KEY },
-      fingerprint: buildFingerprint({
-        tool: 'bash',
-        commandHash: hashString(command),
-        workdir: workdirTarget.key,
-        runInBackground: effects.runInBackground,
-        timeoutMs: effects.timeoutMs,
-        sandboxPermissions: effects.sandboxPermissions,
-      }),
-      // H5 — the presentation-only workdir display (the approval
-      // summary's `cwd=` token). NEVER part of the fingerprint/scope/
-      // authority — the fingerprint carries the opaque workdir KEY.
-      workdirDisplay: workdirTarget.display,
-    }
+    return canonicalizeShellOperation(class_.tool, rawArguments, resolveTarget)
   }
 
   const tool = class_.tool
@@ -649,6 +682,61 @@ export async function canonicalizeOperation(
   const target = await resolveResource(tool, filePath, resolveTarget)
   projection['resourceKey'] = target.key
   return operation(tool, target, buildFingerprint(projection))
+}
+
+/**
+ * A2C-1 — canonicalize ONE shell-class tool call (`bash` / `pwsh`) into
+ * its {@link CanonicalOperation} (plan §5.2/§5.4/§5.5). The SINGLE
+ * shell-class canonicalizer: both shell tools are isomorphic (the
+ * pinned-upstream `tool-pwsh` arguments mirror `tool-bash`
+ * field-for-field), so the authority core carries ONE shell-class logic
+ * — never two drifting copies — and the two tools are separated ONLY
+ * by their exact tool name (the resource key + the projection's `tool`
+ * field, plan §5.2: `bash authority != pwsh authority`).
+ *
+ * The per-field projection and fail-closed reasons are documented in
+ * the module header (the shell-class entry): the resolver is consulted
+ * EXACTLY ONCE (the workdir authority key), the effect fields fail
+ * closed BEFORE the resolver call, and every malformed shape fails
+ * closed with the per-tool-mirrored closed `<tool>-...` reasons.
+ *
+ * @param tool - the exact shell-class tool name (`'bash'` | `'pwsh'`).
+ * @param arguments_ - the losslessly-parsed, deep-frozen arguments.
+ * @param resolveTarget - the injected path-resolution seam (plan §7.2).
+ * @returns the canonical operation (`{ kind: 'tool', key: <tool name> }`
+ *   resource + the shell-class effect fingerprint + the presentation-
+ *   only workdir display).
+ * @throws {@link OperationPermissionError} —
+ *   `OPERATION_CANONICALIZATION_FAILED` with the closed `details.reason`
+ *   — on ANY canonicalization failure.
+ */
+export async function canonicalizeShellOperation(
+  tool: ToolLevelPermissionTool,
+  arguments_: unknown,
+  resolveTarget: PathTargetResolver,
+): Promise<CanonicalOperation> {
+  const args = asArgumentRecord(tool, arguments_, `${tool}-command-missing`)
+  const command = extractShellCommand(tool, args)
+  const effects = extractShellEffects(tool, args)
+  const workdirTarget = await resolveResource(tool, effects.workdirInput, resolveTarget)
+  const resourceKey = SHELL_TOOL_RESOURCE_KEYS[tool]
+  return {
+    tool,
+    resource: { kind: 'tool', key: resourceKey, display: resourceKey },
+    fingerprint: buildFingerprint({
+      tool,
+      commandHash: hashString(command),
+      workdir: workdirTarget.key,
+      runInBackground: effects.runInBackground,
+      timeoutMs: effects.timeoutMs,
+      sandboxPermissions: effects.sandboxPermissions,
+    }),
+    // H5 (A2C-1: the shell class) — the presentation-only workdir
+    // display (the approval summary's `cwd=` token). NEVER part of the
+    // fingerprint/scope/authority — the fingerprint carries the opaque
+    // workdir KEY.
+    workdirDisplay: workdirTarget.display,
+  }
 }
 
 /**

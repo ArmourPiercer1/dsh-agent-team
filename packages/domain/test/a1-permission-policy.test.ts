@@ -699,7 +699,7 @@ describe('A1: duplicate normalization is deterministic', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the six closed tool names', () => {
+  it('PERMISSION_TOOL_NAMES pins the seven closed tool names (A2C-1: the shell class bash/pwsh)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -707,6 +707,7 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'edit',
       'lsp',
       'bash',
+      'pwsh',
     ])
   })
 

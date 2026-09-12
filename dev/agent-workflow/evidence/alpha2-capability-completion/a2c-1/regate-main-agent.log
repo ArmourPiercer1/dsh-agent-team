@@ -1,0 +1,27 @@
+=== R1 focused vitest (a2c1+a1+a3+a4a+a5a+a6a+hardening) ===
+ Test Files  6 passed (6)
+      Tests  229 passed (229)
+=== R2 full root suite ===
+ Test Files  11 failed | 270 passed (281)
+      Tests  21 failed | 3337 passed (3358)
+=== R3 plain-node runtime chain ===
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+PASS packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests)
+=== R4 typecheck ===
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+=== R5 build ===
+packages/client build: Done
+=== R6 verify-zero-core ===
+INFO third-party patch file /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/patches/node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+RESULT: PASS verify-zero-core (0 findings)
+=== REGATE A2C-1 DONE ===

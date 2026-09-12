@@ -135,12 +135,16 @@ export const BLUEPRINT_POLICY_REFERENCEABLE_FIELDS: readonly string[] = [
 export const CAPABILITY_POLICY_DECISIONS: readonly string[] = ['allow', 'deny']
 
 /**
- * The six tool names a permission rule may gate (alpha.2 plan §4/§6.2,
- * closed vocabulary). `bash` allows tool-level ask/deny via
- * `resource: { kind: 'any' }` only — no positive parameter-level allow.
- * Enforced in validation: a `bash` rule in the `allow` lane is rejected,
- * and an `exact` `bash` resource is rejected in every lane (the bash
- * vocabulary is `any` in `ask`/`deny` only).
+ * The seven tool names a permission rule may gate (alpha.2 plan §4/§6.2 +
+ * A2C-1, closed vocabulary). The shell class (`bash`, `pwsh`) allows
+ * tool-level ask/deny via `resource: { kind: 'any' }` only — no positive
+ * parameter-level allow. Enforced in validation: a shell-class rule in
+ * the `allow` lane is rejected, and an `exact` shell-class resource is
+ * rejected in every lane (the shell vocabulary is `any` in `ask`/`deny`
+ * only). `bash authority != pwsh authority`: the two share the shell
+ * class rules but are distinct tools (a rule for one never gates the
+ * other, and the runtime fingerprints them with separate tool
+ * identities).
  */
 export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'read',
@@ -149,6 +153,7 @@ export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'edit',
   'lsp',
   'bash',
+  'pwsh',
 ]
 
 /**

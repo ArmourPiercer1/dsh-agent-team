@@ -25,7 +25,7 @@
  * - determinism (same input → structurally identical output, across
  *   fresh-but-equal input objects);
  * - the A2 handoff vocabulary pin: A2 `PERMISSION_TOOL_VALUES`
- *   deep-equals A1 `PERMISSION_TOOL_NAMES` (same six names, same
+ *   deep-equals A1 `PERMISSION_TOOL_NAMES` (same seven names, same
  *   order) — the two definitions must never diverge (plan §6.2).
  *
  * The resolver is PURE over canonical identities (plan §8): the
@@ -500,13 +500,14 @@ describe('a3 static resolver — provenance first-match indexing and determinism
 })
 
 // ---------------------------------------------------------------------------
-// Vocabulary pin (A2 handoff): the two PermissionTool definitions must
-// never diverge (plan §6.2 — same six names, same closed semantics).
+// Vocabulary pin (A2 handoff; A2C-1: +`pwsh` — the shell class): the two
+// PermissionTool definitions must never diverge (plan §6.2 — same seven
+// names, same closed semantics).
 // ---------------------------------------------------------------------------
 
 describe('a3 static resolver — tool vocabulary pin (A2 handoff)', () => {
-  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same six names, same order)', () => {
+  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same seven names, same order)', () => {
     expect(PERMISSION_TOOL_VALUES).toEqual(PERMISSION_TOOL_NAMES)
-    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash'])
+    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh'])
   })
 })

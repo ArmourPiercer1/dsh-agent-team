@@ -581,19 +581,24 @@ function validatePermissionPolicy(raw: unknown, path: string): TemplatePermissio
 
 /**
  * Validate one permission rule (closed `tool` + `resource`) in the lane it
- * sits in. After the closed-vocabulary checks, the alpha.2 bash contract is
- * enforced HERE (the schema is the enforcement point — H2 ruling):
+ * sits in. After the closed-vocabulary checks, the alpha.2 shell-class
+ * contract is enforced HERE (the schema is the enforcement point — H2
+ * ruling; A2C-1 extends it from `bash` to the shell class `bash`/`pwsh`,
+ * whose rule semantics are identical — plan §5.3):
  *
- * - `bash` + `exact` is rejected in EVERY lane: an `exact` key is a file
- *   key and can never match the bash tool-level resource, and alpha.2 has
- *   no parameter-level shell matcher — such a rule would be structurally
- *   inert, so it is rejected instead of silently parsed;
- * - `bash` + `any` is rejected in the ALLOW lane: alpha.2 grants no
- *   positive whole-tool permission for bash (no parameter-level allow for
- *   shell commands). `bash` + `any` in the `ask` / `deny` lanes stays
- *   legal (the minimal shell permission).
+ * - a shell-class tool + `exact` is rejected in EVERY lane: an `exact`
+ *   key is a file key and can never match the tool-level resource, and
+ *   alpha.2 has no parameter-level shell matcher — such a rule would be
+ *   structurally inert, so it is rejected instead of silently parsed;
+ * - a shell-class tool + `any` is rejected in the ALLOW lane: alpha.2
+ *   grants no positive whole-tool permission for a shell tool (no
+ *   parameter-level allow for shell commands). Shell-class `any` in the
+ *   `ask` / `deny` lanes stays legal (the minimal shell permission).
  *
- * Both diagnostics are STABLE text (deterministic; no randoms) — tests pin
+ * The diagnostics are STABLE text (deterministic; no randoms) and
+ * parameterized by the tool name: for `bash` the messages are byte-
+ * identical to the original H2 text (the H2 pins stay verbatim), and for
+ * `pwsh` the same contract is stated for `pwsh` (A2C-1 pins). Tests pin
  * the message verbatim.
  */
 function validatePermissionRule(raw: unknown, path: string, lane: 'allow' | 'ask' | 'deny'): PermissionRule {
@@ -611,17 +616,22 @@ function validatePermissionRule(raw: unknown, path: string, lane: 'allow' | 'ask
 
   const resource = validatePermissionResource(requireField(record, 'resource', path), `${path}.resource`)
 
-  if (tool === 'bash' && resource.kind === 'exact') {
+  // The shell class (A2C-1): identical rule contract for `bash` and
+  // `pwsh` (plan §5.3 — ask/deny on `any` only; no exact in any lane, no
+  // positive whole-tool allow). `bash`/`pwsh` are the only tool-level
+  // permission tools, so the class check is this two-name membership.
+  const isShellTool = tool === 'bash' || tool === 'pwsh'
+  if (isShellTool && resource.kind === 'exact') {
     throw teamContractError(
       'MALFORMED_DTO',
-      `permission rule ${path} (lane '${lane}') is rejected: the bash tool does not accept an 'exact' resource in any lane — an exact key is a file key and can never match the bash tool-level resource, and alpha.2 has no parameter-level shell matcher (bash supports only the 'any' resource, in the ask or deny lane)`,
+      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept an 'exact' resource in any lane — an exact key is a file key and can never match the ${tool} tool-level resource, and alpha.2 has no parameter-level shell matcher (${tool} supports only the 'any' resource, in the ask or deny lane)`,
       { path: `${path}.resource.kind`, lane },
     )
   }
-  if (tool === 'bash' && resource.kind === 'any' && lane === 'allow') {
+  if (isShellTool && resource.kind === 'any' && lane === 'allow') {
     throw teamContractError(
       'MALFORMED_DTO',
-      `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } })`,
+      `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for ${tool} — the allow lane must not carry a ${tool} rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: ${tool}, resource: { kind: 'any' } })`,
       { path: `${path}.resource.kind`, lane },
     )
   }

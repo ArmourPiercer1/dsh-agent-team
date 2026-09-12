@@ -1,0 +1,106 @@
+[
+  {
+    "seq": 1,
+    "path": "/chat/completions",
+    "receivedAt": "2026-09-12T17:35:27.163Z",
+    "status": 200,
+    "auth": "Bearer <redacted>",
+    "model": "a2c1-live-model",
+    "tools": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "ralph",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "lastUserText": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.\n\nApproval prompts are disabled in this session: actions that require approval are reje",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "a2c1-L4-call-a",
+          "name": "pwsh",
+          "arguments": {
+            "command": "Get-ChildItem -Name",
+            "description": "List directory names (A2C-1 live probe)",
+            "workdir": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 2,
+    "path": "/chat/completions",
+    "receivedAt": "2026-09-12T17:35:27.164Z",
+    "status": 200,
+    "auth": "Bearer <redacted>",
+    "model": "a2c1-live-model",
+    "tools": null,
+    "lastUserText": "Generate the session title from this JSON array of human messages:\n[{\"seq\":7,\"text\":\"[team-relay] from=human:a2c1-l4-root to=inst-0l9i95708cx7 (label: a2c1-worker)\\nA2C1_PWSH_a2c16d30b74f run the pwsh probe now\"}]",
+    "reply": {
+      "kind": "text"
+    }
+  },
+  {
+    "seq": 3,
+    "path": "/chat/completions",
+    "receivedAt": "2026-09-12T17:35:27.194Z",
+    "status": 200,
+    "auth": "Bearer <redacted>",
+    "model": "a2c1-live-model",
+    "tools": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "ralph",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "lastUserText": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.\n\nApproval prompts are disabled in this session: actions that require approval are reje",
+    "reply": {
+      "kind": "text"
+    }
+  }
+]

@@ -1,0 +1,16 @@
+$ vitest run packages/runtime/test/a2c1-pwsh-permission.test.ts packages/domain/test/a1-permission-policy.test.ts packages/runtime/test/a3-permission-resolver.test.ts packages/runtime/test/h5-bash-effects.test.ts packages/runtime/test/h1a-pre-execute-endcap.test.ts packages/runtime/test/issue2-capability-permission-precedence.test.ts
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-1
+
+ ✓ packages/domain/test/a1-permission-policy.test.ts (43 tests) 49ms
+ ✓ packages/runtime/test/a3-permission-resolver.test.ts (28 tests) 5ms
+ ✓ packages/runtime/test/issue2-capability-permission-precedence.test.ts (12 tests) 3ms
+ ✓ packages/runtime/test/h1a-pre-execute-endcap.test.ts (49 tests) 5ms
+ ✓ packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests) 6ms
+ ✓ packages/runtime/test/h5-bash-effects.test.ts (25 tests) 4ms
+
+ Test Files  6 passed (6)
+      Tests  185 passed (185)
+   Start at  16:12:06
+   Duration  2.67s (transform 2.22s, setup 0ms, import 7.17s, tests 72ms, environment 0ms)
+
