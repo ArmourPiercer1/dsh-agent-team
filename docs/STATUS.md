@@ -4,12 +4,12 @@
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 `0.1.0-rc.1` 发布裁决）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
-> **最近更新**：2026-09-11。issue #1 异步委托修复完成并集成至本地 master：R8 live acceptance 17/17（§29 硬条件 + §18 冻结结论 A）、三盲审 [补充内容, 通过, 通过] + 补充落地重验、int（p4t6 pin 673 union）重验全绿、master FF 0804b95 → 2c67a31。**NO push** — 本地 master 领先 origin/master (6a2f3e1) 10 个提交（6 wave + 3 issue#1 + 1 bookkeeping），等待用户明确推送授权。权威状态见 graph.yaml `issue1_async_delegation` 块 + SESSION_ROUTER_LOG 末尾。
+> **最近更新**：2026-09-12。test-infra-standardization 完成并 FF 集成至本地 master：`tests/` 布局标准化（测试源码 checkout → `tests/deepseek-harness-test-use` @ a66e470204 pristine、DSH_HOME → `tests/homes/`、路径唯一来源 `tests/paths.mjs`、home 命名/清理协议 §7、kit 归位、vitest.config 主检出修复、upstream-resolver 双候选、CI 路径）；验证全绿（p4t6 @ pin 690 未动、p8t3/p8t4、check:artifacts 1104、client 46/47、3180 新鲜世界启动冒烟全链）。master FF a99c213 → 3b56ec5 + 5cb57e9 + bookkeeping（3 提交）。**NO push** — 本地 master 领先 origin/master (a99c213，2026-09-12 已推送) 3 个提交，等待用户明确推送授权。client 套件唯一失败 = TCM-M4 (4c67da9) 潜伏 spec/实现失配（预先存在，证据链见 evidence，裁决请求单独任务）。权威状态见 graph.yaml `test_infra_standardization` 块 + SESSION_ROUTER_LOG 末尾。
 > **上次更新**：2026-09-08。用户基于手动测试与 Playwright/live acceptance，裁决当前代码可冻结为未来基线 **`0.1.0-rc.1`**。F3/F11/F9/T1.4 repair 已完成确定性验证和 live matrix；已知的 G3 consumed/F10 边界保持为预声明限制，不作为本 RC 阻塞。发布分支策略同步冻结：首个正式 release 之前，`master` 用于后续 alpha 开发，`stable` 只跟踪经裁决的 RC 基线及 RC-qualified 修复。
 
 ## 1. 一句话现状
 
-**当前（2026-09-11）**：alpha.2 加固（H1–H3 安全闭环 + H4–H6 followup）与 issue #1 异步委托修复（async admission receipt + 持久 memberResult + team_collect 纯读，共 11 工具）均已集成至本地 master；R8 live 验收 17/17 + §18 冻结结论 A + 三盲审通过（补充内容落地重验后）。`stable` 仍指向 `0.1.0-rc.1` 线；master 领先 origin/master (6a2f3e1) 10 个提交 — **push 待用户明确授权**。下方 remote-mount-race / D1–D6 / repair / RC 内容保留为历史闭环证据。
+**当前（2026-09-12）**：tests/ 布局标准化（test-infra-standardization）完成并 FF 集成至本地 master（3 提交；验证全绿，3180 新鲜世界冒烟全链；evidence/裁决请求见上方最近更新行）。alpha.2 加固（H1–H3 安全闭环 + H4–H6 followup）、issue #1 异步委托修复、issue #2 blueprint-loading（line C，含 21 分支 spec 缺口修复 3d09b68）与 PR #4（line B 权限修复）均已合入并**已推送**（origin/master = a99c213，2026-09-12；全部 PR 已关闭 0 open）。`stable` 仍指向 `0.1.0-rc.1` 线；本地 master 领先 origin/master 3 个提交（test-infra-standardization）— **push 待用户明确授权**。下方 remote-mount-race / D1–D6 / repair / RC 内容保留为历史闭环证据。
 
 **remote-mount-race 历史闭环（R135 起）**：用户新机（origin master `05721fd` 预构建安装面）
 `dsh web` →「新建团队」→ `catalog.list` **HTTP 405**（Team UI 本体正常）。双根因在用户世界副本上
