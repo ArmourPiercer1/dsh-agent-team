@@ -2746,3 +2746,18 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **INT_W2 冻结**（本 commit）：A2C-2 + A2C-5 全数入 int。W3 = A2C-7（base INT_W2）。
 - SOP 更新（教训）：改 agent-bindings 的任务，focused 门禁必须显式包含全部 live-bridge
   消费者（a6a/bp1 首列）；node 链 "base-IDENTICAL" 不能替代 vitest 侧文件级检查。
+
+### W3 派发（A2C-7，solo wave，base = INT_W2 @ e95a57e）
+
+- **W3 简报事实节已填**（e95a57e）：resource kinds @ schema.ts:170（['exact','any'] → 加
+  'subtree'）；shell 拒绝 lane 逻辑 @ validate.ts:624-631（A2C-1 语义不回退）；
+  canonical-operation @ INT_W2 行号（resolveTarget L241 / shell L657+L743 / read L333+L670）；
+  A5 挂载点 = pre-execute-adapter.ts（fsBackend accessor L103-105/L435-441，决策-local
+  batch 在 rule canonicalization 阶段）；**真实 fs backend 首用**（本仓测试从未用过）=
+  pinned `packages/fs/fs-local` `LocalFileSystem(ctx, {cwd})` @ L64（contains 实现在
+  L125，canonical relative 语义，prefix trap 天然正确）；Context 构造方式 = 代理 recon。
+- **worktree**：`.worktrees/a2c-7`（task/a2c-7-subtree-matcher）@ e95a57e。
+- **子代理**：A2C-7 = `3caf0f71`。边界 = 唯一深 matcher 扩展任务（计划 §14 授权）；
+  A3 保持 pure（permission-resolver 零 fs import = 专项门禁）；fs.contains 为唯一
+  containment authority；H4 retarget 必跟随；16 组测试矩阵全覆盖 + 至少一个 real
+  LocalFileSystem 测试真调 contains()。
