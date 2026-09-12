@@ -2699,3 +2699,15 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3379）+ 联合套件 6 文件 182/182
   （int-bookkeeping-a2c5.log）。
 - **INT_W2 未冻结**（A2C-2 子代理 ea079e0c 仍在运行）。
+
+### A2C-2 进展（W2，里程碑 b）
+
+- 测试文件 `a2c2-permission-coverage.test.ts` RED 阶段完成：S0 = 3 探针（plan §7.6）+
+  稳定 characterization 腿 + gate 腿。
+- **RED @ base（stash 形式）**：文件干净加载；3/3 失败均精确停在首个 post-fix gate 腿
+  （base 上 gatePresent=false）；pre-fix characterization 腿通过（未知工具留在 surface /
+  default-deny 下 web_fetch 工具体执行 / grep、subagent、web_fetch 全在 7 名 managed
+  词集外）——gap 实证充分。
+- stash pop 精确恢复（3 tracked 修改：errors.ts / index.ts / agent-bindings.mjs + 3 未跟踪：
+  permission-coverage.ts 新 evaluator / 测试 / 证据目录；stash 空）。
+- 实现已就位（新 evaluator 模块 + setup error 面 + agent-bindings 安装点）；GREEN 填充中。
