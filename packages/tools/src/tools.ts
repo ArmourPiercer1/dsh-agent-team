@@ -464,7 +464,9 @@ function inspectConfigSpec(): ToolSpec {
   return {
     name: 'team_inspect_config',
     description:
-      'Inspect the effective policy configuration of ONE member instance (the per-capability effective values after overlay and external facts).',
+      'Inspect the effective policy configuration of ONE member instance. ' +
+      '`effective` = the legacy GENERIC capability policy view (the per-capability values after overlay and external facts; its `permissions` cell is a legacy generic cell and NOT the alpha.2 operation-permission authority). ' +
+      '`operationPermissions` = the ACTUAL static parameter-aware operation-permission policy enforced by alpha.2 for this instance (the bound template capabilities.permissions: default plus allow/ask/deny rules as stored, plus the managedTools and resourceKinds vocabulary; `mode: "absent"` when the template declares no permissions).',
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
