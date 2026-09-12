@@ -2598,3 +2598,17 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **B7 a5a node 链失败（早前）裁决**：世界状态依赖（`team_domain already exists`）——vitest 轮
   留下/清理 .tmp-fault 世界与 node 轮交叉；新世界下 a5a PASS。scratchDir 文档要求测试 finally
   清理；跨 runner 交错为既有卫生缺口（非 A2C-4 引入）。
+
+### A2C-1 接管进展（里程碑 b）
+
+- 测试文件完成：`a2c1-pwsh-permission.test.ts` 2016 行 / 28 测试（P1–P4 RED 探针 + 24 GREEN；
+  超出 500–1200 目标 → 代理将压缩至 ~1700 并记录为文档化偏差——合并时核实）。
+- **RED 取证（99bc790 pre-fix 树）**：文件可加载（零 import 错误）；26/28 失败 = 4 探针全败
+  （P1 classify=unsupported / P2 static allow 穿透执行 nextCalls=1 / P3 MALFORMED_DTO 未知工具 /
+  P4 bodyDelta=1 工具体执行）+ 22 GREEN 断言 post-fix 事实；2 个 pre-fix 通过 = bash 回归 pin
+  （byte-identical bash-* reasons + bash ask 流）——按设计。
+- **p4t6 实证**：该 RED 全量运行中 scanner 报告 691 vs pin 690 → A2C-1 delta +1 实证确认
+  （INT_W1 冻结后 pin 联合 = 691 + 1 = 692 预期）。
+- stash pop 精确恢复（9 M + 未跟踪测试 + 证据目录；stash 空）。**注**：接管代理对
+  `canonical-operation.ts` 做了一处 reason-string 修复（在 9 文件集内，合并时 diff 核实范围）。
+- 下一步：GREEN 运行 → gates → 适配 live proof → commit → 里程碑 c。
