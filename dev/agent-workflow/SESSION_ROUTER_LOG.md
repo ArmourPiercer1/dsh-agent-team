@@ -2503,3 +2503,21 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **基线记录（int @ 1e05d24，计划 §2.1）**：root suite 280 files/3330 tests = 10 files/20 tests 预存在失败（domain t1×9+t2×1；legacy p7t6×1；runtime d3×1 + p6t3-mediation×5 + p6t3-restart×2 + 文件级 module-load×3[p8s3b/t12a-b2/t12a-glue，agentPresets dep 缺失 harness 环境类]；tools p6t6-actions×1）；client-local 47 files/641 tests = 1 失败（TCM-M4 `team-creation-panel.client.spec.tsx:453`，`4c67da9` 潜伏 spec/实现失配，裁决待用户，本轮不顺手修）；p4t6 pin = 690。完整日志 `dev/agent-workflow/evidence/alpha2-capability-completion/baseline-vitest.log` + `baseline.md`。
 - **Wave 1 派发（计划 §3 W1，并行）**：A2C-1（`task/a2c-1-pwsh-permission` @ `.worktrees/a2c-1`）+ A2C-4（`task/a2c-4-external-hard-last-mile` @ `.worktrees/a2c-4`）；产品文件基本不重叠（冲突矩阵 §4）；`pre-execute-adapter.ts` 同文件不同区域（A2C-1 = supported-tool 分类面 / A2C-4 = allow 路径 external recheck 插入），简报要求最小 hunk 隔离；A2C-1 live proof 等效适配（本机无 pwsh 二进制 + 非 Windows → 显式挂载 `tool-pwsh` 的 preset + dispatch 级放行证明，偏差记入任务报告）。
 - **推送状态**：origin/master = `1e05d24`（PR #7 合并）；origin/int/alpha2-capability-completion = 本 bookkeeping；其余无推送。
+
+### W1 监控与后备预案（R141 续，2026-09-12）
+
+- **A2C-4**：RED 取证完成（red-run.log，2/2 probes 于 base 失败）；GREEN 源改动完成
+  （control/types+service+index：`checkExternalOperation` 复用 hardCellAllows + guardOperation 内
+  consumption write 前 live recheck；adapter 仅 L873 static-allow 单插入点）；测试文件扩展中（950+ 行，
+  G1–G9 §6.5 矩阵）；expected scanner delta = +1；合并规划注记：`guardOperation` 第二生产调用方
+  `packages/tools/src/guard.ts` consultGuard 由 in-guard recheck 覆盖（consultGuard 本身 fail-closed，
+  tools/ 零改动）。
+- **A2C-1**：GREEN 源编辑 9 文件完成，主 Agent diff 预审通过（shell class 词集 / byte-identical bash
+  诊断 / 单一 canonicalizeShellOperation / adapter hunk 仅 L279 import + L717 exact-inert skip，
+  与 A2C-4 插入区 L873 零重叠）；测试文件撰写中（子代理确认在验证 real-composition recipe 形状后
+  单 turn 内执行 写文件 → stash → RED → pop）；主 Agent 曾于 R8 纠正其 RED 取证流程（对 pre-fix 树
+  跑 4 probes）——已确认遵循。
+- **后备预案**（未触发）：A2C-1 接管简报 `briefs/a2c-1-takeover-brief.md` 已提交 int（剩余步骤契约 +
+  已核验源状态清单）；触发条件 = A2C-1 测试文件在 R25 检查时仍未落盘 → interrupt + 重派窄域子代理。
+- **远端**：origin/int/alpha2-capability-completion 持续同步；master = 1e05d24 未动；无 open PR
+  （任务 PR 将在各任务 commit 后创建）。
