@@ -2761,3 +2761,14 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   A3 保持 pure（permission-resolver 零 fs import = 专项门禁）；fs.contains 为唯一
   containment authority；H4 retarget 必跟随；16 组测试矩阵全覆盖 + 至少一个 real
   LocalFileSystem 测试真调 contains()。
+
+### A2C-7 进展（W3，里程碑 a+b）
+
+- 测试文件完成：`a2c7-subtree-matcher.test.ts` 1769 行 / 31 测试，16 §9.9 组全覆盖
+  （G1 root / G2 child / G3 deep / G4 sibling / G5 prefix-trap / G6 rel-abs / G7 ..-trav /
+  G8 casing / G9 alias-identity / G10 retarget / G11 exact / G12 any / G13 priority /
+  G14 grammar-shell-reject / G15 failure-lanes / G16 cold-resume）+ R1/R2 探针 +
+  **REAL LocalFileSystem 段**（真 fs.resolve + 真 contains，temp dir）。
+- **RED 纯净形式**（track 树本净，先测试后源码；stash no-op 已文档化，pop 验证）：
+  16 failed | 15 passed — 16 失败全为 subtree 判别探针 pre-fix 事实（schema 拒 subtree 等）。
+- GREEN 实现 + 门禁组进行中。
