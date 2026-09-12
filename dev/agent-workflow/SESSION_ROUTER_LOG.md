@@ -2856,3 +2856,11 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **closure-report.md**（§19 十二节 + 附录 A DoD 30/30 核验）完成。
 - **Alpha.3 readiness verdict = GO**（前置：TCM-M4 裁决 / Windows worker 复跑 / A2C-6 设计评审 — 均非阻塞）。
 - **最终动作**：唯一 int→master 总 PR 开放（其他 PR 全部已合并）——供用户 merge；主 Agent 不 merge master。
+
+### 最终状态（本轮完成，等待用户 merge）
+
+- **PR #14**（int/alpha2-capability-completion → master）= **唯一开放 PR**（#7–#13 全部 merged）——
+  供用户 merge；主 Agent 不 merge master（standing directive）。
+- 收束全部完成：closure gates（fresh install 全绿）+ closure-report（12 节 + DoD 30/30）+
+  Alpha.3 GO 裁决 + 三件用户注意事项（TCM-M4 待裁决 / Windows 适配 / strict-mode fail-closed 行为变化）。
+- 远端状态：master = 1e05d24（未动）；int = 8ee8efc（FROZEN INT_W4 + closure）；task 分支保留。
