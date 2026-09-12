@@ -34,10 +34,15 @@
  * - NOT the control scope (A4: exact allows over the `fingerprint`) and
  *   NOT the pre-execute listener (A5: the agent-scoped
  *   `tools/pre-execute` enforcement);
- * - NOT a `subtree` matcher in alpha.2: the plan cut rule (plan §8.2 —
- *   only `exact` and `any` exist in the A1 vocabulary) makes it out of
- *   scope; no `startsWith`, no path parsing, no case folding — string
- *   equality on opaque keys only.
+ * - the `subtree` kind (A2C-7, plan §9): the rule carries the root's
+ *   canonical key (`rootKey` — PROVENANCE/DEBUG only) and the
+ *   OPERATION-RELATIVE containment boolean `containsOperation`, computed
+ *   by the A5 adapter with the ONLY legal authority: the pinned public
+ *   `FileSystem.contains(rootTarget, operationTarget)` over targets of
+ *   the SAME provider (plan §9.4). The matcher consumes the boolean and
+ *   NEVER compares `rootKey` against anything (no `startsWith`, no key
+ *   equality, no path parsing, no case folding — the containment
+ *   judgment is the seam's, fresh per decision (H4));
  *
  * Input contract (who canonicalizes what, and when):
  *
@@ -138,8 +143,13 @@ export type PermissionLane = 'allow' | 'ask' | 'deny'
 /**
  * One policy rule AFTER A5's input normalization (module header): the
  * A1 rule's `exact.path` has been replaced by its canonical key (the
- * same resolver the operation went through); `any` rules pass through
- * unchanged. A3 compares `key` — it never sees a raw path.
+ * same resolver the operation went through); the A2C-7 `subtree` rule's
+ * path has been canonicalized to its root key AND its containment
+ * relation to THIS operation has been computed by the A5 seam (the
+ * public `FileSystem.contains` — the only legal authority); `any` rules
+ * pass through unchanged. A3 compares the exact key / consumes the
+ * subtree boolean — it never sees a raw path and never infers
+ * containment from `rootKey`.
  */
 export type CanonicalRule = {
   /** The tool this rule gates (closed A1 vocabulary). */
@@ -147,6 +157,19 @@ export type CanonicalRule = {
   /** The resource the rule matches, on canonical keys. */
   readonly resource:
     | { readonly kind: 'exact'; readonly key: string }
+    | {
+        /** A2C-7 (plan §9) — the subtree root's canonical key.
+         *  PROVENANCE/DEBUG equality only: the matcher NEVER compares
+         *  it (containment is `containsOperation`, computed by the
+         *  A5 seam over the public `FileSystem.contains`). */
+        readonly kind: 'subtree'
+        readonly rootKey: string
+        /** The OPERATION-RELATIVE containment verdict for THIS decision
+         *  (root == operation target OR the operation is a canonical
+         *  descendant — the pinned `FileSystem.contains` semantics,
+         *  same provider, fresh per decision (H4)). */
+        readonly containsOperation: boolean
+      }
     | { readonly kind: 'any' }
 }
 
@@ -256,6 +279,16 @@ function ruleDecision(lane: PermissionLane, ruleIndex: number): PermissionDecisi
  * - the tool must match first (a file rule never matches a bash
  *   operation and vice-versa — the tool names differ);
  * - `any`: the whole tool (no resource identity);
+ * - `subtree` (A2C-7, plan §9): the rule's OPERATION-RELATIVE
+ *   `containsOperation` boolean is `true` (the A5 seam computed it with
+ *   the pinned `FileSystem.contains` — the only legal containment
+ *   authority, fresh per decision). `rootKey` is PROVENANCE only: the
+ *   matcher never compares it against the operation key (no
+ *   `startsWith`, no equality, no parsing — a `rootKey` string-equal
+ *   to the operation key, or a prefix of it, means NOTHING to the
+ *   matcher: the boolean is the whole input). `subtree` addresses FILE
+ *   identities — it matches only a `kind: 'file'` resource (a shell
+ *   operation's tool-level key is never contained in a file subtree);
  * - `exact`: the rule's canonical key EQUALS the operation's resource
  *   key (no case folding, no `startsWith`, no path parsing). `exact`
  *   addresses FILE identities — it matches only a `kind: 'file'`
@@ -274,6 +307,13 @@ function ruleMatches(rule: CanonicalRule, operation: CanonicalOperation): boolea
   }
   if (operation.resource.kind !== 'file') {
     return false
+  }
+  if (rule.resource.kind === 'subtree') {
+    // A2C-7 (plan §9.5): the containment verdict is the A5 seam's
+    // (the pinned `FileSystem.contains`, same provider, fresh per
+    // decision (H4)) — the matcher consumes the boolean and NEVER
+    // consults `rootKey` (provenance only).
+    return rule.resource.containsOperation === true
   }
   return rule.resource.key === operation.resource.key
 }

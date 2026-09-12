@@ -1116,7 +1116,7 @@ export const NEG_PERMISSION_UNKNOWN_TOOL: NegativeFixture = {
 }
 
 export const NEG_PERMISSION_RESOURCE_UNKNOWN_KIND: NegativeFixture = {
-  name: 'permission resource kind is outside the closed vocabulary (subtree is not A1)',
+  name: 'permission resource kind is outside the closed vocabulary (glob is not A1)',
   code: 'MALFORMED_DTO',
   source: permissionNegativeSource([
     '    permissions:',
@@ -1124,7 +1124,7 @@ export const NEG_PERMISSION_RESOURCE_UNKNOWN_KIND: NegativeFixture = {
     '      allow:',
     '        - tool: read',
     '          resource:',
-    '            kind: subtree',
+    '            kind: glob',
     '            path: "/data"',
     '      ask: []',
     '      deny: []',
