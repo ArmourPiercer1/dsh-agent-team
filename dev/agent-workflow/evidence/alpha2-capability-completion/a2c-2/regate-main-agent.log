@@ -1,0 +1,25 @@
+=== R1 focused (a2c2+a2c5+a2+a3+a4a+a5a+a2c1+a2c4+a6a) ===
+ Test Files  1 failed | 7 passed (8)
+      Tests  194 passed (194)
+=== R2 full root ===
+ Test Files  13 failed | 270 passed (283)
+      Tests  21 failed | 3306 passed (3327)
+=== R3 node chain ===
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+PASS packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests)
+=== R4 typecheck ===
+$ tsc -p tsconfig.json
+=== R5 build ===
+packages/client build: Done
+=== R6 zero-core ===
+RESULT: PASS verify-zero-core (0 findings)
+=== REGATE A2C-2 DONE ===

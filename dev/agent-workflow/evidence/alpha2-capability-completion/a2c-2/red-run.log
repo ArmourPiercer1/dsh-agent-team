@@ -1,0 +1,94 @@
+=== A2C-2 RED RUN ===
+date: 2026-09-12T18:01:44Z
+base: b96faf368674a39fc9a40637501e310585c10fb5 (stash applied: tracked src edits reverted to base)
+command: npx vitest run packages/runtime/test/a2c2-permission-coverage.test.ts
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-2
+
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts (3 tests | 3 failed) 6ms
+     × P1 · the unknown tool on the final surface under default=deny is UNKNOWN_UNMANAGED (the gate rejects it; nothing auto-removes it) 4ms
+     × P2 · default=deny does not auto-remove an unsupported tool (web_fetch stays on the surface and its body runs; the gate classifies it sensitive) 0ms
+     × P3 · grep/subagent/web_fetch escape the 7-name managed vocabulary (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails) 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts > a2c2 G · the six-class evaluator matrix (plan §7.3)
+Error: No test found in suite a2c2 G · the six-class evaluator matrix (plan §7.3)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts > a2c2 F · the FATAL lanes + the typed error shape (plan §7.4)
+Error: No test found in suite a2c2 F · the FATAL lanes + the typed error shape (plan §7.4)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts > a2c2 S · the real-seam legs (MCP delta, legacy enablement, lifecycle)
+Error: No test found in suite a2c2 S · the real-seam legs (MCP delta, legacy enablement, lifecycle)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts > a2c2 S0 · RED probes (plan §7.6) > P1 · the unknown tool on the final surface under default=deny is UNKNOWN_UNMANAGED (the gate rejects it; nothing auto-removes it)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:424:28
+    422|     expect(p1.bodyCalls).toBe(0) // nothing was called — the gap is at…
+    423|     // the post-fix gate leg (RED on base):
+    424|     expect(p1.gatePresent).toBe(true)
+       |                            ^
+    425|     expect(p1.verdictOk).toBe(false)
+    426|     expect(p1.verdictUnmanaged).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts > a2c2 S0 · RED probes (plan §7.6) > P2 · default=deny does not auto-remove an unsupported tool (web_fetch stays on the surface and its body runs; the gate classifies it sensitive)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:445:28
+    443|     expect(p2.resultText).toBe('ok')
+    444|     // the post-fix gate leg (RED on base):
+    445|     expect(p2.gatePresent).toBe(true)
+       |                            ^
+    446|     expect(p2.classification).toBe('known-sensitive-unmanaged')
+    447|     expect(p2.verdictOk).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts > a2c2 S0 · RED probes (plan §7.6) > P3 · grep/subagent/web_fetch escape the 7-name managed vocabulary (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:466:28
+    464|     expect(p3.classifyKinds).toEqual(['unsupported', 'unsupported', 'u…
+    465|     // the post-fix gate leg (RED on base):
+    466|     expect(p3.gatePresent).toBe(true)
+       |                            ^
+    467|     expect(p3.verdictOk).toBe(false)
+    468|     expect(p3.verdictUnmanaged).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  18:01:45
+   Duration  675ms (transform 443ms, setup 0ms, import 594ms, tests 6ms, environment 0ms)
+
+exit: 1

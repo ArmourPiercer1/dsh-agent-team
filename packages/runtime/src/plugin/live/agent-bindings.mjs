@@ -148,7 +148,7 @@
  *                        agent back, the AgentSetup contract).
  *
  *   fsBackend (OPTIONAL) - the per-agent DSH `fs` seam accessor
- *                        (agentCtx) => { resolve(path, { cwd? }) }:
+ *                        (agentCtx) => { resolve(path, { cwd? }), contains? }:
  *                        alpha.2 (A6 live fix V1-1) - the public
  *                        fs.resolve seam the permission adapter's
  *                        resolveTarget closure canonicalizes file targets
@@ -156,6 +156,11 @@
  *                        upstream file tools use; the upstream
  *                        agent-instructions plugin uses the identical
  *                        lazy ctx.get('fs') + session.header.cwd pattern).
+ *                        A2C-7 (plan section 9): the same accessor also
+ *                        exposes the pinned public `FileSystem.contains`
+ *                        containment seam (the ONLY legal authority for
+ *                        the `subtree` permission kind - the containsTargets
+ *                        closure below passes it to the adapter).
  *                        host.ts passes a closure that resolves the
  *                        service LAZILY per call via the row's strict
  *                        ctx.get('fs') (the global service store): the
@@ -281,7 +286,7 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // T12-M2: READ-ONLY reuse of the persona resolver (agent-setup/persona) and
 // the blueprint parser (the domain facade) — the composition that puts the
 // blueprint persona onto the real DSH Agent at create/setup.
-import { parseBlueprint } from '../../../../domain/blueprint/src/index.js'
+import { parseBlueprint, PERMISSION_TOOL_NAMES } from '../../../../domain/blueprint/src/index.js'
 import { staticCapabilitiesOf } from '../../../../domain/policy/src/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
@@ -301,7 +306,22 @@ import {
 // lifecycle — and ONLY for a bound template that declares
 // `capabilities.permissions` (absent policy = no listener: the alpha.1 /
 // legacy path stays byte-for-byte unchanged).
-import { installParameterPermissionListener } from '../../../operation-permission/index.js'
+import {
+  installParameterPermissionListener,
+  // alpha.2 A2C-2 (plan §7): the Permission Coverage Gate — the closed
+  // six-class authority-owner classification of the FINAL model-facing
+  // tool surface + the deterministic typed error the strict setup fails
+  // with when an unmanaged (known-sensitive or unknown) tool is on it.
+  buildPermissionCoverageErrorDetail,
+  evaluatePermissionCoverage,
+  mcpIntroducedToolNames,
+  PermissionCoverageUnmanagedError,
+} from '../../../operation-permission/index.js'
+// A2C-2 (plan §7.2): the public scope seam — the agent-scoped tool
+// surface is read through `tools.schemas(scopeOf(agentCtx))`; the Agent
+// IS the scope key, so the setup callback's agent ctx carries the
+// correct tag (upstream core/scope `scopeOf`).
+import { scopeOf } from '@deepseek-ai/dsh-scope'
 
 /**
  * The leader instance id (packages/contracts LEADER_INSTANCE_ID). The
@@ -1096,6 +1116,12 @@ export function createAgentBindings(deps) {
         mcpFiber: undefined,
         mcpActivationError: undefined,
         appliedRecordIds: new Set(),
+        // A2C-2 (plan §7.3-C): the strict-mode pre-MCP surface snapshot —
+        // the OTHER_MANAGED_MCP ownership proof is the ACTUAL delta between
+        // this snapshot and the FINAL surface after the reconcile (no
+        // name-prefix guessing). Undefined on every legacy / alpha.1 setup
+        // (the gate and the snapshot are both strict-mode only).
+        a2c2PreMcpSurface: undefined,
       }
       consumptionState.set(sessionId, state)
       toolDisposers.push(installModelSelection(agentCtx, ref))
@@ -1188,6 +1214,11 @@ export function createAgentBindings(deps) {
       // callback reads it when it runs — never before. Absent -> the
       // registration loop is skipped, as before.
       const teamTools = teamToolsRef.current
+      // A2C-2 (plan §7.3-B): the EXACTLY selected+registered Team tool
+      // names — the OTHER_MANAGED_TEAM_TOOL ownership fact for the
+      // Coverage Gate (the `teamTools` capability + the Team runtime are
+      // the authority owner). Empty on every legacy / alpha.1 setup.
+      let selectedTeamToolNames = []
       if (teamTools) {
         // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
         // registers only the catalog tools the template's teamTools entry
@@ -1197,6 +1228,7 @@ export function createAgentBindings(deps) {
         const catalog = Array.isArray(teamTools.tools) ? teamTools.tools : []
         const selected =
           capabilities.mode === 'selective' ? selectTeamTools(catalog, capabilities.teamTools) : [...catalog]
+        selectedTeamToolNames = selected.map((def) => def.name)
         for (const def of selected) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
@@ -1239,10 +1271,59 @@ export function createAgentBindings(deps) {
         capabilities.mode !== 'selective' ||
         (config.mcpServer !== null && filterMcpServers([config.mcpServer.name], capabilities.mcp).length > 0)
       const mcpMountAllowed = mcpView !== null && mcpView.allowed && mcpTemplateAllowed
+      // A2C-2 (plan §7.3-C): the pre-MCP surface snapshot — taken AFTER
+      // the preset mount + builtinToolDeny + Team tool/skill registration
+      // and BEFORE the MCP reconcile, so the delta across the reconcile
+      // is the PROVEN MCP ownership (OTHER_MANAGED_MCP). Strict mode only
+      // (absent policy = zero overhead: the legacy / alpha.1 path runs
+      // byte-for-byte as before).
+      if (permissionPolicy !== undefined) {
+        state.a2c2PreMcpSurface = coverageSurfaceNames(agentCtx, sessionId)
+      }
       if (mcpMountAllowed) {
         await reconcileMcp(agentCtx, state, true)
       }
       applyBoundaryRecords(state, modelView, mcpView)
+      // alpha.2 A2C-2 (plan §7): the Permission Coverage Gate — the FINAL
+      // effective tool surface (after preset mount + builtinToolDeny +
+      // Team tool + Team skill registration + the MCP reconcile) is
+      // classified into the closed six authority-owner classes; a
+      // KNOWN_SENSITIVE_UNMANAGED or UNKNOWN_UNMANAGED tool on the
+      // surface of a STRICT (capabilities.permissions) agent FAILS THE
+      // SETUP LOUDLY with the typed deterministic error
+      // (alpha2-permission-coverage-unmanaged-tools). NO auto-hide: the
+      // gate never restrict()s a discovered tool — it throws; NO
+      // acknowledgement escape hatch (plan §7.5 / §7.3-F). Strict mode
+      // only: an absent policy skips every line below (invariant §1.2 —
+      // the legacy / alpha.1 path runs byte-for-byte as before; the gate
+      // is absent, not disabled-quietly).
+      if (permissionPolicy !== undefined) {
+        const finalSurfaceNames = coverageSurfaceNames(agentCtx, sessionId)
+        const mcpIntroduced = mcpIntroducedToolNames(
+          state.a2c2PreMcpSurface ?? finalSurfaceNames,
+          finalSurfaceNames,
+        )
+        const verdict = evaluatePermissionCoverage(finalSurfaceNames, {
+          managedToolNames: PERMISSION_TOOL_NAMES,
+          teamToolNames: selectedTeamToolNames,
+          mcpToolNames: mcpIntroduced,
+        })
+        if (!verdict.ok) {
+          const presets = agentPresets
+          const presetId =
+            presets !== null && presets !== undefined && typeof presets.composedPreset === 'function'
+              ? presets.composedPreset(agentCtx)
+              : undefined
+          throw new PermissionCoverageUnmanagedError(
+            buildPermissionCoverageErrorDetail(verdict, { instanceId, presetId }),
+          )
+        }
+        for (const safe of verdict.safeUnmanaged) {
+          observations.push(
+            `alpha2-perm: coverage PASS safe-unmanaged tool '${safe}' on ${sessionId} (source-reviewed closed registry)`,
+          )
+        }
+      }
       // alpha.2 (plan §11.3): the tools/pre-execute permission enforcement
       // (the A5 frozen adapter over the A2/A3/A4 APIs) — installed LAST in
       // the setup, on THIS agent's scope only. The adapter returns the
@@ -1309,11 +1390,36 @@ export function createAgentBindings(deps) {
             path,
             typeof cwd === 'string' && cwd !== '' ? { cwd } : {},
           )
-          return { key: String(target.targetKey), display: String(target.displayPath) }
+          // A2C-7 (plan §9): the OPAQUE FsTarget handle rides the
+          // resolver result as an additive runtime-only field (the A2
+          // canonicalizer ignores it - it reads only key/display); the
+          // A5 adapter uses it exclusively as the argument to the
+          // pinned `FileSystem.contains` containment seam (both
+          // handles from the SAME live provider - never a string
+          // authority over the unbranded keys).
+          return { key: String(target.targetKey), display: String(target.displayPath), handle: target }
+        }
+        // A2C-7 (plan §9): the containment authority closure - the
+        // pinned public `FileSystem.contains` over the SAME lazy
+        // ctx.get('fs') basis as resolveTarget (per call, never
+        // captured). The adapter awaits the result (synchronous on the
+        // pinned upstream `FileSystem`; a thenable is tolerated) and
+        // treats a fault as containment-undeterminable (fail-closed
+        // semantics per lane).
+        const containsTargets = (parent, child) => {
+          const backend = fsBackend(agentCtx)
+          if (typeof backend.contains !== 'function') {
+            // A provider without the public containment seam: the
+            // subtree containment is undeterminable (the adapter fails
+            // closed on the deny lane; allow/ask keep non-match).
+            throw new Error('the fs provider does not expose a public contains() seam (alpha.2 subtree containment undeterminable)')
+          }
+          return backend.contains(parent, child)
         }
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
+          containsTargets,
           controlService,
           rootSessionId: teamRoot,
           caller: { kind: 'instance', instanceId },
@@ -2267,6 +2373,57 @@ export function createAgentBindings(deps) {
       `alpha2-perm: permission-control-unavailable for ${sessionId} (instanceId=${instanceId})`,
     )
     return error
+  }
+
+  // A2C-2 (plan §7.4): the typed fail-closed error of a strict-mode setup
+  // whose FINAL tool surface CANNOT be read (no tools.schemas seam, no
+  // scope tag, or a malformed enumeration). Code
+  // 'alpha2-permission-coverage-surface-unavailable' (the sibling of
+  // alpha2-permission-fs-unavailable / -control-unavailable); the
+  // rejection propagates out of the AgentSetup callback and rolls the
+  // unpublished agent back — a strict agent never runs on a surface the
+  // Coverage Gate could not verify (fail closed, plan §7.2 / §7.8).
+  function permissionCoverageSurfaceUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: alpha.2 permission coverage surface unavailable for '${sessionId}': ${reason} (code: alpha2-permission-coverage-surface-unavailable)`)
+    error.code = 'alpha2-permission-coverage-surface-unavailable'
+    observations.push(`alpha2-perm: permission-coverage-surface-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // A2C-2 (plan §7.2): the FINAL model-facing surface of one agent scope,
+  // enumerated through the public `tools.schemas(scope)` seam — the
+  // agent-scoped view: the inherited preset surface AFTER every
+  // restriction (builtinToolDeny's restrict() masks inherited names),
+  // PLUS the scope's own registrations (the Team tools, the MCP tools).
+  // The Agent IS the scope key, so the setup callback's agent ctx carries
+  // the correct scope tag (upstream core/scope `scopeOf`). Sorted names.
+  // FAILS CLOSED (the typed error above) when the surface cannot be read:
+  // a partial or global view must never be classified.
+  function coverageSurfaceNames(agentCtx, sessionId) {
+    const tools = agentCtx.tools
+    if (tools === null || typeof tools !== 'object' || typeof tools.schemas !== 'function') {
+      throw permissionCoverageSurfaceUnavailable(sessionId, 'the agent ctx exposes no tools.schemas seam')
+    }
+    const scope = scopeOf(agentCtx)
+    if (scope === undefined) {
+      throw permissionCoverageSurfaceUnavailable(
+        sessionId,
+        'the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable',
+      )
+    }
+    const schemas = tools.schemas(scope)
+    if (!Array.isArray(schemas)) {
+      throw permissionCoverageSurfaceUnavailable(sessionId, 'tools.schemas returned a non-array surface')
+    }
+    for (const schema of schemas) {
+      if (schema === null || typeof schema !== 'object' || typeof schema.name !== 'string') {
+        throw permissionCoverageSurfaceUnavailable(
+          sessionId,
+          'tools.schemas returned a schema without a string name',
+        )
+      }
+    }
+    return schemas.map((schema) => schema.name).sort()
   }
 
   /**

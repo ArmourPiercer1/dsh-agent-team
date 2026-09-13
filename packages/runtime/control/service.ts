@@ -75,6 +75,20 @@
  * stale-denied — the external probe is moot for an operation that can
  * never execute).
  *
+ * A2C-4 last-mile recheck (alpha.2 plan §6.3): the SAME hard-cell
+ * semantics are re-probed LIVE at the FINAL dispatch points, through one
+ * SHARED READ-ONLY evaluator (`checkExternalOperation` — built over the
+ * same `externalPolicyFacts` port and `hardCellAllows`; there is no
+ * second hard-policy implementation): (a) the pre-execute adapter's
+ * static-allow path consults it BEFORE marking the exec authorized (the
+ * static path carries no control request — this is its only external
+ * gate); (b) `guardOperation` consults it AFTER the exact-scope match and
+ * BEFORE the consumption write — a cell that tightened after the decision
+ * blocks with verdict reason `external-policy` and does NOT write the
+ * consumption fact (the one-shot allow is not burned: "prefer zero allow
+ * consumption"). Both probes fail closed (a thrown/malformed facts probe
+ * is a deny) and are read-only (no durable row either way).
+ *
  * Resolver authority (invariant 37 / Architecture 25.1): the closed
  * resolver role set per kind (CONTROL_RESOLVER_ROLES) is checked BEFORE
  * the envelope — a MEMBER is never a resolver for any kind, even when
@@ -129,6 +143,7 @@ import {
 } from '../../domain/policy/src/index.js'
 import type {
   CapabilityName,
+  ExternalPolicyFacts,
   PolicyEntry,
 } from '../../domain/policy/src/index.js'
 import {
@@ -172,6 +187,7 @@ import type {
   ControlDecisionRecord,
   ControlDecisionReason,
   ControlDecisionValue,
+  ControlExternalVerdict,
   ControlGuardVerdict,
   ControlOperationScope,
   ControlRequestKind,
@@ -541,7 +557,8 @@ function hardCellAllows(entry: PolicyEntry | undefined, toolName: string | undef
  *
  * @param options - the injected ports (see {@link ControlServiceOptions}).
  * @returns the ControlService (requestControl / resolveControl /
- *   listControlState / guardOperation).
+ *   listControlState / guardOperation / checkExternalOperation /
+ *   awaitControlDecision).
  */
 export function createControlService(options: ControlServiceOptions): ControlService {
   const repositories = options.teamDomain.repositories
@@ -1104,6 +1121,94 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     })
   }
 
+  // --- checkExternalOperation (the A2C-4 shared read-only external check) --------------
+
+  /**
+   * A2C-4 (alpha.2 plan §6.3) — the SHARED READ-ONLY external hard check:
+   * the last-mile recheck of the LIVE external hard policy, built over
+   * the SAME `options.externalPolicyFacts()` port and the SAME
+   * hard-cell semantics as the resolve-time probe (`hardCellAllows` —
+   * one evaluator, never a second hard policy implementation):
+   *
+   * - domain derivation mirrors resolveControl: the explicit
+   *   `capabilityDomain` when present, else `tools` when a `toolName` is
+   *   named, else NO cell (an operation that names no capability domain
+   *   is not probed — the Team-owned admission that gated it is the
+   *   whole check; the facts port is never even consulted);
+   * - an ABSENT cell = "no host restriction" (allowed);
+   * - a hard `deny` refuses; a hard allow-list must NAME the operation's
+   *   tool (an unnamed tool matches no item — refused);
+   * - an explicit `capabilityExists: false` refuses;
+   * - FAIL CLOSED and NEVER THROWS: a thrown facts probe or a malformed
+   *   facts shape is a deny verdict (invariant 34: no Team decision,
+   *   human included, bypasses the external hard policy);
+   * - READ-ONLY: no durable row is written, regardless of the verdict.
+   *
+   * Callers: the pre-execute adapter's static-allow path (before the
+   * authorized-execution mark) and `guardOperation` itself (before the
+   * allow-consumption write — a tightened cell blocks WITHOUT consuming
+   * the one-shot allow).
+   */
+  async function checkExternalOperation(input: {
+    readonly capabilityDomain?: CapabilityName
+    readonly toolName?: string
+  }): Promise<ControlExternalVerdict> {
+    // Fail closed on a malformed (non-closed-set) domain BEFORE any
+    // derivation: a garbage domain must never read as "no cell".
+    const explicitDomain = input.capabilityDomain
+    if (
+      explicitDomain !== undefined &&
+      !(CAPABILITY_NAME_VALUES as readonly string[]).includes(String(explicitDomain))
+    ) {
+      return {
+        allowed: false,
+        reason: `the capability domain '${String(explicitDomain)}' is outside the closed set — fail closed`,
+      }
+    }
+    const capabilityDomain =
+      explicitDomain ?? (input.toolName !== undefined ? ('tools' as const) : undefined)
+    if (capabilityDomain === undefined) {
+      // No external cell applies to this operation (mirrors the
+      // resolve-time probe skip — the facts port is never consulted).
+      return { allowed: true }
+    }
+    let facts: ExternalPolicyFacts
+    try {
+      facts = await options.externalPolicyFacts()
+    } catch (error: unknown) {
+      // A throwing facts probe is a fail-closed deny, never an escape.
+      return {
+        allowed: false,
+        reason: `the external policy facts probe failed (${
+          error instanceof Error ? error.message : String(error)
+        }) — fail closed`,
+      }
+    }
+    try {
+      if (facts.capabilityExists?.[capabilityDomain] === false) {
+        return {
+          allowed: false,
+          reason: `capability '${capabilityDomain}' does not exist on the host (capabilityExists: false) — fail closed`,
+        }
+      }
+      if (!hardCellAllows(facts.hard?.[capabilityDomain], input.toolName)) {
+        return {
+          allowed: false,
+          reason: `the external hard policy denies capability '${capabilityDomain}' (the hard cell refuses the operation)`,
+        }
+      }
+      return { allowed: true }
+    } catch (error: unknown) {
+      // A malformed facts shape is a fail-closed deny, never an escape.
+      return {
+        allowed: false,
+        reason: `the external policy facts are malformed (${
+          error instanceof Error ? error.message : String(error)
+        }) — fail closed`,
+      }
+    }
+  }
+
   // --- guardOperation (the tool-pipeline last-mile seam) -------------------------------
 
   async function guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict> {
@@ -1237,6 +1342,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           throw new Error('control: invariant violation — one unconsumed allow but no element')
         }
         const { request, decision } = winner
+        // A2C-4 (alpha.2 plan §6.3) — the live external hard recheck,
+        // AFTER the exact-scope match and BEFORE the consumption write:
+        // if the host's external hard policy tightened between the
+        // decision and this final guard, the block carries ZERO effect —
+        // the consumption fact is NOT written (the one-shot allow is not
+        // burned: a host policy that already prevents the execution must
+        // not consume the approval; "prefer zero allow consumption";
+        // invariant 34). The shared read-only check never throws and
+        // writes nothing — a deny here is a plain block verdict.
+        const external = await checkExternalOperation({
+          capabilityDomain: scope.capabilityDomain,
+          toolName: scope.toolName,
+        })
+        if (external.allowed === false) {
+          return {
+            allowed: false,
+            reason: CONTROL_GUARD_BLOCK_REASONS.EXTERNAL_POLICY,
+            requestId: request.payload.requestId,
+            decisionSequence: decision.entry.sequence,
+          }
+        }
         await putEntry({
           schemaVersion: 2,
           sequence: await allocateSequence(),
@@ -1378,6 +1504,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     resolveControl,
     listControlState,
     guardOperation,
+    checkExternalOperation,
     awaitControlDecision,
   }
 }

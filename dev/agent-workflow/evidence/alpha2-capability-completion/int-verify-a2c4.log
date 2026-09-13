@@ -1,0 +1,47 @@
+=== V1 build:composition ===
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-int/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-int/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1104 files; committed install-surface artifacts match the fresh build
+rc=0
+=== V2 check:artifacts ===
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1104 files; committed install-surface artifacts match the fresh build
+=== V3 p4t6 vitest ===
+$ vitest run -- packages/testkit/test/p4t6-session-event-scan.test.ts
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 7ms
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-int/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-int/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+=== V4 full vitest (clean worlds) ===
+      Tests  22 failed | 3319 passed (3341)
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-int/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+ Test Files  11 failed | 270 passed (281)
+ ❯ Object.create packages/runtime/test/p8s3b-result-effects.test.ts:345:46
+ ❯ Object.create packages/runtime/test/t12a-live-bridge.mjs:441:14
+ ❯ Object.createChildSession packages/runtime/src/plugin/live/agent-bindings.mjs:1718:37
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2042:29
+ ❯ Object.resume packages/runtime/test/t12a-live-bridge.mjs:446:14
+ ❯ Object.setup packages/runtime/src/plugin/live/agent-bindings.mjs:1146:15
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:358:11
+ ❯ assertPlainRecord packages/contracts/src/dto/common.ts:38:11
+ ❯ capabilityTemplateUnresolved packages/runtime/src/plugin/live/agent-bindings.mjs:2227:19
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:909:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:949:23
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:991:13
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:426:36
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed) 27ms
+ ❯ packages/domain/test/t1-capability-schema.test.ts:152:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:163:23
+=== V5 runtime node chain (fresh world — a5a proof) ===
+FAIL packages/runtime/test/a6a-production-wiring.test.ts
+FAIL packages/runtime/test/bp1-blueprint-authority.test.ts
+FAIL packages/runtime/test/bp1-dual-team-gate.test.ts
+FAIL packages/runtime/test/bp1-red-glue-probe.test.ts
+FAIL packages/runtime/test/d1-member-base-tools.test.ts
+FAIL packages/runtime/test/d1-s6-remote-v3.test.ts (6/14 tests)
+FAIL packages/runtime/test/d1-team-ownership-index.test.ts (5/16 tests)
+FAIL packages/runtime/test/d2-s6-ensure-root-live.test.ts (5/10 tests)
+FAIL packages/runtime/test/d3-member-identity-context.test.ts
+FAIL packages/runtime/test/d5-instance-contract.test.ts (2/9 tests)
+PASS packages/runtime/test/a5a-pre-execute.test.ts (50 tests)
+=== VERIFY DONE ===

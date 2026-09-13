@@ -95,7 +95,14 @@ export interface FakeFsDouble {
   resolve(path: string, opts?: { cwd?: string }): Promise<{ targetKey: string; displayPath: string }>
 }
 
-/** The agent-scoped ctx double (the service surface the live glue consumes). */
+/** The agent-scoped ctx double (the service surface the live glue consumes).
+ *  A2C-2: the handle factory mints each agent's scope (the public
+ *  `createScope` seam, as the real Agent's constructor does), so the
+ *  object a setup callback receives is the SCOPE-TAGGED context —
+ *  `scopeOf(agentCtx)` is never `undefined` (the Permission Coverage
+ *  Gate's fail-closed surface read requires the tag); every member
+ *  below resolves through the tag object's prototype chain to the
+ *  recording layer. */
 export interface AgentCtxDouble {
   readonly listeners: AgentListenerEntry[]
   /** Every agentCtx.plugin() fiber recorded (the mini-MCP mount point). */
@@ -146,6 +153,16 @@ export interface AgentCtxDouble {
      *  on absence) and returns a composite disposer (listener first,
      *  guard last) that the glue rides its single toolDisposers slot. */
     guard(guard: (exec: { readonly name: string }) => string | undefined): () => void
+    /** A2C-2 (alpha.2, plan §7): the public model-facing surface seam
+     *  (`tools.schemas(scope)`) — the Permission Coverage Gate's surface
+     *  read. Double semantics: one entry per tool registered through
+     *  THIS double's `tools.register` (the current set — the register
+     *  disposer's unwind removes it), minus every name in the accumulated
+     *  `tools.restrict({ deny })` union (the flat-layer approximation of
+     *  the real inherited-layer mask — see the inline comment in the
+     *  bridge). Deterministic: sorted by name. The `scope` argument is
+     *  accepted for signature fidelity (the double is one scope). */
+    schemas(scope?: unknown): Array<{ name: string; description: string }>
   }
   /** The DSH systemPrompt builtin double (T12-M2: the persona layer). */
   readonly systemPrompt: {

@@ -1,0 +1,1319 @@
+{
+  "stamp": "20260912T162326Z",
+  "nonce": "a2c16d30b74f",
+  "home": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z",
+  "webPort": 3183,
+  "mockPort": 3497,
+  "summary": {
+    "L1": "PASS",
+    "L2": "PASS",
+    "L3": "PASS",
+    "L4": "PASS",
+    "L5a": "PASS",
+    "L5b": "PASS"
+  },
+  "legs": {
+    "L1": {
+      "key": "L1",
+      "policy": "static deny (explicit deny rule pwsh any)",
+      "root": "a2c1-l1-root",
+      "bootNum": 1,
+      "pass": true,
+      "assertions": [
+        {
+          "name": "worker turn completed (turn/end after the pwsh call)",
+          "ok": true,
+          "detail": "turnEnd={\"type\":\"turn/end\",\"seq\":35,\"turn\":1,\"data\":{\"turn\":1,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "worker model-visible call: pwsh tool/call recorded in the durable log",
+          "ok": true,
+          "detail": "{\"turn\":1,\"step\":1,\"callId\":\"a2c1-L1-call-a\",\"name\":\"pwsh\",\"arguments\":\"{\\\"command\\\":\\\"Get-ChildItem -Name\\\",\\\"description\\\":\\\"List directory names (A2C-1 live probe)\\\",\\\"workdir\\\":\\\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child\\\"}\"}"
+        },
+        {
+          "name": "denial text contains \"permission denied by the static permission policy\"",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L1-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: permission denied by the static permission policy: the template's deny rule 0 denies pwsh on pwsh\"}],\"isError\":true}]"
+        },
+        {
+          "name": "denial text contains \"denies pwsh on\"",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L1-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: permission denied by the static permission policy: the template's deny rule 0 denies pwsh on pwsh\"}],\"isError\":true}]"
+        },
+        {
+          "name": "ZERO body executions: no spawn/ENOENT in the tool result (body never attempted)",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L1-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: permission denied by the static permission policy: the template's deny rule 0 denies pwsh on pwsh\"}],\"isError\":true}]"
+        },
+        {
+          "name": "NO permission consumption row (a static deny never asks): zero requests/decisions/consumptions",
+          "ok": true,
+          "detail": "{\"requests\":[],\"decisions\":[],\"consumptions\":[]}"
+        }
+      ],
+      "evidence": {
+        "worker": {
+          "kind": "member-activated",
+          "instanceId": "inst-02rr1at0yzrv",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-2583d0dc0e4f6a76de93ecd8f5d8ce35",
+          "operationId": "op-0cciir10snu9yk0rycwmj0nl",
+          "replayed": false,
+          "ledgerSequence": 1,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "workerToolCall": {
+          "name": "pwsh",
+          "arguments": "{\"command\":\"Get-ChildItem -Name\",\"description\":\"List directory names (A2C-1 live probe)\",\"workdir\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child\"}"
+        },
+        "workerToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L1-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: permission denied by the static permission policy: the template's deny rule 0 denies pwsh on pwsh\"}],\"isError\":true}]"
+        },
+        "state": {
+          "members": [
+            {
+              "instanceId": "inst-02rr1at0yzrv",
+              "templateId": "worker",
+              "label": "a2c1-worker",
+              "childSessionId": "session-team-child-2583d0dc0e4f6a76de93ecd8f5d8ce35",
+              "lifecycle": "CREATED",
+              "activityVersion": 1
+            },
+            {
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "childSessionId": "undefined",
+              "lifecycle": "undefined",
+              "activityVersion": 1
+            }
+          ],
+          "control": {
+            "requests": [],
+            "decisions": [],
+            "consumptions": []
+          }
+        }
+      }
+    },
+    "L2": {
+      "key": "L2",
+      "policy": "ask (pwsh any) -> resolve DENY",
+      "root": "a2c1-l2-root",
+      "bootNum": 2,
+      "pass": true,
+      "assertions": [
+        {
+          "name": "control request created on ask (kind recorded = leader-approval)",
+          "ok": true,
+          "detail": "{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L2-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0nu5xv00dfyfrr0bj3g9i0pi\",\"requester\":{\"instanceId\":\"inst-1qdzbib1o2e4\",\"kind\":\"instance\",\"r"
+        },
+        {
+          "name": "control request names tool pwsh (toolName) and the exact worker callId (correlation)",
+          "ok": true,
+          "detail": "{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L2-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0nu5xv00dfyfrr0bj3g9i0pi\",\"requester\":{\"instanceId\":\"inst-1qdzbib1o2e4\",\"kind\":\"instance\",\"r"
+        },
+        {
+          "name": "the ask originates from the suspended worker turn (requester = worker member instance)",
+          "ok": true,
+          "detail": "{\"instanceId\":\"inst-1qdzbib1o2e4\",\"kind\":\"instance\",\"role\":\"member\"}"
+        },
+        {
+          "name": "worker turn completed after the deny resolution",
+          "ok": true,
+          "detail": "{\"type\":\"turn/end\",\"seq\":35,\"turn\":1,\"data\":{\"turn\":1,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "decision result text = \"the approval was denied\"",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L2-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        {
+          "name": "ZERO body executions after denial: no spawn/ENOENT in the tool result",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L2-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        {
+          "name": "durable ledger: exactly one request row + one decision row (deny, decider human), zero consumptions",
+          "ok": true,
+          "detail": "{\"requests\":[{\"createdAt\":\"2026-09-12T17:35:22.020Z\",\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L2-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0nu5xv00dfyfrr0bj3g9i0pi\",\"requester\":{\"instanceId\":\"inst-1qdzbib1o2e4\",\"kind\":\"instance\",\"role\":\"member\"},\"summary\":\"pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-202"
+        }
+      ],
+      "evidence": {
+        "worker": {
+          "kind": "member-activated",
+          "instanceId": "inst-1qdzbib1o2e4",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-72b49d245e2080dc97fa2e623a076df9",
+          "operationId": "op-1g60q0p13bjx3k0hl4jr30ds",
+          "replayed": false,
+          "ledgerSequence": 4,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestAtAsk": {
+          "requestId": "ctrl-0nu5xv00dfyfrr0bj3g9i0pi",
+          "kind": "leader-approval",
+          "toolName": "pwsh",
+          "correlation": "a2c1-L2-call-a",
+          "requester": {
+            "instanceId": "inst-1qdzbib1o2e4",
+            "kind": "instance",
+            "role": "member"
+          },
+          "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+          "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4"
+        },
+        "resolution": {
+          "decision": {
+            "requestId": "ctrl-0nu5xv00dfyfrr0bj3g9i0pi",
+            "decision": "deny",
+            "decider": {
+              "kind": "human",
+              "humanId": "a2c1-l2-root"
+            },
+            "scope": {
+              "rootSessionId": "a2c1-l2-root",
+              "targetInstanceId": "inst-1qdzbib1o2e4",
+              "actionName": "parameter-permission",
+              "correlation": "a2c1-L2-call-a",
+              "toolName": "pwsh",
+              "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4"
+            },
+            "requestSequence": 6,
+            "decisionSequence": 7,
+            "createdAt": "2026-09-12T17:35:22.465Z",
+            "note": "a2c1 L2: human denies the pwsh ask"
+          }
+        },
+        "sendOutcome": {
+          "status": "delivered",
+          "rootSessionId": "a2c1-l2-root",
+          "action": "send-message",
+          "callerRole": "human",
+          "recipientInstanceId": "inst-1qdzbib1o2e4",
+          "deliveryMode": "direct",
+          "deliveredToInstanceId": "inst-1qdzbib1o2e4",
+          "deliveredToSessionId": "session-team-child-72b49d245e2080dc97fa2e623a076df9",
+          "factSequence": 5,
+          "deliveredSequence": 8,
+          "requestToken": "a2c1-l2-send-a2c16d30b74f"
+        },
+        "workerToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L2-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        "controlDurable": {
+          "requests": [
+            {
+              "createdAt": "2026-09-12T17:35:22.020Z",
+              "factType": "control-request-recorded",
+              "payload": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L2-call-a",
+                "kind": "leader-approval",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "requestId": "ctrl-0nu5xv00dfyfrr0bj3g9i0pi",
+                "requester": {
+                  "instanceId": "inst-1qdzbib1o2e4",
+                  "kind": "instance",
+                  "role": "member"
+                },
+                "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                "targetInstanceId": "inst-1qdzbib1o2e4",
+                "toolName": "pwsh"
+              },
+              "rootSessionId": "a2c1-l2-root",
+              "schemaVersion": 2,
+              "sequence": 6
+            }
+          ],
+          "decisions": [
+            {
+              "createdAt": "2026-09-12T17:35:22.461Z",
+              "factType": "control-decision-recorded",
+              "payload": {
+                "decider": {
+                  "humanId": "a2c1-l2-root",
+                  "kind": "human"
+                },
+                "decision": "deny",
+                "note": "a2c1 L2: human denies the pwsh ask",
+                "requestId": "ctrl-0nu5xv00dfyfrr0bj3g9i0pi",
+                "requestSequence": 6,
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L2-call-a",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l2-root",
+                  "targetInstanceId": "inst-1qdzbib1o2e4",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l2-root",
+              "schemaVersion": 2,
+              "sequence": 7
+            }
+          ],
+          "consumptions": []
+        },
+        "ledgerRows": {
+          "requestRow": {
+            "createdAt": "2026-09-12T17:35:22.020Z",
+            "factType": "control-request-recorded",
+            "payload": {
+              "actionName": "parameter-permission",
+              "correlation": "a2c1-L2-call-a",
+              "kind": "leader-approval",
+              "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+              "requestId": "ctrl-0nu5xv00dfyfrr0bj3g9i0pi",
+              "requester": {
+                "instanceId": "inst-1qdzbib1o2e4",
+                "kind": "instance",
+                "role": "member"
+              },
+              "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+              "targetInstanceId": "inst-1qdzbib1o2e4",
+              "toolName": "pwsh"
+            },
+            "rootSessionId": "a2c1-l2-root",
+            "schemaVersion": 2,
+            "sequence": 6
+          },
+          "decisionRow": {
+            "createdAt": "2026-09-12T17:35:22.461Z",
+            "factType": "control-decision-recorded",
+            "payload": {
+              "decider": {
+                "humanId": "a2c1-l2-root",
+                "kind": "human"
+              },
+              "decision": "deny",
+              "note": "a2c1 L2: human denies the pwsh ask",
+              "requestId": "ctrl-0nu5xv00dfyfrr0bj3g9i0pi",
+              "requestSequence": 6,
+              "scope": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L2-call-a",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "rootSessionId": "a2c1-l2-root",
+                "targetInstanceId": "inst-1qdzbib1o2e4",
+                "toolName": "pwsh"
+              }
+            },
+            "rootSessionId": "a2c1-l2-root",
+            "schemaVersion": 2,
+            "sequence": 7
+          }
+        }
+      }
+    },
+    "L3": {
+      "key": "L3",
+      "policy": "ask (pwsh any) -> resolve ALLOW once; second call (new callId) re-asks",
+      "root": "a2c1-l3-root",
+      "bootNum": 3,
+      "pass": true,
+      "assertions": [
+        {
+          "name": "call 1: control request created (leader-approval, pwsh)",
+          "ok": true,
+          "detail": "{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L3-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0lcvi3v1tasvmc1nl267l0li\",\"requester\":{\"instanceId\":\"inst-0hyr7wx1djjw\",\"kind\":\"instance\",\"r"
+        },
+        {
+          "name": "call 1: worker turn completed after the allow resolution",
+          "ok": true,
+          "detail": "{\"type\":\"turn/end\",\"seq\":35,\"turn\":1,\"data\":{\"turn\":1,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "call 1: BODY IS ATTEMPTED — tool result carries a body-level failure (ENOENT / missing pwsh binary), NOT a permission denial",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L3-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"[stderr]\\nbash: line 1: Get-ChildItem: command not found\\n[exit code: 127]\"}],\"isError\":false}]"
+        },
+        {
+          "name": "call 1: permission allow = 1 (one decision row, allow)",
+          "ok": true,
+          "detail": "[{\"createdAt\":\"2026-09-12T17:35:24.754Z\",\"factType\":\"control-decision-recorded\",\"payload\":{\"decider\":{\"humanId\":\"a2c1-l3-root\",\"kind\":\"human\"},\"decision\":\"allow\",\"note\":\"a2c1 L3: allow-once for the exact pwsh call\",\"requestId\":\"ctrl-0lcvi3v1tasvmc1nl267l0li\",\"requestSequence\":11,\"scope\":{\"actionName"
+        },
+        {
+          "name": "call 1: EXACTLY ONE dispatch authorized — one consumption row for request 1",
+          "ok": true,
+          "detail": "[{\"createdAt\":\"2026-09-12T17:35:24.819Z\",\"factType\":\"control-allow-consumed\",\"payload\":{\"consumedAt\":\"2026-09-12T17:35:24.819Z\",\"decisionSequence\":12,\"requestId\":\"ctrl-0lcvi3v1tasvmc1nl267l0li\",\"scope\":{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L3-call-a\",\"operationFingerprint\":\"sha256"
+        },
+        {
+          "name": "call 2 (allow consumed): a NEW control request is created — live re-ask (unit G4c: a new call asks again; no static shell allow)",
+          "ok": true,
+          "detail": "{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L3-call-b\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0xe31zm04t290x0frdbdg0or\",\"requester\":{\"instanceId\":\"inst-0hyr7wx1djjw\",\"kind\":\"instance\",\"r"
+        },
+        {
+          "name": "call 2: worker turn completed after the deny resolution",
+          "ok": true,
+          "detail": "{\"type\":\"turn/end\",\"seq\":61,\"turn\":2,\"data\":{\"turn\":2,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "call 2: body NOT executed after the deny (no second ENOENT body failure beyond call 1)",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L3-call-b\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        {
+          "name": "final: two request rows, two decision rows (allow, deny), one consumption row (call 1 only)",
+          "ok": true,
+          "detail": "{\"requests\":[{\"createdAt\":\"2026-09-12T17:35:24.308Z\",\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L3-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0lcvi3v1tasvmc1nl267l0li\",\"requester\":{\"instanceId\":\"inst-0hyr7wx1djjw\",\"kind\":\"instance\",\"role\":\"member\"},\"summary\":\"pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-202"
+        }
+      ],
+      "evidence": {
+        "worker": {
+          "kind": "member-activated",
+          "instanceId": "inst-0hyr7wx1djjw",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-8967ae94decf3c67095dc78bdd7df705",
+          "operationId": "op-17xsdtn0kve99m1mawi4506j",
+          "replayed": false,
+          "ledgerSequence": 9,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "request1": {
+          "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+          "kind": "leader-approval",
+          "toolName": "pwsh"
+        },
+        "sendOutcome1": {
+          "status": "delivered",
+          "rootSessionId": "a2c1-l3-root",
+          "action": "send-message",
+          "callerRole": "human",
+          "recipientInstanceId": "inst-0hyr7wx1djjw",
+          "deliveryMode": "direct",
+          "deliveredToInstanceId": "inst-0hyr7wx1djjw",
+          "deliveredToSessionId": "session-team-child-8967ae94decf3c67095dc78bdd7df705",
+          "factSequence": 10,
+          "deliveredSequence": 14,
+          "requestToken": "a2c1-l3-send1-a2c16d30b74f"
+        },
+        "call1ToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L3-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"[stderr]\\nbash: line 1: Get-ChildItem: command not found\\n[exit code: 127]\"}],\"isError\":false}]"
+        },
+        "stateAfterCall1": {
+          "control": {
+            "requests": [
+              {
+                "createdAt": "2026-09-12T17:35:24.308Z",
+                "factType": "control-request-recorded",
+                "payload": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L3-call-a",
+                  "kind": "leader-approval",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+                  "requester": {
+                    "instanceId": "inst-0hyr7wx1djjw",
+                    "kind": "instance",
+                    "role": "member"
+                  },
+                  "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                  "targetInstanceId": "inst-0hyr7wx1djjw",
+                  "toolName": "pwsh"
+                },
+                "rootSessionId": "a2c1-l3-root",
+                "schemaVersion": 2,
+                "sequence": 11
+              }
+            ],
+            "decisions": [
+              {
+                "createdAt": "2026-09-12T17:35:24.754Z",
+                "factType": "control-decision-recorded",
+                "payload": {
+                  "decider": {
+                    "humanId": "a2c1-l3-root",
+                    "kind": "human"
+                  },
+                  "decision": "allow",
+                  "note": "a2c1 L3: allow-once for the exact pwsh call",
+                  "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+                  "requestSequence": 11,
+                  "scope": {
+                    "actionName": "parameter-permission",
+                    "correlation": "a2c1-L3-call-a",
+                    "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                    "rootSessionId": "a2c1-l3-root",
+                    "targetInstanceId": "inst-0hyr7wx1djjw",
+                    "toolName": "pwsh"
+                  }
+                },
+                "rootSessionId": "a2c1-l3-root",
+                "schemaVersion": 2,
+                "sequence": 12
+              }
+            ],
+            "consumptions": [
+              {
+                "createdAt": "2026-09-12T17:35:24.819Z",
+                "factType": "control-allow-consumed",
+                "payload": {
+                  "consumedAt": "2026-09-12T17:35:24.819Z",
+                  "decisionSequence": 12,
+                  "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+                  "scope": {
+                    "actionName": "parameter-permission",
+                    "correlation": "a2c1-L3-call-a",
+                    "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                    "rootSessionId": "a2c1-l3-root",
+                    "targetInstanceId": "inst-0hyr7wx1djjw",
+                    "toolName": "pwsh"
+                  }
+                },
+                "rootSessionId": "a2c1-l3-root",
+                "schemaVersion": 2,
+                "sequence": 13
+              }
+            ]
+          }
+        },
+        "request2": {
+          "requestId": "ctrl-0xe31zm04t290x0frdbdg0or",
+          "kind": "leader-approval",
+          "toolName": "pwsh"
+        },
+        "sendOutcome2": {
+          "status": "delivered",
+          "rootSessionId": "a2c1-l3-root",
+          "action": "send-message",
+          "callerRole": "human",
+          "recipientInstanceId": "inst-0hyr7wx1djjw",
+          "deliveryMode": "direct",
+          "deliveredToInstanceId": "inst-0hyr7wx1djjw",
+          "deliveredToSessionId": "session-team-child-8967ae94decf3c67095dc78bdd7df705",
+          "factSequence": 15,
+          "deliveredSequence": 18,
+          "requestToken": "a2c1-l3-send2-a2c16d30b74f"
+        },
+        "call2ToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L3-call-b\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        "controlDurable": {
+          "requests": [
+            {
+              "createdAt": "2026-09-12T17:35:24.308Z",
+              "factType": "control-request-recorded",
+              "payload": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L3-call-a",
+                "kind": "leader-approval",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+                "requester": {
+                  "instanceId": "inst-0hyr7wx1djjw",
+                  "kind": "instance",
+                  "role": "member"
+                },
+                "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                "targetInstanceId": "inst-0hyr7wx1djjw",
+                "toolName": "pwsh"
+              },
+              "rootSessionId": "a2c1-l3-root",
+              "schemaVersion": 2,
+              "sequence": 11
+            },
+            {
+              "createdAt": "2026-09-12T17:35:24.892Z",
+              "factType": "control-request-recorded",
+              "payload": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L3-call-b",
+                "kind": "leader-approval",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "requestId": "ctrl-0xe31zm04t290x0frdbdg0or",
+                "requester": {
+                  "instanceId": "inst-0hyr7wx1djjw",
+                  "kind": "instance",
+                  "role": "member"
+                },
+                "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                "targetInstanceId": "inst-0hyr7wx1djjw",
+                "toolName": "pwsh"
+              },
+              "rootSessionId": "a2c1-l3-root",
+              "schemaVersion": 2,
+              "sequence": 16
+            }
+          ],
+          "decisions": [
+            {
+              "createdAt": "2026-09-12T17:35:24.754Z",
+              "factType": "control-decision-recorded",
+              "payload": {
+                "decider": {
+                  "humanId": "a2c1-l3-root",
+                  "kind": "human"
+                },
+                "decision": "allow",
+                "note": "a2c1 L3: allow-once for the exact pwsh call",
+                "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+                "requestSequence": 11,
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L3-call-a",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l3-root",
+                  "targetInstanceId": "inst-0hyr7wx1djjw",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l3-root",
+              "schemaVersion": 2,
+              "sequence": 12
+            },
+            {
+              "createdAt": "2026-09-12T17:35:25.384Z",
+              "factType": "control-decision-recorded",
+              "payload": {
+                "decider": {
+                  "humanId": "a2c1-l3-root",
+                  "kind": "human"
+                },
+                "decision": "deny",
+                "note": "a2c1 L3: second ask denied",
+                "requestId": "ctrl-0xe31zm04t290x0frdbdg0or",
+                "requestSequence": 16,
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L3-call-b",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l3-root",
+                  "targetInstanceId": "inst-0hyr7wx1djjw",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l3-root",
+              "schemaVersion": 2,
+              "sequence": 17
+            }
+          ],
+          "consumptions": [
+            {
+              "createdAt": "2026-09-12T17:35:24.819Z",
+              "factType": "control-allow-consumed",
+              "payload": {
+                "consumedAt": "2026-09-12T17:35:24.819Z",
+                "decisionSequence": 12,
+                "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L3-call-a",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l3-root",
+                  "targetInstanceId": "inst-0hyr7wx1djjw",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l3-root",
+              "schemaVersion": 2,
+              "sequence": 13
+            }
+          ]
+        },
+        "ledgerRows": {
+          "requestRow1": {
+            "createdAt": "2026-09-12T17:35:24.308Z",
+            "factType": "control-request-recorded",
+            "payload": {
+              "actionName": "parameter-permission",
+              "correlation": "a2c1-L3-call-a",
+              "kind": "leader-approval",
+              "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+              "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+              "requester": {
+                "instanceId": "inst-0hyr7wx1djjw",
+                "kind": "instance",
+                "role": "member"
+              },
+              "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+              "targetInstanceId": "inst-0hyr7wx1djjw",
+              "toolName": "pwsh"
+            },
+            "rootSessionId": "a2c1-l3-root",
+            "schemaVersion": 2,
+            "sequence": 11
+          },
+          "requestRow2": {
+            "createdAt": "2026-09-12T17:35:24.892Z",
+            "factType": "control-request-recorded",
+            "payload": {
+              "actionName": "parameter-permission",
+              "correlation": "a2c1-L3-call-b",
+              "kind": "leader-approval",
+              "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+              "requestId": "ctrl-0xe31zm04t290x0frdbdg0or",
+              "requester": {
+                "instanceId": "inst-0hyr7wx1djjw",
+                "kind": "instance",
+                "role": "member"
+              },
+              "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+              "targetInstanceId": "inst-0hyr7wx1djjw",
+              "toolName": "pwsh"
+            },
+            "rootSessionId": "a2c1-l3-root",
+            "schemaVersion": 2,
+            "sequence": 16
+          },
+          "consumptionRow": {
+            "createdAt": "2026-09-12T17:35:24.819Z",
+            "factType": "control-allow-consumed",
+            "payload": {
+              "consumedAt": "2026-09-12T17:35:24.819Z",
+              "decisionSequence": 12,
+              "requestId": "ctrl-0lcvi3v1tasvmc1nl267l0li",
+              "scope": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L3-call-a",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "rootSessionId": "a2c1-l3-root",
+                "targetInstanceId": "inst-0hyr7wx1djjw",
+                "toolName": "pwsh"
+              }
+            },
+            "rootSessionId": "a2c1-l3-root",
+            "schemaVersion": 2,
+            "sequence": 13
+          }
+        },
+        "liveObservation": "second identical call (fresh callId) RE-ASKS (new request row); the same-callId allow-consumed retry (unit G4b) is not reachable through the live agent loop (callIds are minted per loop step) — recorded as live semantics; units pin the retry path."
+      }
+    },
+    "L4": {
+      "key": "L4",
+      "policy": "builtinToolDeny:[pwsh] (no permissions policy)",
+      "root": "a2c1-l4-root",
+      "bootNum": 4,
+      "pass": true,
+      "assertions": [
+        {
+          "name": "worker turn completed (the hidden-tool call settles)",
+          "ok": true,
+          "detail": "{\"type\":\"turn/end\",\"seq\":35,\"turn\":1,\"data\":{\"turn\":1,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "pwsh ABSENT from the worker model-visible tool table (capability-layer hide)",
+          "ok": true,
+          "detail": "[\"ask_user_question\",\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+        },
+        {
+          "name": "sibling tool bash still present in the worker tool table (the deny is targeted, not blanket)",
+          "ok": true,
+          "detail": "[\"ask_user_question\",\"bash\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"ralph\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"workflow\",\"write\"]"
+        },
+        {
+          "name": "the scripted model still TRIED pwsh (tool/call recorded) — the hide is at the surface, not the model",
+          "ok": true,
+          "detail": "{\"turn\":1,\"step\":1,\"callId\":\"a2c1-L4-call-a\",\"name\":\"pwsh\",\"arguments\":\"{\\\"command\\\":\\\"Get-ChildItem -Name\\\",\\\"description\\\":\\\"List directory names (A2C-1 live probe)\\\",\\\"workdir\\\":\\\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child\\\"}\"}"
+        },
+        {
+          "name": "ZERO body executions: the hidden-tool result carries NO spawn/ENOENT (executor never reached)",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L4-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"pwsh\\\"\"}],\"isError\":true}]"
+        },
+        {
+          "name": "ZERO permission rows for pwsh (the tool never reaches the permission layer)",
+          "ok": true,
+          "detail": "{\"requests\":[],\"decisions\":[],\"consumptions\":[]}"
+        }
+      ],
+      "evidence": {
+        "worker": {
+          "kind": "member-activated",
+          "instanceId": "inst-0l9i95708cx7",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-0a3eb6bf68cfcc19874ed9a45c192de8",
+          "operationId": "op-10dw3l00dw3hpt0jfmy6m1l2",
+          "replayed": false,
+          "ledgerSequence": 19,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "workerModelTools": [
+          "ask_user_question",
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "workerToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L4-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"pwsh\\\"\"}],\"isError\":true}]"
+        },
+        "state": {
+          "control": {
+            "requests": [],
+            "decisions": [],
+            "consumptions": []
+          }
+        }
+      }
+    },
+    "L5a": {
+      "key": "L5a",
+      "policy": "ask (pwsh any) -> resolve ALLOW once; durable rows; then process stop",
+      "root": "a2c1-l5-root",
+      "bootNum": 5,
+      "pass": true,
+      "assertions": [
+        {
+          "name": "L5a: control request created (leader-approval, pwsh)",
+          "ok": true,
+          "detail": "{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L5a-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"requester\":{\"instanceId\":\"inst-04fs89a1n9ib\",\"kind\":\"instance\",\""
+        },
+        {
+          "name": "L5a: worker turn completed after the allow",
+          "ok": true,
+          "detail": "{\"type\":\"turn/end\",\"seq\":35,\"turn\":1,\"data\":{\"turn\":1,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "L5a: body attempted (ENOENT-class failure) — permission verdict was allow",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L5a-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"[stderr]\\nbash: line 1: Get-ChildItem: command not found\\n[exit code: 127]\"}],\"isError\":false}]"
+        },
+        {
+          "name": "L5a: durable rows present before the stop (1 request / 1 decision allow / 1 consumption)",
+          "ok": true,
+          "detail": "{\"requests\":[{\"createdAt\":\"2026-09-12T17:35:28.961Z\",\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L5a-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"requester\":{\"instanceId\":\"inst-04fs89a1n9ib\",\"kind\":\"instance\",\"role\":\"member\"},\"summary\":\"pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20"
+        }
+      ],
+      "evidence": {
+        "worker": {
+          "kind": "member-activated",
+          "instanceId": "inst-04fs89a1n9ib",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-121ba700fda19a528f65126a1770e240",
+          "operationId": "op-0lrpa5i0d016ln0psov181lt",
+          "replayed": false,
+          "ledgerSequence": 22,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "request1": {
+          "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+          "kind": "leader-approval",
+          "toolName": "pwsh"
+        },
+        "sendOutcome": {
+          "status": "delivered",
+          "rootSessionId": "a2c1-l5-root",
+          "action": "send-message",
+          "callerRole": "human",
+          "recipientInstanceId": "inst-04fs89a1n9ib",
+          "deliveryMode": "direct",
+          "deliveredToInstanceId": "inst-04fs89a1n9ib",
+          "deliveredToSessionId": "session-team-child-121ba700fda19a528f65126a1770e240",
+          "factSequence": 23,
+          "deliveredSequence": 27,
+          "requestToken": "a2c1-l5a-send-a2c16d30b74f"
+        },
+        "call1ToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L5a-call-a\",\"content\":[{\"type\":\"text\",\"text\":\"[stderr]\\nbash: line 1: Get-ChildItem: command not found\\n[exit code: 127]\"}],\"isError\":false}]"
+        },
+        "state": {
+          "members": [
+            {
+              "instanceId": "inst-04fs89a1n9ib",
+              "templateId": "worker",
+              "label": "a2c1-worker",
+              "childSessionId": "session-team-child-121ba700fda19a528f65126a1770e240",
+              "lifecycle": "CREATED",
+              "activityVersion": 1
+            },
+            {
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "childSessionId": "undefined",
+              "lifecycle": "undefined",
+              "activityVersion": 1
+            }
+          ],
+          "control": {
+            "requests": [
+              {
+                "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                "kind": "leader-approval",
+                "targetInstanceId": "inst-04fs89a1n9ib",
+                "actionName": "parameter-permission",
+                "toolName": "pwsh",
+                "correlation": "a2c1-L5a-call-a",
+                "status": "decided",
+                "createdAt": "2026-09-12T17:35:28.961Z"
+              }
+            ],
+            "decisions": [
+              {
+                "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                "decision": "allow",
+                "note": "a2c1 L5a: allow-once (durable rows for the cold-resume leg)",
+                "decisionSequence": 25,
+                "requestSequence": 24,
+                "createdAt": "2026-09-12T17:35:29.418Z"
+              }
+            ],
+            "consumptions": [
+              {
+                "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                "decisionSequence": 25,
+                "consumedAt": "2026-09-12T17:35:29.473Z"
+              }
+            ]
+          },
+          "teamSession": {
+            "rootSessionId": "a2c1-l5-root",
+            "blueprintId": "a2c1-live-l5",
+            "revision": "1",
+            "contentHash": "sha256:e0afd298b820e29907250e0570ec4015a8e6a59e527794b91edd7fee8bba365b",
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/root",
+            "createdAt": "2026-09-12T17:35:28.577Z",
+            "generation": 8
+          },
+          "controlDurable": {
+            "requests": [
+              {
+                "createdAt": "2026-09-12T17:35:28.961Z",
+                "factType": "control-request-recorded",
+                "payload": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L5a-call-a",
+                  "kind": "leader-approval",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                  "requester": {
+                    "instanceId": "inst-04fs89a1n9ib",
+                    "kind": "instance",
+                    "role": "member"
+                  },
+                  "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                  "targetInstanceId": "inst-04fs89a1n9ib",
+                  "toolName": "pwsh"
+                },
+                "rootSessionId": "a2c1-l5-root",
+                "schemaVersion": 2,
+                "sequence": 24
+              }
+            ],
+            "decisions": [
+              {
+                "createdAt": "2026-09-12T17:35:29.418Z",
+                "factType": "control-decision-recorded",
+                "payload": {
+                  "decider": {
+                    "humanId": "a2c1-l5-root",
+                    "kind": "human"
+                  },
+                  "decision": "allow",
+                  "note": "a2c1 L5a: allow-once (durable rows for the cold-resume leg)",
+                  "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                  "requestSequence": 24,
+                  "scope": {
+                    "actionName": "parameter-permission",
+                    "correlation": "a2c1-L5a-call-a",
+                    "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                    "rootSessionId": "a2c1-l5-root",
+                    "targetInstanceId": "inst-04fs89a1n9ib",
+                    "toolName": "pwsh"
+                  }
+                },
+                "rootSessionId": "a2c1-l5-root",
+                "schemaVersion": 2,
+                "sequence": 25
+              }
+            ],
+            "consumptions": [
+              {
+                "createdAt": "2026-09-12T17:35:29.473Z",
+                "factType": "control-allow-consumed",
+                "payload": {
+                  "consumedAt": "2026-09-12T17:35:29.473Z",
+                  "decisionSequence": 25,
+                  "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                  "scope": {
+                    "actionName": "parameter-permission",
+                    "correlation": "a2c1-L5a-call-a",
+                    "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                    "rootSessionId": "a2c1-l5-root",
+                    "targetInstanceId": "inst-04fs89a1n9ib",
+                    "toolName": "pwsh"
+                  }
+                },
+                "rootSessionId": "a2c1-l5-root",
+                "schemaVersion": 2,
+                "sequence": 26
+              }
+            ]
+          }
+        }
+      }
+    },
+    "L5b": {
+      "key": "L5b",
+      "policy": "COLD RESUME: same home + root (create-or-open adopts stamped domain)",
+      "root": "a2c1-l5-root",
+      "bootNum": 6,
+      "pass": true,
+      "assertions": [
+        {
+          "name": "cold resume: teamSession durable row reopens with the SAME team identity (rootSessionId + blueprintId + contentHash)",
+          "ok": true,
+          "detail": "{\"rootSessionId\":\"a2c1-l5-root\",\"blueprintId\":\"a2c1-live-l5\",\"revision\":\"1\",\"contentHash\":\"sha256:e0afd298b820e29907250e0570ec4015a8e6a59e527794b91edd7fee8bba365b\",\"defaultWorkspace\":\"/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/root\",\"createdAt\":\"2026-09-12T17:3"
+        },
+        {
+          "name": "cold resume: teamSession contentHash UNCHANGED since L5a (same blueprint document, adopted — not re-created)",
+          "ok": true,
+          "detail": "l5a={\"rootSessionId\":\"a2c1-l5-root\",\"blueprintId\":\"a2c1-live-l5\",\"revision\":\"1\",\"contentHash\":\"sha256:e0afd298b820e29907250e0570ec4015a8e6a59e527794b91edd7fee8bba365b\",\"defaultWorkspace\":\"/home/user/dsh-p now={\"rootSessionId\":\"a2c1-l5-root\",\"blueprintId\":\"a2c1-live-l5\",\"revision\":\"1\",\"contentHash\":\"sha256:e0afd298b820e29907250e0570ec4015a8e6a59e527794b91edd7fee8bba365b\",\"defaultWorkspace\":\"/home/user/dsh-p"
+        },
+        {
+          "name": "cold resume: prior permission rows persist (1 request / 1 decision allow / 1 consumption from L5a)",
+          "ok": true,
+          "detail": "{\"requests\":[{\"createdAt\":\"2026-09-12T17:35:28.961Z\",\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L5a-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"requester\":{\"instanceId\":\"inst-04fs89a1n9ib\",\"kind\":\"instance\",\"role\":\"member\"},\"summary\":\"pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20"
+        },
+        {
+          "name": "cold resume: the member row persists (same instanceId + childSessionId as L5a)",
+          "ok": true,
+          "detail": "{\"instanceId\":\"inst-04fs89a1n9ib\",\"templateId\":\"worker\",\"label\":\"a2c1-worker\",\"childSessionId\":\"session-team-child-121ba700fda19a528f65126a1770e240\",\"lifecycle\":\"CREATED\",\"activityVersion\":1}"
+        },
+        {
+          "name": "cold resume: member identity identical to L5a (no duplicate member rows; same instance + child session)",
+          "ok": true,
+          "detail": "l5a={\"kind\":\"member-activated\",\"instanceId\":\"inst-04fs89a1n9ib\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-121ba700fda19a528f65126a1770e240\",\"operationId\":\"op-0lrpa5i0d016ln0psov181lt\",\"replayed\":false,\"ledgerSequence\":22,\"admissionCode\":\"ADMISSION_OPEN\"} now={\"instanceId\":\"inst-04fs89a1n9ib\",\"templateId\":\"worker\",\"label\":\"a2c1-worker\",\"childSessionId\":\"session-team-child-121ba700fda19a528f65126a1770e240\",\"lifecycle\":\"CREATED\",\"activityVersion\":1}"
+        },
+        {
+          "name": "cold resume: team.listRoots sees all five leg roots (world state is shared and durable)",
+          "ok": true,
+          "detail": "[\"a2c1-l1-root\",\"a2c1-l2-root\",\"a2c1-l3-root\",\"a2c1-l4-root\",\"a2c1-l5-root\"]"
+        },
+        {
+          "name": "cold resume: a fresh pwsh call on the re-opened worker RE-ASKS (policy re-enforced after restart; the L5a allow does not cover a new call)",
+          "ok": true,
+          "detail": "{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L5b-call-c\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-00zy25q01vw6e71brtrtc0se\",\"requester\":{\"instanceId\":\"inst-04fs89a1n9ib\",\"kind\":\"instance\",\""
+        },
+        {
+          "name": "cold resume: worker turn completed after the deny",
+          "ok": true,
+          "detail": "{\"type\":\"turn/end\",\"seq\":63,\"turn\":2,\"data\":{\"turn\":2,\"reason\":{\"kind\":\"completed\"}}}"
+        },
+        {
+          "name": "cold resume: the deny is enforced (result = \"the approval was denied\"; no body execution)",
+          "ok": true,
+          "detail": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L5b-call-c\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        {
+          "name": "cold resume: final control state = 2 requests / 2 decisions (allow, deny) / 1 consumption",
+          "ok": true,
+          "detail": "{\"requests\":[{\"createdAt\":\"2026-09-12T17:35:28.961Z\",\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"parameter-permission\",\"correlation\":\"a2c1-L5a-call-a\",\"kind\":\"leader-approval\",\"operationFingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\",\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"requester\":{\"instanceId\":\"inst-04fs89a1n9ib\",\"kind\":\"instance\",\"role\":\"member\"},\"summary\":\"pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20"
+        }
+      ],
+      "evidence": {
+        "resumed": {
+          "teamSession": {
+            "rootSessionId": "a2c1-l5-root",
+            "blueprintId": "a2c1-live-l5",
+            "revision": "1",
+            "contentHash": "sha256:e0afd298b820e29907250e0570ec4015a8e6a59e527794b91edd7fee8bba365b",
+            "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/root",
+            "createdAt": "2026-09-12T17:35:28.577Z",
+            "generation": 8
+          },
+          "members": [
+            {
+              "instanceId": "inst-04fs89a1n9ib",
+              "templateId": "worker",
+              "label": "a2c1-worker",
+              "childSessionId": "session-team-child-121ba700fda19a528f65126a1770e240",
+              "lifecycle": "CREATED",
+              "activityVersion": 1
+            },
+            {
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "childSessionId": "undefined",
+              "lifecycle": "undefined",
+              "activityVersion": 1
+            }
+          ],
+          "controlDurable": {
+            "requests": [
+              {
+                "createdAt": "2026-09-12T17:35:28.961Z",
+                "factType": "control-request-recorded",
+                "payload": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L5a-call-a",
+                  "kind": "leader-approval",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                  "requester": {
+                    "instanceId": "inst-04fs89a1n9ib",
+                    "kind": "instance",
+                    "role": "member"
+                  },
+                  "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                  "targetInstanceId": "inst-04fs89a1n9ib",
+                  "toolName": "pwsh"
+                },
+                "rootSessionId": "a2c1-l5-root",
+                "schemaVersion": 2,
+                "sequence": 24
+              }
+            ],
+            "decisions": [
+              {
+                "createdAt": "2026-09-12T17:35:29.418Z",
+                "factType": "control-decision-recorded",
+                "payload": {
+                  "decider": {
+                    "humanId": "a2c1-l5-root",
+                    "kind": "human"
+                  },
+                  "decision": "allow",
+                  "note": "a2c1 L5a: allow-once (durable rows for the cold-resume leg)",
+                  "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                  "requestSequence": 24,
+                  "scope": {
+                    "actionName": "parameter-permission",
+                    "correlation": "a2c1-L5a-call-a",
+                    "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                    "rootSessionId": "a2c1-l5-root",
+                    "targetInstanceId": "inst-04fs89a1n9ib",
+                    "toolName": "pwsh"
+                  }
+                },
+                "rootSessionId": "a2c1-l5-root",
+                "schemaVersion": 2,
+                "sequence": 25
+              }
+            ],
+            "consumptions": [
+              {
+                "createdAt": "2026-09-12T17:35:29.473Z",
+                "factType": "control-allow-consumed",
+                "payload": {
+                  "consumedAt": "2026-09-12T17:35:29.473Z",
+                  "decisionSequence": 25,
+                  "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                  "scope": {
+                    "actionName": "parameter-permission",
+                    "correlation": "a2c1-L5a-call-a",
+                    "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                    "rootSessionId": "a2c1-l5-root",
+                    "targetInstanceId": "inst-04fs89a1n9ib",
+                    "toolName": "pwsh"
+                  }
+                },
+                "rootSessionId": "a2c1-l5-root",
+                "schemaVersion": 2,
+                "sequence": 26
+              }
+            ]
+          }
+        },
+        "ensureRootLive": {
+          "rootSessionId": "a2c1-l5-root",
+          "mode": "team",
+          "live": true
+        },
+        "roots": [
+          "a2c1-l1-root",
+          "a2c1-l2-root",
+          "a2c1-l3-root",
+          "a2c1-l4-root",
+          "a2c1-l5-root"
+        ],
+        "worker2": {
+          "instanceId": "inst-04fs89a1n9ib",
+          "childSessionId": "session-team-child-121ba700fda19a528f65126a1770e240"
+        },
+        "request2": {
+          "requestId": "ctrl-00zy25q01vw6e71brtrtc0se",
+          "kind": "leader-approval",
+          "toolName": "pwsh"
+        },
+        "sendOutcome": {
+          "status": "delivered",
+          "rootSessionId": "a2c1-l5-root",
+          "action": "send-message",
+          "callerRole": "human",
+          "recipientInstanceId": "inst-04fs89a1n9ib",
+          "deliveryMode": "direct",
+          "deliveredToInstanceId": "inst-04fs89a1n9ib",
+          "deliveredToSessionId": "session-team-child-121ba700fda19a528f65126a1770e240",
+          "factSequence": 28,
+          "deliveredSequence": 31,
+          "requestToken": "a2c1-l5b-send-a2c16d30b74f"
+        },
+        "drivePath": "reopened-original-worker",
+        "ledgerRows": {
+          "requestRow2": {
+            "createdAt": "2026-09-12T17:35:31.202Z",
+            "factType": "control-request-recorded",
+            "payload": {
+              "actionName": "parameter-permission",
+              "correlation": "a2c1-L5b-call-c",
+              "kind": "leader-approval",
+              "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+              "requestId": "ctrl-00zy25q01vw6e71brtrtc0se",
+              "requester": {
+                "instanceId": "inst-04fs89a1n9ib",
+                "kind": "instance",
+                "role": "member"
+              },
+              "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+              "targetInstanceId": "inst-04fs89a1n9ib",
+              "toolName": "pwsh"
+            },
+            "rootSessionId": "a2c1-l5-root",
+            "schemaVersion": 2,
+            "sequence": 29
+          }
+        },
+        "call2ToolResult": {
+          "text": "[{\"type\":\"tool-result\",\"toolCallId\":\"a2c1-L5b-call-c\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"isError\":true}]"
+        },
+        "controlDurable": {
+          "requests": [
+            {
+              "createdAt": "2026-09-12T17:35:28.961Z",
+              "factType": "control-request-recorded",
+              "payload": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L5a-call-a",
+                "kind": "leader-approval",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                "requester": {
+                  "instanceId": "inst-04fs89a1n9ib",
+                  "kind": "instance",
+                  "role": "member"
+                },
+                "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                "targetInstanceId": "inst-04fs89a1n9ib",
+                "toolName": "pwsh"
+              },
+              "rootSessionId": "a2c1-l5-root",
+              "schemaVersion": 2,
+              "sequence": 24
+            },
+            {
+              "createdAt": "2026-09-12T17:35:31.202Z",
+              "factType": "control-request-recorded",
+              "payload": {
+                "actionName": "parameter-permission",
+                "correlation": "a2c1-L5b-call-c",
+                "kind": "leader-approval",
+                "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                "requestId": "ctrl-00zy25q01vw6e71brtrtc0se",
+                "requester": {
+                  "instanceId": "inst-04fs89a1n9ib",
+                  "kind": "instance",
+                  "role": "member"
+                },
+                "summary": "pwsh [cwd=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child] Get-ChildItem -Name",
+                "targetInstanceId": "inst-04fs89a1n9ib",
+                "toolName": "pwsh"
+              },
+              "rootSessionId": "a2c1-l5-root",
+              "schemaVersion": 2,
+              "sequence": 29
+            }
+          ],
+          "decisions": [
+            {
+              "createdAt": "2026-09-12T17:35:29.418Z",
+              "factType": "control-decision-recorded",
+              "payload": {
+                "decider": {
+                  "humanId": "a2c1-l5-root",
+                  "kind": "human"
+                },
+                "decision": "allow",
+                "note": "a2c1 L5a: allow-once (durable rows for the cold-resume leg)",
+                "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                "requestSequence": 24,
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L5a-call-a",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l5-root",
+                  "targetInstanceId": "inst-04fs89a1n9ib",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l5-root",
+              "schemaVersion": 2,
+              "sequence": 25
+            },
+            {
+              "createdAt": "2026-09-12T17:35:31.645Z",
+              "factType": "control-decision-recorded",
+              "payload": {
+                "decider": {
+                  "humanId": "a2c1-l5-root",
+                  "kind": "human"
+                },
+                "decision": "deny",
+                "note": "a2c1 L5b: post-resume ask denied",
+                "requestId": "ctrl-00zy25q01vw6e71brtrtc0se",
+                "requestSequence": 29,
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L5b-call-c",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l5-root",
+                  "targetInstanceId": "inst-04fs89a1n9ib",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l5-root",
+              "schemaVersion": 2,
+              "sequence": 30
+            }
+          ],
+          "consumptions": [
+            {
+              "createdAt": "2026-09-12T17:35:29.473Z",
+              "factType": "control-allow-consumed",
+              "payload": {
+                "consumedAt": "2026-09-12T17:35:29.473Z",
+                "decisionSequence": 25,
+                "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+                "scope": {
+                  "actionName": "parameter-permission",
+                  "correlation": "a2c1-L5a-call-a",
+                  "operationFingerprint": "sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4",
+                  "rootSessionId": "a2c1-l5-root",
+                  "targetInstanceId": "inst-04fs89a1n9ib",
+                  "toolName": "pwsh"
+                }
+              },
+              "rootSessionId": "a2c1-l5-root",
+              "schemaVersion": 2,
+              "sequence": 26
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+# A2C-4 RED evidence (base = 99bc790, branch task/a2c-4-external-hard-last-mile)
+# command: npx vitest run packages/runtime/test/a2c4-external-lastmile.test.ts
+# date: 2026-09-12T15:41:05Z
+
+## RED run 1 (focused file) — 2/2 probes FAILED as required
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4
+
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts (2 tests | 2 failed) 6ms
+     × R1: a static allow still EXECUTES after the live external provider hard-denies the tools cell (gap: the static path carries no external check) 4ms
+     × R2: a durable allow whose external cell tightened before the guard still EXECUTES and CONSUMES the one-shot (gap: guardOperation re-reads no external facts) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts > A2C-4 RED probes — the pre-fix external hard last-mile gaps (plan §6.4) > R1: a static allow still EXECUTES after the live external provider hard-denies the tools cell (gap: the static path carries no external check)
+AssertionError: expected 'allow' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "allow"
+
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts:377:36
+    375|     // zero next() calls, a deny decision, zero durable control rows
+    376|     // (the static path has no control request at all).
+    377|     expect(r1.phaseBDecision.kind).toBe('deny')
+       |                                    ^
+    378|     expect(r1.phaseBExecuted).toBe(0)
+    379|     expect(r1.controlRowsAfterB).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts > A2C-4 RED probes — the pre-fix external hard last-mile gaps (plan §6.4) > R2: a durable allow whose external cell tightened before the guard still EXECUTES and CONSUMES the one-shot (gap: guardOperation re-reads no external facts)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts:391:31
+    389|     // have written a consumption row (the one-shot survives the
+    390|     // tightened window; zero effect).
+    391|     expect(r2.verdictAllowed).toBe(false)
+       |                               ^
+    392|     expect(r2.verdictReason).toBe(CONTROL_GUARD_BLOCK_REASONS.EXTERNAL…
+    393|     expect(r2.consumptions).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  15:41:05
+   Duration  618ms (transform 409ms, setup 0ms, import 540ms, tests 6ms, environment 0ms)
+

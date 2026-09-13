@@ -2493,3 +2493,374 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **用户指令**：「请你执行推送」— 仓库红线例外条款（用户明确许可的一次性推送）生效，范围 = 本地 master 的 test-infra-standardization 3 提交 + 本 bookkeeping。
 - **Push**：`git push origin master` — origin/master `a99c213 ->` 本地 tip（4 提交：`3b56ec5` layout+code+evidence + `5cb57e9` docs + `b617eec` bookkeeping + 本 bookkeeping）。零 force-push；`git ls-remote origin refs/heads/master` 核验与本地 tip 一致；推送后 origin/master == 本地 master（0 ahead）。
 - **推送后红线复核**：references/ 冻结 fork 未触碰（本操作为纯远端 refs 更新，本地树零变更）；test-use checkout 与 :3080 与本操作无关、未涉及。
+
+### alpha.2 capability completion 轮 — 启动（R141，2026-09-12）
+
+- **用户指令（2026-09-12）**：「基于 dsh-agent-team-alpha2-capability-completion-plan.md 中的补充意见执行代码核查；如果意见合理，则按照计划执行alpha.2版本的进一步修复。拉起子代理并行工作，每个子代理执行一个单独的任务，完成后由主 Agent 合并 worktree」+「先撰写代码审查文档，提交一个pr；每到一个重要节点提交一次pr，以防开发进度损失；执行 worktree 合并时同时操作 PR 合并；最后只保留一个总的、解决了潜在合并冲突、可直接 merge 到 master 的 pr」。
+- **R141 代码核查（主 Agent，只读）**：A2C-1/2/3/4/5/7 六条补充意见逐条对照 master @ ee9d49c + pinned `a66e470204` 核实——**全部合理且可执行，零 CORE PATCH**（file:line 证据表 + 复现命令 = `docs/alpha2-capability-completion-code-review.md` §3/§9）。关键 public seam：`ToolRuntime.schemas(scope)`（core/tools:1225，agent-scoped 最终 surface 枚举）/ `fs.contains(parent,child)`（fs/fs:157，canonical containment）/ `externalPolicyFacts` port（control/service:1044）/ `tool-pwsh` args 与 `tool-bash` 字段集逐字节相同（shell/tool-{pwsh,bash}:63-69/45-51）/ standard preset OS 条件挂载（agent.cordis.yml:44-50）。
+- **偏差登记**：D-0 基线 = master（ee9d49c → 1e05d24），计划冻结基线 `a99c213` 为其祖先（代差 4 提交 = test-infra-standardization，零产品代码变化，语义前提不受影响）；D-1 用户授权 PR 工作流（红线「无显式授权不 push」例外条款生效；零 force-push；`references/` 与 :3080 零触碰不变）。
+- **节点 0（审查文档 PR）**：`docs/alpha2-capability-completion-code-review.md` → PR #7（`docs/alpha2-capability-completion-review` → master）→ 主 Agent 合并（merge commit `1e05d24`）。
+- **基线记录（int @ 1e05d24，计划 §2.1）**：root suite 280 files/3330 tests = 10 files/20 tests 预存在失败（domain t1×9+t2×1；legacy p7t6×1；runtime d3×1 + p6t3-mediation×5 + p6t3-restart×2 + 文件级 module-load×3[p8s3b/t12a-b2/t12a-glue，agentPresets dep 缺失 harness 环境类]；tools p6t6-actions×1）；client-local 47 files/641 tests = 1 失败（TCM-M4 `team-creation-panel.client.spec.tsx:453`，`4c67da9` 潜伏 spec/实现失配，裁决待用户，本轮不顺手修）；p4t6 pin = 690。完整日志 `dev/agent-workflow/evidence/alpha2-capability-completion/baseline-vitest.log` + `baseline.md`。
+- **Wave 1 派发（计划 §3 W1，并行）**：A2C-1（`task/a2c-1-pwsh-permission` @ `.worktrees/a2c-1`）+ A2C-4（`task/a2c-4-external-hard-last-mile` @ `.worktrees/a2c-4`）；产品文件基本不重叠（冲突矩阵 §4）；`pre-execute-adapter.ts` 同文件不同区域（A2C-1 = supported-tool 分类面 / A2C-4 = allow 路径 external recheck 插入），简报要求最小 hunk 隔离；A2C-1 live proof 等效适配（本机无 pwsh 二进制 + 非 Windows → 显式挂载 `tool-pwsh` 的 preset + dispatch 级放行证明，偏差记入任务报告）。
+- **推送状态**：origin/master = `1e05d24`（PR #7 合并）；origin/int/alpha2-capability-completion = 本 bookkeeping；其余无推送。
+
+### W1 监控与后备预案（R141 续，2026-09-12）
+
+- **A2C-4**：RED 取证完成（red-run.log，2/2 probes 于 base 失败）；GREEN 源改动完成
+  （control/types+service+index：`checkExternalOperation` 复用 hardCellAllows + guardOperation 内
+  consumption write 前 live recheck；adapter 仅 L873 static-allow 单插入点）；测试文件扩展中（950+ 行，
+  G1–G9 §6.5 矩阵）；expected scanner delta = +1；合并规划注记：`guardOperation` 第二生产调用方
+  `packages/tools/src/guard.ts` consultGuard 由 in-guard recheck 覆盖（consultGuard 本身 fail-closed，
+  tools/ 零改动）。
+- **A2C-1**：GREEN 源编辑 9 文件完成，主 Agent diff 预审通过（shell class 词集 / byte-identical bash
+  诊断 / 单一 canonicalizeShellOperation / adapter hunk 仅 L279 import + L717 exact-inert skip，
+  与 A2C-4 插入区 L873 零重叠）；测试文件撰写中（子代理确认在验证 real-composition recipe 形状后
+  单 turn 内执行 写文件 → stash → RED → pop）；主 Agent 曾于 R8 纠正其 RED 取证流程（对 pre-fix 树
+  跑 4 probes）——已确认遵循。
+- **后备预案**（未触发）：A2C-1 接管简报 `briefs/a2c-1-takeover-brief.md` 已提交 int（剩余步骤契约 +
+  已核验源状态清单）；触发条件 = A2C-1 测试文件在 R25 检查时仍未落盘 → interrupt + 重派窄域子代理。
+- **远端**：origin/int/alpha2-capability-completion 持续同步；master = 1e05d24 未动；无 open PR
+  （任务 PR 将在各任务 commit 后创建）。
+
+### A2C-1 宽限裁决（R25 检查点）
+
+- R25 检查：A2C-1 测试文件仍未落盘（预设触发条件字面成立）；但 list_agents 状态 = **running**
+  （turn 活跃执行中，非 idle/停滞）。其最后自报计划 = 单 mega-turn（写 1000+ 行测试文件 →
+  stash → RED → pop），大文件 LLM 构成为长操作。
+- **裁决（偏离 R24 预设，记录在案）**：中断活跃 turn 将丢失 in-flight 草稿且新代理须重新构成
+  （成本 ≥ 等待）。宽限延长恰好一轮：R26 检查仍无文件 → interrupt + 按 takeover brief 重派
+  窄域子代理（不再延长）。A2C-4 同期健康推进（测试 1074 行）。
+
+### A2C-1 接管执行（R26 硬触发）
+
+- **R26 检查**：测试文件仍未落盘（4 轮零制品：无文件、无进程、无 commit）。中断原代理
+  （dd9e18c4）——其 closing message 证实死于一次未完成的超大单生成
+  （"All patterns verified. Now writing the full test file:"）。
+- **中断后核验**：9 源文件完好、stash 列表空、无半成品测试文件、无 a2c1/pwsh 残留。
+- **重派**：新窄域子代理 **6eb01116**（takeover），同 worktree `.worktrees/a2c-1`，
+  简报 = `briefs/a2c-1-takeover-brief.md` + 原 a2c-1-brief 契约；关键修正：
+  ① 测试文件**增量写入**（先 ~150 行骨架 → 3–4 次 edit 填充，禁止单次巨型生成）；
+  ② 结构样板 = 兄弟任务 `a2c4-external-lastmile.test.ts`（RED/GREEN 分段 + runner 约束已验证）；
+  ③ 三个里程碑 send_message 进度 ping（文件完成 / RED 取证 / gates+commit）；
+  ④ 9 源文件视为已验证完成，禁重构。
+- **A2C-4** 不受影响，健康推进（测试 1074 行）。
+
+### 目标轮次预算交接（R141 续，goal round 37/40 时点）
+
+- **当前运行中**：A2C-4 子代理 `7f76dfaf`（测试 1075 行 + RED 日志已落盘；GREEN 运行/gates/commit
+  待完成）；A2C-1 接管子代理 `6eb01116`（早期阶段：必读 + install 完成；测试文件/RED/gates/commit 待做）。
+  原 A2C-1 `dd9e18c4` 已停车（ready，勿复用）。
+- **恢复即做**：检查两 worktree 的 commit 状态；任一任务 commit 完成 → 按
+  `evidence/alpha2-capability-completion/merge-sop.md` 执行该任务合并序列
+  （§13 PR 描述 → push → re-gate → 同步 merge → int bookkeeping[p4t6 pin 690+Σdelta / dist 重建 /
+  check:artifacts / smoke:composition] → 冻结 INT_Wn）；两任务齐备 → 派发 W2
+  （`briefs/a2c-2-brief.md` + `a2c-5-brief.md`，base = INT_W1，先填 TO-FILL-AT-DISPATCH 事实节，
+  worktree `.worktrees/a2c-2`/`.worktrees/a2c-5` 未建——`git worktree add -b <branch> int/...`）。
+- **远端现状**：origin/master = 1e05d24（PR #7 已合）；origin/int = 本分支 tip（持续推送）；
+  无 open PR（任务 PR 待各任务 commit 后创建）。
+
+### A2C-4 合并执行（W1 第一任务）
+
+- **DONE 报告接收**（子代理 7f76dfaf）：2 commits（b4ab104 src+tests 6 文件 / df77a18 证据 15 文件）；
+  新文件 1（a2c4-external-lastmile.test.ts，11 测试 = R1/R2 保留探针 + G1–G9）；scanner delta = +1
+  （690→691）；零消费语义行为证明（收紧窗口 consumptions=0、放宽后恰一次、G7 人类 allow 不胜
+  external hard、G3 探针抛错 fail-closed 零行、G8 只读不抛）；H1/H4/H5 零回归（a6a 52/52、
+  a5a 50/50、a4a 28/28）；偏差 D-1（a6a spy 补全，缺省 allowed:true = absent-cell）/ D-2
+  （重检在 guardOperation 内部）/ D-3（verify-zero-core --host 调用）全部有据。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine（porcelain 0 @ a66e470204）✓；
+  RED 2/2 pre-fix 失败 ✓；diff 审查 ✓（adapter 重检 @ L884 位于授权 mark 之前，try/catch
+  fail-closed，零副作用；a6a double D-1 补全正确）。
+- **主代理 re-gate（独立复跑 @ df77a18）**：全量根套件 **21 failed = 基线 20 + p4t6 预期 1**
+  （失败文件集 = 基线 10 文件 + p4t6，精确匹配）；plain-node runtime 链 FAIL 集与 99bc790
+  逐字节一致；typecheck/build exit 0；verify-zero-core 0 findings。
+- **PR #8** 创建（§13 格式，base int）→ 本地 `merge --no-ff` → **int = e2e0163**。
+- **int bookkeeping**：p4t6 pin 690→691（双断言 + 账本条目）；dist 重建 / check:artifacts /
+  smoke:composition / 全量套件交叉冒烟 = int-bookkeeping-a2c4.log（后台）。
+- **INT_W1 未冻结**（A2C-1 接管代理 6eb01116 仍在运行）。
+
+### A2C-4 int bookkeeping 完成 + 瞬态 flake 裁决
+
+- **bookkeeping commit f3df652**：p4t6 pin 690→691（DEC-1 联合，+1 = a2c4 测试文件）+ dist 重建
+  （control + operation-permission 16 文件）+ graph/log。
+- **V 轮验证全绿**：build:composition PASS（check-artifacts-committed OK 1104 文件）· check:artifacts
+  PASS · p4t6 vitest 10/10 PASS（pin 691 真值）· smoke:composition PASS · node 链 FAIL 集（新世界）
+  与 99bc790 基线一致（a5a 50/50 PASS）。
+- **全量根套件 4 次运行**：2 次 = **20 failed = 基线精确匹配**（10 文件；full-vitest-int-rerun-*.log）；
+  1 次 = 21（+p6t1-parallel）；1 次 = 22（+p4t6 +p6t1-parallel）。
+- **flake 裁决（记录在案，非阻塞）**：
+  - `p6t1-parallel`：4 次全量 2 次失败 / 孤立 9/9 PASS / p6t1 族 3×92 PASS / 最近 2 次全量 PASS。
+    机制 = 全并行负载下的时序敏感 flake（p6t1 世界激活路径）；A2C-4 不触碰该路径
+    （activation/storage 层；p6t1 世界不安装 permission listener）。→ 既有负载相关 flake 类。
+  - `p4t6`：3 次全量 1 次失败 / 孤立 10/10 PASS / 直接扫描器运行 2× = **691 稳定**（含 t12a
+    泄漏状态；泄漏目录无 scannable 文件）。→ 281 文件并行负载下 scanner walk 竞争，pin 真值无误。
+  - 闭包 gate 的 failure-set-diff 纪律须将两个 flake 列为"负载相关瞬态"（复跑裁决），
+    不计入 A2C 回归。
+- **B7 a5a node 链失败（早前）裁决**：世界状态依赖（`team_domain already exists`）——vitest 轮
+  留下/清理 .tmp-fault 世界与 node 轮交叉；新世界下 a5a PASS。scratchDir 文档要求测试 finally
+  清理；跨 runner 交错为既有卫生缺口（非 A2C-4 引入）。
+
+### A2C-1 接管进展（里程碑 b）
+
+- 测试文件完成：`a2c1-pwsh-permission.test.ts` 2016 行 / 28 测试（P1–P4 RED 探针 + 24 GREEN；
+  超出 500–1200 目标 → 代理将压缩至 ~1700 并记录为文档化偏差——合并时核实）。
+- **RED 取证（99bc790 pre-fix 树）**：文件可加载（零 import 错误）；26/28 失败 = 4 探针全败
+  （P1 classify=unsupported / P2 static allow 穿透执行 nextCalls=1 / P3 MALFORMED_DTO 未知工具 /
+  P4 bodyDelta=1 工具体执行）+ 22 GREEN 断言 post-fix 事实；2 个 pre-fix 通过 = bash 回归 pin
+  （byte-identical bash-* reasons + bash ask 流）——按设计。
+- **p4t6 实证**：该 RED 全量运行中 scanner 报告 691 vs pin 690 → A2C-1 delta +1 实证确认
+  （INT_W1 冻结后 pin 联合 = 691 + 1 = 692 预期）。
+- stash pop 精确恢复（9 M + 未跟踪测试 + 证据目录；stash 空）。**注**：接管代理对
+  `canonical-operation.ts` 做了一处 reason-string 修复（在 9 文件集内，合并时 diff 核实范围）。
+- 下一步：GREEN 运行 → gates → 适配 live proof → commit → 里程碑 c。
+
+### A2C-1 合并执行（W1 第二任务）
+
+- **FINAL 报告接收**（接管子代理 6eb01116，DONE）：2 commits（e5d1e00 src 8 文件含 4 行
+  reason-string 参数化 / 59df831 测试 2016 行 28 测试 + a1&a3 pin 6→7 + 54 证据）；新文件 1；
+  scanner delta +1（690→691 分支视角；集成 tip 联合 = 692）；**live proof 5/5 legs 42/42
+  断言**（:3183 真实实例；L3 allow_once = 1 决策 + 恰好 1 消费 + 工具体 exit 127 区分成立；
+  DSH_HOME 保留+注册；环境偏差 DSH_PERMISSION_MODE 旋钮已记录）。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine ✓；diff 审查 ✓（reason-string =
+  `<tool>-command-*` 每工具镜像，bash byte-identical；adapter = 纯参数化 + import，无结构漂移；
+  a3 pin 为首次 GREEN 发现的遗漏 pin — 在 A2C-1 边界内）。
+- **主代理 re-gate（独立 @ 59df831）**：聚焦 6 文件 229/229；全量 21 = 基线 20 + p4t6 1
+  （3358 = 3330+28 ✓）；node 链 FAIL 集 = 基线 10 文件（a2c1 28 PASS）；typecheck/build/
+  zero-core 全绿（0 findings）。
+- **PR #9** 创建（§13 格式）→ 本地 `merge --no-ff` → **int = 23a4d9f，零冲突**；语义并集核验
+  ✓（adapter: checkExternalOperation ×2 + SHELL_PERMISSION_TOOL_VALUES ×2 共存；control
+  service intact ×6；双方文档注释并存）。
+- **INT_W1 bookkeeping**（后台）：p4t6 pin 691→692；dist 重建（domain/blueprint +
+  operation-permission → 7 工具词汇）；check:artifacts / smoke / 全量套件交叉冒烟（预期
+  20 = 基线精确）/ node 链 / 联合套件 a2c1+a2c4+a5a+a6a（A2C-4 open-risk ③）=
+  int-bookkeeping-a2c1.log。
+
+### INT_W1 冻结
+
+- A2C-4 @ e2e0163（PR #8, 16:04:48Z）+ A2C-1 @ 23a4d9f（PR #9, 17:40:01Z）双双合入 int；
+  零冲突；语义并集核验通过（adapter 双 hunk 共存、control intact）。
+- **INT_W1 bookkeeping 验证全绿**（int-bookkeeping-a2c1.log）：
+  - p4t6 pin 692 真值（10/10）
+  - 全量根套件 **20 failed | 3349 passed (3369 = 3330+28+11) = 基线精确匹配**（10 文件；
+    p4t6 过；本轮无 flake）
+  - node 链 FAIL 集 = 基线 10 文件
+  - **联合套件 a2c1+a2c4+a5a+a6a = 141/141**（A2C-4 open-risk ③ 关闭：两任务 adapter hunk
+    交互无回归）
+  - build:composition / check:artifacts OK（1104 文件，install-surface = 7 工具词汇 dist）
+  - smoke:composition PASS
+- p4t6 pin 历史: 690 (base) → 691 (A2C-4) → **692 (A2C-1)**。
+- **W2 派发基线 = INT_W1 tip**（本冻结提交）；worktrees `.worktrees/a2c-2` + `.worktrees/a2c-5`
+  待建；简报 TO-FILL-AT-DISPATCH 事实节待以 INT_W1 实际树填充。
+
+### W2 派发（A2C-2 + A2C-5，base = INT_W1 @ b96faf3）
+
+- **W2 简报事实节已填**（b96faf3）：
+  - A2C-2: managed 词集 7 名 @ schema.ts:149-157；gate 插入点 = agent-bindings.mjs L1245
+    （MCP reconcile 块结束）→ L1265（`if (permissionPolicy !== undefined)`）之间，gate 自身
+    条件化于 permissionPolicy 存在；surface seam = `agentCtx.tools.schemas(scope?)`
+    （upstream L1225，agent-scoped，model-facing ToolSchema[]）；MCP ownership 用
+    schemas() 前后 delta 证明；SAFE_UNMANAGED 起步 0 条（逐条 source-review file:line）。
+  - A2C-5: read 投影 @ canonical-operation.ts L174-175（READ_OFFSET_DEFAULT=1 /
+    READ_LIMIT_DEFAULT=2000）、effectiveReadWindow @ L309-326、消费点 @ L640；
+    fingerprint 链文件清单；offset 语义待代理 recon 裁决。
+- **worktrees**：`.worktrees/a2c-2`（task/a2c-2-permission-coverage-gate）+
+  `.worktrees/a2c-5`（task/a2c-5-read-fingerprint），均 @ b96faf3。
+- **子代理**：A2C-2 = `ea079e0c`，A2C-5 = `469eceb0`（并行；边界已在简报+派发中双向声明：
+  A2C-2 动 agent-bindings+新 evaluator，A2C-5 动 canonical-operation read 区）。
+- 两代理均带：RED-first stash 协议、增量写文件协议（骨架→2-4 次 edit）、三里程碑 ping、
+  全门禁清单、单写禁令、no-push。
+
+### A2C-5 进展（W2，里程碑 a+b）
+
+- 测试文件完成：`a2c5-read-fingerprint.test.ts` 395 行 / 10 测试（T1/T6/T7 RED 探针 +
+  T2–T5/T8–T10 不变量腿），增量写入（骨架+driver → RED → matrix）。
+- **RED @ b96faf3 纯净形式**：track 树本净（先测试后源码）→ 无 stash 需要（stash list 空，
+  状态平凡恢复）；文件干净加载；3 探针精确按契约 pre-fix 失败：T1（omitted == explicit-2000，
+  同 digest sha256:841a4401…）/ T6/T7（跨身份 guard 尝试消费 one-shot allow：双向 allowed=true）；
+  7 不变量腿 pre-fix 通过。
+- **recon 裁决**（pinned a66e470204 `parseReadArgs`）：offset omitted→1（固定，保持）；
+  limit omitted→deployment readLimit（默认 2000，可配置）→ limit 取 null 身份。
+- 下一步：GREEN 实现 → gates → commit → 里程碑 c。
+
+### A2C-5 合并执行（W2 第一任务）
+
+- **FINAL 报告接收**（子代理 469eceb0，DONE）：2 commits（26e3543 src+tests / 4622a1b 证据）；
+  新文件 1（a2c5 395 行 10 测试）；scanner delta +1（692→693）；修复 = `effectiveReadWindow`
+  `limit: limit ?? null`（omitted = null 身份；显式 N byte-stable；offset 不变 — recon @
+  pinned parseReadArgs 裁决：offset 固定 1，limit = deployment 可配置 readLimit → 不读入
+  指纹 §8.3）；READ_LIMIT_DEFAULT 保留导出（A2 面）不再代入；消费者零结构变更；旧 in-flight
+  pending-ask 行部署后自然 fail-closed（计划接受）。
+- **主代理前置核验**：单写零接触 ✓（代理 forbidden-path 审计 + 主代理 diff 双确认）；
+  upstream pristine ✓；功能 hunk 精确 = `limit: limit ?? null` + 文档重写，严格限于 read
+  投影区 ✓。
+- **主代理 re-gate（独立 @ 4622a1b）**：聚焦 7 文件 186/186；全量 21 = 基线 20 + p4t6 1
+  （3379 = 3330+28+11+10 ✓）；node 链 = 基线 10 文件（a2c5 10 PASS）；typecheck/build/
+  zero-core 全绿。
+- **PR #10** 创建 → 本地 merge（零冲突，17 文件）→ int bookkeeping：pin 692→693（10/10
+  真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3379）+ 联合套件 6 文件 182/182
+  （int-bookkeeping-a2c5.log）。
+- **INT_W2 未冻结**（A2C-2 子代理 ea079e0c 仍在运行）。
+
+### A2C-2 进展（W2，里程碑 b）
+
+- 测试文件 `a2c2-permission-coverage.test.ts` RED 阶段完成：S0 = 3 探针（plan §7.6）+
+  稳定 characterization 腿 + gate 腿。
+- **RED @ base（stash 形式）**：文件干净加载；3/3 失败均精确停在首个 post-fix gate 腿
+  （base 上 gatePresent=false）；pre-fix characterization 腿通过（未知工具留在 surface /
+  default-deny 下 web_fetch 工具体执行 / grep、subagent、web_fetch 全在 7 名 managed
+  词集外）——gap 实证充分。
+- stash pop 精确恢复（3 tracked 修改：errors.ts / index.ts / agent-bindings.mjs + 3 未跟踪：
+  permission-coverage.ts 新 evaluator / 测试 / 证据目录；stash 空）。
+- 实现已就位（新 evaluator 模块 + setup error 面 + agent-bindings 安装点）；GREEN 填充中。
+
+### A2C-2 合并阻塞 → 回派修复（主代理 re-gate 发现）
+
+- **发现**：主代理独立 re-gate（.worktrees/a2c-2）——全量根 vitest **13 failed files**（基线 10
+  + p4t6 + **a6a** + 1 未解释）；a6a vitest SOLO = 文件级失败 "no tests"。A2C-5 分支（int 现态）
+  a6a vitest 为绿（INT_W1 union 182/182 含 a6a）→ A2C-2 分支新回归。
+- **根因**（已定位）：a6a 世界声明 capabilities.permissions（A6 蓝图 leader+tpl-a）→ 新 gate
+  正确运行；但 `t12a-live-bridge.mjs` 的 recording-double ctx `tools` 对象（L313+）无 `schemas`
+  seam（double 建于 A2C-2 之前；register/restrict/guard/on 皆有）→ gate fail-closed 正确 FATAL
+  （`alpha2-permission-coverage-surface-unavailable`）→ a6a 文件加载失败。
+- **代理门禁盲区**：其 focused 列表未含 a6a；node 链 "base-IDENTICAL" 检查掩盖之（a6a 本就是
+  node 链基线 FAIL 文件，加载级破坏不可见）。**教训入 SOP：改 agent-bindings 的任务，focused
+  清单必须显式包含全部 live-bridge 消费者（a6a 首列）**。
+- **修复指令已回派**（send_message → ea079e0c）：按 H1/alpha.1 既有模式给 double 加 `tools.schemas`
+  （镜像真实语义：本 double register 序列推导 + 尊重本 double 记录的 restrict({deny})）；a6a 结果
+  二选一如实处理（surface 全 owned → 原断言过；surface 含 sensitive → blueprint 加 builtinToolDeny
+  成为 coherent alpha.2 配置 + 可选 typed-FATAL 腿）；重跑门禁（a6a solo/pair/focused/全量根逐文件/
+  node 链/typecheck/build/zero-core）；第 3 commit；milestone c ping 带全量 failed-file 清单。
+
+### A2C-2 合并执行（W2 第二任务）+ INT_W2 冻结
+
+- **合并阻塞修复接收**（c0bb109，纯测试文件）：double 加 `tools.schemas`（register 序列 −
+  restrict deny，确定性）+ `makeHandle` 经 public `createScope` 铸 scope；第二受害文件
+  bp1 一并修复；a6a 裁决 = option 1（strict surface = 恰好所注册 Team tools，零伪造
+  builtinToolDeny，52/52 原断言）；scope backing plugin 不计入 `plugins`（H1-3 pin + t4a
+  保持绿）。
+- **主代理 re-gate 2（独立 @ c0bb109）**：a6a solo 52/52 · bp1 solo 8/8 · 5 文件 159/159 ·
+  全量根 **11 = 基线 10 + p4t6，无其他**（21 = 20+1；3387 = 3369+18）· node 链 10 = 基线 ·
+  zero-core 0 · c0bb109 diff 纯测试（bridge .mjs/.d.mts + 证据）✓
+- **PR #11** 创建 → 本地 merge（零冲突，17 文件，与 A2C-5 文件集不相交）→ int bookkeeping：
+  pin 693→695（10/10 真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3397 =
+  3369+10+18）+ 联合套件 7 文件 200/200（int-bookkeeping-a2c2.log）。
+- **INT_W2 冻结**（本 commit）：A2C-2 + A2C-5 全数入 int。W3 = A2C-7（base INT_W2）。
+- SOP 更新（教训）：改 agent-bindings 的任务，focused 门禁必须显式包含全部 live-bridge
+  消费者（a6a/bp1 首列）；node 链 "base-IDENTICAL" 不能替代 vitest 侧文件级检查。
+
+### W3 派发（A2C-7，solo wave，base = INT_W2 @ e95a57e）
+
+- **W3 简报事实节已填**（e95a57e）：resource kinds @ schema.ts:170（['exact','any'] → 加
+  'subtree'）；shell 拒绝 lane 逻辑 @ validate.ts:624-631（A2C-1 语义不回退）；
+  canonical-operation @ INT_W2 行号（resolveTarget L241 / shell L657+L743 / read L333+L670）；
+  A5 挂载点 = pre-execute-adapter.ts（fsBackend accessor L103-105/L435-441，决策-local
+  batch 在 rule canonicalization 阶段）；**真实 fs backend 首用**（本仓测试从未用过）=
+  pinned `packages/fs/fs-local` `LocalFileSystem(ctx, {cwd})` @ L64（contains 实现在
+  L125，canonical relative 语义，prefix trap 天然正确）；Context 构造方式 = 代理 recon。
+- **worktree**：`.worktrees/a2c-7`（task/a2c-7-subtree-matcher）@ e95a57e。
+- **子代理**：A2C-7 = `3caf0f71`。边界 = 唯一深 matcher 扩展任务（计划 §14 授权）；
+  A3 保持 pure（permission-resolver 零 fs import = 专项门禁）；fs.contains 为唯一
+  containment authority；H4 retarget 必跟随；16 组测试矩阵全覆盖 + 至少一个 real
+  LocalFileSystem 测试真调 contains()。
+
+### A2C-7 进展（W3，里程碑 a+b）
+
+- 测试文件完成：`a2c7-subtree-matcher.test.ts` 1769 行 / 31 测试，16 §9.9 组全覆盖
+  （G1 root / G2 child / G3 deep / G4 sibling / G5 prefix-trap / G6 rel-abs / G7 ..-trav /
+  G8 casing / G9 alias-identity / G10 retarget / G11 exact / G12 any / G13 priority /
+  G14 grammar-shell-reject / G15 failure-lanes / G16 cold-resume）+ R1/R2 探针 +
+  **REAL LocalFileSystem 段**（真 fs.resolve + 真 contains，temp dir）。
+- **RED 纯净形式**（track 树本净，先测试后源码；stash no-op 已文档化，pop 验证）：
+  16 failed | 15 passed — 16 失败全为 subtree 判别探针 pre-fix 事实（schema 拒 subtree 等）。
+- GREEN 实现 + 门禁组进行中。
+
+### A2C-7 合并执行（W3 唯一任务）+ INT_W3 冻结
+
+- **FINAL 报告接收**（3caf0f71，GREEN）：2 commits（831fedb src+tests 11 文件 +5222/−68
+  实际 +2222/−68 / 58f9994 证据）；新文件 1（a2c7 1769 行 31 测试）；scanner delta +1
+  （695→696 实测精确）；A1 kinds += subtree（shell 全 lane 拒绝，A2C-1 文本 byte-identical）；
+  A5 decision-local opaque map（H4 fresh，retarget 跟随 G10 real）；fs.contains 唯一
+  authority；A3 pure 专项 PASS（恰 2 import 均 type-only）；failure lanes deny=FAIL
+  CLOSED / allow-ask=non-match（P1-3 residual 文档化）。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine ✓；worktree 归位 ✓（D1：派发时
+  我的 cd 链错误致嵌套 → 代理 git worktree move 纠正）；diff 严格限于 §14 授权文件集 ✓。
+- **主代理 re-gate（独立 @ 58f9994）**：聚焦 11 文件 315/315（**a6a/bp1 显式列** —
+  A2C-2 SOP 教训执行）+ h4 族 10/10；全量 11=基线10+p4t6（3433=3397+36）；node 链
+  12=base；typecheck×2/build/zero-core 全绿。
+- **PR #12** 创建 → 本地 merge（零冲突，16 文件）→ bookkeeping：pin 695→696（10/10 真值）
+  + dist 重建 + smoke PASS + 联合套件 9 文件 **241/241**。
+- **全量 bookkeeping 运行出现 11 文件/23 测试** → 逐文件提取：第 11 文件 = **p6t1-parallel
+  （2 测试）** = 文档化 load flake → **isolation 9/9 PASS** 裁决（非回归；test 数 2/3
+  逐 run 变化 = flake 特征，与既有裁决记录一致）。
+- **INT_W3 冻结**（本 commit）：A2C-7 入 int。W4 = A2C-3（base INT_W3，client 面，
+  TCM-M4 待裁决失败不得扩大）。
+
+### W4 派发（A2C-3，solo wave，base = INT_W3 @ 4cf23ec）— 最后一波
+
+- **W4 简报事实节已填**（4cf23ec）：payload 类型 @ admission/types.ts:264（独立字段
+  `operationPermissions`，`effective` 零破坏）；INSPECT_CONFIG 链 @ effects.ts:288-307；
+  **数据源 = `ctx.blueprint: TeamBlueprint` @ effects.ts:119**（bound 快照 → 目标条目 →
+  capabilities.permissions；禁 observation/free-text 重建）；最终词集常量 @
+  schema.ts:149（7 名含 pwsh）/ :174（['exact','subtree','any']）；round-trip 族 =
+  p8t3-round-trip.test.ts（主挂点）+ 4 同族；TCM-M4 client 基线（:453，裁决待用户，
+  不得顺手修）；baseline 20/10 文件不变。
+- **worktree**：`.worktrees/a2c-3`（task/a2c-3-inspect-operation-permission）@ 4cf23ec
+  （绝对路径创建 + worktree list 核验无嵌套 — A2C-7 D1 教训执行）。
+- **子代理**：A2C-3 = `55cf475a`。完成后：合并 → INT_W4 → **收束阶段**（closure gates
+  plan §18 + closure-report §19 + §16 矩阵 + §20 DoD + 唯一 int→master 总 PR 供用户 merge）。
+
+### A2C-3 进展（W4，里程碑 b）
+
+- 测试文件 `a2c3-inspect-operation-permission.test.ts`（RED 时 293 行，final ~520）11 测试：
+  R1/R2 探针 + 9 §10.5 腿（member exact/any/subtree、leader、absent、pwsh、subtree-kind、
+  determinism、pure-read、remote round-trip、effective-unregressed）。
+- **RED @ base 4cf23ec 纯净形式**（RED 时零 tracked 编辑 — run 即 pre-fix 树；pop no-op，
+  porcelain 验证）：文件加载（world 构建/blueprint 解析/4 inspects + remote drive 运行）；
+  8 failed / 3 passed — 失败 = R1、R2、T1–T6（operationPermissions 字段 pre-fix 缺席）；
+  T7/T8/T9 不变量双腿通过。
+- fixture 注记：team-scoped human-override 将 legacy permission 名授予 GENERIC cell
+  （invariant 34 路径）→ R2 的 generic-vs-bound 分裂非平凡。
+- GREEN 进行中。
+
+### A2C-3 合并执行（W4 唯一任务）+ INT_W4 冻结 + 全部任务收束
+
+- **FINAL 报告接收**（55cf475a，GREEN）：2 commits（5607f9f src / 1256354 测试+证据）；
+  新文件 1（a2c3 558 行 11 测试）；scanner delta +1（696→697 实测精确）；payload =
+  {kind, effective（byte-identical）, operationPermissions（REQUIRED 独立字段）}；
+  static/absent 形态；数据源 = ctx.blueprint（bound 快照）；leader 经保留 id / member 经
+  templateId / dangling → fail-closed；零 alpha.3 伪造；pure read（writeCount 15→15 +
+  listings deep-equal）。
+- **主代理前置核验**：单写零接触 ✓；upstream pristine ✓；diff 严格限于 §14 边界 4 文件 ✓。
+- **主代理 re-gate（独立 @ 1256354）**：聚焦 7 文件 164/164；全量 11=基线10+p4t6
+  （3444=3433+11；首次 run 12 文件 = p6t1-parallel flake 3 测试 → isolation 9/9 裁决）；
+  node 链 10=基线 + a2c3 11/11 PASS（d5 中止 = pre-existing shim gap，base 同现）；
+  **client = 恰好 TCM-M4**（640/641，未修，裁决待用户）；typecheck×5 全 0；build 0；
+  zero-core 0 findings。
+- **PR #13** 创建 → 本地 merge（零冲突，17 文件）→ bookkeeping：pin 696→697（10/10
+  真值）+ dist 重建 + smoke PASS + 全量 **20 = 基线精确**（3444）+ 联合套件（6 A2C +
+  a6a + a2 + h4）9 文件 202/202。
+- **INT_W4 冻结**（本 commit）：全部 6 任务（A2C-1/2/3/4/5/7）已入 int。**收束阶段开始**：
+  closure gates（plan §18）→ closure-report（§19 十二节）→ §16 矩阵 → §20 DoD →
+  唯一 int→master 总 PR 供用户 merge。
+
+### 收束阶段完成（全部 6 任务 + closure gates + closure-report + 总 PR）
+
+- **closure gates（§18，fresh install @ 收束 tip，`closure-gates.log`）**：
+  - C1 聚焦安全套件 18 文件 / **465 测试全 PASS**（A1–A6 + H1a + H3 + H4 + H5 + issue2×2 + A2C 全 6 族）
+  - C2 root vitest **10 files / 20 tests = baseline 精确**（3444）→ 逐文件 diff 表 1:1（closure-report §1）
+  - C3 node 链 per-package = pre-existing 集合（runtime 10 / domain 2 / tools 2 / storage 0 / testkit 0）
+  - C4 client = **恰好 TCM-M4**（640/641，未修）
+  - C5 typecheck 8/9 = 0（legacy = build-only 包，build 覆盖）
+  - C6 build + build:composition + check:artifacts **OK 1108**
+  - C7 p4t6 聚合 pin **10/10 @ 697**（fresh install 真值）
+  - C8 verify-zero-core **0 findings** + upstream porcelain 0 @ a66e470204
+- **closure-report.md**（§19 十二节 + 附录 A DoD 30/30 核验）完成。
+- **Alpha.3 readiness verdict = GO**（前置：TCM-M4 裁决 / Windows worker 复跑 / A2C-6 设计评审 — 均非阻塞）。
+- **最终动作**：唯一 int→master 总 PR 开放（其他 PR 全部已合并）——供用户 merge；主 Agent 不 merge master。
+
+### 最终状态（本轮完成，等待用户 merge）
+
+- **PR #14**（int/alpha2-capability-completion → master）= **唯一开放 PR**（#7–#13 全部 merged）——
+  供用户 merge；主 Agent 不 merge master（standing directive）。
+- 收束全部完成：closure gates（fresh install 全绿）+ closure-report（12 节 + DoD 30/30）+
+  Alpha.3 GO 裁决 + 三件用户注意事项（TCM-M4 待裁决 / Windows 适配 / strict-mode fail-closed 行为变化）。
+- 远端状态：master = 1e05d24（未动）；int = 8ee8efc（FROZEN INT_W4 + closure）；task 分支保留。

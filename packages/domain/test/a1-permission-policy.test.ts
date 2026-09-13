@@ -321,7 +321,7 @@ describe('A1: validation rejections (closed schema, fail loudly)', () => {
     )
   })
 
-  it('a resource kind outside the closed vocabulary rejects (subtree is not A1)', () => {
+  it('a resource kind outside the closed vocabulary rejects (glob is not A1)', () => {
     expectCode(
       () => parseBlueprint(NEG_PERMISSION_RESOURCE_UNKNOWN_KIND.source),
       'MALFORMED_DTO',
@@ -698,8 +698,93 @@ describe('A1: duplicate normalization is deterministic', () => {
   })
 })
 
+describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
+  /** One minimal blueprint whose allow lane carries one rule (the
+   *  `kind`/`path` lines are the probe's variables). */
+  const subtreeProbeSource = (tool: string, kind: string, path: string): string =>
+    [
+      '---',
+      'schemaVersion: 1',
+      'blueprintId: team.min',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      '  capabilities:',
+      '    teamTools:',
+      '      kind: allow',
+      '      items: []',
+      '    builtinToolDeny: []',
+      '    skills:',
+      '      kind: allow',
+      '      items: []',
+      '    mcp:',
+      '      kind: allow',
+      '      items: []',
+      '    permissions:',
+      '      default: ask',
+      '      allow:',
+      `        - tool: ${tool}`,
+      '          resource:',
+      `            kind: ${kind}`,
+      `            path: "${path}"`,
+      '      ask: []',
+      '      deny: []',
+      'members: []',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+
+  it('a file tool + subtree parses and normalizes (trimmed path, closed shape)', () => {
+    const policy = policyOf(subtreeProbeSource('read', 'subtree', ' /data '))
+    expect(policy.allow).toEqual([{ tool: 'read', resource: { kind: 'subtree', path: '/data' } }])
+  })
+
+  it('every file-class tool accepts subtree in the allow lane', () => {
+    for (const tool of ['read', 'read_image', 'write', 'edit', 'lsp'] as const) {
+      const policy = policyOf(subtreeProbeSource(tool, 'subtree', '/data'))
+      expect(policy.allow).toEqual([{ tool, resource: { kind: 'subtree', path: '/data' } }])
+    }
+  })
+
+  it('the shell class rejects subtree in every lane (the A2C-1 shell contract)', () => {
+    for (const tool of ['bash', 'pwsh'] as const) {
+      expectErrorDetails(
+        () => parseBlueprint(subtreeProbeSource(tool, 'subtree', '/data')),
+        'MALFORMED_DTO',
+        { path: '$.leader.capabilities.permissions.allow[0].resource.kind' },
+      )
+    }
+  })
+
+  it('an empty subtree path rejects (the exact path constraints ride on subtree)', () => {
+    expectErrorDetails(
+      () => parseBlueprint(subtreeProbeSource('read', 'subtree', '')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.permissions.allow[0].resource.path' },
+    )
+  })
+
+  it('the hashable projection carries the subtree kind (order/content still hash)', () => {
+    const blueprint = parseBlueprint(subtreeProbeSource('read', 'subtree', '/data'))
+    const hashable = toHashableBlueprint(blueprint)
+    const leader = hashable.leader as RemoteSafeRecord
+    const caps = leader.capabilities as RemoteSafeRecord
+    expect(caps.permissions).toEqual({
+      default: 'ask',
+      allow: [{ tool: 'read', resource: { kind: 'subtree', path: '/data' } }],
+      ask: [],
+      deny: [],
+    })
+  })
+})
+
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the six closed tool names', () => {
+  it('PERMISSION_TOOL_NAMES pins the seven closed tool names (A2C-1: the shell class bash/pwsh)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -707,6 +792,7 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'edit',
       'lsp',
       'bash',
+      'pwsh',
     ])
   })
 
@@ -714,8 +800,8 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
     expect(PERMISSION_POLICY_DEFAULTS).toEqual(['ask', 'deny'])
   })
 
-  it('PERMISSION_RESOURCE_KINDS pins the closed kind vocabulary (no subtree)', () => {
-    expect(PERMISSION_RESOURCE_KINDS).toEqual(['exact', 'any'])
+  it('PERMISSION_RESOURCE_KINDS pins the closed kind vocabulary (A2C-7: subtree joins exact | any)', () => {
+    expect(PERMISSION_RESOURCE_KINDS).toEqual(['exact', 'subtree', 'any'])
   })
 
   it('PERMISSION_RULE_FIELDS / PERMISSION_POLICY_FIELDS pin the closed field sets', () => {

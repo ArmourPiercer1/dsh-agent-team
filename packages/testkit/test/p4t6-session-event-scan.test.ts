@@ -875,8 +875,76 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // followup/h5-bash-effect/ + dev/agent-workflow/evidence/issue1-async-
     // delegation/ + dev/agent-workflow/evidence/alpha2-blueprint-loading/ +
     // alpha2-issue2-permission/.
-    expect(scanResult.filesScanned).toBe(690)
-    expect(scanResult.files.length).toBe(690)
+    // alpha.2 capability-completion A2C-4 (merged into
+    // int/alpha2-capability-completion @ e2e0163, PR #8): +1 = 691 —
+    // one new file, packages/runtime/test/a2c4-external-lastmile.test.ts
+    // (the R1/R2 RED-probe retention + G1–G9 §6.5 matrix for the
+    // external hard last-mile recheck). Zero other scannable additions
+    // (the a6a spy completion is an in-place edit of an existing file;
+    // the control/ + pre-execute-adapter sources are in-place edits).
+    // Scanner unchanged; DEC-1 union applied at the integration tip by
+    // the main agent. Zero denylist vocabulary in the new file (the
+    // frozen quarantine hit set stays at fifteen occurrences).
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-4/.
+    // alpha.2 capability-completion A2C-1 (merged into
+    // int/alpha2-capability-completion @ 23a4d9f, PR #9): +1 = 692 —
+    // one new file, packages/runtime/test/a2c1-pwsh-permission.test.ts
+    // (the P1–P4 RED-probe retention + 24 GREEN acceptance/fingerprint/
+    // real-pipeline tests for the shell-class pwsh parameter permission).
+    // The a1/a3 vocabulary pin updates (6→7 tool names) are in-place
+    // edits of existing files (no count change). Scanner unchanged;
+    // DEC-1 union applied at the integration tip by the main agent.
+    // Zero denylist vocabulary in the new file (the frozen quarantine
+    // hit set stays at fifteen occurrences).
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/.
+    // alpha.2 capability-completion A2C-5 (merged into
+    // int/alpha2-capability-completion, PR #10): +1 = 693 — one new
+    // file, packages/runtime/test/a2c5-read-fingerprint.test.ts (the
+    // T1/T6/T7 RED-probe retention + §8.4 identity matrix for the
+    // omitted-limit null identity). The a2 suite update + the
+    // canonical-operation read-region change are in-place edits (no
+    // count change). Scanner unchanged; DEC-1 union at the integration
+    // tip by the main agent. Zero denylist vocabulary in the new file
+    // (the frozen quarantine hit set stays at fifteen occurrences).
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-5/.
+    // alpha.2 capability-completion A2C-2 (merged into
+    // int/alpha2-capability-completion, PR #11): +2 = 695 — two new
+    // files, packages/runtime/test/a2c2-permission-coverage.test.ts
+    // (the S0 §7.6 probes + six-class matrix + FATAL/typed-error legs
+    // + real-seam legs) and the in-place t12a-live-bridge double
+    // extension (the tools.schemas seam + createScope scope minting —
+    // the merge-block repair for the a6a/bp1 production-wiring
+    // worlds). Scanner unchanged; DEC-1 union at the integration tip
+    // by the main agent. Zero denylist vocabulary in both new files.
+    // Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-2/.
+    // alpha.2 capability-completion A2C-7 (merged into
+    // int/alpha2-capability-completion, PR #12): +1 = 696 — one new
+    // file, packages/runtime/test/a2c7-subtree-matcher.test.ts (the
+    // 16-group §9.9 subtree matrix + R1/R2 + the REAL pinned
+    // LocalFileSystem contains section). All other A2C-7 changes are
+    // in-place edits (domain schema/types/validate, A3 resolver, A5
+    // adapter, host/glue, a1 test). Scanner unchanged; DEC-1 union at
+    // the integration tip by the main agent. Zero denylist vocabulary
+    // in the new file. Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-7/.
+    // alpha.2 capability-completion A2C-3 (merged into
+    // int/alpha2-capability-completion, PR #13): +1 = 697 — one new
+    // file, packages/runtime/test/a2c3-inspect-operation-permission
+    // .test.ts (the 11-leg §10.5 matrix: R1/R2 semantic-split probes +
+    // static/absent forms + pwsh/subtree constant sources +
+    // deterministic order + pure-read + remote round-trip +
+    // effective-unregressed). All other A2C-3 changes are in-place
+    // edits (admission types, action-router effects, tools
+    // description). Scanner unchanged; DEC-1 union at the integration
+    // tip by the main agent. Zero denylist vocabulary in the new
+    // file. Evidence:
+    // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-3/.
+    expect(scanResult.filesScanned).toBe(697)
+    expect(scanResult.files.length).toBe(697)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -59,7 +59,7 @@ import { enforceWorkAcceptingState, mapActivationError } from '../admission/gate
 import { resolveInstanceToken } from '../admission/resolve.js';
 import { archiveMember, disposeMember, restoreMember } from '../lifecycle/index.js';
 import { isLifecycleRuntimeError } from '../lifecycle/errors.js';
-import { effectivePolicyView, memberSummary } from '../admission/types.js';
+import { effectivePolicyView, memberSummary, operationPermissionView } from '../admission/types.js';
 import { ACTION_NAMES } from '../admission/actions.js';
 import { admitWorkLocked, completeWorkChainAfterAdmission, scanWorkStatus, } from './work-execution.js';
 /** The durable fact families (see admission/actions.ts for the contract). */
@@ -132,6 +132,30 @@ export function withTeamLock(teamLocks, rootSessionId, work, signal) {
     teamLocks.set(rootSessionId, next.catch(() => undefined));
     return next;
 }
+/**
+ * A2C-3 (plan §10.3): the bound blueprint template entry that OWNS the
+ * target instance — the LeaderTemplate for the reserved leader id, the
+ * MemberTemplate matched by the target's static `templateId` otherwise.
+ *
+ * The TeamSession bound Blueprint snapshot is the DATA SOURCE (invariant:
+ * never reconstruct from runtime observation or free text). alpha.2 has no
+ * dynamic permission mutation, so the bound static policy IS the current
+ * operation policy — there is no live/dynamic overlay to reconcile here.
+ *
+ * Fail-closed: a member target whose `templateId` resolves to no bound
+ * member template is an internal invariant violation (the bound snapshot
+ * is authoritative; a dangling reference must not be silently served).
+ */
+function boundTemplateOf(blueprint, target) {
+    if (target.instanceId === LEADER_INSTANCE_ID) {
+        return blueprint.leader;
+    }
+    const member = blueprint.members.find((entry) => entry.templateId === target.templateId);
+    if (member === undefined) {
+        internalInvariant(`inspect-config: no bound member template '${target.templateId}' for target '${target.instanceId}'`);
+    }
+    return member;
+}
 async function runEffect(ctx) {
     const { spec } = ctx;
     switch (spec.name) {
@@ -173,6 +197,11 @@ async function runEffect(ctx) {
             return {
                 kind: 'config-inspected',
                 effective: effectivePolicyView(effectivePolicyValues(policy), CAPABILITY_NAME_VALUES),
+                // A2C-3 (plan §10): the ACTUAL alpha.2 operation permission — the
+                // bound template's static parameter-aware policy (bound snapshot,
+                // never runtime observation). Pure read: the effect phase writes
+                // nothing (the seam write log is unchanged by this effect).
+                operationPermissions: operationPermissionView(boundTemplateOf(ctx.blueprint, target)),
             };
         }
         case ACTION_NAMES.WORK_STATUS: {

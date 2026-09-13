@@ -5,8 +5,9 @@
  * The public surface of the module:
  * - `createControlService` — the durable control plane service over an
  *   open TeamDomain (requestControl / resolveControl / listControlState /
- *   guardOperation / awaitControlDecision — the alpha.2 synchronous wait
- *   bridge);
+ *   guardOperation / checkExternalOperation — the A2C-4 shared read-only
+ *   external hard last-mile recheck / awaitControlDecision — the alpha.2
+ *   synchronous wait bridge);
  * - the closed vocabulary (request kinds, decision values/reasons, guard
  *   block reasons, the control-service error codes) and the record types
  *   (ControlRequestRecord / ControlDecisionRecord / ControlConsumption-
@@ -116,6 +117,7 @@ export type {
   ControlDecisionRecord,
   ControlDecisionReason,
   ControlDecisionValue,
+  ControlExternalVerdict,
   ControlGuardBlockReason,
   ControlGuardVerdict,
   ControlOperationScope,

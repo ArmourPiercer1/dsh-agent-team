@@ -1,0 +1,144 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "a2c1-l5-root",
+  "teamSession": {
+    "rootSessionId": "a2c1-l5-root",
+    "blueprintId": "a2c1-live-l5",
+    "revision": "1",
+    "contentHash": "sha256:e0afd298b820e29907250e0570ec4015a8e6a59e527794b91edd7fee8bba365b",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/root",
+    "createdAt": "2026-09-12T17:35:28.577Z",
+    "generation": 8
+  },
+  "members": [
+    {
+      "instanceId": "inst-04fs89a1n9ib",
+      "templateId": "worker",
+      "label": "a2c1-worker",
+      "childSessionId": "session-team-child-121ba700fda19a528f65126a1770e240",
+      "lifecycle": "CREATED",
+      "activityVersion": 1
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [
+      {
+        "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+        "kind": "leader-approval",
+        "targetInstanceId": "inst-04fs89a1n9ib",
+        "actionName": "parameter-permission",
+        "toolName": "pwsh",
+        "correlation": "a2c1-L5a-call-a",
+        "status": "decided",
+        "createdAt": "2026-09-12T17:35:28.961Z"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+        "decision": "allow",
+        "note": "a2c1 L5a: allow-once (durable rows for the cold-resume leg)",
+        "decisionSequence": 25,
+        "requestSequence": 24,
+        "createdAt": "2026-09-12T17:35:29.418Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-0cm9mw30tj59rq081ukt91vg",
+        "decisionSequence": 25,
+        "consumedAt": "2026-09-12T17:35:29.473Z"
+      }
+    ]
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "a2c1-l5-root": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "a2c1-live-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "a2c1-live-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-team-child-121ba700fda19a528f65126a1770e240": {
+        "instanceId": "inst-04fs89a1n9ib",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "a2c1-live-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "a2c1-live-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "a2c1-live-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      }
+    }
+  },
+  "observations": [
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"a2c1-L5a-call-a\",\"tool\":\"pwsh\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"pwsh\",\"fingerprint\":\"sha256:f9556dc6cde318ac0ca15d7575722adf3fdc37b0a3ff36bae096df6e6122c7b4\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"a2c1-L5a-call-a\",\"decision\":\"ask\",\"provenance\":{\"source\":\"rule\",\"effect\":\"ask\",\"lane\":\"ask\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"request-created\",\"callId\":\"a2c1-L5a-call-a\",\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"kind\":\"leader-approval\",\"correlation\":\"a2c1-L5a-call-a\"}",
+    "alpha2-perm: {\"stage\":\"decision-arrived\",\"callId\":\"a2c1-L5a-call-a\",\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"decision\":\"allow\",\"decisionSequence\":25}",
+    "alpha2-perm: {\"stage\":\"guard-verdict\",\"callId\":\"a2c1-L5a-call-a\",\"allowed\":true,\"requestId\":\"ctrl-0cm9mw30tj59rq081ukt91vg\",\"decisionSequence\":25}"
+  ]
+}

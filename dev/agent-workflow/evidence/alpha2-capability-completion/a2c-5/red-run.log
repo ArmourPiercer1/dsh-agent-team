@@ -1,0 +1,80 @@
+=== A2C-5 RED RUN — pre-fix tree ===
+date      : 2026-09-12T17:50:48Z
+tree      : b96faf368674a39fc9a40637501e310585c10fb5 (b96faf3 = INT_W1 product state)
+stash     : 'git stash push' -> No local changes to save (tracked tree pristine; the RED probe file is untracked by design and stays in place)
+command   : npx vitest run packages/runtime/test/a2c5-read-fingerprint.test.ts
+=====================================================================
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-5
+
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts (10 tests | 3 failed) 7ms
+     × T1 (RED): omitted limit is a DISTINCT identity from explicit 2000 — the projection carries `limit: null` (exact digests pinned) 3ms
+     ✓ T2: omitted limit is deterministic (byte-identical across calls) 0ms
+     ✓ T3: explicit same limit is deterministic, and explicit 2000 KEEPS its pre-A2C-5 identity (byte-exact digest — the explicit path is untouched) 0ms
+     ✓ T4: explicit limits differ from each other (100 vs 200) 0ms
+     ✓ T5: resource / offset change still changes the identity 0ms
+     × T6 (RED): a one-shot allow for the OMITTED identity is NOT consumable by the explicit-2000 attempt (fail closed — no cross-identity consumption; the allow survives and authorizes its own identity exactly once) 1ms
+     × T7 (RED): symmetric direction — a one-shot allow for the EXPLICIT-2000 identity is NOT consumable by the omitted attempt 0ms
+     ✓ T8: offset semantics UNCHANGED (recon on pinned a66e470204 parseReadArgs: omitted ≡ explicit 1, the fixed one-based default; offset 2 stays distinct) 0ms
+     ✓ T9: the static resolver consumes the new identities OPAQUELY (rule scope = tool + opaque resource key — zero consumer changes) 0ms
+     ✓ T10: explicit non-positive-integer limit/offset still fail closed (the mirrored upstream parseReadArgs validation is preserved verbatim) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c5-read-fingerprint.test.ts > a2c5 read fingerprint identity (plan §8) — RED probes > T1 (RED): omitted limit is a DISTINCT identity from explicit 2000 — the projection carries `limit: null` (exact digests pinned)
+AssertionError: expected 'sha256:841a4401e4f2ffcc11541756ef7251…' not to be 'sha256:841a4401e4f2ffcc11541756ef7251…' // Object.is equality
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts:309:39
+    307|     // one fingerprint. The frozen fix: the omission is an ABSENCE in …
+    308|     // projection, never a substituted deployment constant.
+    309|     expect(F.omitted.fingerprint).not.toBe(F.explicit2000.fingerprint)
+       |                                       ^
+    310|     expect(F.omitted.fingerprint).toBe(EXPECTED_DIGEST_OMITTED)
+    311|     expect(F.explicit2000.fingerprint).toBe(EXPECTED_DIGEST_EXPLICIT_2…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/a2c5-read-fingerprint.test.ts > a2c5 read fingerprint identity (plan §8) — RED probes > T6 (RED): a one-shot allow for the OMITTED identity is NOT consumable by the explicit-2000 attempt (fail closed — no cross-identity consumption; the allow survives and authorizes its own identity exactly once)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts:345:33
+    343|     // fresh scope with no durable request: a plain no-request block,
+    344|     // zero effect, nothing consumed, nothing written.
+    345|     expect(DIR_A.cross.allowed).toBe(false)
+       |                                 ^
+    346|     expect(blockReason(DIR_A.cross)).toBe(CONTROL_GUARD_BLOCK_REASONS.…
+    347|     // The approved identity still passes (the one-shot survived the
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/a2c5-read-fingerprint.test.ts > a2c5 read fingerprint identity (plan §8) — RED probes > T7 (RED): symmetric direction — a one-shot allow for the EXPLICIT-2000 identity is NOT consumable by the omitted attempt
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts:357:33
+    355|
+    356|   it('T7 (RED): symmetric direction — a one-shot allow for the EXPLICI…
+    357|     expect(DIR_B.cross.allowed).toBe(false)
+       |                                 ^
+    358|     expect(blockReason(DIR_B.cross)).toBe(CONTROL_GUARD_BLOCK_REASONS.…
+    359|     expect(DIR_B.own.allowed).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 7 passed (10)
+   Start at  17:50:48
+   Duration  633ms (transform 414ms, setup 0ms, import 552ms, tests 7ms, environment 0ms)
+
+exit code: 1

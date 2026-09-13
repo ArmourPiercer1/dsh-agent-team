@@ -121,12 +121,16 @@ export const BLUEPRINT_POLICY_REFERENCEABLE_FIELDS = [
 /** The only values a capability policy may map a domain to. */
 export const CAPABILITY_POLICY_DECISIONS = ['allow', 'deny'];
 /**
- * The six tool names a permission rule may gate (alpha.2 plan §4/§6.2,
- * closed vocabulary). `bash` allows tool-level ask/deny via
- * `resource: { kind: 'any' }` only — no positive parameter-level allow.
- * Enforced in validation: a `bash` rule in the `allow` lane is rejected,
- * and an `exact` `bash` resource is rejected in every lane (the bash
- * vocabulary is `any` in `ask`/`deny` only).
+ * The seven tool names a permission rule may gate (alpha.2 plan §4/§6.2 +
+ * A2C-1, closed vocabulary). The shell class (`bash`, `pwsh`) allows
+ * tool-level ask/deny via `resource: { kind: 'any' }` only — no positive
+ * parameter-level allow. Enforced in validation: a shell-class rule in
+ * the `allow` lane is rejected, and an `exact` shell-class resource is
+ * rejected in every lane (the shell vocabulary is `any` in `ask`/`deny`
+ * only). `bash authority != pwsh authority`: the two share the shell
+ * class rules but are distinct tools (a rule for one never gates the
+ * other, and the runtime fingerprints them with separate tool
+ * identities).
  */
 export const PERMISSION_TOOL_NAMES = [
     'read',
@@ -135,6 +139,7 @@ export const PERMISSION_TOOL_NAMES = [
     'edit',
     'lsp',
     'bash',
+    'pwsh',
 ];
 /**
  * The only fallback decisions a permission policy may declare
@@ -144,9 +149,13 @@ export const PERMISSION_TOOL_NAMES = [
 export const PERMISSION_POLICY_DEFAULTS = ['ask', 'deny'];
 /**
  * The closed resource kinds of a permission rule (alpha.2 plan §6.2).
- * `subtree` is intentionally absent in A1 (not a release blocker).
+ * `subtree` (A2C-7, plan §9): one workspace path that matches the path
+ * ITSELF and every canonical descendant — the containment judgment is
+ * the pinned public `FileSystem.contains` seam's (NEVER a string
+ * authority over opaque keys); the shell class (bash/pwsh) does not
+ * accept a subtree resource in any lane (the A2C-1 shell contract).
  */
-export const PERMISSION_RESOURCE_KINDS = ['exact', 'any'];
+export const PERMISSION_RESOURCE_KINDS = ['exact', 'subtree', 'any'];
 /** The exact closed field set of a TemplatePermissionPolicy block. */
 export const PERMISSION_POLICY_FIELDS = ['default', 'allow', 'ask', 'deny'];
 /** The exact closed field set of one permission rule. */

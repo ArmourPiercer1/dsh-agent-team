@@ -53,30 +53,39 @@ export const OPERATION_PERMISSION_ERROR_CODE_VALUES: readonly string[] =
  * Argument-shape reasons: a supported tool's arguments are malformed in
  * a way the tool itself would reject BEFORE executing (mirroring the
  * upstream tools' own validation — `parseReadArgs` / `parseWriteArgs` /
- * `parseEditArgs` / `parseLspArgs` / `tool-bash` `validateBashArgs`), so
- * the call has no well-formed "effective" projection and must not be
- * authorized:
+ * `parseEditArgs` / `parseLspArgs` / the shell class `validateBashArgs`
+ * / `validatePwshArgs`), so the call has no well-formed "effective"
+ * projection and must not be authorized:
  * - file_path / write content / edit strings: missing, non-string, or
  *   (where the tool rejects it) empty / equal;
- * - bash command: missing, non-string, or whitespace-only (the upstream
- *   `tool-bash` rejects all three before execution — H2 P1-2: the
- *   command is the security-relevant field for bash, so a call without
- *   a well-formed command cannot be authorized);
- * - bash effect fields (H5 P1-B: the execution effect of `bash -c X`
- *   — WHERE it runs, foreground vs detached, the explicit timeout, and
- *   the requested sandbox mode — are security-relevant too, and the
- *   upstream materialization feeds them to the pre-execute waterfall
- *   UNVALIDATED — `validateBashArgs` runs inside `execute`, after the
- *   gate — so a malformed effect shape has no well-formed "effective"
- *   projection and fails closed BEFORE the resolver call):
- *   - `bash-workdir-not-a-string` — `workdir` present and not a string
- *     (omitted / empty-string is LEGITIMATE — normalized to the session
- *     cwd, the tool's own defaulting);
- *   - `bash-run-in-background-not-boolean` — `run_in_background`
+ * - shell-class command (`bash` / `pwsh`): missing, non-string, or
+ *   whitespace-only (each upstream shell tool rejects all three before
+ *   execution — H2 P1-2: the command is the security-relevant field for
+ *   the shell class, so a call without a well-formed command cannot be
+ *   authorized; A2C-1 mirrors the per-tool reasons: `bash-command-*`
+ *   over `tool-bash` `validateBashArgs`, `pwsh-command-*` over
+ *   `tool-pwsh` `validatePwshArgs`);
+ * - shell-class effect fields (H5 P1-B, A2C-1: the execution effect of a
+ *   shell call — WHERE it runs, foreground vs detached, the explicit
+ *   timeout, and the requested sandbox mode — are security-relevant too,
+ *   and the upstream materialization feeds them to the pre-execute
+ *   waterfall UNVALIDATED — `validateBashArgs` / `validatePwshArgs` run
+ *   inside `execute`, after the gate — so a malformed effect shape has
+ *   no well-formed "effective" projection and fails closed BEFORE the
+ *   resolver call; the reasons are per-tool-mirrored, one family per
+ *   upstream shell tool):
+ *   - `bash-workdir-not-a-string` / `pwsh-workdir-not-a-string` —
+ *     `workdir` present and not a string (omitted / empty-string is
+ *     LEGITIMATE — normalized to the session cwd, the tool's own
+ *     defaulting);
+ *   - `bash-run-in-background-not-boolean` /
+ *     `pwsh-run-in-background-not-boolean` — `run_in_background`
  *     present and not a boolean;
- *   - `bash-timeout-ms-invalid` — `timeoutMs` present and not a finite
- *     number > 0 (mirrors the upstream `validateBashArgs` check);
- *   - `bash-sandbox-permissions-not-a-string` — `sandbox_permissions`
+ *   - `bash-timeout-ms-invalid` / `pwsh-timeout-ms-invalid` —
+ *     `timeoutMs` present and not a finite number > 0 (mirrors the
+ *     upstream `validateBashArgs` / `validatePwshArgs` check);
+ *   - `bash-sandbox-permissions-not-a-string` /
+ *     `pwsh-sandbox-permissions-not-a-string` — `sandbox_permissions`
  *     present and not a string (any string — including `''` — is its
  *     own value: mode LEGALITY is the upstream authority at execution,
  *     and the escalation pairing with `justification` stays upstream's);
@@ -124,6 +133,13 @@ export type CanonicalizationFailureReason =
   | 'bash-run-in-background-not-boolean'
   | 'bash-timeout-ms-invalid'
   | 'bash-sandbox-permissions-not-a-string'
+  | 'pwsh-command-missing'
+  | 'pwsh-command-not-a-string'
+  | 'pwsh-command-empty'
+  | 'pwsh-workdir-not-a-string'
+  | 'pwsh-run-in-background-not-boolean'
+  | 'pwsh-timeout-ms-invalid'
+  | 'pwsh-sandbox-permissions-not-a-string'
   | 'resolver-threw'
   | 'resolver-key-empty'
   | 'resolver-result-malformed'
@@ -155,6 +171,13 @@ export const CANONICALIZATION_FAILURE_REASONS: readonly CanonicalizationFailureR
   'bash-run-in-background-not-boolean',
   'bash-timeout-ms-invalid',
   'bash-sandbox-permissions-not-a-string',
+  'pwsh-command-missing',
+  'pwsh-command-not-a-string',
+  'pwsh-command-empty',
+  'pwsh-workdir-not-a-string',
+  'pwsh-run-in-background-not-boolean',
+  'pwsh-timeout-ms-invalid',
+  'pwsh-sandbox-permissions-not-a-string',
   'resolver-threw',
   'resolver-key-empty',
   'resolver-result-malformed',
@@ -287,4 +310,123 @@ export function isPermissionGuardUnavailableError(
   value: unknown,
 ): value is PermissionGuardUnavailableError {
   return value instanceof PermissionGuardUnavailableError
+}
+
+// ---------------------------------------------------------------------------
+// A2C-2 (alpha.2, plan §7.4) — the Permission Coverage Gate error:
+// the typed setup/compatibility failure of a strict
+// (capabilities.permissions) agent whose FINAL model-facing tool surface
+// carries a KNOWN_SENSITIVE_UNMANAGED or UNKNOWN_UNMANAGED tool.
+//
+// The detail is DETERMINISTIC (the unmanaged tool names sorted — see
+// `buildPermissionCoverageErrorDetail` in `permission-coverage.ts`):
+// `instanceId` + `presetId` + `unmanagedTools[{name, classification,
+// reason, remediation}]`. Branch on {@link code} + {@link detail},
+// never on the message text (the existing failure surface — the
+// AgentSetup rejection rolling the unpublished agent back — displays the
+// typed diagnostic; this round adds no dedicated UI, plan §7.4).
+// ---------------------------------------------------------------------------
+
+/** The closed Permission Coverage Gate error codes (A2C-2, plan §7.4). */
+export const PERMISSION_COVERAGE_ERROR_CODES = {
+  /**
+   * The final surface of a strict agent carries a tool with no reviewed
+   * authority owner (a KNOWN_SENSITIVE_UNMANAGED or an UNKNOWN_UNMANAGED
+   * entry in `detail.unmanagedTools`). The setup FAILS LOUDLY — NO
+   * auto-hide (the gate never `restrict()`s a discovered tool) and NO
+   * acknowledgement escape hatch (plan §7.5 / §7.3-F).
+   */
+  ALPHA2_PERMISSION_COVERAGE_UNMANAGED: 'alpha2-permission-coverage-unmanaged-tools',
+} as const
+
+/** One of the closed Permission Coverage Gate error codes. */
+export type PermissionCoverageErrorCode =
+  (typeof PERMISSION_COVERAGE_ERROR_CODES)[keyof typeof PERMISSION_COVERAGE_ERROR_CODES]
+
+/**
+ * The closed unmanaged classifications the detail carries (the FATAL
+ * subset of the six-class verdict — the MANAGED / SAFE classes never
+ * appear in an unmanaged entry).
+ */
+export type PermissionCoverageUnmanagedClassification =
+  | 'known-sensitive-unmanaged'
+  | 'unknown-unmanaged'
+
+/** One FATAL unmanaged entry (the plan §7.4 shape). */
+export interface PermissionCoverageUnmanagedToolEntry {
+  /** The final-surface tool name. */
+  readonly name: string
+  /** The closed FATAL class of the tool. */
+  readonly classification: PermissionCoverageUnmanagedClassification
+  /** The stable deterministic reason (per sensitive category / the
+   *  unknown-semantics reason). */
+  readonly reason: string
+  /** The stable deterministic remediation. */
+  readonly remediation: string
+}
+
+/**
+ * The deterministic detail of one coverage-gate failure (plan §7.4):
+ * `instanceId` + `presetId` + `unmanagedTools` (sorted by name).
+ * Lossless-JSON (no live objects).
+ */
+export interface PermissionCoverageErrorDetail {
+  /** The bound instance id the failing setup was for. */
+  readonly instanceId: string
+  /** The composed preset identity, or `null` when the surface's preset
+   *  cannot be determined (explicit, never omitted). */
+  readonly presetId: string | null
+  /** The FATAL entries, sorted by tool name. */
+  readonly unmanagedTools: readonly PermissionCoverageUnmanagedToolEntry[]
+}
+
+/**
+ * One rejection of a strict setup by the Permission Coverage Gate
+ * (A2C-2, plan §7.4): the final model-facing surface carries an
+ * unmanaged (known-sensitive or unknown) tool. Thrown at the verified
+ * insertion point (after the MCP reconcile, before the
+ * parameter-permission listener — plan §7.2); the rejection propagates
+ * out of the AgentSetup callback and rolls the unpublished agent back
+ * (the AgentSetup contract) — the strict agent never runs on a surface
+ * the gate did not verify. Branch on {@link code} + {@link detail},
+ * never the message.
+ */
+export class PermissionCoverageUnmanagedError extends Error {
+  /** The stable closed error code (branch on this, never the message). */
+  readonly code: PermissionCoverageErrorCode
+
+  /** The deterministic failure detail (plan §7.4). */
+  readonly detail: PermissionCoverageErrorDetail
+
+  constructor(detail: PermissionCoverageErrorDetail) {
+    super(permissionCoverageUnmanagedMessage(detail))
+    this.name = 'PermissionCoverageUnmanagedError'
+    this.code = PERMISSION_COVERAGE_ERROR_CODES.ALPHA2_PERMISSION_COVERAGE_UNMANAGED
+    this.detail = detail
+  }
+}
+
+/** Type guard: is `value` a {@link PermissionCoverageUnmanagedError}? */
+export function isPermissionCoverageUnmanagedError(
+  value: unknown,
+): value is PermissionCoverageUnmanagedError {
+  return value instanceof PermissionCoverageUnmanagedError
+}
+
+/**
+ * The deterministic message of one coverage-gate failure (the closed
+ * code embedded in the text, the unmanaged names sorted with their
+ * class — the existing failure surface displays this diagnostic).
+ * @param detail - the deterministic failure detail.
+ * @returns the stable message.
+ */
+function permissionCoverageUnmanagedMessage(detail: PermissionCoverageErrorDetail): string {
+  const entries = detail.unmanagedTools
+    .map((entry) => `${entry.name} (${entry.classification})`)
+    .join(', ')
+  return (
+    `permission coverage gate failed for instance '${detail.instanceId}': ` +
+    `${detail.unmanagedTools.length} unmanaged tool(s) on the final model-facing surface: ${entries} ` +
+    `(code: ${PERMISSION_COVERAGE_ERROR_CODES.ALPHA2_PERMISSION_COVERAGE_UNMANAGED})`
+  )
 }

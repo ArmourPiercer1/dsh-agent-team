@@ -198,6 +198,18 @@ interface GlueModule {
      */
     readonly fsBackend?: (agentCtx: unknown) => {
       resolve(path: string, options?: { cwd?: string }): Promise<unknown>
+      /**
+       * A2C-7 (alpha.2 plan §9) — the pinned upstream PUBLIC containment
+       * seam (`FileSystem.contains(parent, child)`, synchronous on the
+       * pinned `@deepseek-ai/dsh-fs` abstract; a thenable is tolerated
+       * for a future async backend). The ONLY legal containment
+       * authority for the `subtree` permission kind (plan §9.4: never
+       * `startsWith`, never targetKey parsing). Optional: a provider
+       * without a public `contains` keeps the pre-A2C-7 surface — the
+       * adapter then treats subtree containment as undeterminable
+       * (fail-closed semantics, never a minted grant).
+       */
+      contains?(parent: unknown, child: unknown): boolean | Promise<boolean>
     }
     /**
      * BP-F (issue #2 blueprint-loading, plan §11.1, optional additive):
@@ -691,9 +703,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // row on the fs backend would break compositions that host a team without
   // file tools (they would run the alpha.1 surface); the lazy read is the
   // additive pattern (cf. agentPresets above).
-  const fsBackend = (): { resolve(path: string, options?: { cwd?: string }): Promise<unknown> } => {
+  const fsBackend = (): {
+    resolve(path: string, options?: { cwd?: string }): Promise<unknown>
+    contains?(parent: unknown, child: unknown): boolean | Promise<boolean>
+  } => {
     const svc = ctx.get('fs') as
-      | { resolve?: (path: string, options?: { cwd?: string }) => Promise<unknown> }
+      | {
+          resolve?: (path: string, options?: { cwd?: string }) => Promise<unknown>
+          contains?: (parent: unknown, child: unknown) => boolean | Promise<boolean>
+        }
       | null
       | undefined
     if (svc === undefined || svc === null || typeof svc.resolve !== 'function') {
@@ -703,7 +721,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       )
     }
     const resolve = svc.resolve
-    return { resolve: (path, options) => resolve(path, options) }
+    // A2C-7: the containment seam rides the SAME lazy provider (only
+    // exposed when the provider exposes it — an absent `contains` is
+    // the pre-A2C-7 surface, not an error at install).
+    return {
+      resolve: (path, options) => resolve(path, options),
+      ...(typeof svc.contains === 'function' ? { contains: svc.contains } : {}),
+    }
   }
 
   // The bootstrap (config validation, resolver hook arming, services,

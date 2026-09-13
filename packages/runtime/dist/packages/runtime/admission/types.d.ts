@@ -24,6 +24,7 @@
  */
 import type { CapabilityName, PolicyEntry } from '../../domain/policy/src/index.js';
 import type { LifecycleOperation } from '../../domain/lifecycle/src/index.js';
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js';
 import type { MemberLifecycleState, MemberInstanceRecordDto } from '../../contracts/src/index.js';
 /** The closed caller roles the facade resolves from the TeamDomain. */
 export declare const CALLER_ROLES: {
@@ -252,10 +253,27 @@ export type RuntimeActionEffect =
     readonly kind: 'work-status';
     readonly entries: readonly WorkStatusEntry[];
 }
-/** The per-capability effective policy view (inspect-config). */
+/** The per-capability effective policy view (inspect-config).
+ *
+ * A2C-3 (plan §10): `effective` is the LEGACY generic capability policy
+ * view (the five generic cells after overlay + external facts — the
+ * generic `permissions` cell is NOT the alpha.2 operation-permission
+ * authority). The independent `operationPermissions` field carries the
+ * ACTUAL alpha.2 static parameter-aware policy (see
+ * {@link OperationPermissionView}). */
  | {
     readonly kind: 'config-inspected';
     readonly effective: Record<string, PolicyEntry>;
+    /**
+     * A2C-3 (plan §10): the ACTUAL alpha.2 operation permission of the
+     * target — the bound template's static parameter-aware policy
+     * (`boundTemplate.capabilities.permissions` → the TemplatePermission
+     * Policy enforced by the pre-execute adapter). INDEPENDENT from the
+     * legacy generic `effective.permissions` cell. alpha.2 has no
+     * dynamic permission mutation: the static policy IS the current
+     * operation policy (no alpha.3 grants/overlays are invented).
+     */
+    readonly operationPermissions: OperationPermissionView;
 }
 /** The member list view (list-members). */
  | {
@@ -278,6 +296,60 @@ export type RuntimeActionEffect =
         readonly displayName: string;
         readonly contextPolicy: string;
     }[];
+};
+/**
+ * The lossless-JSON view of ONE stored static permission rule (A2C-3,
+ * plan §10.2): the tool it gates and the resource it matches. Served in
+ * the policy's STORED (declaration) order — the A1 normalization pin —
+ * never re-sorted, duplicates preserved.
+ */
+export type OperationPermissionRuleView = {
+    readonly tool: string;
+    readonly resource: {
+        readonly kind: 'exact';
+        readonly path: string;
+    };
+} | {
+    readonly tool: string;
+    readonly resource: {
+        readonly kind: 'subtree';
+        readonly path: string;
+    };
+} | {
+    readonly tool: string;
+    readonly resource: {
+        readonly kind: 'any';
+    };
+};
+/**
+ * The `operationPermissions` field of the `config-inspected` effect
+ * (A2C-3, plan §10.2) — the ACTUAL alpha.2 operation permission of the
+ * inspected target, independent from the legacy generic `effective` view.
+ *
+ * - `mode: 'static'` — the bound template declares `capabilities.permissions`:
+ *   the rules AS STORED in the policy (deterministic declaration order) plus
+ *   the FINAL closed vocabularies — `managedTools` = `PERMISSION_TOOL_NAMES`
+ *   and `resourceKinds` = `PERMISSION_RESOURCE_KINDS` (imported from the
+ *   domain blueprint constants, never hardcoded — no vocabulary drift);
+ * - `mode: 'absent'` — the bound template declares no `permissions` (legacy
+ *   / alpha.1 behavior: no parameter-permission enforcement installed).
+ *
+ * alpha.2 has no dynamic permission mutation: the static policy IS the
+ * current operation policy (plan §10.3). NO alpha.3 `grants` / `overlays`
+ * fields exist in this shape.
+ */
+export type OperationPermissionView = {
+    readonly mode: 'static';
+    readonly default: 'ask' | 'deny';
+    readonly allow: readonly OperationPermissionRuleView[];
+    readonly ask: readonly OperationPermissionRuleView[];
+    readonly deny: readonly OperationPermissionRuleView[];
+    /** The FINAL closed managed-tool vocabulary (`PERMISSION_TOOL_NAMES`). */
+    readonly managedTools: readonly string[];
+    /** The FINAL closed resource-kind vocabulary (`PERMISSION_RESOURCE_KINDS`). */
+    readonly resourceKinds: readonly string[];
+} | {
+    readonly mode: 'absent';
 };
 /** The successful outcome of one action (lossless JSON). */
 export interface TeamRuntimeActionOutcome {
@@ -579,4 +651,30 @@ export declare function memberSummary(member: MemberInstanceRecordDto): {
     readonly lifecycle?: MemberLifecycleState;
     readonly childSessionId?: string;
 };
+/**
+ * The lossless-JSON view of the BOUND template's static parameter-aware
+ * operation permission policy (A2C-3, plan §10.2/§10.3) — the ACTUAL
+ * alpha.2 operation-permission authority
+ * (`boundTemplate.capabilities.permissions` → TemplatePermissionPolicy →
+ * pre-execute adapter), independent from the legacy generic
+ * `effective.permissions` cell.
+ *
+ * Deterministic: the lanes are served in the policy's STORED (declaration)
+ * order — the A1 normalization pin — never re-sorted, duplicates
+ * preserved. `managedTools` / `resourceKinds` are the FINAL closed
+ * vocabularies from the domain blueprint constants
+ * (`PERMISSION_TOOL_NAMES` / `PERMISSION_RESOURCE_KINDS`), so the view
+ * cannot drift from the enforced vocabulary. alpha.2 has no dynamic
+ * permission mutation: the static policy IS the current operation policy
+ * (no alpha.3 grants/overlays are invented).
+ *
+ * @param template - the bound blueprint template entry of the inspected
+ *   target (LeaderTemplate or MemberTemplate; the capabilities block is
+ *   optional — absent = legacy mode, `mode: 'absent'`).
+ */
+export declare function operationPermissionView(template: {
+    readonly capabilities?: {
+        readonly permissions?: TemplatePermissionPolicy;
+    };
+}): OperationPermissionView;
 //# sourceMappingURL=types.d.ts.map

@@ -476,7 +476,13 @@ export async function apply(ctx, config) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "fs" public service is absent (or lacks resolve) — it is resolved lazily per call and must be up before parameter-permission canonicalization resolves a file target (fail-closed: a typed canonicalization denial, never a pass-through)');
         }
         const resolve = svc.resolve;
-        return { resolve: (path, options) => resolve(path, options) };
+        // A2C-7: the containment seam rides the SAME lazy provider (only
+        // exposed when the provider exposes it — an absent `contains` is
+        // the pre-A2C-7 surface, not an error at install).
+        return {
+            resolve: (path, options) => resolve(path, options),
+            ...(typeof svc.contains === 'function' ? { contains: svc.contains } : {}),
+        };
     };
     // The bootstrap (config validation, resolver hook arming, services,
     // seam, domain, glue, legacy reader, root construction, boot) runs as

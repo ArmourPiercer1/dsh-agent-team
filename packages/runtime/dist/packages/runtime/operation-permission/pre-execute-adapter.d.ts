@@ -18,7 +18,10 @@
  *     ↓                                OperationPermissionError: deny,
  *                                       never next())
  *     resolveOperationPermission(...)         (A3 — pure static decision)
- *     ├ allow → await next()
+ *     ├ allow → checkExternalOperation(live)  (A2C-4 — the external hard
+ *         │     last-mile recheck; fail closed)
+ *         │   ├ allowed → await next()
+ *         │   └ denied  → return { kind: 'deny' } (zero effect: NOT marked)
  *     ├ deny  → return { kind: 'deny' }       (provenance in the reason)
  *     └ ask
  *         ↓
@@ -32,7 +35,12 @@
  *     └ decision allow
  *         ↓
  *     guardOperation(exact scope + fingerprint)  (A4 — check-and-reserve
- *         ↓                                exactly once)
+ *         ↓                                exactly once; the live
+ *                                             external hard recheck A2C-4
+ *                                             runs INSIDE the guard,
+ *                                             before the consumption
+ *                                             write — a tightened cell
+ *                                             blocks WITHOUT consuming)
  *     ├ allowed → await next()
  *     └ blocked → return { kind: 'deny' }     (no-request here is a
  *                                             consistency anomaly — fail
@@ -76,8 +84,11 @@
  * - it is FAIL CLOSED (plan §7.5/§10.3): every non-allow outcome returns
  *   before `next()` is awaited, so the tool body is NEVER invoked
  *   (zero-effect invariant): unsupported pass-through, static deny,
- *   canonicalization failure, request failure, wait abort, wait closed,
- *   durable deny/stale-denied, guard block — all deny;
+ *   the static-path external recheck deny (A2C-4 — the exec is never
+ *   marked, the end-cap stays armed), canonicalization failure, request
+ *   failure, wait abort, wait closed, durable deny/stale-denied, guard
+ *   block (including the guard's external-policy block — zero allow
+ *   consumption) — all deny;
  * - it is AGENT-SCOPED: `installParameterPermissionListener` registers
  *   ONE listener on the ONE agent ctx it is given (the A6 glue installs
  *   it per agent lifecycle — fresh root / fresh member / cold resume —
@@ -148,9 +159,9 @@
  *   consulted) before it could be authorized — while a rule addressing a
  *   different, resolvable path has a different opaque key and cannot
  *   match the operation. Exact rules whose `tool` differs from the
- *   operation's tool (and every `bash` exact rule — inert by
- *   construction, A3) are never canonicalized at all (they can never
- *   match, so the resolver is never called for them). Rules are thus
+ *   operation's tool (and every shell-class exact rule — `bash` /
+ *   `pwsh`, inert by construction, A3) are never canonicalized at all
+ *   (they can never match, so the resolver is never called for them). Rules are thus
  *   canonicalized against the SAME cwd basis as operations: the SAME
  *   injected resolver closure, which reads the agent's live session cwd
  *   LAZILY at resolve time (FACT 3b — never captured at install). The
@@ -251,7 +262,8 @@
  *   so the nested call of a permission tool is end-cap denied in its
  *   own right (the nested dispatch is the upstream's own escape hatch,
  *   not a Team authorization path); (c) UNSUPPORTED tool names abstain
- *   (the guard never over-denies beyond the six permission tools);
+ *   (the guard never over-denies beyond the seven permission tools —
+ *   the A1 tools + the A2C-1 shell class `bash`/`pwsh`);
  *   (d) the guard is AGENT-SCOPED (an upstream agent-ctx guard applies
  *   only to that agent) and INSTALL-SCOPED (fresh WeakSet per install)
  *   — two installs on two agents are independent; (e) the install is
@@ -378,6 +390,22 @@ export interface InstallParameterPermissionListenerParams {
      * decision for both (H4 — no cache).
      */
     readonly resolveTarget: PathTargetResolver;
+    /**
+     * A2C-7 (alpha.2 plan §9) — the containment authority seam: the
+     * pinned upstream PUBLIC `FileSystem.contains(parent, child)` over
+     * OPAQUE `FsTarget`s of the SAME provider (both handles produced by
+     * `resolveTarget`'s live fs service — the glue passes the same
+     * lazy `ctx.get('fs')` basis). The ONLY legal containment predicate
+     * (plan §9.4: never `startsWith`, never targetKey parsing, never
+     * consumer-side `node:path`). Optional — when absent, a `subtree`
+     * rule's containment is UNDETERMINABLE (deny lane: fail-closed deny,
+     * the rule cannot be dropped; allow/ask lanes: non-match — the P1-3
+     * lane asymmetry). Pre-A2C-7 installers (no subtree rules in their
+     * policies) are unaffected: the optionality is backward-compatible.
+     * Synchronous (`boolean`, the pinned seam) or a thenable (a future
+     * async backend) — both are awaited internally.
+     */
+    readonly containsTargets?: (parent: unknown, child: unknown) => boolean | Promise<boolean>;
     /** The durable control plane service (A4 — fully constructed). */
     readonly controlService: ControlService;
     /** The team root session id (the TeamSession, invariant 9). */

@@ -1,0 +1,95 @@
+[
+  {
+    "seq": 1,
+    "path": "/chat/completions",
+    "receivedAt": "2026-09-12T17:35:31.187Z",
+    "status": 200,
+    "auth": "Bearer <redacted>",
+    "model": "a2c1-live-model",
+    "tools": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "pwsh",
+      "ralph",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "lastUserText": "[team-relay] from=human:a2c1-l5-root to=inst-04fs89a1n9ib (label: a2c1-worker)\nA2C1_PWSH3_a2c16d30b74f run the pwsh probe after cold resume",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "a2c1-L5b-call-c",
+          "name": "pwsh",
+          "arguments": {
+            "command": "Get-ChildItem -Name",
+            "description": "List directory names (A2C-1 live probe)",
+            "workdir": "/home/user/dsh-plugins/dsh-agent-team/tests/homes/a2c1-live-20260912T162326Z/work/child"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 2,
+    "path": "/chat/completions",
+    "receivedAt": "2026-09-12T17:35:31.727Z",
+    "status": 200,
+    "auth": "Bearer <redacted>",
+    "model": "a2c1-live-model",
+    "tools": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "pwsh",
+      "ralph",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "lastUserText": "[team-relay] from=human:a2c1-l5-root to=inst-04fs89a1n9ib (label: a2c1-worker)\nA2C1_PWSH3_a2c16d30b74f run the pwsh probe after cold resume",
+    "reply": {
+      "kind": "text"
+    }
+  }
+]

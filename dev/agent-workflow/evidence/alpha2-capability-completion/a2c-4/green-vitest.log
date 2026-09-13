@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a2c-4
+
+ ✓ packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  15:57:24
+   Duration  639ms (transform 403ms, setup 0ms, import 570ms, tests 3ms, environment 0ms)
+

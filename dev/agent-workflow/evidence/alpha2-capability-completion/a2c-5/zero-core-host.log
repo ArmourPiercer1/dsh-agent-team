@@ -1,0 +1,7 @@
+=== A2C-5 GATE — verify-zero-core (host scan, pristine upstream) ===
+date: 2026-09-12T17:54:25Z
+verify-zero-core: host=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+INFO third-party patched dependency "node-pty" at /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/pnpm-workspace.yaml [patchedDependencies] (upstream's own dependency patching; not a Team rewrite)
+INFO third-party patch file /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/patches/node-pty@1.2.0-beta.15.patch (upstream's own dependency patching; not a Team rewrite)
+RESULT: PASS verify-zero-core (0 findings)
+exit: 0
