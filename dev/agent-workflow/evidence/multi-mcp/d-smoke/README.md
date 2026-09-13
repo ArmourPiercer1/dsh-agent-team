@@ -62,18 +62,32 @@ node dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs
    p6t6 观测行）→ 写 `p6t6-directive.json`（boot 1, phase create）→
    boot host（boot 行 + 裸 `GET /` 401 + token→cookie 303）→ 行健康
    （`/__p6t6/health` ok）→ `p6t6StateReady`（root+phase+teamSession）。
-6. 成员创建：经 `POST /__p6t6/tool` 执行 shipped `team_create_member`
-   （worker-a / worker-b 各一实例；anti-cheat：不 seed）。
-7. 判据 C1–C5：每 agent 一次真实 turn（leader 走 `POST /api/session/prompt`，
+6. **durable seed**：`/team-remote/override.set`（capability mcp,
+   allow [A,B], **scope: team**）——blueprint 的 `capabilities.mcp` 只是静态
+   模板门，**不 seed durable cell**（冻结语义：team cell unspecified =
+   fail-closed 不挂）；没有这条治理记录，world 契约正确但零挂载。
+7. 成员创建：经 `POST /__p6t6/tool` 执行 shipped `team_create_member`
+   （worker-a / worker-b 各一实例；anti-cheat：不 seed）。成员创建时的
+   fresh setup 解析（seed 之后）→ m1 挂 A、m2 挂 B（C2/C3 在创建相即成立）。
+8. **leader 边界触发**：`POST /__p6t6/tool` 执行 `team_list_members`
+   （as = root session）→ `executeTool` → `prepareAgentForRequest(root)` →
+   mcp reconcile，挂上 leader 的 [A,B]。根因注记：root **原生 prompt 路径
+   （`/api/session/prompt`）不跑 team 边界**（既有 glue 布线：
+   `prepareAgentForRequest` 只在 submitAttributedInput / workDelivery.deliver /
+   deliverRootInput / executeTool 四处调用），故边界必须用 team tool 执行触发。
+   tool 执行不产生 model 请求（mock seq 不受影响）。
+9. 判据 C1–C5：每 agent 一次真实 turn（leader 走 `POST /api/session/prompt`，
    member 走 `/team-remote/member.send`）→ mock 捕获 model-facing tools +
    `GET /__p6t6/state` 快照 → 逐判据断言；C4 = `/team-remote/override.set`
-   把 leader 的 durable mcp cell 从 allow[A,B] 收紧到 allow[A]，下一 boundary
-   断言 B 真消失；C5 = 同 home 停启（boot 2, phase resume），逐 agent 再 turn，
-   断言 effective 集与重启前**逐位相等**（含收紧后的 A-only leader）。
-8. teardown：停 host → 关 mini A/B + mock → **C6** 端口释放（3491/3492/3496/
-   host port）→ **C7** test-use porcelain 空 + HEAD 基线（post==pre==
-   `a66e470204`）+ `:3080` 前后一致 → home 删除（或 `--keep` 登记）→
-   `summary.json` + `criterion-list.json` 落盘 + stdout 打印。
+   把 leader 的 durable mcp cell 从 allow[A,B] 收紧到 allow[A]（**scope:
+   instance**），随后再发一次 `team_list_members` 边界触发（同上），断言 B
+   真消失（state deny-first dispose + model schema 无 B、A 在）；C5 = 同
+   home 停启（boot 2, phase resume），逐 agent 再 turn，断言 effective 集与
+   重启前**逐位相等**（含收紧后的 A-only leader）。
+10. teardown：停 host → 关 mini A/B + mock → **C6** 端口释放（3491/3492/3496/
+    host port）→ **C7** test-use porcelain 空 + HEAD 基线（post==pre==
+    `a66e470204`）+ `:3080` 前后一致 → home 删除（或 `--keep` 登记）→
+    `summary.json` + `criterion-list.json` 落盘 + stdout 打印。
 
 ## 3. 判据表（d-docs-smoke.md 验收判据 1–7 的落地）
 
@@ -125,14 +139,31 @@ base 树（`b49f4239`，B 未合入）不支持 `mcpServers`：行配置中
 - C6/C7 **PASS**（teardown 与 pristine 复核对基线树恒成立）。
 - kit 退出码 = 2（链路全通、判据按预期失败）。
 
-**不要在 base 树追求 GREEN**；GREEN 由主 Agent 在 int 树（A+B+C 合入后）执行
+**不要在 base 树追求 GREEN**；GREEN 由主 Agent 在 int 树（A+B+C+D 合入后）执行
 同一 kit 产出。
+
+### int 树 GREEN 形态（已达成，`runs/mm-smoke-20260913T18-45-41Z` @ int 3ee3f72）
+
+修复两处 kit 设计缺口（**durable seed 缺失** + **边界探针走错路径**——详见
+`base-dryrun-interpretation.md` 的归因/修复节，零运行时改动）后：
+
+- C1 **15/15**（三会话 i5-servers；leader schema 恰为
+  `[mcp__mcp_signal__ping, mcp__mcp_designer__ping]`，m1/m2 各自单 server；
+  state+schema 双证一致）、C2 **3/3**（两端点同名 `ping` + 前缀隔离无碰撞）、
+  C3 **4/4**（模板门 × durable 策略的真实隔离）、C4 **3/3**（instance 收紧后
+  边界 dispose B，A 保持）、C5 **4/4**（同 home 重启逐位相等，durable 双记录
+  跨重启存活）、C6 **1/1**、C7 **3/3** → **exit 0**。
+- 关键 world 设计：blueprint 的 `capabilities.mcp` 只是静态模板门，**不 seed
+  durable cell**（unspecified team cell = fail-closed 不挂）——world 必须先有
+  team-scope 治理记录（kit 的 seed 步骤）；leader 的边界 reconcile 只能由
+  **会跑 `prepareAgentForRequest` 的操作**触发（team tool 执行路径），root 原生
+  prompt 不跑 team 边界（既有 glue 布线）。
 
 ## 7. 证据文件（每次运行 = `runs/<stamp>/` 一目录）
 
 | 文件 | 内容 |
 | --- | --- |
-| `summary.json` | 运行元数据 + 七判据完整清单 + exit code（`--keep` 时含 home 路径） |
+| `summary.json` | 运行元数据 + 七判据完整清单 + exit code + durable seed 记录（`--keep` 时含 home 路径） |
 | `criterion-list.json` | 判据清单（同 summary 内 criteria） |
 | `run.log` | 全程时间线 |
 | `build.log` | 目标 repo `pnpm build` / `build:composition` 输出 |

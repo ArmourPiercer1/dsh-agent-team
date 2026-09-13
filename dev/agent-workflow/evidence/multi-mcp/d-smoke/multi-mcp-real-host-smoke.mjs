@@ -22,14 +22,40 @@
  *     C6 teardown releases 3491/3492 (+3496 mock, +host port)
  *     C7 test-use worktree porcelain empty + HEAD baseline; :3080 untouched
  *
+ * World design (frozen-contract semantics — verified against mcp-facet.ts /
+ * cell-provenance.ts / agent-bindings.mjs, int tree @ 4feac8c, Gate C round 1):
+ *   - The blueprint's capabilities.mcp is the STATIC template gate only. It
+ *     NEVER seeds the durable cell: an unspecified team cell is fail-closed
+ *     (NO mount). So after boot:1 the kit seeds a TEAM-SCOPE governance
+ *     override (override.set, capability mcp, allow [A,B], scope team) —
+ *     the durable policy record that grants the cell.
+ *   - Members created AFTER the seed resolve fresh at creation and mount
+ *     their template subsets (m1 → A, m2 → B) immediately.
+ *   - The leader (root session) reconciles only at a REQUEST BOUNDARY. The
+ *     root native prompt path (/api/session/prompt) does NOT run the team
+ *     boundary (pre-existing glue wiring: prepareAgentForRequest is invoked
+ *     from submitAttributedInput / workDelivery.deliver / deliverRootInput /
+ *     executeTool only). Therefore the kit triggers the boundary with a
+ *     team-TOOL execution on the root (team_list_members via the p6t6 tool
+ *     route → executeTool → prepareAgentForRequest(root) → reconcile) —
+ *     once before the C1 probes, and once more as the C4 "next boundary"
+ *     op after the instance-scope tighten. Tool executions issue no model
+ *     requests (mock seq accounting unaffected).
+ *   - pendingNextBoundary is bookkeeping/diagnostics, not a second gate:
+ *     effective = current durable policy; a boundary (or a fresh setup,
+ *     e.g. boot:2) applies it.
+ *
  * Row config (canonical multi-MCP form + legacy null, RC/master compatible):
  *   mcpServers: [{ name: mcp_signal, port: 3491 }, { name: mcp_designer, port: 3492 }]
  *   mcpServer:  null
  * On the base tree (before Task A/B merge) the row still boots (legacy check
- * passes with null; `mcpServers` is an ignored unknown field) and the kit
- * observes the LEGACY single-value /__p6t6/state mcp shape with no mounts —
- * the EXPECTED base dry-run failure mode (criteria C1-C5 FAIL with that
- * detail; C6/C7 still PASS). Do not chase GREEN on a base tree.
+ * passes with null; `mcpServers` is an ignored unknown field); the team-scope
+ * seed and the boundary-trigger tool calls are all ADMITTED there too
+ * (governance override + team tools pre-date multi-MCP), but nothing ever
+ * mounts (no mcpServers support) and the kit observes the LEGACY single-value
+ * /__p6t6/state mcp shape — the EXPECTED base dry-run failure mode (criteria
+ * C1-C5 FAIL with that detail; C6/C7 still PASS). Do not chase GREEN on a
+ * base tree.
  *
  * Usage
  *   node multi-mcp-real-host-smoke.mjs [--repo <target repo root>] [--keep] [--host-port <n>]
@@ -1022,6 +1048,7 @@ async function main() {
   let host2 = null
   let memberA = null
   let memberB = null
+  let seedRec = null
   try {
     // ── world boot #1 (create) ──────────────────────────────────────────────
     await ensureProfile({ instance: new DshInstance({ hostTree: HOST_TREE, dshHome: HOME, port: hostPort, clientCommitHash: CLIENT_COMMIT_HASH, logDir: join(RUN_DIR, 'instances', 'profile-init') }), log, timeoutMs: 180_000 })
@@ -1029,6 +1056,36 @@ async function main() {
     host1 = await bootHost({ label: 'HOST1-CREATE', port: hostPort, boot: 1, phase: 'create', hostPort })
     const st1 = await p6t6StateReady(host1.port, { rootSessionId: ROOT, phase: 'create' })
     log(`HOST1: state ready (teamSession=${st1.body?.teamSession?.blueprintId} rev=${st1.body?.teamSession?.revision})`)
+
+    // ── seed the durable TEAM-scoped mcp allow (governance record) ─────────
+    // The blueprint's capabilities.mcp is only the STATIC template gate —
+    // it never seeds the durable cell (frozen mcp-facet semantics: an
+    // unspecified team cell is fail-closed = NO mount). Mounting therefore
+    // requires a governance record. This team-scope override (allow [A,B])
+    // makes the durable policy grant the cell, so that:
+    //   - fresh member-setup resolution at creation sees team-allow ∩
+    //     template → member-1 mounts A, member-2 mounts B (C2/C3 hold from
+    //     the creation phase);
+    //   - the leader's next REQUEST BOUNDARY (a team-tool execution on the
+    //     root — see the boundary trigger below) reconciles [A,B].
+    // Fail loud: without this record the world is contract-correct but
+    // mounts nothing, which would look like a runtime regression.
+    const seedRes = await remoteCall(host1.origin, host1.cookie, 'override.set', {
+      teamSessionId: ROOT,
+      capability: 'mcp',
+      value: { kind: 'allow', items: [SERVER_A, SERVER_B] },
+      actor: { kind: 'human' },
+      scope: 'team',
+    })
+    let seedRecLocal = null
+    try {
+      seedRecLocal = remoteValue(seedRes, 'override.set')?.record ?? remoteValue(seedRes, 'override.set')
+      if (typeof seedRecLocal?.recordId !== 'string') throw new Error(`no recordId in admission: ${JSON.stringify(seedRecLocal).slice(0, 200)}`)
+    } catch (error) {
+      throw new Error(`team-scope mcp allow seed REJECTED (precondition for the whole smoke): ${String(error.message ?? error)}`)
+    }
+    seedRec = seedRecLocal
+    log(`durable seed: team-scope mcp allow [${SERVER_A}, ${SERVER_B}] admitted (recordId=${seedRec.recordId})`)
 
     // ── create members (shipped tool via the p6t6 seam) ────────────────────
     const mkMember = async (tmpl, label, tag) => {
@@ -1049,6 +1106,23 @@ async function main() {
     }
     memberA = await mkMember(TMPL_A, 'member-1', 'm1')
     memberB = await mkMember(TMPL_B, 'member-2', 'm2')
+
+    // ── leader boundary trigger (request-boundary op on the root) ─────────
+    // The root NATIVE prompt path (/api/session/prompt) does NOT run the
+    // team request boundary (pre-existing glue wiring: prepareAgentForRequest
+    // is wired into submitAttributedInput / workDelivery.deliver /
+    // deliverRootInput / executeTool only). A team-TOOL execution on the
+    // root goes through executeTool → prepareAgentForRequest(root) → mcp
+    // reconcile, which mounts [A,B] for the leader (team allow [A,B] ∩
+    // leader template allow [A,B]). Run it BEFORE the first leader probe so
+    // C1 observes the post-boundary state. (Tool executions issue no model
+    // requests — mock seq accounting is unaffected.)
+    const trig1Res = await p6t6Tool(host1.port, 'team_list_members', {
+      rootSessionId: ROOT,
+      requestToken: `mms-trig1-${RUN_STAMP}`,
+    }, ROOT)
+    const trig1 = toolValue(trig1Res, 'team_list_members')
+    log(`leader boundary trigger: team_list_members executed (status=${trig1?.status})`)
 
     // ── initial probes (C1/C2/C3 data) ─────────────────────────────────────
     const snapLeader1 = await probeAgent({ label: 'leader#1', host: host1, kind: 'leader', marker: MK_L1, cookie: host1.cookie })
@@ -1146,6 +1220,18 @@ async function main() {
     check('C4', 'durable override tighten admitted (leader mcp allow [A,B] -> [A])',
       overrideErr === null && overrideRec !== null && typeof (overrideRec?.recordId) === 'string',
       overrideErr ?? `record=${JSON.stringify(overrideRec).slice(0, 300)}`)
+    // The "next boundary" must be a boundary-RUNNING op on the root: a
+    // team-tool execution (executeTool → prepareAgentForRequest(root) →
+    // reconcile). The root native prompt does NOT run the team boundary
+    // (pre-existing glue wiring), so a prompt-only probe would leave the
+    // tightened policy sitting in pendingNextBoundary with no reconcile.
+    // After this op: B is disposed (deny-first), A stays mounted.
+    const trig2Res = await p6t6Tool(host1.port, 'team_list_members', {
+      rootSessionId: ROOT,
+      requestToken: `mms-trig2-${RUN_STAMP}`,
+    }, ROOT)
+    const trig2 = toolValue(trig2Res, 'team_list_members')
+    log(`C4 boundary trigger: team_list_members executed (status=${trig2?.status})`)
     const snapLeader2 = await probeAgent({ label: 'leader#2', host: host1, kind: 'leader', marker: MK_L2, cookie: host1.cookie })
     writeFileSync(join(RUN_DIR, 'state-after-c4.json'), JSON.stringify(snapLeader2.stateBody, null, 2))
     const leader2Tools = mcpToolsOf(snapLeader2.req) ?? []
@@ -1259,6 +1345,7 @@ async function main() {
         baseUrl: process.env.DEEPSEEK_BASE_URL,
       },
       members: { member1: memberA, member2: memberB },
+      seed: seedRec,
       criteria: Object.values(results),
       pass: Object.values(results).every((r) => r.pass === true),
       exitCode: 0,

@@ -1,0 +1,96 @@
+[2026-09-13T18:45:41.309Z] === Task D multi-mcp real-host smoke kit mm-smoke-20260913T18-45-41Z ===
+[2026-09-13T18:45:41.309Z] targetRepo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-int
+[2026-09-13T18:45:41.309Z] hostRepoRoot=/home/user/dsh-plugins/dsh-agent-team hostTree=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-13T18:45:41.309Z] evidenceDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-45-41Z keep=false
+[2026-09-13T18:45:41.314Z] :3080 pre: unreachable: fetch failed
+[2026-09-13T18:45:41.333Z] test-use pre: head=a66e4702047846cdaa10c66c9d3df3951f5ea70d statusEmpty=true diffEmpty=true baseline=a66e4702047846cdaa10c66c9d3df3951f5ea70d
+[2026-09-13T18:45:41.334Z] host port selected: 3181
+[2026-09-13T18:45:41.334Z] ports free: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-13T18:45:41.334Z] fresh home asserted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260913T18-45-41Z (lock: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260913T18-45-41Z.lock)
+[2026-09-13T18:45:41.336Z] module resolution links wired (runtime + packages level)
+[2026-09-13T18:45:41.336Z] building target repo: pnpm build && pnpm build:composition …
+[2026-09-13T18:45:45.485Z] pnpm build ok (log: /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-45-41Z/build.log)
+[2026-09-13T18:45:45.936Z] pnpm build:composition ok (install-surface freshness gate passed)
+[2026-09-13T18:45:46.028Z] dist host import probe ok
+[2026-09-13T18:45:46.033Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-13T18:45:46.033Z] mock DeepSeek endpoint up at 127.0.0.1:3496 (DEEPSEEK_BASE_URL/DEEPSEEK_API_KEY exported to host launches)
+[2026-09-13T18:45:46.053Z] mini MCP A up on 127.0.0.1:3491 (mcp_signal); B up on 127.0.0.1:3492 (mcp_designer)
+[2026-09-13T18:45:46.067Z] mini tools/list: A=["ping"] B=["ping"]
+[2026-09-13T18:45:46.067Z] profile not initialized yet — running a throwaway boot to let the host create it
+[2026-09-13T18:45:47.069Z] throwaway boot OK: http://127.0.0.1:3181/?token=dsuxLq9GwwsHB_0fEbOhZBxRjlHZHByE95tH_Vz7QO0
+[2026-09-13T18:45:47.105Z] web profile ensured (throwaway boot if first use)
+[2026-09-13T18:45:47.106Z] HOST1-CREATE: patch (bootPhase=create) + directive (boot=1) written
+[2026-09-13T18:45:48.196Z] HOST1-CREATE: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-13T18:45:48.199Z] HOST1-CREATE: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-13T18:45:49.332Z] HOST1-CREATE: row ready — toolCount=11 liveSessions=["session-mm-smoke-root-mm-smoke-20260913T18-45-41Z"]
+[2026-09-13T18:45:49.337Z] HOST1: state ready (teamSession=mm-smoke-bp-1 rev=1)
+[2026-09-13T18:45:49.348Z] durable seed: team-scope mcp allow [mcp_signal, mcp_designer] admitted (recordId=ovr-mcp-team-g0)
+[2026-09-13T18:45:49.424Z] member-1: created instanceId=inst-1ik3p8g004rz childSessionId=session-team-child-3539a9f8aaf9c94d94920eec6a960048 (template worker-a)
+[2026-09-13T18:45:49.463Z] member-2: created instanceId=inst-06yniqx18pvj childSessionId=session-team-child-182a99da390f436d06d27a1b49f82999 (template worker-b)
+[2026-09-13T18:45:49.467Z] leader boundary trigger: team_list_members executed (status=executed)
+[2026-09-13T18:45:49.517Z] mock: mock: 1 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:49.517Z] mock: mock: 2 text reply (40 chars): "MM_ACK_MM_L1_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:50.030Z] mock: mock: 3 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:50.031Z] mock: mock: 4 text reply (40 chars): "MM_ACK_MM_M1_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:50.076Z] mock: mock: 5 text reply (42 chars): "MM_DEFAULT_ACK_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:50.076Z] mock: mock: 6 text reply (40 chars): "MM_ACK_MM_M2_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:50.090Z] state mcp shape (leader session): i5-servers
+[2026-09-13T18:45:50.091Z] C1 PASS — leader: /__p6t6/state mcp shape is I5 (mcp.servers map) :: observed shape=i5-servers raw={"servers":{"mcp_signal":{"mounted":true,"allowed":true,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-team-g0"},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin=
+[2026-09-13T18:45:50.091Z] C1 PASS — leader: state servers.mcp_signal.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-13T18:45:50.091Z] C1 PASS — leader: state servers.mcp_designer.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-13T18:45:50.091Z] C1 PASS — leader: model-facing MCP tool set EXACT === ["mcp__mcp_signal__ping","mcp__mcp_designer__ping"] :: observed=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"] (mock req seq=1 model=mm-smoke-model)
+[2026-09-13T18:45:50.091Z] C1 PASS — leader: double proof consistent (state-mounted servers appear in the model schema) :: state mounted=["mcp_signal","mcp_designer"] schema=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"]
+[2026-09-13T18:45:50.091Z] C1 PASS — member-1: /__p6t6/state mcp shape is I5 (mcp.servers map) :: observed shape=i5-servers raw={"servers":{"mcp_signal":{"mounted":true,"allowed":true,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-team-g0"},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin=
+[2026-09-13T18:45:50.091Z] C1 PASS — member-1: state servers.mcp_signal.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-13T18:45:50.091Z] C1 PASS — member-1: state servers.mcp_designer.mounted === false :: observed={"present":true,"mounted":false,"allowed":true}
+[2026-09-13T18:45:50.091Z] C1 PASS — member-1: model-facing MCP tool set EXACT === ["mcp__mcp_signal__ping"] :: observed=["mcp__mcp_signal__ping"] (mock req seq=3 model=mm-smoke-model)
+[2026-09-13T18:45:50.091Z] C1 PASS — member-1: double proof consistent (state-mounted servers appear in the model schema) :: state mounted=["mcp_signal"] schema=["mcp__mcp_signal__ping"]
+[2026-09-13T18:45:50.091Z] C1 PASS — member-2: /__p6t6/state mcp shape is I5 (mcp.servers map) :: observed shape=i5-servers raw={"servers":{"mcp_signal":{"mounted":false,"allowed":true,"source":{"layer":"humanOverride","origin":"human","recordId":"ovr-mcp-team-g0"},"unavailable":false,"pendingNextBoundary":[],"explanation":"mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin
+[2026-09-13T18:45:50.091Z] C1 PASS — member-2: state servers.mcp_signal.mounted === false :: observed={"present":true,"mounted":false,"allowed":true}
+[2026-09-13T18:45:50.091Z] C1 PASS — member-2: state servers.mcp_designer.mounted === true :: observed={"present":true,"mounted":true,"allowed":true}
+[2026-09-13T18:45:50.091Z] C1 PASS — member-2: model-facing MCP tool set EXACT === ["mcp__mcp_designer__ping"] :: observed=["mcp__mcp_designer__ping"] (mock req seq=5 model=mm-smoke-model)
+[2026-09-13T18:45:50.091Z] C1 PASS — member-2: double proof consistent (state-mounted servers appear in the model schema) :: state mounted=["mcp_designer"] schema=["mcp__mcp_designer__ping"]
+[2026-09-13T18:45:50.091Z] C1: PASS (15/15 checks)
+[2026-09-13T18:45:50.091Z] C2 PASS — both mini endpoints expose the SAME underlying tool name "ping" (MCP-level) :: A tools=["ping"] B tools=["ping"]
+[2026-09-13T18:45:50.091Z] C2 PASS — leader schema carries BOTH mounted names as distinct tools (prefix separation, no collision) :: leader mcp tools=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"]
+[2026-09-13T18:45:50.091Z] C2 PASS — no colliding duplicate tool names in the leader schema :: leader mcp tools=["mcp__mcp_designer__ping","mcp__mcp_signal__ping"]
+[2026-09-13T18:45:50.091Z] C2: PASS (3/3 checks)
+[2026-09-13T18:45:50.091Z] C3 PASS — member-1 schema: A tool present, B tool ABSENT :: m1 mcp tools=["mcp__mcp_signal__ping"]
+[2026-09-13T18:45:50.091Z] C3 PASS — member-2 schema: B tool present, A tool ABSENT :: m2 mcp tools=["mcp__mcp_designer__ping"]
+[2026-09-13T18:45:50.091Z] C3 PASS — member-1 state: A mounted, B NOT mounted :: m1 eff={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":true}}
+[2026-09-13T18:45:50.091Z] C3 PASS — member-2 state: B mounted, A NOT mounted :: m2 eff={"mcp_signal":{"present":true,"mounted":false,"allowed":true},"mcp_designer":{"present":true,"mounted":true,"allowed":true}}
+[2026-09-13T18:45:50.091Z] C3: PASS (4/4 checks)
+[2026-09-13T18:45:50.095Z] C4: override.set admitted (recordId=ovr-mcp-inst-leader-g0)
+[2026-09-13T18:45:50.095Z] C4 PASS — durable override tighten admitted (leader mcp allow [A,B] -> [A]) :: record={"recordId":"ovr-mcp-inst-leader-g0","kind":"human-override","scope":"instance","rootSessionId":"session-mm-smoke-root-mm-smoke-20260913T18-45-41Z","values":{"mcp":{"kind":"allow","items":["mcp_signal"]}},"generation":1,"updatedAt":"2026-09-13T18:45:50.092Z","instanceId":"inst-leader"}
+[2026-09-13T18:45:50.099Z] C4 boundary trigger: team_list_members executed (status=executed)
+[2026-09-13T18:45:50.112Z] mock: mock: 7 text reply (40 chars): "MM_ACK_MM_L2_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:50.609Z] C4 PASS — after the next boundary, B is NOT mounted in the leader state (deny-first dispose) :: leader eff post-override={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} shape=i5-servers
+[2026-09-13T18:45:50.609Z] C4 PASS — B tool really GONE from the leader model-facing schema (A still present) :: leader mcp tools post-override=["mcp__mcp_signal__ping"] (mock req seq=7)
+[2026-09-13T18:45:50.609Z] C4: PASS (3/3 checks)
+[2026-09-13T18:45:50.609Z] C5: pre-restart effective sets: {"session-mm-smoke-root-mm-smoke-20260913T18-45-41Z":{"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}},"session-team-child-3539a9f8aaf9c94d94920eec6a960048":{"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":true}},"session-team-child-182a99da390f436d06d27a1b49f82999":{"mcp_signal":{"present":true,"mounted":false,"allowed":true},"mcp_designer":{"present":true,"mounted":true,"allowed":true}}}
+[2026-09-13T18:45:50.658Z] HOST1-CREATE: stopped (killed=true portFree=true)
+[2026-09-13T18:45:50.659Z] HOST2-RESUME: patch (bootPhase=resume) + directive (boot=2) written
+[2026-09-13T18:45:51.915Z] HOST2-RESUME: bare GET / -> 401 (expected 401 = launch-token gate)
+[2026-09-13T18:45:51.916Z] HOST2-RESUME: booted at http://127.0.0.1:3181; auth cookie exchanged
+[2026-09-13T18:45:51.964Z] HOST2-RESUME: row ready — toolCount=11 liveSessions=["session-mm-smoke-root-mm-smoke-20260913T18-45-41Z","session-team-child-182a99da390f436d06d27a1b49f82999","session-team-child-3539a9f8aaf9c94d94920eec6a960048"]
+[2026-09-13T18:45:51.968Z] HOST2: state ready after restart (phase=resume teamSession=mm-smoke-bp-1)
+[2026-09-13T18:45:52.016Z] mock: mock: 8 text reply (40 chars): "MM_ACK_MM_RL_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:52.522Z] mock: mock: 9 text reply (41 chars): "MM_ACK_MM_RM1_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:52.565Z] mock: mock: 10 text reply (41 chars): "MM_ACK_MM_RM2_mm-smoke-20260913T18-45-41Z"
+[2026-09-13T18:45:52.580Z] C5 PASS — leader: post-restart effective set === pre-restart set (I5 shape) :: pre={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} post={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":false}} shape=i5-servers
+[2026-09-13T18:45:52.580Z] C5 PASS — leader model-facing MCP tools after restart == [A] (durable override survived) :: post-restart leader mcp tools=["mcp__mcp_signal__ping"]
+[2026-09-13T18:45:52.580Z] C5 PASS — member-1: post-restart effective set === pre-restart set (I5 shape) :: pre={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":true}} post={"mcp_signal":{"present":true,"mounted":true,"allowed":true},"mcp_designer":{"present":true,"mounted":false,"allowed":true}} shape=i5-servers
+[2026-09-13T18:45:52.580Z] C5 PASS — member-2: post-restart effective set === pre-restart set (I5 shape) :: pre={"mcp_signal":{"present":true,"mounted":false,"allowed":true},"mcp_designer":{"present":true,"mounted":true,"allowed":true}} post={"mcp_signal":{"present":true,"mounted":false,"allowed":true},"mcp_designer":{"present":true,"mounted":true,"allowed":true}} shape=i5-servers
+[2026-09-13T18:45:52.580Z] C5: PASS (4/4 checks)
+[2026-09-13T18:45:52.622Z] HOST2-RESUME: stopped (killed=true portFree=true)
+[2026-09-13T18:45:52.622Z] mini MCP A closed
+[2026-09-13T18:45:52.622Z] mini MCP B closed
+[2026-09-13T18:45:52.622Z] mock model closed
+[2026-09-13T18:45:52.623Z] C6 PASS — all run ports released after teardown (host=3181 3491 3492 3496) :: {"host":true,"mcpA":true,"mcpB":true,"mock":true}
+[2026-09-13T18:45:52.623Z] C6: PASS (1/1 checks)
+[2026-09-13T18:45:52.643Z] C7 PASS — test-use worktree porcelain EMPTY after the run :: statusEmpty=true diffEmpty=true head=a66e4702047846cdaa10c66c9d3df3951f5ea70d
+[2026-09-13T18:45:52.643Z] C7 PASS — test-use HEAD still at baseline a66e4702047846cdaa10c66c9d3df3951f5ea70d :: pre=a66e4702047846cdaa10c66c9d3df3951f5ea70d post=a66e4702047846cdaa10c66c9d3df3951f5ea70d
+[2026-09-13T18:45:52.643Z] C7 PASS — :3080 untouched (read-only probe, status unchanged pre==post) :: pre=unreachable: fetch failed post=unreachable: fetch failed
+[2026-09-13T18:45:52.643Z] C7: PASS (3/3 checks)
+[2026-09-13T18:45:52.645Z] home deleted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260913T18-45-41Z
+[2026-09-13T18:45:52.645Z] summary -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-45-41Z/summary.json
