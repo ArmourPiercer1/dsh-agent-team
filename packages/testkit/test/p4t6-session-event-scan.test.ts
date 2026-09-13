@@ -943,8 +943,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // tip by the main agent. Zero denylist vocabulary in the new
     // file. Evidence:
     // dev/agent-workflow/evidence/alpha2-capability-completion/a2c-3/.
-    expect(scanResult.filesScanned).toBe(697)
-    expect(scanResult.files.length).toBe(697)
+    // team-skills-provider (task branch, plugin-attached skills):
+    // +2 = 699 — two new files, packages/runtime/src/plugin/team-skills.ts
+    // (the bundled-skills provider over the install-surface
+    // .agents/skills dir: frontmatter parsing, the candidate shape
+    // (rank 550 / source+provider 'dsh-agent-team'), the locator fence,
+    // the loud degradation paths) and
+    // packages/runtime/test/team-skills.test.ts (the fixture-dir unit
+    // legs + the layout-candidate math + the REAL SkillRegistry
+    // integration + the fiber-disposal / HMR-safety leg). All other
+    // task changes are in-place edits (host.ts apply wiring, the
+    // node-min shim console/path/fs surface additions, the root
+    // package.json files whitelist, the runtime package.json devDep,
+    // pnpm-lock.yaml). Scanner unchanged. Zero denylist vocabulary in
+    // both new files (the frozen quarantine hit set stays at fifteen
+    // occurrences).
+    expect(scanResult.filesScanned).toBe(699)
+    expect(scanResult.files.length).toBe(699)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
