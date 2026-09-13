@@ -3103,3 +3103,49 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   executeTool 路径的 team tool 调用触发 root 边界挂 [A,B]）；(2) C4 探针
   改为会跑 root 边界的 team tool 调用。D 已通知（send_message，含全部
   证据引用与修复要求），修复 + 重跑 GREEN 后主 Agent 再验收。
+
+### M3 — Task D 收束合入 + Gate C 终态 + 收束门禁全量
+
+- **D GREEN 终跑独立复算**（runs/mm-smoke-20260913T18-45-41Z，33/33 逐条
+  核过）：C1 三会话 i5-servers + leader schema 恰 [A,B] + member 单 server
+  精确集 + 双证一致；C2 同名 ping 前缀隔离；C3 双向隔离（state+schema）；
+  C4 instance 收紧 [A] 后 B 真消失（schema 无 B、A 在、state
+  mounted=false+allowed=false = deny-first）；C5 同 home 重启逐 agent
+  effective 集逐位相等 + leader schema 恰 [A]（durable 记录跨重启存活）；
+  C6 端口全释放；C7 test-use pristine + HEAD + :3080。seed =
+  ovr-mcp-team-g0（team-scope allow [A,B]）。
+- **D 卫生缺口修复验收（4a74f79，37 文件全在 d-smoke）**：
+  - ensureJunctions 快照语义（原有非 symlink 一律不碰）+ restoreJunctions
+    teardown + **新判据 C8「目标树扫描面无漂移」**（pre/post 各跑 p4t6 同一
+    扫描器：目录集 + filesScanned + kit 目录全删 + 原有 junction 全复原）；
+  - 规范终跑 mm-smoke-20260913T18-55-50Z：**exit 0，37/37**（含 C8 4/4：
+    9 目录/702 文件 pre==post、all 6 restored、none 残留）— 独立复算确认；
+  - D 另发现并复原第二处残留：两树 packages/runtime/node_modules 下 6 条
+    被重指向 test-use hoist 的 pnpm junction（12 条）→ 各自 .pnpm 单变体
+    target；主 Agent 独立 spot-verify（readlink = int 树自身 .pnpm）+
+    终扫 9 目录/702 文件 + packages/node_modules 不存在 + porcelain 空 ✓。
+  - 中间 TDZ fatal（18-55-11Z，C8 编辑声明位置）fail-loud 留档 + 空 home
+    残留已清（kit 审计链完整：八次运行）。
+  - 主 Agent 处置 D 移交项：int 树 .tmp-t12a-b2-home/（mtime 18:49:42 =
+    本会话收束全量套件的 t12a-b2 既有失败测试 scratch，非 kit 产物）→
+    已删（与 M2c 前同类残留，测试自身失败路径不清理 — base 既有测试债）。
+- **cherry-pick -x** 58b133f → 0b2fbe1（GREEN 轮）+ 4a74f79 → 6f7e1f2
+  （卫生轮）；p4t6 @702 10/10；artifacts OK 1116。
+- **收束门禁（主 Agent 独立 @ 终态，逐项）**：
+  - runtime 全量 = **6 文件/8 测试 = pre-B 既有基线精确**（1870/1878 绿）✓
+  - tools 全量 = 81/82 — 唯一失败 p6t6-actions「worker→leader 直投」
+    **独立证明 base 既有**（主 worktree @ b49f4239 同失败 13/14；import
+    闭包不触及 A/B 文件；零 I5 引用；隔离重跑确定性复现）— master 级
+    既有债，与 6 个 runtime 文件同类，留痕待用户知悉（不在本轮范围）✓
+  - typecheck runtime/tools/domain 全 exit 0 ✓
+  - p4t6 10/10 @ 702（pin 链：697→699 pre-base / 699→701 A / 701→702 C）✓
+  - pnpm build + build:composition + check-artifacts-committed OK 1116 ✓
+  - **zero-core**：references/deepseek-harness porcelain 空 @ c291e7961a +
+    冻结 tag legacy-agent-team-pre-vnext = a3ab319927 未动（分支 ref 本环境
+    未物化，符合 AGENTS.md 迁移状态注记）✓；test-use porcelain 空 +
+    HEAD a66e470204（八次运行 C7 全绿）✓
+  - homes：无本轮 mm-smoke 残留（kit teardown 全清；仅存 20260912 前例
+    历史 home）✓
+  - 全 worktree 终态 porcelain 空 ✓
+- **int 推送（M3 = 终态，PR #16 自动更新）**。四任务全部收束；待 PR body
+  更新 + 用户审查 merge。
