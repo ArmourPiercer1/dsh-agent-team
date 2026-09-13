@@ -2864,3 +2864,55 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - 收束全部完成：closure gates（fresh install 全绿）+ closure-report（12 节 + DoD 30/30）+
   Alpha.3 GO 裁决 + 三件用户注意事项（TCM-M4 待裁决 / Windows 适配 / strict-mode fail-closed 行为变化）。
 - 远端状态：master = 1e05d24（未动）；int = 8ee8efc（FROZEN INT_W4 + closure）；task 分支保留。
+
+---
+
+## 2026-09-14 — multi-mcp 快速修复轮（用户指令轮）
+
+### R-MM-0 启动与计划审查
+
+- **用户指令**：读取工作区代码与文档 → 审查 `docs/plans/active/` 修复计划 →
+  与代码实际状态一致者按计划执行；主 Agent 负责拉起 subagent / 验收 / worktree
+  与 PR 合并；完成标准 = 一个与 master 无冲突的 PR 供用户手动 merge。
+- **会话环境**：model = qwen3.8-27b（ROUTER_RULES §1 路由核验：本会话与全部
+  子代理继承同一路由，核验通过）；approval policy = never（用户改）；
+  文件策略 danger-full-access（沙箱不限制文件写）。
+- **仓库状态核验**：本地 master 原 f5a1578（PR #14 本地 merge）为远端 master
+  **祖先**；`git fetch` 后远端 master = `b49f4239`（= PR #15
+  task/team-skills-provider 合并点）→ 本地 master fast-forward 至 b49f4239
+  （纯前进，零改写）。**计划基线（multi-mcp-quick-fix-plan.md 登记
+  b49f4239）= 当前 master，逐字一致**。
+- **active 计划审查结论**（逐份）：
+  - `multi-mcp-quick-fix-plan.md`（2026-09-13 最新）= **本轮执行目标**。
+    主 Agent 逐断言核验与代码一致：types.ts L205-210 单值 `mcpServer`；
+    host.ts L388-394 单值校验；agent-bindings.mjs（2739 行）单 `mcpView`/
+    `mcpFiber`/`mcpActivationError`（L557-559/751-802/830-866）+ 单值调用点
+    `filterMcpServers([config.mcpServer.name], ...)`（L1272/L1786）+
+    `reconcileMcp(agentCtx, state, allowed)` 单 fiber（L830）+
+    `applyBoundaryRecords(state, modelView, mcpView)` 单 view（L813）；
+    复用资产核验：`filterMcpServers(configuredServers: readonly string[],
+    policy)` 复数签名（mcp-adapter.ts L42）+ `resolveDurableMcpFacet({...,
+    serverName})`（mcp-facet.ts L139-140）均为既有 set/serverName 语义；
+    计划引用测试文件 7 个 + bridge/harness 3 个全部在位；
+    docs/INSTALL.md L169/L244 + cordis.patch.yml L82 单值模板在位。
+    **裁决：与代码实际状态一致 → 按计划执行。**
+  - 其余 7 份 active 计划：0.1.1-alpha-roadmap-memo = 冻结边界备忘（非修复
+    计划）；0.1.1-alpha.1-* 两份 = alpha.1 轮（早已关闭）；
+    alpha2-permission-boundary-hardening = 已执行（A1-A6/H1a/H3/H4/H5 在
+    closure 门禁 465 测试集内）；alpha2-hardening-followup-repair = 已执行
+    （P1-A/P1-B 已在代码：canonical-operation.ts Bash fingerprint 绑定
+    workdir/run_in_background/timeoutMs/sandbox_permissions + 非
+    install-lifetime 缓存的 canonical key）；alpha2-capability-completion =
+    已关闭（PR #14 已 merge 入 master 谱系 + PR #15 已在其后）。
+- **契约冻结**（Step 0，计划 §5）：`briefs/multi-mcp/00-contract.md`
+  C1-C7（计划 §4 逐字）+ 实现级 I1-I14（mcp-supply.ts 唯一 canonical
+  读取路径 / state per-server 形状 / reconcileMcpSet deny-first+rollback
+  时序 / I5 诊断形状 / I9 禁改面 / p4t6 基线 697 归主 Agent 记账 等）。
+- **波次**：W0 = A（config）+ D（docs/smoke kit）并行；W1 = A 合入后
+  B（runtime）+ C（RED→GREEN）rebase 并行；W2 = 收束（Gate C real-host
+  smoke 由主 Agent 执行 D 的 kit + 门禁 + 最终 PR）。
+- **git 基础**：`int/multi-mcp-quick-fix` @ b49f4239 + worktrees
+  `.worktrees/multi-mcp-{a-config,b-runtime,c-tests,d-docs,int}`；
+  各 worktree pnpm install（warm store）完成；lockfile 零变更约束。
+- **PR 策略**：单 PR（int → master），里程碑推送（防丢）；不 push master/
+  stable；最终由用户审查后手动 merge。
