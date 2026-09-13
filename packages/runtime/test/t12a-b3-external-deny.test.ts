@@ -96,7 +96,9 @@ const controlHandle = control.agents.handles.get(CHILD)
 // views — this world configures the bridge's default single server, so
 // the mcp facet view lives under its server name.
 const DENIED_SERVER = 't12a-mini-mcp'
-const deniedView = denied.binding.resolveConsumptionViews(CHILD) as {
+// `as unknown as` — the bridge's declared view shape is looser than the
+// B3 fields read here (selection/unavailability are runtime-resolved).
+const deniedView = denied.binding.resolveConsumptionViews(CHILD) as unknown as {
   instanceId: string
   modelView: {
     selection: { provider: string; model: string } | undefined

@@ -310,6 +310,10 @@ const w1E2Live = liveServers(w1E2)
 const w1E3Live = liveServers(w1E3)
 const w1LeaderState = mcpState(w1.binding, W1_ROOT)
 const w1E3State = mcpState(w1.binding, W1_E3)
+// Snapshot of the leader's live fiber keys BEFORE the 6.10 close() runs
+// (close() disposes AND clears state.mcpFibers — the 6.1 state pin asserts
+// against the pre-close snapshot; 6.10 pins the close itself).
+const w1LeaderFiberKeysBeforeClose = stateFiberKeys(w1LeaderState)
 // The leader's fiber OBJECTS (6.10 reads their dispose counts after close).
 const w1LeaderFiberA = mcpFibers(w1Leader, A)[0]
 const w1LeaderFiberB = mcpFibers(w1Leader, B)[0]
@@ -782,7 +786,10 @@ describe('multi-MCP 6.1 — the role split (the core regression): configured {A,
   it('per-server live state: the leader mcpFibers keys are exactly [A, B] (contract I4/C5)', () => {
     expect(w1LeaderState !== undefined).toBe(true)
     expect(w1LeaderState?.mcpFibers !== undefined).toBe(true)
-    expect(stateFiberKeys(w1LeaderState)).toEqual([A, B])
+    // The keys are read from the PRE-CLOSE snapshot: the 6.10 close() below
+    // disposes and clears state.mcpFibers, so the live Map is empty by the
+    // time this assertion runs. The snapshot is the live-set evidence.
+    expect(w1LeaderFiberKeysBeforeClose).toEqual([A, B])
   })
   it('per-server views: every CONFIGURED server carries a view (leader mcpViews keys = [A, B, C])', () => {
     expect(stateViewKeys(w1LeaderState)).toEqual([A, B, C])

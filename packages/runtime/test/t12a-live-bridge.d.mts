@@ -327,11 +327,33 @@ export interface LiveWorld {
       }): Promise<{ childSessionId: string }>
     }
     drainDescendants(childSessionId: string): Promise<{ drained: number; quiescent: boolean }>
+    /**
+     * The last-applied consumption views. multi-mcp (contract I4): the
+     * singular `mcpView` field is REPLACED by the per-configured-server
+     * `mcpViews` record (the EMPTY object when no MCP server is
+     * configured — consumers treat {} as "no MCP").
+     */
     resolveConsumptionViews(sessionId: string): {
       readonly instanceId: string
       readonly modelView: { readonly selection: { readonly provider: string; readonly model: string } | undefined; readonly [k: string]: unknown }
-      readonly mcpView: { readonly allowed: boolean; readonly [k: string]: unknown } | null
+      readonly mcpViews: Record<string, { readonly allowed: boolean; readonly [k: string]: unknown }>
     }
+    /**
+     * The per-session consumption STATE (contract I4):
+     * `{ instanceId, ref, modelView, mcpViews, mcpFibers: Map<string, Fiber>,
+     * mcpActivationErrors: Map<string, string>, appliedRecordIds: Set<string> }`
+     * (+ the strict-mode `a2c2PreMcpSurface` when set). `undefined` for a
+     * session that never ran an agent setup. The Map/Set fields are live
+     * references — a close() disposes AND clears `mcpFibers`.
+     */
+    getConsumptionState(sessionId: string): unknown
+    /**
+     * Run the request-boundary reconciliation for one session under one
+     * team root (re-resolves the durable views, disposes denied servers
+     * FIRST, then mounts the newly-allowed ones; throws fail-closed on
+     * any activation failure — the boundary never proceeds half-reconciled).
+     */
+    prepareAgentForRequest(sessionId: string, teamRootSid: string): Promise<void>
     readonly observations: readonly string[]
     /** The REAL scoped-prompt persona surface (T12-M2). */
     readonly personaSurface: {

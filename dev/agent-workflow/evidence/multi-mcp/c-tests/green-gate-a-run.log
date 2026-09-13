@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-c-tests
+
+ ✓ packages/runtime/test/t3-skills-mcp-adapter.test.ts (11 tests) 4ms
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (11 tests) 3ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests) 4ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests) 6ms
+ ✓ packages/runtime/test/mcp-supply-config.test.ts (39 tests) 6ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (27 tests) 4ms
+ ✓ packages/runtime/test/multi-mcp-wiring.test.ts (47 tests) 5ms
+
+ Test Files  8 passed (8)
+      Tests  164 passed (164)
+   Start at  18:33:39
+   Duration  860ms (transform 2.86s, setup 0ms, import 4.69s, tests 35ms, environment 0ms)
+
