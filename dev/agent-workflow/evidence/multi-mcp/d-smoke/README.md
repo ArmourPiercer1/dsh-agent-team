@@ -53,7 +53,12 @@ node dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs
    端口空闲；fresh home 断言（非空即 fail-closed）。
 2. 模块解析链接：目标树 `packages/runtime/node_modules` + `packages/node_modules`
    → test-use pnpm hoist 的 junction（worktree 本地、gitignored；host 树不动；
-   t12-vertical 先例）。
+   t12-vertical 先例）。**这是运行时临时改动**：每处改动都快照（原有 junction
+   记录原 target；新目录/新 junction 登记为 kit 创建），teardown 时精确还原
+   （restoreJunctions：删 kit 创建项、rmdir kit 创建的空目录、原 junction 复原）
+   ——目标树必须原样留下，由 C8 对 p4t6 扫描面（文件系统级：顶层
+   `packages/*` 目录集 + `filesScanned`，gitignored 的 junction 目录 git 不可见
+   但会破坏扫描）做 pre==post 断言。
 3. 目标 repo 构建：`pnpm build && pnpm build:composition`（含
    check-artifacts-committed 安装面新鲜度闸）+ dist host import probe。
 4. 服务：mock model（3496，decide = 每 marker 一条纯文本 ack，无 tool call）；
@@ -86,7 +91,9 @@ node dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs
    重启前**逐位相等**（含收紧后的 A-only leader）。
 10. teardown：停 host → 关 mini A/B + mock → **C6** 端口释放（3491/3492/3496/
     host port）→ **C7** test-use porcelain 空 + HEAD 基线（post==pre==
-    `a66e470204`）+ `:3080` 前后一致 → home 删除（或 `--keep` 登记）→
+    `a66e470204`）+ `:3080` 前后一致 → 目标树链接还原（restoreJunctions：删
+    kit 创建项 + 复原原有 junction）+ **C8** 目标树扫描面 pre==post（p4t6 扫描器
+    级：顶层 packages/* 目录集 + filesScanned）→ home 删除（或 `--keep` 登记）→
     `summary.json` + `criterion-list.json` 落盘 + stdout 打印。
 
 ## 3. 判据表（d-docs-smoke.md 验收判据 1–7 的落地）
@@ -100,12 +107,13 @@ node dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs
 | C5 | 5. host restart（同 home 再启）后重建相同 effective set | 停启（boot 2, phase resume）→ 每 agent 再 turn → 逐 agent `servers` map 与重启前**逐位相等**（含 C4 收紧后的 A-only leader；durable override 存活于重启） |
 | C6 | 6. teardown 后 3491/3492 端口释放 | `waitForPortFree` × {3491, 3492, 3496, host port} |
 | C7 | 7. test-use worktree porcelain 空 + `:3080` 未触碰 | `git status --porcelain`/`git diff` 空 + HEAD == `a66e4702047846cdaa10c66c9d3df3951f5ea70d`（pre==post）；`:3080` 只读探测 pre==post |
+| C8 | （kit 卫生判据）目标树扫描面无漂移——kit 不留下任何文件系统级痕迹 | teardown 还原链接后复跑 p4t6 扫描器（`scanSessionEventVocabulary`，与 p4t6 同一文件系统级扫描）：顶层 `packages/*` 目录集 pre==post（int 树 = 9 目录，无 kit 创建的 `packages/node_modules`）+ `filesScanned` pre==post（int 树 = 702，无 junction 跟随进 host 树 hoist）+ kit 创建的目录全部 rmdir + 原有 pnpm junction 全部复原到原 target |
 
 ## 4. 退出码（fail loud，判据清单绝不吞错）
 
 | code | 语义 |
 | --- | --- |
-| 0 | 七判据全 PASS（GREEN —— int 树 B+C 合入后的期望形态） |
+| 0 | 八判据全 PASS（GREEN —— int 树 B+C+D 合入后的期望形态） |
 | 2 | 链路完整跑完，但 ≥1 判据 FAIL（base 树干跑的预期形态；或 int 树真回归） |
 | 1 | kit 级 FATAL（构建/boot/基建断链），部分判据清单 |
 
@@ -142,17 +150,19 @@ base 树（`b49f4239`，B 未合入）不支持 `mcpServers`：行配置中
 **不要在 base 树追求 GREEN**；GREEN 由主 Agent 在 int 树（A+B+C+D 合入后）执行
 同一 kit 产出。
 
-### int 树 GREEN 形态（已达成，`runs/mm-smoke-20260913T18-45-41Z` @ int 3ee3f72）
+### int 树 GREEN 形态（已达成，`runs/mm-smoke-20260913T18-55-50Z` @ int 3ee3f72）
 
-修复两处 kit 设计缺口（**durable seed 缺失** + **边界探针走错路径**——详见
-`base-dryrun-interpretation.md` 的归因/修复节，零运行时改动）后：
+修复三处 kit 侧问题（**durable seed 缺失** + **边界探针走错路径** + **目标树
+链接残留**——详见 `base-dryrun-interpretation.md` 的归因/修复/卫生缺口节，
+**零运行时改动**）后：
 
 - C1 **15/15**（三会话 i5-servers；leader schema 恰为
   `[mcp__mcp_signal__ping, mcp__mcp_designer__ping]`，m1/m2 各自单 server；
   state+schema 双证一致）、C2 **3/3**（两端点同名 `ping` + 前缀隔离无碰撞）、
   C3 **4/4**（模板门 × durable 策略的真实隔离）、C4 **3/3**（instance 收紧后
   边界 dispose B，A 保持）、C5 **4/4**（同 home 重启逐位相等，durable 双记录
-  跨重启存活）、C6 **1/1**、C7 **3/3** → **exit 0**。
+  跨重启存活）、C6 **1/1**、C7 **3/3**、C8 **4/4**（目标树 p4t6 扫描面
+  pre==post：9 目录 / 702 文件，kit 链接全还原）→ **exit 0，37/37**。
 - 关键 world 设计：blueprint 的 `capabilities.mcp` 只是静态模板门，**不 seed
   durable cell**（unspecified team cell = fail-closed 不挂）——world 必须先有
   team-scope 治理记录（kit 的 seed 步骤）；leader 的边界 reconcile 只能由
@@ -163,7 +173,7 @@ base 树（`b49f4239`，B 未合入）不支持 `mcpServers`：行配置中
 
 | 文件 | 内容 |
 | --- | --- |
-| `summary.json` | 运行元数据 + 七判据完整清单 + exit code + durable seed 记录（`--keep` 时含 home 路径） |
+| `summary.json` | 运行元数据 + 八判据完整清单 + exit code + durable seed 记录 + 目标树扫描面 pre/post（`--keep` 时含 home 路径） |
 | `criterion-list.json` | 判据清单（同 summary 内 criteria） |
 | `run.log` | 全程时间线 |
 | `build.log` | 目标 repo `pnpm build` / `build:composition` 输出 |

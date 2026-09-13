@@ -1,0 +1,59 @@
+{
+  "task": "Task D multi-mcp dual mini-MCP real-host smoke",
+  "runStamp": "mm-smoke-20260913T18-55-11Z",
+  "generatedAt": "2026-09-13T18:55:11.797Z",
+  "targetRepo": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-int",
+  "fatal": "ReferenceError: Cannot access 'scanPre' before initialization\n    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1080:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "per-agent model-facing MCP tools EXACT (I5 state + schema double proof): leader A+B / m1 A / m2 B",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C2",
+      "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C3",
+      "name": "member isolation (m1 sees A only; m2 sees B only)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C4",
+      "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C5",
+      "name": "host restart (same home, resume) rebuilds the SAME effective set",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C6",
+      "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C7",
+      "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C8",
+      "name": "target-tree scan surface unchanged (kit link dirs removed, pnpm junctions restored)",
+      "status": "not-run",
+      "checks": []
+    }
+  ],
+  "pass": false,
+  "exitCode": 1
+}

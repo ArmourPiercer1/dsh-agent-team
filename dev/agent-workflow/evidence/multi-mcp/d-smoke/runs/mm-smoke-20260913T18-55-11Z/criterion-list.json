@@ -1,0 +1,50 @@
+[
+  {
+    "id": "C1",
+    "name": "per-agent model-facing MCP tools EXACT (I5 state + schema double proof): leader A+B / m1 A / m2 B",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C2",
+    "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C3",
+    "name": "member isolation (m1 sees A only; m2 sees B only)",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C4",
+    "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C5",
+    "name": "host restart (same home, resume) rebuilds the SAME effective set",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C6",
+    "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C7",
+    "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C8",
+    "name": "target-tree scan surface unchanged (kit link dirs removed, pnpm junctions restored)",
+    "status": "not-run",
+    "checks": []
+  }
+]

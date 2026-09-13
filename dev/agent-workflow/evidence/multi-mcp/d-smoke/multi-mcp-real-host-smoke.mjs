@@ -21,6 +21,9 @@
  *     C5 host restart (same home, resume) rebuilds the SAME effective set
  *     C6 teardown releases 3491/3492 (+3496 mock, +host port)
  *     C7 test-use worktree porcelain empty + HEAD baseline; :3080 untouched
+ *     C8 target-tree scan surface unchanged (kit link dirs removed, pnpm
+ *        junctions restored — the p4t6 scanner is file-system-level, a
+ *        leftover top-level packages/node_modules is git-invisible)
  *
  * World design (frozen-contract semantics — verified against mcp-facet.ts /
  * cell-provenance.ts / agent-bindings.mjs, int tree @ 4feac8c, Gate C round 1):
@@ -54,7 +57,7 @@
  * (governance override + team tools pre-date multi-MCP), but nothing ever
  * mounts (no mcpServers support) and the kit observes the LEGACY single-value
  * /__p6t6/state mcp shape — the EXPECTED base dry-run failure mode (criteria
- * C1-C5 FAIL with that detail; C6/C7 still PASS). Do not chase GREEN on a
+ * C1-C5 FAIL with that detail; C6/C7/C8 still PASS). Do not chase GREEN on a
  * base tree.
  *
  * Usage
@@ -102,9 +105,11 @@ import {
   existsSync,
   lstatSync,
   mkdirSync,
+  readlinkSync,
   readdirSync,
   realpathSync,
   rmSync,
+  rmdirSync,
   statSync,
   symlinkSync,
   writeFileSync,
@@ -655,6 +660,12 @@ function writeTeamPatchFile(patchPath, bootPhase) {
 // TARGET repo. When the target is a pnpm worktree, mirror the host tree's hoist
 // entries into packages/runtime/node_modules + packages/node_modules
 // (gitignored, target-tree-local; the host tree is never touched).
+// These junctions are RUN-TIME-ONLY: every mutation is snapshotted
+// (ensureJunctions) and undone at teardown (restoreJunctions) — the target
+// tree must be left exactly as found, which C8 verifies against the p4t6
+// scan surface (pre==post). A leftover top-level packages/node_modules dir
+// is git-invisible but breaks the p4t6 scanner (packageDirs 9→10,
+// filesScanned +~150 via junction follow into the host-tree hoist).
 
 const RUNTIME_LINKS = [
   ['@deepseek-ai', 'dsh-agent'],
@@ -674,8 +685,20 @@ const PACKAGES_LINKS = [
   ['@deepseek-ai', 'dsh-system-prompt'],
 ]
 
-function ensureJunctions(base, links, logTag) {
+/**
+ * Wire the module-resolution junctions into the TARGET tree. Every mutation
+ * is snapshotted into `snap` so restoreJunctions (teardown) can put the
+ * target tree back EXACTLY as found:
+ *   - pre-existing symlink  -> re-pointed for the run, restored to the stored
+ *     (relative) target afterwards;
+ *   - pre-existing NON-symlink -> left untouched (never destroy something
+ *     that cannot be restored);
+ *   - absent link           -> created now, removed at teardown;
+ *   - kit-created base/scope dirs -> rmdir'ed at teardown (deepest first).
+ */
+function ensureJunctions(base, links, logTag, snap) {
   const hoist = join(HOST_TREE, 'node_modules', '.pnpm', 'node_modules')
+  if (!existsSync(base)) snap.createdDirs.push(base)
   mkdirSync(base, { recursive: true })
   for (const [scope, name] of links) {
     const label = scope ? `${scope}/${name}` : name
@@ -684,22 +707,77 @@ function ensureJunctions(base, links, logTag) {
       throw new Error(`host tree pnpm hoist has no link for ${label} at ${target} — cannot wire ${logTag} module links (is the test-use checkout pnpm-installed?)`)
     }
     const scopeDir = scope ? join(base, scope) : base
+    if (scope && !existsSync(scopeDir)) snap.createdDirs.push(scopeDir)
     mkdirSync(scopeDir, { recursive: true })
     const link = join(scopeDir, name)
     let st = null
     try { st = lstatSync(link) } catch { /* absent */ }
     if (st !== null) {
-      if (st.isSymbolicLink() || (statSync(link, { throwIfNoEntry: false })?.isDirectory() ?? false)) {
+      if (st.isSymbolicLink()) {
+        const originalTarget = readlinkSync(link)
+        snap.entries.push({ link, preExisted: true, originalTarget, untouched: false })
         let okResolve = false
         try { okResolve = realpathSync(link) === realpathSync(target) } catch { okResolve = false }
         if (okResolve) continue
         rmSync(link, { force: true })
       } else {
-        rmSync(link, { force: true })
+        log(`${logTag} link LEFT UNTOUCHED (pre-existing non-symlink, not restorable): ${link}`)
+        snap.entries.push({ link, preExisted: true, originalTarget: null, untouched: true })
+        continue
       }
+    } else {
+      snap.entries.push({ link, preExisted: false, originalTarget: null, untouched: false })
     }
     symlinkSync(target, link, process.platform === 'win32' ? 'junction' : 'dir')
     log(`${logTag} link: ${label} -> ${target}`)
+  }
+}
+
+/** Teardown counterpart of ensureJunctions (see its contract). Drift that
+ *  survives this restore is flagged by C8 (the scan-surface comparison). */
+function restoreJunctions(snap, logTag) {
+  for (const e of snap.entries) {
+    if (e.untouched) continue
+    let st = null
+    try { st = lstatSync(e.link) } catch { /* already gone */ }
+    if (st !== null && !st.isSymbolicLink()) {
+      log(`${logTag} restore: LEFT unexpected non-symlink at ${e.link} (C8 flags any drift)`)
+      continue
+    }
+    if (st !== null) rmSync(e.link, { force: true })
+    if (e.preExisted && e.originalTarget !== null) {
+      symlinkSync(e.originalTarget, e.link, process.platform === 'win32' ? 'junction' : 'dir')
+      log(`${logTag} link restored: ${e.link} -> ${e.originalTarget}`)
+    }
+  }
+  for (const d of [...snap.createdDirs].sort((a, b) => b.length - a.length)) {
+    try {
+      rmdirSync(d)
+      log(`${logTag} rmdir (kit-created, now empty): ${d}`)
+    } catch { /* not empty or already gone — C8 flags any leftover */ }
+  }
+}
+
+// ── target-tree scan surface (C8) ───────────────────────────────────────────
+// The p4t6 scanner (packages/testkit/fault-injection/session-event-scan.mjs)
+// is FILE-SYSTEM-level: packageDirs = top-level `packages/*` dirs and the
+// walk descends into each of them (only SUBDIRS named node_modules/dist/
+// .tmp-fault are skipped). A kit-leftover TOP-LEVEL packages/node_modules
+// junction dir is git-invisible (gitignored) but breaks the scan
+// (packageDirs 9→10, filesScanned +~150 via junction follow into the
+// test-use hoist). C8 asserts pre==post of this surface.
+const SCANNER_RELPATH = join('packages', 'testkit', 'fault-injection', 'session-event-scan.mjs')
+
+async function scanTargetTree(repoRoot) {
+  try {
+    const mod = await import(pathToFileURL(join(repoRoot, SCANNER_RELPATH)).href)
+    const r = mod.scanSessionEventVocabulary({ repoRoot })
+    return { mode: 'scanner', packageDirs: r.packageDirs, filesScanned: r.filesScanned }
+  } catch {
+    // Fallback (scanner absent in this tree): dir-level listing only.
+    const dirs = readdirSync(join(repoRoot, 'packages'), { withFileTypes: true })
+      .filter((e) => e.isDirectory()).map((e) => e.name).sort()
+    return { mode: 'dirs-only', packageDirs: dirs, filesScanned: null }
   }
 }
 
@@ -789,6 +867,7 @@ const CRITERIA = [
   { id: 'C5', name: 'host restart (same home, resume) rebuilds the SAME effective set' },
   { id: 'C6', name: 'teardown releases 3491/3492 (+3496 mock, +host port)' },
   { id: 'C7', name: 'test-use porcelain empty + HEAD baseline; :3080 untouched' },
+  { id: 'C8', name: 'target-tree scan surface unchanged (kit link dirs removed, pnpm junctions restored)' },
 ]
 const results = {}
 for (const c of CRITERIA) results[c.id] = { id: c.id, name: c.name, status: 'not-run', checks: [] }
@@ -951,6 +1030,17 @@ const mockRef = { current: null }
 // ── MAIN ────────────────────────────────────────────────────────────────────
 
 async function main() {
+  // World-state accumulators (declared up top: pre-flight assigns scanPre/
+  // linkSnap, the finally-block teardown reads them).
+  let host1 = null
+  let host2 = null
+  let memberA = null
+  let memberB = null
+  let seedRec = null
+  let linkSnap = null
+  let scanPre = null
+  let scanPost = null
+
   mkdirSync(RUN_DIR, { recursive: true })
   RUN_LOG = join(RUN_DIR, 'run.log')
   log(`=== Task D multi-mcp real-host smoke kit ${RUN_STAMP} ===`)
@@ -995,9 +1085,15 @@ async function main() {
   log(`fresh home asserted: ${HOME} (lock: ${LOCK_FILE})`)
 
   // Worktree module links (gitignored, target-tree-local; host tree untouched).
-  ensureJunctions(join(TARGET_REPO, 'packages', 'runtime', 'node_modules'), RUNTIME_LINKS, 'runtime')
-  ensureJunctions(join(TARGET_REPO, 'packages', 'node_modules'), PACKAGES_LINKS, 'packages')
-  log('module resolution links wired (runtime + packages level)')
+  // C8 pre-snapshot of the target-tree scan surface BEFORE any wiring: the
+  // p4t6 scanner is file-system-level — a leftover top-level packages/
+  // node_modules dir is git-invisible but breaks the scan.
+  scanPre = await scanTargetTree(TARGET_REPO)
+  log(`target-tree scan pre (C8): mode=${scanPre.mode} packageDirs=${scanPre.packageDirs.length}${scanPre.filesScanned !== null ? ` filesScanned=${scanPre.filesScanned}` : ''}`)
+  linkSnap = { createdDirs: [], entries: [] }
+  ensureJunctions(join(TARGET_REPO, 'packages', 'runtime', 'node_modules'), RUNTIME_LINKS, 'runtime', linkSnap)
+  ensureJunctions(join(TARGET_REPO, 'packages', 'node_modules'), PACKAGES_LINKS, 'packages', linkSnap)
+  log(`module resolution links wired (runtime + packages level; ${linkSnap.entries.length} entries snapshotted for teardown restore)`)
 
   // ── build (target repo production dist — the sanctioned recipe) ──────────
   log('building target repo: pnpm build && pnpm build:composition …')
@@ -1044,11 +1140,6 @@ async function main() {
     dieFatal(`mini MCP startup failed: ${error.message}`)
   }
 
-  let host1 = null
-  let host2 = null
-  let memberA = null
-  let memberB = null
-  let seedRec = null
   try {
     // ── world boot #1 (create) ──────────────────────────────────────────────
     await ensureProfile({ instance: new DshInstance({ hostTree: HOST_TREE, dshHome: HOME, port: hostPort, clientCommitHash: CLIENT_COMMIT_HASH, logDir: join(RUN_DIR, 'instances', 'profile-init') }), log, timeoutMs: 180_000 })
@@ -1317,6 +1408,38 @@ async function main() {
     }
     finishCriterion('C7')
 
+    // ── target-tree link restore + C8: scan surface unchanged ───────────────
+    try {
+      if (linkSnap !== null) restoreJunctions(linkSnap, 'teardown')
+      scanPost = await scanTargetTree(TARGET_REPO)
+      const sameDirs = JSON.stringify(scanPost.packageDirs) === JSON.stringify(scanPre?.packageDirs ?? [])
+      check('C8', 'target-tree packages/* dir set unchanged (no kit-created dir left)',
+        sameDirs && scanPre !== null, `pre=${JSON.stringify(scanPre?.packageDirs)} post=${JSON.stringify(scanPost.packageDirs)}`)
+      if (scanPre?.filesScanned !== null && scanPost.filesScanned !== null) {
+        check('C8', 'p4t6 scanner filesScanned unchanged (no junction follow into host tree)',
+          scanPost.filesScanned === scanPre.filesScanned, `pre=${scanPre.filesScanned} post=${scanPost.filesScanned}`)
+      } else {
+        check('C8', 'p4t6 scanner unavailable in target tree (dirs-only mode)', true, `pre-mode=${scanPre?.mode} post-mode=${scanPost.mode}`)
+      }
+      if (linkSnap !== null) {
+        const leftovers = linkSnap.createdDirs.filter((d) => existsSync(d))
+        check('C8', 'all kit-created link dirs removed', leftovers.length === 0,
+          leftovers.length ? JSON.stringify(leftovers) : 'none')
+        const badRestore = linkSnap.entries.filter((e) => {
+          if (e.untouched || !e.preExisted || e.originalTarget === null) return false
+          let st = null
+          try { st = lstatSync(e.link) } catch { return true }
+          if (!st.isSymbolicLink()) return true
+          try { return readlinkSync(e.link) !== e.originalTarget } catch { return true }
+        })
+        check('C8', 'pre-existing pnpm junctions restored to original targets', badRestore.length === 0,
+          badRestore.length ? JSON.stringify(badRestore.map((e) => e.link)) : `all ${linkSnap.entries.filter((e) => e.preExisted && !e.untouched).length} restored`)
+      }
+    } catch (error) {
+      check('C8', 'target-tree restore/scan check completed', false, error.message)
+    }
+    finishCriterion('C8')
+
     // ── home teardown (TEST_METHODS §7) ────────────────────────────────────
     let homeKept = false
     if (KEEP) {
@@ -1346,6 +1469,7 @@ async function main() {
       },
       members: { member1: memberA, member2: memberB },
       seed: seedRec,
+      targetTreeScan: { pre: scanPre, post: scanPost },
       criteria: Object.values(results),
       pass: Object.values(results).every((r) => r.pass === true),
       exitCode: 0,

@@ -10,13 +10,15 @@
 1. **base 干跑**（`runs/mm-smoke-20260913T18-17-32Z`）：kit 在 base 树**全链路跑通**，
    按预期在 C1–C5 失败（legacy 单值形状 + 零 MCP 工具 = 单值行为签名），C6/C7
    通过，exit 2 —— 与任务卡「不追求 GREEN」一致，非 kit 缺陷。
-2. **int 树 GREEN 终跑**（`runs/mm-smoke-20260913T18-45-41Z`）：修复 kit 两处设计
-   缺口（durable seed 缺失 + 边界探针走错路径）后**七判据 33/33 全 PASS，exit
-   0**。Gate C 轮 1 的首次 GREEN 运行（`runs/mm-smoke-20260913T18-36-43Z`，主
-   Agent 执行）失败的每一条都被归因为 **kit 期望 vs 冻结契约的误读**，运行时
-   （A/B/C）逐观测符合冻结契约；修复全部落在 kit 侧，**零运行时改动**。
+2. **int 树 GREEN 终跑**（`runs/mm-smoke-20260913T18-55-50Z`）：修复 kit 两处设计
+   缺口（durable seed 缺失 + 边界探针走错路径）+ 一处卫生缺口（目标树链接
+   残留 → 新增 C8 扫描面判据 + teardown 精确还原）后**八判据 37/37 全 PASS，
+   exit 0**，且跑完目标树 p4t6 扫描面 pre==post（9 目录 / 702 文件）。Gate C
+   轮 1 的首次 GREEN 运行（`runs/mm-smoke-20260913T18-36-43Z`，主 Agent
+   执行）失败的每一条都被归因为 **kit 期望 vs 冻结契约的误读**，运行时
+   （A/B/C）逐观测符合冻结契约；全部修复落在 kit 侧，**零运行时改动**。
 
-## 六次运行（audit trail，全部保留在 `runs/`）
+## 八次运行（audit trail，全部保留在 `runs/`）
 
 | run | 目标树 | 结果 | 说明 |
 | --- | --- | --- | --- |
@@ -25,7 +27,9 @@
 | `mm-smoke-20260913T18-17-32Z` | base | **预期终点**：C1–C5 FAIL / C6、C7 PASS，**exit 2** | 规范 base 干跑证据（下节）。 |
 | `mm-smoke-20260913T18-36-43Z` | int @ 4feac8c | exit 2，C1 5/15、C2 2/3、C3 0/4、C4 2/3、C5 3/4、C6/C7 PASS | 主 Agent 执行的 Gate C 轮 1 GREEN 运行。**全部失败归因 = kit 两处设计缺口**（详下节），运行时逐观测符合冻结契约。 |
 | `mm-smoke-20260913T18-45-08Z` | int @ 3ee3f72 | **七判据全 PASS**，但 summary 构造处 **kit-level FATAL**（exit 1） | 修复后的 kit 首跑：durable seed + 边界触发全部生效，33/33 判据 PASS；唯 `seedRec` 声明在 try 块内、summary 在 finally 块 → ReferenceError（kit 缺陷 #4，提升声明至外层作用域修复）。teardown/C6/C7/home 删除在该 fatal 之前已完成（世界无残留）。 |
-| `mm-smoke-20260913T18-45-41Z` | int @ 3ee3f72 | **exit 0，33/33 全 PASS** | **规范 GREEN 证据**（下节）。 |
+| `mm-smoke-20260913T18-45-41Z` | int @ 3ee3f72 | **exit 0，33/33 全 PASS**（七判据时代） | 首个干净 GREEN（修复 #1/#2 后）；**但 teardown 不完整**——留下目标树链接残留（下节「卫生缺口」），该次仍记录在案作为缺口证据。 |
+| `mm-smoke-20260913T18-55-11Z` | int @ 3ee3f72 | **kit-level FATAL**（exit 1），链路未开始 | kit 缺陷 #5：C8 编辑把 `scanPre/linkSnap/scanPost` 声明放在 pre-flight 使用点**之后**（同函数作用域 → TDZ ReferenceError）。fail-loud 照旧（全判据 `not-run` 落盘）。fatal 发生于链接布线之前（目标树零触碰），但 home 已断言创建 → 空 home + lock 残留，已手动删除（`tests/homes/…18-55-11Z`）。声明移至 `main()` 顶部修复。 |
+| `mm-smoke-20260913T18-55-50Z` | int @ 3ee3f72 | **exit 0，37/37 全 PASS（含 C8 4/4）** | **规范 GREEN 终跑**（下节）：C1–C7 同前 + **C8 目标树扫描面 pre==post**（p4t6 扫描器级：9 目录 / 702 文件；6 个原有 pnpm junction 全部复原原 target；kit 创建的 `packages/node_modules` 树 rmdir）。 |
 
 ## base 干跑（`mm-smoke-20260913T18-17-32Z`）判读
 
@@ -117,7 +121,9 @@
 （修复后又暴露 kit 缺陷 #4：`seedRec` 作用域错误致 summary 构造 fatal ——
 `mm-smoke-20260913T18-45-08Z` 记录在案，见运行表；修复后终跑干净。）
 
-### GREEN 终跑（`mm-smoke-20260913T18-45-41Z` @ int 3ee3f72）——**exit 0**
+### GREEN 终跑（`mm-smoke-20260913T18-55-50Z` @ int 3ee3f72）——**exit 0，37/37**
+
+（C1–C7 与 18-45-41Z 同形态、同数值；下表为终跑实际记录，新增 C8 行。）
 
 | 判据 | 结果 | 关键观测 |
 | --- | --- | --- |
@@ -128,9 +134,43 @@
 | C5 | **PASS**（4/4） | 同 home 重启（boot 2, phase resume，3 liveSessions）后逐 agent effective 集与重启前**逐位相等**（含收紧后 A-only leader）；leader 重启后 schema 恰 `[mcp__mcp_signal__ping]`（durable 双记录跨重启存活）。 |
 | C6 | **PASS**（1/1） | 3181/3491/3492/3496 全释放。 |
 | C7 | **PASS**（3/3） | test-use porcelain 空 + HEAD `a66e4702…` pre==post；`:3080` pre==post。 |
+| C8 | **PASS**（4/4） | 目标树扫描面（p4t6 同一文件系统级扫描器 `scanSessionEventVocabulary`）pre==post：顶层 `packages/*` = 9 目录（无 kit 创建的 `packages/node_modules`）、`filesScanned` = 702（无 junction 跟随进 host 树 hoist）；kit 创建目录全部 rmdir；6 个原有 pnpm junction 全部复原到原（相对）target。 |
 
-`summary.json` 记录 durable seed（`seed.recordId=ovr-mcp-team-g0, scope=team`）
-与成员/override 全量元数据。
+`summary.json` 记录 durable seed（`seed.recordId=ovr-mcp-team-g0, scope=team`）、
+`targetTreeScan`（pre/post 扫描面）与成员/override 全量元数据。
+
+## 目标树链接残留卫生缺口（kit 缺陷 #5 的「内容」侧）→ C8 + teardown 还原
+
+主 Agent 在 18-36-43Z 运行后发现：kit 的「模块解析链接」步骤在**目标树**留下
+gitignored 但**文件系统级可见**的残留——
+
+- 新建顶层 `packages/node_modules/`（内含 7 个指向 test-use hoist 的
+  `@deepseek-ai/*` junction）：porcelain 不可见（gitignored），但 p4t6 扫描器
+  的 `packageDirs` = `packages/*` 顶层目录集 → **9→10**；且扫描 walk 对顶层
+  目录逐一 `walk()`（`node_modules` 跳过规则只作用于**子目录**）→ 跟随 junction
+  深入 test-use hoist → `filesScanned` **702→853**。主 Agent 终跑后 int 树
+  p4t6 因此一度失败，已手动删除该目录恢复（10/10、702）。
+- 既有 `packages/runtime/node_modules/` 下 6 个 pnpm junction（`@deepseek-ai/`
+  ×5 + `zod`）被 kit **重指向**到 test-use hoist（运行期需要，但 teardown 未
+  复原）——这是目标树 pnpm 安装面的漂移（后续该 worktree 的构建/解析会拿到
+  host 树的包副本），主 Agent 删除目录时未覆盖此项，D 侧已手动复原两树各
+  6 条到各自 `.pnpm` 单变体 target（逐条 `readlink` 复核，int 树扫描面恢复
+  9 目录 / 702）。
+
+**修复（kit 侧，零运行时改动）**：
+
+1. `ensureJunctions` 现在对每处改动做**快照**：原有 symlink 记录原（相对）
+   target；原有**非 symlink** 一律**不动**（不可复原者不破坏）；缺失项与
+   kit 新建的 base/scope 目录登记为「kit 创建」。
+2. 新增 `restoreJunctions`（teardown 必跑）：删 kit 创建的 junction、rmdir
+   kit 创建的空目录（深→浅）、原有 junction 复原到快照 target；任何残留漂移
+   由 C8 兜底断言。
+3. 新增判据 **C8「目标树扫描面无漂移」**：pre（链接布线前）与 post（teardown
+   还原后）各跑一次 p4t6 同一扫描器——顶层目录集相等 + `filesScanned` 相等 +
+   kit 创建目录全删 + 原有 junction 全复原；`summary.json` 落 `targetTreeScan`
+   pre/post。目标树若本来就没有 `packages/node_modules`（本环境两树均如此）则
+   post 必然复原 9 目录；若未来目标树自带该目录，C8 的 pre==post 语义同样成立
+   （不碰非 kit 创建项）。
 
 ## 对后续 GREEN 重跑（若有）的提示
 
@@ -139,12 +179,15 @@
 - 两 mini 端点同名 `ping` 是**设计**（命名空间碰撞最强测试），非配置错误。
 - durable seed（team-scope `ovr-mcp-team-g0`）是 world 的前置条件——若 runtime
   变更导致 seed 被拒，kit 会 fail-loud 报「precondition for the whole smoke」。
+- C8 自带：跑完 kit 会自行复扫目标树 p4t6 扫描面（pre==post）并落盘
+  `targetTreeScan`——「目标树扫描面无漂移」不再依赖外部复查。
 
 ## 卫生复核（本目录）
 
-- kit 对 test-use 树零写入（C7 pre/post 复核，六次运行全部成立）；对目标树仅
+- kit 对 test-use 树零写入（C7 pre/post 复核，八次运行全部成立）；对目标树仅
   构建产物（check-artifacts-committed 证明 dist 与已提交安装面逐字一致，无工作
-  树漂移——base 与 int 两树均复核）。
+  树漂移——base 与 int 两树均复核）+ 运行期链接（现由 teardown 精确还原，C8
+  pre/post 扫描面断言兜底，见「卫生缺口」节）。
 - 临时 home 全部已删除（各 `summary.json` 记 `kept=false`；孤儿重建残留见运行表
   #2 说明）；lock 文件随之删除。
 - 实例日志（`instances/*/instance-port3181.log`）含 boot 行的 launch token——
