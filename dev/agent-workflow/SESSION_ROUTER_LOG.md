@@ -3149,3 +3149,7 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   - 全 worktree 终态 porcelain 空 ✓
 - **int 推送（M3 = 终态，PR #16 自动更新）**。四任务全部收束；待 PR body
   更新 + 用户审查 merge。
+
+- **PR #16 body 更新至终态**（gh CLI `pr edit` 因 Projects-classic
+  弃用字段 GraphQL 失败 → REST PATCH /pulls/16 成功；body 现含完整里程碑链、
+  Gate C 终态 37/37、门禁全量结果、3 条已知事项留痕）。
