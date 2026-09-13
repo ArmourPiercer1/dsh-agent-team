@@ -3071,3 +3071,35 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
     零新增失败，套件回到既有基线** ✓。
 - **int 推送**（M2c，PR #16 自动更新）。收束阶段：post-C dist 重建
   （tools plugin.mjs I5 → tools dist）→ Gate C 双 MCP real-host smoke。
+
+### Gate C（第一轮）— 双 MCP real-host GREEN 运行 + 归因裁决
+
+- **主 Agent 于 int 树 @ 4feac8c（A+B+C+D 齐）执行 D 的 kit**
+  （--repo .worktrees/multi-mcp-int；host=3181；mini 3491/3492；mock 3496）。
+  evidence = D worktree runs/mm-smoke-20260913T18-36-43Z/。
+- **结果 exit 2**：C6/C7 PASS（端口释放 + test-use pristine @ a66e470204 +
+  :3080 pre==post）；C1-C5 FAIL — **主 Agent 逐观测归因 = kit 两处设计缺口，
+  运行时（A/B/C）零契约违规**：
+  1. **C1/C2/C3 零挂载 = 契约正确行为**：基线 durable mcp cell =
+     unspecified（state-after-c1 raw: source={unspecified,static,null} +
+     deniedBy={by:team,reason:unspecifiedFailClosed}）— 冻结 mcp-facet.ts
+     （C4 零改动面）L12-18 明文 "unspecified → fail-closed: NO mount"。
+     blueprint capabilities.mcp = 静态模板门，不 seed durable cell；
+     durable allow 需 governance 记录 — kit world 从未 seed → 零挂载正确。
+  2. **C4 "next boundary" 探针未触发 root 边界**：/api/session/prompt
+     （root 原生输入）不在 glue 的 4 个边界调用点内（base 与 int 完全相同：
+     base L1988/2020/2183/2627 = int L2079/2111/2274/2718，B 未增删）→
+     pre-existing 布线，非 B 回归。证据：c4 快照 override 仍在
+     pendingNextBoundary（边界跑过则 applyBoundaryRecords 已计入
+     appliedRecordIds → pending 空）+ allowed=true 时 mounted=false。
+     cell-provenance 冻结语义：effective = 当前策略（pending = bookkeeping，
+     非两级门 — C5 boot:2 直接证明：applied=[] 时 allowed=true 即挂载）。
+- **通过面确认（I5 集成 + 持久化语义）**：三会话 /__p6t6/state 均 i5-servers
+  形状 ✓；override 被接受且策略生效（leader A allowed=true,
+  source=humanOverride）✓；**C5 restart 后 leader model-facing tools=[A]
+  = durable override 跨重启存活 + setup 重建挂载** ✓；C6/C7 ✓。
+- **裁决**：修 kit（D 的 owned 面，零运行时改动）— (1) boot 后 seed
+  team-scope mcp allow [A,B]（member 创建相即挂 + leader 经一次
+  executeTool 路径的 team tool 调用触发 root 边界挂 [A,B]）；(2) C4 探针
+  改为会跑 root 边界的 team tool 调用。D 已通知（send_message，含全部
+  证据引用与修复要求），修复 + 重跑 GREEN 后主 Agent 再验收。
