@@ -2944,3 +2944,49 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   p8s4b-mcp-facet + t12a-b3-external-deny = **7 文件 104/104 PASS**；
   `pnpm --filter @dsh-agent-team/runtime typecheck` exit 0。
 - **int 推送**（M1，PR #16 自动更新）。W1 派发就绪（B/C rebase 到本 tip）。
+
+### M2a — Task B 合入 int（per-server live reconciler，I4）
+
+- **B FINAL 报告接收**（93ba31c8，DONE）：2 commits（09ddfbe src +189/−94 /
+  ddc3bc4 证据 8 文件）；唯一 owned 源文件 = agent-bindings.mjs；dist 零出现；
+  porcelain clean；未 push。
+- **主 Agent 独立核验（不轻信报告）**：
+  - diff 严格 = owned 1 源文件 + 8 evidence ✓；
+  - `reconcileMcpSet` 逐行对照 I4 时序 1-7（target⊆configured guard /
+    deny-first dispose（失败=observation）/ configured 顺序 mount /
+    port-null 先查且消息逐字 I4 冻结串 / temporary set / 失败仅回滚本轮
+    new fibers（denied 不恢复）+ 记 mcpActivationErrors + observation 点名 +
+    rethrow / 全成 commit）✓；fiber options 与旧路径逐字一致 ✓；
+  - 两处调用点 = template∩durable 逐 server AND；**selective-mode 逻辑核验为
+    base 既有**（b49f4239 L1271 同形）— 正确泛化，无 C3 语义新增 ✓；
+  - agentSetup 保持 pre-MCP snapshot → 单次 reconcileMcpSet（全 target）→
+    final snapshot（§2.7 覆盖顺序）✓；close() 遍历全部 session 全部 fibers ✓；
+  - grep 独立复测：单值词汇（mcpFiber\b/mcpActivationError\b/.mcpView\b）
+    零命中，per-server 词汇 33 处 ✓。
+  - DEVIATIONS 裁决：(a) port-null throw 前额外记 mcpActivationErrors —
+    接受（I5 诊断完整性，observation/throw 语义不变）；(b) 消息尾注 = I4
+    自身冻结串（非偏差，B 报告措辞更正）。**新接受 1 处注释级精化**：
+    deny-first 保留 denied server 的 view（"last-applied views" 语义 —
+    拒绝视图本身即最后应用视图，下 boundary 重解覆盖；比 I4 草图清 view 更
+    准确）— 记录在案，无行为风险。
+- **pre-existing 基线确立（独立）**：pre-B int tip（4ad989d）full
+  runtime suite = **6 文件 / 8 测试失败**：p8s3b-result-effects /
+  t12a-b2-child-identity / t12a-glue-handoff-ports（3 个 [file] 级失败，
+  错误均在 base glue 路径）+ D3-4 + p6t3-mediation×5 + p6t3-restart×2。
+  **静态归因**：6 个失败文件零 import A 模块（mcp-supply/types/host），
+  失败栈全在 A 未触碰的 base glue / base 测试路径 → pre-existing @ base
+  b49f4239（master 既有债，非本轮范围，留痕）。
+- **cherry-pick -x** 09ddfbe + ddc3bc4 无冲突 → int @ 2d44809/00a925b。
+- **主 Agent re-gate（独立 @ post-B）**：
+  - focused 7 文件 = **111/113**：t4a 27/27、p8s4b 11/11、a2c2 18/18（classifier
+    零改动证明）、mcp-supply-config 39/39、p4t6 @701 10/10；h1-nullable 3/4
+    （H1-2 = 单值断言 vs mcpViews:{} 预期失败）、t12a-b3 3/4（B3-4 =
+    deniedView.mcpView.deniedBy TypeError 预期失败）— 两个失败恰为 C 的
+    GREEN 适配清单。
+  - full runtime suite @ post-B = 9 文件 / 13 测试；**diff vs pre-B 基线
+    精确 = {H1-2, B3-4}** + p6t1-parallel×3（仅全量负载下）→ p6t1 隔离
+    重跑 **9/9 PASS**（load flake，isolation 裁决先例，非回归）。
+  - `pnpm --filter @dsh-agent-team/runtime typecheck` exit 0 ✓。
+- **dist**：place-dist-glue 更新（agent-bindings 189+/94− 同步）；check:
+  artifacts 收束阶段统一跑。p4t6 不变（B 零新可扫描文件）@ 701。
+- **int 推送**（M2a，PR #16 自动更新）；**C 已通知进阶段 2 GREEN**。

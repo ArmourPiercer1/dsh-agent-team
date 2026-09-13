@@ -13,7 +13,7 @@ multi_mcp_quick_fix_20260914:
   pr: "单 PR int/multi-mcp-quick-fix -> master，里程碑推送（milestone-0 = 契约冻结；每合并一里程碑 push 一次）"
   tasks:
     MM-A: { state: MERGED-INT, class: B, branch: task/multi-mcp-a-config, worktree: .worktrees/multi-mcp-a-config, base: b49f4239, head: 4a60e7e, int_pick: 71deaa8, pr: "16 (M1)", owned: "types.ts + mcp-supply.ts(新) + host.ts + mcp-supply-config.test.ts(新)", brief: briefs/multi-mcp/a-config.md, re_gate: "独立 7 文件 104/104 + runtime typecheck 0 @ int" }
-    MM-B: { state: PENDING_W1, class: A, branch: task/multi-mcp-b-runtime, worktree: .worktrees/multi-mcp-b-runtime, base: int-tip(after A), owned: "agent-bindings.mjs (唯一)", brief: briefs/multi-mcp/b-runtime.md }
+    MM-B: { state: MERGED-INT, class: B, branch: task/multi-mcp-b-runtime, worktree: .worktrees/multi-mcp-b-runtime, base: b49f4239, head: ddc3bc4, int_pick: 2d44809, pr: "16 (M2a)", owned: "agent-bindings.mjs (唯一源文件)", brief: briefs/multi-mcp/b-runtime.md, re_gate: "独立 focused 111/113 (仅 H1-2/B3-4 = C GREEN 责任) + full-suite diff vs pre-B 基线精确 = {H1-2, B3-4} + p6t1 隔离 9/9 (load flake 裁决) + typecheck 0" }
     MM-C: { state: PENDING_W1, class: A, branch: task/multi-mcp-c-tests, worktree: .worktrees/multi-mcp-c-tests, base: int-tip(after A), owned: "t12a-live-bridge.{mjs,d.mts} + multi-mcp-wiring.test.ts(新) + t4a + t12a-h1-nullable + tools/harness/plugin.mjs (+ p8s4b/t12a-b3 最小适配)", brief: briefs/multi-mcp/c-tests.md }
     MM-D: { state: DISPATCHED, class: B, branch: task/multi-mcp-d-docs, worktree: .worktrees/multi-mcp-d-docs, base: b49f4239, owned: "docs/INSTALL.md + cordis.patch.yml + evidence/multi-mcp/d-smoke/ (kit)", brief: briefs/multi-mcp/d-docs-smoke.md }
   gates:
