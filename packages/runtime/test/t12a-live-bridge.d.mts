@@ -212,6 +212,16 @@ export interface AgentsDoubleOptions {
   readonly whenIdleBehavior?: (agent: object) => Promise<void>
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
+  /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
+   *  injection — a recorded plugin fiber whose `options.serverName` has an
+   *  entry here REJECTS on await with `new Error(<message>)` (the real
+   *  mcpClient fiber's failOnStartupError rejection). */
+  readonly mcpFailures?: Record<string, string>
+  /** multi-mcp (Task C, plan §6.11): per-server MCP tool names —
+   *  registered on the agent ctx through the real `tools.register` path at
+   *  the fiber's activation (the Permission Coverage Gate's proven-mount
+   *  delta basis); unregistered on the fiber's dispose. */
+  readonly mcpToolNames?: Record<string, string[]>
 }
 
 /** The sessionPersistence service double (records materializations). */
@@ -431,6 +441,12 @@ export interface LiveWorldOptions {
   readonly configOverrides?: Record<string, unknown>
   readonly teamTools?: { readonly tools: readonly unknown[] }
   readonly agents?: AgentsDoubleOptions
+  /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
+   *  injection (see AgentsDoubleOptions.mcpFailures). */
+  readonly mcpFailures?: Record<string, string>
+  /** multi-mcp (Task C, plan §6.11): per-server MCP tool names (see
+   *  AgentsDoubleOptions.mcpToolNames). */
+  readonly mcpToolNames?: Record<string, string[]>
   readonly subagents?: SubagentsDouble
   /** D1 v2 → v3: the agentPresets service double (the ordinary-preset
    *  base-tool substrate the MEMBER agents (v2) AND the ROOT agent (v3)

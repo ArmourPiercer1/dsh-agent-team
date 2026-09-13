@@ -210,8 +210,23 @@ function makeFakeFs() {
  *
  * @param {Array<{name: string, order: number, text: string}>} [globalSections]
  *   the world's global prompt layer (one shared array per world).
+ * @param {Record<string, string>} [mcpFailures]
+ *   multi-mcp (Task C, plan §6.7): per-server MCP activation FAILURE
+ *   injection — when a recorded (non-scope-plumbing) plugin fiber's
+ *   `options.serverName` has an entry here, the fiber REJECTS on await
+ *   with `new Error(<message>)` (the bridge's only activation-failure
+ *   seam; the real mcpClient fiber rejects with the server's startup
+ *   error). Absent/empty = every fiber settles as before.
+ * @param {Record<string, string[]>} [mcpToolNames]
+ *   multi-mcp (Task C, plan §6.11): per-server MCP tool names — when a
+ *   recorded plugin fiber ACTIVATES (its first successful settle), the
+ *   listed tool names are registered on THIS ctx through the same
+ *   `tools.register` path a real mcpClient fiber's tools use (the
+ *   Permission Coverage Gate's PROVEN-mount delta basis, plan §7.3-C);
+ *   dispose() unregisters them (the real fiber's teardown removes its
+ *   tools). Absent/empty = no registration (the pre-multi-mcp behavior).
  */
-function makeAgentCtx(globalSections) {
+function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
   const listeners = []
   const registeredTools = []
   const toolExecutions = []
@@ -329,10 +344,41 @@ function makeAgentCtx(globalSections) {
       // (non-function specs: the MCP client with its options) record
       // exactly as before.
       const isScopePlumbing = typeof pluginSpec === 'function'
+      // multi-mcp (Task C): the ctx this fiber was minted on (the fiber's
+      // own methods run with `this` = the fiber, so the tools registration
+      // path is captured here).
+      const ctxSelf = this
+      // multi-mcp (Task C): per-server activation behavior, computed for
+      // the recorded (world-mount) fibers only — scope-plumbing fibers
+      // keep the pre-multi-mcp settle exactly.
+      const serverName =
+        typeof options?.serverName === 'string' ? options.serverName : undefined
+      const failMessage =
+        !isScopePlumbing &&
+        serverName !== undefined &&
+        mcpFailures !== null &&
+        typeof mcpFailures === 'object'
+          ? mcpFailures[serverName]
+          : undefined
+      const activationError =
+        failMessage === undefined ? undefined : new Error(failMessage)
+      const toolNamesForServer =
+        !isScopePlumbing &&
+        serverName !== undefined &&
+        mcpToolNames !== null &&
+        typeof mcpToolNames === 'object'
+          ? mcpToolNames[serverName] ?? []
+          : []
+      let activated = false
+      const activationDisposers = []
       const fiber = {
         pluginSpec,
         options,
         disposed: false,
+        // multi-mcp (Task C, plan §6.10): dispose-call counter — the
+        // "disposed exactly once" pin (a real fiber disposed twice is a
+        // lifecycle bug the glue must never produce).
+        disposeCount: 0,
         // A2C-2: the scope carrier — `createScope` does
         // `fiber.ctx.extend({ [kScope]: key })`; the tag lands on the
         // extended object and `scopeOf(agentCtx)` walks THIS prototype
@@ -350,6 +396,10 @@ function makeAgentCtx(globalSections) {
         }),
         dispose() {
           this.disposed = true
+          this.disposeCount += 1
+          // multi-mcp (Task C): the real fiber's teardown removes the
+          // server's tools from the agent scope.
+          for (const dispose of activationDisposers) dispose()
         },
         // `await fiber` (the glue's MCP-activation await) must settle exactly
         // once. The settled value is a NON-thenable (`undefined`): resolving
@@ -358,10 +408,35 @@ function makeAgentCtx(globalSections) {
         // adoption's `resolve(fiber)` re-adopts it). The glue uses the `fiber`
         // variable (not the resolved value) for `state.mcpFiber`, so settling
         // to `undefined` is behavior-preserving.
-        then(onfulfilled) {
+        // multi-mcp (Task C, plan §6.7): a fiber with an injected failure
+        // REJECTS on await (the real mcpClient fiber's failOnStartupError
+        // rejection) — the message is the world's configured one.
+        then(onfulfilled, onrejected) {
+          if (activationError !== undefined) {
+            return Promise.reject(activationError).then(onfulfilled, onrejected)
+          }
+          // multi-mcp (Task C, plan §6.11): the MCP mount's tool
+          // registration at activation (the real mcpClient fiber registers
+          // its server's tools on the agent scope as part of activation) —
+          // idempotent (a real Promise settles once; a double settle must
+          // not double-register), riding the SAME tools.register path so
+          // the opLog / surface reads see the mount's tools.
+          if (!activated && toolNamesForServer.length > 0) {
+            activated = true
+            for (const name of toolNamesForServer) {
+              const dispose = ctxSelf.tools.register({
+                name,
+                description: `mcp tool of server ${serverName}`,
+              })
+              activationDisposers.push(dispose)
+            }
+          }
           return Promise.resolve().then(() => (onfulfilled ? onfulfilled(undefined) : undefined))
         },
         catch(onrejected) {
+          if (activationError !== undefined) {
+            return Promise.reject(activationError).catch(onrejected)
+          }
           return Promise.resolve().then(() => (onrejected ? onrejected(undefined) : undefined))
         },
       }
@@ -469,6 +544,14 @@ function makeAgentCtx(globalSections) {
  * @param {Array<{name: string, order: number, text: string}>} [options.systemPromptGlobals]
  *   the world's global prompt layer for every agent ctx (T12-M2; default:
  *   the DSH service pair harness:identity + a global deployment:persona).
+ * @param {Record<string, string>} [options.mcpFailures]
+ *   multi-mcp (Task C, plan §6.7): per-server MCP activation failure
+ *   injection (see makeAgentCtx' `mcpFailures`), shared by every agent
+ *   ctx of this double.
+ * @param {Record<string, string[]>} [options.mcpToolNames]
+ *   multi-mcp (Task C, plan §6.11): per-server MCP tool names (see
+ *   makeAgentCtx' `mcpToolNames`), shared by every agent ctx of this
+ *   double.
  */
 export function createAgentsDouble(options = {}) {
   const creates = []
@@ -478,6 +561,10 @@ export function createAgentsDouble(options = {}) {
   const cancels = []
   const handles = new Map()
   const whenIdleBehavior = options.whenIdleBehavior ?? (() => Promise.resolve())
+  // multi-mcp (Task C): the per-server activation behavior tables (shared
+  // by every agent ctx; absent = the pre-multi-mcp double behavior).
+  const mcpFailures = options.mcpFailures
+  const mcpToolNames = options.mcpToolNames
   // T12-M2: one shared global prompt layer per world (the DSH service
   // registers harness:identity + a global deployment:persona section at
   // construction; the persona glue's scoped installs shadow that global).
@@ -487,7 +574,7 @@ export function createAgentsDouble(options = {}) {
   ]
 
   async function makeHandle(sessionId, { setup, meta }) {
-    const ctx = makeAgentCtx(globalSections)
+    const ctx = makeAgentCtx(globalSections, mcpFailures, mcpToolNames)
     // alpha.2 (A6): the session header double (the lazy `cwd` read basis of
     // the permission adapter's resolveTarget closure, FACT 3b). CREATE
     // carries the meta.cwd the glue requested (the production session
@@ -732,6 +819,16 @@ export async function observeAssembly(agentCtx) {
  *   (bootPhase, seedMembers, mcpServer, externalPolicyFacts, ...)
  * @param {object} [options.teamTools] the tool stack (teamToolsRef.current)
  * @param {object} [options.agents] extra agents-double options (whenIdleBehavior)
+ * @param {Record<string, string>} [options.mcpFailures] multi-mcp (Task C,
+ *   plan §6.7): per-server MCP activation failure injection — a recorded
+ *   plugin fiber whose `options.serverName` has an entry here REJECTS on
+ *   await with `new Error(<message>)` (the real mcpClient fiber's
+ *   failOnStartupError rejection). Passed through to the agents double.
+ * @param {Record<string, string[]>} [options.mcpToolNames] multi-mcp (Task
+ *   C, plan §6.11): per-server MCP tool names — registered on the agent
+ *   ctx through the real `tools.register` path at the fiber's activation
+ *   (the Permission Coverage Gate's proven-mount delta basis). Passed
+ *   through to the agents double.
  * @param {object} [options.subagents] the subagents service double (absent = the
  *   production host seam not wired: drain is typed fail-closed)
  * @param {object|null} [options.agentPresets] the agentPresets service
@@ -772,6 +869,11 @@ export async function createLiveWorld(options = {}) {
   const agents = createAgentsDouble({
     ...(options.agents ?? {}),
     systemPromptGlobals: options.systemPromptGlobals,
+    // multi-mcp (Task C): the per-server activation behavior tables
+    // (plan §6.7 failure injection / §6.11 coverage tool names) — passed
+    // through to the agents double verbatim (absent = pre-multi-mcp).
+    mcpFailures: options.mcpFailures,
+    mcpToolNames: options.mcpToolNames,
   })
   const sessionPersistence = createSessionPersistenceDouble()
   const domain = await createDomainDouble({

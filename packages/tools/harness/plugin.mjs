@@ -469,28 +469,52 @@ function registerSuccessRoutes(ctx, webServer, teamRoot) {
                 explanation: views.modelView.explanation,
               } : {}),
             },
+            // multi-MCP (contract I5): the PER-SERVER mcp diagnostics —
+            // keys = the configured servers that carry a view (the
+            // `mcpViews` record keys; zero-MCP rows and sessions without
+            // live state report `mcp: { servers: {} }`). Field presence
+            // follows the existing conditional-spread style:
+            // unavailable/deniedBy/activationError appear only when set;
+            // mounted/allowed/source/pendingNextBoundary/explanation are
+            // always present. This is a harness/diagnostics contract —
+            // the public Remote protocol is NOT upgraded. (Pre-multi-MCP
+            // single-value state — `mcpView`/`mcpFiber` — degrades to the
+            // zero shape: the reads below are shape-defensive by design.)
             mcp: {
-              mounted: state !== undefined && state.mcpFiber !== undefined,
-              // T12-V11: mcpServer: null is row-config-legal (host.ts row
-              // validation accepts it) — the null guard keeps the p6t6 state
-              // route well-formed for the mcp-less variant (parent-authorized
-              // harness-row bug fix; T12 runs #6-#10: deterministic 500
-              // "Cannot read properties of null (reading 'name')").
-              serverName: teamRoot.config.mcpServer?.name ?? null,
-              ...(state !== undefined && state.mcpActivationError !== undefined ? { activationError: state.mcpActivationError } : {}),
-              // T12-V14: with mcpServer: null the consumption views object exists but its
-              // mcpView is null — the T12-V11 serverName guard only removed the FIRST
-              // deref, so the state route 500d again one line further down ("Cannot read
-              // properties of null (reading 'allowed')", run #11 B1 23:05:43Z / C1
-              // 23:21:03Z). An mcp-less row reports no mcp view fields at all.
-              ...(views !== undefined && views.mcpView !== undefined && views.mcpView !== null ? {
-                allowed: views.mcpView.allowed,
-                source: views.mcpView.source,
-                unavailable: views.mcpView.unavailable,
-                ...(views.mcpView.deniedBy !== undefined ? { deniedBy: views.mcpView.deniedBy } : {}),
-                pendingNextBoundary: views.mcpView.pendingNextBoundary,
-                explanation: views.mcpView.explanation,
-              } : {}),
+              servers: (() => {
+                const viewMap =
+                  views !== undefined && views.mcpViews !== undefined && typeof views.mcpViews === 'object'
+                    ? views.mcpViews
+                    : {}
+                const fiberMap =
+                  state !== undefined &&
+                  state.mcpFibers !== undefined &&
+                  typeof state.mcpFibers.has === 'function'
+                    ? state.mcpFibers
+                    : undefined
+                const errorMap =
+                  state !== undefined &&
+                  state.mcpActivationErrors !== undefined &&
+                  typeof state.mcpActivationErrors.get === 'function'
+                    ? state.mcpActivationErrors
+                    : undefined
+                const out = {}
+                for (const name of Object.keys(viewMap)) {
+                  const view = viewMap[name]
+                  const activationError = errorMap === undefined ? undefined : errorMap.get(name)
+                  out[name] = {
+                    mounted: fiberMap === undefined ? false : fiberMap.has(name),
+                    allowed: view.allowed,
+                    source: view.source,
+                    ...(view.unavailable !== undefined ? { unavailable: view.unavailable } : {}),
+                    ...(view.deniedBy !== undefined ? { deniedBy: view.deniedBy } : {}),
+                    pendingNextBoundary: view.pendingNextBoundary,
+                    explanation: view.explanation,
+                    ...(activationError !== undefined ? { activationError } : {}),
+                  }
+                }
+                return out
+              })(),
             },
           }
         }
