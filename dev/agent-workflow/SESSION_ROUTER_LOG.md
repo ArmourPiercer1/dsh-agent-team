@@ -2990,3 +2990,40 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **dist**：place-dist-glue 更新（agent-bindings 189+/94− 同步）；check:
   artifacts 收束阶段统一跑。p4t6 不变（B 零新可扫描文件）@ 701。
 - **int 推送**（M2a，PR #16 自动更新）；**C 已通知进阶段 2 GREEN**。
+
+### M2b — Task D 验收通过并合入 int（docs + smoke kit；GREEN 运行待 A+B+C+D 齐后）
+
+- **D FINAL 报告接收**（8807e36c，DONE）：单 commit 31ecbc3（53 文件 +6567）；
+  docs/INSTALL.md（§3.2 双字段模板 + 新 §3.3 全语义 + 排障行 I1 序重写）+
+  cordis.patch.yml（mcpServers: [] canonical）+ 双 mini-MCP real-host smoke kit
+  （~1050 行，零新依赖）+ base 干跑证据（3 runs 全留档）。未 push。
+- **主 Agent 独立验收（PASS）**：
+  - scope 严格 = owned 面（docs + cordis.patch.yml + evidence/d-smoke），
+    packages/ 零触碰 ✓；
+  - §3.3 逐条对照契约：entry 形状 / 重名 fail-closed / port:null mount 时
+    fail-closed 点名 / [] = 无 MCP / legacy 本 alpha 接受 + ambiguous 规则 /
+    挂载目标 = configured∩capabilities.mcp∩durable（每 boundary 重读）/
+    不挂非 allow（非先挂再隐藏）/ mcp__<name>__<tool> 命名 + 同名 tool
+    不冲突 / 通配 * / unspecified cell fail-closed / per-template 子集示例 /
+    durable override 收紧 + 重启 durable truth 不变注记 — 与 I1/I4/C3/C4 一致 ✓；
+  - **RC 兼容声明核验**（D 声明 "RC≤0.1.0-rc.1 不识别 mcpServers 且忽略未知
+    字段"）：对 origin/stable 的 host.ts 校验器核验 = 仅检查 c.mcpServer，
+    无 unknown-field 闭集检查 → 双字段模板（mcpServers:[] + mcpServer:null）
+    在 RC 线安全 ✓（本环境无 RC 构建，核验以 stable 分支源码为据）；
+  - kit：node --check OK；C1-C7 判据代码对照契约（C1 I5 形状分类
+    mcp.servers map + 逐 server mounted + model schema 精确集 + 双证一致；
+    C2 双端点同名 ping 故意碰撞 + leader 双前缀无重复；C3 双向隔离；
+    C4 override.set 收紧 + 下一 boundary 探针；C5 同 home 重启；C6 teardown
+    端口；C7 test-use pristine + :3080 只读探测）✓；端口护栏 = 3180..3186
+    硬范围（越界 dieFatal），:3080 仅只读 pre-flight ✓；
+  - base 干跑 summary（runs/mm-smoke-20260913T18-17-32Z）独立复算：
+    exit 2 / C1-C5 FAIL（legacy 单值签名 {"mounted":false,"serverName":null}
+    + 零 mcp__* 工具 = 设计内预期终点）/ C6+C7 PASS / testUse pre==post ✓。
+  - DEVIATIONS（环境事实/kit 自修，均留痕，接受）：:3180 被本会话 GUI 占用
+    → kit 自动选 3181（3180 族内）；:3080 本环境无 stable 实例 → C7
+    pre==post==unreachable；干跑前 2 次 kit 级 fatal 已修（ENOENT git-pre /
+    boot 解析孤儿 host，PID 已清，残 home 已删）。
+- **cherry-pick -x 31ecbc3 → int @ 29a06e5** 无冲突（与 C owned 面零交集）；
+  check-artifacts OK 1116；p4t6 @701 10/10（kit 在 dev/ 下，非 packages/**
+  扫描面，pin 不变）。
+- **推送**（PR #16 自动更新）。GREEN 运行（Gate C）待 C 合入后执行。
