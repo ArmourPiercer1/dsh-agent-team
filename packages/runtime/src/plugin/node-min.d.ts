@@ -32,12 +32,15 @@ declare module 'fs' {
    */
   export function existsSync(path: string): boolean
 
-  /** One directory entry (the subset of `fs.Dirent` the source index uses). */
+  /** One directory entry (the subset of `fs.Dirent` the source index and
+   * the bundled-skills provider use). */
   export interface DirentLike {
     /** The entry name (not a path). */
     readonly name: string
     /** True for a regular file. */
     isFile(): boolean
+    /** True for a directory. */
+    isDirectory(): boolean
   }
 
   /**
@@ -87,6 +90,17 @@ declare module 'fs' {
    * @param options - `{ recursive, force }` (the only overload used).
    */
   export function rmSync(path: string, options: { recursive: boolean; force: boolean }): void
+
+  /**
+   * Synchronous stat. Node builtin `fs.statSync` (team-skills.ts probes
+   * the install-surface candidates: the path must exist AND be a
+   * directory to win the candidate search).
+   * @param path - the path to stat.
+   * @returns the stat result (the subset consumed: `isDirectory()`).
+   * @throws the Node ENOENT / EACCES error objects (the caller
+   *   classifies them).
+   */
+  export function statSync(path: string): { isDirectory(): boolean }
 }
 
 declare module 'url' {
@@ -97,6 +111,14 @@ declare module 'url' {
    * @returns the platform-specific path string.
    */
   export function fileURLToPath(path: string | URL): string
+}
+
+declare module 'path' {
+  /**
+   * The platform path separator. Node builtin `path.sep` (team-skills.ts
+   * joins the skills-directory fence / candidate file paths).
+   */
+  export const sep: string
 }
 
 declare const URL: {
@@ -123,6 +145,23 @@ declare const console: {
    * @param more - additional arguments (stringified by Node).
    */
   error(message: unknown, ...more: unknown[]): void
+  /**
+   * Write a warning line to the host process's stderr. Node builtin
+   * `console.warn` (team-skills.ts surfaces the loud degradation paths:
+   * the absent skills service, the unresolvable install-surface
+   * directory, and the per-file skip reasons).
+   * @param message - the message to write.
+   * @param more - additional arguments (stringified by Node).
+   */
+  warn(message: unknown, ...more: unknown[]): void
+  /**
+   * Write an information line to the host process's stdout. Node builtin
+   * `console.info` (team-skills.ts surfaces the successful registration
+   * observation: the skills directory + the candidate count).
+   * @param message - the message to write.
+   * @param more - additional arguments (stringified by Node).
+   */
+  info(message: unknown, ...more: unknown[]): void
 }
 
 /** A Node timer handle (setInterval/setTimeout return one). */

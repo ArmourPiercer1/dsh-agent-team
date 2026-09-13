@@ -74,6 +74,7 @@ import type { LegacyInspectFn } from './legacy-surface.js'
 import { createBlueprintAuthority } from './blueprint-authority.js'
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
 import { createBlueprintSourceIndex } from './blueprint-source-index.js'
+import { registerTeamSkills } from './team-skills.js'
 
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
@@ -617,6 +618,21 @@ export const inject = ['agents', 'storageDomain', 'sessions', 'workspaceRegistry
  *   {@link validateTeamPluginConfig}).
  */
 export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promise<void> {
+  // --- the bundled team skills (plugin-attached skills) ------------------
+  // Register the two team skills that ship inside the installed package on
+  // the `skills` public service. This is a soft add-on: an absent/malformed
+  // `skills` service or an unresolvable install-surface directory degrades
+  // with a loud console.warn and NEVER blocks the team core (the base
+  // bundle's skill row precedes this row on the host composition, so the
+  // service is present on a real host; a skill-less test composition simply
+  // gets no team skills). The registration is an effect of THIS row's fiber
+  // (the row's apply context), so a row stop / plugin removal disposes it.
+  // Fire-and-forget: `registerTeamSkills` is total (never rejects — every
+  // failure path degrades to a console.warn) and its `registerProvider`
+  // call runs synchronously before its only await, so the provider is live
+  // on this fiber the moment the call is made.
+  void registerTeamSkills(ctx, import.meta.url)
+
   // The lazy materialization accessor (served to the frozen glue under its
   // `sessionPersistence` deps key as `ensureMaterialized`): resolved per
   // call so the first materialization — long after the stock host is fully

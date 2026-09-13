@@ -23,6 +23,7 @@
     "./package.json": "./package.json"
   },
   "files": [
+    ".agents/skills",
     "cordis.patch.yml",
     "packages/client/composition-shim",
     "packages/runtime/dist",
