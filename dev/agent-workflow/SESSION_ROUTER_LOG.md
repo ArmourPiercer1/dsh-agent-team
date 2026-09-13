@@ -2916,3 +2916,31 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   各 worktree pnpm install（warm store）完成；lockfile 零变更约束。
 - **PR 策略**：单 PR（int → master），里程碑推送（防丢）；不 push master/
   stable；最终由用户审查后手动 merge。
+
+### M1 — Task A 合入 int（config 契约 0..N）
+
+- **A FINAL 报告接收**（9e848808，DONE）：3 commits（c5ef040 src I1/I2/I3 /
+  17e75fd 测试 39 case / 4a60e7e 证据）；owned 8 文件 +743/−10；
+  p4t6 未触碰；porcelain clean。DEVIATIONS = 1 处机械 type-bridge
+  （host.ts `c` 的 Partial 形态 → `c as unknown as Pick<...>`，仅类型层，
+  运行时值相同，validator 对 JSON 形态全定义逐支 fail-closed）— 主 Agent
+  接受（无语义变化，已留痕）。RISK 四条（mcpServers:null 不可达 /
+  ambiguous 语义含 []+legacy 钉死 / C7 legacy 三钉 / p4t6 记账归主 Agent）
+  全部已按契约钉死于测试。
+- **主 Agent 前置核验（独立）**：worktree diff 严格 = owned 8 文件 ✓；
+  mcp-supply.ts 逐行对照 I1（检查顺序 1→5、detail 字符串逐字、legacy
+  check-5 与旧 host 检查字节级等价）✓；types.ts = I2 ✓；host.ts 原位替换 +
+  单一 fail() 封套 + 校验顺序不变 ✓；测试 39 case 覆盖 Must-4 全量
+  （归一化四规则 + 拷贝语义 + 重名点名 + malformed 全形态 + ambiguous
+  边界与顺序 + C7 现状钉死 + host 边界精确 envelope）✓。
+- **cherry-pick -x** 三 commit 无冲突 → int @ 71deaa8。
+- **p4t6 DEC-1 union**：base 真值更正 = **699** @ b49f4239（M0 误记 697 =
+  pre-PR#15 值，已更正 graph）；A +2（mcp-supply.ts +
+  mcp-supply-config.test.ts）→ **701 实测**（scanSessionEventVocabulary
+  于 int tip 直接测量；quarantine hit set 保持 15；两新文件零 denylist
+  词汇）→ pin 699→701 落盘。
+- **主 Agent re-gate（独立 @ 71deaa8 + pin 提交）**：p4t6(701) +
+  mcp-supply-config(39) + t4a(27) + team-skills(9) + h1-nullable +
+  p8s4b-mcp-facet + t12a-b3-external-deny = **7 文件 104/104 PASS**；
+  `pnpm --filter @dsh-agent-team/runtime typecheck` exit 0。
+- **int 推送**（M1，PR #16 自动更新）。W1 派发就绪（B/C rebase 到本 tip）。

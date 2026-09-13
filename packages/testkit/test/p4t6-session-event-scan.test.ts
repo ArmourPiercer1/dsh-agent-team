@@ -958,8 +958,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // pnpm-lock.yaml). Scanner unchanged. Zero denylist vocabulary in
     // both new files (the frozen quarantine hit set stays at fifteen
     // occurrences).
-    expect(scanResult.filesScanned).toBe(699)
-    expect(scanResult.files.length).toBe(699)
+    // multi-mcp quick-fix Task A (merged into int/multi-mcp-quick-fix,
+    // PR #16 M1): +2 = 701 — two new files,
+    // packages/runtime/src/plugin/mcp-supply.ts (the I1 pure module:
+    // configuredMcpServers canonical read + mcpSupplyValidationIssue
+    // fail-closed 0..N/unique-name/ambiguous/legacy checks) and
+    // packages/runtime/test/mcp-supply-config.test.ts (the 39-case
+    // normalization + validation-order + C7 legacy-pin + host
+    // boundary matrix). All other Task A changes are in-place edits
+    // (types.ts TeamPluginMcpServer + mcpServers field, host.ts
+    // in-place validator swap). Scanner unchanged; DEC-1 union at the
+    // integration tip by the main agent (measured truth 701 via
+    // scanSessionEventVocabulary on the int tip; quarantine hit set
+    // stays at fifteen). Zero denylist vocabulary in both new files.
+    // Evidence: dev/agent-workflow/evidence/multi-mcp/a-config/.
+    expect(scanResult.filesScanned).toBe(701)
+    expect(scanResult.files.length).toBe(701)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
