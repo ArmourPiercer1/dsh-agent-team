@@ -1,0 +1,38 @@
+# Gate 2a raw output (t4a + t12a-h1-nullable)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime
+
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (4 tests | 1 failed) 4ms
+     ✓ H1-1 boot + member setup with mcpServer: null must not throw (both agents settle live) 1ms
+     × H1-2 the consumption view stays valid with no MCP facet (mcpView === null) 3ms
+     ✓ H1-3 no reconcile/create attempt: no MCP plugin fiber mounted on any agent 0ms
+     ✓ H1-4 control: with a configured server the mcp facet exists (non-null) 0ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (27 tests) 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-h1-nullable-mcp.test.ts > T12-H1 nullable MCP server config > H1-2 the consumption view stays valid with no MCP facet (mcpView === null)
+AssertionError: expected undefined to be null // Object.is equality
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts:77:32
+     75|   it('H1-2 the consumption view stays valid with no MCP facet (mcpView…
+     76|     expect(memberView.instanceId).toBe(INSTANCE)
+     77|     expect(memberView.mcpView).toBe(null)
+       |                                ^
+     78|     expect(rootView.mcpView).toBe(null)
+     79|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 30 passed (31)
+   Start at  18:18:35
+   Duration  729ms (transform 733ms, setup 0ms, import 1.25s, tests 9ms, environment 0ms)
+
