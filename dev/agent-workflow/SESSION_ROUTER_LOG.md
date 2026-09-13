@@ -3027,3 +3027,47 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
   check-artifacts OK 1116；p4t6 @701 10/10（kit 在 dev/ 下，非 packages/**
   扫描面，pin 不变）。
 - **推送**（PR #16 自动更新）。GREEN 运行（Gate C）待 C 合入后执行。
+
+### M2c — Task C 验收通过并合入 int（§6.1-6.11 矩阵 + 桥接 + I5 诊断）
+
+- **C FINAL 报告接收**（c826e830，DONE 两阶段）：917b761（RED：47 例矩阵 +
+  桥接 per-server doubles + h1 零 MCP 迁移 + b3 适配 + I5 + RED 证据）/
+  3319a3f（GREEN：观测点修正 + .d.mts I4 类型面 + b3 cast + GREEN 证据）。
+  RED @ 4ad989d（A-only）96 例 34F/62P 逐例归类 (a)23+(b)10 = RED PURE；
+  GREEN Gate A 164/164；未 push。
+- **主 Agent 独立核验（不轻信报告）**：
+  - owned diff 严格 = 10 文件（5 代码 + 4 evidence + .d.mts），dist/p4t6/
+    agent-bindings/A 产物零触碰 ✓；
+  - multi-mcp-wiring.test.ts 47 例逐 describe 核对契约覆盖：6.1 角色分裂
+    （leader{A,B}/expert-1{A}/expert-2{B}/expert-3 deny→零 fiber 且
+    configured∩durable 非空 + views≠mounts）/ 6.2 legacy C7 对照 / 6.3 零
+    MCP（即使模板+durable 双允许 A 仍零 fiber + views={}）/ 6.4 重名拒 +
+    读路径唯一性 / 6.4b 模板隔离（B fiber 对象不存在 = 非先挂再弃）/ 6.5
+    durable 实例收紧（A dispose + B 同 fiber 保留 + sibling 不受影响）/
+    6.6 激活失败回滚（round fiber disposed + 无 partial + 错误记在失败
+    server）/ 6.7 deny-first 排序（先 remove A 后 B 失败，无 partial B）/
+    6.8 port-null 双 case（未选中不阻 + 选中 fail-closed 点名 B + A 回滚）/
+    6.9 冷 resume（create+resume 双相同效集）/ 6.10 close exactly-once /
+    6.11 coverage 门（双探针 OTHER_MANAGED_MCP + delta 精确 + verdict
+    pass）✓；
+  - **GREEN 唯一修正核验**：W1 6.1 读 pre-close 快照 — 断言值 [A,B] 未变，
+    仅观测点移到刻意 close 之前（B 的 close() 合法清空 mcpFibers；测试
+    生命周期 bug 自修，非放宽）✓；
+  - **I5 诊断独立核验**：mcp.servers[<name>] = {mounted, allowed, source,
+    pendingNextBoundary, explanation 恒在 + unavailable/deniedBy/
+    activationError 条件在}；keys = mcpViews keys；零 MCP → {servers:{}}；
+    形状防御读（object/Map 守卫）✓；**与 D kit 的 i5-servers 分类器
+    契约级对接核验一致**（kit 判 mcp.servers 为对象 map）✓；
+  - t4a/p8s4b 零改动声明核验：grep 无单值引用，RED/GREEN 均 27/27、11/11 ✓。
+- **cherry-pick -x** 917b761 + 3319a3f 无冲突 → int @ ac40898。
+- **p4t6 DEC-1 union**：701→**702 实测**（+multi-mcp-wiring.test.ts；
+  quarantine hit set 保持 15）→ pin 落盘。
+- **主 Agent re-gate（独立 @ post-C）**：
+  - Gate A 8 文件 + p4t6 = **9 文件 174/174** ✓；
+  - runtime typecheck exit 0 + tools typecheck exit 0 ✓；
+  - **full runtime suite = 6 文件 / 8 测试失败 = pre-B 既有基线精确复现**
+    （167 文件 / 1878 测试；+1 文件 +50 测试 = 47 wiring + 3 h1 迁移；
+    H1-2/B3-4 转 GREEN；p6t1 本轮全量负载下亦绿，隔离 9/9）— **C 合并
+    零新增失败，套件回到既有基线** ✓。
+- **int 推送**（M2c，PR #16 自动更新）。收束阶段：post-C dist 重建
+  （tools plugin.mjs I5 → tools dist）→ Gate C 双 MCP real-host smoke。

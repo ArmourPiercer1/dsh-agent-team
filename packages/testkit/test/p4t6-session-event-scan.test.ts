@@ -972,8 +972,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // scanSessionEventVocabulary on the int tip; quarantine hit set
     // stays at fifteen). Zero denylist vocabulary in both new files.
     // Evidence: dev/agent-workflow/evidence/multi-mcp/a-config/.
-    expect(scanResult.filesScanned).toBe(701)
-    expect(scanResult.files.length).toBe(701)
+    // multi-mcp quick-fix Task C (merged into int/multi-mcp-quick-fix,
+    // PR #16 M2c): +1 = 702 — one new file,
+    // packages/runtime/test/multi-mcp-wiring.test.ts (the 47-case
+    // §6.1-6.11 matrix: role split A/B/A+B/none, legacy, zero-MCP,
+    // template isolation, durable instance narrowing at the boundary,
+    // activation-failure rollback + deny-first ordering, port-null
+    // both cases, cold resume, close exactly-once, strict permission
+    // coverage multi-MCP). All other Task C changes are in-place edits
+    // (the t12a bridge per-server doubles, h1 zero-MCP migration, b3
+    // per-server read, the I5 diagnostics in tools/harness/plugin.mjs,
+    // the bridge .d.mts type surface). Scanner unchanged; DEC-1 union
+    // at the integration tip by the main agent (measured truth 702 via
+    // scanSessionEventVocabulary; quarantine hit set stays at fifteen).
+    // Zero denylist vocabulary in the new file.
+    // Evidence: dev/agent-workflow/evidence/multi-mcp/c-tests/.
+    expect(scanResult.filesScanned).toBe(702)
+    expect(scanResult.files.length).toBe(702)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
