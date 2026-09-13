@@ -1,0 +1,15 @@
+# Gate 1 (focused) — pnpm vitest run packages/runtime/test/mcp-supply-config.test.ts
+# worktree: .worktrees/multi-mcp-a-config @ b49f423 (task/multi-mcp-a-config)
+# base: b49f4239ff9378ac8041e5667402029b4dcd4ca4
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-a-config
+
+ ✓ packages/runtime/test/mcp-supply-config.test.ts (39 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  39 passed (39)
+   Start at  18:03:26
+   Duration  863ms (transform 631ms, setup 0ms, import 790ms, tests 5ms, environment 0ms)
+
+EXIT=0

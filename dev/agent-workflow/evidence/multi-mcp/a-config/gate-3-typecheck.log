@@ -1,0 +1,6 @@
+# Gate 3 — pnpm --filter @dsh-agent-team/runtime typecheck
+# worktree: .worktrees/multi-mcp-a-config @ b49f423 (task/multi-mcp-a-config)
+# base: b49f4239ff9378ac8041e5667402029b4dcd4ca4
+
+$ tsc -p tsconfig.json
+EXIT=0
