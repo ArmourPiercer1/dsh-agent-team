@@ -1,0 +1,82 @@
+[
+  {
+    "id": "C1",
+    "name": "per-agent model-facing MCP tools EXACT (I5 state + schema double proof): leader A+B / m1 A / m2 B",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C2",
+    "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+    "status": "not-run",
+    "checks": [],
+    "miniProbe": {
+      "a": {
+        "initStatus": 200,
+        "tools": [
+          "ping"
+        ]
+      },
+      "b": {
+        "initStatus": 200,
+        "tools": [
+          "ping"
+        ]
+      }
+    }
+  },
+  {
+    "id": "C3",
+    "name": "member isolation (m1 sees A only; m2 sees B only)",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C4",
+    "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C5",
+    "name": "host restart (same home, resume) rebuilds the SAME effective set",
+    "status": "not-run",
+    "checks": []
+  },
+  {
+    "id": "C6",
+    "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+    "status": "run",
+    "checks": [
+      {
+        "name": "all run ports released after teardown (host=3181 3491 3492 3496)",
+        "ok": false,
+        "detail": "{\"host\":false,\"mcpA\":true,\"mcpB\":true,\"mock\":true}"
+      }
+    ],
+    "pass": false
+  },
+  {
+    "id": "C7",
+    "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+    "status": "run",
+    "checks": [
+      {
+        "name": "test-use worktree porcelain EMPTY after the run",
+        "ok": true,
+        "detail": "statusEmpty=true diffEmpty=true head=a66e4702047846cdaa10c66c9d3df3951f5ea70d"
+      },
+      {
+        "name": "test-use HEAD still at baseline a66e4702047846cdaa10c66c9d3df3951f5ea70d",
+        "ok": true,
+        "detail": "pre=a66e4702047846cdaa10c66c9d3df3951f5ea70d post=a66e4702047846cdaa10c66c9d3df3951f5ea70d"
+      },
+      {
+        "name": ":3080 untouched (read-only probe, status unchanged pre==post)",
+        "ok": true,
+        "detail": "pre=unreachable: fetch failed post=unreachable: fetch failed"
+      }
+    ],
+    "pass": true
+  }
+]

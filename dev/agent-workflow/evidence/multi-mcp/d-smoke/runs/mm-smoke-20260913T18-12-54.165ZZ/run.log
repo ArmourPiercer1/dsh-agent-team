@@ -1,0 +1,14 @@
+[2026-09-13T18:12:54.170Z] === Task D multi-mcp real-host smoke kit mm-smoke-20260913T18-12-54.165ZZ ===
+[2026-09-13T18:12:54.170Z] targetRepo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs
+[2026-09-13T18:12:54.170Z] hostRepoRoot=/home/user/dsh-plugins/dsh-agent-team hostTree=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-13T18:12:54.170Z] evidenceDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-12-54.165ZZ keep=false
+[2026-09-13T18:12:54.175Z] :3080 pre: unreachable: fetch failed
+[2026-09-13T18:12:54.176Z] FATAL (kit-level, run aborted): Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-12-54.165ZZ/git-pre/git-head.log'
+    at Object.openSync (node:fs:621:18)
+    at writeFileSync (node:fs:2496:35)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/tests/characterization/lib/util.mjs:55:5
+    at new Promise (<anonymous>)
+    at spawnToLog (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/tests/characterization/lib/util.mjs:54:10)
+    at captureGitState (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/tests/characterization/lib/tree-clean.mjs:25:28)
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:931:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

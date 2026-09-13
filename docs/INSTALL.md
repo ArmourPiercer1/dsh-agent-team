@@ -162,10 +162,16 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
           metadata: {}
           ---
         seedMembers: []
-        # 以下三字段必填：host 配置校验 fail-closed，缺失任一 → TEAM_PLUGIN_CONFIG_INVALID
+        # 以下字段必填：host 配置校验 fail-closed，缺失任一 → TEAM_PLUGIN_CONFIG_INVALID
         # （字段集与 R122 验证行逐字对齐，R125 gate reviewer-3 B1）
         generation: 1
         deniedSelection: null
+        # MCP 0..N 配置：canonical 字段 = mcpServers（{ name, port: number|null } 数组，
+        # 空数组 = 无 MCP）；legacy 单字段 mcpServer 本 alpha 仍被接受，两者同时出现时
+        # mcpServer 必须为 null（否则按 ambiguous 拒）。本模板保留「canonical 空 + legacy
+        # null」双字段形态，使同一份模板在 RC（≤0.1.0-rc.1，不识别 mcpServers、只校验
+        # mcpServer）与 master 线都可直接使用。语义细节见 §3.3。
+        mcpServers: []
         mcpServer: null
         staticModel:
           provider: <your-provider>
@@ -212,6 +218,66 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
   rc.1 自带 web profile 已默认 `patchReload: live`（此时改完 `cordis.patch.yml` 自动热加载，
   无需再显式声明），否则改完 `cordis.patch.yml` 需重启 `dsh web` 进程。
 
+### 3.3 MCP 配置（`mcpServers`，0..N）
+
+行配置中 MCP 的 canonical 字段是 `mcpServers` —— 0..N 个具名 server 的数组：
+
+```yaml
+mcpServers:
+  - { name: mcp_signal, port: 3494 }
+  - { name: mcp_designer, port: 3495 }
+```
+
+- 每个 entry 为 `{ name, port: number|null }`：`name` 是 server 的身份标识，必须唯一
+  （重名 fail-closed 拒）；`port` 是该 mini-MCP 服务监听的 streamable-http 端点端口
+  （客户端固定连 `http://127.0.0.1:<port>/mcp`）；
+- `mcpServers: []`（空数组）= 无 MCP，合法配置；
+- `port: null` = 只声明 server 名、不配端口：durable 策略放行该 server 的挂载场景会在
+  mount 时 fail-closed（错误点名具体 server）；
+- **legacy 兼容（本 alpha）**：单字段 `mcpServer: { name, port } | null` 继续被接受，
+  语义不变（等价于 1 个 server）。两字段同时存在时 `mcpServer` 必须为 `null`，
+  否则配置校验按 ambiguous 拒（`TEAM_PLUGIN_CONFIG_INVALID`）。新配置一律推荐
+  `mcpServers`（RC ≤0.1.0-rc.1 不识别 `mcpServers` 且忽略未知字段，与
+  `mcpServer: null` 并存不影响 RC 线）。
+
+**挂载目标**：每个 agent 在每次 request boundary 实际挂载的 server 集 =
+行配置 servers ∩ 该模板 `capabilities.mcp` allow 集 ∩ durable mcp cell
+（governance override / 外部策略，每次 boundary 重读 durable truth）三者的交集；
+不在 allow 内的 server **不挂载**（不是「先挂再隐藏」）。模型可见的工具名为
+`mcp__<name>__<tool>`：不同 server 即使暴露同名 tool 也互不冲突。
+allow 集可用通配 `*`（放行全部已配置 server）。模板不声明 `capabilities.mcp`
+时 cell 为 unspecified，fail-closed = 不挂任何 MCP。
+
+per-template 子集示例（同一行 `mcpServers` 配 2 个 server，不同模板用不同子集）：
+
+```yaml
+# 行 config（完整形态见 §3.2 模板）
+mcpServers:
+  - name: mcp_signal
+    port: 3494
+  - name: mcp_designer
+    port: 3495
+
+# blueprint：per-template capabilities.mcp 子集
+expert-1:
+  capabilities:
+    mcp:
+      kind: allow
+      items: [mcp_signal]
+
+expert-2:
+  capabilities:
+    mcp:
+      kind: allow
+      items: [mcp_designer]
+```
+
+leader 模板同理：`capabilities.mcp.items` 写 leader 应见的 server 集合
+（如 `[mcp_signal, mcp_designer]`）。durable override 可在运行期按 instance 收紧
+（如把某 member 的 mcp cell 从 `[A, B]` 收紧到 `[A]`），下一个 boundary 起目标
+server 即被 unmount，模型可见工具随之消失；宿主重启后 durable truth 不变，
+effective 集不变。
+
 ## 4. 真实模型
 
 - `staticModel` 必须指向目标机器上**真实可用**的 provider/model，且该 DSH 实例已配置
@@ -241,7 +307,7 @@ profile 目录）编辑 `cordis.patch.yml` —— 顶层是 patch 数组；不�
 | 快速安装 host 行加载失败（无 file:// 路径） | **仅旧 commit（≤ `e832d73`）**：`prepare` 链未走完 → dist 缺失（boot fail-loud）：在依赖目录 `<profile>/node_modules/dsh-agent-team` 手工补跑 `pnpm install --ignore-scripts && pnpm build && pnpm build:composition` 后重启；@deepseek-ai/\* 解析错 = 嵌套安装闭包不全（registry 可达性 / lockfile）。**master 安装面 dist 为提交产物，此症状不应出现**——安装目录残缺时直接重装 |
 | 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 装入的 commit 处于 bundle-form 初期 `files` 安装面不全的窗口（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被遗漏）：用新 commit 重装；临时处置 = 从源码树把 `packages/runtime/src/plugin/upstream-resolver.mjs` 拷入依赖目录同相对路径后重启 |
 | seam 推导失败（`no default seam module was found`） | 安装目录结构残缺（入口推导的两个布局候选都不存在）：重装，或改 §3 手动形态写显式 `seamUrl` |
-| host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection` / `mcpServer` 三字段之一（必填、fail-closed，见 §3 模板） |
+| host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection`（必填、fail-closed，见 §3 模板），或 MCP 字段组合非法 —— `mcpServers` 必须是 `{ name: 非空 string, port: number|null }` 数组且 name 不重名；`mcpServers` 缺省时 legacy `mcpServer` 必须存在（`null` 或 `{ name, port }`）；两者同时出现时 `mcpServer` 必须为 `null`（否则 ambiguous 拒）。`mcpServers: []`（或 `mcpServer: null`）= 无 MCP，合法（语义细节见 §3.3） |
 | host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install` |
 | client 行加载失败 | `pnpm build:composition` 是否已跑（`composition-shim/` 存在）；改试 §3 的相对路径形态 |
 | 页面 404 | 目标 DSH 缺 web shell 产物（源码安装 DSH 需在该机 `pnpm build:web` 一次；发布版 DSH 不应出现） |
