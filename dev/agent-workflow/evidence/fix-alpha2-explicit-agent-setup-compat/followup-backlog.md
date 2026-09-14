@@ -104,3 +104,63 @@ Recorded per plan §13 (unrelated findings: record, do not fix in this task).
 `t12a-glue-handoff-ports`. Identical before and after this fix (see
 `baseline-worktree-fullsuite.log` / post-fix reruns). Tracked by their
 originating tasks; out of scope per plan §5.
+
+## 5. P1 (CASE B): standard-preset `subagent` lands POST-gate — the gate-verified surface is not the model-facing surface (2026-09-14 evening, live-verified on 0.1.5-rc.2)
+
+- **Finding.** On DSH 0.1.5-rc.2, standard root preset + leader
+  `capabilities.permissions` (20-name deny list covering every standard DISC
+  tool except the five gate-managed fs tools and `todo_write`; `subagent_fork`
+  denied, `subagent` deliberately not denied):
+  - **A** (the Coverage Gate's `tools.schemas(agent)` read during
+    composition): gate PASSED → subagent ∉ A (subagent is classified
+    KNOWN_SENSITIVE, so a pass implies it was absent there).
+  - **B** (post `agents.create()` publication, probe timeline of the created
+    leader): the `created-sync` snapshot taken INSIDE the `agent/created`
+    dispatch = 8 tools WITHOUT subagent; 2 ms later the deferred own-layer
+    install lands (`tools/change-42` = 9 tools WITH subagent); every later
+    snapshot keeps it.
+  - **C** (the model's first request body, mock-captured): 9 tools
+    INCLUDING subagent (`bash, edit, read, read_image, subagent,
+    team_list_members, team_send_message, todo_write, write`).
+  - subagent A/B/C = **false/true/true** (first appearance: `tools/change-42`);
+    subagent_fork A/B/C = false/false/false (denied at composition, as
+    designed).
+  The standard preset defers its own `subagent` layer to the `agent/created`
+  event that dsh-agent-loop's `publish` dispatches at publication
+  (enter → announce → session-start) — structurally after the gate. The
+  permission Coverage Gate therefore verifies a surface that is NOT the
+  surface the model actually receives for any standard-preset team agent.
+  This refines/empirically closes item 2 (the 07-34-10Z run proved the
+  install is own-layer and un-restrictable; this run pins the TIMING to
+  post-gate with an A/B/C timeline on a real host).
+- **Evidence.** `probe/runs/f2-standard-probe-20260914T11-42-48Z/`
+  (summary.json — gateOutcome / aSurface / bSurface entries / cSurface /
+  subagent{a,b,c,firstAppearanceLabel} / subagentFork; probe-timeline.jsonl;
+  team-create.json; c-surface.json; disc-surface.json). Debug history:
+  `f2-standard-probe-20260914T11-21-00Z` (eager service capture),
+  `-11-25-43Z` (prompt-vs-publish startup race → spurious
+  session/not-found), `-11-39-52Z` (missing DEEPSEEK_API_KEY in the fresh
+  probe home → accepted turn never reached the model endpoint).
+- **Status per review instruction F2.** Marked **P1 POST-GATE SURFACE
+  EXPANSION**; NO fix in this round (probe-only mandate).
+- **Candidate options (NOT implemented — recorded for adjudication only).**
+  1. **Upstream (dsh-agent / dsh-agent-loop / dsh-tool-subagent)**: perform
+     the deferred `modelSelectionSettings` install BEFORE the publish/announce
+     (i.e. during setup, after the setup Agent exists — the install needs the
+     Agent; the loop could run it in setup once the Agent is bound) so the
+     gate sees the final surface; or make `tools.schemas(agent)` reflect the
+     pending own-layer install (surface prediction at setup time).
+  2. **Plugin/alpha.2 (Team runtime)**: re-read the surface at publication
+     (a post-announce verification pass) and fail closed / roll back if the
+     published surface gained unmanaged KNOWN_SENSITIVE tools since the gate
+     (turns post-gate expansion into a detected, typed failure instead of a
+     silent model-visible gap).
+  3. **Plugin (preset wiring)**: for strict (capabilities.permissions)
+     agents, mount the subagent capability explicitly through the
+     restrictable layer (or an operation adapter for the delegation class)
+     instead of relying on the preset's deferred own-layer row — i.e. the
+     team owns the surface end to end (overlaps item 2(b)).
+  4. **Policy/classification**: if the threat model accepts subagent as
+     SAFE under an explicit strict grant, classify it accordingly — NOT
+     recommended without a reviewed threat-model change (subagent spawns
+     full agents).
