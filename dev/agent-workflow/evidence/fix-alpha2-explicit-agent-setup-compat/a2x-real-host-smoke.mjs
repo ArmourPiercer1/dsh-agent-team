@@ -357,10 +357,22 @@ async function waitForLogLine(logPath, regex, timeoutMs, alive) {
       if (m !== null) return lines[i]
     }
     seen = lines.length
-    if (Date.now() >= deadline) return null
+    if (Date.now() >= deadline) break
     if (alive !== undefined && !alive()) return null
     await new Promise((r) => setTimeout(r, 300))
   }
+  // Final full re-read before declaring failure: an incremental poll can
+  // miss a line that is already in the file (observed once: a stalled
+  // event loop left the marker in the log while every incremental read
+  // saw stale content). The marker being present is the ground truth.
+  try {
+    const full = readFileSync(logPath, 'utf8')
+    for (const l of full.split('\n')) {
+      const m = regex.exec(l)
+      if (m !== null) return l
+    }
+  } catch { /* best-effort */ }
+  return null
 }
 
 function spawnNpmHost({ port, home, logPath }) {

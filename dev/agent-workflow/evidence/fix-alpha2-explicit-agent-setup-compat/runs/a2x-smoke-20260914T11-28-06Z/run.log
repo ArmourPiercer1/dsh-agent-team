@@ -1,0 +1,27 @@
+[2026-09-14T11:28:06.581Z] === a2x real-host smoke (DSH 0.1.5-rc.2 npm dist) a2x-smoke-20260914T11-28-06Z ===
+[2026-09-14T11:28:06.582Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat
+[2026-09-14T11:28:06.582Z] host=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh (version 0.1.5-rc.2)
+[2026-09-14T11:28:06.582Z] baselineSha=df9230de678f987f407f3bb59492863bb8dc6530 keep=false
+[2026-09-14T11:28:06.599Z] :3080 pre: unreachable
+[2026-09-14T11:28:06.602Z] ports: host=3183 mock=3496
+[2026-09-14T11:28:06.602Z] fresh homes asserted (disc/red/green)
+[2026-09-14T11:28:06.606Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T11:28:06.607Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T11:28:06.607Z] ── leg 1: DISCOVERY (fixed glue, legacy boot) ──
+[2026-09-14T11:28:11.593Z] DISC: booted (host 0.1.5-rc.2) at http://127.0.0.1:3183; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T11-28-06Z"]
+[2026-09-14T11:28:11.662Z] PASS D1: discovery leader turn admitted — apiPrompt status=200
+[2026-09-14T11:28:11.697Z] mock: mock: 1 text reply (41 chars): "A2X_DISC_ACK_a2x-smoke-20260914T11-28-06Z"
+[2026-09-14T11:28:11.698Z] mock: mock: 2 text reply (41 chars): "A2X_DISC_ACK_a2x-smoke-20260914T11-28-06Z"
+[2026-09-14T11:28:12.162Z] PASS D2: discovery model request captured — seq=1 model=a2x-smoke-model surfaceCount=15
+[2026-09-14T11:28:12.162Z] discovery surface (15 tools): edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-14T11:28:12.163Z] PASS D3: coverage-complete policy derivable — denyList(0): (none)
+[2026-09-14T11:28:12.663Z] DISC host stopped
+[2026-09-14T11:28:12.665Z] saved blueprint written: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-smoke-blueprints/a2x-perm-team.yaml
+[2026-09-14T11:28:12.684Z] pre-fix glue farm ready: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-prefix/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[2026-09-14T11:28:12.684Z] ── leg 2: RED (pre-fix glue @ baseline, team.create with Leader permissions) ──
+[2026-09-14T11:32:12.787Z] FATAL RED: host boot failed: no boot marker within 240s
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=eGzUm_PmFyuWQxbMcIyLNbbU7Yy2NLyWnrkvEpIahrw
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+

@@ -1,0 +1,24 @@
+{
+  "runStamp": "a2x-smoke-20260914T11-28-06Z",
+  "fatal": "RED: host boot failed: no boot marker within 240s\n--- log tail ---\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3183/?token=eGzUm_PmFyuWQxbMcIyLNbbU7Yy2NLyWnrkvEpIahrw\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n",
+  "criteria": [
+    {
+      "id": "D1",
+      "name": "discovery leader turn admitted",
+      "ok": true,
+      "detail": "apiPrompt status=200"
+    },
+    {
+      "id": "D2",
+      "name": "discovery model request captured",
+      "ok": true,
+      "detail": "seq=1 model=a2x-smoke-model surfaceCount=15"
+    },
+    {
+      "id": "D3",
+      "name": "coverage-complete policy derivable",
+      "ok": true,
+      "detail": "denyList(0): (none)"
+    }
+  ]
+}

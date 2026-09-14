@@ -1,0 +1,11 @@
+[2026-09-14T11:21:00.863Z] :3080 pre = unreachable
+[2026-09-14T11:21:00.865Z] port    = 3181
+[2026-09-14T11:21:00.870Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T11:21:00.870Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T11:21:00.871Z] patch   = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/f2-standard-probe-20260914T11-21-00Z/profiles/web/cordis.patch.yml
+[2026-09-14T11:21:00.871Z] home    = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/f2-standard-probe-20260914T11-21-00Z
+[2026-09-14T11:21:00.871Z] run     = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/dev/agent-workflow/evidence/fix-alpha2-explicit-agent-setup-compat/probe/runs/f2-standard-probe-20260914T11-21-00Z
+[2026-09-14T11:21:04.786Z] host booted: dsh web: http://127.0.0.1:3181/?token=FteAeBK60EKwNCxPGQ337czMrbQTKHcxo-xXS_JrBWY
+[2026-09-14T11:21:04.786Z] probe row ready (observer live)
+[2026-09-14T11:21:04.838Z] ── leg 0: DISC control (boot root, standard preset, no capabilities) ──
+[2026-09-14T11:23:05.134Z] FATAL DISC model request not captured within 120s
