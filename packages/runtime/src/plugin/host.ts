@@ -657,14 +657,38 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // row's fiber, disposed with the row) resolves the `webServer` property
   // read through the strict service read instead: the same service
   // instance the built-in walk returns on 0.1.2-era hosts, located
-  // topology-independently. Every other property read — and every
-  // `webServer` read on a host where the service is absent, where the
-  // strict read returns undefined rather than throwing — delegates
-  // verbatim to the built-in path, so 0.1.2-era hosts and headless hosts
-  // keep their exact prior behavior.
+  // topology-independently.
+  //
+  // SCOPE (F1, PR #17 review + the real-host probe,
+  // evidence/.../probe/runs/f1-shim-probe-*): the listener serves the
+  // `webServer` read ONLY while THIS row's own registration call
+  // (`mountRemoteNow` → `registerRemote(connection)` →
+  // `connection.rpc.handle('/team-remote', ...)`) is in flight
+  // (`teamRemoteMountInFlight`). The probe established the caller
+  // topology: the waterfall receiver is a per-call traceable SHADOW of
+  // the CALLING row's context (the read's reader fiber is the CALLER
+  // row's own fiber; a fresh proxy per call — so `readerCtx === ctx`
+  // never holds for the service-mediated read and no reader-proxy
+  // caching is possible). Without the flag, the process-wide listener
+  // served ANY row's `webServer` read while this plugin was loaded —
+  // an unrelated row's broken dependency declaration was masked (and an
+  // unrelated plugin could mount foreign RPC channels through the seam
+  // — both demonstrated live in the pre-fix probe run). With the flag,
+  // every `webServer` read outside the registration window falls
+  // through to the built-in walk verbatim: native Cordis failure where
+  // the inject is missing (the unrelated row keeps its exact prior
+  // failure) and unchanged native success where the walk already
+  // resolves it (0.1.2-era hosts, headless hosts, and every host row
+  // that declares its own `webServer` inject). The read is synchronous
+  // inside the call (the connection service's `owner.effect(...)` runs
+  // its body in the same tick — verified in the 0.1.5 cordis source and
+  // in the probe's single-event-per-mount trace), so the window covers
+  // exactly the read(s) of the in-flight registration.
+  let teamRemoteMountInFlight = false
   if (typeof ctx.on === 'function') {
     ctx.on('internal/get', (readerCtx, prop, _error, next) => {
       if (prop !== 'webServer') return next()
+      if (!teamRemoteMountInFlight) return next()
       const value = readerCtx.get('webServer')
       return value !== undefined ? value : next()
     })
@@ -864,7 +888,20 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     const registerRemote = root.seams.remoteHandlerRegistration.current()
     let registration: RemoteRegistration
     try {
-      registration = registerRemote(connection)
+      // F1 scope window: the `webServer` compatibility seam (the
+      // `internal/get` listener above) serves ONLY the property read(s)
+      // of this registration call — the `connection.rpc.handle` body
+      // performs its `owner.webServer.register(route)` walk
+      // synchronously inside (the 0.1.5 connection service runs its
+      // `owner.effect(...)` body in the same tick). Any other row's
+      // `webServer` read — before, after, or from another plugin's own
+      // `rpc.handle` — falls through to the built-in walk verbatim.
+      teamRemoteMountInFlight = true
+      try {
+        registration = registerRemote(connection)
+      } finally {
+        teamRemoteMountInFlight = false
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       const detail = `the remote handler registration onto channel ${REMOTE_RPC_CHANNEL} failed (one owner per channel): ${message}`
