@@ -75,6 +75,7 @@ import { createBlueprintAuthority } from './blueprint-authority.js'
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js'
 import { createBlueprintSourceIndex } from './blueprint-source-index.js'
 import { registerTeamSkills } from './team-skills.js'
+import { mcpSupplyValidationIssue } from './mcp-supply.js'
 
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
@@ -385,15 +386,19 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   ) {
     fail('deniedSelection must be a plain object or null')
   }
-  if (
-    c.mcpServer !== null &&
-    (c.mcpServer === undefined ||
-      typeof c.mcpServer !== 'object' ||
-      typeof c.mcpServer.name !== 'string' ||
-      (c.mcpServer.port !== null && typeof c.mcpServer.port !== 'number'))
-  ) {
-    fail('mcpServer must be { name, port: number|null } or null')
-  }
+  // multi-mcp (Task A, contract I3): the legacy single-value check is
+  // replaced IN PLACE by the shared MCP-supply validator (I1): it
+  // validates the new canonical `mcpServers` (0..N, unique names —
+  // C1/C2) and, when `mcpServers` is absent, the legacy `mcpServer`
+  // with the byte-identical detail (C7). The single fail() error
+  // envelope below is unchanged; the surrounding validation order is.
+  // The cast bridges the raw JSON row config (Partial + index signature)
+  // to the validator's typed parameter — the check itself is total over
+  // the JSON shape (fail-closed on every branch).
+  const mcpIssue = mcpSupplyValidationIssue(
+    c as unknown as Pick<TeamPluginConfig, 'mcpServer' | 'mcpServers'>,
+  )
+  if (mcpIssue !== null) fail(mcpIssue)
   if (!Array.isArray(c.environmentFacts)) fail('environmentFacts must be an array')
   if (
     c.externalPolicyFacts === null ||

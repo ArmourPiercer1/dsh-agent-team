@@ -1,0 +1,729 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-c-tests
+
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (11 tests) 3ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests) 3ms
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests | 1 failed) 8ms
+       ✓ H1-1 boot + member setup must not throw (both agents settle live) 1ms
+       ✓ H1-2 the consumption view stays valid with no per-server MCP state (mcpViews = {}) 1ms
+       ✓ H1-3 no reconcile/create attempt: no MCP plugin fiber mounted on any agent 0ms
+       ✓ H1-1 boot + member setup must not throw (both agents settle live) 0ms
+       ✓ H1-2 the consumption view stays valid with no per-server MCP state (mcpViews = {}) 0ms
+       ✓ H1-3 configured ∩ allowed = ∅: the template AND the durable allow name A, yet zero fibers 0ms
+     × H1-4 control: with a configured server the per-server view EXISTS (the zero state is config-specific) 5ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (27 tests) 4ms
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts (47 tests | 33 failed) 18ms
+     × leader (allow [A,B]) mounts exactly {A, B} 6ms
+     × expert-1 (allow [A]) mounts exactly {A} 1ms
+     × expert-2 (allow [B]) mounts exactly {B} 1ms
+     ✓ expert-3 (deny) mounts NOTHING (the template deny wins over the durable allow) 0ms
+     ✓ expert-3: configured ∩ durable-allow is non-empty yet zero fibers (the static gate is per-template) 0ms
+     × per-server live state: the leader mcpFibers keys are exactly [A, B] (contract I4/C5) 0ms
+     × per-server views: every CONFIGURED server carries a view (leader mcpViews keys = [A, B, C]) 0ms
+     × per-server views: expert-3 has all three views but ZERO fibers (views ≠ mounts) 0ms
+     ✓ the legacy mcpServer {name, port} config still mounts the single configured server (leader) 0ms
+     ✓ the legacy member (no capabilities: the durable decision alone) mounts the same server 0ms
+     × per-server state: the legacy form yields exactly one configured server (mcpViews/mcpFibers keys) 0ms
+     ✓ no MCP plugin fiber is mounted on any agent (zero agentCtx.plugin(mcpClient, ...) calls) 0ms
+     ✓ the per-server views are the empty object (even though template AND durable allow A) 0ms
+     ✓ the per-server fibers are empty 0ms
+     ✓ the host-config validation rejects the duplicate name (A mcpSupplyValidationIssue) 0ms
+     ✓ the read helper passes caller-validated input through as-is (the uniqueness guard lives in validation, not the read path) 0ms
+     × the member (template allow [A]) mounts A 1ms
+     × the member does NOT mount B (template allow [A] ∩ configured {A,B} = {A}) 0ms
+     ✓ no B fiber object exists on the member ctx at all (not mounted-then-disposed) 0ms
+     × the per-server state: the member mcpFibers keys are exactly [A] while mcpViews carry both configured servers 0ms
+     × the legacy leader (no capabilities) mounts both durable-allowed servers (the durable-only baseline) 0ms
+     × initial: the member mounts {A, B} at boot (the durable team allow) 0ms
+     × after the durable instance narrowing to allow [B]: A is disposed, B REMAINS (the same fiber, not a re-mount) 0ms
+     × the per-server state reflects the narrowing: the member mcpFibers keys are [B] 0ms
+     × the sibling member (no boundary ran, no instance record) is untouched: {A, B} still live 0ms
+     × the boot fails (the setup is fail closed) 0ms
+     × A round fiber was created and is ROLLED BACK (disposed) — no partial newly-mounted set 0ms
+     × B left nothing in the live state (no partial fiber committed) 0ms
+     × the activation error is recorded on the failing server (contract I4 step 6) 0ms
+     × boot mounted exactly {A} (the durable allow [A] at gen 1) 0ms
+     × the next boundary fails (the request does not proceed) 0ms
+     × A was already removed (deny FIRST — the new policy denies A before B is mounted) 0ms
+     ✓ B left no partial fiber and the live state is empty 0ms
+     × the activation error is recorded on the failing server 0ms
+     × case 1: only A selected → setup SUCCEEDS, A mounts, B (port=null) is not selected and blocks nothing 0ms
+     × case 2: B selected → the boot fails closed and the error NAMES B 0ms
+     ✓ case 2: no partial newly-mounted set (A was rolled back with the failed round) 0ms
+     × case 2: A fiber was created but ROLLED BACK (the port-null round fails closed, nothing committed) 0ms
+     × create phase: member-1 {A}, member-2 {B} 0ms
+     × cold resume: the SAME effective sets (member-1 {A}, member-2 {B}) 0ms
+     ✓ the resume re-bound every session (resumes, never re-creates) 0ms
+     × the leader A fiber was disposed exactly once by close() 0ms
+     × the leader B fiber was disposed exactly once by close() 0ms
+     ✓ the setup succeeds (no coverage failure on the SECOND mcp tool) 0ms
+     × the final surface carries BOTH servers mcp tools (the proven mount additions) 0ms
+     × the proven delta across the MCP reconcile is exactly the two probe tools 0ms
+     × both probe tools classify OTHER_MANAGED_MCP (never UNKNOWN_UNMANAGED) and the verdict passes 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 34 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.1 — the role split (the core regression): configured {A,B,C} × per-template mcp > leader (allow [A,B]) mounts exactly {A, B}
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:766:26
+    764| describe('multi-MCP 6.1 — the role split (the core regression): config…
+    765|   it('leader (allow [A,B]) mounts exactly {A, B}', () => {
+    766|     expect(w1LeaderLive).toEqual([A, B])
+       |                          ^
+    767|   })
+    768|   it('expert-1 (allow [A]) mounts exactly {A}', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.1 — the role split (the core regression): configured {A,B,C} × per-template mcp > expert-1 (allow [A]) mounts exactly {A}
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:769:22
+    767|   })
+    768|   it('expert-1 (allow [A]) mounts exactly {A}', () => {
+    769|     expect(w1E1Live).toEqual([A])
+       |                      ^
+    770|   })
+    771|   it('expert-2 (allow [B]) mounts exactly {B}', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.1 — the role split (the core regression): configured {A,B,C} × per-template mcp > expert-2 (allow [B]) mounts exactly {B}
+AssertionError: expected [] to deeply equal [ 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:772:22
+    770|   })
+    771|   it('expert-2 (allow [B]) mounts exactly {B}', () => {
+    772|     expect(w1E2Live).toEqual([B])
+       |                      ^
+    773|   })
+    774|   it('expert-3 (deny) mounts NOTHING (the template deny wins over the …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.1 — the role split (the core regression): configured {A,B,C} × per-template mcp > per-server live state: the leader mcpFibers keys are exactly [A, B] (contract I4/C5)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:784:52
+    782|   it('per-server live state: the leader mcpFibers keys are exactly [A,…
+    783|     expect(w1LeaderState !== undefined).toBe(true)
+    784|     expect(w1LeaderState?.mcpFibers !== undefined).toBe(true)
+       |                                                    ^
+    785|     expect(stateFiberKeys(w1LeaderState)).toEqual([A, B])
+    786|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.1 — the role split (the core regression): configured {A,B,C} × per-template mcp > per-server views: every CONFIGURED server carries a view (leader mcpViews keys = [A, B, C])
+AssertionError: expected [] to deeply equal [ Array(3) ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+-   "mcp-gamma",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:788:42
+    786|   })
+    787|   it('per-server views: every CONFIGURED server carries a view (leader…
+    788|     expect(stateViewKeys(w1LeaderState)).toEqual([A, B, C])
+       |                                          ^
+    789|   })
+    790|   it('per-server views: expert-3 has all three views but ZERO fibers (…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.1 — the role split (the core regression): configured {A,B,C} × per-template mcp > per-server views: expert-3 has all three views but ZERO fibers (views ≠ mounts)
+AssertionError: expected [] to deeply equal [ Array(3) ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+-   "mcp-gamma",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:791:38
+    789|   })
+    790|   it('per-server views: expert-3 has all three views but ZERO fibers (…
+    791|     expect(stateViewKeys(w1E3State)).toEqual([A, B, C])
+       |                                      ^
+    792|     expect(stateFiberKeys(w1E3State)).toEqual([])
+    793|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.2 — legacy single-server compatibility (the C7 control) > per-server state: the legacy form yields exactly one configured server (mcpViews/mcpFibers keys)
+AssertionError: expected [] to deeply equal [ 't12a-mini-mcp' ]
+
+- Expected
++ Received
+
+- [
+-   "t12a-mini-mcp",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:804:42
+    802|   })
+    803|   it('per-server state: the legacy form yields exactly one configured …
+    804|     expect(stateViewKeys(w2LeaderState)).toEqual([LEGACY_SERVER])
+       |                                          ^
+    805|     expect(stateFiberKeys(w2LeaderState)).toEqual([LEGACY_SERVER])
+    806|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.5 — static template isolation (selective member vs legacy leader) > the member (template allow [A]) mounts A
+AssertionError: expected [] to include 'mcp-alpha'
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:859:26
+    857| describe('multi-MCP 6.5 — static template isolation (selective member …
+    858|   it('the member (template allow [A]) mounts A', () => {
+    859|     expect(w4MemberLive).toContain(A)
+       |                          ^
+    860|   })
+    861|   it('the member does NOT mount B (template allow [A] ∩ configured {A,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.5 — static template isolation (selective member vs legacy leader) > the member does NOT mount B (template allow [A] ∩ configured {A,B} = {A})
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:863:26
+    861|   it('the member does NOT mount B (template allow [A] ∩ configured {A,…
+    862|     expect(w4MemberLive).not.toContain(B)
+    863|     expect(w4MemberLive).toEqual([A])
+       |                          ^
+    864|   })
+    865|   it('no B fiber object exists on the member ctx at all (not mounted-t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.5 — static template isolation (selective member vs legacy leader) > the per-server state: the member mcpFibers keys are exactly [A] while mcpViews carry both configured servers
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:869:43
+    867|   })
+    868|   it('the per-server state: the member mcpFibers keys are exactly [A] …
+    869|     expect(stateFiberKeys(w4MemberState)).toEqual([A])
+       |                                           ^
+    870|     expect(stateViewKeys(w4MemberState)).toEqual([A, B])
+    871|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.5 — static template isolation (selective member vs legacy leader) > the legacy leader (no capabilities) mounts both durable-allowed servers (the durable-only baseline)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:874:24
+    872|   it('the legacy leader (no capabilities) mounts both durable-allowed …
+    873|     const leaderLive = liveServers(w4Leader)
+    874|     expect(leaderLive).toEqual([A, B])
+       |                        ^
+    875|   })
+    876| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.6 — durable instance-override isolation at the next boundary > initial: the member mounts {A, B} at boot (the durable team allow)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:880:28
+    878| describe('multi-MCP 6.6 — durable instance-override isolation at the n…
+    879|   it('initial: the member mounts {A, B} at boot (the durable team allo…
+    880|     expect(w5E1LiveBefore).toEqual([A, B])
+       |                            ^
+    881|   })
+    882|   it('after the durable instance narrowing to allow [B]: A is disposed…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.6 — durable instance-override isolation at the next boundary > after the durable instance narrowing to allow [B]: A is disposed, B REMAINS (the same fiber, not a re-mount)
+AssertionError: expected [] to deeply equal [ 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:883:27
+    881|   })
+    882|   it('after the durable instance narrowing to allow [B]: A is disposed…
+    883|     expect(w5E1LiveAfter).toEqual([B])
+       |                           ^
+    884|     expect(w5E1FiberA?.disposed).toBe(true)
+    885|     expect(w5E1FiberB?.disposed).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.6 — durable instance-override isolation at the next boundary > the per-server state reflects the narrowing: the member mcpFibers keys are [B]
+AssertionError: expected [] to deeply equal [ 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:891:44
+    889|   })
+    890|   it('the per-server state reflects the narrowing: the member mcpFiber…
+    891|     expect(stateFiberKeys(w5E1StateAfter)).toEqual([B])
+       |                                            ^
+    892|   })
+    893|   it('the sibling member (no boundary ran, no instance record) is unto…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.6 — durable instance-override isolation at the next boundary > the sibling member (no boundary ran, no instance record) is untouched: {A, B} still live
+AssertionError: expected [] to deeply equal [ 'mcp-alpha', 'mcp-beta' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+-   "mcp-beta",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:894:27
+    892|   })
+    893|   it('the sibling member (no boundary ran, no instance record) is unto…
+    894|     expect(w5E2LiveAfter).toEqual([A, B])
+       |                           ^
+    895|     expect(w5E2FiberA?.disposed).toBe(false)
+    896|     expect(w5E2FiberB?.disposed).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7a — activation failure at setup (A ok, B throws) rolls back the round > the boot fails (the setup is fail closed)
+AssertionError: expected undefined not to be undefined // Object.is equality
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:903:29
+    901| describe('multi-MCP 6.7a — activation failure at setup (A ok, B throws…
+    902|   it('the boot fails (the setup is fail closed)', () => {
+    903|     expect(w6BootError).not.toBe(undefined)
+       |                             ^
+    904|     expect(String((w6BootError as Error)?.message ?? w6BootError)).toC…
+    905|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7a — activation failure at setup (A ok, B throws) rolls back the round > A round fiber was created and is ROLLED BACK (disposed) — no partial newly-mounted set
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:907:32
+    905|   })
+    906|   it('A round fiber was created and is ROLLED BACK (disposed) — no par…
+    907|     expect(w6FiberA?.disposed).toBe(true)
+       |                                ^
+    908|     expect(stateFiberKeys(w6LeaderState)).toEqual([])
+    909|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7a — activation failure at setup (A ok, B throws) rolls back the round > B left nothing in the live state (no partial fiber committed)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:911:36
+    909|   })
+    910|   it('B left nothing in the live state (no partial fiber committed)', …
+    911|     expect(w6FiberB !== undefined).toBe(true) // the fiber object exis…
+       |                                    ^
+    912|     expect(stateFiberKeys(w6LeaderState)).not.toContain(B)
+    913|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7a — activation failure at setup (A ok, B throws) rolls back the round > the activation error is recorded on the failing server (contract I4 step 6)
+AssertionError: expected undefined to be 'beta down (injected startup failure)' // Object.is equality
+
+- Expected:
+"beta down (injected startup failure)"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:915:56
+    913|   })
+    914|   it('the activation error is recorded on the failing server (contract…
+    915|     expect(w6LeaderState?.mcpActivationErrors?.get(B)).toBe('beta down…
+       |                                                        ^
+    916|   })
+    917| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7b — the safe ordering (old {A}, new target {B}, B fails at the boundary) > boot mounted exactly {A} (the durable allow [A] at gen 1)
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:921:27
+    919| describe('multi-MCP 6.7b — the safe ordering (old {A}, new target {B},…
+    920|   it('boot mounted exactly {A} (the durable allow [A] at gen 1)', () =…
+    921|     expect(w6bLiveBefore).toEqual([A])
+       |                           ^
+    922|   })
+    923|   it('the next boundary fails (the request does not proceed)', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7b — the safe ordering (old {A}, new target {B}, B fails at the boundary) > the next boundary fails (the request does not proceed)
+AssertionError: expected undefined not to be undefined // Object.is equality
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:924:34
+    922|   })
+    923|   it('the next boundary fails (the request does not proceed)', () => {
+    924|     expect(w6bBoundaryError).not.toBe(undefined)
+       |                                  ^
+    925|     expect(String((w6bBoundaryError as Error)?.message ?? w6bBoundaryE…
+    926|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7b — the safe ordering (old {A}, new target {B}, B fails at the boundary) > A was already removed (deny FIRST — the new policy denies A before B is mounted)
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:928:33
+    926|   })
+    927|   it('A was already removed (deny FIRST — the new policy denies A befo…
+    928|     expect(w6bFiberA?.disposed).toBe(true)
+       |                                 ^
+    929|   })
+    930|   it('B left no partial fiber and the live state is empty', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.7b — the safe ordering (old {A}, new target {B}, B fails at the boundary) > the activation error is recorded on the failing server
+AssertionError: expected undefined to be 'beta down (boundary)' // Object.is equality
+
+- Expected:
+"beta down (boundary)"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:934:62
+    932|   })
+    933|   it('the activation error is recorded on the failing server', () => {
+    934|     expect(w6bLeaderStateAfter?.mcpActivationErrors?.get(B)).toBe('bet…
+       |                                                              ^
+    935|   })
+    936| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.8 — port=null exact behavior > case 1: only A selected → setup SUCCEEDS, A mounts, B (port=null) is not selected and blocks nothing
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:941:21
+    939|   it('case 1: only A selected → setup SUCCEEDS, A mounts, B (port=null…
+    940|     expect(w7aBootError).toBe(undefined)
+    941|     expect(w7aLive).toEqual([A])
+       |                     ^
+    942|     expect(mcpFibers(w7aLeader, B).length).toBe(0)
+    943|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.8 — port=null exact behavior > case 2: B selected → the boot fails closed and the error NAMES B
+AssertionError: expected undefined not to be undefined // Object.is equality
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:945:30
+    943|   })
+    944|   it('case 2: B selected → the boot fails closed and the error NAMES B…
+    945|     expect(w7bBootError).not.toBe(undefined)
+       |                              ^
+    946|     expect(String((w7bBootError as Error)?.message ?? w7bBootError)).t…
+    947|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.8 — port=null exact behavior > case 2: A fiber was created but ROLLED BACK (the port-null round fails closed, nothing committed)
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:952:33
+    950|   })
+    951|   it('case 2: A fiber was created but ROLLED BACK (the port-null round…
+    952|     expect(w7bFiberA?.disposed).toBe(true)
+       |                                 ^
+    953|   })
+    954| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.9 — cold resume re-derives the same effective sets > create phase: member-1 {A}, member-2 {B}
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:958:23
+    956| describe('multi-MCP 6.9 — cold resume re-derives the same effective se…
+    957|   it('create phase: member-1 {A}, member-2 {B}', () => {
+    958|     expect(w8cE1Live).toEqual([A])
+       |                       ^
+    959|     expect(w8cE2Live).toEqual([B])
+    960|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.9 — cold resume re-derives the same effective sets > cold resume: the SAME effective sets (member-1 {A}, member-2 {B})
+AssertionError: expected [] to deeply equal [ 'mcp-alpha' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp-alpha",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:962:23
+    960|   })
+    961|   it('cold resume: the SAME effective sets (member-1 {A}, member-2 {B}…
+    962|     expect(w8rE1Live).toEqual([A])
+       |                       ^
+    963|     expect(w8rE2Live).toEqual([B])
+    964|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.10 — close() disposes each server fiber exactly once > the leader A fiber was disposed exactly once by close()
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:973:22
+    971| describe('multi-MCP 6.10 — close() disposes each server fiber exactly …
+    972|   it('the leader A fiber was disposed exactly once by close()', () => {
+    973|     expect(w1CloseA).toBe(1)
+       |                      ^
+    974|   })
+    975|   it('the leader B fiber was disposed exactly once by close()', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.10 — close() disposes each server fiber exactly once > the leader B fiber was disposed exactly once by close()
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:976:22
+    974|   })
+    975|   it('the leader B fiber was disposed exactly once by close()', () => {
+    976|     expect(w1CloseB).toBe(1)
+       |                      ^
+    977|   })
+    978| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.11 — the Permission Coverage Gate over a dual-MCP strict agent > the final surface carries BOTH servers mcp tools (the proven mount additions)
+AssertionError: expected [] to include 'mcp_alpha_probe'
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:985:29
+    983|   })
+    984|   it('the final surface carries BOTH servers mcp tools (the proven mou…
+    985|     expect(w10FinalSurface).toContain('mcp_alpha_probe')
+       |                             ^
+    986|     expect(w10FinalSurface).toContain('mcp_beta_probe')
+    987|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.11 — the Permission Coverage Gate over a dual-MCP strict agent > the proven delta across the MCP reconcile is exactly the two probe tools
+AssertionError: expected [] to deeply equal [ 'mcp_alpha_probe', 'mcp_beta_probe' ]
+
+- Expected
++ Received
+
+- [
+-   "mcp_alpha_probe",
+-   "mcp_beta_probe",
+- ]
++ []
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:990:22
+    988|   it('the proven delta across the MCP reconcile is exactly the two pro…
+    989|     expect(w10PreSurface).not.toBe(undefined)
+    990|     expect(w10Delta).toEqual(['mcp_alpha_probe', 'mcp_beta_probe'])
+       |                      ^
+    991|   })
+    992|   it('both probe tools classify OTHER_MANAGED_MCP (never UNKNOWN_UNMAN…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/34]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts > multi-MCP 6.11 — the Permission Coverage Gate over a dual-MCP strict agent > both probe tools classify OTHER_MANAGED_MCP (never UNKNOWN_UNMANAGED) and the verdict passes
+AssertionError: expected undefined to be 'other-managed-mcp' // Object.is equality
+
+- Expected:
+"other-managed-mcp"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:996:43
+    994|     expect(w10Verdict!.ok).toBe(true)
+    995|     const byName = new Map(w10Verdict!.tools.map((t) => [t.name, t.cla…
+    996|     expect(byName.get('mcp_alpha_probe')).toBe('other-managed-mcp')
+       |                                           ^
+    997|     expect(byName.get('mcp_beta_probe')).toBe('other-managed-mcp')
+    998|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/34]⎯
+
+ FAIL  packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > H1-4 control: with a configured server the per-server view EXISTS (the zero state is config-specific)
+AssertionError: expected [] to deeply equal [ 't12a-mini-mcp' ]
+
+- Expected
++ Received
+
+- [
+-   "t12a-mini-mcp",
+- ]
++ []
+
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts:206:39
+    204|
+    205|   it('H1-4 control: with a configured server the per-server view EXIST…
+    206|     expect(Object.keys(controlViews)).toEqual([LEGACY_SERVER])
+       |                                       ^
+    207|   })
+    208| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/34]⎯
+
+
+ Test Files  2 failed | 3 passed (5)
+      Tests  34 failed | 62 passed (96)
+   Start at  18:27:31
+   Duration  829ms (transform 1.79s, setup 0ms, import 3.00s, tests 35ms, environment 0ms)
+

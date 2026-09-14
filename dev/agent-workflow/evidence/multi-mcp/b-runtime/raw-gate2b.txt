@@ -1,0 +1,31 @@
+# Gate 2b raw output (p8s4b + t12a-b3)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime
+
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (11 tests) 3ms
+ ❯ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests | 1 failed) 4ms
+     ✓ B3-1 external hard DENY + override ALLOW for the same capability -> no selection in the consumption view 1ms
+     ✓ B3-2 the ACTUAL agent boundary installs the denied selection (not the allowed model, not the baseline) 1ms
+     ✓ B3-3 control: with empty external facts the same override ALLOWs the model (the override is genuinely in force) 0ms
+     × B3-4 the external hard deny is capability-scoped: the model-only deny never denies the mcp facet by external 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-b3-external-deny.test.ts > T12-B3 external hard facts at the consumption boundary > B3-4 the external hard deny is capability-scoped: the model-only deny never denies the mcp facet by external
+TypeError: Cannot read properties of undefined (reading 'deniedBy')
+ ❯ packages/runtime/test/t12a-b3-external-deny.test.ts:144:44
+    142|
+    143|   it('B3-4 the external hard deny is capability-scoped: the model-only…
+    144|     const mcpDeniedBy = deniedView.mcpView.deniedBy
+       |                                            ^
+    145|     const deniedByExternal = mcpDeniedBy !== undefined && mcpDeniedBy.…
+    146|     expect(deniedByExternal).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 14 passed (15)
+   Start at  18:18:41
+   Duration  638ms (transform 628ms, setup 0ms, import 922ms, tests 7ms, environment 0ms)
+

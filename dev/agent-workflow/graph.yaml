@@ -1,4 +1,27 @@
 # Team vNext 编排状态（任务分包 §16）。主 Agent 每轮工作后更新；不依赖会话记忆。
+multi_mcp_quick_fix_20260914:
+  status: IN_PROGRESS
+  plan: docs/plans/active/multi-mcp-quick-fix-plan.md
+  plan_review: "主 Agent 2026-09-14 审查：计划全部断言与 master@b49f4239 代码一致（types.ts mcpServer 单值/host.ts L388-394 校验/agent-bindings.mjs 单 mcpView+mcpFiber+reconcileMcp/filterMcpServers 复数已存在/resolveDurableMcpFacet per-serverName 已存在/计划基线 = 当前 master 逐字一致）→ 按计划执行。其余 active 计划均核验为已执行（alpha.1/alpha.2 各轮 = 已并入 master，见 closure 日志）。"
+  base: b49f4239ff9378ac8041e5667402029b4dcd4ca4
+  integration_branch: int/multi-mcp-quick-fix
+  contract: dev/agent-workflow/briefs/multi-mcp/00-contract.md (C1-C7 + I1-I14 冻结)
+  waves:
+    w0: [A, D]          # A config 契约 + D docs/smoke kit 准备（并行）
+    w1: [B, C]          # A 合入后 rebase 并行（B runtime / C RED→GREEN 两阶段）
+    w2: [CLOSURE]       # B+C 合入后：Gate C real-host smoke（主 Agent 执行 D 的 kit）+ 收束门禁 + 最终 PR
+  pr: "单 PR int/multi-mcp-quick-fix -> master，里程碑推送（milestone-0 = 契约冻结；每合并一里程碑 push 一次）"
+  tasks:
+    MM-A: { state: MERGED-INT, class: B, branch: task/multi-mcp-a-config, worktree: .worktrees/multi-mcp-a-config, base: b49f4239, head: 4a60e7e, int_pick: 71deaa8, pr: "16 (M1)", owned: "types.ts + mcp-supply.ts(新) + host.ts + mcp-supply-config.test.ts(新)", brief: briefs/multi-mcp/a-config.md, re_gate: "独立 7 文件 104/104 + runtime typecheck 0 @ int" }
+    MM-B: { state: MERGED-INT, class: B, branch: task/multi-mcp-b-runtime, worktree: .worktrees/multi-mcp-b-runtime, base: b49f4239, head: ddc3bc4, int_pick: 2d44809, pr: "16 (M2a)", owned: "agent-bindings.mjs (唯一源文件)", brief: briefs/multi-mcp/b-runtime.md, re_gate: "独立 focused 111/113 (仅 H1-2/B3-4 = C GREEN 责任) + full-suite diff vs pre-B 基线精确 = {H1-2, B3-4} + p6t1 隔离 9/9 (load flake 裁决) + typecheck 0" }
+    MM-C: { state: PENDING_W1, class: A, branch: task/multi-mcp-c-tests, worktree: .worktrees/multi-mcp-c-tests, base: int-tip(after A), owned: "t12a-live-bridge.{mjs,d.mts} + multi-mcp-wiring.test.ts(新) + t4a + t12a-h1-nullable + tools/harness/plugin.mjs (+ p8s4b/t12a-b3 最小适配)", brief: briefs/multi-mcp/c-tests.md }
+    MM-D: { state: ACCEPTED-WAIT-M3, class: B, branch: task/multi-mcp-d-docs, worktree: .worktrees/multi-mcp-d-docs, base: b49f4239, head: 31ecbc3, owned: "docs/INSTALL.md + cordis.patch.yml + evidence/multi-mcp/d-smoke/ (kit)", brief: briefs/multi-mcp/d-docs-smoke.md, acceptance: "主 Agent 独立验收 PASS（scope 精确 53 文件；§3.3 与 I1/I4 语义逐条一致；RC 双字段模板声明已对 origin/stable 校验器核验 = 无 unknown-field 检查；kit node --check OK + C1-C7 判据代码对照契约 + 3180..3186 硬范围/3080 只读护栏；base 干跑 summary exit2/C1-C5 FAIL=legacy 签名/C6+C7 PASS/testUse pre==post）；GREEN 运行（int 树 A+B+C+D 齐后）由 D worker 在线执行、主 Agent 验收" }
+  gates:
+    gateA_focused: { status: PENDING, def: "计划 §7 Gate A 全量（multi-mcp-wiring + t4a + h1-nullable + t3-skills + p8s4b-mcp-facet + t12a-b3 + a2c2-coverage + mcp-supply-config）" }
+    gateB_package: { status: PENDING, def: "runtime full + tools suite + typecheck runtime/tools/domain + pnpm build + build:composition (含 place-dist-glue + check-artifacts)" }
+    gateC_realhost: { status: PENDING, def: "双 mini-MCP real-host smoke（主 Agent 于 int 树执行 D 的 kit；TEST_METHODS §2 链；3180 族 + 3491-3500；禁 3080）" }
+    zero_core: { status: PENDING, def: "references/deepseek-harness 零变更 + tests/deepseek-harness-test-use porcelain 空 @ a66e470204" }
+  p4t6: { base_pin: 699, note: "base 699 @ b49f4239（PR #15 team-skills +2 后真值；M0 时误记 697 = pre-PR#15 值，已更正）；Task A 合并后 = 701（实测）；C 合并后预期 702（multi-mcp-wiring.test.ts +1）；DEC-1 union 记账由主 Agent 在每次 int 合并时执行" }
 current_phase: "RELEASE 0.1.0-rc.1 (2026-09-08): 用户基于手动测试 + Playwright/live acceptance 裁决当前代码作为未来基线发布；stable 仅跟踪 RC，master 转入下一 alpha 开发。历史 repair 摘要：用户新机安装 `dsh web` 新建团队 405 修复任务 — 实机测试暴露 D-1 (stamped-no-identity home: 盖章在、身份缺, 每 boot 响亮失败; R137 指引'无需删 domain 文件'对该状态有误, 已更正) → D-1 自愈修复落地 (task 88c80df: create-or-open 三分支解析, adopted+身份缺 → root 幂等 create 铸造缺失身份, stamps 采纳不重打; 严格 resume W4 不变) + 自测五门全绿 + 用户状态回放垂直 200 (首启/重启) → 用户裁决'自测完毕直接推送, 实机绿后单独审查' → **已推送 origin (R138): master 18fe8a2→16aa84a(+R138) + int e25ceeb→d8a1ca9** → 用户实机测试轮 2 (R139): 405 消失 + 团队 UI 完整渲染 + 团队 1 运行中 + D-1 自愈生效 (未动 team_domain.json, 实机确认); 新报告 D-2 'leader 看不到团队工具' = **误报** (会话日志决定性证据: 用户 19:40 对话发生在 D:\test 普通 web 会话 session-0bf2409a — 其 request/header = 恰好 24 个 DSH 标准工具, 零 team_*, 与用户引用列表逐一对应; 真 Leader team-root (19:39:07 heal boot 创建) 零回合从未被问; 用户引用的 list_teammates 等 5 名 = legacy 词汇, vNext 实际 10 工具) — 生产接线代码路径核验正确 (ref 装配期无条件填充, create/resume 两分支 setup 均注册, DSH core 保证 agent-scoped register → 模型可见 assembly), 真实缺口 = glue 注册循环零测试覆盖 → D-2 测试补盲 (task 858bc79, 3 文件 +156/−3, 零 src: t12a-team-tools-registration 3 测试 = 真实 glue + 真实 createTeamTools 十工具栈, create 阶段 root+成员恰好 10 / cold-root resume 重注册 10 / close 处置全部) + 自测五门全绿 (2454/2458, dist 零变更) → **已推送 origin (R139): master b4e8d4f→9029c9a + int d8a1ca9→e6f591e**; 待: 用户复测 (**问对会话**: 团队 tab → Leader 行 '回到 leader' 打开 team-root 会话提问; 普通聊天会话本就不带团队工具) → 绿后三盲审 (reviewer-7/8/9, 找潜在问题, 含 D-1 三分支边界/幂等铸造/严格入口隔离 + D-2 工具注册面)"
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb

@@ -1,0 +1,11 @@
+# Gate 3 raw output (a2c2-permission-coverage)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime
+
+ ✓ packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  18:18:42
+   Duration  667ms (transform 443ms, setup 0ms, import 595ms, tests 5ms, environment 0ms)
+

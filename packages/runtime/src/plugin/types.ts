@@ -160,6 +160,21 @@ export interface TeamSkillDefinitionConfig {
 }
 
 /**
+ * One MCP server supply entry of the boot world (multi-mcp C1, the
+ * canonical 0..N `mcpServers` input of the row config). The `name` is
+ * the server identity (C2: unique within `mcpServers` — the same
+ * identity the policy vocabulary (capabilities.mcp, durable mcp cell)
+ * and the MCP tool namespaces key on); `port: null` means the server is
+ * NOT mounted (the durable policy may still allow it — plan §6.8).
+ */
+export interface TeamPluginMcpServer {
+  /** The stable server name (the identity; unique within `mcpServers`). */
+  readonly name: string
+  /** The mini-MCP port the host serves it on (`null` = not mounted). */
+  readonly port: number | null
+}
+
+/**
  * The complete JSON-safe row `config:` of the production plugin.
  *
  * Every field is plain lossless JSON (the row `config` is the only input
@@ -203,11 +218,25 @@ export interface TeamPluginConfig {
   readonly staticModel: TeamPluginStaticModel
   /** The denied model selection of the world (null when none). */
   readonly deniedSelection: Record<string, unknown> | null
-  /** The MCP server of the world (null port = not mounted). */
+  /**
+   * The MCP server of the world (null port = not mounted). LEGACY 0|1
+   * form — multi-mcp C7: still accepted during this alpha; the canonical
+   * 0..N input is `mcpServers` (below), and new documents and tests use
+   * `mcpServers`.
+   */
   readonly mcpServer: {
     readonly name: string
     readonly port: number | null
   } | null
+  /**
+   * The MCP servers of the world — the canonical 0..N input (multi-mcp
+   * C1). Each `name` is the server identity (C2: unique within the row);
+   * `port: null` on an entry = that server is not mounted. Absent = no
+   * MCP servers (`[]` is legal and means the same). Legacy `mcpServer`
+   * (above) remains accepted during this alpha; new documents and tests
+   * use `mcpServers` (C7).
+   */
+  readonly mcpServers?: readonly TeamPluginMcpServer[]
   /** The boot-world environment facts (compatibility input). */
   readonly environmentFacts: readonly TeamPluginEnvironmentFact[]
   /** The boot-world external hard policy facts. */

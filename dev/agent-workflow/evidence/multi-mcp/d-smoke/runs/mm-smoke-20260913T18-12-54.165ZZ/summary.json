@@ -1,0 +1,53 @@
+{
+  "task": "Task D multi-mcp dual mini-MCP real-host smoke",
+  "runStamp": "mm-smoke-20260913T18-12-54.165ZZ",
+  "generatedAt": "2026-09-13T18:12:54.176Z",
+  "targetRepo": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs",
+  "fatal": "Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-12-54.165ZZ/git-pre/git-head.log'\n    at Object.openSync (node:fs:621:18)\n    at writeFileSync (node:fs:2496:35)\n    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/tests/characterization/lib/util.mjs:55:5\n    at new Promise (<anonymous>)\n    at spawnToLog (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/tests/characterization/lib/util.mjs:54:10)\n    at captureGitState (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/tests/characterization/lib/tree-clean.mjs:25:28)\n    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:931:24)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "per-agent model-facing MCP tools EXACT (I5 state + schema double proof): leader A+B / m1 A / m2 B",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C2",
+      "name": "A/B namespaces do not collide (same underlying tool ping; distinct mounted names)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C3",
+      "name": "member isolation (m1 sees A only; m2 sees B only)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C4",
+      "name": "durable override tighten (leader [A,B]->[A]) really unmounts B at the next boundary",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C5",
+      "name": "host restart (same home, resume) rebuilds the SAME effective set",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C6",
+      "name": "teardown releases 3491/3492 (+3496 mock, +host port)",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C7",
+      "name": "test-use porcelain empty + HEAD baseline; :3080 untouched",
+      "status": "not-run",
+      "checks": []
+    }
+  ],
+  "pass": false,
+  "exitCode": 1
+}

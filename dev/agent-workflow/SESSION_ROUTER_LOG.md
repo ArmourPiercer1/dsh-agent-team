@@ -2864,3 +2864,292 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - 收束全部完成：closure gates（fresh install 全绿）+ closure-report（12 节 + DoD 30/30）+
   Alpha.3 GO 裁决 + 三件用户注意事项（TCM-M4 待裁决 / Windows 适配 / strict-mode fail-closed 行为变化）。
 - 远端状态：master = 1e05d24（未动）；int = 8ee8efc（FROZEN INT_W4 + closure）；task 分支保留。
+
+---
+
+## 2026-09-14 — multi-mcp 快速修复轮（用户指令轮）
+
+### R-MM-0 启动与计划审查
+
+- **用户指令**：读取工作区代码与文档 → 审查 `docs/plans/active/` 修复计划 →
+  与代码实际状态一致者按计划执行；主 Agent 负责拉起 subagent / 验收 / worktree
+  与 PR 合并；完成标准 = 一个与 master 无冲突的 PR 供用户手动 merge。
+- **会话环境**：model = qwen3.8-27b（ROUTER_RULES §1 路由核验：本会话与全部
+  子代理继承同一路由，核验通过）；approval policy = never（用户改）；
+  文件策略 danger-full-access（沙箱不限制文件写）。
+- **仓库状态核验**：本地 master 原 f5a1578（PR #14 本地 merge）为远端 master
+  **祖先**；`git fetch` 后远端 master = `b49f4239`（= PR #15
+  task/team-skills-provider 合并点）→ 本地 master fast-forward 至 b49f4239
+  （纯前进，零改写）。**计划基线（multi-mcp-quick-fix-plan.md 登记
+  b49f4239）= 当前 master，逐字一致**。
+- **active 计划审查结论**（逐份）：
+  - `multi-mcp-quick-fix-plan.md`（2026-09-13 最新）= **本轮执行目标**。
+    主 Agent 逐断言核验与代码一致：types.ts L205-210 单值 `mcpServer`；
+    host.ts L388-394 单值校验；agent-bindings.mjs（2739 行）单 `mcpView`/
+    `mcpFiber`/`mcpActivationError`（L557-559/751-802/830-866）+ 单值调用点
+    `filterMcpServers([config.mcpServer.name], ...)`（L1272/L1786）+
+    `reconcileMcp(agentCtx, state, allowed)` 单 fiber（L830）+
+    `applyBoundaryRecords(state, modelView, mcpView)` 单 view（L813）；
+    复用资产核验：`filterMcpServers(configuredServers: readonly string[],
+    policy)` 复数签名（mcp-adapter.ts L42）+ `resolveDurableMcpFacet({...,
+    serverName})`（mcp-facet.ts L139-140）均为既有 set/serverName 语义；
+    计划引用测试文件 7 个 + bridge/harness 3 个全部在位；
+    docs/INSTALL.md L169/L244 + cordis.patch.yml L82 单值模板在位。
+    **裁决：与代码实际状态一致 → 按计划执行。**
+  - 其余 7 份 active 计划：0.1.1-alpha-roadmap-memo = 冻结边界备忘（非修复
+    计划）；0.1.1-alpha.1-* 两份 = alpha.1 轮（早已关闭）；
+    alpha2-permission-boundary-hardening = 已执行（A1-A6/H1a/H3/H4/H5 在
+    closure 门禁 465 测试集内）；alpha2-hardening-followup-repair = 已执行
+    （P1-A/P1-B 已在代码：canonical-operation.ts Bash fingerprint 绑定
+    workdir/run_in_background/timeoutMs/sandbox_permissions + 非
+    install-lifetime 缓存的 canonical key）；alpha2-capability-completion =
+    已关闭（PR #14 已 merge 入 master 谱系 + PR #15 已在其后）。
+- **契约冻结**（Step 0，计划 §5）：`briefs/multi-mcp/00-contract.md`
+  C1-C7（计划 §4 逐字）+ 实现级 I1-I14（mcp-supply.ts 唯一 canonical
+  读取路径 / state per-server 形状 / reconcileMcpSet deny-first+rollback
+  时序 / I5 诊断形状 / I9 禁改面 / p4t6 基线 697 归主 Agent 记账 等）。
+- **波次**：W0 = A（config）+ D（docs/smoke kit）并行；W1 = A 合入后
+  B（runtime）+ C（RED→GREEN）rebase 并行；W2 = 收束（Gate C real-host
+  smoke 由主 Agent 执行 D 的 kit + 门禁 + 最终 PR）。
+- **git 基础**：`int/multi-mcp-quick-fix` @ b49f4239 + worktrees
+  `.worktrees/multi-mcp-{a-config,b-runtime,c-tests,d-docs,int}`；
+  各 worktree pnpm install（warm store）完成；lockfile 零变更约束。
+- **PR 策略**：单 PR（int → master），里程碑推送（防丢）；不 push master/
+  stable；最终由用户审查后手动 merge。
+
+### M1 — Task A 合入 int（config 契约 0..N）
+
+- **A FINAL 报告接收**（9e848808，DONE）：3 commits（c5ef040 src I1/I2/I3 /
+  17e75fd 测试 39 case / 4a60e7e 证据）；owned 8 文件 +743/−10；
+  p4t6 未触碰；porcelain clean。DEVIATIONS = 1 处机械 type-bridge
+  （host.ts `c` 的 Partial 形态 → `c as unknown as Pick<...>`，仅类型层，
+  运行时值相同，validator 对 JSON 形态全定义逐支 fail-closed）— 主 Agent
+  接受（无语义变化，已留痕）。RISK 四条（mcpServers:null 不可达 /
+  ambiguous 语义含 []+legacy 钉死 / C7 legacy 三钉 / p4t6 记账归主 Agent）
+  全部已按契约钉死于测试。
+- **主 Agent 前置核验（独立）**：worktree diff 严格 = owned 8 文件 ✓；
+  mcp-supply.ts 逐行对照 I1（检查顺序 1→5、detail 字符串逐字、legacy
+  check-5 与旧 host 检查字节级等价）✓；types.ts = I2 ✓；host.ts 原位替换 +
+  单一 fail() 封套 + 校验顺序不变 ✓；测试 39 case 覆盖 Must-4 全量
+  （归一化四规则 + 拷贝语义 + 重名点名 + malformed 全形态 + ambiguous
+  边界与顺序 + C7 现状钉死 + host 边界精确 envelope）✓。
+- **cherry-pick -x** 三 commit 无冲突 → int @ 71deaa8。
+- **p4t6 DEC-1 union**：base 真值更正 = **699** @ b49f4239（M0 误记 697 =
+  pre-PR#15 值，已更正 graph）；A +2（mcp-supply.ts +
+  mcp-supply-config.test.ts）→ **701 实测**（scanSessionEventVocabulary
+  于 int tip 直接测量；quarantine hit set 保持 15；两新文件零 denylist
+  词汇）→ pin 699→701 落盘。
+- **主 Agent re-gate（独立 @ 71deaa8 + pin 提交）**：p4t6(701) +
+  mcp-supply-config(39) + t4a(27) + team-skills(9) + h1-nullable +
+  p8s4b-mcp-facet + t12a-b3-external-deny = **7 文件 104/104 PASS**；
+  `pnpm --filter @dsh-agent-team/runtime typecheck` exit 0。
+- **int 推送**（M1，PR #16 自动更新）。W1 派发就绪（B/C rebase 到本 tip）。
+
+### M2a — Task B 合入 int（per-server live reconciler，I4）
+
+- **B FINAL 报告接收**（93ba31c8，DONE）：2 commits（09ddfbe src +189/−94 /
+  ddc3bc4 证据 8 文件）；唯一 owned 源文件 = agent-bindings.mjs；dist 零出现；
+  porcelain clean；未 push。
+- **主 Agent 独立核验（不轻信报告）**：
+  - diff 严格 = owned 1 源文件 + 8 evidence ✓；
+  - `reconcileMcpSet` 逐行对照 I4 时序 1-7（target⊆configured guard /
+    deny-first dispose（失败=observation）/ configured 顺序 mount /
+    port-null 先查且消息逐字 I4 冻结串 / temporary set / 失败仅回滚本轮
+    new fibers（denied 不恢复）+ 记 mcpActivationErrors + observation 点名 +
+    rethrow / 全成 commit）✓；fiber options 与旧路径逐字一致 ✓；
+  - 两处调用点 = template∩durable 逐 server AND；**selective-mode 逻辑核验为
+    base 既有**（b49f4239 L1271 同形）— 正确泛化，无 C3 语义新增 ✓；
+  - agentSetup 保持 pre-MCP snapshot → 单次 reconcileMcpSet（全 target）→
+    final snapshot（§2.7 覆盖顺序）✓；close() 遍历全部 session 全部 fibers ✓；
+  - grep 独立复测：单值词汇（mcpFiber\b/mcpActivationError\b/.mcpView\b）
+    零命中，per-server 词汇 33 处 ✓。
+  - DEVIATIONS 裁决：(a) port-null throw 前额外记 mcpActivationErrors —
+    接受（I5 诊断完整性，observation/throw 语义不变）；(b) 消息尾注 = I4
+    自身冻结串（非偏差，B 报告措辞更正）。**新接受 1 处注释级精化**：
+    deny-first 保留 denied server 的 view（"last-applied views" 语义 —
+    拒绝视图本身即最后应用视图，下 boundary 重解覆盖；比 I4 草图清 view 更
+    准确）— 记录在案，无行为风险。
+- **pre-existing 基线确立（独立）**：pre-B int tip（4ad989d）full
+  runtime suite = **6 文件 / 8 测试失败**：p8s3b-result-effects /
+  t12a-b2-child-identity / t12a-glue-handoff-ports（3 个 [file] 级失败，
+  错误均在 base glue 路径）+ D3-4 + p6t3-mediation×5 + p6t3-restart×2。
+  **静态归因**：6 个失败文件零 import A 模块（mcp-supply/types/host），
+  失败栈全在 A 未触碰的 base glue / base 测试路径 → pre-existing @ base
+  b49f4239（master 既有债，非本轮范围，留痕）。
+- **cherry-pick -x** 09ddfbe + ddc3bc4 无冲突 → int @ 2d44809/00a925b。
+- **主 Agent re-gate（独立 @ post-B）**：
+  - focused 7 文件 = **111/113**：t4a 27/27、p8s4b 11/11、a2c2 18/18（classifier
+    零改动证明）、mcp-supply-config 39/39、p4t6 @701 10/10；h1-nullable 3/4
+    （H1-2 = 单值断言 vs mcpViews:{} 预期失败）、t12a-b3 3/4（B3-4 =
+    deniedView.mcpView.deniedBy TypeError 预期失败）— 两个失败恰为 C 的
+    GREEN 适配清单。
+  - full runtime suite @ post-B = 9 文件 / 13 测试；**diff vs pre-B 基线
+    精确 = {H1-2, B3-4}** + p6t1-parallel×3（仅全量负载下）→ p6t1 隔离
+    重跑 **9/9 PASS**（load flake，isolation 裁决先例，非回归）。
+  - `pnpm --filter @dsh-agent-team/runtime typecheck` exit 0 ✓。
+- **dist**：place-dist-glue 更新（agent-bindings 189+/94− 同步）；check:
+  artifacts 收束阶段统一跑。p4t6 不变（B 零新可扫描文件）@ 701。
+- **int 推送**（M2a，PR #16 自动更新）；**C 已通知进阶段 2 GREEN**。
+
+### M2b — Task D 验收通过并合入 int（docs + smoke kit；GREEN 运行待 A+B+C+D 齐后）
+
+- **D FINAL 报告接收**（8807e36c，DONE）：单 commit 31ecbc3（53 文件 +6567）；
+  docs/INSTALL.md（§3.2 双字段模板 + 新 §3.3 全语义 + 排障行 I1 序重写）+
+  cordis.patch.yml（mcpServers: [] canonical）+ 双 mini-MCP real-host smoke kit
+  （~1050 行，零新依赖）+ base 干跑证据（3 runs 全留档）。未 push。
+- **主 Agent 独立验收（PASS）**：
+  - scope 严格 = owned 面（docs + cordis.patch.yml + evidence/d-smoke），
+    packages/ 零触碰 ✓；
+  - §3.3 逐条对照契约：entry 形状 / 重名 fail-closed / port:null mount 时
+    fail-closed 点名 / [] = 无 MCP / legacy 本 alpha 接受 + ambiguous 规则 /
+    挂载目标 = configured∩capabilities.mcp∩durable（每 boundary 重读）/
+    不挂非 allow（非先挂再隐藏）/ mcp__<name>__<tool> 命名 + 同名 tool
+    不冲突 / 通配 * / unspecified cell fail-closed / per-template 子集示例 /
+    durable override 收紧 + 重启 durable truth 不变注记 — 与 I1/I4/C3/C4 一致 ✓；
+  - **RC 兼容声明核验**（D 声明 "RC≤0.1.0-rc.1 不识别 mcpServers 且忽略未知
+    字段"）：对 origin/stable 的 host.ts 校验器核验 = 仅检查 c.mcpServer，
+    无 unknown-field 闭集检查 → 双字段模板（mcpServers:[] + mcpServer:null）
+    在 RC 线安全 ✓（本环境无 RC 构建，核验以 stable 分支源码为据）；
+  - kit：node --check OK；C1-C7 判据代码对照契约（C1 I5 形状分类
+    mcp.servers map + 逐 server mounted + model schema 精确集 + 双证一致；
+    C2 双端点同名 ping 故意碰撞 + leader 双前缀无重复；C3 双向隔离；
+    C4 override.set 收紧 + 下一 boundary 探针；C5 同 home 重启；C6 teardown
+    端口；C7 test-use pristine + :3080 只读探测）✓；端口护栏 = 3180..3186
+    硬范围（越界 dieFatal），:3080 仅只读 pre-flight ✓；
+  - base 干跑 summary（runs/mm-smoke-20260913T18-17-32Z）独立复算：
+    exit 2 / C1-C5 FAIL（legacy 单值签名 {"mounted":false,"serverName":null}
+    + 零 mcp__* 工具 = 设计内预期终点）/ C6+C7 PASS / testUse pre==post ✓。
+  - DEVIATIONS（环境事实/kit 自修，均留痕，接受）：:3180 被本会话 GUI 占用
+    → kit 自动选 3181（3180 族内）；:3080 本环境无 stable 实例 → C7
+    pre==post==unreachable；干跑前 2 次 kit 级 fatal 已修（ENOENT git-pre /
+    boot 解析孤儿 host，PID 已清，残 home 已删）。
+- **cherry-pick -x 31ecbc3 → int @ 29a06e5** 无冲突（与 C owned 面零交集）；
+  check-artifacts OK 1116；p4t6 @701 10/10（kit 在 dev/ 下，非 packages/**
+  扫描面，pin 不变）。
+- **推送**（PR #16 自动更新）。GREEN 运行（Gate C）待 C 合入后执行。
+
+### M2c — Task C 验收通过并合入 int（§6.1-6.11 矩阵 + 桥接 + I5 诊断）
+
+- **C FINAL 报告接收**（c826e830，DONE 两阶段）：917b761（RED：47 例矩阵 +
+  桥接 per-server doubles + h1 零 MCP 迁移 + b3 适配 + I5 + RED 证据）/
+  3319a3f（GREEN：观测点修正 + .d.mts I4 类型面 + b3 cast + GREEN 证据）。
+  RED @ 4ad989d（A-only）96 例 34F/62P 逐例归类 (a)23+(b)10 = RED PURE；
+  GREEN Gate A 164/164；未 push。
+- **主 Agent 独立核验（不轻信报告）**：
+  - owned diff 严格 = 10 文件（5 代码 + 4 evidence + .d.mts），dist/p4t6/
+    agent-bindings/A 产物零触碰 ✓；
+  - multi-mcp-wiring.test.ts 47 例逐 describe 核对契约覆盖：6.1 角色分裂
+    （leader{A,B}/expert-1{A}/expert-2{B}/expert-3 deny→零 fiber 且
+    configured∩durable 非空 + views≠mounts）/ 6.2 legacy C7 对照 / 6.3 零
+    MCP（即使模板+durable 双允许 A 仍零 fiber + views={}）/ 6.4 重名拒 +
+    读路径唯一性 / 6.4b 模板隔离（B fiber 对象不存在 = 非先挂再弃）/ 6.5
+    durable 实例收紧（A dispose + B 同 fiber 保留 + sibling 不受影响）/
+    6.6 激活失败回滚（round fiber disposed + 无 partial + 错误记在失败
+    server）/ 6.7 deny-first 排序（先 remove A 后 B 失败，无 partial B）/
+    6.8 port-null 双 case（未选中不阻 + 选中 fail-closed 点名 B + A 回滚）/
+    6.9 冷 resume（create+resume 双相同效集）/ 6.10 close exactly-once /
+    6.11 coverage 门（双探针 OTHER_MANAGED_MCP + delta 精确 + verdict
+    pass）✓；
+  - **GREEN 唯一修正核验**：W1 6.1 读 pre-close 快照 — 断言值 [A,B] 未变，
+    仅观测点移到刻意 close 之前（B 的 close() 合法清空 mcpFibers；测试
+    生命周期 bug 自修，非放宽）✓；
+  - **I5 诊断独立核验**：mcp.servers[<name>] = {mounted, allowed, source,
+    pendingNextBoundary, explanation 恒在 + unavailable/deniedBy/
+    activationError 条件在}；keys = mcpViews keys；零 MCP → {servers:{}}；
+    形状防御读（object/Map 守卫）✓；**与 D kit 的 i5-servers 分类器
+    契约级对接核验一致**（kit 判 mcp.servers 为对象 map）✓；
+  - t4a/p8s4b 零改动声明核验：grep 无单值引用，RED/GREEN 均 27/27、11/11 ✓。
+- **cherry-pick -x** 917b761 + 3319a3f 无冲突 → int @ ac40898。
+- **p4t6 DEC-1 union**：701→**702 实测**（+multi-mcp-wiring.test.ts；
+  quarantine hit set 保持 15）→ pin 落盘。
+- **主 Agent re-gate（独立 @ post-C）**：
+  - Gate A 8 文件 + p4t6 = **9 文件 174/174** ✓；
+  - runtime typecheck exit 0 + tools typecheck exit 0 ✓；
+  - **full runtime suite = 6 文件 / 8 测试失败 = pre-B 既有基线精确复现**
+    （167 文件 / 1878 测试；+1 文件 +50 测试 = 47 wiring + 3 h1 迁移；
+    H1-2/B3-4 转 GREEN；p6t1 本轮全量负载下亦绿，隔离 9/9）— **C 合并
+    零新增失败，套件回到既有基线** ✓。
+- **int 推送**（M2c，PR #16 自动更新）。收束阶段：post-C dist 重建
+  （tools plugin.mjs I5 → tools dist）→ Gate C 双 MCP real-host smoke。
+
+### Gate C（第一轮）— 双 MCP real-host GREEN 运行 + 归因裁决
+
+- **主 Agent 于 int 树 @ 4feac8c（A+B+C+D 齐）执行 D 的 kit**
+  （--repo .worktrees/multi-mcp-int；host=3181；mini 3491/3492；mock 3496）。
+  evidence = D worktree runs/mm-smoke-20260913T18-36-43Z/。
+- **结果 exit 2**：C6/C7 PASS（端口释放 + test-use pristine @ a66e470204 +
+  :3080 pre==post）；C1-C5 FAIL — **主 Agent 逐观测归因 = kit 两处设计缺口，
+  运行时（A/B/C）零契约违规**：
+  1. **C1/C2/C3 零挂载 = 契约正确行为**：基线 durable mcp cell =
+     unspecified（state-after-c1 raw: source={unspecified,static,null} +
+     deniedBy={by:team,reason:unspecifiedFailClosed}）— 冻结 mcp-facet.ts
+     （C4 零改动面）L12-18 明文 "unspecified → fail-closed: NO mount"。
+     blueprint capabilities.mcp = 静态模板门，不 seed durable cell；
+     durable allow 需 governance 记录 — kit world 从未 seed → 零挂载正确。
+  2. **C4 "next boundary" 探针未触发 root 边界**：/api/session/prompt
+     （root 原生输入）不在 glue 的 4 个边界调用点内（base 与 int 完全相同：
+     base L1988/2020/2183/2627 = int L2079/2111/2274/2718，B 未增删）→
+     pre-existing 布线，非 B 回归。证据：c4 快照 override 仍在
+     pendingNextBoundary（边界跑过则 applyBoundaryRecords 已计入
+     appliedRecordIds → pending 空）+ allowed=true 时 mounted=false。
+     cell-provenance 冻结语义：effective = 当前策略（pending = bookkeeping，
+     非两级门 — C5 boot:2 直接证明：applied=[] 时 allowed=true 即挂载）。
+- **通过面确认（I5 集成 + 持久化语义）**：三会话 /__p6t6/state 均 i5-servers
+  形状 ✓；override 被接受且策略生效（leader A allowed=true,
+  source=humanOverride）✓；**C5 restart 后 leader model-facing tools=[A]
+  = durable override 跨重启存活 + setup 重建挂载** ✓；C6/C7 ✓。
+- **裁决**：修 kit（D 的 owned 面，零运行时改动）— (1) boot 后 seed
+  team-scope mcp allow [A,B]（member 创建相即挂 + leader 经一次
+  executeTool 路径的 team tool 调用触发 root 边界挂 [A,B]）；(2) C4 探针
+  改为会跑 root 边界的 team tool 调用。D 已通知（send_message，含全部
+  证据引用与修复要求），修复 + 重跑 GREEN 后主 Agent 再验收。
+
+### M3 — Task D 收束合入 + Gate C 终态 + 收束门禁全量
+
+- **D GREEN 终跑独立复算**（runs/mm-smoke-20260913T18-45-41Z，33/33 逐条
+  核过）：C1 三会话 i5-servers + leader schema 恰 [A,B] + member 单 server
+  精确集 + 双证一致；C2 同名 ping 前缀隔离；C3 双向隔离（state+schema）；
+  C4 instance 收紧 [A] 后 B 真消失（schema 无 B、A 在、state
+  mounted=false+allowed=false = deny-first）；C5 同 home 重启逐 agent
+  effective 集逐位相等 + leader schema 恰 [A]（durable 记录跨重启存活）；
+  C6 端口全释放；C7 test-use pristine + HEAD + :3080。seed =
+  ovr-mcp-team-g0（team-scope allow [A,B]）。
+- **D 卫生缺口修复验收（4a74f79，37 文件全在 d-smoke）**：
+  - ensureJunctions 快照语义（原有非 symlink 一律不碰）+ restoreJunctions
+    teardown + **新判据 C8「目标树扫描面无漂移」**（pre/post 各跑 p4t6 同一
+    扫描器：目录集 + filesScanned + kit 目录全删 + 原有 junction 全复原）；
+  - 规范终跑 mm-smoke-20260913T18-55-50Z：**exit 0，37/37**（含 C8 4/4：
+    9 目录/702 文件 pre==post、all 6 restored、none 残留）— 独立复算确认；
+  - D 另发现并复原第二处残留：两树 packages/runtime/node_modules 下 6 条
+    被重指向 test-use hoist 的 pnpm junction（12 条）→ 各自 .pnpm 单变体
+    target；主 Agent 独立 spot-verify（readlink = int 树自身 .pnpm）+
+    终扫 9 目录/702 文件 + packages/node_modules 不存在 + porcelain 空 ✓。
+  - 中间 TDZ fatal（18-55-11Z，C8 编辑声明位置）fail-loud 留档 + 空 home
+    残留已清（kit 审计链完整：八次运行）。
+  - 主 Agent 处置 D 移交项：int 树 .tmp-t12a-b2-home/（mtime 18:49:42 =
+    本会话收束全量套件的 t12a-b2 既有失败测试 scratch，非 kit 产物）→
+    已删（与 M2c 前同类残留，测试自身失败路径不清理 — base 既有测试债）。
+- **cherry-pick -x** 58b133f → 0b2fbe1（GREEN 轮）+ 4a74f79 → 6f7e1f2
+  （卫生轮）；p4t6 @702 10/10；artifacts OK 1116。
+- **收束门禁（主 Agent 独立 @ 终态，逐项）**：
+  - runtime 全量 = **6 文件/8 测试 = pre-B 既有基线精确**（1870/1878 绿）✓
+  - tools 全量 = 81/82 — 唯一失败 p6t6-actions「worker→leader 直投」
+    **独立证明 base 既有**（主 worktree @ b49f4239 同失败 13/14；import
+    闭包不触及 A/B 文件；零 I5 引用；隔离重跑确定性复现）— master 级
+    既有债，与 6 个 runtime 文件同类，留痕待用户知悉（不在本轮范围）✓
+  - typecheck runtime/tools/domain 全 exit 0 ✓
+  - p4t6 10/10 @ 702（pin 链：697→699 pre-base / 699→701 A / 701→702 C）✓
+  - pnpm build + build:composition + check-artifacts-committed OK 1116 ✓
+  - **zero-core**：references/deepseek-harness porcelain 空 @ c291e7961a +
+    冻结 tag legacy-agent-team-pre-vnext = a3ab319927 未动（分支 ref 本环境
+    未物化，符合 AGENTS.md 迁移状态注记）✓；test-use porcelain 空 +
+    HEAD a66e470204（八次运行 C7 全绿）✓
+  - homes：无本轮 mm-smoke 残留（kit teardown 全清；仅存 20260912 前例
+    历史 home）✓
+  - 全 worktree 终态 porcelain 空 ✓
+- **int 推送（M3 = 终态，PR #16 自动更新）**。四任务全部收束；待 PR body
+  更新 + 用户审查 merge。
+
+- **PR #16 body 更新至终态**（gh CLI `pr edit` 因 Projects-classic
+  弃用字段 GraphQL 失败 → REST PATCH /pulls/16 成功；body 现含完整里程碑链、
+  Gate C 终态 37/37、门禁全量结果、3 条已知事项留痕）。

@@ -1,0 +1,331 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-mm-smoke-root-mm-smoke-20260913T18-45-08Z",
+  "teamSession": {
+    "rootSessionId": "session-mm-smoke-root-mm-smoke-20260913T18-45-08Z",
+    "blueprintId": "mm-smoke-bp-1",
+    "revision": "1",
+    "contentHash": "sha256:a2dd363ac5964893e6d4564ea45a8f1d770c72e310753f36b1a3ca35f92139b8",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "createdAt": "2026-09-13T18:45:15.302Z",
+    "generation": 8
+  },
+  "members": [
+    {
+      "instanceId": "inst-0g9qk900gul1",
+      "templateId": "worker-a",
+      "label": "mm-smoke-m1",
+      "childSessionId": "session-team-child-9a5a036d1d2b4af6685da9b07df15e48",
+      "lifecycle": "CREATED",
+      "activityVersion": 1
+    },
+    {
+      "instanceId": "inst-11qj2lh11ah6",
+      "templateId": "worker-b",
+      "label": "mm-smoke-m2",
+      "childSessionId": "session-team-child-ca4edbb7fcf9aceaad7e8ef9b79e9c33",
+      "lifecycle": "CREATED",
+      "activityVersion": 1
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [
+      {
+        "recordId": "ovr-mcp-inst-leader-g0",
+        "kind": "human-override",
+        "scope": "instance",
+        "instanceId": "inst-leader",
+        "values": {
+          "mcp": {
+            "items": [
+              "mcp_signal"
+            ],
+            "kind": "allow"
+          }
+        },
+        "generation": 1,
+        "updatedAt": "2026-09-13T18:45:17.072Z"
+      },
+      {
+        "recordId": "ovr-mcp-team-g0",
+        "kind": "human-override",
+        "scope": "team",
+        "values": {
+          "mcp": {
+            "items": [
+              "mcp_signal",
+              "mcp_designer"
+            ],
+            "kind": "allow"
+          }
+        },
+        "generation": 1,
+        "updatedAt": "2026-09-13T18:45:16.311Z"
+      }
+    ],
+    "sessions": {
+      "session-mm-smoke-root-mm-smoke-20260913T18-45-08Z": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "ovr-mcp-inst-leader-g0"
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal]; team humanOverride(origin=human, ovr-mcp-inst-leader-g0) allow[mcp_signal]; external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": false,
+              "allowed": false,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "ovr-mcp-inst-leader-g0"
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [],
+              "explanation": "mcp: effective allow[mcp_signal]; team humanOverride(origin=human, ovr-mcp-inst-leader-g0) allow[mcp_signal]; external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      },
+      "session-team-child-9a5a036d1d2b4af6685da9b07df15e48": {
+        "instanceId": "inst-0g9qk900gul1",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "ovr-mcp-team-g0"
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [
+                {
+                  "recordId": "ovr-mcp-inst-leader-g0",
+                  "kind": "human-override",
+                  "scope": "instance",
+                  "generation": 1,
+                  "updatedAt": "2026-09-13T18:45:17.072Z",
+                  "values": {
+                    "mcp": {
+                      "items": [
+                        "mcp_signal"
+                      ],
+                      "kind": "allow"
+                    }
+                  }
+                }
+              ],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin=human, ovr-mcp-team-g0) allow[mcp_signal,mcp_designer]; external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": false,
+              "allowed": true,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "ovr-mcp-team-g0"
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [
+                {
+                  "recordId": "ovr-mcp-inst-leader-g0",
+                  "kind": "human-override",
+                  "scope": "instance",
+                  "generation": 1,
+                  "updatedAt": "2026-09-13T18:45:17.072Z",
+                  "values": {
+                    "mcp": {
+                      "items": [
+                        "mcp_signal"
+                      ],
+                      "kind": "allow"
+                    }
+                  }
+                }
+              ],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin=human, ovr-mcp-team-g0) allow[mcp_signal,mcp_designer]; external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      },
+      "session-team-child-ca4edbb7fcf9aceaad7e8ef9b79e9c33": {
+        "instanceId": "inst-11qj2lh11ah6",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {
+            "mcp_signal": {
+              "mounted": false,
+              "allowed": true,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "ovr-mcp-team-g0"
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [
+                {
+                  "recordId": "ovr-mcp-inst-leader-g0",
+                  "kind": "human-override",
+                  "scope": "instance",
+                  "generation": 1,
+                  "updatedAt": "2026-09-13T18:45:17.072Z",
+                  "values": {
+                    "mcp": {
+                      "items": [
+                        "mcp_signal"
+                      ],
+                      "kind": "allow"
+                    }
+                  }
+                }
+              ],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin=human, ovr-mcp-team-g0) allow[mcp_signal,mcp_designer]; external exists=yes, hard=unspecified"
+            },
+            "mcp_designer": {
+              "mounted": true,
+              "allowed": true,
+              "source": {
+                "layer": "humanOverride",
+                "origin": "human",
+                "recordId": "ovr-mcp-team-g0"
+              },
+              "unavailable": false,
+              "pendingNextBoundary": [
+                {
+                  "recordId": "ovr-mcp-inst-leader-g0",
+                  "kind": "human-override",
+                  "scope": "instance",
+                  "generation": 1,
+                  "updatedAt": "2026-09-13T18:45:17.072Z",
+                  "values": {
+                    "mcp": {
+                      "items": [
+                        "mcp_signal"
+                      ],
+                      "kind": "allow"
+                    }
+                  }
+                }
+              ],
+              "explanation": "mcp: effective allow[mcp_signal,mcp_designer]; team humanOverride(origin=human, ovr-mcp-team-g0) allow[mcp_signal,mcp_designer]; external exists=yes, hard=unspecified"
+            }
+          }
+        }
+      }
+    }
+  },
+  "observations": [
+    "alpha1: team skill 'base' skipped (not-in-catalog)",
+    "alpha1: team skill 'base' skipped (not-in-catalog)",
+    "alpha1: team skill 'base' skipped (not-in-catalog)"
+  ]
+}

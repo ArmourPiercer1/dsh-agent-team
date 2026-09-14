@@ -1,0 +1,4 @@
+# :3080 pre-flight probe (READ-ONLY; TEST_METHODS §3: never touch)
+url: http://127.0.0.1:3080/
+httpStatus: unreachable: fetch failed
+at: 2026-09-13T18:36:43.694Z

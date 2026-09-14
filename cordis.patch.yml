@@ -79,7 +79,11 @@
         seedMembers: []
         generation: 1
         deniedSelection: null
-        mcpServer: null
+        # Canonical 0..N MCP configuration (empty array = no MCP). The legacy
+        # single `mcpServer` field is still accepted during this alpha; when
+        # both are present, `mcpServer` must be null (ambiguous otherwise).
+        # See docs/INSTALL.md §3.3 for the full semantics.
+        mcpServers: []
         staticModel:
           provider: deepseek-official
           model: deepseek-v4-flash

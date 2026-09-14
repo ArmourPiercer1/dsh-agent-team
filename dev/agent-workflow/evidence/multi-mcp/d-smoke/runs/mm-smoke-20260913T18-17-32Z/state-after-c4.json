@@ -1,0 +1,179 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-mm-smoke-root-mm-smoke-20260913T18-17-32Z",
+  "teamSession": {
+    "rootSessionId": "session-mm-smoke-root-mm-smoke-20260913T18-17-32Z",
+    "blueprintId": "mm-smoke-bp-1",
+    "revision": "1",
+    "contentHash": "sha256:a2dd363ac5964893e6d4564ea45a8f1d770c72e310753f36b1a3ca35f92139b8",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "createdAt": "2026-09-13T18:17:40.040Z",
+    "generation": 8
+  },
+  "members": [
+    {
+      "instanceId": "inst-0mk99qt032eo",
+      "templateId": "worker-b",
+      "label": "mm-smoke-m2",
+      "childSessionId": "session-team-child-f48fd277107af3a0dc9c26f2e9b7e416",
+      "lifecycle": "CREATED",
+      "activityVersion": 1
+    },
+    {
+      "instanceId": "inst-1907o4o0i4ou",
+      "templateId": "worker-a",
+      "label": "mm-smoke-m1",
+      "childSessionId": "session-team-child-7b345302d4655c37597ff2bb434b13ef",
+      "lifecycle": "CREATED",
+      "activityVersion": 1
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [
+      {
+        "recordId": "ovr-mcp-inst-leader-g0",
+        "kind": "human-override",
+        "scope": "instance",
+        "instanceId": "inst-leader",
+        "values": {
+          "mcp": {
+            "items": [
+              "mcp_signal"
+            ],
+            "kind": "allow"
+          }
+        },
+        "generation": 1,
+        "updatedAt": "2026-09-13T18:17:41.753Z"
+      }
+    ],
+    "sessions": {
+      "session-mm-smoke-root-mm-smoke-20260913T18-17-32Z": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-team-child-7b345302d4655c37597ff2bb434b13ef": {
+        "instanceId": "inst-1907o4o0i4ou",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      },
+      "session-team-child-f48fd277107af3a0dc9c26f2e9b7e416": {
+        "instanceId": "inst-0mk99qt032eo",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "mm-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "mounted": false,
+          "serverName": null
+        }
+      }
+    }
+  },
+  "observations": [
+    "alpha1: team skill 'base' skipped (not-in-catalog)",
+    "alpha1: team skill 'base' skipped (not-in-catalog)",
+    "alpha1: team skill 'base' skipped (not-in-catalog)"
+  ]
+}

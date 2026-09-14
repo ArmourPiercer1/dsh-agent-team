@@ -92,14 +92,20 @@ const control = await buildWorld({ hard: {}, capabilityExists: {} })
 
 const deniedHandle = denied.agents.handles.get(CHILD)
 const controlHandle = control.agents.handles.get(CHILD)
-const deniedView = denied.binding.resolveConsumptionViews(CHILD) as {
+// multi-mcp (Task C, minimal adaptation — contract I4): the per-server
+// views — this world configures the bridge's default single server, so
+// the mcp facet view lives under its server name.
+const DENIED_SERVER = 't12a-mini-mcp'
+// `as unknown as` — the bridge's declared view shape is looser than the
+// B3 fields read here (selection/unavailability are runtime-resolved).
+const deniedView = denied.binding.resolveConsumptionViews(CHILD) as unknown as {
   instanceId: string
   modelView: {
     selection: { provider: string; model: string } | undefined
     unavailable: boolean
     deniedBy: { by: string; reason: string } | undefined
   }
-  mcpView: { allowed: boolean; deniedBy: { by: string; reason: string } | undefined }
+  mcpViews?: Record<string, { allowed: boolean; deniedBy?: { by: string; reason: string } }>
 }
 const controlView = control.binding.resolveConsumptionViews(CHILD) as {
   modelView: { selection: { provider: string; model: string } | undefined }
@@ -141,7 +147,9 @@ describe('T12-B3 external hard facts at the consumption boundary', () => {
   })
 
   it('B3-4 the external hard deny is capability-scoped: the model-only deny never denies the mcp facet by external', () => {
-    const mcpDeniedBy = deniedView.mcpView.deniedBy
+    // multi-mcp (Task C): the per-server mcp facet view (single-server
+    // world — the bridge default's server name).
+    const mcpDeniedBy = deniedView.mcpViews?.[DENIED_SERVER]?.deniedBy
     const deniedByExternal = mcpDeniedBy !== undefined && mcpDeniedBy.by === 'external'
     expect(deniedByExternal).toBe(false)
   })

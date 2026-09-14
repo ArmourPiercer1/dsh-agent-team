@@ -1,0 +1,1115 @@
+# full-suite on B tree (blast radius)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime
+
+ ✓ packages/runtime/test/bp1-blueprint-authority.test.ts (29 tests) 35ms
+ ✓ packages/runtime/test/p5t1-overlay-slots.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/p5t3-future-boundary.test.ts (9 tests) 9ms
+ ✓ packages/runtime/test/p5t1-double-bind.test.ts (8 tests) 10ms
+ ✓ packages/runtime/test/p5t4-intersection.test.ts (15 tests) 15ms
+ ✓ packages/runtime/test/p6t1-checks.test.ts (27 tests) 19ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 8ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 2ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 3ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 0ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ✓ packages/runtime/test/p6t3-send-delivery.test.ts (9 tests) 29ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 9ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 5ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 0ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 0ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 1ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+ ✓ packages/runtime/test/p6t2-actions.test.ts (30 tests) 10ms
+ ✓ packages/runtime/test/a2-canonical-operation.test.ts (31 tests) 14ms
+ ✓ packages/runtime/test/h1a-pre-execute-endcap.test.ts (49 tests) 5ms
+ ✓ packages/runtime/test/p6t4-negatives.test.ts (11 tests) 9ms
+ ✓ packages/runtime/test/d5-instance-contract.test.ts (9 tests) 30ms
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (4 tests | 1 failed) 8ms
+     ✓ H1-1 boot + member setup with mcpServer: null must not throw (both agents settle live) 2ms
+     × H1-2 the consumption view stays valid with no MCP facet (mcpView === null) 4ms
+     ✓ H1-3 no reconcile/create attempt: no MCP plugin fiber mounted on any agent 0ms
+     ✓ H1-4 control: with a configured server the mcp facet exists (non-null) 0ms
+ ❯ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests | 1 failed) 10ms
+     ✓ B3-1 external hard DENY + override ALLOW for the same capability -> no selection in the consumption view 2ms
+     ✓ B3-2 the ACTUAL agent boundary installs the denied selection (not the allowed model, not the baseline) 1ms
+     ✓ B3-3 control: with empty external facts the same override ALLOWs the model (the override is genuinely in force) 1ms
+     × B3-4 the external hard deny is capability-scoped: the model-only deny never denies the mcp facet by external 3ms
+ ✓ packages/runtime/test/p5t1-fresh-cold-paths.test.ts (8 tests) 10ms
+ ✓ packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests) 9ms
+ ✓ packages/runtime/test/tcm-m3-root-initial-work.test.ts (18 tests) 13ms
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ✓ packages/runtime/test/p8s2-leader-contract.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/a6a-production-wiring.test.ts (52 tests) 22ms
+ ✓ packages/runtime/test/a5a-pre-execute.test.ts (50 tests) 11ms
+ ✓ packages/runtime/test/issue1-async-delegation.test.ts (18 tests) 4ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts (12 tests) 9ms
+ ✓ packages/runtime/test/p8s7r2-disposed-history.test.ts (10 tests) 9ms
+ ✓ packages/runtime/test/tcm-g1-s6-integration.test.ts (11 tests) 5ms
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 10ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 2ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 1ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 0ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 5ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 0ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ✓ packages/runtime/test/p5t2-persona-compatible.test.ts (3 tests) 9ms
+ ✓ packages/runtime/test/p5t2-persona-complete-fatal.test.ts (3 tests) 8ms
+ ✓ packages/runtime/test/p8s7r1-create-params.test.ts (8 tests) 5ms
+ ✓ packages/runtime/test/a3-permission-resolver.test.ts (28 tests) 13ms
+ ✓ packages/runtime/test/p7t2-escalation.test.ts (22 tests) 8ms
+ ✓ packages/runtime/test/p5t1-binder-core.test.ts (15 tests) 9ms
+ ✓ packages/runtime/test/p7t5-failure-before-root-create.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p5t3-restart.test.ts (3 tests) 9ms
+ ✓ packages/runtime/test/d1-team-ownership-index.test.ts (16 tests) 9ms
+ ✓ packages/runtime/test/p8t2-overlay.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/p5t6-cold-member.test.ts (8 tests) 8ms
+ ✓ packages/runtime/test/p8s7r4-bc22-idempotency.test.ts (5 tests) 8ms
+ ✓ packages/runtime/test/f9-s6-resolve-control.test.ts (14 tests) 9ms
+ ✓ packages/runtime/test/mcp-supply-config.test.ts (39 tests) 12ms
+ ✓ packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests) 13ms
+ ✓ packages/runtime/test/p5t5-fresh-root.test.ts (9 tests) 6ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-projection.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (11 tests) 4ms
+ ✓ packages/runtime/test/t14h-probe-merge.test.ts (10 tests) 7ms
+ ✓ packages/runtime/test/p8s7r1-initial-work.test.ts (9 tests) 8ms
+ ✓ packages/runtime/test/p5t2-persona-no-persona.test.ts (3 tests) 7ms
+ ✓ packages/runtime/test/p6t1-explicit.test.ts (26 tests) 9ms
+ ✓ packages/runtime/test/p6t2-authority.test.ts (10 tests) 6ms
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/f3a-lock-scope.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (27 tests) 5ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-projection.test.ts > p8s6-projection teardown > the C2 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-projection.test.ts (14 tests) 9ms
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/f9-control-exactly-once.test.ts (8 tests) 4ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts > p8s7r2-policy-state-durable teardown > the R2-1 worlds are disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p7t4-repeat-reconcile.test.ts (8 tests) 5ms
+ ✓ packages/runtime/test/p8s7r2-policy-state-durable.test.ts (8 tests) 8ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/d1-s6-remote-v3.test.ts (14 tests) 6ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts > p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-08, projection v2) > the R2-2 worlds are disposed (close + stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-effective-config.test.ts (19 tests) 10ms
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 2 failed) 11ms
+     × two activated results with distinct instance ids and child Sessions 7ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 0ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 1ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts > R2-3 (P8-S7-R2): BQ-11 the model state view > R23.16: every world root closed cleanly and the scratch dirs are destroyed (reversible)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-model-state.test.ts (16 tests) 13ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p6t2-quota.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/p5t6-evict-readmit.test.ts (7 tests) 6ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p5t6-fresh-member.test.ts (24 tests) 10ms
+ ✓ packages/runtime/test/p7t3-lifecycle-fact.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p7t2-override-precedence.test.ts (12 tests) 8ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (11 tests) 5ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p6t2-addressing.test.ts (13 tests) 6ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p6t5-authority.test.ts (12 tests) 4ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t2-future-boundary.test.ts (16 tests) 10ms
+ ✓ packages/runtime/test/bp1-dual-team-gate.test.ts (8 tests) 7ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t2-policy-state.test.ts (11 tests) 5ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:343:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:350:97)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:924:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1280:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/p8s5a-production-assembly.test.ts:697:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/p8s5a-production-assembly.test.ts:685:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:931:13)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1280:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/p8s5a-production-assembly.test.ts:724:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/p8s5a-production-assembly.test.ts:685:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p6t5-intervals.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p8s5a-production-assembly.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/h4-rule-identity.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/p6t1-recovery.test.ts (15 tests) 8ms
+ ✓ packages/runtime/test/p8s4b-model-consumption.test.ts (11 tests) 4ms
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 34ms
+ ✓ packages/runtime/test/p7t3-archive-running.test.ts (7 tests) 5ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t4-crash-sidecar.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p7t2-creation-fields.test.ts (9 tests) 6ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1257:11)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts (4 tests) 5ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:825:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1262:27)
+
+stderr | packages/runtime/test/p8s6-pagination.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/tcm-d4-root-context.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/t12m4-remote-mount.test.ts (9 tests) 6ms
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t4-root-fork.test.ts (17 tests) 4ms
+ ✓ packages/runtime/test/p8s7r2-residency-resuming.test.ts (7 tests) 6ms
+stderr | packages/runtime/test/p8s6-pagination.test.ts > p8s6-pagination teardown > the C6 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-pagination.test.ts (9 tests) 7ms
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts > p8s6-remote-commands teardown > the C4 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-remote-commands.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/p7t3-dispose-race.test.ts (6 tests) 6ms
+ ✓ packages/runtime/test/p5t1-ordinary-noop.test.ts (5 tests) 9ms
+ ✓ packages/runtime/test/issue2-capability-permission-precedence.test.ts (12 tests) 7ms
+ ✓ packages/runtime/test/issue2-real-preset-restriction.test.ts (13 tests) 4ms
+ ✓ packages/runtime/test/p5t2-persona-cold-bind.test.ts (3 tests) 7ms
+ ✓ packages/runtime/test/p5t4-cold-resume.test.ts (1 test) 8ms
+ ✓ packages/runtime/test/p7t1-ack-fingerprint.test.ts (16 tests) 8ms
+ ✓ packages/runtime/test/p7t5-snapshot-once.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/p7t1-probe-generation.test.ts (19 tests) 6ms
+ ✓ packages/runtime/test/t3-skills-mcp-adapter.test.ts (11 tests) 7ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t1-inflight-drift.test.ts (14 tests) 3ms
+stderr | packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/f3c-messaging-sibling.test.ts (2 tests) 3ms
+ ✓ packages/runtime/test/tcm-m1-s6-v2-routing.test.ts (5 tests) 5ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p6t5-projection.test.ts (8 tests) 6ms
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plugin context (the web profile provides it through the workspace row — the team row hard-injects it)
+    at assertWorkspaceRegistryLike (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/workspace-attach.ts:65:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:948:7)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1280:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/tcm-m2-workspace-attach.test.ts:421:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolveByPath and list to be functions
+    at assertWorkspaceRegistryLike (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/workspace-attach.ts:75:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:948:7)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1280:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/tcm-m2-workspace-attach.test.ts:442:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t5-target-inspect.test.ts (6 tests) 4ms
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-push-reconnect.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: schema_meta stamp for store 'schema_meta' is missing (partial create or corruption)
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/storage/schema/errors.ts:98:10)
+    at openTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/storage/repositories/team-domain.ts:219:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1012:14)
+
+stderr | packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p6t4-external-policy.test.ts (6 tests) 4ms
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p7t2-provenance.test.ts (12 tests) 9ms
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p7t4-ordinary-fork.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/p8s7r4-handoff-wiring.test.ts (8 tests) 6ms
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-t12b2foreign" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1271:21)
+
+ ✓ packages/runtime/test/p8s4b-override-admission.test.ts (28 tests) 8ms
+ ✓ packages/runtime/test/p5t5-admission.test.ts (5 tests) 7ms
+ ✓ packages/runtime/test/t12b2-resume-separation.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/t12b6-handoff-agent-start.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/tcm-m2-workspace-attach.test.ts (14 tests) 6ms
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p7t1-cold-resume.test.ts (12 tests) 10ms
+ ✓ packages/runtime/test/p6t4-allow-once.test.ts (4 tests) 5ms
+stderr | packages/runtime/test/p8s6-push-reconnect.test.ts > p8s6-push-reconnect teardown > the C5 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+ ✓ packages/runtime/test/p8s6-push-reconnect.test.ts (5 tests) 4ms
+stderr | packages/runtime/test/bp1-red-probe.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-bp1rednofit" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1271:21)
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/bp1-red-probe.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/a2c5-read-fingerprint.test.ts (10 tests) 8ms
+ ✓ packages/runtime/test/p7t3-restore-no-agent.test.ts (6 tests) 6ms
+ ✓ packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests) 15ms
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 9 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/storage/repositories/team-domain.ts:180:13)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1009:14)
+
+ ✓ packages/runtime/test/p8s7r4-handoff-surface.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/t12b1-real-create.test.ts (4 tests) 6ms
+ ✓ packages/runtime/test/p8t2-negative.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/p8s4a-entrypoints.test.ts (11 tests) 8ms
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] bundled team skill "bad-name" skipped: the frontmatter name "Bad_Name" is not a valid kebab-case skill name
+[dsh-agent-team] bundled team skill "missing-description" skipped: SKILL.md frontmatter must carry a kebab-case "name" and a non-empty "description"
+
+stdout | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+
+ ✓ packages/runtime/test/team-skills.test.ts (9 tests) 7ms
+ ✓ packages/runtime/test/p6t4-deny.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/p8t2-cold.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/p7t5-source-mutate.test.ts (4 tests) 4ms
+ ✓ packages/runtime/test/p7t5-no-creation-scan.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/p7t4-member-fork.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/t12b4-principal-context.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/tcm-m3-root-work-glue.test.ts (9 tests) 5ms
+stderr | packages/runtime/test/p8s6-principal.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s4b-cell-provenance.test.ts (10 tests) 4ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r4-fork-describe.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p6t4-restart.test.ts (3 tests) 5ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 9 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/storage/repositories/team-domain.ts:180:13)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1009:14)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-principal.test.ts > p8s6-principal teardown > the C3 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 8ms
+ ✓ packages/runtime/test/p6t4-stale.test.ts (5 tests) 4ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/root.ts:1954:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1271:21)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p5t5-cold-root.test.ts (7 tests) 6ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8s4a-chain.test.ts (11 tests) 5ms
+ ✓ packages/runtime/test/p7t3-descendant-drain.test.ts (5 tests) 5ms
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/d2-s6-ensure-root-live.test.ts (10 tests) 7ms
+stderr | packages/runtime/test/bp1-freeze-barrier.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8s7r4-fork-describe.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/rmr-create-or-open-boot.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/p8t2-terminal.test.ts (5 tests) 4ms
+stderr | packages/runtime/test/bp1-freeze-barrier.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/bp1-freeze-barrier.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/g8s1-generation-stamp.test.ts (5 tests) 4ms
+stderr | packages/runtime/test/bp1-freeze-barrier.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p6t5-restart.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/p6t1-delegate.test.ts (15 tests) 8ms
+ ✓ packages/runtime/test/bp1-freeze-barrier.test.ts (3 tests) 5ms
+ ✓ packages/runtime/test/p6t5-progress.test.ts (13 tests) 5ms
+ ✓ packages/runtime/test/issue1-serial-blocking.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/p8t2-fifty.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/pbf-default-artifact-urls.test.ts (9 tests) 7ms
+ ✓ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/p8s5a-host-loadability.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/t12h4-s6-fail-closed.test.ts (2 tests) 4ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts (8 tests) 3ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts (5 tests) 2ms
+stderr | packages/runtime/test/runtime.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/runtime.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:343:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:349:64)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:924:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1280:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/runtime.test.ts:28:20
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/runtime.test.ts (3 tests) 2ms
+ ✓ packages/runtime/test/d1-member-base-tools.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/h5-bash-effects.test.ts (25 tests) 5ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts (5 tests) 2ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/bp1-red-glue-probe.test.ts (2 tests) 2ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 100ms — the connection service appeared after the mount step)
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear within 200ms (headless host, or the web connection service was not provided in time)
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.handle to be a function
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative integer (milliseconds) when present
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:343:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:426:5)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:924:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/src/plugin/host.ts:1280:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/packages/runtime/test/rmr-remote-mount-race.test.ts:328:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-b-runtime/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+ ✓ packages/runtime/test/rmr-remote-mount-race.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests) 8ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: root base tools unavailable for 'session-p8s3b-g1': the agentPresets service is absent from the glue deps (or lacks a callable mount) — the leader (root) must never run without its ordinary base tools (code: root-base-tools-unavailable)
+ ❯ rootBaseToolsUnavailable packages/runtime/src/plugin/live/agent-bindings.mjs:2403:19
+    2401|   // setup (the root), before any member is created.
+    2402|   function rootBaseToolsUnavailable(sessionId, reason) {
+    2403|     const error = new Error(`agent-bindings: root base tools unavailab…
+       |                   ^
+    2404|     error.code = 'root-base-tools-unavailable'
+    2405|     observations.push(`p6t6: root-base-tools-unavailable for ${session…
+ ❯ Object.setup packages/runtime/src/plugin/live/agent-bindings.mjs:1246:15
+ ❯ Object.create packages/runtime/test/p8s3b-result-effects.test.ts:345:46
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2239:29
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:602:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ ❯ capabilityTemplateUnresolved packages/runtime/src/plugin/live/agent-bindings.mjs:2424:19
+    2422|     if (details.instanceId !== undefined) parts.push(`instanceId=${det…
+    2423|     if (details.templateId !== undefined) parts.push(`templateId=${det…
+    2424|     const error = new Error(`agent-bindings: capability template unres…
+       |                   ^
+    2425|     error.code = 'capability-template-unresolved'
+    2426|     error.reason = reason
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1085:13
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1177:29
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:541:36
+ ❯ Object.resume packages/runtime/test/t12a-live-bridge.mjs:561:14
+ ❯ Object.createChildSession packages/runtime/src/plugin/live/agent-bindings.mjs:1915:37
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:90:39
+ ❯ withDshHome packages/runtime/test/t12a-live-bridge.mjs:943:18
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:88:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  packages/runtime/test/t12a-glue-handoff-ports.test.ts [ packages/runtime/test/t12a-glue-handoff-ports.test.ts ]
+TeamContractError: blueprint document must start with a --- frontmatter delimiter line
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ splitFrontmatter packages/domain/blueprint/src/parse.ts:77:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1021:15
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:890:18
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:1003:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1043:23
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1177:29
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:541:36
+ ❯ Object.create packages/runtime/test/t12a-live-bridge.mjs:556:14
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2239:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:445:50
+    443|     // no block with the foreign root is ever installed.
+    444|     expect(foreignSetupError instanceof Error).toBe(true)
+    445|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    446|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    447|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:154:31
+    152| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    153|   it('two activated results with distinct instance ids and child Sessi…
+    154|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    155|     expect(p1?.results.length).toBe(2)
+    156|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:167:30
+    165|
+    166|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    167|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    168|     expect(p1?.memberCount).toBe(2)
+    169|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:358:11
+    356| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    357|   if (!isMessagingError(error)) {
+    358|     throw new Error(
+       |           ^
+    359|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    360|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+
+ FAIL  packages/runtime/test/t12a-b3-external-deny.test.ts > T12-B3 external hard facts at the consumption boundary > B3-4 the external hard deny is capability-scoped: the model-only deny never denies the mcp facet by external
+TypeError: Cannot read properties of undefined (reading 'deniedBy')
+ ❯ packages/runtime/test/t12a-b3-external-deny.test.ts:144:44
+    142|
+    143|   it('B3-4 the external hard deny is capability-scoped: the model-only…
+    144|     const mcpDeniedBy = deniedView.mcpView.deniedBy
+       |                                            ^
+    145|     const deniedByExternal = mcpDeniedBy !== undefined && mcpDeniedBy.…
+    146|     expect(deniedByExternal).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  packages/runtime/test/t12a-h1-nullable-mcp.test.ts > T12-H1 nullable MCP server config > H1-2 the consumption view stays valid with no MCP facet (mcpView === null)
+AssertionError: expected undefined to be null // Object.is equality
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts:77:32
+     75|   it('H1-2 the consumption view stays valid with no MCP facet (mcpView…
+     76|     expect(memberView.instanceId).toBe(INSTANCE)
+     77|     expect(memberView.mcpView).toBe(null)
+       |                                ^
+     78|     expect(rootView.mcpView).toBe(null)
+     79|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  9 failed | 157 passed (166)
+      Tests  12 failed | 1816 passed (1828)
+   Start at  18:16:59
+   Duration  12.46s (transform 28.76s, setup 0ms, import 104.57s, tests 1.20s, environment 16ms)
+
+# control: same 6 files on INT tip 4ad989d (no B changes) — identical failure set = pre-existing
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-int
+
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 6ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 1ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 2ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 0ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 9ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 5ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 0ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 1ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 7ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 1ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 0ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 0ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 4ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 0ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: root base tools unavailable for 'session-p8s3b-g1': the agentPresets service is absent from the glue deps (or lacks a callable mount) — the leader (root) must never run without its ordinary base tools (code: root-base-tools-unavailable)
+ ❯ rootBaseToolsUnavailable packages/runtime/src/plugin/live/agent-bindings.mjs:2312:19
+    2310|   // setup (the root), before any member is created.
+    2311|   function rootBaseToolsUnavailable(sessionId, reason) {
+    2312|     const error = new Error(`agent-bindings: root base tools unavailab…
+       |                   ^
+    2313|     error.code = 'root-base-tools-unavailable'
+    2314|     observations.push(`p6t6: root-base-tools-unavailable for ${session…
+ ❯ Object.setup packages/runtime/src/plugin/live/agent-bindings.mjs:1172:15
+ ❯ Object.create packages/runtime/test/p8s3b-result-effects.test.ts:345:46
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2148:29
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:602:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ ❯ capabilityTemplateUnresolved packages/runtime/src/plugin/live/agent-bindings.mjs:2333:19
+    2331|     if (details.instanceId !== undefined) parts.push(`instanceId=${det…
+    2332|     if (details.templateId !== undefined) parts.push(`templateId=${det…
+    2333|     const error = new Error(`agent-bindings: capability template unres…
+       |                   ^
+    2334|     error.code = 'capability-template-unresolved'
+    2335|     error.reason = reason
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1011:13
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1103:29
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:541:36
+ ❯ Object.resume packages/runtime/test/t12a-live-bridge.mjs:561:14
+ ❯ Object.createChildSession packages/runtime/src/plugin/live/agent-bindings.mjs:1824:37
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:90:39
+ ❯ withDshHome packages/runtime/test/t12a-live-bridge.mjs:943:18
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:88:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  packages/runtime/test/t12a-glue-handoff-ports.test.ts [ packages/runtime/test/t12a-glue-handoff-ports.test.ts ]
+TeamContractError: blueprint document must start with a --- frontmatter delimiter line
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ splitFrontmatter packages/domain/blueprint/src/parse.ts:77:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1021:15
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:890:18
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:929:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:969:23
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1103:29
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:541:36
+ ❯ Object.create packages/runtime/test/t12a-live-bridge.mjs:556:14
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:2148:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:445:50
+    443|     // no block with the foreign root is ever installed.
+    444|     expect(foreignSetupError instanceof Error).toBe(true)
+    445|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    446|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    447|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:358:11
+    356| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    357|   if (!isMessagingError(error)) {
+    358|     throw new Error(
+       |           ^
+    359|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    360|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  8 failed | 9 passed (17)
+   Start at  18:17:44
+   Duration  754ms (transform 2.20s, setup 0ms, import 1.77s, tests 22ms, environment 0ms)
+

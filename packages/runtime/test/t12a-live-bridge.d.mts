@@ -212,6 +212,16 @@ export interface AgentsDoubleOptions {
   readonly whenIdleBehavior?: (agent: object) => Promise<void>
   /** The world's global prompt layer (T12-M2; default: the DSH service pair). */
   readonly systemPromptGlobals?: GlobalPromptSection[]
+  /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
+   *  injection — a recorded plugin fiber whose `options.serverName` has an
+   *  entry here REJECTS on await with `new Error(<message>)` (the real
+   *  mcpClient fiber's failOnStartupError rejection). */
+  readonly mcpFailures?: Record<string, string>
+  /** multi-mcp (Task C, plan §6.11): per-server MCP tool names —
+   *  registered on the agent ctx through the real `tools.register` path at
+   *  the fiber's activation (the Permission Coverage Gate's proven-mount
+   *  delta basis); unregistered on the fiber's dispose. */
+  readonly mcpToolNames?: Record<string, string[]>
 }
 
 /** The sessionPersistence service double (records materializations). */
@@ -317,11 +327,33 @@ export interface LiveWorld {
       }): Promise<{ childSessionId: string }>
     }
     drainDescendants(childSessionId: string): Promise<{ drained: number; quiescent: boolean }>
+    /**
+     * The last-applied consumption views. multi-mcp (contract I4): the
+     * singular `mcpView` field is REPLACED by the per-configured-server
+     * `mcpViews` record (the EMPTY object when no MCP server is
+     * configured — consumers treat {} as "no MCP").
+     */
     resolveConsumptionViews(sessionId: string): {
       readonly instanceId: string
       readonly modelView: { readonly selection: { readonly provider: string; readonly model: string } | undefined; readonly [k: string]: unknown }
-      readonly mcpView: { readonly allowed: boolean; readonly [k: string]: unknown } | null
+      readonly mcpViews: Record<string, { readonly allowed: boolean; readonly [k: string]: unknown }>
     }
+    /**
+     * The per-session consumption STATE (contract I4):
+     * `{ instanceId, ref, modelView, mcpViews, mcpFibers: Map<string, Fiber>,
+     * mcpActivationErrors: Map<string, string>, appliedRecordIds: Set<string> }`
+     * (+ the strict-mode `a2c2PreMcpSurface` when set). `undefined` for a
+     * session that never ran an agent setup. The Map/Set fields are live
+     * references — a close() disposes AND clears `mcpFibers`.
+     */
+    getConsumptionState(sessionId: string): unknown
+    /**
+     * Run the request-boundary reconciliation for one session under one
+     * team root (re-resolves the durable views, disposes denied servers
+     * FIRST, then mounts the newly-allowed ones; throws fail-closed on
+     * any activation failure — the boundary never proceeds half-reconciled).
+     */
+    prepareAgentForRequest(sessionId: string, teamRootSid: string): Promise<void>
     readonly observations: readonly string[]
     /** The REAL scoped-prompt persona surface (T12-M2). */
     readonly personaSurface: {
@@ -431,6 +463,12 @@ export interface LiveWorldOptions {
   readonly configOverrides?: Record<string, unknown>
   readonly teamTools?: { readonly tools: readonly unknown[] }
   readonly agents?: AgentsDoubleOptions
+  /** multi-mcp (Task C, plan §6.7): per-server MCP activation failure
+   *  injection (see AgentsDoubleOptions.mcpFailures). */
+  readonly mcpFailures?: Record<string, string>
+  /** multi-mcp (Task C, plan §6.11): per-server MCP tool names (see
+   *  AgentsDoubleOptions.mcpToolNames). */
+  readonly mcpToolNames?: Record<string, string[]>
   readonly subagents?: SubagentsDouble
   /** D1 v2 → v3: the agentPresets service double (the ordinary-preset
    *  base-tool substrate the MEMBER agents (v2) AND the ROOT agent (v3)

@@ -1,0 +1,12 @@
+[2026-09-13T18:55:11.654Z] === Task D multi-mcp real-host smoke kit mm-smoke-20260913T18-55-11Z ===
+[2026-09-13T18:55:11.655Z] targetRepo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-int
+[2026-09-13T18:55:11.655Z] hostRepoRoot=/home/user/dsh-plugins/dsh-agent-team hostTree=/home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-09-13T18:55:11.655Z] evidenceDir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/runs/mm-smoke-20260913T18-55-11Z keep=false
+[2026-09-13T18:55:11.659Z] :3080 pre: unreachable: fetch failed
+[2026-09-13T18:55:11.676Z] test-use pre: head=a66e4702047846cdaa10c66c9d3df3951f5ea70d statusEmpty=true diffEmpty=true baseline=a66e4702047846cdaa10c66c9d3df3951f5ea70d
+[2026-09-13T18:55:11.677Z] host port selected: 3181
+[2026-09-13T18:55:11.678Z] ports free: host=3181 mcpA=3491 mcpB=3492 mock=3496
+[2026-09-13T18:55:11.678Z] fresh home asserted: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260913T18-55-11Z (lock: /home/user/dsh-plugins/dsh-agent-team/tests/homes/mm-smoke-20260913T18-55-11Z.lock)
+[2026-09-13T18:55:11.797Z] FATAL (kit-level, run aborted): ReferenceError: Cannot access 'scanPre' before initialization
+    at main (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-d-docs/dev/agent-workflow/evidence/multi-mcp/d-smoke/multi-mcp-real-host-smoke.mjs:1080:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

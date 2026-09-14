@@ -1,0 +1,30 @@
+# Gate 2 (regression, host-validation family) — pnpm vitest run
+#   packages/runtime/test/t4a-capability-wiring.test.ts packages/runtime/test/team-skills.test.ts
+# worktree: .worktrees/multi-mcp-a-config @ b49f423 (task/multi-mcp-a-config)
+# base: b49f4239ff9378ac8041e5667402029b4dcd4ca4
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-a-config
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] bundled team skill "bad-name" skipped: the frontmatter name "Bad_Name" is not a valid kebab-case skill name
+[dsh-agent-team] bundled team skill "missing-description" skipped: SKILL.md frontmatter must carry a kebab-case "name" and a non-empty "description"
+
+stdout | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/multi-mcp-a-config/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+
+ ✓ packages/runtime/test/team-skills.test.ts (9 tests) 3ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (27 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  36 passed (36)
+   Start at  18:03:35
+   Duration  869ms (transform 527ms, setup 0ms, import 868ms, tests 8ms, environment 0ms)
+
+EXIT=0

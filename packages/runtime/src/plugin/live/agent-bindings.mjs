@@ -50,8 +50,13 @@
   *                        injects the per-root resolver below, so the
   *                        dynamic Team authority is the owning TeamSession's
   *                        bound snapshot, NEVER this row-global document),
- *                        mcpServer {name, port} | null (null = no MCP server
- *                        configured — T12-H1), staticModel, deniedSelection,
+ *                        mcpServers [{name, port}] 0..N (canonical —
+ *                        multi-mcp C1; port null = configured-but-unmounted)
+ *                        with the legacy single mcpServer {name, port} |
+ *                        null still accepted during this alpha (C7; null =
+ *                        no MCP server configured — T12-H1); every read
+ *                        goes through configuredMcpServers (contract I1);
+ *                        staticModel, deniedSelection,
  *                        externalPolicyFacts {hard, capabilityExists} (T12-B3:
  *                        the injected external hard facts; normalized —
  *                        never re-interpreted — into the resolvers),
@@ -299,6 +304,12 @@ import {
   filterMcpServers,
   registerTeamSkills,
 } from '../../../agent-setup/capability/index.js'
+// multi-mcp (contract I1/I4): the SOLE canonical MCP-supply read path over
+// the row config (0..N `mcpServers` with the legacy single `mcpServer`
+// still accepted during this alpha — C1/C7). The glue consumes it
+// VERBATIM: every configured-server read in this file goes through
+// configuredMcpServers (no second normalization anywhere).
+import { configuredMcpServers } from '../mcp-supply.js'
 // alpha.2 (plan §10/§11): the A5 tools/pre-execute enforcement adapter —
 // the frozen A2/A3/A4 composition (canonicalize -> static decision ->
 // ask: request/wait/guard over the durable Control plane, fail-closed
@@ -554,9 +565,11 @@ export function createAgentBindings(deps) {
   const observations = []
   /**
    * @type {Map<string, object>} per-session durable consumption state, keyed
-   * by session id: `{ instanceId, ref, modelView, mcpView (null = no MCP
-   * facet, T12-H1), mcpFiber,
-   * mcpActivationError, appliedRecordIds: Set<string> }`. The `ref` is the
+   * by session id: `{ instanceId, ref, modelView, mcpViews (the
+   * per-configured-server facet views — Record<serverName, view>; {} = no
+   * MCP facet, T12-H1 generalized by multi-mcp C5), mcpFibers:
+   * Map<serverName, fiber>, mcpActivationErrors: Map<serverName, string>,
+   * appliedRecordIds: Set<string> }`. The `ref` is the
    * row-owned ModelSelectionRef installed on the public model-selection seam;
    * the views are the last APPLIED consumption views; `appliedRecordIds` is
    * the §18.3 boundary record set (which durable records this session has
@@ -743,10 +756,12 @@ export function createAgentBindings(deps) {
    *   projection).
    * @param {string} [teamRootSid] - the team root the session belongs to
    *   (T12-GLUE; absent = this row's boot root, as before).
-   * @returns {{instanceId: string, modelView: object, mcpView: object | null}}
-   *   `mcpView` is `null` when no Team MCP server is configured
-   *   (config.mcpServer === null — T12-H1): no MCP facet exists, so
-   *   consumers must treat null as "no MCP" (never dereference).
+   * @returns {{instanceId: string, modelView: object, mcpViews: Record<string, object>}}
+   *   `mcpViews` is the per-configured-server facet views (the multi-mcp C5
+   *   generalization of the single T12-H1 mcpView): the EMPTY object when
+   *   no MCP server is configured (config.mcpServers = [] / legacy
+   *   mcpServer = null): no MCP facet exists, so consumers treat {} as
+   *   "no MCP" (never expect an entry).
    */
   function resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid) {
     const existing = consumptionState.get(sessionId)
@@ -784,22 +799,23 @@ export function createAgentBindings(deps) {
       modelArgs.appliedRecordIds = applied
     }
     const { view: modelView } = consumption.model.resolveDurableModelSelection(modelArgs)
-    // T12-H1: mcpServer === null means NO Team MCP server is configured —
-    // no dereference of the server config, no facet resolution, no
-    // reconcile/create attempt downstream. The consumption view stays
-    // valid with mcpView: null (no MCP facet).
-    const mcpView =
-      config.mcpServer === null
-        ? null
-        : consumption.capability.resolveDurableMcpFacet({
-            rootSessionId: teamRoot,
-            instanceId,
-            overrides,
-            external,
-            serverName: config.mcpServer.name,
-            ...(applied.length > 0 ? { appliedRecordIds: applied } : {}),
-          }).view
-    return { instanceId, modelView, mcpView }
+    // multi-mcp (contract I4; T12-H1 generalized to 0..N): the PER-SERVER
+    // views — one resolveDurableMcpFacet call per CONFIGURED server (the
+    // resolver is the unchanged C4 policy authority; the serverName
+    // parameter is its existing per-server seam). Zero configured servers
+    // -> {} (no MCP facet: no resolution, no reconcile attempt downstream).
+    const mcpViews = {}
+    for (const server of configuredMcpServers(config)) {
+      mcpViews[server.name] = consumption.capability.resolveDurableMcpFacet({
+        rootSessionId: teamRoot,
+        instanceId,
+        overrides,
+        external,
+        serverName: server.name,
+        ...(applied.length > 0 ? { appliedRecordIds: applied } : {}),
+      }).view
+    }
+    return { instanceId, modelView, mcpViews }
   }
 
   /**
@@ -808,61 +824,119 @@ export function createAgentBindings(deps) {
    * cells this boundary resolved").
    * @param {object} state
    * @param {object} modelView
-   * @param {object | null} mcpView (null = no MCP facet, T12-H1)
+   * @param {Record<string, object>} mcpViews (the per-server facet views;
+   *   {} = no MCP facet — T12-H1 generalized by multi-mcp C5). The Set
+   *   target dedupes naturally when one durable record appears in several
+   *   servers' pending lists (a shared-scope override — legal, §18.3).
    */
-  function applyBoundaryRecords(state, modelView, mcpView) {
-    const mcpPending = mcpView === null ? [] : mcpView.pendingNextBoundary
+  function applyBoundaryRecords(state, modelView, mcpViews) {
+    const mcpPending = []
+    for (const view of Object.values(mcpViews)) {
+      mcpPending.push(...view.pendingNextBoundary)
+    }
     for (const pending of [...modelView.pendingNextBoundary, ...mcpPending]) {
       state.appliedRecordIds.add(pending.recordId)
     }
   }
 
   /**
-   * Mount (or dispose) the live mini-MCP server on one agent per the durable
-   * mcp facet. The fiber is a thenable: awaiting it completes activation
-   * (connection + tool discovery); `.dispose()` unregisters the tools. A
-   * rejected activation is recorded, the fiber is dropped, and the error
-   * propagates (fail-closed: the tool is simply absent — never a half mount).
+   * Mount (or dispose) the live mini-MCP servers on one agent per the
+   * per-server durable mcp facet views (multi-mcp C5/C6; contract I4).
+   * The fiber is a thenable: awaiting it completes activation (connection
+   * + tool discovery); `.dispose()` unregisters the tools.
+   *
+   * Deny-first ordering (plan §2.5): every mounted server OUTSIDE the
+   * target set is disposed BEFORE any new mount, so a failed new mount can
+   * never leave a denied server exposed. Newly-mounted fibers commit to the
+   * live set only when EVERY target server activated; any failure this
+   * round (an activation rejection OR a policy-allowed server with no
+   * configured port) rolls back this round's NEW fibers — the denied
+   * disposals above are NOT restored (they are the durable decision, not a
+   * side effect) — and the error propagates (fail-closed: the setup /
+   * request boundary fails, the request never runs on a partial MCP
+   * surface; a failed server is simply absent, never half-mounted).
    * @param {object} agentCtx
-   * @param {object} state - the session's consumption state (holds the fiber).
-   * @param {boolean} allowed - the facet's mount decision.
+   * @param {object} state - the session's consumption state (holds the
+   *   per-server fibers / activation errors / last-applied views).
+   * @param {readonly string[]} targetServerNames - the exact server set
+   *   this agent may mount NOW (the caller's template ∩ durable decision —
+   *   contract I4 §2.3; an empty set = dispose everything, mount nothing).
    */
-  async function reconcileMcp(agentCtx, state, allowed) {
-    // T12-H1: no configured server — nothing to mount or dispose (the
-    // port-null throw below stays for a CONFIGURED server without port).
-    if (config.mcpServer === null) return
-    if (allowed && state.mcpFiber === undefined) {
-      if (config.mcpServer.port === null) {
-        throw new Error(`p6t6: the durable policy allows mcp server '${config.mcpServer.name}' but no mini-MCP port is configured (config.mcpServer.port)`)
+  async function reconcileMcpSet(agentCtx, state, targetServerNames) {
+    const configured = configuredMcpServers(config)
+    const byName = new Map(configured.map((s) => [s.name, s]))
+    // (1) structural guard: the target is always computed FROM the
+    //     configured names — an unconfigured name in the target is a
+    //     caller bug; fail closed, never mount the unknown (C2 identity).
+    for (const name of targetServerNames) {
+      if (!byName.has(name)) {
+        throw new Error(`p6t6: reconcile target names an unconfigured mcp server '${name}'`)
       }
-      const fiber = agentCtx.plugin(mcpClient, {
-        transport: 'streamable-http',
-        serverName: config.mcpServer.name,
-        url: `http://127.0.0.1:${config.mcpServer.port}/mcp`,
-        headers: {},
-        toolCallTimeoutMs: 15_000,
-        failOnStartupError: true,
-      })
-      try {
-        await fiber
-        state.mcpFiber = fiber
-      } catch (error) {
-        state.mcpActivationError = error instanceof Error ? error.message : String(error)
-        observations.push(`p6t6: mcp activation failed: ${state.mcpActivationError}`)
-        try { fiber.dispose() } catch { /* the fiber is already dead */ }
-        throw error
-      }
-      return
     }
-    if (!allowed && state.mcpFiber !== undefined) {
-      const fiber = state.mcpFiber
-      state.mcpFiber = undefined
-      state.mcpActivationError = undefined
+    // (2) DENY-FIRST: dispose every mounted server outside the target (a
+    //     dispose failure is observed, never allowed to strand the
+    //     remaining disposals). The last-applied VIEWS are kept (state
+    //     semantics: the views are the last applied consumption views —
+    //     a denied server's view records the denial).
+    for (const name of [...state.mcpFibers.keys()]) {
+      if (targetServerNames.includes(name)) continue
+      const fiber = state.mcpFibers.get(name)
+      state.mcpFibers.delete(name)
+      state.mcpActivationErrors.delete(name)
       try {
         fiber.dispose()
       } catch (error) {
-        observations.push(`p6t6: mcp fiber dispose failed: ${error instanceof Error ? error.message : String(error)}`)
+        observations.push(`p6t6: mcp fiber dispose failed [server ${name}]: ${error instanceof Error ? error.message : String(error)}`)
       }
+    }
+    // (3) mounts = target − already mounted, in CONFIGURED order (the
+    //     deterministic activation order; C2: the name is the identity).
+    const mounts = configured.filter((s) => targetServerNames.includes(s.name) && !state.mcpFibers.has(s.name))
+    if (mounts.length === 0) return
+    // (4-5) mount each — the port check FIRST (a policy-allowed server
+    //       without a port fails closed with the server NAMED — plan §6.8
+    //       case 2; a server NOT in the target is never port-checked, so
+    //       an unselected port-null server cannot fail the setup — case 1)
+    //       — successful fibers collect in a TEMPORARY set: nothing commits
+    //       to state until every target server activated.
+    const fresh = []
+    let active = null // the server whose step is in flight (rollback target)
+    try {
+      for (const server of mounts) {
+        active = server
+        if (server.port === null) {
+          throw new Error(`p6t6: the durable policy allows mcp server '${server.name}' but no mini-MCP port is configured (config.mcpServers port for '${server.name}')`)
+        }
+        const fiber = agentCtx.plugin(mcpClient, {
+          transport: 'streamable-http',
+          serverName: server.name,
+          url: `http://127.0.0.1:${server.port}/mcp`,
+          headers: {},
+          toolCallTimeoutMs: 15_000,
+          failOnStartupError: true,
+        })
+        await fiber
+        fresh.push({ name: server.name, fiber })
+      }
+    } catch (error) {
+      // (6) ROLLBACK this round's NEW fibers only (the step-2 denied
+      //     disposals stand); record the failed server's error, observe
+      //     with the server named (I8), and fail the setup / boundary.
+      //     (`active` is always set when we reach this catch: every throw
+      //     happens inside the loop after `active = server`.)
+      for (const { fiber } of fresh) {
+        try { fiber.dispose() } catch { /* the fiber is already dead */ }
+      }
+      const message = error instanceof Error ? error.message : String(error)
+      state.mcpActivationErrors.set(active.name, message)
+      observations.push(`p6t6: mcp activation failed [server ${active.name}]: ${message}`)
+      throw error
+    }
+    // (7) COMMIT: every target server activated — the new fibers join the
+    //     live set and any stale error slot of a re-mounted server clears.
+    for (const { name, fiber } of fresh) {
+      state.mcpFibers.set(name, fiber)
+      state.mcpActivationErrors.delete(name)
     }
   }
 
@@ -1086,7 +1160,7 @@ export function createAgentBindings(deps) {
       // T12-M2: capture the agent ctx for the persona surface (the
       // production-facing installs and the overlay slot resolve through it).
       liveAgentCtxs.set(sessionId, agentCtx)
-      const { modelView, mcpView, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
+      const { modelView, mcpViews, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
       // alpha.1 (plan §10): the static template capabilities of this
       // session — the durable identity (row templateId / leader position /
       // fresh-create hint) -> the bound blueprint's per-template declaration.
@@ -1112,9 +1186,9 @@ export function createAgentBindings(deps) {
         instanceId,
         ref,
         modelView,
-        mcpView,
-        mcpFiber: undefined,
-        mcpActivationError: undefined,
+        mcpViews,
+        mcpFibers: new Map(),
+        mcpActivationErrors: new Map(),
         appliedRecordIds: new Set(),
         // A2C-2 (plan §7.3-C): the strict-mode pre-MCP surface snapshot —
         // the OTHER_MANAGED_MCP ownership proof is the ACTUAL delta between
@@ -1263,14 +1337,25 @@ export function createAgentBindings(deps) {
       // At a fresh create no overrides exist yet (unspecified), so this is
       // the resume/restart path that re-applies the durable truth on boot.
       // alpha.1 (plan §10.8): the template's static mcp entry ADDITIONALLY
-      // filters the configured server (selective mode: allow must name the
+      // filters the configured servers (selective mode: allow must name a
       // configured server, deny = no mount — the T3 filter over the row's
       // configured server set, no second MCP resolver). LEGACY mode = the
       // durable decision alone (the 0.1.0-rc.1 behavior).
-      const mcpTemplateAllowed =
-        capabilities.mode !== 'selective' ||
-        (config.mcpServer !== null && filterMcpServers([config.mcpServer.name], capabilities.mcp).length > 0)
-      const mcpMountAllowed = mcpView !== null && mcpView.allowed && mcpTemplateAllowed
+      // multi-mcp (contract I4 §2.3): the generalization is PER SERVER —
+      // a server is in the mount target iff BOTH its template entry AND
+      // its durable cell allow it (the per-server AND of the old
+      // `mcpMountAllowed` boolean; filterMcpServers / the durable facet
+      // resolver are the unchanged C3/C4 authorities). ONE reconcile
+      // below covers the whole target set — and it stays BETWEEN the
+      // pre-MCP snapshot and the coverage FINAL snapshot (A2C-2 §7.3-C:
+      // the delta across this single reconcile is the proven MCP
+      // ownership for ALL mounted servers at once).
+      const configuredMcpNames = configuredMcpServers(config).map((s) => s.name)
+      const mcpTemplateAllowedNames =
+        capabilities.mode === 'selective'
+          ? filterMcpServers(configuredMcpNames, capabilities.mcp)
+          : [...configuredMcpNames]
+      const mcpMountTarget = mcpTemplateAllowedNames.filter((name) => mcpViews[name]?.allowed === true)
       // A2C-2 (plan §7.3-C): the pre-MCP surface snapshot — taken AFTER
       // the preset mount + builtinToolDeny + Team tool/skill registration
       // and BEFORE the MCP reconcile, so the delta across the reconcile
@@ -1280,10 +1365,10 @@ export function createAgentBindings(deps) {
       if (permissionPolicy !== undefined) {
         state.a2c2PreMcpSurface = coverageSurfaceNames(agentCtx, sessionId)
       }
-      if (mcpMountAllowed) {
-        await reconcileMcp(agentCtx, state, true)
+      if (mcpMountTarget.length > 0) {
+        await reconcileMcpSet(agentCtx, state, mcpMountTarget)
       }
-      applyBoundaryRecords(state, modelView, mcpView)
+      applyBoundaryRecords(state, modelView, mcpViews)
       // alpha.2 A2C-2 (plan §7): the Permission Coverage Gate — the FINAL
       // effective tool surface (after preset mount + builtinToolDeny +
       // Team tool + Team skill registration + the MCP reconcile) is
@@ -1757,8 +1842,8 @@ export function createAgentBindings(deps) {
 
   /**
    * The request-boundary reconciliation (P8-S4B §18.2): re-read the backend
-   * truth and bring the live agent's model selection + mcp mount in line with
-   * it BEFORE the next real request. Future-boundary semantics come from the
+   * truth and bring the live agent's model selection + mcp mount SET in line
+   * with it BEFORE the next real request. Future-boundary semantics come from the
    * public seam itself: an in-flight turn keeps its own assembly snapshot
    * (`assembled`); only the NEXT assembly sees the new `current`.
    * @param {string} sessionId
@@ -1769,26 +1854,32 @@ export function createAgentBindings(deps) {
   async function prepareAgentForRequest(sessionId, teamRootSid) {
     const state = consumptionState.get(sessionId)
     if (state === undefined) return // defensive: every row agent has consumption state
-    const { modelView, mcpView } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
+    const { modelView, mcpViews } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
     const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
     if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {
       state.ref.current = selection
     }
     const handle = liveAgents.get(sessionId)
-    if (handle !== undefined && mcpView !== null) {
-      // alpha.1 (plan §10.8): the request-boundary reconcile honors the
-      // template's static mcp entry too (re-read from the durable identity
-      // — the same decision the setup applied, so a durable tighten/deny
-      // AND a blueprint template mcp deny converge on the same no-mount).
+    if (handle !== undefined && Object.keys(mcpViews).length > 0) {
+      // alpha.1 (plan §10.8) + multi-mcp (contract I4 §2.3): the
+      // request-boundary reconcile honors the template's static mcp entry
+      // too (re-read from the durable identity — the same decision the
+      // setup applied, so a durable tighten/deny AND a blueprint template
+      // mcp deny converge on the same no-mount — per server). The target
+      // set may be EMPTY: reconcileMcpSet then disposes every mounted
+      // server (the durable-deny path) and mounts nothing.
       const caps = resolveStaticCapabilities(sessionId, state.instanceId, undefined, teamRootSid)
-      const templateAllowed =
-        caps.mode !== 'selective' ||
-        (config.mcpServer !== null && filterMcpServers([config.mcpServer.name], caps.mcp).length > 0)
-      await reconcileMcp(handle.agent.ctx, state, mcpView.allowed && templateAllowed)
+      const configuredMcpNames = configuredMcpServers(config).map((s) => s.name)
+      const templateAllowedNames =
+        caps.mode === 'selective'
+          ? filterMcpServers(configuredMcpNames, caps.mcp)
+          : [...configuredMcpNames]
+      const target = templateAllowedNames.filter((name) => mcpViews[name]?.allowed === true)
+      await reconcileMcpSet(handle.agent.ctx, state, target)
     }
-    applyBoundaryRecords(state, modelView, mcpView)
+    applyBoundaryRecords(state, modelView, mcpViews)
     state.modelView = modelView
-    state.mcpView = mcpView
+    state.mcpViews = mcpViews
   }
 
   // ── the activation ports (real external effects, minimal surface) ─────
@@ -2685,10 +2776,14 @@ export function createAgentBindings(deps) {
     personaPending.clear()
     liveAgentCtxs.clear()
     for (const state of consumptionState.values()) {
-      if (state.mcpFiber !== undefined) {
-        try { state.mcpFiber.dispose() } catch { /* the scope unwind covers it */ }
-        state.mcpFiber = undefined
+      // multi-mcp (contract I4): every session may hold several mini-MCP
+      // fibers (one per mounted server) — dispose ALL of them, in every
+      // session's state, before the maps are cleared with the state.
+      for (const fiber of [...state.mcpFibers.values()]) {
+        try { fiber.dispose() } catch { /* the scope unwind covers it */ }
       }
+      state.mcpFibers.clear()
+      state.mcpActivationErrors.clear()
     }
     consumptionState.clear()
   }
