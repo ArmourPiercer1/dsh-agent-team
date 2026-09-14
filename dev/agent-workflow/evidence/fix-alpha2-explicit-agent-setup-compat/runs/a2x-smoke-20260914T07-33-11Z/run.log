@@ -1,0 +1,28 @@
+[2026-09-14T07:33:11.299Z] === a2x real-host smoke (DSH 0.1.5-rc.2 npm dist) a2x-smoke-20260914T07-33-11Z ===
+[2026-09-14T07:33:11.300Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat
+[2026-09-14T07:33:11.300Z] host=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh (version 0.1.5-rc.2)
+[2026-09-14T07:33:11.300Z] baselineSha=df9230de678f987f407f3bb59492863bb8dc6530 keep=false
+[2026-09-14T07:33:11.317Z] :3080 pre: unreachable
+[2026-09-14T07:33:11.320Z] ports: host=3181 mock=3496
+[2026-09-14T07:33:11.320Z] fresh homes asserted (disc/red/green)
+[2026-09-14T07:33:11.324Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T07:33:11.324Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T07:33:11.324Z] ── leg 1: DISCOVERY (fixed glue, legacy boot) ──
+[2026-09-14T07:33:16.248Z] DISC: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-33-11Z"]
+[2026-09-14T07:33:16.316Z] PASS D1: discovery leader turn admitted — apiPrompt status=200
+[2026-09-14T07:33:16.369Z] mock: mock: 1 text reply (40 chars): "A2X_DEFAULT_a2x-smoke-20260914T07-33-11Z"
+[2026-09-14T07:33:16.370Z] mock: mock: 2 text reply (41 chars): "A2X_DISC_ACK_a2x-smoke-20260914T07-33-11Z"
+[2026-09-14T07:33:16.816Z] PASS D2: discovery model request captured — seq=1 model=a2x-smoke-model surfaceCount=38
+[2026-09-14T07:33:16.817Z] discovery surface (38 tools): ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read, read_image, send_message, skill, subagent, subagent_fork, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, todo_write, update_goal, web_fetch, web_search, workflow, write
+[2026-09-14T07:33:16.817Z] PASS D3: coverage-complete policy derivable — denyList(21): ask_user_question, create_goal, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, send_message, skill, subagent, subagent_fork, update_goal, web_fetch, web_search, workflow
+[2026-09-14T07:33:17.317Z] DISC host stopped
+[2026-09-14T07:33:17.318Z] saved blueprint written: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-smoke-blueprints/a2x-perm-team.yaml
+[2026-09-14T07:33:17.329Z] pre-fix glue farm ready: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-prefix/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[2026-09-14T07:33:17.329Z] ── leg 2: RED (pre-fix glue @ baseline, team.create with Leader permissions) ──
+[2026-09-14T07:33:22.033Z] RED: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-33-11Z"]
+[2026-09-14T07:33:22.090Z] FAIL R1: pre-fix glue: team.create fails with the exact production error — result=MALFORMED_DTO :: allow entry at $.leader.capabilities.teamTools has unknown fields: builtinToolDeny (source: a2x-perm-team.yaml)
+[2026-09-14T07:33:22.093Z] FAIL R2: pre-fix glue: surface-unavailable observation recorded for the created root — observations(0):
+[2026-09-14T07:33:22.593Z] RED host stopped
+[2026-09-14T07:33:22.594Z] ── leg 3: GREEN (fixed dist glue, same row world, same team.create) ──
+[2026-09-14T07:33:27.214Z] GREEN: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-33-11Z"]
+[2026-09-14T07:33:27.281Z] FAIL G1: fixed glue: team.create succeeds (fresh-root) — result={"code":"MALFORMED_DTO","message":"allow entry at $.leader.capabilities.teamTools has unknown fields: builtinToolDeny (source: a2x-perm-team.yaml)","details":{"method":"team.create","endpoint":"team.create","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"MALFORMED_DTO","message":"allow entry at $.leader.capabilities.teamTools has unknown fields: builtinToolD

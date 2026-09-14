@@ -1,0 +1,5 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=JIvet3ph1wuup4Y-4-mRBZoca4gil8m9hhnX6ALHSho
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property "webServer" without inject
+    at mountRemoteNow (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:572:23)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:962:35)

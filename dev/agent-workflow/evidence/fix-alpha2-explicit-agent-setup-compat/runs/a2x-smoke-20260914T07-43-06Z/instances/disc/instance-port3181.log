@@ -1,0 +1,3 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=Ll7CyHGEl7txq0i-N6RQbPdVarcKa_P0Ttt6mdB4F7k
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote

@@ -1,0 +1,24 @@
+[2026-09-14T11:42:48.463Z] :3080 pre = unreachable
+[2026-09-14T11:42:48.466Z] port    = 3184
+[2026-09-14T11:42:48.472Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T11:42:48.472Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T11:42:48.473Z] patch   = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/f2-standard-probe-20260914T11-42-48Z/profiles/web/cordis.patch.yml
+[2026-09-14T11:42:48.473Z] home    = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/f2-standard-probe-20260914T11-42-48Z
+[2026-09-14T11:42:48.473Z] run     = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/dev/agent-workflow/evidence/fix-alpha2-explicit-agent-setup-compat/probe/runs/f2-standard-probe-20260914T11-42-48Z
+[2026-09-14T11:42:52.097Z] host booted: dsh web: http://127.0.0.1:3184/?token=ni7w1C_JzJb-viB0OZPBCrht6BGZTgBAeDwKZEc_eTk
+[2026-09-14T11:42:52.097Z] probe row ready (observer live)
+[2026-09-14T11:42:52.152Z] ── leg 0: DISC control (boot root, standard preset, no capabilities) ──
+[2026-09-14T11:42:52.247Z] prompt session/not-found (startup race, attempt 1) — retrying after 2s
+[2026-09-14T11:42:54.259Z] DISC prompt response: status=200 body={"type":"server-response","rpcId":"f2-qs3t24da2z","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-14T11:42:54.313Z] mock: mock: 1 text reply (48 chars): "F2_DISC_ACK_f2-standard-probe-20260914T11-42-48Z"
+[2026-09-14T11:42:54.314Z] mock: mock: 2 text reply (48 chars): "F2_DISC_ACK_f2-standard-probe-20260914T11-42-48Z"
+[2026-09-14T11:42:54.761Z] disc surface (38 tools): ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read, read_image, send_message, skill, subagent, subagent_fork, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, todo_write, update_goal, web_fetch, web_search, workflow, write
+[2026-09-14T11:42:54.761Z] DISC control OK: subagent + subagent_fork present in the standard discovery surface (38 tools)
+[2026-09-14T11:42:54.761Z] ── leg 1: team.create with leader capabilities.permissions (standard preset) ──
+[2026-09-14T11:42:54.862Z] mock: mock: 3 text reply (49 chars): "F2_PROBE_ACK_f2-standard-probe-20260914T11-42-48Z"
+[2026-09-14T11:42:54.862Z] mock: mock: 4 text reply (49 chars): "F2_PROBE_ACK_f2-standard-probe-20260914T11-42-48Z"
+[2026-09-14T11:42:54.877Z] team.create OK — gate passed (subagent not in the A surface)
+[2026-09-14T11:42:54.877Z] C surface (9 tools): bash, edit, read, read_image, subagent, team_list_members, team_send_message, todo_write, write
+[2026-09-14T11:42:58.881Z] :3080 post = unreachable
+[2026-09-14T11:42:58.882Z] CASE: B — P1 POST-GATE SURFACE EXPANSION: the Coverage Gate passed (subagent ∉ A — the gate reads tools.schemas(agent) during composition, before publish/announce) but the standard preset deferred its own-layer `subagent` install to the agent/created event dispatched at publication — subagent appears in the p
+[2026-09-14T11:42:58.882Z] summary: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/dev/agent-workflow/evidence/fix-alpha2-explicit-agent-setup-compat/probe/runs/f2-standard-probe-20260914T11-42-48Z/summary.json

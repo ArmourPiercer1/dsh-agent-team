@@ -14,6 +14,16 @@ export interface TeamPluginHostContext {
     get(name: string): unknown;
     provide(name: string, value: unknown): void;
     effect(factory: () => () => void, label?: string): void;
+    /**
+     * Cordis event registration: the listener is owned by this row's fiber
+     * and disposed with the row. Optional in this structural projection —
+     * the entry keeps Cordis-type independence (plan §19.2) and minimal
+     * structural doubles omit it; the one consumer (the 0.1.5 `webServer`
+     * property-read seam registered in {@link apply}) guards the absence and
+     * degrades to the built-in Cordis resolution. On every real host the
+     * Cordis context proxy always provides it.
+     */
+    on?(name: string, listener: (readerCtx: TeamPluginHostContext, prop: string, error: Error, next: () => unknown) => unknown, options?: boolean | Record<string, unknown>): void;
 }
 /**
  * Validate the row `config` channel loudly (plan §19.2: the row config is

@@ -1,0 +1,4 @@
+{
+  "error": "the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property \"webServer\" without inject",
+  "stack": "TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property \"webServer\" without inject\n    at mountRemoteNow (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:572:23)\n    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:962:35)"
+}

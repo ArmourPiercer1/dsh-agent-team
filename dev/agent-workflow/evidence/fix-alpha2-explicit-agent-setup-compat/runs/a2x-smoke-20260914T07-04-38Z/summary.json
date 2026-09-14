@@ -1,0 +1,5 @@
+{
+  "runStamp": "a2x-smoke-20260914T07-04-38Z",
+  "fatal": "DISC: row setup failed — setupError: the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property \"webServer\" without inject\n--- log tail ---\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3181/?token=JIvet3ph1wuup4Y-4-mRBZoca4gil8m9hhnX6ALHSho\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property \"webServer\" without inject\n    at mountRemoteNow (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:572:23)\n    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:962:35)\n",
+  "criteria": []
+}

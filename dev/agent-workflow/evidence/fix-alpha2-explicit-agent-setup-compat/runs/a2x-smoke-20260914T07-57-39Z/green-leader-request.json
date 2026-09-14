@@ -1,0 +1,760 @@
+{
+  "reqSeq": 3,
+  "model": "a2x-smoke-model",
+  "surface": [
+    "edit",
+    "read",
+    "read_image",
+    "team_list_members",
+    "team_send_message",
+    "write"
+  ],
+  "body": {
+    "model": "a2x-smoke-model",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the a2x permissions team.\n\n[team-root-context rootSessionId=session-a2x-created-a2x-smoke-20260914T07-57-39Z leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-a2x-created-a2x-smoke-20260914T07-57-39Z\" and a unique requestToken.\n\nYou are a coding agent powered by the a2x-smoke-model model.\n\nTokens prefixed with @ are workspace paths the user explicitly referenced, relative to the workspace root. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Results include line numbers. Use offset and limit to continue reading large files.\n\nUse the write tool to create files or completely replace file contents. Existing files are overwritten, so read an existing file first (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nUse the edit tool for targeted changes to existing UTF-8 text files. It replaces literal old_string with new_string; by default old_string must appear exactly once. If old_string appears multiple times, provide a more specific old_string or set replace_all to true. Read the file first (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nWhen you successfully create or modify files, mention the primary outputs in your final response. To make those and any other changed-file references clickable in Web, format them as Markdown inline code using the exact file-tool path, or a basename when unique among the files changed in that turn.\n\nThe DeepSeek Harness implementation checkout is at /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3181. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh."
+      },
+      {
+        "role": "user",
+        "content": "[team-root-work requestToken=team-create:initial-work:sha256:07dc7ba48403980c40b1a37f50bb3ad6bf5f623e7404ba785bdc01977386a638] A2X_GREEN_a2x-smoke-20260914T07-57-39Z"
+      },
+      {
+        "role": "user",
+        "content": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+      }
+    ],
+    "stream": true,
+    "stream_options": {
+      "include_usage": true
+    },
+    "thinking": {
+      "type": "enabled"
+    },
+    "reasoning_effort": "high",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "edit",
+          "description": "Edit an existing UTF-8 text file by replacing literal text.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "file_path": {
+                "type": "string",
+                "description": "Path to edit, resolved by the filesystem backend."
+              },
+              "old_string": {
+                "type": "string",
+                "description": "Literal text to replace. Must match exactly."
+              },
+              "new_string": {
+                "type": "string",
+                "description": "Literal replacement text. Use an empty string to delete the match."
+              },
+              "replace_all": {
+                "type": "boolean",
+                "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+              },
+              "sandbox_permissions": {
+                "type": "string",
+                "description": "The wider sandbox mode this file operation needs. Only valid as a one-shot retry of an operation the sandbox just denied; requires justification and user approval.",
+                "enum": [
+                  "workspace-write",
+                  "danger-full-access"
+                ]
+              },
+              "justification": {
+                "type": "string",
+                "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access."
+              }
+            },
+            "required": [
+              "file_path",
+              "old_string",
+              "new_string"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "read",
+          "description": "Read a UTF-8 text file and return line-numbered content.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "file_path": {
+                "type": "string",
+                "description": "Path to read, resolved by the filesystem backend."
+              },
+              "offset": {
+                "type": "number",
+                "description": "1-based first line to return. Defaults to 1."
+              },
+              "limit": {
+                "type": "number",
+                "description": "Maximum number of lines to return. Defaults to 2000."
+              }
+            },
+            "required": [
+              "file_path"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "read_image",
+          "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. A path without a file extension is accepted; the format is detected from the file content, so normalized attachment paths can be passed directly without copying or renaming. Harness validates and downscales large supported images before the next model request, so use this tool directly instead of installing image libraries or creating thumbnails merely to inspect an image. Independent files may be read concurrently in small batches. Requires the current model to accept image input.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "file_path": {
+                "type": "string",
+                "description": "Path to the image file, resolved by the filesystem backend."
+              }
+            },
+            "required": [
+              "file_path"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "team_list_members",
+          "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "rootSessionId": {
+                "type": "string",
+                "description": "The TeamSession (root session) id this operation belongs to."
+              },
+              "requestToken": {
+                "type": "string",
+                "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+              }
+            },
+            "required": [
+              "rootSessionId",
+              "requestToken"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "team_send_message",
+          "description": "Send one message to a member instance (instance-addressed; the relay policy mediates through the leader where required). The recipient receives ordinary attributed input on its bound session.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "rootSessionId": {
+                "type": "string",
+                "description": "The TeamSession (root session) id this operation belongs to."
+              },
+              "requestToken": {
+                "type": "string",
+                "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+              },
+              "recipientInstanceId": {
+                "type": "string",
+                "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+              },
+              "body": {
+                "type": "string",
+                "description": "The message body (non-empty, max 8192 chars; stored verbatim)."
+              },
+              "subject": {
+                "type": "string",
+                "description": "Optional subject (non-empty, max 256 chars)."
+              }
+            },
+            "required": [
+              "rootSessionId",
+              "requestToken",
+              "recipientInstanceId",
+              "body"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "write",
+          "description": "Create or fully replace a UTF-8 text file.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "file_path": {
+                "type": "string",
+                "description": "Path to write, resolved by the filesystem backend."
+              },
+              "content": {
+                "type": "string",
+                "description": "Full UTF-8 text content to write."
+              },
+              "sandbox_permissions": {
+                "type": "string",
+                "description": "The wider sandbox mode this file operation needs. Only valid as a one-shot retry of an operation the sandbox just denied; requires justification and user approval.",
+                "enum": [
+                  "workspace-write",
+                  "danger-full-access"
+                ]
+              },
+              "justification": {
+                "type": "string",
+                "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access."
+              }
+            },
+            "required": [
+              "file_path",
+              "content"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 256000,
+    "dsh_plugin_packages": {
+      "version": 1,
+      "packages": [
+        {
+          "name": "@deepseek-ai/cordis-plugin-hmr",
+          "version": "1.0.17"
+        },
+        {
+          "name": "@deepseek-ai/cordis-plugin-timer",
+          "version": "1.1.4"
+        },
+        {
+          "name": "@deepseek-ai/dsh-agent",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-agent-default-model",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-agent-loop",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-agent-presets",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-api-gateway",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-api-remotes",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-api-session-controller",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-api-settings-controller",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-api-workspace-controller",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-api-workspace-files",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-attachment-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-bash-sandbox",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-connection",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-file-upload",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-hmr",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-locale",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-modules",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-resources",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-agent-preset",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-approval",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-attachment",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-brand-official",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-chat",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-commands",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-conversation",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-cordis",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-deliverables",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-directory-picker-browse",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-goal",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-input-trigger",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-jobs",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-layout",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-message-feedback",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-model-selection",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-open-in-app",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-permission-presets",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-plan",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-reference",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-renderer",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-session",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-settings",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-settings-general",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-settings-models",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-settings-plugins",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-sidebar",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-files",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-skill",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-subagent",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-theme",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-tool",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-trajectory",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-user-questions",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-workflow-run",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-client-ui-workspace",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-code-runtime-worker-thread",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-command-feedback",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-commands",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-cordis-client-runner",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-cordis-host-runner",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-credentials-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-deepseek-llm-api-extensions",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-file-reference-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-fs-observation-policy",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-fs-sandbox",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-goal",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-goal-round-driver",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-host-directory-picker-auto",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-host-directory-picker-browse",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-host-open-in-app",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-host-plugin-inventory",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-host-webserver",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-jobs-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-llm",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-llm-deepseek",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-llm-pi-ai",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-llm-retry",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-message-feedback",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-permission-presets",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-persona",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-plugin-package-inventory-deepseek",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-repeat-tool-reminder",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-sandbox-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-sandbox-policy",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-checkpoint-policy",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-log-deepseek",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-log-export",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-projection",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-projection-cache",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-query-sqlite",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-reference",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-stats",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-telemetry-otel",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-title",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-title-first-prompt-llm",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-session-turn-outline",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-settings-file",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-shell-env",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-skill",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-spill-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-spill-policy",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-storage",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-storage-domain",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-storage-json",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-subagent",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-subagent-fork-in-process",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-subagent-spawn-in-process",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-subprocess-local",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-system-prompt",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-token-meter",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-tool-call-timeout-policy",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-tool-fs",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-tool-subagent",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-tools",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-typert-loader",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-typert-registry",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-user-approval",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-user-questions",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-web",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-web-app",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-web-fetch-http",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-web-search-deepseek",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@deepseek-ai/dsh-workspace",
+          "version": "0.1.5-rc.2"
+        },
+        {
+          "name": "@dsh-agent-team/runtime",
+          "version": "0.1.1-alpha.2"
+        },
+        {
+          "name": "@dsh-agent-team/tools",
+          "version": "0.1.1-alpha.2"
+        }
+      ]
+    }
+  }
+}

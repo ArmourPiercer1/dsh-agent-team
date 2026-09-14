@@ -1,0 +1,341 @@
+{
+  "probe": "f1-shim-scope",
+  "stamp": "2026-09-14T11-11-57",
+  "port": 3181,
+  "hostVersion": "0.1.5-rc.2",
+  "distRow": "file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+  "port3080": {
+    "pre": "unreachable (ECONNREFUSED)",
+    "post": "unreachable (ECONNREFUSED)"
+  },
+  "teamMountWebServerEvents": [
+    {
+      "seq": 617,
+      "chain": [
+        "directory-picker-auto",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "directory-picker-auto",
+        "uid": 40,
+        "injects": [
+          "webServer",
+          "loader"
+        ],
+        "storeKeys": [
+          "loader",
+          "webServer"
+        ]
+      }
+    },
+    {
+      "seq": 677,
+      "chain": [
+        "client-hmr",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "client-hmr",
+        "uid": 70,
+        "injects": [
+          "clientModules",
+          "webServer"
+        ],
+        "storeKeys": [
+          "clientModules",
+          "webServer"
+        ]
+      }
+    },
+    {
+      "seq": 679,
+      "chain": [
+        "registerWebCarrier",
+        "ClientModuleRegistry",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "registerWebCarrier",
+        "uid": 82,
+        "injects": [
+          "webServer"
+        ],
+        "storeKeys": [
+          "webServer"
+        ]
+      }
+    },
+    {
+      "seq": 682,
+      "chain": [
+        "web-app",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "web-app",
+        "uid": 106,
+        "injects": [
+          "webServer",
+          "webStartup"
+        ],
+        "storeKeys": [
+          "webStartup",
+          "webServer"
+        ]
+      }
+    },
+    {
+      "seq": 778,
+      "chain": [
+        "client-connection",
+        "client-connection",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "client-connection",
+        "uid": 170,
+        "injects": [
+          "webServer",
+          "webRuntime"
+        ],
+        "storeKeys": [
+          "webServer",
+          "webRuntime"
+        ]
+      }
+    },
+    {
+      "seq": 779,
+      "chain": [
+        "open-in-app",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "open-in-app",
+        "uid": 65,
+        "injects": [
+          "webServer",
+          "connection",
+          "subprocess"
+        ],
+        "storeKeys": [
+          "subprocess",
+          "webServer",
+          "connection"
+        ]
+      }
+    },
+    {
+      "seq": 780,
+      "chain": [
+        "open-in-app",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "open-in-app",
+        "uid": 65,
+        "injects": [
+          "webServer",
+          "connection",
+          "subprocess"
+        ],
+        "storeKeys": [
+          "subprocess",
+          "webServer",
+          "connection"
+        ]
+      }
+    },
+    {
+      "seq": 781,
+      "chain": [
+        "open-in-app",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "open-in-app",
+        "uid": 65,
+        "injects": [
+          "webServer",
+          "connection",
+          "subprocess"
+        ],
+        "storeKeys": [
+          "subprocess",
+          "webServer",
+          "connection"
+        ]
+      }
+    },
+    {
+      "seq": 787,
+      "chain": [
+        "TypertGatewayService",
+        "TypertGatewayService",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "TypertGatewayService",
+        "uid": 147,
+        "injects": [
+          "connection",
+          "webServer"
+        ],
+        "storeKeys": [
+          "webServer",
+          "connection"
+        ]
+      }
+    },
+    {
+      "seq": 788,
+      "chain": [
+        "frontend-static",
+        "web-app",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "frontend-static",
+        "uid": 163,
+        "injects": [
+          "webServer",
+          "connection",
+          "webStartup"
+        ],
+        "storeKeys": [
+          "webServer",
+          "webStartup",
+          "connection"
+        ]
+      }
+    },
+    {
+      "seq": 806,
+      "chain": [
+        "dsh-agent-team",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "dsh-agent-team",
+        "uid": 159,
+        "injects": [
+          "agents",
+          "storageDomain",
+          "sessions",
+          "workspaceRegistry"
+        ],
+        "storeKeys": [
+          "agents",
+          "storageDomain",
+          "sessions",
+          "workspaceRegistry",
+          "teamRoot"
+        ]
+      }
+    },
+    {
+      "seq": 807,
+      "chain": [
+        "Include",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "Include",
+        "uid": 41,
+        "injects": [],
+        "storeKeys": []
+      }
+    },
+    {
+      "seq": 808,
+      "chain": [
+        "Include",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "Include",
+        "uid": 41,
+        "injects": [],
+        "storeKeys": []
+      }
+    },
+    {
+      "seq": 809,
+      "chain": [
+        "Include",
+        "Include",
+        "Loader",
+        "root"
+      ],
+      "fiber": {
+        "name": "Include",
+        "uid": 41,
+        "injects": [],
+        "storeKeys": []
+      }
+    }
+  ],
+  "p1_selfRead": {
+    "outcome": "threw",
+    "message": "cannot get property \"webServer\" without inject"
+  },
+  "p3_foreignRpcHandle": {
+    "outcome": "threw",
+    "message": "cannot get property \"webServer\" without inject"
+  },
+  "p3b_foreignRpcHandle2": {
+    "outcome": "threw",
+    "message": "cannot get property \"webServer\" without inject"
+  },
+  "p4_identity": {
+    "webServerEventCount": 14,
+    "teamMountReaderChain": [
+      "directory-picker-auto",
+      "Include",
+      "Loader",
+      "root"
+    ],
+    "thisRowChain": [
+      "Include",
+      "Include",
+      "Loader",
+      "root"
+    ],
+    "foreignReaderCount": 13,
+    "sameTeamVsForeign1": false,
+    "sameForeign1VsForeign2": false,
+    "foreignReaderIsThisRowCtx": false
+  },
+  "thisRowChain": [
+    "Include",
+    "Include",
+    "Loader",
+    "root"
+  ]
+}

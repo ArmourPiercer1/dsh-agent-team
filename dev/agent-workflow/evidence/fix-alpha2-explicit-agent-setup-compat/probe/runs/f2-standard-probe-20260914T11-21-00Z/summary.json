@@ -1,0 +1,5 @@
+{
+  "probe": "f2-standard-surface",
+  "stamp": "f2-standard-probe-20260914T11-21-00Z",
+  "fatal": "DISC model request not captured within 120s"
+}

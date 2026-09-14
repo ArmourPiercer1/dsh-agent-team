@@ -1,0 +1,35 @@
+# Teardown / scratch log — fix/alpha2-explicit-agent-setup-compat (probe phase)
+
+Recorded per TEST_METHODS §7 (temp worlds deleted at teardown; deletion logged).
+
+## Deleted 2026-09-14T07:35Z (probe diagnostics complete)
+
+| Path (worktree-relative) | What | Why deleted |
+| --- | --- | --- |
+| `dev/tests/homes/a2x-probe-{test-use-0.1.2-rc.1,npm-0.1.5-rc.2}-20260914T072054Z/` | Probe homes from the FIRST probe run (buggy WORKTREE resolution, 4 levels up instead of 5) | Buggy scratch at a wrong path; superseded by correct-path runs |
+| `tests/homes/a2x-smoke-20260914T07-04-38Z-{disc,red,green}/` | Stale DSH_HOME worlds left by the FATAL first real-host smoke run (died at DISC-leg bootstrap: `cannot get property "webServer" without inject`) | Superseded by the rerun after the `internal/get` seam landed |
+| `probe/runs/probe-20260914T072054Z/`, `probe-20260914T072112Z/`, `probe-20260914T072139Z/` | First three probe iterations (bugs: wrong REPO path; unsplit `--port` argv; non-terminating fiber walk) | Buggy iterations; retained runs below are the valid ones |
+
+## Retained as evidence
+
+| Path | What |
+| --- | --- |
+| `probe/probe-row.mjs` | Diagnostic cordis row: fiber-chain + full composition map + `webServer` read probes |
+| `probe/a2x-topology-probe.mjs` | Runner: boots npm 0.1.5-rc.2 (:3183) and test-use 0.1.2-rc.1 (:3184) hosts with a probe-only profile patch, fresh temp homes under `tests/homes/`, `:3080` read-only check, homes deleted after each leg |
+| `probe/runs/probe-20260914T072324Z/summary.json` | ROOT-CAUSE run (no shim): 0.1.5 `connection.rpc.handle` FAILS (`cannot get property "webServer" without inject`), 0.1.2 OK; connection row inject diff is the only topology difference |
+| `probe/runs/probe-20260914T072905Z/summary.json` | SHIM run: identical listener registered in the probe row → 0.1.5 `rpcHandle` OK, 0.1.2 still OK (behavior preserved) |
+| `a2x-real-host-smoke.mjs` | Real-host smoke kit (DISC/RED/GREEN legs) — see runs/ for the post-shim rerun |
+
+## Version-matrix evidence (npm registry, 2026-09-14)
+
+`@deepseek-ai/dsh-client-connection` inject array by published version:
+
+- 0.1.2-rc.1, 0.1.3-alpha.2: `["webServer", "credentials"]`
+- 0.1.5-alpha.1, 0.1.5-alpha.2, 0.1.5-rc.1, 0.1.5-rc.2: `["credentials"]`
+
+`@deepseek-ai/dsh-agent-loop` setup call: 1-arg through 0.1.3-alpha.2
+(`setup?.(prepared.agent.ctx)`); two-arg (`prepared.agent.ctx, prepared.agent`)
+in every 0.1.5 build. No published host version combines the two-arg contract
+with a working `connection.rpc.handle` from an external plugin row — the
+`internal/get` seam in `packages/runtime/src/plugin/host.ts` is the plugin-side
+compatibility for the 0.1.5+ published dists.

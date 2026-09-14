@@ -408,6 +408,59 @@ export const inject = ['agents', 'storageDomain', 'sessions', 'workspaceRegistry
  *   {@link validateTeamPluginConfig}).
  */
 export async function apply(ctx, config) {
+    // --- 0.1.5 remote-channel compatibility seam (`webServer` reads) -------
+    // The host's dsh-client-connection service registers RPC channels —
+    // `connection.rpc.handle(channel, mounted)`, the seam this row uses to
+    // mount /team-remote — with `owner.webServer.register(route)`. Cordis
+    // resolves that property read through the `internal/get` waterfall whose
+    // fallback walks the ANCESTOR fibers of the connection row's own origin
+    // context. On 0.1.2-era hosts the walk finds `webServer` because the
+    // connection row injects it. Upstream commit 2ef85b1e17 — shipped in
+    // every 0.1.5 build — removed `webServer` from the connection row's
+    // inject, so the walk finds nothing and every external row's
+    // `connection.rpc.handle(...)` fails on 0.1.5+ hosts with `cannot get
+    // property "webServer" without inject`. This listener (an effect of this
+    // row's fiber, disposed with the row) resolves the `webServer` property
+    // read through the strict service read instead: the same service
+    // instance the built-in walk returns on 0.1.2-era hosts, located
+    // topology-independently.
+    //
+    // SCOPE (F1, PR #17 review + the real-host probe,
+    // evidence/.../probe/runs/f1-shim-probe-*): the listener serves the
+    // `webServer` read ONLY while THIS row's own registration call
+    // (`mountRemoteNow` → `registerRemote(connection)` →
+    // `connection.rpc.handle('/team-remote', ...)`) is in flight
+    // (`teamRemoteMountInFlight`). The probe established the caller
+    // topology: the waterfall receiver is a per-call traceable SHADOW of
+    // the CALLING row's context (the read's reader fiber is the CALLER
+    // row's own fiber; a fresh proxy per call — so `readerCtx === ctx`
+    // never holds for the service-mediated read and no reader-proxy
+    // caching is possible). Without the flag, the process-wide listener
+    // served ANY row's `webServer` read while this plugin was loaded —
+    // an unrelated row's broken dependency declaration was masked (and an
+    // unrelated plugin could mount foreign RPC channels through the seam
+    // — both demonstrated live in the pre-fix probe run). With the flag,
+    // every `webServer` read outside the registration window falls
+    // through to the built-in walk verbatim: native Cordis failure where
+    // the inject is missing (the unrelated row keeps its exact prior
+    // failure) and unchanged native success where the walk already
+    // resolves it (0.1.2-era hosts, headless hosts, and every host row
+    // that declares its own `webServer` inject). The read is synchronous
+    // inside the call (the connection service's `owner.effect(...)` runs
+    // its body in the same tick — verified in the 0.1.5 cordis source and
+    // in the probe's single-event-per-mount trace), so the window covers
+    // exactly the read(s) of the in-flight registration.
+    let teamRemoteMountInFlight = false;
+    if (typeof ctx.on === 'function') {
+        ctx.on('internal/get', (readerCtx, prop, _error, next) => {
+            if (prop !== 'webServer')
+                return next();
+            if (!teamRemoteMountInFlight)
+                return next();
+            const value = readerCtx.get('webServer');
+            return value !== undefined ? value : next();
+        });
+    }
     // --- the bundled team skills (plugin-attached skills) ------------------
     // Register the two team skills that ship inside the installed package on
     // the `skills` public service. This is a soft add-on: an absent/malformed
@@ -563,7 +616,21 @@ export async function apply(ctx, config) {
         const registerRemote = root.seams.remoteHandlerRegistration.current();
         let registration;
         try {
-            registration = registerRemote(connection);
+            // F1 scope window: the `webServer` compatibility seam (the
+            // `internal/get` listener above) serves ONLY the property read(s)
+            // of this registration call — the `connection.rpc.handle` body
+            // performs its `owner.webServer.register(route)` walk
+            // synchronously inside (the 0.1.5 connection service runs its
+            // `owner.effect(...)` body in the same tick). Any other row's
+            // `webServer` read — before, after, or from another plugin's own
+            // `rpc.handle` — falls through to the built-in walk verbatim.
+            teamRemoteMountInFlight = true;
+            try {
+                registration = registerRemote(connection);
+            }
+            finally {
+                teamRemoteMountInFlight = false;
+            }
         }
         catch (error) {
             const message = error instanceof Error ? error.message : String(error);

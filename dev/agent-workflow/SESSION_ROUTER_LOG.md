@@ -3153,3 +3153,67 @@ G5_FINAL_AT=2026-09-07T07:20:15.4663260+08:00
 - **PR #16 body 更新至终态**（gh CLI `pr edit` 因 Projects-classic
   弃用字段 GraphQL 失败 → REST PATCH /pulls/16 成功；body 现含完整里程碑链、
   Gate C 终态 37/37、门禁全量结果、3 条已知事项留痕）。
+
+## 2026-09-14 — alpha.2 AgentSetup explicit-Agent compat 快速修复轮（用户指令轮，接前代理中断会话）
+
+### 任务与背景
+
+- 计划：`docs/plans/active/fix-agentsetup-explicit-agent-compat-prompt.md`（fast fix；CORE PATCH BUDGET = 0；无 0.1.5 依赖升级、无 re-design、无 host 版本嗅探）。
+- 前代理在修复中途被中断（身份修复 src+dist 已 byte-mirror 完成、T1–T5 已绿、focused/full 基线已跑）；本轮完成剩余工作：real 0.1.5-rc.2 smoke 打通 + 收束门禁 + git/PR。
+- 用户指令原文要点：按计划执行剩余工作；完成后不要继续寻找更多潜在问题。
+
+### 交付（commit a42ebf4 @ `fix/alpha2-explicit-agent-setup-compat`，worktree `.worktrees/fix-alpha2-explicit-agent-setup-compat`，147 文件 = 生产 4 + 测试/桥 3 + .gitignore 1 + 证据 136 + 日志 3）
+
+- **身份修复**（`packages/runtime/src/plugin/live/agent-bindings.mjs` + dist mirror，前代理产物，本轮验证）：`resolveSetupAgent(agentCtx, explicitAgent)` explicit-first（explicit → `agentCtx.agent` → `scopeOf` 末位兜底，无版本嗅探）；Coverage Gate `tools.schemas(agent)` 与 permission cwd basis（`agent.session.header.cwd`，决策时 lazy 读）用同一 Agent；no-identity 保持 fail-closed（typed error + setup 回滚）。
+- **`internal/get` webServer seam（本轮新增，超前代理 diff，已显著上报待用户裁决）**：`packages/runtime/src/plugin/host.ts` 的 `apply()` 顶部注册 `internal/get` 公共 typed 事件监听（`ctx.on` 为可选成员 + `typeof` 守卫，10+ 测试 mock 不受影响；监听随 row fiber 生命周期 dispose）。0.1.5 起 host `dsh-client-connection` row inject 移除 `webServer`（upstream `2ef85b1e17`，全部 0.1.5 npm 构建均有）→ 任何外部 row 的 remote mount 死于 `cannot get property "webServer" without inject`。probe 证据：`probe/runs/probe-20260914T072324Z`（无 shim：0.1.5 rpcHandle FAIL / 0.1.2 OK）/ `probe-20260914T072905Z`（有 shim：两 host 均 OK，0.1.2 行为不变）。
+- **真实 host smoke**（kit：`evidence/.../a2x-real-host-smoke.mjs`，三腿 DISC/RED/GREEN，npm `@deepseek-ai/dsh@0.1.5-rc.2` 真实 host，fresh homes，3181，:3080 只读 pre/post，mock model 3496）：**终跑 `runs/a2x-smoke-20260914T07-57-39Z` verdict=GREEN，13/13**。RED 腿 = pre-fix glue（`git show df9230d` symlink farm）team.create 以用户生产原错误失败（`TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED` 包 `alpha2-permission-coverage-surface-unavailable`，observation row 留痕）；GREEN 腿 = 同 world fixed glue team.create 成功（`path: fresh-root`）+ 创建 Leader 初始任务驱动真实 model turn（gated 6 工具面：read/read_image/write/edit + 2 个选定 team 工具）+ **A5 live 证明**：脚本化 `read` 调用进入 permission pipeline 且 durable ALLOW（`stage: canonicalized`（相对路径经修复的 lazy cwd basis 解析进 session workspace）+ `stage: decision, decision: allow, provenance: rule/allow` 两行 observation）。中间 7 次运行全部留档（webServer fatal → MALFORMED_DTO → subagent restrict → minimal GREEN/G7-skip → bash allow-lane MALFORMED → G7 过早快照 → file-path-missing）。
+- **smoke 范围裁决（kit 侧，非生产）**：smoke world 用 kit 自造 USER preset `a2x-a5`（persona + dsh-tool-fs，无 delegation group）经 0.1.5 公开 `$DSH_HOME/.agent-presets` seam 挂载（`rootPresetId`/`memberPresetId`）。理由 = 下面两条 host 契约发现叠加：
+  1. 0.1.5 所有非 minimal 出厂 preset（standard/cordis/ptc）的 spawn `subagent` row（`modelSelectionSettings: true`）走 DEFERRED PER-AGENT install → 注册进 agent OWN tool layer → `tools.restrict()` 结构性不可达（`restrictableNames` 排除 own layer）而 Coverage Gate 判 KNOWN_SENSITIVE → 严格（capabilities.permissions）agent 在 0.1.5-rc.2 上 un-creatable（`runs/a2x-smoke-20260914T07-34-10Z` live 实证：restrict 抛 `unknown global tool "subagent"`）；
+  2. alpha.2 策略（A2C-1，`domain/blueprint/src/validate.ts`）禁止 shell 类（bash/pwsh）whole-tool allow-lane 规则 → shipped `minimal` preset 唯一 managed 工具 bash 无法走 allow lane → 计划 §9「被允许的 managed tool 进入 permission pipeline」证明在 minimal 上不可能（`runs/a2x-smoke-20260914T07-46-35Z` live 实证：MALFORMED_DTO）。
+  两条均入 `followup-backlog.md`（§13 规则：unrelated → 记录不修；含 3 项：upstream webServer re-injection / subagent own-layer 碰撞 / p6t1-parallel flake / 既有基线失败集）。
+
+### 收束门禁（全部在 host.ts 变更后的终态重跑，证据 = 证据目录 *-final.log）
+
+- focused：**12 文件 / 209 测试全绿**（计划 §7 十件套 + 新 `alpha2-explicit-agent-setup` 5 测试 + `t12m4-remote-mount` + `rmr-remote-mount-race`）。
+- runtime regression 全量：**8 failed | 1875 passed (1883) = 基线（df9230d）失败集 byte-identical**（d3 D3-4、p6t3-mediation ×5、p6t3-restart ×2 + 3 个既有 load-failure 文件；0 新增失败；+5 通过 = 新测试）。
+- typecheck：`tsc -p tsconfig.json` exit 0；build + `check:artifacts` **OK 1116 文件**。
+- 红线复核：CORE PATCH BUDGET = 0（upstream 零源码改动/零 patch，全公开 seam）；`references/deepseek-harness` porcelain 空 @ c291e7961a + 冻结 tag peel = a3ab319927 未动；`tests/deepseek-harness-test-use` porcelain 空 @ a66e470204；:3080 pre/post 均 unreachable；homes/scratch 全清（kit teardown + 手工清理 `.tmp-t12a-b2-home`（t12a-b2 既有失败测试自留 scratch）留痕）。
+
+### git / PR
+
+- commit `a42ebf4`（message 按 §12：`fix(runtime): use explicit AgentSetup identity for permission coverage`）；`git diff --check` 净（证据 run.log 尾空白已规范化，内容未改）；计划授权的一次性推送完成（`git push -u origin fix/alpha2-explicit-agent-setup-compat`）。
+- **PR #17 → master**（标题 `fix(runtime): adapt permission coverage to explicit AgentSetup identity`；body = §12 模板填实数 + webServer seam 说明 + followup-backlog 指针）。
+- 待用户审查 merge（`internal/get` seam 超计划 diff 部分已在 PR body 与本报告显著标注，供裁决）。
+
+## 2026-09-14（晚）— PR #17 pre-merge review follow-up 轮（F1 shim 收窄 + F2 standard preset A/B/C probe，CASE B 裁决）
+
+### 任务与背景
+
+- 用户以 review 指令形式给出两条有界 follow-up（备忘：`evidence/fix-alpha2-explicit-agent-setup-compat/pr17-review-followup-instructions.md`）：**F1** = 收窄 `host.ts` 的 `webServer` `internal/get` 兼容 shim 至 team 自身 `connection.rpc.handle()` 注册 `/team-remote` 时产生的那次读取（禁止 blanket pass-through / patch Cordis / Symbol-hack / monkey-patch；不得假设 `readerCtx === ctx`，先 probe 0.1.5 真实拓扑）；**F2** = 在 DSH 0.1.5-rc.2 上实测 standard preset + `capabilities.permissions` 的真实时序（A = Coverage Gate 的 `tools.schemas(agent)` 读、B = `agents.create()` resolve/发布后、C = 首个 model request 前；`subagent` 与 `subagent_fork` 分别跟踪、不主动 deny subagent；只 probe 不改生产；Case A = setup-blocked + 候选方案清单（不实现）待裁决，Case B = 标记 P1 POST-GATE SURFACE EXPANSION + 精确证据 + STOP）。
+- 红线沿用：CORE PATCH BUDGET = 0；F1 允许文件 = host.ts + dist + remote-mount 测试；F2 只允许 probe/证据/fixture；禁改 permission-coverage/pre-execute-adapter/blueprint/storage/contracts/MCP policy/Team tools/subagent upstream/deps/preset/`PERMISSION_TOOL_NAMES`。
+
+### F1 交付（commit `b8e77b2`）
+
+- **拓扑 probe（先行，0.1.5-rc.2 真实 host）**：`probe/runs/f1-shim-probe-2026-09-14T11-11-57/` — 纯观察者 row 证实：service-mediated read（经 `connection.rpc.handle`）的 waterfall receiver 是**调用方 row ctx 的 per-call 可追溯 shadow**（reader fiber = 调用方 row 自己的 fiber，每次调用新 proxy）→ `readerCtx === ctx` 永不成立 → call-site flag 是最小公开 seam。
+- **host.ts 收窄**：`internal/get` 监听现在仅对 `prop === 'webServer'` 且 `teamRemoteMountInFlight === true`（flag 只包住 `mountRemoteNow` 内 `registerRemote(connection)` 的同步窗口，try/finally 复位；initial 与 late watcher 两条 mount 路径都经过它）时以 `readerCtx.get('webServer')` 应答（undefined 时回落 `next()`）；其余一律 `next()` → 无关上下文（直接读或 foreign `rpc.handle`）保持原生 `cannot get property "webServer" without inject`。fail-closed 残余面已写进代码注释（flag 窗口内同步只跑 `registerRemote`，`webServer.register` 是普通 service 方法不走 property walk → 无关读取无法交错；未来 cordis 若把该读 defer 出去则原生失败而非误服务）。
+- **新回归**：`packages/runtime/test/f1-webserver-shim-isolation.test.ts`（真实 `Context()` + `Service`，cordis 4.0.2）3/3：T1 = 0.1.5 拓扑（webServer 在 sibling fiber）shim 服务 team mount 成功；T2 = 关键回归（无关直接读 + 无关 `rpc.handle` 均原生抛错、零路由、/team-remote 恰一条；red-check 过）；T3 = 0.1.2 拓扑（webServer 在 connection 自身 fiber）原生 walk 照常解析。
+- 门禁：t12m4 + rmr + 新文件 143/143；full suite 8 failed | 1878 passed (1886) = 基线失败集（+3 为新 F1 测试）；typecheck 全绿；build + build:composition + check:artifacts OK 1116。
+
+### F2 交付（commit `a4395d8`）— 裁决 = **CASE B**
+
+- **probe world**：0.1.5-rc.2 真实 npm host + worktree dist 生产 row，standard root preset，saved blueprint `team.f2-perm`（leader `capabilities.permissions`：20 名 builtinToolDeny = standard 26 个 restrictable 名 − {bash, read, read_image, write, edit, todo_write}；skills/mcp allow 空；permissions default ask + read allow/any + write ask/any + bash deny/any）。`subagent_fork` 在 deny 列表（immediate restrictable install 且 KNOWN_SENSITIVE — 不 deny 会在 A 处 FATAL 混淆 subagent）；`subagent` 刻意不 deny（probe 对象）。纯观察者 row（`probe/f2-standard-probe-row.mjs`，inject=[]，strict `ctx.get` lazy 取 tools/agents）在 `agent/created` 同步/微任务/250ms/2s 四处 + `tools/change` + 1s `agents.list()` rescan（含 heartbeat）快照 `tools.schemas(agent)`。
+- **调试留痕（3 次失败运行入档）**：① probe row apply 时 eager `ctx.get('tools')` 拿到 undefined（row fiber 并行 apply，sibling 服务晚到）→ 改 lazy；② LEG 0 prompt 抢在 boot leader 的 session 索引注册之前（boot marker +177ms 发 prompt，agent/created +317ms）→ 假 `session/not-found`（0.1.5 prompt 路径：live agent 缺失 → `sessionQuery.observeSession` 未注册 → not-found）→ runner 增加「等 timeline 出现 created-sync(ROOT) 再发 prompt」+ not-found 有限重试（requestId 稳定，幂等）；③ fresh probe home 空 `.credentials.yaml` + 未设 `DEEPSEEK_API_KEY`（kit 设了、首版漏了）→ turn 被 accept 但 model 请求永不到达 mock → 对齐 kit 环境。
+- **终跑 `probe/runs/f2-standard-probe-20260914T11-42-48Z`（port 3184，:3080 pre/post unreachable）**：
+  - DISC 控制（boot leader，standard，无 capabilities）：38 工具面，subagent + subagent_fork 均在（world sanity，与 07-34-10Z 一致）。
+  - **A（gate 读，composition 时）**：gate **PASSED** → subagent ∉ A（gate 判 subagent KNOWN_SENSITIVE，pass 蕴含 composition 时读中无 subagent）。
+  - **B（发布后，created leader `session-f2created-...` 的 timeline）**：`created-sync`（agent/created dispatch 内）= **8 工具，无 subagent**；+2ms `tools/change-42` = **9 工具，含 subagent**（delayed own-layer install 落在 announce dispatch 内，即发布时刻）；此后 rescan/250ms/2s 全部稳定 9 工具含 subagent。
+  - **C（首个 model request，mock req seq=3）**：9 工具**含 subagent**（`bash, edit, read, read_image, subagent, team_list_members, team_send_message, todo_write, write`）。
+  - **subagent A/B/C = false/true/true**（first appearance = `tools/change-42`）；**subagent_fork A/B/C = false/false/false**（deny 在 composition 处 masked，符合设计）。
+- **裁决**：**CASE B — P1 POST-GATE SURFACE EXPANSION**。gate 验证的 surface（A）≠ model 面向的 surface（B/C）：standard preset 把自身 `subagent` 层 defer 到发布时 dispatch 的 `agent/created` 事件上安装，结构上 post-gate（dsh-agent-loop `publish`：enter → announce → session-start；本 probe 实证 announce dispatch 内 +2ms 落地）。按指令 **STOP，不在本轮修**；候选方案（不实现，待裁决）已记入 `followup-backlog.md` 第 5 条。
+
+### Gate D 与 git
+
+- Gate D（真实 0.1.5）：① a2x 定制 fs-only smoke（narrowed-shim dist）**GREEN 13/13**（`runs/a2x-smoke-20260914T11-43-34Z/`，含 G7 durable ALLOW 证明行；`/team-remote` 在真实 0.1.5 host 正常 MOUNTED）；② standard preset A/B/C probe 完成（GREEN 非必须 — 裁决为 CASE B）。中途一次 kit RED 腿 boot-wait 异常（instance log 已有 boot marker 但增量轮询 240s 未命中；事件循环疑似瞬态 stall）→ `waitForLogLine` 增加超时后 final full re-read（marker 存在为 ground truth），该异常运行 `runs/a2x-smoke-20260914T11-28-06Z/` 入档，重跑即绿。
+- full suite 终态：**8 failed | 1878 passed (1886)** = 基线失败集（d3 D3-4、p6t3-mediation ×5、p6t3-restart ×2 + 3 个既有 load-failure 文件）；期间观察到 p6t1-parallel 在满载时 2–3 个 flake（隔离 9/9 ×2 全绿，负载回落即消失 — 与 backlog 第 3 条既有记录一致）。
+- git：2 commits（`b8e77b2` F1 fix + 证据；`a4395d8` F2 probe + 证据 + kit 稳健性修复 + 两轮 a2x 运行记录）→ 授权推送 `a42ebf4..a4395d8` 至 PR #17 分支；PR #17 body 按 §8 更新（explicit-Agent fix: GREEN on controlled fs-only permission surface / standard preset: probed separately, result: CASE B）。
+- 清理：tests/homes 全部清空（a2x ×3 失败腿 + f1 ×2 + f2 ×3 + .tmp-t12a-b2-home）；:3080 全程未触碰（各 run pre/post unreachable 入档）。
