@@ -1,0 +1,51 @@
+[2026-09-14T07:54:57.387Z] === a2x real-host smoke (DSH 0.1.5-rc.2 npm dist) a2x-smoke-20260914T07-54-57Z ===
+[2026-09-14T07:54:57.388Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat
+[2026-09-14T07:54:57.388Z] host=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh (version 0.1.5-rc.2)
+[2026-09-14T07:54:57.388Z] baselineSha=df9230de678f987f407f3bb59492863bb8dc6530 keep=false
+[2026-09-14T07:54:57.405Z] :3080 pre: unreachable
+[2026-09-14T07:54:57.407Z] ports: host=3181 mock=3496
+[2026-09-14T07:54:57.408Z] fresh homes asserted (disc/red/green)
+[2026-09-14T07:54:57.412Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T07:54:57.412Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T07:54:57.412Z] ── leg 1: DISCOVERY (fixed glue, legacy boot) ──
+[2026-09-14T07:55:02.346Z] DISC: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-54-57Z"]
+[2026-09-14T07:55:02.414Z] PASS D1: discovery leader turn admitted — apiPrompt status=200
+[2026-09-14T07:55:02.442Z] mock: mock: 1 text reply (41 chars): "A2X_DISC_ACK_a2x-smoke-20260914T07-54-57Z"
+[2026-09-14T07:55:02.443Z] mock: mock: 2 text reply (41 chars): "A2X_DISC_ACK_a2x-smoke-20260914T07-54-57Z"
+[2026-09-14T07:55:02.914Z] PASS D2: discovery model request captured — seq=1 model=a2x-smoke-model surfaceCount=15
+[2026-09-14T07:55:02.914Z] discovery surface (15 tools): edit, read, read_image, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, write
+[2026-09-14T07:55:02.915Z] PASS D3: coverage-complete policy derivable — denyList(0): (none)
+[2026-09-14T07:55:03.416Z] DISC host stopped
+[2026-09-14T07:55:03.418Z] saved blueprint written: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-smoke-blueprints/a2x-perm-team.yaml
+[2026-09-14T07:55:03.437Z] pre-fix glue farm ready: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-prefix/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[2026-09-14T07:55:03.437Z] ── leg 2: RED (pre-fix glue @ baseline, team.create with Leader permissions) ──
+[2026-09-14T07:55:08.065Z] RED: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-54-57Z"]
+[2026-09-14T07:55:08.144Z] PASS R1: pre-fix glue: team.create fails with the exact production error — result=TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED :: team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-54-57Z' failed: agent-bindings: alpha.2 permission coverage surface unavailable for 'session-a2x-created-a2x-smoke-20260914T07-54-57Z': the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable (code: alpha2-permission-coverage-surf
+[2026-09-14T07:55:08.146Z] PASS R2: pre-fix glue: surface-unavailable observation recorded for the created root — alpha2-perm: permission-coverage-surface-unavailable for session-a2x-created-a2x-smoke-20260914T07-54-57Z: the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable
+[2026-09-14T07:55:08.647Z] RED host stopped
+[2026-09-14T07:55:08.648Z] ── leg 3: GREEN (fixed dist glue, same row world, same team.create) ──
+[2026-09-14T07:55:13.295Z] GREEN: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-54-57Z"]
+[2026-09-14T07:55:13.437Z] mock: mock: 3 tool-call reply: read
+[2026-09-14T07:55:13.438Z] mock: mock: 4 tool-call reply: read
+[2026-09-14T07:55:13.459Z] mock: mock: 5 text reply (43 chars): "A2X_GREEN_DONE_a2x-smoke-20260914T07-54-57Z"
+[2026-09-14T07:55:13.476Z] PASS G1: fixed glue: team.create succeeds (fresh-root) — result={"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a2x-created-a2x-smoke-20260914T07-54-57Z","blueprint":{"blueprintId":"team.a2x-perm","revision":"1","contentHash":"sha256:f83e74b063a2fc1654da7b35650bdf9e940c8857c4e01bbe7d01306d3e1e75f0"},"createdAt":"2026-09-
+[2026-09-14T07:55:13.476Z] PASS G2: created leader initial work reached the model — seq=3 model=a2x-smoke-model surfaceCount=6
+[2026-09-14T07:55:13.476Z] created-leader surface (6 tools): edit, read, read_image, team_list_members, team_send_message, write
+[2026-09-14T07:55:13.476Z] PASS G3: capability layer: every denied unmanaged tool is OFF the created surface — none of the deny list present
+[2026-09-14T07:55:13.476Z] PASS G4: selected team tools ON the created surface — team_send_message, team_list_members
+[2026-09-14T07:55:13.476Z] PASS G5: non-selected team tools OFF the created surface (selective mode) — clean
+[2026-09-14T07:55:13.476Z] PASS G6: managed-vocabulary tools stay ON the surface (gate-managed, not denied) — present: read, read_image, write, edit
+[2026-09-14T07:56:43.918Z] FAIL G7: A5 enforcement: read allow/any call entered the permission pipeline with a durable ALLOW on the real host — A5 proof incomplete after 90s: toolRow=ok allowRow=ABSENT; alpha2-perm rows (1): alpha2-perm: {"stage":"canonicalization-failed","callId":"a2x-read-1","tool":"read","reason":"permission denied: canonicalization failed for tool \"read\": file
+[2026-09-14T07:56:43.919Z] PASS G8: no coverage failure observations in the GREEN world — clean
+[2026-09-14T07:56:44.420Z] GREEN host stopped
+[2026-09-14T07:56:44.420Z] sweep: disc host stopped
+[2026-09-14T07:56:44.421Z] sweep: red host stopped
+[2026-09-14T07:56:44.421Z] sweep: green host stopped
+[2026-09-14T07:56:44.421Z] mock model closed
+[2026-09-14T07:56:44.422Z] :3080 post: unreachable
+[2026-09-14T07:56:44.424Z] pre-fix farm removed
+[2026-09-14T07:56:44.432Z] leg-disc home removed: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-54-57Z-disc
+[2026-09-14T07:56:44.438Z] leg-red home removed: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-54-57Z-red
+[2026-09-14T07:56:44.441Z] leg-green home removed: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-54-57Z-green
+[2026-09-14T07:56:44.441Z] blueprint scratch removed
+[2026-09-14T07:56:44.442Z] summary: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/dev/agent-workflow/evidence/fix-alpha2-explicit-agent-setup-compat/runs/a2x-smoke-20260914T07-54-57Z/summary.json — verdict=RED-EXPECTED-FAILED (1 failed criteria)

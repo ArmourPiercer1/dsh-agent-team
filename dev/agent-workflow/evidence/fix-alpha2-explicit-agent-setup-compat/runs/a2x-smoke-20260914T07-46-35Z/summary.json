@@ -1,0 +1,105 @@
+{
+  "runStamp": "a2x-smoke-20260914T07-46-35Z",
+  "verdict": "RED-EXPECTED-FAILED",
+  "host": {
+    "package": "@deepseek-ai/dsh",
+    "version": "0.1.5-rc.2",
+    "bin": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "port": 3181,
+    "mockPort": 3496
+  },
+  "baselineSha": "df9230de678f987f407f3bb59492863bb8dc6530",
+  "worlds": {
+    "disc": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-46-35Z-disc",
+    "red": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-46-35Z-red",
+    "green": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-46-35Z-green",
+    "kept": false
+  },
+  "discoverySurface": [
+    "bash",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_send_message"
+  ],
+  "denyList": [],
+  "criteria": [
+    {
+      "id": "D1",
+      "name": "discovery leader turn admitted",
+      "ok": true,
+      "detail": "apiPrompt status=200"
+    },
+    {
+      "id": "D2",
+      "name": "discovery model request captured",
+      "ok": true,
+      "detail": "seq=1 model=a2x-smoke-model surfaceCount=12"
+    },
+    {
+      "id": "D3",
+      "name": "coverage-complete policy derivable",
+      "ok": true,
+      "detail": "denyList(0): (none)"
+    },
+    {
+      "id": "R1",
+      "name": "pre-fix glue: team.create fails with the exact production error",
+      "ok": false,
+      "detail": "result=MALFORMED_DTO :: permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } }) (source: a2x-perm-team.yaml)"
+    },
+    {
+      "id": "R2",
+      "name": "pre-fix glue: surface-unavailable observation recorded for the created root",
+      "ok": false,
+      "detail": "observations(0): "
+    },
+    {
+      "id": "G1",
+      "name": "fixed glue: team.create succeeds (fresh-root)",
+      "ok": false,
+      "detail": "result={\"code\":\"MALFORMED_DTO\",\"message\":\"permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } }) (source: a2x-perm-team.yaml)\",\"details\":{\"method\":\"team.cr"
+    },
+    {
+      "id": "G2",
+      "name": "created leader initial work reached the model",
+      "ok": false,
+      "detail": "no mock request carrying the green marker within 180s"
+    },
+    {
+      "id": "G7",
+      "name": "A5 enforcement listener ran on the real host (bash allow/any lane)",
+      "ok": true,
+      "detail": "bash is NOT on the created surface — enforcement leg skipped (no tool call to gate)"
+    },
+    {
+      "id": "G8",
+      "name": "no coverage failure observations in the GREEN world",
+      "ok": true,
+      "detail": "clean"
+    }
+  ],
+  "artifacts": [
+    "run.log",
+    "discovery-surface.json",
+    "saved-blueprint.yaml",
+    "red-team-create.json",
+    "red-state.json",
+    "green-team-create.json",
+    "green-leader-request.json",
+    "green-state.json",
+    "port3080-pre.txt",
+    "port3080-post.txt",
+    "instances/disc/",
+    "instances/red/",
+    "instances/green/"
+  ],
+  "at": "2026-09-14T07:49:52.771Z"
+}

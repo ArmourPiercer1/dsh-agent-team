@@ -1,0 +1,60 @@
+---
+schemaVersion: 1
+blueprintId: team.a2x-perm
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a2x permissions team."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_send_message
+        - team_list_members
+      builtinToolDeny:
+        - ask_user_question
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - interrupt_agent
+        - job_kill
+        - job_list
+        - job_output
+        - list_agents
+        - present
+        - ralph
+        - send_message
+        - skill
+        - subagent
+        - subagent_fork
+        - update_goal
+        - web_fetch
+        - web_search
+        - workflow
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: read
+          resource:
+            kind: any
+      ask:
+        - tool: write
+          resource:
+            kind: any
+      deny:
+        - tool: bash
+          resource:
+            kind: any
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+---

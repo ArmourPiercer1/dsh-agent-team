@@ -1,0 +1,17 @@
+[2026-09-14T07:04:38.106Z] === a2x real-host smoke (DSH 0.1.5-rc.2 npm dist) a2x-smoke-20260914T07-04-38Z ===
+[2026-09-14T07:04:38.107Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat
+[2026-09-14T07:04:38.107Z] host=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh (version 0.1.5-rc.2)
+[2026-09-14T07:04:38.107Z] baselineSha=df9230de678f987f407f3bb59492863bb8dc6530 keep=false
+[2026-09-14T07:04:38.125Z] :3080 pre: unreachable
+[2026-09-14T07:04:38.127Z] ports: host=3181 mock=3496
+[2026-09-14T07:04:38.128Z] fresh homes asserted (disc/red/green)
+[2026-09-14T07:04:38.132Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T07:04:38.132Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T07:04:38.132Z] ── leg 1: DISCOVERY (fixed glue, legacy boot) ──
+[2026-09-14T07:04:42.101Z] FATAL DISC: row setup failed — setupError: the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property "webServer" without inject
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=JIvet3ph1wuup4Y-4-mRBZoca4gil8m9hhnX6ALHSho
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): cannot get property "webServer" without inject
+    at mountRemoteNow (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:572:23)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/dist/packages/runtime/src/plugin/host.js:962:35)

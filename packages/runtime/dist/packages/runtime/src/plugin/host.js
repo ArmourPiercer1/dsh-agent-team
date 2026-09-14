@@ -408,6 +408,34 @@ export const inject = ['agents', 'storageDomain', 'sessions', 'workspaceRegistry
  *   {@link validateTeamPluginConfig}).
  */
 export async function apply(ctx, config) {
+    // --- 0.1.5 remote-channel compatibility seam (`webServer` reads) -------
+    // The host's dsh-client-connection service registers RPC channels —
+    // `connection.rpc.handle(channel, mounted)`, the seam this row uses to
+    // mount /team-remote — with `owner.webServer.register(route)`. Cordis
+    // resolves that property read through the `internal/get` waterfall whose
+    // fallback walks the ANCESTOR fibers of the connection row's own origin
+    // context. On 0.1.2-era hosts the walk finds `webServer` because the
+    // connection row injects it. Upstream commit 2ef85b1e17 — shipped in
+    // every 0.1.5 build — removed `webServer` from the connection row's
+    // inject, so the walk finds nothing and every external row's
+    // `connection.rpc.handle(...)` fails on 0.1.5+ hosts with `cannot get
+    // property "webServer" without inject`. This listener (an effect of this
+    // row's fiber, disposed with the row) resolves the `webServer` property
+    // read through the strict service read instead: the same service
+    // instance the built-in walk returns on 0.1.2-era hosts, located
+    // topology-independently. Every other property read — and every
+    // `webServer` read on a host where the service is absent, where the
+    // strict read returns undefined rather than throwing — delegates
+    // verbatim to the built-in path, so 0.1.2-era hosts and headless hosts
+    // keep their exact prior behavior.
+    if (typeof ctx.on === 'function') {
+        ctx.on('internal/get', (readerCtx, prop, _error, next) => {
+            if (prop !== 'webServer')
+                return next();
+            const value = readerCtx.get('webServer');
+            return value !== undefined ? value : next();
+        });
+    }
     // --- the bundled team skills (plugin-attached skills) ------------------
     // Register the two team skills that ship inside the installed package on
     // the `skills` public service. This is a soft add-on: an absent/malformed

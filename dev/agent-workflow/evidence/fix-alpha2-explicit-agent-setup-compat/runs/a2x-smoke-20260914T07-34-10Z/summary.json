@@ -1,0 +1,153 @@
+{
+  "runStamp": "a2x-smoke-20260914T07-34-10Z",
+  "verdict": "RED-EXPECTED-FAILED",
+  "host": {
+    "package": "@deepseek-ai/dsh",
+    "version": "0.1.5-rc.2",
+    "bin": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "port": 3181,
+    "mockPort": 3496
+  },
+  "baselineSha": "df9230de678f987f407f3bb59492863bb8dc6530",
+  "worlds": {
+    "disc": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-34-10Z-disc",
+    "red": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-34-10Z-red",
+    "green": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-34-10Z-green",
+    "kept": false
+  },
+  "discoverySurface": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "ralph",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_send_message",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow",
+    "write"
+  ],
+  "denyList": [
+    "ask_user_question",
+    "create_goal",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "ralph",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow"
+  ],
+  "criteria": [
+    {
+      "id": "D1",
+      "name": "discovery leader turn admitted",
+      "ok": true,
+      "detail": "apiPrompt status=200"
+    },
+    {
+      "id": "D2",
+      "name": "discovery model request captured",
+      "ok": true,
+      "detail": "seq=1 model=a2x-smoke-model surfaceCount=38"
+    },
+    {
+      "id": "D3",
+      "name": "coverage-complete policy derivable",
+      "ok": true,
+      "detail": "denyList(21): ask_user_question, create_goal, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, send_message, skill, subagent, subagent_fork, update_goal, web_fetch, web_search, workflow"
+    },
+    {
+      "id": "R1",
+      "name": "pre-fix glue: team.create fails with the exact production error",
+      "ok": false,
+      "detail": "result=TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED :: team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-34-10Z' failed: tools.restrict() names unknown global tool \"subagent\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read, read_image, send_message, skill, subagent_fork, todo_write, update_goal, web_fetch, web_search, workflow,"
+    },
+    {
+      "id": "R2",
+      "name": "pre-fix glue: surface-unavailable observation recorded for the created root",
+      "ok": false,
+      "detail": "observations(0): "
+    },
+    {
+      "id": "G1",
+      "name": "fixed glue: team.create succeeds (fresh-root)",
+      "ok": false,
+      "detail": "result={\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-34-10Z' failed: tools.restrict() names unknown global tool \\\"subagent\\\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present"
+    },
+    {
+      "id": "G2",
+      "name": "created leader initial work reached the model",
+      "ok": false,
+      "detail": "no mock request carrying the green marker within 180s"
+    },
+    {
+      "id": "G7",
+      "name": "A5 enforcement listener ran on the real host (read allow/any lane)",
+      "ok": true,
+      "detail": "read is NOT on the created surface — enforcement leg skipped (no tool call to gate)"
+    },
+    {
+      "id": "G8",
+      "name": "no coverage failure observations in the GREEN world",
+      "ok": true,
+      "detail": "clean"
+    }
+  ],
+  "artifacts": [
+    "run.log",
+    "discovery-surface.json",
+    "saved-blueprint.yaml",
+    "red-team-create.json",
+    "red-state.json",
+    "green-team-create.json",
+    "green-leader-request.json",
+    "green-state.json",
+    "port3080-pre.txt",
+    "port3080-post.txt",
+    "instances/disc/",
+    "instances/red/",
+    "instances/green/"
+  ],
+  "at": "2026-09-14T07:37:27.159Z"
+}

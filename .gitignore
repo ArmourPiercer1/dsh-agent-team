@@ -11,6 +11,11 @@ tests/deepseek-harness-test-use/
 # per-world DSH_HOME dirs (world state, launch tokens — never committed;
 # naming + cleanup protocol in docs/TEST_METHODS.md §7)
 tests/homes/
+# real published-host npm install for the alpha.2 0.1.5-rc.2 live smoke
+# (task fix/alpha2-explicit-agent-setup-compat; npm node_modules — never
+# committed; reinstall: npm install --no-save @deepseek-ai/dsh@0.1.5-rc.2
+# in that directory)
+tests/live-host-015rc2/
 
 # build & tooling (P1-T4 skeleton)
 node_modules/

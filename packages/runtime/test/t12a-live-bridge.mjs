@@ -251,6 +251,12 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
   // — records every scoped skill registration on THIS ctx with a working
   // disposer (the agent-scope unwind removes them, as with tools).
   const registeredSkills = []
+  // fix/alpha2-explicit-agent-setup-compat: the scope argument of every
+  // `tools.schemas(scope)` call, in order (the real seam takes the scope
+  // key — the Agent; the double accepts it for signature fidelity and now
+  // RECORDS it so a test can pin WHICH identity the Permission Coverage
+  // Gate enumerated the surface through).
+  const schemaScopeArgs = []
   const systemPrompt = {
     globals: globalSections,
     section(spec) {
@@ -298,6 +304,7 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
     toolGuards,
     opLog,
     registeredSkills,
+    schemaScopeArgs,
     fs,
     // alpha.2 (A6): the agent back-reference — the handle factory sets it
     // to the live agent (the `ctx.agent` DX accessor basis; undefined
@@ -504,11 +511,15 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
       // own registrations are the scope-own team tools, which the real
       // seam exempts from restrict, and no repo deny list names a team
       // tool). The `scope` argument is accepted for signature fidelity
-      // (the double is one scope). Deterministic: sorted by name, stable
+      // (the double is one scope) and RECORDED (schemaScopeArgs): a test
+      // can pin the exact identity the gate enumerated through (the
+      // fix/alpha2-explicit-agent-setup-compat precedence legs).
+      // Deterministic: sorted by name, stable
       // `{ name, description }` shape (the gate consumes names; the real
       // upstream returns ToolSchema[] deep clones — description mirrors
       // the registered def's or '').
-      schemas() {
+      schemas(scope) {
+        schemaScopeArgs.push(scope)
         const denied = new Set()
         for (const opts of toolRestrictions) {
           for (const name of opts?.deny ?? []) denied.add(String(name))
@@ -552,6 +563,33 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
  *   multi-mcp (Task C, plan §6.11): per-server MCP tool names (see
  *   makeAgentCtx' `mcpToolNames`), shared by every agent ctx of this
  *   double.
+ * @param {boolean} [options.passExplicitAgent]
+ *   fix/alpha2-explicit-agent-setup-compat (default false): the DSH
+ *   0.1.5+ AgentSetup contract — the setup callback is invoked as
+ *   `setup(agentCtx, agent)` (the factory passes the composed Agent
+ *   explicitly as the SECOND parameter). Default: the 0.1.2-era
+ *   one-argument call `setup(agentCtx)`.
+ * @param {boolean} [options.legacyCtxAgent]
+ *   fix/alpha2-explicit-agent-setup-compat (default true): the 0.1.2-era
+ *   `ctx.agent` reverse association (the agent back-reference on the
+ *   setup ctx). DSH 0.1.5 REMOVED it — pass `false` to model the 0.1.5
+ *   world (the setup ctx then carries NO identity at all beyond the
+ *   explicit argument / scope tag).
+ * @param {boolean} [options.mintScope]
+ *   fix/alpha2-explicit-agent-setup-compat (default true): mint each
+ *   agent's scope (the public `createScope` seam) so
+ *   `scopeOf(agentCtx)` is defined on the setup ctx. Pass `false` to
+ *   model a setup ctx whose scope tag the plugin CANNOT read (the real
+ *   0.1.5 shape across duplicate @deepseek-ai/dsh-scope package
+ *   instances — the module-private Symbol tag is unreadable from a
+ *   second package instance).
+ * @param {(agent: object) => { ctxAgent?: object, scopeKey?: object }} [options.identityOverride]
+ *   fix/alpha2-explicit-agent-setup-compat: per-handle identity control
+ *   (the precedence legs): `ctxAgent` replaces the value the `ctx.agent`
+ *   back-reference points at (instead of the handle's own agent), and
+ *   `scopeKey` replaces the scope-mint key (instead of the handle's own
+ *   agent) — letting one world pin THREE distinct identities (explicit
+ *   Agent vs `ctx.agent` vs `scopeOf(agentCtx)`).
  */
 export function createAgentsDouble(options = {}) {
   const creates = []
@@ -565,6 +603,12 @@ export function createAgentsDouble(options = {}) {
   // by every agent ctx; absent = the pre-multi-mcp double behavior).
   const mcpFailures = options.mcpFailures
   const mcpToolNames = options.mcpToolNames
+  // fix/alpha2-explicit-agent-setup-compat: the AgentSetup contract knobs
+  // (defaults reproduce the 0.1.2-era world every pre-existing test pins).
+  const passExplicitAgent = options.passExplicitAgent === true
+  const legacyCtxAgent = options.legacyCtxAgent !== false
+  const mintScope = options.mintScope !== false
+  const identityOverride = options.identityOverride
   // T12-M2: one shared global prompt layer per world (the DSH service
   // registers harness:identity + a global deployment:persona section at
   // construction; the persona glue's scoped installs shadow that global).
@@ -605,17 +649,39 @@ export function createAgentsDouble(options = {}) {
     // A2C-2 (alpha.2, plan §7): mint the agent's SCOPE before the setup
     // callback runs — the real Agent mints it in its constructor, so the
     // setup callback's agent ctx ALWAYS carries the scope tag. The
-    // Permission Coverage Gate's surface read
-    // (`tools.schemas(scopeOf(agentCtx))`) is fail-closed on an untagged
-    // ctx (alpha2-permission-coverage-surface-unavailable), and a
-    // faithful double must not FATAL a world the real harness would never
-    // FATAL. The scope's backing plugin (the private no-op in dsh-scope)
-    // rides the ctx.plugin seam above — unrecorded (scope plumbing, not a
+    // Permission Coverage Gate's surface read is fail-closed on a
+    // ctx whose identity the plugin cannot resolve, and a faithful
+    // double must not FATAL a world the real harness would never FATAL.
+    // The scope's backing plugin (the private no-op in dsh-scope) rides
+    // the ctx.plugin seam above — unrecorded (scope plumbing, not a
     // world mount). `createScope(ctx, agent)` mirrors the real scope key
     // (the Agent itself is the opaque routing key).
-    const scope = createScope(ctx, agent)
-    agent.ctx = scope.ctx
-    ctx.agent = agent
+    // fix/alpha2-explicit-agent-setup-compat: the mint is OPT-IN per world
+    // (`mintScope`) and the key is overridable (`identityOverride`) —
+    // the 0.1.5-style worlds either drop the tag entirely (a plugin on a
+    // second dsh-scope package instance reads `scopeOf(agentCtx) ===
+    // undefined` for a perfectly healthy Agent) or pin a distinct key
+    // (the precedence legs).
+    const identity =
+      typeof identityOverride === 'function' ? identityOverride(agent) : {}
+    if (mintScope) {
+      const scopeKey = identity.scopeKey !== undefined ? identity.scopeKey : agent
+      const scope = createScope(ctx, scopeKey)
+      agent.ctx = scope.ctx
+    } else {
+      // No minted scope: the setup ctx is the agent ctx itself (still a
+      // fully functional ctx — only the plugin-readable identity tag is
+      // absent, exactly the 0.1.5 / duplicate-package-instance shape).
+      agent.ctx = ctx
+    }
+    // alpha.2 (A6): the agent back-reference — the handle factory sets it
+    // to the live agent (the 0.1.2-era `ctx.agent` reverse association).
+    // fix/alpha2-explicit-agent-setup-compat: the association is OPT-IN
+    // per world (`legacyCtxAgent` — DSH 0.1.5 removed it) and overridable
+    // (`identityOverride.ctxAgent`) for the three-identity precedence
+    // legs.
+    const ctxAgent = identity.ctxAgent !== undefined ? identity.ctxAgent : legacyCtxAgent ? agent : undefined
+    if (ctxAgent !== undefined) ctx.agent = ctxAgent
     const handle = {
       agent,
       dispose() {
@@ -625,7 +691,14 @@ export function createAgentsDouble(options = {}) {
       },
     }
     handles.set(sessionId, handle)
-    if (setup !== undefined) await setup(agent.ctx)
+    // fix/alpha2-explicit-agent-setup-compat: the DSH 0.1.5+ factory
+    // invokes `setup(agentCtx, agent)` — the explicit composed Agent as
+    // the SECOND argument (0.1.5-rc.2 agent-loop: `setup?.(
+    // prepared.agent.ctx, prepared.agent)`); the 0.1.2-era contract is the
+    // one-argument call. The double honors the world's chosen contract.
+    if (setup !== undefined) {
+      await (passExplicitAgent ? setup(agent.ctx, agent) : setup(agent.ctx))
+    }
     return handle
   }
 

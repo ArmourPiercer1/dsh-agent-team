@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a2x-j0bibf2xst",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+        "message": "team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-43-06Z' failed: agent-bindings: alpha.2 permission coverage surface unavailable for 'session-a2x-created-a2x-smoke-20260914T07-43-06Z': the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable (code: alpha2-permission-coverage-surface-unavailable)",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+            "message": "team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-43-06Z' failed: agent-bindings: alpha.2 permission coverage surface unavailable for 'session-a2x-created-a2x-smoke-20260914T07-43-06Z': the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable (code: alpha2-permission-coverage-surface-unavailable)"
+          }
+        }
+      }
+    }
+  }
+}

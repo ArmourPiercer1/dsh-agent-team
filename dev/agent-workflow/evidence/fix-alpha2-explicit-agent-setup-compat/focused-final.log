@@ -1,0 +1,91 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime
+
+ ✓ test/p8s7r1-create-params.test.ts (8 tests) 4ms
+ ✓ test/tcm-m3-root-work-glue.test.ts (9 tests) 5ms
+ ✓ test/issue2-real-preset-restriction.test.ts (13 tests) 4ms
+ ✓ test/alpha2-explicit-agent-setup.test.ts (5 tests) 4ms
+ ✓ test/a2c2-permission-coverage.test.ts (18 tests) 8ms
+ ✓ test/p8s7r1-initial-work.test.ts (9 tests) 4ms
+ ✓ test/issue2-capability-permission-precedence.test.ts (12 tests) 3ms
+ ✓ test/a6a-production-wiring.test.ts (52 tests) 7ms
+ ✓ test/tcm-m3-root-initial-work.test.ts (18 tests) 5ms
+ ✓ test/h1a-pre-execute-endcap.test.ts (49 tests) 6ms
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:1304:11)
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:872:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:1309:27)
+
+ ✓ test/t12m4-remote-mount.test.ts (9 tests) 3ms
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 100ms — the connection service appeared after the mount step)
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear within 200ms (headless host, or the web connection service was not provided in time)
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.handle to be a function
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative integer (milliseconds) when present
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:362:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:445:5)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:971:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/src/plugin/host.ts:1327:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/packages/runtime/test/rmr-remote-mount-race.test.ts:328:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+ ✓ test/rmr-remote-mount-race.test.ts (7 tests) 4ms
+
+ Test Files  12 passed (12)
+      Tests  209 passed (209)
+   Start at  08:00:00
+   Duration  1.74s (transform 6.05s, setup 0ms, import 10.17s, tests 55ms, environment 1ms)

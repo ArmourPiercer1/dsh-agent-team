@@ -1,0 +1,132 @@
+{
+  "runStamp": "a2x-smoke-20260914T07-52-49Z",
+  "verdict": "RED-EXPECTED-FAILED",
+  "host": {
+    "package": "@deepseek-ai/dsh",
+    "version": "0.1.5-rc.2",
+    "bin": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "port": 3181,
+    "mockPort": 3496
+  },
+  "baselineSha": "df9230de678f987f407f3bb59492863bb8dc6530",
+  "worlds": {
+    "disc": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-52-49Z-disc",
+    "red": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-52-49Z-red",
+    "green": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-52-49Z-green",
+    "kept": false
+  },
+  "discoverySurface": [
+    "edit",
+    "read",
+    "read_image",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "criteria": [
+    {
+      "id": "D1",
+      "name": "discovery leader turn admitted",
+      "ok": true,
+      "detail": "apiPrompt status=200"
+    },
+    {
+      "id": "D2",
+      "name": "discovery model request captured",
+      "ok": true,
+      "detail": "seq=1 model=a2x-smoke-model surfaceCount=15"
+    },
+    {
+      "id": "D3",
+      "name": "coverage-complete policy derivable",
+      "ok": true,
+      "detail": "denyList(0): (none)"
+    },
+    {
+      "id": "R1",
+      "name": "pre-fix glue: team.create fails with the exact production error",
+      "ok": true,
+      "detail": "result=TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED :: team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-52-49Z' failed: agent-bindings: alpha.2 permission coverage surface unavailable for 'session-a2x-created-a2x-smoke-20260914T07-52-49Z': the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable (code: alpha2-permission-coverage-surface-unavailable)"
+    },
+    {
+      "id": "R2",
+      "name": "pre-fix glue: surface-unavailable observation recorded for the created root",
+      "ok": true,
+      "detail": "alpha2-perm: permission-coverage-surface-unavailable for session-a2x-created-a2x-smoke-20260914T07-52-49Z: the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable"
+    },
+    {
+      "id": "G1",
+      "name": "fixed glue: team.create succeeds (fresh-root)",
+      "ok": true,
+      "detail": "result={\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a2x-created-a2x-smoke-20260914T07-52-49Z\",\"blueprint\":{\"blueprintId\":\"team.a2x-perm\",\"revision\":\"1\",\"contentHash\":\"sha256:f83e74b063a2fc1654da7b35650bdf9e940c8857c4e01bbe7d01306d3e1e75f0\"},\"createdAt\":\"2026-09-"
+    },
+    {
+      "id": "G2",
+      "name": "created leader initial work reached the model",
+      "ok": true,
+      "detail": "seq=3 model=a2x-smoke-model surfaceCount=6"
+    },
+    {
+      "id": "G3",
+      "name": "capability layer: every denied unmanaged tool is OFF the created surface",
+      "ok": true,
+      "detail": "none of the deny list present"
+    },
+    {
+      "id": "G4",
+      "name": "selected team tools ON the created surface",
+      "ok": true,
+      "detail": "team_send_message, team_list_members"
+    },
+    {
+      "id": "G5",
+      "name": "non-selected team tools OFF the created surface (selective mode)",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "id": "G6",
+      "name": "managed-vocabulary tools stay ON the surface (gate-managed, not denied)",
+      "ok": true,
+      "detail": "present: read, read_image, write, edit"
+    },
+    {
+      "id": "G7",
+      "name": "A5 enforcement listener ran on the real host (read allow/any lane)",
+      "ok": false,
+      "detail": "no alpha2-perm observation after a permission-gated read call (rows=0); all observations: "
+    },
+    {
+      "id": "G8",
+      "name": "no coverage failure observations in the GREEN world",
+      "ok": true,
+      "detail": "clean"
+    }
+  ],
+  "artifacts": [
+    "run.log",
+    "discovery-surface.json",
+    "saved-blueprint.yaml",
+    "red-team-create.json",
+    "red-state.json",
+    "green-team-create.json",
+    "green-leader-request.json",
+    "green-state.json",
+    "port3080-pre.txt",
+    "port3080-post.txt",
+    "instances/disc/",
+    "instances/red/",
+    "instances/green/"
+  ],
+  "at": "2026-09-14T07:53:05.078Z"
+}

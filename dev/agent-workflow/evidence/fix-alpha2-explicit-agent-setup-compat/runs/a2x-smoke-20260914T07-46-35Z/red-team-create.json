@@ -1,0 +1,30 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a2x-n5c8pcgc3o",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "MALFORMED_DTO",
+        "message": "permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } }) (source: a2x-perm-team.yaml)",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "MALFORMED_DTO",
+            "message": "permission rule $.leader.capabilities.permissions.allow[0] (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a bash rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: bash, resource: { kind: 'any' } }) (source: a2x-perm-team.yaml)",
+            "details": {
+              "path": "$.leader.capabilities.permissions.allow[0].resource.kind",
+              "lane": "allow",
+              "sourceName": "a2x-perm-team.yaml"
+            }
+          }
+        }
+      }
+    }
+  }
+}

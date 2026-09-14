@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a2x-r6a56qthj6",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+        "message": "team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-34-10Z' failed: tools.restrict() names unknown global tool \"subagent\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read, read_image, send_message, skill, subagent_fork, todo_write, update_goal, web_fetch, web_search, workflow, write",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+            "message": "team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-34-10Z' failed: tools.restrict() names unknown global tool \"subagent\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read, read_image, send_message, skill, subagent_fork, todo_write, update_goal, web_fetch, web_search, workflow, write"
+          }
+        }
+      }
+    }
+  }
+}
