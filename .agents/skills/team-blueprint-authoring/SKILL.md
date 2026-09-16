@@ -137,7 +137,10 @@ When present, all four base sub-fields are required:
   (deny = zero team tools for that agent).
 - `builtinToolDeny` — a plain string array of exact built-in tool names to
   deny for that agent (the blacklist must actually remove the tools from the
-  agent's visible surface, e.g. `bash`, `write`, `edit`).
+  agent's visible surface, e.g. `bash`, `write`, `edit`). It reaches only the
+  **global (restrictable) tool layer** of the agent — tools the host preset
+  installs into the agent's **own** tool layer are not deny-able this way
+  (see §5.2).
 - `skills` — allow/deny entry for Team-managed skills.
 - `mcp` — allow/deny entry for MCP servers.
 
@@ -175,6 +178,39 @@ Rules (closed vocabulary; anything else is a `MALFORMED_DTO`):
   - `any` in the **allow** lane is rejected (no positive whole-tool
     permission for shell); `any` in the `ask` / `deny` lanes is the minimal
     legal shell permission.
+
+### 5.2 Interaction with the host preset (live-verified on a 0.1.5-rc.2 host, 2026-09-14)
+
+The agent's tool surface is composed by the **host preset** (e.g. the shipped
+`standard`) plus this blueprint's capabilities. Three host-contract facts
+matter when you author strict `capabilities.permissions` for an agent whose
+preset is a non-minimal shipped one:
+
+1. **The preset's spawn `subagent` is not deny-able.** The shipped
+   non-minimal presets (`standard`, `cordis`, `ptc`) install the `subagent`
+   tool into the agent's **own** tool layer through a deferred install that
+   runs at publication (`agent/created`). `builtinToolDeny` reaches only the
+   global layer — listing `subagent` there fails setup with
+   `unknown global tool "subagent"`.
+2. **The coverage gate reads the surface before that install lands.** The
+   permission Coverage Gate reads the agent surface during composition, i.e.
+   **before** publication; the deferred own-layer install lands on the
+   model-facing surface milliseconds after the gate. Verified A/B/C on
+   0.1.5-rc.2: `subagent` absent from the gate read, present in the model's
+   first request (and in every post-publication surface snapshot). So for
+   such an agent the gate-verified surface is NOT the model-facing surface —
+   do not count on the gate having checked `subagent`.
+3. **`subagent_fork` IS deny-able — and must be.** It installs immediately in
+   the global layer, and it is classified known-sensitive: a strict agent
+   that neither denies nor manages `subagent_fork` is rejected by the
+   coverage gate (known-sensitive-unmanaged FATAL).
+
+Practical rule: for a strict-permission agent, either choose a preset that
+does not mount the spawn subagent (the shipped `minimal` preset has no
+`subagent`, but its only managed tool `bash` cannot take an allow-lane rule —
+§5.1 shell class), or keep `subagent_fork` in `builtinToolDeny` and accept
+that the model will still see `subagent` post-gate (open P1 finding as of
+2026-09-14; no shipped fix yet).
 
 ## 6. Pre-flight checklist (static)
 
@@ -252,5 +288,11 @@ already bound to in place (frozen revisions replay their stored source).
 - `permissions.default: allow` — always rejected.
 - Giving `bash`/`pwsh` an `exact`/`subtree` resource, or an allow-lane `any`
   for a shell tool.
+- Denying the preset's own-layer spawn `subagent` in `builtinToolDeny`
+  (setup fails with `unknown global tool "subagent"`), or assuming its
+  absence from the gate surface means the model never sees it (on 0.1.5-rc.2
+  standard-preset agents it is installed post-gate — §5.2).
+- Leaving `subagent_fork` undecided on a strict standard-preset agent
+  (known-sensitive unmanaged → coverage gate FATAL — §5.2).
 - Expecting an edited file to change an already-created team — it does not.
 - Authoring into a directory that no `blueprintDir` config points at.
