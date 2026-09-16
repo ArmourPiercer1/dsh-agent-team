@@ -123,6 +123,11 @@ export interface AgentCtxDouble {
   /** alpha.1: every skills register(def) entry recorded on THIS ctx
    *  (disposers flip `disposed`). */
   readonly registeredSkills: RegisteredSkillEntry[]
+  /** fix/alpha2-explicit-agent-setup-compat: the scope argument of every
+   *  `tools.schemas(scope)` call, in order (identity pin for the
+   *  Permission Coverage Gate — WHICH identity the gate enumerated the
+   *  surface through; the real seam's scope key IS the Agent). */
+  readonly schemaScopeArgs: readonly unknown[]
   /** alpha.2 (A6): the fake upstream `fs` seam double — the permission
    *  adapter's `resolveTarget` closure basis (absent from alpha.1 worlds'
    *  reads: behavior-inert for them). */
@@ -222,6 +227,23 @@ export interface AgentsDoubleOptions {
    *  the fiber's activation (the Permission Coverage Gate's proven-mount
    *  delta basis); unregistered on the fiber's dispose. */
   readonly mcpToolNames?: Record<string, string[]>
+  /** fix/alpha2-explicit-agent-setup-compat (default false): the DSH
+   *  0.1.5+ AgentSetup contract — the setup callback is invoked as
+   *  `setup(agentCtx, agent)` (the explicit composed Agent as the second
+   *  parameter). Default: the 0.1.2-era one-argument `setup(agentCtx)`. */
+  readonly passExplicitAgent?: boolean
+  /** fix/alpha2-explicit-agent-setup-compat (default true): the 0.1.2-era
+   *  `ctx.agent` reverse association (DSH 0.1.5 removed it). */
+  readonly legacyCtxAgent?: boolean
+  /** fix/alpha2-explicit-agent-setup-compat (default true): mint each
+   *  agent's scope so `scopeOf(agentCtx)` is defined on the setup ctx
+   *  (pass false to model the unreadable-tag world). */
+  readonly mintScope?: boolean
+  /** fix/alpha2-explicit-agent-setup-compat: per-handle identity override
+   *  (the three-identity precedence legs): `ctxAgent` replaces the
+   *  `ctx.agent` value, `scopeKey` replaces the scope-mint key (both
+   *  default to the handle's own agent / legacy options). */
+  readonly identityOverride?: (agent: object) => { ctxAgent?: object; scopeKey?: object }
 }
 
 /** The sessionPersistence service double (records materializations). */

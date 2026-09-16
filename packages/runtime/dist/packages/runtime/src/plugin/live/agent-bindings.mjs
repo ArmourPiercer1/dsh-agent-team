@@ -328,11 +328,53 @@ import {
   mcpIntroducedToolNames,
   PermissionCoverageUnmanagedError,
 } from '../../../operation-permission/index.js'
-// A2C-2 (plan §7.2): the public scope seam — the agent-scoped tool
-// surface is read through `tools.schemas(scopeOf(agentCtx))`; the Agent
-// IS the scope key, so the setup callback's agent ctx carries the
-// correct tag (upstream core/scope `scopeOf`).
+// A2C-2 (plan §7.2) + fix/alpha2-explicit-agent-setup-compat: the
+// agent-scoped tool surface is read through `tools.schemas(runtimeAgent)`
+// where `runtimeAgent` is the setup's CANONICAL runtime-Agent resolver
+// (below): the explicit `AgentSetup` second argument (the DSH 0.1.5+
+// contract — the factory calls `setup(agentCtx, agent)` and REMOVED the
+// `agentCtx.agent` reverse association), falling back to the 0.1.2-era
+// `agentCtx.agent`, then LAST to the scope tag (`scopeOf(agentCtx)` —
+// which is unreadable across duplicate @deepseek-ai/dsh-scope module
+// instances because the tag is a module-private Symbol, so it is the
+// least reliable of the three and must never shadow the explicit Agent).
 import { scopeOf } from '@deepseek-ai/dsh-scope'
+
+/**
+ * The canonical runtime-Agent identity of one AgentSetup invocation —
+ * the SINGLE resolver every setup-time identity consumption uses (the
+ * Permission Coverage Gate's `tools.schemas(agent)` surface read and the
+ * permission resolver's lazy `session.header.cwd` basis).
+ *
+ * Precedence (deliberate — 0.1.5 style wins over every implicit seam):
+ *   1. `explicitAgent` — the AgentSetup SECOND parameter (the DSH 0.1.5+
+ *      formal contract: `setup(agentCtx, agent)`; the factory supplies the
+ *      very Agent being composed — the authoritative identity);
+ *   2. `agentCtx.agent` — the 0.1.2-era reverse association (retained so
+ *      the plugin keeps working on the 0.1.2-era contract its pinned
+ *      dependencies declare);
+ *   3. `scopeOf(agentCtx)` — LAST legacy fallback only (the scope tag;
+ *      the Agent IS the scope key upstream, but the tag is a
+ *      module-private Symbol, so a plugin resolving a SECOND
+ *      @deepseek-ai/dsh-scope package instance reads `undefined` even
+ *      for a perfectly healthy Agent ctx — that is exactly the
+ *      alpha.2 `alpha2-permission-coverage-surface-unavailable` blocker
+ *      this fix removes).
+ *
+ * `undefined` when NO identity is reachable — the strict
+ * (`capabilities.permissions`) setup must then fail closed; a
+ * permissions agent never runs on a surface the gate cannot verify.
+ * @param {object} agentCtx - the setup's agent ctx.
+ * @param {object|undefined} explicitAgent - the explicit AgentSetup agent.
+ * @returns {object|undefined} the canonical runtime Agent (or undefined).
+ */
+function resolveSetupAgent(agentCtx, explicitAgent) {
+  if (explicitAgent !== null && explicitAgent !== undefined) return explicitAgent
+  const legacyAgent =
+    agentCtx !== null && typeof agentCtx === 'object' ? agentCtx.agent : undefined
+  if (legacyAgent !== null && legacyAgent !== undefined) return legacyAgent
+  return scopeOf(agentCtx)
+}
 
 /**
  * The leader instance id (packages/contracts LEADER_INSTANCE_ID). The
@@ -1153,13 +1195,30 @@ export function createAgentBindings(deps) {
    * runs without its base tools).
    * @param {string} [teamRootSid] - the team root the session belongs to
    *   (T12-GLUE; absent = this row's boot root, as before).
-   * @returns {function(object): Promise<void>} the AgentSetup callback.
+   * @returns {function(object, object?): Promise<void>} the AgentSetup
+   *   callback — `(agentCtx, setupAgent?)`: the DSH 0.1.5+ contract passes
+   *   the composed Agent explicitly as the second argument; 0.1.2-era
+   *   hosts call it with only `agentCtx` (the resolver then uses the
+   *   legacy seams).
    */
   function agentSetup(sessionId, instanceIdHint, templateIdHint, bindPath, teamRootSid) {
-    return async (agentCtx) => {
+    // fix/alpha2-explicit-agent-setup-compat: the DSH 0.1.5+ AgentSetup
+    // contract is `setup(agentCtx, agent)` — the factory passes the very
+    // Agent being composed as the SECOND parameter and no longer exposes
+    // `agentCtx.agent` (the reverse association was removed upstream).
+    // 0.1.2-era hosts still call `setup(agentCtx)` — `setupAgent` is then
+    // `undefined` and the resolver falls back to the legacy seams.
+    return async (agentCtx, setupAgent) => {
       // T12-M2: capture the agent ctx for the persona surface (the
       // production-facing installs and the overlay slot resolve through it).
       liveAgentCtxs.set(sessionId, agentCtx)
+      // The CANONICAL runtime-Agent identity for this setup (the explicit
+      // AgentSetup agent -> agentCtx.agent -> the scope tag; see
+      // resolveSetupAgent): the single source for the Permission Coverage
+      // Gate's `tools.schemas(agent)` surface read AND the permission
+      // resolver's lazy `session.header.cwd` basis below — both consumed
+      // through this one value (one Agent, one identity, one cwd basis).
+      const runtimeAgent = resolveSetupAgent(agentCtx, setupAgent)
       const { modelView, mcpViews, instanceId } = resolveConsumptionViews(sessionId, instanceIdHint, teamRootSid)
       // alpha.1 (plan §10): the static template capabilities of this
       // session — the durable identity (row templateId / leader position /
@@ -1363,7 +1422,7 @@ export function createAgentBindings(deps) {
       // (absent policy = zero overhead: the legacy / alpha.1 path runs
       // byte-for-byte as before).
       if (permissionPolicy !== undefined) {
-        state.a2c2PreMcpSurface = coverageSurfaceNames(agentCtx, sessionId)
+        state.a2c2PreMcpSurface = coverageSurfaceNames(agentCtx, sessionId, runtimeAgent)
       }
       if (mcpMountTarget.length > 0) {
         await reconcileMcpSet(agentCtx, state, mcpMountTarget)
@@ -1383,7 +1442,7 @@ export function createAgentBindings(deps) {
       // the legacy / alpha.1 path runs byte-for-byte as before; the gate
       // is absent, not disabled-quietly).
       if (permissionPolicy !== undefined) {
-        const finalSurfaceNames = coverageSurfaceNames(agentCtx, sessionId)
+        const finalSurfaceNames = coverageSurfaceNames(agentCtx, sessionId, runtimeAgent)
         const mcpIntroduced = mcpIntroducedToolNames(
           state.a2c2PreMcpSurface ?? finalSurfaceNames,
           finalSurfaceNames,
@@ -1454,15 +1513,25 @@ export function createAgentBindings(deps) {
         // leader position resolves to LEADER_INSTANCE_ID, a member to its
         // durable row) — so caller and targetInstanceId share it.
         const isLeader = sessionId === teamRoot
-        // FACT 3b (settled 2026-09-11): the session cwd is read LAZILY at
-        // resolve time, off the agent's live session header (materialized
-        // by pre-execute time on every bind path — create: meta.cwd, cold
-        // resume: the durable header) — the SAME basis the upstream file
-        // tools use (exec.agent?.session.header.cwd), never captured at
-        // install. The closure serves BOTH the operation canonicalization
-        // and the rule canonicalization (A5 R1/R2 — one cwd basis).
+        // FACT 3b (settled 2026-09-11, re-based by
+        // fix/alpha2-explicit-agent-setup-compat): the session cwd is read
+        // LAZILY at resolve time, off the CANONICAL runtime Agent's live
+        // session header (materialized by pre-execute time on every bind
+        // path — create: meta.cwd, cold resume: the durable header) — the
+        // SAME basis the upstream file tools use (the Agent's
+        // `session.header.cwd`, resolved per call), never captured at
+        // install. `runtimeAgent` is the setup's explicit AgentSetup agent
+        // with the bounded legacy fallbacks (the 0.1.5 host supplies it
+        // explicitly; 0.1.2-era hosts resolve it through `agentCtx.agent`
+        // / the scope tag) — the SAME value the Coverage Gate above used
+        // for `tools.schemas(agent)`, so the surface and the cwd basis
+        // agree on one Agent identity. The closure serves BOTH the
+        // operation canonicalization and the rule canonicalization (A5
+        // R1/R2 — one cwd basis).
         const resolveTarget = async (path) => {
-          const cwd = agentCtx.agent?.session?.header?.cwd
+          const cwd = runtimeAgent !== null && runtimeAgent !== undefined
+            ? runtimeAgent.session?.header?.cwd
+            : undefined
           // V1-1: the fs seam comes from the deps accessor (the host
           // row's LAZY strict ctx.get('fs') global-store read) - the
           // property proxy agentCtx.fs is topology-sensitive and can
@@ -2481,28 +2550,33 @@ export function createAgentBindings(deps) {
     return error
   }
 
-  // A2C-2 (plan §7.2): the FINAL model-facing surface of one agent scope,
-  // enumerated through the public `tools.schemas(scope)` seam — the
-  // agent-scoped view: the inherited preset surface AFTER every
-  // restriction (builtinToolDeny's restrict() masks inherited names),
-  // PLUS the scope's own registrations (the Team tools, the MCP tools).
-  // The Agent IS the scope key, so the setup callback's agent ctx carries
-  // the correct scope tag (upstream core/scope `scopeOf`). Sorted names.
+  // A2C-2 (plan §7.2; identity re-based by
+  // fix/alpha2-explicit-agent-setup-compat): the FINAL model-facing
+  // surface of one agent scope, enumerated through the public
+  // `tools.schemas(agent)` seam — the agent-scoped view: the inherited
+  // preset surface AFTER every restriction (builtinToolDeny's restrict()
+  // masks inherited names), PLUS the scope's own registrations (the Team
+  // tools, the MCP tools). The scope key is the setup's CANONICAL runtime
+  // Agent (the explicit AgentSetup agent — the DSH 0.1.5+ contract — with
+  // the bounded `agentCtx.agent` / scope-tag legacy fallbacks; the Agent
+  // IS the scope key upstream). Sorted names.
   // FAILS CLOSED (the typed error above) when the surface cannot be read:
-  // a partial or global view must never be classified.
-  function coverageSurfaceNames(agentCtx, sessionId) {
+  // a partial or global view must never be classified. NOTE: the
+  // parameterless `tools.schemas()` global surface is deliberately NOT a
+  // fallback — classifying the global view would turn an unreadable
+  // agent-scoped surface into a fail-open false pass.
+  function coverageSurfaceNames(agentCtx, sessionId, runtimeAgent) {
     const tools = agentCtx.tools
     if (tools === null || typeof tools !== 'object' || typeof tools.schemas !== 'function') {
       throw permissionCoverageSurfaceUnavailable(sessionId, 'the agent ctx exposes no tools.schemas seam')
     }
-    const scope = scopeOf(agentCtx)
-    if (scope === undefined) {
+    if (runtimeAgent === null || runtimeAgent === undefined) {
       throw permissionCoverageSurfaceUnavailable(
         sessionId,
-        'the agent ctx carries no scope tag — the agent-scoped tool surface is unreadable',
+        'no runtime Agent identity is available (no explicit AgentSetup agent, no agentCtx.agent, no scope tag) — the agent-scoped tool surface is unreadable',
       )
     }
-    const schemas = tools.schemas(scope)
+    const schemas = tools.schemas(runtimeAgent)
     if (!Array.isArray(schemas)) {
       throw permissionCoverageSurfaceUnavailable(sessionId, 'tools.schemas returned a non-array surface')
     }

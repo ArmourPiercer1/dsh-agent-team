@@ -1,0 +1,6 @@
+{"t":1789384861680,"label":"row-applied","rescanMs":1000,"rescanCount":90}
+{"t":1789384865103,"label":"created-sync","agentId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","sessionId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","error":"tools.schemas unavailable"}
+{"t":1789384865104,"label":"created-microtask","agentId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","sessionId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","error":"tools.schemas unavailable"}
+{"t":1789384865105,"label":"tools/change-38","agentId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","sessionId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","error":"tools.schemas unavailable"}
+{"t":1789384865354,"label":"created-250ms","agentId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","sessionId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","error":"tools.schemas unavailable"}
+{"t":1789384867104,"label":"created-2s","agentId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","sessionId":"session-f2root-f2-standard-probe-20260914T11-21-00Z","error":"tools.schemas unavailable"}

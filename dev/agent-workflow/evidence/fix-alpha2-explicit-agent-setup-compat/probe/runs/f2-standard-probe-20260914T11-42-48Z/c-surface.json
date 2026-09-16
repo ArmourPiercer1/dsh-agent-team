@@ -1,0 +1,14 @@
+{
+  "reqSeq": 3,
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "subagent",
+    "team_list_members",
+    "team_send_message",
+    "todo_write",
+    "write"
+  ]
+}

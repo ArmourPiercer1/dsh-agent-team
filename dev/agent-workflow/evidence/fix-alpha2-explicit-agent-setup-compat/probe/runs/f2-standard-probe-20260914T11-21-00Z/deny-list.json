@@ -1,0 +1,25 @@
+{
+  "denyList": [
+    "ask_user_question",
+    "create_goal",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "ralph",
+    "send_message",
+    "skill",
+    "subagent_fork",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow"
+  ],
+  "note": "subagent deliberately NOT denied (the probe subject); subagent_fork denied (immediate restrictable install — an undenied copy would FATAL the gate at A and confound the subagent timing question)"
+}

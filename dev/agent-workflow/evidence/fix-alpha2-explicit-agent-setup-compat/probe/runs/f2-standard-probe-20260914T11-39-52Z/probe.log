@@ -1,0 +1,14 @@
+[2026-09-14T11:39:52.717Z] :3080 pre = unreachable
+[2026-09-14T11:39:52.719Z] port    = 3183
+[2026-09-14T11:39:52.726Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T11:39:52.726Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T11:39:52.727Z] patch   = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/f2-standard-probe-20260914T11-39-52Z/profiles/web/cordis.patch.yml
+[2026-09-14T11:39:52.727Z] home    = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/f2-standard-probe-20260914T11-39-52Z
+[2026-09-14T11:39:52.727Z] run     = /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/dev/agent-workflow/evidence/fix-alpha2-explicit-agent-setup-compat/probe/runs/f2-standard-probe-20260914T11-39-52Z
+[2026-09-14T11:39:56.941Z] host booted: dsh web: http://127.0.0.1:3183/?token=mj2RnDMpjcicbWIf-z_haMECq8TN7KVy6tY15rBGW3E
+[2026-09-14T11:39:56.942Z] probe row ready (observer live)
+[2026-09-14T11:39:56.996Z] ── leg 0: DISC control (boot root, standard preset, no capabilities) ──
+[2026-09-14T11:39:57.109Z] DISC prompt response: status=200 body={"type":"server-response","rpcId":"f2-e6ex94n6i3","result":{"ok":true,"value":{"accepted":true}}}
+[2026-09-14T11:41:57.269Z] DIAG projection: {"type":"server-response","rpcId":"f2-uc3txjwvd2","result":{"ok":true,"value":{"data":{"projection":{"schemaVersion":2,"teamSessionId":"session-f2root-f2-standard-probe-20260914T11-39-52Z","blueprint":{"blueprintId":"team.f2-boot","revision":"1","contentHash":"sha256:419c24a9536e5eb6f6e577a58c7b1184621843c420792e935228c5732032d414"},"generation":2,"generatedAt":"2026-09-14T11:41:57.266Z","root":{"teamSessionId":"session-f2root-f2-standard-probe-20260914T11-39-52Z","createdAt":"2026-09-14T11:39:56.934Z","policyState":"default","admission":"OPEN","compatibility":{"status":"OPEN","probeGeneration
+[2026-09-14T11:41:57.269Z] DIAG mock requests so far: 0
+[2026-09-14T11:41:57.270Z] FATAL DISC model request not captured within 120s

@@ -1,0 +1,69 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-a2x-root-a2x-smoke-20260914T07-34-10Z",
+  "teamSession": {
+    "rootSessionId": "session-a2x-root-a2x-smoke-20260914T07-34-10Z",
+    "blueprintId": "team.a2x-boot",
+    "revision": "1",
+    "contentHash": "sha256:64021a8081742fb7dcd9f2a7d3e072485ba5d67691828668d15b718ddaa1ac74",
+    "defaultWorkspace": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh",
+    "createdAt": "2026-09-14T07:34:25.156Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-a2x-root-a2x-smoke-20260914T07-34-10Z": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "a2x-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "a2x-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": []
+}

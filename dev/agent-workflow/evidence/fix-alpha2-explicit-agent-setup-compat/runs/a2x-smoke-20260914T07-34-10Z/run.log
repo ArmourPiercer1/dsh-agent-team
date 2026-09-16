@@ -1,0 +1,43 @@
+[2026-09-14T07:34:10.381Z] === a2x real-host smoke (DSH 0.1.5-rc.2 npm dist) a2x-smoke-20260914T07-34-10Z ===
+[2026-09-14T07:34:10.382Z] worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat
+[2026-09-14T07:34:10.382Z] host=/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh (version 0.1.5-rc.2)
+[2026-09-14T07:34:10.382Z] baselineSha=df9230de678f987f407f3bb59492863bb8dc6530 keep=false
+[2026-09-14T07:34:10.399Z] :3080 pre: unreachable
+[2026-09-14T07:34:10.401Z] ports: host=3181 mock=3496
+[2026-09-14T07:34:10.401Z] fresh homes asserted (disc/red/green)
+[2026-09-14T07:34:10.405Z] mock: mock: listening on 127.0.0.1:3496
+[2026-09-14T07:34:10.405Z] mock DeepSeek endpoint up at 127.0.0.1:3496
+[2026-09-14T07:34:10.405Z] ── leg 1: DISCOVERY (fixed glue, legacy boot) ──
+[2026-09-14T07:34:15.087Z] DISC: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-34-10Z"]
+[2026-09-14T07:34:15.151Z] PASS D1: discovery leader turn admitted — apiPrompt status=200
+[2026-09-14T07:34:15.218Z] mock: mock: 1 text reply (40 chars): "A2X_DEFAULT_a2x-smoke-20260914T07-34-10Z"
+[2026-09-14T07:34:15.218Z] mock: mock: 2 text reply (41 chars): "A2X_DISC_ACK_a2x-smoke-20260914T07-34-10Z"
+[2026-09-14T07:34:15.652Z] PASS D2: discovery model request captured — seq=1 model=a2x-smoke-model surfaceCount=38
+[2026-09-14T07:34:15.652Z] discovery surface (38 tools): ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read, read_image, send_message, skill, subagent, subagent_fork, team_collect, team_create_member, team_delegate, team_follow_up, team_inspect_config, team_list_members, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_send_message, todo_write, update_goal, web_fetch, web_search, workflow, write
+[2026-09-14T07:34:15.652Z] PASS D3: coverage-complete policy derivable — denyList(21): ask_user_question, create_goal, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, send_message, skill, subagent, subagent_fork, update_goal, web_fetch, web_search, workflow
+[2026-09-14T07:34:16.155Z] DISC host stopped
+[2026-09-14T07:34:16.156Z] saved blueprint written: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-smoke-blueprints/a2x-perm-team.yaml
+[2026-09-14T07:34:16.170Z] pre-fix glue farm ready: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.a2x-prefix/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[2026-09-14T07:34:16.170Z] ── leg 2: RED (pre-fix glue @ baseline, team.create with Leader permissions) ──
+[2026-09-14T07:34:21.103Z] RED: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-34-10Z"]
+[2026-09-14T07:34:21.187Z] FAIL R1: pre-fix glue: team.create fails with the exact production error — result=TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED :: team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-34-10Z' failed: tools.restrict() names unknown global tool "subagent"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, present, ralph, read
+[2026-09-14T07:34:21.189Z] FAIL R2: pre-fix glue: surface-unavailable observation recorded for the created root — observations(0):
+[2026-09-14T07:34:21.690Z] RED host stopped
+[2026-09-14T07:34:21.690Z] ── leg 3: GREEN (fixed dist glue, same row world, same team.create) ──
+[2026-09-14T07:34:26.313Z] GREEN: booted (host 0.1.5-rc.2) at http://127.0.0.1:3181; row ready — toolCount=11 liveSessions=["session-a2x-root-a2x-smoke-20260914T07-34-10Z"]
+[2026-09-14T07:34:26.395Z] FAIL G1: fixed glue: team.create succeeds (fresh-root) — result={"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a2x-created-a2x-smoke-20260914T07-34-10Z' failed: tools.restrict() names unknown global tool \"subagent\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents,
+[2026-09-14T07:37:26.641Z] FAIL G2: created leader initial work reached the model — no mock request carrying the green marker within 180s
+[2026-09-14T07:37:26.647Z] PASS G7: A5 enforcement listener ran on the real host (read allow/any lane) — read is NOT on the created surface — enforcement leg skipped (no tool call to gate)
+[2026-09-14T07:37:26.647Z] PASS G8: no coverage failure observations in the GREEN world — clean
+[2026-09-14T07:37:27.148Z] GREEN host stopped
+[2026-09-14T07:37:27.148Z] sweep: disc host stopped
+[2026-09-14T07:37:27.149Z] sweep: red host stopped
+[2026-09-14T07:37:27.149Z] sweep: green host stopped
+[2026-09-14T07:37:27.149Z] mock model closed
+[2026-09-14T07:37:27.150Z] :3080 post: unreachable
+[2026-09-14T07:37:27.151Z] pre-fix farm removed
+[2026-09-14T07:37:27.153Z] leg-disc home removed: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-34-10Z-disc
+[2026-09-14T07:37:27.156Z] leg-red home removed: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-34-10Z-red
+[2026-09-14T07:37:27.159Z] leg-green home removed: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/homes/a2x-smoke-20260914T07-34-10Z-green
+[2026-09-14T07:37:27.159Z] blueprint scratch removed
+[2026-09-14T07:37:27.159Z] summary: /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/dev/agent-workflow/evidence/fix-alpha2-explicit-agent-setup-compat/runs/a2x-smoke-20260914T07-34-10Z/summary.json — verdict=RED-EXPECTED-FAILED (4 failed criteria)

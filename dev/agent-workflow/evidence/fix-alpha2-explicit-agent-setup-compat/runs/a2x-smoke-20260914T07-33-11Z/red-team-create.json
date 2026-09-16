@@ -1,0 +1,32 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a2x-q9vy9bc7lg",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "MALFORMED_DTO",
+        "message": "allow entry at $.leader.capabilities.teamTools has unknown fields: builtinToolDeny (source: a2x-perm-team.yaml)",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "MALFORMED_DTO",
+            "message": "allow entry at $.leader.capabilities.teamTools has unknown fields: builtinToolDeny (source: a2x-perm-team.yaml)",
+            "details": {
+              "path": "$.leader.capabilities.teamTools",
+              "extraFields": [
+                "builtinToolDeny"
+              ],
+              "sourceName": "a2x-perm-team.yaml"
+            }
+          }
+        }
+      }
+    }
+  }
+}

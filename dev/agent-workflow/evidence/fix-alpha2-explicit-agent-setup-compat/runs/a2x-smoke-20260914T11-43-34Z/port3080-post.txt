@@ -1,0 +1,4 @@
+# :3080 post-flight probe (READ-ONLY)
+url: http://127.0.0.1:3080/
+httpStatus: unreachable
+at: 2026-09-14T11:43:50.279Z

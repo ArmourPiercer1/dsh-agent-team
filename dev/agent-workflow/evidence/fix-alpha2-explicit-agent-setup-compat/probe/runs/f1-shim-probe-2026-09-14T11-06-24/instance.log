@@ -1,0 +1,10 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+dsh web: http://127.0.0.1:3181/?token=yIKJwTMc8XvxDuN-Fs5DTRd38srM496x3DLODYXoU8k
+[dsh-agent-team] bootstrap FAILED: Error: cannot create effect on inactive context
+    at Fiber.assertActive (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/cordis/lib/index.js:1132:9)
+    at Proxy.prepare (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh-agent-loop/lib/index.js:1627:18)
+    at Object.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+    at Proxy.setupAndPublish (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh-agent-loop/lib/index.js:1850:21)
+    at Object.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-alpha2-explicit-agent-setup-compat/tests/live-host-015rc2/node_modules/@deepseek-ai/dsh-agent-loop/lib/index.js:1834:16
