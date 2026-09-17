@@ -1267,6 +1267,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // every fresh TeamSession mint of this root freezes its snapshot first
     // (the real create boot + team.create v1/v2 through the bindFresh
     // wrapper, the handoff target pre-put, the fixture boot seed).
+    // A2 (RC2 repair, plan §5.2): the SAME per-Team bound-blueprint
+    // resolver the live glue consumes (constructed above) — the root's
+    // binder persona source resolves through it, so the binder and the
+    // agent setup share one snapshot authority (one resolver, no
+    // duplicated resolution logic; the row anchor is no longer a bound
+    // Team's runtime persona authority).
+    resolveBoundBlueprint,
     blueprintAuthority,
     // P8-S7-R4 A28: the DSH public sessionQuery service, resolved lazily
     // at handoff use time (absent in this host entry → the handoff source

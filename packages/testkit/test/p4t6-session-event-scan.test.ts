@@ -987,26 +987,31 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // scanSessionEventVocabulary; quarantine hit set stays at fifteen).
     // Zero denylist vocabulary in the new file.
     // Evidence: dev/agent-workflow/evidence/multi-mcp/c-tests/.
-    // RC2-A6 (0.1.5-rc.2 compatibility repair,
-    // task/rc2-a6-control-guard): +3 = 705 — one new file,
-    // packages/runtime/test/control-guard-leader.test.ts (the A6-T1..T4
-    // leader last-mile guard liveness suite: live v2 leader + allow ->
-    // allowed, team-gone leader -> target-stale, the unchanged
-    // ordinary-member lifecycle matrix, exactly-once allow consumption
-    // on both paths), recording the two increments missed since the
-    // M2c pin (a42ebf4 alpha2-explicit-agent-setup compat:
-    // packages/runtime/test/alpha2-explicit-agent-setup.test.ts;
-    // b8e77b2 webServer shim scoping:
-    // packages/runtime/test/f1-webserver-shim-isolation.test.ts). All
-    // other RC2-A6 changes are in-place edits (packages/runtime/
-    // control/service.ts the guard liveness split + its dist mirror).
-    // Scanner unchanged; DEC-1 union measured on the task worktree
-    // (measured truth 705 via scanSessionEventVocabulary; quarantine
-    // hit set stays at fifteen). Zero denylist vocabulary in all three
-    // files.
-    // Evidence: dev/agent-workflow/evidence/rc2-repair/a6/.
-    expect(scanResult.filesScanned).toBe(705)
-    expect(scanResult.files.length).toBe(705)
+    // RC2-A6 + RC2-A2 union (measured on the integration tip, DEC-1):
+    // +7 = 709 — the two task suites' new files on top of the 702 base,
+    // recording the two increments missed since the M2c pin (the same
+    // "record the missed pin" precedent as the A2 alpha.2 / TCM-D4
+    // stale-base entries — the rc2 repair round added them without
+    // recording the increment): a42ebf4 alpha2-explicit-agent-setup
+    // compat (packages/runtime/test/alpha2-explicit-agent-setup.test.ts)
+    // and b8e77b2 webServer shim scoping (packages/runtime/test/
+    // f1-webserver-shim-isolation.test.ts); RC2-A6 added packages/
+    // runtime/test/control-guard-leader.test.ts (the A6-T1..T4 leader
+    // last-mile guard liveness suite); RC2-A2 added packages/runtime/
+    // test/bound-blueprint-persona-helpers.ts (the shared diverged-
+    // blueprint fixtures + ref/identity-block builders), bound-
+    // blueprint-persona-root.test.ts (the production-host-entry binder
+    // suite A2-T1/T3/T4 + the missing-row typed throw + the factory-
+    // world unchanged pin), bound-blueprint-persona-live.test.ts (the
+    // T12 lane-A live-bridge persona-text suite A2-T1/T2/T3) and
+    // p8s5a-stub-glue.d.mts (the stub-glue bundle's .d.mts type
+    // surface so tsc (NodeNext) resolves the factory-world import).
+    // All seven carry zero denylist vocabulary; the frozen quarantine
+    // hit set is unchanged at fifteen. Scanner unchanged. Evidence:
+    // dev/agent-workflow/evidence/rc2-repair/a6/ + a2/.
+    expect(scanResult.filesScanned).toBe(709)
+    expect(scanResult.files.length).toBe(709)
+
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

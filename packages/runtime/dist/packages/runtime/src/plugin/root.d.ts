@@ -78,7 +78,7 @@
  * arrives exclusively through the injected live-agent glue bundle).
  * @module @dsh-agent-team/runtime/plugin/root
  */
-import type { BlueprintCatalog } from '../../../domain/blueprint/src/index.js';
+import type { BlueprintCatalog, TeamBlueprint } from '../../../domain/blueprint/src/index.js';
 import type { BlueprintAuthority } from './blueprint-authority.js';
 import type { ControlService } from '../../control/index.js';
 import type { HandoffOperationState } from '../../handoff/index.js';
@@ -269,6 +269,30 @@ export interface TeamProductionRootParams {
      * bump — plan §12.3).
      */
     readonly remoteReadiness?: () => import('./s6-remote.js').RemoteReadiness;
+    /**
+     * A2 (RC2 repair, plan §5.2, optional additive) — the narrow per-Team
+     * bound-blueprint resolver the persona source resolves through:
+     * `(teamRootSid) => TeamBlueprint` — the durable TeamSession row's bound
+     * snapshot ref through the live authority. The production host entry
+     * ALWAYS passes one — its EXISTING glue resolver closure (host.ts), a
+     * single source of truth; the root never builds a second resolution
+     * path.
+     *
+     * ABSENT (factory worlds, pre-repair kits): the persona source keeps the
+     * LEGACY row-anchor closure — the row's `blueprintSource` is the
+     * factory's explicit fixture authority (the pre-repair behavior,
+     * unchanged).
+     *
+     * PRESENT: the persona source resolves the OWNING team root's bound
+     * snapshot PER TARGET ROOT (cached per root: the bound snapshot is
+     * immutable for the root's lifetime, invariant 10, and parsing is pure).
+     * A resolver failure PROPAGATES out of the slot's apply (the binder
+     * wraps it as `BINDER_OVERLAY_FAILED`) — fail closed. There is NEVER a
+     * silent row-anchor fallback on the production path (plan §5.3: the
+     * bound snapshot is the authority; "unavailable / inconsistent" is not
+     * "templateId missing").
+     */
+    readonly resolveBoundBlueprint?: (teamRootSid: string) => TeamBlueprint;
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).

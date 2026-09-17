@@ -1824,7 +1824,13 @@ export function createAgentBindings(deps) {
    * The setup-time persona install for one session (agentSetup calls it AFTER
    * the team tools are registered and BEFORE the mcp reconcile — the persona
    * must be in the prompt before any work on the session):
-   *  - an empty blueprintSource -> no persona authority exists, skip;
+   *  - an empty blueprintSource with NO resolver injected (the factory world)
+   *    -> no persona authority exists, skip. A2 (RC2 repair, plan §5.3): in
+   *    PRODUCTION the resolver IS injected and the bound snapshot is the
+   *    persona authority — an empty row anchor never skips the install; a
+   *    root without a durable TeamSession row fails closed through the
+   *    resolver's typed throw (the setup rejection rolls the unpublished
+   *    agent back), never a silent persona-less agent;
    *  - the root: the substrate target is the root identity; the durable
    *    teamSessions row (when the repository carries it) is the step record;
    *  - a member: the MemberInstance row looked up by childSessionId is the
@@ -1835,7 +1841,14 @@ export function createAgentBindings(deps) {
    *    persona-less member).
    */
   function installPersonaForSetup(sessionId, instanceId, templateIdHint, bindPath, teamRootSid) {
-    if (String(config.blueprintSource ?? '') === '') return
+    // A2 (RC2 repair, plan §5.3): the row-config skip is FACTORY-WORLD ONLY
+    // (no resolver injected — there the empty anchor means no persona
+    // authority at all). With the resolver injected (the production host
+    // ALWAYS passes one) the bound snapshot is the authority: proceed to
+    // slot.apply and let a missing row / unresolvable snapshot fail closed
+    // through the resolver's typed throw — NEVER a silent skip, never a
+    // row-anchor fallback.
+    if (resolveBoundBlueprint === undefined && String(config.blueprintSource ?? '') === '') return
     const slot = getPersonaSlot()
     // T12-GLUE: the session may be the root of its OWN team in this row's
     // domain (the handoff target) — it then embodies that team's leader

@@ -304,7 +304,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -365,7 +365,20 @@ export function createTeamProductionRoot(params) {
     const presetSeam = {
         getSubstrate: () => ({ presetId: 'dsh-agent-team', personaKind: 'standard' }),
     };
-    const personaSource = {
+    // A2 (RC2 repair, plan §5.2): the persona source — the BOUND blueprint
+    // snapshot is the persona authority for every bound Team. With the
+    // injected resolver (the production host ALWAYS passes its existing
+    // glue resolver) the persona resolves PER OWNING TEAM ROOT through the
+    // live authority — the bound snapshot is resolved ONCE per root and
+    // cached (immutable for the root's lifetime, invariant 10; parsing is
+    // pure). A resolver failure PROPAGATES out of the slot's apply (the
+    // binder wraps it as BINDER_OVERLAY_FAILED): fail closed, NEVER a
+    // silent row-anchor fallback (plan §5.3 — "bound snapshot unavailable /
+    // inconsistent" is a different failure than "templateId missing").
+    // Without a resolver (factory worlds) the LEGACY row-anchor closure is
+    // the explicit factory fixture authority — the pre-repair behavior,
+    // unchanged.
+    const anchorPersonaSource = {
         getLeaderPersona: () => blueprint.leader.persona,
         getMemberPersona: (_rootSessionId, templateId) => {
             const template = blueprint.members.find((member) => String(member.templateId) === String(templateId));
@@ -375,6 +388,43 @@ export function createTeamProductionRoot(params) {
             return template.persona;
         },
     };
+    // The resolver-backed per-root cache (A2): one resolved bound snapshot
+    // per owning root (the bound snapshot is immutable for the root's
+    // lifetime — invariant 10 — so the cached source stays authoritative
+    // for the process; one binding per boot).
+    const boundPersonaSources = new Map();
+    const boundPersonaSourceFor = (rootSessionId) => {
+        const key = String(rootSessionId);
+        const cached = boundPersonaSources.get(key);
+        if (cached !== undefined)
+            return cached;
+        const resolve = resolveBoundBlueprint;
+        if (resolve === undefined) {
+            // Unreachable through the resolver-backed source (it is selected
+            // ONLY when a resolver is injected) — fail closed anyway; this
+            // path never falls back to the row anchor silently.
+            throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID, `bound blueprint persona source has no resolver for root "${key}" — the production host always injects one`);
+        }
+        const bound = resolve(key);
+        const source = {
+            getLeaderPersona: () => bound.leader.persona,
+            getMemberPersona: (_owner, templateId) => {
+                const template = bound.members.find((member) => String(member.templateId) === String(templateId));
+                if (template === undefined) {
+                    throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CONFIG_INVALID, `no blueprint member template with templateId "${String(templateId)}"`);
+                }
+                return template.persona;
+            },
+        };
+        boundPersonaSources.set(key, source);
+        return source;
+    };
+    const personaSource = resolveBoundBlueprint === undefined
+        ? anchorPersonaSource
+        : {
+            getLeaderPersona: (rootSessionId) => boundPersonaSourceFor(rootSessionId).getLeaderPersona(rootSessionId),
+            getMemberPersona: (rootSessionId, templateId) => boundPersonaSourceFor(rootSessionId).getMemberPersona(rootSessionId, templateId),
+        };
     // The scoped-prompt installation surface: the S5A boot world has no DSH
     // public prompt binding (the real one lands with the T5/T6 public seam);
     // installations are recorded (observable, write-free) — never silently
