@@ -9,7 +9,7 @@
 | 项 | 值 |
 | --- | --- |
 | DSH 源码 | `<repo>/tests/deepseek-harness-test-use`（pristine upstream checkout；**自身 git 仓**，detached 于基线；gitignored；工作树必须保持 clean） |
-| 基线 | upstream `deepseek-ai/deepseek-harness` @ **`a66e4702047846cdaa10c66c9d3df3951f5ea70d`**（官方 `release(dsh): 0.1.2-rc.1` 提交 = 本程序审计基线；短形式 `a66e470204`；canonical 常量见 `tests/paths.mjs` 的 `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`） |
+| 基线 | upstream `deepseek-ai/deepseek-harness` @ **`fb2c4b9e698e30edb738bca4cf0618587db7d203`**（0.1.5-rc.2 官方发布点 = 分支 `stable-1-0.1.5-rc.2` tip；短形式 `fb2c4b9e69`；canonical 常量见 `tests/paths.mjs` 的 `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`）。**DSH 0.1.2 自 2026-09-17 起不再支持**（用户裁决，rc2-repair 轮基线） |
 | DSH_HOME | `<repo>/tests/homes/<world>`（一世界一目录；**位于会话工作区内**——见 §5 沙箱约束；与稳定实例的默认 `~/.dsh` 完全隔离；`tests/homes/` 已被 `.gitignore` 覆盖；协议见 §7） |
 | 端口 | `3180` 族（3180-3186 / 3491-3500；稳定实例占 3080；测试实例**禁止**使用 3080） |
 
@@ -24,7 +24,7 @@ pnpm install --ignore-scripts   # node ^22.19 || >=24；packageManager pnpm@11.7
                                 # --ignore-scripts：受限沙箱禁止 piped-stdio 子进程 spawn（lifecycle 脚本 EPERM）；
                                 # 预编译原生包（node-pty/koffi/esbuild 平台二进制）不受影响
 # 构建（必须；web 运行时从 lib/ 加载，且需 client 产物）：
-DSH_CLIENT_COMMIT_HASH=a66e470204 \
+DSH_CLIENT_COMMIT_HASH=fb2c4b9e69 \
 ESBUILD_WORKER_THREADS=1 \
 node scripts/build.ts           # 直接 node 跑 TS orchestrator（v24 原生 type-stripping），绕开 tsx
 # 启动（DSH_HOME 必须显式设置；用构建产物入口，绕开 tsx 的同步 esbuild spawn）：
@@ -72,6 +72,7 @@ DSH_HOME=<repo>/tests/homes/<world> node apps/cli/lib/bin.js web --port 3180 --n
 - 2026-08-29 第三次裁决（取代第二次的 DSH_HOME）：DSH_HOME 改为工作区内 `references/.dsh-test`（原因见 §5）。源码、端口、其余约束不变。
 - 2026-09-04（R122 留痕）：基线随 upstream in-place 更新移至 0.1.2-rc.1；host-service-registry 语义缝隙（`sessionPersistence.ensureMaterialized` → `sessions.flush`）为上游 rc.1 自有替换，非 CORE_SEAM_BLOCKER。
 - 2026-09-12（本次）：测试基础设施标准化——布局迁入 `tests/`（§1）、基线对齐 `a66e470204`（§1 + 文首留痕）、home 协议（§7）、kit 归位（§4.1）、pin 代差登记（§4.2）。端口策略与稳定实例红线不变。
+- 2026-09-17（rc2-repair 轮，用户裁决"本轮基线 0.1.5-rc.2，后续不再为 0.1.2 提供支持"）：测试运行时基线 `a66e470204`（0.1.2-rc.1）→ **`fb2c4b9e698e30edb738bca4cf0618587db7d203`**（0.1.5-rc.2 官方发布点，与 `docs/plans/active/dsh-agent-team-rc2-repair-plan.md` §0.1 宿主提交逐字一致）。test-use 检出已迁移（`git checkout --detach`，对象本地已有、无网络；porcelain 迁移前后均为空）；`pnpm install --ignore-scripts` + `DSH_CLIENT_COMMIT_HASH=fb2c4b9e69 node scripts/build.ts` 重建成功；3181 新 home（`tests/homes/.dsh-test-rc2b`）启动冒烟：boot 行出现 + 无 token 401 + token 303 鉴权放行；`tests/paths.mjs` pin 与 AGENTS.md 基线行同步更新。`references/deepseek-harness` 工作树同期已由用户切至 `stable-1-0.1.5-rc.2` @ 同提交（冻结 legacy 锚点 `a3ab319927` 未移动，本环境复核）。§4.2 的 characterization pin（`cd5ef814`）为独立来源，**不动**。端口策略与稳定实例红线不变。
 
 ## 7. DSH_HOME 命名与清理协议（`tests/homes/`，2026-09-12 新增）
 

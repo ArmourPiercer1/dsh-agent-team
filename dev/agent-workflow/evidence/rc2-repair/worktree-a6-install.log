@@ -1,0 +1,4 @@
+    at async main4 (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304383:30)
+    at async runPnpm (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304656:5)
+    at async file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304649:3
+=== A6 WORKTREE INSTALL DONE ===
